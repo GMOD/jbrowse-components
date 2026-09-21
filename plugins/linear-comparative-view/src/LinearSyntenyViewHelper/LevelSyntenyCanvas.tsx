@@ -13,12 +13,12 @@ import { SyntenyRendererFactory } from '../LinearSyntenyDisplay/SyntenyRenderer.
 import { syntenyWidgetFeature } from '../LinearSyntenyDisplay/syntenyWidgetFeature.ts'
 import OffscreenMateOverlay from './OffscreenMateOverlay.tsx'
 import OffscreenMateTooltip from './OffscreenMateTooltip.tsx'
-import { offscreenMateHit, offscreenMateNavHit } from './offscreenMateStrip.ts'
+import { offscreenMateHit } from './offscreenMateStrip.ts'
 import { useWheelScrollZoom } from './useWheelScrollZoom.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type { OffscreenMateHover } from './OffscreenMateTooltip.tsx'
-import type { OffscreenMateNavHit } from './offscreenMateStrip.ts'
+import type { OffscreenMateHit } from './offscreenMateStrip.ts'
 import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 import type React from 'react'
 
@@ -77,7 +77,7 @@ function openSyntenyFeatureWidget(
 
 function markMenuItems(
   model: LinearSyntenyViewHelperModel,
-  hit: OffscreenMateNavHit,
+  hit: OffscreenMateHit,
 ) {
   const panel = hit.side === 'top' ? 'panel below' : 'panel above'
   return [
@@ -125,7 +125,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     (OffscreenMateHover & { bandTransformKey: string }) | undefined
   >(undefined)
   const [markMenu, setMarkMenu] = useState<
-    { hit: OffscreenMateNavHit; clientX: number; clientY: number } | undefined
+    { hit: OffscreenMateHit; clientX: number; clientY: number } | undefined
   >(undefined)
   const { bandTransformKey } = model
   const hover =
@@ -269,11 +269,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     // The mark strip first, in the few pixels above every ribbon. A mark is not
     // a feature, so it answers with a navigation rather than a selection, and
     // must not fall through to clear the clicked feature on its way.
-    const mate = offscreenMateNavHit(
-      model.offscreenMateStrips,
-      coords.x,
-      coords.y,
-    )
+    const mate = offscreenMateHit(model.offscreenMateStrips, coords.x, coords.y)
     if (mate) {
       model.showOffscreenMateContig(mate)
       return
@@ -303,11 +299,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     // The mark strip first, as in the move and release handlers: the pick
     // engine accepts any y inside the track height, so a right-click on a mark
     // would otherwise open the menu for whatever ribbon runs beneath it.
-    const mate = offscreenMateNavHit(
-      model.offscreenMateStrips,
-      coords.x,
-      coords.y,
-    )
+    const mate = offscreenMateHit(model.offscreenMateStrips, coords.x, coords.y)
     if (mate) {
       event.preventDefault()
       cancelHover()

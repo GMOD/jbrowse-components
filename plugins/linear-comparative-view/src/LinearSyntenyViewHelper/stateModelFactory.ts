@@ -38,7 +38,7 @@ import type {
   SyntenyTrackRenderParams,
 } from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
-import type { OffscreenMateNavHit } from './offscreenMateStrip.ts'
+import type { OffscreenMateHit } from './offscreenMateStrip.ts'
 import type { ParentViewDuck, RowPair } from './parentViewDuck.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { DisplayInitialSnapshot } from '@jbrowse/core/util/tracks'
@@ -512,7 +512,7 @@ export function linearSyntenyViewHelperModelFactory(
        * showing. The click takes the follow anchor, and the Undo gives back
        * the anchor and every row's viewport together.
        */
-      showOffscreenMateContig(hit: OffscreenMateNavHit) {
+      showOffscreenMateContig(hit: OffscreenMateHit) {
         const { parentView } = self
         const view = parentView.views[hit.navRow]
         if (!view) {

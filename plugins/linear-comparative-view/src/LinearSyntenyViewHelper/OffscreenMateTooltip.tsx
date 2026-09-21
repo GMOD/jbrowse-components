@@ -16,7 +16,7 @@ export interface OffscreenMateHover extends OffscreenMateHit {
 
 export function offscreenMateClickHint(hit: OffscreenMateHit) {
   const panel = hit.side === 'top' ? 'panel below' : 'panel above'
-  return hit.displayed
+  return hit.mateCumBp
     ? `The ${panel} has scrolled off it. Click to scroll there`
     : `Not on the ${panel}. Click to add it`
 }

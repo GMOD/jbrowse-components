@@ -231,50 +231,15 @@ function markAlignedBp(data: OffscreenMateDataset, i: number) {
   return data.lengths[i]!
 }
 
-export interface OffscreenMateMark {
-  refName: string
-  // the facing row displays this contig and has scrolled off it, as opposed to
-  // not displaying it at all
-  displayed: boolean
-}
-
-// The mark under a point, or undefined. Where marks overlap the longest
-// alignment wins, which is the one painted last.
-export function offscreenMateAt(
-  lane: OffscreenMateLane,
-  x: number,
-  y: number,
-): OffscreenMateMark | undefined {
-  const strip = stripGeometry(lane)
-  if (!strip || !pointerOnStrip(strip, y)) {
-    return undefined
-  }
-  let hit: OffscreenMateMark | undefined
-  let hitBp = -Infinity
-  forEachMark(lane, (data, _d, i, mx, w) => {
-    if (x >= mx && x <= mx + w) {
-      const bp = markAlignedBp(data, i)
-      if (bp > hitBp) {
-        hitBp = bp
-        hit = {
-          refName: offscreenMateRefName(data, i),
-          displayed: data.mateAxis !== undefined,
-        }
-      }
-    }
-  })
-  return hit
-}
-
 export interface OffscreenMateLocus {
   start: number
   end: number
 }
 
-// What a click on a mark resolves to. `mateCumBp` present means the facing
-// row displays the contig and the click scrolls to where the alignments are
-// drawn; absent means the row has to gain the contig first, and `locus` frames
-// the window inside it.
+// What a pointer on a mark resolves to, hover and click alike. `mateCumBp`
+// present means the facing row displays the contig and a click scrolls to
+// where the alignments are drawn; absent means the row has to gain the contig
+// first, and `locus` frames the window inside it.
 export interface OffscreenMateSpan {
   refName: string
   // the blocks' untrimmed extent in the contig's own bp
@@ -283,9 +248,10 @@ export interface OffscreenMateSpan {
   mateCumBp?: OffscreenMateLocus
 }
 
-// The union of every alignment under the point, since a mark is a column of
-// them, and the contig of the longest one — the same one the hover named
-export function offscreenMateSpanAt(
+// The contig of the longest alignment under the point, which is the one
+// painted last, and the union of that contig's alignments under it, since a
+// mark is a column of them
+export function offscreenMateAt(
   lane: OffscreenMateLane,
   x: number,
   y: number,

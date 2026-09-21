@@ -1,7 +1,6 @@
 import {
   offscreenMateTotals,
   offscreenMateHit,
-  offscreenMateNavHit,
   offscreenMateStrips,
 } from './offscreenMateStrip.ts'
 
@@ -76,10 +75,6 @@ function bothSides(over: Record<string, unknown> = {}): OffscreenMateSource {
 
 function hit(model: OffscreenMateSource, x: number, y: number) {
   return offscreenMateHit(offscreenMateStrips(model), x, y)
-}
-
-function navHit(model: OffscreenMateSource, x: number, y: number) {
-  return offscreenMateNavHit(offscreenMateStrips(model), x, y)
 }
 
 // The one mistake here that draws something plausible instead of nothing: these
@@ -208,18 +203,21 @@ test('a second display on the level is asked too', () => {
 test('a pointer at the bottom edge answers the target axis, and the row above', () => {
   expect(hit(bothSides(), 1, 99)).toEqual({
     refName: 'fromTarget',
-    displayed: false,
     navRow: 0,
     side: 'bottom',
+    locus: { start: 0, end: 500 },
+    // the worker's class: no place on the facing axis at all, so nowhere to
+    // scroll to and no drawn span to carry
+    mateCumBp: undefined,
   })
 })
 
 test('a pointer at the top edge still answers the query axis', () => {
-  expect(hit(bothSides(), 1, 1)).toEqual({
+  expect(hit(bothSides(), 1, 1)).toMatchObject({
     refName: 'fromQuery',
-    displayed: false,
     navRow: 1,
     side: 'top',
+    mateCumBp: undefined,
   })
 })
 
@@ -275,22 +273,6 @@ test('a display that has not fetched totals nothing rather than throwing', () =>
   ).toBe(0)
 })
 
-// The click's own resolver, which differs from the hover's only in carrying the
-// coordinates — the strip it answers from, and the row that strip navigates,
-// have to be the same ones or a click lands on a different axis from the mark
-// the pointer was over.
-test('a click resolves the same strip and row, plus the mate locus', () => {
-  expect(navHit(bothSides(), 1, 99)).toEqual({
-    refName: 'fromTarget',
-    navRow: 0,
-    side: 'bottom',
-    locus: { start: 0, end: 500 },
-    // the worker's class: no place on the facing axis at all, so nowhere to
-    // scroll to and no drawn span to carry
-    mateCumBp: undefined,
-  })
-})
-
 // The class the worker cannot see: the alignment is drawn on BOTH axes, and
 // whether it is a mark is a question about where the facing row currently sits.
 // One perspective per row, since either end can be the one that scrolled off.
@@ -332,7 +314,7 @@ test('the bottom strip marks the ribbons the row above culled', () => {
   ])
   expect(hit(model, 1, 99)).toMatchObject({
     refName: 'scrolledAway',
-    displayed: true,
+    mateCumBp: { start: 100_000, end: 100_050 },
   })
 })
 
@@ -381,7 +363,7 @@ test('a culled bottom mark clicks through as a contig that row already has', () 
       },
     ],
   })
-  expect(navHit(model, 1, 99)).toMatchObject({
+  expect(hit(model, 1, 99)).toMatchObject({
     refName: 'scrolledAway',
     navRow: 0,
     side: 'bottom',
@@ -416,7 +398,7 @@ test('a mark whose mate span collapses still resolves to a place', () => {
       },
     ],
   })
-  expect(navHit(model, 1, 99)).toMatchObject({
+  expect(hit(model, 1, 99)).toMatchObject({
     refName: 'scrolledAway',
     locus: { start: 7_000, end: 7_000 },
     mateCumBp: { start: 100_000, end: 100_050 },

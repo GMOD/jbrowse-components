@@ -1,7 +1,6 @@
 import {
   datasetMayHide,
   offscreenMateAt,
-  offscreenMateSpanAt,
 } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import { offscreenMateMarkColorFor } from './offscreenMateMarkColors.ts'
 
@@ -10,7 +9,6 @@ import type {
   MateBand,
   OffscreenMateDataset,
   OffscreenMateLane,
-  OffscreenMateMark,
   OffscreenMateSide,
   OffscreenMateSpan,
 } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
@@ -131,12 +129,7 @@ export function offscreenMateStrips(
   })
 }
 
-export interface OffscreenMateHit extends OffscreenMateMark {
-  navRow: number
-  side: OffscreenMateSide
-}
-
-export interface OffscreenMateNavHit extends OffscreenMateSpan {
+export interface OffscreenMateHit extends OffscreenMateSpan {
   navRow: number
   side: OffscreenMateSide
 }
@@ -148,28 +141,9 @@ export function offscreenMateHit(
   strips: OffscreenMateStrip[],
   x: number,
   y: number,
-) {
-  return stripHit(strips, x, y, offscreenMateAt)
-}
-
-// The click's resolver: a full scan of the lane for the span, where the hover
-// only needs a name
-export function offscreenMateNavHit(
-  strips: OffscreenMateStrip[],
-  x: number,
-  y: number,
-) {
-  return stripHit(strips, x, y, offscreenMateSpanAt)
-}
-
-function stripHit<T>(
-  strips: OffscreenMateStrip[],
-  x: number,
-  y: number,
-  ask: (lane: OffscreenMateLane, x: number, y: number) => T | undefined,
-) {
+): OffscreenMateHit | undefined {
   for (const strip of strips) {
-    const found = ask(strip, x, y)
+    const found = offscreenMateAt(strip, x, y)
     if (found) {
       return { ...found, navRow: strip.navRow, side: strip.side }
     }

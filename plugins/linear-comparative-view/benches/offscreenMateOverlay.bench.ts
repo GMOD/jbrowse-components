@@ -25,14 +25,9 @@
 //                      here because src/ no longer has it.
 //   control            a second, separately-declared copy of hover-ribbons-old.
 //                      A row whose control is far from 1.00 measured nothing.
-//   click-strip        what a CLICK on a mark resolves: the same hit, plus the
-//                      union of the mate spans stacked under it, which is a full
-//                      scan of the lane rather than the hover's early exit. One
-//                      per navigation — the column exists to say whether it could
-//                      also be afforded on the hover path, which is where the
-//                      tooltip would need it.
 //   hover-strip        pointer IN the strip, which is the case neither shape can
-//                      answer without scanning, and the ceiling on this path.
+//                      answer without scanning, and the ceiling on this path. A
+//                      click resolves through the same call.
 //   draw               one overlay repaint — the LAYOUT and path building only.
 //                      The fake context's fill is a no-op, so rasterization is
 //                      not in this column and a change to how the strip is
@@ -56,7 +51,6 @@ import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import {
   drawOffscreenMates,
   offscreenMateAt,
-  offscreenMateSpanAt,
 } from '../src/LinearSyntenyDisplay/drawOffscreenMates.ts'
 
 import type { OffscreenMateLane } from '../src/LinearSyntenyDisplay/drawOffscreenMates.ts'
@@ -269,7 +263,6 @@ for (const { name, data } of FIXTURES) {
     hoverRibbonsOld: Infinity,
     control: Infinity,
     hoverStrip: Infinity,
-    clickStrip: Infinity,
     draw: Infinity,
   }
   // interleaved round-robin, min of rounds
@@ -299,12 +292,6 @@ for (const { name, data } of FIXTURES) {
     best.hoverStrip = Math.min(best.hoverStrip, performance.now() - t)
 
     t = performance.now()
-    for (let i = 0; i < HOVERS; i++) {
-      keep(offscreenMateSpanAt(layout, i % WIDTH, 3)?.refName)
-    }
-    best.clickStrip = Math.min(best.clickStrip, performance.now() - t)
-
-    t = performance.now()
     drawOffscreenMates(ctx, [layout], COLORS)
     best.draw = Math.min(best.draw, performance.now() - t)
   }
@@ -318,8 +305,6 @@ for (const { name, data } of FIXTURES) {
       best.hoverRibbonsOld / HOVERS,
     )}  [ctl ${(best.control / best.hoverRibbonsOld).toFixed(2)}]  hover-strip ${fmt(
       best.hoverStrip / HOVERS,
-    )}  click-strip ${fmt(
-      best.clickStrip / HOVERS,
     )}  draw ${fmt(best.draw)}  svg ${svgKb.toFixed(0).padStart(5)}KB   (ms, per hover except draw)`,
   )
 }

@@ -5,7 +5,6 @@ import {
   OFFSCREEN_MATE_HEIGHT_PX,
   drawOffscreenMates,
   offscreenMateAt,
-  offscreenMateSpanAt,
 } from './drawOffscreenMates.ts'
 
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
@@ -105,7 +104,7 @@ function data(
     // the two measure differently is `collectOffscreenMates`'s own test
     lengths: Float32Array.from(spans.map(s => s[1] - s[0])),
     // the mate's own coordinates, which these tests only need to be parallel
-    // and ordered — where a click lands is `offscreenMateSpanAt`'s own test
+    // and ordered — where a click lands is `offscreenMateAt`'s own test
     mateStarts: Float64Array.from(mates.map(s => s[0])),
     mateEnds: Float64Array.from(mates.map(s => s[1])),
   }
@@ -1058,7 +1057,7 @@ test('a click answers the mate locus, not just the contig', () => {
     ...params,
     datasets: [data([[100, 400]], ['ctgB'], [[4000, 4400]])],
   }
-  expect(offscreenMateSpanAt(layout, 20, 3)).toEqual({
+  expect(offscreenMateAt(layout, 20, 3)).toEqual({
     refName: 'ctgB',
     locus: { start: 4000, end: 4400 },
     mateCumBp: undefined,
@@ -1088,7 +1087,7 @@ test('...unioned over every alignment stacked under the pointer', () => {
       ),
     ],
   }
-  expect(offscreenMateSpanAt(layout, 11, 3)).toEqual({
+  expect(offscreenMateAt(layout, 11, 3)).toEqual({
     refName: 'ctgB',
     locus: { start: 4000, end: 9100 },
     mateCumBp: undefined,
@@ -1119,7 +1118,7 @@ test('...but never across the contigs sharing that column', () => {
   }
   // ctgC holds the longer of the two alignments, so it is what the hover named
   // and what the click follows
-  expect(offscreenMateSpanAt(layout, 11, 3)).toEqual({
+  expect(offscreenMateAt(layout, 11, 3)).toEqual({
     refName: 'ctgC',
     locus: { start: 4000, end: 4200 },
     mateCumBp: undefined,
@@ -1129,7 +1128,7 @@ test('...but never across the contigs sharing that column', () => {
 test('below the strip a click resolves nothing, like the hover', () => {
   const layout = { ...params, datasets: [data([[100, 400]], ['ctgB'])] }
   expect(
-    offscreenMateSpanAt(layout, 20, OFFSCREEN_MATE_HEIGHT_PX + 1),
+    offscreenMateAt(layout, 20, OFFSCREEN_MATE_HEIGHT_PX + 1),
   ).toBeUndefined()
 })
 
@@ -1144,7 +1143,7 @@ test('a mark whose mate span collapses resolves to the point, not the contig', (
     ...params,
     datasets: [data([[100, 400]], ['ctgB'], [[0, 0]])],
   }
-  expect(offscreenMateSpanAt(layout, 20, 3)).toEqual({
+  expect(offscreenMateAt(layout, 20, 3)).toEqual({
     refName: 'ctgB',
     mateCumBp: undefined,
     locus: { start: 0, end: 0 },
@@ -1235,7 +1234,7 @@ test('a click on one says the contig is displayed', () => {
     datasets: [placed([[100, 400]], [[90_000, 90_300]])],
     mateBand: { lo: 0, hi: 1000 },
   }
-  expect(offscreenMateSpanAt(layout, 20, 3)).toMatchObject({
+  expect(offscreenMateAt(layout, 20, 3)).toMatchObject({
     refName: 'other',
     mateCumBp: { start: 90_000, end: 90_300 },
   })
@@ -1253,7 +1252,7 @@ test('a click on a placed mark carries where it is drawn, not the block extent',
     datasets: [placed([[100, 400]], [[90_000, 90_300]])],
     mateBand: { lo: 0, hi: 1000 },
   }
-  expect(offscreenMateSpanAt(layout, 20, 3)).toEqual({
+  expect(offscreenMateAt(layout, 20, 3)).toEqual({
     refName: 'other',
     locus: { start: 100, end: 400 },
     mateCumBp: { start: 90_000, end: 90_300 },
@@ -1279,7 +1278,7 @@ test('...unioned over the marks stacked under the pointer', () => {
     ],
     mateBand: { lo: 0, hi: 1000 },
   }
-  expect(offscreenMateSpanAt(layout, 11, 3)).toMatchObject({
+  expect(offscreenMateAt(layout, 11, 3)).toMatchObject({
     mateCumBp: { start: 90_000, end: 95_100 },
   })
 })
@@ -1296,7 +1295,7 @@ test('...and never unioned with a lane that has no drawn position', () => {
     ],
     mateBand: { lo: 0, hi: 1000 },
   }
-  expect(offscreenMateSpanAt(layout, 11, 3)).toEqual({
+  expect(offscreenMateAt(layout, 11, 3)).toEqual({
     refName: 'ctgB',
     locus: { start: 100, end: 4100 },
     mateCumBp: { start: 90_000, end: 90_100 },
@@ -1318,7 +1317,7 @@ test('...whichever order the lanes are scanned in', () => {
     ],
     mateBand: { lo: 0, hi: 1000 },
   }
-  expect(offscreenMateSpanAt(layout, 11, 3)).toMatchObject({
+  expect(offscreenMateAt(layout, 11, 3)).toMatchObject({
     refName: 'ctgB',
     mateCumBp: { start: 90_000, end: 90_100 },
   })
@@ -1331,5 +1330,5 @@ test('a mark with no place on the facing axis carries no drawn span', () => {
     ...params,
     datasets: [data([[100, 400]], ['ctgB'], [[4000, 4400]])],
   }
-  expect(offscreenMateSpanAt(layout, 20, 3)!.mateCumBp).toBeUndefined()
+  expect(offscreenMateAt(layout, 20, 3)!.mateCumBp).toBeUndefined()
 })

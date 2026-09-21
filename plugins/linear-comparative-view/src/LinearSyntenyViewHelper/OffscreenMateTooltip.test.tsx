@@ -39,7 +39,7 @@ function draw(
   model: OffscreenMateSource,
   refName: string,
   side: 'top' | 'bottom' = 'top',
-  displayed = false,
+  scrolledOff = false,
 ) {
   const { getByRole } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
@@ -48,7 +48,8 @@ function draw(
         hover={{
           refName,
           side,
-          displayed,
+          locus: { start: 0, end: 1 },
+          mateCumBp: scrolledOff ? { start: 0, end: 1 } : undefined,
           navRow: 1,
           clientX: 40,
           clientY: 12,
