@@ -117,9 +117,9 @@ import type {
   LaneRegion,
 } from './laneFetch.ts'
 import type { LaneChoice, LaneFilter } from './laneSelection.ts'
-import type { LaneStack } from './laneStack.ts'
+import type { Lane, LaneStack } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
-import type { TickGeometry } from './multiwayGeometry.ts'
+import type { LaneGlyphColors, TickGeometry } from './multiwayGeometry.ts'
 import type {
   MultiWayCell,
   MultiWayLayer,
@@ -747,6 +747,10 @@ export function stateModelFactory(
       let boxes:
         | { features?: Feature[]; settings: string; colors: GeneColors }
         | undefined
+      let lanes = new Map<
+        string,
+        { held: HeldLaneGenes; settings: string; colors: GeneColors }
+      >()
       return {
         /**
          * #getter
@@ -771,17 +775,36 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * per lane, its genes' fills, resolved once per gene commit and
-         * colour setting, so a settle runs no jexl
+         * per lane, its genes' fills, resolved once per commit of that lane's
+         * genes and colour setting, so a settle or another lane's commit runs
+         * no jexl
          */
         get laneGeneColors(): ReadonlyMap<string, GeneColors> {
-          const settings = self.geneColorSettings
-          return new Map(
-            [...(self.laneGenes?.keys() ?? [])].map(lane => [
+          const { geneColorSettings } = self
+          const settings = JSON.stringify(geneColorSettings)
+          const next = new Map<
+            string,
+            { held: HeldLaneGenes; settings: string; colors: GeneColors }
+          >()
+          for (const [lane, held] of self.laneGenes ?? []) {
+            const prev = lanes.get(lane)
+            next.set(
               lane,
-              geneColors(self.configuration, settings, jexl),
-            ]),
-          )
+              prev?.held === held && prev.settings === settings
+                ? prev
+                : {
+                    held,
+                    settings,
+                    colors: geneColors(
+                      self.configuration,
+                      geneColorSettings,
+                      jexl,
+                    ),
+                  },
+            )
+          }
+          lanes = next
+          return new Map([...next].map(([lane, { colors }]) => [lane, colors]))
         },
       }
     })
@@ -1565,39 +1588,72 @@ export function stateModelFactory(
           }),
         }
       },
-      /**
-       * #getter
-       * two cells per lane — its gene models and baseline, and its placement
-       * boxes; see `buildLaneCells`. Boxes first, so a hit
-       * test walking these in order answers the box over the gene the way the
-       * draw order does. Fills come off `laneGeneColors` and `boxColors`, so a
-       * settle re-runs no jexl slot, and neither the hover nor the selection
-       * reads these: the chrome draws both
-       */
-      get laneGlyphCells() {
-        const { laneGenes, laneGeneColors, boxColors } = self
-        const { lanes, glyphHeight } = self.laneStack
-        const ink = bandInk()
-        const out = new Map<string, MultiWayCell>()
-        lanes.forEach((lane, row) => {
-          const { glyphs, boxes } = buildLaneCells({
-            lane,
-            genes: laneGenes?.get(lane.assemblyName)?.genes ?? [],
-            glyphHeight,
-            width: self.canvasWidth,
-            colors: {
+    }))
+    .views(self => {
+      let held: {
+        lane: Lane
+        colors: LaneGlyphColors
+        glyphs: MultiWayCell
+        boxes: MultiWayCell
+      }[] = []
+      return {
+        /**
+         * #getter
+         * two cells per lane — its gene models and baseline, and its placement
+         * boxes; see `buildLaneCells`. Boxes first, so a hit test walking these
+         * in order answers the box over the gene the way the draw order does.
+         * Fills come off `laneGeneColors` and `boxColors`, so a settle re-runs
+         * no jexl slot, and neither the hover nor the selection reads these:
+         * the chrome draws both.
+         *
+         * A lane whose `Lane`, fills and ink are the ones its cells were packed
+         * from keeps those cells, so another lane's gene commit re-uploads
+         * nothing of it
+         */
+        get laneGlyphCells() {
+          const { laneGenes, laneGeneColors, boxColors } = self
+          const { lanes, glyphHeight } = self.laneStack
+          const ink = bandInk()
+          held = lanes.map((lane, row) => {
+            const colors = {
               genes: laneGeneColors.get(lane.assemblyName) ?? boxColors,
               boxes: boxColors,
               stroke: ink.text,
               divider: ink.divider,
-            },
+            }
+            const prev = held[row]
+            if (
+              prev?.lane === lane &&
+              prev.colors.genes === colors.genes &&
+              prev.colors.boxes === colors.boxes &&
+              prev.colors.stroke === colors.stroke &&
+              prev.colors.divider === colors.divider
+            ) {
+              return prev
+            }
+            const { glyphs, boxes } = buildLaneCells({
+              lane,
+              genes: laneGenes?.get(lane.assemblyName)?.genes ?? [],
+              glyphHeight,
+              width: self.canvasWidth,
+              colors,
+            })
+            return {
+              lane,
+              colors,
+              glyphs: { kind: 'glyphs', data: glyphs },
+              boxes: { kind: 'glyphs', data: boxes },
+            }
           })
-          out.set(boxesKey(row), { kind: 'glyphs', data: boxes })
-          out.set(glyphsKey(row), { kind: 'glyphs', data: glyphs })
-        })
-        return out
-      },
-    }))
+          const out = new Map<string, MultiWayCell>()
+          held.forEach(({ glyphs, boxes }, row) => {
+            out.set(boxesKey(row), boxes)
+            out.set(glyphsKey(row), glyphs)
+          })
+          return out
+        },
+      }
+    })
     .views(self => ({
       /**
        * #getter
