@@ -11,19 +11,15 @@ export function showAddTrackWidget(
   trackContainerId?: string,
 ) {
   if (isSessionModelWithWidgets(session)) {
-    session.showWidget(
-      session.addWidget('AddTrackWidget', 'addTrackWidget', {
-        view: viewId,
-        trackContainerId,
-      }),
-    )
+    session.openWidget('AddTrackWidget', 'addTrackWidget', {
+      view: viewId,
+      trackContainerId,
+    })
   }
 }
 
 export function showAddConnectionWidget(session: IStateTreeNode) {
   if (isSessionModelWithWidgets(session)) {
-    session.showWidget(
-      session.addWidget('AddConnectionWidget', 'addConnectionWidget'),
-    )
+    session.openWidget('AddConnectionWidget', 'addConnectionWidget')
   }
 }

@@ -88,8 +88,7 @@ describe('savedSessionMenuItems', () => {
       session: currentSessionId
         ? {
             id: currentSessionId,
-            addWidget: () => ({}),
-            showWidget: () => {},
+            openWidget: () => ({}),
           }
         : undefined,
       activateSession: () => Promise.resolve(),

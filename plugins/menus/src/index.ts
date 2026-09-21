@@ -27,16 +27,14 @@ export default class MenusPlugin extends Plugin {
         label: 'About',
         icon: InfoIcon,
         onClick: (session: SessionWithWidgets) => {
-          const widget = session.addWidget('AboutWidget', 'aboutWidget')
-          session.showWidget(widget)
+          session.openWidget('AboutWidget', 'aboutWidget')
         },
       })
       pluginManager.rootModel.appendToMenu('Help', {
         label: 'Help',
         icon: HelpIcon,
         onClick: (session: SessionWithWidgets) => {
-          const widget = session.addWidget('HelpWidget', 'helpWidget')
-          session.showWidget(widget)
+          session.openWidget('HelpWidget', 'helpWidget')
         },
       })
     }

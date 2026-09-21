@@ -96,9 +96,7 @@ export default class GridBookmarkPlugin extends Plugin {
         label: 'Highlights',
         icon: HighlightIcon,
         onClick: (session: SessionWithWidgets) => {
-          let widget = session.widgets.get('GridBookmark')
-          widget ??= session.addWidget('GridBookmarkWidget', 'GridBookmark')
-          session.showWidget(widget)
+          session.openWidget('GridBookmarkWidget', 'GridBookmark')
         },
       })
     }

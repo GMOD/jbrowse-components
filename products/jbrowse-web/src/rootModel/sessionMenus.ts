@@ -64,8 +64,7 @@ export interface SavedSessionMenuHost {
   savedSessionMetadata?: SessionMetadata[]
   session?: {
     id: string
-    addWidget: (typeName: string, id: string) => unknown
-    showWidget: (widget: unknown) => void
+    openWidget: (typeName: string, id: string) => unknown
   }
   activateSession: (id: string) => Promise<void>
 }
@@ -98,10 +97,7 @@ export function savedSessionMenuItems(self: SavedSessionMenuHost) {
   const actions = {
     activate: (id: string) => self.activateSession(id),
     showMore: () => {
-      const widget = self.session?.addWidget('SessionManager', 'sessionManager')
-      if (widget) {
-        self.session?.showWidget(widget)
-      }
+      self.session?.openWidget('SessionManager', 'sessionManager')
     },
   }
   return [

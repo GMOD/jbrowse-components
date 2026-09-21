@@ -81,7 +81,7 @@ export function openSubsequenceWidget(
   if (!isSessionModelWithWidgets(session) || samples.length === 0) {
     return
   }
-  const widget = session.addWidget('MafSequenceWidget', 'mafSequence', {
+  session.openWidget('MafSequenceWidget', 'mafSequence', {
     adapterConfig: model.adapterConfig,
     // The display's own budget, captured here because the widget has no
     // display to ask. Its read is the same file over the same span as the
@@ -98,5 +98,4 @@ export function openSubsequenceWidget(
     ],
     connectedViewId: view.id,
   })
-  session.showWidget(widget)
 }

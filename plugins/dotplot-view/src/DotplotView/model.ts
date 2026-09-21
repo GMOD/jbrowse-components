@@ -1387,12 +1387,11 @@ export default function stateModelFactory(pm: PluginManager) {
         activateTrackSelector() {
           const session = getSession(self)
           if (isSessionModelWithWidgets(session)) {
-            const selector = session.addWidget(
+            const selector = session.openWidget(
               'HierarchicalTrackSelectorWidget',
               'hierarchicalTrackSelector',
               { view: self },
             )
-            session.showWidget(selector)
             return selector
           }
           throw new Error('session does not support widgets')

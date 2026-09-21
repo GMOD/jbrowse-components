@@ -514,6 +514,12 @@ export interface SessionWithWidgets extends AbstractSessionModel {
     initialState?: Record<string, unknown>,
     configuration?: { type: string },
   ): Widget
+  openWidget(
+    typeName: string,
+    id: string,
+    initialState?: Record<string, unknown>,
+    configuration?: { type: string },
+  ): Widget
   showWidget(widget: unknown): void
   hideWidget(widget: unknown): void
 }

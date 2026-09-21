@@ -1048,12 +1048,11 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (!isSessionModelWithWidgets(session)) {
           return
         }
-        const selector = session.addWidget(
+        const selector = session.openWidget(
           'HierarchicalTrackSelectorWidget',
           'hierarchicalTrackSelector',
           { view: self },
         )
-        session.showWidget(selector)
         return selector
       },
 

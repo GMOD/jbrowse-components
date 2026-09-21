@@ -440,7 +440,7 @@ export function createTestAlignmentsDisplay() {
       clearSelection() {
         self.selection = undefined
       },
-      addWidget(
+      openWidget(
         type: string,
         id: string,
         initialState: { featureData: SimpleFeatureSerialized },
@@ -448,7 +448,6 @@ export function createTestAlignmentsDisplay() {
         openedWidgets.push({ type, featureData: initialState.featureData })
         return { type, id }
       },
-      showWidget() {},
     }))
 
   const { session, view, display } = mount(Session)

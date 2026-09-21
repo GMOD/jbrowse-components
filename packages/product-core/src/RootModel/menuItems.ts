@@ -50,9 +50,7 @@ export function importSessionMenuItem(): MenuItem {
     label: 'Import session...',
     icon: PublishIcon,
     onClick: (session: SessionWithWidgets) => {
-      session.showWidget(
-        session.addWidget('ImportSessionWidget', 'importSessionWidget'),
-      )
+      session.openWidget('ImportSessionWidget', 'importSessionWidget')
     },
   }
 }
@@ -94,10 +92,9 @@ export function openTrackMenuItem(): MenuItem {
       if (!firstView) {
         session.notify('Please open a view to add a track first')
       } else {
-        const widget = session.addWidget('AddTrackWidget', 'addTrackWidget', {
+        session.openWidget('AddTrackWidget', 'addTrackWidget', {
           view: firstView.id,
         })
-        session.showWidget(widget)
         if (session.views.length > 1) {
           session.notify(MULTI_VIEW_WARNING)
         }
@@ -111,11 +108,7 @@ export function openConnectionMenuItem(): MenuItem {
     label: 'Open connection...',
     icon: Cable,
     onClick: (session: SessionWithWidgets) => {
-      const widget = session.addWidget(
-        'AddConnectionWidget',
-        'addConnectionWidget',
-      )
-      session.showWidget(widget)
+      session.openWidget('AddConnectionWidget', 'addConnectionWidget')
     },
   }
 }
@@ -125,9 +118,7 @@ export function pluginStoreMenuItem(): MenuItem {
     label: 'Plugin store',
     icon: ExtensionIcon,
     onClick: (session: SessionWithWidgets) => {
-      session.showWidget(
-        session.addWidget('PluginStoreWidget', 'pluginStoreWidget'),
-      )
+      session.openWidget('PluginStoreWidget', 'pluginStoreWidget')
     },
   }
 }

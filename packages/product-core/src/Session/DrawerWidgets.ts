@@ -186,7 +186,7 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
           type: typeName,
           configuration: conf ?? { type: typeName },
         })
-        return self.widgets.get(id)
+        return self.widgets.get(id)!
       },
 
       /**
@@ -243,6 +243,35 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         self.poppedOut = false
       },
 
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(
+            function drawerPositionAutorun() {
+              localStorageSetItem('drawerPosition', self.drawerPosition)
+            },
+            { name: 'DrawerPosition' },
+          ),
+        )
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * adds the widget, replacing one with the same id, and shows it
+       */
+      openWidget(
+        typeName: string,
+        id: string,
+        initialState = {},
+        conf?: unknown,
+      ) {
+        const widget = self.addWidget(typeName, id, initialState, conf)
+        self.showWidget(widget)
+        return widget
+      },
+    }))
+    .actions(self => ({
       /**
        * #action
        * opens a configuration editor to configure the given thing,
@@ -271,27 +300,13 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
           )
         }
 
-        const editor = this.addWidget(
+        const editor = self.openWidget(
           'ConfigurationEditorWidget',
           'configEditor',
-          {},
         )
         // Set target via action since it's now volatile
         editor.setTarget(targetConfig)
         editor.setExpandedDisplayId(opts?.expandedDisplayId)
-        this.showWidget(editor)
-      },
-
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            function drawerPositionAutorun() {
-              localStorageSetItem('drawerPosition', self.drawerPosition)
-            },
-            { name: 'DrawerPosition' },
-          ),
-        )
       },
     }))
     .postProcessSnapshot(snap => {

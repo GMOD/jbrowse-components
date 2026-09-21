@@ -123,6 +123,15 @@ export function displayTestSessionModel<VIEW extends IAnyModelType>({
       },
       showWidget(_widget: unknown) {},
     }))
+    .actions(self => ({
+      openWidget(
+        type: string,
+        id: string,
+        initialState?: Record<string, unknown>,
+      ) {
+        return self.addWidget(type, id, initialState)
+      },
+    }))
 }
 
 /**
