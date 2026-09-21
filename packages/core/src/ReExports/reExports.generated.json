@@ -2987,6 +2987,15 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/jexlFilterActions": {
+      "package": "@jbrowse/core",
+      "names": [
+        "filterByValueItems",
+        "isJexlFilterDisplay",
+        "jexlFilterDisplay"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/jexlFilters": {
       "package": "@jbrowse/core",
       "names": [

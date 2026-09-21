@@ -4,9 +4,12 @@ import { isObject } from '../../util/index.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
 import Attributes from './Attributes.tsx'
 import BasicValue from './BasicValue.tsx'
+import FieldActionsButton, {
+  useRevealFieldActions,
+} from './FieldActionsButton.tsx'
 import FieldName from './FieldName.tsx'
 
-import type { FeatureFormatter } from '../types.tsx'
+import type { FeatureFormatter, FieldActions } from '../types.tsx'
 
 const MAX_ARRAY_LENGTH = 100
 
@@ -49,6 +52,7 @@ export default function ArrayValue({
   value,
   description,
   formatter,
+  fieldActions,
   prefix = [],
   width,
 }: {
@@ -56,10 +60,12 @@ export default function ArrayValue({
   name: string
   value: unknown[]
   formatter?: FeatureFormatter
+  fieldActions?: FieldActions
   prefix?: string[]
   width?: number
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
+  const reveal = useRevealFieldActions()
   const [showAll, setShowAll] = useState(false)
   const limit = value.every(v => typeof v === 'number')
     ? MAX_NUMERIC_ARRAY_LENGTH
@@ -89,7 +95,7 @@ export default function ArrayValue({
       </>
     )
   ) : (
-    <div className={classes.field}>
+    <div className={cx(classes.field, reveal)}>
       <FieldName
         prefix={prefix}
         description={description}
@@ -97,9 +103,16 @@ export default function ArrayValue({
         width={width}
       />
       {value.length === 1 ? (
-        <BasicValue
-          value={formatter ? formatter(value[0], name, 0) : value[0]}
-        />
+        <>
+          <BasicValue
+            value={formatter ? formatter(value[0], name, 0) : value[0]}
+          />
+          <FieldActionsButton
+            path={[...prefix, name]}
+            value={value[0]}
+            fieldActions={fieldActions}
+          />
+        </>
       ) : (
         <>
           {displayedValues.map((val, i) => (

@@ -18,6 +18,7 @@ import type {
   Descriptors,
   FeatureDetailsModel,
   FeatureFormatter,
+  FieldActions,
 } from '../types.tsx'
 
 function SectionHeader({ title }: { title: string }) {
@@ -53,6 +54,7 @@ interface FeatureDetailsProps {
   omit?: string[]
   descriptions?: Descriptors
   formatter?: FeatureFormatter
+  fieldActions?: FieldActions
 }
 
 const FeatureDetails = observer(function FeatureDetails(
@@ -65,6 +67,7 @@ const FeatureDetails = observer(function FeatureDetails(
     depth = 0,
     descriptions,
     formatter,
+    fieldActions,
   } = props
   const maxDepth = model.maxDepth ?? Infinity
   const {
@@ -105,6 +108,7 @@ const FeatureDetails = observer(function FeatureDetails(
               omitSingleLevel={coreDetails}
               descriptions={descriptions}
               formatter={formatter}
+              fieldActions={fieldActions}
             />
           </Fragment>,
         ].filter(Boolean),
@@ -142,6 +146,7 @@ const FeatureDetails = observer(function FeatureDetails(
               // truncating <Formatter> from every nested card
               descriptions={descriptions}
               formatter={formatter}
+              fieldActions={fieldActions}
               omit={omit}
             />
           ))}

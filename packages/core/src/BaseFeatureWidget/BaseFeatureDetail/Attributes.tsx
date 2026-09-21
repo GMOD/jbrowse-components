@@ -11,7 +11,7 @@ import SimpleField from './SimpleField.tsx'
 import UriAttribute from './UriField.tsx'
 import { accessNested } from './util.ts'
 
-import type { Descriptors, FeatureFormatter } from '../types.tsx'
+import type { Descriptors, FeatureFormatter, FieldActions } from '../types.tsx'
 
 // Lazy: reaches @mui/x-data-grid, and this module sits on the eager startup
 // path via product-core's ui barrel (AboutDialog -> AboutDialogContents).
@@ -130,6 +130,7 @@ export default function Attributes(props: {
   omit?: string[]
   omitSingleLevel?: string[]
   formatter?: FeatureFormatter
+  fieldActions?: FieldActions
   descriptions?: Descriptors
   prefix?: string[]
   hideUris?: boolean
@@ -145,6 +146,7 @@ export default function Attributes(props: {
     omitSingleLevel = [],
     descriptions,
     formatter,
+    fieldActions,
     hideUris,
     prefix = [],
     labelWidth,
@@ -192,6 +194,7 @@ export default function Attributes(props: {
               name={key}
               value={value}
               formatter={formatter}
+              fieldActions={fieldActions}
               description={description}
               prefix={prefix}
               width={width}
@@ -223,6 +226,7 @@ export default function Attributes(props: {
               omit={omit}
               descriptions={descriptions}
               formatter={formatter}
+              fieldActions={fieldActions}
               hideUris={hideUris}
               prefix={[...prefix, key]}
               labelWidth={width}
@@ -234,6 +238,7 @@ export default function Attributes(props: {
               key={key}
               name={key}
               formatter={formatter}
+              fieldActions={fieldActions}
               value={value}
               description={description}
               prefix={prefix}

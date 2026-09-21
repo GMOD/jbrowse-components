@@ -1,8 +1,11 @@
 import { makeStyles } from '../../util/tss-react/index.ts'
 import BasicValue from './BasicValue.tsx'
+import FieldActionsButton, {
+  useRevealFieldActions,
+} from './FieldActionsButton.tsx'
 import FieldName from './FieldName.tsx'
 
-import type { FeatureFormatter } from '../types.tsx'
+import type { FeatureFormatter, FieldActions } from '../types.tsx'
 
 const useStyles = makeStyles()({
   field: {
@@ -18,6 +21,7 @@ export default function SimpleField({
   prefix,
   width,
   formatter,
+  fieldActions,
 }: {
   description?: React.ReactNode
   name: string
@@ -25,10 +29,12 @@ export default function SimpleField({
   prefix?: string[]
   width?: number
   formatter?: FeatureFormatter
+  fieldActions?: FieldActions
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
+  const reveal = useRevealFieldActions()
   return value != null ? (
-    <div className={classes.field}>
+    <div className={cx(classes.field, reveal)}>
       <FieldName
         prefix={prefix}
         description={description}
@@ -36,6 +42,11 @@ export default function SimpleField({
         width={width}
       />
       <BasicValue value={formatter ? formatter(value, name) : value} />
+      <FieldActionsButton
+        path={[...(prefix ?? []), name]}
+        value={value}
+        fieldActions={fieldActions}
+      />
     </div>
   ) : null
 }

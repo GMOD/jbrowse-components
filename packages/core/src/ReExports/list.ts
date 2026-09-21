@@ -311,6 +311,7 @@ export default [
   '@jbrowse/core/util/io/RemoteFileWithRangeCache',
   '@jbrowse/core/util/isDataCurrent',
   '@jbrowse/core/util/jexl',
+  '@jbrowse/core/util/jexlFilterActions',
   '@jbrowse/core/util/jexlFilters',
   '@jbrowse/core/util/jexlStrings',
   '@jbrowse/core/util/layouts',

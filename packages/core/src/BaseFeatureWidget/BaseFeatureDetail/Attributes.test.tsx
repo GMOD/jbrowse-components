@@ -1,5 +1,5 @@
 import { ThemeProvider } from '@mui/material'
-import { render } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 
 import { createJBrowseTheme } from '../../ui/index.ts'
 import Attributes from './Attributes.tsx'
@@ -171,4 +171,37 @@ describe('Attributes', () => {
     )
     expect(await findByText('transcripts', {}, { timeout: 15000 })).toBeTruthy()
   }, 20000)
+})
+
+describe('fieldActions', () => {
+  test('offers each single value its actions, with the path to it', () => {
+    const onClick = jest.fn()
+    const fieldActions = jest.fn((path: string[], value: unknown) =>
+      path.join('.') === 'INFO.DP'
+        ? [{ label: `Show only DP = ${value}`, onClick }]
+        : [],
+    )
+    const { getAllByRole, getByText } = renderWithTheme(
+      <Attributes
+        attributes={{ QUAL: 30, ALT: ['A', 'T'], INFO: { DP: [25] } }}
+        fieldActions={fieldActions}
+      />,
+    )
+    expect(fieldActions.mock.calls).toEqual([
+      [['QUAL'], 30],
+      [['INFO', 'DP'], 25],
+    ])
+    const buttons = getAllByRole('button', { name: 'Filter by this value' })
+    expect(buttons).toHaveLength(1)
+    fireEvent.click(buttons[0]!)
+    fireEvent.click(getByText('Show only DP = 25'))
+    expect(onClick).toHaveBeenCalled()
+  })
+
+  test('shows no button without fieldActions', () => {
+    const { queryByRole } = renderWithTheme(
+      <Attributes attributes={{ QUAL: 30 }} />,
+    )
+    expect(queryByRole('button')).toBeNull()
+  })
 })

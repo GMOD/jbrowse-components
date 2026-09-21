@@ -5,6 +5,10 @@ import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
 import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
 import { assembleLocString, notEmpty } from '@jbrowse/core/util'
+import {
+  filterByValueItems,
+  jexlFilterDisplay,
+} from '@jbrowse/core/util/jexlFilterActions'
 import { getBreakendMateLocString, safeParseBreakend } from '@jbrowse/sv-core'
 import { Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -94,6 +98,14 @@ function LaunchBreakendWidgetArea({
   ) : null
 }
 
+const FILTERABLE_COLUMNS = new Set(['QUAL', 'FILTER', 'ID', 'REF', 'ALT'])
+
+function isFilterable(path: string[]) {
+  return path.length === 1
+    ? FILTERABLE_COLUMNS.has(path[0]!)
+    : path.length === 2 && path[0] === 'INFO'
+}
+
 const FeatDefined = observer(function FeatDefined({
   feat,
   model,
@@ -117,6 +129,11 @@ const FeatDefined = observer(function FeatDefined({
   // can carry '.' for a missing entry, so coerce per ALT index rather than
   // requiring the whole array to be numeric (which dropped the span entirely)
   const svlens = Array.isArray(INFO?.SVLEN) ? INFO.SVLEN : []
+  const display = jexlFilterDisplay(model.track)
+  const fieldActions = display
+    ? (path: string[], value: unknown) =>
+        isFilterable(path) ? filterByValueItems(display, path, value) : []
+    : undefined
 
   return (
     <Paper data-testid="variant-side-drawer">
@@ -143,6 +160,7 @@ const FeatDefined = observer(function FeatDefined({
             <Formatter value={value} />
           )
         }
+        fieldActions={fieldActions}
       />
       <Suspense fallback={null}>
         <AnnotationPanel

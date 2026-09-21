@@ -1,3 +1,4 @@
+import type { MenuItem } from '../ui/MenuTypes.ts'
 import type { SimpleFeatureSerialized } from '../util/simpleFeature.ts'
 import type {
   SequenceFeatureDetailsModel,
@@ -27,6 +28,9 @@ export type FeatureFormatter = (
   key: string,
   index?: number,
 ) => React.ReactNode
+
+/** Menu items for one attribute's value, offered from a button on its row. */
+export type FieldActions = (path: string[], value: unknown) => MenuItem[]
 
 export interface BaseProps extends BaseCardProps {
   feature: SimpleFeatureSerialized
