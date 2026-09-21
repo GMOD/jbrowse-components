@@ -58,10 +58,12 @@ export type MateNavDestination =
       displayedRegionIndex: number
     }
   | {
-      kind: 'add'
+      kind: 'show'
       loc: string
       regions: Region[]
       location: { refName: string; start: number; end: number }
+      // the row gains a region, the whole contig or a slice of it
+      adds: boolean
     }
   | { kind: 'none'; reason: string }
 
@@ -95,10 +97,13 @@ function drawnPlacement(
 // The scroll class navigates with the row's own spelling and coordinates,
 // read back through `pxToBp` from where the ribbons are drawn; a drawn span
 // landing off the layout or on another contig is stale geometry and the row
-// holds. The add class keeps the row's own region for the contig only when it
-// reaches the framed window (compared raw, as `navTo` compares), and
-// otherwise swaps every spelling of that contig for the whole one, so
-// `showRegions` cannot be handed a window outside its regions.
+// holds. Otherwise the click frames the mate locus and never removes a
+// region: a region of the contig holding the window's centre shows it, a
+// contig the row lacks is appended whole, and one the row shows only slices
+// of gains a slice of the window, trimmed clear of the slices either side so
+// no two regions overlap. A region spelling the contig by an alias is respelled
+// in place first: `navTo` canonicalizes the location and then compares refNames
+// raw, so no spelling reaches an aliased region.
 export function mateNavDestination({
   node,
   view,
@@ -139,21 +144,47 @@ export function mateNavDestination({
       reason: `Could not find ${refName} in ${assemblyName}`,
     }
   }
-  const { start, end } = navSpan(region, mate.locus)
-  const reaches = view.displayedRegions.some(
-    r => r.refName === region.refName && start >= r.start && end <= r.end,
+  const regions = view.displayedRegions.map(r =>
+    r.refName !== region.refName && canonical(r.refName) === region.refName
+      ? { ...r, refName: region.refName }
+      : r,
   )
-  return {
-    kind: 'add',
-    regions: reaches
-      ? [...view.displayedRegions]
-      : [
-          ...view.displayedRegions.filter(
-            r => canonical(r.refName) !== region.refName,
-          ),
-          region,
-        ],
-    location: { refName: region.refName, start, end },
-    loc: assembleLocString({ refName: region.refName, start, end }),
+  const own = regions.filter(r => r.refName === region.refName)
+  const window = navSpan(region, mate.locus)
+  const room = roomAround(own, (window.start + window.end) / 2)
+  const location = {
+    refName: region.refName,
+    start: Math.max(window.start, room.start),
+    end: Math.min(window.end, room.end),
   }
+  const appended = room.shown
+    ? undefined
+    : own.length > 0
+      ? { ...region, ...location, reversed: own.every(r => r.reversed) }
+      : region
+  return {
+    kind: 'show',
+    regions: appended ? [...regions, appended] : regions,
+    location,
+    loc: assembleLocString(location),
+    adds: !!appended,
+  }
+}
+
+// The region holding `centre`, or else the gap between the regions either side
+function roomAround(regions: Region[], centre: number) {
+  const holder = regions.find(r => centre >= r.start && centre < r.end)
+  return holder
+    ? { start: holder.start, end: holder.end, shown: true }
+    : {
+        start: Math.max(
+          -Infinity,
+          ...regions.filter(r => r.end <= centre).map(r => r.end),
+        ),
+        end: Math.min(
+          Infinity,
+          ...regions.filter(r => r.start > centre).map(r => r.start),
+        ),
+        shown: false,
+      }
 }

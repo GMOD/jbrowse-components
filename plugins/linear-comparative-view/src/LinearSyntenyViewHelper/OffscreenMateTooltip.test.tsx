@@ -4,6 +4,7 @@ import { render } from '@testing-library/react'
 
 import OffscreenMateTooltip from './OffscreenMateTooltip.tsx'
 
+import type { MateNavDestination } from './offscreenMateNav.ts'
 import type { OffscreenMateSource } from './offscreenMateStrip.ts'
 
 function source(
@@ -35,11 +36,19 @@ function source(
   } as OffscreenMateSource
 }
 
+const ADDS: MateNavDestination = {
+  kind: 'show',
+  loc: 'ctgB:190,001..210,000',
+  regions: [],
+  location: { refName: 'ctgB', start: 190_000, end: 210_000 },
+  adds: true,
+}
+
 function draw(
   model: OffscreenMateSource,
   refName: string,
   side: 'top' | 'bottom' = 'top',
-  scrolledOff = false,
+  destination: MateNavDestination | undefined = ADDS,
 ) {
   const { getByRole } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
@@ -49,11 +58,11 @@ function draw(
           refName,
           side,
           locus: { start: 0, end: 1 },
-          mateCumBp: scrolledOff ? { start: 0, end: 1 } : undefined,
           navRow: 1,
           clientX: 40,
           clientY: 12,
         }}
+        destination={destination}
       />
     </ThemeProvider>,
   )
@@ -86,27 +95,47 @@ test('and how many alignments carry it', () => {
 })
 
 // The mark is often unlabelled and the click is the only other way to find out
-// where it goes, so the hover says what clicking does, and which of the two
-// things it does: a contig the facing panel lacks is added to its regions,
-// one it has merely scrolled off is scrolled to.
+// where it goes, so the hover says what clicking does and names the locus the
+// snackbar will.
 test('and says what clicking it does', () => {
   expect(draw(source({ ctgB: 1 }), 'ctgB')).toContain(
-    'Not on the panel below. Click to add it',
+    'Click to add ctgB:190,001..210,000 to the panel below',
   )
 })
 
-test('a mark for a contig the panel has scrolled off says so', () => {
-  expect(draw(source({ ctgB: 1 }), 'ctgB', 'top', true)).toContain(
-    'The panel below has scrolled off it. Click to scroll there',
-  )
+test('a mark the panel can already reach offers to show it', () => {
+  expect(
+    draw(source({ ctgB: 1 }), 'ctgB', 'top', { ...ADDS, adds: false }),
+  ).toContain('Click to show ctgB:190,001..210,000 on the panel below')
+})
+
+test('so does a mark whose alignments are drawn off screen', () => {
+  expect(
+    draw(source({ ctgB: 1 }), 'ctgB', 'top', {
+      kind: 'scroll',
+      loc: 'ctgB:200,001..201,000',
+      refName: 'ctgB',
+      coord0: 200_500,
+      displayedRegionIndex: 0,
+    }),
+  ).toContain('Click to show ctgB:200,001..201,000 on the panel below')
+})
+
+// warned on hover, where it used to be found out only by clicking
+test('a mark that resolves nowhere says why', () => {
+  expect(
+    draw(source({ ctgB: 1 }), 'ctgB', 'top', {
+      kind: 'none',
+      reason: 'Could not find ctgB in volvox2',
+    }),
+  ).toContain('Could not find ctgB in volvox2')
 })
 
 // ...and WHICH panel, because the band has a strip on each edge once the view
-// fetches both rows. A mark on the lower edge names a contig the panel ABOVE is
-// not showing.
+// fetches both rows
 test('a mark on the target axis names the panel above instead', () => {
   expect(draw(source({ ctgB: 1 }), 'ctgB', 'bottom')).toContain(
-    'Not on the panel above. Click to add it',
+    'to the panel above',
   )
 })
 

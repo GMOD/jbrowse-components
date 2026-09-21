@@ -446,6 +446,17 @@ export function linearSyntenyViewHelperModelFactory(
         return self.linearSyntenyDisplays.find(d => d.displayKey === key)
       },
       /**
+       * #method
+       * Where a click on a mark would send its row, which the hover prints as
+       * the click's promise; undefined for a row the stack no longer has.
+       */
+      offscreenMateDestination(hit: OffscreenMateHit) {
+        const view = self.parentView.views[hit.navRow]
+        return view
+          ? mateNavDestination({ node: self, view, mate: hit })
+          : undefined
+      },
+      /**
        * #getter
        * Render-lifecycle precondition, overriding `RenderLifecycleMixin`'s
        * default-true hook: the render callback sizes the canvas off
@@ -501,20 +512,20 @@ export function linearSyntenyViewHelperModelFactory(
     .actions(self => ({
       /**
        * #action
-       * What clicking a mark does: show the contig it names on the row that
-       * is not displaying it. A contig the row has is scrolled to and one it
-       * lacks is added to its regions; neither discards what the row was
-       * showing. The click takes the follow anchor, and the Undo gives back
-       * the anchor and every row's viewport together.
+       * What clicking a mark does: show where its alignments land on the
+       * facing row. The row scrolls to them, or gains the contig or a slice of
+       * it, and never loses a region it was showing. The click takes the
+       * follow anchor, and the Undo gives back the anchor and every row's
+       * viewport together.
        */
       showOffscreenMateContig(hit: OffscreenMateHit) {
         const { parentView } = self
         const view = parentView.views[hit.navRow]
-        if (!view) {
+        const dest = self.offscreenMateDestination(hit)
+        if (!view || !dest) {
           return
         }
         const session = getSession(self)
-        const dest = mateNavDestination({ node: self, view, mate: hit })
         if (dest.kind === 'none') {
           session.notify(dest.reason, 'warning')
           return

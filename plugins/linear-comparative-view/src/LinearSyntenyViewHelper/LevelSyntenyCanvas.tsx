@@ -357,7 +357,13 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
         }}
       />
       <OffscreenMateOverlay model={model} />
-      {hover ? <OffscreenMateTooltip model={model} hover={hover} /> : null}
+      {hover ? (
+        <OffscreenMateTooltip
+          model={model}
+          hover={hover}
+          destination={model.offscreenMateDestination(hover)}
+        />
+      ) : null}
       {markMenu ? (
         <ContextMenu
           anchor={markMenu}

@@ -585,19 +585,29 @@ test('a locus at the start of its contig still gets the whole floor', async () =
   expect(visible!.end - visible!.start).toBeGreaterThanOrEqual(20_000)
 }, 20000)
 
-// A ROW NARROWED TO A SLICE OF THE CONTIG THE MARK NAMES, which the design
-// contemplates on its own — a stale worker-lane mark survives the row being
-// narrowed. `already` was a refName test, so the row gained nothing and the
-// window `navSpan` framed against the WHOLE contig fell outside every displayed
-// region: `showRegions` replaced the list and `navTo` then threw
-// `could not find a region that contained ...`, out of a pointer handler, with
-// the region list already rewritten.
-test('a row showing a slice of the contig gains the region the window needs', async () => {
+// A ROW SHOWING SLICES OF THE CONTIG THE MARK NAMES — a multi-locus search, or
+// Collapse introns' "Replace current view". The worker marks an alignment whose
+// mate misses every slice, so this is the common case for such a row, and the
+// click used to answer it by swapping the slices for the whole contig. It
+// appends a slice of the window instead, which keeps the region list
+// append-only and every slice the reader chose.
+function sliceOf(start: number, end: number, reversed?: boolean) {
+  return { assemblyName: 'volvox2', refName: 'ctgB', start, end, reversed }
+}
+
+function regionsOf(view: LinearSyntenyViewModel, row: number) {
+  return view.views[row]!.displayedRegions.map(r => [
+    r.refName,
+    r.start,
+    r.end,
+    !!r.reversed,
+  ])
+}
+
+test('a row showing a slice of the contig keeps it and gains a slice of the window', async () => {
   const { view, level } = await setup()
   const row = view.views[1]!
-  row.setDisplayedRegions([
-    { assemblyName: 'volvox2', refName: 'ctgB', start: 0, end: 1000 },
-  ])
+  row.setDisplayedRegions([sliceOf(0, 1000)])
 
   expect(() => {
     level.showOffscreenMateContig(
@@ -605,12 +615,68 @@ test('a row showing a slice of the contig gains the region the window needs', as
     )
   }).not.toThrow()
 
-  // the slice could not reach the window, so the whole contig replaced it —
-  // one region rather than the contig listed twice
-  expect(refNames(view, 1)).toEqual(['ctgB'])
+  expect(regionsOf(view, 1)).toEqual([
+    ['ctgB', 0, 1000, false],
+    ['ctgB', 290_500, 310_500, false],
+  ])
   const [visible] = row.dynamicBlocks.contentBlocks
-  expect(visible!.start).toBeGreaterThan(250_000)
-  expect(visible!.end).toBeLessThan(350_000)
+  expect(visible!.start).toBeGreaterThanOrEqual(290_500)
+  expect(visible!.end).toBeLessThanOrEqual(310_500)
+}, 20000)
+
+// The worker's clip assumes one contig's regions do not overlap, and exon
+// slices sit closer than the window's 20kb floor
+test('the added slice stops where the slices either side of it start', async () => {
+  const { view, level } = await setup()
+  view.views[1]!.setDisplayedRegions([
+    sliceOf(0, 295_000),
+    sliceOf(305_000, BP),
+  ])
+
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, { locus: { start: 299_500, end: 300_500 } }),
+  )
+
+  expect(regionsOf(view, 1).at(-1)).toEqual(['ctgB', 295_000, 305_000, false])
+}, 20000)
+
+test('a slice added beside reversed ones runs the same way', async () => {
+  const { view, level } = await setup()
+  view.views[1]!.setDisplayedRegions([sliceOf(0, 1000, true)])
+
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, { locus: { start: 300_000, end: 301_000 } }),
+  )
+
+  expect(regionsOf(view, 1)).toEqual([
+    ['ctgB', 0, 1000, true],
+    ['ctgB', 290_500, 310_500, true],
+  ])
+}, 20000)
+
+// A locus straddling a slice's edge is shown in the slice that holds its
+// centre, rather than added again beside it
+test('a window centred inside a slice is shown there, adding nothing', async () => {
+  const { view, level } = await setup()
+  view.views[1]!.setDisplayedRegions([
+    sliceOf(0, 1000),
+    sliceOf(200_000, 205_000),
+  ])
+  const straddling = mark('ctgB', 1, {
+    locus: { start: 203_000, end: 204_000 },
+  })
+
+  expect(level.offscreenMateDestination(straddling)).toMatchObject({
+    kind: 'show',
+    adds: false,
+    location: { refName: 'ctgB', start: 200_000, end: 205_000 },
+  })
+  level.showOffscreenMateContig(straddling)
+
+  expect(regionsOf(view, 1)).toEqual([
+    ['ctgB', 0, 1000, false],
+    ['ctgB', 200_000, 205_000, false],
+  ])
 }, 20000)
 
 // ...and only when it has to. A row already displaying the whole contig keeps
@@ -636,8 +702,10 @@ test('...and keeps the region it has when that region reaches the window', async
 // canonicalize, so a hand-authored session can put an alias spelling there
 // while the mark's refName is canonical (`renameOffscreenMates`). Compared with
 // `===`, the row gained a second region for a contig it was already showing and
-// the ruler read the contig twice.
-test('an aliased region spelling is replaced rather than duplicated', async () => {
+// the ruler read the contig twice. `navTo` canonicalizes the location and then
+// compares refNames raw, so it cannot reach the aliased region in any spelling:
+// the click respells it in place, keeping its extent.
+test('an aliased region spelling is respelled rather than duplicated', async () => {
   const { view, level } = await setup()
   const row = view.views[1]!
   row.setDisplayedRegions([
@@ -654,6 +722,22 @@ test('an aliased region spelling is replaced rather than duplicated', async () =
   const [visible] = row.dynamicBlocks.contentBlocks
   expect(visible!.start).toBeGreaterThan(150_000)
   expect(visible!.end).toBeLessThan(250_000)
+}, 20000)
+
+test('an aliased slice keeps its extent beside the slice the click adds', async () => {
+  const { view, level } = await setup()
+  view.views[1]!.setDisplayedRegions([
+    { assemblyName: 'volvox2', refName: 'CTGB', start: 0, end: 1000 },
+  ])
+
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, { locus: { start: 300_000, end: 301_000 } }),
+  )
+
+  expect(regionsOf(view, 1)).toEqual([
+    ['ctgB', 0, 1000, false],
+    ['ctgB', 290_500, 310_500, false],
+  ])
 }, 20000)
 
 // The same mismatch on the scroll branch, where it silently did nothing: the
