@@ -317,14 +317,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
-       * The rows a drag or a wheel on a band moves: every row, or while
-       * following the anchor alone, which the follow then places the others
-       * against, as it does a gesture on the anchor itself.
+       * The rows a drag or a wheel on a band moves: every row the follow does
+       * not place. Off, that is every row; on, it is the anchor and any row
+       * whose level toward the anchor has no synteny track.
        */
       get bandGestureRows() {
-        return self.followSynteny
-          ? self.views.slice(self.followAnchorIndex, self.followAnchorIndex + 1)
-          : self.views
+        if (!self.followSynteny) {
+          return self.views
+        }
+        const placed = new Set(
+          this.followPairs
+            .filter(p => p.level.linearSyntenyDisplays.length)
+            .map(p => p.movingView),
+        )
+        return self.views.filter(row => !placed.has(row))
       },
       /**
        * #getter

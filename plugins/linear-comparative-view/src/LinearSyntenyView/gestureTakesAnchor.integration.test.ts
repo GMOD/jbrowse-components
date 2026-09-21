@@ -47,13 +47,25 @@ const assembly = (name: string) => ({
 
 const NAMES = ['volvox0', 'volvox1', 'volvox2']
 
-// Three rows and no synteny track: what is under test is which row a gesture
-// lands on, which the follow decides before any alignment is read.
+// Three rows, and no synteny track unless the spec opens `synteny01`: what is
+// under test is which row a gesture lands on, which the follow decides before
+// any alignment is read.
 async function launchStack(spec: Record<string, unknown>) {
   const session = createTestSession()
   for (const name of [...NAMES, 'volvox3']) {
     session.addAssemblyConf(assembly(name))
   }
+  session.addSessionTrackConf({
+    type: 'SyntenyTrack',
+    trackId: 'synteny01',
+    assemblyNames: ['volvox0', 'volvox1'],
+    adapter: {
+      type: 'PAFAdapter',
+      pafLocation: { uri: 'none.paf', locationType: 'UriLocation' },
+      queryAssembly: 'volvox0',
+      targetAssembly: 'volvox1',
+    },
+  })
   const view = (await session.launchView('LinearSyntenyView', {
     views: NAMES.map(name => ({ assembly: name, loc: 'ctgA:1-8000' })),
     ...spec,
@@ -153,21 +165,30 @@ test('a band gesture over every row is held, not taken by the last row', async (
   expect(view.followAnchorIndex).toBe(0)
 })
 
-// A drag on the anchor moves the anchor and the follow places the rest, so a
-// row with nothing aligned holds. The band's drag moved every row, holding
-// rows included.
-test('a band drag moves the anchor alone while following, and every row when not', async () => {
-  const view = await openStack()
+// While following, the follow places a row whose level has a synteny track,
+// and a band drag moving it too would pan it past its placement. A row across
+// a trackless level is one the follow never places, so the drag moves it.
+test('a band drag moves every row the follow does not place', async () => {
+  const view = await launchStack({ tracks: [['synteny01'], []] })
+  await when(() => !!view.levels[0]!.linearSyntenyDisplays[0]?.featureData)
+  view.setFollowSynteny(true)
   const offsets = () => view.views.map(row => row.offsetPx)
   const before = offsets()
   view.panStack(40)
-  expect(offsets()).toEqual([before[0]! + 40, before[1], before[2]])
+  expect(offsets()).toEqual([before[0]! + 40, before[1], before[2]! + 40])
   expect(view.followAnchorIndex).toBe(0)
 
   view.setFollowSynteny(false)
   const after = offsets()
   view.panStack(40)
   expect(offsets()).toEqual(after.map(x => x + 40))
+})
+
+test('with no synteny track a band drag moves every row, following or not', async () => {
+  const view = await openStack()
+  const before = view.views.map(row => row.offsetPx)
+  view.panStack(40)
+  expect(view.views.map(row => row.offsetPx)).toEqual(before.map(x => x + 40))
 })
 
 // the view-wide zooms reach every row from one of the stack's own actions,

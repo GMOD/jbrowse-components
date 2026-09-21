@@ -128,7 +128,8 @@ panel drives; the others are placed from it, outward one level at a time in a
 stack of three or more.
 
 Dragging the ribbons between two panels pans them all at once. While following,
-the drag moves the anchor panel and the others follow it.
+the drag moves the anchor panel and the others follow it, except a panel past a
+band with no synteny track, which the follow cannot place and the drag pans.
 
 The header's arrows button toggles following on and off without opening the
 menu, and shows whether it is running. It changes to a warning form where
