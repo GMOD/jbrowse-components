@@ -289,13 +289,13 @@ function ownProblems(mark: MarkSnapshot) {
   }
   const cuts = thresholdDomain(mark)
   if (
-    cuts?.some((cut, i) => !pinned(cut) || Number(cut) < Number(cuts[i - 1]))
+    cuts?.some((cut, i) => !pinned(cut) || Number(cut) <= Number(cuts[i - 1]))
   ) {
     problems.push(
       found(
         'threshold-cuts',
         'encoding.color.domain',
-        'threshold cuts are numbers, read in ascending order, with the palette running from the lowest interval',
+        'threshold cuts are distinct numbers, read in ascending order, with the palette running from the lowest interval; a repeated cut leaves an interval no value falls in',
       ),
     )
   }

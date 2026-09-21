@@ -250,6 +250,9 @@ test('threshold cuts written high to low are told which way they are read', () =
     'warning threshold-cuts mark 0 encoding.color.domain',
   ])
   expect(found(cuts(['low', 'high']))).toHaveLength(1)
+  expect(found(cuts(['0.5', '0.5']))).toEqual([
+    'warning threshold-cuts mark 0 encoding.color.domain',
+  ])
 })
 
 test('a ramp domain is a pinned pair, and a span wants one', () => {
