@@ -19,7 +19,12 @@ import { getUniqueTags } from '../../shared/getUniqueTags.ts'
 import { TAG_FIELD_PREFIX, facetTag } from '../../shared/groupByLabels.ts'
 import { tagGroupingVerdict } from './tagGroupingVerdict.ts'
 
-import type { FilterBy, GroupBy, ReadColorBy } from '../../shared/types.ts'
+import type {
+  BaseLayer,
+  FilterBy,
+  GroupBy,
+  ReadColorBy,
+} from '../../shared/types.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // Exactly what this dialog reads. `getGroupByMenuItem` extends it with the
@@ -39,6 +44,7 @@ export interface GroupByDialogModel extends IStateTreeNode {
   // fetch's budget rather than running unbounded beside a refused track.
   resolvedByteLimit: () => number | undefined
   colorBy: ReadColorBy
+  baseLayer: BaseLayer | undefined
   facet?: GroupBy
   setFacet: (facet?: GroupBy) => void
   setColorBy: (colorBy: ReadColorBy) => void
@@ -50,20 +56,22 @@ function isColoringByTag(colorBy: ReadColorBy, tag: string) {
 }
 
 // Whether "also color by this tag" should be ticked, absent an explicit click:
-// yes over the plain scheme, where grouping by a tag usually pairs with coloring
-// by it, and yes when the reads already carry that same tag's colors. No over
-// every other scheme, since ticking it REPLACES whatever is painted — a reader
-// looking at modifications, bisulfite or insert size who groups by HP loses that
-// picture on Submit, which is the trap the SV-channels preset dropped `colorBy`
-// over.
+// yes over a bare plain fill, where grouping by a tag usually pairs with
+// coloring by it, and yes when the reads already carry that same tag's colors.
+// No over any other fill, which ticking REPLACES, and no under a per-base
+// layer, whose calls read against the plain fill and share the tag palette's
+// blue.
 //
 // Derived from the tag in the box rather than seeded once from the model: the
 // box is where the tag is chosen, so a state read at open time describes a tag
 // the user hasn't typed yet. Typing the tag the reads are already colored by
 // then left the box unticked over colors that were on — and, since unticking
 // means "don't color by this tag", submitting turned those colors off.
-function defaultColorByTag(colorBy: ReadColorBy, tag: string) {
-  return colorBy.type === 'normal' || isColoringByTag(colorBy, tag)
+function defaultColorByTag(model: GroupByDialogModel, tag: string) {
+  return (
+    (model.colorBy.type === 'normal' && !model.baseLayer) ||
+    isColoringByTag(model.colorBy, tag)
+  )
 }
 
 // The scheme to apply after grouping by `tag`: color by it when checked; when
@@ -98,8 +106,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   // being typed (`defaultColorByTag`); a click pins the answer, since from then
   // on it is the user's and not a default.
   const [colorByTagChoice, setColorByTagChoice] = useState<boolean>()
-  const colorByTag =
-    colorByTagChoice ?? defaultColorByTag(model.colorBy, groupByTag)
+  const colorByTag = colorByTagChoice ?? defaultColorByTag(model, groupByTag)
   // Short, because the field emits only a VALID two-letter tag (or undefined),
   // so the half-typed keystrokes a long debounce exists to swallow never reach
   // here — a second of it was dead time on every open, and on every quick-pick

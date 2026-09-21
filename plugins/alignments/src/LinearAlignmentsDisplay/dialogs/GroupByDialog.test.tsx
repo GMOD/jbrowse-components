@@ -6,7 +6,7 @@ import { MAX_GROUPS } from '../../shared/groupFeatures.ts'
 import GroupByDialog from './GroupByDialog.tsx'
 import { tagGroupingVerdict } from './tagGroupingVerdict.ts'
 
-import type { ColorBy, GroupBy } from '../../shared/types.ts'
+import type { BaseLayer, ColorBy, GroupBy } from '../../shared/types.ts'
 import type { GroupByDialogModel } from './GroupByDialog.tsx'
 
 beforeEach(() => {
@@ -23,12 +23,17 @@ afterEach(() => {
 // is deliberately left enabled in, since the verdict is advice the data supplies
 // and without it the grouping is the one the menu would have applied anyway. The
 // verdict itself is unit-tested below.
-function renderDialog(state: { colorBy: ColorBy; facet?: GroupBy }) {
+function renderDialog(state: {
+  colorBy: ColorBy
+  baseLayer?: BaseLayer
+  facet?: GroupBy
+}) {
   const setFacet = jest.fn()
   const setColorBy = jest.fn()
   const model = {
     id: 'display1',
     colorBy: state.colorBy,
+    baseLayer: state.baseLayer,
     facet: state.facet,
     filterBy: {},
     resolvedByteLimit: () => undefined,
@@ -98,11 +103,25 @@ test('a different tag colouring leaves the box unticked and untouched', async ()
 })
 
 // Every scheme but the plain one PAINTS something the checkbox would replace, so
-// grouping by HP over a methylation or insert-size view used to turn that
-// picture off on Submit.
+// grouping by HP over an insert-size view used to turn that picture off on
+// Submit.
 test('a non-tag colour scheme is not replaced by default', async () => {
   const { setColorBy } = renderDialog({
-    colorBy: { type: 'modifications' },
+    colorBy: { type: 'insertSize' },
+  })
+  typeTag('HP')
+  expect(checkbox().checked).toBe(false)
+  await settleScan()
+  submit()
+  expect(setColorBy).not.toHaveBeenCalled()
+})
+
+// The plain fill under a per-base layer is the backdrop its calls read
+// against, and the tag palette's blue and pink collide with the calls'.
+test('the plain fill under a per-base layer is not replaced by default', async () => {
+  const { setColorBy } = renderDialog({
+    colorBy: { type: 'normal' },
+    baseLayer: { type: 'modifications' },
   })
   typeTag('HP')
   expect(checkbox().checked).toBe(false)
