@@ -399,6 +399,11 @@ slices share no part of. The worker marks at each of those drop sites
 displayed regions before it flips anything. `bidirectionalFetch.test.ts` holds
 all four.
 
+A chain clipped inside a CIGAR gap is marked with a one-base mate locus, so its
+click frames 20kb around that base. Marking the unclipped span instead would
+frame the whole chain, 86Mb for chimp chr19, and no demo pairs a chain PAF with
+a sliced facing row, so the one-base locus stays.
+
 **C cannot move into the fetch, and that is the whole of its design.** The facing
 row pans a full `syntenyPanBufferPx` without refetching, so a mark decided when
 the data landed sits beside the ribbon it claims does not exist. It is therefore

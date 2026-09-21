@@ -201,6 +201,11 @@ deliberately does, to minimize ribbon crossing. The anchor's first contig then
 maps to the mate's _last_ region and the interval between the two edges runs
 backwards over a slice of the row.
 
+**Two visible slices of one contig follow as one window**, since the windows
+union blocks per refName. For collapsed introns that is the gene span, the right
+answer, and far-apart slices of one contig come only from a multi-locus search;
+per-slice windows would take ~30 lines `followWindowsMapping` has no slot for.
+
 **One scan of the blocks, not one per contig.** `followWindowsMapping` takes the
 windows as a list for that reason: the per-frame cost is the block loop, and a
 whole-genome anchor has as many contigs as the assembly does.
