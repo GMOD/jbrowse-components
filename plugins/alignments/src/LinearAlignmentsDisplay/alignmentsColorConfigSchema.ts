@@ -61,7 +61,7 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
       field:
         'what colours a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute',
       scale:
-        'none paints value and keeps the field for a switch back; categorical a palette colour per value; linear a ramp over a numeric tag or attribute; threshold the bins domain cuts; unset follows field',
+        'none paints value and keeps the field for a switch back; categorical a palette colour per value; linear a ramp over a numeric tag or attribute; threshold the bins domain cuts; unset follows field, and under a tag or attribute is linear with a ramp and categorical without',
       domain:
         "the values that take the palette first, in order; under insertSize the two cut points between short, normal and long, where the sampled distribution otherwise sets them; under linear the ramp's two ends, where the loaded reads otherwise set them",
     }),

@@ -13,6 +13,7 @@ import {
   thresholdPalette,
 } from '@jbrowse/core/util/thresholdScale'
 
+import { DEFAULT_RAMP, bakedScaleOf } from '../shared/alignmentsColor.ts'
 import { bakedValueColor } from './colorTagUtils.ts'
 
 import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
@@ -59,7 +60,7 @@ const LEGEND_RAMP_STOPS = 8
 
 function rampLut({ ramp }: Pick<AlignmentsColorSetting, 'ramp'>, mid: number) {
   const named =
-    ramp.length === 0 || (ramp.length === 1 && ramp[0] === 'viridis')
+    ramp.length === 0 || (ramp.length === 1 && ramp[0] === DEFAULT_RAMP)
   return buildColorRampLut(
     named ? VIRIDIS_STOPS : ramp.map(c => cssColorToRgba(c)),
     mid,
@@ -139,7 +140,8 @@ export function bakedColorScale(
   refNamePosition: RefNamePosition | undefined,
   extent: NumericExtent | undefined,
 ): BakedColorScale {
-  const { scale, domain, palette } = setting
+  const { domain, palette } = setting
+  const scale = bakedScaleOf(setting)
   if (colorBy.type === 'tag' && scale === 'linear') {
     return linearScale(setting, pinnedLinearDomain(domain) ?? extent ?? [0, 1])
   }

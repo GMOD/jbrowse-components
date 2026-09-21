@@ -395,6 +395,30 @@ describe('alignments colorBy', () => {
     expect(display.colorSetting).toMatchObject({ field: 'strand', palette: [] })
   })
 
+  it.each([
+    { field: 'tags.NM', scale: 'linear', ramp: ['#ffffff', '#000000'] },
+    { field: 'tags.NM', scale: 'linear' },
+    { field: 'tags.NM', ramp: ['#ffffff', '#000000'] },
+  ])('Normal and back keeps the linear ramp of %j', color => {
+    const { display } = createDisplay({ color })
+    expect(display.bakedColorScale?.kind).toBe('linear')
+    display.setColorBy({ type: 'normal' })
+    expect(display.bakedColorScale).toBeUndefined()
+    display.setColorBy({ type: 'tag', tag: 'NM' })
+    expect(display.bakedColorScale?.kind).toBe('linear')
+  })
+
+  it('leaving pairs and coming back keeps a pinned insert-size band', () => {
+    const { display } = createDisplay({
+      color: { field: 'insertSizeAndOrientation', domain: ['150', '600'] },
+    })
+    display.setLinkedReads('normal')
+    display.setLinkedReads('off')
+    expect(display.colorBy).toEqual({ type: 'normal' })
+    display.setLinkedReads('normal')
+    expect(display.pinnedInsertSizeBand).toEqual({ lower: 150, upper: 600 })
+  })
+
   it('an undeclared key in the colour object is refused', () => {
     expect(() => createDisplay({ color: { type: 'strand' } })).toThrow()
   })

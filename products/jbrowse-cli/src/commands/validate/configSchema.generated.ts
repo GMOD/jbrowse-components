@@ -3994,7 +3994,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": ""
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a palette colour per value; linear a ramp over a numeric tag or attribute; threshold the bins domain cuts; unset follows field.",
+              "description": "none paints value and keeps the field for a switch back; categorical a palette colour per value; linear a ramp over a numeric tag or attribute; threshold the bins domain cuts; unset follows field, and under a tag or attribute is linear with a ramp and categorical without.",
               "anyOf": [
                 {
                   "enum": [
@@ -4712,7 +4712,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": "strand"
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a palette colour per value; linear a ramp over a numeric tag or attribute; threshold the bins domain cuts; unset follows field.",
+              "description": "none paints value and keeps the field for a switch back; categorical a palette colour per value; linear a ramp over a numeric tag or attribute; threshold the bins domain cuts; unset follows field, and under a tag or attribute is linear with a ramp and categorical without.",
               "anyOf": [
                 {
                   "enum": [

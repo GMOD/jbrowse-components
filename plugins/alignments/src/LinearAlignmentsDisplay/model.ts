@@ -71,7 +71,7 @@ import { visibleRegionJunctions } from '../features/sashimi/computeOverlay.ts'
 import { mergeJunctions } from '../features/sashimi/junctions.ts'
 import {
   BASE_COLOR_FIELDS,
-  COLOR_FIELDS,
+  bakedScaleOf,
   colorSnapshotFor,
   isBakedScheme,
 } from '../shared/alignmentsColor.ts'
@@ -1613,10 +1613,10 @@ export default function stateModelFactory(
            * then.
            */
           get bakedColorExtent(): NumericExtent | undefined {
-            const { scale, domain } = self.colorSetting
+            const setting = self.colorSetting
             return self.colorBy.type === 'tag' &&
-              scale === 'linear' &&
-              !pinnedLinearDomain(domain)
+              bakedScaleOf(setting) === 'linear' &&
+              !pinnedLinearDomain(setting.domain)
               ? numericExtentAcrossGroups(
                   this.laidOutByGroupFramed,
                   d => d.readTagValues,
@@ -3768,15 +3768,23 @@ export default function stateModelFactory(
             const currentType = self.colorBy.type
             if (mode === 'off') {
               if (PAIRING_COLOR_SCHEMES.has(currentType)) {
-                setConf(self, 'color', { value: self.colorSetting.value })
+                setConf(
+                  self,
+                  'color',
+                  colorSnapshotFor({ type: 'normal' }, self.colorSetting),
+                )
               }
             } else if (currentType === 'normal' && !self.baseLayer) {
               // The plain default becomes the SV-signal fill; a plain fill
               // under a per-base layer is the backdrop its marks read against.
-              setConf(self, 'color', {
-                value: self.colorSetting.value,
-                field: COLOR_FIELDS.insertSizeAndOrientation,
-              })
+              setConf(
+                self,
+                'color',
+                colorSnapshotFor(
+                  { type: 'insertSizeAndOrientation' },
+                  self.colorSetting,
+                ),
+              )
             }
             // No explicit invalidation here: `linkedReads` is an `rpcProps()`
             // key, so `SettingsInvalidate` runs `invalidateSettings` when this
