@@ -53,9 +53,9 @@ export type MateNavDestination =
   | {
       kind: 'scroll'
       loc: string
-      refName: string
-      coord0: number
-      displayedRegionIndex: number
+      // the window in the row's own cumBp, which `setWindow` and `flyTo` take
+      centerBp: number
+      widthBp: number
     }
   | {
       kind: 'show'
@@ -65,37 +65,43 @@ export type MateNavDestination =
     }
   | { kind: 'none'; reason: string }
 
-// The drawn span read back through the row's own layout: where it lands, and
-// the locstring naming it, spanning the drawn extent where that sits inside
-// one region and naming the centre base otherwise
+// The drawn span read back through the row's own layout: its centre and ends
+// where they land, the first of those on the contig, and the locstring naming
+// it, spanning the drawn extent where that sits inside one region and naming
+// that base otherwise. A span across two displayed copies of the contig
+// centres between them, so its ends are asked too.
 function drawnPlacement(
   view: LinearGenomeViewModel,
   drawn: OffscreenMateLocus,
+  onContig: (refName: string) => boolean,
 ) {
   const px = (cumBp: number) => cumBp / view.bpPerPx - view.offsetPx
   const at = view.pxToBp(px((drawn.start + drawn.end) / 2))
   const from = view.pxToBp(px(drawn.start))
   const to = view.pxToBp(px(drawn.end))
+  const landed = [at, from, to].find(p => !p.oob && onContig(p.refName))
+  if (!landed) {
+    return undefined
+  }
   const whole =
     !from.oob && !to.oob && from.index === at.index && to.index === at.index
-  const start = whole ? Math.min(from.coord0, to.coord0) : at.coord0
-  const end = whole ? Math.max(from.coord0, to.coord0) : at.coord0
-  return {
-    at,
-    loc: assembleLocString({
-      refName: at.refName,
-      start,
-      end: Math.max(end, start + 1),
-    }),
-  }
+  const start = whole ? Math.min(from.coord0, to.coord0) : landed.coord0
+  const end = whole ? Math.max(from.coord0, to.coord0) : landed.coord0
+  return assembleLocString({
+    refName: landed.refName,
+    start,
+    end: Math.max(end, start + 1),
+  })
 }
 
 // Resolve a mark's click against the row it names, without touching anything.
 //
-// The scroll class navigates with the row's own spelling and coordinates,
-// read back through `pxToBp` from where the ribbons are drawn; a drawn span
-// landing off the layout or on another contig is stale geometry and the row
-// holds. Otherwise the click frames the mate locus and never removes a region.
+// The scroll class moves the row to where the alignments are drawn, in its
+// own cumBp: at the zoom it is on where the span fits the window, and framing
+// the span, padded, where it does not. A drawn span none of whose centre and
+// ends lands on the contig is stale geometry, and the row holds.
+//
+// Otherwise the click frames the mate locus and never removes a region.
 // A contig the row lacks is appended whole. One the row shows slices of gains
 // a slice in the gap between them holding most of the locus, placed beside its
 // neighbour and running its way; a locus no gap holds any of is shown in the
@@ -121,18 +127,24 @@ export function mateNavDestination({
     assembly?.getCanonicalRefName2(name) ?? name
   const drawn = mate.mateCumBp
   if (drawn && view.displayedRegions.length > 0) {
-    const { at, loc } = drawnPlacement(view, drawn)
-    return at.oob || canonical(at.refName) !== canonical(refName)
+    const loc = drawnPlacement(
+      view,
+      drawn,
+      name => canonical(name) === canonical(refName),
+    )
+    return loc === undefined
       ? {
           kind: 'none',
           reason: `Could not show ${refName}: that mark's drawn position no longer lands on it`,
         }
       : {
           kind: 'scroll',
-          refName: at.refName,
-          coord0: at.coord0,
-          displayedRegionIndex: at.index,
           loc,
+          centerBp: (drawn.start + drawn.end) / 2,
+          widthBp: Math.max(
+            view.windowWidthBp,
+            (drawn.end - drawn.start) * (1 + 2 * OFFSCREEN_MATE_NAV_GROW),
+          ),
         }
   }
   const region = assembly?.getRegionForRefName(canonical(refName))

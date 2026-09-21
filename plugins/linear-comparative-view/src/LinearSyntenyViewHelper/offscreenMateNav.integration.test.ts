@@ -479,6 +479,49 @@ test('a drawn span this row cannot show moves nothing', async () => {
   expect(row.windowWidthBp).toBe(40_000)
 })
 
+// A mark standing for a run of anchors navigates to their union, which can be
+// many windows wide. Centred at the zoom the row happens to be on, the row
+// showed the union's middle, which need hold none of the alignments.
+test('a drawn span wider than the window is framed, not centred at the current zoom', async () => {
+  const { session, level, row } = await scrollableSetup()
+  session.setPreferenceOverride('animationMode', 'disabled')
+
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 100_000, end: 300_000 },
+      mateCumBp: { start: BP + 100_000, end: BP + 300_000 },
+    }),
+  )
+
+  expect(row.windowWidthBp).toBe(280_000)
+  expect(row.windowStartBp).toBe(BP + 200_000 - 140_000)
+})
+
+// A contig displayed twice with another between: the union of its marks
+// centres on the other contig, which read as stale geometry and moved nothing.
+test('a drawn span across two displayed copies of its contig still scrolls', async () => {
+  const { session, level, row } = await scrollableSetup()
+  session.setPreferenceOverride('animationMode', 'disabled')
+  const region = (refName: string) => ({
+    assemblyName: 'volvox2',
+    refName,
+    start: 0,
+    end: BP,
+  })
+  row.setDisplayedRegions([region('ctgB'), region('ctgA'), region('ctgB')])
+  row.setWindow(40_000, 0)
+
+  level.showOffscreenMateContig(
+    mark('ctgB', 1, {
+      locus: { start: 50_000, end: 350_000 },
+      mateCumBp: { start: 350_000, end: 2 * BP + 50_000 },
+    }),
+  )
+
+  expect(row.windowWidthBp).toBe(700_000)
+  expect(row.windowStartBp).toBe(600_000 - 350_000)
+})
+
 // Flown, not jumped — so the row is somewhere else on the way and the reader
 // can see the distance being crossed. Asserted on the zoom rather than the
 // position, since the pull-back is the half a jump could not produce.

@@ -535,13 +535,9 @@ export function linearSyntenyViewHelperModelFactory(
           // the flight reads back what it wrote each frame, so the Undo below
           // ends it rather than being overwritten by its next frame
           if (mateFlightAllowed(parentView, session.animationMode)) {
-            view.flyToCenter(
-              dest.coord0,
-              dest.refName,
-              dest.displayedRegionIndex,
-            )
+            view.flyTo(dest.centerBp, dest.widthBp)
           } else {
-            view.centerAt(dest.coord0, dest.refName, dest.displayedRegionIndex)
+            view.setWindow(dest.widthBp, dest.centerBp - dest.widthBp / 2)
           }
         } else {
           // one transaction, or a per-bp consumer scans a window never on
