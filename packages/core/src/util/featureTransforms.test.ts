@@ -455,6 +455,21 @@ test('a plain groupby keys by the element where the first feature lacks the fiel
   ])
 })
 
+test('a VCF missing value and an absent field are one group', () => {
+  const out = runTransforms(
+    [
+      feature(100, 101, { ALT: ['<DEL>'] }),
+      feature(200, 201, { ALT: [null] }),
+      feature(300, 301, {}),
+    ],
+    [{ type: 'aggregate', groupby: ['ALT'], ops: [{ op: 'count' }] }],
+  )
+  expect(rows(out, 'ALT', 'count')).toEqual([
+    ['<DEL>', 1],
+    [undefined, 2],
+  ])
+})
+
 test('a plain groupby keys by the element where the first feature holds a plain string', () => {
   const out = runTransforms(
     [

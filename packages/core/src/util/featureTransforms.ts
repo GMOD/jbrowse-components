@@ -106,11 +106,12 @@ function pathReader(ref: string, step: string) {
 
 // A list holding one value is that value, as a VCF's ALT and INFO fields
 // arrive, and a longer one is its text: a Map keys a list by identity, which
-// made every feature a group of its own.
+// made every feature a group of its own. A missing value is one group, whether
+// the field is absent or holds a VCF's `.`.
 function groupKey(value: unknown): unknown {
   return Array.isArray(value)
     ? value.length === 1
-      ? value[0]
+      ? (value[0] ?? undefined)
       : value.join(',')
     : (value ?? undefined)
 }
