@@ -12,9 +12,9 @@ export const gwasSpecs: ScreenshotSpec[] = [
   // Manhattan plot from a real human GWAS (config_gwas hg19 genome-wide summary
   // stats) over a whole chromosome (chr2), so the classic dense field of points
   // with significant peaks reads as a per-chromosome Manhattan overview (reviewer:
-  // show a whole-chromosome overview). The binned Manhattan display renders the
-  // full contig fast enough headless even though genome-wide showAllRegions did
-  // not.
+  // show a whole-chromosome overview). The Manhattan display draws a point per
+  // record, and a whole contig of them renders headless where genome-wide
+  // showAllRegions did not.
   {
     mode: 'url',
     name: 'gwas/manhattan',
