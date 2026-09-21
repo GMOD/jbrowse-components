@@ -41,36 +41,49 @@ function darkenColor(
 // once alongside which layers there are at all.
 export type WiggleLayer = Omit<SourceRenderData, 'rowIndex' | 'renderingType'>
 
-// One whisker band's per-instance colors: each feature gets posColor or negColor
-// by whether that band's value sits above or below the pivot, then the band tint
-// is baked in. The tint is mirrored across the pivot so lightness always tracks
-// magnitude, not signed value: on the positive side the max band lightens and
-// the min band darkens (biggest positive = lightest); on the negative side that
-// flips (posTint vs negTint), so the most-negative min band lightens and the
-// least-negative max band darkens (most negative = lightest red, not a dark
-// brown). Only two packed colors are possible per band, so they're computed once
-// and indexed by sign — and where they come out the same (a solid-color track,
-// `posColor === negColor`), the band carries no per-instance lane at all and
-// both backends read the layer color.
+// One whisker band's per-instance colors: each feature takes the colour of
+// the band between two cuts its value falls in, then the band tint is baked
+// in. The tint is mirrored across the pivot so lightness always tracks
+// magnitude, not signed value: at or past the lowest cut the max band
+// lightens and the min band darkens (biggest positive = lightest); below it
+// that flips (posTint vs negTint), so the most-negative min band lightens and
+// the least-negative max band darkens (most negative = lightest red, not a
+// dark brown). The packed colours are computed once and indexed by band — and
+// where they all come out the same (a solid-color track), the band carries no
+// per-instance lane at all and both backends read the layer color.
 function bandColorsAbgr(
   bandScores: Float32Array,
   numFeatures: number,
-  pivot: number,
-  posColor: [number, number, number],
-  negColor: [number, number, number],
+  bands: ColorBands,
   posTint: (c: [number, number, number]) => [number, number, number],
   negTint: (c: [number, number, number]) => [number, number, number],
 ): Uint32Array | undefined {
-  const posAbgr = normalizedRgbToABGR(...posTint(posColor))
-  const negAbgr = normalizedRgbToABGR(...negTint(negColor))
-  if (posAbgr === negAbgr) {
+  const packed = bands.colors.map((color, k) =>
+    normalizedRgbToABGR(...(k === 0 ? negTint(color) : posTint(color))),
+  )
+  if (packed.every(c => c === packed[0])) {
     return undefined
   }
+  const { cuts } = bands
   const out = new Uint32Array(numFeatures)
   for (let i = 0; i < numFeatures; i++) {
-    out[i] = bandScores[i]! >= pivot ? posAbgr : negAbgr
+    const score = bandScores[i]!
+    let k = 0
+    while (k < cuts.length && score >= cuts[k]!) {
+      k++
+    }
+    out[i] = packed[k]!
   }
   return out
+}
+
+/**
+ * Where the colour changes, ascending, and the colour of each band: one more
+ * colour than cuts, the lowest band first.
+ */
+export interface ColorBands {
+  cuts: number[]
+  colors: [number, number, number][]
 }
 
 // How a band's base color is shifted to convey magnitude. See summaryBands.
@@ -208,6 +221,8 @@ export function makeSummaryLayers({
   negColor,
   pivot,
   origin,
+  innerColors,
+  cuts,
   renderingType,
 }: {
   data: FeatureArrays
@@ -216,8 +231,11 @@ export function makeSummaryLayers({
   negColor: [number, number, number]
   pivot: number
   origin: number
+  cuts: number[]
+  innerColors: [number, number, number][]
   renderingType: WiggleRenderingType
 }): WiggleLayer[] {
+  const colorBands = { cuts, colors: [negColor, ...innerColors, posColor] }
   const { featurePositions, numFeatures } = data
   const isDensityMode = renderingType === RENDERING_TYPE_DENSITY
   const isFilled = renderingType === RENDERING_TYPE_XYPLOT
@@ -265,15 +283,13 @@ export function makeSummaryLayers({
         b.negTint(negColor),
       )
       const colored = (layer: WiggleLayer | undefined, tint: Tint) => {
-        if (!layer || origin === pivot) {
+        if (!layer || (origin === pivot && cuts.length === 1)) {
           return layer
         }
         const colorsAbgr = bandColorsAbgr(
           layer.featureScores,
           layer.numFeatures,
-          pivot,
-          posColor,
-          negColor,
+          colorBands,
           tint,
           tint,
         )
@@ -294,9 +310,7 @@ export function makeSummaryLayers({
     const colorsAbgr = bandColorsAbgr(
       b.scores,
       numFeatures,
-      pivot,
-      posColor,
-      negColor,
+      colorBands,
       b.posTint,
       b.negTint,
     )

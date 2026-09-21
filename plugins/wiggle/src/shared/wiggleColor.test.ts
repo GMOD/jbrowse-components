@@ -22,6 +22,8 @@ test('a bare value paints both sides', () => {
     posColor: 'green',
     negColor: 'green',
     pivot: 0,
+    cuts: [0],
+    innerColors: [],
     rampLut: null,
     perSource: false,
   })
@@ -32,9 +34,42 @@ test('an empty threshold domain cuts at the origin, in the wiggle defaults', () 
     posColor: WIGGLE_POS_COLOR_DEFAULT,
     negColor: WIGGLE_NEG_COLOR_DEFAULT,
     pivot: 3,
+    cuts: [3],
+    innerColors: [],
     rampLut: null,
     perSource: false,
   })
+})
+
+test('each cut after the first adds a band, painted by the next range colour', () => {
+  const out = resolved(
+    color({
+      field: 'score',
+      scale: 'threshold',
+      domain: ['2', '-2'],
+      range: ['blue', 'grey', 'red'],
+    }),
+    0,
+  )
+  expect(out).toMatchObject({
+    pivot: -2,
+    cuts: [-2, 2],
+    negColor: 'blue',
+    innerColors: ['grey'],
+    posColor: 'red',
+  })
+})
+
+test('a band a threshold range leaves out paints the no-category grey', () => {
+  const out = resolved(
+    color({ field: 'score', scale: 'threshold', domain: ['-2', '0', '2'] }),
+    0,
+  )
+  expect(out.innerColors).toEqual(['#afafaf', '#afafaf'])
+  expect([out.negColor, out.posColor]).toEqual([
+    WIGGLE_NEG_COLOR_DEFAULT,
+    WIGGLE_POS_COLOR_DEFAULT,
+  ])
 })
 
 test('a threshold domain names the cut and the range the two sides', () => {

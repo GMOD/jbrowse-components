@@ -62,10 +62,10 @@ Left open from the `jexl:` work:
    alone, through `scripts/generateMarkRules.ts`'s copy; a small shared
    workspace package, as `@jbrowse/add-track-core` is, would let it check every
    display's colour.
-4. **A wiggle `threshold` with N cuts**, by ggplot2's rule that a segment takes
-   its start point's bin. Fills cost nothing, since each instance carries its
-   colour; the lines and band are a shader change to `pivotSideColor`. After
-   step 1.
+4. **A wiggle `threshold` with N cuts: landed.** Up to eight cuts, on bars,
+   scatter, lines, the whiskers band and the key, matching on Canvas2D and
+   WebGL2. The GPU whiskers band compiled and draws no error, but no capture
+   shows it: volvox's bigWig has no summary level at the zooms tried.
 5. **The lane-split table: `shapeSpecs.ts` landed** without the banding. Each
    shape's channels and ramp side are one table, and the lane request, the
    rule list, the requires rule and the model's value tests read it. The

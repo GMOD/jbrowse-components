@@ -105,6 +105,7 @@ export {
 } from './scoreFieldConfigSchemaFields.ts'
 
 export {
+  MAX_WIGGLE_CUTS,
   MIN_FILL_WIDTH_PX,
   NO_PREV_START,
   RENDERING_TYPE_DENSITY,

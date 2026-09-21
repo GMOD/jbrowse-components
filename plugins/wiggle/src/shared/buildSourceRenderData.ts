@@ -28,6 +28,8 @@ function sourceLayers({
   negColor,
   pivot,
   origin,
+  cuts,
+  innerColors,
 }: {
   source: WiggleSourceData
   summaryScoreMode: string
@@ -36,6 +38,8 @@ function sourceLayers({
   negColor: [number, number, number]
   pivot: number
   origin: number
+  cuts: number[]
+  innerColors: [number, number, number][]
 }): WiggleLayer[] {
   if (
     renderingType === RENDERING_TYPE_LINE ||
@@ -59,6 +63,8 @@ function sourceLayers({
     negColor,
     pivot,
     origin,
+    cuts,
+    innerColors,
     renderingType,
   })
 }
@@ -142,7 +148,10 @@ export function buildSourceRenderData(
   } = gpuProps
   // A colour per source paints both sides of the cut in it, so the plot reads
   // as one colour each; every other scale keeps the pair.
-  const { perSource, pivot } = wiggleColor
+  const { perSource, pivot, cuts } = wiggleColor
+  const innerColors = wiggleColor.innerColors.map(c =>
+    cssColorToNormalizedRgb(c),
+  )
   const renderingTypeInt = renderingTypeToInt(renderingType)
   const lineCenter = renderingTypeInt === RENDERING_TYPE_LINE_CENTER
   const defaultPosColor = cssColorToNormalizedRgb(wiggleColor.posColor)
@@ -180,6 +189,8 @@ export function buildSourceRenderData(
         negColor: perSource ? posColor : defaultNegColor,
         pivot,
         origin,
+        cuts,
+        innerColors,
       })
       for (const layer of layers) {
         const into = layer.band ? bands : result

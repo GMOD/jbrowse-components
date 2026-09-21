@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every display turns its colour object into what it paints through display-kit's `colorEncodingOf`, the bridge ADR-151 gave the mark and Manhattan displays: the quantitative, alignments, canvas feature and multi-way gene colours and synteny's `paintedField` read the `ColorEncoding` it answers, a display's `colorEncoding` getter, and keep only their own painting. Each display names a default scale per field and nothing else. The quantitative display's `field` is `score | source`, a pairing its two-sided layers cannot paint draws the misconfiguration grey, a threshold parts at its lowest cut, and a colour per source hands out its `range` in its `domain`'s order. The alignments displays' insert-size fields default to `threshold`, so their `domain` is that scale's cuts"
+summary: "Every display turns its colour object into what it paints through display-kit's `colorEncodingOf`, the bridge ADR-151 gave the mark and Manhattan displays: the quantitative, alignments, canvas feature and multi-way gene colours and synteny's `paintedField` read the `ColorEncoding` it answers, a display's `colorEncoding` getter, and keep only their own painting. Each display names a default scale per field and nothing else. The quantitative display's `field` is `score | source`, a pairing its two-sided layers cannot paint draws the misconfiguration grey, a threshold paints every cut up to eight, and a colour per source hands out its `range` in its `domain`'s order. The alignments displays' insert-size fields default to `threshold`, so their `domain` is that scale's cuts"
 ---
 
 # ADR-153: Every display resolves its colour through one function
@@ -67,8 +67,14 @@ has nothing to paint with: those pairs draw `MISCONFIGURED_COLOR`
 (`@jbrowse/core/util/color`), the grey the encoder already paints for a `jexl:`
 colour yielding no string and a ramp value that is not finite.
 
-**A threshold parts at its lowest cut** (`declaredCut`), on the plot and in the
-key, because `thresholdCuts` sorts the cuts for every threshold scale.
+~~**A threshold parts at its lowest cut** (`declaredCut`), on the plot and in
+the key, because `thresholdCuts` sorts the cuts for every threshold scale.~~
+**A threshold paints every cut**, sorted as `thresholdCuts` sorts them for
+every threshold scale, up to `MAX_WIGGLE_CUTS` (8, the uniform block's size):
+each band between two cuts takes the next `range` colour, a band the `range`
+leaves out paints the no-category grey, and the lowest and highest keep the
+display's defaults. A line takes the colour of the band its centre line is in,
+cut at each crossing, as it did at the one cut.
 
 **A colour per source hands out its `range`, then the default palette**, from
 the one cursor that serves the subtrack groups first and then the ungrouped

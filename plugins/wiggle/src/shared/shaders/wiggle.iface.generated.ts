@@ -9,7 +9,7 @@ export const BINDINGS: readonly ShaderBinding[] = [
 
 export const VERTS_PER_INSTANCE = 6
 
-export const UNIFORMS_SIZE_BYTES = 80
+export const UNIFORMS_SIZE_BYTES = 224
 
 // Word indices into a Float32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
@@ -34,7 +34,50 @@ export const UNIFORM_OFFSET_I32 = {
   scaleType: 4,
   renderingType: 5,
   densityRampLut: 18,
+  numCuts: 19,
 } as const
+
+
+// Word indices of each array field’s elements, into a 4-byte-word
+// view over the uniform buffer (Uint32Array or Float32Array — the
+// field’s scalar type picks, same as UNIFORM_OFFSET_*). NOT
+// consecutive: std140 pads every array element to 16 bytes.
+export const UNIFORM_SLOT_ARRAYS = {
+  cuts: [20, 24] as const,
+  innerColor: [28, 32, 36, 40, 44, 48, 52] as const,
+} as const
+
+// Element `i` of the `cuts` uniform array (4 components).
+export function setUniformCuts(
+  f32: Float32Array,
+  i: number,
+  v0: number,
+  v1: number,
+  v2: number,
+  v3: number,
+) {
+  const o = UNIFORM_SLOT_ARRAYS.cuts[i]!
+  f32[o] = v0
+  f32[o + 1] = v1
+  f32[o + 2] = v2
+  f32[o + 3] = v3
+}
+
+// Element `i` of the `innerColor` uniform array (4 components).
+export function setUniformInnerColor(
+  f32: Float32Array,
+  i: number,
+  v0: number,
+  v1: number,
+  v2: number,
+  v3: number,
+) {
+  const o = UNIFORM_SLOT_ARRAYS.innerColor[i]!
+  f32[o] = v0
+  f32[o + 1] = v1
+  f32[o + 2] = v2
+  f32[o + 3] = v3
+}
 
 
 export interface Uniforms {
@@ -55,6 +98,9 @@ export interface Uniforms {
   symlogConstant: number
   devicePixelRatio: number
   densityRampLut: number
+  numCuts: number
+  cuts: [[number, number, number, number], [number, number, number, number]]
+  innerColor: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -79,6 +125,43 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[16] = uniforms.symlogConstant
   f32[17] = uniforms.devicePixelRatio
   i32[18] = uniforms.densityRampLut
+  i32[19] = uniforms.numCuts
+  f32[20] = uniforms.cuts[0][0]
+  f32[21] = uniforms.cuts[0][1]
+  f32[22] = uniforms.cuts[0][2]
+  f32[23] = uniforms.cuts[0][3]
+  f32[24] = uniforms.cuts[1][0]
+  f32[25] = uniforms.cuts[1][1]
+  f32[26] = uniforms.cuts[1][2]
+  f32[27] = uniforms.cuts[1][3]
+  f32[28] = uniforms.innerColor[0][0]
+  f32[29] = uniforms.innerColor[0][1]
+  f32[30] = uniforms.innerColor[0][2]
+  f32[31] = uniforms.innerColor[0][3]
+  f32[32] = uniforms.innerColor[1][0]
+  f32[33] = uniforms.innerColor[1][1]
+  f32[34] = uniforms.innerColor[1][2]
+  f32[35] = uniforms.innerColor[1][3]
+  f32[36] = uniforms.innerColor[2][0]
+  f32[37] = uniforms.innerColor[2][1]
+  f32[38] = uniforms.innerColor[2][2]
+  f32[39] = uniforms.innerColor[2][3]
+  f32[40] = uniforms.innerColor[3][0]
+  f32[41] = uniforms.innerColor[3][1]
+  f32[42] = uniforms.innerColor[3][2]
+  f32[43] = uniforms.innerColor[3][3]
+  f32[44] = uniforms.innerColor[4][0]
+  f32[45] = uniforms.innerColor[4][1]
+  f32[46] = uniforms.innerColor[4][2]
+  f32[47] = uniforms.innerColor[4][3]
+  f32[48] = uniforms.innerColor[5][0]
+  f32[49] = uniforms.innerColor[5][1]
+  f32[50] = uniforms.innerColor[5][2]
+  f32[51] = uniforms.innerColor[5][3]
+  f32[52] = uniforms.innerColor[6][0]
+  f32[53] = uniforms.innerColor[6][1]
+  f32[54] = uniforms.innerColor[6][2]
+  f32[55] = uniforms.innerColor[6][3]
 }
 
 export const INSTANCE_STRIDE_BYTES = 20

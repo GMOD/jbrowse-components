@@ -1,7 +1,7 @@
 // The step line (RENDERING_TYPE_LINE): three square-capped quads per bin over
 // its bar top. `wiggleLineCenter.slang` draws the interpolated line, and both
 // import `wiggleCommon` for the uniform block, the row's score math and the
-// pivot-side colour, so the two line renderings place and colour a score alike.
+// band colour, so the two line renderings place and colour a score alike.
 //
 // They are separate modules because a module reflects exactly one instance
 // struct, and each reads a different neighbour: the step line the previous and
@@ -37,8 +37,10 @@ struct VsOut {
   nointerpolation float4 negColor : COLOR1;
   // the y range the segment's centre line spans
   nointerpolation float2 centerLine : TEXCOORD0;
-  nointerpolation float pivotYPx : TEXCOORD1;
-  float yPx : TEXCOORD2;
+  // each cut's y in the row
+  nointerpolation float4 cutYsLo : TEXCOORD1;
+  nointerpolation float4 cutYsHi : TEXCOORD2;
+  float yPx : TEXCOORD3;
 };
 
 float rowScoreToClipY(float score, float rowTop, float rowHeight, float pxToClip) {
@@ -96,7 +98,8 @@ VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {
   o.color = float4(unpackRGBA(inst.color).rgb, 1.0);
   o.negColor = float4(unpackRGBA(inst.negColor).rgb, 1.0);
   o.centerLine = centerLine;
-  o.pivotYPx = rowScoreToYPx(u.pivot, rowTop, rowHeight, u);
+  o.cutYsLo = cutYsPx(0, rowTop, rowHeight, u);
+  o.cutYsHi = cutYsPx(4, rowTop, rowHeight, u);
   o.yPx = (1.0 - sy) / pxToClip;
   return o;
 }
@@ -110,9 +113,11 @@ VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {
 // capsules union under max blend precisely so that overlap is free.
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  return pivotSideColor(
+  return bandColorAt(
     clamp(fragIn.yPx, fragIn.centerLine.x, fragIn.centerLine.y),
-    fragIn.pivotYPx,
+    fragIn.cutYsLo,
+    fragIn.cutYsHi,
+    u,
     fragIn.color,
     fragIn.negColor);
 }

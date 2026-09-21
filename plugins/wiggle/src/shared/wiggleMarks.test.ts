@@ -17,6 +17,7 @@ import {
   UNIFORMS_SIZE_BYTES,
   UNIFORM_OFFSET_F32 as U,
   UNIFORM_OFFSET_I32 as UI,
+  UNIFORM_SLOT_ARRAYS,
 } from './shaders/wiggle.generated.ts'
 import {
   INSTANCE_OFFSET_F32 as F_F32,
@@ -71,6 +72,8 @@ const DEFAULT_STATE = {
   lineWidth: 1,
   origin: 0,
   pivot: 0,
+  cuts: [0],
+  innerColors: [],
 }
 
 describe('the wiggle mark list', () => {
@@ -368,6 +371,32 @@ describe('the wiggle mark list', () => {
     expect(writes.at(-1)!.args[0]).toBe(UNIFORMS_SIZE_BYTES)
   })
 
+  it('writes each cut and the colour of each band between two of them', () => {
+    const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
+    const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
+    const source = makeSource({ renderingType: RENDERING_TYPE_LINE })
+    backend.upload(0, [source])
+    backend.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
+      ...DEFAULT_STATE,
+      renderingType: RENDERING_TYPE_LINE,
+      pivot: -2,
+      cuts: [-2, 0, 2],
+      innerColors: [
+        [0.5, 0.5, 0.5],
+        [0, 1, 0],
+      ],
+    })
+    const f32 = hal.getLastUniformsF32()!
+    expect(hal.getLastUniformsI32()![UI.numCuts]).toBe(3)
+    const [cutsAt] = UNIFORM_SLOT_ARRAYS.cuts
+    expect([...f32.slice(cutsAt, cutsAt + 3)]).toEqual([-2, 0, 2])
+    const [firstInner, secondInner] = UNIFORM_SLOT_ARRAYS.innerColor
+    expect([...f32.slice(firstInner, firstInner + 4)]).toEqual([
+      0.5, 0.5, 0.5, 1,
+    ])
+    expect([...f32.slice(secondInner, secondInner + 4)]).toEqual([0, 1, 0, 1])
+  })
+
   // The named-ramp gauge (agent-docs/architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md): a named
   // ramp on a density track is a uniform flag and one 256×1 LUT upload through
   // the shared path — no new shader, no buffer byte. The LUT bytes are the
@@ -605,6 +634,8 @@ describe('the wiggle mark list', () => {
       ...DEFAULT_STATE,
       origin: 5,
       pivot: 5,
+      cuts: [5],
+      innerColors: [],
     })
 
     const f32 = hal.getLastUniformsF32()!

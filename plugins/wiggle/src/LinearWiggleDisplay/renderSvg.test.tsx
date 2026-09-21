@@ -140,6 +140,8 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
       lineWidth: 1,
       origin: 0,
       pivot: 0,
+      cuts: [0],
+      innerColors: [],
     },
     gpuProps: () => ({
       sources: [{ name: 'a' }, { name: 'b' }],
@@ -149,6 +151,8 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
         posColor: '#0068d1',
         negColor: '#e01e26',
         pivot: 0,
+        cuts: [0],
+        innerColors: [],
         rampLut: null,
         rampMid: undefined,
         perSource: false,

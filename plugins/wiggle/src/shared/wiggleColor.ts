@@ -1,7 +1,11 @@
-import { MISCONFIGURED_COLOR } from '@jbrowse/core/util/color'
+import {
+  MISCONFIGURED_COLOR,
+  NO_CATEGORY_COLOR,
+} from '@jbrowse/core/util/color'
 import { thresholdCuts } from '@jbrowse/core/util/thresholdScale'
 import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { colorNotices } from '@jbrowse/display-kit/colorScale'
+import { MAX_WIGGLE_CUTS } from '@jbrowse/wiggle-core'
 
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
 import { rampLutOf } from './densityColorRamp.ts'
@@ -20,12 +24,16 @@ import type {
  * which spelling the config used.
  */
 export interface ResolvedWiggleColor {
-  /** At or above `pivot`, and the whole plot where nothing parts. */
+  /** At or above the last cut, and the whole plot where nothing parts. */
   posColor: string
   /** Below `pivot`. */
   negColor: string
-  /** Where the two sides part, and where the two-sided density fade is white. */
+  /** The lowest cut, and where the two-sided density fade is white. */
   pivot: number
+  /** Where the colour changes, ascending, `pivot` first; at most `MAX_WIGGLE_CUTS`. */
+  cuts: number[]
+  /** The colours between `negColor` and `posColor`, one per band between two cuts. */
+  innerColors: string[]
   /** A ramp's 256 entries, or null for the two-sided fade off `posColor`/`negColor`. */
   rampLut: Uint8Array | null
   /** The score at the ramp's middle stop; unset runs the ramp straight across the domain. */
@@ -64,16 +72,16 @@ function paints(encoding: FieldColorEncoding) {
 }
 
 /**
- * The cut a threshold over `score` declares: its lowest, which is the one the
- * two sides part at. Undefined for any other encoding, and for a threshold
- * naming no cut, which parts at the `origin`.
+ * The cuts a threshold over `score` declares, ascending, at most
+ * `MAX_WIGGLE_CUTS`. Empty for any other encoding, and for a threshold naming
+ * no cut, which parts at the `origin`.
  */
-export function declaredCut(encoding: ReturnType<typeof wiggleColorEncoding>) {
+export function declaredCuts(encoding: ReturnType<typeof wiggleColorEncoding>) {
   return typeof encoding === 'object' &&
     encoding.scale === 'threshold' &&
     paints(encoding)
-    ? thresholdCuts(encoding.domain ?? [])[0]
-    : undefined
+    ? thresholdCuts(encoding.domain ?? []).slice(0, MAX_WIGGLE_CUTS)
+    : []
 }
 
 /**
@@ -98,6 +106,8 @@ function solid(color: string, pivot: number): ResolvedWiggleColor {
     posColor: color,
     negColor: color,
     pivot,
+    cuts: [pivot],
+    innerColors: [],
     rampLut: null,
     rampMid: undefined,
     perSource: false,
@@ -118,14 +128,17 @@ export function resolveWiggleColor(
     case 'categorical':
       return { ...solid(WIGGLE_POS_COLOR_DEFAULT, origin), perSource: true }
     case 'threshold': {
-      const [
-        negColor = WIGGLE_NEG_COLOR_DEFAULT,
-        posColor = WIGGLE_POS_COLOR_DEFAULT,
-      ] = encoding.range ?? []
+      const declared = declaredCuts(encoding)
+      const cuts = declared.length > 0 ? declared : [origin]
+      const range = encoding.range ?? []
       return {
-        posColor,
-        negColor,
-        pivot: declaredCut(encoding) ?? origin,
+        negColor: range[0] ?? WIGGLE_NEG_COLOR_DEFAULT,
+        posColor: range[cuts.length] ?? WIGGLE_POS_COLOR_DEFAULT,
+        pivot: cuts[0]!,
+        cuts,
+        innerColors: cuts
+          .slice(1)
+          .map((_, i) => range[i + 1] ?? NO_CATEGORY_COLOR),
         rampLut: null,
         rampMid: undefined,
         perSource: false,
@@ -141,6 +154,8 @@ export function resolveWiggleColor(
         negColor: ends[0] ?? WIGGLE_NEG_COLOR_DEFAULT,
         posColor: ends.at(-1) ?? WIGGLE_POS_COLOR_DEFAULT,
         pivot: domainMid ?? origin,
+        cuts: [domainMid ?? origin],
+        innerColors: [],
         rampLut:
           range.length === 1 ? null : rampLutOf({ range, scheme, reverse }),
         rampMid: domainMid,

@@ -432,6 +432,8 @@ function runEncodeScenario(fixture: SourceColumns[]) {
       posColor: WIGGLE_POS_COLOR_DEFAULT,
       negColor: WIGGLE_NEG_COLOR_DEFAULT,
       pivot: PIVOT,
+      cuts: [PIVOT],
+      innerColors: [],
       rampLut: null,
       rampMid: undefined,
       perSource: false,

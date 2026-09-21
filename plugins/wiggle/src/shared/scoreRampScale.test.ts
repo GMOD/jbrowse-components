@@ -19,6 +19,8 @@ const RAMP = {
   posColor: '#b2182b',
   negColor: '#2166ac',
   pivot: 0,
+  cuts: [0],
+  innerColors: [],
   rampMid: undefined,
 }
 

@@ -36,7 +36,10 @@ struct VsOut {
   nointerpolation float4 negColor : COLOR1;
   // perpendicular CSS px inside the top (.x) and bottom (.y) edges
   float2 inkPx : TEXCOORD0;
-  float belowPivotPx : TEXCOORD1;
+  float yPx : TEXCOORD1;
+  // each cut's y in the row
+  nointerpolation float4 cutYsLo : TEXCOORD2;
+  nointerpolation float4 cutYsHi : TEXCOORD3;
 };
 
 // Floored only in a column narrower than an output pixel, where the edge's rise
@@ -89,7 +92,9 @@ VsOut vs_main(WiggleBandInstance inst, uint vid : SV_VertexID) {
   o.posColor = float4(unpackRGBA(inst.posColor).rgb, 1.0);
   o.negColor = float4(unpackRGBA(inst.negColor).rgb, 1.0);
   o.inkPx = float2((y - topEdge) * topPerp, (bottomEdge - y) * bottomPerp);
-  o.belowPivotPx = y - rowScoreToYPx(u.pivot, rowTop, rowHeight, u);
+  o.yPx = y;
+  o.cutYsLo = cutYsPx(0, rowTop, rowHeight, u);
+  o.cutYsHi = cutYsPx(4, rowTop, rowHeight, u);
   return o;
 }
 
@@ -100,19 +105,32 @@ float bandCoverage(float insideTopPx, float insideBottomPx) {
     0.0);
 }
 
-// Covered separately above and below the pivot, so an edge lying on the pivot
-// takes none of the other colour.
+// Each band between two cuts covers the part of the ink its cut lines bound,
+// so an edge lying on a cut splits cleanly between the two colours.
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  float above = bandCoverage(
-    fragIn.inkPx.x, min(fragIn.inkPx.y, -fragIn.belowPivotPx));
-  float below = bandCoverage(
-    min(fragIn.inkPx.x, fragIn.belowPivotPx), fragIn.inkPx.y);
-  float coverage = above + below;
+  float y = fragIn.yPx;
+  float coverage = 0.0;
+  float3 rgb = float3(0.0);
+  // the cut below the band being summed; +inf for the lowest band
+  float lowerCutPx = 1e9;
+  for (int band = 0; band <= u.numCuts; band++) {
+    float upperCutPx = band < u.numCuts
+      ? cutYAt(band, fragIn.cutYsLo, fragIn.cutYsHi)
+      : -1e9;
+    float c = bandCoverage(
+      min(fragIn.inkPx.x, y - upperCutPx),
+      min(fragIn.inkPx.y, lowerCutPx - y));
+    float3 color = band == 0 ? fragIn.negColor.rgb
+      : band == u.numCuts ? fragIn.posColor.rgb
+      : u.innerColor[band - 1].rgb;
+    rgb += color * c;
+    coverage += c;
+    lowerCutPx = upperCutPx;
+  }
   if (coverage <= 0.0) {
     discard;
   }
-  float3 rgb = (fragIn.posColor.rgb * above + fragIn.negColor.rgb * below) / coverage;
   float alpha = WHISKER_BAND_OPACITY * coverage;
-  return float4(rgb * alpha, alpha);
+  return float4(rgb / coverage * alpha, alpha);
 }

@@ -2,13 +2,13 @@
 // the previous bin's midpoint to this one's. `wiggleLine.slang` draws the step
 // line on a record of its own, since a module reflects one instance struct and
 // the two read different neighbours; both import `wiggleCommon` for the
-// uniform block, the row's score math and the pivot-side colour.
+// uniform block, the row's score math and the band colour.
 //
 // Premultiplied MAX blend, so overlapping segments and caps union instead of
 // accumulating into dark seams under src-over. The lines draw first into a
 // target cleared to transparent black and the whiskers band goes behind them
 // afterwards. Max is still inexact where overlaid lines of different colours
-// cross, and at a joint within half a line width of the pivot, whose capsules
+// cross, and at a joint within half a line width of a cut, whose capsules
 // can pick different sides.
 //! targets: wgsl, glsl
 //! blend: max
@@ -41,7 +41,9 @@ struct VsOut {
   // the segment centre's y and the tangent's y, so the fragment can place the
   // centre line under itself
   nointerpolation float2 centerLine : TEXCOORD2;
-  nointerpolation float pivotYPx : TEXCOORD3;
+  // each cut's y in the row
+  nointerpolation float4 cutYsLo : TEXCOORD3;
+  nointerpolation float4 cutYsHi : TEXCOORD4;
   // signed px distance (along, perp) from the segment centre, and the
   // segment's half-length, for the capsule SDF
   float2 localPos : TEXCOORD0;
@@ -97,7 +99,8 @@ VsOut vs_main(WiggleLineCenterInstance inst, uint vid : SV_VertexID) {
   o.localPos = local;
   o.segHalfLen = len * 0.5;
   o.centerLine = float2(centerYpx, f.tangent.y);
-  o.pivotYPx = rowScoreToYPx(u.pivot, rowTop, rowHeight, u);
+  o.cutYsLo = cutYsPx(0, rowTop, rowHeight, u);
+  o.cutYsHi = cutYsPx(4, rowTop, rowHeight, u);
   return o;
 }
 
@@ -109,9 +112,11 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     discard;
   }
   float along = clamp(fragIn.localPos.x, -fragIn.segHalfLen, fragIn.segHalfLen);
-  float4 color = pivotSideColor(
+  float4 color = bandColorAt(
     fragIn.centerLine.x + fragIn.centerLine.y * along,
-    fragIn.pivotYPx,
+    fragIn.cutYsLo,
+    fragIn.cutYsHi,
+    u,
     fragIn.color,
     fragIn.negColor);
   // PREMULTIPLIED, so same-colour overlaps union (max) rather than accumulate

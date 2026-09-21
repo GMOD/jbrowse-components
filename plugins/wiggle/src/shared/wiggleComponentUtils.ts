@@ -2,6 +2,7 @@
 // sits, what a rendering-type name means, and the render state handed to the
 // backend each frame. Layer building lives in wiggleLayers.ts and hit testing
 // in wiggleHitTest.ts.
+import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import {
   RENDERING_TYPE_DENSITY,
@@ -121,6 +122,10 @@ export function makeWiggleRenderState(
     lineWidth: self.lineWidth,
     origin: self.origin,
     pivot: self.wiggleColor.pivot,
+    cuts: self.wiggleColor.cuts,
+    innerColors: self.wiggleColor.innerColors.map(c =>
+      cssColorToNormalizedRgb(c),
+    ),
     rampLut: self.wiggleColor.rampLut ?? undefined,
     rampMid: self.wiggleColor.rampMid,
   }))

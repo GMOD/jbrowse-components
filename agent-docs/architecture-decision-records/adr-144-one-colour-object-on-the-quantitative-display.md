@@ -143,10 +143,8 @@ declared, and none for a string.
 - **A wiggle-only `densityColorRamp` enum beside `ramp`.** Two members, one of
   which meant "no ramp". `ramp: ['viridis']` says it with the slot every other
   display's ramp uses, and an empty `ramp` is the fade.
-- **Refusing a threshold `domain` longer than one cut.** The encoder partitions
-  into two sides, so a second cut point is not painted. Refusing it needs a
-  check where the config is read and a message; reading the first cut and
-  letting the key show what was declared is what a display with a two-sided
-  encoder can honestly do, and widening `bandColorsAbgr` to N bins is a
-  rendering change with its own measurement. The first cut is what paints and
-  what the key lists; a second is neither painted nor keyed.
+- **Refusing a threshold `domain` longer than one cut.** ~~The encoder
+  partitions into two sides, so a second cut point is not painted.~~ Every cut
+  paints now, up to eight, each band in its own `range` colour, on the bars,
+  lines, whiskers band and key alike
+  ([ADR-153](adr-153-every-display-resolves-its-colour-through-one-function.md)).

@@ -5779,11 +5779,11 @@
               "enum": ["score", "source"]
             },
             "scale": {
-              "description": "how field becomes a colour: threshold cuts score at its lowest cut and paints each side; linear and log run range, else scheme, else viridis across the y domain with domainMid at the middle stop, which is the density picture, and a one-colour range fades from white at domainMid; categorical hands each source a colour of its own; a scale over the other field paints grey; none paints value, keeping a field for a switch back; unset beside a field, it is categorical over source and threshold over score.",
+              "description": "how field becomes a colour: threshold paints each band between two of its cuts; linear and log run range, else scheme, else viridis across the y domain with domainMid at the middle stop, which is the density picture, and a one-colour range fades from white at domainMid; categorical hands each source a colour of its own; a scale over the other field paints grey; none paints value, keeping a field for a switch back; unset beside a field, it is categorical over source and threshold over score.",
               "enum": ["none", "categorical", "linear", "log", "threshold"]
             },
             "domain": {
-              "description": "for a threshold scale, the cut point the two sides part at, the lowest where it lists several, empty meaning the origin; for a categorical scale over source, the subtracks outside a group that take the range first, in order.",
+              "description": "for a threshold scale, up to eight cut points, sorted, empty meaning one at the origin; for a categorical scale over source, the subtracks outside a group that take the range first, in order.",
               "anyOf": [
                 {
                   "type": "array",
@@ -5801,7 +5801,7 @@
               ]
             },
             "range": {
-              "description": "a threshold scale's colour below the cut and at or above it; the colours a categorical scale over source hands to the subtrack groups first and then to each subtrack, continuing into the default palette; a linear or log scale's stops, evenly spaced.",
+              "description": "a threshold scale's colour for each band, lowest first, one more than the cuts, a missing middle band grey; the colours a categorical scale over source hands to the subtrack groups first and then to each subtrack, continuing into the default palette; a linear or log scale's stops, evenly spaced.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/CssColor"

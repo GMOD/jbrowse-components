@@ -37,6 +37,8 @@ describe('makeSummaryLayers', () => {
     posColor,
     negColor,
     pivot: 0,
+    cuts: [0],
+    innerColors: [],
     origin: 0,
     summaryScoreMode: 'whiskers',
   }
@@ -100,6 +102,8 @@ describe('makeSummaryLayers', () => {
       data: summaryData,
       ...base,
       pivot: 6,
+      cuts: [6],
+      innerColors: [],
       origin: 6,
       renderingType: RENDERING_TYPE_XYPLOT,
     })
@@ -122,6 +126,8 @@ describe('makeSummaryLayers', () => {
       data: summaryData,
       ...base,
       pivot: 6,
+      cuts: [6],
+      innerColors: [],
       origin: 0,
       renderingType: RENDERING_TYPE_XYPLOT,
     })
@@ -142,12 +148,32 @@ describe('makeSummaryLayers', () => {
     ])
   })
 
+  test('each bar takes the colour of the band between two cuts it falls in', () => {
+    const inner: [number, number, number] = [0.5, 0.5, 0.5]
+    const [layer] = makeSummaryLayers({
+      data: noSummaryData,
+      ...base,
+      summaryScoreMode: 'avg',
+      pivot: 4,
+      origin: 0,
+      cuts: [4, 6],
+      innerColors: [inner],
+      renderingType: RENDERING_TYPE_XYPLOT,
+    })
+    expect([...layer!.colorsAbgr!]).toEqual([
+      normalizedRgbToABGR(...inner),
+      normalizedRgbToABGR(...posColor),
+    ])
+  })
+
   test('density splits a lone band into solid sides', () => {
     const result = makeSummaryLayers({
       data: summaryData,
       ...base,
       summaryScoreMode: 'min',
       pivot: 3,
+      cuts: [3],
+      innerColors: [],
       origin: 3,
       renderingType: RENDERING_TYPE_DENSITY,
     })
@@ -172,6 +198,8 @@ describe('makeSummaryLayers', () => {
       ...base,
       summaryScoreMode,
       pivot: 6,
+      cuts: [6],
+      innerColors: [],
       origin: 6,
       renderingType: RENDERING_TYPE_SCATTER,
     })
@@ -195,6 +223,8 @@ describe('makeSummaryLayers', () => {
       data: noSummaryData,
       ...base,
       pivot: 6,
+      cuts: [6],
+      innerColors: [],
       origin: 6,
       renderingType: RENDERING_TYPE_SCATTER,
     })[0]!.colorsAbgr!
@@ -211,6 +241,8 @@ describe('makeSummaryLayers', () => {
       data: summaryData,
       ...base,
       pivot: 6,
+      cuts: [6],
+      innerColors: [],
       origin: 6,
       renderingType: RENDERING_TYPE_SCATTER,
     })
@@ -234,6 +266,8 @@ describe('makeSummaryLayers', () => {
       data: summaryData,
       ...base,
       pivot: 100,
+      cuts: [100],
+      innerColors: [],
       origin: 100,
       renderingType: RENDERING_TYPE_SCATTER,
     })

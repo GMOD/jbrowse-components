@@ -165,6 +165,8 @@ function props(renderingType: string, mode: string): WiggleGpuProps {
       posColor: WIGGLE_POS_COLOR_DEFAULT,
       negColor: WIGGLE_NEG_COLOR_DEFAULT,
       pivot,
+      cuts: [pivot],
+      innerColors: [],
       rampLut: null,
       rampMid: undefined,
       perSource: false,
@@ -433,6 +435,8 @@ function rowArgs(c: never, layer: SourceRenderData) {
     symlogConstant: 1,
     origin: pivot,
     pivot,
+    cuts: [pivot],
+    innerColors: [],
     lineWidth: 1,
   }
 }

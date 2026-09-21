@@ -23,6 +23,8 @@ test('a row per source defaults to the pos/neg pair about the origin', () => {
     posColor: WIGGLE_POS_COLOR_DEFAULT,
     negColor: WIGGLE_NEG_COLOR_DEFAULT,
     pivot: 0,
+    cuts: [0],
+    innerColors: [],
     rampLut: null,
     perSource: false,
   })
@@ -133,14 +135,22 @@ test('a colour per source hands out its range, the domain’s sources first', ()
   expect(colors()).toEqual(['#0000ff', set1[0], '#ff0000'])
 })
 
-test('a threshold parts at its lowest cut, as every threshold scale sorts them', () => {
+test('a threshold paints a band per cut, sorted as every threshold scale sorts them', () => {
   const display = makeDisplay(['a'], true)
-  display.setColor({ field: 'score', scale: 'threshold', domain: ['5', '2'] })
-  expect(display.wiggleColor.pivot).toBe(2)
+  display.setColor({
+    field: 'score',
+    scale: 'threshold',
+    domain: ['5', '2'],
+    range: ['blue', 'grey', 'red'],
+  })
+  expect(display.wiggleColor.cuts).toEqual([2, 5])
   const key = display.colorScales.find(s => s.id === 'threshold')
-  expect(key?.kind === 'categorical' && key.entries.map(e => e.label)).toEqual([
-    '< 2',
-    '≥ 2',
+  expect(
+    key?.kind === 'categorical' && key.entries.map(e => [e.label, e.color]),
+  ).toEqual([
+    ['< 2', 'blue'],
+    ['2 – 5', 'grey'],
+    ['≥ 5', 'red'],
   ])
 })
 

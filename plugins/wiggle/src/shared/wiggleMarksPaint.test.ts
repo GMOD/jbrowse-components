@@ -137,6 +137,8 @@ describe('the wiggle painters', () => {
     lineWidth: 1,
     origin: 0,
     pivot: 0,
+    cuts: [0],
+    innerColors: [],
   }
 
   test('draws XY plot rectangles', () => {
@@ -172,6 +174,8 @@ describe('the wiggle painters', () => {
       ...defaultState,
       origin: 5,
       pivot: 5,
+      cuts: [5],
+      innerColors: [],
     })
 
     expect(fillRectCalls.length).toBe(2)
@@ -491,6 +495,8 @@ const lineState = {
   lineWidth: 1,
   origin: 0,
   pivot: 0,
+  cuts: [0],
+  innerColors: [] as [number, number, number][],
 }
 const zeroY = 200
 const score5Y = 100
@@ -722,6 +728,8 @@ describe('a log domain entirely under 1', () => {
     lineWidth: 1,
     origin: 0,
     pivot: 0,
+    cuts: [0],
+    innerColors: [],
   }
 
   function barHeights(scores: number[]) {
@@ -831,6 +839,8 @@ describe('the whiskers band', () => {
     lineWidth: 1,
     origin: 0,
     pivot: 0,
+    cuts: [0],
+    innerColors: [] as [number, number, number][],
   }
   const posColor: [number, number, number] = [0, 0, 1]
   const negColor: [number, number, number] = [1, 0, 0]
@@ -940,6 +950,30 @@ describe('the whiskers band', () => {
     const clipRects = rectCalls.filter(r => r[2] === 2e6)
     expect(clipRects.map(r => r[1] + r[3])).toContain(100)
     expect(clipRects.map(r => r[1])).toContain(100)
+  })
+
+  test('a band crossing two cuts fills each band between them in its colour', () => {
+    const { fillStyles, rectCalls } = paint(
+      [bandLayer([5], [-5], [0], [100], RENDERING_TYPE_LINE)],
+      RENDERING_TYPE_LINE,
+      {
+        domainY: [-10, 10],
+        pivot: -2,
+        cuts: [-2, 2],
+        innerColors: [[0, 1, 0]],
+      },
+    )
+    expect(fillStyles).toEqual([
+      'rgba(0,0,255,0.3)',
+      'rgba(0,255,0,0.3)',
+      'rgba(255,0,0,0.3)',
+    ])
+    const clipRects = rectCalls.filter(r => r[2] === 2e6)
+    expect(clipRects.map(r => [r[1], r[1] + r[3]])).toEqual([
+      [-1, 80],
+      [80, 120],
+      [120, 201],
+    ])
   })
 
   test('the band stays under the mean stroke, and the stroke skips the band layer', () => {
@@ -1065,6 +1099,43 @@ describe('line plots colour by pivot side', () => {
       'L(80,150)',
       'L(160,150)',
       'L(160,100)',
+    ])
+  })
+
+  test('a line crossing two cuts takes each band colour between them', () => {
+    const mock = createMockCanvas()
+    const source = {
+      ...makeSource([5, -5], [0, 100], [100, 200], RENDERING_TYPE_LINE_CENTER),
+      color: [0, 0, 1] as [number, number, number],
+      negColor: [1, 0, 0] as [number, number, number],
+    }
+    paintWiggle(mock.ctx, new Map([[0, [source]]]), [lineBlock], {
+      ...state,
+      renderingType: RENDERING_TYPE_LINE_CENTER,
+      pivot: -2,
+      cuts: [-2, 2],
+      innerColors: [[0, 1, 0]],
+    })
+    const pts = (calls: number[][]) =>
+      calls.map(c => [
+        Math.round(c[0]! * 1000) / 1000,
+        Math.round(c[1]! * 1000) / 1000,
+      ])
+    expect(mock.strokeStyles).toEqual([
+      'rgb(0,0,255)',
+      'rgb(0,255,0)',
+      'rgb(255,0,0)',
+    ])
+    expect(pts(mock.ctx.moveTo.mock.calls)).toEqual([
+      [40, 50],
+      [64, 80],
+      [96, 120],
+    ])
+    expect(pts(mock.ctx.lineTo.mock.calls)).toEqual([
+      [40, 50],
+      [64, 80],
+      [96, 120],
+      [120, 150],
     ])
   })
 

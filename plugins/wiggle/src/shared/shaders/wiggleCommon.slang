@@ -23,7 +23,7 @@
 // render-core. Generated into @jbrowse/wiggle-core (see consts-out) because
 // that is where `WiggleRenderingType` is declared, and the plugin reads them
 // back from there.
-//! export-consts: RENDERING_TYPE_XYPLOT, RENDERING_TYPE_DENSITY, RENDERING_TYPE_LINE, RENDERING_TYPE_SCATTER, RENDERING_TYPE_LINE_CENTER, NO_PREV_START, MIN_FILL_WIDTH_PX
+//! export-consts: RENDERING_TYPE_XYPLOT, RENDERING_TYPE_DENSITY, RENDERING_TYPE_LINE, RENDERING_TYPE_SCATTER, RENDERING_TYPE_LINE_CENTER, NO_PREV_START, MIN_FILL_WIDTH_PX, MAX_WIGGLE_CUTS
 //! consts-out: packages/wiggle-core/src/wiggleRenderModes.generated.ts
 //! js-export: densityGradientT, densityRampT
 //! js-skip: scoreToY — a plot-box wrapper over scoreScale.slang's normalizeScore, which is where the shared decision is and where it is exported from. The Canvas2D side composes the same normalizer with its own box (wiggle-core yScaleTicks.ts), so a twin of this signature would have no caller
@@ -50,6 +50,10 @@ public static const uint NO_PREV_START = 0xffffffffu;
 // number the GPU does, and it spent a while as a literal here beside a comment
 // naming its TS twin — which is the arrangement adr-051 exists to retire.
 public static const float MIN_FILL_WIDTH_PX = 1.5;
+
+// The most cuts a threshold colour parts a plot at; the uniform block holds
+// this many.
+public static const int MAX_WIGGLE_CUTS = 8;
 
 // The fill renderings' per-instance record, declared here because two entry
 // shaders draw off ONE buffer packed in this layout: `wiggle.slang` (xyplot,
@@ -103,6 +107,14 @@ public struct Uniforms {
   // the alternative a config names. In the shared block like the other mode
   // ints so one UBO write per region serves every entry shader.
   public int    densityRampLut;
+  // How many of `cuts` are in use, at least 1: the pivot.
+  public int    numCuts;
+  // The scores the colour changes at, ascending, four to a vector.
+  public float4 cuts[MAX_WIGGLE_CUTS / 4];
+  // The colour of each band between two cuts. The band below the first cut
+  // and the one past the last are the instance's own colours, since a source
+  // can bring its own.
+  public float4 innerColor[MAX_WIGGLE_CUTS - 1];
 };
 
 public float bpToClipX(uint bp, Uniforms u) {
@@ -120,11 +132,39 @@ public float rowScoreToYPx(float score, float rowTop, float rowHeight, Uniforms 
   return scoreToY(score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant) + rowTop;
 }
 
-// A line's colour follows the side of the pivot its centre line is on, not the
-// pixel's, so a line lying on the pivot stays one colour. Screen y grows
-// downward, so a larger y is below the pivot.
-public float4 pivotSideColor(float centerLineYPx, float pivotYPx, float4 posColor, float4 negColor) {
-  return centerLineYPx > pivotYPx ? negColor : posColor;
+public float cutScore(int i, Uniforms u) {
+  return u.cuts[i / 4][i % 4];
+}
+
+// Each cut's y in the row, four to a vector: placed once per vertex and handed
+// to the fragment flat, so a pixel only compares. Slots past `numCuts` are 0.
+public float4 cutYsPx(int from, float rowTop, float rowHeight, Uniforms u) {
+  float4 ys = float4(0.0);
+  for (int k = 0; k < 4; k++) {
+    if (from + k < u.numCuts) {
+      ys[k] = rowScoreToYPx(cutScore(from + k, u), rowTop, rowHeight, u);
+    }
+  }
+  return ys;
+}
+
+public float cutYAt(int i, float4 cutYsLo, float4 cutYsHi) {
+  return i < 4 ? cutYsLo[i] : cutYsHi[i - 4];
+}
+
+// A line's colour follows the band its centre line is in, not the pixel's, so
+// a line lying on a cut stays one colour. Screen y grows downward, so a score
+// at or past a cut is at or above that cut's y.
+public float4 bandColorAt(float centerLineYPx, float4 cutYsLo, float4 cutYsHi, Uniforms u, float4 posColor, float4 negColor) {
+  int band = 0;
+  for (int i = 0; i < u.numCuts; i++) {
+    if (centerLineYPx <= cutYAt(i, cutYsLo, cutYsHi)) {
+      band = i + 1;
+    }
+  }
+  return band == 0 ? negColor
+    : band == u.numCuts ? posColor
+    : u.innerColor[band - 1];
 }
 
 // Density mode's gradient position: how far this score sits from the pivot,

@@ -64,6 +64,8 @@ interface WiggleParams {
   lineWidth: number
   origin: number
   pivot: number
+  cuts: number[]
+  innerColors: [number, number, number][]
   rampMid: number | undefined
   // Density's named-ramp table, resolved from a name on the render state: the
   // GPU samples these bytes as the density pass's texture and Canvas2D indexes
@@ -87,6 +89,8 @@ function wiggleParams(
     lineWidth: state.lineWidth,
     origin: state.origin,
     pivot: state.pivot,
+    cuts: state.cuts,
+    innerColors: state.innerColors,
     rampMid: state.rampMid,
     rampLut:
       renderingType === RENDERING_TYPE_DENSITY ? (state.rampLut ?? null) : null,
@@ -137,7 +141,38 @@ function writeWiggleUniforms(
     // wants the density of the screen the mark is read on.
     devicePixelRatio: getDpr(),
     densityRampLut: p.rampLut ? 1 : 0,
+    numCuts: p.cuts.length,
+    cuts: [cutQuad(p.cuts, 0), cutQuad(p.cuts, 4)],
+    innerColor: [
+      innerRgba(p, 0),
+      innerRgba(p, 1),
+      innerRgba(p, 2),
+      innerRgba(p, 3),
+      innerRgba(p, 4),
+      innerRgba(p, 5),
+      innerRgba(p, 6),
+    ],
   })
+}
+
+function innerRgba(
+  p: WiggleParams,
+  i: number,
+): [number, number, number, number] {
+  const [r, g, b] = p.innerColors[i] ?? [0, 0, 0]
+  return [r, g, b, 1]
+}
+
+function cutQuad(
+  cuts: number[],
+  from: number,
+): [number, number, number, number] {
+  return [
+    cuts[from] ?? 0,
+    cuts[from + 1] ?? 0,
+    cuts[from + 2] ?? 0,
+    cuts[from + 3] ?? 0,
+  ]
 }
 
 function rgb255(source: SourceRenderData) {
@@ -149,9 +184,12 @@ function rgb255(source: SourceRenderData) {
   }
 }
 
+function rgbCss([r, g, b]: [number, number, number]) {
+  return `rgb(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)})`
+}
+
 function cssRgb(source: SourceRenderData) {
-  const { r, g, b } = rgb255(source)
-  return `rgb(${r},${g},${b})`
+  return rgbCss(source.color)
 }
 
 function lineColors(source: SourceRenderData) {
@@ -202,6 +240,8 @@ function wiggleShape(
             symlogConstant: p.symlogConstant,
             origin: p.origin,
             pivot: p.pivot,
+            cuts: p.cuts,
+            innerColors: p.innerColors,
           },
           p,
         )

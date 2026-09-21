@@ -55,7 +55,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
 import {
-  declaredCut,
+  declaredCuts,
   resolveWiggleColor,
   sourcePalette,
   wiggleColorEncoding,
@@ -678,24 +678,24 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * The key a threshold with a declared cut draws: one row per interval,
+       * The key a threshold with declared cuts draws: one row per interval,
        * labelled by the span it covers. A threshold cutting at the `origin`
        * draws none, because the axis already shows where the origin is and a
        * `< 0` / `≥ 0` key on every bigWig says nothing a reader did not ask
        * for. Density draws none either: there the ramp is the key.
        */
       get thresholdColorScale(): ColorScale | undefined {
-        const cut = declaredCut(self.colorEncoding)
-        if (self.isDensityMode || cut === undefined) {
+        const cuts = declaredCuts(self.colorEncoding)
+        if (self.isDensityMode || cuts.length === 0) {
           return undefined
         }
-        const { posColor, negColor } = self.wiggleColor
-        const colors = [negColor, posColor]
+        const { posColor, negColor, innerColors } = self.wiggleColor
+        const colors = [negColor, ...innerColors, posColor]
         return {
           kind: 'categorical',
           id: 'threshold',
           title: 'score',
-          entries: thresholdLabels([cut]).map((label, i) => ({
+          entries: thresholdLabels(cuts).map((label, i) => ({
             value: label,
             label,
             color: colors[i]!,

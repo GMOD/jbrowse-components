@@ -43,9 +43,12 @@ export interface RowDraw {
   symlogConstant: number
   // The score xyplot bars grow from.
   origin: number
-  // The score the colour parts at: a line's and band's sides, and the white of
-  // the two-sided density fade.
+  // The lowest cut, and the white of the two-sided density fade.
   pivot: number
+  // Where a line's and band's colour changes, ascending, `pivot` first, and
+  // the colour of each band between two of them.
+  cuts: number[]
+  innerColors: [number, number, number][]
 }
 
 // Per-instance colors (summary bands) exist on every layer the GPU encodes
@@ -176,9 +179,26 @@ export function drawDensity({
   }
 }
 
-// Keeps the part of each segment on one side of the pivot, cut at the crossing,
-// so a line stroked once per side changes colour where the shader's does.
-class PivotSidePen {
+// The part of the segment from y0 to y1, as a fraction of it, inside the band
+// top < y <= bottom; undefined where it misses. A band owns its lower edge,
+// so a line lying on a cut takes the colour above it, as the shader does.
+function bandSpan(y0: number, y1: number, top: number, bottom: number) {
+  if (y0 === y1) {
+    return top < y0 && y0 <= bottom ? ([0, 1] as const) : undefined
+  }
+  const tTop = (top - y0) / (y1 - y0)
+  const tBottom = (bottom - y0) / (y1 - y0)
+  const t0 = Math.max(0, Math.min(tTop, tBottom))
+  const t1 = Math.min(1, Math.max(tTop, tBottom))
+  return t0 < t1 || (t0 === t1 && y0 + (y1 - y0) * t0 !== top)
+    ? ([t0, t1] as const)
+    : undefined
+}
+
+// Keeps the part of each segment inside one band, cut where it crosses the
+// band's edges, so a line stroked once per band changes colour where the
+// shader's does.
+class BandPen {
   private x = 0
   private y = 0
   private drawing = false
@@ -186,16 +206,9 @@ class PivotSidePen {
   constructor(
     private ctx: MarkContext2D,
     private path: CappedPath,
-    private pivotY: number,
-    private side: 'above' | 'below' | 'both',
+    private top: number,
+    private bottom: number,
   ) {}
-
-  private keeps(y: number) {
-    return (
-      this.side === 'both' ||
-      this.side === (y > this.pivotY ? 'below' : 'above')
-    )
-  }
 
   moveTo(x: number, y: number) {
     this.x = x
@@ -204,34 +217,19 @@ class PivotSidePen {
   }
 
   lineTo(x: number, y: number) {
-    const from = this.keeps(this.y)
-    const to = this.keeps(y)
-    if (from || to) {
+    const span = bandSpan(this.y, y, this.top, this.bottom)
+    if (span) {
+      const [t0, t1] = span
       if (this.path.add()) {
         this.drawing = false
       }
-      let fromX = this.x
-      let fromY = this.y
-      let toX = x
-      let toY = y
-      if (from !== to) {
-        const crossX =
-          this.x + ((this.pivotY - this.y) / (y - this.y)) * (x - this.x)
-        if (from) {
-          toX = crossX
-          toY = this.pivotY
-        } else {
-          fromX = crossX
-          fromY = this.pivotY
-        }
+      if (!this.drawing || t0 > 0) {
+        this.ctx.moveTo(this.x + (x - this.x) * t0, this.y + (y - this.y) * t0)
       }
-      if (!this.drawing || !from) {
-        this.ctx.moveTo(fromX, fromY)
+      if (t0 < t1 || (t0 === 0 && t1 === 1)) {
+        this.ctx.lineTo(this.x + (x - this.x) * t1, this.y + (y - this.y) * t1)
       }
-      if (from === to || fromX !== toX || fromY !== toY) {
-        this.ctx.lineTo(toX, toY)
-      }
-      this.drawing = to
+      this.drawing = t1 === 1
     } else {
       this.drawing = false
     }
@@ -240,26 +238,52 @@ class PivotSidePen {
   }
 }
 
-function strokeBySide(
-  ctx: MarkContext2D,
-  pivotY: number,
-  rgb: string,
-  negRgb: string,
-  trace: (pen: PivotSidePen) => void,
+// Each band's screen edges, lowest band first (painted highest first, as the
+// positive side always was): band k lies between cut k and
+// cut k-1, and the lowest and highest run to the row's ends.
+function bandEdges(cutYs: number[]) {
+  return Array.from({ length: cutYs.length + 1 }, (_, k) => ({
+    top: k < cutYs.length ? cutYs[k]! : Number.NEGATIVE_INFINITY,
+    bottom: k > 0 ? cutYs[k - 1]! : Number.POSITIVE_INFINITY,
+  }))
+}
+
+function bandStyles(
+  negStyle: string,
+  innerColors: [number, number, number][],
+  posStyle: string,
+  style: (rgb: [number, number, number]) => string,
 ) {
-  const passes =
-    rgb === negRgb
-      ? ([['both', rgb]] as const)
-      : ([
-          ['above', rgb],
-          ['below', negRgb],
-        ] as const)
-  for (const [side, style] of passes) {
+  return [negStyle, ...innerColors.map(style), posStyle]
+}
+
+function strokeByBands(
+  ctx: MarkContext2D,
+  cutYs: number[],
+  styles: string[],
+  trace: (pen: BandPen) => void,
+) {
+  const passes = styles.every(style => style === styles[0])
+    ? [
+        {
+          top: Number.NEGATIVE_INFINITY,
+          bottom: Number.POSITIVE_INFINITY,
+          style: styles[0]!,
+        },
+      ]
+    : bandEdges(cutYs)
+        .map((edges, k) => ({ ...edges, style: styles[k]! }))
+        .reverse()
+  for (const { top, bottom, style } of passes) {
     ctx.strokeStyle = style
     const path = new CappedPath(ctx, 'stroke')
-    trace(new PivotSidePen(ctx, path, pivotY, side))
+    trace(new BandPen(ctx, path, top, bottom))
     path.flush()
   }
+}
+
+function lineRgb([r, g, b]: [number, number, number]) {
+  return `rgb(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)})`
 }
 
 export function drawLine({
@@ -271,7 +295,8 @@ export function drawLine({
   domainY,
   scaleType,
   symlogConstant,
-  pivot,
+  cuts,
+  innerColors,
   rgb,
   negRgb,
   lineWidth,
@@ -286,25 +311,30 @@ export function drawLine({
   const positions = source.featurePositions
   const scores = source.featureScores
   const toX = makeBpMapper(block)
-  strokeBySide(ctx, scoreToY(pivot) + rowTop, rgb, negRgb, pen => {
-    let inRun = false
-    for (let i = 0; i < n; i++) {
-      const endBp = positions[i * 2 + 1]!
-      const x1 = toX(positions[i * 2]!)
-      const x2 = toX(endBp)
-      const scoreY = scoreToY(scores[i]!) + rowTop
-      if (!inRun) {
-        pen.moveTo(x1, zeroY)
-        inRun = true
+  strokeByBands(
+    ctx,
+    cuts.map(cut => scoreToY(cut) + rowTop),
+    bandStyles(negRgb, innerColors, rgb, lineRgb),
+    pen => {
+      let inRun = false
+      for (let i = 0; i < n; i++) {
+        const endBp = positions[i * 2 + 1]!
+        const x1 = toX(positions[i * 2]!)
+        const x2 = toX(endBp)
+        const scoreY = scoreToY(scores[i]!) + rowTop
+        if (!inRun) {
+          pen.moveTo(x1, zeroY)
+          inRun = true
+        }
+        pen.lineTo(x1, scoreY)
+        pen.lineTo(x2, scoreY)
+        if (i === n - 1 || positions[(i + 1) * 2] !== endBp) {
+          pen.lineTo(x2, zeroY)
+          inRun = false
+        }
       }
-      pen.lineTo(x1, scoreY)
-      pen.lineTo(x2, scoreY)
-      if (i === n - 1 || positions[(i + 1) * 2] !== endBp) {
-        pen.lineTo(x2, zeroY)
-        inRun = false
-      }
-    }
-  })
+    },
+  )
 }
 
 // Point-to-point line: connects the score at each feature's bp midpoint to its
@@ -327,7 +357,8 @@ export function drawLineCenter({
   domainY,
   scaleType,
   symlogConstant,
-  pivot,
+  cuts,
+  innerColors,
   rgb,
   negRgb,
   lineWidth,
@@ -345,23 +376,28 @@ export function drawLineCenter({
   const scores = source.featureScores
   const toX = makeBpMapper(block)
   const gapLimitBp = source.gapLimitBp ?? Number.POSITIVE_INFINITY
-  strokeBySide(ctx, scoreToY(pivot) + rowTop, rgb, negRgb, pen => {
-    for (let i = 0; i < n; i++) {
-      const cx = (toX(positions[i * 2]!) + toX(positions[i * 2 + 1]!)) / 2
-      const cy = scoreToY(scores[i]!) + rowTop
-      if (!centerLinksToPrevious(positions, i, gapLimitBp)) {
-        pen.moveTo(cx, cy)
+  strokeByBands(
+    ctx,
+    cuts.map(cut => scoreToY(cut) + rowTop),
+    bandStyles(negRgb, innerColors, rgb, lineRgb),
+    pen => {
+      for (let i = 0; i < n; i++) {
+        const cx = (toX(positions[i * 2]!) + toX(positions[i * 2 + 1]!)) / 2
+        const cy = scoreToY(scores[i]!) + rowTop
+        if (!centerLinksToPrevious(positions, i, gapLimitBp)) {
+          pen.moveTo(cx, cy)
+        }
+        pen.lineTo(cx, cy)
       }
-      pen.lineTo(cx, cy)
-    }
-  })
+    },
+  )
 }
 
 // Keeps a long run inside CappedPath's per-path budget.
 const BAND_BINS_PER_POLYGON = 1000
 
-// One polygon per run, broken where the line over it breaks. The pivot clip
-// sits on a device pixel so the two colours meet without a seam.
+// One polygon per run, broken where the line over it breaks. Each cut's clip
+// sits on a device pixel so neighbouring colours meet without a seam.
 export function drawWhiskerBand({
   ctx,
   source,
@@ -371,7 +407,8 @@ export function drawWhiskerBand({
   domainY,
   scaleType,
   symlogConstant,
-  pivot,
+  cuts,
+  innerColors,
   interpolated,
 }: RowDraw & { interpolated: boolean }) {
   const { band, numFeatures: n } = source
@@ -435,30 +472,53 @@ export function drawWhiskerBand({
     path.flush()
   }
 
-  let above = false
-  let below = false
+  const bandCount = cuts.length + 1
+  const touched = Array.from({ length: bandCount }, () => false)
   for (let i = 0; i < n; i++) {
-    above ||= maxScores[i]! >= pivot
-    below ||= minScores[i]! < pivot
+    const lowest = cutBand(minScores[i]!, cuts)
+    const highest = cutBand(maxScores[i]!, cuts)
+    for (let k = lowest; k <= highest; k++) {
+      touched[k] = true
+    }
   }
-  const posFill = cssRgba(source.color, WHISKER_BAND_OPACITY)
-  const negFill = cssRgba(source.negColor ?? source.color, WHISKER_BAND_OPACITY)
-  if (above && below && posFill !== negFill) {
-    const dpr = getDpr()
-    const pivotY = Math.round((scoreToY(pivot) + rowTop) * dpr) / dpr
-    const rowBottom = rowTop + rowHeight
-    withClip(ctx, -1e6, rowTop - 1, 2e6, pivotY - rowTop + 1, () => {
-      ctx.fillStyle = posFill
-      trace()
-    })
-    withClip(ctx, -1e6, pivotY, 2e6, rowBottom - pivotY + 1, () => {
-      ctx.fillStyle = negFill
-      trace()
-    })
-  } else {
-    ctx.fillStyle = below ? negFill : posFill
+  const fills = bandStyles(
+    cssRgba(source.negColor ?? source.color, WHISKER_BAND_OPACITY),
+    innerColors,
+    cssRgba(source.color, WHISKER_BAND_OPACITY),
+    rgb => cssRgba(rgb, WHISKER_BAND_OPACITY),
+  )
+  const drawn = fills.filter((_, k) => touched[k])
+  if (drawn.every(fill => fill === drawn[0])) {
+    ctx.fillStyle = drawn[0] ?? fills[0]!
     trace()
+  } else {
+    const dpr = getDpr()
+    const rowBottom = rowTop + rowHeight
+    const snapped = cuts.map(
+      cut => Math.round((scoreToY(cut) + rowTop) * dpr) / dpr,
+    )
+    for (const [k, { top, bottom }] of [
+      ...bandEdges(snapped).entries(),
+    ].reverse()) {
+      if (touched[k]) {
+        const clipTop = Math.max(top, rowTop - 1)
+        const clipBottom = Math.min(bottom, rowBottom + 1)
+        withClip(ctx, -1e6, clipTop, 2e6, clipBottom - clipTop, () => {
+          ctx.fillStyle = fills[k]!
+          trace()
+        })
+      }
+    }
   }
+}
+
+// The band a score is in: how many cuts it is at or past.
+function cutBand(score: number, cuts: number[]) {
+  let band = 0
+  while (band < cuts.length && score >= cuts[band]!) {
+    band++
+  }
+  return band
 }
 
 function cssRgba([r, g, b]: [number, number, number], alpha: number) {

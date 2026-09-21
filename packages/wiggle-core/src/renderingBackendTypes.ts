@@ -1,4 +1,5 @@
 import {
+  MAX_WIGGLE_CUTS as GENERATED_MAX_WIGGLE_CUTS,
   MIN_FILL_WIDTH_PX as GENERATED_MIN_FILL_WIDTH_PX,
   NO_PREV_START as GENERATED_NO_PREV_START,
   RENDERING_TYPE_DENSITY as GENERATED_RENDERING_TYPE_DENSITY,
@@ -49,6 +50,10 @@ export const NO_PREV_START = GENERATED_NO_PREV_START
 // other.
 export const MIN_FILL_WIDTH_PX = GENERATED_MIN_FILL_WIDTH_PX
 
+// The most cuts a threshold colour parts a plot at: the shader's uniform
+// block holds this many.
+export const MAX_WIGGLE_CUTS = GENERATED_MAX_WIGGLE_CUTS
+
 export interface WiggleGPURenderState {
   domainY: [number, number]
   scaleType: ScaleTypeCode
@@ -76,6 +81,11 @@ export interface WiggleGPURenderState {
   // The score the colour parts at: which side a line, band or bar paints, and
   // where the two-sided density fade is white. A threshold's cut, else `origin`.
   pivot: number
+  // Where the colour changes, ascending, `pivot` first, and the colour of each
+  // band between two of them; the lowest and highest bands take each layer's
+  // own `negColor` and `color`.
+  cuts: number[]
+  innerColors: [number, number, number][]
   // The score at a density ramp's middle stop; absent runs the ramp straight
   // across the domain.
   rampMid?: number

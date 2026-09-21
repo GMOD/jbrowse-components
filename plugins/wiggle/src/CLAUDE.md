@@ -38,10 +38,11 @@ Canvas2D's in-order source-over does.
 
 `wiggleCommon.slang` holds what they must agree on: the uniform struct, the fill
 record, `rowScoreToYPx` (where a score lands in its row, for both lines and the
-band) and `pivotSideColor` are shared, the **binding is not**, and each
-re-imports `colorPack`/`hpmath`. Density's colour parity across GPU / Canvas2D /
-SVG is swept by `densityColorParity.test.ts`; its autoscale-pan cost (one
-uniform write, zero buffer bytes) is pinned in `wiggleMarks.test.ts`.
+band) and `bandColorAt`, the colour of the band between two cuts a line is in,
+are shared, the **binding is not**, and each re-imports `colorPack`/`hpmath`.
+Density's colour parity across GPU / Canvas2D / SVG is swept by
+`densityColorParity.test.ts`; its autoscale-pan cost (one uniform write, zero
+buffer bytes) is pinned in `wiggleMarks.test.ts`.
 
 **The mark that draws, the buffer, the `renderingType` uniform and the Canvas2D
 painter all come off the encoded layers, never off `renderState`** — each of the
@@ -223,15 +224,16 @@ per layer, and it is the only mode that reaches the split with a single band
 packed colour per instance — or none at all where both sides of the pivot come
 out the same colour, which is what a solid-colour track is.
 
-## A line plot is one line, coloured by the side of the pivot it is on
+## A line plot is one line, coloured by the band between two cuts it is in
 
 Every summary mode on `line`/`linecenter` draws one layer through all the bins
-(`lineLayers`), with no per-instance colour lane. **Colour comes from the line's
-side of the pivot, not the bin**: the shader tests each fragment's centre-line
-y, Canvas2D strokes once per side through `PivotSidePen`. Centre line rather
-than pixel, so capsules overlapping at a joint agree under max blend unless the
-joint lies within half a line width of the pivot; per-bin colours blended every
-colour-changing joint to magenta. Whiskers adds a `band` layer under the line.
+(`lineLayers`), with no per-instance colour lane. **Colour comes from the band
+the line is in, not the bin**: the shader tests each fragment's centre-line y
+against the cut heights its vertex placed (`bandColorAt`), and Canvas2D strokes
+once per band through `BandPen`. Centre line rather than pixel, so capsules
+overlapping at a joint agree under max blend unless the joint lies within half a
+line width of a cut; per-bin colours blended every colour-changing joint to
+magenta. Whiskers adds a `band` layer under the line, split the same way.
 
 ## The colour key follows the scale
 
