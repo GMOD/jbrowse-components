@@ -53,3 +53,24 @@ test('a prototype key is refused', () => {
   ).toThrow(/constructor/)
   expect(({} as Record<string, unknown>).polluted).toBeUndefined()
 })
+
+test('a jexl: item runs to the first comma outside its brackets and quotes', () => {
+  const call = "jexl:get(feature,'score')>5"
+  expect(slotValue(call)).toBe(call)
+  expect(slotValue(`${call},`)).toEqual([call])
+  expect(slotValue(`${call},jexl:[1,2][0]==1`)).toEqual([
+    call,
+    'jexl:[1,2][0]==1',
+  ])
+  expect(slotValue("jexl:get(feature,'name')=='a,b'")).toBe(
+    "jexl:get(feature,'name')=='a,b'",
+  )
+  expect(slotValue(String.raw`jexl:'it\'s,',x`)).toEqual([
+    String.raw`jexl:'it\'s,'`,
+    'x',
+  ])
+})
+
+test('a quote outside a jexl: item groups nothing', () => {
+  expect(slotValue("5'UTR,3'UTR")).toEqual(["5'UTR", "3'UTR"])
+})

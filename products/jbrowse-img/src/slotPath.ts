@@ -12,17 +12,48 @@ function scalar(text: string): string | number | boolean {
   return text.trim() !== '' && Number.isFinite(n) ? n : text
 }
 
+// A `jexl:` item runs to the first comma outside its own brackets and quotes,
+// since a jexl call separates its arguments with commas.
+function listItems(text: string) {
+  const items: string[] = []
+  let start = 0
+  let depth = 0
+  let quote: string | undefined
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charAt(i)
+    if (quote) {
+      if (c === '\\') {
+        i++
+      } else if (c === quote) {
+        quote = undefined
+      }
+    } else if (c === ',' && depth === 0) {
+      items.push(text.slice(start, i))
+      start = i + 1
+    } else if (text.startsWith('jexl:', start)) {
+      if (c === "'" || c === '"') {
+        quote = c
+      } else if ('([{'.includes(c)) {
+        depth++
+      } else if (')]}'.includes(c)) {
+        depth--
+      }
+    }
+  }
+  items.push(text.slice(start))
+  return items
+}
+
 /**
  * The value of a `path=value` modifier: `true`/`false`, a number, a
- * comma-separated list (a trailing comma makes a list of one), or the text as
+ * comma-separated list (a trailing comma makes a list of one, and a `jexl:`
+ * item keeps the commas inside its own brackets and quotes), or the text as
  * written.
  */
 export function slotValue(text: string) {
-  return text.includes(',')
-    ? text
-        .split(',')
-        .filter(item => item !== '')
-        .map(scalar)
+  const items = listItems(text)
+  return items.length > 1
+    ? items.filter(item => item !== '').map(scalar)
     : scalar(text)
 }
 

@@ -785,6 +785,8 @@ jb2export --fasta ref.fa --bam reads.bam color:tag:HP color.domain=1,2 \
 
 - `true` and `false` are booleans and a number is a number
 - a comma makes a list, and a trailing comma a list of one: `color.palette=tan,`
+- a `jexl:` item keeps the commas inside its own brackets and quotes:
+  `jexlFilters=jexl:get(feature,'score')>5,` is a list of one filter
 - a slot the display does not declare, or a key its object refuses, fails the
   export with the display's own message
 

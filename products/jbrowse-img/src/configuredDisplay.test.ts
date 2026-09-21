@@ -151,3 +151,30 @@ describe('a path write into a setting the config already writes', () => {
     expect(pathFirst).toContain('fill="rgb(255,0,0)"')
   }, 60000)
 })
+
+describe('a jexl: value in a path write', () => {
+  const nameIs = "jexl:get(feature,'name')=='EDEN.1'"
+
+  test('keeps the commas of its own call, and a trailing comma makes a list of one', async () => {
+    const written = await exportTrack(configWith(basic), [
+      `jexlFilters=${nameIs},`,
+    ])
+    const stated = await exportTrack(
+      configWith({ ...basic, jexlFilters: [nameIs] }),
+    )
+    expect(written).toBe(stated)
+    expect(written).not.toContain('EDEN.2')
+  }, 60000)
+
+  test('writes one expression into a member', async () => {
+    const callback = "jexl:get(feature,'start')>=0?'red':'blue'"
+    const written = await exportTrack(configWith(basic), [
+      `color.value=${callback}`,
+    ])
+    const stated = await exportTrack(
+      configWith({ ...basic, color: { value: callback } }),
+    )
+    expect(written).toBe(stated)
+    expect(written).toContain('fill="rgb(255,0,0)"')
+  }, 60000)
+})
