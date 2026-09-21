@@ -1,3 +1,5 @@
+import { MORPH_DURATION_MS } from '@jbrowse/core/util'
+
 import { packStackedGenes } from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -83,6 +85,23 @@ describe('the Y morph autorun decides for itself', () => {
 
     expect(movedIds(before, tops(env.display)).length).toBeGreaterThan(0)
     expect(env.display.morphFromTops).toBeUndefined()
+  })
+
+  // the frame loop that ends a morph is the component's, and a display whose
+  // loop never runs must still stop animating at the end time
+  it('ends a morph at its end time with no frame loop running', () => {
+    jest.useFakeTimers()
+    try {
+      const env = setUp()
+      zoomTo(env, 4)
+      expect(env.display.animating).toBe(true)
+      jest.advanceTimersByTime(MORPH_DURATION_MS - 1)
+      expect(env.display.animating).toBe(true)
+      jest.advanceTimersByTime(2)
+      expect(env.display.animating).toBe(false)
+    } finally {
+      jest.useRealTimers()
+    }
   })
 
   it('starts nothing when a relayout moves no row', () => {
