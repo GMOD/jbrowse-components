@@ -4,7 +4,6 @@ import {
   cachedSetup,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { downloadStatus } from '@jbrowse/core/util'
-import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
@@ -35,7 +34,6 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
           this.pluginManager,
         ),
         chunkCacheBudget: decompressedBytesBudget,
-        bgzfWorkerPool: sharedBgzfWorkerPool(),
       })
       return {
         gff,

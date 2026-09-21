@@ -31,7 +31,7 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/bgzf-filehandle": "^6.6.0",
+    "@gmod/bgzf-filehandle": "^6.7.0",
     "@jbrowse/alignments-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-kit": "workspace:^",

@@ -695,8 +695,10 @@ What keeps it here is the part that is a ceiling rather than a seam: **20
 grow-only `WebAssembly.Memory` instances that nothing tears down**, one per
 inflate worker. Since `@gmod/bgzf-filehandle` 6.6.0 a pool reaps its own workers
 after 3 minutes idle, so the resting level is reclaimed and the peak while
-someone is actively browsing is not. That peak is the unmeasured quantity, and
-JS heap counters cannot see it.
+someone is actively browsing is not. Since 6.7 a pool boots only when a chunk of
+0.4MB inflated reaches it, so an RPC worker whose tracks read smaller chunks
+holds none. That peak is the unmeasured quantity, and JS heap counters cannot
+see it.
 
 **Retire when** either that memory is measured and found not to matter, or one
 pool and one byte cache serve every RPC worker over a `MessagePort` (the same
