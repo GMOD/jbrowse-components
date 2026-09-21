@@ -700,9 +700,10 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
   ): JsonSchema {
     const name = type.name.replace(/ConfigurationSchema$/, '')
     const forms = liftedForms(meta)
+    const slots = slotTable(meta, depth)
     const properties = {
       ...identityOf(meta, name),
-      ...slotTable(meta, depth),
+      ...slots,
       ...(forms.uri
         ? { uri: shorthandSchema('uri'), baseUri: shorthandSchema('baseUri') }
         : {}),
@@ -711,7 +712,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       ...requirements(meta),
       ...(meta.options.closed ? { [CLOSED]: true } : {}),
     })
-    const target = properties[stringTarget(meta)]
+    const target = slots[stringTarget(meta)]
     const schema = forms.bare
       ? {
           anyOf: [
