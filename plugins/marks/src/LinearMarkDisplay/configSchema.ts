@@ -61,13 +61,13 @@ const markGlyphSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.encoding.glyph.field
-     * The feature field a categorical scale reads — or a jexl callback over
+     * The feature field a categorical scale reads — or a jexl expression over
      * `feature`, which is slower per feature and so the opt-in.
      */
     field: {
-      type: 'string',
+      type: 'featureField',
       defaultValue: '',
-      description: 'feature field, or jexl callback',
+      description: 'feature field, or jexl expression',
     },
     /**
      * #slot marks.encoding.glyph.scale
@@ -115,46 +115,45 @@ const markEncodingSchema = ConfigurationSchema(
   {
     /**
      * #slot marks.encoding.x
-     * The feature field, or jexl callback over `feature`, giving the mark's
+     * The feature field, or jexl expression over `feature`, giving the mark's
      * left edge in bp.
      */
     x: {
-      type: 'string',
+      type: 'featureField',
       defaultValue: 'start',
       description: 'left edge field',
     },
     /**
      * #slot marks.encoding.x2
-     * The feature field, or jexl callback, giving the mark's right edge in bp.
+     * The feature field, or jexl expression, giving the mark's right edge in bp.
      */
     x2: {
-      type: 'string',
+      type: 'featureField',
       defaultValue: 'end',
       description: 'right edge field',
     },
     /**
      * #slot marks.encoding.y
-     * The feature field, or jexl callback over `feature`, plotted on the score
+     * The feature field, or jexl expression over `feature`, plotted on the score
      * axis. A feature whose value is not a finite number is skipped. Empty for
      * a mark with no value, such as a span; a bar or point naming none draws
      * nothing, and the track's corner notice says so. The scale it is read
      * through is the display's `scales.y`.
      */
     y: {
-      type: 'string',
+      type: 'featureField',
       defaultValue: '',
-      description: 'value field, or jexl callback',
-      contextVariable: ['feature'],
+      description: 'value field, or jexl expression',
     },
     /**
      * #slot marks.encoding.row
-     * The feature field, or jexl callback, naming the band the mark stands in,
+     * The feature field, or jexl expression, naming the band the mark stands in,
      * an integer from 0; a feature with nothing there sits on band 0. Empty
      * puts every mark on one band across the whole plot, unless this mark's
      * own `transform` holds a `pileup`, whose output field it then reads.
      */
     row: {
-      type: 'string',
+      type: 'featureField',
       defaultValue: '',
       description: 'band field; empty follows a pileup step',
     },

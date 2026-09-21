@@ -618,7 +618,7 @@ exports[`every registered schema slot default 1`] = `
     "showLegend": "boolean = true",
   },
   "display: LinearMultiRowFeatureDisplay": {
-    "clusterField": "string = "auto"",
+    "clusterField": "featureField = "auto"",
     "color": "maybeColor = undefined",
     "colorDomain": "stringArray = []",
     "colorRowLabels": "boolean = false",
@@ -631,7 +631,7 @@ exports[`every registered schema slot default 1`] = `
     "legend": "frozen = []",
     "lengthField": "string = """,
     "mouseover": "string = "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"",
-    "partitionField": "string = """,
+    "partitionField": "featureField = """,
     "rowGroups": "frozen = []",
     "rowHeight": "number = 0",
     "rowProportion": "number = 1",

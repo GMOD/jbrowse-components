@@ -60,6 +60,7 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
     ...colorChannelSlots({
       scales: ALIGNMENTS_COLOR_SCALES,
       scaleName: 'AlignmentsColorScale',
+      fieldType: 'string',
       field:
         'what colours a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute',
       scale:

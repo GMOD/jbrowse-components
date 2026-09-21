@@ -78,6 +78,17 @@ test('an attribute grouping names its sections by value', () => {
   expect(display.rpcProps().displayConfig.facetField).toBe('biotype')
 })
 
+test('a jexl: facet field reaches the worker as written', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  display.setRpcData(0, strandedRegionData(), ctgA)
+  const field = "jexl:get(feature,'type')"
+  display.setFacet({ field })
+  expect(display.facet).toEqual({ field, domain: [] })
+  expect(display.groupKeySpace).toBe(field)
+  expect(display.rpcProps().displayConfig.facetField).toBe(field)
+})
+
 test('hiding a section is per key and drops with the grouping', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()

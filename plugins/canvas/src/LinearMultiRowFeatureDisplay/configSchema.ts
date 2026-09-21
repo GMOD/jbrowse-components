@@ -66,14 +66,10 @@ export default function configSchemaF() {
        * ```
        */
       partitionField: {
-        type: 'string',
+        type: 'featureField',
         defaultValue: '',
         description:
           'feature attribute that assigns each feature to a row, or a jexl expression deriving one. Empty = pick one off the data (repClass if present, else name)',
-        // Editor affordance only: SlotEditor gates its value/callback toggle
-        // on a non-empty contextVariable, and nothing in the read path consults
-        // it.
-        contextVariable: ['feature'],
       },
       /**
        * #slot
@@ -88,11 +84,10 @@ export default function configSchemaF() {
        * ```
        */
       clusterField: {
-        type: 'string',
+        type: 'featureField',
         defaultValue: 'auto',
         description:
           "feature attribute the rows cluster on, or a jexl expression deriving one. 'auto' = the attribute the color slot reads, else name; empty = cluster on presence alone",
-        contextVariable: ['feature'],
       },
       /**
        * #slot

@@ -62,6 +62,7 @@ export const wiggleColorSchema = ConfigurationSchema(
     ...colorChannelSlots({
       scales: COLOR_SCALES,
       scaleName: 'WiggleColorScale',
+      fieldType: 'string',
       field: 'score or source',
       scale:
         'how field becomes a colour: threshold cuts score at its lowest cut and paints each side; linear and log fade from the colour at domainMid out to the ends of the y domain, which is the density picture, through range, else scheme, else the two-sided fade; categorical hands each source a colour of its own; a scale over the other field paints grey; none paints value, keeping a field for a switch back; unset beside a field, it is categorical over source and threshold over score',

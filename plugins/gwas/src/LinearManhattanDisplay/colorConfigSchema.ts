@@ -68,6 +68,7 @@ export const manhattanColorConfigSchema = ConfigurationSchema(
     ...colorChannelSlots({
       scales: MANHATTAN_COLOR_SCALES,
       scaleName: 'ManhattanColorScale',
+      fieldType: 'featureField',
       field:
         "the feature field whose values each take a range colour, with a key listing the values met: name, refName, a BED extra column, a GFF attribute; ld is each point's r² to the index SNP, read from the GWASAdapter's ldAdapter",
       scale:

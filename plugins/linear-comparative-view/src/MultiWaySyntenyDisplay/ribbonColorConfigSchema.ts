@@ -45,6 +45,7 @@ export const ribbonColorConfigSchema = ConfigurationSchema(
     ...colorChannelSlots({
       scales: SYNTENY_COLOR_SCALES,
       scaleName: 'RibbonColorScale',
+      fieldType: 'string',
       field:
         "what colours a ribbon: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity, mappingQual and dnds paint the synteny view's ramps; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it)",
       scale:

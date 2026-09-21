@@ -3259,7 +3259,7 @@
             },
             "field": {
               "description": "a feature field, or a jexl expression over feature, whose values each paint one range colour with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise.",
-              "$ref": "#/$defs/StringOrJexl",
+              "$ref": "#/$defs/FeatureField",
               "default": ""
             },
             "scale": {
@@ -3325,7 +3325,7 @@
           "properties": {
             "field": {
               "description": "feature field (or jexl expression) to group by, one labelled section per value; `strand` for one per strand.",
-              "$ref": "#/$defs/StringOrJexl",
+              "$ref": "#/$defs/FeatureField",
               "default": ""
             },
             "domain": {
@@ -3688,12 +3688,12 @@
         },
         "partitionField": {
           "description": "feature attribute that assigns each feature to a row, or a jexl expression deriving one. Empty = pick one off the data (repClass if present, else name).",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/FeatureField",
           "default": ""
         },
         "clusterField": {
           "description": "feature attribute the rows cluster on, or a jexl expression deriving one. 'auto' = the attribute the color slot reads, else name; empty = cluster on presence alone.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/FeatureField",
           "default": "auto"
         },
         "lengthField": {
@@ -6925,7 +6925,7 @@
             },
             "field": {
               "description": "the feature field whose values each take a range colour, with a key listing the values met: name, refName, a BED extra column, a GFF attribute; ld is each point's r² to the index SNP, read from the GWASAdapter's ldAdapter.",
-              "$ref": "#/$defs/StringOrJexl",
+              "$ref": "#/$defs/FeatureField",
               "default": ""
             },
             "scale": {
@@ -7109,8 +7109,8 @@
               "default": "#0068d1"
             },
             "field": {
-              "description": "the feature field a scale reads, or a jexl callback over feature, which is slower per feature and so the opt-in.",
-              "$ref": "#/$defs/StringOrJexl",
+              "description": "the feature field a scale reads, or a jexl expression over feature, which is slower per feature and so the opt-in.",
+              "$ref": "#/$defs/FeatureField",
               "default": ""
             },
             "scale": {
@@ -7222,8 +7222,8 @@
               "default": "disc"
             },
             "field": {
-              "description": "feature field, or jexl callback.",
-              "$ref": "#/$defs/StringOrJexl",
+              "description": "feature field, or jexl expression.",
+              "$ref": "#/$defs/FeatureField",
               "default": ""
             },
             "scale": {
@@ -7291,22 +7291,22 @@
       "properties": {
         "x": {
           "description": "left edge field.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/FeatureField",
           "default": "start"
         },
         "x2": {
           "description": "right edge field.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/FeatureField",
           "default": "end"
         },
         "y": {
-          "description": "value field, or jexl callback.",
-          "$ref": "#/$defs/StringOrJexl",
+          "description": "value field, or jexl expression.",
+          "$ref": "#/$defs/FeatureField",
           "default": ""
         },
         "row": {
           "description": "band field; empty follows a pileup step.",
-          "$ref": "#/$defs/StringOrJexl",
+          "$ref": "#/$defs/FeatureField",
           "default": ""
         },
         "color": {

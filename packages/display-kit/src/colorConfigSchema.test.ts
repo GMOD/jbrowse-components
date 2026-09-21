@@ -24,6 +24,7 @@ const TestColor = ConfigurationSchema(
       scales: COLOR_SCALES,
       scaleName: 'TestColorScale',
       field: 'field',
+      fieldType: 'featureField',
     }),
     ...colorDomainSlot({}),
     ...colorDomainEndsSlots,

@@ -54,6 +54,7 @@ function samples(def: Parameters<typeof slotChoices>[0]): unknown[] {
     case 'maybeColor':
       return [...maybe, 'red']
     case 'string':
+    case 'featureField':
       return ['', 'x']
     default:
       return [...maybe, def.defaultValue]

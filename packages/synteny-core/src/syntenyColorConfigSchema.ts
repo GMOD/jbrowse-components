@@ -77,6 +77,7 @@ export const syntenyColorConfigSchema = ConfigurationSchema(
     ...colorChannelSlots({
       scales: SYNTENY_COLOR_SCALES,
       scaleName: 'SyntenyColorScale',
+      fieldType: 'string',
       field:
         'what colours an alignment: strand paints forward and reverse; query and target one colour per sequence on that side, reference one per chromosome of the anchor assembly across a stack, track one per overlaid track (pinned under Track colors); identity, mappingQual and dnds paint the preset ramps; any other name is a column the tracks declare in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it)',
       scale:

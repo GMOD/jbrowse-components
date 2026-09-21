@@ -94,8 +94,9 @@ export const markColorSchema = ConfigurationSchema(
     ...colorChannelSlots({
       scales: COLOR_SCALES,
       scaleName: 'MarkColorScale',
+      fieldType: 'featureField',
       field:
-        'the feature field a scale reads, or a jexl callback over feature, which is slower per feature and so the opt-in',
+        'the feature field a scale reads, or a jexl expression over feature, which is slower per feature and so the opt-in',
       scale:
         'how field becomes a colour: categorical hands out range colours per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range colour; none paints value, keeping a field for a switch back; unset beside a field, it is categorical',
     }),

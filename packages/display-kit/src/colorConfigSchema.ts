@@ -62,22 +62,29 @@ export function normalizeChannel(
 /**
  * The mapping half of a colour object, spread beside the display's own
  * `value` slot: the field, and the scale it reads through. `scales` are the
- * members the display can paint.
+ * members the display can paint. `fieldType` is `featureField` where the
+ * display reads the field off each feature, a `jexl:` expression included,
+ * and `string` where it names one of the display's own dimensions.
  */
-export function colorChannelSlots<S extends ColorScaleName>({
+export function colorChannelSlots<
+  S extends ColorScaleName,
+  F extends 'featureField' | 'string',
+>({
   scales,
   scaleName,
   field,
+  fieldType,
   scale = 'how field paints; unset follows field, none paints value',
 }: {
   scales: readonly S[]
   scaleName: string
   field: string
+  fieldType: F
   scale?: string
 }) {
   return {
     field: {
-      type: 'string',
+      type: fieldType,
       defaultValue: '',
       description: field,
     },
@@ -284,6 +291,7 @@ export const colorConfigSchema = ConfigurationSchema(
     ...colorChannelSlots({
       scales: CATEGORICAL_COLOR_SCALES,
       scaleName: 'FeatureColorScale',
+      fieldType: 'featureField',
       field:
         "a feature field, or a jexl expression over feature, whose values each paint one range colour with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise",
       scale:

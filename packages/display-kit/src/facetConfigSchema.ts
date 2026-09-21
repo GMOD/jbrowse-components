@@ -46,7 +46,7 @@ export const facetConfigSchema = ConfigurationSchema(
      * `mateAssembly`. Writing `facet: "strand"` lands here.
      */
     field: {
-      type: 'string',
+      type: 'featureField',
       defaultValue: '',
       description:
         'feature field (or jexl expression) to group by, one labelled section per value; `strand` for one per strand',

@@ -23,6 +23,15 @@ describe('the color slot reaches the worker unevaluated', () => {
     expect(display.rpcProps().color).toBe(BY_ATTRIBUTE)
   })
 
+  it('forwards a jexl field as its raw expression string', () => {
+    const field = "jexl:get(feature,'category')"
+    const { createDisplay } = createTestEnvironment({ color: { field } })
+    const { display } = createDisplay()
+
+    expect(display.color.field).toBe(field)
+    expect(display.rpcProps().color).toMatchObject({ field })
+  })
+
   it('leaves a plain CSS color alone', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
