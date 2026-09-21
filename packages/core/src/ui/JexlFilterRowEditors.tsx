@@ -232,7 +232,7 @@ export function TextRowEditor({
       </div>
       <MonospaceTextField
         className={classes.value}
-        size="small"
+        variant="standard"
         fullWidth
         value={row.text}
         error={compileError(row.text, jexl)}
