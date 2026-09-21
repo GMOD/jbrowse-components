@@ -159,13 +159,13 @@ config = {
             'bedLocations': [uri(f'{n}.bed.gz') for n in order],
             'assemblyNames': order,
         },
-        # Orthologs share a symbol, so coloring a gene by its name runs one
-        # color down the whole stack for a conserved gene and breaks the
-        # column where a lane lacks it.
+        # Coloring a gene by its ortholog group runs one color down the whole
+        # stack for a conserved gene and breaks the column where a lane lacks
+        # it.
         'displays': [{
             'type': 'MultiWaySyntenyDisplay',
             'displayId': 'primate_orthologs-MultiWaySyntenyDisplay',
-            'color': "jexl:feature.name ? randomColor(feature.name) : '#b0b0b0'",
+            'color': {'field': 'cluster'},
         }],
     }],
     'defaultSession': {

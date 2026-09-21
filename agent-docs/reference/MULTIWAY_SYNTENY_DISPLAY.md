@@ -312,7 +312,7 @@ from its own tabix GFF3.
 for. Group keys are gene symbols, so one anchor gene chains through every lane
 and `bridgeSkippedLanes` (`buildRibbonGeometry`) carries a group past
 a lane that lacks it; the lane-genes fetch gives every lane real exon structure;
-colour by symbol (`jexl:feature.name ? randomColor(feature.name)`) makes a
+colour by ortholog group (`{ field: 'cluster' }`) makes a
 conserved gene one colour down the stack; the O-antigen figure is an honest
 negative (each lane draws its own cluster and no ribbon). The adapter loads
 2.6 MB once and answers every window from memory.

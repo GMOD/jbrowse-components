@@ -288,14 +288,14 @@ config = {
             'bedLocations': [uri(f'{n}.bed.gz') for n in order],
             'assemblyNames': order,
         },
-        # Orthologs share a symbol, so coloring a gene by its name runs one
-        # color down the whole stack for a conserved gene and breaks the
-        # column where a lane lacks it. The height is what every lane at the
-        # minimum pitch needs for every header to draw.
+        # Coloring a gene by its ortholog group runs one color down the whole
+        # stack for a conserved gene and breaks the column where a lane lacks
+        # it. The height is what every lane at the minimum pitch needs for
+        # every header to draw.
         'displays': [{
             'type': 'MultiWaySyntenyDisplay',
             'displayId': 'ecoli_orthologs-MultiWaySyntenyDisplay',
-            'color': "jexl:feature.name ? randomColor(feature.name) : '#b0b0b0'",
+            'color': {'field': 'cluster'},
             'height': math.ceil(len(order) * LANE_PITCH / 10) * 10,
         }],
     }],

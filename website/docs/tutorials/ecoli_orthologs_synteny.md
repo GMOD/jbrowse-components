@@ -141,7 +141,7 @@ stack, so the figure below shows every lane at once:
     {
       "type": "MultiWaySyntenyDisplay",
       "displayId": "ecoli_orthologs-MultiWaySyntenyDisplay",
-      "color": "jexl:feature.name ? randomColor(feature.name) : '#b0b0b0'",
+      "color": { "field": "cluster" },
       "height": 970
     }
   ]
@@ -151,17 +151,17 @@ stack, so the figure below shows every lane at once:
 ## One operon, forty-four genomes
 
 Opened on K-12 at the _atp_ operon, the track draws a lane per genome under the
-K-12 axis. Every gene is colored by its symbol, so a conserved gene is one color
-running down the whole stack, and a lane's header names its chromosome, where it
-is looking and `[rev]` where the strain's chromosome reads the other way. The
-color is a hash of the symbol and holds nothing else: two genes share a color
-because they share a name, never because they are in a family together. The key
-in the top right turns one back into a name. It lists the symbols the K-12 lane
-draws in the window, left to right, and _Show legend_ on the track menu puts it
-away. The display leaves it out where it would run to a list, which is any
-window holding more than thirty colors. Lanes stack densest first, so the
-genomes placing the most of the window sit at the top and the reduced Shigella
-genomes fall toward the bottom without anything naming them.
+K-12 axis. Every gene is colored by its ortholog group, which the table names
+after the K-12 gene anchoring it, so a conserved gene is one color running down
+the whole stack. A gene no group claims is grey, which is how a strain's own
+genes read at a glance. A lane's header names its chromosome, where it is
+looking and `[rev]` where the strain's chromosome reads the other way. The key
+in the top right turns a color back into a group's name, with a _(no value)_ row
+for the grey, and _Show legend_ on the track menu puts it away. The display
+leaves it out where it would run to a list, which is any window holding more
+than thirty groups. Lanes stack densest first, so the genomes placing the most
+of the window sit at the top and the reduced Shigella genomes fall toward the
+bottom without anything naming them.
 
 ```json session config=https://jbrowse.org/demos/ecoli_orthologs/config.json
 {

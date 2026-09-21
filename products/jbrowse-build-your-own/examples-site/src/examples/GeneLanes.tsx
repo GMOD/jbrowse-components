@@ -103,8 +103,7 @@ const GeneLanes = observer(function GeneLanes() {
             {
               type: 'MultiWaySyntenyDisplay',
               displayId: 'orthologs-MultiWaySyntenyDisplay',
-              color:
-                "jexl:feature.name ? randomColor(feature.name) : '#b0b0b0'",
+              color: { field: 'cluster' },
               height: 330,
               showLegend: false,
             },

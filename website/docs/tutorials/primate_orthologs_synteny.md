@@ -151,11 +151,12 @@ the session, so the track only has to exist under the lane's assembly name.
 
 One `SyntenyTrack` names all eight assemblies. `blockAssemblies` and
 `bedLocations` are positional against the table's columns, in the order the
-helper printed. The display colors a gene by its symbol, so a conserved gene is
-one color down the whole stack and a lane missing it breaks the column. The
-color is a hash of the symbol, so it identifies a gene and carries nothing else.
-A key naming the symbols appears in the top right once the window holds few
-enough genes to list, and stays out of the way at the windows below:
+helper printed. `{ "field": "cluster" }` colors a gene by its ortholog group,
+which the table names after the human gene anchoring it, so a conserved gene is
+one color down the whole stack, a lane missing it breaks the column, and a gene
+no group claims is grey. A key naming the groups appears in the top right once
+the window holds few enough to list, and stays out of the way at the windows
+below:
 
 ```json addtrack
 {
@@ -200,7 +201,7 @@ enough genes to list, and stays out of the way at the windows below:
     {
       "type": "MultiWaySyntenyDisplay",
       "displayId": "primate_orthologs-MultiWaySyntenyDisplay",
-      "color": "jexl:feature.name ? randomColor(feature.name) : '#b0b0b0'"
+      "color": { "field": "cluster" }
     }
   ]
 }

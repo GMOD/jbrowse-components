@@ -287,12 +287,11 @@ in another repository. Per-lane pan/zoom stays deliberately absent: the lanes
 re-fit to the anchor's viewport by design, and the launch to a linear synteny
 view is the route to a lane you drive yourself.
 
-**Left open by the 2026-09-20 review.** The E. coli and primate tutorials and
-their hosted configs still colour genes with
-`jexl:feature.name ? randomColor(feature.name) : '#b0b0b0'`, which is
-`{ field: 'name' }` in the gene colour channel; moving them to
-`{ field: 'cluster' }` is a docs step with a `deploy-demo.sh` redeploy and a
-reshoot. The next reshoot changes
+**Left open by the 2026-09-20 review.** The E. coli and primate tutorials,
+build scripts and repo configs colour genes by `{ field: 'cluster' }`; the
+hosted configs keep the `jexl:` hash of the name until the hosted app is on v5.
+Then one `deploy-demo.sh` of each, and a reshoot of the five figures on those
+two pages, whose specs load the hosted configs. The next reshoot also changes
 `lane_header_menu` (the grape page, which gains **Flip lane**), the
 `synteny/multiway_zoom_out` video (lane motion) and any figure showing the
 **Color by...** menu, which now has Genes and Ribbons sections.

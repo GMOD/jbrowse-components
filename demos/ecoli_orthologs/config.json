@@ -1831,7 +1831,7 @@
         {
           "type": "MultiWaySyntenyDisplay",
           "displayId": "ecoli_orthologs-MultiWaySyntenyDisplay",
-          "color": "jexl:feature.name ? randomColor(feature.name) : '#b0b0b0'",
+          "color": { "field": "cluster" },
           "height": 970
         }
       ]
