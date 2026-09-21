@@ -671,10 +671,10 @@ describe('emitInterface textures', () => {
       // carries instance attributes too — the case that imports both HAL types.
       baseName: 'test',
       reflection,
-      textures: [{ name: 'colorRamp', textureBinding: 0, samplerBinding: 1 }],
+      textures: [{ name: 'colorRamp' }],
     })
     expect(out).toContain(
-      "{ textureBinding: 0, samplerBinding: 1, glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },",
+      "{ glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },",
     )
     expect(out).toContain(
       "import type { VertexAttributeLayout, ShaderBinding, TextureBinding } from '@jbrowse/render-core/hal'",
@@ -690,10 +690,7 @@ describe('emitInterface textures', () => {
       emitInterface({
         baseName: 'test',
         reflection,
-        textures: [
-          { name: 'colorRamp', textureBinding: 0, samplerBinding: 1 },
-          { name: 'mask', textureBinding: 2, samplerBinding: 3 },
-        ],
+        textures: [{ name: 'colorRamp' }, { name: 'mask' }],
       }),
     ).toThrow(/bind only the first/)
   })

@@ -121,10 +121,8 @@ test('reads the fragment stage’s own parameter name for those varyings', () =>
   expect(findFragmentInputParamName(hic)).toBe('i')
 })
 
-test('pairs a combined sampler with the slot after its texture', () => {
-  expect(findCombinedSamplers(hic)).toEqual([
-    { name: 'colorRamp', textureBinding: 2, samplerBinding: 3 },
-  ])
+test('finds a combined sampler by its author’s name', () => {
+  expect(findCombinedSamplers(hic)).toEqual([{ name: 'colorRamp' }])
 })
 
 describe('findInstanceStruct', () => {

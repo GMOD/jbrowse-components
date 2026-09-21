@@ -77,11 +77,9 @@ export interface ShaderBinding {
  */
 export type TextureSource = Uint8Array | HTMLCanvasElement | OffscreenCanvas
 
+// A pass's texture as WebGL2 binds it, and the filter both HALs sample it
+// with. Its WebGPU binding indices are the pass's `bindings`.
 export interface TextureBinding {
-  // WebGPU binding index for the texture view (e.g. 2)
-  textureBinding: number
-  // WebGPU binding index for the sampler (e.g. 3)
-  samplerBinding: number
   // WebGL texture unit index (e.g. 0 for TEXTURE0)
   glTextureUnit: number
   // GLSL sampler uniform name (e.g. 'u_colorRamp')

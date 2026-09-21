@@ -1164,7 +1164,7 @@ export function emitInterface(inputs: CodegenInputs) {
     for (let i = 0; i < textures.length; i++) {
       const t = textures[i]!
       lines.push(
-        `  { textureBinding: ${t.textureBinding}, samplerBinding: ${t.samplerBinding}, glTextureUnit: ${i}, glUniformName: 'u_${t.name}', filter: 'linear' },`,
+        `  { glTextureUnit: ${i}, glUniformName: 'u_${t.name}', filter: 'linear' },`,
       )
     }
     lines.push(']', '')

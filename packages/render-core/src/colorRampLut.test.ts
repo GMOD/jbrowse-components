@@ -14,8 +14,6 @@ const texturedPass = (id: string): PipelineDescriptor => ({
   bindings: [],
   textures: [
     {
-      textureBinding: 2,
-      samplerBinding: 3,
       glTextureUnit: 0,
       glUniformName: 'u_colorRamp',
       filter: 'linear',

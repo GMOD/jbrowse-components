@@ -116,5 +116,5 @@ export function setInstanceCount(f32: Float32Array, i: number, v: number) {
 
 // Combined `Sampler2D` bindings. Texture unit indices start at 0.
 export const TEXTURES: readonly [TextureBinding, ...TextureBinding[]] = [
-  { textureBinding: 2, samplerBinding: 3, glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },
+  { glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },
 ]

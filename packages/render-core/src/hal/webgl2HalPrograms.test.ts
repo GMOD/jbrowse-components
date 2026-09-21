@@ -81,8 +81,6 @@ function fakeContext() {
 }
 
 const RAMP: TextureBinding = {
-  textureBinding: 2,
-  samplerBinding: 3,
   glTextureUnit: 0,
   glUniformName: 'u_colorRamp',
   filter: 'linear',

@@ -368,16 +368,12 @@ export function findFragmentInputParamName(reflection: Reflection) {
 
 export interface ReflectionTexture {
   name: string
-  textureBinding: number
-  samplerBinding: number
 }
 
 /**
- * Combined `Sampler2D<T>` declarations. Each one consumes two WebGPU binding
- * slots (texture at N, sampler at N+1) and emits a single `sampler2D` in GLSL.
- * Returns the shader author's original name alongside both bindings so the TS
- * side can wire up `TextureBinding{textureBinding, samplerBinding,
- * glUniformName}`.
+ * Combined `Sampler2D<T>` declarations, by the shader author's name, which is
+ * the one `sampler2D` each becomes in GLSL. Their two WebGPU slots are in the
+ * classified binding table.
  */
 export function findCombinedSamplers(reflection: Reflection) {
   const out: ReflectionTexture[] = []
@@ -388,11 +384,7 @@ export function findCombinedSamplers(reflection: Reflection) {
       p.type.combined &&
       p.binding?.kind === 'descriptorTableSlot'
     ) {
-      out.push({
-        name: p.name,
-        textureBinding: p.binding.index,
-        samplerBinding: p.binding.index + 1,
-      })
+      out.push({ name: p.name })
     }
   }
   return out

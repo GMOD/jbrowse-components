@@ -465,8 +465,6 @@ describe('marks sharing a uniform writer and a params lens', () => {
 // arbitrary here, since what MockHal answers from is only that the pass
 // declares one.
 const RAMP_BINDING: TextureBinding = {
-  textureBinding: 2,
-  samplerBinding: 3,
   glTextureUnit: 0,
   glUniformName: 'u_colorRamp',
   filter: 'linear',
