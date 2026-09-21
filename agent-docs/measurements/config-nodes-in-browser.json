@@ -1,0 +1,47 @@
+{
+  "id": "config-nodes-in-browser",
+  "measured": "2026-09-21",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "pnpm --filter @jbrowse/web build && PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome node products/jbrowse-web/browser-tests/config-node-cost-probe.ts",
+    "notes": "Headless Chrome on a production build of jbrowse-web, with the volvox config loaded, creating the same FeatureTrack snapshots configSchemaCost.test.ts does through the app's own track config union. Each ms is the minimum of fifteen runs after a warm-up, each after a forced GC. Sittings on the shared machine at load 4-9 spread from 62 to 125 ms for the 262 row; the lowest sitting is recorded. MST's type check is off in a production build and on under jest, which config-schema-construction's jsdom row ran with; the two also differ in engine and DOM, and nothing here separates those."
+  },
+  "columns": [
+    {
+      "key": "tracks",
+      "label": "track config nodes",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "ms",
+      "label": "ms",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "msPerTrack",
+      "label": "ms per track",
+      "format": "ms",
+      "precision": 2,
+      "align": "right",
+      "derived": "ms / tracks"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "tracks": 262,
+        "ms": 61.8
+      }
+    },
+    {
+      "values": {
+        "tracks": 2620,
+        "ms": 669.1
+      }
+    }
+  ]
+}

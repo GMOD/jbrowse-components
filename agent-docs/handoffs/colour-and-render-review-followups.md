@@ -1,6 +1,6 @@
 ---
 name: colour-and-render-review-followups
-description: What a 2026-09-21 review of the overnight colour-object, shader-loading and multiway landings found and did not fix, the synteny mate and follow findings excepted (those are synteny-mates-and-follow-review). Its calls are all decided; three measurements remain, each deciding whether anything is built. Read before touching the colour objects' menus, the mark rule list, the shader loaders or the multiway demos.
+description: What a 2026-09-21 review of the overnight colour-object, shader-loading and multiway landings found and did not fix, the synteny mate and follow findings excepted (those are synteny-mates-and-follow-review). Its calls are all decided; two measurements remain, each deciding whether anything is built. Read before touching the colour objects' menus, the mark rule list, the shader loaders or the multiway demos.
 ---
 
 # Colour, shader-loading and multiway follow-ups
@@ -18,11 +18,6 @@ decides it, and delete this file when none is left.
   loads when a HAL is built"). Grouping a plugin's text into one chunk was
   declined with no latency figure; time first paint under a throttled network
   before reopening it.
-- **Where config time goes in a browser.** Creating 262 track config nodes
-  took 159 ms under jsdom, five times plugin registration
-  (`agent-docs/measurements/config-schema-construction.json`, EAGER_BUNDLE
-  §"Not worth chasing: building those config schemas"). Measure it in a
-  browser before proposing anything.
 - **Whether every alignments figure paints as it did under ADR-149.** The
   per-base layer split its own `baseColor` object off `color`, and no suite
   checks the claim that a modification layer over the plain fill draws the old
