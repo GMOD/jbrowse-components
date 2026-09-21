@@ -58,6 +58,8 @@ A narrow peak fades out across a whole chromosome when averaged over a wide bin.
 - Scale type - linear or log Y axis
 - Resolution - overrides the resolution chosen from the view width
 - Set min/max score - pins the Y axis, for comparison across samples
+- Reference lines - a dashed line across the plot at each value you name, each
+  with an optional label and colour
 
 ### Colors
 

@@ -130,6 +130,14 @@ export function ScoreScaleMixin() {
       },
       /**
        * #getter
+       * Whether this display's scale declares `rules`, which is whether the
+       * score menu offers the reference lines.
+       */
+      get scoreRulesDeclared(): boolean {
+        return confNode(self).configuration.scales.y.rules !== undefined
+      },
+      /**
+       * #getter
        * `scales.y.rules`, read off the live nodes: a snapshot strips a slot at
        * its default, and a rule at 0 is one. Empty on a display whose scale
        * declares no rules.
@@ -170,6 +178,14 @@ export function ScoreScaleMixin() {
        */
       setMaxScore(val?: number) {
         setConf(confNode(self), ['scales', 'y', 'domainMax'], val)
+      },
+      /**
+       * #action
+       * Replaces `scales.y.rules` whole, each entry in a form the config
+       * takes: a number, or `{ value, color, label }`.
+       */
+      setScoreRules(rules: (number | ValueScaleRule)[]) {
+        setConf(confNode(self), ['scales', 'y', 'rules'], rules)
       },
     }))
 }

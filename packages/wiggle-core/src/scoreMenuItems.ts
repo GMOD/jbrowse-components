@@ -3,13 +3,16 @@ import { lazy } from 'react'
 import { checkboxItem, radioItems } from '@jbrowse/core/ui/menuItems'
 import { getDialogHost } from '@jbrowse/core/util'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
+import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule'
 
 import { DEFAULT_AUTOSCALE_OPTIONS } from './autoscale.ts'
 
 import type { MenuItem, NormalMenuItem } from '@jbrowse/core/ui'
+import type { ValueScaleRule } from '@jbrowse/display-ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog.tsx'))
+const SetScoreRulesDialog = lazy(() => import('./SetScoreRulesDialog.tsx'))
 
 // Canonical "thing that has a value scale" — every display with one (wiggle,
 // multi-wiggle, manhattan, alignments coverage, the mark display) exposes this
@@ -43,6 +46,14 @@ export interface ScoreScaleModel extends IStateTreeNode {
 export interface AutoscaleModel {
   autoscaleType: string | undefined
   setAutoscale: (v?: string) => void
+}
+
+// The reference-lines half, apart for the same reason: a scale declares `rules`
+// or it does not, and `scoreRulesDeclared` is which.
+export interface ScoreRulesModel {
+  scoreRulesDeclared: boolean
+  scoreRules: ValueScaleRule[]
+  setScoreRules: (rules: ValueScaleRule[]) => void
 }
 
 const SCALE_TYPE_LABELS: Record<string, string> = {
@@ -181,8 +192,36 @@ export interface ScoreSubMenuOptions {
   disabledHelpText?: string
 }
 
+function declaresScoreRules<T extends IStateTreeNode>(
+  self: T & Partial<ScoreRulesModel>,
+): self is T & ScoreRulesModel {
+  return (
+    self.scoreRulesDeclared === true &&
+    self.scoreRules !== undefined &&
+    self.setScoreRules !== undefined
+  )
+}
+
+// The count is in the label, as the min/max row carries its bounds: a dashed
+// line across a plot means nothing until the reader knows it was put there.
+export function makeSetScoreRulesItem(
+  self: IStateTreeNode & ScoreRulesModel,
+): MenuItem {
+  const count = self.scoreRules.length
+  return {
+    label: count > 0 ? `Reference lines (${count})...` : 'Reference lines...',
+    icon: HorizontalRuleIcon,
+    onClick: () => {
+      getDialogHost(self).queueDialog(handleClose => [
+        SetScoreRulesDialog,
+        { model: self, handleClose },
+      ])
+    },
+  }
+}
+
 export function makeScoreSubMenu(
-  self: ScoreScaleModel & Partial<AutoscaleModel>,
+  self: ScoreScaleModel & Partial<AutoscaleModel> & Partial<ScoreRulesModel>,
   opts: ScoreSubMenuOptions = {},
 ): MenuItem {
   const {
@@ -216,6 +255,7 @@ export function makeScoreSubMenu(
       makeSetMinMaxScoreItem(self),
       ...(domain ? [makePinCurrentRangeItem(self, domain)] : []),
       ...(self.hasManualScoreBounds ? [makeClearMinMaxScoreItem(self)] : []),
+      ...(declaresScoreRules(self) ? [makeSetScoreRulesItem(self)] : []),
       ...trailingItems,
     ],
   }

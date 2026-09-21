@@ -177,3 +177,42 @@ describe('makeScoreSubMenu against a pinned defaultScoreDomain', () => {
     ])
   })
 })
+
+// The reference lines are a member of the scale, so the one menu that writes
+// the scale offers them, and only where the display's scale declares `rules`.
+describe('the reference lines row', () => {
+  const ruledSchema = ConfigurationSchema('TestRuledDisplay', {
+    scales: scalesSchema(
+      valueScaleSchema({ types: ['linear'], rules: { color: 'red' } }),
+    ),
+  })
+  const ruled = () =>
+    types
+      .compose(
+        'TestRuledDisplay',
+        ScoreScaleMixin(),
+        types.model({ configuration: ruledSchema }),
+      )
+      .create({ configuration: {} })
+
+  it('is absent where the scale declares no rules', () => {
+    expect(labels(makeScoreSubMenu(makePinnedDomainDisplay()))).not.toContain(
+      'Reference lines...',
+    )
+  })
+
+  it('counts the lines it holds, and the writer takes the config forms', () => {
+    const display = ruled()
+    expect(labels(makeScoreSubMenu(display))).toContain('Reference lines...')
+    display.setScoreRules([7.3, { value: 5, label: 'suggestive' }])
+    expect(display.scoreRules).toEqual([
+      { value: 7.3, color: 'red' },
+      { value: 5, color: 'red', label: 'suggestive' },
+    ])
+    expect(labels(makeScoreSubMenu(display))).toContain(
+      'Reference lines (2)...',
+    )
+    display.setScoreRules([])
+    expect(display.scoreRules).toEqual([])
+  })
+})
