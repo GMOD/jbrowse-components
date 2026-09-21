@@ -43,8 +43,8 @@ writes. Only its first record moved (HG01978.2 against HG02004.2, from the
 reader's collinear chaining), and inside `hprc_c4_graph_bases`'s window the old
 33 bp insertion and 80 bp deletion became substitutions and short indels, which
 score -80 against -123 under vg's model. The caption was loosened to match.
-Rebuild `@jbrowse/web`, then from `website/`
-`node scripts/generate-screenshots.ts --filter multiway_synteny/hprc_c4_graph`,
+Rebuild `@jbrowse/web`, then
+`pnpm --dir website screenshots --filter multiway_synteny/hprc_c4_graph`,
 look at both, `pnpm figures:push --filter multiway_synteny/hprc_c4_graph`, and
 commit `figures.lock`.
 

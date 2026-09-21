@@ -82,6 +82,10 @@ member", rather than inventing a house convention.
   `string` slot that could legitimately hold it, which is all of them.
 - **Reading an omitted key as a reset.** It would make the merge path unable to
   express "leave this alone", which is what almost every spec wants.
+- **`scales.y.title: null` meaning no caption**, as in Vega-Lite and GenomeSpy.
+  In a track-config delta `null` already resets a slot, so the same key would
+  mean "derive" on one route and "none" on another: a per-slot exception to a
+  rule that has none. `""` says no caption. Declined 2026-09-21.
 
 ## Consequences
 
