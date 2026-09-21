@@ -30,6 +30,7 @@ import type { FollowWindow } from './followAnchorWindow.ts'
 import type { FollowHost, FollowReport } from './followHost.ts'
 import type { FollowLevelState } from './followLevelStates.ts'
 import type { FollowStep } from './planFollowStep.ts'
+import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
   LinearGenomeViewModel,
@@ -787,6 +788,30 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     ),
   )
 
+  // The settle's own rule, for a level the frame pass reaches with several
+  // windows and no decision, recorded so the rest of the drag keeps it
+  function decideFrameSpread(
+    pair: FollowPair,
+    blocks: ContentBlock[],
+    windows: FollowWindow[],
+    { spans, mapped }: ReturnType<typeof followSpreadSpans>,
+  ) {
+    const decision = spans.length
+      ? decideSpread({
+          blocks,
+          // eslint-disable-next-line no-restricted-syntax -- read for the decision, which the blocks above already track
+          stayingRegions: untracked(() => pair.stayingView.displayedRegions),
+          // eslint-disable-next-line no-restricted-syntax -- self-write: the row this pass places
+          movingRegions: untracked(() => pair.movingView.displayedRegions),
+          windows,
+          spans,
+          mapped,
+        })
+      : { spreading: true }
+    levelStates.get(pair.level).spread = decision
+    return decision
+  }
+
   // Replans against the live window rather than extrapolating the last exact
   // answer, which tracked a drag perfectly and then snapped 43% of a screen on
   // settle: past one alignment the answer is the envelope, and an envelope is
@@ -824,33 +849,41 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           // placed across several contigs is not read at all, so there is no
           // read to take untracked.
           const carried = placed.get(stayingView)
-          const windows =
-            carried ??
-            followAnchorWindows(
-              written.has(stayingView)
-                ? // eslint-disable-next-line no-restricted-syntax -- self-write: this pass wrote that row
-                  untracked(() => stayingView.dynamicBlocks.contentBlocks)
-                : stayingView.dynamicBlocks.contentBlocks,
-            )
-          // The multi-contig rung's ANSWER is recomputed here rather than
-          // steered by the settle — it chooses no block, so there is nothing
-          // cached to steer by. Whether to take the rung at all is the settle's
-          // to decide: the two placements are the furthest apart this subsystem
-          // can put a row, and a per-frame re-decision flips between them across
-          // a threshold the user is panning along. `followRung` is the same rule
-          // the settle applied, and the demoted level's window it names is the
-          // kept contig, or the widest once a pan has carried that off screen.
-          const rung = followRung(windows, levelStates.spreadFor(level))
-          if (!rung) {
-            continue
-          }
-          if (rung.kind === 'spread') {
-            const { spans } = followSpreadSpans({
+          const blocks = carried
+            ? undefined
+            : written.has(stayingView)
+              ? // eslint-disable-next-line no-restricted-syntax -- self-write: this pass wrote that row
+                untracked(() => stayingView.dynamicBlocks.contentBlocks)
+              : stayingView.dynamicBlocks.contentBlocks
+          const windows = carried ?? followAnchorWindows(blocks!)
+          let spreadSpans: ReturnType<typeof followSpreadSpans> | undefined
+          const spreadAnswer = () =>
+            (spreadSpans ??= followSpreadSpans({
               displays: level.linearSyntenyDisplays,
               windows,
               toMate,
               mateAssembly,
-            })
+            }))
+          // The multi-contig rung's ANSWER is recomputed here rather than
+          // steered by the settle — it chooses no block, so there is nothing
+          // cached to steer by. Whether to take the rung at all is decided once
+          // and then kept: the two placements are the furthest apart this
+          // subsystem can put a row, and a per-frame re-decision flips between
+          // them across a threshold the user is panning along. The settle
+          // decides it, or this pass does when a drag carries a second contig
+          // on screen before any settle has, and the settle then inherits that
+          // answer as its previous one. `followRung` is the rule both apply.
+          const decision =
+            levelStates.spreadFor(level) ??
+            (blocks && windows.length > 1
+              ? decideFrameSpread(pair, blocks, windows, spreadAnswer())
+              : undefined)
+          const rung = followRung(windows, decision)
+          if (!rung) {
+            continue
+          }
+          if (rung.kind === 'spread') {
+            const { spans } = spreadAnswer()
             if (spans.length) {
               placed.set(movingView, followPlacedWindows(spans))
               self.holdFollowAnchor(() =>

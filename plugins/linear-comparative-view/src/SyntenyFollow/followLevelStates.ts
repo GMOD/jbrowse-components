@@ -62,12 +62,13 @@ export interface FollowLevelState {
   // re-reported every settle, its message having been cleared by a level that
   // resolves fine.
   lastErrorMessage?: string
-  // The multi-contig rung's own decision, made by the exact pass and FOLLOWED
-  // by the frame pass rather than re-made there. The two placements it chooses
-  // between are the furthest apart this subsystem can put a row, so a frame pass
-  // free to re-decide would flip between them across a threshold the user is
-  // panning along — and it also carries the hysteresis, which needs a previous
-  // answer to be hysteresis at all.
+  // The multi-contig rung's own decision, made by the exact pass — or by the
+  // frame pass when a drag reaches several windows before any settle has — and
+  // then FOLLOWED rather than re-made per frame. The two placements it chooses
+  // between are the furthest apart this subsystem can put a row, so a frame
+  // pass free to re-decide would flip between them across a threshold the user
+  // is panning along — and it also carries the hysteresis, which needs a
+  // previous answer to be hysteresis at all.
   spread?: SpreadDecision
   // Where the row was and where the last navigation sent it, so a repeat of the
   // same pair can be recognised as a navigation that achieved nothing. Cleared
@@ -125,10 +126,9 @@ export function createFollowLevelStates<Level extends object>() {
     pickFor(level: Level) {
       return states.get(level)?.pick
     },
-    // What the exact pass decided about the multi-contig rung, for the frame
-    // pass to follow. Like `pickFor`, it does not mint: a level that pass has
-    // never reached has made no decision, and the frame pass spreads, which is
-    // what this rung did before the decision existed.
+    // What was decided about the multi-contig rung, for the frame pass to
+    // follow. Like `pickFor`, it does not mint: undefined is the frame pass's
+    // cue to decide for itself.
     spreadFor(level: Level) {
       return states.get(level)?.spread
     },

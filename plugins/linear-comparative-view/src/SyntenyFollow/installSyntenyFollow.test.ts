@@ -427,6 +427,39 @@ describe('a straddle whose answers are far apart', () => {
   })
 })
 
+// The settle clears its multi-contig decision whenever the anchor shows one
+// contig, so a drag that carries a second contig on screen reaches the frame
+// pass undecided. Undecided read as spread, and the row was thrown across every
+// contig between the two answers until the settle refused and put it back.
+test('a drag onto a second contig decides the spread before placing across it', async () => {
+  const rows = [row('a'), row('b')]
+  const host = hostFor()
+  host.setFollowPairs([
+    {
+      level: {
+        linearSyntenyDisplays: [
+          display([pairing('chr1', 'chr1'), pairing('chr2', 'chr9')]),
+        ],
+      },
+      stayingView: rows[0] as unknown as LinearGenomeViewModel,
+      movingView: rows[1] as unknown as LinearGenomeViewModel,
+      toMate: true,
+      movingIndex: 1,
+    },
+  ])
+  place(rows[0]!, 200_000, 900_000)
+  installSyntenyFollow(host)
+  await new Promise(resolve => setTimeout(resolve, 0))
+  expect(shown(rows[1]!)).toEqual(['chr1'])
+
+  rows[0]!.holdCoarseBlocks()
+  place(rows[0]!, 300_000, 1_100_000)
+  expect(shown(rows[0]!)).toEqual(['chr1', 'chr2'])
+  // placed from chr1's window at the anchor's scale, which reaches into the
+  // head of its neighbour, rather than across to chr9, chr2's answer
+  expect(shown(rows[1]!)).toEqual(['chr1', 'chr2'])
+})
+
 function twoRows(displays: LinearSyntenyDisplayModel[]) {
   const rows = [row('a'), row('b')]
   const host = hostFor()
