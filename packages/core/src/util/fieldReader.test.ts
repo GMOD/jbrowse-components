@@ -10,7 +10,7 @@ const variant = new SimpleFeature({
   start: 0,
   end: 1,
   type: 'deletion',
-  INFO: { SVTYPE: ['DEL'], nested: { depth: 3 } },
+  INFO: { SVTYPE: ['DEL'], nested: { depth: 3 }, AF: [0.5], 'AF.EAS': [0.3] },
   'gene.version': '7',
 })
 
@@ -27,6 +27,12 @@ test('a dotted path reads into a structured field', () => {
 
 test('a field whose name has a dot wins over the path', () => {
   expect(fieldReader('gene.version', jexl)(variant)).toBe('7')
+})
+
+// VCF 4.3 allows a dot in an INFO key, beside the key it extends
+test('a key whose name has a dot is read whole at any depth of the path', () => {
+  expect(fieldReader('INFO.AF.EAS', jexl)(variant)).toEqual([0.3])
+  expect(fieldReader('INFO.AF', jexl)(variant)).toEqual([0.5])
 })
 
 test('a jexl expression reads over feature, and one that does not compile throws once', () => {

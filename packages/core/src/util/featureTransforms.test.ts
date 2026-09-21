@@ -567,6 +567,24 @@ test('a jexl: field on a step names the step and points at formula', () => {
   ).toThrow(/a bin field is a name or a dotted path.*formula/)
 })
 
+test('a pileup packs the features whose start it can read as though the rest were absent', () => {
+  const at = (start: number | undefined, id: string) =>
+    new SimpleFeature({
+      uniqueId: id,
+      refName: 'ctgA',
+      start: start ?? 0,
+      end: 100,
+      INFO: start === undefined ? {} : { POS: start },
+    })
+  const out = runTransforms(
+    [at(10, 'a'), at(undefined, 'x'), at(20, 'b')],
+    [{ type: 'pileup', fields: ['INFO.POS', 'end'] }],
+  )
+  const rowOf = Object.fromEntries(out.map(f => [f.id(), f.get('row')]))
+  expect([rowOf.a, rowOf.b]).toEqual([0, 1])
+  expect(out.map(f => f.id())).toEqual(['a', 'b', 'x'])
+})
+
 // The packing as it was written before it read each interval once: a stable
 // sort through a comparator, then first fit. Ties keep the order they arrived
 // in, and an unsorted list is what a transform in front of a pileup hands it.

@@ -16,6 +16,7 @@ export function fieldReader(
   jexl: JexlInstance | undefined,
 ): (feature: Feature) => unknown {
   const path = ref.includes('.') ? ref.split('.') : undefined
+  const rests = path?.map((_, i) => path.slice(i).join('.'))
   if (isJexl(ref)) {
     if (!jexl) {
       throw new Error(`a jexl: field needs a jexl instance (${ref})`)
@@ -25,8 +26,8 @@ export function fieldReader(
   }
   return feature => {
     const value: unknown = feature.get(ref)
-    return value === undefined && path
-      ? readPath(feature.get(path[0]!), path)
+    return value === undefined && path && rests
+      ? readPath(feature.get(path[0]!), path, rests)
       : value
   }
 }
@@ -41,7 +42,11 @@ export function isPlainFieldRef(ref: string) {
   return !ref.includes('.') && !isJexl(ref)
 }
 
-function readPath(root: unknown, path: readonly string[]) {
+function readPath(
+  root: unknown,
+  path: readonly string[],
+  rests: readonly string[],
+) {
   let value = root
   for (let i = 1; i < path.length; i++) {
     value =
@@ -49,5 +54,27 @@ function readPath(root: unknown, path: readonly string[]) {
         ? Reflect.get(value, path[i]!)
         : undefined
   }
-  return value ?? undefined
+  return value ?? readWholeRest(root, path, rests)
+}
+
+// A path that read nothing by descending tries each level's rest as one key,
+// so `INFO.AF.EAS` reaches a key named `AF.EAS`, which VCF 4.3 allows. Only a
+// miss pays for it: a path that resolves is the plain walk above.
+function readWholeRest(
+  root: unknown,
+  path: readonly string[],
+  rests: readonly string[],
+) {
+  let value = root
+  for (let i = 1; i < path.length - 1; i++) {
+    if (typeof value !== 'object' || value === null) {
+      return undefined
+    }
+    const whole: unknown = Reflect.get(value, rests[i]!)
+    if (whole !== undefined) {
+      return whole ?? undefined
+    }
+    value = Reflect.get(value, path[i]!)
+  }
+  return undefined
 }

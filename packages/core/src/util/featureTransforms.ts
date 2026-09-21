@@ -449,6 +449,16 @@ function pileup(features: readonly Feature[], step: PileupStep) {
       inOrder &&= i === 0 || starts[i]! >= starts[i - 1]!
     }
   }
+  // Any unreadable start leaves the list out of order. Read as Infinity, it
+  // sorts last and packs where it claims no row a readable one could want,
+  // where NaN left the sort without an order and a row's end unreadable.
+  if (!inOrder) {
+    for (let i = 0; i < n; i++) {
+      if (Number.isNaN(starts[i])) {
+        starts[i] = Infinity
+      }
+    }
+  }
   const order = inOrder
     ? undefined
     : Uint32Array.from(starts, (_, i) => i).sort(
