@@ -1,6 +1,8 @@
 import { useCallback } from 'react'
 
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
+import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
+import ConfigProblemsIndicator from '@jbrowse/display-kit/ConfigProblemsIndicator'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMenu'
 import { PointerLayer } from '@jbrowse/display-ui'
@@ -154,6 +156,9 @@ const WiggleBody = observer(function WiggleBody({
 
       {/* inline hint when the plot would otherwise be a silent blank */}
       <WiggleHint model={model} />
+      <BottomRightIndicators>
+        <ConfigProblemsIndicator notices={model.notices} />
+      </BottomRightIndicators>
 
       {/* the full crosshair, not just a genomic guide: cursor y picks the row
           being read in multi-row mode and a score level in overlay mode, and

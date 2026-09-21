@@ -257,6 +257,24 @@ test('threshold cuts written high to low are told which way they are read', () =
   ])
 })
 
+test('a threshold range with other than one colour per interval is named', () => {
+  const colors = (range: string[]) => [
+    {
+      shape: 'point',
+      encoding: {
+        y: 'score',
+        color: { field: 'pip', scale: 'threshold', domain: [0.1, 0.5], range },
+      },
+    },
+  ]
+  expect(found(colors([]))).toEqual([])
+  expect(found(colors(['red', 'orange', 'blue']))).toEqual([])
+  expect(found(colors(['red', 'blue']))).toEqual([
+    'warning threshold-range mark 0 encoding.color.range',
+  ])
+  expect(found(colors(['red', 'orange', 'blue', 'green']))).toHaveLength(1)
+})
+
 test('a ramp reads its ends, not a domain, and a span wants both ends pinned', () => {
   const ramp = (shape: string, color: Record<string, unknown>) => [
     {

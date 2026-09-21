@@ -24,3 +24,102 @@ export function paintedScale<S extends string, F extends string>(
 ): S | F | 'none' {
   return field ? (scale ?? fieldScale) : 'none'
 }
+
+/** A combination of a colour object's slots the display cannot paint as written. */
+export interface ColorProblem {
+  rule: 'threshold-cuts' | 'threshold-range' | 'ramp-domain' | 'ramp-ends'
+  /** the slot to look at, relative to the colour object */
+  slot: string
+  message: string
+}
+
+/** The slots `colorProblems` reads, as a snapshot or a resolved setting holds them. */
+export interface ColorSlots {
+  field?: string
+  scale?: string
+  domain?: readonly unknown[]
+  range?: readonly unknown[]
+  domainMin?: number
+  domainMax?: number
+}
+
+function pinned(entry: unknown) {
+  return entry !== '' && Number.isFinite(Number(entry))
+}
+
+/**
+ * What a colour object's slots say together that no single slot can refuse,
+ * since the config editor writes one slot at a time (ADR-133). A display shows
+ * these as a notice and draws what it can. `fieldScale` is the scale a named
+ * field paints through when `scale` is unset.
+ */
+export function colorProblems(
+  color: ColorSlots,
+  fieldScale: string,
+): ColorProblem[] {
+  const { domain = [], range = [], domainMin, domainMax } = color
+  const scale = paintedScale(
+    { scale: color.scale, field: color.field ?? '' },
+    fieldScale,
+  )
+  const problems: ColorProblem[] = []
+  if (scale === 'threshold') {
+    if (
+      domain.some(
+        (cut, i) => !pinned(cut) || Number(cut) <= Number(domain[i - 1]),
+      )
+    ) {
+      problems.push({
+        rule: 'threshold-cuts',
+        slot: 'domain',
+        message:
+          'threshold cuts are distinct numbers, read in ascending order, with the range running from the lowest interval; a repeated cut leaves an interval no value falls in',
+      })
+    }
+    if (
+      domain.length > 0 &&
+      range.length > 0 &&
+      range.length !== domain.length + 1
+    ) {
+      problems.push({
+        rule: 'threshold-range',
+        slot: 'range',
+        message: `${domain.length} threshold ${domain.length === 1 ? 'cut makes' : 'cuts make'} ${domain.length + 1} intervals, one colour each, and range lists ${range.length}: a missing colour comes from the default palette and an extra one is never read`,
+      })
+    }
+  }
+  if (scale === 'linear' || scale === 'log') {
+    if (domain.length > 0) {
+      problems.push({
+        rule: 'ramp-domain',
+        slot: 'domain',
+        message:
+          "a linear or log scale reads no domain, which is a categorical scale's order and a threshold scale's cuts; a ramp's ends are domainMin and domainMax where the colour has them",
+      })
+    }
+    if (
+      domainMin !== undefined &&
+      domainMax !== undefined &&
+      domainMin > domainMax
+    ) {
+      problems.push({
+        rule: 'ramp-ends',
+        slot: 'domainMax',
+        message:
+          'domainMax is below domainMin: the ramp spans the two either way, and reverse is what turns it round',
+      })
+    }
+  }
+  return problems
+}
+
+/** `colorProblems` as the lines a display's corner notice lists, under the setting's own name. */
+export function colorNotices(
+  color: ColorSlots,
+  fieldScale: string,
+  name = 'color',
+): string[] {
+  return colorProblems(color, fieldScale).map(
+    ({ slot, message }) => `${name}.${slot}: ${message}`,
+  )
+}

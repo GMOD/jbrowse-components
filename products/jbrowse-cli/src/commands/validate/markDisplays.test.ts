@@ -273,6 +273,18 @@ describe('a marks list in a config file', () => {
     expect(cuts(['0.1', '0.5'])).toEqual([])
     expect(cuts([0.5, 0.1])).toEqual([`warning threshold-cuts ${domain}`])
     expect(cuts(['low', 'high'])).toEqual([`warning threshold-cuts ${domain}`])
+    expect(
+      found(
+        colored('point', {
+          field: 'pip',
+          scale: 'threshold',
+          domain: [0.1, 0.5],
+          range: ['red', 'blue'],
+        }),
+      ),
+    ).toEqual([
+      `warning threshold-range ${DISPLAY}.marks[0].encoding.color.range`,
+    ])
     const ramp = { field: 'score', scale: 'linear', range: ['white', 'red'] }
     const color = `${DISPLAY}.marks[0].encoding.color`
     expect(

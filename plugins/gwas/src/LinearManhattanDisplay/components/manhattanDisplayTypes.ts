@@ -31,6 +31,7 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   hoveredFeature: ManhattanHit | undefined
   indexSnpMissing: boolean
   skippedFeatures: SkippedFeatures
+  notices: readonly string[]
   setHoveredFeature: (hit: ManhattanHit | undefined) => void
   clearHoveredFeature: () => void
   selectFeature: (hit: ManhattanHit) => void

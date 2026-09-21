@@ -1,6 +1,7 @@
 import { MISCONFIGURED_COLOR } from '@jbrowse/core/util/color'
 import { thresholdCuts } from '@jbrowse/core/util/thresholdScale'
 import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
+import { colorNotices } from '@jbrowse/display-kit/colorScale'
 
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
 import { rampLutOf } from './densityColorRamp.ts'
@@ -38,10 +39,16 @@ export interface ResolvedWiggleColor {
  * field: `source` is categorical, and `score` the bicolor cut.
  */
 export function wiggleColorEncoding(color: ColorSetting) {
-  return colorEncodingOf(
-    color,
-    color.field === SOURCE_FIELD ? 'categorical' : 'threshold',
-  )
+  return colorEncodingOf(color, fieldScaleOf(color.field))
+}
+
+function fieldScaleOf(field: string) {
+  return field === SOURCE_FIELD ? 'categorical' : 'threshold'
+}
+
+/** What the `color` object's slots say together that it cannot paint as written. */
+export function wiggleColorNotices(color: ColorSetting) {
+  return colorNotices(color, fieldScaleOf(color.field))
 }
 
 /**

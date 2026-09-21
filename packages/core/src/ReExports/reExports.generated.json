@@ -3758,9 +3758,24 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "COLOR_SCALES",
+        "colorNotices",
+        "colorProblems",
         "paintedScale"
       ],
       "worker": "real"
+    },
+    "@jbrowse/display-kit/ConfigProblemsIndicator": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip",
+        "react-dom"
+      ]
     },
     "@jbrowse/display-kit/configSchema": {
       "package": "@jbrowse/display-kit",

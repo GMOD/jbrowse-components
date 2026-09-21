@@ -4,6 +4,7 @@ import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityCompu
 
 import {
   alignmentsColorEncoding,
+  alignmentsColorNotices,
   baseLayerOf,
   bodyColorScheme,
   colorByOf,
@@ -190,6 +191,14 @@ export function configSlotViews(self: ConfigSlotSelf) {
      */
     get colorEncoding(): AlignmentsColorEncoding {
       return alignmentsColorEncoding(this.colorSetting)
+    },
+    /**
+     * #getter
+     * What `colorSetting`'s slots say together that it cannot paint as
+     * written, for the corner notice.
+     */
+    get notices(): string[] {
+      return alignmentsColorNotices(this.colorSetting)
     },
     /**
      * #getter

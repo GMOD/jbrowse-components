@@ -20,6 +20,7 @@ export interface WiggleDisplayModel
   // hook the browser tests use to target one track's display
   configuration: { displayId: string }
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
+  notices: readonly string[]
   sources: { name: string; color?: string; labelColor?: string }[]
   sourcesWithoutLayout: { name: string }[]
   domain: [number, number] | undefined

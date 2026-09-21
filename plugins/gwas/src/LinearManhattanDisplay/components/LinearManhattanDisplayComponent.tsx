@@ -1,3 +1,4 @@
+import ConfigProblemsIndicator from '@jbrowse/display-kit/ConfigProblemsIndicator'
 import SkippedFeaturesIndicator from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import { ScorePlotChrome } from '@jbrowse/wiggle-core/ScorePlotChrome'
 import { observer } from 'mobx-react'
@@ -39,7 +40,10 @@ const LinearManhattanDisplayComponent = observer(
           model.indexSnpMissing ? <LdIndexWarning offsetTop={yTop} /> : null
         }
         indicators={() => (
-          <SkippedFeaturesIndicator {...model.skippedFeatures} />
+          <>
+            <ConfigProblemsIndicator notices={model.notices} />
+            <SkippedFeaturesIndicator {...model.skippedFeatures} />
+          </>
         )}
       />
     )

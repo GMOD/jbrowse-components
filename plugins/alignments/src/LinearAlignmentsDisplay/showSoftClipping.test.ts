@@ -387,6 +387,15 @@ describe('alignments colorBy', () => {
     expect(getConf(display, ['baseColor', 'scale'])).toBe('none')
   })
 
+  it('a ramp with its ends reversed is a notice', () => {
+    const { display } = createDisplay({
+      color: { field: 'tags.XS', scale: 'linear', domainMin: 10, domainMax: 1 },
+    })
+    expect(display.notices).toEqual([
+      expect.stringMatching(/^color\.domainMax: domainMax is below domainMin/),
+    ])
+  })
+
   it('a string is the constant read fill', () => {
     const { display } = createDisplay({ color: 'rgb(0, 0, 255)' })
     expect(display.colorBy).toEqual({ type: 'normal' })

@@ -3,6 +3,7 @@ import {
   colorEncodingOf,
   colorForField,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import { colorNotices } from '@jbrowse/display-kit/colorScale'
 
 import { TAG_FIELD_PREFIX, facetTag } from './groupByLabels.ts'
 
@@ -91,10 +92,16 @@ const INSERT_SIZE_FIELDS = new Set([
  * between short, normal and long, and any other field is categorical.
  */
 export function alignmentsColorEncoding(setting: AlignmentsColorSetting) {
-  return colorEncodingOf(
-    setting,
-    INSERT_SIZE_FIELDS.has(setting.field) ? 'threshold' : 'categorical',
-  )
+  return colorEncodingOf(setting, fieldScaleOf(setting.field))
+}
+
+function fieldScaleOf(field: string) {
+  return INSERT_SIZE_FIELDS.has(field) ? 'threshold' : 'categorical'
+}
+
+/** What the `color` object's slots say together that it cannot paint as written. */
+export function alignmentsColorNotices(setting: AlignmentsColorSetting) {
+  return colorNotices(setting, fieldScaleOf(setting.field))
 }
 
 export type AlignmentsColorEncoding = ReturnType<typeof alignmentsColorEncoding>

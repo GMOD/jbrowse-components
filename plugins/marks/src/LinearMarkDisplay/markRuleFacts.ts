@@ -5,5 +5,5 @@
  * module named here imports nothing.
  */
 export { isJexl } from '@jbrowse/core/util/jexlStrings'
-export { paintedScale } from '@jbrowse/display-kit/colorScale'
+export { colorProblems, paintedScale } from '@jbrowse/display-kit/colorScale'
 export type { ColorScaleName } from '@jbrowse/display-kit/colorScale'

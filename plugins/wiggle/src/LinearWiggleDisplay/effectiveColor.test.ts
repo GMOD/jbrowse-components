@@ -154,3 +154,19 @@ test('a threshold cut moves the colour, and the bars still grow from the origin'
   })
   expect([state.origin, state.pivot]).toEqual([0, 2])
 })
+
+test('a threshold range that does not fit its cuts is a notice', () => {
+  const { createDisplay } = createTestEnvironment({
+    displayConfig: {
+      color: {
+        field: 'score',
+        scale: 'threshold',
+        domain: ['0', '2'],
+        range: ['red', 'blue'],
+      },
+    },
+  })
+  expect(createDisplay().display.notices).toEqual([
+    expect.stringMatching(/^color\.range: 2 threshold cuts make 3 intervals/),
+  ])
+})

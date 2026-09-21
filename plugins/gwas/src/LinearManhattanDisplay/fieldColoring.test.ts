@@ -313,3 +313,12 @@ describe('LinearManhattanDisplay field coloring', () => {
     expect(labels(display.trackMenuItems())).toContain('Field (population)...')
   })
 })
+
+test('LD bins that do not fit their colours are a notice', () => {
+  const { display } = createTestEnvironment({
+    color: { field: 'ld', domain: [0.2, 0.8], range: ['red', 'blue'] },
+  }).createDisplay()
+  expect(display.notices).toEqual([
+    expect.stringMatching(/^color\.range: 2 threshold cuts make 3 intervals/),
+  ])
+})

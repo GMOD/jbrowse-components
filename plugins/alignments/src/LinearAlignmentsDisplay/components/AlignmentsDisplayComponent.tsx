@@ -3,6 +3,7 @@ import { Suspense } from 'react'
 import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
+import ConfigProblemsIndicator from '@jbrowse/display-kit/ConfigProblemsIndicator'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 import TrackHeightIndicator from '@jbrowse/display-kit/TrackHeightIndicator'
@@ -60,6 +61,7 @@ const AlignmentsCornerControls = observer(function AlignmentsCornerControls({
     <BottomRightIndicators
       scrollbarWidth={hasOverflow ? VERTICAL_SCROLLBAR_CLEARANCE : 0}
     >
+      <ConfigProblemsIndicator notices={model.notices} />
       <TrackHeightIndicator
         heightMode={model.heightMode}
         hasOverflow={hasOverflow}

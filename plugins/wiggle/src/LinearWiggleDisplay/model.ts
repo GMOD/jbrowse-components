@@ -59,6 +59,7 @@ import {
   resolveWiggleColor,
   sourcePalette,
   wiggleColorEncoding,
+  wiggleColorNotices,
 } from '../shared/wiggleColor.ts'
 import { getRowHeight, getRowTop } from '../shared/wiggleComponentUtils.ts'
 import { wiggleDisplayViews } from '../shared/wiggleDisplayViews.ts'
@@ -386,6 +387,14 @@ export default function stateModelFactory(
        */
       get colorEncoding() {
         return wiggleColorEncoding(self.effectiveColor)
+      },
+      /**
+       * #getter
+       * What `colorSetting`'s slots say together that it cannot paint as
+       * written, for the corner notice.
+       */
+      get notices(): string[] {
+        return wiggleColorNotices(self.colorSetting)
       },
     }))
     .views(self => ({

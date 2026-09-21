@@ -32,6 +32,7 @@ import {
   colorForField,
   paintedScale,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import { colorNotices } from '@jbrowse/display-kit/colorScale'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -439,6 +440,23 @@ export function stateModelFactory(
             [...self.rpcDataMap.values()].map(d => [
               { count: d.count, skipped: d.skipped, field },
             ]),
+          )
+        },
+        /**
+         * #getter
+         * What the `color` object's slots say together that it cannot paint
+         * as written, for the corner notice.
+         */
+        get notices(): string[] {
+          const field: string = getConf(self, ['color', 'field'])
+          return colorNotices(
+            {
+              field,
+              scale: getConf(self, ['color', 'scale']),
+              domain: getConf(self, ['color', 'domain']),
+              range: getConf(self, ['color', 'range']),
+            },
+            field === LD_FIELD ? 'threshold' : 'categorical',
           )
         },
       }))

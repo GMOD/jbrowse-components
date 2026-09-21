@@ -54,17 +54,14 @@ Left open from the `jexl:` work:
    ADR-151 records: Colin chose the plain rule over guessing the kind
    (2026-09-21). The alignments Tag dialog now asks for a colour per value or
    a gradient, so that choice is one click rather than a config edit.
-3. **Colour rules on every display.** `threshold-cuts`, `ramp-domain` and
-   `ramp-ends` live only in the mark display's rule list
-   (`plugins/marks/src/LinearMarkDisplay/markProblems.ts`), so a bad colour
-   object says nothing on the other five displays. Move them beside the object
-   in display-kit and give each display a `notices` getter and its chip;
-   `jbApi.ts` already reads `display.notices` duck-typed. Add the missing check
-   that a threshold's `range` has one more colour than its cuts
-   (`thresholdPalette` tops it up silently). With the rules moved, a small
-   shared workspace package beats `scripts/generateMarkRules.ts`'s copy into
-   the CLI, as `@jbrowse/add-track-core` is shared today; without the move,
-   keep the copy.
+3. **Colour rules on every display: landed.** `colorProblems` in display-kit's
+   `colorScale.ts` holds `threshold-cuts`, the new `threshold-range` and the
+   two ramp rules; the mark, quantitative, alignments and Manhattan displays
+   show them through `ConfigProblemsIndicator`. The feature and synteny colours
+   take no scale these rules read. Open: `jbrowse validate` runs them for marks
+   alone, through `scripts/generateMarkRules.ts`'s copy; a small shared
+   workspace package, as `@jbrowse/add-track-core` is, would let it check every
+   display's colour.
 4. **A wiggle `threshold` with N cuts**, by ggplot2's rule that a segment takes
    its start point's bin. Fills cost nothing, since each instance carries its
    colour; the lines and band are a shader change to `pivotSideColor`. After

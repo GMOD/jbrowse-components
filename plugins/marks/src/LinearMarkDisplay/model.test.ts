@@ -784,7 +784,7 @@ test('a colour ramp pins the end it names, and a domain beside it is named as un
   ]).createDisplay()
   expect(display.notices).toEqual([
     expect.stringMatching(
-      /^mark 0 encoding.color.domain: a linear or log scale reads its ends from domainMin and domainMax/,
+      /^mark 0 encoding.color.domain: a linear or log scale reads no domain/,
     ),
   ])
   expect(display.encodings[0]!.color).toMatchObject({

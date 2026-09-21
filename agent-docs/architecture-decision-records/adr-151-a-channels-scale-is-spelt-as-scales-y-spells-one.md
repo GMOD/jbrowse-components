@@ -93,8 +93,10 @@ is the Edit as JSON counterpart, the colour as written.
 - A `domain` written beside a linear or log scale loads, since no slot
   combination is refused (ADR-133), and paints over the regions' extremes. The
   mark rule list reports it (`ramp-domain`), with ends written high to low
-  (`ramp-ends`), in the display's notice and in `jbrowse validate`. Nothing
-  reports it on the quantitative or alignments displays.
+  (`ramp-ends`), in the display's notice and in `jbrowse validate`. The
+  quantitative, alignments and Manhattan displays report it in their notice
+  through the same `colorProblems`; `jbrowse validate` reports it for marks
+  alone.
 - `{ field: 'score', range: [...] }` with no `scale` is categorical on the mark
   display and a threshold on the quantitative display, where it used to be a
   ramp; a ramp asks for `scale: 'linear'`.
