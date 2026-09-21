@@ -121,7 +121,7 @@ export function offsetLabelBaselineY(textHeight: number, fontSize: number) {
   return textHeight - LABEL_PAD_BOTTOM - labelDescent(fontSize)
 }
 
-// Baseline for a label inset into the top of the box it draws over ('overlay'
+// Baseline for a label inset into the top of the box it draws over ('overlapping'
 // mode), measured down from that top edge so the ascenders stay inside it.
 export function insetLabelBaselineY(fontSize: number) {
   return labelBaselineFromTop(LABEL_PAD_TOP, fontSize)
@@ -260,14 +260,14 @@ export const refNameLabelBaselineY = labelBaselineFromTop(
   REF_NAME_LABEL_FONT_SIZE,
 )
 
-// The mode one track's label is drawn in. 'overlay' yields to 'offset' for a
+// The mode one track's label is drawn in. 'overlapping' yields to 'offset' for a
 // display that `prefersOffset`, as TrackContainer does on screen: its left edge
 // carries content — an axis, a sample's genotypes — the label would print over.
 export function trackLabelMode(
   track: TrackHeights,
   trackLabels: TrackLabelMode,
 ): TrackLabelMode {
-  return trackLabels === 'overlay' && track.displays[0]?.prefersOffset
+  return trackLabels === 'overlapping' && track.displays[0]?.prefersOffset
     ? 'offset'
     : trackLabels
 }

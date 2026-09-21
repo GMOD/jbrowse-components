@@ -46,8 +46,8 @@ const descent = (fontSize: number) => Math.ceil(fontSize * 0.22)
 const inkTop = (baseline: number, fontSize: number) =>
   baseline - (labelInkHeight(fontSize) - descent(fontSize))
 
-test('none draws nothing at all', () => {
-  expect(renderLabel('none')).toBeNull()
+test('hidden draws nothing at all', () => {
+  expect(renderLabel('hidden')).toBeNull()
 })
 
 test('left right-aligns into the gutter trackLabelLeftOffset reserved', () => {
@@ -95,8 +95,8 @@ test('offset hangs off the leftmost visible content, above the track body', () =
   expect(text?.getAttribute('text-anchor')).toBeNull()
 })
 
-test('overlay insets over the track body it draws on', () => {
-  const text = renderLabel('overlay')
+test('overlapping insets over the track body it draws on', () => {
+  const text = renderLabel('overlapping')
   expect(text?.getAttribute('x')).toBe(String(CONTENT_X + 5))
   // ascenders stay inside the box below the label's own top edge; at y=0 they
   // used to rise into the track above
@@ -105,7 +105,7 @@ test('overlay insets over the track body it draws on', () => {
   ).toBeGreaterThanOrEqual(0)
 })
 
-test.each(['left', 'offset', 'overlay'] as const)(
+test.each(['left', 'offset', 'overlapping'] as const)(
   '%s places its own baseline rather than declaring one',
   trackLabels => {
     // every mode resolves the baseline from util.ts's ink-box model, which is
@@ -119,8 +119,8 @@ test.each(['left', 'offset', 'overlay'] as const)(
 
 // An overlaid label prints over the track's own data, which the on-screen
 // label clears with a paper box; the export's needs the halo instead.
-test('overlay carries a halo and the other modes do not', () => {
-  expect(renderLabel('overlay')?.getAttribute('paint-order')).toBe('stroke')
+test('overlapping carries a halo and the other modes do not', () => {
+  expect(renderLabel('overlapping')?.getAttribute('paint-order')).toBe('stroke')
   expect(renderLabel('offset')?.getAttribute('paint-order')).toBeNull()
   expect(renderLabel('left')?.getAttribute('paint-order')).toBeNull()
 })

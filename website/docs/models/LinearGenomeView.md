@@ -108,7 +108,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-scrollzoom">**scrollZoom**</span><br><code>boolean</code> | scroll-to-zoom is a global, personal preference resolved from the session; toggling it in any view applies everywhere | LinearGenomeView |
 | <span id="getter-pinnedtracks">**pinnedTracks**</span><br><code>any[]</code> |  | LinearGenomeView |
 | <span id="getter-unpinnedtracks">**unpinnedTracks**</span><br><code>any[]</code> |  | LinearGenomeView |
-| <span id="getter-effectivetracklabels">**effectiveTrackLabels**</span><br><code>any</code> | the effective track labels setting, resolving the stored `trackLabels` against the LinearGenomeViewPlugin config default | LinearGenomeView |
+| <span id="getter-effectivetracklabels">**effectiveTrackLabels**</span><br><code>"hidden" &#124; "offset" &#124; "overlapping"</code> | the effective track labels setting, resolving the stored `trackLabels` against the LinearGenomeViewPlugin config default | LinearGenomeView |
 | <span id="getter-width">**width**</span><br><code>number</code> |  | LinearGenomeView |
 | <span id="getter-trackwidthpx">**trackWidthPx**</span><br><code>number</code> | width minus track outline borders (1px each side when shown) | LinearGenomeView |
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> |  | LinearGenomeView |

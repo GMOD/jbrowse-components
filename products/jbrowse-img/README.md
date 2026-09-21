@@ -1292,7 +1292,7 @@ of the same type, e.g. `--bam file1.bam --bam file2.bam`
 - `--themeName` — theme to use for rendering: `default`, `lightStock`,
   `lightMinimal`, `darkStock`, or `darkMinimal`
 - `--showGridlines` — draw genomic coordinate gridlines
-- `--trackLabels` — label position: `offset`, `overlay`, `left`, or `none`
+- `--trackLabels` — label position: `offset`, `overlapping`, `left`, or `hidden`
 
 ## Full command-line help
 
@@ -1326,7 +1326,7 @@ Options:
   --themeName       Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines   Show genomic coordinate gridlines in the output [default: false]
-  --trackLabels     Track label position: offset, overlay, left, or none
+  --trackLabels     Track label position: offset, overlapping, left, or hidden
   --refseq          Show the reference sequence track [default: false]
   --spec            Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
   --help            Show help
@@ -1373,7 +1373,7 @@ Options:
   --themeName           Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
   --fontFamily          Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines       Show genomic coordinate gridlines in the output [default: false]
-  --trackLabels         Track label position: offset, overlay, left, or none
+  --trackLabels         Track label position: offset, overlapping, left, or hidden
   --refseq              Show the reference sequence track [default: false]
   --spec                Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
   --fasta2              Second assembly indexed FASTA (shorthand)
@@ -1416,7 +1416,7 @@ Options:
   --themeName           Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
   --fontFamily          Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines       Show genomic coordinate gridlines in the output [default: false]
-  --trackLabels         Track label position: offset, overlay, left, or none
+  --trackLabels         Track label position: offset, overlapping, left, or hidden
   --refseq              Show the reference sequence track [default: false]
   --spec                Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
   --fasta2              Second assembly indexed FASTA (shorthand)
@@ -1463,7 +1463,7 @@ Options:
   --themeName       Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines   Show genomic coordinate gridlines in the output [default: false]
-  --trackLabels     Track label position: offset, overlay, left, or none
+  --trackLabels     Track label position: offset, overlapping, left, or hidden
   --refseq          Show the reference sequence track [default: false]
   --spec            Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
 
@@ -1492,7 +1492,7 @@ Options:
   --themeName       Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines   Show genomic coordinate gridlines in the output [default: false]
-  --trackLabels     Track label position: offset, overlay, left, or none
+  --trackLabels     Track label position: offset, overlapping, left, or hidden
   --refseq          Show the reference sequence track [default: false]
   --spec            Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
 

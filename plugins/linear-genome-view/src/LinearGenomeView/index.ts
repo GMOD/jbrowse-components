@@ -71,6 +71,7 @@ export type {
   LinearGenomeViewLaunchProps,
   NavLocation,
   TrackLabelMode,
+  ViewTrackLabelMode,
   VolatileGuide,
 } from './types.ts'
 export {

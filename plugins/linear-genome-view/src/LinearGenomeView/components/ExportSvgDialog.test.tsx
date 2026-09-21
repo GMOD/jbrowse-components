@@ -6,7 +6,9 @@ import { fireEvent, render, waitFor } from '@testing-library/react'
 
 import ExportSvgDialog from './ExportSvgDialog.tsx'
 
-function stubView(effectiveTrackLabels: string) {
+import type { ViewTrackLabelMode } from '../types.ts'
+
+function stubView(effectiveTrackLabels: ViewTrackLabelMode) {
   const exportSvg = jest.fn().mockResolvedValue(undefined)
   return types
     .model('Session', {
@@ -28,7 +30,7 @@ function stubView(effectiveTrackLabels: string) {
     .create({}).view
 }
 
-async function exportedTrackLabels(effectiveTrackLabels: string) {
+async function exportedTrackLabels(effectiveTrackLabels: ViewTrackLabelMode) {
   const model = stubView(effectiveTrackLabels)
   const { getByRole } = render(
     <ExportSvgDialog model={model} handleClose={() => {}} />,
@@ -44,16 +46,17 @@ beforeEach(() => {
   localStorage.clear()
 })
 
-// A user who has not picked a placement here gets the one the view shows.
-test.each([
-  ['hidden', 'none'],
-  ['overlapping', 'overlay'],
-  ['offset', 'offset'],
-])('a view with %s labels exports %s by default', async (view, exported) => {
-  expect(await exportedTrackLabels(view)).toBe(exported)
-})
+// A user who has not picked a placement here gets the one the view shows —
+// which is the whole point of the shared vocabulary: no mode is translated on
+// the way to the export.
+test.each(['hidden', 'overlapping', 'offset'] as const)(
+  'a view with %s labels exports the same by default',
+  async view => {
+    expect(await exportedTrackLabels(view)).toBe(view)
+  },
+)
 
 test('a placement picked in the dialog before still wins', async () => {
-  localStorage.setItem('svg-tracklabels', JSON.stringify('left'))
+  localStorage.setItem('svg-tracklabels-mode', JSON.stringify('left'))
   expect(await exportedTrackLabels('hidden')).toBe('left')
 })

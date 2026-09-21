@@ -27,21 +27,25 @@ test('anchors sit at the top of each rendered track body', () => {
 
 test('baseY shifts the whole view, and label-less mode has no band', () => {
   const tracks = [track('t1', 100), track('t2', 50)]
-  const offsets = getTrackOffsets(tracks, 'none', TEXT_HEIGHT, 500)
+  const offsets = getTrackOffsets(tracks, 'hidden', TEXT_HEIGHT, 500)
 
   expect(offsets.t1).toBe(500)
-  expect(offsets.t2).toBe(500 + trackBoxHeight(tracks[0]!, 'none', TEXT_HEIGHT))
+  expect(offsets.t2).toBe(
+    500 + trackBoxHeight(tracks[0]!, 'hidden', TEXT_HEIGHT),
+  )
 })
 
 // An overlaid label yields to a band for a display that prefers one, as on
 // screen, so that track's body and every anchor below it move down by a band.
-test('overlay mode gives a band only to a track that prefers offset', () => {
+test('overlapping mode gives a band only to a track that prefers offset', () => {
   const tracks = [track('t1', 100, true), track('t2', 50)]
-  const offsets = getTrackOffsets(tracks, 'overlay', TEXT_HEIGHT)
+  const offsets = getTrackOffsets(tracks, 'overlapping', TEXT_HEIGHT)
 
   expect(offsets.t1).toBe(TEXT_HEIGHT)
-  expect(offsets.t2).toBe(trackBoxHeight(tracks[0]!, 'overlay', TEXT_HEIGHT))
-  expect(trackBoxHeight(tracks[0]!, 'overlay', TEXT_HEIGHT)).toBe(
+  expect(offsets.t2).toBe(
+    trackBoxHeight(tracks[0]!, 'overlapping', TEXT_HEIGHT),
+  )
+  expect(trackBoxHeight(tracks[0]!, 'overlapping', TEXT_HEIGHT)).toBe(
     trackBoxHeight(tracks[0]!, 'offset', TEXT_HEIGHT),
   )
 })

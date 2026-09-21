@@ -32,7 +32,28 @@ export type LinearDisplayModel = DisplayModel & {
   prefersOffset?: boolean
 }
 
-export type TrackLabelMode = 'offset' | 'overlay' | 'left' | 'none'
+/**
+ * Where a track's name is drawn. One vocabulary for the screen and the SVG
+ * export: the config slot, the view's `trackLabels`, the export dialog and
+ * `jbrowse-img --trackLabels` all name a mode from here, so a setting carried
+ * from one to another needs no translation.
+ *
+ * The list is the enumeration the config slot validates against, so a mode
+ * added here has to mean something on screen.
+ */
+export const VIEW_TRACK_LABEL_MODES = [
+  'offset',
+  'overlapping',
+  'hidden',
+] as const
+
+export type ViewTrackLabelMode = (typeof VIEW_TRACK_LABEL_MODES)[number]
+
+/**
+ * The export can also reserve a gutter down the left of the figure and
+ * right-align every name in it, which a view on screen has no room for.
+ */
+export type TrackLabelMode = ViewTrackLabelMode | 'left'
 
 export interface ExportSvgOptions extends ViewExportSvgOptions {
   fontSize?: number

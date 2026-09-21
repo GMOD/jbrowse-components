@@ -17,6 +17,7 @@ export interface BpOffset {
 export type {
   ExportSvgOptions,
   TrackLabelMode,
+  ViewTrackLabelMode,
 } from '@jbrowse/display-kit/types'
 
 // canonical definition lives in core so the shared HighlightsMixin and dotplot

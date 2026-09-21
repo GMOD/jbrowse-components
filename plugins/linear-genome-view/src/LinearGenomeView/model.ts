@@ -112,6 +112,7 @@ import type {
   HighlightType,
   InitState,
   NavLocation,
+  ViewTrackLabelMode,
   VolatileGuide,
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -698,7 +699,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * the effective track labels setting, resolving the stored `trackLabels`
        * against the LinearGenomeViewPlugin config default
        */
-      get effectiveTrackLabels() {
+      get effectiveTrackLabels(): ViewTrackLabelMode {
         const sessionSetting = getConf(getSession(self), [
           'LinearGenomeViewPlugin',
           'trackLabels',
@@ -1798,7 +1799,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
+      setTrackLabels(setting: ViewTrackLabelMode) {
         self.trackLabels = setting
       },
 

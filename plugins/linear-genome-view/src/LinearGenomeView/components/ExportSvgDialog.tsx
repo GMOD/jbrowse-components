@@ -5,18 +5,8 @@ import {
 } from '@jbrowse/core/ui'
 import { MenuItem, TextField } from '@mui/material'
 
-import type { TrackLabelMode } from '../types.ts'
+import type { TrackLabelMode, ViewTrackLabelMode } from '../types.ts'
 import type { BaseExportSvgOptions } from '@jbrowse/core/ui'
-
-// The export mode matching a view's on-screen label setting, for a user who
-// has not picked one in this dialog before.
-function labelModeFor(viewTrackLabels: string | undefined): TrackLabelMode {
-  return viewTrackLabels === 'hidden'
-    ? 'none'
-    : viewTrackLabels === 'overlapping'
-      ? 'overlay'
-      : 'offset'
-}
 
 // Shared track-label + gridlines export dialog. Used by LGV, linear-synteny and
 // breakpoint-split views (their lazyDialogs re-export this).
@@ -25,7 +15,7 @@ export default function ExportSvgDialog({
   handleClose,
 }: {
   model: {
-    effectiveTrackLabels?: string
+    effectiveTrackLabels?: ViewTrackLabelMode
     exportSvg(
       opts: BaseExportSvgOptions & {
         trackLabels: TrackLabelMode
@@ -35,9 +25,13 @@ export default function ExportSvgDialog({
   }
   handleClose: () => void
 }) {
+  // The view's own setting is already an export mode, so a user who has not
+  // picked one here gets the figure their screen shows. The key is `-mode`
+  // because the modes were once spelled `overlay`/`none`, and a stored one of
+  // those would select nothing in the dropdown.
   const [trackLabels, setTrackLabels] = useExportSvgPreference<TrackLabelMode>(
-    'tracklabels',
-    labelModeFor(model.effectiveTrackLabels),
+    'tracklabels-mode',
+    model.effectiveTrackLabels ?? 'offset',
   )
   const [showGridlines, setShowGridlines] = useExportSvgPreference(
     'gridlines',
@@ -71,9 +65,9 @@ export default function ExportSvgDialog({
         }}
       >
         <MenuItem value="offset">Offset</MenuItem>
-        <MenuItem value="overlay">Overlay</MenuItem>
+        <MenuItem value="overlapping">Overlapping</MenuItem>
         <MenuItem value="left">Left</MenuItem>
-        <MenuItem value="none">None</MenuItem>
+        <MenuItem value="hidden">Hidden</MenuItem>
       </TextField>
     </BaseExportSvgDialog>
   )

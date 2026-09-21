@@ -12,12 +12,12 @@ import type { TrackLabelMode } from '../types.ts'
 // Where the label sits, per mode. 'left' right-aligns in the gutter
 // trackLabelLeftOffset reserved (hence the shared TRACK_LABEL_GAP); the other
 // modes hang off the leftmost visible content at `x`, either just above the
-// track body ('offset') or inset over it ('overlay').
+// track body ('offset') or inset over it ('overlapping').
 //
 // Every mode is placed on its alphabetic baseline (the SVG default, so no
 // dominantBaseline is emitted at all): 'offset' so its descenders land a known
 // distance above the track body — the band it sits in is `textHeight` tall, and
-// offsetLabelBaselineY owns that arithmetic — and 'left'/'overlay' so their
+// offsetLabelBaselineY owns that arithmetic — and 'left'/'overlapping' so their
 // ascenders stay inside the track box they align with. 'left' used to be pinned
 // at a hardcoded y=20 on a hanging baseline, which neither scaled with fontSize
 // nor stayed inside a track shorter than ~35px.
@@ -68,7 +68,7 @@ export default function SVGTrackLabel({
   x: number
 }) {
   const theme = useTheme()
-  if (trackLabels === 'none') {
+  if (trackLabels === 'hidden') {
     return null
   }
   const pos = labelPosition({
@@ -78,10 +78,10 @@ export default function SVGTrackLabel({
     fontSize,
     x,
   })
-  // 'overlay' prints over the track's own data, which the on-screen label
+  // 'overlapping' prints over the track's own data, which the on-screen label
   // clears with a paper box, so it carries the halo text over a plot needs
   const halo =
-    trackLabels === 'overlay'
+    trackLabels === 'overlapping'
       ? {
           stroke: stripAlpha(theme.palette.background.paper),
           strokeWidth: 3,

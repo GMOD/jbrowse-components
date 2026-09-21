@@ -4365,6 +4365,7 @@
     "@jbrowse/display-kit/types": {
       "package": "@jbrowse/display-kit",
       "names": [
+        "VIEW_TRACK_LABEL_MODES",
         "svgLegendAreaReserved"
       ],
       "worker": "real"

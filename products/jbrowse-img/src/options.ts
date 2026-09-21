@@ -47,9 +47,9 @@ function orList(values: readonly string[]) {
 // rather than string, and the help text below is generated from the same list.
 const trackLabelModes = [
   'offset',
-  'overlay',
+  'overlapping',
   'left',
-  'none',
+  'hidden',
 ] as const satisfies readonly TrackLabelMode[]
 
 const cigarModes = [

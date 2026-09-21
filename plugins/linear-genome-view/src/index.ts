@@ -1,6 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
+import { VIEW_TRACK_LABEL_MODES } from '@jbrowse/display-kit/types'
 import { types } from '@jbrowse/mobx-state-tree'
 import LineStyleIcon from '@mui/icons-material/LineStyle'
 
@@ -31,9 +32,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
       type: 'string',
       defaultValue: 'offset',
       model: types.enumeration('trackLabelOptions', [
-        'offset',
-        'overlapping',
-        'hidden',
+        ...VIEW_TRACK_LABEL_MODES,
       ]),
     },
   })
@@ -126,6 +125,7 @@ export type {
   LinearGenomeViewLaunchProps,
   NavLocation,
   TrackLabelMode,
+  ViewTrackLabelMode,
   VolatileGuide,
 } from './LinearGenomeView/types.ts'
 // Not for consumers to import — it is the element type of the view model's
