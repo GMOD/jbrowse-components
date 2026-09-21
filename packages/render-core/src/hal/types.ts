@@ -50,20 +50,23 @@ export type BlendState =
   | { op: 'max' }
   | { op: 'behind' }
 
+export type ShaderStage = 'vertex' | 'fragment' | 'compute'
+
 /**
  * One entry of a shader's GPU binding table, as the Slang codegen reflects it.
  *
- * `kind` is spelled the way WebGPU spells it so a consumer can build a
- * `createBindGroupLayout` entry from it directly. That is the point: the binding
- * indices used to be asserted by hand in three places that never consulted the
- * shader — this HAL's two hardcoded render layouts, and the LD compute driver's
- * own. A shader's `BINDINGS` export is the reflected truth, and `pnpm
- * gen:shaders` now refuses a render shader whose table is not one the HALs bind.
+ * `kind` is spelled the way WebGPU spells it and `stages` names the entry
+ * points that read the binding, so a consumer builds a `createBindGroupLayout`
+ * entry from it directly, `visibility` included. The WebGPU HAL and the compute
+ * driver both do. `pnpm gen:shaders` refuses a render shader whose table is not
+ * one the HALs bind, and a `stages` that leaves out a stage the emitted WGSL
+ * reads the binding in.
  */
 export interface ShaderBinding {
   index: number
   kind: 'uniform' | 'texture' | 'sampler' | 'storage' | 'read-only-storage'
   name: string
+  stages: readonly ShaderStage[]
 }
 
 /**

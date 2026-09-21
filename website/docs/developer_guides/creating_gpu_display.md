@@ -332,7 +332,7 @@ table is the union of all three, plus the three strings the text modules hold:
 | `GLSL_VERTEX` | the compiled WebGL2 vertex stage, in `<base>.glsl.generated.ts`; reach it through `SOURCE.glsl()` |
 | `GLSL_FRAGMENT` | the compiled WebGL2 fragment stage, beside the vertex stage |
 | `SOURCE` | a loader per target, `wgsl()` and `glsl()`, each an `import()` of the module holding that text alone; `slangPass` carries it onto the descriptor and the HAL awaits it when it is built |
-| `BINDINGS` | every binding the shader declares, for HAL bind-group setup |
+| `BINDINGS` | every binding the shader declares and the stages that read it; the WebGPU bind-group layout is built from it |
 | `VERTS_PER_INSTANCE` | vertices per instance, from the shader's const of that name; the draw call reads it |
 | `TOPOLOGY` | the primitive topology `vs_main` emits for, when the shader declares one |
 | `BLEND_STATE` | the blend the fragment stage's output wants, when the shader declares one |

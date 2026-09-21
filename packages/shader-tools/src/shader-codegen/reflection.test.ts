@@ -6,6 +6,7 @@ import {
   findUniformBlockName,
   findVaryingFieldNames,
   findVertexAttributeStruct,
+  withEntryPointReads,
 } from './reflection.ts'
 
 import type { Reflection } from './reflection.ts'
@@ -176,8 +177,49 @@ describe('findInstanceStruct', () => {
           },
         },
       ],
-      entryPoints: [{ name: 'computeLD', stage: 'compute', parameters: [] }],
+      entryPoints: [
+        { name: 'computeLD', stage: 'compute', parameters: [], bindings: [] },
+      ],
     } as Reflection
     expect(findInstanceStruct(compute)).toBeUndefined()
+  })
+})
+
+describe('withEntryPointReads', () => {
+  const slot = (used?: 0 | 1) => ({
+    kind: 'descriptorTableSlot' as const,
+    index: 1,
+    ...(used === undefined ? {} : { used }),
+  })
+  const entry = (name: string, stage: 'vertex' | 'fragment', used?: 0 | 1) => ({
+    name,
+    stage,
+    parameters: [],
+    bindings: [{ name: 'u', binding: slot(used) }],
+  })
+  const whole: Reflection = {
+    parameters: [],
+    entryPoints: [entry('vs_main', 'vertex'), entry('fs_main', 'fragment')],
+  }
+
+  test("takes each entry point's bindings from its own compile", () => {
+    const merged = withEntryPointReads(whole, [
+      { parameters: [], entryPoints: [entry('fs_main', 'fragment', 0)] },
+      { parameters: [], entryPoints: [entry('vs_main', 'vertex', 1)] },
+    ])
+    expect(
+      merged.entryPoints.map(e => [e.name, e.bindings[0]?.binding.used]),
+    ).toEqual([
+      ['vs_main', 1],
+      ['fs_main', 0],
+    ])
+  })
+
+  test('refuses an entry point nothing compiled alone', () => {
+    expect(() =>
+      withEntryPointReads(whole, [
+        { parameters: [], entryPoints: [entry('vs_main', 'vertex', 1)] },
+      ]),
+    ).toThrow(/'fs_main' was not compiled alone/)
   })
 })

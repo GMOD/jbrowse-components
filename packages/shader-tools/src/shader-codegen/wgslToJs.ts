@@ -33,7 +33,7 @@ import { demangle } from './slangcMangling.ts'
 // Tokenizer
 // ---------------------------------------------------------------------------
 
-interface Token {
+export interface Token {
   kind: 'ident' | 'number' | 'punct'
   text: string
   line: number
@@ -79,7 +79,7 @@ const PUNCT = [
 const NUMBER_RE =
   /^(?:0[xX][0-9a-fA-F]+|(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)[fhuil]?/
 
-function tokenize(src: string): Token[] {
+export function tokenize(src: string): Token[] {
   const out: Token[] = []
   let i = 0
   let line = 1

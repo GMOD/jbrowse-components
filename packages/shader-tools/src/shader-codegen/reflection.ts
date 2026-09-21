@@ -10,8 +10,8 @@
 // `reflection.parameters` looking at `type.kind`.
 //
 // The types describe only the parts we consume. slangc emits considerably more
-// (`containerVarLayout`, per-entry-point `bindings`, `bindlessSpaceIndex`),
-// which JSON.parse keeps and TS ignores.
+// (`containerVarLayout`, `bindlessSpaceIndex`), which JSON.parse keeps and TS
+// ignores.
 
 export interface ScalarType {
   kind: 'scalar'
@@ -111,12 +111,23 @@ export interface EntryPointParameter {
   binding?: VaryingBinding
 }
 
+/**
+ * One module-scope binding as an entry point sees it. `used` is whether the
+ * entry point reads it, and slangc reports it only for an entry point compiled
+ * alone — see `withEntryPointReads`.
+ */
+export interface EntryPointBinding {
+  name: string
+  binding: DescriptorBinding & { used?: 0 | 1 }
+}
+
 export interface EntryPoint {
   name: string
   stage: 'vertex' | 'fragment' | 'compute'
   // Slang reflects `[numthreads(X, Y, Z)]` on a compute entry point.
   threadGroupSize?: [number, number, number]
   parameters: EntryPointParameter[]
+  bindings: EntryPointBinding[]
   result?: {
     type?: SlangType | StructType
     binding?: VaryingBinding
@@ -227,6 +238,34 @@ export function findEntryPoint(
   stage: EntryPoint['stage'],
 ) {
   return reflection.entryPoints.find(e => e.stage === stage)
+}
+
+/**
+ * The module's reflection with each entry point's `bindings` taken from a
+ * compile of that entry point alone.
+ *
+ * That compile is the only one where slangc marks which bindings an entry point
+ * reads. The whole-module compile the WGSL comes from lists every binding under
+ * every entry point and flags none, and so does one naming both entry points.
+ */
+export function withEntryPointReads(
+  module: Reflection,
+  alone: readonly Reflection[],
+): Reflection {
+  const compiled = alone.flatMap(r => r.entryPoints)
+  return {
+    ...module,
+    entryPoints: module.entryPoints.map(e => {
+      const own = compiled.find(c => c.name === e.name && c.stage === e.stage)
+      if (!own) {
+        throw new Error(
+          `entry point '${e.name}' was not compiled alone, so nothing says ` +
+            `which bindings it reads`,
+        )
+      }
+      return { ...e, bindings: own.bindings }
+    }),
+  }
 }
 
 /**

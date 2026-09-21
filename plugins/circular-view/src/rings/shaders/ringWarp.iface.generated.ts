@@ -4,9 +4,9 @@
 import type { VertexAttributeLayout, ShaderBinding, BlendState, TextureBinding } from '@jbrowse/render-core/hal'
 
 export const BINDINGS: readonly ShaderBinding[] = [
-  { index: 1, kind: 'uniform', name: 'u' },
-  { index: 2, kind: 'texture', name: 'strip' },
-  { index: 3, kind: 'sampler', name: 'strip' },
+  { index: 1, kind: 'uniform', name: 'u', stages: ['vertex', 'fragment'] },
+  { index: 2, kind: 'texture', name: 'strip', stages: ['fragment'] },
+  { index: 3, kind: 'sampler', name: 'strip', stages: ['fragment'] },
 ]
 
 export const VERTS_PER_INSTANCE = 384

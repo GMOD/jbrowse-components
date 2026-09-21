@@ -27,13 +27,16 @@
 //
 // The binding table is also the thing three separate places were asserting by
 // hand — the render HALs' uniform-only layout (uniform at 1) and their textured
-// one (uniform 1, texture 2, sampler 3), both now built in render-core's
-// `hal/deviceGpuCache.ts`, and the LD compute driver's own `makeBindGroupLayout`
-// (0 read-only-storage, 1 storage, 2 uniform) — none of which consulted
-// reflection. Emitting it lets a consumer build its layout from the shader
-// instead of from a comment promising the two agree.
+// one (uniform 1, texture 2, sampler 3), and the LD compute driver's own
+// `makeBindGroupLayout` (0 read-only-storage, 1 storage, 2 uniform) — none of
+// which consulted reflection. Emitting it lets a consumer build its layout from
+// the shader instead of from a comment promising the two agree, and each entry
+// carries the stages that read it, so the layout's `visibility` comes from the
+// shader too.
 
-import type { Parameter, Reflection } from './reflection.ts'
+import { tokenize } from './wgslToJs.ts'
+
+import type { EntryPoint, Parameter, Reflection } from './reflection.ts'
 
 /**
  * A binding kind, spelled as WebGPU spells it so a consumer can hand the value
@@ -49,14 +52,21 @@ export type BindingKind =
   | 'storage'
   | 'read-only-storage'
 
+export type ShaderStage = EntryPoint['stage']
+
 export interface ShaderBinding {
   index: number
   kind: BindingKind
   /** The shader author's name. A combined sampler contributes two bindings under one name. */
   name: string
+  /** The entry points that read it — what a layout's `visibility` shows it to. */
+  stages: readonly ShaderStage[]
 }
 
-function classifyOne(label: string, p: Parameter): ShaderBinding[] {
+function classifyOne(
+  label: string,
+  p: Parameter,
+): Omit<ShaderBinding, 'stages'>[] {
   const t = p.type
   const at = (kind: BindingKind, index: number) => ({
     index,
@@ -102,8 +112,31 @@ function classifyOne(label: string, p: Parameter): ShaderBinding[] {
   return bad(`reflects as '${t.kind}', which is not a bindable resource`)
 }
 
+// Whether each entry point reads the parameter. A flag slangc left out is a
+// failure rather than a "no": a stage omitted here is one the WebGPU layout
+// hides the binding from.
+function stagesReading(
+  label: string,
+  reflection: Reflection,
+  name: string,
+): ShaderStage[] {
+  return reflection.entryPoints.flatMap(e => {
+    const used = e.bindings.find(b => b.name === name)?.binding.used
+    if (used === undefined) {
+      throw new Error(
+        `${label}: slangc did not say whether entry point '${e.name}' reads ` +
+          `'${name}'. It marks a binding \`used\` only for an entry point ` +
+          `compiled alone (withEntryPointReads), and the WebGPU bind-group ` +
+          `layout shows each binding to exactly the stages marked.`,
+      )
+    }
+    return used ? [e.stage] : []
+  })
+}
+
 /**
- * Every binding the shader declares, in index order.
+ * Every binding the shader declares, in index order, with the stages that read
+ * it.
  *
  * Refuses a duplicate index and a second uniform block. The duplicate check is
  * what makes the combined-sampler expansion safe: it invents `index + 1` for the
@@ -114,7 +147,11 @@ export function classifyBindings(
   label: string,
   reflection: Reflection,
 ): ShaderBinding[] {
-  const out = reflection.parameters.flatMap(p => classifyOne(label, p))
+  const out = reflection.parameters.flatMap(p => {
+    const shapes = classifyOne(label, p)
+    const stages = stagesReading(label, reflection, p.name)
+    return shapes.map(b => ({ ...b, stages }))
+  })
   const byIndex = new Map<number, ShaderBinding>()
   for (const b of out) {
     const prior = byIndex.get(b.index)
@@ -239,13 +276,132 @@ export function assertBindingsMatchWgsl(
   }
 }
 
-// The binding tables the render path can actually bind. Both HALs build their
-// layout from one of these two shapes, so a render shader that reflects
-// anything else compiles and then fails pipeline creation at runtime, on a
-// machine that isn't the author's.
+const isStage = (text: string | undefined): text is ShaderStage =>
+  text === 'vertex' || text === 'fragment' || text === 'compute'
+
+/**
+ * Each entry point of the emitted WGSL, with the binding indices it statically
+ * uses: the module-scope variables its body names, or that the body of any
+ * function it calls names. That is WebGPU's own rule for which layout entries a
+ * pipeline stage has to see.
+ */
+function wgslEntryPointReads(wgsl: string) {
+  const indexOf = new Map<string, number>()
+  for (const m of wgsl.matchAll(WGSL_BINDING_RE)) {
+    indexOf.set(m[4]!, Number(m[1]))
+  }
+  const tokens = tokenize(wgsl)
+  const named = new Map<string, Set<string>>()
+  const entries: { name: string; stage: ShaderStage }[] = []
+  let stage: ShaderStage | undefined
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i]!
+    const next = tokens[i + 1]?.text
+    if (t.text === '@' && isStage(next)) {
+      stage = next
+    } else if (t.kind === 'ident' && t.text === 'fn' && next !== undefined) {
+      let j = i + 2
+      while (tokens[j]!.text !== '{') {
+        j++
+      }
+      const body = new Set<string>()
+      for (let depth = 0; ; j++) {
+        const u = tokens[j]!
+        if (u.text === '{') {
+          depth++
+        } else if (u.text === '}') {
+          depth--
+          if (depth === 0) {
+            break
+          }
+        } else if (u.kind === 'ident' && tokens[j - 1]!.text !== '.') {
+          body.add(u.text)
+        }
+      }
+      named.set(next, body)
+      if (stage) {
+        entries.push({ name: next, stage })
+        stage = undefined
+      }
+      i = j
+    }
+  }
+  const readsOf = (fn: string, seen: Set<string>, reads: Set<number>) => {
+    for (const id of named.get(fn) ?? []) {
+      const index = indexOf.get(id)
+      if (index !== undefined) {
+        reads.add(index)
+      } else if (named.has(id) && !seen.has(id)) {
+        seen.add(id)
+        readsOf(id, seen, reads)
+      }
+    }
+    return reads
+  }
+  return entries.map(({ name, stage }) => ({
+    name,
+    stage,
+    reads: readsOf(name, new Set([name]), new Set()),
+  }))
+}
+
+/**
+ * Refuse a table whose `stages` leave out a stage the emitted WGSL reads the
+ * binding in.
+ *
+ * `stages` comes from reflection, and the WebGPU HAL builds each binding's
+ * layout `visibility` from it, so a stage missing there is a pipeline WebGPU
+ * refuses on every machine where it is the first rung — after which the display
+ * falls to WebGL2 without a word. The WGSL is what that validation reads, so it
+ * is what this compares against: the same doctrine as `assertBindingsMatchWgsl`,
+ * and one-directional for the same reason, since a stage reflection names that
+ * the WGSL never reads only widens a layout.
+ *
+ * Every entry point reflection names has to be found in the WGSL, or a change
+ * in how slangc spells one would leave this comparing nothing.
+ */
+export function assertStageReadsMatchWgsl(
+  label: string,
+  bindings: readonly ShaderBinding[],
+  entryPoints: readonly Pick<EntryPoint, 'name' | 'stage'>[],
+  wgsl: string,
+) {
+  const found = wgslEntryPointReads(wgsl)
+  for (const e of entryPoints) {
+    if (!found.some(f => f.name === e.name && f.stage === e.stage)) {
+      throw new Error(
+        `${label}: reflection names the ${e.stage} entry point '${e.name}', ` +
+          `and no '@${e.stage} fn ${e.name}' was found in the emitted WGSL, ` +
+          `so nothing checked which bindings it reads.`,
+      )
+    }
+  }
+  for (const { name, stage, reads } of found) {
+    for (const index of reads) {
+      const b = bindings.find(x => x.index === index)
+      if (b && !b.stages.includes(stage)) {
+        throw new Error(
+          `${label}: the ${stage} entry point '${name}' reads binding ` +
+            `${index} ('${b.name}', a ${b.kind}) in the emitted WGSL, but ` +
+            `reflection lists ${b.stages.length > 0 ? `only ${b.stages.join(' and ')}` : 'no stage'} ` +
+            `as reading it. The WebGPU layout shows a binding to the stages ` +
+            `reflection names, so this pipeline would be refused. After a ` +
+            `SLANG_VERSION bump, this means slangc's per-entry-point \`used\` ` +
+            `flags and its WGSL have diverged.`,
+        )
+      }
+    }
+  }
+}
+
+// The binding tables the render path can actually bind: the HALs fill the
+// uniform block from one ring and bind at most one texture, so a render shader
+// that reflects anything else compiles and then fails at pipeline creation, on
+// a machine that isn't the author's.
 //
 // This is a guard, not a second declaration: nothing here is used to bind
-// anything. `PipelineDescriptor.bindings` carries the shader's own table to the HAL.
+// anything. `PipelineDescriptor.bindings` carries the shader's own table to the
+// HAL, which builds its WebGPU layout from it.
 const RENDER_SHAPES = ['uniform@1', 'uniform@1,texture@2,sampler@3'] as const
 
 function bindingShape(bindings: readonly ShaderBinding[]) {

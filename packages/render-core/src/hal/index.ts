@@ -12,6 +12,7 @@ export type {
   SampleCount,
   ShaderBinding,
   ShaderSource,
+  ShaderStage,
   TextureBinding,
   TextureSource,
 } from './types.ts'

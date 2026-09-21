@@ -891,21 +891,22 @@ export function emitInterface(inputs: CodegenInputs) {
   }
 
   // The shader's own binding table, so a consumer builds its bind group layout
-  // from the shader instead of restating it. Three places restated it — both
-  // HALs' hardcoded render layouts and the LD compute driver's — and reflection
-  // knew the answer in all three.
+  // from the shader instead of restating it, down to which stages see each
+  // binding.
   //
-  // A render shader is additionally held to a shape the HALs actually bind; a
+  // A render shader is additionally held to a shape the HALs actually bind —
+  // the empty table included, since every draw binds the uniform ring — and a
   // compute shader is not, because its driver derives the layout from this.
+  if (findEntryPoint(reflection, 'vertex')) {
+    assertRenderBindingShape(`${baseName}.slang`, bindings)
+  }
   if (bindings.length > 0) {
-    if (findEntryPoint(reflection, 'vertex')) {
-      assertRenderBindingShape(`${baseName}.slang`, bindings)
-    }
-    // #shaderExport BINDINGS | every binding the shader declares, for HAL bind-group setup
+    // #shaderExport BINDINGS | every binding the shader declares and the stages that read it; the WebGPU bind-group layout is built from it
     lines.push('export const BINDINGS: readonly ShaderBinding[] = [')
     for (const b of bindings) {
+      const stages = b.stages.map(s => `'${s}'`).join(', ')
       lines.push(
-        `  { index: ${b.index}, kind: '${b.kind}', name: '${b.name}' },`,
+        `  { index: ${b.index}, kind: '${b.kind}', name: '${b.name}', stages: [${stages}] },`,
       )
     }
     lines.push(']', '')

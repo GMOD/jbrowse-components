@@ -299,6 +299,16 @@ const computeReflection = {
       stage: 'compute',
       threadGroupSize: [64, 1, 1],
       parameters: [],
+      bindings: [
+        {
+          name: 'genotypes',
+          binding: { kind: 'descriptorTableSlot', index: 0, used: 1 },
+        },
+        {
+          name: 'u',
+          binding: { kind: 'descriptorTableSlot', index: 1, used: 1 },
+        },
+      ],
     },
   ],
 } as Reflection
@@ -336,8 +346,8 @@ describe('emitInterface compute', () => {
     expect(out).toContain(
       [
         'export const BINDINGS: readonly ShaderBinding[] = [',
-        "  { index: 0, kind: 'read-only-storage', name: 'genotypes' },",
-        "  { index: 1, kind: 'uniform', name: 'u' },",
+        "  { index: 0, kind: 'read-only-storage', name: 'genotypes', stages: ['compute'] },",
+        "  { index: 1, kind: 'uniform', name: 'u', stages: ['compute'] },",
         ']',
       ].join('\n'),
     )
@@ -638,6 +648,22 @@ describe('the shader module and its text', () => {
   })
 })
 
+// Every draw binds the uniform ring, and the WebGPU layout is built from this
+// table, so an empty one would give the draw's dynamic offset nothing to bind.
+test('refuses a render shader with no binding table', () => {
+  expect(() =>
+    emitInterface({
+      baseName: 'test',
+      reflection: {
+        parameters: [],
+        entryPoints: [
+          { name: 'vs_main', stage: 'vertex', parameters: [], bindings: [] },
+        ],
+      },
+    }),
+  ).toThrow(/binding table '' is not one the render HALs bind/)
+})
+
 describe('emitInterface textures', () => {
   test('emits the TEXTURES binding and imports the HAL type', () => {
     const out = emitInterface({
@@ -762,6 +788,7 @@ describe('storage-buffer instancing', () => {
         {
           name: 'vsMain',
           stage: 'vertex' as const,
+          bindings: [],
           parameters: [
             {
               name: 'inst',
@@ -873,7 +900,7 @@ describe('unmodeled reflection shapes', () => {
       emitInterface({
         baseName: 'test',
         reflection: {
-          parameters: [],
+          parameters: [uniformParam],
           entryPoints: [
             {
               name: 'vs_main',
@@ -891,6 +918,12 @@ describe('unmodeled reflection shapes', () => {
                       },
                     ],
                   },
+                },
+              ],
+              bindings: [
+                {
+                  name: 'u',
+                  binding: { kind: 'descriptorTableSlot', index: 1, used: 1 },
                 },
               ],
             },

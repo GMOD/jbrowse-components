@@ -59,6 +59,7 @@ import {
 import { assertVertexInputsMatch } from './shader-codegen/assertVertexInputs.ts'
 import {
   assertBindingsMatchWgsl,
+  assertStageReadsMatchWgsl,
   classifyBindings,
 } from './shader-codegen/bindings.ts'
 import {
@@ -100,6 +101,7 @@ import {
   findUniformBlockName,
   findVaryingFieldNames,
   findVertexAttributeStruct,
+  withEntryPointReads,
 } from './shader-codegen/reflection.ts'
 import {
   stripLineDirectives,
@@ -698,42 +700,52 @@ async function compileOne(log: Log, slangPath: string, source: string) {
       validations.push(run(NAGA, [wgslOut]))
     }
 
-    const reflection = JSON.parse(
+    const moduleReflection = JSON.parse(
       readFileSync(reflectionOut, 'utf8'),
     ) as Reflection
+    const glsl = targets.includes('glsl')
+    const vs = findEntryPoint(moduleReflection, 'vertex')
+    const fs = findEntryPoint(moduleReflection, 'fragment')
+    if (glsl && (!vs || !fs)) {
+      throw new Error(
+        `${slangPath}: targets 'glsl' but missing vertex or fragment entry point`,
+      )
+    }
+
+    // Each entry point compiled alone, the one compile where slangc says which
+    // bindings it reads. For a shader targeting GLSL that is the stage's GLSL
+    // compile; otherwise only its reflection is kept.
+    const stageTarget = glsl ? 'glsl' : 'wgsl'
+    const aloneOut = (entry: string) =>
+      path.join(tmp, `${base}.${entry}.${stageTarget}`)
+    const alone = await Promise.all(
+      moduleReflection.entryPoints.map(async e => {
+        const out = aloneOut(e.name)
+        await runOrThrow(SLANGC, [
+          slangPath,
+          '-target',
+          stageTarget,
+          '-stage',
+          e.stage,
+          '-entry',
+          e.name,
+          '-o',
+          out,
+          '-reflection-json',
+          `${out}.json`,
+          '-I',
+          dir,
+          '-I',
+          SHARED_INCLUDE,
+        ])
+        return JSON.parse(readFileSync(`${out}.json`, 'utf8')) as Reflection
+      }),
+    )
+    const reflection = withEntryPointReads(moduleReflection, alone)
     let glslVertex: string | undefined
     let glslFragment: string | undefined
 
-    if (targets.includes('glsl')) {
-      const vsName = findEntryPoint(reflection, 'vertex')?.name
-      const fsName = findEntryPoint(reflection, 'fragment')?.name
-      if (!vsName || !fsName) {
-        throw new Error(
-          `${slangPath}: targets 'glsl' but missing vertex or fragment entry point`,
-        )
-      }
-      const glslVertexOut = path.join(tmp, `${base}.vert.glsl`)
-      const glslFragmentOut = path.join(tmp, `${base}.frag.glsl`)
-      const glslArgs = (stage: string, entry: string, out: string) => [
-        slangPath,
-        '-target',
-        'glsl',
-        '-stage',
-        stage,
-        '-entry',
-        entry,
-        '-o',
-        out,
-        '-I',
-        dir,
-        '-I',
-        SHARED_INCLUDE,
-      ]
-      await Promise.all([
-        runOrThrow(SLANGC, glslArgs('vertex', vsName, glslVertexOut)),
-        runOrThrow(SLANGC, glslArgs('fragment', fsName, glslFragmentOut)),
-      ])
-
+    if (glsl && vs && fs) {
       const vertexStruct = findVertexAttributeStruct(reflection)
       const attributes = vertexStruct
         ? {
@@ -746,8 +758,8 @@ async function compileOne(log: Log, slangPath: string, source: string) {
       const fragParamName = findFragmentInputParamName(reflection)
       const samplerNames = findCombinedSamplers(reflection).map(s => s.name)
 
-      const rawVert = readFileSync(glslVertexOut, 'utf8')
-      const rawFrag = readFileSync(glslFragmentOut, 'utf8')
+      const rawVert = readFileSync(aloneOut(vs.name), 'utf8')
+      const rawFrag = readFileSync(aloneOut(fs.name), 'utf8')
       glslVertex = vulkanGlslToWebgl2(rawVert, 'vertex', {
         uniformBlockName,
         attributes,
@@ -755,7 +767,7 @@ async function compileOne(log: Log, slangPath: string, source: string) {
         varyings:
           varyingFieldNames.length > 0
             ? {
-                prefix: `entryPointParam_${vsName}`,
+                prefix: `entryPointParam_${vs.name}`,
                 fieldNames: varyingFieldNames,
               }
             : undefined,
@@ -799,9 +811,16 @@ async function compileOne(log: Log, slangPath: string, source: string) {
     // Reflection and the emitted WGSL are two outputs of the same compiler, and
     // only one of them is what the GPU runs. Make them agree about the bindings
     // here, where the message can name the shader — see assertBindingsMatchWgsl.
+    const bindings = classifyBindings(`${base}.slang`, reflection)
     assertBindingsMatchWgsl(
       path.relative(PROJECT_ROOT, slangPath),
-      classifyBindings(`${base}.slang`, reflection),
+      bindings,
+      wgsl,
+    )
+    assertStageReadsMatchWgsl(
+      path.relative(PROJECT_ROOT, slangPath),
+      bindings,
+      reflection.entryPoints,
       wgsl,
     )
 

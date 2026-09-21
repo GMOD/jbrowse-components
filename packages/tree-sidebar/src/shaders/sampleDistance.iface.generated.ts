@@ -4,9 +4,9 @@
 import type { ShaderBinding } from '@jbrowse/render-core/hal'
 
 export const BINDINGS: readonly ShaderBinding[] = [
-  { index: 0, kind: 'read-only-storage', name: 'data' },
-  { index: 1, kind: 'storage', name: 'dist' },
-  { index: 2, kind: 'uniform', name: 'u' },
+  { index: 0, kind: 'read-only-storage', name: 'data', stages: ['compute'] },
+  { index: 1, kind: 'storage', name: 'dist', stages: ['compute'] },
+  { index: 2, kind: 'uniform', name: 'u', stages: ['compute'] },
 ]
 
 export const COMPUTE_ENTRY_POINT = "sampleDistance"

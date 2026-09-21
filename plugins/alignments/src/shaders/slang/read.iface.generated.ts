@@ -4,7 +4,7 @@
 import type { VertexAttributeLayout, ShaderBinding } from '@jbrowse/render-core/hal'
 
 export const BINDINGS: readonly ShaderBinding[] = [
-  { index: 1, kind: 'uniform', name: 'u' },
+  { index: 1, kind: 'uniform', name: 'u', stages: ['vertex', 'fragment'] },
 ]
 
 export const VERTS_PER_INSTANCE = 9

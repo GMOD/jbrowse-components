@@ -119,8 +119,18 @@ describe('slangPass', () => {
       },
     ]
     const bindings = [
-      { index: 1, kind: 'uniform' as const, name: 'u' },
-      { index: 2, kind: 'texture' as const, name: 'ramp' },
+      {
+        index: 1,
+        kind: 'uniform' as const,
+        name: 'u',
+        stages: ['vertex', 'fragment'] as const,
+      },
+      {
+        index: 2,
+        kind: 'texture' as const,
+        name: 'ramp',
+        stages: ['fragment'] as const,
+      },
     ]
 
     const desc = slangPass({
