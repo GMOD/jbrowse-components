@@ -160,14 +160,13 @@ v5 user as compatible whatever its state here.
 
 <!-- BEGIN GENERATED ABI_PLUGIN_BREAKS -->
 
-3 of the 13 plugins in the store break against this build.
+2 of the 13 plugins in the store break against this build.
 
 <!-- prettier-ignore -->
 | Plugin | What breaks |
 | --- | --- |
 | Apollo | `@jbrowse/core/util#isContainedWithin`<br />`@jbrowse/core/util/tracks#getParentRenderProps`<br />`worker eval: TypeError: Cannot read properties of undefined (reading 'createElement')` |
 | Ideogram | `worker eval: ReferenceError: window is not defined` |
-| Reactome | `module @material-ui/core`<br />`module @material-ui/core/utils`<br />`module @material-ui/lab`<br />`worker eval: This JBrowse does not serve '@material-ui/core' to plugins: the plugin was built against an older or newer @jbrowse/core, or against a package this host does not bundle` |
 
 <!-- END GENERATED ABI_PLUGIN_BREAKS -->
 

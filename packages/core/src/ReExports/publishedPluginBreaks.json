@@ -37,12 +37,7 @@
   },
   {
     "plugin": "Reactome",
-    "breaks": [
-      "module @material-ui/core",
-      "module @material-ui/core/utils",
-      "module @material-ui/lab",
-      "worker eval: This JBrowse does not serve '@material-ui/core' to plugins: the plugin was built against an older or newer @jbrowse/core, or against a package this host does not bundle"
-    ]
+    "breaks": []
   },
   {
     "plugin": "RefGet",
