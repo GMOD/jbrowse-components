@@ -1,5 +1,6 @@
 import { getSession } from '@jbrowse/core/util'
 import { getMembers } from '@jbrowse/mobx-state-tree'
+import { showRegionsWithUndo } from '@jbrowse/plugin-linear-genome-view'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { transaction, when } from 'mobx'
 
@@ -104,6 +105,20 @@ test("the anchor row's own gesture changes nothing", async () => {
   const view = await openStack()
   view.views[0]!.horizontalScroll(40)
   expect(view.followAnchorIndex).toBe(0)
+})
+
+// Collapsed introns and alignments' mate views replace the row's regions; the
+// follow held that as its own navigation and put the row straight back.
+test("replacing a followed row's regions with an Undo takes the anchor", async () => {
+  const view = await openStack()
+  const row = view.views[2]!
+  const regions = [
+    { assemblyName: 'volvox2', refName: 'ctgA', start: 1000, end: 2000 },
+  ]
+  showRegionsWithUndo({ view: row, regions, message: 'Collapsed introns' })
+  expect(view.followAnchorIndex).toBe(2)
+  expect(row.displayedRegions).toEqual(regions)
+  expect(row.windowWidthBp).toBeLessThanOrEqual(1000)
 })
 
 test('a navigation held for the follow is not a gesture', async () => {

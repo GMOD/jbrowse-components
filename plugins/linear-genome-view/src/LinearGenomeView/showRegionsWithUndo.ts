@@ -1,4 +1,5 @@
 import { getNotificationSink } from '@jbrowse/core/util'
+import { transaction } from 'mobx'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { Region } from '@jbrowse/core/util/types'
@@ -46,7 +47,12 @@ export function showRegionsWithUndo({
     windowWidthBp: view.windowWidthBp,
     windowStartBp: view.windowStartBp,
   }
-  view.showRegions(regions)
+  // two root actions in one transaction: `fitAllRegions` reads as the reader's
+  // own gesture to a synteny follow, which `showRegions` does not
+  transaction(() => {
+    view.setDisplayedRegions(regions)
+    view.fitAllRegions()
+  })
   getNotificationSink(view).notify(message, 'info', {
     name: 'Undo',
     onClick: () => {
