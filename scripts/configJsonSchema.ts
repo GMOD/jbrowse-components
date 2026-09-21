@@ -38,6 +38,7 @@ export interface SchemaMetadata {
     implicitIdentifier?: string | boolean
     shorthand?: string
     closed?: boolean
+    shorthandWith?: Record<string, unknown>
     preProcessSnapshot?: (snap: unknown) => unknown
     requires?: {
       id: string
@@ -707,7 +708,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
           anyOf: [
             {
               type: forms.bare,
-              description: `Shorthand for \`{ "${stringTarget(meta)}": ... }\`.`,
+              description: `Shorthand for \`{ "${stringTarget(meta)}": ...${companionText(meta)} }\`.`,
             },
             object,
           ],
@@ -754,6 +755,12 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
   }
 
   // The slot a bare value lifts into, as the schema declares it.
+  function companionText(meta: SchemaMetadata) {
+    return Object.entries(meta.options.shorthandWith ?? {})
+      .map(([slot, value]) => `, "${slot}": ${JSON.stringify(value)}`)
+      .join('')
+  }
+
   function stringTarget(meta: SchemaMetadata) {
     return meta.options.shorthand ?? 'value'
   }

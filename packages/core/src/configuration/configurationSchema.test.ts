@@ -1568,6 +1568,34 @@ describe('a shorthand naming a number slot', () => {
   })
 })
 
+describe('a shorthand with companion slots', () => {
+  const Color = ConfigurationSchema(
+    'ShorthandWithColor',
+    {
+      value: { type: 'maybeColor' },
+      field: { type: 'string', defaultValue: 'strand' },
+      scale: { type: 'maybeString' },
+    },
+    { shorthand: 'value', shorthandWith: { scale: 'none' }, closed: true },
+  )
+  const Display = ConfigurationSchema('ShorthandWithDisplay', { color: Color })
+
+  test('a bare value sets them beside it, on every door', () => {
+    expect(getSnapshot(Display.create({ color: 'red' }))).toEqual({
+      color: { value: 'red', scale: 'none' },
+    })
+    const node = Display.create({})
+    node.setSubschema('color', 'blue')
+    expect(getSnapshot(node.color)).toEqual({ value: 'blue', scale: 'none' })
+  })
+
+  test('the object form sets only what it names, and reloads as written', () => {
+    const written = getSnapshot(Display.create({ color: { value: 'red' } }))
+    expect(written).toEqual({ color: { value: 'red' } })
+    expect(getSnapshot(Display.create(written))).toEqual(written)
+  })
+})
+
 describe('a closed schema', () => {
   const Color = ConfigurationSchema(
     'ClosedColor',

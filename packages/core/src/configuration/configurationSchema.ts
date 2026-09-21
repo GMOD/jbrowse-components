@@ -94,6 +94,12 @@ export interface ConfigurationSchemaOptions<
    */
   shorthand?: string
   /**
+   * Slots a bare value sets beside `shorthand`, for a schema whose defaults
+   * would hide it: LGVSyntenyColor's `field` defaults to `strand`, so its
+   * `color: "steelblue"` is `{ value: "steelblue", scale: "none" }`.
+   */
+  shorthandWith?: Record<string, unknown>
+  /**
    * Refuse a snapshot key the schema does not declare, where MST would drop
    * it in silence. Checked after the `shorthand` lift and before
    * `preProcessSnapshot`, on the same paths.

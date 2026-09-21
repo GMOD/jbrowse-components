@@ -63,7 +63,8 @@ export function shorthandForm({
 /**
  * What a schema does to every snapshot on its way in, whichever door it
  * arrives by (`create`, `applySnapshot`, `setSubschema`, a settings bag): a
- * bare string or number lifts into the declared `shorthand` slot and `null`
+ * bare string or number lifts into the declared `shorthand` slot, beside any
+ * `shorthandWith` slots, and `null`
  * into the empty object that clears it, a `closed` schema refuses a key it
  * does not declare, then the schema's own `preProcessSnapshot` runs. A bare
  * value the shorthand does not lift passes through for MST to refuse.
@@ -72,12 +73,13 @@ export function preProcessSnapshotWith(
   schema: ConfigurationSchemaMetadata,
   snapshot: unknown,
 ): Record<string, unknown> {
-  const { shorthand, closed, preProcessSnapshot } = schema.options
+  const { shorthand, shorthandWith, closed, preProcessSnapshot } =
+    schema.options
   const lifted =
     snapshot === null
       ? {}
       : shorthand !== undefined && typeof snapshot === shorthandForm(schema)
-        ? { [shorthand]: snapshot }
+        ? { ...shorthandWith, [shorthand]: snapshot }
         : (snapshot as Record<string, unknown>)
   if (closed) {
     refuseUndeclaredKeys(schema, lifted)
