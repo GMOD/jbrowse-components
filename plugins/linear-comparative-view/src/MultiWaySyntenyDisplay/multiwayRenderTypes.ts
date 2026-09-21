@@ -1,6 +1,7 @@
 import type { SyntenyTrackRenderParams } from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
 import type { SyntenyOutlineChannels } from '../LinearSyntenyDisplay/syntenyRibbonMarks.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type { PaintedFill } from './geneColor.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { RegionRenderData } from '@jbrowse/plugin-canvas'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
@@ -22,6 +23,8 @@ export interface GlyphHit {
   feature: Feature
   groupKey?: string
   label: string
+  /** what the mark is filled with, which the gene key reads back */
+  fill?: PaintedFill
 }
 
 export interface LaneGlyphData extends RegionRenderData {

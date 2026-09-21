@@ -1200,7 +1200,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   ribbonColor: (value, { displayType }) => {
     const label = syntenyColorLabel(syntenyColorField(value))
     return label && displayType === 'MultiWaySyntenyDisplay'
-      ? { path: `${TRACK_MENU} → Color by... → ${label}` }
+      ? { path: `${TRACK_MENU} → Color by... → Ribbons → ${label}` }
       : undefined
   },
   laneFilter: (value, { displayType }) => {

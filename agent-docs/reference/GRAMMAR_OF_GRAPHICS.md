@@ -315,12 +315,14 @@ The seams, named honestly:
   `encodeFeatures` resolved; synteny and the mark display map their own
   resolved tables — already in their channel's order, and the mark's rows
   carrying a glyph swatch — but place the rows through the same
-  `legendSpecOf`. Two keys stay outside it and both are the same exception:
-  the multi-row feature display's and the multiway lane glyphs'
-  (`laneColorKey`) read colours off `itemRgb` and per-feature `jexl:`, so
-  there is no channel behind them to carry a field name or a domain. They
-  still run the union's rule — a row IS a colour, named by every feature
-  value carrying it. **A value-less feature files under the empty key `''`**, which
+  `legendSpecOf`. The multiway lane glyphs' `color` is the `FeatureColor`
+  object, so a field there hands the union the values its packer filed each
+  mark under (`laneFieldKey`), `cluster` among them. Two keys stay outside
+  it and both are the same exception: the multi-row feature display's, which
+  reads colours off `itemRgb` and per-feature `jexl:`, and the multiway lane
+  glyphs' under a `jexl:` `value` (`laneColorKey`), so there is no channel
+  behind them to carry a field name or a domain. They still run the union's
+  rule — a row IS a colour, named by every feature value carrying it. **A value-less feature files under the empty key `''`**, which
   the one comparator already places after every value, so the worker tables
   and the candidates carry no flag for it; the key's `missing` row is derived
   from that key where the row is made. What a value-less feature paints

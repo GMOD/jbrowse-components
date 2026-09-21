@@ -131,8 +131,11 @@ function stack({
   })
 }
 
+const goldenrod = { css: 'goldenrod', packed: cssColorToABGR('goldenrod') }
+const fills = { fill: () => goldenrod, utr: () => goldenrod.packed }
 const colors = {
-  colorOf: () => 'goldenrod',
+  genes: fills,
+  boxes: fills,
   stroke: 'black',
   divider: 'rgba(0,0,0,0.1)',
 }
@@ -749,5 +752,52 @@ describe('a lane cell', () => {
     expect(
       glyphHitAt(glyphs.hits, 100, s.lanes[0]!.glyphTop + 1)?.groupKey,
     ).toBe('g1')
+  })
+
+  // The peach frame reaches 500..2500, so the gene's last 400 bp are clipped
+  // off. Inside the reach `a` overlaps it more (600 bp against 501); in bp
+  // `b` does (901 against 600), and a pan moving the reach cannot flip it
+  test('a gene straddling the reach is claimed by its widest overlap in bp', () => {
+    const record = (name: string, anchor: number, start: number, end: number) =>
+      new SimpleFeature({
+        uniqueId: name,
+        refName: 'chr1',
+        start: anchor,
+        end: anchor + 100,
+        strand: 1,
+        name,
+        mate: { assemblyName: 'peach', refName: 'Pp1', start, end },
+      })
+    const s = stack({
+      features: [record('a', 100, 1900, 2500), record('b', 300, 1999, 2900)],
+    })
+    const clipped = new SimpleFeature({
+      uniqueId: 'peachGene',
+      refName: 'Pp1',
+      start: 1800,
+      end: 2900,
+      strand: 1,
+      type: 'gene',
+    })
+    const claims: (string | undefined)[] = []
+    const { glyphs, boxes } = buildLaneCells({
+      lane: s.lanes[1]!,
+      genes: [new LaneGene(clipped)],
+      glyphHeight: s.glyphHeight,
+      width: WIDTH,
+      colors: {
+        ...colors,
+        genes: {
+          ...fills,
+          fill: (_feature, cluster) => {
+            claims.push(cluster)
+            return goldenrod
+          },
+        },
+      },
+    })
+    expect(glyphs.hits.map(h => h.groupKey)).toEqual(['b'])
+    expect(claims).toEqual(['b'])
+    expect(boxes.hits).toEqual([])
   })
 })

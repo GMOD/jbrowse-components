@@ -20,6 +20,7 @@ import { frameTickXs, groupSpansLanes } from './layoutMultiWay.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type { GeneColors } from './geneColor.ts'
 import type { LaneGene } from './geneGlyph.ts'
 import type { Lane, LaneBand, LaneStack } from './laneStack.ts'
 import type { MultiWayGroup, Span } from './layoutMultiWay.ts'
@@ -534,7 +535,10 @@ export function buildBandCell({
 }
 
 export interface LaneGlyphColors {
-  colorOf: (slot: 'color' | 'utrColor', feature: Feature) => string
+  /** the lane's own genes */
+  genes: GeneColors
+  /** the placement boxes, off the groups' own records */
+  boxes: GeneColors
   stroke: string
   divider: string
 }
@@ -549,6 +553,64 @@ function onCanvas(span: Span, width: number) {
 export interface LaneCells {
   glyphs: LaneGlyphData
   boxes: LaneGlyphData
+}
+
+interface DrawnGene {
+  gene: LaneGene
+  span: Span
+  /** the group the gene carries, which `cluster` paints it by */
+  cluster?: string
+}
+
+interface LaneBox {
+  key: string
+  group: MultiWayGroup
+  span: Span
+}
+
+/**
+ * Which placements a lane's drawn genes stand in for. A placement one of them
+ * overlaps is that gene's, the widest overlap where several do; a placement no
+ * gene overlaps is a box. A gene claimed twice — a tandem array, a clipped
+ * edge — carries the widest claim, the group it is mostly made of.
+ *
+ * In bp on the lane's own sequence, so a gene straddling the edge claims the
+ * same group whatever the frame clips off it.
+ */
+function claimPlacements(lane: Lane, drawn: DrawnGene[]) {
+  const onRef = new Map<string, { spans: Span[]; drawn: DrawnGene[] }>()
+  for (const d of drawn) {
+    const { feature } = d.gene
+    const ref = lane.canon(feature.get('refName'))
+    const genes = onRef.get(ref) ?? { spans: [], drawn: [] }
+    genes.spans.push([feature.get('start'), feature.get('end')])
+    genes.drawn.push(d)
+    onRef.set(ref, genes)
+  }
+  const covering = new Map(
+    [...onRef].map(([ref, genes]) => [
+      ref,
+      { cover: annotatedSpans(genes.spans), drawn: genes.drawn },
+    ]),
+  )
+  const widest = new Map<DrawnGene, number>()
+  const boxes: LaneBox[] = []
+  for (const [key, { group, spans, intervals }] of lane.placements) {
+    intervals.forEach(({ refName, start, end }, i) => {
+      const genes = covering.get(lane.canon(refName))
+      const cover = genes?.cover([start, end])
+      if (genes && cover) {
+        const gene = genes.drawn[cover.index]!
+        if (cover.overlap > (widest.get(gene) ?? 0)) {
+          widest.set(gene, cover.overlap)
+          gene.cluster = key
+        }
+      } else {
+        boxes.push({ key, group, span: spans[i]! })
+      }
+    })
+  }
+  return boxes
 }
 
 /**
@@ -590,33 +652,31 @@ export function buildLaneCells({
   for (const [x1, x2] of lane.baseline) {
     glyphs.line(x1, x2, centerY, glyphHeight, 0, divider)
   }
-  // a slot answers the same few strings for a whole lane; parse each once
-  const packed = new Map<string, number>()
-  const pack = (css: string) => {
-    let color = packed.get(css)
-    if (color === undefined) {
-      color = cssColorToABGR(css)
-      packed.set(css, color)
-    }
-    return color
-  }
 
-  const annotated: Span[] = []
+  const drawn: DrawnGene[] = []
   for (const gene of genes) {
     const { feature } = gene
-    const refName = feature.get('refName')
-    const span = lane.spanOf(refName, feature.get('start'), feature.get('end'))
-    if (span === undefined || !onCanvas(span, width)) {
-      continue
+    const span = lane.spanOf(
+      feature.get('refName'),
+      feature.get('start'),
+      feature.get('end'),
+    )
+    if (span !== undefined && onCanvas(span, width)) {
+      drawn.push({ gene, span })
     }
-    annotated.push(span)
+  }
+  const unclaimed = claimPlacements(lane, drawn)
+
+  for (const { gene, span, cluster } of drawn) {
+    const { feature } = gene
+    const refName = feature.get('refName')
     const { left, right, pxDir, full, thin, introns } = geneGlyphGeometry(
       gene,
       span,
       (start, end) => lane.spanOf(refName, start, end),
     )
-    const color = pack(colors.colorOf('color', feature))
-    const utrColor = pack(colors.colorOf('utrColor', feature))
+    const fill = colors.genes.fill(feature, cluster)
+    const utrColor = colors.genes.utr(feature)
     for (const [x1, x2] of introns) {
       glyphs.line(x1, x2, centerY, glyphHeight, pxDir, stroke)
     }
@@ -625,7 +685,7 @@ export function buildLaneCells({
       glyphs.rect(x1, x2, utrY, utrHeight, utrColor)
     }
     for (const [x1, x2] of full) {
-      glyphs.rect(x1, x2, y, glyphHeight, color)
+      glyphs.rect(x1, x2, y, glyphHeight, fill.packed)
     }
     // no width gate here: the passes cull an arrow narrower than
     // ARROW_MIN_FEATURE_WIDTH_PX themselves, in px, and these cells are packed
@@ -650,44 +710,32 @@ export function buildLaneCells({
       y1: y,
       y2: y + glyphHeight,
       feature,
+      groupKey: cluster,
       label: feature.get('name') ?? feature.id(),
+      fill,
     })
   }
 
-  // per covered gene, the widest placement that claimed it: two groups under
-  // one gene is a tandem array or a clipped edge, and the reader wants the one
-  // the gene is mostly made of
-  const claimed = new Map<number, number>()
-  const coveringGene = annotatedSpans(annotated)
-  for (const [key, { group, spans }] of lane.placements) {
-    for (const span of spans) {
-      const cover = coveringGene(span)
-      if (cover) {
-        if (cover.overlap > (claimed.get(cover.index) ?? 0)) {
-          claimed.set(cover.index, cover.overlap)
-          glyphs.hits[cover.index]!.groupKey = key
-        }
-        continue
-      }
-      const color = pack(colors.colorOf('color', group.feature))
-      const [boxLeft, boxRight] = span[0] <= span[1] ? span : [span[1], span[0]]
-      boxes.rect(
-        boxLeft,
-        Math.max(boxLeft + 1, boxRight),
-        y + 1,
-        Math.max(1, glyphHeight - 2),
-        withAbgrAlpha(color, BOX_ALPHA),
-      )
-      boxes.hits.push({
-        x1: boxLeft,
-        x2: Math.max(boxLeft + 1, boxRight),
-        y1: y,
-        y2: y + glyphHeight,
-        feature: group.feature,
-        groupKey: key,
-        label: key,
-      })
-    }
+  for (const { key, group, span } of unclaimed) {
+    const fill = colors.boxes.fill(group.feature, key)
+    const [boxLeft, boxRight] = span[0] <= span[1] ? span : [span[1], span[0]]
+    boxes.rect(
+      boxLeft,
+      Math.max(boxLeft + 1, boxRight),
+      y + 1,
+      Math.max(1, glyphHeight - 2),
+      withAbgrAlpha(fill.packed, BOX_ALPHA),
+    )
+    boxes.hits.push({
+      x1: boxLeft,
+      x2: Math.max(boxLeft + 1, boxRight),
+      y1: y,
+      y2: y + glyphHeight,
+      feature: group.feature,
+      groupKey: key,
+      label: key,
+      fill,
+    })
   }
   return { glyphs: glyphs.build(), boxes: boxes.build() }
 }

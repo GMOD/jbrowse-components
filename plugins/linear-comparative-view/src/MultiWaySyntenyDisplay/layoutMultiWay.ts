@@ -414,13 +414,14 @@ export function groupRunSpansOnRow(
   assemblyName: string,
   frame: RowFrame,
   width: number,
-): { span: Span; orientation: number }[] {
+): { span: Span; orientation: number; interval: MultiWayPlacement }[] {
   // every run holds a placement the frame shows, so `frameSpan` always answers
   return groupRunsOnRow(group, assemblyName, frame).map(run => {
     const [a, b] = frameSpan(frame, run.min, run.max, width)!
     return {
       span: run.orientation < 0 ? ([b, a] as const) : ([a, b] as const),
       orientation: run.orientation,
+      interval: { refName: frame.refName, start: run.min, end: run.max },
     }
   })
 }

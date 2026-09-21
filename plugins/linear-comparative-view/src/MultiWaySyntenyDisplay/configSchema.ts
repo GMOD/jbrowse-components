@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
+import { utrDefaultColor } from '@jbrowse/core/ui/palette'
+import { colorConfigSchema } from '@jbrowse/display-kit/colorConfigSchema'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -44,17 +45,14 @@ export function configSchemaFactory() {
     'MultiWaySyntenyDisplay',
     {
       /**
-       * #slot
+       * #slot color
+       * The gene glyphs' fill: a CSS color or `jexl:` callback, goldenrod
+       * unset, or `{ field }` to paint each value its own palette color with
+       * a key. `{ field: "cluster" }` paints a gene by the ortholog group it
+       * carries and a placement box by its own, so a group is one color down
+       * the stack; a gene no group claims is the no-value grey.
        */
-      // #region contextVariableSlot
-      color: {
-        type: 'color',
-        description:
-          'the fill color of the gene glyphs, matching the canvas gene track default',
-        defaultValue: featureDefaultColor,
-        contextVariable: ['feature'],
-      },
-      // #endregion
+      color: colorConfigSchema,
       /**
        * #slot
        */

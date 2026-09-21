@@ -85,11 +85,6 @@ export class LaneGene {
  * the hole opened: the better annotated a lane was, the more of the group
  * highlight it lost.
  *
- * Px rather than bp so one rule covers both kinds of lane: the anchor lane's
- * genes and its group spans both come through the view's axis, a mate lane's
- * both come through its frame, and neither pair is comparable in bp with the
- * other.
- *
  * Indexed once per lane: asked per placement span, a scan of every gene was
  * tens of millions of interval tests over a gene-dense window of forty lanes.
  * The tree answers the closed overlap, so an abutting gene comes back and the

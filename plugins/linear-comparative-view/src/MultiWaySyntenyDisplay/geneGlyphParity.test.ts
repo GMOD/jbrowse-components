@@ -1,4 +1,5 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 import {
   STRAND_ARROW_LENGTH_PX,
@@ -32,6 +33,9 @@ import type { DisplayConfig } from '@jbrowse/plugin-canvas'
 const HEIGHT = 10
 const GENE_START = 100
 const GENE_END = 900
+
+const goldenrod = { css: 'goldenrod', packed: cssColorToABGR('goldenrod') }
+const fills = { fill: () => goldenrod, utr: () => goldenrod.packed }
 
 const gene = new SimpleFeature({
   uniqueId: 'geneA',
@@ -100,12 +104,13 @@ const { glyphs: lane } = buildLaneCells({
     glyphTop: 0,
     spanOf: (_refName: string, start: number, end: number) => [start, end],
     baseline: [[0, 1000]],
+    canon: (refName: string) => refName,
     placements: new Map(),
   } as unknown as Lane,
   genes: [new LaneGene(gene)],
   glyphHeight: HEIGHT,
   width: 1000,
-  colors: { colorOf: () => 'goldenrod', stroke: '#222', divider: '#ccc' },
+  colors: { genes: fills, boxes: fills, stroke: '#222', divider: '#ccc' },
 })
 
 const round = (n: number) => Number(n.toFixed(3))

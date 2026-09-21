@@ -212,11 +212,12 @@ Opened in a linear genome view on human, the track draws a lane per genome under
 the human axis, each fitted to wherever that genome keeps the window's genes. A
 lane's header names its chromosome, the span it shows and `[rev]` where it reads
 the other way, and the ribbons between adjacent lanes join each gene to its
-ortholog. **Color by... → Strand** on the track menu colors each ribbon by the
-strand of the pair it joins, the two lanes' orientations against the human axis
-multiplied out, rather than by whether the ribbon is drawn crossed. A lane
-reading the block backwards is drawn mirrored, so its ribbons come out straight
-while the strand color still marks every one of them as an inversion.
+ortholog. **Color by... → Strand**, under **Ribbons** on the track menu, colors
+each ribbon by the strand of the pair it joins, the two lanes' orientations
+against the human axis multiplied out, rather than by whether the ribbon is
+drawn crossed. A lane reading the block backwards is drawn mirrored, so its
+ribbons come out straight while the strand color still marks every one of them
+as an inversion.
 
 The stack sorts densest-first, so the genome sharing the most of the window's
 genes sits directly under the anchor. A ribbon joins adjacent lanes only, so a

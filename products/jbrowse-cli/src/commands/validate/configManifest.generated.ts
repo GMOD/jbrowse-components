@@ -3947,7 +3947,31 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "color",
-          "type": "(JexlString | CssColor)"
+          "type": "FeatureColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "value",
+              "type": "(JexlString | (CssColor | undefined))"
+            },
+            {
+              "name": "field",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "scale",
+              "type": "(JexlString | (FeatureColorScale | undefined))"
+            },
+            {
+              "name": "domain",
+              "type": "(JexlString | string[])",
+              "liftsNumbers": true
+            },
+            {
+              "name": "palette",
+              "type": "(JexlString | string[])"
+            }
+          ],
+          "shorthand": "value"
         },
         {
           "name": "utrColor",

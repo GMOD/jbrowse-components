@@ -1,6 +1,11 @@
-import { toggleItem, withSubHeader } from '@jbrowse/core/ui/menuItems'
+import {
+  radioItems,
+  toggleItem,
+  withSubHeader,
+} from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocStringRaw } from '@jbrowse/core/util'
+import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { openMateLabel } from '@jbrowse/core/util/tracks'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import { sectionRowMenuItems } from '@jbrowse/display-kit/groupByMenu'
@@ -9,6 +14,7 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
+import { CLUSTER_FIELD } from './geneColor.ts'
 import { laneRegion } from './laneHeader.ts'
 import { laneResetLabel } from './laneSelection.ts'
 
@@ -16,6 +22,7 @@ import type { LaneFlipPin } from './laneDecision.ts'
 import type { LaneSelectionModel } from './laneSelection.ts'
 import type { Lane } from './laneStack.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { RadioOption } from '@jbrowse/core/ui/menuItems'
 import type { AttributeRange } from '@jbrowse/synteny-core'
 
 export type HeaderLane = Pick<
@@ -62,6 +69,11 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   showLegend: boolean
   setShowLegend: (flag: boolean) => void
   hasLegendKey: boolean
+  geneColorField: string
+  setGeneColorBy: (field: string) => void
+  geneColorDomain: readonly string[]
+  pinnedGeneColorDomain: readonly string[]
+  pinGeneColorDomain: () => void
 }
 
 /**
@@ -213,7 +225,53 @@ export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
   ]
 }
 
-export function colorSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
+const GENE_COLOR_MODES: RadioOption<string>[] = [
+  {
+    value: '',
+    label: 'Default',
+    helpText:
+      "The gene color the track's config sets, goldenrod where it sets none.",
+  },
+  {
+    value: CLUSTER_FIELD,
+    label: 'Cluster',
+    helpText:
+      'Each gene by the ortholog group it carries, so a group is one color down the stack. A gene no group claims is grey.',
+  },
+  { value: 'name', label: 'Name', helpText: 'Each gene by its name.' },
+  {
+    value: STRAND_FIELD,
+    label: 'Strand',
+    helpText: 'Forward genes red and reverse genes blue.',
+  },
+]
+
+export function geneColorMenuItems(model: MultiWayMenuModel): MenuItem[] {
+  const field = model.geneColorField
+  const modes = GENE_COLOR_MODES.some(mode => mode.value === field)
+    ? GENE_COLOR_MODES
+    : [...GENE_COLOR_MODES, { value: field, label: field }]
+  return [
+    ...radioItems(modes, field, value => {
+      model.setGeneColorBy(value)
+    }),
+    ...(field === ''
+      ? []
+      : [
+          {
+            label: 'Pin distinct colors',
+            disabled:
+              model.pinnedGeneColorDomain.length ===
+              model.geneColorDomain.length,
+            onClick: () => {
+              model.pinGeneColorDomain()
+            },
+          },
+        ]),
+  ]
+}
+
+export function ribbonColorMenuItems(model: MultiWayMenuModel): MenuItem[] {
   return colorByMenuItems({
     colorBy: model.ribbonColorField,
     structuralFields: ['', 'strand'],
@@ -284,7 +342,10 @@ export function multiWayTrackMenuItems(model: MultiWayMenuModel): MenuItem[] {
     {
       label: 'Color by...',
       icon: PaletteIcon,
-      subMenu: colorSubMenuItems(model),
+      subMenu: [
+        ...withSubHeader('Genes', geneColorMenuItems(model)),
+        ...withSubHeader('Ribbons', ribbonColorMenuItems(model)),
+      ],
     },
     lanesMenuItem(model),
   ]

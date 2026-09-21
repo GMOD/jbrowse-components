@@ -13,6 +13,7 @@ import {
   isFeature,
   openFeatureWidget,
 } from '@jbrowse/core/util'
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
 import {
@@ -58,6 +59,7 @@ import { isNamedRecord } from '../syntenyMate.ts'
 import { axisPlacement, axisSpan, displayedRegionSpans } from './anchorAxis.ts'
 import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
 import { composeLaneLinks } from './composeLaneLinks.ts'
+import { geneColorScale, geneColors } from './geneColor.ts'
 import { annotationRank } from './laneAnnotation.ts'
 import { frameFromDecision } from './laneDecision.ts'
 import { specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
@@ -80,7 +82,7 @@ import {
   rowAssembliesOf,
   tickIntervalFor,
 } from './layoutMultiWay.ts'
-import { laneColorKey, ribbonColorScale } from './legend.ts'
+import { laneColorKey, laneFieldKey, ribbonColorScale } from './legend.ts'
 import { multiWayTrackMenuItems } from './menus.ts'
 import {
   BANDS_KEY,
@@ -104,6 +106,7 @@ import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeomet
 import type { AxisPlacement } from './anchorAxis.ts'
 import type { LanePlacementRecord } from './composeLaneLinks.ts'
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
+import type { GeneColorSettings, GeneColors } from './geneColor.ts'
 import type { AnchorCoord, LaneDecision, LaneFlipPin } from './laneDecision.ts'
 import type {
   DeclaredLane,
@@ -123,9 +126,10 @@ import type {
   MultiWayRenderState,
   MultiWayRenderingBackend,
 } from './multiwayRenderTypes.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem, MouseState } from '@jbrowse/core/ui'
-import type { CategoricalEntry, ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
 import type {
   HighlightRect,
@@ -704,38 +708,84 @@ export function stateModelFactory(
       get showLaneTicks(): boolean {
         return getConf(self, 'showLaneTicks')
       },
+      /**
+       * #getter
+       * the `color` object and `utrColor` as written, neither evaluated
+       */
+      get geneColorSettings(): GeneColorSettings {
+        return {
+          color: {
+            value: self.configuration.color.value,
+            field: getConf(self, ['color', 'field']),
+            scale: getConf(self, ['color', 'scale']),
+            domain: getConf(self, ['color', 'domain']),
+            palette: getConf(self, ['color', 'palette']),
+          },
+          utrColor: self.configuration.utrColor,
+        }
+      },
     }))
     .views(self => ({
       /**
        * #getter
-       * the `color` and `utrColor` slots resolved per feature a lane draws —
-       * every lane's genes, and the groups' own records for the placement
-       * boxes — keyed by feature id. Off the fetched sets and the config
-       * alone: a settle rebuilds every lane's cells against this map, so a
-       * settle runs no jexl
+       * the field the genes paint by, `''` while `color.value` paints
        */
-      get glyphColors() {
-        const { configuration } = self
-        const color = new Map<string, string>()
-        const utrColor = new Map<string, string>()
-        for (const { feature } of self.groups) {
-          color.set(
-            feature.id(),
-            readConfObject(configuration, 'color', { feature }),
-          )
-        }
-        for (const { genes } of self.laneGenes?.values() ?? []) {
-          for (const { feature } of genes) {
-            const id = feature.id()
-            color.set(id, readConfObject(configuration, 'color', { feature }))
-            utrColor.set(
-              id,
-              readConfObject(configuration, 'utrColor', { feature }),
-            )
-          }
-        }
-        return { color, utrColor }
+      get geneColorField(): string {
+        return geneColorScale(self.geneColorSettings.color)?.field ?? ''
       },
+      /**
+       * #getter
+       */
+      get geneColorDomain(): readonly string[] {
+        return self.geneColorSettings.color.domain
+      },
+    }))
+    .views(self => {
+      const { jexl } = getEnv<{ pluginManager: PluginManager }>(
+        self,
+      ).pluginManager
+      let boxes:
+        | { features?: Feature[]; settings: string; colors: GeneColors }
+        | undefined
+      return {
+        /**
+         * #getter
+         * the placement boxes' fills, off the groups' own records: resolved
+         * once per ortholog fetch and colour setting, so a settle runs no jexl
+         */
+        get boxColors(): GeneColors {
+          const { features, geneColorSettings } = self
+          const settings = JSON.stringify(geneColorSettings)
+          if (
+            boxes === undefined ||
+            boxes.features !== features ||
+            boxes.settings !== settings
+          ) {
+            boxes = {
+              features,
+              settings,
+              colors: geneColors(self.configuration, geneColorSettings, jexl),
+            }
+          }
+          return boxes.colors
+        },
+        /**
+         * #getter
+         * per lane, its genes' fills, resolved once per gene commit and
+         * colour setting, so a settle runs no jexl
+         */
+        get laneGeneColors(): ReadonlyMap<string, GeneColors> {
+          const settings = self.geneColorSettings
+          return new Map(
+            [...(self.laneGenes?.keys() ?? [])].map(lane => [
+              lane,
+              geneColors(self.configuration, settings, jexl),
+            ]),
+          )
+        },
+      }
+    })
+    .views(self => ({
       /**
        * #getter
        */
@@ -1520,17 +1570,14 @@ export function stateModelFactory(
        * two cells per lane — its gene models and baseline, and its placement
        * boxes; see `buildLaneCells`. Boxes first, so a hit
        * test walking these in order answers the box over the gene the way the
-       * draw order does. Colors come off `glyphColors`, so a settle re-runs no
-       * jexl slot, and neither the hover nor the selection reads these: the
-       * chrome draws both
+       * draw order does. Fills come off `laneGeneColors` and `boxColors`, so a
+       * settle re-runs no jexl slot, and neither the hover nor the selection
+       * reads these: the chrome draws both
        */
       get laneGlyphCells() {
-        const { laneGenes, glyphColors } = self
+        const { laneGenes, laneGeneColors, boxColors } = self
         const { lanes, glyphHeight } = self.laneStack
         const ink = bandInk()
-        const colorOf = (slot: 'color' | 'utrColor', feature: Feature) =>
-          glyphColors[slot].get(feature.id()) ??
-          readConfObject(self.configuration, slot, { feature })
         const out = new Map<string, MultiWayCell>()
         lanes.forEach((lane, row) => {
           const { glyphs, boxes } = buildLaneCells({
@@ -1539,7 +1586,8 @@ export function stateModelFactory(
             glyphHeight,
             width: self.canvasWidth,
             colors: {
-              colorOf,
+              genes: laneGeneColors.get(lane.assemblyName) ?? boxColors,
+              boxes: boxColors,
               stroke: ink.text,
               divider: ink.divider,
             },
@@ -1557,6 +1605,8 @@ export function stateModelFactory(
        * lane whose color for a group runs down every chain the stack draws, and
        * keying every lane instead would spend a row on each strain's private
        * genes and blow the bound on the window where the chains are the point.
+       * A field keys the values it painted, a `jexl:` color its drawn colors
+       * by name, and a constant nothing.
        *
        * `MAX_LEGEND_ENTRIES` rather than `legendIsReadable`'s own default,
        * because this is a derived key and that is the bound a derived key stops
@@ -1567,15 +1617,87 @@ export function stateModelFactory(
        * settle, so reading `dragOffsetPx` here only rebuilt the key on every
        * pan frame.
        */
-      get geneLegend(): CategoricalEntry[] {
+      get geneColorScales(): ColorScale[] {
         const hits = [boxesKey(0), glyphsKey(0)].flatMap(key => {
           const cell = self.laneGlyphCells.get(key)
           return cell?.kind === 'glyphs' ? cell.data.hits : []
         })
-        const items = laneColorKey(hits, [0, self.canvasWidth], feature =>
-          self.glyphColors.color.get(feature.id()),
+        const onScreen: Span = [0, self.canvasWidth]
+        const { color } = self.geneColorSettings
+        const field = geneColorScale(color)
+        if (field) {
+          return laneFieldKey(hits, onScreen, field)
+        }
+        const items = isJexl(color.value) ? laneColorKey(hits, onScreen) : []
+        return legendIsReadable(items, MAX_LEGEND_ENTRIES)
+          ? [
+              {
+                kind: 'categorical',
+                id: 'genes',
+                title: 'Gene colors',
+                entries: items,
+              },
+            ]
+          : []
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * `color.domain` followed by the values the gene key lists that it does
+       * not, in the key's order and less the no-value row
+       */
+      get pinnedGeneColorDomain(): string[] {
+        const { domain } = self.geneColorSettings.color
+        const listed = new Set(domain)
+        const keyed = self.geneColorScales.flatMap(scale =>
+          scale.kind === 'categorical'
+            ? scale.entries
+                .flatMap(e => e.values ?? [e.value])
+                .filter(v => v !== '')
+            : [],
         )
-        return legendIsReadable(items, MAX_LEGEND_ENTRIES) ? items : []
+        return [...domain, ...keyed.filter(v => !listed.has(v))]
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * paint the genes by `field`, or by `color.value` for `''`, keeping the
+       * value, and the field's order and palette while it is the field
+       * already named, for the way back
+       */
+      setGeneColorBy(field: string) {
+        const {
+          value,
+          field: current,
+          domain,
+          palette,
+        } = self.geneColorSettings.color
+        const kept =
+          field === '' || field === current
+            ? { domain: [...domain], palette: [...palette] }
+            : {}
+        setConf(self, 'color', {
+          ...(value === undefined ? {} : { value }),
+          field: field === '' ? current : field,
+          ...kept,
+          ...(field === '' ? { scale: 'none' } : {}),
+        })
+      },
+      /**
+       * #action
+       * `pinnedGeneColorDomain` into `color.domain`, so every value the gene
+       * key lists spends its own palette color
+       */
+      pinGeneColorDomain() {
+        const { value, field, palette } = self.geneColorSettings.color
+        setConf(self, 'color', {
+          ...(value === undefined ? {} : { value }),
+          field,
+          domain: self.pinnedGeneColorDomain,
+          palette: [...palette],
+        })
       },
     }))
     .views(self => ({
@@ -1588,12 +1710,7 @@ export function stateModelFactory(
        */
       get colorScales(): ColorScale[] {
         const scales: ColorScale[] = [
-          {
-            kind: 'categorical',
-            id: 'genes',
-            title: 'Gene colors',
-            entries: self.geneLegend,
-          },
+          ...self.geneColorScales,
           ribbonColorScale(
             self.ribbonColorField,
             self.ribbonAttributeRanges,

@@ -1,17 +1,27 @@
 import { SimpleFeature } from '@jbrowse/core/util'
-import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
+import {
+  NO_VALUE_LABEL,
+  categoricalField,
+} from '@jbrowse/core/util/categoricalField'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
-import { laneColorKey, ribbonColorKey, ribbonColorScale } from './legend.ts'
+import {
+  laneColorKey,
+  laneFieldKey,
+  ribbonColorKey,
+  ribbonColorScale,
+} from './legend.ts'
 
 import type { GlyphHit } from './multiwayRenderTypes.ts'
-import type { Feature } from '@jbrowse/core/util'
 
 const hit = (
   uniqueId: string,
   x1: number,
   x2: number,
+  css: string,
   name?: string,
+  key?: string,
 ): GlyphHit => ({
   x1,
   x2,
@@ -25,17 +35,14 @@ const hit = (
     end: 1,
   }),
   label: name ?? uniqueId,
+  fill: { css, packed: cssColorToABGR(css), key },
 })
-
-const byId = (colors: Record<string, string>) => (feature: Feature) =>
-  colors[feature.id()]
 
 test('the key names the drawn colors left to right', () => {
   expect(
     laneColorKey(
-      [hit('b', 300, 400, 'atpB'), hit('a', 100, 200, 'atpA')],
+      [hit('b', 300, 400, '#0f0', 'atpB'), hit('a', 100, 200, '#f00', 'atpA')],
       [0, 800],
-      byId({ a: '#f00', b: '#0f0' }),
     ),
   ).toEqual([
     { value: 'atpA', label: 'atpA', color: '#f00' },
@@ -48,9 +55,8 @@ test('the key names the drawn colors left to right', () => {
 test('a second name on a color already keyed is dropped', () => {
   expect(
     laneColorKey(
-      [hit('a', 100, 200, 'atpA'), hit('b', 300, 400, 'atpB')],
+      [hit('a', 100, 200, '#f00', 'atpA'), hit('b', 300, 400, '#f00', 'atpB')],
       [0, 800],
-      byId({ a: '#f00', b: '#f00' }),
     ),
   ).toEqual([{ value: 'atpA', label: 'atpA', color: '#f00' }])
 })
@@ -58,9 +64,8 @@ test('a second name on a color already keyed is dropped', () => {
 test('an unnamed feature names no color', () => {
   expect(
     laneColorKey(
-      [hit('a', 100, 200), hit('b', 300, 400, 'atpB')],
+      [hit('a', 100, 200, '#f00'), hit('b', 300, 400, '#0f0', 'atpB')],
       [0, 800],
-      byId({ a: '#f00', b: '#0f0' }),
     ),
   ).toEqual([{ value: 'atpB', label: 'atpB', color: '#0f0' }])
 })
@@ -71,17 +76,39 @@ test('an unnamed feature names no color', () => {
 test('a hit off the window is not named', () => {
   expect(
     laneColorKey(
-      [hit('a', -400, -300, 'atpA'), hit('b', 300, 400, 'atpB')],
+      [
+        hit('a', -400, -300, '#f00', 'atpA'),
+        hit('b', 300, 400, '#0f0', 'atpB'),
+      ],
       [0, 800],
-      byId({ a: '#f00', b: '#0f0' }),
     ),
   ).toEqual([{ value: 'atpB', label: 'atpB', color: '#0f0' }])
 })
 
 test('a gene straddling the left edge is still named', () => {
+  expect(laneColorKey([hit('a', -50, 50, '#f00', 'atpA')], [0, 800])).toEqual([
+    { value: 'atpA', label: 'atpA', color: '#f00' },
+  ])
+})
+
+// A painting field keys the values its marks were filed under, in the field's
+// own order, and the gene no cluster claims as the no-value row.
+test('a field keys the values on screen through the channel', () => {
+  const field = categoricalField('cluster', { domain: ['rbcL'] })
+  const [scale] = laneFieldKey(
+    [
+      hit('a', 100, 200, field.color('psbA'), 'x', 'psbA'),
+      hit('b', 300, 400, field.color('rbcL'), 'y', 'rbcL'),
+      hit('c', 500, 600, field.color(''), 'z', ''),
+      hit('d', -400, -300, field.color('atpA'), 'w', 'atpA'),
+    ],
+    [0, 800],
+    field,
+  )
+  expect(scale?.title).toBe('Gene cluster')
   expect(
-    laneColorKey([hit('a', -50, 50, 'atpA')], [0, 800], byId({ a: '#f00' })),
-  ).toEqual([{ value: 'atpA', label: 'atpA', color: '#f00' }])
+    scale?.kind === 'categorical' ? scale.entries.map(e => e.label) : [],
+  ).toEqual(['rbcL', 'psbA', NO_VALUE_LABEL])
 })
 
 test('the ribbon key is the strand pair, in two colors', () => {

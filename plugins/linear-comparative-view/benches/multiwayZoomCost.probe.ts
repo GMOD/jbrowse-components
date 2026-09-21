@@ -25,7 +25,6 @@
 // twelve-step range this probe used to stop at only reached 11 -> 9.5.
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { AdapterType } from '@jbrowse/core/pluggableElementTypes'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
@@ -34,6 +33,7 @@ import { firstValueFrom, toArray } from 'rxjs'
 import blocksSchema from '../../comparative-adapters/src/MCScanBlocksAdapter/configSchema.ts'
 import gffSchema from '../../gff3/src/Gff3TabixAdapter/configSchema.ts'
 import { configSchemaFactory } from '../src/MultiWaySyntenyDisplay/configSchema.ts'
+import { geneColors } from '../src/MultiWaySyntenyDisplay/geneColor.ts'
 import {
   geneGlyphGeometry,
   geneGlyphShape,
@@ -60,7 +60,6 @@ import {
 import type { LaneGene } from '../src/MultiWaySyntenyDisplay/geneGlyph.ts'
 import type { LaneDecision } from '../src/MultiWaySyntenyDisplay/laneDecision.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature } from '@jbrowse/core/util'
 
 class Adapters extends Plugin {
   name = 'Adapters'
@@ -294,19 +293,38 @@ for (let step = 0; step < 19; step++, span *= 1.35) {
       stripe: '#eee',
     })
   })
-  const colorOf = (slot: 'color' | 'utrColor', feature: Feature) =>
-    readConfObject(config, slot, { feature })
+  const freshFills = () =>
+    geneColors(
+      config,
+      {
+        color: {
+          value: config.color.value,
+          field: '',
+          scale: undefined,
+          domain: [],
+          palette: [],
+        },
+        utrColor: config.utrColor,
+      },
+      pm.jexl,
+    )
   const minOf = (f: () => void) => Math.min(...[0, 1, 2, 3, 4].map(() => ms(f)))
   let geneCount = 0
   let onCanvasCount = 0
   const tGlyphs = minOf(() => {
+    const fills = freshFills()
     for (const lane of stack.lanes) {
       buildLaneCells({
         lane,
         genes: laneGenes.get(lane.assemblyName) ?? [],
         glyphHeight: stack.glyphHeight,
         width: WIDTH,
-        colors: { colorOf, stroke: '#000', divider: '#ccc' },
+        colors: {
+          genes: fills,
+          boxes: fills,
+          stroke: '#000',
+          divider: '#ccc',
+        },
       })
     }
   })
@@ -349,9 +367,10 @@ for (let step = 0; step < 19; step++, span *= 1.35) {
     }
   })
   const tColor = minOf(() => {
+    const fills = freshFills()
     for (const { gene } of spans) {
-      colorOf('color', gene.feature)
-      colorOf('utrColor', gene.feature)
+      fills.fill(gene.feature, undefined)
+      fills.utr(gene.feature)
     }
   })
   console.log(

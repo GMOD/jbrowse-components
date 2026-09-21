@@ -5203,9 +5203,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
         "color": {
-          "description": "the fill color of the gene glyphs, matching the canvas gene track default.",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "goldenrod"
+          "$ref": "#/$defs/FeatureColor"
         },
         "utrColor": {
           "description": "the fill color of the untranslated parts of a gene glyph, matching the canvas gene track default.",

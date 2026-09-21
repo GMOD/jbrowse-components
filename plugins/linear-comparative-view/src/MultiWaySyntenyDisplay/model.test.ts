@@ -1,7 +1,11 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { SimpleFeature } from '@jbrowse/core/util'
-import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
+import {
+  NO_VALUE_LABEL,
+  categoricalField,
+} from '@jbrowse/core/util/categoricalField'
+import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { takeSnackbarAction } from '@jbrowse/display-test-utils'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
@@ -12,6 +16,13 @@ import { laneResetLabel } from './laneSelection.ts'
 import { MIN_LANE_PITCH } from './laneStack.ts'
 import { lanesMenuItem } from './menus.ts'
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
+
+import type { MultiWaySyntenyDisplayModel } from './model.ts'
+
+const geneKeyOf = (display: MultiWaySyntenyDisplayModel) => {
+  const scale = display.colorScales.find(s => s.id === 'genes')
+  return scale?.kind === 'categorical' ? scale.entries : []
+}
 
 const namedGene = (
   uniqueId: string,
@@ -206,8 +217,9 @@ test('the key names the anchor lane genes a name-hashed color slot draws', () =>
     ]),
     undefined,
   )
-  expect(display.geneLegend.map(i => i.label)).toEqual(['atpA', 'atpB'])
-  expect(new Set(display.geneLegend.map(i => i.color)).size).toBe(2)
+  const entries = geneKeyOf(display)
+  expect(entries.map(i => i.label)).toEqual(['atpA', 'atpB'])
+  expect(new Set(entries.map(i => i.color)).size).toBe(2)
   expect(display.colorScales.map(s => s.id)).toEqual(['genes'])
   expect(display.hasLegendKey).toBe(true)
 })
@@ -232,8 +244,97 @@ test('a flat color slot has nothing to key', () => {
     ]),
     undefined,
   )
-  expect(display.geneLegend).toEqual([])
+  expect(geneKeyOf(display)).toEqual([])
   expect(display.hasLegendKey).toBe(false)
+})
+
+function anchorGenes(display: MultiWaySyntenyDisplayModel, genes: LaneGene[]) {
+  display.setLaneGenes(
+    new Map([['volvox', { key: display.laneGenesFetchSpecs[0]!.key, genes }]]),
+    undefined,
+  )
+}
+
+function anchorGeneFills(display: MultiWaySyntenyDisplayModel) {
+  const cell = display.laneGlyphCells.get('glyphs:0')
+  return cell?.kind === 'glyphs'
+    ? cell.data.hits.map(h => [h.feature.id(), h.fill?.css])
+    : []
+}
+
+// The color object's shorthand: a bare string, `jexl:` included, is its
+// `value`, and an unset `value` still paints the goldenrod the plain slot had
+test('a color string paints through the channel, and unset is goldenrod', () => {
+  const display = createDisplay()
+  anchorGenes(display, [namedGene('g1', 'atpA', 100, 300)])
+  expect(anchorGeneFills(display)).toEqual([['g1', 'goldenrod']])
+
+  setConf(display, 'color', "jexl:feature.name == 'atpA' ? 'red' : 'blue'")
+  expect(display.geneColorField).toBe('')
+  expect(anchorGeneFills(display)).toEqual([['g1', 'red']])
+})
+
+// `cluster` is the group a gene stands in for, decided before its fill is
+// packed; a gene no placement overlaps carries no group and paints the
+// channel's no-value grey, and the key lists both
+test('cluster paints a gene by the group it carries', () => {
+  const display = createDisplay()
+  display.setFeatures([mateRecord('own1', 'volvox_random', 'gene1')])
+  anchorGenes(display, [
+    namedGene('g1', 'atpA', 120, 280),
+    namedGene('g2', 'atpB', 500, 600),
+  ])
+  display.setGeneColorBy('cluster')
+  expect(display.geneColorField).toBe('cluster')
+  const field = categoricalField('cluster')
+  expect(anchorGeneFills(display)).toEqual([
+    ['g1', field.color('gene1')],
+    ['g2', NO_CATEGORY_COLOR],
+  ])
+  expect(geneKeyOf(display).map(e => e.label)).toEqual([
+    'gene1',
+    NO_VALUE_LABEL,
+  ])
+})
+
+// Default goes back to the configured value and keeps the field for the way
+// back; re-picking the field keeps the order it had
+test('Default keeps the field, and the field keeps its order', () => {
+  const display = createDisplay()
+  setConf(display, 'color', { value: 'red', field: 'name', domain: ['atpA'] })
+  display.setGeneColorBy('')
+  expect(display.geneColorField).toBe('')
+  expect(display.geneColorSettings.color).toMatchObject({
+    value: 'red',
+    field: 'name',
+    scale: 'none',
+    domain: ['atpA'],
+  })
+  display.setGeneColorBy('name')
+  expect(display.geneColorSettings.color).toMatchObject({
+    value: 'red',
+    field: 'name',
+    scale: undefined,
+    domain: ['atpA'],
+  })
+  display.setGeneColorBy('strand')
+  expect(display.geneColorSettings.color).toMatchObject({
+    value: 'red',
+    field: 'strand',
+    domain: [],
+  })
+})
+
+test('Pin distinct colors writes the keyed values into the domain', () => {
+  const display = createDisplay()
+  anchorGenes(display, [
+    namedGene('g1', 'atpA', 100, 300),
+    namedGene('g2', 'atpB', 400, 600),
+  ])
+  display.setGeneColorBy('name')
+  expect(display.pinnedGeneColorDomain).toEqual(['atpA', 'atpB'])
+  display.pinGeneColorDomain()
+  expect(display.geneColorDomain).toEqual(['atpA', 'atpB'])
 })
 
 // The ribbons are the other color vocabulary, and only `strand` gives it rows:
@@ -853,8 +954,8 @@ test('one lane’s window change refetches that lane alone', async () => {
 
 // `laneGlyphCells` resolved the `color` and `utrColor` jexl slots per gene on
 // every lane whenever the stack changed, which is every settle. The colour
-// depends on the feature, the config and the selection, never on the frame.
-test('a settle rebuilds the lane cells against the same colour map', () => {
+// depends on the feature and the config, never on the frame.
+test('a settle rebuilds the lane cells against the same fills', () => {
   const display = createDisplay()
   display.setFeatures([mateRecord('own1', 'volvox_random', 'gene1')])
   const gene = new SimpleFeature({
@@ -876,26 +977,32 @@ test('a settle rebuilds the lane cells against the same colour map', () => {
     ]),
     undefined,
   )
-  const stop = autorun(() => [display.glyphColors, display.laneGlyphCells])
-  const colors = display.glyphColors
+  const stop = autorun(() => [
+    display.laneGeneColors,
+    display.boxColors,
+    display.laneGlyphCells,
+  ])
+  const genes = display.laneGeneColors.get('volvox')
+  const boxes = display.boxColors
   const cells = display.laneGlyphCells
-  expect(colors.color.has('own1')).toBe(true)
-  expect(colors.color.has('g')).toBe(true)
-  expect(colors.utrColor.has('g')).toBe(true)
 
   display.setLaneFrames(
     37,
     new Map([['volvox_random', decisionOn('ctgB', 200)]]),
   )
   expect(display.laneGlyphCells).not.toBe(cells)
-  expect(display.glyphColors).toBe(colors)
+  expect(display.laneGeneColors.get('volvox')).toBe(genes)
+  expect(display.boxColors).toBe(boxes)
 
-  // a gene commit is what the map is keyed on
+  // a gene commit is what a lane's fills are keyed on, and an ortholog
+  // commit the boxes'
   display.setLaneGenes(
     new Map([['volvox', { key: 'later', genes: [] }]]),
     undefined,
   )
-  expect(display.glyphColors).not.toBe(colors)
+  expect(display.laneGeneColors.get('volvox')).not.toBe(genes)
+  display.setFeatures([mateRecord('own2', 'volvox_random', 'gene2')])
+  expect(display.boxColors).not.toBe(boxes)
   stop()
 })
 

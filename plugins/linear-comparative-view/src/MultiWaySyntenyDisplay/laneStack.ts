@@ -2,7 +2,12 @@ import { clamp } from '@jbrowse/core/util'
 
 import { frameSpan, groupRunSpansOnRow, rowFrameX } from './layoutMultiWay.ts'
 
-import type { MultiWayGroup, RowFrame, Span } from './layoutMultiWay.ts'
+import type {
+  MultiWayGroup,
+  MultiWayPlacement,
+  RowFrame,
+  Span,
+} from './layoutMultiWay.ts'
 
 const LABEL_HEIGHT = 12
 const MIN_GLYPH_PX = 5
@@ -150,6 +155,8 @@ export interface LaneGroup {
    * flipped has already straightened the span of an inverted run
    */
   orientations: number[]
+  /** per span, the bp interval of the lane's own sequence it draws, unclipped */
+  intervals: MultiWayPlacement[]
 }
 
 export interface LaneStack {
@@ -250,7 +257,7 @@ export function buildLanes({
         const anchorSpan = anchorSpans.get(group.key)
         const runs = isAnchor
           ? anchorSpan
-            ? [{ span: anchorSpan, orientation: 1 }]
+            ? [{ span: anchorSpan, orientation: 1, interval: group.anchor }]
             : []
           : frame
             ? groupRunSpansOnRow(group, assemblyName, frame, width)
@@ -260,6 +267,7 @@ export function buildLanes({
             group,
             spans: runs.map(run => run.span),
             orientations: runs.map(run => run.orientation),
+            intervals: runs.map(run => run.interval),
           })
         }
       }

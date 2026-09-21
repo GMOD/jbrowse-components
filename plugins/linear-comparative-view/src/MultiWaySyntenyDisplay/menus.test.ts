@@ -2,10 +2,11 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
 import { laneRegion } from './laneHeader.ts'
 import {
-  colorSubMenuItems,
+  geneColorMenuItems,
   laneHeaderMenuItems,
   lanesMenuItem,
   multiWayTrackMenuItems,
+  ribbonColorMenuItems,
   showSubMenuItems,
 } from './menus.ts'
 
@@ -109,12 +110,14 @@ function trackModel({
   configuredLanes = [],
   domain = [],
   hasLegendKey = false,
+  geneColorField = '',
 }: {
   universe?: number
   laneFilter?: LaneFilter
   configuredLanes?: string[]
   domain?: string[]
   hasLegendKey?: boolean
+  geneColorField?: string
 } = {}) {
   const { model: header, calls } = headerModel()
   const model = {
@@ -156,6 +159,15 @@ function trackModel({
     showLegend: true,
     setShowLegend: () => {},
     hasLegendKey,
+    geneColorField,
+    setGeneColorBy: (field: string) => {
+      calls.push(`gene color ${field}`)
+    },
+    geneColorDomain: [],
+    pinnedGeneColorDomain: ['psbA'],
+    pinGeneColorDomain: () => {
+      calls.push('pin gene colors')
+    },
   }
   return { model, calls }
 }
@@ -176,11 +188,69 @@ test('the track menu is Show, Color by and Lanes', () => {
 
 test('Color by offers the synteny view modes a lane stack paints', () => {
   const { model } = trackModel()
-  expect(labelsOf(colorSubMenuItems(model))).toEqual([
+  expect(labelsOf(ribbonColorMenuItems(model))).toEqual([
     'Default',
     'Strand',
     'Color by value',
   ])
+})
+
+// One menu, the genes' channel over the ribbons', each under its own heading
+test('Color by heads the gene modes and the ribbon modes', () => {
+  const { model, calls } = trackModel()
+  const colorBy = subMenuOf(multiWayTrackMenuItems(model)[1])
+  expect(labelsOf(colorBy)).toEqual([
+    'Genes',
+    'Default',
+    'Cluster',
+    'Name',
+    'Strand',
+    'Ribbons',
+    'Default',
+    'Strand',
+    'Color by value',
+  ])
+  expect(colorBy.map(i => i.type)).toEqual([
+    'subHeader',
+    'radio',
+    'radio',
+    'radio',
+    'radio',
+    'subHeader',
+    'radio',
+    'radio',
+    undefined,
+  ])
+  click(colorBy[2])
+  expect(calls).toEqual(['gene color cluster'])
+})
+
+// A field the config names that no row writes is still the checked one, and a
+// painting field offers its pin
+test('the gene modes name a configured field and offer the pin under it', () => {
+  const { model, calls } = trackModel({ geneColorField: 'biotype' })
+  const genes = geneColorMenuItems(model)
+  expect(labelsOf(genes)).toEqual([
+    'Default',
+    'Cluster',
+    'Name',
+    'Strand',
+    'biotype',
+    'Pin distinct colors',
+  ])
+  expect(genes.map(i => 'checked' in i && i.checked)).toEqual([
+    false,
+    false,
+    false,
+    false,
+    true,
+    false,
+  ])
+  click(genes[5])
+  expect(calls).toEqual(['pin gene colors'])
+  expect(labelsOf(geneColorMenuItems(trackModel().model))).not.toContain(
+    'Pin distinct colors',
+  )
 })
 
 test('Show offers the legend only when something is keyed, and the hidden lanes once there are some', () => {

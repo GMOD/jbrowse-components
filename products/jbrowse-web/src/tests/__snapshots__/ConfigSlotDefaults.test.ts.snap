@@ -764,7 +764,6 @@ exports[`every registered schema slot default 1`] = `
   },
   "display: MultiWaySyntenyDisplay": {
     "bridgeSkippedLanes": "boolean = true",
-    "color": "color = "goldenrod"",
     "domain": "stringArray = []",
     "drawCurves": "boolean = false",
     "fetchSizeLimit": "number = 1000000",
