@@ -1,6 +1,7 @@
 import { COMPACTNESS_PRESETS } from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import {
   COLOR_FIELDS,
+  alignmentsColorEncoding,
   baseLayerOf,
   colorByOf,
 } from '../../../../plugins/alignments/src/shared/alignmentsColor.ts'
@@ -150,6 +151,20 @@ const MODIFICATION_BY_TYPE = 'One color per modification type'
 const MODIFICATION_TWO_COLOR =
   'One color per type, plus low-probability & unmodified in blue'
 
+// The members a spec's `color` leaves out, so the two slots a recipe reads go
+// through the display's own setting → encoding → scheme path rather than a
+// second reading of the same rule here.
+const UNSET_COLOR = {
+  value: undefined,
+  domain: [],
+  range: [],
+  scheme: undefined,
+  reverse: false,
+  domainMin: undefined,
+  domainMax: undefined,
+  domainMid: undefined,
+}
+
 // The alignments displays' `color` object: the field names the scheme
 // (`colorByOf`), and a scheme's place in the menu is COLOR_SCHEMES'. A declared
 // scale has no menu row, and neither has a feature attribute or a constant.
@@ -158,10 +173,13 @@ function alignmentsColorStep(value: unknown): FieldStep | undefined {
   if (!color) {
     return undefined
   }
-  const colorBy = colorByOf({
-    field: asString(color.field) ?? '',
-    scale: color.scale === 'none' ? 'none' : undefined,
-  })
+  const colorBy = colorByOf(
+    alignmentsColorEncoding({
+      ...UNSET_COLOR,
+      field: asString(color.field) ?? '',
+      scale: color.scale === 'none' ? 'none' : undefined,
+    }),
+  )
   if (colorBy.type === 'normal' || colorBy.attribute !== undefined) {
     return undefined
   }

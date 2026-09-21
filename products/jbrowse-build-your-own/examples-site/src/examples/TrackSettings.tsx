@@ -7,15 +7,20 @@ import { pickColorOptions } from '@jbrowse/plugin-alignments'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
+import type {
+  LinearAlignmentsDisplayModel,
+  ReadColorBy,
+} from '@jbrowse/plugin-alignments'
 
-const schemes = pickColorOptions(
+const schemeTypes = [
   'normal',
   'strand',
   'pairOrientation',
   'insertSizeAndOrientation',
   'mappingQuality',
-)
+] as const satisfies readonly ReadColorBy['type'][]
+
+const schemes = pickColorOptions(...schemeTypes)
 
 const Settings = observer(function Settings({
   display,
@@ -37,9 +42,10 @@ const Settings = observer(function Settings({
         <select
           value={display.colorBy.type}
           onChange={event => {
-            display.setColorBy({
-              type: event.target.value as (typeof schemes)[number]['type'],
-            })
+            const type = schemeTypes.find(t => t === event.target.value)
+            if (type) {
+              display.setColorBy({ type })
+            }
           }}
         >
           {schemes.map(({ type, label }) => (
