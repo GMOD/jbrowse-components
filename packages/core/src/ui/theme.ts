@@ -191,6 +191,10 @@ const baseThemeOptions: ThemeOptions = {
     fontSize: DEFAULT_FONT_SIZE,
   },
   spacing: DEFAULT_SPACING,
+  // an animation makes every popover, dialog and hover trail the input
+  motion: {
+    reducedMotion: 'always',
+  },
   components: {
     MuiTooltip: {
       styleOverrides: {
@@ -213,7 +217,6 @@ const baseThemeOptions: ThemeOptions = {
         disableGutters: true,
         slotProps: {
           transition: {
-            timeout: 150,
             unmountOnExit: true,
           },
         },
@@ -290,16 +293,6 @@ const baseThemeOptions: ThemeOptions = {
         size: 'small',
       },
     },
-    MuiPopover: {
-      defaultProps: {
-        transitionDuration: 0,
-      },
-    },
-    MuiMenu: {
-      defaultProps: {
-        transitionDuration: 0,
-      },
-    },
     MuiMenuItem: {
       defaultProps: {
         dense: true,
@@ -353,34 +346,6 @@ const baseThemeOptions: ThemeOptions = {
     MuiToggleButtonGroup: {
       defaultProps: {
         size: 'small',
-      },
-    },
-    // Speed up ripple animations for snappier feel (default is 550ms)
-    // See https://mui.com/material-ui/api/button-base/
-    // and https://github.com/mui/material-ui/blob/master/packages/mui-material/src/ButtonBase/TouchRipple.js
-    //
-    // The click ripple only: a *focus* ripple is a different animation on the
-    // same two elements — childPulsate, which runs `infinite` — so a blanket
-    // 50ms turns MUI's 2500ms breath into a 20Hz strobe that never stops. It
-    // shows up on any focus-visible button, and Chrome hands one out unasked:
-    // it re-evaluates :focus-visible on the already-focused element after any
-    // keystroke, and the focus event that a browser-tab switch fires on the way
-    // back is what makes MUI act on it. So these select the enter and leaving
-    // keyframes by name and let the pulsate keep its own duration.
-    //
-    // Both selectors also outrank TouchRipple's own rules on specificity, which
-    // is what `!important` was here for.
-    MuiButtonBase: {
-      styleOverrides: {
-        root: {
-          '& .MuiTouchRipple-ripple.MuiTouchRipple-rippleVisible:not(.MuiTouchRipple-ripplePulsate)':
-            {
-              animationDuration: '50ms',
-            },
-          '& .MuiTouchRipple-child.MuiTouchRipple-childLeaving': {
-            animationDuration: '50ms',
-          },
-        },
       },
     },
   },
