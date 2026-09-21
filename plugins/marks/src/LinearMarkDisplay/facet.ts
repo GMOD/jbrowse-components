@@ -167,21 +167,17 @@ function facetLayer(layer: StoredLayer, remap: Uint32Array): StoredLayer {
 }
 
 /**
- * Every region's layers on the one layout, so the chips and the bands they
- * name agree whichever region an instance came from and whatever the reader
- * has hidden.
+ * A region's layers on the one layout, so the chips and the bands they name
+ * agree whichever region an instance came from and whatever the reader has
+ * hidden. A region no facet split, the density sidecar's, keeps its rows.
  */
-export function remapFacetRows(
-  map: ReadonlyMap<number, MarkRegionData>,
+export function facetRegion(
+  region: MarkRegionData,
   layout: FacetLayout,
-): ReadonlyMap<number, MarkRegionData> {
-  return new Map(
-    [...map].map(([index, region]) => {
-      const remap = rowRemap(region, layout)
-      return [
-        index,
-        { ...region, layers: region.layers.map(l => facetLayer(l, remap)) },
-      ]
-    }),
-  )
+): MarkRegionData {
+  if (!region.facet) {
+    return region
+  }
+  const remap = rowRemap(region, layout)
+  return { ...region, layers: region.layers.map(l => facetLayer(l, remap)) }
 }

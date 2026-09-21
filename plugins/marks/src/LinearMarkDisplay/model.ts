@@ -45,8 +45,10 @@ import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { sectionOrderMenuItems } from '@jbrowse/display-kit/groupByMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
+import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/display-ui'
 import { addDisposer, cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { inkOfInstances, pointInsetPx } from '@jbrowse/render-core/marks'
 import {
@@ -72,7 +74,7 @@ import {
   markRequirementProblems,
 } from './configSchema.ts'
 import { densityRegionData } from './densityLayer.ts'
-import { facetLayout, remapFacetRows } from './facet.ts'
+import { facetLayout, facetRegion } from './facet.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
 import { sameMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend, colorSection, markColorScales } from './legend.ts'
@@ -137,6 +139,8 @@ export type MarkRenderingBackend = PerRegionRenderingBackend<
 
 const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
 const PlotFieldDialog = lazy(() => import('./components/PlotFieldDialog.tsx'))
+
+const NO_REGIONS: ReadonlyMap<number, MarkRegionData> = new Map()
 
 // The worker's layers as the display stores them: the Flatbush wrapped once
 // at the commit.
@@ -680,34 +684,42 @@ export function stateModelFactory(
           : (self.regionPayloads as ReadonlyMap<number, MarkRegionData>)
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * The sections drawn over every loaded region, in the domain's order
-       * and less the hidden ones, and where each key's rows start.
-       */
-      get facetLayout(): FacetLayout {
+    .views(self => {
+      const layout = stableIdentityComputed(() => {
         const { field = '', domain = [] } = self.facet ?? {}
         return facetLayout(
           self.featurePayloads.values(),
           categoricalField(field, { domain }),
           self.hiddenGroupKeys,
         )
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The layers the display draws: faceted, every region's rows offset
-       * onto the one layout, so a chip and the band under it agree whichever
-       * region a span came from.
-       */
-      get rpcDataMap(): ReadonlyMap<number, MarkRegionData> {
-        return self.facet
-          ? remapFacetRows(self.featurePayloads, self.facetLayout)
-          : self.featurePayloads
-      },
-    }))
+      })
+      const faceted = createEncodeMemo(
+        () => (self.facet ? self.featurePayloads : NO_REGIONS),
+        () => layout.get(),
+        facetRegion,
+      )
+      return {
+        /**
+         * #getter
+         * The sections drawn over every loaded region, in the domain's order
+         * and less the hidden ones, and where each key's rows start.
+         */
+        get facetLayout(): FacetLayout {
+          return layout.get()
+        },
+        /**
+         * #getter
+         * The layers the display draws: faceted, every region's rows offset
+         * onto the one layout, so a chip and the band under it agree
+         * whichever region a span came from. A region is offset again only
+         * when it or the layout moves, which is what the upload re-packs.
+         */
+        get rpcDataMap(): ReadonlyMap<number, MarkRegionData> {
+          const drawn = faceted()
+          return self.facet ? drawn : self.featurePayloads
+        },
+      }
+    })
     .views(self => ({
       /**
        * #getter
