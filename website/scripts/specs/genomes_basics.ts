@@ -155,7 +155,15 @@ const PLOT_TYPE_PATH = ['Plot type', 'Multi-row', 'XY plot']
 
 // gnomAD's own consequence class for the variant: pLoF, missense, synonymous
 // or other. pLoF is the high-impact end, 93 of the 4,695 records over TP53.
-const GNOMAD_PLOF_FILTER = "jexl:feature.annot == 'pLoF'"
+// A filter row, built on the dialog's default Conditions tab: the field picker
+// lists only generic feature fields, so the column is typed in, and a typed
+// field opens on the `is` operator.
+const GNOMAD_PLOF = { field: 'annot', value: 'pLoF' }
+
+// The first condition row's inputs. Tab, not Enter, commits a typed field:
+// Enter in a free-text field submits the dialog.
+const FILTER_FIELD = '.MuiDialog-container input[placeholder="Field"]'
+const FILTER_VALUE = '.MuiDialog-container input[placeholder="Value"]'
 
 // Collapsed to the longest coding transcript, which the page reaches through the
 // isoform control at the bottom right of the gene track: one click, on a chip
@@ -200,7 +208,9 @@ const SITE = 'https://genomes.jbrowse.org'
 // route each one films runs through the app the rest of the page is of.
 export const genomesBasicsVideoFixtures = {
   gnomadTrackId: GNOMAD_TRACK_ID,
-  plofFilter: GNOMAD_PLOF_FILTER,
+  plof: GNOMAD_PLOF,
+  filterField: FILTER_FIELD,
+  filterValue: FILTER_VALUE,
   // The gnomAD lane with nothing narrowing it: gnomad_filter_menu's session,
   // one track alone in the view at the window that figure is taken at.
   //
@@ -627,23 +637,19 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Where the three frames below come from. Those frames arrive already
-  // filtered, out of `jexlFiltersSetting`, so the app never draws the dialog
-  // the prose tells a reader to type into.
-  //
   // Same two-frame shape as `about_track`: the menu item is the question and
-  // the dialog is the answer. Stacked rather than side by side, because the
-  // dialog's content is a fixed 80em (JexlFilterDialog).
+  // the dialog is the answer. Stacked, because the dialog is most of the
+  // frame's width.
   //
   // The track is alone in the view so the menu has the frame to open into, and
   // it is UNFILTERED -- with a filter in effect `filterMenuItems` relabels the
   // row "Filter by... (1)" and turns it into a submenu, which is a different
   // click path from the one the reader is being shown.
   //
-  // The pLoF expression rather than the AF one, so the typed text lines up with
-  // the bottom frame of the figure below it, which is the one whose filter has
-  // no visible-in-the-picture analogue (a frequency cut looks like fewer
-  // variants; a consequence class does not look like anything).
+  // The pLoF filter rather than the AF one: a consequence class has no
+  // visible-in-the-picture analogue (a frequency cut looks like fewer
+  // variants), and it is a row the Conditions tab can build, where a typed
+  // column offers no numeric operators.
   {
     mode: 'url',
     name: 'genomes_basics/gnomad_filter_menu',
@@ -659,7 +665,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'gnomAD',
     readyTimeout: 180000,
-    viewportHeight: 640,
+    viewportHeight: 590,
     diffThreshold: 0.02,
     // the menu is driven by clicking, which leaves the track's own hover
     // tooltip standing over the frame the menu is the subject of
@@ -680,31 +686,15 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
         actions: [
           { type: 'click', text: 'Filter by...' },
           { type: 'waitForText', text: 'Add condition' },
-          { type: 'click', selector: '[data-testid="jexl-filter-text-tab"]' },
-          // The visible textarea, not the autosize shadow MUI renders beside
-          // it. Typed from column one, because the dialog opens EMPTY on a
-          // track that declares no filters of its own -- which is what this
-          // one does.
-          //
-          // It used to be typed onto a new line, and that was not a style
-          // choice: `BaseLinearDisplay`'s `jexlFilters` slot shipped the NCBI
-          // gbkey=Src cut as its default, `activeFilters()` seeded every
-          // feature track's dialog with it, and a bare type ran on to the end
-          // of that line into a parse error. The rule moved to
-          // `hideSourceFeatures` (a gate in buildFeatureAdmission, never in
-          // this dialog), so the leading newline now buys a blank first line
-          // and a picture of a list with a hole in it.
-          {
-            type: 'type',
-            selector: '.MuiDialog-container textarea:not([aria-hidden="true"])',
-            value: GNOMAD_PLOF_FILTER,
-          },
+          { type: 'type', selector: FILTER_FIELD, value: GNOMAD_PLOF.field },
+          { type: 'press', key: 'Tab' },
+          { type: 'type', selector: FILTER_VALUE, value: GNOMAD_PLOF.value },
           { type: 'delay', ms: 500 },
         ],
         // back to the spec's own height, which the shorter first frame would
         // otherwise carry into this one -- the dialog is the taller of the two
         // and clears its bottom edge by a line
-        viewportHeight: 640,
+        viewportHeight: 590,
       },
     ],
   },

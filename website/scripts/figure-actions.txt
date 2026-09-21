@@ -16,7 +16,7 @@ tutorials/dog10k_selection.md 1
 tutorials/dog10k_svs.md 1
 tutorials/ecoli_orthologs_synteny.md 1
 tutorials/embed_linear_genome_view.md 1
-tutorials/genomes_basics.md 7
+tutorials/genomes_basics.md 5
 tutorials/genomes_proteins.md 2
 tutorials/genomes_synteny.md 2
 tutorials/hic_structural_variants.md 1

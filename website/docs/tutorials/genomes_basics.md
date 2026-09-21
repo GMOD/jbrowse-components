@@ -155,28 +155,31 @@ H3K27ac an active one; all seven cell lines carry both.
 
 ## Filtering a dense track
 
-**gnomAD v4.1 - gnomAD v4.1 Exomes** under Variation and Repeats opens as
+**gnomAD v4.1.1 - gnomAD v4.1.1 Exomes** under Variation and Repeats opens as
 several thousand records over _TP53_, one block of colour. **Track menu → Filter
-by...** takes the track's own columns, as rows of field, operator and value or,
-on its Text tab, one jexl expression per line:
+by...** takes the track's own columns as rows of field, operator and value. Type
+the column name into the field box, which lists only the fields every feature
+has. A typed column compares as text, so a numeric cut goes on the dialog's Text
+tab as jexl, one expression per line:
 
-- `jexl:feature.AF >= 0.001` keeps the variants standing in the population
-- `jexl:feature.annot == 'pLoF'` keeps gnomAD's predicted loss-of-function
-  consequence class (the others are missense, synonymous and other)
+- **annot** is `pLoF` keeps gnomAD's predicted loss-of-function consequence
+  class (the others are missense, synonymous and other)
+- `jexl:feature.AF >= 0.001` on the Text tab keeps the variants standing in the
+  population
 
-<Figure src="/img/genomes_basics/gnomad_filter_menu.png" caption="The gnomAD track's menu, and the dialog Filter by... opens over it, with a consequence-class expression typed in." />
+<Figure src="/img/genomes_basics/gnomad_filter_menu.png" caption="The gnomAD track's menu, and the dialog Filter by... opens over it, with a consequence-class row filled in." />
 
 The colours are the file's own, per consequence class, so the loss-of-function
 filter leaves a track drawn in one colour.
 
-<Video src="/media/genomes_basics/gnomad_filter.mp4" caption="gnomAD v4.1 Exomes over TP53 and the filter dialog its track menu opens. One consequence-class expression redraws the lane with the predicted loss-of-function records alone, in the one colour the file gives that class." />
+<Video src="/media/genomes_basics/gnomad_filter.mp4" caption="gnomAD v4.1.1 Exomes over TP53 and the filter dialog its track menu opens. One consequence-class row redraws the lane with the predicted loss-of-function records alone, in the one colour the file gives that class." />
 
 Once a filter is in effect the same menu row opens a submenu with **Edit
 filters...** and **Clear all filters**.
 
 A BigBed's extra fields arrive as fields, so filtering is limited to the columns
-the file carries. ClinVar's clinical classification is `feature.clinSign`, so
-`jexl:feature.clinSign == 'Pathogenic'` cuts that catalog down the same way.
+the file carries. ClinVar's clinical classification is the column `clinSign`, so
+the row **clinSign** is `Pathogenic` cuts that catalog down the same way.
 
 ## Other tracks in the hg38 catalog
 

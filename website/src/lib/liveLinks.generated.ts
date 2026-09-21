@@ -1184,7 +1184,7 @@ export const videoSteps: Record<string, string[]> = {
   ],
   "genomes_basics/gnomad_filter": [
     "Keep only the predicted loss-of-function variants",
-    "jexl:feature.annot == 'pLoF'"
+    "annot is pLoF"
   ],
   "genomes_basics/find_a_track": [
     "Find a conservation track in the hg38 catalog",

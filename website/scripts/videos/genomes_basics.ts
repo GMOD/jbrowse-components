@@ -7,11 +7,13 @@ import { displayReady, trackMenu } from './shared.ts'
 import type { VideoSpec } from '../video-spec-types.ts'
 
 const {
+  filterField,
+  filterValue,
   geneTrackOnly,
   gnomadTrackId,
   phylopTrackId,
   phylopTrackName,
-  plofFilter,
+  plof,
   unfilteredGnomad,
 } = genomesBasicsVideoFixtures
 
@@ -22,10 +24,6 @@ const {
 const OPEN_SELECTOR = 'button[title="Open track selector"]'
 const CLOSE_SELECTOR = 'button[title="Close track selector"]'
 
-// The dialog's real textarea, not the aria-hidden autosize shadow MUI renders
-// beside it, which takes no keystrokes.
-const FILTER_FIELD = '.MuiDialog-container textarea:not([aria-hidden="true"])'
-
 // Where the pointer parks. A bare SVG <g> with no handler, clear of the tracks
 // and of every control that carries a tooltip — which the gnomAD lane needs
 // more than most, since its config declares a nine-line `mouseover`.
@@ -35,16 +33,16 @@ export const genomesBasicsVideos: VideoSpec[] = [
   // The REDRAW, which genomes_basics.md asserts and pictures nowhere: "the
   // track redraws with the records that pass all of them", and then "the
   // loss-of-function filter leaves a track drawn in one colour". The figure
-  // beside it (gnomad_filter_menu) stops at the dialog with the expression
-  // typed in, and the three frames that used to show the lane before and after
+  // beside it (gnomad_filter_menu) stops at the dialog with the row filled
+  // in, and the three frames that used to show the lane before and after
   // were deleted on review as too much page for a difference living in a sixth
   // of each. A clip is the form that difference fits in: one lane, one window,
   // and the whole change on the same pixels.
   //
   // It is also the only dialog on the page a reader has to type into. Every
   // other state genomes_basics.md reaches is a checkbox or a menu radio, and
-  // the jexl line is the one place a reader has to know a column name — so the
-  // clip's middle is the empty dialog and what goes in it.
+  // the filter row is the one place a reader has to know a column name — so
+  // the clip's middle is the empty row and what goes in it.
   //
   // WHAT THE ROW BECOMES IS NOT FILMED, and the first take is why. Once a
   // filter is in effect `filterMenuItems` turns that row into a submenu holding
@@ -57,10 +55,10 @@ export const genomesBasicsVideos: VideoSpec[] = [
   {
     name: 'genomes_basics/gnomad_filter',
     description:
-      'gnomAD v4.1 Exomes over TP53 cut down to its predicted loss-of-function records: Track menu, Filter by..., a jexl line typed into the Text tab of the filter dialog, and the lane redrawing under it',
+      'gnomAD v4.1.1 Exomes over TP53 cut down to its predicted loss-of-function records: Track menu, Filter by..., an annot is pLoF row filled in on the filter dialog, and the lane redrawing under it',
     url: unfilteredGnomad,
     // Sized to the DIALOG, which the run's content report cannot see: it
-    // measures the app, and the filter dialog is ~490px of centred dialog on
+    // measures the app, and the filter dialog is ~430px of centred dialog on
     // top of one. The fixture's taller lane is what keeps the rest of the frame
     // from being page background once the dialog goes. Even, per the encode.
     viewportHeight: 640,
@@ -86,22 +84,24 @@ export const genomesBasicsVideos: VideoSpec[] = [
       { type: 'waitForText', text: 'Filter by...' },
       { type: 'click', text: 'Filter by...' },
       { type: 'waitForText', text: 'Add condition' },
-      { type: 'click', selector: '[data-testid="jexl-filter-text-tab"]' },
-      // The Text tab opens EMPTY on this track, which is the state the page's
-      // "one jexl expression per line" describes.
+      // The dialog opens on one empty row, since this track declares no
+      // filters of its own.
       { type: 'delay', ms: 2200 },
       {
         type: 'type',
-        selector: FILTER_FIELD,
-        value: plofFilter,
-        say: plofFilter,
+        selector: filterField,
+        value: plof.field,
+        say: `${plof.field} is ${plof.value}`,
       },
+      { type: 'press', key: 'Tab' },
+      { type: 'delay', ms: 600 },
+      { type: 'type', selector: filterValue, value: plof.value },
       { type: 'delay', ms: 1200 },
       // The button reads APPLY and the DOM says Apply: MUI uppercases it in
       // CSS, so the match is the string and the chip is the label.
       { type: 'click', text: 'Apply' },
-      { type: 'waitForText', text: 'jexl documentation', hidden: true },
-      // The pointer is where SUBMIT was, which is over the lane the moment the
+      { type: 'waitForText', text: 'Add condition', hidden: true },
+      // The pointer is where APPLY was, which is over the lane the moment the
       // dialog goes — and this track's mouseover is nine lines of allele
       // counts. Off it before the redraw is on camera.
       { type: 'hover', selector: WORDMARK, hold: 0 },
