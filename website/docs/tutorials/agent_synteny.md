@@ -74,7 +74,7 @@ this, the captions being what the agent said as it went:
 
 The first request is the whole pipeline, in one sentence:
 
-```
+```text
 Align D. simulans GCF_016746395.2 against D. mauritiana GCF_004382145.1 with
 minimap2. Run it in the background and poll it, and when it is done index it
 and open both genomes side by side, with their gene tracks and the alignment
@@ -138,7 +138,7 @@ zoom looks much like a genome pair with little in common.
 
 ## Ask for the dotplot
 
-```
+```text
 Add a dotplot of the same two assemblies underneath.
 ```
 
@@ -146,7 +146,7 @@ _D. simulans_ and _D. mauritiana_ each carry a few hundred unplaced scaffolds,
 and a dotplot that draws them interleaves the axes with rows holding a handful
 of alignments each. Naming the arms gives one diagonal:
 
-```
+```text
 Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX.
 ```
 
@@ -159,7 +159,7 @@ backwards is a different color rather than a bend in a black line:
 
 ## Ask where they disagree
 
-```
+```text
 Where do the two genomes run in opposite directions? Answer from the
 alignment file, not from the dotplot, and show me the numbers.
 ```
@@ -190,7 +190,7 @@ END {
 }' sim_vs_mau.paf | sort
 ```
 
-```
+```text
 2L   22.15 Mb aligned,  0.28% reverse
 2R   20.56 Mb aligned,  5.02% reverse
 3L   22.56 Mb aligned,  0.03% reverse
@@ -206,7 +206,7 @@ other two: 2R and X sit more than an order of magnitude above them.
 Grouping the reverse-strand blocks of 5 kb or more, and cutting a group wherever
 half a megabase passes with none, gives three regions:
 
-```
+```text
 2R  sim    59,995 - 2,256,808  <->  mau   628,956 - 3,646,198   (2.20 Mb, 75 blocks)
 X   sim 8,303,553 - 8,752,357  <->  mau 8,530,265 - 8,980,862   (0.45 Mb,  2 blocks)
 X   sim 21,441,285 - 22,026,996 <->  mau 21,459,277 - 22,872,816 (0.59 Mb, 12 blocks)
@@ -223,7 +223,7 @@ largest is smaller than the X regions. Both answers are the same data.
 
 ## Ask to be taken there
 
-```
+```text
 Take the synteny view to the 2R region, with the gene tracks on.
 ```
 

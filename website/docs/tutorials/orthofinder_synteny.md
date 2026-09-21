@@ -176,7 +176,7 @@ order inside them.
 The conversion prints, per adjacent pair, the share of a chromosome's links
 landing on its single best partner in the row below:
 
-```
+```text
 chromosome-level correspondence, each row against the next:
   melanogaster -> simulans     best partner holds  98% of a chromosome's links (5 chromosomes)
   simulans     -> yakuba       best partner holds  89% of a chromosome's links (5 chromosomes)

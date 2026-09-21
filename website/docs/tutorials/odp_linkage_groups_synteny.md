@@ -68,7 +68,7 @@ once would, which keeps the plots dense enough to show a pattern.
 
 A table's row is the gene pair, the group, where each gene sits, and the color:
 
-```
+```text
 rbh                    EMU_gene      RES_gene       gene_group  EMU_scaf  EMU_pos  RES_scaf  RES_pos   ...  color
 rbh2way_EMU_RES_964    Em0019g38a    mRNA.RE04286   A1a         EMU19     180964   RES2      13815510  ...  #C23D51
 rbh2way_EMU_RES_4123   Em0019g57a    mRNA.RE14076   None        EMU19     290216   RES8      13037026  ...  #000000
@@ -96,7 +96,7 @@ gets `.`, which the browser draws in a recessive grey.
 A `.blocks` row is the gene ids across the two genomes, then the attribute
 columns:
 
-```
+```text
 mRNA.RE04286  Em0019g38a  A1a  #C23D51
 mRNA.RE14076  Em0019g57a  .    #000000
 ```

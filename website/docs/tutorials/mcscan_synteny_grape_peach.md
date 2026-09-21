@@ -62,7 +62,7 @@ loads a `.blocks` table with one track backing every band.
 `.anchors` is the gene-pair level. Each line is one orthologous pair and its
 alignment score, with `###` separating synteny blocks:
 
-```
+```text
 ###
 VIT_201s0011g00070.1	Prupe.1G290900.1	1430
 VIT_201s0011g00080.1	Prupe.1G290800.1	446
@@ -72,7 +72,7 @@ VIT_201s0011g00090.1	Prupe.1G290700.1	147
 `.anchors.simple` is the same run reduced to one line per block: the first and
 last gene of the block on each side, a score, and the block's orientation:
 
-```
+```text
 VIT_201s0011g00070.1	VIT_201s0011g00910.1	Prupe.1G281700.1	Prupe.1G290900.1	149	-
 VIT_201s0011g02000.1	VIT_201s0011g02280.2	Prupe.1G345900.1	Prupe.1G348100.1	53	-
 VIT_201s0011g02300.1	VIT_201s0011g02530.1	Prupe.1G299800.1	Prupe.1G303200.1	39	+
@@ -89,7 +89,7 @@ One BED per genome, prepared from its GFF3 before the ortholog run. Only the
 first six columns are read, and column 4 must match the anchor gene ids byte for
 byte:
 
-```
+```text
 chr1	12836	26777	VIT_201s0011g00010.1	0	+
 chr1	33170	35791	VIT_201s0011g00030.1	0	+
 ```

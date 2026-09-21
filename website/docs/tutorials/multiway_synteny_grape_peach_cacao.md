@@ -73,7 +73,7 @@ A `.blocks` file is a tab-delimited table: one row per orthologous group, one
 column per genome, `.` where a genome has no member. The file names none of its
 columns, so `blockAssemblies` does, by position:
 
-```
+```text
 grape01	peach01	cacao01
 grape02	peach02	cacao02
 grape03	.	.
@@ -109,7 +109,7 @@ A cell holds one gene id, and two conventions place a second copy.
 to two peach regions fills a second peach column. `--iter` caps the chains, and
 the run below pins it to one. At `--iter=2`:
 
-```
+```text
 grape01	peach01	peach01b
 grape02	peach02	.
 grape03	.	.
@@ -121,7 +121,7 @@ track, so the track's own `assemblyNames` names peach once.
 
 The other convention is a copy per row, repeating the grape id:
 
-```
+```text
 grape01	peach01	cacao01
 grape02	peach02a	cacao02
 grape02	peach02b	cacao02
@@ -277,8 +277,10 @@ Reduce each direction of an all-vs-all `blastp` or DIAMOND run (`-outfmt 6`) to
 its best hit per query, then keep the pairs that agree both ways:
 
 ```bash
+# sort by bitscore (column 12) descending, keep the first hit per query
 sort -k1,1 -k12,12gr grape_vs_peach.tsv | awk '!seen[$1]++ {print $1 "\t" $2}' > g2p
 sort -k1,1 -k12,12gr peach_vs_grape.tsv | awk '!seen[$1]++ {print $1 "\t" $2}' > p2g
+# keep a pair only where each side's best hit is the other
 awk 'NR == FNR {best[$1] = $2; next} best[$2] == $1' p2g g2p > grape_peach.rbh
 ```
 
@@ -288,6 +290,9 @@ against one reference genome and outer-join the results on the reference gene:
 
 ```bash
 export LC_ALL=C  # join and sort must agree on collation
+# -a1 -a2 keep a grape gene present in only one pair, -e . fills its missing
+# side; -o lists the join field then column 2 of each file: grape gene,
+# peach ortholog, cacao ortholog
 join -t $'\t' -a1 -a2 -e . -o 0,1.2,2.2 \
   <(sort -k1,1 grape_peach.rbh) <(sort -k1,1 grape_cacao.rbh) > grape.blocks
 ```
@@ -301,9 +306,11 @@ this way.
 Only the first six BED fields are read. From a GFF3:
 
 ```bash
+# column 3 is the feature type; only gene rows become BED features
 awk -F'\t' -v OFS='\t' '$3 == "gene" && match($9, /ID=[^;]+/) {
-  id = substr($9, RSTART + 3, RLENGTH - 3)
+  id = substr($9, RSTART + 3, RLENGTH - 3)  # strip the leading "ID="
   sub(/^gene:/, "", id)
+  # BED start is 0-based, so the GFF3's 1-based start shifts down by one
   print $1, $4 - 1, $5, id, 0, $7
 }' grape.gff3 > grape.bed
 ```
