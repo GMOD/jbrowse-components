@@ -149,9 +149,14 @@ test('SVInspector quick-filter input propagates to visibleRows/features', async 
     expect(svInspectorView.features.length).toBe(
       spreadsheet.visibleRows!.length,
     )
+    // the chord track is built once from every row, so the filter reaches the
+    // circle as ids rather than as a rebuilt track
     expect(
       svInspectorView.featuresCircularTrackConfiguration?.adapter.features,
-    ).toBe(svInspectorView.features)
+    ).toHaveLength(initialRowCount)
+    expect(svInspectorView.visibleChordIds).toEqual(
+      svInspectorView.features.map(f => f.uniqueId),
+    )
   })
 }, 60000)
 
@@ -205,7 +210,8 @@ test('SVInspector filtering updates circular view accordingly', async () => {
     const trackConfig = svInspectorView.featuresCircularTrackConfiguration
     expect(trackConfig).toBeDefined()
     expect(trackConfig?.type).toBe('VariantTrack')
-    expect(trackConfig?.adapter.features).toBe(features)
+    expect(trackConfig?.adapter.features).toStrictEqual(features)
+    expect(svInspectorView.visibleChordIds).toBeUndefined()
 
     const allRows = spreadsheet.rows!
     const visibilityMap: Record<number, boolean> = {}
@@ -225,6 +231,14 @@ test('SVInspector filtering updates circular view accordingly', async () => {
     for (const feature of filteredFeatures as any[]) {
       expect(feature.refName).toBe('B')
     }
+
+    // same track, narrowed chords
+    expect(
+      svInspectorView.featuresCircularTrackConfiguration?.adapter.features,
+    ).toHaveLength(allRows.length)
+    expect(svInspectorView.visibleChordIds).toEqual(
+      filteredFeatures.map(f => f.uniqueId),
+    )
 
     expect(svInspectorView.showCircularView).toBe(filteredFeatures.length > 0)
   })
