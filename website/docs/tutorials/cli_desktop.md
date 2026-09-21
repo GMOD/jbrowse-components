@@ -79,7 +79,7 @@ for a remote URL, which is referenced in place):
 
 Now `myproject/` is self-contained, with the config next to every file it needs:
 
-```
+```text
 myproject/
 ├── config.json
 ├── GRCh38.fa.gz  (+ .fa.gz.fai, .fa.gz.gzi)

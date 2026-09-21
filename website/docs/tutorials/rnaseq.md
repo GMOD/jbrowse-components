@@ -67,7 +67,7 @@ reference.
 A spliced read from the _ACTB_ pileup above (reads here are 51 bp) has a CIGAR
 like this, spaced out for readability:
 
-```
+```text
 18M 95N 33M
 ```
 

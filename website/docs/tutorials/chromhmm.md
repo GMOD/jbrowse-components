@@ -67,7 +67,7 @@ The nine
 15-state segmentation BEDs concatenate into one `cellType`-tagged BED. Each line
 is BED9 plus one trailing field, the cell-type label that becomes a row:
 
-```
+```text
 #chrom  chromStart  chromEnd  name               score  strand  thickStart  thickEnd  itemRgb      cellType
 chr1    10000       10600     15_Repetitive/CNV  0      .       10000       10600     245,245,245  GM12878
 chr1    10000       10600     15_Repetitive/CNV  0      .       10000       10600     245,245,245  K562

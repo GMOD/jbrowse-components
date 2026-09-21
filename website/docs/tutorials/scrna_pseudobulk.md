@@ -72,14 +72,15 @@ on each output:
 sinto filterbarcodes -b possorted_genome_bam.bam -c barcodes.tsv -p 8
 for bam in *.bam; do
   samtools index "$bam"
+  # --samFlagExclude 1024 drops PCR duplicates; --minMappingQuality 255 keeps
+  # only unique alignments; --normalizeUsing CPM scales so one cell type's
+  # row compares with another's
   bamCoverage -b "$bam" -o "${bam%.bam}.bw" \
     --samFlagExclude 1024 --minMappingQuality 255 --normalizeUsing CPM
 done
 ```
 
-`--samFlagExclude 1024` is the duplicate filter and `--minMappingQuality 255`
-the unique-mapping one. This writes a second copy of the BAM to disk, split N
-ways.
+This writes a second copy of the BAM to disk, split N ways.
 
 [`build_scrna_pseudobulk.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_scrna_pseudobulk.sh)
 instead reads the BAM by region over HTTPS, accumulating each cell type's
@@ -218,7 +219,8 @@ The store is read by the `MultiWiggleZarrAdapter` from
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr), the
 adapter [](/docs/tutorials/population_cnv) uses for the 1000 Genomes panel. The
 cell list, bin size and row colors are attributes of the store, written by the
-build step:
+build step. Because the adapter needs the plugin, this whole fragment, `plugins`
+and `tracks` together, goes into `config.json` rather than through Add track:
 
 ```json
 {

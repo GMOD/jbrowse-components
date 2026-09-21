@@ -119,7 +119,7 @@ tabix -f -p gff dtu_muscle_vs_liver.gff3.gz
 The track configuration reads its slots out of this column. A transcript row
 from the finished file looks like this, wrapped:
 
-```
+```text
 chr10  HAVANA  transcript  7788129  7807815  .  +  .
   ID=ENST00000356708.11;Parent=ENSG00000165629.19;gene_name=ATP5F1C;
   transcript_name=ATP5F1C-202;...;

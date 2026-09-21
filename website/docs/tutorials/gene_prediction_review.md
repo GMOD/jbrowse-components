@@ -189,7 +189,7 @@ the classifier writes down where it looked. Every capture and every live link
 carries a **Disagreements** track directly under the prediction, one short box
 per junction that differs, labelled with what moved:
 
-```
+```text
 g13605.t1:donor-1048
 ```
 
@@ -201,7 +201,7 @@ The track reads `data/conflicts.bed`, which the portal writes alongside the
 captures. Plain BED6, so it opens in any browser and intersects with `bedtools`
 without going through the page at all:
 
-```
+```text
 chr22  21636314  21636431  g13605.t1:donor-1048     0  +
 chr22  23977067  23977386  g13682.t1:acceptor+3025  0  -
 chr22  50012765  50018574  g14001.t1:split          0  -
