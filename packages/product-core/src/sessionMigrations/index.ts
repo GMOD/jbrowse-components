@@ -88,6 +88,7 @@ const V4_COLOR_FIELDS: Record<string, string> = {
 const V4_BASE_COLOR_FIELDS: Record<string, string> = {
   perBaseQuality: 'baseQuality',
   perBaseLetter: 'base',
+  perBaseLettering: 'base',
   modifications: 'modifications',
   methylation: 'modifications',
   bisulfite: 'bisulfite',
@@ -106,17 +107,22 @@ function colorSlotsOf(value: unknown): Record<string, unknown> {
         : undefined
   const baseField =
     typeof type === 'string' ? V4_BASE_COLOR_FIELDS[type] : undefined
+  const given = isObject(modifications) ? modifications : undefined
+  const { isolatedModification, ...rest } = given ?? {}
   const settings =
-    type === 'methylation'
+    given || type === 'methylation'
       ? {
-          ...(isObject(modifications) ? modifications : {}),
-          fillUnmarked: true,
+          ...rest,
+          ...(typeof isolatedModification === 'string'
+            ? { shownModifications: [isolatedModification] }
+            : {}),
+          ...(type === 'methylation' ? { fillUnmarked: true } : {}),
         }
-      : modifications
+      : undefined
   return {
     ...(field ? { color: { field } } : {}),
     ...(baseField ? { baseColor: { field: baseField } } : {}),
-    ...(isObject(settings) ? { modifications: settings } : {}),
+    ...(settings ? { modifications: settings } : {}),
   }
 }
 

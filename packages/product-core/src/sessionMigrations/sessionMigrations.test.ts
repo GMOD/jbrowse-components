@@ -467,6 +467,37 @@ describe('migrateSessionSnapshot', () => {
     expect(result.trackConfigDeltas).toBeUndefined()
   })
 
+  // The spellings v4.3.0's own menus wrote: "Per-base lettering", and each
+  // "Show only <type>" modification row.
+  test.each([
+    [
+      { type: 'perBaseLettering' },
+      { baseColor: { field: 'base' }, modifications: undefined },
+    ],
+    [
+      {
+        type: 'modifications',
+        modifications: { isolatedModification: 'm', threshold: 10 },
+      },
+      {
+        baseColor: { field: 'modifications' },
+        modifications: { shownModifications: ['m'], threshold: 10 },
+      },
+    ],
+  ])('migrates the v4.3.0 colorBy %j', (colorBy, expected) => {
+    const result = migrateConfigSnapshot({
+      tracks: [
+        {
+          trackId: 'track1',
+          type: 'AlignmentsTrack',
+          displays: [{ type: 'LinearPileupDisplay', displayId: 'd', colorBy }],
+        },
+      ],
+    })
+    const { baseColor, modifications } = (result.tracks as any)[0].displays[0]
+    expect({ baseColor, modifications }).toEqual(expected)
+  })
+
   test('merges nested colorBy into an existing trackConfigDeltas entry', () => {
     const snap = {
       name: 'test',
