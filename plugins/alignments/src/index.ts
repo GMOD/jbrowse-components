@@ -144,5 +144,6 @@ export type {
   ModificationColorBy,
   ReadColorBy,
   SortedBy,
+  TagColorScale,
 } from './shared/types.ts'
 export type { ReadCategoryKey } from './shared/readCategoryFilters.ts'
