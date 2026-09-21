@@ -69,7 +69,7 @@ test('a window overlapping the block edge still resolves', () => {
   expect(frame(win(105_000, 200_000))).toMatchObject({ refName: 'Pp01' })
 })
 
-// The bug this file exists for. The exact pass raises `followUnaligned` and
+// The bug this file exists for. The exact pass raises `followReport.unaligned` and
 // places nothing here; the per-frame pass used to interpolate anyway, and
 // `interpolateFollowSpan` clamps the window to the block first — so both edges
 // collapsed onto the block's far corner and the followed row was flung to a

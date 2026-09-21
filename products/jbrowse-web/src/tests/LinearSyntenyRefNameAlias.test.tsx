@@ -71,7 +71,7 @@ interface SyntenyView {
   initialized: boolean
   views: LinearGenomeViewModel[]
   levels: { linearSyntenyDisplays: SyntenyDisplay[] }[]
-  followUnaligned: boolean
+  followReport: { unaligned: boolean }
   setWidth: (n: number) => void
   setFollowSynteny: (flag: boolean) => void
   setShowOffscreenMates: (flag: boolean) => void
@@ -163,7 +163,7 @@ test('the follow places the row through an alias-spelled file too', async () => 
     expect(win.start).toBeGreaterThan(9500)
     expect(win.end).toBeLessThan(11500)
   }, timeout)
-  expect(view.followUnaligned).toBe(false)
+  expect(view.followReport.unaligned).toBe(false)
 })
 
 // THE OTHER AXIS, which the two tests above cannot reach and which nothing
@@ -257,5 +257,5 @@ test('an assembly named by alias in the track config still follows', async () =>
     expect(win.start).toBeGreaterThan(10500)
     expect(win.end).toBeLessThan(12500)
   }, timeout)
-  expect(view.followUnaligned).toBe(false)
+  expect(view.followReport.unaligned).toBe(false)
 })

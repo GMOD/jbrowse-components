@@ -13,7 +13,7 @@ still differ in two variables at once.
 The hang this used to describe is fixed, and it was the follow's, not the swap's:
 `alreadyShowing` can never agree with an answer narrower than the moving view's
 zoom floor, and saying no means navigate, which wakes the pass that asked. A
-zero-width answer now holds the row and lights `followUnaligned`, a narrow one
+zero-width answer now holds the row and lights `followReport.unaligned`, a narrow one
 is matched by containment within the floor, and
 `LinearSyntenyFollow.test.tsx` covers a follow on a swapped track. See
 `SyntenyFollow/CLAUDE.md`.

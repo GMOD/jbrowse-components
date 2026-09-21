@@ -152,8 +152,8 @@ back. The settle inherits that answer as its previous one.
 
 **And it is measured over a window set, so it dies with one.** `planSpread` runs
 only past two windows, so below that nothing rewrites the decision and a refusal
-outlives the anchor zooming into one contig: `followPartial` went on naming a
-region the anchor no longer spans, ahead of `approximate` in
+outlives the anchor zooming into one contig: `followReport.partial` went on
+naming a region the anchor no longer spans, ahead of `approximate` in
 `followToggleTitle`, which is to say it was the sentence the reader got.
 `planLevel` clears the decision where the rung is out of reach, which drops the
 stale incumbent and the hysteresis band with it — the band is for a user panning
@@ -256,7 +256,7 @@ an equivalent array, and no RPC is involved.
 The overview is a fixed point only **up to the unaligned flanks**: the union
 starts at the first block's mate edge, so a row with unaligned ends settles a
 hair inside its full extent, once, and stays. It reports itself as
-`followApproximate`, which it is.
+`followReport.approximate`, which it is.
 
 ## Ordering is outward from the anchor, not by level index
 
@@ -320,9 +320,9 @@ contigs that did.
 
 Latest-wins over an unordered RPC, and the level that bumps it is every level
 the pass _visits_ — including one that found nothing. That pass has decided the
-row holds and lit `followUnaligned`; bumping only for levels with something to
-resolve let the previous window's answer land underneath that and move the row
-anyway.
+row holds and lit `followReport.unaligned`; bumping only for levels with
+something to resolve let the previous window's answer land underneath that and
+move the row anyway.
 
 **`seq` cannot see a move between settles.** The coarse blocks wake the settle
 on a 500ms throttle, so an answer can land after the staying row has moved and
@@ -454,15 +454,15 @@ numbers is not "already there". `alreadyShowing` takes that floor and accepts
 the displayed regions near a contig end.
 
 And a **zero-width answer is not a place at all**: the caller holds and lights
-`followUnaligned`. Holding means **dropping the level's pick as well** — the
-frame pass steers by whatever the last settle chose, so leaving the last good
-one standing kept placing a row this branch had decided to hold, on a transform
-measured over a window it had left, which nothing corrects while the answers go
-on collapsing. A CIGAR walk clamps the window to its block before walking, so a
-block whose axes are not what the plan thought brings both ends back on one
-coordinate — which is what a swapped-assembly track does, and it is a config
-someone can legitimately write. Widening one would fling the row to base-level
-zoom on a coordinate the arithmetic never identified.
+`followReport.unaligned`. Holding means **dropping the level's pick as well** —
+the frame pass steers by whatever the last settle chose, so leaving the last
+good one standing kept placing a row this branch had decided to hold, on a
+transform measured over a window it had left, which nothing corrects while the
+answers go on collapsing. A CIGAR walk clamps the window to its block before
+walking, so a block whose axes are not what the plan thought brings both ends
+back on one coordinate — which is what a swapped-assembly track does, and it is
+a config someone can legitimately write. Widening one would fling the row to
+base-level zoom on a coordinate the arithmetic never identified.
 
 The two are separate holes, and a collapse has to be **reported rather than
 rounded away** for the second to close. `interpolateFollowSpan` used to widen a
@@ -522,8 +522,8 @@ first two cases, the third is only knowable once the walk comes back empty. Only
 the prefix lowers it; a promotion that could also lower would race the plan's
 reset and flicker.
 
-`followUnaligned` is the different answer: nothing covers the window, so the
-rows hold. Without the flag a held row and a dead follow look identical.
+`followReport.unaligned` is the different answer: nothing covers the window, so
+the rows hold. Without the flag a held row and a dead follow look identical.
 
 ## Orientation is matched once per decision, and only when opted in
 

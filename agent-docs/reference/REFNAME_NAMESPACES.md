@@ -485,7 +485,7 @@ The probe, which is now `volvox_asmalias.paf` in the fixture: a track whose
 second `assemblyNames` entry is `vvx` (volvox's declared assembly alias) with
 every refName canonical, so the two namespaces cannot be confused. Before the
 fix, `mateAssemblyNameDict` read `['vvx']` against a view on `volvox`,
-`followUnaligned` was true, and the row never moved.
+`followReport.unaligned` was true, and the row never moved.
 
 ## The repo-wide half nobody notices
 

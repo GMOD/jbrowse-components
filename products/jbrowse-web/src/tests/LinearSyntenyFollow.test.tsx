@@ -27,8 +27,7 @@ interface SyntenyView {
   initialized: boolean
   views: LinearGenomeViewModel[]
   levels: { linearSyntenyDisplays: { featureData?: unknown }[] }[]
-  followApproximate: boolean
-  followUnaligned: boolean
+  followReport: { approximate: boolean; unaligned: boolean }
   followAnchorIndex: number
   setWidth: (n: number) => void
   setFollowSynteny: (flag: boolean) => void
@@ -315,7 +314,7 @@ test('a followed row zoomed away from an overview by hand leads', async () => {
   expect(shownBy(target!).bp).toBeLessThan(WHOLE_GENOME_BP / 4)
   await followSettled(view.views)
   expect(shownBy(target!).bp).toBeLessThan(WHOLE_GENOME_BP / 4)
-  expect(view.followUnaligned).toBe(true)
+  expect(view.followReport.unaligned).toBe(true)
 
   await target!.navToLocString('ctgA:1..6079', TARGET_ASM)
   // a one-base sliver of ctgA can sit at the window's edge, so the contig
@@ -340,18 +339,18 @@ test('the view says when a placement was proportional rather than walked', async
   await waitFor(() => {
     expect(windowOf(target!).start).toBeGreaterThan(29500)
   }, timeout)
-  expect(view.followApproximate).toBe(false)
+  expect(view.followReport.approximate).toBe(false)
 
   // wider than any one alignment, so the answer is now the envelope
   await query!.navToLocString('ctgA:1..49186', QUERY_ASM)
   await waitFor(() => {
-    expect(view.followApproximate).toBe(true)
+    expect(view.followReport.approximate).toBe(true)
   }, timeout)
 
   // and it is not a latch — zooming back inside one alignment reports exact again
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
   await waitFor(() => {
-    expect(view.followApproximate).toBe(false)
+    expect(view.followReport.approximate).toBe(false)
   }, timeout)
 })
 
@@ -362,11 +361,11 @@ test('switching the mode off clears what the follow was reporting', async () => 
 
   await query!.navToLocString('ctgA:1..49186', QUERY_ASM)
   await waitFor(() => {
-    expect(view.followApproximate).toBe(true)
+    expect(view.followReport.approximate).toBe(true)
   }, timeout)
 
   view.setFollowSynteny(false)
-  expect(view.followApproximate).toBe(false)
+  expect(view.followReport.approximate).toBe(false)
 })
 
 // The complaint this answers is about MOTION, not accuracy. The exact resolve
@@ -581,7 +580,7 @@ test('a resolve landing after the mode is switched off does not move the row', a
 
 // The same in-flight resolve, against the other way a pass can decide the rows
 // hold. Only a pass that HAD something to resolve used to bump the sequence, so
-// the pass that lights `followUnaligned` — the one whose whole claim is that
+// the pass that lights `followReport.unaligned` — the one whose whole claim is that
 // the rows are holding — let the previous window's answer through underneath it.
 test('a resolve landing after the anchor has left every alignment does not move the row', async () => {
   const view = await openSyntenyView()
@@ -611,7 +610,7 @@ test('a resolve landing after the anchor has left every alignment does not move 
   // inside it has no answer at all and both rows are meant to stay put
   await query!.navToLocString('ctgA:16100..16250', QUERY_ASM)
   await waitFor(() => {
-    expect(view.followUnaligned).toBe(true)
+    expect(view.followReport.unaligned).toBe(true)
   }, timeout)
 
   release!()
@@ -658,7 +657,7 @@ test('a resolve landing after the mode is toggled off and on does not move the r
 
   view.setFollowSynteny(true)
   await waitFor(() => {
-    expect(view.followUnaligned).toBe(true)
+    expect(view.followReport.unaligned).toBe(true)
   }, timeout)
   releases[0]!()
   await followSettled(view.views)
@@ -667,7 +666,7 @@ test('a resolve landing after the mode is toggled off and on does not move the r
 }, 60000)
 
 // A zero-width walk means the exact pass holds the row and lights
-// `followUnaligned`. The frame pass steers by whatever the last settle picked,
+// `followReport.unaligned`. The frame pass steers by whatever the last settle picked,
 // though, and the holding branch returned before replacing it — so the row went
 // on being placed through a block the pass that owns the decision had just
 // disowned, on an affine map measured over a window it had already left. The
@@ -699,7 +698,7 @@ test('a row the exact pass holds is not still steered by the frame pass', async 
 
   await query!.navToLocString('ctgA:30500..31500', QUERY_ASM)
   await waitFor(() => {
-    expect(view.followUnaligned).toBe(true)
+    expect(view.followReport.unaligned).toBe(true)
   }, timeout)
   const held = windowOf(target!)
 
@@ -1011,7 +1010,7 @@ test('a swapped-assembly track holds the row rather than spinning', async () => 
   // arithmetic never identified
   expect(windowOf(bottom!)).toEqual(before)
   // and it says so, since a held row and a dead follow look identical
-  expect(view.followUnaligned).toBe(true)
+  expect(view.followReport.unaligned).toBe(true)
 }, 60000)
 
 // The backstop, against the pathology itself rather than against either cause

@@ -40,7 +40,7 @@ export async function requestCigarMap({
   return rpcManager.call(
     getRpcSessionId(model),
     'SyntenyGetCigarMap',
-    // eslint-disable-next-line no-restricted-syntax -- reports nothing: a fire-and-forget per-block precision fetch nobody awaits, and `followApproximate` is already the surface for the frames it improves. Borrowing the display's status field would flash its fetch chip once per block crossed during a drag.
+    // eslint-disable-next-line no-restricted-syntax -- reports nothing: a fire-and-forget per-block precision fetch nobody awaits, and `followReport.approximate` is already the surface for the frames it improves. Borrowing the display's status field would flash its fetch chip once per block crossed during a drag.
     {
       signal,
       adapterConfig: model.adapterConfig,

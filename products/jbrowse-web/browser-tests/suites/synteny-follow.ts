@@ -44,7 +44,7 @@ interface RowWindow {
 // puppeteer stringifies the callback, so a shared alias reaches the browser as
 // the same code four inline copies would.
 interface FollowView {
-  followApproximate: boolean
+  followReport: { approximate: boolean }
   setFollowAnchorIndex: (i: number) => void
   setFollowSynteny: (flag: boolean) => void
   views: { dynamicBlocks: { contentBlocks: RowWindow[] } }[]
@@ -141,12 +141,12 @@ const suite: TestSuite = {
         // flag that stopped being set would be invisible.
         const approximate = await page.evaluate(
           () =>
-            (window as SessionWindow).JBrowseSession.views[0]!
-              .followApproximate,
+            (window as SessionWindow).JBrowseSession.views[0]!.followReport
+              .approximate,
         )
         if (!approximate) {
           throw new Error(
-            'expected followApproximate on a whole-chromosome window, which no ' +
+            'expected followReport.approximate on a whole-chromosome window, which no ' +
               'single alignment here covers',
           )
         }

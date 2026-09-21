@@ -179,17 +179,6 @@ const Host = types
     followPairs: [] as FollowPair[],
     views: [] as HostRow[],
   }))
-  .views(self => ({
-    get followUnaligned() {
-      return self.followReport.unaligned
-    },
-    get followApproximate() {
-      return self.followReport.approximate
-    },
-    get followPartial() {
-      return self.followReport.partial
-    },
-  }))
   .actions(self => ({
     setFollowPairs(pairs: FollowPair[]) {
       self.followPairs = pairs
@@ -348,7 +337,7 @@ describe('a straddle whose answers are far apart', () => {
     expect(shown(rows[1]!)).toEqual(['chr1'])
     // named, both sides: scrolling the anchor onto chr2 is how the reader sees
     // the answer this refused, and nothing else would tell them it is there
-    expect(host.followPartial).toEqual({
+    expect(host.followReport.partial).toEqual({
       following: 'chr1',
       elsewhere: ['chr2'],
     })
@@ -362,7 +351,7 @@ describe('a straddle whose answers are far apart', () => {
   test('scrolling onto the contig it named stops naming it', async () => {
     const { rows, host } = stack('chr9')
     await new Promise(resolve => setTimeout(resolve, 0))
-    expect(host.followPartial).toEqual({
+    expect(host.followReport.partial).toEqual({
       following: 'chr1',
       elsewhere: ['chr2'],
     })
@@ -372,14 +361,14 @@ describe('a straddle whose answers are far apart', () => {
     expect(followAnchorWindows(rows[0]!.coarseDynamicBlocks)).toHaveLength(1)
     // the row really is following chr2 now — chr9 is what chr2 maps to
     expect(shown(rows[1]!)).toEqual(['chr9'])
-    expect(host.followPartial).toBeUndefined()
+    expect(host.followReport.partial).toBeUndefined()
   })
 
   test('and it spreads as before when the two answers are neighbours', async () => {
     const { rows, host } = stack('chr2')
     await new Promise(resolve => setTimeout(resolve, 0))
     expect(shown(rows[1]!)).toEqual(['chr1', 'chr2'])
-    expect(host.followPartial).toBeUndefined()
+    expect(host.followReport.partial).toBeUndefined()
   })
 
   // The refusal is measured over a window set, so it dies with it. Zoomed into
@@ -390,11 +379,11 @@ describe('a straddle whose answers are far apart', () => {
   test('the report clears once the anchor is back on one contig', async () => {
     const { rows, host } = stack('chr9')
     await new Promise(resolve => setTimeout(resolve, 0))
-    expect(host.followPartial).toBeDefined()
+    expect(host.followReport.partial).toBeDefined()
     place(rows[0]!, 200_000, 600_000)
     expect(followAnchorWindows(rows[0]!.coarseDynamicBlocks)).toHaveLength(1)
     await new Promise(resolve => setTimeout(resolve, 0))
-    expect(host.followPartial).toBeUndefined()
+    expect(host.followReport.partial).toBeUndefined()
   })
 
   // The frame pass follows the settle's DECISION, not its window: the decision
@@ -423,7 +412,7 @@ describe('a straddle whose answers are far apart', () => {
     rows[0]!.holdCoarseBlocks()
     installSyntenyFollow(host)
     await new Promise(resolve => setTimeout(resolve, 0))
-    expect(host.followPartial).toEqual({
+    expect(host.followReport.partial).toEqual({
       following: 'chr1',
       elsewhere: ['chr2'],
     })
@@ -503,7 +492,7 @@ describe('a window wider than the block it is placed by', () => {
     place(rows[0]!, 0, CONTIG)
     installSyntenyFollow(host)
     await new Promise(resolve => setTimeout(resolve, 0))
-    expect(host.followApproximate).toBe(true)
+    expect(host.followReport.approximate).toBe(true)
     expect(requestCigarMap).toHaveBeenCalledTimes(1)
     expect(jest.mocked(requestCigarMap).mock.calls[0]![0].feat).toMatchObject({
       refName: 'chr1',

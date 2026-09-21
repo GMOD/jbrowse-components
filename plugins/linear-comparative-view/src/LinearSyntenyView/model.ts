@@ -334,28 +334,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * nothing aligns under the anchor's window, so the other rows are holding
-       */
-      get followUnaligned() {
-        return self.followReport.unaligned
-      },
-      /**
-       * #getter
-       * a row was placed proportionally rather than by a CIGAR walk
-       */
-      get followApproximate() {
-        return self.followReport.approximate
-      },
-      /**
-       * #getter
-       * the multi-contig answer refused as mostly filler, naming the region
-       * followed and the ones whose answers are off screen
-       */
-      get followPartial() {
-        return self.followReport.partial
-      },
-      /**
-       * #getter
        * scroll-to-zoom is a global, personal preference resolved from the
        * session; toggling it in any view applies everywhere
        */

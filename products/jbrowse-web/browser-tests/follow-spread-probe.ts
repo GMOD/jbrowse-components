@@ -65,8 +65,8 @@ try {
       (v: any) => v.type === 'LinearSyntenyView',
     )
     return {
-      followPartial: view.followPartial,
-      followApproximate: view.followApproximate,
+      followPartial: view.followReport.partial,
+      followApproximate: view.followReport.approximate,
       rows: view.views.map((v: any) => {
         const blocks = v.dynamicBlocks.contentBlocks
         return {
