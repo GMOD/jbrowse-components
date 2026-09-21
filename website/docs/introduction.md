@@ -74,7 +74,7 @@ Points of reference:
 - IGV and igv.js: much of the alignments track, particularly read pairing and
   modBAM color schemes, view as pairs, and link supplementary alignments
 - D-GENIES: for establishing a very high quality, easy to use dotplot viewer
-- GenomeSpy: for proving GPU powered and grammar of graphics tecniques
+- GenomeSpy: for proving GPU powered and grammar of graphics techniques
 - [Every other genome visualization developer](https://cmdcolin.github.io/awesome-genome-visualization/?latest=true)
 - UCSC genome browser - For their genome browser and open data sharing, enabling
   genomes.jbrowse.org
