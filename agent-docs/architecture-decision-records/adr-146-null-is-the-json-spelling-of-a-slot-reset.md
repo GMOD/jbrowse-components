@@ -100,6 +100,16 @@ member", rather than inventing a house convention.
   out of the namespace's snapshot, which `stripDefault` reads as the default. It
   used to copy the `null` in, so `create` refused it and a session spec could
   pin an axis and not unpin it.
+- **A track-config delta is the third route that reads `null` as a reset.** A
+  non-admin's edits to an admin's track are stored as a merge patch over that
+  config (`trackConfigDelta.ts`), so a slot the user puts back to its default,
+  or a list the user empties, is a `null` there, and the merge removes the
+  member so the schema's default applies — after a reload and in a share link,
+  where an omitted member could only mean "leave it alone". The diff infers the
+  `null` from a member one snapshot has and the other lacks, which is a reset
+  only when both are post-`stripDefault`, so every caller diffs two snapshots in
+  that form. Having no schema, the delta reads `null` this way at every depth,
+  a frozen slot's object members included.
 - A frozen slot's *nested* nulls are untouched — the merge path reinterprets a
   slot's own value and a namespace's members, and recurses into nothing else. A
   caller that needs to store a bare `null` wraps it, or writes it as a snapshot.

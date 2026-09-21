@@ -12,18 +12,15 @@
  *   - `diffTrackConfig(base, edited)` — the minimal delta
  *   - `mergeTrackConfig(base, delta)` — reconstruct the effective config
  *
- * Deliberate limitation (no tombstones): a delta records adds/changes only, not
- * deletions. If a user *resets* a slot the admin had customized (base has it,
- * edited omits it), the delta can't express "drop below the admin value", so the
- * field keeps following the base across a reload. This keeps the merge trivial
- * and the shared JSON free of deletion sentinels, and following the admin value
- * is a defensible outcome.
- *
- * What it is NOT free to conflate is a removal with a reset. Both diff to an
- * empty delta, and `SessionTracks.updateTrackConfiguration` used to read that as
- * "the edit netted back to the base" and revert the track's working copy — which
- * undid a removal on screen 400ms after it landed. That branch now keeps the
- * working copy; see the comment there.
+ * A delta is a JSON Merge Patch (RFC 7396) over the base, so a `null` member is
+ * a reset: the merge removes the member and the schema's default applies. That
+ * is ADR-146's spelling of a reset, and the diff writes one wherever the base
+ * sets a member the edited config lacks — a slot put back to its default, or a
+ * list emptied, since `stripDefault` drops both from a snapshot. The inference
+ * is exact only because both sides are post-`stripDefault` snapshots: a member
+ * the admin wrote at its default is absent from both, where a `null` for it
+ * would block a later admin value. As in RFC 7396, a delta cannot set a member
+ * to a literal `null`; null and absent are one state.
  *
  * `displays` is merged by `displayId` so an edit to one display doesn't pin the
  * others. Nested config objects (e.g. `adapter`) recurse. Any other array (value
@@ -66,11 +63,12 @@ function isDisplayArray(v: Json): v is JsonObject[] {
   )
 }
 
-// Sentinel returned by diffValue when a value is unchanged, so callers can tell
-// "no delta" apart from a legitimate `undefined` slot value.
 const UNCHANGED = Symbol('unchanged')
 
 function diffValue(base: Json, edited: Json): Json | typeof UNCHANGED {
+  if (edited == null) {
+    return base == null ? UNCHANGED : null
+  }
   if (deepEqual(base, edited)) {
     return UNCHANGED
   }
@@ -83,12 +81,9 @@ function diffValue(base: Json, edited: Json): Json | typeof UNCHANGED {
       if (baseDisplay) {
         const d = diffValue(baseDisplay, editedDisplay)
         if (d !== UNCHANGED) {
-          // always re-key the delta entry by displayId so merge can realign it
           out.push({ ...(d as JsonObject), displayId: id })
         }
       } else {
-        // a display present only in the edited config (e.g. an added display):
-        // carry it whole
         out.push(editedDisplay)
       }
     }
@@ -96,26 +91,21 @@ function diffValue(base: Json, edited: Json): Json | typeof UNCHANGED {
   }
   if (isPlainObject(edited) && isPlainObject(base)) {
     const out: JsonObject = {}
-    for (const [k, v] of Object.entries(edited)) {
-      const d = diffValue(base[k], v)
+    for (const k of new Set([...Object.keys(base), ...Object.keys(edited)])) {
+      const d = diffValue(base[k], edited[k])
       if (d !== UNCHANGED) {
         out[k] = d
       }
     }
-    // an object whose only difference from base is dropped keys (a reset the
-    // delta can't express, see module note) yields no adds/changes: treat it as
-    // unchanged rather than emitting a content-free entry
     return Object.keys(out).length > 0 ? out : UNCHANGED
   }
-  // scalar, or an object/array replacing a scalar (or a value array): replace
   return edited
 }
 
 /**
- * Minimal delta of `edited` against `base`. Both are plain config snapshots
- * (post-stripDefault). Records adds/changes only; see the module note on the
- * no-tombstone limitation. Always retains `trackId` so the delta is
- * self-identifying.
+ * Minimal delta of `edited` against `base`, both post-stripDefault snapshots. A
+ * member `base` sets and `edited` lacks is a `null` (see the module note).
+ * Always retains `trackId` so the delta is self-identifying.
  */
 export function diffTrackConfig(
   base: Record<string, unknown>,
@@ -128,35 +118,40 @@ export function diffTrackConfig(
 }
 
 function mergeValue(base: Json, delta: Json): Json {
-  if (isDisplayArray(delta) && isDisplayArray(base)) {
+  if (isDisplayArray(delta)) {
+    const baseDisplays = isDisplayArray(base) ? base : []
     const deltaById = new Map(delta.map(d => [d.displayId as string, d]))
-    const merged = base.map(baseDisplay => {
+    const merged = baseDisplays.map(baseDisplay => {
       const d = deltaById.get(baseDisplay.displayId as string)
       return d ? (mergeValue(baseDisplay, d) as JsonObject) : baseDisplay
     })
-    // displays present only in the delta (added by the user) append after base
-    const baseIds = new Set(base.map(d => d.displayId as string))
+    const baseIds = new Set(baseDisplays.map(d => d.displayId as string))
     for (const d of delta) {
       if (!baseIds.has(d.displayId as string)) {
-        merged.push(d)
+        merged.push(mergeValue(undefined, d) as JsonObject)
       }
     }
     return merged
   }
-  if (isPlainObject(delta) && isPlainObject(base)) {
-    const out: JsonObject = { ...base }
+  if (isPlainObject(delta)) {
+    const out: JsonObject = isPlainObject(base) ? { ...base } : {}
     for (const [k, v] of Object.entries(delta)) {
-      out[k] = mergeValue(base[k], v)
+      if (v === null) {
+        delete out[k]
+      } else {
+        out[k] = mergeValue(out[k], v)
+      }
     }
     return out
   }
-  // scalar / value array / type mismatch: delta wins
   return delta
 }
 
 /**
  * Reconstruct the effective config by layering `delta` over the live `base`.
- * Inverse of `diffTrackConfig` on the add/change path (see module note).
+ * A `null` removes the member it names, and one naming something the base no
+ * longer has is dropped, so no `null` member reaches the config a track
+ * hydrates from.
  */
 export function mergeTrackConfig(
   base: Record<string, unknown>,
@@ -165,7 +160,10 @@ export function mergeTrackConfig(
   return mergeValue(base as JsonObject, delta as JsonObject) as JsonObject
 }
 
-/** A single overridden slot: the dotted `path`, its base `from` and edited `to`. */
+/**
+ * A single overridden slot: the dotted `path`, its base `from` and edited `to`,
+ * which is `undefined` for a reset.
+ */
 export interface TrackConfigChange {
   /**
    * Where the setting lives. A producer that wants a friendlier heading sets
@@ -231,7 +229,7 @@ function walkDelta(
       }
     }
   } else {
-    out.push({ path, from: base, to: delta })
+    out.push({ path, from: base, to: delta ?? undefined })
   }
 }
 

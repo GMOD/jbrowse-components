@@ -942,10 +942,9 @@ test('planWebExport still drops a track whose data file is local', () => {
   expect(plan.session.sessionTracks).toEqual([])
 })
 
-// Under a hosted base the omission is also the right delta: a delta records adds
-// and changes but never a deletion, so leaving the local index out lets the
-// base's own index resolve instead of pinning the recipient to a path on the
-// sender's disk.
+// Under a hosted base the hub's own index takes the local one's place, so the
+// delta records no change to it and the base's index resolves, rather than a
+// reset of it or a path on the sender's disk.
 test('planWebExport does not ship a local text index as a hub track edit', () => {
   const base = {
     trackId: 'hub-track',

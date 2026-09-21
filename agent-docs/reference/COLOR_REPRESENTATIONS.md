@@ -10,7 +10,7 @@ kind: spec
 Most of this repo's cross-cutting concepts turn out to be a large branch count
 funneling into a small number of values a consumer actually reads —
 [REGION_TOO_LARGE.md](REGION_TOO_LARGE.md) (73 states to 7) and
-[TRACK_REGISTRATION.md](TRACK_REGISTRATION.md) (32 to 4) are both that shape.
+[TRACK_REGISTRATION.md](TRACK_REGISTRATION.md) (31 to 4) are both that shape.
 Color is not: the graph a color travels through has a hole in it, the hole is
 along the one axis the type system cannot check, and the file/line growth this
 spec was chosen for (18 → 74 consumer files, 301 → ~1,950 implementation

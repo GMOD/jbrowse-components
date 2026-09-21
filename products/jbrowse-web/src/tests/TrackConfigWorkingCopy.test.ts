@@ -49,14 +49,13 @@ test('one track shown in two views is two displays over one config', async () =>
   expect(a.configuration).toBe(b.configuration)
 })
 
-// Unsetting a slot (what a size row's reset writes) is a removal, and
-// `diffTrackConfig` records adds and changes but never deletions. So unsetting
-// a slot an admin `config.json` declares diffs to nothing exactly as netting
-// back to the base does. Clearing the delta then reverted the track's working
-// copy to the base, undoing the reset ~400ms after the user watched it land.
+// Unsetting a slot an admin `config.json` declares is what a size row's reset
+// writes, and it has to hold through the debounced save: the delta records it
+// as a `null`, where clearing the delta would revert the working copy to the
+// admin value.
 describe('unsetting an admin-configured slot', () => {
   // gff3_custom_tooltips declares `subfeatureLabels: 'below'` on its
-  // LinearBasicDisplay, which is what makes the removal unexpressible
+  // LinearBasicDisplay
   const ADMIN_TRACK = 'gff3_custom_tooltips'
   const ADMIN_SLOT = 'subfeatureLabels'
 

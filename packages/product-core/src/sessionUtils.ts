@@ -463,10 +463,12 @@ function droppableTrackIds(
 // (`addTrackTextSearchConf`), so indexing a remote BAM on desktop is enough to
 // make an otherwise perfectly portable track non-portable and get it dropped
 // whole. The data file is the track; the index is a search box over it. Shedding
-// the index costs the recipient that box and nothing else, and under a hosted
-// base the omission also lets the base's own (remote) index resolve, since a
-// delta records adds and changes but never a deletion.
-function withoutLocalTextSearch<T>(track: T): T {
+// the index costs the recipient that box and nothing else.
+//
+// A hub track takes the hub's own index in its place, so its delta records no
+// change there and the recipient searches with the hub's index. Leaving the
+// member out would be a reset of it.
+function withoutLocalTextSearch<T>(track: T, hubIndex?: unknown): T {
   if (
     !isRecord(track) ||
     !isRecord(track.textSearching) ||
@@ -475,7 +477,9 @@ function withoutLocalTextSearch<T>(track: T): T {
     return track
   }
   const { textSearching, ...rest } = track
-  return rest as T
+  return (
+    hubIndex === undefined ? rest : { ...rest, textSearching: hubIndex }
+  ) as T
 }
 
 // Display names of the tracks `withoutLocalTextSearch` stripped, for the report.
@@ -687,8 +691,26 @@ export function planWebExport(
   const priorSessionAssemblies = asArray(defaultSession.sessionAssemblies)
   const inputTracks = snapshot.tracks ?? []
   const inputSessionTracks = asArray(defaultSession.sessionTracks)
-  const allTracks = inputTracks.map(withoutLocalTextSearch)
-  const allSessionTracks = inputSessionTracks.map(withoutLocalTextSearch)
+
+  const baseAssemblyNames = new Set(
+    (baseConfig?.assemblies ?? []).map(a => a.name),
+  )
+  const coveredByBase =
+    !!sourceConfigUrl &&
+    !!baseConfig &&
+    assemblies.every(a => baseAssemblyNames.has(a.name))
+  const hubIndexes = new Map(
+    (coveredByBase ? (baseConfig.tracks ?? []) : []).map(t => [
+      t.trackId,
+      t.textSearching,
+    ]),
+  )
+  const allTracks = inputTracks.map(t =>
+    withoutLocalTextSearch(t, hubIndexes.get(t.trackId)),
+  )
+  const allSessionTracks = inputSessionTracks.map(t =>
+    withoutLocalTextSearch(t),
+  )
 
   // over the stripped lists, so a track whose only local file was its own search
   // index is no longer read as one that has to be dropped
@@ -708,13 +730,6 @@ export function planWebExport(
   const tracks = allTracks.filter(keep)
   const priorSessionTracks = allSessionTracks.filter(keep)
 
-  const baseAssemblyNames = new Set(
-    (baseConfig?.assemblies ?? []).map(a => a.name),
-  )
-  const coveredByBase =
-    !!sourceConfigUrl &&
-    !!baseConfig &&
-    assemblies.every(a => baseAssemblyNames.has(a.name))
   // `baseConfig` is undefined only because the caller could not fetch
   // `sourceConfigUrl` — it is the same fetch that produces it — so the two ways
   // a hub drops out of the plan are distinguishable here without a flag.

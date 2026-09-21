@@ -6,7 +6,7 @@ import {
 import { getEnv, getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
-import { createViewState } from './index.ts'
+import { createViewState, createViewStateAsync } from './index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -172,5 +172,194 @@ test('an edit to a shown catalog track reaches the session snapshot', async () =
       (getSnapshot(state.session) as { trackConfigDeltas?: unknown })
         .trackConfigDeltas,
     ).toEqual({ [TRACK_ID]: expect.objectContaining({ name: 'Edited name' }) })
+  })
+})
+
+// A non-admin's reset of a slot the admin config sets is a `null` in the delta
+// (ADR-146). Each case reads it back through a session rebuilt from its JSON,
+// which is what a reload or a share link hands the next session.
+describe('a reset of an admin-set slot survives a reload', () => {
+  const FST = 'fst'
+  const RULES = ['scales', 'y', 'rules'] as const
+  const DOMAIN_MAX = ['scales', 'y', 'domainMax'] as const
+
+  function fstTrack(extra: Record<string, unknown>) {
+    return {
+      type: 'GWASTrack',
+      trackId: FST,
+      name: 'Fst',
+      assemblyNames: ['volvox'],
+      adapter: { type: 'GWASAdapter', uri: 'fst.bed.gz' },
+      ...extra,
+    }
+  }
+  const rulesBase = fstTrack({
+    displayDefaults: { scales: { y: { domainMax: 50, rules: [0.295] } } },
+  })
+  const rulesDelta = {
+    trackId: FST,
+    displays: [
+      {
+        displayId: `${FST}-LinearManhattanDisplay`,
+        scales: { y: { rules: null } },
+      },
+    ],
+  }
+
+  interface EditableSession extends DeltaSession {
+    sessionTracks: unknown[]
+    getTrackConfigChanges: (trackId: string) => unknown[]
+    getEditableTrackConfig: (
+      trackId: string,
+      frozenConfig: unknown,
+      schemaType: unknown,
+    ) => AnyConfigurationModel
+  }
+
+  function sessionOf(state: ReturnType<typeof createViewState>) {
+    return state.session as unknown as EditableSession
+  }
+
+  function pluginManagerOf(state: IStateTreeNode) {
+    return getEnv<{ pluginManager: PluginManager }>(state).pluginManager
+  }
+
+  function manhattan(trackConf: AnyConfigurationModel) {
+    return (trackConf.displays as AnyConfigurationModel[]).find(
+      d => d.type === 'LinearManhattanDisplay',
+    )!
+  }
+
+  // what BaseTrackModel's persist reaction does: edit the working copy, then
+  // hand its snapshot to updateTrackConfiguration
+  function edit(
+    state: ReturnType<typeof createViewState>,
+    change: (trackConf: AnyConfigurationModel) => void,
+  ) {
+    const session = sessionOf(state)
+    const workingCopy = session.getEditableTrackConfig(
+      FST,
+      session.tracks.find(t => t.trackId === FST),
+      pluginManagerOf(state).pluggableConfigSchemaType('track'),
+    )
+    change(workingCopy)
+    session.updateTrackConfiguration(
+      getSnapshot(workingCopy) as { trackId: string },
+    )
+    return workingCopy
+  }
+
+  function reload(
+    state: ReturnType<typeof createViewState>,
+    base: ReturnType<typeof fstTrack>,
+  ) {
+    return createViewStateAsync({
+      assembly,
+      tracks: [base],
+      session: JSON.parse(JSON.stringify(getSnapshot(state.session))),
+    })
+  }
+
+  function effective(state: ReturnType<typeof createViewState>) {
+    return hydrateTrackConfig(
+      pluginManagerOf(state),
+      sessionOf(state).tracks.find(t => t.trackId === FST) as unknown as Record<
+        string,
+        unknown
+      >,
+    )!
+  }
+
+  test('emptying the admin rules list', async () => {
+    const state = createViewState({ assembly, tracks: [rulesBase] })
+    const workingCopy = edit(state, conf => {
+      setConf(manhattan(conf), RULES, [])
+    })
+    expect(sessionOf(state).trackConfigDeltas[FST]).toEqual(rulesDelta)
+    expect(sessionOf(state).getTrackConfigChanges(FST)).toHaveLength(1)
+    expect(readConfObject(manhattan(workingCopy), RULES)).toHaveLength(0)
+
+    const display = manhattan(effective(await reload(state, rulesBase)))
+    expect(readConfObject(display, RULES)).toHaveLength(0)
+    expect(readConfObject(display, DOMAIN_MAX)).toBe(50)
+  })
+
+  test('resetting an admin-set scalar, a maybe slot and a track slot', async () => {
+    const base = fstTrack({
+      description: 'admin description',
+      displayDefaults: {
+        scatterPointSize: 9,
+        scales: { y: { domainMax: 50 } },
+      },
+    })
+    const state = createViewState({ assembly, tracks: [base] })
+    const defaultSize = readConfObject(
+      manhattan(hydrateTrackConfig(pluginManagerOf(state), fstTrack({}))!),
+      'scatterPointSize',
+    )
+    edit(state, conf => {
+      setConf(conf, 'description', undefined)
+      setConf(manhattan(conf), 'scatterPointSize', undefined)
+      setConf(manhattan(conf), DOMAIN_MAX, undefined)
+    })
+
+    const reloaded = effective(await reload(state, base))
+    expect(readConfObject(reloaded, 'description')).toBe('')
+    expect(readConfObject(manhattan(reloaded), 'scatterPointSize')).toBe(
+      defaultSize,
+    )
+    expect(readConfObject(manhattan(reloaded), DOMAIN_MAX)).toBeUndefined()
+  })
+
+  // Both sides of the diff are post-stripDefault, so a slot the admin spelled
+  // at its default is absent from both and no reset is inferred for it
+  test('a slot the admin wrote at its default takes no null, and a later admin value flows through', async () => {
+    const size = readConfObject(
+      manhattan(
+        effective(createViewState({ assembly, tracks: [fstTrack({})] })),
+      ),
+      'scatterPointSize',
+    ) as number
+    const base = fstTrack({ displayDefaults: { scatterPointSize: size } })
+    const state = createViewState({ assembly, tracks: [base] })
+    edit(state, conf => {
+      setConf(manhattan(conf), DOMAIN_MAX, 20)
+    })
+    expect(sessionOf(state).trackConfigDeltas[FST]).toEqual({
+      trackId: FST,
+      displays: [
+        {
+          displayId: `${FST}-LinearManhattanDisplay`,
+          scales: { y: { domainMax: 20 } },
+        },
+      ],
+    })
+
+    const adminChanged = fstTrack({
+      displayDefaults: { scatterPointSize: size + 3 },
+    })
+    const display = manhattan(effective(await reload(state, adminChanged)))
+    expect(readConfObject(display, 'scatterPointSize')).toBe(size + 3)
+    expect(readConfObject(display, DOMAIN_MAX)).toBe(20)
+  })
+
+  test('a legacy full-config override that dropped the admin rules migrates to a null', async () => {
+    const fresh = createViewState({ assembly, tracks: [rulesBase] })
+    const legacy = hydrateTrackConfig(pluginManagerOf(fresh), rulesBase)!
+    setConf(manhattan(legacy), RULES, [])
+
+    const state = await createViewStateAsync({
+      assembly,
+      tracks: [rulesBase],
+      session: JSON.parse(
+        JSON.stringify({
+          ...getSnapshot(fresh.session),
+          sessionTracks: [getSnapshot(legacy)],
+        }),
+      ),
+    })
+    expect(sessionOf(state).sessionTracks).toEqual([])
+    expect(sessionOf(state).trackConfigDeltas[FST]).toEqual(rulesDelta)
+    expect(readConfObject(manhattan(effective(state)), RULES)).toHaveLength(0)
   })
 })

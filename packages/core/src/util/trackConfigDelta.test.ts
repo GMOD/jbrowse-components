@@ -134,18 +134,133 @@ test('a legacy full override that differs keeps only the differing fields', () =
   })
 })
 
-test('no-tombstone limitation: resetting an admin-set slot is not expressed', () => {
+test('a reset of an admin-set display slot is a null the merge removes', () => {
   const adminBase = clone(base)
   adminBase.displays[1]!.color = 'red'
-
   const userReset = clone(adminBase)
   delete userReset.displays[1]!.color
 
   const delta = diffTrackConfig(adminBase, userReset)
-  expect(delta).toEqual({ trackId: 'vcf' })
-  expect(asCfg(mergeTrackConfig(adminBase, delta)).displays[1]!.color).toBe(
-    'red',
-  )
+  expect(delta).toEqual({
+    trackId: 'vcf',
+    displays: [{ displayId: 'vcf-Linear', color: null }],
+  })
+  expect(mergeTrackConfig(adminBase, delta)).toEqual(userReset)
+})
+
+test('a reset of an admin-set top-level slot is a null the merge removes', () => {
+  const userReset = clone(base)
+  delete userReset.category
+
+  const delta = diffTrackConfig(base, userReset)
+  expect(delta).toEqual({ trackId: 'vcf', category: null })
+  expect(mergeTrackConfig(base, delta)).toEqual(userReset)
+})
+
+function manhattan(y: Record<string, unknown>) {
+  return {
+    trackId: 'fst',
+    displays: [
+      {
+        type: 'LinearManhattanDisplay',
+        displayId: 'fst-LinearManhattanDisplay',
+        scales: { y },
+      },
+    ],
+  }
+}
+const manhattanBase = manhattan({ domainMax: 50, rules: [{ value: 0.295 }] })
+
+// `stripDefault` drops an emptied list from the snapshot, so the edited side
+// holds the list's absence
+test('emptying an admin-filled list is a null on the list', () => {
+  const emptied = manhattan({ domainMax: 50 })
+  const delta = diffTrackConfig(manhattanBase, emptied)
+  expect(delta).toEqual({
+    trackId: 'fst',
+    displays: [
+      {
+        displayId: 'fst-LinearManhattanDisplay',
+        scales: { y: { rules: null } },
+      },
+    ],
+  })
+  expect(mergeTrackConfig(manhattanBase, delta)).toEqual(emptied)
+})
+
+test('a null survives the JSON a share link carries', () => {
+  const emptied = manhattan({ domainMax: 50 })
+  const shared = JSON.parse(
+    JSON.stringify(diffTrackConfig(manhattanBase, emptied)),
+  ) as Record<string, unknown>
+  expect(mergeTrackConfig(manhattanBase, shared)).toEqual(emptied)
+})
+
+test('null and an absent member are the same thing to the diff', () => {
+  expect(
+    diffTrackConfig({ trackId: 't', color: null }, { trackId: 't' }),
+  ).toEqual({ trackId: 't' })
+  expect(
+    diffTrackConfig({ trackId: 't' }, { trackId: 't', color: null }),
+  ).toEqual({ trackId: 't' })
+})
+
+// The admin can later drop what a user reset. The merge then has nothing to
+// remove, and a null reaching `create` would fail the track's hydration.
+test('a null over a member the base no longer has leaves no null behind', () => {
+  const displays = [
+    {
+      displayId: 'fst-LinearManhattanDisplay',
+      scales: { y: { domainMax: 20, rules: null } },
+    },
+    {
+      type: 'LinearArcDisplay',
+      displayId: 'fst-LinearArcDisplay',
+      color: null,
+      height: 80,
+    },
+  ]
+  const arc = {
+    type: 'LinearArcDisplay',
+    displayId: 'fst-LinearArcDisplay',
+    height: 80,
+  }
+  expect(
+    mergeTrackConfig(
+      {
+        trackId: 'fst',
+        displays: [
+          {
+            type: 'LinearManhattanDisplay',
+            displayId: 'fst-LinearManhattanDisplay',
+          },
+        ],
+      },
+      { trackId: 'fst', category: null, displays },
+    ),
+  ).toEqual({
+    trackId: 'fst',
+    displays: [
+      {
+        type: 'LinearManhattanDisplay',
+        displayId: 'fst-LinearManhattanDisplay',
+        scales: { y: { domainMax: 20 } },
+      },
+      arc,
+    ],
+  })
+  expect(
+    mergeTrackConfig({ trackId: 'fst' }, { trackId: 'fst', displays }),
+  ).toEqual({
+    trackId: 'fst',
+    displays: [
+      {
+        displayId: 'fst-LinearManhattanDisplay',
+        scales: { y: { domainMax: 20 } },
+      },
+      arc,
+    ],
+  })
 })
 
 test('a display added only by the user is carried whole into the delta', () => {
@@ -176,6 +291,22 @@ test('flatten addresses a display edit by display type and omits identity keys',
       path: ['displays', 'LinearVariantDisplay', 'color'],
       from: undefined,
       to: 'green',
+    },
+  ])
+})
+
+test('flatten lists a reset as a change to the default', () => {
+  const adminBase = clone(base)
+  adminBase.displays[1]!.color = 'red'
+  const userReset = clone(adminBase)
+  delete userReset.displays[1]!.color
+  expect(
+    flattenTrackConfigDelta(adminBase, diffTrackConfig(adminBase, userReset)),
+  ).toEqual([
+    {
+      path: ['displays', 'LinearVariantDisplay', 'color'],
+      from: 'red',
+      to: undefined,
     },
   ])
 })
