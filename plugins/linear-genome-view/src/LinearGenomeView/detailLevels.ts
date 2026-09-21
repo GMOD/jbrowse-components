@@ -149,6 +149,7 @@ export const LEVEL_OWN = new Set([
   'zoomTo',
   'zoom',
   'flyTo',
+  'flyToFit',
   'showAllRegions',
   'fitAllRegions',
   'clampZoomToCeiling',
