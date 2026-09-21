@@ -3743,6 +3743,8 @@
         "colorDomainEndsSlots",
         "colorDomainSlot",
         "colorEncodingOf",
+        "colorForField",
+        "colorForValue",
         "colorMembersOf",
         "colorRampSlots",
         "colorRangeSlot",

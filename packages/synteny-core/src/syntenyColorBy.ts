@@ -1,4 +1,7 @@
-import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  colorEncodingOf,
+  colorForField,
+} from '@jbrowse/display-kit/colorConfigSchema'
 
 import type { SyntenyColorSnapshot } from './syntenyColorConfigSchema.ts'
 
@@ -23,17 +26,12 @@ export function paintedField({
 
 /**
  * #api
- * The colour object that paints by `field`, written over `current`: `''`
- * keeps the field and its order under `scale: 'none'` for a switch back, and
- * a field keeps its order only when it is the one already named.
+ * The colour object that paints by `field`, written over `current`: display-kit's
+ * `colorForField`, the rule every display's Color by pick writes by.
  */
 export function syntenyColorFor(
   field: string,
   current: SyntenyColorSnapshot,
 ): SyntenyColorSnapshot {
-  if (field === '') {
-    return { ...current, scale: 'none' }
-  }
-  const { scale, domain, ...rest } = current
-  return { ...rest, field, ...(field === current.field ? { domain } : {}) }
+  return colorForField(current, field)
 }

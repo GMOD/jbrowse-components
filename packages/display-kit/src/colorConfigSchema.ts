@@ -241,6 +241,56 @@ export function colorEncodingOf<V extends string | undefined>(
   }
 }
 
+interface PickableColor {
+  value?: string
+  field?: string
+  scale?: string
+}
+
+function definedMembers(color: object) {
+  return Object.fromEntries(
+    Object.entries(color)
+      .filter(([, v]) => v !== undefined)
+      .map(([k, v]) => [k, Array.isArray(v) ? [...v] : v]),
+  )
+}
+
+/**
+ * The colour object a Color by pick writes over `current`. `''` paints
+ * `value` and keeps the field and its members under `scale: 'none'` for the
+ * way back; the field already named keeps its members and a declared scale;
+ * a new field keeps only `value`.
+ */
+export function colorForField(current: PickableColor, field: string) {
+  const kept = definedMembers(current)
+  if (field === '') {
+    return current.field ? { ...kept, scale: 'none' } : kept
+  }
+  if (field === current.field) {
+    return {
+      ...kept,
+      scale: current.scale === 'none' ? undefined : current.scale,
+    }
+  }
+  return definedMembers({ value: current.value, field })
+}
+
+/**
+ * The colour object a Solid color pick writes over `current`: `value` paints,
+ * undefined returning to each feature's own colour, and a field stays under
+ * `scale: 'none'` for the way back.
+ */
+export function colorForValue(
+  current: PickableColor,
+  value: string | undefined,
+) {
+  return definedMembers({
+    ...current,
+    value,
+    ...(current.field ? { scale: 'none' } : {}),
+  })
+}
+
 /**
  * A categorical encoding's field as every categorical channel keys, orders,
  * names and paints it, or `undefined` for any other encoding.

@@ -29,6 +29,10 @@ import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { colorSpecOf } from '@jbrowse/display-kit/channelSpec'
+import {
+  colorForField,
+  colorForValue,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import {
   autorunOnReadyView,
@@ -1097,16 +1101,6 @@ export default function baseStateModelFactory(
     })
     .actions(self => {
       const openDetails = createCanvasFeatureDetailsOpener(self)
-      function writeFeatureColor(color?: string) {
-        const { field, domain, range } = self.colorSettings
-        self.configuration.setSubschema('color', {
-          ...(color === undefined ? {} : { value: color }),
-          field,
-          domain: [...domain],
-          range: [...range],
-          scale: 'none',
-        })
-      }
       return {
         /**
          * #action
@@ -1166,7 +1160,10 @@ export default function baseStateModelFactory(
          * its order and range stay under `scale: 'none'` for the way back.
          */
         setFeatureColor(color?: string) {
-          writeFeatureColor(color)
+          self.configuration.setSubschema(
+            'color',
+            colorForValue(self.colorSettings, color),
+          )
         },
 
         /**
@@ -1180,16 +1177,17 @@ export default function baseStateModelFactory(
           range?: readonly string[]
         }) {
           const { value } = self.colorSettings
-          if (scale) {
-            self.configuration.setSubschema('color', {
-              ...(value === undefined ? {} : { value }),
-              field: scale.field,
-              domain: [...(scale.domain ?? [])],
-              range: [...(scale.range ?? [])],
-            })
-          } else {
-            writeFeatureColor(value)
-          }
+          self.configuration.setSubschema(
+            'color',
+            scale
+              ? {
+                  ...(value === undefined ? {} : { value }),
+                  field: scale.field,
+                  domain: [...(scale.domain ?? [])],
+                  range: [...(scale.range ?? [])],
+                }
+              : colorForField(self.colorSettings, ''),
+          )
         },
 
         /**
@@ -1599,9 +1597,9 @@ export default function baseStateModelFactory(
        * the domain and range while it is the field already painting.
        */
       colorByField(field: string) {
-        const { field: current, domain, range } = self.colorSettings
-        self.setColorScale(
-          field === current ? { field, domain, range } : { field },
+        self.configuration.setSubschema(
+          'color',
+          colorForField(self.colorSettings, field),
         )
       },
       /**

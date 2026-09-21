@@ -1,5 +1,8 @@
 import { thresholdCuts } from '@jbrowse/core/util/thresholdScale'
-import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  colorEncodingOf,
+  colorForField,
+} from '@jbrowse/display-kit/colorConfigSchema'
 
 import { TAG_FIELD_PREFIX, facetTag } from './groupByLabels.ts'
 
@@ -178,30 +181,12 @@ export function isBakedScheme(colorBy: ColorBy) {
   )
 }
 
-/**
- * The `color` object a scheme pick writes. The plain fill keeps the field
- * under `none` for the way back, and a field re-picked keeps its order, range
- * and ends; a new field starts from none of them. A re-picked field paints
- * through its own default scale: `none` and a declared `linear` or `threshold`
- * share the one `scale` slot, so the plain fill cannot keep the kind.
- */
+/** The `color` object a scheme pick writes: `colorForField` over the scheme's field. */
 export function colorSnapshotFor(
   colorBy: ColorBy,
   current: AlignmentsColorSetting,
 ): Partial<AlignmentsColorSetting> {
-  const field = colorFieldOf(colorBy)
-  const kept = Object.fromEntries(
-    Object.entries(current).filter(([, v]) => v !== undefined),
-  )
-  return field === ''
-    ? current.field
-      ? { ...kept, scale: 'none' }
-      : kept
-    : field === current.field
-      ? { ...kept, scale: current.scale === 'none' ? undefined : current.scale }
-      : current.value === undefined
-        ? { field }
-        : { value: current.value, field }
+  return colorForField(current, colorFieldOf(colorBy))
 }
 
 /**

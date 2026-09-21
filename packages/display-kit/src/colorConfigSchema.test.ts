@@ -9,6 +9,8 @@ import {
   colorDomainEndsSlots,
   colorDomainSlot,
   colorEncodingOf,
+  colorForField,
+  colorForValue,
   colorRampSlots,
   colorRangeSlot,
 } from './colorConfigSchema.ts'
@@ -118,4 +120,57 @@ test('the scale is never read off which output member is written', () => {
   expect(scaleOf({ range: ['white', 'red'] })).toBe('categorical')
   expect(scaleOf({ range: [] })).toBe('categorical')
   expect(scaleOf({ scheme: 'viridis' })).toBe('categorical')
+})
+
+describe('colorForField', () => {
+  const tag = {
+    value: 'grey',
+    field: 'tags.HP',
+    scale: 'categorical',
+    domain: ['1', '2'],
+    range: ['red', 'blue'],
+  }
+
+  test('the constant keeps the field and its members under none', () => {
+    expect(colorForField(tag, '')).toEqual({ ...tag, scale: 'none' })
+  })
+
+  test('the field already named keeps its members and a declared scale', () => {
+    expect(colorForField(tag, 'tags.HP')).toEqual(tag)
+    expect(colorForField({ ...tag, scale: 'none' }, 'tags.HP')).toEqual({
+      ...tag,
+      scale: undefined,
+    })
+  })
+
+  test('a new field keeps only the value', () => {
+    expect(colorForField(tag, 'strand')).toEqual({
+      value: 'grey',
+      field: 'strand',
+    })
+    expect(colorForField({ field: 'tags.HP' }, 'strand')).toEqual({
+      field: 'strand',
+    })
+  })
+
+  test('copies the lists rather than handing the same arrays back', () => {
+    expect(colorForField(tag, 'tags.HP').domain).not.toBe(tag.domain)
+  })
+})
+
+describe('colorForValue', () => {
+  test('paints the value and sets a field aside under none', () => {
+    const typed = { field: 'type', domain: ['gene'] }
+    expect(colorForValue(typed, 'red')).toEqual({
+      ...typed,
+      value: 'red',
+      scale: 'none',
+    })
+  })
+
+  test('undefined returns to the features own colour', () => {
+    expect(colorForValue({ value: 'red', field: '' }, undefined)).toEqual({
+      field: '',
+    })
+  })
 })

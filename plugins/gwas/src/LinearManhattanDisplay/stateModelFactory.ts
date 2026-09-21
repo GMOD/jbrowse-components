@@ -29,6 +29,7 @@ import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
   colorEncodingOf,
+  colorForField,
   paintedScale,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
@@ -583,14 +584,17 @@ export function stateModelFactory(
         },
       }))
       .actions(self => {
-        // `self.color` is the colour as painted, LD's default cuts and range
-        // filled in, so neither write below reads it back into the config
+        // The colour as written, not `self.color`, which fills in LD's
+        // default cuts and range
         function colorBy(field: string) {
-          if (field === self.color.field) {
-            setConf(self, ['color', 'scale'], undefined)
-          } else {
-            setConf(self, 'color', { value: self.color.value, field })
+          const written = {
+            value: self.conf.color.value,
+            field: getConf(self, ['color', 'field']),
+            scale: getConf(self, ['color', 'scale']),
+            domain: getConf(self, ['color', 'domain']),
+            range: getConf(self, ['color', 'range']),
           }
+          setConf(self, 'color', colorForField(written, field))
         }
         return {
           /**

@@ -31,6 +31,7 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
   categoricalColorField,
   colorEncodingOf,
+  colorForField,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
@@ -1853,27 +1854,15 @@ export function stateModelFactory(
     .actions(self => ({
       /**
        * #action
-       * paint the genes by `field`, or by `color.value` for `''`, keeping the
-       * value, and the field's order and range while it is the field
-       * already named, for the way back
+       * paint the genes by `field`, or by `color.value` for `''`, by
+       * display-kit's `colorForField`
        */
       setGeneColorBy(field: string) {
-        const {
-          value,
-          field: current,
-          domain,
-          range,
-        } = self.geneColorSettings.color
-        const kept =
-          field === '' || field === current
-            ? { domain: [...domain], range: [...range] }
-            : {}
-        setConf(self, 'color', {
-          ...(value === undefined ? {} : { value }),
-          field: field === '' ? current : field,
-          ...kept,
-          ...(field === '' ? { scale: 'none' } : {}),
-        })
+        setConf(
+          self,
+          'color',
+          colorForField(self.geneColorSettings.color, field),
+        )
       },
       /**
        * #action

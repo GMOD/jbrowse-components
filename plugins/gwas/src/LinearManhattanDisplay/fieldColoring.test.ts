@@ -176,6 +176,18 @@ describe('LinearManhattanDisplay field coloring', () => {
     expect(display.color.domain).toEqual([])
   })
 
+  it('re-picking a field keeps a threshold the config declares', () => {
+    const color = {
+      field: 'beta',
+      scale: 'threshold',
+      domain: ['0'],
+      range: ['blue', 'red'],
+    }
+    const { display } = createTestEnvironment({ color }).createDisplay()
+    display.colorByField('beta')
+    expect(display.color).toMatchObject(color)
+  })
+
   it('leaving LD coloring restores the constant', () => {
     const { display } = createTestEnvironment({
       color: { value: 'rebeccapurple', field: 'ld' },
