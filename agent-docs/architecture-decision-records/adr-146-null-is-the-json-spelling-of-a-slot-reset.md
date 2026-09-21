@@ -96,6 +96,18 @@ member", rather than inventing a house convention.
   slots above: their default was `null` and is now unset, and both are falsy, so
   a config, spec or link that says `"densityAdapter": null` reads the same as
   before. What changed is which of the two a *merge* lands on.
+- **The rule above is about declared defaults; the behaviour change is about
+  writes, and those are different populations.** `setSlot(slot, null)` on ANY
+  frozen-family slot now resets rather than stores, and about 29 in-tree frozen
+  slots default to something other than `null` — `{}`, `[]`,
+  `{ type: 'normal' }`. On one of those the write used to leave a falsy `null`
+  and now leaves a truthy object, so a reader spelled `if (conf.thing)` flips.
+  Nothing in this tree or in the plugin checkouts writes `null` to one, and a
+  third-party `frozen` slot with an object default is where it would first bite.
+- **"No slot declares `null` as its default" is convention, not a check.**
+  `ConfigSlot` accepts `{ type: 'frozen', defaultValue: null }`, while the
+  adjacent rule it sits beside — a `maybe*` slot with a concrete merged default
+  — throws. The newer of the two rules is the unenforced one.
 - **`getSnapshot` of a reset slot no longer emits `null`**, so a slot reset
   through the merge path round-trips as absent rather than as a stored value.
 - **A namespace's member resets the same way, at any depth.**

@@ -107,8 +107,11 @@ of one.
 
 **Run `scripts/audit-config-read-types.ts` after touching the node type.** A
 brand that loses its polymorphic `this` cuts every node back to
-`AnyConfigurationSchemaType`, switching the read-side check off tree-wide, and
-that typechecks clean — the audit is the only thing that reports it.
+`AnyConfigurationSchemaType`, switching the read-side check off tree-wide. The
+typecheck catches that first — the `HostChecksSlotNames` pins fire, 72 errors
+across 15 files when it was tried — and the audit is what sizes it, 121
+unchecked reads becoming 338. Run both: a narrowing that degrades without
+tripping a pin shows up only in the count.
 
 **A widened `baseConfiguration` poisons the whole schema** — `MergeConfigDef`
 maps over the base's keys and an `any` definition's keys are `string`, so a

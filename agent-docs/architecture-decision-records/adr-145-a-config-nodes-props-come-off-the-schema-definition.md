@@ -31,7 +31,7 @@ config for as long as it did.
 MST's own.**
 
 ```ts
-readonly Type: ConfigNodeProps<DEFINITION> & ConfigNodeMembers & ConfigNodeBrand<this>
+readonly Type: ConfigNodeProps<DEFINITION> & ConfigNodeActions & ConfigNodeBrand<this>
 ```
 
 An intersection with MST's props was built first and measured: reads narrow, and
@@ -39,6 +39,15 @@ typos still compile, because the index signature on the other constituent
 answers every name. Replacing is what makes an undeclared member an error, and
 it costs nothing over narrowing alone — its error set was a strict subset of the
 intersecting spike's, 60 against 67, with none the spike did not already have.
+
+**The decisive gain is the sub-schema chain, not the typo.** Under the
+intersection `node.scales` is `any`, so everything below it —
+`node.scales.y.domainMin` — is unchecked however carefully the top level was
+typed. ADR-133 and ADR-144 moved this tree's settings into sub-schema channels,
+so a nested read is now the common shape rather than an edge case, and
+intersecting recovers none of it. The second `@ts-expect-error` probe below is
+that case. The `.d.ts` is the other half: −1.8% here against +2.7% for
+intersecting, on types every plugin author downloads.
 
 Four mechanisms hold it up, and each one fails quietly:
 
@@ -49,14 +58,22 @@ Four mechanisms hold it up, and each one fails quietly:
    concrete node assignable to `AnyConfigurationModel`. It carries `this`,
    because that brand is the only route from a node back to its schema:
    `ConfigurationSchemaForModel` walks it, and every slot-name constraint in the
-   tree hangs off that walk. **Nothing but
-   `scripts/audit-config-read-types.ts` reports losing it** — a spike that
-   dropped the polymorphic `this` compiled clean while taking 137 unchecked
-   reads to 333.
-2. **`MergeConfigDef` is a flat mapped type** over `keyof BD | keyof D`.
-   `Omit<BD, keyof D> & { … }` over a definition carrying an index signature
-   collapses to the index signature alone — `Exclude<string | number, 'lodMode'>`
-   is `string | number` — so every named base slot is dropped on every merge.
+   tree hangs off that walk. Substituting a fixed schema for the `this` gives
+   **72 typecheck errors across 15 files** — the `HostChecksSlotNames` pins are
+   what fire — and takes the audit from 121 unchecked reads to 338. So the
+   typecheck catches it first and the audit corroborates; an earlier revision
+   of this ADR said the audit was the only detector, which was measured on a
+   spike that had already lost the pins.
+2. **`MergeConfigDef` is a flat mapped type** over `keyof BD | keyof D`, which
+   is how it was written when `Omit<BD, keyof D> & { … }` over a definition
+   carrying an index signature collapsed to the index signature alone —
+   `Exclude<string | number, 'lodMode'>` is `string | number`, dropping every
+   named base slot on every merge. **That no longer bites**: leaving
+   `DEFINITION` unconstrained removed the index signature, and rewriting this
+   as the old intersecting form gives zero errors tree-wide and the same
+   unchecked-read count. Three of these four mechanisms are load-bearing today;
+   this is the one that is not, and it is kept because the flat form is also
+   the clearer statement.
 3. **`NormalizeSlotDef` keeps `type`, `model` and a widened `defaultValue`.**
    The description, `advanced`, `contextVariable` and the literal default are
    documentation and runtime; carrying them makes two schemas that differ only
@@ -98,7 +115,12 @@ of them produces exactly two `TS2551`s and nothing else.
 
 ## What the `any` was hiding
 
-Five, of which the first two are the ones to recognise again:
+Five, of which the first two are the ones to recognise again. **None of them
+was found by the typed props** — they came out of the narrowings that went in
+beside it, and all five were on the branch that kept the index signature. Read
+them as what typing a config surface at all buys, not as an argument for
+replacing rather than intersecting; that argument is the sub-schema chain and
+the `.d.ts`, above.
 
 - **`HtsgetBamAdapter` was registered with its own schema while its class
   inherited `BamAdapter`'s config type**, reading every slot through
