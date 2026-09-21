@@ -37,6 +37,7 @@ export default class AlignmentsPlugin extends Plugin {
 // the point of the lazy registration. It is reachable at
 // '@jbrowse/plugin-alignments/LinearAlignmentsDisplay/stateModel'.
 export { alignmentsColorConfigSchema } from './LinearAlignmentsDisplay/alignmentsColorConfigSchema.ts'
+export { ALIGNMENTS_FIELD_SCALES } from './shared/alignmentsColor.ts'
 export { linearAlignmentsDisplayConfigSchemaFactory } from './LinearAlignmentsDisplay/index.ts'
 export type {
   AlignmentLane,

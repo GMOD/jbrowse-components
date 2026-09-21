@@ -10,6 +10,7 @@
 // Pure: no filesystem, no process exit. The command wrapper owns both.
 
 import { configManifest } from './configManifest.generated.ts'
+import { displayDefaultsForTrackType } from './displayDefaultKeys.ts'
 import { isRecord, liftToSnapshot } from './liftConfig.ts'
 import { colorProblems, fieldScaleOf } from './markRules/colorScale.ts'
 import { markProblems } from './markRules/markProblems.ts'
@@ -495,9 +496,8 @@ function checkMarkDisplay(
   }
 }
 
-// A colour object's slots together, by the rule its display paints by: the
-// schema's `fieldScale`, carried in the manifest, stands in for the plugin
-// code the CLI does not run.
+// The display's own colour rules, with its schema's fieldScale standing in
+// for the plugin code the CLI does not run
 function checkColorSlots(
   display: Record<string, unknown>,
   slots: SlotEntry[],
@@ -508,11 +508,15 @@ function checkColorSlots(
   if (!isRecord(lifted)) {
     return
   }
-  for (const { name, fieldScale } of slots) {
-    const color = lifted[name]
-    if (!fieldScale || !isRecord(color)) {
+  for (const { name, fieldScale, subSlots = [] } of slots) {
+    const written = lifted[name]
+    if (!fieldScale || !isRecord(written)) {
       continue
     }
+    const declared = new Set(subSlots.map(slot => slot.name))
+    const color = Object.fromEntries(
+      Object.entries(written).filter(([key]) => declared.has(key)),
+    )
     const field = typeof color.field === 'string' ? color.field : ''
     for (const problem of colorProblems(
       {
@@ -527,12 +531,17 @@ function checkColorSlots(
       },
       fieldScaleOf(fieldScale, field),
     )) {
-      report.problems.push({
-        level: 'warning',
-        where: `${where}.${name}.${problem.slot}`,
-        message: problem.message,
-        rule: problem.rule,
-      })
+      const at = `${where}.${name}.${problem.slot}`
+      if (
+        !report.problems.some(p => p.where === at && p.rule === problem.rule)
+      ) {
+        report.problems.push({
+          level: 'warning',
+          where: at,
+          message: problem.message,
+          rule: problem.rule,
+        })
+      }
     }
   }
 }
@@ -559,6 +568,17 @@ function checkMarkDisplays(
         : undefined
     if (colorSlots) {
       checkColorSlots(node, colorSlots, where, report)
+    }
+    if (typeof node.type === 'string' && isRecord(node.displayDefaults)) {
+      for (const display of displayDefaultsForTrackType(node.type, manifest)
+        .displayTypes) {
+        checkColorSlots(
+          node.displayDefaults,
+          manifest.displays[display]?.slots ?? [],
+          `${where}.displayDefaults`,
+          report,
+        )
+      }
     }
     if (
       Array.isArray(node.marks) &&

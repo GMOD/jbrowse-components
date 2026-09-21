@@ -177,11 +177,7 @@ export function colorMembersOf(color: AnyConfigurationModel): string[] {
   return Object.keys(getConfigurationSchemaDefinition(color) ?? {})
 }
 
-/**
- * A colour object's options: a bare string is its `value`, an undeclared key
- * is refused, and `fieldScale` is what a field paints through while `scale` is
- * unset.
- */
+/** A colour object's options: a bare string is its `value`, and an undeclared key is refused. */
 export function colorChannelOptions(
   name: string,
   fieldScale: FieldScales = { '*': 'categorical' },

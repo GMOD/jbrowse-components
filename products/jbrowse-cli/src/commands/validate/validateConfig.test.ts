@@ -328,53 +328,104 @@ describe('validateConfig', () => {
     return config
   }
 
-  // Stale but working, so a warning — and scoped to the display type the
-  // migration actually covers, since `colorBySetting` is lifted for the
-  // alignments display and means nothing on a LinearBasicDisplay.
-  // The display's own default scale decides which rules apply, read off the
-  // schema's fieldScale through the manifest: a score colour with no scale is
-  // a threshold on the quantitative display, a name colour categorical.
-  it('warns on a colour object its display cannot paint as written', () => {
-    const withDisplay = (display: Record<string, unknown>) => {
-      const config = baseConfig()
-      config.tracks[0] = {
-        ...config.tracks[0]!,
-        displays: [display],
-      } as (typeof config.tracks)[0]
-      return config
-    }
+  // Which rules apply is the display's own default scale, read off its
+  // schema's fieldScale through the manifest.
+  describe('a colour object its display cannot paint as written', () => {
     const where = 'tracks[0].displays[0].color'
-    expect(
-      warningsOf(
-        withDisplay({
-          type: 'LinearAlignmentsDisplay',
-          color: {
+    const onTrack = (track: Record<string, unknown>) => {
+      const config = baseConfig()
+      return { ...config, tracks: [{ ...config.tracks[0], ...track }] }
+    }
+    const found = (track: Record<string, unknown>) =>
+      warningsOf(onTrack(track)).map(p => `${p.rule} ${p.where}`)
+    const display = (type: string, color: Record<string, unknown>) => ({
+      displays: [{ type, color }],
+    })
+
+    it('reads an explicit scale', () => {
+      expect(
+        found(
+          display('LinearAlignmentsDisplay', {
             field: 'tags.XS',
             scale: 'linear',
             domainMin: 10,
             domainMax: 1,
+          }),
+        ),
+      ).toEqual([`ramp-ends ${where}.domainMax`])
+    })
+
+    it("reads a field's default scale where none is written", () => {
+      const cuts = { domain: ['2', '1'] }
+      expect(
+        found(
+          display('LinearAlignmentsDisplay', { field: 'insertSize', ...cuts }),
+        ),
+      ).toEqual([`threshold-cuts ${where}.domain`])
+      expect(
+        found(
+          display('LinearAlignmentsDisplay', { field: 'tags.HP', ...cuts }),
+        ),
+      ).toEqual([])
+      expect(
+        found(display('LGVSyntenyDisplay', { field: 'insertSize', ...cuts })),
+      ).toEqual([`threshold-cuts ${where}.domain`])
+      expect(
+        found({
+          type: 'QuantitativeTrack',
+          adapter: { type: 'BigWigAdapter', uri: 'x.bw' },
+          ...display('LinearWiggleDisplay', { field: 'score', ...cuts }),
+        }),
+      ).toEqual([`threshold-cuts ${where}.domain`])
+      expect(
+        found({
+          type: 'QuantitativeTrack',
+          adapter: { type: 'BigWigAdapter', uri: 'x.bw' },
+          ...display('LinearWiggleDisplay', { field: 'source', ...cuts }),
+        }),
+      ).toEqual([])
+      expect(
+        found({
+          type: 'GWASTrack',
+          adapter: { type: 'GWASAdapter', uri: 'x.tsv.gz' },
+          ...display('LinearManhattanDisplay', {
+            field: 'ld',
+            domain: [0.2, 0.8],
+            range: ['red', 'blue'],
+          }),
+        }),
+      ).toEqual([`threshold-range ${where}.range`])
+    })
+
+    it('checks displayDefaults against the display the track offers', () => {
+      expect(
+        found({
+          displayDefaults: {
+            color: { field: 'insertSize', domain: ['2', '1'] },
           },
         }),
-      ).map(p => `${p.rule} ${p.where}`),
-    ).toEqual([`ramp-ends ${where}.domainMax`])
-    expect(
-      warningsOf(
-        withDisplay({
-          type: 'LinearAlignmentsDisplay',
-          color: { field: 'insertSize', domain: ['2', '1'] },
+      ).toEqual(['threshold-cuts tracks[0].displayDefaults.color.domain'])
+    })
+
+    it('reads no slot the colour object does not declare', () => {
+      expect(
+        found({
+          type: 'QuantitativeTrack',
+          adapter: { type: 'BigWigAdapter', uri: 'x.bw' },
+          ...display('LinearWiggleDisplay', {
+            field: 'score',
+            scale: 'linear',
+            domainMin: 10,
+            domainMax: 1,
+          }),
         }),
-      ).map(p => `${p.rule} ${p.where}`),
-    ).toEqual([`threshold-cuts ${where}.domain`])
-    expect(
-      warningsOf(
-        withDisplay({
-          type: 'LinearAlignmentsDisplay',
-          color: { field: 'tags.HP', domain: ['2', '1'] },
-        }),
-      ),
-    ).toEqual([])
+      ).toEqual([])
+    })
   })
 
+  // Stale but working, so a warning — and scoped to the display type the
+  // migration actually covers, since `colorBySetting` is lifted for the
+  // alignments display and means nothing on a LinearBasicDisplay.
   it('warns rather than errors on a key a session migration still lifts', () => {
     const config = sessionDisplay({
       type: 'LinearAlignmentsDisplay',

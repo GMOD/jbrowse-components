@@ -1,6 +1,9 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { colorChannelOptions } from '@jbrowse/display-kit/colorConfigSchema'
-import { alignmentsColorConfigSchema } from '@jbrowse/plugin-alignments'
+import {
+  ALIGNMENTS_FIELD_SCALES,
+  alignmentsColorConfigSchema,
+} from '@jbrowse/plugin-alignments'
 
 /**
  * #config LGVSyntenyColor
@@ -30,7 +33,7 @@ export const lgvSyntenyColorConfigSchema = ConfigurationSchema(
      * #baseConfiguration
      */
     baseConfiguration: alignmentsColorConfigSchema,
-    ...colorChannelOptions('color'),
+    ...colorChannelOptions('color', ALIGNMENTS_FIELD_SCALES),
     shorthandWith: { scale: 'none' },
   },
 )

@@ -3737,6 +3737,8 @@ export const configManifest: ConfigManifest = {
           ],
           "shorthand": "value",
           "fieldScale": {
+            "insertSize": "threshold",
+            "insertSizeAndOrientation": "threshold",
             "*": "categorical"
           }
         },
