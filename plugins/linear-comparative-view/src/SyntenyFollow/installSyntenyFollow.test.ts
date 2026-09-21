@@ -274,7 +274,6 @@ describe('a spread carried up a three-row stack', () => {
         stayingView: rows[i] as unknown as LinearGenomeViewModel,
         movingView: rows[i + 1] as unknown as LinearGenomeViewModel,
         toMate: true,
-        movingIndex: i + 1,
       })),
     )
     installSyntenyFollow(host)
@@ -324,7 +323,6 @@ describe('a straddle whose answers are far apart', () => {
         stayingView: rows[0] as unknown as LinearGenomeViewModel,
         movingView: rows[1] as unknown as LinearGenomeViewModel,
         toMate: true,
-        movingIndex: 1,
       },
     ])
     installSyntenyFollow(host)
@@ -412,7 +410,6 @@ describe('a straddle whose answers are far apart', () => {
         stayingView: rows[0] as unknown as LinearGenomeViewModel,
         movingView: rows[1] as unknown as LinearGenomeViewModel,
         toMate: true,
-        movingIndex: 1,
       },
     ])
     place(rows[0]!, 200_000, 1_100_000)
@@ -449,7 +446,6 @@ test('a drag onto a second contig decides the spread before placing across it', 
       stayingView: rows[0] as unknown as LinearGenomeViewModel,
       movingView: rows[1] as unknown as LinearGenomeViewModel,
       toMate: true,
-      movingIndex: 1,
     },
   ])
   place(rows[0]!, 200_000, 900_000)
@@ -474,7 +470,6 @@ function twoRows(displays: LinearSyntenyDisplayModel[]) {
       stayingView: rows[0] as unknown as LinearGenomeViewModel,
       movingView: rows[1] as unknown as LinearGenomeViewModel,
       toMate: true,
-      movingIndex: 1,
     },
   ])
   return { rows, host }

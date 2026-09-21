@@ -46,7 +46,6 @@ export interface FollowPair {
   movingView: LinearGenomeViewModel
   toMate: boolean
   mateAssembly?: string
-  movingIndex: number
 }
 
 export interface SyntenyFollowHost extends FollowAnchorHost {
@@ -179,10 +178,16 @@ interface FollowPlan extends Omit<FollowReport, 'partial'> {
 // One navigation, as "from where" and "to where". Both halves matter: the same
 // target from a different place is the follow re-asserting itself over a row the
 // user has since dragged, which has to stay allowed.
-function navSignature(from: FollowWindow | undefined, to: ResolvedSpan) {
-  const here = from
-    ? `${from.refName}:${from.start}-${from.end}`
-    : 'nowhere-yet'
+function navSignature(
+  from: FollowWindow | 'spread' | undefined,
+  to: ResolvedSpan,
+) {
+  const here =
+    from === 'spread'
+      ? from
+      : from
+        ? `${from.refName}:${from.start}-${from.end}`
+        : 'nowhere-yet'
   return `${here}>${to.refName}:${to.start}-${to.end}`
 }
 
@@ -373,7 +378,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     const widest = spans.reduce((a, b) =>
       b.end - b.start > a.end - a.start ? b : a,
     )
-    const nav = `spread>${widest.refName}:${widest.start}-${widest.end}`
+    const nav = navSignature('spread', widest)
     if (nav !== state.lastNav) {
       state.lastNav = nav
       self

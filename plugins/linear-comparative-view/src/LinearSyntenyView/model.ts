@@ -475,7 +475,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     stayingView: self.views[stayingIndex]!,
                     movingView: self.views[movingIndex]!,
                     toMate,
-                    movingIndex,
                     // the lower row is the alignments' mate axis
                     mateAssembly: rows.v1.assemblyNames[0],
                   },
