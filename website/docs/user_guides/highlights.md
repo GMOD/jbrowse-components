@@ -41,9 +41,9 @@ back to it.
 
 ## Showing and hiding
 
-**Highlights → Toggle highlights** in a view's menu, or **Show highlights on
-views** in the list's menu, hides or shows the bands in every view at once.
-Making or recoloring a highlight shows them again.
+**Highlights → Toggle highlights** in an LGV's menu, **Toggle highlights** in a
+dotplot's, or **Show highlights on views** in the list's menu hides or shows the
+bands in every view at once. Making or recoloring a highlight shows them again.
 
 ## Removing
 

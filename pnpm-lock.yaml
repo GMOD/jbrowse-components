@@ -1342,9 +1342,6 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.2
         version: 6.5.2(mobx@7.0.3)
-      '@jbrowse/plugin-dotplot-view':
-        specifier: workspace:^
-        version: link:../dotplot-view
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view

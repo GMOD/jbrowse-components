@@ -226,43 +226,6 @@ export default class GridBookmarkPlugin extends Plugin {
           } as typeof snap
         }),
     )
-
-    extendViewType(pluginManager, 'DotplotView', stateModel =>
-      stateModel
-        .actions(self => ({
-          /**
-           * #action
-           */
-          activateHighlightWidget() {
-            return activateHighlightWidget(self)
-          },
-        }))
-        .views(self => {
-          const superMenuItems = self.menuItems
-          return {
-            /**
-             * #method
-             */
-            menuItems() {
-              return [
-                ...superMenuItems(),
-                {
-                  label: 'Highlights',
-                  icon: HighlightIcon,
-                  subMenu: [
-                    {
-                      label: 'Open highlight list',
-                      icon: ListIcon,
-                      onClick: () => self.activateHighlightWidget(),
-                    },
-                    toggleHighlightsMenuItem(self),
-                  ],
-                },
-              ]
-            },
-          }
-        }),
-    )
   }
 
   configure(pluginManager: PluginManager) {

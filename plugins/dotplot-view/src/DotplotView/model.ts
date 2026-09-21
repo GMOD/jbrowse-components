@@ -48,6 +48,7 @@ import {
   trackHasLodTiers,
 } from '@jbrowse/synteny-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import HighlightIcon from '@mui/icons-material/Highlight'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 
 import { pickDotplotFeature } from '../DotplotDisplay/dotplotPickEngine.ts'
@@ -1763,6 +1764,15 @@ export default function stateModelFactory(pm: PluginManager) {
                   },
                 ]
               : []),
+            {
+              label: 'Toggle highlights',
+              icon: HighlightIcon,
+              type: 'checkbox' as const,
+              checked: session.highlightsVisible,
+              onClick: () => {
+                session.setHighlightsVisible(!session.highlightsVisible)
+              },
+            },
           ]
         },
       })),

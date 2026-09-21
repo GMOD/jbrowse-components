@@ -1164,8 +1164,9 @@ only on a real violation):
   the drawing across track bodies frozen at a moment in the past, and two figures
   of one view mint identical SVG ids, where `url(#…)` takes the first and clips
   every later figure with the first one's rects. Three components shipped the
-  first (`SVGHighlights`, grid-bookmark's `LGVHighlightSVG`, alignments'
-  `SashimiArcsSvg`) before anyone noticed, and the door they came through —
+  first (`SVGHighlights`, grid-bookmark's bookmark overlay since folded into
+  it, alignments' `SashimiArcsSvg`) before anyone noticed, and the door they
+  came through —
   `LinearGenomeView-HighlightSVGComponent`, and whatever a display's `renderSvg`
   returns — is open to any plugin.
 
