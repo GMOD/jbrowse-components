@@ -22,6 +22,8 @@ export interface ConfigurationSchemaMetadata {
   options: MergedConfigurationSchemaOptions<any, any>
   /** the frozen-family slots, the only members a snapshot's `null` is stored in */
   storesNull: ReadonlySet<string>
+  /** the `featureField` slots, which the reader hands over as written */
+  featureFields: ReadonlySet<string>
 }
 
 // Per-schema metadata keyed by the MST type itself. Registered for BOTH the

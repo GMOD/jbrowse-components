@@ -288,6 +288,7 @@ function makeConfigurationSchemaModel<
   // which setSlot may write. Same collect-as-you-classify as subSchemaKeys.
   const slotKeys = new Set<string>()
   const storesNull = new Set<string>()
+  const featureFields = new Set<string>()
   for (const [slotName, slotDefinition] of Object.entries(schemaDefinition)) {
     if (isConfigurationSchemaType(slotDefinition)) {
       // a sub-configuration. A bare sub-schema is already stripDefault-wrapped
@@ -312,6 +313,9 @@ function makeConfigurationSchemaModel<
         modelDefinition[slotName] = ConfigSlot(slotDefinition)
         if (modelDefinition[slotName].is(null)) {
           storesNull.add(slotName)
+        }
+        if (slotDefinition.type === 'featureField') {
+          featureFields.add(slotName)
         }
       } catch (e) {
         throw new Error(
@@ -424,6 +428,7 @@ function makeConfigurationSchemaModel<
     definition: schemaDefinition,
     options,
     storesNull,
+    featureFields,
   }
   completeModel = completeModel.preProcessSnapshot(snapshot =>
     preProcessSnapshotWith(metadata, snapshot),

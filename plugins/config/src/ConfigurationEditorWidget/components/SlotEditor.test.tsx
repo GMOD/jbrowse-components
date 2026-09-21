@@ -31,3 +31,26 @@ test('a maybeStringEnum slot labels its unset choice', () => {
   const { getByText } = openChoices(enumSlot({}))
   expect(getByText('default')).toBeTruthy()
 })
+
+test('a featureField holding a jexl: expression edits it as text', () => {
+  const expression = "jexl:get(feature,'biotype')"
+  const { getByDisplayValue, queryByRole } = render(
+    <SlotEditor
+      slot={
+        {
+          name: 'field',
+          description: 'feature field',
+          type: 'featureField',
+          contextVariable: [],
+          defaultValue: '',
+          value: expression,
+          modified: true,
+          pluginManager: {},
+          set: jest.fn(),
+        } as unknown as SlotFacade
+      }
+    />,
+  )
+  expect(getByDisplayValue(expression).tagName).toBe('INPUT')
+  expect(queryByRole('button', { name: /callback/i })).toBeNull()
+})

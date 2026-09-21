@@ -418,6 +418,8 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       case 'maybeString':
       case 'text':
         return { type: 'string' }
+      case 'featureField':
+        return ref('FeatureField')
       case 'integer':
         return { type: 'integer' }
       case 'number':
@@ -473,11 +475,13 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
             }
           : builtinSlot(def.type)
     const form =
-      shared && !def.model && !legacyValues?.length
-        ? ref(shared[0])
-        : frozen
-          ? {}
-          : { anyOf: [value, ...legacy, ref('JexlString')] }
+      def.type === 'featureField'
+        ? value
+        : shared && !def.model && !legacyValues?.length
+          ? ref(shared[0])
+          : frozen
+            ? {}
+            : { anyOf: [value, ...legacy, ref('JexlString')] }
     const withDefault =
       def.defaultValue === undefined ||
       typeof def.defaultValue === 'function' ||
@@ -843,6 +847,11 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     pattern: '^jexl:',
     description:
       'A jexl callback evaluated when the slot is read, e.g. `jexl:get(feature, "score") > 10 ? "red" : "blue"`. Every slot accepts one in place of a fixed value.',
+  }
+  defs.FeatureField = {
+    type: 'string',
+    description:
+      'A field the display reads off each feature: a name, a dotted path into a structured field (`INFO.SVTYPE`), or a `jexl:` expression over `feature`, which the display evaluates per feature.',
   }
   defs.CssColor = {
     type: 'string',

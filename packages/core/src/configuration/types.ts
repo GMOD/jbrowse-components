@@ -254,6 +254,7 @@ interface SlotValueByType {
   boolean: boolean
   string: string
   text: string
+  featureField: string
   color: string
   colorArray: string[]
 }

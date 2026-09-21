@@ -128,6 +128,7 @@ describe('getConf slot-value type narrowing', () => {
       boolean: { type: 'boolean', defaultValue: false },
       string: { type: 'string', defaultValue: '' },
       text: { type: 'text', defaultValue: '' },
+      featureField: { type: 'featureField', defaultValue: '' },
       color: { type: 'color', defaultValue: 'red' },
       colorArray: { type: 'colorArray', defaultValue: [] },
       stringEnumArray: {
@@ -153,6 +154,7 @@ describe('getConf slot-value type narrowing', () => {
     const boolean = readConfObject(node, 'boolean')
     const string = readConfObject(node, 'string')
     const text = readConfObject(node, 'text')
+    const featureField = readConfObject(node, 'featureField')
     const color = readConfObject(node, 'color')
     const colorArray = readConfObject(node, 'colorArray')
     const stringEnumArray = readConfObject(node, 'stringEnumArray')
@@ -173,6 +175,7 @@ describe('getConf slot-value type narrowing', () => {
     assertType<Equal<typeof boolean, boolean>>()
     assertType<Equal<typeof string, string>>()
     assertType<Equal<typeof text, string>>()
+    assertType<Equal<typeof featureField, string>>()
     assertType<Equal<typeof color, string>>()
     assertType<Equal<typeof colorArray, string[]>>()
     assertType<Equal<typeof stringEnumArray, ('disc' | 'triangle')[]>>()

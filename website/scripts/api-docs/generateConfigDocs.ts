@@ -1176,6 +1176,7 @@ const DISPLAYS_GUIDE = '/docs/config_guides/tracks#configuring-displays'
 const MAYBE_TYPES_ANCHOR = 'the-maybe-types'
 const DOCUMENTED_SLOT_TYPES = new Map([
   ['string', 'string'],
+  ['featureField', 'featurefield'],
   ['number', 'number'],
   ['integer', 'integer'],
   ['boolean', 'boolean'],

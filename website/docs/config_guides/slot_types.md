@@ -16,6 +16,14 @@ are the ordinary ones plus an "unset" state, described
 
 Plain text, e.g. a track `name` or an `assemblyName`.
 
+## featureField
+
+A field the display reads off each feature: a name (`gene_biotype`), a dotted
+path into a structured field (`INFO.SVTYPE`, a read's `tags.HP`), or a
+[`jexl:` expression](/docs/config_guides/jexl) over `feature` that derives one
+(`"jexl:feature.end - feature.start"`). The display evaluates the expression
+once per feature, the way it reads a named field.
+
 ## stringArray
 
 A list of strings, e.g. a track's `assemblyNames` or `category`.

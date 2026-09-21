@@ -84,6 +84,42 @@ test('a callback default is evaluated per-read', () => {
   ).toBe('abc')
 })
 
+describe('a featureField slot', () => {
+  const expression = "jexl:get(feature,'name')"
+
+  test('hands its jexl: expression over as written, with or without args', () => {
+    const config = makeConfig(
+      { type: 'featureField', defaultValue: '' },
+      expression,
+    )
+    expect(readConfObject(config, 'slot')).toBe(expression)
+    expect(readConfObject(config, 'slot', { feature: undefined })).toBe(
+      expression,
+    )
+  })
+
+  test('hands it over from inside a sub-schema', () => {
+    const Channel = ConfigurationSchema('Channel', {
+      field: { type: 'featureField', defaultValue: '' },
+    })
+    const config = ConfigurationSchema('Host', { channel: Channel }).create(
+      { channel: { field: expression } },
+      { pluginManager },
+    )
+    expect(readConfObject(config, ['channel', 'field'])).toBe(expression)
+  })
+
+  test('refuses a contextVariable, which would make it a callback', () => {
+    expect(() =>
+      ConfigSlot({
+        type: 'featureField',
+        defaultValue: '',
+        contextVariable: ['feature'],
+      }),
+    ).toThrow(/featureField/)
+  })
+})
+
 describe('a color slot', () => {
   const colorSlot = (value?: unknown) =>
     makeConfig({ type: 'color', defaultValue: 'red' }, value)

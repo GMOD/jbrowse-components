@@ -79,6 +79,9 @@ const slotTypes = {
   maybeString: { model: types.maybe(types.string) },
   string: { model: types.string, fallbackDefault: '' },
   text: { model: types.string, fallbackDefault: '' },
+  // a field the display reads per feature: a name, a dotted path, or a
+  // `jexl:` expression, which the display evaluates and the reader never does
+  featureField: { model: types.string, fallbackDefault: '' },
   fileLocation: {
     model: FileLocation,
     fallbackDefault: {
@@ -268,6 +271,11 @@ export default function ConfigSlot(definition: ConfigSlotDefinition) {
   if (defaultValue !== undefined && MAYBE_TYPES.has(type)) {
     throw new Error(
       `a "${type}" slot cannot have a concrete defaultValue (${JSON.stringify(defaultValue)}): unset is the state a maybe* slot exists for, and no config can spell undefined, so it would be unreachable. If this slot overrides a base slot, the base's defaultValue merged in — state 'defaultValue: undefined' to overwrite it. Otherwise use the non-maybe form of the type.`,
+    )
+  }
+  if (type === 'featureField' && definition.contextVariable?.length) {
+    throw new Error(
+      'a "featureField" slot names a field the display reads per feature, and its jexl: expression is evaluated there, never called with a contextVariable. If this slot overrides a base callback slot, state \'contextVariable: undefined\'.',
     )
   }
 

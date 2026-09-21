@@ -154,6 +154,7 @@ const FileSelectorWrapper = observer(function FileSelectorWrapper({
 const valueComponents: Record<string, React.ComponentType<any>> = {
   string: StringEditor,
   maybeString: StringEditor,
+  featureField: StringEditor,
   text: TextEditor,
   fileLocation: FileSelectorWrapper,
   stringArray: StringArrayEditor,
@@ -184,9 +185,11 @@ const SlotEditor = observer(function SlotEditor({
   // editor mode is UI-only state, derived once from whether the stored value is
   // a jexl callback. Toggling rewrites the value; typing a "jexl:" prefix into a
   // value field does not auto-swap the editor, since this state only changes on
-  // the explicit toggle.
-  const [callbackMode, setCallbackMode] = useState(() =>
-    isCallbackValue(slot.value),
+  // the explicit toggle. A featureField's `jexl:` expression is a field, typed
+  // in its own text field.
+  const callback = slot.contextVariable.length > 0
+  const [callbackMode, setCallbackMode] = useState(
+    () => callback && isCallbackValue(slot.value),
   )
   // bumped on reset to remount the value editor: the buffered editors (number,
   // json, callback) seed internal state from slot.value only on mount, so an
@@ -212,7 +215,7 @@ const SlotEditor = observer(function SlotEditor({
               aria-label="reset to default"
               onClick={() => {
                 slot.set(slot.defaultValue)
-                setCallbackMode(isCallbackValue(slot.defaultValue))
+                setCallbackMode(callback && isCallbackValue(slot.defaultValue))
                 setResetNonce(nonce => nonce + 1)
               }}
             >
@@ -221,7 +224,7 @@ const SlotEditor = observer(function SlotEditor({
           </Tooltip>
         </div>
       ) : null}
-      {slot.contextVariable.length ? (
+      {callback ? (
         <div className={classes.slotModeSwitch}>
           <Tooltip
             title={

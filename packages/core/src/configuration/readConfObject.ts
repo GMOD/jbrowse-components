@@ -4,6 +4,8 @@
  * `readConfigValue` off a plain snapshot object in a worker or a renderer. Both
  * exist to evaluate a slot's `jexl:...` callback on read; they differ only in
  * where the jexl instance comes from, the node's env or an explicit argument.
+ * A `featureField` slot's `jexl:` expression is the display's to evaluate per
+ * feature, so `readConfObject` hands it over as written.
  */
 import {
   getEnv,
@@ -13,6 +15,7 @@ import {
   isStateTreeNode,
 } from '@jbrowse/mobx-state-tree'
 
+import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import { evaluateJexl, isCallbackValue } from './slotValueUtils.ts'
 
 import type { Feature } from '../util/index.ts'
@@ -82,6 +85,15 @@ function rawSlotValue(confObject: ReadableConfig, slotName: string) {
     : confObject[slotName]
 }
 
+function isFeatureField(confObject: ReadableConfig, slotName: string) {
+  return (
+    isStateTreeNode(confObject) &&
+    !!getConfigurationSchemaMetadata(getType(confObject))?.featureFields.has(
+      slotName,
+    )
+  )
+}
+
 // Read and resolve a single slot: raw value, jexl callback evaluation, then a
 // referentially-stable snapshot for sub-config nodes.
 function readSlot(
@@ -95,9 +107,10 @@ function readSlot(
   if (value === undefined) {
     return undefined
   }
-  const val = isCallbackValue(value)
-    ? evalConfigCallback(value, args, confObject)
-    : value
+  const val =
+    isCallbackValue(value) && !isFeatureField(confObject, slotName)
+      ? evalConfigCallback(value, args, confObject)
+      : value
   // Fast path for primitives (most common case)
   if (val === null || typeof val !== 'object') {
     return val
