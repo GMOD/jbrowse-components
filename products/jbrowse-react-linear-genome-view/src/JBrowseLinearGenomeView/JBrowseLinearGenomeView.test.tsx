@@ -103,14 +103,15 @@ test('top-level location + highlight navigate via view', async () => {
     },
     { timeout },
   )
-  // the launch consumes highlight and backfills assemblyName, then clears itself
+  // the launch adds the highlight to the session with its assemblyName, then
+  // clears itself
   await waitFor(
     () => {
       expect(state.session.view.pendingLaunch).toBeUndefined()
     },
     { timeout },
   )
-  expect(state.session.view.highlight).toEqual([
+  expect(state.session.view.highlights).toEqual([
     expect.objectContaining({
       refName: 'ctgA',
       start: 4,

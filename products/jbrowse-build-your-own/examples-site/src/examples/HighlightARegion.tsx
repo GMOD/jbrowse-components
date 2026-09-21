@@ -87,7 +87,7 @@ const HighlightARegion = observer(function HighlightARegion() {
             key={label}
             type="button"
             onClick={() => {
-              view.setHighlight([highlight])
+              session.setHighlights([highlight])
               view.navToLocString(loc).catch((e: unknown) => {
                 console.error(e)
               })

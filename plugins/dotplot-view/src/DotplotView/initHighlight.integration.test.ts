@@ -43,9 +43,9 @@ test('init.highlight is applied after the assembly finishes loading', async () =
   // in SVGDotplotView.test.tsx on why the inner 15s deadline is gone
   await session.assemblyManager.waitForAssembly('volvox')
 
-  await when(() => view.highlight.length > 0)
+  await when(() => view.highlights.length > 0)
 
-  expect(view.highlight[0]).toMatchObject({
+  expect(view.highlights[0]).toMatchObject({
     refName: 'ctgA',
     assemblyName: 'volvox',
   })
@@ -70,9 +70,9 @@ test('init loc navigation runs once regions exist, and highlight still applies',
 
   // loc-nav gates on initialized (regions populated), so wait for that
   await when(() => view.initialized)
-  await when(() => view.highlight.length > 0)
+  await when(() => view.highlights.length > 0)
 
-  expect(view.highlight).toHaveLength(1)
+  expect(view.highlights).toHaveLength(1)
   // the horizontal axis should have been moved off the whole-genome overview
   expect(view.hview.offsetPx).toBeGreaterThan(0)
   expect(notifyError).not.toHaveBeenCalled()
@@ -98,10 +98,10 @@ test('a bad init.highlight entry keeps its siblings and the loc-nav after it', a
   await session.assemblyManager.waitForAssembly('volvox')
 
   await when(() => view.initialized)
-  await when(() => view.highlight.length === 2)
+  await when(() => view.highlights.length === 2)
 
   // the two good entries survived the bad one between them
-  expect(view.highlight.map((h: { start: number }) => h.start)).toEqual([
+  expect(view.highlights.map((h: { start: number }) => h.start)).toEqual([
     999, 7999,
   ])
   // and the loc-nav that runs after highlights still happened

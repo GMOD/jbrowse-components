@@ -19,7 +19,7 @@ import type {
 import type { ParsedLocString } from '@jbrowse/core/util'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type {
-  HighlightType,
+  HighlightInput,
   InitState,
   LinearGenomeViewLaunchProps,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -124,7 +124,7 @@ export interface ViewStateOptions extends CreateViewStateBaseOptions {
   /** sugar for `view.loc`, and it also accepts a parsed locstring. Wins over `view.loc` */
   location?: string | ParsedLocString
   /** sugar for `view.highlight`. Wins over `view.highlight` */
-  highlight?: (string | HighlightType)[]
+  highlight?: (string | HighlightInput)[]
   /** a session you author, checked against the session model's shape */
   defaultSession?: SessionSnapshot
   /**

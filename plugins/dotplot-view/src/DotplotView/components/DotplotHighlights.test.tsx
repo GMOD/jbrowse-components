@@ -73,7 +73,7 @@ test('off-axis region draws no bands', async () => {
 
 test('native highlights render and respect highlightsVisible', async () => {
   const model = await setup()
-  model.addToHighlights({
+  getSession(model).addHighlight({
     refName: 'ctgA',
     start: 100,
     end: 200,
@@ -101,7 +101,7 @@ test('native highlights render and respect highlightsVisible', async () => {
 // is the fix, that the press never reaches the plot to start a drag at all.
 test('a press on a highlight chip never reaches the plot', async () => {
   const model = await setup()
-  model.addToHighlights({
+  getSession(model).addHighlight({
     refName: 'ctgA',
     start: 100,
     end: 200,
@@ -127,7 +127,7 @@ test('a press on a highlight chip never reaches the plot', async () => {
 // gets its own chip
 test('each axis band draws its own chip', async () => {
   const model = await setup()
-  model.addToHighlights({
+  getSession(model).addHighlight({
     refName: 'ctgA',
     start: 100,
     end: 200,

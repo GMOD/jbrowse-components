@@ -15,7 +15,11 @@ import { installCloseUps } from './closeUps.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { InitState } from './types.ts'
-import type { AssemblyHost, NotificationSink } from '@jbrowse/core/util'
+import type {
+  AbstractSessionModel,
+  AssemblyHost,
+  NotificationSink,
+} from '@jbrowse/core/util'
 import type { InitApplyContext } from '@jbrowse/core/util/installInitAutorun'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -168,25 +172,10 @@ async function showInitTracks(self: LinearGenomeViewModel, init: InitState) {
   }
 }
 
-// backfill assemblyName on any session-authored highlights that omitted it so
-// downstream code (bookmark widget grid, addBookmark, etc) doesn't have to keep
-// falling back
-function backfillHighlightAssemblies(self: LinearGenomeViewModel) {
-  const fallback = self.assemblyNames[0]
-  if (self.highlight.length && fallback) {
-    const normalized = self.highlight.map(h =>
-      h.assemblyName ? h : { ...h, assemblyName: fallback },
-    )
-    if (normalized.some((h, i) => h !== self.highlight[i])) {
-      self.setHighlight(normalized)
-    }
-  }
-}
-
 /**
- * Apply an init blob's `highlight` entries to a view, coercing each locstring
- * or wire-format object and reporting a bad one without taking out its
- * siblings.
+ * Add an init blob's `highlight` entries to the session, coercing each
+ * locstring or wire-format object and reporting a bad one without taking out
+ * its siblings. An entry without an assembly takes the launch's.
  *
  * Exported because a LinearSyntenyView row is a LinearGenomeView that does NOT
  * go through this file's init autorun — the synteny view builds each row's
@@ -194,8 +183,9 @@ function backfillHighlightAssemblies(self: LinearGenomeViewModel) {
  * to be applied and was dropped in silence.
  */
 export function applyInitHighlights(
-  self: LinearGenomeViewModel,
-  session: AssemblyHost & NotificationSink,
+  session: AssemblyHost &
+    NotificationSink &
+    Pick<AbstractSessionModel, 'addHighlight'>,
   init: Pick<InitState, 'highlight' | 'assembly'>,
 ) {
   for (const h of asArray(init.highlight)) {
@@ -206,7 +196,7 @@ export function applyInitHighlights(
         session.assemblyManager.isValidRefName(refName, init.assembly),
       )
       if (highlight) {
-        self.addToHighlights(highlight)
+        session.addHighlight(highlight)
       }
     } catch (e) {
       console.error(e)
@@ -238,9 +228,8 @@ async function applyInit(
   // reading or mutating a detached node throws) and also covers the case
   // isAlive misses — a newer setLaunch landed mid-apply, so the rest of *this*
   // blob is stale. Finishing it anyway appends its tracks and highlights under
-  // the one that replaced it, and addToHighlights pushes, so a re-launch of the
-  // same spec (a StrictMode remount) doubles the bands. The drain loop applies
-  // the newer init next either way.
+  // the one that replaced it. The drain loop applies the newer init next either
+  // way.
   //
   // Checked after each await rather than once at the top, and as early returns
   // rather than nesting, so a step added later takes a guard beside it instead
@@ -259,8 +248,7 @@ async function applyInit(
   if (init.nav !== undefined) {
     self.setHideHeader(!init.nav)
   }
-  backfillHighlightAssemblies(self)
-  applyInitHighlights(self, session, init)
+  applyInitHighlights(session, init)
 }
 
 /**

@@ -91,7 +91,7 @@ test('a band per highlight the view can place, each with its label drawn', () =>
   render(
     <Highlights
       view={{
-        highlight: [
+        highlights: [
           { refName: 'chr17', start: 100, end: 200, label: 'BRCA1' },
           { refName: 'chr17', start: 300, end: 301, color: 'orange' },
           { refName: 'chrZ', start: 1, end: 2, label: 'off screen' },

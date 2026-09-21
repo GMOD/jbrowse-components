@@ -12,7 +12,7 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { addExtensionElement } from '@jbrowse/core/ui'
-import { getEnv } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { act, render, waitFor, within } from '@testing-library/react'
@@ -22,7 +22,7 @@ import { stateModelFactory } from '../index.ts'
 import volvoxDisplayedRegions from '../volvoxDisplayedRegions.json' with { type: 'json' }
 import { useViewSvgFigure } from './useViewSvgFigure.tsx'
 
-import type { LinearGenomeViewModel } from '../index.ts'
+import type { HighlightType, LinearGenomeViewModel } from '../index.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 // A stub session and two display types — one that can render SVG and one that
@@ -159,6 +159,7 @@ function initialize() {
       // identifier, so a stub that answered with a plain object would leave
       // every track's `configuration` unresolvable
       tracks: types.array(stubManager.pluggableConfigSchemaType('track')),
+      highlights: types.array(types.frozen<HighlightType>()),
       highlightsVisible: types.optional(types.boolean, true),
       assemblyManager: types.optional(AssemblyManager, {
         assemblies: { volvox: { name: 'volvox' } },
@@ -184,9 +185,9 @@ function initialize() {
       notifyError(message: string) {
         console.error(message)
       },
-      // HighlightsMixin's afterAttach reveals the bands whenever the collection
-      // grows, so a view carrying a highlight needs this to exist
-      revealHighlights() {},
+      setHighlights(highlights: HighlightType[]) {
+        self.highlights.replace(highlights)
+      },
     }))
   return { Session, LinearGenomeModel, stubManager }
 }
@@ -331,7 +332,7 @@ test('the drawn figure does not move when the host re-renders', async () => {
 // the run-agnostic half of the same rule.
 test('a highlight band does not move when the view pans', async () => {
   const view = makeView([{ trackId: 'first', name: 'first', type: 'SvgTrack' }])
-  view.setHighlight([
+  getSession(view).setHighlights([
     { assemblyName: 'volvox', refName: 'ctgA', start: 1000, end: 2000 },
   ])
   const { svg } = await renderFigure(view)
@@ -359,7 +360,7 @@ test('adding a highlight redraws the figure', async () => {
   expect(band()).toBeNull()
 
   await act(async () => {
-    view.setHighlight([
+    getSession(view).setHighlights([
       { assemblyName: 'volvox', refName: 'ctgA', start: 1000, end: 2000 },
     ])
     await Promise.resolve()

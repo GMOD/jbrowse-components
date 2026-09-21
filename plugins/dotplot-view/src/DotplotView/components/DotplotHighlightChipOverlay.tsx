@@ -55,7 +55,7 @@ const HighlightChip = observer(function HighlightChip({
             label: 'Dismiss highlight',
             icon: CloseIcon,
             onClick: () => {
-              model.removeHighlight(highlight)
+              getSession(model).removeHighlight(highlight)
             },
           },
         ]}
@@ -102,7 +102,7 @@ const HighlightChips = observer(function HighlightChips({
 const DotplotHighlightChipOverlay = observer(
   function DotplotHighlightChipOverlay({ model }: { model: DotplotViewModel }) {
     return getSession(model).highlightsVisible
-      ? model.highlight.map((h, i) => (
+      ? model.highlights.map((h, i) => (
           <HighlightChips
             key={highlightKey(h, i)}
             model={model}

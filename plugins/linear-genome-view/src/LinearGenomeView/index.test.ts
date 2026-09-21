@@ -31,7 +31,7 @@ import { setDisplayedRegionsKeepingCenter } from './util.ts'
 import volvoxDisplayedRegions from './volvoxDisplayedRegions.json' with { type: 'json' }
 
 import type { LinearGenomeViewModel } from './index.ts'
-import type { InitState } from './types.ts'
+import type { HighlightType, InitState } from './types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { RpcStatus } from '@jbrowse/core/util'
@@ -175,6 +175,9 @@ function initialize() {
       get(str: string) {
         return self.assemblies.get(str)
       },
+      getCanonicalAssemblyName(name: string) {
+        return self.assemblies.has(name) ? name : undefined
+      },
 
       loadingAssembly(names: string[]) {
         return names
@@ -204,8 +207,8 @@ function initialize() {
       // un-minimizes it. init.tracklist keys its width-settle wait off exactly
       // that pair.
       minimized: types.optional(types.boolean, false),
-      // mirrors BaseSession's session-wide highlight band toggle, which
-      // view.revealHighlights writes through
+      // mirrors BaseSession's highlight list and band toggle
+      highlights: types.array(types.frozen<HighlightType>()),
       highlightsVisible: types.optional(types.boolean, true),
       assemblyManager: types.optional(AssemblyManager, {
         assemblies: {
@@ -257,8 +260,14 @@ function initialize() {
       setHighlightsVisible(arg: boolean) {
         self.highlightsVisible = arg
       },
-      revealHighlights() {
-        self.highlightsVisible = true
+      addHighlight(h: HighlightType) {
+        self.highlights.push(h)
+      },
+      removeHighlight(h: HighlightType) {
+        self.highlights.remove(h)
+      },
+      setHighlights(hs: HighlightType[]) {
+        self.highlights.replace(hs)
       },
     }))
 
@@ -2516,44 +2525,20 @@ describe('highlights', () => {
     return model
   }
 
-  test('add and remove highlights', () => {
-    const model = setupHighlightModel()
-    const h = { refName: 'ctgA', start: 100, end: 200, assemblyName: 'volvox' }
-    model.addToHighlights(h)
-    expect(model.highlight.length).toBe(1)
-    expect(model.highlight[0]!.start).toBe(100)
-    model.removeHighlight(model.highlight[0]!)
-    expect(model.highlight.length).toBe(0)
-  })
-
-  test('a new highlight reveals the session-wide bands', () => {
+  test('the view draws the session highlights on its own assembly', () => {
     const model = setupHighlightModel()
     const session = getSession(model)
-    session.setHighlightsVisible(false)
-
-    model.addToHighlights({
+    const onVolvox = {
       refName: 'ctgA',
       start: 100,
       end: 200,
       assemblyName: 'volvox',
-    })
-    expect(session.highlightsVisible).toBe(true)
-
-    // removing one must not re-reveal, otherwise the toggle can't be turned off
-    session.setHighlightsVisible(false)
-    model.removeHighlight(model.highlight[0]!)
-    expect(session.highlightsVisible).toBe(false)
-  })
-
-  test('setHighlight replaces the array', () => {
-    const model = setupHighlightModel()
-    model.setHighlight([
-      { refName: 'ctgA', start: 0, end: 50, assemblyName: 'volvox' },
-      { refName: 'ctgA', start: 100, end: 200, assemblyName: 'volvox' },
+    }
+    session.setHighlights([
+      onVolvox,
+      { refName: 'ctgA', start: 0, end: 50, assemblyName: 'otherAssembly' },
     ])
-    expect(model.highlight.length).toBe(2)
-    model.setHighlight([])
-    expect(model.highlight.length).toBe(0)
+    expect(model.highlights).toEqual([onVolvox])
   })
 
   test('label toggle defaults to true and can be flipped', () => {
@@ -2561,34 +2546,6 @@ describe('highlights', () => {
     expect(model.labelsVisible).toBe(true)
     model.setLabelsVisible(false)
     expect(model.labelsVisible).toBe(false)
-  })
-
-  test('updateHighlight replaces label and color in place', () => {
-    const model = setupHighlightModel()
-    const h = { refName: 'ctgA', start: 100, end: 200, assemblyName: 'volvox' }
-    model.addToHighlights(h)
-    const ref = model.highlight[0]!
-    model.updateHighlight(ref, { label: 'test', color: '#ff0000' })
-    expect(model.highlight.length).toBe(1)
-    expect(model.highlight[0]!.label).toBe('test')
-    expect(model.highlight[0]!.color).toBe('#ff0000')
-    expect(model.highlight[0]!.start).toBe(100)
-  })
-
-  test('recoloring from the grid reveals the bands', () => {
-    const model = setupHighlightModel()
-    const session = getSession(model)
-    model.addToHighlights({
-      refName: 'ctgA',
-      start: 100,
-      end: 200,
-      assemblyName: 'volvox',
-    })
-    // the highlight grid lists entries with the bands off, so a color picked
-    // there has to bring them back or nothing appears to happen
-    session.setHighlightsVisible(false)
-    model.updateHighlight(model.highlight[0]!, { color: '#ff0000' })
-    expect(session.highlightsVisible).toBe(true)
   })
 
   test('getHighlightCoords maps to pixel position', () => {
@@ -2857,9 +2814,9 @@ describe('declarative launch: highlight, nav, unknown keys', () => {
       highlight: ['ctgA:100-200'],
     })
     await waitFor(() => {
-      expect(model.highlight.length).toBe(1)
+      expect(getSession(model).highlights.length).toBe(1)
     })
-    const h = model.highlight[0]!
+    const h = getSession(model).highlights[0]!
     expect(h.refName).toBe('ctgA')
     expect(h.assemblyName).toBe('volvox')
     expect(h.start).toBeLessThan(h.end)
@@ -2874,9 +2831,9 @@ describe('declarative launch: highlight, nav, unknown keys', () => {
       ],
     })
     await waitFor(() => {
-      expect(model.highlight.length).toBe(1)
+      expect(getSession(model).highlights.length).toBe(1)
     })
-    const h = model.highlight[0]!
+    const h = getSession(model).highlights[0]!
     expect(h.start).toBe(100)
     expect(h.end).toBe(200)
     expect(h.color).toBe('#123456')
@@ -2894,9 +2851,9 @@ describe('declarative launch: highlight, nav, unknown keys', () => {
       ],
     })
     await waitFor(() => {
-      expect(model.highlight.length).toBe(1)
+      expect(getSession(model).highlights.length).toBe(1)
     })
-    expect(model.highlight[0]!.assemblyName).toBe('volvox2')
+    expect(getSession(model).highlights[0]!.assemblyName).toBe('volvox2')
   })
 
   test('init.highlight accepts a HighlightType object directly', async () => {
@@ -2908,14 +2865,33 @@ describe('declarative launch: highlight, nav, unknown keys', () => {
       ],
     })
     await waitFor(() => {
-      expect(model.highlight.length).toBe(1)
+      expect(getSession(model).highlights.length).toBe(1)
     })
-    const h = model.highlight[0]!
+    const h = getSession(model).highlights[0]!
     expect(h.start).toBe(100)
     expect(h.end).toBe(200)
     expect(h.label).toBe('a label with spaces')
     // assemblyName omitted on the object, so it falls back to init.assembly
     expect(h.assemblyName).toBe('volvox')
+  })
+
+  test('a saved view carrying highlight objects moves them to the session', async () => {
+    const saved = {
+      refName: 'ctgA',
+      start: 100,
+      end: 200,
+      assemblyName: 'volvox',
+    }
+    const model = makeModel({
+      displayedRegions: [
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+      ],
+      highlight: [saved],
+    } as InitState)
+    await waitFor(() => {
+      expect(getSession(model).highlights).toEqual([saved])
+    })
+    expect(model.displayedRegions[0]!.end).toBe(1000)
   })
 
   test('init.highlight without loc applies the highlight', async () => {
@@ -2924,16 +2900,16 @@ describe('declarative launch: highlight, nav, unknown keys', () => {
       highlight: ['ctgA:100-200'],
     })
     await waitFor(() => {
-      expect(model.highlight.length).toBe(1)
+      expect(getSession(model).highlights.length).toBe(1)
     })
     // no loc => showAllRegionsInAssembly ran (nothing was displayed yet)
     expect(model.hasDisplayedRegions).toBe(true)
-    expect(model.highlight[0]!.refName).toBe('ctgA')
+    expect(getSession(model).highlights[0]!.refName).toBe('ctgA')
   })
 
   // regression: with init.tracklist the autorun reads raw volatileWidth and
   // awaits a width settle, so a width change while init is mid-apply re-triggers
-  // it before `init` is cleared. addToHighlights pushes, so a re-entrant pass
+  // it before `init` is cleared. adding a highlight pushes, so a re-entrant pass
   // duplicated the highlight (the double highlights seen under React StrictMode's
   // double mount, which churns volatileWidth). Without tracklist this doesn't
   // reproduce: the autorun's only width dependency is the `initialized`
@@ -2954,7 +2930,7 @@ describe('declarative launch: highlight, nav, unknown keys', () => {
     await waitFor(() => {
       expect(model.pendingLaunch).toBeUndefined()
     })
-    expect(model.highlight.length).toBe(1)
+    expect(getSession(model).highlights.length).toBe(1)
   })
 
   // the sibling of the case above: not a re-entrant autorun pass (the drain
@@ -2982,7 +2958,7 @@ describe('declarative launch: highlight, nav, unknown keys', () => {
     })
     // only the successor's band, and it did get applied (the locstring is
     // 1-based closed, so 300-400 lands at interbase 299)
-    expect(model.highlight.map(h => h.start)).toEqual([299])
+    expect(getSession(model).highlights.map(h => h.start)).toEqual([299])
   })
 
   // init.tracklist opens the drawer before navigating so the region is framed
@@ -3095,8 +3071,8 @@ describe('declarative launch: highlight, nav, unknown keys', () => {
     await waitFor(() => {
       expect(model.pendingLaunch).toBeUndefined()
     })
-    expect(model.highlight.length).toBe(1)
-    expect(model.highlight[0]!.refName).toBe('ctgA')
+    expect(getSession(model).highlights.length).toBe(1)
+    expect(getSession(model).highlights[0]!.refName).toBe('ctgA')
     expect(console.error).toHaveBeenCalledWith(
       expect.stringContaining('Invalid init highlight "badref:1-100"'),
     )

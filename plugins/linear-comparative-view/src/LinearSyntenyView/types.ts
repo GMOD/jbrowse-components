@@ -1,5 +1,5 @@
 import type { LinearSyntenyViewStateModel } from './model.ts'
-import type { HighlightType } from '@jbrowse/core/util/highlights'
+import type { HighlightInput } from '@jbrowse/core/util/highlights'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type { ViewInit } from '@jbrowse/core/util/withLaunchInput'
 import type { LinearGenomeViewLaunchProps } from '@jbrowse/plugin-linear-genome-view'
@@ -55,12 +55,12 @@ export interface LinearSyntenyViewCommands extends SyntenyViewSharedCommands {
     // haplotype per row is the only way two rows of ONE haplotype-resolved
     // assembly are a comparison rather than two copies of the same picture.
     displayedRegionNames?: string[]
-    // Shaded spans on this row: a locstring, or a HighlightType object. Same
+    // Shaded spans on this row: a locstring, or an object. Same
     // field and same coercion as the LGV's own init — re-listed here for the
     // same reason `loc` and `displayedRegionNames` are, since a row is built
     // from a snapshot and never runs the LGV's init autorun. Naming the same
     // span on two rows is how a synteny figure says "this object, seen twice".
-    highlight?: (string | HighlightType)[]
+    highlight?: (string | HighlightInput)[]
   } & LinearGenomeViewLaunchProps)[]
   // synteny tracks per level: tracks[i] is shown between views[i] and
   // views[i+1]. A flat list is treated as a single level-0 entry. An entry is a

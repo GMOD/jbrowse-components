@@ -1,7 +1,7 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 
 import GridBookmarkWidget from './GridBookmarkWidget.tsx'
 
@@ -9,9 +9,7 @@ import type { GridBookmarkModel } from '../model.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
-const theme = createJBrowseTheme()
-
-function setup() {
+test('the list shows each highlight with its label', async () => {
   const session = createTestSession({
     sessionSnapshot: {
       views: [
@@ -26,39 +24,22 @@ function setup() {
       ],
     },
   })
-  const widget = session.addWidget(
-    'GridBookmarkWidget',
-    'GridBookmark',
-  ) as GridBookmarkModel
-  widget.addBookmark({
+  session.addHighlight({
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
     end: 100,
+    label: 'first region',
   })
-  return widget
-}
-
-function renderWidget(widget: GridBookmarkModel) {
-  return render(
-    <ThemeProvider theme={theme}>
+  const widget = session.addWidget(
+    'GridBookmarkWidget',
+    'GridBookmark',
+  ) as GridBookmarkModel
+  render(
+    <ThemeProvider theme={createJBrowseTheme()}>
       <GridBookmarkWidget model={widget} />
     </ThemeProvider>,
   )
-}
-
-test('single grid renders for bookmarks/highlights, two for both', () => {
-  const widget = setup()
-
-  widget.setGridView('bookmarks')
-  const { container, rerender } = renderWidget(widget)
-  expect(container.querySelectorAll('.MuiDataGrid-root')).toHaveLength(1)
-
-  widget.setGridView('both')
-  rerender(
-    <ThemeProvider theme={theme}>
-      <GridBookmarkWidget model={widget} />
-    </ThemeProvider>,
-  )
-  expect(container.querySelectorAll('.MuiDataGrid-root')).toHaveLength(2)
+  expect(await screen.findByText('first region')).toBeTruthy()
+  expect(screen.getByText('ctgA:1..100')).toBeTruthy()
 })

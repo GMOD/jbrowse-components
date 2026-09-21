@@ -82,8 +82,8 @@ function clipGroupContents(svg: string) {
 }
 
 test('overlay highlights render inside the view clip group', async () => {
-  const { view } = await setup()
-  view.addToHighlights({
+  const { session, view } = await setup()
+  session.addHighlight({
     refName: 'ctgA',
     start: 5000,
     end: 6000,

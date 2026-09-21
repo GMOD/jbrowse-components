@@ -2,25 +2,38 @@ import Plugin from '@jbrowse/core/Plugin'
 import { extendViewType } from '@jbrowse/core/pluggableElementTypes'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
 import {
-  assembleLocString,
   getNotificationSink,
   getSession,
   isAbstractMenuManager,
 } from '@jbrowse/core/util'
-import BookmarkIcon from '@mui/icons-material/Bookmark'
-import BookmarksIcon from '@mui/icons-material/Bookmarks'
+import HighlightIcon from '@mui/icons-material/Highlight'
 import LabelIcon from '@mui/icons-material/Label'
+import ListIcon from '@mui/icons-material/List'
 
 import GridBookmarkWidgetF from './GridBookmarkWidget/index.ts'
-import { navToBookmark } from './GridBookmarkWidget/utils.ts'
+import { navToHighlight } from './GridBookmarkWidget/utils.ts'
 import {
-  activateBookmarkWidget,
-  ensureBookmarkWidget,
+  activateHighlightWidget,
   toggleHighlightsMenuItem,
 } from './bookmarkViewUtils.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
+import type { HighlightType } from '@jbrowse/core/util/highlights'
+
+function regionHighlight(r: {
+  assemblyName: string
+  refName: string
+  start: number
+  end: number
+}): HighlightType {
+  return {
+    assemblyName: r.assemblyName,
+    refName: r.refName,
+    start: r.start,
+    end: r.end,
+  }
+}
 
 export default class GridBookmarkPlugin extends Plugin {
   name = 'GridBookmarkPlugin'
@@ -34,45 +47,30 @@ export default class GridBookmarkPlugin extends Plugin {
           /**
            * #action
            */
-          activateBookmarkWidget() {
-            return activateBookmarkWidget(self)
+          activateHighlightWidget() {
+            return activateHighlightWidget(self)
           },
-        }))
-        .actions(self => ({
           /**
            * #action
            */
-          navigateNewestBookmark() {
+          navigateNewestHighlight() {
             const session = getSession(self)
-            const bookmarkWidget = self.activateBookmarkWidget()
-            const newest = bookmarkWidget.bookmarks.at(-1)
+            const newest = session.highlights.at(-1)
             if (newest) {
-              const { assemblyName, ...rest } = newest
-              void navToBookmark(
-                assembleLocString(rest),
-                assemblyName,
-                session.views,
-                bookmarkWidget,
-              )
+              void navToHighlight(newest, self)
             } else {
-              session.notify(
-                'There are no recent bookmarks to navigate to.',
-                'info',
-              )
+              session.notify('There are no highlights to navigate to.', 'info')
             }
           },
-
           /**
            * #action
            */
-          bookmarkCurrentRegion() {
-            const regions = self.visibleWholeBaseRegions
-            const bookmarkWidget = self.activateBookmarkWidget()
-            if (!regions.length) {
+          highlightCurrentRegion() {
+            const [region] = self.visibleWholeBaseRegions
+            if (!region) {
               throw new Error('no region selected')
-            } else {
-              bookmarkWidget.addBookmark(regions[0]!)
             }
+            getSession(self).addHighlight(regionHighlight(region))
           },
         }))
         .views(self => {
@@ -87,19 +85,19 @@ export default class GridBookmarkPlugin extends Plugin {
               return [
                 ...superMenuItems(),
                 {
-                  label: 'Bookmarks/highlights',
-                  icon: BookmarksIcon,
+                  label: 'Highlights',
+                  icon: HighlightIcon,
                   subMenu: [
                     {
-                      label: 'Open bookmark widget',
-                      icon: BookmarksIcon,
-                      onClick: () => self.activateBookmarkWidget(),
+                      label: 'Open highlight list',
+                      icon: ListIcon,
+                      onClick: () => self.activateHighlightWidget(),
                     },
                     {
-                      label: 'Bookmark current region',
-                      icon: BookmarkIcon,
+                      label: 'Highlight current region',
+                      icon: Highlighter,
                       onClick: () => {
-                        self.bookmarkCurrentRegion()
+                        self.highlightCurrentRegion()
                       },
                     },
                     toggleHighlightsMenuItem(self),
@@ -126,22 +124,9 @@ export default class GridBookmarkPlugin extends Plugin {
               return [
                 ...superHighlightMenuItems(highlight),
                 {
-                  label: 'Open bookmark widget',
-                  icon: BookmarksIcon,
-                  onClick: () => self.activateBookmarkWidget(),
-                },
-                {
-                  label: 'Convert highlight to bookmark',
-                  icon: BookmarkIcon,
-                  onClick: () => {
-                    if (highlight.assemblyName) {
-                      self.activateBookmarkWidget().addBookmark({
-                        ...highlight,
-                        assemblyName: highlight.assemblyName,
-                      })
-                      self.removeHighlight(highlight)
-                    }
-                  },
+                  label: 'Open highlight list',
+                  icon: ListIcon,
+                  onClick: () => self.activateHighlightWidget(),
                 },
               ]
             },
@@ -157,29 +142,12 @@ export default class GridBookmarkPlugin extends Plugin {
                   icon: Highlighter,
                   onClick: () => {
                     const { leftOffset, rightOffset } = self
-                    const selectedRegions = self.getSelectedRegions(
+                    const [region] = self.getSelectedRegions(
                       leftOffset,
                       rightOffset,
                     )
-                    if (selectedRegions.length) {
-                      self.addToHighlights(selectedRegions[0]!)
-                    }
-                  },
-                },
-                {
-                  label: 'Bookmark region',
-                  icon: BookmarkIcon,
-                  onClick: () => {
-                    const { leftOffset, rightOffset } = self
-                    const selectedRegions = self.getSelectedRegions(
-                      leftOffset,
-                      rightOffset,
-                    )
-                    const bookmarkWidget = self.activateBookmarkWidget()
-                    if (!selectedRegions.length) {
-                      throw new Error('no regions selected')
-                    } else {
-                      bookmarkWidget.addBookmark(selectedRegions[0]!)
+                    if (region) {
+                      getSession(self).addHighlight(regionHighlight(region))
                     }
                   },
                 },
@@ -199,23 +167,22 @@ export default class GridBookmarkPlugin extends Plugin {
               // ctrl+shift+d or cmd+shift+d
               if (e.code === 'KeyD') {
                 e.preventDefault()
-                self.activateBookmarkWidget()
-                self.bookmarkCurrentRegion()
-                getNotificationSink(self).notify('Bookmark created.', 'success')
+                self.highlightCurrentRegion()
+                getNotificationSink(self).notify(
+                  'Region highlighted.',
+                  'success',
+                )
               }
               // ctrl+shift+m or cmd+shift+m
               if (e.code === 'KeyM') {
                 e.preventDefault()
-                self.navigateNewestBookmark()
+                self.navigateNewestHighlight()
               }
             }
           }
           return {
             afterCreate() {
               document.addEventListener('keydown', keydownListener)
-            },
-            afterAttach() {
-              ensureBookmarkWidget(self)
             },
             beforeDestroy() {
               document.removeEventListener('keydown', keydownListener)
@@ -266,8 +233,8 @@ export default class GridBookmarkPlugin extends Plugin {
           /**
            * #action
            */
-          activateBookmarkWidget() {
-            return activateBookmarkWidget(self)
+          activateHighlightWidget() {
+            return activateHighlightWidget(self)
           },
         }))
         .views(self => {
@@ -280,13 +247,13 @@ export default class GridBookmarkPlugin extends Plugin {
               return [
                 ...superMenuItems(),
                 {
-                  label: 'Bookmarks/highlights',
-                  icon: BookmarksIcon,
+                  label: 'Highlights',
+                  icon: HighlightIcon,
                   subMenu: [
                     {
-                      label: 'Open bookmark widget',
-                      icon: BookmarksIcon,
-                      onClick: () => self.activateBookmarkWidget(),
+                      label: 'Open highlight list',
+                      icon: ListIcon,
+                      onClick: () => self.activateHighlightWidget(),
                     },
                     toggleHighlightsMenuItem(self),
                   ],
@@ -294,27 +261,19 @@ export default class GridBookmarkPlugin extends Plugin {
               ]
             },
           }
-        })
-        .actions(self => ({
-          afterAttach() {
-            ensureBookmarkWidget(self)
-          },
-        })),
+        }),
     )
   }
 
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToMenu('Tools', {
-        label: 'Bookmarks/highlights',
-        icon: BookmarksIcon,
+        label: 'Highlights',
+        icon: HighlightIcon,
         onClick: (session: SessionWithWidgets) => {
-          let bookmarkWidget = session.widgets.get('GridBookmark')
-          bookmarkWidget ??= session.addWidget(
-            'GridBookmarkWidget',
-            'GridBookmark',
-          )
-          session.showWidget(bookmarkWidget)
+          let widget = session.widgets.get('GridBookmark')
+          widget ??= session.addWidget('GridBookmarkWidget', 'GridBookmark')
+          session.showWidget(widget)
         },
       })
     }

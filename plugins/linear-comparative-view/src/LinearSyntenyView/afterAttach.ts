@@ -206,7 +206,7 @@ async function applyInitViewLocsAndTracks(
         // same span on two rows is how a synteny figure says "this object,
         // seen twice" -- and it was being dropped in silence, which is the
         // failure mode the launch partition exists to end everywhere else.
-        applyInitHighlights(view, getSession(self), {
+        applyInitHighlights(getSession(self), {
           highlight: viewInit.highlight,
           assembly: viewInit.assembly,
         })

@@ -5,8 +5,8 @@ import type { GridBookmarkModel } from './GridBookmarkWidget/model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-// get-or-create the singleton GridBookmark widget and bring it to front
-export function activateBookmarkWidget(node: IAnyStateTreeNode) {
+// get-or-create the singleton highlight list widget and bring it to front
+export function activateHighlightWidget(node: IAnyStateTreeNode) {
   const session = getSession(node)
   if (isSessionModelWithWidgets(session)) {
     let widget = session.widgets.get('GridBookmark')
@@ -14,23 +14,9 @@ export function activateBookmarkWidget(node: IAnyStateTreeNode) {
     session.showWidget(widget)
     return widget as GridBookmarkModel
   }
-  throw new Error('Could not open bookmark widget')
+  throw new Error('Could not open the highlight list')
 }
 
-// ensure the widget exists (without showing it) so its localStorage-backed
-// bookmarks can render as highlight overlays without each overlay component
-// having to create it on first render
-export function ensureBookmarkWidget(node: IAnyStateTreeNode) {
-  const session = getSession(node)
-  if (
-    isSessionModelWithWidgets(session) &&
-    !session.widgets.get('GridBookmark')
-  ) {
-    session.addWidget('GridBookmarkWidget', 'GridBookmark')
-  }
-}
-
-// single checkbox for the one session-wide highlight-visibility flag
 export function toggleHighlightsMenuItem(self: IAnyStateTreeNode): MenuItem {
   const session = getSession(self)
   return {

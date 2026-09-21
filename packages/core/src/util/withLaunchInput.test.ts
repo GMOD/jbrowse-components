@@ -18,7 +18,6 @@ import type {
 interface TestCommands {
   assembly: string
   tracks?: (string | { trackId: string })[]
-  highlight?: (string | { refName: string })[]
   views?: unknown[]
   sameScale?: boolean
 }
@@ -27,7 +26,6 @@ const keys = defineLaunchKeys<TestCommands>()(
   {
     assembly: { kind: 'launch' },
     tracks: { kind: 'trackEntries' },
-    highlight: { kind: 'highlightEntries' },
     views: { kind: 'rows' },
     sameScale: { kind: 'replay' },
   },
@@ -39,7 +37,6 @@ function viewModel(name: string) {
     type: types.literal(name),
     launch: types.frozen<LaunchInput<TestCommands> | undefined>(),
     tracks: types.array(types.frozen()),
-    highlight: types.array(types.frozen()),
     views: types.array(types.frozen()),
     sameScale: types.optional(types.boolean, false),
     showThing: types.optional(types.boolean, false),
@@ -55,7 +52,6 @@ function attach(view: IAnyModelType, snap: unknown) {
   return types.model({ view }).create({ view: snap }).view as IStateTreeNode & {
     launch?: LaunchInput<TestCommands>
     tracks?: unknown[]
-    highlight?: unknown[]
     views?: unknown[]
     sameScale?: boolean
   }
@@ -149,16 +145,6 @@ describe('the per-entry discriminators', () => {
     expect(open({ type: 'TestView', tracks: 'genes' }).launch).toEqual({
       tracks: 'genes',
     })
-  })
-
-  test('highlightEntries: a string launches, an object persists', () => {
-    const persisted = { refName: 'chr1' }
-    const view = open({
-      type: 'TestView',
-      highlight: ['chr1:1-100', persisted],
-    })
-    expect(view.launch).toEqual({ highlight: ['chr1:1-100'] })
-    expect(view.highlight).toEqual([persisted])
   })
 
   test('rows: a row carrying a `type` is built', () => {

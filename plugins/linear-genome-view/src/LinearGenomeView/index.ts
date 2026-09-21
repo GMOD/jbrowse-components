@@ -66,6 +66,7 @@ export type {
 export type {
   BpOffset,
   ExportSvgOptions,
+  HighlightInput,
   HighlightType,
   InitState,
   LinearGenomeViewLaunchProps,

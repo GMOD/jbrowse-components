@@ -19,10 +19,10 @@ export const {
 // and has to be announced by hand. Missing that half is what let two components
 // on one key show different values until one of them remounted.
 //
-// Announcing is deliberately not folded into localStorageSetItem. The
-// grid-bookmark widget persists its list from an autorun over the list, so a
-// write that called its own subscriber back would re-enter that autorun and
-// write again, forever. A writer says when its write is news.
+// Announcing is deliberately not folded into localStorageSetItem. A writer
+// that persists from an autorun over its own state would, if its write called
+// its own subscriber back, re-enter that autorun and write again, forever. A
+// writer says when its write is news.
 const listeners = new Map<string, Set<() => void>>()
 
 // Installed on the first subscription rather than at module scope, so importing

@@ -26,7 +26,7 @@ export const lgvLaunchKeys = defineLaunchKeys<InitState>()(
     tracklist: { kind: 'launch' },
     nav: { kind: 'launch' },
     tracks: { kind: 'trackEntries' },
-    highlight: { kind: 'highlightEntries' },
+    highlight: { kind: 'launch' },
   },
   {
     passThrough: [

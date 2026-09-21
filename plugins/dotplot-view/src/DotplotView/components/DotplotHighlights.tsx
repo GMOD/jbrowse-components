@@ -15,7 +15,7 @@ const DotplotHighlights = observer(function DotplotHighlights({
 }) {
   const theme = useTheme()
   return getSession(model).highlightsVisible
-    ? model.highlight.map((h, i) => (
+    ? model.highlights.map((h, i) => (
         <DotplotHighlightBands
           key={highlightKey(h, i)}
           model={model}

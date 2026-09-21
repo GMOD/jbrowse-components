@@ -11,12 +11,12 @@ import { openLocation } from '@jbrowse/core/util/io'
 import ImportIcon from '@mui/icons-material/Publish'
 import { observer } from 'mobx-react'
 
-import { parseBookmarks } from '../../utils.ts'
+import { parseHighlights } from '../../utils.ts'
 
 import type { GridBookmarkModel } from '../../model.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
-const ImportBookmarksDialog = observer(function ImportBookmarksDialog({
+const ImportHighlightsDialog = observer(function ImportHighlightsDialog({
   onClose,
   model,
 }: {
@@ -33,7 +33,7 @@ const ImportBookmarksDialog = observer(function ImportBookmarksDialog({
     <SubmitDialog
       open
       maxWidth="xl"
-      title="Import bookmarks"
+      title="Import highlights"
       submitText="Import"
       submitStartIcon={<ImportIcon />}
       submitDisabled={!location}
@@ -42,7 +42,7 @@ const ImportBookmarksDialog = observer(function ImportBookmarksDialog({
         try {
           if (location) {
             const data = await openLocation(location).readFile('utf8')
-            model.importBookmarks(parseBookmarks(data, selectedAsm))
+            model.importHighlights(parseHighlights(data, selectedAsm))
           }
           onClose()
         } catch (e) {
@@ -69,4 +69,4 @@ const ImportBookmarksDialog = observer(function ImportBookmarksDialog({
     </SubmitDialog>
   )
 })
-export default ImportBookmarksDialog
+export default ImportHighlightsDialog

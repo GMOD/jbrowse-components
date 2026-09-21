@@ -1,9 +1,8 @@
 import { getFillProps } from '@jbrowse/core/util'
 
 // One full-height SVG highlight band with an optional label at the top,
-// mirroring the on-screen HighlightBand div. Shared by the LGV native-highlight
-// export (SVGHighlights) and the grid-bookmark export (LGVHighlightSVG). The
-// label is hidden on bands too narrow to fit it.
+// mirroring the on-screen HighlightBand div. The label is hidden on bands too
+// narrow to fit it.
 export default function SVGHighlightBand({
   coords,
   height,

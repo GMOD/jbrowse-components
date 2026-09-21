@@ -2,9 +2,15 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { setNumberGrouping } from '@jbrowse/core/util'
 import { freezeDeep } from '@jbrowse/core/util/freezeDeep'
+import { isSameHighlight } from '@jbrowse/core/util/highlights'
 import { isFeature, unwrapFeature } from '@jbrowse/core/util/simpleFeature'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { getParent, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
+import {
+  cast,
+  getParent,
+  isStateTreeNode,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
 
 import { applyDeveloperMode } from './developerMode.ts'
@@ -19,6 +25,7 @@ import type {
   DialogComponentType,
   TrackConfigChange,
 } from '@jbrowse/core/util'
+import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 type DoneCallback = (
@@ -56,8 +63,15 @@ export function BaseSessionModel<
       focusedViewId: types.maybe(types.string),
       /**
        * #property
-       * one session-wide toggle for all region highlight bands (URL/view
-       * highlights and bookmark overlays)
+       * translucent bands over genomic regions; every view draws the ones on
+       * its own assemblies
+       */
+      highlights: types.stripDefault(
+        types.array(types.frozen<HighlightType>()),
+        [],
+      ),
+      /**
+       * #property
        */
       highlightsVisible: types.stripDefault(types.boolean, true),
       /**
@@ -299,18 +313,46 @@ export function BaseSessionModel<
       },
       /**
        * #action
-       * toggle all region highlight bands across every view
        */
       setHighlightsVisible(arg: boolean) {
         self.highlightsVisible = arg
       },
       /**
        * #action
-       * turn highlight bands back on, so a newly made highlight or bookmark is
-       * visible even after an earlier "highlights off"
+       * an identical entry is not added twice, so a spec launched again does not
+       * stack its bands. Adding shows the bands again, since a highlight made
+       * while they are off would otherwise read as nothing happening
        */
-      revealHighlights() {
+      addHighlight(highlight: HighlightType) {
+        if (!self.highlights.some(h => isSameHighlight(h, highlight))) {
+          self.highlights.push(highlight)
+        }
         self.highlightsVisible = true
+      },
+      /**
+       * #action
+       */
+      removeHighlight(highlight: HighlightType) {
+        self.highlights.remove(highlight)
+      },
+      /**
+       * #action
+       */
+      updateHighlight(old: HighlightType, updates: Partial<HighlightType>) {
+        const idx = self.highlights.indexOf(old)
+        if (idx !== -1) {
+          self.highlights[idx] = { ...old, ...updates }
+          self.highlightsVisible = true
+        }
+      },
+      /**
+       * #action
+       */
+      setHighlights(highlights: HighlightType[]) {
+        self.highlights = cast(highlights)
+        if (highlights.length) {
+          self.highlightsVisible = true
+        }
       },
       /**
        * #action

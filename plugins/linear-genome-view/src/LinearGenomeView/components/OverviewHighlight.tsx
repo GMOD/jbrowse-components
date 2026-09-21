@@ -21,7 +21,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
   // gate on highlightsVisible to match the main-view band, scalebar band, and
   // SVG export — otherwise "Turn off highlights" leaves the overview bands up
   return getSession(model).highlightsVisible
-    ? model.highlight
+    ? model.highlights
         .map(highlight => {
           const coords = model.getOverviewHighlightCoords(highlight)
           return coords ? { coords, highlight } : undefined

@@ -65,18 +65,18 @@ test('`highlight` (the &highlight= URL param) is parsed onto the list and govern
     highlight: ['ctgA:100-200'],
   })
 
-  // the URL highlight resolves onto the view's highlight list once init runs
+  // the URL highlight lands on the session's list once init runs
   await waitFor(
     () => {
-      expect(view.highlight.length).toBe(1)
+      expect(view.highlights.length).toBe(1)
     },
     { timeout: 30000 },
   )
-  expect(view.highlight[0]!.refName).toBe('ctgA')
+  expect(view.highlights[0]!.refName).toBe('ctgA')
 
   // rendering gates on getSession(view).highlightsVisible (the same expression
   // used by the main-view, scalebar, overview and SVG-export components), so a
-  // single session-wide flag now hides URL highlights and bookmark overlays alike
+  // single session-wide flag hides every band
   const session = getSession(view)
   expect(session.highlightsVisible).toBe(true)
   session.setHighlightsVisible(false)

@@ -56,7 +56,7 @@ async function setup(highlight = HIGHLIGHT) {
   await waitFor(() => {
     expect(model.initialized).toBe(true)
   })
-  model.setHighlight([highlight])
+  session.setHighlights([highlight])
 
   render(
     <ThemeProvider theme={createJBrowseTheme()}>

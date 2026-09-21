@@ -72,7 +72,7 @@ export const ROW_GESTURES = new Set([
   'flyToCenter',
   'flyToFit',
   'navToLocString',
-  'navigateNewestBookmark',
+  'navigateNewestHighlight',
   'showAllRegions',
   'showAllRegionsInAssembly',
   'fitAllRegions',

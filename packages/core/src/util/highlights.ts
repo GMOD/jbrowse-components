@@ -1,22 +1,14 @@
-import { addDisposer } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
-
 import { colord } from './colord.ts'
 import { parseLocString } from './locString.ts'
-import { getSession } from './mstUtils.ts'
 
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { Theme } from '@mui/material'
 
-// A translucent band drawn over a genomic region. Shared by the LGV and dotplot
-// `view.highlight` arrays and the grid-bookmark overlays (which key/colorize
-// bookmarks with the same helpers below).
+// A translucent band over a genomic region. The session holds one list of them,
+// and every view draws the entries on its own assemblies.
 export interface HighlightType {
   start: number
   end: number
-  // optional because view.highlight is persisted via types.frozen and session
-  // JSON authored by hand may legitimately omit the assemblyName
-  assemblyName?: string
+  assemblyName: string
   refName: string
   // overrides the theme's highlight color; user-supplied color is used as-is so
   // explicit alpha is preserved
@@ -25,28 +17,20 @@ export interface HighlightType {
   label?: string
 }
 
-// Bands and bookmark overlays both render only while the session-wide
-// `highlightsVisible` flag is on, so anything added while it is off draws
-// nothing at all, which reads as "it didn't work". Watching the collection
-// grow reveals for every path that adds to it rather than asking each call
-// site to remember. `count` is seeded before the autorun so restoring a
-// session that deliberately persisted bands-off doesn't flip it back on, and
-// removals only lower the baseline — they never re-reveal, or the toggle could
-// never be turned off.
-export function revealHighlightsOnGrowth(
-  node: IAnyStateTreeNode,
-  count: () => number,
-) {
-  let prevCount = count()
-  addDisposer(
-    node,
-    autorun(function highlightRevealAutorun() {
-      const newCount = count()
-      if (newCount > prevCount) {
-        getSession(node).revealHighlights()
-      }
-      prevCount = newCount
-    }),
+// What a launch spec may write: the view it launches supplies a missing
+// assemblyName.
+export type HighlightInput = Omit<HighlightType, 'assemblyName'> & {
+  assemblyName?: string
+}
+
+export function isSameHighlight(a: HighlightType, b: HighlightType) {
+  return (
+    a.assemblyName === b.assemblyName &&
+    a.refName === b.refName &&
+    a.start === b.start &&
+    a.end === b.end &&
+    a.color === b.color &&
+    a.label === b.label
   )
 }
 
@@ -135,13 +119,13 @@ function parseLocHighlight(
     : undefined
 }
 
-// Normalize an `init.highlight` entry (HighlightType object, JSON string, or
-// loc string) into a HighlightType, defaulting the assemblyName. Shared by
-// LinearGenomeView and DotplotView, whose `init.highlight` accept the same
-// three forms — the JSON shape-check in particular has to stay identical or a
-// highlight that works in one view silently drops in the other.
+// Normalize a launch spec's `highlight` entry (object, JSON string, or loc
+// string) into a HighlightType, defaulting the assemblyName. Shared by
+// LinearGenomeView and DotplotView, whose `highlight` launch keys accept the
+// same three forms — the JSON shape-check in particular has to stay identical or
+// a highlight that works in one view silently drops in the other.
 export function coerceHighlight(
-  h: string | HighlightType,
+  h: string | HighlightInput,
   defaultAssembly: string,
   // takes the assembly a `{...}` prefix named, so a caller with more than one
   // assembly in play validates the refName against the one the entry asked for

@@ -151,26 +151,12 @@ describe('the track entries discriminator', () => {
   })
 })
 
-describe('the highlight discriminator', () => {
-  const persisted = {
-    refName: 'ctgA',
-    start: 1,
-    end: 2,
-    assemblyName: 'volvox',
-  }
-
-  test('a locstring needs the assembly manager, so it launches', async () => {
-    expect(
-      (await open({ views: AXES, highlight: ['ctgA:1-100'] })).launch,
-    ).toEqual({
-      views: AXES,
-      highlight: ['ctgA:1-100'],
-    })
-  })
-
-  test('an object is the persisted shape and stays on the property', async () => {
-    const view = await open({ views: AXES, highlight: [persisted] })
-    expect(view.launch).toEqual({ views: AXES })
-    expect(view.highlight).toHaveLength(1)
+test('every highlight entry launches, since the session holds the list', async () => {
+  const object = { refName: 'ctgA', start: 1, end: 2, assemblyName: 'volvox' }
+  expect(
+    (await open({ views: AXES, highlight: ['ctgA:1-100', object] })).launch,
+  ).toEqual({
+    views: AXES,
+    highlight: ['ctgA:1-100', object],
   })
 })

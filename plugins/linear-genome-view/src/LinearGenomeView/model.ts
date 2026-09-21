@@ -1,10 +1,7 @@
 import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
-import {
-  BaseViewModel,
-  HighlightsMixin,
-} from '@jbrowse/core/pluggableElementTypes/models'
+import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import {
@@ -43,6 +40,7 @@ import {
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import { highlightsOnAssemblies } from '@jbrowse/core/util/viewHighlights'
 import {
   assemblyErrorMessage,
   computeViewStatus,
@@ -347,7 +345,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .compose(
       'LinearGenomeView',
       BaseViewModel,
-      HighlightsMixin(),
       types.model({
         /**
          * #property
@@ -516,7 +513,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * controls whether highlight/bookmark chip labels are shown inline
+         * controls whether highlight chip labels are shown inline
          */
         labelsVisible: types.stripDefault(types.boolean, true),
 
@@ -736,6 +733,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
       get assemblyDisplayNames() {
         const { assemblyManager } = getSession(self)
         return this.assemblyNames.map(a => assemblyManager.getDisplayName(a))
+      },
+      /**
+       * #getter
+       * the session's highlights on this view's assemblies
+       */
+      get highlights() {
+        const { highlights, assemblyManager } = getSession(self)
+        return highlightsOnAssemblies(
+          highlights,
+          this.assemblyNames,
+          assemblyManager,
+        )
       },
       /**
        * #getter
@@ -3218,7 +3227,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       * Map a highlight or bookmark region to its pixel position+width inside
+       * Map a highlight region to its pixel position+width inside
        * the tracks container. Falls back to the raw refName if the region's
        * assemblyName is missing or unknown so highlights authored without an
        * assembly still render in single-assembly views.
@@ -3472,7 +3481,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // `cytobandsVisible`; both now persist as the bare `showCytobands` prop
       // (the capability-gated getter is `effectiveShowCytobands`).
       const {
-        highlight,
         showCytobandsSetting,
         cytobandsVisible,
         offsetPx,
@@ -3481,10 +3489,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       } = snap
       const legacyShowCytobands = showCytobandsSetting ?? cytobandsVisible
       return {
-        highlight:
-          Array.isArray(highlight) || highlight === undefined
-            ? highlight
-            : [highlight],
         ...(legacyShowCytobands !== undefined
           ? { showCytobands: legacyShowCytobands }
           : {}),

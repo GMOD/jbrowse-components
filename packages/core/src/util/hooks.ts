@@ -235,8 +235,7 @@ function resolveUpdate<T>(value: T | ((val: T) => T), prev: T) {
  * components on the same key each kept their own copy of it, so toggling a
  * setting in one BreakpointSplitView header left a second one open beside it
  * showing the old value until it remounted. Instances on a key now subscribe to
- * each other's writes, and to other tabs' — `subscribeToLocalStorageKey`, which
- * the grid-bookmark widget shares from its state model.
+ * each other's writes, and to other tabs' — `subscribeToLocalStorageKey`.
  *
  * The store is read on every notify rather than cached, so nothing here can go
  * stale against a `localStorage.clear()`. Which also means a functional update

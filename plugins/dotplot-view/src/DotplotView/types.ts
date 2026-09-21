@@ -1,4 +1,5 @@
 import type { DotplotViewStateModel } from './model.ts'
+import type { HighlightInput } from '@jbrowse/core/util/highlights'
 import type { ViewInit } from '@jbrowse/core/util/withLaunchInput'
 import type { SyntenyViewSharedCommands } from '@jbrowse/synteny-core'
 
@@ -60,9 +61,9 @@ export interface DotplotViewCommands extends SyntenyViewSharedCommands {
     displayedRegionNames?: string[]
   }[]
   tracks?: string[]
-  // loc-strings ("chr1:100-200") or JSON objects matching HighlightType,
-  // mirroring the linear genome view's `highlight`
-  highlight?: string[]
+  // loc-strings ("chr1:100-200"), JSON strings or objects, mirroring the
+  // linear genome view's `highlight`
+  highlight?: (string | HighlightInput)[]
 }
 
 /**

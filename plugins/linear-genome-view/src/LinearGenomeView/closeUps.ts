@@ -132,7 +132,7 @@ export const CLOSE_UP_NAVIGATIONS = new Set([
   'navToMultiple',
   'navToLocString',
   'navToLocations',
-  'navigateNewestBookmark',
+  'navigateNewestHighlight',
   'showRegions',
   'showAllRegionsInAssembly',
 ])

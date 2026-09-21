@@ -5,18 +5,18 @@ import Delete from '@mui/icons-material/Delete'
 import Palette from '@mui/icons-material/Palette'
 import { IconButton, Stack, Tooltip, Typography } from '@mui/material'
 
-import { DEFAULT_HIGHLIGHT, HIGHLIGHT_ALPHA } from '../model.ts'
+import { HIGHLIGHT_ALPHA } from '../model.ts'
 
 // gmail-style contextual action bar: shown above a grid once rows are selected,
 // exposing the bulk actions (recolor, delete) as icons instead of a hamburger
 export default function SelectionActions({
   count,
-  color = DEFAULT_HIGHLIGHT,
+  color,
   onDelete,
   onRecolor,
 }: {
   count: number
-  color?: string
+  color: string
   onDelete: () => void
   onRecolor?: (color: string) => void
 }) {

@@ -1,16 +1,9 @@
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
-import { getBookmarkHighlights } from './components/Highlight/getBookmarkHighlights.ts'
-
-import type { GridBookmarkModel, IExtendedLGV } from './model.ts'
+import type { GridBookmarkModel } from './model.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
-
-// bookmarks are localStorage-backed, so isolate tests from each other
-beforeEach(() => {
-  localStorage.clear()
-})
 
 function setup() {
   const view = {
@@ -32,7 +25,7 @@ function setup() {
 }
 
 // a real assembly, so refName resolution and alias lookup are the product's
-// rather than the fixture's. Only ctgA is displayed: ctgB is the bookmark the
+// rather than the fixture's. Only ctgA is displayed: ctgB is the highlight the
 // keyboard shortcut has to reach without a region list already holding it
 async function setupWithAssembly() {
   const session = createTestSession({
@@ -71,126 +64,95 @@ async function setupWithAssembly() {
   return { session, view: session.views[0] }
 }
 
-test('highlightsVisible is a single session-level flag gating overlays', () => {
+test('the list holds the highlights on an assembly some view shows', () => {
   const { session, widget } = setup()
-  widget.addBookmark({
-    assemblyName: 'volvox',
-    refName: 'ctgA',
-    start: 0,
-    end: 100,
-  })
-  const view = session.views[0] as IExtendedLGV
-
-  // on by default, so the view's bookmark overlay resolves the bookmark
-  expect(session.highlightsVisible).toBe(true)
-  expect(getBookmarkHighlights(view).bookmarks).toHaveLength(1)
-
-  // flipping the one flag hides overlays everywhere
-  session.setHighlightsVisible(false)
-  expect(getBookmarkHighlights(view).bookmarks).toHaveLength(0)
-})
-
-test('a new bookmark reveals the bands so it is not silently swallowed', () => {
-  const { session, widget } = setup()
-  session.setHighlightsVisible(false)
-  widget.addBookmark({
-    assemblyName: 'volvox',
-    refName: 'ctgA',
-    start: 0,
-    end: 100,
-  })
-  expect(session.highlightsVisible).toBe(true)
-  expect(
-    getBookmarkHighlights(session.views[0] as IExtendedLGV).bookmarks,
-  ).toHaveLength(1)
-
-  // an imported file reveals too; the reveal watches the list, not the caller
-  session.setHighlightsVisible(false)
-  widget.importBookmarks([
-    { assemblyName: 'volvox', refName: 'ctgA', start: 200, end: 300 },
-  ])
-  expect(session.highlightsVisible).toBe(true)
-
-  // recoloring from the grid reveals too: the grid lists bookmarks with the
-  // overlays off, so the picked color would otherwise go nowhere
-  session.setHighlightsVisible(false)
-  const region = widget.bookmarks[0]!
-  // the grid row shape BookmarkGrid builds, which is what the color picker
-  // hands back
-  widget.updateBookmarkHighlight(
-    { ...region, id: 0, correspondingObj: region },
-    'rgb(255,0,0)',
-  )
-  expect(region.highlight).toBe('rgb(255,0,0)')
-  expect(session.highlightsVisible).toBe(true)
-
-  // deleting must not re-reveal, otherwise the toggle can't be turned off
-  session.setHighlightsVisible(false)
-  widget.removeBookmarkObject(widget.bookmarks[0]!)
-  expect(session.highlightsVisible).toBe(false)
-})
-
-test('loading stored bookmarks does not override a persisted bands-off', () => {
-  const { session } = setup()
-  session.setHighlightsVisible(false)
-  // a widget created with bookmarks already present must not reveal: the count
-  // is seeded at attach, so only growth after that counts
-  const widget = session.addWidget('GridBookmarkWidget', 'GridBookmark2', {
-    bookmarks: [
-      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
-    ],
-  }) as GridBookmarkModel
-  expect(widget.bookmarks).toHaveLength(1)
-  expect(session.highlightsVisible).toBe(false)
-})
-
-test('visibleBookmarks only includes assemblies open in a view', () => {
-  const { widget } = setup()
   expect([...widget.assembliesInViews]).toEqual(['volvox'])
-
-  widget.addBookmark({
+  session.addHighlight({
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
     end: 100,
   })
-  widget.addBookmark({
+  session.addHighlight({
     assemblyName: 'other-asm',
     refName: 'ctgA',
     start: 0,
     end: 100,
   })
+  expect(widget.rows.map(r => r.highlight.assemblyName)).toEqual(['volvox'])
+})
 
-  expect(widget.bookmarks).toHaveLength(2)
-  expect(widget.visibleBookmarks.map(b => b.assemblyName)).toEqual(['volvox'])
+test('a highlight made in one view is drawn in every view of its assembly', () => {
+  const { session } = setup()
+  session.addHighlight({
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 100,
+  })
+  expect(session.views.map((v: any) => v.highlights.length)).toEqual([1, 1])
+})
+
+test('recoloring the selection keeps it selected', () => {
+  const { session, widget } = setup()
+  session.addHighlight({
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 100,
+  })
+  widget.setSelectedKeys(new Set(widget.rows.map(r => r.key)))
+  widget.recolorSelectedHighlights('red')
+  expect(widget.selectedHighlights.map(h => h.color)).toEqual(['red'])
+
+  widget.removeSelectedHighlights()
+  expect(session.highlights).toEqual([])
+})
+
+test('a selection outlives a removal elsewhere without moving to a neighbour', () => {
+  const { session, widget } = setup()
+  for (const start of [0, 200, 400]) {
+    session.addHighlight({
+      assemblyName: 'volvox',
+      refName: 'ctgA',
+      start,
+      end: start + 100,
+    })
+  }
+  widget.setSelectedKeys(new Set([widget.rows[2]!.key]))
+  session.removeHighlight(session.highlights[0])
+  expect(widget.selectedHighlights).toEqual([])
 })
 
 // ctrl/cmd+shift+M ran through navTo, which throws for a refName the view is
 // not already displaying -- inside a keydown listener, so the shortcut did
 // nothing at all
-test('the newest-bookmark shortcut reaches a region the view is not displaying', async () => {
+test('the newest-highlight shortcut reaches a region the view is not displaying', async () => {
   const { session, view } = await setupWithAssembly()
-  const widget = session.widgets.get('GridBookmark') as GridBookmarkModel
-  widget.addBookmark({
+  session.addHighlight({
     assemblyName: 'volvox',
     refName: 'ctgB',
     start: 100,
     end: 200,
   })
 
-  view.navigateNewestBookmark()
+  view.navigateNewestHighlight()
   await when(() => view.displayedRegions[0]?.refName === 'ctgB')
   expect(view.coarseVisibleLocStrings).toContain('ctgB')
 })
 
-test('an alias of the view assembly still lists its bookmarks', async () => {
-  const { session } = await setupWithAssembly()
-  const widget = session.widgets.get('GridBookmark') as GridBookmarkModel
-  widget.addBookmark({
+test('a highlight named by an alias of the view assembly is listed and drawn', async () => {
+  const { session, view } = await setupWithAssembly()
+  const widget = session.addWidget(
+    'GridBookmarkWidget',
+    'GridBookmark',
+  ) as GridBookmarkModel
+  session.addHighlight({
     assemblyName: 'vvx',
     refName: 'ctgA',
     start: 0,
     end: 100,
   })
-  expect(widget.visibleBookmarks).toHaveLength(1)
+  expect(widget.rows).toHaveLength(1)
+  expect(view.highlights).toHaveLength(1)
 })

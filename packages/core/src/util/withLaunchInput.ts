@@ -56,12 +56,7 @@ export interface LaunchInputOptions<M extends IAnyModelType> {
  * property, and a copy rides in the blob so the launcher can run the ordered
  * imperative step the property write alone does not produce.
  */
-export type LaunchKeyKind =
-  | 'launch'
-  | 'trackEntries'
-  | 'rows'
-  | 'highlightEntries'
-  | 'replay'
+export type LaunchKeyKind = 'launch' | 'trackEntries' | 'rows' | 'replay'
 
 export interface LaunchKeySpec {
   kind: LaunchKeyKind
@@ -236,10 +231,6 @@ function isRecipeEntry(kind: LaunchKeyKind, entry: unknown) {
       return (
         typeof entry === 'string' || (isObject(entry) && 'trackId' in entry)
       )
-    case 'highlightEntries':
-      // a string needs coerceHighlight and the assembly manager, neither of
-      // which a pure preprocessor can reach; an object is the persisted shape
-      return typeof entry === 'string'
     case 'rows':
       // a built row is a view snapshot, and every view's `type` is a required
       // literal

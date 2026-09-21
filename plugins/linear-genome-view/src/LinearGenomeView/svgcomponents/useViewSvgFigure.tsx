@@ -309,11 +309,10 @@ const FrozenSvgFigure = memo(function FrozenSvgFigure({
  * highlight bands**, which are drawn in the figure and are the one thing in it a
  * reader adds without navigating anywhere.
  *
- * A plugin's own overlay (grid-bookmark's bookmarks, through
- * `LinearGenomeView-HighlightSVGComponent`) is state this cannot see, so a
- * bookmark added under a drawn figure shows up at its next redraw rather than at
- * once. Subscribing from inside the figure is the thing that must not happen —
- * see the note at the top of the file.
+ * A plugin's own overlay, through `LinearGenomeView-HighlightSVGComponent`, is
+ * state this cannot see, so a change to it shows up at the figure's next
+ * redraw rather than at once. Subscribing from inside the figure is the thing
+ * that must not happen — see the note at the top of the file.
  */
 function figureKey(view: LinearGenomeViewModel, themeName: string | undefined) {
   // A closed view is not an error, it is a host doing an ordinary thing in an
@@ -339,7 +338,7 @@ function figureKey(view: LinearGenomeViewModel, themeName: string | undefined) {
     // bakes in; the effective height is a getter, so it is read beside it
     view.tracks.map(track => [getSnapshot(track), track.displays[0]?.height]),
     session.getActiveThemeOptions?.(themeName),
-    session.highlightsVisible ? view.highlight : false,
+    session.highlightsVisible ? view.highlights : false,
     view.labelsVisible,
   ])
 }

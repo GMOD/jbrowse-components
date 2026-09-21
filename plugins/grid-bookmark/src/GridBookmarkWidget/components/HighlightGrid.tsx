@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import {
   assembleLocString,
@@ -14,7 +12,7 @@ import {
 } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
-import { isAssemblyInViews, navToBookmark } from '../utils.ts'
+import { navToHighlight } from '../utils.ts'
 import EmptyState from './EmptyState.tsx'
 import SelectionActions from './SelectionActions.tsx'
 import {
@@ -28,25 +26,41 @@ import {
   useCellStyles,
 } from './columns.tsx'
 
-import type { GridBookmarkModel, IExtendedLGV } from '../model.ts'
-import type { GridRowId } from '@mui/x-data-grid'
+import type { GridBookmarkModel } from '../model.ts'
+import type { HighlightType } from '@jbrowse/core/util/highlights'
 
-function NoHighlightsOverlay() {
-  return (
-    <EmptyState message="No highlights yet. Highlights added to a view appear here." />
-  )
-}
-
-type Highlight = IExtendedLGV['highlight'][number]
-
-interface HighlightRow {
+interface Row {
   id: string
-  view: IExtendedLGV
-  highlight: Highlight
+  highlight: HighlightType
   locString: string
   label: string
   assemblyName: string
   color?: string
+}
+
+// lets us pass a context-aware empty message through DataGrid's noRowsOverlay
+// slotProps
+declare module '@mui/x-data-grid' {
+  interface NoRowsOverlayPropsOverrides {
+    message?: string
+  }
+}
+
+function NoHighlightsOverlay({ message }: { message?: string }) {
+  return (
+    <EmptyState
+      message={
+        message ??
+        'No highlights yet. Drag across a view to highlight a region, or import from the menu.'
+      }
+    />
+  )
+}
+
+function hiddenMessage(count: number) {
+  return count === 1
+    ? '1 highlight hidden because its assembly is not open in a view. Open a view on that assembly to see it.'
+    : `${count} highlights hidden because their assembly is not open in a view. Open a view on that assembly to see them.`
 }
 
 const HighlightGrid = observer(function HighlightGrid({
@@ -58,58 +72,30 @@ const HighlightGrid = observer(function HighlightGrid({
   const apiRef = useGridApiRef()
   const theme = useTheme()
   const session = getSession(model)
-  const { assemblyManager } = session
-  const [selectedIds, setSelectedIds] = useState(() => new Set<GridRowId>())
-  const { assembliesInViews } = model
-  const rows = session.views
-    .filter(
-      (v): v is IExtendedLGV =>
-        v.type === 'LinearGenomeView' &&
-        Array.isArray((v as IExtendedLGV).highlight),
-    )
-    .flatMap(view =>
-      view.highlight.map((highlight, hIdx): HighlightRow => {
-        const { assemblyName = '', refName, start, end } = highlight
-        return {
-          id: `${view.id}-${hIdx}`,
-          view,
-          highlight,
-          locString: assembleLocString({ refName, start, end }),
-          label: highlight.label ?? '',
-          assemblyName,
-          color: highlight.color,
-        }
-      }),
-    )
-    // only show highlights whose assembly is open in a view. highlights
-    // without an assemblyName (pre-init session JSON) always pass through so
-    // they're not hidden by the filter
-    .filter(
-      r =>
-        !r.assemblyName ||
-        isAssemblyInViews(assembliesInViews, r.assemblyName, assemblyManager),
-    )
+  const hiddenCount = session.highlights.length - model.rows.length
+  const rows = model.rows.map(({ key, highlight }): Row => {
+    const { assemblyName, refName, start, end, label, color } = highlight
+    return {
+      id: key,
+      highlight,
+      locString: assembleLocString({ refName, start, end }),
+      label: label ?? '',
+      assemblyName,
+      color,
+    }
+  })
+  const themeColor = theme.palette.highlight.main
 
   return (
     <DataGridFlexContainer>
       <SelectionActions
-        count={selectedIds.size}
-        color={
-          rows.find(r => selectedIds.has(r.id))?.color ??
-          theme.palette.highlight.main
-        }
+        count={model.selectedHighlights.length}
+        color={model.selectedHighlights[0]?.color ?? themeColor}
         onDelete={() => {
-          const selectedRows = rows.filter(r => selectedIds.has(r.id))
-          for (const r of selectedRows) {
-            r.view.removeHighlight(r.highlight)
-          }
-          setSelectedIds(new Set())
+          model.removeSelectedHighlights()
         }}
         onRecolor={color => {
-          const selectedRows = rows.filter(r => selectedIds.has(r.id))
-          for (const r of selectedRows) {
-            r.view.updateHighlight(r.highlight, { color })
-          }
+          model.recolorSelectedHighlights(color)
         }}
       />
       <DataGrid
@@ -121,40 +107,44 @@ const HighlightGrid = observer(function HighlightGrid({
         onCellClick={startLabelEditOnClick(apiRef)}
         hideFooterPagination={rows.length <= DEFAULT_PAGE_SIZE}
         slots={{ noRowsOverlay: NoHighlightsOverlay }}
+        slotProps={{
+          noRowsOverlay: {
+            message: hiddenCount > 0 ? hiddenMessage(hiddenCount) : undefined,
+          },
+        }}
         rows={rows}
         columns={[
           { ...GRID_CHECKBOX_SELECTION_COL_DEF, width: 50 },
-          locationColumn<HighlightRow>(classes.cell, 'Location', row => {
-            void navToBookmark(
-              row.locString,
-              row.assemblyName || row.view.assemblyNames[0]!,
-              [row.view],
-              model,
-            )
+          locationColumn<Row>(classes.cell, 'Location', row => {
+            void navToHighlight(row.highlight, model)
           }),
-          labelColumn<HighlightRow>(classes.cell),
-          ...assemblyColumn<HighlightRow>(rows.map(r => r.assemblyName)),
-          colorColumn<HighlightRow>(
+          labelColumn<Row>(classes.cell),
+          ...assemblyColumn<Row>(rows.map(r => r.assemblyName)),
+          colorColumn<Row>(
             'color',
-            row => row.color ?? theme.palette.highlight.main,
+            row => row.color ?? themeColor,
             (row, color) => {
-              row.view.updateHighlight(row.highlight, { color })
+              session.updateHighlight(row.highlight, { color })
             },
           ),
         ]}
         checkboxSelection
         onRowSelectionModelChange={selectionModel => {
-          setSelectedIds(
-            resolveSelectedIds(
-              selectionModel,
-              rows.map(r => r.id),
+          model.setSelectedKeys(
+            new Set(
+              [
+                ...resolveSelectedIds(
+                  selectionModel,
+                  rows.map(r => r.id),
+                ),
+              ].map(String),
             ),
           )
         }}
-        rowSelectionModel={{ type: 'include', ids: selectedIds }}
+        rowSelectionModel={{ type: 'include', ids: model.selectedKeys }}
         processRowUpdate={row => {
-          row.view.updateHighlight(row.highlight, {
-            label: row.label,
+          session.updateHighlight(row.highlight, {
+            label: row.label || undefined,
           })
           return row
         }}

@@ -184,18 +184,20 @@ describe('the track entries discriminator', () => {
   })
 })
 
-describe('the highlight discriminator', () => {
-  const persisted = { refName: 'chr1', start: 1, end: 2, assemblyName: 'hg38' }
-
-  test('a string needs the assembly manager, so it launches', () => {
-    expect(
-      open({ type: 'LinearGenomeView', highlight: ['chr1:1-100'] }).launch,
-    ).toEqual({ highlight: ['chr1:1-100'] })
+test('a view with no highlight has no launch pending', () => {
+  const view = open({
+    type: 'LinearGenomeView',
+    displayedRegions: [
+      { refName: 'chr2', start: 0, end: 100, assemblyName: 'hg38' },
+    ],
   })
+  expect(view.pendingLaunch).toBeUndefined()
+})
 
-  test('an object is the persisted shape and stays on the property', () => {
-    const view = open({ type: 'LinearGenomeView', highlight: [persisted] })
-    expect(view.launch).toBeUndefined()
-    expect(view.highlight).toHaveLength(1)
-  })
+test('every highlight entry launches, since the session holds the list', () => {
+  const object = { refName: 'chr1', start: 1, end: 2, assemblyName: 'hg38' }
+  expect(
+    open({ type: 'LinearGenomeView', highlight: ['chr1:1-100', object] })
+      .launch,
+  ).toEqual({ highlight: ['chr1:1-100', object] })
 })

@@ -143,8 +143,8 @@ test('an alias of the axis assembly still bands that axis', async () => {
   expect(model.getVHighlightCoords(span)).toBeUndefined()
 })
 
-// hand-authored session JSON and grid bookmarks may omit it (an init.highlight
-// entry never does — coerceHighlight stamps the axis it named, else the h axis)
+// a region handed to the coords methods may omit it (a session highlight
+// never does — coerceHighlight stamps the axis it named, else the h axis)
 test('a highlight with no assemblyName bands both axes', async () => {
   const model = await setupTwoAssemblies()
   const span = { refName: 'chr1', start: 100, end: 200 }
@@ -161,7 +161,7 @@ test('addHighlightFromMouseCoords bands the drag rect on both axes', async () =>
     [100, viewHeight - 200],
     [300, viewHeight - 400],
   )
-  expect(model.highlight).toEqual([
+  expect(model.highlights).toEqual([
     { assemblyName: 'volvox', refName: 'ctgA', start: 100, end: 300 },
     { assemblyName: 'volvox', refName: 'ctgA', start: 200, end: 400 },
   ])
@@ -170,13 +170,14 @@ test('addHighlightFromMouseCoords bands the drag rect on both axes', async () =>
 test('addHighlightFromMouseCoords clamps a drag past the region edges', async () => {
   const model = await setup()
   const { viewHeight } = model
-  // ctgA is 0-1000 at bpPerPx=1, so both ends of this drag run off the region
+  // ctgA is 0-1000 at bpPerPx=1, so both ends of this drag run off the region.
+  // Both axes are volvox, so the two spans are one region, and the one entry
+  // bands both axes
   model.addHighlightFromMouseCoords(
     [-50, viewHeight + 50],
     [1200, viewHeight - 1200],
   )
-  expect(model.highlight).toEqual([
-    { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+  expect(model.highlights).toEqual([
     { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
   ])
 })
@@ -191,11 +192,11 @@ test('addHighlightFromMouseCoords orders the band on a reversed region', async (
     [100, viewHeight - 200],
     [300, viewHeight - 400],
   )
-  for (const h of model.highlight) {
+  for (const h of model.highlights) {
     expect(h.start).toBeLessThan(h.end)
   }
   // the reversed axis maps px 200..400 to bp 600..800 (1000 - px)
-  expect(model.highlight[1]).toEqual({
+  expect(model.highlights[1]).toEqual({
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 600,
@@ -249,7 +250,7 @@ test('a drag off a reversed region clamps to the edge it was heading for', async
   const { viewHeight } = model
   // px 800 is bp 200 of the reversed ctgA; px 1500 is inside ctgB
   model.addHighlightFromMouseCoords([800, viewHeight - 100], [1500, 0])
-  expect(model.highlight[0]).toEqual({
+  expect(model.highlights[0]).toEqual({
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
@@ -393,7 +394,7 @@ test('an unlocked plot still stops each axis at its own fit', async () => {
 test('a drag under the 3px threshold adds no highlight', async () => {
   const model = await setup()
   model.addHighlightFromMouseCoords([100, 100], [102, 102])
-  expect(model.highlight).toHaveLength(0)
+  expect(model.highlights).toHaveLength(0)
 })
 
 test('settled gates on autoDiagonalize completion when requested', async () => {
@@ -488,15 +489,15 @@ test('returning to the import form drops the banner with the view', async () => 
   expect(model.assemblyNames).toHaveLength(0)
 })
 
-test('highlight actions add/remove and toggle visibility', async () => {
+test('the plot draws the session highlights on its axes, and keeps them past a return to the import form', async () => {
   const model = await setup()
-  const h = { refName: 'ctgA', start: 0, end: 10, assemblyName: 'volvox' }
-  model.addToHighlights(h)
-  expect(model.highlight.length).toBe(1)
   const session = getSession(model)
-  expect(session.highlightsVisible).toBe(true)
-  session.setHighlightsVisible(false)
-  expect(session.highlightsVisible).toBe(false)
-  model.removeHighlight(model.highlight[0])
-  expect(model.highlight.length).toBe(0)
+  const h = { refName: 'ctgA', start: 0, end: 10, assemblyName: 'volvox' }
+  session.addHighlight(h)
+  session.addHighlight({ ...h, assemblyName: 'otherAssembly' })
+  expect(model.highlights).toEqual([h])
+
+  model.clearView()
+  expect(model.highlights).toEqual([])
+  expect(session.highlights).toHaveLength(2)
 })

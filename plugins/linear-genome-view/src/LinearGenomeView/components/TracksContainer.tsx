@@ -119,9 +119,9 @@ const HighlightGroup = observer(function HighlightGroup({
 }: {
   model: LGV
 }) {
-  return getSession(model).highlightsVisible && model.highlight.length ? (
+  return getSession(model).highlightsVisible && model.highlights.length ? (
     <Suspense fallback={null}>
-      {model.highlight.map((highlight, idx) => (
+      {model.highlights.map((highlight, idx) => (
         <Highlight
           key={highlightKey(highlight, idx)}
           model={model}
@@ -141,7 +141,7 @@ const ScalebarHighlightGroup = observer(function ScalebarHighlightGroup({
   const { pluginManager } = getEnv(model)
   const { classes } = useStyles()
   const viewBands = getSession(model).highlightsVisible
-    ? model.highlight.map((h, idx) => {
+    ? model.highlights.map((h, idx) => {
         const coords = model.getHighlightCoords(h)
         return coords ? (
           <OverviewHighlightBand

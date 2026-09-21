@@ -23,7 +23,6 @@ export {
   BaseViewModel,
   type DisplayModel,
   type FileTypeExporter,
-  HighlightsMixin,
   type IBaseViewModel,
   InternetAccount,
   addDisplayConfigMigration,

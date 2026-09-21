@@ -7,6 +7,7 @@ import {
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const calls = [
@@ -43,10 +44,12 @@ const cell: React.CSSProperties = { padding: '2px 10px', textAlign: 'left' }
 
 const Calls = observer(function Calls({
   view,
+  session,
 }: {
   view: LinearGenomeViewModel
+  session: Pick<AbstractSessionModel, 'highlights' | 'setHighlights'>
 }) {
-  const shown = view.highlight[0]?.label
+  const shown = session.highlights[0]?.label
   return (
     <table
       style={{
@@ -80,7 +83,7 @@ const Calls = observer(function Calls({
                       : undefined,
                 }}
                 onClick={() => {
-                  view.setHighlight([
+                  session.setHighlights([
                     { assemblyName: 'hg38', refName, start, end, label: id },
                   ])
                   view
@@ -150,7 +153,7 @@ const ATableOfCalls = observer(function ATableOfCalls() {
   const { view } = state.session
   return (
     <EmbedProvider session={state.session}>
-      <Calls view={view} />
+      <Calls view={view} session={state.session} />
       <TrackStack view={view}>
         <Scalebar view={view} />
         <Highlights view={view} />

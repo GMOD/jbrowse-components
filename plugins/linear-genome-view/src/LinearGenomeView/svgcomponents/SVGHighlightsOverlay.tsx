@@ -7,9 +7,9 @@ import SVGHighlights from './SVGHighlights.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
-// The highlight layer over one view's tracks area: native LGV highlights plus
-// whatever plugins contribute (bookmarks), clipped to the view width. Callers
-// translate this to the top-left of the tracks area.
+// The highlight layer over one view's tracks area: the view's highlights plus
+// whatever plugins contribute, clipped to the view width. Callers translate
+// this to the top-left of the tracks area.
 export default function SVGHighlightsOverlay({
   model,
   tracksHeight,

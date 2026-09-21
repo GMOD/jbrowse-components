@@ -6,32 +6,14 @@ import {
 } from '@jbrowse/core/util'
 import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 
-import type { GridBookmarkModel } from './model.ts'
-import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
+import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { AbstractViewModel } from '@jbrowse/core/util/types'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-type LGV = LinearGenomeViewModel
-
-type MaybeLGV = LGV | undefined
-
-// stable identity for a bookmark region, used to dedupe shared vs local
-// bookmarks on load. JSON-encoding the fields (rather than joining on a
-// delimiter) avoids collisions when a refName contains the delimiter. Overlay
-// components key off the shared highlightKey instead (it also breaks index ties)
-export function bookmarkKey(r: {
-  assemblyName?: string
-  refName: string
-  start: number
-  end: number
-}) {
-  return JSON.stringify([r.assemblyName, r.refName, r.start, r.end])
-}
-
 // DataGrid column width fitting the wider of the header text and the cell
-// values, shared by the bookmark and highlight grids. Capped at maxWidth so
-// long values ellipsize (via the .cell style) instead of overflowing the
-// narrow sidebar widget
+// values. Capped at maxWidth so long values ellipsize (via the .cell style)
+// instead of overflowing the narrow sidebar widget
 export function colWidth(header: string, values: string[], maxWidth = 200) {
   return Math.min(
     Math.max(measureText(header, 12) + 30, measureGridWidth(values)),
@@ -39,51 +21,43 @@ export function colWidth(header: string, values: string[], maxWidth = 200) {
   )
 }
 
-// the grids list only what a view currently shows, and a view holds whatever
-// name the session opened it on -- an alias of the name a bookmark stored
-export function isAssemblyInViews(
-  assembliesInViews: Set<string>,
-  assemblyName: string,
-  assemblyManager: AssemblyNameResolver,
-) {
-  return [...assembliesInViews].some(n =>
-    isSameAssemblyName(n, assemblyName, assemblyManager),
-  )
+function isLinearGenomeView(
+  v: AbstractViewModel,
+): v is AbstractViewModel & LinearGenomeViewModel {
+  return v.type === 'LinearGenomeView'
 }
 
-export async function navToBookmark(
-  locString: string,
-  assembly: string,
-  views: AbstractViewModel[],
-  model: GridBookmarkModel,
+export async function navToHighlight(
+  highlight: HighlightType,
+  node: IStateTreeNode,
 ) {
-  const session = getSession(model)
+  const session = getSession(node)
+  const { assemblyName, ...region } = highlight
+  const locString = assembleLocString(region)
   try {
     // prefer the focused view when it's an LGV on the right assembly, else the
-    // first such LGV. the type guard matters: a non-LGV (dotplot, circular) on
-    // this assembly has no navToLocString, so navigating to it would throw
+    // first such LGV. a non-LGV (dotplot, circular) on this assembly has no
+    // navToLocString
     const isTarget = (v: AbstractViewModel) =>
-      v.type === 'LinearGenomeView' &&
+      isLinearGenomeView(v) &&
       isSameAssemblyName(
-        v.assemblyNames?.[0],
-        assembly,
+        v.assemblyNames[0],
+        assemblyName,
         session.assemblyManager,
       )
-    const view = (views.find(
-      v => v.id === session.focusedViewId && isTarget(v),
-    ) ?? views.find(isTarget)) as MaybeLGV
+    const view =
+      session.views.find(v => v.id === session.focusedViewId && isTarget(v)) ??
+      session.views.find(isTarget)
 
-    // slightly zoom out (grow 0.2) so the bookmarked region has context on
-    // either side
-    if (view) {
-      await view.navToLocString(locString, assembly, 0.2)
+    // slightly zoom out (grow 0.2) so the region has context on either side
+    if (view && isLinearGenomeView(view)) {
+      await view.navToLocString(locString, assemblyName, 0.2)
     } else {
       // no view open for this assembly: launch a new one declaratively so it
       // shows a loading spinner (not a flash of the import form) while the
       // assembly loads, then self-navigates with the same grow
       session.addView('LinearGenomeView', {
-        id: `${model.id}_${assembly}`,
-        assembly,
+        assembly: assemblyName,
         loc: locString,
         grow: 0.2,
       })
@@ -112,11 +86,15 @@ function parseCoord(value: string | undefined, field: string, line: string) {
   return n
 }
 
-// Parse imported bookmark file contents. TSV files carry their own assembly
-// column and 1-based starts (matching downloadBookmarkFile's export); BED files
-// are 0-based and adopt the assembly chosen in the dialog. Throws on malformed
-// coordinates so the dialog surfaces the error instead of importing NaN regions.
-export function parseBookmarks(data: string, bedAssembly: string) {
+// Parse imported highlight file contents. TSV files carry their own assembly
+// column and 1-based starts (matching downloadHighlightFile's export); BED
+// files are 0-based and adopt the assembly chosen in the dialog. Throws on
+// malformed coordinates so the dialog surfaces the error instead of importing
+// NaN regions.
+export function parseHighlights(
+  data: string,
+  bedAssembly: string,
+): HighlightType[] {
   const lines = data.split(/\n|\r\n|\r/).filter(f => !!f.trim())
   const tsv = lines.length > 0 && isTSVHeader(lines[0]!)
   const dataLines = (tsv ? lines.slice(1) : lines).filter(
@@ -134,27 +112,23 @@ export function parseBookmarks(data: string, bedAssembly: string) {
       // internal coordinate; BED starts are already 0-based
       start: parseCoord(start, 'start', line) - (tsv ? 1 : 0),
       end: parseCoord(end, 'end', line),
-      label: label === '.' ? undefined : label,
+      label: !label || label === '.' ? undefined : label,
     }
   })
 }
 
-export async function downloadBookmarkFile(
+export async function downloadHighlightFile(
   fileFormat: string,
-  model: GridBookmarkModel,
+  highlights: readonly HighlightType[],
 ) {
-  const { selectedBookmarks, visibleBookmarks } = model
-  const bookmarksToDownload =
-    selectedBookmarks.length === 0 ? visibleBookmarks : selectedBookmarks
-
   const { saveAs } = await import('@jbrowse/core/util/FileSaver')
+  const labelOf = (h: HighlightType) => h.label || '.'
 
   if (fileFormat === 'BED') {
     const fileContents: Record<string, string[]> = {}
-    for (const bookmark of bookmarksToDownload) {
-      const labelVal = bookmark.label === '' ? '.' : bookmark.label
-      const line = `${bookmark.refName}\t${bookmark.start}\t${bookmark.end}\t${labelVal}\n`
-      ;(fileContents[bookmark.assemblyName] ??= []).push(line)
+    for (const h of highlights) {
+      const line = `${h.refName}\t${h.start}\t${h.end}\t${labelOf(h)}\n`
+      ;(fileContents[h.assemblyName] ??= []).push(line)
     }
 
     for (const assembly in fileContents) {
@@ -162,19 +136,17 @@ export async function downloadBookmarkFile(
         new Blob([fileContents[assembly]!.join('')], {
           type: 'text/x-bed;charset=utf-8',
         }),
-        `jbrowse_bookmarks_${assembly}.bed`,
+        `jbrowse_highlights_${assembly}.bed`,
       )
     }
   } else {
-    // TSV
     const fileHeader = 'chrom\tstart\tend\tlabel\tassembly_name\tcoord_range\n'
     const fileContents =
       fileHeader +
-      bookmarksToDownload
-        .map(bookmark => {
-          const labelVal = bookmark.label === '' ? '.' : bookmark.label
-          const locString = assembleLocString(bookmark)
-          return `${bookmark.refName}\t${bookmark.start + 1}\t${bookmark.end}\t${labelVal}\t${bookmark.assemblyName}\t${locString}\n`
+      highlights
+        .map(h => {
+          const locString = assembleLocString(h)
+          return `${h.refName}\t${h.start + 1}\t${h.end}\t${labelOf(h)}\t${h.assemblyName}\t${locString}\n`
         })
         .join('')
 
@@ -182,7 +154,7 @@ export async function downloadBookmarkFile(
       new Blob([fileContents], {
         type: 'text/tab-separated-values;charset=utf-8',
       }),
-      'jbrowse_bookmarks.tsv',
+      'jbrowse_highlights.tsv',
     )
   }
 }

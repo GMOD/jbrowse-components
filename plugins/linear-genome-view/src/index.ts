@@ -120,6 +120,7 @@ export type { LaunchLinearGenomeViewArgs } from './LaunchLinearGenomeView/index.
 export type {
   BpOffset,
   ExportSvgOptions,
+  HighlightInput,
   HighlightType,
   InitState,
   LinearGenomeViewLaunchProps,

@@ -1,6 +1,4 @@
-import { downloadBookmarkFile, parseBookmarks } from './utils.ts'
-
-import type { GridBookmarkModel } from './model.ts'
+import { downloadHighlightFile, parseHighlights } from './utils.ts'
 
 // jsdom's Blob implements only slice/size/type (jsdom/jsdom#2555);
 // `config/jest/blob.js` fills `text()` off its FileReader.
@@ -17,7 +15,7 @@ jest.mock('@jbrowse/core/util/FileSaver', () => ({
   },
 }))
 
-const sampleBookmarks = [
+const sampleHighlights = [
   {
     refName: 'ctgA',
     start: 100,
@@ -29,7 +27,7 @@ const sampleBookmarks = [
     refName: 'ctgA',
     start: 300,
     end: 400,
-    label: '',
+    label: undefined,
     assemblyName: 'volvox',
   },
   {
@@ -41,37 +39,30 @@ const sampleBookmarks = [
   },
 ]
 
-function makeModel(selected: typeof sampleBookmarks = []) {
-  return {
-    selectedBookmarks: selected,
-    visibleBookmarks: sampleBookmarks,
-  } as unknown as GridBookmarkModel
-}
-
 beforeEach(() => {
   mockSaveAs.mockClear()
 })
 
 test('BED export writes one file per assembly, omits header, uses . for empty labels', async () => {
-  await downloadBookmarkFile('BED', makeModel())
+  await downloadHighlightFile('BED', sampleHighlights)
   expect(mockSaveAs).toHaveBeenCalledTimes(2)
   const byName = Object.fromEntries(
     mockSaveAs.mock.calls.map(([blob, name]) => [name, blob]),
   )
 
-  expect(await readBlobText(byName['jbrowse_bookmarks_volvox.bed']!)).toBe(
+  expect(await readBlobText(byName['jbrowse_highlights_volvox.bed']!)).toBe(
     'ctgA\t100\t200\tfirst\nctgA\t300\t400\t.\n',
   )
-  expect(await readBlobText(byName['jbrowse_bookmarks_hg38.bed']!)).toBe(
+  expect(await readBlobText(byName['jbrowse_highlights_hg38.bed']!)).toBe(
     'ctgB\t50\t60\tother-asm\n',
   )
 })
 
 test('TSV export concatenates all assemblies into one file with header and 1-based starts', async () => {
-  await downloadBookmarkFile('TSV', makeModel())
+  await downloadHighlightFile('TSV', sampleHighlights)
   expect(mockSaveAs).toHaveBeenCalledTimes(1)
   const [blob, name] = mockSaveAs.mock.calls[0]!
-  expect(name).toBe('jbrowse_bookmarks.tsv')
+  expect(name).toBe('jbrowse_highlights.tsv')
   expect(await readBlobText(blob)).toBe(
     'chrom\tstart\tend\tlabel\tassembly_name\tcoord_range\n' +
       'ctgA\t101\t200\tfirst\tvolvox\t{volvox}ctgA:101..200\n' +
@@ -80,20 +71,9 @@ test('TSV export concatenates all assemblies into one file with header and 1-bas
   )
 })
 
-test('only selected bookmarks are exported when selection is non-empty', async () => {
-  await downloadBookmarkFile(
-    'TSV',
-    makeModel([sampleBookmarks[0]!, sampleBookmarks[2]!]),
-  )
-  const text = await readBlobText(mockSaveAs.mock.calls[0]![0])
-  expect(text).toContain('ctgA\t101\t200\tfirst')
-  expect(text).toContain('ctgB\t51\t60\tother-asm')
-  expect(text).not.toContain('300\t400')
-})
-
 test('BED import is 0-based and adopts the chosen assembly, . means no label', () => {
   expect(
-    parseBookmarks('ctgA\t100\t200\tfirst\nctgA\t300\t400\t.\n', 'volvox'),
+    parseHighlights('ctgA\t100\t200\tfirst\nctgA\t300\t400\t.\n', 'volvox'),
   ).toEqual([
     {
       assemblyName: 'volvox',
@@ -117,7 +97,7 @@ test('TSV import converts 1-based starts back to 0-based and uses its own assemb
     'chrom\tstart\tend\tlabel\tassembly_name\tcoord_range\n' +
     'ctgA\t101\t200\tfirst\tvolvox\t{volvox}ctgA:101..200\n' +
     'ctgB\t51\t60\tother-asm\thg38\t{hg38}ctgB:51..60\n'
-  expect(parseBookmarks(tsv, 'ignored')).toEqual([
+  expect(parseHighlights(tsv, 'ignored')).toEqual([
     {
       assemblyName: 'volvox',
       refName: 'ctgA',
@@ -136,16 +116,16 @@ test('TSV import converts 1-based starts back to 0-based and uses its own assemb
 })
 
 test('TSV export then import round-trips coordinates', async () => {
-  await downloadBookmarkFile('TSV', makeModel())
+  await downloadHighlightFile('TSV', sampleHighlights)
   const exported = await readBlobText(mockSaveAs.mock.calls[0]![0])
-  const parsed = parseBookmarks(exported, 'ignored')
+  const parsed = parseHighlights(exported, 'ignored')
   expect(parsed.map(b => ({ start: b.start, end: b.end }))).toEqual(
-    sampleBookmarks.map(b => ({ start: b.start, end: b.end })),
+    sampleHighlights.map(b => ({ start: b.start, end: b.end })),
   )
 })
 
 test('import skips comment lines and throws on malformed coordinates', () => {
-  expect(parseBookmarks('# a comment\nctgA\t10\t20\tok\n', 'volvox')).toEqual([
+  expect(parseHighlights('# a comment\nctgA\t10\t20\tok\n', 'volvox')).toEqual([
     {
       assemblyName: 'volvox',
       refName: 'ctgA',
@@ -154,10 +134,10 @@ test('import skips comment lines and throws on malformed coordinates', () => {
       label: 'ok',
     },
   ])
-  expect(() => parseBookmarks('ctgA\tnotanumber\t20\n', 'volvox')).toThrow(
+  expect(() => parseHighlights('ctgA\tnotanumber\t20\n', 'volvox')).toThrow(
     /Invalid start/,
   )
-  expect(() => parseBookmarks('ctgA\t\t20\n', 'volvox')).toThrow(
+  expect(() => parseHighlights('ctgA\t\t20\n', 'volvox')).toThrow(
     /Invalid start/,
   )
 })

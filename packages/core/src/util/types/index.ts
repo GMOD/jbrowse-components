@@ -12,6 +12,7 @@ import type {
 import type { PluginDefinition } from '../../pluginDefinitions.ts'
 import type RpcManager from '../../rpc/RpcManager.ts'
 import type { MenuItem } from '../../ui/index.ts'
+import type { HighlightType } from '../highlights.ts'
 import type { Feature } from '../simpleFeature.ts'
 import type { TrackConfigChange } from '../trackConfigDelta.ts'
 import type { UriLocation } from './data.ts'
@@ -171,11 +172,13 @@ export interface AbstractSessionModel
   theme: Theme
   animationMode: AnimationMode
   scrollZoom: boolean
-  // whether region highlight bands (URL/view highlights and bookmark overlays)
-  // are drawn; one session-wide toggle shared by all views
+  highlights: readonly HighlightType[]
+  addHighlight: (highlight: HighlightType) => void
+  removeHighlight: (highlight: HighlightType) => void
+  updateHighlight: (old: HighlightType, updates: Partial<HighlightType>) => void
+  setHighlights: (highlights: HighlightType[]) => void
   highlightsVisible: boolean
   setHighlightsVisible: (arg: boolean) => void
-  revealHighlights: () => void
   // The runtime user-preference store, all of it declared by `BaseSessionModel`
   // and therefore present on every session in every product — required, not
   // optional, so its readers (the scroll-zoom toggles, the preferences dialog)

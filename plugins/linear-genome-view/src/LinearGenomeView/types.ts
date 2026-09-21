@@ -1,5 +1,8 @@
 import type { LinearGenomeViewStateModel } from './model.ts'
-import type { HighlightType } from '@jbrowse/core/util/highlights'
+import type {
+  HighlightInput,
+  HighlightType,
+} from '@jbrowse/core/util/highlights'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
@@ -20,9 +23,7 @@ export type {
   ViewTrackLabelMode,
 } from '@jbrowse/display-kit/types'
 
-// canonical definition lives in core so the shared HighlightsMixin and dotplot
-// can reference it without depending on this plugin
-export type { HighlightType }
+export type { HighlightInput, HighlightType }
 
 export interface NavLocation {
   refName: string
@@ -73,8 +74,8 @@ export interface InitState {
   nav?: boolean
   // a string entry is a locstring or a JSON-encoded HighlightType (the URL
   // wire-format); programmatic callers (createViewState/session JSON) can pass
-  // a HighlightType object directly
-  highlight?: (string | HighlightType)[]
+  // an object directly. Each entry lands on the session's highlight list
+  highlight?: (string | HighlightInput)[]
 }
 
 // Plain persisted view props a launch spec may set beside the launch keys.

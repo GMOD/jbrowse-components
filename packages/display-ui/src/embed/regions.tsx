@@ -31,7 +31,7 @@ export interface ScalebarView {
 }
 
 export interface HighlightsView {
-  highlight: readonly {
+  highlights: readonly {
     assemblyName?: string
     refName: string
     start: number
@@ -40,7 +40,7 @@ export interface HighlightsView {
     label?: string
   }[]
   getHighlightCoords: (
-    highlight: HighlightsView['highlight'][number],
+    highlight: HighlightsView['highlights'][number],
   ) => { left: number; width: number } | undefined
 }
 
@@ -93,7 +93,7 @@ export const Highlights = observer(function Highlights({
   view: HighlightsView
 }) {
   const palette = usePalette()
-  return view.highlight.map((highlight, i) => {
+  return view.highlights.map((highlight, i) => {
     const coords = view.getHighlightCoords(highlight)
     return coords ? (
       <div

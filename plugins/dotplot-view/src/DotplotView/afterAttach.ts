@@ -21,7 +21,10 @@ import { LS_CURSOR_MODE } from './types.ts'
 import type { DotplotViewModel } from './model.ts'
 import type { DotplotViewCommands } from './types.ts'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
-import type { HighlightType } from '@jbrowse/core/util/highlights'
+import type {
+  HighlightInput,
+  HighlightType,
+} from '@jbrowse/core/util/highlights'
 import type { InitApplyContext } from '@jbrowse/core/util/installInitAutorun'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 
@@ -52,15 +55,15 @@ type DotplotLaunch = LaunchInput<DotplotViewCommands> & {
 // against the h axis rejected any refName unique to the v axis outright, and
 // accepted a shared name like `chr1` only to band the wrong axis with it.
 export function parseInitHighlights(
-  entries: string[],
+  entries: (string | HighlightInput)[],
   assemblyManager: AssemblyManager,
   defaultAssembly: string,
 ): {
   highlights: HighlightType[]
-  errors: { entry: string; error: unknown }[]
+  errors: { entry: string | HighlightInput; error: unknown }[]
 } {
   const highlights: HighlightType[] = []
-  const errors: { entry: string; error: unknown }[] = []
+  const errors: { entry: string | HighlightInput; error: unknown }[] = []
   for (const entry of entries) {
     try {
       const highlight = coerceHighlight(
@@ -163,12 +166,12 @@ function applyInitHighlights(self: DotplotViewModel, init: DotplotLaunch) {
   if (init.highlight) {
     const session = getSession(self)
     const { highlights, errors } = parseInitHighlights(
-      init.highlight,
+      [init.highlight].flat(),
       session.assemblyManager,
       self.assemblyNames[0]!,
     )
     for (const h of highlights) {
-      self.addToHighlights(h)
+      session.addHighlight(h)
     }
     for (const { entry, error } of errors) {
       console.error(error)

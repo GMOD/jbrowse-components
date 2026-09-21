@@ -2,7 +2,6 @@ import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import HighlightsMixin from '@jbrowse/core/pluggableElementTypes/models/HighlightsMixin'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
@@ -22,6 +21,7 @@ import {
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import { highlightsOnAssemblies } from '@jbrowse/core/util/viewHighlights'
 import {
   assemblyErrorMessage,
   computeViewStatus,
@@ -116,24 +116,23 @@ function axisTicks(view: Dotplot1DViewModel) {
   return makeTicks(staticBlocks.contentBlocks, bpPerPx)
 }
 
-// Resolve a highlight/bookmark region against ONE axis of the plot, or reject
+// Resolve a highlight region against ONE axis of the plot, or reject
 // it as belonging to the other one. Two things happen here that the pixel
 // lookup below doesn't do on its own:
 //
 // - The assembly check. `bpToPx` compares refNames and nothing else, and a
 //   dotplot is the one view whose two layouts are two different assemblies —
-//   so on an hg38-vs-mm10 plot a bookmark on mm10 `chr1` also banded hg38's
+//   so on an hg38-vs-mm10 plot a highlight on mm10 `chr1` also banded hg38's
 //   `chr1` on the horizontal axis. Aliases go through the axis assembly's
 //   `hasName`, so a highlight naming `GRCh38` still lands on an `hg38` axis.
-//   A region with no assemblyName is drawn on both axes: hand-authored session
-//   JSON and grid bookmarks may omit it, and on a self-vs-self plot both bands
-//   are wanted regardless. (An `init.highlight` entry always carries one —
-//   whichever assembly its `{...}` prefix named, else the horizontal axis'.)
+//   A region with no assemblyName is drawn on both axes. (A session highlight
+//   always carries one — a launch entry's is whichever assembly its `{...}`
+//   prefix named, else the horizontal axis'.)
 // - The refName alias, resolved against the AXIS assembly rather than the
 //   region's own. Having passed the check above they name the same assembly,
 //   and the axis's is the one the view has already waited on, so it is the one
 //   that can actually answer. An assembly whose aliases have not loaded — which
-//   a bookmark on some unrelated one can name — answers with the input rather
+//   a highlight on some unrelated one can name — answers with the input rather
 //   than the alias, so asking the axis is the difference between resolving and
 //   not.
 //
@@ -252,7 +251,6 @@ export default function stateModelFactory(pm: PluginManager) {
         'DotplotView',
         BaseViewModel,
         RenderLifecycleMixin(),
-        HighlightsMixin(),
         DiagonalizeProgressMixin(),
         ImportFormSyntenyMixin(),
         TrackColorsMixin(),
@@ -477,6 +475,18 @@ export default function stateModelFactory(pm: PluginManager) {
         get assemblyErrors() {
           const { assemblyManager } = getSession(self)
           return assemblyErrorMessage(assemblyManager, self.assemblyNames)
+        },
+        /**
+         * #getter
+         * the session's highlights on either axis' assembly
+         */
+        get highlights() {
+          const { highlights, assemblyManager } = getSession(self)
+          return highlightsOnAssemblies(
+            highlights,
+            self.assemblyNames,
+            assemblyManager,
+          )
         },
         /**
          * #getter
@@ -1280,11 +1290,6 @@ export default function stateModelFactory(pm: PluginManager) {
           // hasSomethingToShow, so leaving it here means "return to import form"
           // doesn't. Dropping the request is what returning to the form means.
           self.launch = undefined
-          // Highlights are (assemblyName, refName, start, end) against the pair
-          // being cleared. Kept, they reappear over whatever pair is picked
-          // next whenever it reuses one of these assemblies — and the chips
-          // offer to dismiss a region the plot no longer shows.
-          self.setHighlight([])
           // The banner over the form describes the submit that failed, and this
           // is the one route to the form that isn't a submit — so it was the one
           // that left an error standing over a form with nothing wrong with it,
@@ -1457,8 +1462,9 @@ export default function stateModelFactory(pm: PluginManager) {
         addHighlightFromMouseCoords(mousedown: Coord, mouseup: Coord) {
           const result = self.getCoords(mousedown, mouseup)
           if (result) {
-            self.addToHighlights(dragToHighlight(result.x1, result.x2))
-            self.addToHighlights(dragToHighlight(result.y2, result.y1))
+            const session = getSession(self)
+            session.addHighlight(dragToHighlight(result.x1, result.x2))
+            session.addHighlight(dragToHighlight(result.y2, result.y1))
           }
         },
         /**
@@ -1679,7 +1685,7 @@ export default function stateModelFactory(pm: PluginManager) {
       .views(self => ({
         /**
          * #method
-         * Map a highlight/bookmark region to {left, width} px on the
+         * Map a highlight region to {left, width} px on the
          * horizontal axis. left is already screen-offset. Returns undefined
          * when the region isn't on hview's assembly/displayed regions.
          */
@@ -1694,7 +1700,7 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #method
-         * Map a highlight/bookmark region to {top, height} px on the vertical
+         * Map a highlight region to {top, height} px on the vertical
          * axis. The vview lays out bottom-to-top, so the band is y-flipped into
          * screen space. Returns undefined when the region isn't on vview's
          * assembly/displayed regions.

@@ -973,7 +973,6 @@
         "BaseViewModel",
         "ConnectionType",
         "DisplayType",
-        "HighlightsMixin",
         "InternetAccount",
         "InternetAccountType",
         "RpcMethodType",
@@ -1030,7 +1029,6 @@
         "BaseDisplay",
         "BaseInternetAccountConfig",
         "BaseViewModel",
-        "HighlightsMixin",
         "InternetAccount",
         "addDisplayConfigMigration",
         "baseConnectionConfig",
@@ -1061,13 +1059,6 @@
       "package": "@jbrowse/core",
       "names": [
         "BaseViewModelWithDisplayedRegions",
-        "default"
-      ],
-      "worker": "real"
-    },
-    "@jbrowse/core/pluggableElementTypes/models/HighlightsMixin": {
-      "package": "@jbrowse/core",
-      "names": [
         "default"
       ],
       "worker": "real"
@@ -2883,7 +2874,7 @@
         "coerceHighlight",
         "getHighlightColor",
         "highlightKey",
-        "revealHighlightsOnGrowth"
+        "isSameHighlight"
       ],
       "worker": "real"
     },
@@ -3603,6 +3594,13 @@
       "package": "@jbrowse/core",
       "names": [
         "useRowVirtualScroll"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/viewHighlights": {
+      "package": "@jbrowse/core",
+      "names": [
+        "highlightsOnAssemblies"
       ],
       "worker": "real"
     },

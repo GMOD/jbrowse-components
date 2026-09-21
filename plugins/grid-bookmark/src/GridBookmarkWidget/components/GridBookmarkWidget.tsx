@@ -1,28 +1,23 @@
 import { lazy } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { getDialogHost } from '@jbrowse/core/util'
+import { getDialogHost, getSession } from '@jbrowse/core/util'
 import GetApp from '@mui/icons-material/GetApp'
 import Menu from '@mui/icons-material/Menu'
 import Publish from '@mui/icons-material/Publish'
-import Settings from '@mui/icons-material/Settings'
-import { Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Stack } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import BookmarkGrid from './BookmarkGrid.tsx'
 import HighlightGrid from './HighlightGrid.tsx'
 
 import type { GridBookmarkModel } from '../model.ts'
 
 // lazies
-const ExportBookmarksDialog = lazy(
-  () => import('./dialogs/ExportBookmarksDialog.tsx'),
+const ExportHighlightsDialog = lazy(
+  () => import('./dialogs/ExportHighlightsDialog.tsx'),
 )
-const ImportBookmarksDialog = lazy(
-  () => import('./dialogs/ImportBookmarksDialog.tsx'),
-)
-const HighlightSettingsDialog = lazy(
-  () => import('./dialogs/HighlightSettingsDialog.tsx'),
+const ImportHighlightsDialog = lazy(
+  () => import('./dialogs/ImportHighlightsDialog.tsx'),
 )
 
 const GridBookmarkWidget = observer(function GridBookmarkWidget({
@@ -30,6 +25,7 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
 }: {
   model: GridBookmarkModel
 }) {
+  const session = getSession(model)
   return (
     <div>
       <Stack direction="row" spacing={1} sx={{ alignItems: 'center', pt: 4 }}>
@@ -41,7 +37,7 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
               icon: GetApp,
               onClick: () => {
                 getDialogHost(model).queueDialog(onClose => [
-                  ExportBookmarksDialog,
+                  ExportHighlightsDialog,
                   { onClose, model },
                 ])
               },
@@ -51,43 +47,25 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
               icon: Publish,
               onClick: () => {
                 getDialogHost(model).queueDialog(onClose => [
-                  ImportBookmarksDialog,
+                  ImportHighlightsDialog,
                   { model, onClose },
                 ])
               },
             },
             {
-              label: 'Settings',
-              icon: Settings,
+              label: 'Show highlights on views',
+              type: 'checkbox',
+              checked: session.highlightsVisible,
               onClick: () => {
-                getDialogHost(model).queueDialog(onClose => [
-                  HighlightSettingsDialog,
-                  { model, onClose },
-                ])
+                session.setHighlightsVisible(!session.highlightsVisible)
               },
             },
           ]}
         >
           <Menu />
         </CascadingMenuButton>
-
-        <ToggleButtonGroup
-          size="small"
-          exclusive
-          value={model.gridView}
-          onChange={(_event, value) => {
-            if (value) {
-              model.setGridView(value)
-            }
-          }}
-        >
-          <ToggleButton value="bookmarks">Bookmarks</ToggleButton>
-          <ToggleButton value="highlights">Highlights</ToggleButton>
-          <ToggleButton value="both">Both</ToggleButton>
-        </ToggleButtonGroup>
       </Stack>
-      {model.gridView !== 'highlights' ? <BookmarkGrid model={model} /> : null}
-      {model.gridView !== 'bookmarks' ? <HighlightGrid model={model} /> : null}
+      <HighlightGrid model={model} />
     </div>
   )
 })

@@ -6,9 +6,8 @@ import { getHighlightColor, highlightKey } from '../components/util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
-// Native LGV highlights (model.highlight) drawn as full-height bands over the
-// tracks area, with an optional label at the top. Bookmark highlights are added
-// separately via the LinearGenomeView-HighlightSVGComponent extension point.
+// The view's highlights drawn as full-height bands over the tracks area, with
+// an optional label at the top.
 //
 // Deliberately NOT an observer, and that is the whole of what keeps a live
 // figure coherent. `useViewSvgFigure` freezes a figure by memoizing it against
@@ -27,7 +26,7 @@ export default function SVGHighlights({
 }) {
   const theme = useTheme()
   return getSession(model).highlightsVisible
-    ? model.highlight.map((h, idx) => {
+    ? model.highlights.map((h, idx) => {
         const coords = model.getHighlightCoords(h)
         return coords ? (
           <SVGHighlightBand

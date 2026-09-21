@@ -45,7 +45,7 @@ const Highlight = observer(function Highlight({
               label: 'Dismiss highlight',
               icon: CloseIcon,
               onClick: () => {
-                model.removeHighlight(highlight)
+                getSession(model).removeHighlight(highlight)
               },
             },
             {

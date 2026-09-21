@@ -1,44 +1,16 @@
-import {
-  getSession,
-  localStorageGetJSON,
-  localStorageSetItem,
-  subscribeToLocalStorageKey,
-} from '@jbrowse/core/util'
-import { revealHighlightsOnGrowth } from '@jbrowse/core/util/highlights'
-import { ElementId, Region as RegionModel } from '@jbrowse/core/util/types/mst'
-import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
-
-import { bookmarkKey, isAssemblyInViews } from './utils.ts'
+import { getSession } from '@jbrowse/core/util'
+import { highlightKey } from '@jbrowse/core/util/highlights'
+import { ElementId } from '@jbrowse/core/util/types/mst'
+import { highlightsOnAssemblies } from '@jbrowse/core/util/viewHighlights'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Region } from '@jbrowse/core/util/types'
-import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
-import type { DotplotViewModel } from '@jbrowse/plugin-dotplot-view'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { HighlightType } from '@jbrowse/core/util/highlights'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // alpha applied to highlight colors so they overlay the view rather than
-// obscure it; shared by the default highlight and the color-picker presets
+// obscure it; the color picker's presets use it
 export const HIGHLIGHT_ALPHA = 0.2
-
-export const DEFAULT_HIGHLIGHT = `rgba(247, 129, 192, ${HIGHLIGHT_ALPHA})`
-
-const LabeledRegionModel = types
-  .compose(
-    RegionModel,
-    types.model('Label', {
-      label: types.optional(types.string, ''),
-      highlight: types.optional(types.string, DEFAULT_HIGHLIGHT),
-    }),
-  )
-  .actions(self => ({
-    setLabel(label: string) {
-      self.label = label
-    },
-    setHighlight(color: string) {
-      self.highlight = color
-    },
-  }))
 
 interface ViewWithAssemblies {
   assemblyNames?: string[]
@@ -59,37 +31,14 @@ function forEachView(
   }
 }
 
-export type IExtendedLGV = LinearGenomeViewModel
-
-export type IExtendedDotplotView = DotplotViewModel
-
-export interface ILabeledRegionModel extends SnapshotIn<
-  typeof LabeledRegionModel
-> {
-  refName: string
-  start: number
-  end: number
-  reversed: boolean
-  highlight: string
-  assemblyName: string
-  label: string
-  setRefName: (newRefName: string) => void
-  setLabel: (label: string) => void
-  setHighlight: (color: string) => void
+export interface HighlightRow {
+  key: string
+  highlight: HighlightType
 }
-
-export interface IExtendedLabeledRegionModel extends ILabeledRegionModel {
-  id: number
-  correspondingObj: ILabeledRegionModel
-}
-
-const localStorageKeyF = () =>
-  typeof window !== 'undefined'
-    ? `bookmarks-${window.location.host}${window.location.pathname}`
-    : 'empty'
 
 /**
  * #stateModel GridBookmarkWidgetModel
+ * the list of the session's highlights
  */
 export default function f(_pluginManager: PluginManager) {
   return types
@@ -102,31 +51,20 @@ export default function f(_pluginManager: PluginManager) {
        * #property
        */
       type: types.literal('GridBookmarkWidget'),
-      /**
-       * #property
-       * loaded from localStorage when not present in snapshot; sharedBookmarks
-       * from a shared URL are merged in via preProcessSnapshot
-       */
-      bookmarks: types.optional(types.array(LabeledRegionModel), () =>
-        localStorageGetJSON(localStorageKeyF(), []),
-      ),
     })
     .volatile(() => ({
       /**
        * #volatile
+       * a row's key holds its coordinates and its place in the session's list,
+       * so a key left stale by a removal elsewhere selects nothing rather than
+       * a neighbour
        */
-      selectedBookmarks: [] as IExtendedLabeledRegionModel[],
-      /**
-       * #volatile
-       * which grid tab is visible: bookmarks or highlights
-       */
-      gridView: 'bookmarks',
+      selectedKeys: new Set<string>(),
     }))
     .views(self => ({
       /**
        * #getter
-       * assemblies currently displayed in any open view; the grids only show
-       * bookmarks/highlights belonging to these
+       * assemblies currently displayed in any open view
        */
       get assembliesInViews() {
         const names = new Set<string>()
@@ -141,163 +79,71 @@ export default function f(_pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
-       * bookmarks belonging to an assembly currently open in a view
+       * the list shows only highlights on an assembly some view is showing
        */
-      get visibleBookmarks() {
-        const { assemblyManager } = getSession(self)
-        return self.bookmarks.filter(e =>
-          isAssemblyInViews(
+      get rows(): HighlightRow[] {
+        const { highlights, assemblyManager } = getSession(self)
+        const visible = new Set(
+          highlightsOnAssemblies(
+            highlights,
             self.assembliesInViews,
-            e.assemblyName,
             assemblyManager,
           ),
         )
+        return highlights.flatMap((highlight, i) =>
+          visible.has(highlight)
+            ? [{ key: highlightKey(highlight, i), highlight }]
+            : [],
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get selectedHighlights() {
+        return self.rows
+          .filter(r => self.selectedKeys.has(r.key))
+          .map(r => r.highlight)
       },
     }))
     .actions(self => ({
       /**
        * #action
        */
-      setGridView(arg: 'bookmarks' | 'highlights' | 'both') {
-        self.gridView = arg
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      importBookmarks(regions: Region[]) {
-        self.bookmarks = cast([...self.bookmarks, ...regions])
+      setSelectedKeys(keys: Set<string>) {
+        self.selectedKeys = keys
       },
       /**
        * #action
        */
-      addBookmark(region: Region) {
-        self.bookmarks.push(region)
-      },
-      /**
-       * #action
-       */
-      updateBookmarkLabel(
-        bookmark: IExtendedLabeledRegionModel,
-        label: string,
-      ) {
-        bookmark.correspondingObj.setLabel(label)
-      },
-      /**
-       * #action
-       */
-      updateBookmarkHighlight(
-        bookmark: IExtendedLabeledRegionModel,
-        color: string,
-      ) {
-        bookmark.correspondingObj.setHighlight(color)
-        // the grid lists bookmarks even with the overlays off, so recoloring
-        // there would otherwise do nothing visible
-        getSession(self).revealHighlights()
-      },
-      /**
-       * #action
-       */
-      updateBulkBookmarkHighlights(color: string) {
-        for (const bookmark of self.selectedBookmarks) {
-          this.updateBookmarkHighlight(bookmark, color)
+      importHighlights(highlights: HighlightType[]) {
+        const session = getSession(self)
+        for (const h of highlights) {
+          session.addHighlight(h)
         }
       },
       /**
        * #action
        */
-      setSelectedBookmarks(bookmarks: IExtendedLabeledRegionModel[]) {
-        self.selectedBookmarks = bookmarks
-      },
-      /**
-       * #action
-       */
-      setBookmarkedRegions(regions: SnapshotIn<typeof LabeledRegionModel>[]) {
-        self.bookmarks = cast(regions)
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      clearSelectedBookmarks() {
-        for (const bookmark of self.selectedBookmarks) {
-          self.bookmarks.remove(bookmark.correspondingObj)
+      removeSelectedHighlights() {
+        const session = getSession(self)
+        for (const h of self.selectedHighlights) {
+          session.removeHighlight(h)
         }
-        self.selectedBookmarks = []
+        self.selectedKeys = new Set()
       },
-
       /**
        * #action
        */
-      removeBookmarkObject(arg: Instance<typeof LabeledRegionModel>) {
-        self.bookmarks.remove(arg)
+      recolorSelectedHighlights(color: string) {
+        const session = getSession(self)
+        for (const h of self.selectedHighlights) {
+          session.updateHighlight(h, { color })
+        }
       },
     }))
-    .actions(self => ({
-      afterAttach() {
-        const key = localStorageKeyF()
-        // Another tab edited the bookmarks. Through the shared subscription
-        // rather than a `storage` listener of our own, which had drifted from
-        // the rules that live with it: it answered sessionStorage events on a
-        // same-named key (jbrowse-web mirrors whole sessions there), and it
-        // ignored a clear(), which arrives as `key === null` and so left the
-        // list showing bookmarks that no longer exist.
-        //
-        // The autorun below writes the same key and deliberately does NOT
-        // announce it — this handler would answer its own write, replace the
-        // list with an equal one, and re-enter the autorun forever.
-        addDisposer(
-          self,
-          subscribeToLocalStorageKey(key, () => {
-            self.setBookmarkedRegions(
-              localStorageGetJSON<SnapshotIn<typeof LabeledRegionModel>[]>(
-                key,
-                [],
-              ),
-            )
-          }),
-        )
-        addDisposer(
-          self,
-          autorun(
-            function bookmarkLocalStorageAutorun() {
-              localStorageSetItem(key, JSON.stringify(self.bookmarks))
-            },
-            { name: 'BookmarkLocalStorage' },
-          ),
-        )
-        // covers a single add, a file import and a cross-tab sync alike
-        revealHighlightsOnGrowth(self, () => self.bookmarks.length)
-      },
-    }))
-    .preProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap || typeof snap !== 'object') {
-        return snap
-      }
-      const s = snap as Record<string, unknown>
-      if (!s.sharedBookmarks) {
-        return snap
-      }
-      const { sharedBookmarks, ...rest } = s
-      const local = localStorageGetJSON<
-        SnapshotIn<typeof LabeledRegionModel>[]
-      >(localStorageKeyF(), [])
-      const shared = sharedBookmarks as SnapshotIn<typeof LabeledRegionModel>[]
-      const seen = new Set(local.map(bookmarkKey))
-      const merged = [
-        ...local,
-        ...shared.filter(b => !seen.has(bookmarkKey(b))),
-      ]
-      return { ...rest, bookmarks: merged } as unknown as typeof snap
-    })
-    .postProcessSnapshot(snap => {
-      const { bookmarks, ...rest } = snap
-      return bookmarks.length ? { ...rest, sharedBookmarks: bookmarks } : rest
-    })
 }
 
 export type GridBookmarkStateModel = ReturnType<typeof f>
-export type GridBookmarkModel = Instance<GridBookmarkStateModel>
+export interface GridBookmarkModel extends Instance<GridBookmarkStateModel> {}

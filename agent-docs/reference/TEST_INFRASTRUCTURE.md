@@ -293,7 +293,7 @@ the gap `findSettledDisplay`'s docstring names.
 
 **The `volvoxConfigWithTracks` trim is paid twice, and the second payment is the
 larger one.** Per `createView` it is 0.34s (the A/B is in
-`BookmarkWidget.test.tsx`, below) — but the document it leaves behind is also
+`HighlightWidget.test.tsx`, below) — but the document it leaves behind is also
 what every later `findByText` / `findByRole` / `findByLabelText` scans, so a
 suite that searches is charged again per query. The two text-search suites went **38.1s →
 13.8s of bodies** on a trim justified by reading `trix/volvox_meta.json`: the
@@ -493,7 +493,7 @@ trim.
 
 **The in-run figure is 0.34s per `createView`, not the ~1.1s the 1.5s → 0.4s
 above implies**, because that pair is a cold isolated measurement. The A/B is
-`BookmarkWidget.test.tsx` at eleven calls: 11.1s of test bodies → 7.4s. Then add the
+`HighlightWidget.test.tsx` at eleven calls: 11.1s of test bodies → 7.4s. Then add the
 second payment — the searches after it — which is the larger half for a suite
 that does any (see "The test files, 2026-08-30").
 
@@ -524,7 +524,7 @@ one of these back:
   focus, and only a real pointer sequence focuses `tracksContainer`;
   `fireEvent.click` leaves `activeElement` on `<body>` and the keydown is
   dropped.
-- **A non-input target.** Its bookmark-label cell is a `<div>`, so
+- **A non-input target.** Its highlight-label cell is a `<div>`, so
   `fireEvent.change` fails outright with "element does not have a value setter".
 - **MUI Autocomplete.** It opens its listbox off the focus/pointer sequence, so
   a bare click leaves it closed and the following `findByRole('listbox')` burns
