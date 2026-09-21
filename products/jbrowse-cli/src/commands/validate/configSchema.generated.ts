@@ -6154,6 +6154,39 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "ValueScaleRule": {
+      "title": "ValueScaleRule",
+      "anyOf": [
+        {
+          "type": "number",
+          "description": "Shorthand for \`{ \\"value\\": ... }\`."
+        },
+        {
+          "type": "object",
+          "properties": {
+            "value": {
+              "description": "the value the rule is drawn at.",
+              "$ref": "#/$defs/NumberOrJexl",
+              "default": 0
+            },
+            "color": {
+              "description": "line and label colour.",
+              "$ref": "#/$defs/CssColorOrJexl",
+              "default": "rgb(120,120,120)"
+            },
+            "label": {
+              "description": "text at the rule's right-hand end.",
+              "$ref": "#/$defs/StringOrJexl",
+              "default": ""
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "ValueScale2": {
       "title": "ValueScale2",
       "type": "object",
@@ -6212,6 +6245,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "percentile the localpercentile autoscale clips at.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 0.99
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ValueScaleRule"
+          }
         }
       },
       "patternProperties": {
@@ -6306,9 +6345,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
-        },
-        "scoreRules": {
-          "description": "Horizontal reference lines across the plot, as [{\\"value\\": 30, \\"label\\": \\"2 copies\\"}] — or bare numbers for unlabelled rules. Labels are free text that JBrowse assigns no meaning; see the wiggle-core \`ScoreRule\` docs for why. Ignored by the density rendering, which spends color rather than height on the score and so has no axis to rule, and by a faceted track, which stacks a plot box per row. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
@@ -6457,9 +6493,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
-        },
-        "scoreRules": {
-          "description": "Horizontal reference lines across the plot, as [{\\"value\\": 30, \\"label\\": \\"2 copies\\"}] — or bare numbers for unlabelled rules. Labels are free text that JBrowse assigns no meaning; see the wiggle-core \`ScoreRule\` docs for why. Ignored by the density rendering, which spends color rather than height on the score and so has no axis to rule, and by a faceted track, which stacks a plot box per row. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
@@ -6630,9 +6663,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
-        },
-        "scoreRules": {
-          "description": "Horizontal reference lines across the plot, as [{\\"value\\": 30, \\"label\\": \\"2 copies\\"}] — or bare numbers for unlabelled rules. Labels are free text that JBrowse assigns no meaning; see the wiggle-core \`ScoreRule\` docs for why. Ignored by the density rendering, which spends color rather than height on the score and so has no axis to rule, and by a faceted track, which stacks a plot box per row. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
@@ -7733,39 +7763,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "^_+comment": {}
       },
       "additionalProperties": false
-    },
-    "ValueScaleRule": {
-      "title": "ValueScaleRule",
-      "anyOf": [
-        {
-          "type": "number",
-          "description": "Shorthand for \`{ \\"value\\": ... }\`."
-        },
-        {
-          "type": "object",
-          "properties": {
-            "value": {
-              "description": "the value the rule is drawn at.",
-              "$ref": "#/$defs/NumberOrJexl",
-              "default": 0
-            },
-            "color": {
-              "description": "line and label colour.",
-              "$ref": "#/$defs/CssColorOrJexl",
-              "default": "rgb(120,120,120)"
-            },
-            "label": {
-              "description": "text at the rule's right-hand end.",
-              "$ref": "#/$defs/StringOrJexl",
-              "default": ""
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
     },
     "ValueScale4": {
       "title": "ValueScale4",
@@ -9070,9 +9067,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showLegend": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/showLegend"
             },
-            "scoreRules": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scoreRules"
-            },
             "minimalTicks": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/minimalTicks"
             },
@@ -9998,9 +9992,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "scoreRules": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scoreRules"
-            },
             "minimalTicks": {
               "anyOf": [
                 {
@@ -10243,9 +10234,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "scoreRules": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scoreRules"
-            },
             "minimalTicks": {
               "anyOf": [
                 {
@@ -10438,9 +10426,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showLegend": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/showLegend"
-            },
-            "scoreRules": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/scoreRules"
             },
             "minimalTicks": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/minimalTicks"

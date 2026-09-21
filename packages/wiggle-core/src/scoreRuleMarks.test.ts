@@ -6,40 +6,10 @@ import {
   makeScoreNormalizer,
   resolveSymlogConstant,
 } from './normalize.ts'
-import {
-  parseScoreRules,
-  scoreRuleMarks,
-  widenRangeToRules,
-} from './scoreRuleMarks.ts'
+import { scoreRuleMarks, widenRangeToRules } from './scoreRuleMarks.ts'
 
 const linear = (min: number, max: number) =>
   makeScoreNormalizer(min, max, SCALE_TYPE_LINEAR, 1)
-
-describe('parseScoreRules', () => {
-  test('takes bare numbers and objects, drops the unusable', () => {
-    expect(
-      parseScoreRules([
-        30,
-        { value: 15, label: '1 copy' },
-        { value: '45', color: 'red' },
-        { label: 'no value' },
-        { value: 'abc' },
-        { value: Number.NaN },
-        null,
-        'nope',
-      ]),
-    ).toEqual([
-      { value: 30 },
-      { value: 15, label: '1 copy' },
-      { value: 45, color: 'red' },
-    ])
-  })
-
-  test('a non-array config is no rules, not a crash', () => {
-    expect(parseScoreRules(undefined)).toEqual([])
-    expect(parseScoreRules({ value: 3 })).toEqual([])
-  })
-})
 
 describe('scoreRuleMarks', () => {
   const height = 100

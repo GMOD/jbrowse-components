@@ -160,19 +160,6 @@ unless `nice: false` says it is already the one being drawn with.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
 
-### parseScoreRules
-
-Normalizes whatever a `scoreRules` config slot holds into `ScoreRule`s, dropping
-entries that are not usable. Config is user-authored JSON, so a bare number, a
-missing value or a non-numeric one all have to survive being read.
-
-```js
-// type signature
-(value: unknown) => ValueScaleRule[]
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRuleMarks.ts)
-
 ### resolveSymlogConstant
 
 The symlog constant actually used for a domain. `0` (the config default) means
@@ -192,12 +179,6 @@ rather than hard-coded.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/normalize.ts)
-
-### ScoreRule
-
-A `ValueScaleRule`, as `parseScoreRules` returns one.
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRuleMarks.ts)
 
 ### scoreRuleMarks
 
@@ -260,9 +241,8 @@ Without this a rule is dropped from the plot in the views where it is most
 useful. Autoscale follows the visible data, so over a homozygous deletion a
 coverage domain collapses to about `[0, 1]` and a rule at the diploid depth
 falls outside it, though the rule's position above the data is the most
-informative mark in that view. The reader has no menu to check either:
-`scoreRules` is set by whoever wrote the config, so a rule that vanishes leaves
-nothing behind to notice.
+informative mark in that view, and a rule that vanishes leaves nothing behind to
+notice.
 
 Applied to the raw range, before `getNiceDomain` takes the `scales.y` domain
 bounds. Those still win: a rule outside an explicitly bounded axis is one the

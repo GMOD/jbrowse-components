@@ -184,9 +184,8 @@ export function WiggleCommonMixin() {
       /**
        * #getter
        * Scores the axis must reach whatever the data does, so a rule drawn at
-       * one stays on it. `[]` here and overridden by the displays that draw
-       * score rules — a faceted track stacks a plot box per row and draws none,
-       * so it keeps the base.
+       * one stays on it. `[]` here and overridden by the display that draws
+       * `scales.y.rules`.
        */
       get scoreRuleValues(): number[] {
         return []

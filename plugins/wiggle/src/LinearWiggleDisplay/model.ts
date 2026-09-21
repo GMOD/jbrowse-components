@@ -47,11 +47,7 @@ import {
   treeSidebarOffset,
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
-import {
-  axisPlotBox,
-  makeCrossHatchItem,
-  parseScoreRules,
-} from '@jbrowse/wiggle-core'
+import { axisPlotBox, makeCrossHatchItem } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
@@ -249,15 +245,6 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * The configured rules, parsed. Config is user-authored JSON, so this is
-       * where the unusable entries are dropped rather than at each reader.
-       */
-      get scoreRules() {
-        return parseScoreRules(getConf(self, 'scoreRules'))
-      },
-
-      /**
-       * #getter
        * The `facet` object as written, or undefined while every source shares
        * one plot. `source` is the only field the config admits here.
        */
@@ -432,17 +419,14 @@ export default function stateModelFactory(
       /**
        * #getter
        * Overrides WiggleCommonMixin's empty base, so the axis reaches a
-       * configured rule even where the visible data does not.
+       * rule of `scales.y.rules` even where the visible data does not.
        *
-       * Empty where no rule is drawn: density spends the domain on its colour
-       * ramp, so widening it there stretches the ramp over a range nothing on
-       * screen reaches, and a faceted track stacks a plot box per row with no
-       * single axis for one rule list to sit on.
+       * Empty in density, where no rule is drawn: the domain is spent on the
+       * colour ramp there, so widening it stretches the ramp over a range
+       * nothing on screen reaches.
        */
       get scoreRuleValues() {
-        return self.isDensityMode || self.isFaceted
-          ? []
-          : self.scoreRules.map(r => r.value)
+        return self.isDensityMode ? [] : self.scoreRules.map(r => r.value)
       },
     }))
     .views(self => ({
@@ -559,7 +543,7 @@ export default function stateModelFactory(
                   getRowTop(row, self.effectiveRowHeight),
                 ),
             left: treeSidebarOffset(self),
-            rules: self.scoreRuleValues.length > 0 ? self.scoreRules : [],
+            rules: self.scoreRules,
           },
         ]
       },

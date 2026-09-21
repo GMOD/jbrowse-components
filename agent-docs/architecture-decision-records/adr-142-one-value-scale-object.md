@@ -61,7 +61,7 @@ alone — one scale per aesthetic, owned by the plot.
 | `numStdDev` | `localsd` is a mode | 3 | — | 3 | 3 |
 | `numQuantile` | `localpercentile` is a mode | 0.99 | — | — | 0.99 |
 | `symlogConstant` | `symlog` is a type | 0 | — | 1 | — |
-| `rules` | the factory is given `rules: { color }` | — | — | — | none, a rule drawn grey |
+| `rules` | the factory is given `rules: { color }` | none, a rule drawn grey | — | — | none, a rule drawn grey |
 | `title` | the factory is given `title: true` | — | — | — | unset, which derives the shared `encoding.y` field |
 
 `numStdDev` and `numQuantile` gate on the modes rather than on `autoscale`
@@ -189,6 +189,14 @@ caption. The members table above carries which display takes which.
   `scales.y.rules` off the live nodes, since a snapshot strips a slot at its
   default and a rule at 0 is one. Each display's `domain` widens its raw range
   to the rule values through `widenRangeToRules`, under the pinned ends.
+- **Wiggle's `frozen` `scoreRules` is `scales.y.rules`.** One spelling and no
+  reader for the old key, which a v5 config loses the way it loses `scaleType`.
+  `parseScoreRules` went with the slot: a typed array refuses at load what the
+  parser dropped in silence, a rule with no number or a mistyped key. The
+  facet exemption went too. A faceted track drew no rule because each display
+  placed its rules in the whole-track box; placed per scale in the band's own
+  box, a rule is drawn in every row. Density still draws none and widens to
+  none, its domain being a colour ramp's.
 - **`title` is the `caption` ADR-109 gave `ValueScale`, in three states.** It
   is a `maybeString` slot, a slot type this change adds beside `maybeNumber`
   and `maybeColor`: unset derives, some text is that text, and `""` is an axis

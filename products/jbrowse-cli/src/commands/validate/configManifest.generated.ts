@@ -4731,6 +4731,24 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "numQuantile",
                   "type": "(JexlString | number)"
+                },
+                {
+                  "name": "rules",
+                  "type": "ValueScaleRuleConfigurationSchema[]",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(JexlString | number)"
+                    },
+                    {
+                      "name": "color",
+                      "type": "(JexlString | CssColor)"
+                    },
+                    {
+                      "name": "label",
+                      "type": "(JexlString | string)"
+                    }
+                  ]
                 }
               ]
             }
@@ -4739,10 +4757,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "showLegend",
           "type": "(JexlString | boolean)"
-        },
-        {
-          "name": "scoreRules",
-          "type": "(JexlString | frozen)"
         },
         {
           "name": "minimalTicks",
@@ -4915,6 +4929,24 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "numQuantile",
                   "type": "(JexlString | number)"
+                },
+                {
+                  "name": "rules",
+                  "type": "ValueScaleRuleConfigurationSchema[]",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(JexlString | number)"
+                    },
+                    {
+                      "name": "color",
+                      "type": "(JexlString | CssColor)"
+                    },
+                    {
+                      "name": "label",
+                      "type": "(JexlString | string)"
+                    }
+                  ]
                 }
               ]
             }
@@ -4923,10 +4955,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "showLegend",
           "type": "(JexlString | boolean)"
-        },
-        {
-          "name": "scoreRules",
-          "type": "(JexlString | frozen)"
         },
         {
           "name": "minimalTicks",
@@ -5111,6 +5139,24 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "numQuantile",
                   "type": "(JexlString | number)"
+                },
+                {
+                  "name": "rules",
+                  "type": "ValueScaleRuleConfigurationSchema[]",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(JexlString | number)"
+                    },
+                    {
+                      "name": "color",
+                      "type": "(JexlString | CssColor)"
+                    },
+                    {
+                      "name": "label",
+                      "type": "(JexlString | string)"
+                    }
+                  ]
                 }
               ]
             }
@@ -5119,10 +5165,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "showLegend",
           "type": "(JexlString | boolean)"
-        },
-        {
-          "name": "scoreRules",
-          "type": "(JexlString | frozen)"
         },
         {
           "name": "minimalTicks",

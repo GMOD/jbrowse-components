@@ -146,8 +146,17 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     /**
      * #slot scales
      * The y scale the plot is drawn through: `type`, `domainMin`,
-     * `domainMax`, `autoscale`, `numStdDev`, `numQuantile` and
-     * `symlogConstant`.
+     * `domainMax`, `autoscale`, `numStdDev`, `numQuantile`, `symlogConstant`
+     * and `rules`, the reference lines drawn across it. The density rendering
+     * draws no rule and does not widen to one: it spends colour on the score
+     * and has no axis to rule.
+     * #example
+     * ```json
+     * {
+     *   "type": "LinearWiggleDisplay",
+     *   "scales": { "y": { "rules": [{ "value": 30, "label": "2 copies" }, 15] } }
+     * }
+     * ```
      */
     scales: wiggleValueScale(),
     /**
@@ -158,15 +167,6 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       description:
         "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on",
       defaultValue: true,
-    },
-    /**
-     * #slot
-     */
-    scoreRules: {
-      type: 'frozen',
-      defaultValue: [],
-      description:
-        'Horizontal reference lines across the plot, as [{"value": 30, "label": "2 copies"}] — or bare numbers for unlabelled rules. Labels are free text that JBrowse assigns no meaning; see the wiggle-core `ScoreRule` docs for why. Ignored by the density rendering, which spends color rather than height on the score and so has no axis to rule, and by a faceted track, which stacks a plot box per row',
     },
     /**
      * #slot

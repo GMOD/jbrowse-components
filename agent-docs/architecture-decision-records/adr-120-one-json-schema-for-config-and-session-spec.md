@@ -65,7 +65,7 @@ manifest's type set, key for key.
   (`sequenceAdapter`, `summaryAdapter`, `annotationAdapter`, `ldAdapter`,
   `subadapters`, `adapters`, `bigWigs`), the alignments display's `colorBy`,
   `filterBy`, `groupBy` and `sortedBy`, the variant displays' `samples`,
-  `rowGroups`, `sampleColorMap` and `scoreRules`, `legend`, `features`,
+  `rowGroups` and `sampleColorMap`, `legend`, `features`,
   `showOutline`, and the PanSN and location maps. Typed sub-schemas — a mark's
   `encoding`, `transform[]`, an adapter's `index` — come through as nested
   objects, deduplicated by content so twelve tracks share one `textSearching`.

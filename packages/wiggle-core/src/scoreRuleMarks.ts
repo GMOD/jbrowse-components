@@ -5,12 +5,6 @@ import {
 
 import type { ScoreRuleMark, ValueScaleRule } from '@jbrowse/display-ui'
 
-/**
- * #api
- * A `ValueScaleRule`, as `parseScoreRules` returns one.
- */
-export type ScoreRule = ValueScaleRule
-
 export type { ScoreRuleMark } from '@jbrowse/display-ui'
 
 /**
@@ -40,7 +34,7 @@ export function scoreRuleMarks({
   box,
   normalize,
 }: {
-  rules: readonly ScoreRule[]
+  rules: readonly ValueScaleRule[]
   domain: [number, number] | undefined
   box: { yTop: number; yBottom: number }
   normalize: (score: number) => number
@@ -68,48 +62,14 @@ export function scoreRuleMarks({
 
 /**
  * #api
- * Normalizes whatever a `scoreRules` config slot holds into `ScoreRule`s,
- * dropping entries that are not usable. Config is user-authored JSON, so a bare
- * number, a missing value or a non-numeric one all have to survive being read.
- */
-export function parseScoreRules(value: unknown): ScoreRule[] {
-  if (!Array.isArray(value)) {
-    return []
-  }
-  const out: ScoreRule[] = []
-  for (const entry of value) {
-    if (typeof entry === 'number') {
-      if (Number.isFinite(entry)) {
-        out.push({ value: entry })
-      }
-      continue
-    }
-    if (entry && typeof entry === 'object') {
-      const { value: v, label, color } = entry as Record<string, unknown>
-      const n = typeof v === 'string' ? Number(v) : v
-      if (typeof n === 'number' && Number.isFinite(n)) {
-        out.push({
-          value: n,
-          ...(typeof label === 'string' && label ? { label } : {}),
-          ...(typeof color === 'string' && color ? { color } : {}),
-        })
-      }
-    }
-  }
-  return out
-}
-
-/**
- * #api
  * Widens an autoscaled range so every configured rule stays on the axis.
  *
  * Without this a rule is dropped from the plot in the views where it is most
  * useful. Autoscale follows the visible data, so over a homozygous deletion a
  * coverage domain collapses to about `[0, 1]` and a rule at the diploid depth
  * falls outside it, though the rule's position above the data is the most
- * informative mark in that view. The reader has no menu to check either:
- * `scoreRules` is set by whoever wrote the config, so a rule that vanishes
- * leaves nothing behind to notice.
+ * informative mark in that view, and a rule that vanishes leaves nothing
+ * behind to notice.
  *
  * Applied to the raw range, before `getNiceDomain` takes the `scales.y`
  * domain bounds. Those still win: a rule outside an explicitly bounded axis

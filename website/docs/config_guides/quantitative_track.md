@@ -39,6 +39,35 @@ picks `xyplot`, `density`, `line`, `linecenter` or `scatter`. Those five say
 what a signal is drawn as; `facet` says how many rows there are, so the two can
 be set independently.
 
+Reference lines belong to the axis object too.
+[`scales.y.rules`](/docs/config/valuescale/#slot-scalesyrules) draws a dashed
+line across the plot at each value, a bare number or `{ value, color, label }`,
+in every row of a faceted track:
+
+```json addtrack
+{
+  "type": "QuantitativeTrack",
+  "trackId": "tumor_depth",
+  "name": "Tumor depth",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "BigWigAdapter",
+    "uri": "https://yourhost/tumor_depth.bw"
+  },
+  "displayDefaults": {
+    "scales": {
+      "y": { "rules": [{ "value": 30, "label": "2 copies" }, 15] }
+    }
+  }
+}
+```
+
+An autoscaled end of the axis widens to keep every rule on it, so a rule stays
+drawn over a deletion the coverage never climbs out of, and a pinned `domainMin`
+or `domainMax` that excludes a rule drops it. A label is free text: JBrowse
+assumes no ploidy, so "2 copies" is the author's claim. The `density` rendering
+draws no rules, having no axis to rule.
+
 ## Colors
 
 `color` is a CSS color string, or an object naming the field it reads and the

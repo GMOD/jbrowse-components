@@ -69,12 +69,8 @@ export type {
   VisibleStatsDomainSpec,
 } from './visibleStatsDomain.ts'
 
-export {
-  parseScoreRules,
-  scoreRuleMarks,
-  widenRangeToRules,
-} from './scoreRuleMarks.ts'
-export type { ScoreRule, ScoreRuleMark } from './scoreRuleMarks.ts'
+export { scoreRuleMarks, widenRangeToRules } from './scoreRuleMarks.ts'
+export type { ScoreRuleMark } from './scoreRuleMarks.ts'
 export {
   SMALL_POINT_MAX_DIAMETER_PX,
   appendPointMarker,
