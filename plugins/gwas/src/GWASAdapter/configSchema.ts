@@ -86,6 +86,7 @@ const GWASAdapterConfigSchema = ConfigurationSchema(
       type: 'string',
       description: 'transform applied to the score column',
       defaultValue: DEFAULT_SCORE_TRANSFORM,
+      contextVariable: ['score'],
     },
     /**
      * #slot

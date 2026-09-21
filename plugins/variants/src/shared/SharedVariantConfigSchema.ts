@@ -82,6 +82,7 @@ export default function sharedVariantConfigFactory() {
       featureColor: {
         type: 'string',
         defaultValue: '',
+        contextVariable: ['feature'],
       },
       /**
        * #slot

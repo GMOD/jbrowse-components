@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { BedTabixAdapter } from '@jbrowse/plugin-bed'
 import { map } from 'rxjs'
@@ -15,8 +14,6 @@ import type { Region } from '@jbrowse/core/util'
 // Pan-UKBB flat-file case where columns are already -log10) the parent stream
 // is returned untouched, so the genome-wide hot path is unchanged.
 export default class GWASAdapter extends BedTabixAdapter {
-  // type-only refinement of the inherited config so readConfObject resolves the
-  // GWAS-only slots (e.g. scoreTransform) against the right schema
   declare config: GWASAdapterConfig
 
   // getFeatures runs per block, so the mode is resolved (and a `jexl:`
@@ -30,7 +27,7 @@ export default class GWASAdapter extends BedTabixAdapter {
     if (!this.scoreTransformResolved) {
       this.scoreTransformResolved = true
       this.scoreTransform = getScoreTransform(
-        readConfObject(this.config, 'scoreTransform'),
+        this.config.scoreTransform,
         this.pluginManager?.jexl,
       )
     }
