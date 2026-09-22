@@ -290,6 +290,16 @@ test('a mark the caller could not read keeps its index as a gap', () => {
   ])
 })
 
+test('two packings under a facet are told a display pileup spans every section', () => {
+  expect(
+    problemsOf([PILEUP, PILEUP], { field: 'HP' })
+      .filter(p => p.rule === 'two-packings')
+      .map(p => p.message),
+  ).toEqual([
+    "packs rows of its own, as mark 0 does, and the two share row numbers; one pileup in the display's transform packs them together, though across every section at once, leaving each section the rows the others fill",
+  ])
+})
+
 test("a field the display's steps make is one a mark reads", () => {
   expect(
     found([{ shape: 'bar', encoding: { y: 'depth' } }], undefined, [

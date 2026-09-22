@@ -132,3 +132,9 @@ is the Edit as JSON counterpart, the colour as written.
   It brings back two spellings of one pin and a precedence rule between them,
   where `scales.y` has one. The trap it answers, a `domain` written under a
   ramp, is reported instead: `ramp-domain` in display-kit's `colorProblems`.
+- **`mark` for the mark type and `shape` for the point symbol**, Vega-Lite's
+  and GenomeSpy's names for what this display spells `shape` and `glyph`.
+  After v5.0.0 ships, a rename breaks every config, and this cycle has no
+  migrations. An author who writes their tool's spelling is refused at load
+  either way, and `jbrowse validate` names ours: "Vega-Lite's "mark" is
+  spelled "shape" here" (2026-09-21).

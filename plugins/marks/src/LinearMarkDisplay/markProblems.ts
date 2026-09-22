@@ -427,7 +427,7 @@ export function markProblems(
           ...found(
             'two-packings',
             'transform',
-            `packs rows of its own, as mark ${j} does, and the two share row numbers; one pileup in the display's transform packs them together, with each mark's encoding.row naming the field the pileup writes`,
+            `packs rows of its own, as mark ${j} does, and the two share row numbers; one pileup in the display's transform packs them together, ${faceted ? 'though across every section at once, leaving each section the rows the others fill' : "with each mark's encoding.row naming the field the pileup writes"}`,
           ),
         })
       }
