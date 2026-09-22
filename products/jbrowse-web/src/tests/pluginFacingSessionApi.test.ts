@@ -28,10 +28,11 @@ jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 //
 // The list is evidence, not a wish: it is the intersection of the members this
 // repo's session mixins define with the identifiers that appear in the published
-// bundles of the two plugins the repo itself points at (protein3d in
+// bundles of the plugins the repo itself points at (protein3d in
 // `test_data/protein3d_config.json`, graphgenomeviewer in the screenshot
-// generator's TRUSTED_PLUGIN_URLS). Extend it when another plugin is checked;
-// say in the commit which bundle you read.
+// generator's TRUSTED_PLUGIN_URLS, msaview in the hosted hg38 config the
+// proteins tutorial opens). Extend it when another plugin is checked; say in the
+// commit which bundle you read.
 //
 // Recomputing it is a grep of each bundle for `.member` / `"member"` against the
 // session's own member names — minification renames the variable but not the
@@ -50,20 +51,27 @@ const PLUGIN_FACING = {
   // optional-chained at the call site (`session.addTemporaryAssembly?.({...})`),
   // so losing it degrades as silently as setPendingMove did
   addTemporaryAssembly: 'protein3d',
-  addView: 'protein3d, graphgenomeviewer',
+  addView: 'protein3d, msaview, graphgenomeviewer',
   addWidget: 'graphgenomeviewer',
-  assemblyManager: 'protein3d, graphgenomeviewer',
+  assemblyManager: 'protein3d, msaview, graphgenomeviewer',
+  getTrackById: 'protein3d',
   getTracksById: 'protein3d',
-  notify: 'protein3d, graphgenomeviewer',
-  queueDialog: 'protein3d',
-  rpcManager: 'protein3d',
+  // the genome hover both plugins light a residue or a column from; renamed, the
+  // linking stops with no error on either side
+  hovered: 'protein3d, msaview',
+  // msaview reads the MSA datasets an admin configured off it
+  jbrowse: 'msaview',
+  notify: 'protein3d, msaview, graphgenomeviewer',
+  notifyError: 'protein3d, msaview',
+  queueDialog: 'protein3d, msaview',
+  rpcManager: 'protein3d, msaview',
   // protein3d's `sideBySide` launch option and msaview's launch placement, each
   // behind an `in session` guard
   setPendingMove: 'protein3d, msaview',
   setUseWorkspaces: 'protein3d, msaview',
   showWidget: 'graphgenomeviewer',
   tracks: 'protein3d, graphgenomeviewer',
-  views: 'graphgenomeviewer',
+  views: 'protein3d, msaview, graphgenomeviewer',
 }
 
 test('the session keeps every member a published plugin reaches for', async () => {
