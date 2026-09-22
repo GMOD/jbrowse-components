@@ -39,23 +39,11 @@ export const proteinVideos: VideoSpec[] = [
     // frame is the second state and the first carries page background under it.
     viewportHeight: 1400,
     readyTimeout: 120000,
-    // Long, because the readiness stack cannot see this app. Every display-level
-    // gate in it keys on `data-display-phase` / `data-display-drawn`, and the
-    // released build publishes neither attribute — so `waitForReady` returns
-    // once the loading overlay clears and the tracks may still be fetching. The
-    // first take that raced it right-clicked a gene lane that had not drawn and
-    // failed on the launcher that never appeared.
+    // The release publishes no session census for the gate to read, so the
+    // gene the tour right-clicks having drawn its label is the positive signal.
+    noSession: true,
+    readyText: 'TP53',
     steps: [
-      // What the settle above cannot assert, asserted POSITIVELY: the gene the
-      // tour right-clicks has drawn its label. It used to wait for no lane to
-      // say "Loading" anywhere, and an absence is the wrong shape of gate here
-      // twice over — it is equally true of an app that has not started, and it
-      // is answerable by any lane at all. The released build now leaves a
-      // "Loading" span in each of the RefSeq display's blocks after the genes
-      // have drawn (three of them, one per block, measured), so the gate could
-      // never come true again and the tour failed on it every run while the
-      // frame behind it was fine.
-      { type: 'waitForText', text: 'TP53', timeout: 90000 },
       {
         type: 'rightclick',
         anchor: {

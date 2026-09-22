@@ -68,7 +68,12 @@ export interface VideoSpec {
   // Gates before the camera starts. Everything a tour opens with loads off
   // camera, so the first frame is the app ready rather than the app loading.
   readySelector?: string
+  readyText?: string
   readyTimeout?: number
+  // The page publishes no session census: a released app older than it, as a
+  // tour of genomes.jbrowse.org's own build is. readyText or readySelector is
+  // then the whole positive signal, as for a screenshot spec's noSession.
+  noSession?: boolean
   steps: VideoStep[]
   // Seconds into the finished clip to take the <video poster> from. Defaults to
   // the last frame, which is the state the tour ends in.

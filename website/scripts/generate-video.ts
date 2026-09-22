@@ -723,6 +723,8 @@ async function main() {
             mode: 'url',
             name: spec.name,
             url: spec.url,
+            noSession: spec.noSession,
+            readyText: spec.readyText,
             readySelector: spec.readySelector,
             readyTimeout: spec.readyTimeout,
           })

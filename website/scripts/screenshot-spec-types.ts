@@ -259,8 +259,9 @@ export interface SessionUrlSpec extends CommonSpecFields {
   // would be a false statement about where the link goes.
   liveLabel?: string
   // the page holds no JBrowse session to publish `[data-app-phase]` — a plain
-  // web page, or jbrowse-web's no-config landing — so `readyText` or
-  // `readySelector` is its whole positive signal, followed by network idle
+  // web page, jbrowse-web's no-config landing, or a release older than the
+  // census — so `readyText` or `readySelector` is its whole positive signal,
+  // followed by network idle
   noSession?: boolean
   readyText?: string // text to wait for before settle
   readySelector?: string // CSS selector to wait for before settle
