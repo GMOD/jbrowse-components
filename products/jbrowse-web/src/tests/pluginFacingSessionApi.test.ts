@@ -57,9 +57,10 @@ const PLUGIN_FACING = {
   notify: 'protein3d, graphgenomeviewer',
   queueDialog: 'protein3d',
   rpcManager: 'protein3d',
-  // its `sideBySide` launch option, behind an `in session` guard
-  setPendingMove: 'protein3d',
-  setUseWorkspaces: 'protein3d',
+  // protein3d's `sideBySide` launch option and msaview's launch placement, each
+  // behind an `in session` guard
+  setPendingMove: 'protein3d, msaview',
+  setUseWorkspaces: 'protein3d, msaview',
   showWidget: 'graphgenomeviewer',
   tracks: 'protein3d, graphgenomeviewer',
   views: 'graphgenomeviewer',
@@ -139,6 +140,29 @@ test("protein3d's structure track still lands, and lands in the session", () => 
     'protein3d-structure',
   ])
   expect(session.jbrowse.tracks).toHaveLength(0)
+})
+
+// msaview's launch placement makes the same two calls with `newTab` as well as
+// `splitRight` (jbrowse-plugin-msaview 3.7.1, minified:
+// `e.setPendingMove({type:r,viewId:t}),e.setUseWorkspaces(!0)`).
+test("msaview's new-tab launch still gets its own tab, and shows it", () => {
+  const session = createTestSession() as any
+  const genome = session.addView('LinearGenomeView', {
+    type: 'LinearGenomeView',
+  })
+  const msa = session.addView('LinearGenomeView', {
+    type: 'LinearGenomeView',
+  })
+
+  session.setPendingMove({ type: 'newTab', viewId: msa.id })
+  session.setUseWorkspaces(true)
+
+  const genomeHome = session.tabContainingView(genome.id)
+  const msaHome = session.tabContainingView(msa.id)
+  expect(session.panels.length).toBe(1)
+  expect(msaHome.panel.id).toBe(genomeHome.panel.id)
+  expect(msaHome.tab.id).not.toBe(genomeHome.tab.id)
+  expect(msaHome.panel.activeTabId).toBe(msaHome.tab.id)
 })
 
 // The same doctrine one level out, for the surface an automation SCRIPT reads
