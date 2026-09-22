@@ -774,6 +774,7 @@ exports[`every registered schema slot default 1`] = `
     "mouseover": "string = "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"",
     "showLaneTicks": "boolean = true",
     "showLegend": "boolean = true",
+    "splitStrands": "boolean = false",
     "utrColor": "color = "#357089"",
   },
   "text search adapter: JBrowse1TextSearchAdapter": {
