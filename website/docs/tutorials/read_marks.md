@@ -177,7 +177,8 @@ spanning pair red.
         "scale": "linear",
         "domainMin": 0,
         "domainMax": 5000,
-        "range": ["#c8d8ee", "#d62728"]
+        "range": ["#c8d8ee", "#d62728"],
+        "title": "Insert size (bp)"
       }
     }
   }

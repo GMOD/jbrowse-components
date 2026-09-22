@@ -58,6 +58,7 @@ const PILEUP_TRACK = {
               domainMin: 0,
               domainMax: 5000,
               range: ['#c8d8ee', '#d62728'],
+              title: 'Insert size (bp)',
             },
           },
         },
@@ -113,10 +114,13 @@ export const readMarksSpecs: ScreenshotSpec[] = [
   // The same window with the depth above and each pair's insert size below on
   // a track of its own: a band of pairs near 4.3 kb sits over the dip, in the
   // colour of a full mapping quality.
-  readsSpec('read_marks/insert_size', DELETION, [
-    ['na12878_read_depth', 120],
-    ['na12878_read_marks', 200],
-  ]),
+  {
+    ...readsSpec('read_marks/insert_size', DELETION, [
+      ['na12878_read_depth', 120],
+      ['na12878_read_marks', 200],
+    ]),
+    viewportHeight: 655,
+  },
   // The left breakpoint at base resolution, the reads stacked and coloured
   // by their pair's insert: the spanning pairs' reads in red end at the
   // breakpoint, the rest in blue run through it.
@@ -156,7 +160,7 @@ export const readMarksSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('mark-display'),
     readyTimeout: 120000,
-    viewportHeight: 470,
+    viewportHeight: 510,
     // The tallest bar outside the centromere is the homozygous deletion the
     // tutorial names at 34.2 Mb.
     annotations: [
@@ -172,6 +176,7 @@ export const readMarksSpecs: ScreenshotSpec[] = [
           fracY: 0.3,
         },
         dx: 80,
+        dy: -8,
       },
       {
         type: 'text',
