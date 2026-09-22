@@ -57,10 +57,12 @@ const JBrowse = observer(function JBrowse({
     window.jb = createJbApi(pluginManager)
     // the one channel a browser agent that only reads console output gets;
     // the DOM channel is the ai-instructions meta tag in index.html
-    // eslint-disable-next-line no-console
-    console.info(
-      'window.jb drives this app programmatically — read jb.help, then orient with jb.sessionSummary()',
-    )
+    if (process.env.NODE_ENV !== 'test') {
+      // eslint-disable-next-line no-console
+      console.info(
+        'window.jb drives this app programmatically — read jb.help, then orient with jb.sessionSummary()',
+      )
+    }
   }, [id, pluginManager, rootModel, session])
 
   useEffect(() => {
