@@ -25,7 +25,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * chr1    2000000  5500000  seg2  HG00096
  * chr1    0        3500000  seg3  HG00097
  * ```
- * Paint one row per `sample`, coloring each row from `sampleColorMap`:
+ * Paint one row per `sample`, coloring each row from `sampleColorMap` and
+ * fixing HG00097 above HG00096 regardless of file order:
  * ```js
  * {
  *   type: 'FeatureTrack',
@@ -42,6 +43,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *       displayId: 'ancestry_painting-LinearMultiRowFeatureDisplay',
  *       partitionField: 'sample',
  *       sampleColorMap: { HG00096: '#4e79a7', HG00097: '#f28e2b' },
+ *       domain: ['HG00097', 'HG00096'],
  *     },
  *   ],
  * }
@@ -50,6 +52,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * palette color — unless the features carry an `itemRgb`, which is honored as
  * the per-feature color with no configuration at all. To color per feature off
  * some other attribute, set the `color` slot to a `jexl:` expression reading it.
+ * Omit `domain` and rows keep the order samples first appear in the file.
  */
 export default function configSchemaF() {
   return ConfigurationSchema(

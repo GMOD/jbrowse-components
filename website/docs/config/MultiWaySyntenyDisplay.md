@@ -39,6 +39,38 @@ placements between adjacent lanes:
 }
 ```
 
+The same display with a curated lane order, genes colored by ortholog
+cluster, and ribbons colored by percent identity:
+
+```js
+{
+  type: 'SyntenyTrack',
+  trackId: 'primate_synteny',
+  name: 'Primate synteny',
+  assemblyNames: ['hg38', 'panTro6', 'gorGor6', 'ponAbe3'],
+  adapter: {
+    type: 'MCScanBlocksAdapter',
+    uri: 'hg38.blocks',
+    blockAssemblies: ['hg38', 'panTro6', 'gorGor6', 'ponAbe3'],
+    bedLocations: [
+      { uri: 'hg38.bed' },
+      { uri: 'panTro6.bed' },
+      { uri: 'gorGor6.bed' },
+      { uri: 'ponAbe3.bed' },
+    ],
+  },
+  displays: [
+    {
+      type: 'MultiWaySyntenyDisplay',
+      displayId: 'primate_synteny-MultiWaySyntenyDisplay',
+      domain: ['panTro6', 'gorGor6', 'ponAbe3'],
+      color: { field: 'cluster' },
+      ribbonColor: { field: 'identity' },
+    },
+  ],
+}
+```
+
 _See the **Config slots** section below for all available configuration fields._
 
 ## Related links
