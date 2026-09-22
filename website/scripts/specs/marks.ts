@@ -122,7 +122,7 @@ const SNRPN_FACET_TRACK = {
           transform: [{ type: 'pileup' }],
           encoding: {
             row: 'row',
-            color: { field: 'HP', scale: 'categorical' },
+            color: { field: 'HP', scale: 'categorical', title: 'Haplotype' },
           },
         },
       ],

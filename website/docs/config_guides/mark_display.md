@@ -338,7 +338,7 @@ the features:
         "transform": [{ "type": "pileup" }],
         "encoding": {
           "row": "row",
-          "color": { "field": "HP", "scale": "categorical" }
+          "color": { "field": "HP", "scale": "categorical", "title": "Haplotype" }
         }
       }
     ]
@@ -546,8 +546,9 @@ chip in its corner naming the slot, and the mark when the slot is a mark's:
 - a `bar` or `point` drawn together with a stacked `span`, which stands in the
   first of the span's rows;
 - two marks each running their own `pileup`, which share row numbers, where one
-  `pileup` in the display's `transform` packs them together, with each mark's
-  `encoding.row` naming the field the pileup writes;
+  `pileup` in the display's `transform` packs them together: without a `facet`
+  each mark's `encoding.row` names the field the pileup writes, and under one
+  the pileup packs across every section at once;
 - a zoom range whose `minBpPerPx` is not below its `maxBpPerPx`, which never
   draws.
 
