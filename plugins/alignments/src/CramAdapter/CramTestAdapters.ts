@@ -39,11 +39,10 @@ class FetchableSmallFasta {
   async fetch(id: number, start: number, end: number) {
     const data = await this.data
     const entry = data[id]
-    const length = end - start + 1
     if (!entry) {
       throw new Error(`no sequence with id ${id} exists`)
     }
-    return entry.sequence.slice(start, start + length)
+    return entry.sequence.slice(start, end)
   }
 
   async getSequenceList() {
