@@ -14,7 +14,6 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { withHint } from '@jbrowse/core/ui/menuItems'
 import {
   assembleLocString,
-  getContainingView,
   getPaletteHost,
   getSession,
 } from '@jbrowse/core/util'
@@ -104,7 +103,6 @@ import {
   buildMafTrackMenuItems,
   zoomGatedItem,
 } from './trackMenuItems.ts'
-import { getMsaHighlights } from './util.ts'
 
 import type {
   MafGPURenderState,
@@ -2515,18 +2513,6 @@ export default function stateModelFactory(
         }
       })
       // #endregion
-      .views(self => ({
-        /**
-         * #getter
-         * Get highlight regions from connected MSA views
-         */
-        get msaHighlights() {
-          return getMsaHighlights(
-            getSession(self).views,
-            getContainingView(self).id,
-          )
-        },
-      }))
       .views(self => {
         const encoded = createEncodeMemo(
           () => self.rpcDataMap,

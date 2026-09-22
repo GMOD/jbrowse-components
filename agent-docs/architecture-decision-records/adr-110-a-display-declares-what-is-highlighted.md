@@ -37,8 +37,9 @@ Three more the census listed are not that. Canvas's `highlightBoxes.ts` is
 the *search* highlight, which the export draws; its `HighlightLayer` boxes a
 layout item with its label rows and the hit pad, which is the hit target and
 not an instance's ink, and shares one scroll-locked layer with the solo and
-search boxes. MAF's `MsaHighlightOverlay` is a genomic range a connected MSA
-view names, full height, and `findRowHover.ts` is a hit test. Dotplot's cue
+search boxes. MAF's MSA highlight was a genomic range a connected MSA view
+names, full height, and has since gone: msaview's own genome overlay already
+covered the rows. `findRowHover.ts` is a hit test. Dotplot's cue
 restrokes a capsule path.
 
 `HighlightOverlay.tsx` also recorded why the box is a DOM element: the

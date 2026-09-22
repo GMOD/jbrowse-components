@@ -30,7 +30,6 @@ import MafBandLabels from './MafBandLabels.tsx'
 import MafConservationBand from './MafConservationBand.tsx'
 import MafCoverageBand from './MafCoverageBand.tsx'
 import MafRowsCanvas from './MafRowsCanvas.tsx'
-import MsaHighlightOverlay from './MsaHighlightOverlay.tsx'
 import SubsequenceContextMenu from './SubsequenceContextMenu.tsx'
 import SummaryBarsOverlay from './SummaryBarsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
@@ -128,7 +127,6 @@ const MafBody = observer(function MafBody({
   mouseTracker: MouseTracker
 }) {
   const {
-    height,
     rowsHeight,
     rowsTopOffset,
     scrollTop,
@@ -305,7 +303,6 @@ const MafBody = observer(function MafBody({
       {/* Offset below the stacked bands, which are pinned: only the rows
           scroll. */}
       <ScrollChrome model={model} controlsId={canvasId} top={rowsTopOffset} />
-      <MsaHighlightOverlay model={model} view={view} height={height} />
       {pointer && !contextCoord && !resizeActive ? (
         <div style={{ position: 'relative' }}>
           <DisplayCrosshairs

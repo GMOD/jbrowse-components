@@ -1416,7 +1416,7 @@ WebGPU-capable Chrome, import each `*.generated.ts`, and read
 backing store to `css × dpr`, so `N / canvas_width` in clip space = `N` CSS pixels
 at any DPR. Do not manually scale by `devicePixelRatio`.
 
-**2D overlay canvases (`VisibleLabelsOverlay`, `MsaHighlightOverlay`, etc.):**
+**2D overlay canvases (`VisibleLabelsOverlay` and the like):**
 caller owns DPR. Set `canvas.width = w * dpr` + `canvas.height = h * dpr` in the
 effect, call `ctx.scale(dpr, dpr)`, then put CSS `width`/`height` in the style
 block. Skipping this renders blurry on Retina. `prepareCanvas` (in
