@@ -17225,9 +17225,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "showGridlines": {
           "type": "boolean"
         },
-        "labelsVisible": {
-          "type": "boolean"
-        },
         "colorByCDS": {
           "type": "boolean"
         },
@@ -19153,6 +19150,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "items": {}
         },
         "highlightsVisible": {
+          "type": "boolean"
+        },
+        "highlightLabelsVisible": {
           "type": "boolean"
         },
         "heldForMissingPlugins": {},

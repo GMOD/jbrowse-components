@@ -16257,9 +16257,6 @@
         "showGridlines": {
           "type": "boolean"
         },
-        "labelsVisible": {
-          "type": "boolean"
-        },
         "colorByCDS": {
           "type": "boolean"
         },
@@ -18096,6 +18093,9 @@
           "items": {}
         },
         "highlightsVisible": {
+          "type": "boolean"
+        },
+        "highlightLabelsVisible": {
           "type": "boolean"
         },
         "heldForMissingPlugins": {},

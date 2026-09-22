@@ -6769,7 +6769,6 @@ export const configManifest: ConfigManifest = {
         "showCytobands",
         "trackLabels",
         "showGridlines",
-        "labelsVisible",
         "colorByCDS",
         "showAminoAcids",
         "showTrackOutlines",

@@ -28,8 +28,7 @@ the list of the session's highlights
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-assembliesinviews">**assembliesInViews**</span><br><code>Set&lt;string&gt;</code> | assemblies currently displayed in any open view |
-| <span id="getter-rows">**rows**</span><br><code>HighlightRow[]</code> | the list shows only highlights on an assembly some view is showing |
+| <span id="getter-rows">**rows**</span><br><code>HighlightRow[]</code> | every highlight in the session, in the order they were added |
 | <span id="getter-selectedhighlights">**selectedHighlights**</span><br><code>HighlightType[]</code> |  |
 
 ## Actions
