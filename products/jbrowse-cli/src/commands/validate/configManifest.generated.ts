@@ -5867,6 +5867,10 @@ export const configManifest: ConfigManifest = {
                     {
                       "name": "domainMid",
                       "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "title",
+                      "type": "(string | undefined)"
                     }
                   ],
                   "shorthand": "value",

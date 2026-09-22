@@ -449,6 +449,7 @@ test("the legend unions categorical tables across regions, keeping the first col
           { value: 'exon', color: BLUE },
         ],
       },
+      title: 'type',
     },
   ])
   expect(

@@ -97,14 +97,19 @@ test('bars from a BED score column, coloured by strand, with the key on screen',
   })
 }, 30000)
 
-test('the SVG export paints the same bars and carries the key', async () => {
+test('the SVG export paints the same bars and carries the key under its title', async () => {
   const { view, findByTestId, findByText } = await createView(
     markTrackConfig('mark_bars', [
       {
         shape: 'bar',
         encoding: {
           y: 'score',
-          color: { field: 'strand', scale: 'categorical', range: ['red'] },
+          color: {
+            field: 'strand',
+            scale: 'categorical',
+            range: ['red'],
+            title: 'Feature strand',
+          },
         },
       },
     ]),
@@ -127,6 +132,7 @@ test('the SVG export paints the same bars and carries the key', async () => {
   expect(svg).toContain('height="140" fill="rgb(255,0,0)"')
   // the key, off the same table
   expect(svg).toContain('data-testid="color-legend"')
+  expect(svg).toContain('>Feature strand<')
   expect(svg).toContain('>Forward strand<')
 }, 40000)
 

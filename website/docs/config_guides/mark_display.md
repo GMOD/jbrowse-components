@@ -233,6 +233,14 @@ describes that binding:
 Whichever way a scale resolves, the legend reads the same table the colours came
 from.
 
+A colour scale's key takes its heading from `title`, which has the three states
+the axis `title` has. Left unset, the key reads the `field` name; some text is
+that text; `"title": ""` draws the key with no heading. On an alignments track,
+`{ "field": "score", "scale": "linear", "title": "Mapping quality" }` heads the
+ramp with what a read's `score` measures. Marks sharing a scale share one key
+only under one title, so a second mark titling the same scale differently draws
+a key of its own.
+
 ## Glyph scales
 
 A scale belongs to a channel, not only to colour. `glyph` takes the same

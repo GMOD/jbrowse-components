@@ -600,7 +600,7 @@ test('an encoding channel refuses a key it does not declare', () => {
       { shape: 'span', encoding: { color: { colour: 'strand' } } },
     ]).createDisplay(),
   ).toThrow(
-    'MarkColor takes value, field, scale, domain, domainMin, domainMax, range, scheme, reverse and domainMid, not colour',
+    'MarkColor takes value, field, scale, domain, domainMin, domainMax, range, scheme, reverse, domainMid and title, not colour',
   )
   expect(() =>
     createTestEnvironment([
@@ -1114,9 +1114,37 @@ test('the legend reads the scale table the worker resolved', () => {
         domain: [],
         entries: [{ value: 'gene', color: 0xff0000ff }],
       },
+      title: 'type',
     },
   ])
   expect(display.showLegend).toBe(true)
+})
+
+test("the colour's title heads its key, and a write retitles it without a fetch", () => {
+  const { createDisplay } = createTestEnvironment([
+    {
+      shape: 'point',
+      encoding: {
+        y: 'score',
+        color: { field: 'score', scale: 'linear', title: 'Mapping quality' },
+      },
+    },
+  ])
+  const { display } = createDisplay()
+  display.setRpcData(
+    0,
+    result([{ y: [10, 60], scale: ramp([10, 60]) }]),
+    REGION,
+  )
+  const heading = () => display.colorScales.map(s => s.title)
+  expect(heading()).toEqual(['Mapping quality'])
+  const fetched = display.rpcProps()
+  const { color } = display.conf.marks[0]!.encoding
+  setConf(color, 'title', '')
+  expect(heading()).toEqual([undefined])
+  setConf(color, 'title', undefined)
+  expect(heading()).toEqual(['score'])
+  expect(display.rpcProps()).toEqual(fetched)
 })
 
 // Two marks over one field through one declaration paint a value alike, so
@@ -1165,6 +1193,7 @@ test('two marks colouring by one field through one range share a key', () => {
         { value: '1', color: 0xff0000ff },
         { value: '-1', color: 0xff00ff00 },
       ]),
+      title: 'strand',
     },
   ])
   expect(shared.colorScales.map(s => s.id)).toEqual(['mark-0-1-color'])
@@ -1307,6 +1336,7 @@ test('a glyph scale reaches the worker beside the colour, and its key draws the 
           { value: '-1', glyph: 'diamond' },
         ],
       },
+      title: 'strand',
     },
   ])
   expect(display.colorScales).toEqual([

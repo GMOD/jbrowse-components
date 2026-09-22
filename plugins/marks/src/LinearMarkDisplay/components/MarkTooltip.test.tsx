@@ -70,6 +70,7 @@ test('a point reads its glyph scale, naming the category the plot drew', async (
             { value: 'DUP', glyph: 'diamond' },
           ],
         },
+        title: 'svtype',
       },
     ],
   })

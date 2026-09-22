@@ -24,15 +24,18 @@ const NUMERIC_KEY_HINT =
 export type ScaledChannel = 'color' | 'glyph'
 
 /**
- * One scaled channel's key: the table the worker resolved, and the marks it
- * is the key of. Marks whose channel reads one field through one declared
- * order and palette (or glyph range) share a section, the way ggplot2 keeps
- * one scale per aesthetic across layers; a ramp is each mark's own.
+ * One scaled channel's key: the table the worker resolved, the marks it is
+ * the key of, and its heading. Marks whose channel reads one field through
+ * one declared order and palette (or glyph range) under one title share a
+ * section, the way ggplot2 keeps one scale per aesthetic across layers and
+ * merges only guides titled alike; a ramp is each mark's own.
  */
 export interface MarkLegendSection {
   markIndexes: number[]
   channel: ScaledChannel
   scale: ScaleTable
+  /** A colour's `title` where written, else the field; `''` heads nothing. */
+  title: string
 }
 
 const CHANNELS: {
@@ -109,9 +112,10 @@ function union(current: ScaleTable, next: ScaleTable) {
 }
 
 // What a section is keyed on: the declaration that assigns a categorical
-// value its colour or glyph, so two marks sharing it share the key; a ramp
-// stays the mark's, its domain being the uniform that mark's shapes read.
-function sectionKey(markIndex: number, scale: ScaleTable) {
+// value its colour or glyph, and the title over it, so two marks sharing both
+// share the key; a ramp stays the mark's, its domain being the uniform that
+// mark's shapes read.
+function sectionKey(markIndex: number, scale: ScaleTable, title: string) {
   switch (scale.kind) {
     case 'ramp':
       return JSON.stringify(['ramp', markIndex])
@@ -119,6 +123,7 @@ function sectionKey(markIndex: number, scale: ScaleTable) {
       return JSON.stringify([
         'categorical',
         scale.field,
+        title,
         scale.domain,
         scale.range ?? [],
       ])
@@ -126,6 +131,7 @@ function sectionKey(markIndex: number, scale: ScaleTable) {
       return JSON.stringify([
         'threshold',
         scale.field,
+        title,
         scale.domain,
         scale.entries.map(e => e.color),
       ])
@@ -133,6 +139,7 @@ function sectionKey(markIndex: number, scale: ScaleTable) {
       return JSON.stringify([
         'glyph',
         scale.field,
+        title,
         scale.domain,
         scale.range ?? [],
       ])
@@ -146,11 +153,13 @@ function sectionKey(markIndex: number, scale: ScaleTable) {
  * field's order; a key's entry is the same in every region. A ramp's domain
  * takes each pinned end as the config wrote it and each open one from the
  * union of the regions' own extremes — the same number the shapes read as a
- * uniform.
+ * uniform. A colour key is headed with `colorTitleOf` for its mark where
+ * that answers a string, and every other key with its field.
  */
 export function buildMarkLegend(
   regions: Iterable<MarkRegionData>,
   showsMark: (markIndex: number) => boolean = () => true,
+  colorTitleOf: (markIndex: number) => string | undefined = () => undefined,
 ): MarkLegendSection[] {
   const sections = new Map<string, MarkLegendSection>()
   for (const region of regions) {
@@ -163,13 +172,17 @@ export function buildMarkLegend(
         if (!scale) {
           continue
         }
-        const key = sectionKey(markIndex, scale)
+        const title =
+          (channel === 'color' ? colorTitleOf(markIndex) : undefined) ??
+          scale.field
+        const key = sectionKey(markIndex, scale, title)
         const current = sections.get(key)
         if (!current) {
           sections.set(key, {
             markIndexes: [markIndex],
             channel,
             scale: copyOf(scale),
+            title,
           })
         } else {
           if (!current.markIndexes.includes(markIndex)) {
@@ -195,9 +208,9 @@ export function buildMarkLegend(
 }
 
 // A glyph table over the same field a categorical colour reads, on marks
-// that colour also keys: the two keys would list the same values twice under
-// one title, so the colour key draws the glyph as its swatch and the glyph
-// key is folded away.
+// that colour also keys: the two keys would list the same values twice, so
+// the colour key draws the glyph as its swatch, under the colour's title, and
+// the glyph key is folded away.
 function glyphOverSameField(
   sections: MarkLegendSection[],
   colour: MarkLegendSection,
@@ -217,6 +230,7 @@ function glyphOverSameField(
 // the key and the chips read top to bottom alike.
 function categoricalKey<E extends { value: string }>(
   id: string,
+  title: string | undefined,
   scale: { field: string; domain: string[]; entries: E[] },
   swatchOf: (entry: E) => { color: string } | { swatches: LegendSwatch[] },
   facet: CategoricalField | undefined,
@@ -228,7 +242,7 @@ function categoricalKey<E extends { value: string }>(
   return {
     kind: 'categorical',
     id,
-    title: scale.field,
+    title,
     entries: scale.entries
       .toSorted((a, b) => field.compare(a.value, b.value))
       .map(e => ({
@@ -258,6 +272,7 @@ export function markColorScales(
     }
     const { markIndexes, channel, scale } = section
     const id = `mark-${markIndexes.join('-')}-${channel}`
+    const title = section.title || undefined
     switch (scale.kind) {
       case 'categorical': {
         const glyph = glyphOverSameField(sections, section)
@@ -270,6 +285,7 @@ export function markColorScales(
             : undefined
         const key = categoricalKey(
           id,
+          title,
           scale,
           ({ value, color }) => {
             const css = abgrToCssRgba(color)
@@ -288,6 +304,7 @@ export function markColorScales(
         return [
           categoricalKey(
             id,
+            title,
             scale,
             e => ({ swatches: [{ color: 'currentColor', glyph: e.glyph }] }),
             facet,
@@ -298,7 +315,7 @@ export function markColorScales(
           {
             kind: 'categorical',
             id,
-            title: scale.field,
+            title,
             entries: scale.entries.map(e => ({
               value: e.value,
               label: e.value,
@@ -311,7 +328,7 @@ export function markColorScales(
           {
             kind: 'ramp',
             id,
-            title: scale.field,
+            title,
             domain: scale.domain,
             stops: stopsFromRampLut(scale.lut, RAMP_STOPS),
           },

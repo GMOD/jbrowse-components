@@ -514,7 +514,8 @@ the row axis in the vocabulary above, and none is a new channel.
   declaration rather than the mark, the way ggplot2's `ScalesList$add_defaults`
   keeps one scale per aesthetic across layers and `Guides$merge` folds
   matching guides — and any difference in the declaration keeps them apart
-  ([ADR-136](../architecture-decision-records/adr-136-a-legend-follows-its-scale-and-a-colour-slot-is-a-colour.md)).
+  ([ADR-136](../architecture-decision-records/adr-136-a-legend-follows-its-scale-and-a-colour-slot-is-a-colour.md)),
+  a colour's `title` included, since ggplot2 merges only guides titled alike.
   Two marks with two unpinned ramps over one field still union nothing and
   each key is its own: the domain is a uniform each mark's shaders read, so
   sharing it is a rendering change to measure, not a legend change.

@@ -1,3 +1,5 @@
+import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
+import { legendEntries } from '@jbrowse/core/ui/legendSpec'
 import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
@@ -215,4 +217,51 @@ test('a key rebuilt over an extent that has not moved hands back the table it ba
   expect(first).toBeDefined()
   expect(lutOf(regions)).toBe(first)
   expect(lutOf([...regions, divergingRegion([-1, 0.5])])).not.toBe(first)
+})
+
+function keyTitle(written: string | undefined, loaded: MarkRegionData) {
+  const [key] = markColorScales(
+    buildMarkLegend([loaded], undefined, () => written),
+  )
+  return key?.title
+}
+
+// Unset derives, text is the text, and the empty string is a key the author
+// wants bare, the three states `scales.y.title` has.
+test('a colour key is titled with its field until title names it, and "" leaves it bare', () => {
+  const scores = region(table(['1', '2']))
+  expect(keyTitle(undefined, scores)).toBe('score')
+  expect(keyTitle('Mapping quality', scores)).toBe('Mapping quality')
+  expect(keyTitle('', scores)).toBeUndefined()
+  expect(keyTitle('PIP', region(thresholdTable()))).toBe('PIP')
+  expect(keyTitle(undefined, rampRegion([1, 2]))).toBe('log2')
+  expect(keyTitle('log2 ratio', rampRegion([1, 2]))).toBe('log2 ratio')
+  expect(keyTitle('', rampRegion([1, 2]))).toBeUndefined()
+})
+
+test('a bare key leaves the legend no heading row', () => {
+  const heading = (written: string | undefined) =>
+    legendEntries(
+      legendSpecOf(
+        markColorScales(
+          buildMarkLegend(
+            [region(table(['1', '2']))],
+            undefined,
+            () => written,
+          ),
+        ),
+      ),
+    ).map(e => e.label)
+  expect(heading('Mapping quality')).toEqual(['Mapping quality', '1', '2'])
+  expect(heading(undefined)).toEqual(['score', '1', '2'])
+  expect(heading('')).toEqual(['1', '2'])
+})
+
+test('two marks over one declaration share a key only under one title', () => {
+  const both = region(table(['1']), table(['1']))
+  const keys = (titleOf: (markIndex: number) => string | undefined) =>
+    buildMarkLegend([both], undefined, titleOf).map(s => s.title)
+  expect(keys(() => 'MAPQ')).toEqual(['MAPQ'])
+  expect(keys(i => (i === 0 ? 'score' : undefined))).toEqual(['score'])
+  expect(keys(i => (i === 0 ? 'MAPQ' : undefined))).toEqual(['MAPQ', 'score'])
 })
