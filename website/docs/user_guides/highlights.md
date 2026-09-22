@@ -32,8 +32,6 @@ every highlight with a link back to it.
   labels** in an LGV's menu shows or hides the names on the bands.
 - The Color column sets a band's color. Tick rows to recolor or delete several
   at once.
-- The list shows the highlights on an assembly some open view is showing, and
-  says how many others it is hiding.
 
 <Figure caption="A label typed into the highlight list names the band on the LGV." src="/img/highlight_list_edit_label.png"/>
 
@@ -48,7 +46,7 @@ the delete icon.
 
 ## Export and import
 
-Export writes the ticked highlights, or every listed one, as BED (one file per
+Export writes the ticked highlights, or all of them, as BED (one file per
 assembly, 0-based starts) or TSV (one file with an `assembly_name` column,
 1-based starts). Import reads either and adds to the list; a BED file takes the
 assembly picked in the dialog.

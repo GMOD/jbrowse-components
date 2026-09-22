@@ -64,9 +64,8 @@ async function setupWithAssembly() {
   return { session, view: session.views[0] }
 }
 
-test('the list holds the highlights on an assembly some view shows', () => {
+test('the list holds every highlight, including one no open view shows', () => {
   const { session, widget } = setup()
-  expect([...widget.assembliesInViews]).toEqual(['volvox'])
   session.addHighlight({
     assemblyName: 'volvox',
     refName: 'ctgA',
@@ -79,7 +78,10 @@ test('the list holds the highlights on an assembly some view shows', () => {
     start: 0,
     end: 100,
   })
-  expect(widget.rows.map(r => r.highlight.assemblyName)).toEqual(['volvox'])
+  expect(widget.rows.map(r => r.highlight.assemblyName)).toEqual([
+    'volvox',
+    'other-asm',
+  ])
 })
 
 test('a highlight made in one view is drawn in every view of its assembly', () => {

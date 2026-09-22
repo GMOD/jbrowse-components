@@ -6,6 +6,7 @@ import {
   resolveSelectedIds,
 } from '@jbrowse/core/util'
 import { getHighlightColor } from '@jbrowse/core/util/highlights'
+import { Stack, Typography } from '@mui/material'
 import {
   DataGrid,
   GRID_CHECKBOX_SELECTION_COL_DEF,
@@ -14,7 +15,6 @@ import {
 import { observer } from 'mobx-react'
 
 import { navToHighlight } from '../utils.ts'
-import EmptyState from './EmptyState.tsx'
 import SelectionActions from './SelectionActions.tsx'
 import {
   COMPACT_ROW_HEIGHT,
@@ -38,29 +38,22 @@ interface Row {
   assemblyName: string
 }
 
-// lets us pass a context-aware empty message through DataGrid's noRowsOverlay
-// slotProps
-declare module '@mui/x-data-grid' {
-  interface NoRowsOverlayPropsOverrides {
-    message?: string
-  }
-}
-
-function NoHighlightsOverlay({ message }: { message?: string }) {
+function NoHighlightsOverlay() {
   return (
-    <EmptyState
-      message={
-        message ??
-        'No highlights yet. Drag across a view to highlight a region, or import from the menu.'
-      }
-    />
+    <Stack
+      sx={{
+        height: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        p: 2,
+      }}
+    >
+      <Typography variant="body2" color="text.secondary" align="center">
+        No highlights yet. Drag across a view to highlight a region, or import
+        from the menu.
+      </Typography>
+    </Stack>
   )
-}
-
-function hiddenMessage(count: number) {
-  return count === 1
-    ? '1 highlight hidden because its assembly is not open in a view. Open a view on that assembly to see it.'
-    : `${count} highlights hidden because their assembly is not open in a view. Open a view on that assembly to see them.`
 }
 
 const HighlightGrid = observer(function HighlightGrid({
@@ -72,7 +65,6 @@ const HighlightGrid = observer(function HighlightGrid({
   const apiRef = useGridApiRef()
   const theme = useStyleTheme()
   const session = getSession(model)
-  const hiddenCount = session.highlights.length - model.rows.length
   const rows = model.rows.map(({ key, highlight }): Row => {
     const { assemblyName, refName, start, end, label } = highlight
     return {
@@ -108,11 +100,6 @@ const HighlightGrid = observer(function HighlightGrid({
         onCellClick={startLabelEditOnClick(apiRef)}
         hideFooterPagination={rows.length <= DEFAULT_PAGE_SIZE}
         slots={{ noRowsOverlay: NoHighlightsOverlay }}
-        slotProps={{
-          noRowsOverlay: {
-            message: hiddenCount > 0 ? hiddenMessage(hiddenCount) : undefined,
-          },
-        }}
         rows={rows}
         columns={[
           { ...GRID_CHECKBOX_SELECTION_COL_DEF, width: 50 },
