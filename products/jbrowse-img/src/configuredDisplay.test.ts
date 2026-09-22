@@ -195,6 +195,18 @@ describe('a mark display the rule list finds a problem in', () => {
     ).rejects.toThrow(/track "genes" mark 0 transform\.0\.expr: /)
   }, 60000)
 
+  test("names the display's own step under no mark", async () => {
+    await expect(
+      exportTrack(
+        configWith({
+          type: 'LinearMarkDisplay',
+          transform: [{ type: 'filter', expr: 'score>5' }],
+          marks: [{ shape: 'bar', encoding: { y: 'score' } }],
+        }),
+      ),
+    ).rejects.toThrow(/track "genes" transform\.0\.expr: /)
+  }, 60000)
+
   test('says a warning and draws', async () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const svg = await exportTrack(

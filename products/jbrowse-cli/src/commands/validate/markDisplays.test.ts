@@ -243,6 +243,32 @@ describe('a marks list in a config file', () => {
     ])
   })
 
+  it("checks the display's own steps, at the display's path", () => {
+    const bar = { shape: 'bar', encoding: { y: 'score' } }
+    expect(
+      found([bar], {
+        transform: [
+          { type: 'filter', expr: "get(feature,'score') > 1" },
+          { type: 'bin', step: -5 },
+        ],
+      }),
+    ).toEqual([
+      `error step-expression ${DISPLAY}.transform[0].expr`,
+      `error bin-width ${DISPLAY}.transform[1].step`,
+    ])
+    expect(
+      found([bar], {
+        transform: [
+          { type: 'formula', expr: 'jexl:1', as: 'score' },
+          {
+            type: 'aggregate',
+            ops: [{ op: 'sum', field: 'jexl:feature.score' }],
+          },
+        ],
+      }),
+    ).toEqual([`error undefined ${DISPLAY}.transform[1].ops[0].field`])
+  })
+
   it('points a jexl: field on a step at formula', () => {
     const grouped = (field: string) => [
       {

@@ -103,7 +103,7 @@ import type {
   MarkRenderState,
   StoredLayer,
 } from './markList.ts'
-import type { MarkProblem, MarkSnapshot } from './markProblems.ts'
+import type { MarkProblem, MarkSnapshot, StepSnapshot } from './markProblems.ts'
 import type { PlotFields, PlotSpec } from './plotFields.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -954,9 +954,10 @@ export function stateModelFactory(
        */
       get configProblems(): MarkProblem[] {
         const marks: MarkSnapshot[] = getSnapshot(self.conf.marks)
+        const transform = getSnapshot(self.conf.transform) as StepSnapshot[]
         return [
           ...markRequirementProblems(marks),
-          ...markProblems(marks, self.facet),
+          ...markProblems(marks, self.facet, transform),
         ]
       },
       /**

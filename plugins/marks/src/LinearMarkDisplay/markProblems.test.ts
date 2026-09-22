@@ -9,20 +9,34 @@ import type {
   FacetSnapshot,
   MarkProblem,
   MarkSnapshot,
+  StepSnapshot,
 } from './markProblems.ts'
 
 const schema = configSchemaFactory()
 const reached = new Set<string>()
 
 // The list as the display reads it: the schema's own lift, defaults left off.
-function problemsOf(marks: unknown[], facet?: unknown): MarkProblem[] {
-  const snap: { marks?: MarkSnapshot[]; facet?: FacetSnapshot } = getSnapshot(
-    schema.create({ displayId: 'd', marks, ...(facet ? { facet } : {}) }),
+function problemsOf(
+  marks: unknown[],
+  facet?: unknown,
+  transform?: unknown[],
+): MarkProblem[] {
+  const snap: {
+    marks?: MarkSnapshot[]
+    facet?: FacetSnapshot
+    transform?: StepSnapshot[]
+  } = getSnapshot(
+    schema.create({
+      displayId: 'd',
+      marks,
+      ...(facet ? { facet } : {}),
+      ...(transform ? { transform } : {}),
+    }),
   )
   const lifted = snap.marks ?? []
   const problems = [
     ...markRequirementProblems(lifted),
-    ...markProblems(lifted, snap.facet),
+    ...markProblems(lifted, snap.facet, snap.transform),
   ]
   for (const { rule } of problems) {
     reached.add(rule)
@@ -30,8 +44,8 @@ function problemsOf(marks: unknown[], facet?: unknown): MarkProblem[] {
   return problems
 }
 
-function found(marks: unknown[], facet?: unknown) {
-  return problemsOf(marks, facet).map(
+function found(marks: unknown[], facet?: unknown, transform?: unknown[]) {
+  return problemsOf(marks, facet, transform).map(
     p => `${p.level} ${p.rule} mark ${p.mark} ${p.slot}`,
   )
 }
@@ -235,6 +249,34 @@ test('a jexl: field on a step is pointed at formula, where a dotted path is read
   expect(found(grouped('jexl:feature.INFO.DP[0]'))).toEqual([
     'error step-field-expression mark 0 transform.0.groupby.0',
   ])
+})
+
+test("the display's own steps are checked as a mark's are, under no mark", () => {
+  const bar = { shape: 'bar', encoding: { y: 'score' } }
+  const problems = problemsOf([bar], undefined, [
+    { type: 'filter', expr: "get(feature,'score') > 1" },
+    { type: 'bin', step: -5 },
+    { type: 'pileup', fields: ['start'] },
+    { type: 'aggregate', groupby: ['jexl:feature.x'], ops: [{ op: 'sum' }] },
+  ])
+  expect(problems.map(p => `${p.rule} ${p.mark} ${p.slot}`)).toEqual([
+    'step-expression undefined transform.0.expr',
+    'bin-width undefined transform.1.step',
+    'step-pair undefined transform.2.fields',
+    'op-field undefined transform.3.ops.0.field',
+    'step-field-expression undefined transform.3.groupby.0',
+  ])
+  expect(problemText(problems[1]!)).toBe(
+    'transform.1.step: a bin is a positive width in bp',
+  )
+})
+
+test("a field the display's steps make is one a mark reads", () => {
+  expect(
+    found([{ shape: 'bar', encoding: { y: 'depth' } }], undefined, [
+      { type: 'formula', expr: 'jexl:1', as: 'depth' },
+    ]),
+  ).toEqual([])
 })
 
 test('threshold cuts written high to low are told which way they are read', () => {

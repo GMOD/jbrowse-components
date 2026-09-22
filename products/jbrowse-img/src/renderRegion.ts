@@ -220,7 +220,7 @@ function throwOnRenderError(session: RenderErrorSources) {
 
 interface ConfigProblem {
   level: string
-  mark: number
+  mark?: number
   slot: string
   message: string
 }
@@ -246,7 +246,7 @@ function reportConfigProblems(session: Model['session']) {
   for (const track of openTracks(session)) {
     for (const display of track.displays) {
       for (const { level, mark, slot, message } of configProblemsOf(display)) {
-        const line = `track "${track.configuration.trackId}" mark ${mark} ${slot}: ${message}`
+        const line = `track "${track.configuration.trackId}" ${mark === undefined ? '' : `mark ${mark} `}${slot}: ${message}`
         if (level === 'error') {
           errors.add(line)
         } else {

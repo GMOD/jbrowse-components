@@ -21,7 +21,7 @@ import {
 } from './schemaValidate.ts'
 import { didYouMean } from './suggest.ts'
 
-import type { MarkSnapshot } from './markRules/markProblems.ts'
+import type { MarkSnapshot, StepSnapshot } from './markRules/markProblems.ts'
 import type {
   ConfigManifest,
   Problem,
@@ -453,15 +453,21 @@ function checkSession(
 }
 
 const MARK_DISPLAY = 'LinearMarkDisplay'
-const MARKS_POINTER = `/$defs/${MARK_DISPLAY}Slots/properties/marks`
+const SLOTS_POINTER = `/$defs/${MARK_DISPLAY}Slots/properties`
 
 // The rule list reads a config snapshot, which is what a file is once the
-// schema passes its keys and types and the manifest's lifts are applied.
-function isMarkList(
-  lifted: unknown,
-  written: unknown,
-): lifted is MarkSnapshot[] {
-  return Array.isArray(lifted) && hasDeclaredShape(written, MARKS_POINTER)
+// schema passes its keys and types and the manifest's lifts are applied; a
+// list the schema refuses is the schema's to report.
+function declaredList<T>(
+  lifted: Record<string, unknown>,
+  display: Record<string, unknown>,
+  slot: string,
+): T[] {
+  const list = lifted[slot]
+  return Array.isArray(list) &&
+    hasDeclaredShape(display[slot], `${SLOTS_POINTER}/${slot}`)
+    ? (list as T[])
+    : []
 }
 
 function slotPath(slot: string) {
@@ -479,17 +485,18 @@ function checkMarkDisplay(
 ) {
   const slots = manifest.displays[MARK_DISPLAY]?.slots
   const lifted = liftToSnapshot(display, slots ?? [])
-  if (!slots || !isRecord(lifted) || !isMarkList(lifted.marks, display.marks)) {
+  if (!slots || !isRecord(lifted)) {
     return
   }
   const { facet } = lifted
   for (const { level, rule, mark, slot, message } of markProblems(
-    lifted.marks,
+    declaredList<MarkSnapshot>(lifted, display, 'marks'),
     isRecord(facet) ? facet : undefined,
+    declaredList<StepSnapshot>(lifted, display, 'transform'),
   )) {
     report.problems.push({
       level,
-      where: `${where}.marks[${mark}].${slotPath(slot)}`,
+      where: `${where}${mark === undefined ? '' : `.marks[${mark}]`}.${slotPath(slot)}`,
       message,
       rule,
     })

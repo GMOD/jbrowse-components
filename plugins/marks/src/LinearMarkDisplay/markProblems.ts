@@ -55,7 +55,8 @@ export type MarkRuleId = keyof typeof MARK_RULES
 
 /**
  * What a `marks` list says that the display cannot draw as written: the rule,
- * the mark, the slot to look at, and why. A problem is a combination of slots,
+ * the mark, or none for the display's own `transform`, the slot to look at,
+ * and why. A problem is a combination of slots,
  * which a load cannot refuse: the config editor writes one slot at a time, so
  * moving a bar to a span passes through a span that still names a `y`, and a
  * refusal there drops the track from the session it was saved in (ADR-133).
@@ -64,7 +65,7 @@ export type MarkRuleId = keyof typeof MARK_RULES
 export interface MarkProblem {
   rule: string
   level: MarkProblemLevel
-  mark: number
+  mark?: number
   slot: string
   message: string
 }
@@ -237,62 +238,10 @@ function madeFields(mark: MarkSnapshot) {
   return fields
 }
 
-function ownProblems(mark: MarkSnapshot) {
-  const shape = shapeOf(mark)
+// What a list of steps cannot run as written, whether a mark's or the display's
+function stepProblems(steps: readonly StepSnapshot[]) {
   const problems: OwnProblem[] = []
-  const y = mark.encoding?.y
-  const channels = new Set<string>(['x', 'x2', ...SHAPE_SPECS[shape].channels])
-  for (const channel of Object.keys(mark.encoding ?? {})) {
-    if (!channels.has(channel)) {
-      problems.push(
-        found(
-          'unread-channel',
-          `encoding.${channel}`,
-          `a ${shape} does not read ${channel}`,
-        ),
-      )
-    }
-  }
-  if (!readsValue(shape) && mark.source === 'density') {
-    problems.push(
-      found(
-        'span-density-source',
-        'source',
-        `a ${shape} does not draw the density sidecar`,
-      ),
-    )
-  }
-  const color = mark.encoding?.color ?? {}
-  for (const { rule, slot, message } of colorProblems(color, 'categorical')) {
-    problems.push(found(rule, `encoding.color.${slot}`, message))
-  }
-  const ramp = rampColor(mark)
-  if (ramp) {
-    const { domainMin, domainMax } = ramp
-    if (
-      rampResolvesPerRegion(shape) &&
-      (domainMin === undefined || domainMax === undefined)
-    ) {
-      problems.push(
-        found(
-          'unpinned-span-ramp',
-          `encoding.color.${domainMin === undefined ? 'domainMin' : 'domainMax'}`,
-          "a span's ramp resolves an open end against each region's own extremes, so its colours agree across regions only with domainMin and domainMax both pinned",
-        ),
-      )
-    }
-  }
-  const { minBpPerPx = 0, maxBpPerPx = 0 } = mark
-  if (minBpPerPx > 0 && maxBpPerPx > 0 && minBpPerPx >= maxBpPerPx) {
-    problems.push(
-      found(
-        'empty-zoom-range',
-        'minBpPerPx',
-        `never draws: minBpPerPx ${minBpPerPx} is not below maxBpPerPx ${maxBpPerPx}`,
-      ),
-    )
-  }
-  for (const [i, step] of stepsOf(mark).entries()) {
+  for (const [i, step] of steps.entries()) {
     const { type } = step
     if ((type === 'filter' || type === 'formula') && !isJexl(step.expr ?? '')) {
       problems.push(
@@ -354,6 +303,65 @@ function ownProblems(mark: MarkSnapshot) {
       }
     }
   }
+  return problems
+}
+
+function ownProblems(mark: MarkSnapshot) {
+  const shape = shapeOf(mark)
+  const problems: OwnProblem[] = []
+  const y = mark.encoding?.y
+  const channels = new Set<string>(['x', 'x2', ...SHAPE_SPECS[shape].channels])
+  for (const channel of Object.keys(mark.encoding ?? {})) {
+    if (!channels.has(channel)) {
+      problems.push(
+        found(
+          'unread-channel',
+          `encoding.${channel}`,
+          `a ${shape} does not read ${channel}`,
+        ),
+      )
+    }
+  }
+  if (!readsValue(shape) && mark.source === 'density') {
+    problems.push(
+      found(
+        'span-density-source',
+        'source',
+        `a ${shape} does not draw the density sidecar`,
+      ),
+    )
+  }
+  const color = mark.encoding?.color ?? {}
+  for (const { rule, slot, message } of colorProblems(color, 'categorical')) {
+    problems.push(found(rule, `encoding.color.${slot}`, message))
+  }
+  const ramp = rampColor(mark)
+  if (ramp) {
+    const { domainMin, domainMax } = ramp
+    if (
+      rampResolvesPerRegion(shape) &&
+      (domainMin === undefined || domainMax === undefined)
+    ) {
+      problems.push(
+        found(
+          'unpinned-span-ramp',
+          `encoding.color.${domainMin === undefined ? 'domainMin' : 'domainMax'}`,
+          "a span's ramp resolves an open end against each region's own extremes, so its colours agree across regions only with domainMin and domainMax both pinned",
+        ),
+      )
+    }
+  }
+  const { minBpPerPx = 0, maxBpPerPx = 0 } = mark
+  if (minBpPerPx > 0 && maxBpPerPx > 0 && minBpPerPx >= maxBpPerPx) {
+    problems.push(
+      found(
+        'empty-zoom-range',
+        'minBpPerPx',
+        `never draws: minBpPerPx ${minBpPerPx} is not below maxBpPerPx ${maxBpPerPx}`,
+      ),
+    )
+  }
+  problems.push(...stepProblems(stepsOf(mark)))
   const fields = madeFields(mark)
   if (fields && y && !isJexl(y) && !fields.has(y)) {
     problems.push(
@@ -371,18 +379,23 @@ function ownProblems(mark: MarkSnapshot) {
  * The problems of a `marks` list as a config snapshot holds it: shorthands
  * lifted, defaults left off. `facet` is the display's facet as written, naming
  * the field its sections stack by; under one, a rowless mark stands on each
- * section's first row by design. A file's own spelling goes through the
- * schema's lift first, which `jbrowse validate` does from the generated
- * manifest.
+ * section's first row by design. `transform` is the display's own steps,
+ * checked as a mark's are and reported with no mark. A file's own spelling
+ * goes through the schema's lift first, which `jbrowse validate` does from the
+ * generated manifest.
  */
 export function markProblems(
   marks: readonly MarkSnapshot[],
   facet?: FacetSnapshot,
+  transform: readonly StepSnapshot[] = [],
 ): MarkProblem[] {
   const faceted = typeof facet?.field === 'string' && facet.field !== ''
-  const problems = marks.flatMap((mark, i) =>
-    ownProblems(mark).map(p => ({ mark: i, ...p })),
-  )
+  const problems: MarkProblem[] = [
+    ...stepProblems(transform),
+    ...marks.flatMap((mark, i) =>
+      ownProblems(mark).map(p => ({ mark: i, ...p })),
+    ),
+  ]
   for (const [i, mark] of marks.entries()) {
     for (const [j, other] of marks.entries()) {
       if (i === j || !drawTogether(mark, other)) {
@@ -428,7 +441,10 @@ export function markProblems(
   return problems
 }
 
-/** A problem as one line of a notice: `mark 0 encoding.y: …`. */
+/**
+ * A problem as one line of a notice: `mark 0 encoding.y: …`, or
+ * `transform.0.step: …` for the display's own step.
+ */
 export function problemText({ mark, slot, message }: MarkProblem): string {
-  return `mark ${mark} ${slot}: ${message}`
+  return `${mark === undefined ? '' : `mark ${mark} `}${slot}: ${message}`
 }
