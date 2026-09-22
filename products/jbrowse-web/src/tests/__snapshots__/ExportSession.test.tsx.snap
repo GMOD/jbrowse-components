@@ -61,10 +61,6 @@ exports[`export session with alignments and gff tracks 1`] = `
       },
     ],
     "widgets": {
-      "GridBookmark": {
-        "id": "GridBookmark",
-        "type": "GridBookmarkWidget",
-      },
       "hierarchicalTrackSelector": {
         "id": "hierarchicalTrackSelector",
         "type": "HierarchicalTrackSelectorWidget",
