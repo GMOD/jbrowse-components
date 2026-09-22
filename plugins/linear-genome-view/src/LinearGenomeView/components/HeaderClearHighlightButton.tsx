@@ -40,7 +40,7 @@ export function highlightedDisplays(model: LinearGenomeViewModel) {
     .filter(d => d.featureHighlights.length > 0)
 }
 
-// Clears every highlight in the view at once. Shown only while there is one.
+// Clears every feature highlight in the view. Shown only while there is one.
 const HeaderClearHighlightButton = observer(
   function HeaderClearHighlightButton({
     highlighted,
@@ -50,7 +50,7 @@ const HeaderClearHighlightButton = observer(
     return highlighted.length > 0 ? (
       <IconButton
         data-testid="clear_search_highlight"
-        title="Clear highlights"
+        title="Clear feature highlights"
         onClick={() => {
           for (const d of highlighted) {
             d.clearFeatureHighlights()
