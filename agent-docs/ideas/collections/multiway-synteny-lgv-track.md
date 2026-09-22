@@ -33,7 +33,7 @@ but the clip that cuts a record to the window (`clipFeatureToRegion`, under
 `splitAtGapBp` or more (`splitSyntenyFeatureAtGaps` in synteny-core; the
 display asks for 10 kb, the coarse tier's default bound, so the cut is the
 same on either tier). Each gap-free run is its own feature, its `uniqueId`
-and `syntenyId` numbered after the window suffix, so on a nameless source
+and `syntenyId` numbered by its place in the record, so on a nameless source
 each run is its own group with its own anchor and mate intervals — the shape
 `anchorSpans`, `groupRunSpansOnRow`, the ribbons and `composeLaneLinks` all
 read, so a ribbon subdivides at the gap and a composed link interpolates

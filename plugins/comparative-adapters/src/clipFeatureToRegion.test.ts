@@ -107,7 +107,7 @@ test('a record outside the window is dropped', () => {
   expect(clipFeatureToRegion(record(), { start: 2000, end: 3000 })).toEqual([])
 })
 
-test('the piece keeps every field but the alignment strings, and its ids name the window', () => {
+test('the piece keeps every field but the alignment strings, and a cut piece names the window in its ids', () => {
   const f = clipFeatureToRegion(record({ CIGAR, cs: ':100*ac' }), {
     start: 1120,
     end: 1300,
@@ -125,8 +125,25 @@ test('the piece keeps every field but the alignment strings, and its ids name th
     end: 5000,
   })[0]!
   expect(extents(inside)).toEqual([1000, 1400, 5000, 5400])
-  expect(inside.id()).toBe('r1:0-5000')
+  expect(inside.id()).toBe('r1')
   expect(inside.get('CIGAR')).toBeUndefined()
+})
+
+// a display keys its click and its selection on these ids, and every pan past
+// a fetch boundary asks for a different window
+test('a record every window holds whole is one feature in all of them', () => {
+  for (const splitAtGapBp of [undefined, 10_000]) {
+    const pieces = [
+      { start: 0, end: 5000 },
+      { start: 500, end: 12_000 },
+    ].map(window =>
+      clipFeatureToRegion(record({ CIGAR }), window, splitAtGapBp),
+    )
+    expect(pieces.map(p => p.map(f => [f.id(), f.get('syntenyId')]))).toEqual([
+      [['r1', '7']],
+      [['r1', '7']],
+    ])
+  }
 })
 
 test('a feature with no mate is not a pairwise record and passes through', () => {
@@ -153,23 +170,20 @@ function gapped(extra: Partial<SimpleFeatureSerialized> = {}) {
   })
 }
 
-test('splitAtGapBp: a record inside the window is cut at its large indel into runs that share the window suffix and are numbered', () => {
+test('splitAtGapBp: a record inside the window is cut at its large indel into runs numbered after its own id', () => {
   const window = { start: 0, end: 1_000_000 }
   const runs = clipFeatureToRegion(gapped(), window, 10_000)
   expect(runs.map(extents)).toEqual([
     [100_000, 101_000, 5000, 6000],
     [126_000, 127_700, 6000, 7500],
   ])
-  expect(runs.map(f => f.id())).toEqual(['r1:0-1000000/0', 'r1:0-1000000/1'])
-  expect(runs.map(f => f.get('syntenyId'))).toEqual([
-    '7:0-1000000/0',
-    '7:0-1000000/1',
-  ])
+  expect(runs.map(f => f.id())).toEqual(['r1/0', 'r1/1'])
+  expect(runs.map(f => f.get('syntenyId'))).toEqual(['7/0', '7/1'])
   expect(runs.every(f => f.get('CIGAR') === undefined)).toBe(true)
   expect(runs.every(f => f.get('identity') === 0.98)).toBe(true)
 })
 
-test('splitAtGapBp: a window over one run yields that run alone under the plain suffix, and the bound decides what is a gap', () => {
+test('splitAtGapBp: a window over one run yields that run alone, still numbered by its place in the record, and the bound decides what is a gap', () => {
   const [first, ...rest] = clipFeatureToRegion(
     gapped(),
     { start: 100_500, end: 110_000 },
@@ -177,7 +191,7 @@ test('splitAtGapBp: a window over one run yields that run alone under the plain 
   )
   expect(rest).toEqual([])
   expect(extents(first!)).toEqual([100_500, 101_000, 5500, 6000])
-  expect(first!.id()).toBe('r1:100500-110000')
+  expect(first!.id()).toBe('r1:100500-110000/0')
 
   const unsplit = clipFeatureToRegion(
     gapped(),
@@ -185,7 +199,7 @@ test('splitAtGapBp: a window over one run yields that run alone under the plain 
     30_000,
   )
   expect(unsplit.map(extents)).toEqual([[100_000, 127_700, 5000, 7500]])
-  expect(unsplit[0]!.id()).toBe('r1:0-1000000')
+  expect(unsplit[0]!.id()).toBe('r1')
 })
 
 test('splitAtGapBp: - strand runs walk the mate from its far end', () => {
@@ -261,10 +275,7 @@ test('the base passes splitAtGapBp to the clip and getFeatures never sees it', a
     { clipToRegion: true, splitAtGapBp: 10_000 },
     [{ assemblyName: 'anchor', refName: 'chr1', start: 1500, end: 200_000 }],
   )
-  expect(pieces.map(f => f.id()).sort()).toEqual([
-    'r1:1500-200000/0',
-    'r1:1500-200000/1',
-  ])
+  expect(pieces.map(f => f.id()).sort()).toEqual(['r1/0', 'r1/1'])
   expect(
     adapter.regionsSeen.every(
       o => o.clipToRegion === undefined && o.splitAtGapBp === undefined,
