@@ -63,9 +63,10 @@ agree before timing:
 
 ## Prototype
 
-In the `@jbrowse/jexl` repo, local branch `worktree-agent-a48c86b91ece13085`
-(commits `4ca9361` compileColumnar, `7616c93` the 100k-row bench, `a9d714d`
-inferType, `56c8777`, `4c5d933`), built on jexl 4.0.1 and never rebased onto 5.
+Branch `columnar-prototype` on
+[GMOD/jexl](https://github.com/GMOD/jexl/tree/columnar-prototype) (commits
+`4ca9361` compileColumnar, `7616c93` the 100k-row bench, `a9d714d` inferType,
+`56c8777`, `4c5d933`), built on jexl 4.0.1 and never rebased onto 5.
 `Expression.compileColumnar({env, dataPronoun, envPronoun})` returns
 `(columns, n, out?) => values`, with 23 parity tests against `eval`. One
 semantic difference: a function called with no per-row argument runs once, so

@@ -549,6 +549,55 @@ the row axis in the vocabulary above, and none is a new channel.
   display's `coverage` step. There is one polar transform and no other, and
   the strip past `maxCanvasCssPx()` scales down rather than tiling.
 
+## Against GenomeSpy and Gosling
+
+Compared on 2026-09-21 with GenomeSpy v0.88.1 (2026-09-16) and Gosling 1.0.5
+(2025-07). On features the mark display covers roughly half of GenomeSpy's
+vocabulary; its lead is the browser around it and scaling past the fetch budget.
+
+| | JBrowse marks | GenomeSpy v0.88 | Gosling 1.0.5 |
+| --- | --- | --- | --- |
+| Marks | bar, point, span | rect, point, rule, tick, text, link, arrow | point, line, area, bar, rect, text, links, rule, triangles |
+| Channels | x, x2, y, row, color, glyph | adds y2, size, opacity, stroke, angle, text, tooltip | adds ye, size, opacity, stroke, text |
+| y scales | linear, log | 13 kinds, incl. symlog and sqrt | none on y |
+| Named colour ramps | viridis only | the d3 set | — |
+| Transforms | 7 | ~27, incl. window, lookup, stack, regexExtract | ~10 |
+| y shared across tracks | no | yes, `resolve.scale.y: "shared"` | same `domain` pinned by hand |
+| Selections, conditional colour | no | yes, compiled to shaders | hover/select styles only |
+| Legend title / axis title | yes / yes | yes / yes | yes / no |
+
+GenomeSpy is the comparison that matters; Gosling's main branch has been quiet
+since 2025-12. GenomeSpy has added SVG export (v0.84), a Canvas2D fallback
+(v0.85), a WebGPU renderer in development (v0.86) and Python bindings
+(`genome-spy-python` 0.4.0, 2026-09-18), so three backends and SVG export no
+longer set this layer apart on their own. What still does is the sweep that
+holds each shape's painter, shader and hit test to each other
+(`sweepMarkAgainstHit`) and the CI gate that compares the backends.
+
+The gaps a user meets first, in order:
+
+1. **No shared y across tracks.** `dtu`, `hic_structural_variants` and
+   `sv_multisamples` fake one by pinning the same ends by hand, and withdrawing
+   the second axis (ADR-141) sends two-quantity plots to two tracks. The fix sits
+   above the display: tracks naming one scale group autoscale together, which
+   wiggle and coverage would use too.
+2. **No `y2` channel**, so no error bars, intervals or a BigWig's min/max
+   envelope; a mark reads `minScore`/`maxScore` (ADR-123) but draws them as two
+   point sets. A range bar is the smallest channel with the widest reach.
+3. **No text mark**, for labelling a peak, an SV or a gene on a plot.
+4. **A thin colour and scale vocabulary.** One named ramp
+   (`COLOR_SCHEMES = ['viridis']` in `packages/core/src/util/colorSchemes.ts`),
+   and symlog, which the shared scale object and wiggle already have, is not a
+   mark type.
+5. **In-app authoring stops at one mark.** **Plot field...** writes one mark and
+   an optional count per bin, the config editor edits transform steps but not
+   marks (`db4ef2f82a`), and the track menu has no facet or colour picker.
+
+Point size (`scatterPointSize`) and `origin` are the display's rather than a
+mark's, and no mark declares its own tooltip fields. Line and area marks stay
+out ([ADR-127](../architecture-decision-records/adr-127-line-stays-wiggles.md)),
+and so do format-specific displays rebuilt on the grammar (ADR-114, ADR-118).
+
 ## What the tree does that the grammars do not
 
 - **Every channel evaluation is measured**, and the escape is priced: a
@@ -568,6 +617,18 @@ the row axis in the vocabulary above, and none is a new channel.
   sub-schemas and never `frozen`.
 - **Refusals are recorded with the measurement** that produced them, in the
   ADRs' Rejected rows, so a closed question is not reopened by accident.
+- **It scales past the fetch budget.** Bins follow the zoom on the 1/2/5 ladder
+  in the fetch key, and past the byte budget a density file draws in place of
+  the "region too large" banner, which is how chromosome 1's 1.3 million Alus
+  draw end to end; GenomeSpy's multiscale switches at fixed zooms and has no
+  byte budget.
+- **It is a display on the track a user already has**, so the same BAM, VCF or
+  BigWig switches between its usual display and a plot, and inherits sessions,
+  URLs, the agent API, SVG export and the circular view's ring.
+- **The validator reads the plot, not just the JSON**: "reads "mean_score",
+  which its steps do not write" and "never draws: minBpPerPx 100 is not below
+  maxBpPerPx 10" are beyond a JSON Schema.
+- **Clicking a binned bar opens the features inside it.**
 
 ## Where a proposal lands
 
