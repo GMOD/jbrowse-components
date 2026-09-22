@@ -495,7 +495,7 @@ async function dragToZoomFramesTheSpan(page, slug) {
 // naming the data is the proof that the display drew and the page read it.
 const PLACED_KEYS = {
   'color-and-group-by-a-field': 'protein_coding',
-  'gene-lanes': 'atpA',
+  'gene-lanes': 'gene-b3734',
   'a-plot-from-json': 'AluY',
 }
 
