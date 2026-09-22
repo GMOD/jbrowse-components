@@ -535,9 +535,8 @@ Since the worker marks by locus, this is the common case on a row showing
 slices, from a multi-locus search or Collapse introns' "Replace current view":
 an alignment whose mate misses every slice is marked, and the click used to
 swap those slices for the whole forward contig. Any change to the list blanks
-the band for one round trip (`SyntenyBlankOnRegionChange` in
-`LinearSyntenyDisplay/afterAttach.ts`), so an inserted slice costs the reader
-no more than an appended one.
+the band for one round trip (`geometryCurrent` in `LinearSyntenyDisplay/model.ts`),
+so an inserted slice costs the reader no more than an appended one.
 
 **An aliased region is respelled in place.** `navTo` canonicalizes the location
 and then compares `displayedRegions` refNames raw, so no spelling reaches a

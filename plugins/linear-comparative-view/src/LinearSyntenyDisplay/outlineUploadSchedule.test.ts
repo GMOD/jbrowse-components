@@ -131,7 +131,7 @@ async function openSelectedRibbon() {
   await when(() => display.renderParams !== undefined)
 
   // the RPC's answer, then a click on the first ribbon
-  display.setRpcData(FEATURES, GEOMETRY)
+  display.setRpcData(FEATURES, GEOMETRY, display.regionSignature)
   display.setClickedInstance(0)
   const { uploaded, backend } = recordingBackend()
   level.startRenderingBackend(backend)
@@ -187,7 +187,7 @@ test('a refetch still carrying the feature keeps the outline on it', async () =>
   const { display } = await openSelectedRibbon()
   expect(display.clickedFeatureId).toBe(1)
 
-  display.setRpcData(REORDERED, { ...GEOMETRY })
+  display.setRpcData(REORDERED, { ...GEOMETRY }, display.regionSignature)
 
   expect(display.clickedFeatureId).toBe(2)
   expect(display.outlineCell?.kind).toBe('outline')
@@ -198,7 +198,7 @@ test('a refetch still carrying the feature keeps the outline on it', async () =>
 test('a refetch that dropped the feature releases the outline', async () => {
   const { display } = await openSelectedRibbon()
 
-  display.setRpcData(WITHOUT_A, ONE_INSTANCE)
+  display.setRpcData(WITHOUT_A, ONE_INSTANCE, display.regionSignature)
 
   expect(display.clickedFeatureId).toBe(0)
   expect(display.outlineCell).toBeUndefined()

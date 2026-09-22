@@ -1,4 +1,3 @@
-import { addDisposer } from '@jbrowse/mobx-state-tree'
 import {
   canonicalizeSyntenyDictLanes,
   getCanonicalRefNameFn,
@@ -6,12 +5,9 @@ import {
   installComparativeFetchAutorun,
   installLodTierInfoFetch,
 } from '@jbrowse/synteny-core'
-import { reaction, untracked } from 'mobx'
+import { untracked } from 'mobx'
 
-import {
-  emptyOffscreenMates,
-  renameOffscreenMates,
-} from '../LinearSyntenyRPC/collectOffscreenMates.ts'
+import { renameOffscreenMates } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 
 import type { LinearSyntenyDisplayModel } from './model.ts'
 
@@ -25,34 +21,6 @@ export function doAfterAttach(
   self: Omit<LinearSyntenyDisplayModel, 'afterAttach' | 'beforeDestroy'>,
 ) {
   installLodTierInfoFetch(self)
-
-  // Ribbon corners and off-screen mate marks are stored in a cumBp layout the
-  // fetch saw, so a rewritten region list (a flip, a mate-mark drop, the
-  // follow's locstring fallback) leaves every ribbon and mark at a locus that
-  // no longer exists until the refetch lands. One blank frame is honest; a
-  // wrong one is not. The feature lanes stay: they name loci in bp, and a row
-  // the follow places from has just rewritten its regions when the follow
-  // walks them.
-  addDisposer(
-    self,
-    reaction(
-      () => self.regionSignature,
-      () => {
-        const { featureData } = self
-        if (self.instanceData && featureData) {
-          self.setRpcData(
-            {
-              ...featureData,
-              offscreenMates: emptyOffscreenMates(),
-              targetOffscreenMates: emptyOffscreenMates(),
-            },
-            undefined,
-          )
-        }
-      },
-      { name: 'SyntenyBlankOnRegionChange' },
-    ),
-  )
 
   installComparativeFetchAutorun(self, {
     name: 'SyntenyFetch',
@@ -90,6 +58,7 @@ export function doAfterAttach(
             drawCIGAR: view.drawCIGAR,
             drawCIGARMatchesOnly: view.drawCIGARMatchesOnly,
             lodTier: self.lodTier,
+            regionSignature: self.regionSignature,
             // Captured as strings HERE, not derived from `displayedRegions`
             // after the RPC: those are MST nodes and a fetch can outlive the
             // level it was started from, where reading one throws into an
@@ -201,13 +170,13 @@ export function doAfterAttach(
         ),
       }
     },
-    commit: ({ instanceData, ...featureData }) => {
+    commit: ({ instanceData, ...featureData }, { regionSignature }) => {
       // Before the data lands, because the accumulated domain has to outlive
       // this payload: `attributeRanges` reports the span of the SLICE this
       // window fetched, and the ramp a column paints would
       // otherwise re-scale on every pan that rolls the window over.
       self.view.observeAttributeRanges(featureData.attributeRanges)
-      self.setRpcData(featureData, instanceData)
+      self.setRpcData(featureData, instanceData, regionSignature)
     },
   })
 

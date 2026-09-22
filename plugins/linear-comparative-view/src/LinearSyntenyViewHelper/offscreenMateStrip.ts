@@ -32,7 +32,7 @@ export interface OffscreenMateSource {
   rowPair: { v0: StripRow; v1: StripRow } | undefined
   height: number
   linearSyntenyDisplays: (MarkColorDisplay & {
-    featureData?: {
+    mateMarks?: {
       offscreenMates: OffscreenMateData
       targetOffscreenMates?: OffscreenMateData
       targetQueried?: boolean
@@ -59,12 +59,12 @@ function laneData(
   display: SourceDisplay,
   side: OffscreenMateSide,
 ): OffscreenMateDataset[] {
-  const { featureData, culledRibbonMates } = display
+  const { mateMarks, culledRibbonMates } = display
   const lanes =
     side === 'top'
-      ? [featureData?.offscreenMates, culledRibbonMates?.onQueryAxis]
-      : featureData?.targetQueried
-        ? [featureData.targetOffscreenMates, culledRibbonMates?.onTargetAxis]
+      ? [mateMarks?.offscreenMates, culledRibbonMates?.onQueryAxis]
+      : mateMarks?.targetQueried
+        ? [mateMarks.targetOffscreenMates, culledRibbonMates?.onTargetAxis]
         : []
   return lanes.filter(lane => lane !== undefined)
 }

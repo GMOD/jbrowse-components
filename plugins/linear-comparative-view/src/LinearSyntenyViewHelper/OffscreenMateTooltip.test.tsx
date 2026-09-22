@@ -17,7 +17,7 @@ function source(
     height: 100,
     linearSyntenyDisplays: [
       {
-        featureData: {
+        mateMarks: {
           offscreenMates: {
             mateRefNameDict: dict,
             counts: Uint32Array.from(dict, name => counts[name]!),
@@ -130,7 +130,7 @@ function bothLanes() {
     height: 100,
     linearSyntenyDisplays: [
       {
-        featureData: {
+        mateMarks: {
           offscreenMates: {
             mateRefNameDict: ['chr1'],
             counts: Uint32Array.from([7]),

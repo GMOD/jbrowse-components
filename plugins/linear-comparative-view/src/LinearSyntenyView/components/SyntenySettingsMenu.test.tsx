@@ -202,7 +202,11 @@ test('a file with no CIGAR ops is offered no CIGAR row', async () => {
 
   act(() => {
     for (const d of view.allSyntenyDisplays) {
-      d.setRpcData(packSyntenyFeatureData([], { hasCigar: false }), undefined)
+      d.setRpcData(
+        packSyntenyFeatureData([], { hasCigar: false }),
+        undefined,
+        d.regionSignature,
+      )
     }
   })
 

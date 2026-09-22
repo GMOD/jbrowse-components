@@ -35,7 +35,7 @@ function source(over: Record<string, unknown> = {}): OffscreenMateSource {
     level: 0,
     rowPair: { v0: QUERY_ROW, v1: TARGET_ROW },
     height: 100,
-    linearSyntenyDisplays: [{ featureData: { offscreenMates: mates(3) } }],
+    linearSyntenyDisplays: [{ mateMarks: { offscreenMates: mates(3) } }],
     parentView: {
       showOffscreenMates: true,
       minAlignmentLength: 0,
@@ -56,7 +56,7 @@ function bothSides(over: Record<string, unknown> = {}): OffscreenMateSource {
     height: 100,
     linearSyntenyDisplays: [
       {
-        featureData: {
+        mateMarks: {
           offscreenMates: named('fromQuery'),
           targetOffscreenMates: named('fromTarget'),
           targetQueried: true,
@@ -113,7 +113,7 @@ test('a display with nothing hidden contributes nothing to draw', () => {
   expect(
     offscreenMateStrips(
       source({
-        linearSyntenyDisplays: [{ featureData: { offscreenMates: mates(0) } }],
+        linearSyntenyDisplays: [{ mateMarks: { offscreenMates: mates(0) } }],
       }),
     ),
   ).toEqual([])
@@ -124,8 +124,8 @@ test('every display on the level is drawn, not just the first', () => {
     offscreenMateStrips(
       source({
         linearSyntenyDisplays: [
-          { featureData: { offscreenMates: mates(3) } },
-          { featureData: { offscreenMates: mates(2) } },
+          { mateMarks: { offscreenMates: mates(3) } },
+          { mateMarks: { offscreenMates: mates(2) } },
         ],
       }),
     )[0]?.datasets,
@@ -159,7 +159,7 @@ test('an empty mirror lane is not a second strip', () => {
       bothSides({
         linearSyntenyDisplays: [
           {
-            featureData: {
+            mateMarks: {
               offscreenMates: named('fromQuery'),
               targetOffscreenMates: mates(0),
             },
@@ -191,8 +191,8 @@ test('with the toggle off nothing is hittable, since nothing is drawn', () => {
 test('a second display on the level is asked too', () => {
   const s = source({
     linearSyntenyDisplays: [
-      { featureData: { offscreenMates: mates(0) } },
-      { featureData: { offscreenMates: named('ctgQ') } },
+      { mateMarks: { offscreenMates: mates(0) } },
+      { mateMarks: { offscreenMates: named('ctgQ') } },
     ],
   })
   expect(hit(s, 1, 1)?.refName).toBe('ctgQ')
@@ -231,12 +231,12 @@ test('the totals sum every display on the level', () => {
   const both = source({
     linearSyntenyDisplays: [
       {
-        featureData: {
+        mateMarks: {
           offscreenMates: { ...mates(3), counts: Uint32Array.from([3]) },
         },
       },
       {
-        featureData: {
+        mateMarks: {
           offscreenMates: { ...mates(2), counts: Uint32Array.from([2]) },
         },
       },
@@ -297,7 +297,7 @@ test('the bottom strip marks the ribbons the row above culled', () => {
   const model = bothSides({
     linearSyntenyDisplays: [
       {
-        featureData: {
+        mateMarks: {
           offscreenMates: mates(0),
           targetOffscreenMates: mates(0),
           targetQueried: true,
@@ -327,7 +327,7 @@ test('an alignment the row above is still showing is no mark down there', () => 
       bothSides({
         linearSyntenyDisplays: [
           {
-            featureData: {
+            mateMarks: {
               offscreenMates: mates(0),
               targetOffscreenMates: mates(0),
               targetQueried: true,
@@ -351,7 +351,7 @@ test('a culled bottom mark clicks through as a contig that row already has', () 
   const model = bothSides({
     linearSyntenyDisplays: [
       {
-        featureData: {
+        mateMarks: {
           offscreenMates: mates(0),
           targetOffscreenMates: mates(0),
           targetQueried: true,
@@ -386,7 +386,7 @@ test('a mark whose mate span collapses still resolves to a place', () => {
   const model = bothSides({
     linearSyntenyDisplays: [
       {
-        featureData: {
+        mateMarks: {
           offscreenMates: mates(0),
           targetOffscreenMates: mates(0),
           targetQueried: true,
@@ -414,7 +414,7 @@ test('a payload that did not query the lower row draws no lower strip', () => {
   const model = bothSides({
     linearSyntenyDisplays: [
       {
-        featureData: {
+        mateMarks: {
           offscreenMates: mates(0),
           targetOffscreenMates: mates(0),
           targetQueried: false,
@@ -441,7 +441,7 @@ test('an ungated lower lane is not counted either', () => {
       bothSides({
         linearSyntenyDisplays: [
           {
-            featureData: {
+            mateMarks: {
               offscreenMates: named('fromQuery'),
               targetOffscreenMates: named('fromTarget'),
               targetQueried: false,

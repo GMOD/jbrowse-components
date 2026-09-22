@@ -228,6 +228,15 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       instanceData: undefined as SyntenyGeometry | undefined,
       /**
        * #volatile
+       * The `regionSignature` the fetch behind `instanceData` was laid out
+       * under. Ribbon corners and mate marks are placed in that layout's cumBp
+       * space, so they draw only while the rows still show it
+       * (`geometryCurrent`); the feature lanes name loci in bp and stay usable
+       * either way.
+       */
+      geometryRegionSignature: undefined as string | undefined,
+      /**
+       * #volatile
        * Index into `instanceData` of the GPU instance the pointer is over, or
        * -1. The INSTANCE, not the feature, even though the tooltip and the
        * highlight are both about the feature: a CIGAR-detailed ribbon is a base
@@ -260,9 +269,11 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       setRpcData(
         featureData: SyntenyFeatureData | undefined,
         instanceData: SyntenyGeometry | undefined,
+        regionSignature: string,
       ) {
         self.featureData = featureData
         self.instanceData = instanceData
+        self.geometryRegionSignature = regionSignature
         self.hoveredInstanceIdx = -1
         self.contextMenuAnchor = undefined
       },
@@ -340,7 +351,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        */
       get culledRibbonMates() {
         const { featureData, instanceData } = self
-        return featureData && instanceData
+        return featureData && instanceData && this.geometryCurrent
           ? culledRibbonMateData(
               instanceData,
               featureData,
@@ -448,6 +459,24 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
               .map(v => regionSignature(v.displayedRegions))
               .join('_')
           : ''
+      },
+      /**
+       * #getter
+       * The held geometry was laid out under the regions the rows show now. A
+       * flip, a mate-mark drop or the follow's locstring fallback rewrites the
+       * regions ahead of the refetch, and one blank frame is honest where a
+       * ribbon at a locus that no longer exists is not.
+       */
+      get geometryCurrent() {
+        return self.geometryRegionSignature === this.regionSignature
+      },
+      /**
+       * #getter
+       * the payload's off-screen mate marks while `geometryCurrent`, which is
+       * what the strip places them against
+       */
+      get mateMarks() {
+        return this.geometryCurrent ? self.featureData : undefined
       },
       /**
        * #getter
@@ -665,7 +694,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       get renderInstanceData() {
         const { instanceData } = self
         const colors = this.computedColors
-        if (!instanceData || !colors) {
+        if (!instanceData || !colors || !this.geometryCurrent) {
           return undefined
         }
         return { ...instanceData, colors }

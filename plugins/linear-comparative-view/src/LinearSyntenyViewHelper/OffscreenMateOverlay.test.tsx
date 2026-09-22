@@ -18,7 +18,7 @@ function level({ width = 800, height = 100, show = true } = {}) {
     groundColor: '#fff',
     linearSyntenyDisplays: [
       {
-        featureData: {
+        mateMarks: {
           offscreenMates: {
             mateRefNameDict: ['ctgB'],
             counts: Uint32Array.from([1]),

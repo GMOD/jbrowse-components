@@ -83,18 +83,20 @@ test('a pan of the lower row past its buffer moves the key with the bidirectiona
 
 // The corners the worker emitted are relative to the region layout it was
 // given, so after a rewrite of a row's region list the held geometry draws at
-// loci that no longer exist. A pan keeps it; a region change drops it. The
-// feature lanes name loci in bp and stay, because the follow walks them to
-// place the other row from exactly such a rewrite.
-// The off-screen mate marks go with the geometry: they are placed in the same
-// cumBp layout, and a mark left behind draws and answers clicks at the wrong
-// locus until the refetch lands.
-test('a rewritten region list drops the held geometry and the mate marks, keeps the features, a pan keeps all three', async () => {
+// loci that no longer exist. A pan keeps it; a region change hides it until
+// the rows show its layout again. The feature lanes name loci in bp and stay,
+// because the follow walks them to place the other row from exactly such a
+// rewrite. The off-screen mate marks go with the geometry: they are placed in
+// the same cumBp layout, and a mark left behind draws and answers clicks at
+// the wrong locus until the refetch lands.
+test('a rewritten region list hides the held geometry and the mate marks until the layout is back, and keeps the features', async () => {
   const { view, display } = await openSynteny()
   const d = display as unknown as {
-    instanceData: unknown
-    featureData: { featureIds: string[]; offscreenMates: { starts: unknown } }
-    setRpcData: (a: unknown, b: unknown) => void
+    geometryCurrent: boolean
+    mateMarks: { offscreenMates: { starts: unknown } } | undefined
+    featureData: { featureIds: string[] }
+    regionSignature: string
+    setRpcData: (a: unknown, b: unknown, regionSignature: string) => void
   }
   const marks = {
     ...emptyOffscreenMates(),
@@ -107,23 +109,31 @@ test('a rewritten region list drops the held geometry and the mate marks, keeps 
     mateStarts: new Float64Array([0]),
     mateEnds: new Float64Array([100]),
   }
-  d.setRpcData(
-    {
-      attributeRanges: [],
-      featureIds: ['f1'],
-      starts: new Float64Array(0),
-      ends: new Float64Array(0),
-      offscreenMates: marks,
-      targetOffscreenMates: marks,
-    },
-    { instanceCount: 0 },
-  )
-  expect(d.instanceData).toBeDefined()
+  const payload = {
+    attributeRanges: [],
+    featureIds: ['f1'],
+    starts: new Float64Array(0),
+    ends: new Float64Array(0),
+    offscreenMates: marks,
+    targetOffscreenMates: marks,
+  }
+  d.setRpcData(payload, { instanceCount: 0 }, d.regionSignature)
+  expect(d.geometryCurrent).toBe(true)
   view.views[0]!.horizontalScroll(100)
-  expect(d.instanceData).toBeDefined()
-  expect(d.featureData.offscreenMates.starts).toHaveLength(1)
+  expect(d.geometryCurrent).toBe(true)
+  expect(d.mateMarks?.offscreenMates.starts).toHaveLength(1)
   view.views[0]!.horizontallyFlip()
-  expect(d.instanceData).toBeUndefined()
+  expect(d.geometryCurrent).toBe(false)
+  expect(d.mateMarks).toBeUndefined()
   expect(d.featureData.featureIds).toEqual(['f1'])
-  expect(d.featureData.offscreenMates.starts).toHaveLength(0)
+
+  // flipped back inside the debounce: the fetch finds its key current and
+  // runs nothing, so the held layout has to be the one that draws
+  view.views[0]!.horizontallyFlip()
+  expect(d.geometryCurrent).toBe(true)
+  expect(d.mateMarks?.offscreenMates.starts).toHaveLength(1)
+
+  // a fetch that left under another layout lands hidden
+  d.setRpcData(payload, { instanceCount: 0 }, 'another layout')
+  expect(d.geometryCurrent).toBe(false)
 })
