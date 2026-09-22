@@ -156,14 +156,9 @@ every band of a faceted plot and at every zoom: on a multiscale pair whose two
 marks plot different quantities, a rule written for one draws over the other
 too.
 
-`title` names what the axis measures, and has three states. Left unset, the
-display captions the axis with the `encoding.y` field wherever every mark
-drawing a value at the current zoom names the same one, so a multiscale pair of
-`milliDiv` and `count` reads `milliDiv` zoomed in and `count` zoomed out with
-nothing configured; marks naming two fields, a `jexl:` `y`, and the density
-sidecar while it stands in for the features derive no caption. Some text is that
-text at every zoom. `"title": ""` leaves the axis bare. A plot banded by a
-`facet` or a `row` field carries the one caption beside its bands.
+`title` names what the axis measures, and is optional: unset, the axis has no
+caption, and some text is that text at every zoom. A plot banded by a `facet` or
+a `row` field carries the one caption beside its bands.
 
 ## Two quantities
 

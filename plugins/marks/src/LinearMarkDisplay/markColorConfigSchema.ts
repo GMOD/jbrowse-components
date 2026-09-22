@@ -113,9 +113,9 @@ export const markColorSchema = ConfigurationSchema(
     /**
      * #slot title
      * The heading of the key this scale draws, naming what the colour
-     * measures. Three states, as `scales.y.title` has: unset, the key is
-     * titled with `field`; some text is that text; `""` is a key with no
-     * title, and the only spelling of one. `null` reads as unset, as it does
+     * measures. Three states: unset, the key is titled with `field`; some
+     * text is that text; `""` is a key with no title, and the only spelling
+     * of one. `null` reads as unset, as it does
      * in every slot. Marks sharing a key share its title too, so two marks
      * titling one scale differently draw a key each.
      */

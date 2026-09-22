@@ -243,19 +243,13 @@ export function valueScaleSchema({
             /**
              * #slot scales.y.title
              * The caption beside the axis, naming what it measures, drawn
-             * once however many bands the scale rules. Three states: unset,
-             * the display derives it (the mark display from the `encoding.y`
-             * field every mark drawing a value at the view's zoom shares,
-             * and none where they differ or one is a `jexl:` expression);
-             * some text is that text; `""` is an axis with no caption, and
-             * the only spelling of one. `null` reads as unset, as it does in
-             * every slot, so it derives the caption — where Vega-Lite and
-             * GenomeSpy read `title: null` as no title.
+             * once however many bands the scale rules and at every zoom.
+             * Optional, as JBrowse's other captions are: unset, `""` or
+             * `null`, the axis has none; some text is that text.
              */
             title: {
               type: 'maybeString',
-              description:
-                'axis caption; unset follows the plotted field, "" draws none',
+              description: 'axis caption; unset draws none',
             },
           }
         : {}),

@@ -354,18 +354,6 @@ function layerSpans(entries: VisibleEntry<StoredLayer>[]): ScoreSpan[] {
   })
 }
 
-// The `y` field every mark plotting a value names, or '' where they differ or
-// name an expression, which is no title.
-function sharedValueField(marks: readonly MarkConfig[]) {
-  const fields = new Set(
-    marks.flatMap(({ shape, encoding }) =>
-      !readsValue(shape) || encoding.y === '' ? [] : [encoding.y],
-    ),
-  )
-  const [field = ''] = fields
-  return fields.size === 1 && !isJexl(field) ? field : ''
-}
-
 /**
  * #stateModel LinearMarkDisplay
  * #displayFoundation MultiRegionDisplayMixin
@@ -789,20 +777,10 @@ export function stateModelFactory(
       /**
        * #getter
        * What the axis is captioned with: `scales.y.title` where the config
-       * wrote one, the empty string included, which is an axis left bare.
-       * Unset, the `y` field the marks drawing a value at this zoom share, so
-       * a multiscale pair reads `score` at one zoom and `count` at the other;
-       * empty where they differ or name an expression, and while the density
-       * sidecar stands in, whose bins are not the field's values.
+       * wrote one, and nothing otherwise, as a caption is optional
        */
       get axisTitle(): string {
-        const { marks } = self.conf
-        return (
-          self.scaleTitle ??
-          (self.coarseTierStandsIn
-            ? ''
-            : sharedValueField(self.valuedMarkIndices.map(i => marks[i]!)))
-        )
+        return self.scaleTitle ?? ''
       },
       /**
        * #getter

@@ -8017,7 +8017,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 0.99
         },
         "title": {
-          "description": "axis caption; unset follows the plotted field, \\"\\" draws none.",
+          "description": "axis caption; unset draws none.",
           "$ref": "#/$defs/PlainString"
         },
         "rules": {

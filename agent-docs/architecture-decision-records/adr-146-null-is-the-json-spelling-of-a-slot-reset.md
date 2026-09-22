@@ -134,9 +134,9 @@ member", rather than inventing a house convention.
   `null` in a `maybe*` slot — `{ scales: { y: { domainMin: null } } }` — failed
   MST validation and the session dropped the whole track. A frozen-family
   slot keeps what the Decision says of it: its type takes `null`, so the
-  snapshot stores one. For `scales.y.title` this makes `null` mean
-  "derive the caption", the opposite of Vega-Lite's and GenomeSpy's `title:
-  null`; `""` is the spelling for no caption, and the slot doc says so.
+  snapshot stores one. For `scales.y.title` a `null` is unset, which since
+  2026-09-21 draws no caption, as `""` does
+  ([ADR-142](adr-142-one-value-scale-object.md) §"Amended 2026-09-21").
 - A frozen slot's *nested* nulls are untouched — the merge path reinterprets a
   slot's own value and a namespace's members, and recurses into nothing else. A
   caller that needs to store a bare `null` wraps it, or writes it as a snapshot.

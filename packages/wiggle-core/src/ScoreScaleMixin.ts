@@ -121,10 +121,8 @@ export function ScoreScaleMixin() {
       },
       /**
        * #getter
-       * `scales.y.title` as written: `undefined` while unset, which leaves
-       * the caption to the display, and the empty string for an axis the
-       * author wants bare. Also `undefined` on a display whose scale declares
-       * no title.
+       * `scales.y.title` as written, `undefined` while unset or on a display
+       * whose scale declares no title.
        */
       get scaleTitle(): string | undefined {
         return getConf(confNode(self), ['scales', 'y', 'title'])

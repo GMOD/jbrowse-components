@@ -498,18 +498,28 @@ test('a rule in a banded plot is placed in the band every row repeats', () => {
   expect(rule!.y).toBe(yBottom - (4 / 8) * (yBottom - yTop))
 })
 
-test('the axis is titled with the field every valued mark plots, and a multiscale pair retitles at its zoom', () => {
-  const { createDisplay } = createTestEnvironment([
+test('the axis carries only the caption title writes, at every zoom', () => {
+  const multiscale = [
     { shape: 'bar', encoding: { y: 'score' }, maxBpPerPx: 4 },
-    { shape: 'point', encoding: { y: 'score' }, maxBpPerPx: 4 },
-    { shape: 'span', encoding: { color: 'red' } },
     { shape: 'bar', encoding: { y: 'count' }, minBpPerPx: 4 },
+  ]
+  const captions = (y: Record<string, unknown>) => {
+    const { display, view } = createTestEnvironment(
+      multiscale,
+      REGION,
+      'BedAdapter',
+      { scales: { y } },
+    ).createDisplay()
+    view.zoomTo(2)
+    const zoomedIn = display.valueScales[0]!.caption
+    view.zoomTo(8)
+    return [zoomedIn, display.valueScales[0]!.caption]
+  }
+  expect(captions({})).toEqual(['', ''])
+  expect(captions({ title: 'Alu copies' })).toEqual([
+    'Alu copies',
+    'Alu copies',
   ])
-  const { display, view } = createDisplay()
-  view.zoomTo(2)
-  expect(display.valueScales[0]!.caption).toBe('score')
-  view.zoomTo(8)
-  expect(display.valueScales[0]!.caption).toBe('count')
 })
 
 test('two fields, or an expression, leave the axis untitled until title names it', () => {
@@ -531,19 +541,18 @@ test('two fields, or an expression, leave the axis untitled until title names it
   ).toBe('-log10 p')
 })
 
-// Unset derives, text is the text, and the empty string is an axis the author
-// wants bare: three states, which `''` standing for unset could not hold.
-test('an empty title leaves the axis bare where unset would have derived one', () => {
+test('an unset or empty title leaves the axis bare, and a reset returns it there', () => {
   const marks = [{ shape: 'bar', encoding: { y: 'score' } }]
   const titled = (y: Record<string, unknown>) =>
     createTestEnvironment(marks, REGION, 'BedAdapter', {
       scales: { y },
     }).createDisplay().display
-  expect(titled({}).valueScales[0]!.caption).toBe('score')
+  expect(titled({}).valueScales[0]!.caption).toBe('')
   expect(titled({ title: '' }).valueScales[0]!.caption).toBe('')
-  const display = titled({ title: '' })
-  setConf(display, ['scales', 'y', 'title'], undefined)
+  const display = titled({ title: 'score' })
   expect(display.valueScales[0]!.caption).toBe('score')
+  setConf(display, ['scales', 'y', 'title'], undefined)
+  expect(display.valueScales[0]!.caption).toBe('')
 })
 
 test('a banded plot carries its one caption, which the chrome draws once', () => {
@@ -551,7 +560,7 @@ test('a banded plot carries its one caption, which the chrome draws once', () =>
     [{ shape: 'bar', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
-    { facet: 'source' },
+    { facet: 'source', scales: { y: { title: 'score' } } },
   )
   const { display } = createDisplay()
   display.setRpcData(

@@ -525,9 +525,9 @@ the row axis in the vocabulary above, and none is a new channel.
   §Consequences). A multiscale pair shares that scale, so a rule written for
   the raw mark's quantity draws over the binned mark's too; ggplot2's
   `geom_hline` is a layer, which here would carry `minBpPerPx`/`maxBpPerPx`,
-  and nothing is built for it. The default title does follow the zoom, being
-  the `encoding.y` field the drawing marks share, and a faceted plot's axis is
-  titled once beside its bands, as ggplot2's is beside the panel stack.
+  and nothing is built for it. A title is opt-in and holds at every zoom
+  (ADR-142 §"Amended 2026-09-21"), and a faceted plot's axis is titled once
+  beside its bands, as ggplot2's is beside the panel stack.
 - **No conditional encoding.** Hover and selection are a guide over the
   painting, not a `condition` on a channel: a display names the lit
   instances and the chrome boxes their ink

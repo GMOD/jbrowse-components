@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every quantitative display writes its y scale as one `scales.y` object built by `valueScaleSchema({ types, autoscale, symlogConstant })` in wiggle-core: `type`, `domainMin`, `domainMax`, and `autoscale`/`numStdDev`/`numQuantile`/`symlogConstant` where the display draws them. A factory rather than a fixed object because the five displays' scale enums, autoscale modes and defaults differ, and a fixed object would put dead slots back on Manhattan and the mark display. The `Number.MIN_VALUE`/`MAX_VALUE` sentinels die with the flat slots — an unset `maybeNumber` end is what autoscales. `ScoreScaleMixin` reads and writes the object, so the score menu's two radios derive from what the scale declares instead of being opted out of, the mark display gains the three autoscale modes, and jbrowse-img's `--autoscale`/`--minmax`/`--scaletype` write `snap.scales.y`. `applyDisplaySettings` merges a partial sub-schema write rather than replacing the node, except on a channel, which a `shorthand` marks. No migration: a v5 config still saying `scaleType: 'log'` loses it. Amended 2026-09-20: the scale also owns `rules`, its reference lines as a typed array with a bare-number shorthand, and `title`, its axis caption as a three-state `maybeString`, each a factory opt-in; `ValueScale` carries both to the chrome, which draws a scale's rules down its own bands and its caption once however many bands it rules"
+summary: "Every quantitative display writes its y scale as one `scales.y` object built by `valueScaleSchema({ types, autoscale, symlogConstant })` in wiggle-core: `type`, `domainMin`, `domainMax`, and `autoscale`/`numStdDev`/`numQuantile`/`symlogConstant` where the display draws them. A factory rather than a fixed object because the five displays' scale enums, autoscale modes and defaults differ, and a fixed object would put dead slots back on Manhattan and the mark display. The `Number.MIN_VALUE`/`MAX_VALUE` sentinels die with the flat slots — an unset `maybeNumber` end is what autoscales. `ScoreScaleMixin` reads and writes the object, so the score menu's two radios derive from what the scale declares instead of being opted out of, the mark display gains the three autoscale modes, and jbrowse-img's `--autoscale`/`--minmax`/`--scaletype` write `snap.scales.y`. `applyDisplaySettings` merges a partial sub-schema write rather than replacing the node, except on a channel, which a `shorthand` marks. No migration: a v5 config still saying `scaleType: 'log'` loses it. Amended 2026-09-20: the scale also owns `rules`, its reference lines as a typed array with a bare-number shorthand, and `title`, its axis caption as a three-state `maybeString`, each a factory opt-in; `ValueScale` carries both to the chrome, which draws a scale's rules down its own bands and its caption once however many bands it rules. Amended 2026-09-21: the caption is optional, unset drawing none rather than deriving the shared \`encoding.y\` field"
 ---
 
 # ADR-142: One value-scale object, on every quantitative display
@@ -62,7 +62,7 @@ alone — one scale per aesthetic, owned by the plot.
 | `numQuantile` | `localpercentile` is a mode | 0.99 | — | — | 0.99 |
 | `symlogConstant` | `symlog` is a type | 0 | — | 1 | — |
 | `rules` | the factory is given `rules: true` | none | none | — | none |
-| `title` | the factory is given `title: true` | — | — | — | unset, which derives the shared `encoding.y` field |
+| `title` | the factory is given `title: true` | — | — | — | unset, which draws no caption |
 
 `numStdDev` and `numQuantile` gate on the modes rather than on `autoscale`
 being present at all: the coverage band offers `local` and `localsd`, so a
@@ -240,6 +240,17 @@ The members table above carries which display takes which.
   with `minBpPerPx`/`maxBpPerPx`, and nothing is built for it
   ([GRAMMAR_OF_GRAPHICS.md](../reference/GRAMMAR_OF_GRAPHICS.md) §"Gaps against
   the grammar").
+
+### Amended 2026-09-21: a caption is optional
+
+The mark display no longer derives its caption. Unset or `""`, `title` draws
+none, and some text is that text at every zoom, so the axis is captioned only
+where a config names what it measures, the way JBrowse's other labels and keys
+are opted into. The derivation from the shared `encoding.y` field printed the
+raw field name (`milliDiv`, `youngLog2`, `tlen`) over the plot's leftmost data
+on every mark display. A multiscale pair derived one name per zoom, which
+nothing but a derivation could title, since one written `title` holds at every
+zoom. The slot stays a `maybeString`, whose unset and `""` now mean the same.
 
 ## Rejected alternatives
 
