@@ -60,7 +60,12 @@ const PILEUP = { shape: 'span', transform: [{ type: 'pileup' }] }
 interface ShippedConfig {
   tracks: {
     trackId: string
-    displays?: { type: string; marks?: unknown[]; facet?: unknown }[]
+    displays?: {
+      type: string
+      marks?: unknown[]
+      facet?: unknown
+      transform?: unknown[]
+    }[]
   }[]
 }
 
@@ -82,7 +87,7 @@ test.each(SHIPPED)('%s draws every mark it declares as written', path => {
   expect(displays.length).toBeGreaterThan(0)
   expect(
     displays.flatMap(d =>
-      problemsOf(d.marks ?? [], d.facet).map(
+      problemsOf(d.marks ?? [], d.facet, d.transform).map(
         p => `${d.trackId}: ${problemText(p)}`,
       ),
     ),

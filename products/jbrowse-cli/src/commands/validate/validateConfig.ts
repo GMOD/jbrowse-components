@@ -474,6 +474,15 @@ function slotPath(slot: string) {
   return slot.replaceAll(/\.(\d+)(?=\.|$)/g, '[$1]')
 }
 
+// A mark display's own entry, whose marks may come from `displayDefaults`, or
+// a `displayDefaults` holding marks. A mark is a record with a `transform` of
+// its own, so an untyped node counts only by its `marks`.
+function holdsMarkRules(node: Record<string, unknown>) {
+  return node.type === MARK_DISPLAY
+    ? Array.isArray(node.marks) || Array.isArray(node.transform)
+    : node.type === undefined && Array.isArray(node.marks)
+}
+
 // What the marks of one display say together that it cannot draw as written:
 // the rule list the display shows in its corner notice, copied from the plugin
 // (`markRules/`). A single mark's `requires` is the schema's to report.
@@ -588,8 +597,7 @@ function checkMarkDisplays(
       }
     }
     if (
-      Array.isArray(node.marks) &&
-      (node.type === undefined || node.type === MARK_DISPLAY) &&
+      holdsMarkRules(node) &&
       !report.problems.some(p => p.where === `${where}.marks`)
     ) {
       checkMarkDisplay(node, manifest, where, report)

@@ -525,7 +525,7 @@ the banner still appears, unchanged.
 
 A `marks` list loads whenever its keys and value types are right, and the
 display draws what it can. Where two slots disagree, the track shows a warning
-chip in its corner naming the mark and the slot:
+chip in its corner naming the slot, and the mark when the slot is a mark's:
 
 - a `bar` or `point` naming no `y`, which draws nothing;
 - a channel the shape does not read, such as `y` on a `span`;
@@ -535,7 +535,7 @@ chip in its corner naming the mark and the slot:
   first of the span's rows;
 - two marks each running their own `pileup`, which share row numbers, where one
   `pileup` in the display's `transform` packs them together, with each mark's
-  `encoding.row` naming the field it writes;
+  `encoding.row` naming the field the pileup writes;
 - a zoom range whose `minBpPerPx` is not below its `maxBpPerPx`, which never
   draws.
 

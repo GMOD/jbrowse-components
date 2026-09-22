@@ -269,6 +269,23 @@ describe('a marks list in a config file', () => {
     ).toEqual([`error undefined ${DISPLAY}.transform[1].ops[0].field`])
   })
 
+  it("checks a display's own steps when its marks come from displayDefaults", () => {
+    const config = configOf([])
+    const [track] = config.tracks as Record<string, unknown>[]
+    track!.displayDefaults = {
+      marks: [{ shape: 'bar', encoding: { y: 'score' } }],
+    }
+    track!.displays = [
+      {
+        type: 'LinearMarkDisplay',
+        transform: [{ type: 'filter', expr: "get(feature,'score') > 1" }],
+      },
+    ]
+    expect(
+      problemsOf(config).map(p => `${p.level} ${p.rule} ${p.where}`),
+    ).toEqual([`error step-expression ${DISPLAY}.transform[0].expr`])
+  })
+
   it('points a jexl: field on a step at formula', () => {
     const grouped = (field: string) => [
       {
