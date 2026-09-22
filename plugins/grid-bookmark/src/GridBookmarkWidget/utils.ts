@@ -68,7 +68,6 @@ export async function navToHighlight(
   }
 }
 
-// TSV carries its own assembly column plus a coord_range column; BED does not
 function isTSVHeader(header: string) {
   return header.startsWith('chrom') && header.includes('assembly_name')
 }
@@ -86,33 +85,40 @@ function parseCoord(value: string | undefined, field: string, line: string) {
   return n
 }
 
-// Parse imported highlight file contents. TSV files carry their own assembly
-// column and 1-based starts (matching downloadHighlightFile's export); BED
-// files are 0-based and adopt the assembly chosen in the dialog. Throws on
-// malformed coordinates so the dialog surfaces the error instead of importing
-// NaN regions.
+function orUndefined(value: string | undefined) {
+  return !value || value === '.' ? undefined : value
+}
+
+// TSV carries a header, its own assembly and color columns, and 1-based starts
+// (matching downloadHighlightFile's export), and is read by column name. BED is
+// 0-based and adopts the assembly chosen in the dialog. Malformed coordinates
+// throw so the dialog reports them instead of importing NaN regions.
 export function parseHighlights(
   data: string,
   bedAssembly: string,
 ): HighlightType[] {
   const lines = data.split(/\n|\r\n|\r/).filter(f => !!f.trim())
   const tsv = lines.length > 0 && isTSVHeader(lines[0]!)
+  const columns = tsv
+    ? lines[0]!.split('\t')
+    : ['chrom', 'start', 'end', 'label']
   const dataLines = (tsv ? lines.slice(1) : lines).filter(
     f => !f.startsWith('#'),
   )
   return dataLines.map(line => {
-    const [refName, start, end, label, assemblyName] = line.split('\t')
+    const fields = line.split('\t')
+    const field = (name: string) => fields[columns.indexOf(name)]
+    const refName = field('chrom')
     if (!refName) {
       throw new Error(`Missing refName in line: ${line}`)
     }
     return {
-      assemblyName: tsv ? assemblyName || bedAssembly : bedAssembly,
+      assemblyName: field('assembly_name') || bedAssembly,
       refName,
-      // TSV starts are 1-based on export, so convert back to the 0-based
-      // internal coordinate; BED starts are already 0-based
-      start: parseCoord(start, 'start', line) - (tsv ? 1 : 0),
-      end: parseCoord(end, 'end', line),
-      label: !label || label === '.' ? undefined : label,
+      start: parseCoord(field('start'), 'start', line) - (tsv ? 1 : 0),
+      end: parseCoord(field('end'), 'end', line),
+      label: orUndefined(field('label')),
+      color: orUndefined(field('color')),
     }
   })
 }
@@ -140,13 +146,14 @@ export async function downloadHighlightFile(
       )
     }
   } else {
-    const fileHeader = 'chrom\tstart\tend\tlabel\tassembly_name\tcoord_range\n'
+    const fileHeader =
+      'chrom\tstart\tend\tlabel\tassembly_name\tcoord_range\tcolor\n'
     const fileContents =
       fileHeader +
       highlights
         .map(h => {
           const locString = assembleLocString(h)
-          return `${h.refName}\t${h.start + 1}\t${h.end}\t${labelOf(h)}\t${h.assemblyName}\t${locString}\n`
+          return `${h.refName}\t${h.start + 1}\t${h.end}\t${labelOf(h)}\t${h.assemblyName}\t${locString}\t${h.color || '.'}\n`
         })
         .join('')
 

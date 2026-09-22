@@ -22,6 +22,7 @@ const sampleHighlights = [
     end: 200,
     label: 'first',
     assemblyName: 'volvox',
+    color: 'rgba(255,0,0,0.3)',
   },
   {
     refName: 'ctgA',
@@ -64,10 +65,10 @@ test('TSV export concatenates all assemblies into one file with header and 1-bas
   const [blob, name] = mockSaveAs.mock.calls[0]!
   expect(name).toBe('jbrowse_highlights.tsv')
   expect(await readBlobText(blob)).toBe(
-    'chrom\tstart\tend\tlabel\tassembly_name\tcoord_range\n' +
-      'ctgA\t101\t200\tfirst\tvolvox\t{volvox}ctgA:101..200\n' +
-      'ctgA\t301\t400\t.\tvolvox\t{volvox}ctgA:301..400\n' +
-      'ctgB\t51\t60\tother-asm\thg38\t{hg38}ctgB:51..60\n',
+    'chrom\tstart\tend\tlabel\tassembly_name\tcoord_range\tcolor\n' +
+      'ctgA\t101\t200\tfirst\tvolvox\t{volvox}ctgA:101..200\trgba(255,0,0,0.3)\n' +
+      'ctgA\t301\t400\t.\tvolvox\t{volvox}ctgA:301..400\t.\n' +
+      'ctgB\t51\t60\tother-asm\thg38\t{hg38}ctgB:51..60\t.\n',
   )
 })
 
@@ -115,13 +116,25 @@ test('TSV import converts 1-based starts back to 0-based and uses its own assemb
   ])
 })
 
-test('TSV export then import round-trips coordinates', async () => {
+test('TSV export then import round-trips every field', async () => {
   await downloadHighlightFile('TSV', sampleHighlights)
   const exported = await readBlobText(mockSaveAs.mock.calls[0]![0])
-  const parsed = parseHighlights(exported, 'ignored')
-  expect(parsed.map(b => ({ start: b.start, end: b.end }))).toEqual(
-    sampleHighlights.map(b => ({ start: b.start, end: b.end })),
-  )
+  expect(parseHighlights(exported, 'ignored')).toEqual(sampleHighlights)
+})
+
+test('TSV import reads columns by header, so an older file without color loads', () => {
+  const tsv =
+    'chrom\tstart\tend\tassembly_name\tlabel\n' +
+    'ctgA\t101\t200\tvolvox\tfirst\n'
+  expect(parseHighlights(tsv, 'ignored')).toEqual([
+    {
+      assemblyName: 'volvox',
+      refName: 'ctgA',
+      start: 100,
+      end: 200,
+      label: 'first',
+    },
+  ])
 })
 
 test('import skips comment lines and throws on malformed coordinates', () => {

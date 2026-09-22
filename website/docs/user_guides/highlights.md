@@ -47,9 +47,9 @@ the delete icon.
 ## Export and import
 
 Export writes the ticked highlights, or all of them, as BED (one file per
-assembly, 0-based starts) or TSV (one file with an `assembly_name` column,
-1-based starts). Import reads either and adds to the list; a BED file takes the
-assembly picked in the dialog.
+assembly, 0-based starts) or TSV (one file with `assembly_name` and `color`
+columns, 1-based starts). Only TSV keeps colors. Import reads either and adds to
+the list; a BED file takes the assembly picked in the dialog.
 
 ## Setting highlights in code
 

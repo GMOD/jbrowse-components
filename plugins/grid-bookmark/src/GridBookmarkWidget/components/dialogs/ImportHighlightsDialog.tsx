@@ -55,7 +55,7 @@ const ImportHighlightsDialog = observer(function ImportHighlightsDialog({
         location={location}
         setLocation={setLocation}
         name="File"
-        description={`Choose a BED or TSV format file to import. Required TSV column headers are "chrom, start, end, label, assembly_name".`}
+        description={`Choose a BED or TSV format file to import. A TSV needs a header naming chrom, start, end and assembly_name; label and color are optional.`}
       />
       <AssemblySelector
         onChange={val => {
