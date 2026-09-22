@@ -1,12 +1,10 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
 import { of } from 'rxjs'
 
 import {
   fetchPeptideData,
   findTranscriptsWithCDS,
   processTranscriptFromSeq,
-  transcriptGeneticCodeId,
 } from './peptideUtils.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -15,9 +13,6 @@ import type { Feature, Region } from '@jbrowse/core/util'
 jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter', () => ({
   getFeatureAdapterOrThrow: jest.fn(),
 }))
-
-const standardCode = getGeneticCode(1)
-const vertebrateMitoCode = getGeneticCode(2)
 
 function createMockFeature(opts: {
   id?: string
@@ -353,49 +348,6 @@ function createCoordFeature(opts: {
   } as unknown as Feature
 }
 
-describe('transcriptGeneticCodeId', () => {
-  it('reads transl_table off the CDS subfeature', () => {
-    const transcript = createMockFeature({
-      type: 'mRNA',
-      subfeatures: [createMockFeature({ type: 'CDS', transl_table: 2 })],
-    })
-    expect(transcriptGeneticCodeId(transcript, undefined)).toBe(2)
-  })
-
-  it('prefers the transcript transl_table over the CDS', () => {
-    const transcript = createMockFeature({
-      type: 'mRNA',
-      transl_table: 5,
-      subfeatures: [createMockFeature({ type: 'CDS', transl_table: 2 })],
-    })
-    expect(transcriptGeneticCodeId(transcript, undefined)).toBe(5)
-  })
-
-  it('falls back to the assembly genetic code when no transl_table is present', () => {
-    const transcript = createMockFeature({
-      type: 'mRNA',
-      subfeatures: [createMockFeature({ type: 'CDS' })],
-    })
-    expect(transcriptGeneticCodeId(transcript, 2)).toBe(2)
-  })
-
-  it('prefers a feature transl_table over the assembly genetic code', () => {
-    const transcript = createMockFeature({
-      type: 'mRNA',
-      subfeatures: [createMockFeature({ type: 'CDS', transl_table: 3 })],
-    })
-    expect(transcriptGeneticCodeId(transcript, 2)).toBe(3)
-  })
-
-  it('is undefined (standard code) when neither source provides one', () => {
-    const transcript = createMockFeature({
-      type: 'mRNA',
-      subfeatures: [createMockFeature({ type: 'CDS' })],
-    })
-    expect(transcriptGeneticCodeId(transcript, undefined)).toBeUndefined()
-  })
-})
-
 describe('processTranscriptFromSeq', () => {
   const seq = 'ATGAAA'
 
@@ -407,9 +359,7 @@ describe('processTranscriptFromSeq', () => {
       strand: 1,
       subfeatures: [createCoordFeature({ type: 'CDS', start: 0, end: 6 })],
     })
-    expect(
-      processTranscriptFromSeq(seq, transcript, standardCode)?.protein,
-    ).toBe('MK')
+    expect(processTranscriptFromSeq(seq, transcript)?.protein).toBe('MK')
   })
 
   it('translates a standalone polyprotein CDS from its own span', () => {
@@ -433,7 +383,7 @@ describe('processTranscriptFromSeq', () => {
         }),
       ],
     })
-    expect(processTranscriptFromSeq(seq, cds, standardCode)?.protein).toBe('MK')
+    expect(processTranscriptFromSeq(seq, cds)?.protein).toBe('MK')
   })
 
   it('dedupes duplicate CDS rows so the protein is not frameshifted', () => {
@@ -448,9 +398,7 @@ describe('processTranscriptFromSeq', () => {
       ],
     })
     // Without the dedup the duplicate row stitches to ATGAAAATGAAA -> MKMK.
-    expect(
-      processTranscriptFromSeq(seq, transcript, standardCode)?.protein,
-    ).toBe('MK')
+    expect(processTranscriptFromSeq(seq, transcript)?.protein).toBe('MK')
   })
 
   // TGA codes Trp rather than stop under the vertebrate mitochondrial code.
@@ -463,13 +411,10 @@ describe('processTranscriptFromSeq', () => {
       strand: 1,
       subfeatures: [createCoordFeature({ type: 'CDS', start: 0, end: 9 })],
     })
-    expect(
-      processTranscriptFromSeq(mitoSeq, transcript, standardCode)?.protein,
-    ).toBe('M*K')
-    expect(
-      processTranscriptFromSeq(mitoSeq, transcript, vertebrateMitoCode)
-        ?.protein,
-    ).toBe('MWK')
+    expect(processTranscriptFromSeq(mitoSeq, transcript)?.protein).toBe('M*K')
+    expect(processTranscriptFromSeq(mitoSeq, transcript, 2)?.protein).toBe(
+      'MWK',
+    )
   })
 
   it('applies transl_except from the CDS (selenocysteine readthrough)', () => {
@@ -490,7 +435,7 @@ describe('processTranscriptFromSeq', () => {
         }),
       ],
     })
-    const result = processTranscriptFromSeq(seleno, transcript, standardCode)
+    const result = processTranscriptFromSeq(seleno, transcript)
     expect(result?.protein).toBe('MUK')
     expect([...(result?.translExceptIndices ?? [])]).toEqual([1])
   })

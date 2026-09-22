@@ -349,6 +349,7 @@ export default [
   '@jbrowse/core/util/tickLabels',
   '@jbrowse/core/util/TimeTraveller',
   '@jbrowse/core/util/tracks',
+  '@jbrowse/core/util/translateTranscript',
   '@jbrowse/core/util/tss-react',
   '@jbrowse/core/util/tss-react/types',
   '@jbrowse/core/util/types',

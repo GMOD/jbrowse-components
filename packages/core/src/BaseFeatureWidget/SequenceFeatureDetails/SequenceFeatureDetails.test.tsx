@@ -8,7 +8,10 @@ import DLGAP3 from './test_data/DLGAP3.ts'
 import NCDN from './test_data/NCDN.ts'
 import { getSequenceFasta } from './util.ts'
 
-import type { SimpleFeatureSerializedNoId } from '../../util/index.ts'
+import type {
+  SimpleFeatureSerialized,
+  SimpleFeatureSerializedNoId,
+} from '../../util/index.ts'
 import type { SeqState } from '../util.tsx'
 import type { SequenceDisplayMode, SequenceHoverPosition } from './model.ts'
 
@@ -1027,4 +1030,56 @@ test('reverse complement is ignored by spliced sequence types', () => {
   const text = getSequenceFasta(getByTestId('sequence_panel'))
   expect(text).toContain('AAAACCCG')
   expect(text.split('\n')[0]).not.toContain('revcomp')
+})
+
+function renderedProtein(
+  feature: SimpleFeatureSerialized,
+  seq: string,
+  assemblyGeneticCodeId?: number,
+) {
+  const { getByTestId, unmount } = render(
+    <SequencePanel
+      model={SequenceFeatureDetailsF().create()}
+      mode="protein"
+      sequence={{ seq }}
+      feature={feature}
+      assemblyGeneticCodeId={assemblyGeneticCodeId}
+    />,
+  )
+  const text = getByTestId('sequence_panel').textContent
+  unmount()
+  return text
+}
+
+// ATG TGA AAA AAA TAA: a stop at codon two under the standard code, W under the
+// vertebrate mitochondrial one, U where a transl_except names selenocysteine
+const codingFeature = (cds: Record<string, unknown> = {}) => ({
+  uniqueId: 't1',
+  refName: 'chr1',
+  start: 1000,
+  end: 1015,
+  strand: 1,
+  type: 'mRNA',
+  subfeatures: [
+    { refName: 'chr1', start: 1000, end: 1015, type: 'exon' },
+    { refName: 'chr1', start: 1000, end: 1015, type: 'CDS', phase: 0, ...cds },
+  ],
+})
+
+test('the protein reads the genetic code off the CDS, else the assembly', () => {
+  const seq = 'ATGTGAAAAAAATAA'
+  expect(renderedProtein(codingFeature(), seq)).toContain('M*KK*')
+  expect(renderedProtein(codingFeature(), seq, 2)).toContain('MWKK*')
+  expect(renderedProtein(codingFeature({ transl_table: '2' }), seq)).toContain(
+    'MWKK*',
+  )
+})
+
+test('the protein reads a selenocysteine transl_except as U', () => {
+  expect(
+    renderedProtein(
+      codingFeature({ transl_except: '(pos:1004..1006,aa:Sec)' }),
+      'ATGTGAAAAAAATAA',
+    ),
+  ).toContain('MUKK*')
 })

@@ -1,7 +1,7 @@
 import { revcom } from '@jbrowse/core/util'
 import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
 
-import { transcriptCDS } from '../collect/peptideMapping.ts'
+import { cdsInTranscriptionOrder } from '../collect/peptideMapping.ts'
 import { aminoAcidsBySegment } from './aggregateAminoAcids.ts'
 import { processTranscriptFromSeq } from './peptideUtils.ts'
 
@@ -15,7 +15,7 @@ import type { Feature } from '@jbrowse/core/util'
 //
 // Run across every strand × phase combination, because the translation reverses
 // the segment list through revlist and the overlay reverses it through
-// transcriptCDS — two reversals that must agree on which segment carries the
+// cdsInTranscriptionOrder — two reversals that must agree on which segment carries the
 // phase, and on the - strand that is the HIGHEST-coordinate one.
 
 const code = getGeneticCode(undefined)
@@ -59,12 +59,11 @@ function mapTranscript(strand: number, phase: number, firstExonLen = 11) {
   const { protein } = processTranscriptFromSeq(
     genome.slice(100, 211),
     transcript,
-    code,
   )!
-  // Through transcriptCDS, the emitter's own ordering helper, so the reversal
+  // Through cdsInTranscriptionOrder, the emitter's own ordering helper, so the reversal
   // under test is the shipped one rather than a copy.
   const bySegment = aminoAcidsBySegment(
-    transcriptCDS(transcript, strand),
+    cdsInTranscriptionOrder(transcript, strand),
     protein,
     strand,
   )

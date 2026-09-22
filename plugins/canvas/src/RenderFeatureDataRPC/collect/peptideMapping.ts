@@ -1,5 +1,6 @@
+import { transcriptCDS } from '@jbrowse/core/util/translateTranscript'
+
 import { aminoAcidsBySegment } from '../peptides/aggregateAminoAcids.ts'
-import { dedupedSortedCDS } from '../peptides/cdsSegments.ts'
 
 import type {
   AggregatedAminoAcid,
@@ -11,8 +12,11 @@ import type { Feature } from '@jbrowse/core/util'
 // Returns CDS segments in transcription order. Shares the frameshift-guarding
 // dedup with the peptide translation so protein indices align with the rendered
 // rects.
-export function transcriptCDS(feature: Feature, strand: number): CdsSegment[] {
-  const cds = dedupedSortedCDS(feature)
+export function cdsInTranscriptionOrder(
+  feature: Feature,
+  strand: number,
+): CdsSegment[] {
+  const cds = transcriptCDS(feature)
   return strand === -1 ? cds.reverse() : cds
 }
 
@@ -23,7 +27,7 @@ export function aminoAcidsByFeature(feature: Feature, ctx: RenderContext) {
   const peptide = ctx.peptideDataMap?.get(feature.id())
   return peptide
     ? aminoAcidsBySegment(
-        transcriptCDS(feature, strand),
+        cdsInTranscriptionOrder(feature, strand),
         peptide.protein,
         strand,
         peptide.translExceptIndices,

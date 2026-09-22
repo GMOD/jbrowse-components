@@ -1,14 +1,9 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { revcom, revlist } from '@jbrowse/core/util'
+import { translExceptProteinPositions } from '@jbrowse/core/util/convertCodingSequenceToPeptides'
 import {
-  convertCodingSequenceToPeptides,
-  translExceptProteinPositions,
-} from '@jbrowse/core/util/convertCodingSequenceToPeptides'
-import {
-  getGeneticCode,
-  parseTranslTable,
-  relativizeTranslExcept,
-} from '@jbrowse/core/util/geneticCodes'
+  transcriptCDS,
+  translateTranscript,
+} from '@jbrowse/core/util/translateTranscript'
 import { firstValueFrom, toArray } from 'rxjs'
 
 import { hasCDSSubfeature } from '../glyphs/glyphUtils.ts'
@@ -17,12 +12,10 @@ import {
   hasMatureProteinChildren,
 } from '../glyphs/matureProteinRegion.ts'
 import { getSubfeatures, isCDS } from '../util.ts'
-import { dedupedSortedCDS } from './cdsSegments.ts'
 
 import type { PeptideData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { GeneticCode } from '@jbrowse/core/util/geneticCodes'
 
 interface PeptideFetchProps {
   sessionId: string
@@ -164,72 +157,21 @@ export function findTranscriptsWithCDS(
   return transcripts
 }
 
-// Relative to the sequence slice the codon translator is handed, which is what
-// the subtraction is for.
-function extractCDSRegions(feature: Feature) {
-  const featureStart = feature.get('start')
-  return dedupedSortedCDS(feature).map(({ start, end, phase }) => ({
-    start: start - featureStart,
-    end: end - featureStart,
-    phase: phase ?? 0,
-  }))
-}
-
-// `transl_table` rides on the CDS, occasionally on the transcript itself; a file
-// carrying neither falls back to the assembly's configured code, and undefined
-// to the standard one.
-export function transcriptGeneticCodeId(
-  transcript: Feature,
-  assemblyGeneticCodeId: number | undefined,
-) {
-  const cds = getSubfeatures(transcript).find(isCDS)
-  return (
-    parseTranslTable(transcript.get('transl_table')) ??
-    parseTranslTable(cds?.get('transl_table')) ??
-    assemblyGeneticCodeId
-  )
-}
-
-// transl_except entries ride on the CDS by NCBI convention, occasionally the
-// transcript. Relativized to the strand-corrected CDS frame so a selenocysteine
-// reads as U.
-function transcriptTranslExcept(transcript: Feature) {
-  const cds = getSubfeatures(transcript).find(isCDS)
-  const raw = transcript.get('transl_except') ?? cds?.get('transl_except')
-  const start = transcript.get('start')
-  return raw
-    ? relativizeTranslExcept({
-        raw,
-        featureStart: start,
-        featureLength: transcript.get('end') - start,
-        strand: transcript.get('strand'),
-      })
-    : undefined
-}
-
 export function processTranscriptFromSeq(
   seq: string,
   transcript: Feature,
-  code: GeneticCode,
+  assemblyGeneticCodeId?: number,
 ): PeptideData | undefined {
-  const strand = transcript.get('strand')
-  const rawCds = extractCDSRegions(transcript)
-  if (rawCds.length === 0) {
-    return undefined
-  }
-
-  const processedSeq = strand === -1 ? revcom(seq) : seq
-  const cds = strand === -1 ? revlist(rawCds, processedSeq.length) : rawCds
-  const translExcept = transcriptTranslExcept(transcript)
-
   try {
-    const protein = convertCodingSequenceToPeptides({
-      cds,
-      sequence: processedSeq,
-      codonTable: code.codonTable,
-      starts: code.starts,
-      translExcept,
+    const translation = translateTranscript({
+      transcript,
+      seq,
+      assemblyGeneticCodeId,
     })
+    if (!translation) {
+      return undefined
+    }
+    const { protein, cds, translExcept } = translation
     return {
       protein,
       translExceptIndices: translExcept?.length
@@ -271,7 +213,7 @@ export async function fetchPeptideData(
   const wholeSeq = await fetchCodingSequenceBuffer(
     pluginManager,
     props,
-    mergeSequenceRanges(transcripts.flatMap(t => dedupedSortedCDS(t))),
+    mergeSequenceRanges(transcripts.flatMap(t => transcriptCDS(t))),
     bulkStart,
     bulkEnd,
   )
@@ -283,10 +225,11 @@ export async function fetchPeptideData(
     const tStart = transcript.get('start')
     const tEnd = transcript.get('end')
     const seq = wholeSeq.slice(tStart - bulkStart, tEnd - bulkStart)
-    const code = getGeneticCode(
-      transcriptGeneticCodeId(transcript, assemblyGeneticCodeId),
+    const peptideData = processTranscriptFromSeq(
+      seq,
+      transcript,
+      assemblyGeneticCodeId,
     )
-    const peptideData = processTranscriptFromSeq(seq, transcript, code)
     if (peptideData) {
       peptideDataMap.set(transcript.id(), peptideData)
     }

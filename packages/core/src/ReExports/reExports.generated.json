@@ -3429,6 +3429,16 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/translateTranscript": {
+      "package": "@jbrowse/core",
+      "names": [
+        "transcriptCDS",
+        "transcriptGeneticCodeId",
+        "transcriptTranslExcept",
+        "translateTranscript"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/tss-react": {
       "package": "@jbrowse/core",
       "names": [
