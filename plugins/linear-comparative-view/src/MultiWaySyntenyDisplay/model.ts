@@ -109,6 +109,7 @@ import {
   glyphHitAt,
   glyphsKey,
   outlineKey,
+  ribbonFeatureId,
 } from './multiwayGeometry.ts'
 import { multiwayBlocks } from './multiwayMarks.ts'
 import {
@@ -147,6 +148,7 @@ import type {
   MultiWayLayer,
   MultiWayRenderState,
   MultiWayRenderingBackend,
+  RibbonRef,
 } from './multiwayRenderTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -168,11 +170,9 @@ import type {
 import type React from 'react'
 
 /** what the pointer is over: a gene, a placement box or a ribbon */
-export interface HoverTarget {
+export interface HoverTarget extends RibbonRef {
   label: string
   feature: Feature
-  groupKey?: string
-  targetIdx?: number
 }
 
 function regionKey(r: LaneRegion) {
@@ -294,12 +294,11 @@ export function stateModelFactory(
       /**
        * #volatile
        * clicked twin of the hover: the group or direct-link ribbon whose
-       * outline stays after the pointer leaves it, cleared by a click on
-       * empty canvas or a refetch
+       * outline stays after the pointer leaves it, until a click on empty
+       * canvas. Held by key, so it outlives every relayout and refetch that
+       * still draws its ribbon — the click's own widget resizes the view
        */
-      clickedTarget: undefined as
-        | { groupKey?: string; targetIdx?: number }
-        | undefined,
+      clickedTarget: undefined as RibbonRef | undefined,
       /**
        * #volatile
        * what the last settle decided per mate lane — contig, orientation,
@@ -353,11 +352,6 @@ export function stateModelFactory(
       laneMotionHalfway: new Set<string>() as ReadonlySet<string>,
     }))
     .actions(self => {
-      function dropDirectLinkClick() {
-        if (self.clickedTarget?.groupKey === undefined) {
-          self.clickedTarget = undefined
-        }
-      }
       function ribbonColorSetting(): SyntenyColorSnapshot {
         return {
           value: getConf(self, ['ribbonColor', 'value']),
@@ -395,17 +389,6 @@ export function stateModelFactory(
           }
           self.fetchedFeatures = { anchor, features }
           observeRibbonFeatures(features)
-          dropDirectLinkClick()
-        },
-        /**
-         * #action
-         * a bare targetIdx addresses the outgoing targets array, so it goes
-         * whenever the lanes rebuild; a group KEY re-resolves against the
-         * rebuilt geometry and stays — load-bearing, since the click's own
-         * widget resizes the view and that refetches
-         */
-        clearDirectLinkClick() {
-          dropDirectLinkClick()
         },
         /**
          * #action
@@ -435,7 +418,6 @@ export function stateModelFactory(
             observeRibbonFeatures(links.links)
           }
           self.laneLinks = held
-          dropDirectLinkClick()
         },
         /**
          * #action
@@ -1997,25 +1979,14 @@ export function stateModelFactory(
        * in all of them
        */
       get hoveredFeatureId() {
-        const { hoveredGroupKey, hoverTarget } = self
-        const idx =
-          hoveredGroupKey !== undefined
-            ? self.ribbonGeometry.groupTarget.get(hoveredGroupKey)
-            : hoverTarget?.targetIdx
-        return idx === undefined ? 0 : idx + 1
+        return ribbonFeatureId(self.ribbonGeometry, self.hoverTarget)
       },
       /**
        * #getter
-       * the clicked twin, resolved the same way — a group key survives a
-       * relayout, a direct-link index only its own fetch
+       * the clicked twin, resolved the same way
        */
       get clickedFeatureId() {
-        const { clickedTarget } = self
-        const idx =
-          clickedTarget?.groupKey !== undefined
-            ? self.ribbonGeometry.groupTarget.get(clickedTarget.groupKey)
-            : clickedTarget?.targetIdx
-        return idx === undefined ? 0 : idx + 1
+        return ribbonFeatureId(self.ribbonGeometry, self.clickedTarget)
       },
       /**
        * #getter
@@ -2260,26 +2231,14 @@ export function stateModelFactory(
           }
         }
         const hit = self.pickRibbonAt(x, y)
-        if (hit) {
-          // the pick answers an INSTANCE; the target is what that instance's
-          // feature index names, which is the gutter cell's own lane
-          const targetIdx = self.ribbonRegions.get(hit.key)?.instanceFeatureIdx[
-            hit.instanceIndex
-          ]
-          const target =
-            targetIdx === undefined
-              ? undefined
-              : self.ribbonGeometry.targets[targetIdx]
-          if (target && targetIdx !== undefined) {
-            return {
-              label: target.label,
-              feature: target.feature,
-              groupKey: target.groupKey,
-              targetIdx,
-            }
-          }
-        }
-        return undefined
+        // the pick answers an INSTANCE; the target is what that instance's
+        // feature index names
+        const targetIdx =
+          hit &&
+          self.ribbonRegions.get(hit.key)?.instanceFeatureIdx[hit.instanceIndex]
+        return targetIdx === undefined
+          ? undefined
+          : self.ribbonGeometry.targets[targetIdx]
       },
     }))
     .views(self => ({
@@ -2506,7 +2465,7 @@ export function stateModelFactory(
         // an outline, and a click on empty canvas clears it
         self.clickedTarget = hoverTarget && {
           groupKey: hoverTarget.groupKey,
-          targetIdx: hoverTarget.targetIdx,
+          linkId: hoverTarget.linkId,
         }
         if (hoverTarget) {
           self.selectFeature(hoverTarget.feature)

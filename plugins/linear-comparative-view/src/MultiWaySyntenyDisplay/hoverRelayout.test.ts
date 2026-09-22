@@ -6,11 +6,11 @@ import { createDisplay } from './testEnv.ts'
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-// A group hover re-resolves through `groupTarget.get(key)` when the lanes are
-// relaid out. A direct-link ribbon carries no group, so its raw `targetIdx` is
-// the whole of what the highlight, the tooltip and the click have to go on —
-// and the lanes relayout on four things no viewport clear can see: a reorder, a
-// hidden lane, a pinned contig and a dependent fetch commit.
+// The lanes relayout on four things no viewport clear can see: a reorder, a
+// hidden lane, a pinned contig and a dependent fetch commit. Each moves the
+// ribbons out from under a stationary pointer, so each drops the hover. The
+// click names its ribbon by key — a group's, or a direct link's own id — and
+// follows that ribbon through the rebuilt targets instead of holding a slot.
 const MATES = ['volvox_random', 'volvox_other']
 const LINK_PAIR = `${MATES[0]}|${MATES[1]}`
 
@@ -59,15 +59,15 @@ async function stackedDisplay(links: Feature[]) {
 }
 
 function hoverDirectLink(display: MultiWaySyntenyDisplayModel) {
-  const { targets } = display.ribbonGeometry
-  const targetIdx = targets.findIndex(t => t.groupKey === undefined)
-  const target = targets[targetIdx]!
-  display.setHoverTarget({
-    label: target.label,
-    feature: target.feature,
-    targetIdx,
-  })
-  return targetIdx
+  const target = display.ribbonGeometry.targets.find(
+    t => t.linkId !== undefined,
+  )!
+  display.setHoverTarget(target)
+  return target.linkId!
+}
+
+function linkFeatureId(display: MultiWaySyntenyDisplayModel, linkId: string) {
+  return display.ribbonGeometry.linkTarget.get(linkId)! + 1
 }
 
 function viewportOf(display: MultiWaySyntenyDisplayModel) {
@@ -80,10 +80,12 @@ test('a lane-links commit drops a direct-link hover rather than moving it', asyn
     link('L1', 110, 210),
     link('L2', 410, 510),
   ])
-  const idx = hoverDirectLink(display)
+  hoverDirectLink(display)
+  display.selectHovered()
   expect(display.hoverTarget?.feature.id()).toBe('L1')
   expect(display.hoverTarget?.groupKey).toBeUndefined()
-  expect(display.hoveredFeatureId).toBe(idx + 1)
+  const before = linkFeatureId(display, 'L1')
+  expect(display.hoveredFeatureId).toBe(before)
 
   const viewport = viewportOf(display)
   display.setLaneLinks(
@@ -102,23 +104,25 @@ test('a lane-links commit drops a direct-link hover rather than moving it', asyn
     ]),
   )
   expect(viewportOf(display)).toEqual(viewport)
-  // what the stored index would otherwise light up, name and open
-  expect(display.ribbonGeometry.targets[idx]?.feature.id()).toBe('L0')
-
   expect(display.hoverTarget).toBeUndefined()
   expect(display.hoveredFeatureId).toBe(0)
+
+  // the click follows L1 to its new slot rather than lighting what now
+  // sits in the old one
+  expect(display.ribbonGeometry.targets[before - 1]?.feature.id()).toBe('L0')
+  expect(display.clickedFeatureId).toBe(linkFeatureId(display, 'L1'))
+  expect(display.clickedFeatureId).not.toBe(before)
 })
 
 // Move up / Move down / Hide lane carry `keepMenuOpen`, so they fire
 // repeatedly with the pointer nowhere near the canvas they are relaying out.
-// The click stores the same bare index, and its outline would otherwise land
-// on whatever ribbon the rebuilt array holds there.
-test('a lane reorder drops the hover and a direct-link click', async () => {
+// The link's pair is no longer adjacent after the swap, so its outline is gone
+// while the lanes are swapped and back once they are not.
+test('a lane reorder drops the hover and keeps a direct-link click', async () => {
   const display = await stackedDisplay([link('L1', 110, 210)])
-  const idx = hoverDirectLink(display)
+  hoverDirectLink(display)
   display.selectHovered()
-  expect(display.hoverTarget).toBeDefined()
-  expect(display.clickedFeatureId).toBe(idx + 1)
+  expect(display.clickedFeatureId).toBe(linkFeatureId(display, 'L1'))
 
   const viewport = viewportOf(display)
   display.setDomain([MATES[1]!, MATES[0]!])
@@ -126,6 +130,9 @@ test('a lane reorder drops the hover and a direct-link click', async () => {
   expect(viewportOf(display)).toEqual(viewport)
   expect(display.hoverTarget).toBeUndefined()
   expect(display.clickedFeatureId).toBe(0)
+
+  display.setDomain([MATES[0]!, MATES[1]!])
+  expect(display.clickedFeatureId).toBe(linkFeatureId(display, 'L1'))
 })
 
 test('a hidden lane drops the hover', async () => {

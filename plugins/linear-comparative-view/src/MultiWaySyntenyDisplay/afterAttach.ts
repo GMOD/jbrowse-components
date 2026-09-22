@@ -288,14 +288,13 @@ function installLaneFrameDecision(self: MultiWaySyntenyDisplayModel) {
 export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   // The viewport clear the fetch foundation installs answers the axes the VIEW
   // moves on. The lanes also relayout with the view still — a reorder, a hidden
-  // lane, a pinned contig, a dependent commit — and a direct-link ribbon's
-  // `targetIdx` has no groupKey to re-resolve through, so it addresses whatever
-  // the rebuilt array holds at that index.
+  // lane, a pinned contig, a dependent commit — which moves the ribbons out
+  // from under a stationary pointer. The click is not the pointer's, and
+  // re-resolves by key.
   installClearHoverOnSurfaceMove(self, {
     transform: () => self.ribbonGeometry.targets,
     clear: () => {
       self.clearHoveredFeature()
-      self.clearDirectLinkClick()
     },
     name: 'MultiWayClearHoverOnLaneRelayout',
   })

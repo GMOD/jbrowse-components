@@ -31,9 +31,17 @@ export interface LaneGlyphData extends RegionRenderData {
   hits: GlyphHit[]
 }
 
-export interface RibbonTarget {
-  feature: Feature
+/**
+ * What a ribbon names, by a key that outlives a rebuild of the targets: its
+ * group's key, or a direct link's own feature id
+ */
+export interface RibbonRef {
   groupKey?: string
+  linkId?: string
+}
+
+export interface RibbonTarget extends RibbonRef {
+  feature: Feature
   label: string
 }
 

@@ -30,6 +30,7 @@ import type {
   LaneGlyphData,
   MultiWayCell,
   RibbonLayer,
+  RibbonRef,
   RibbonTarget,
 } from './multiwayRenderTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -212,6 +213,21 @@ export interface RibbonGeometry {
   targets: RibbonTarget[]
   /** the target every ribbon of a group shares, so one hover lights the group in every gutter */
   groupTarget: Map<string, number>
+  linkTarget: Map<string, number>
+}
+
+/** the 1-based feature id the passes compare for `ref`, or 0 for none */
+export function ribbonFeatureId(
+  { groupTarget, linkTarget }: RibbonGeometry,
+  ref: RibbonRef | undefined,
+) {
+  const idx =
+    ref?.groupKey !== undefined
+      ? groupTarget.get(ref.groupKey)
+      : ref?.linkId !== undefined
+        ? linkTarget.get(ref.linkId)
+        : undefined
+  return idx === undefined ? 0 : idx + 1
 }
 
 /**
@@ -256,6 +272,7 @@ export function buildRibbonGeometry({
   const layers: RibbonLayer[] = []
   const targets: RibbonTarget[] = []
   const groupTarget = new Map<string, number>()
+  const linkTarget = new Map<string, number>()
   // One target per group, shared by every gutter — which is what lets one
   // hover light the whole chain, and also what stops the label naming a lane
   // PAIR. What it can name is the group's identity: its key and where the
@@ -330,11 +347,13 @@ export function buildRibbonGeometry({
       if (s1 && s2 && wideEnough(s1, s2, upper, lower)) {
         const ordered: Span = link.get('strand') === -1 ? [s2[1], s2[0]] : s2
         const idx = targets.length
+        linkTarget.set(link.id(), idx)
         const via = link.get('composedThrough') as
           | { refName: string; start: number; end: number }
           | undefined
         targets.push({
           feature: link,
+          linkId: link.id(),
           label: [
             `${upper.assemblyName} ${upper.canon(link.get('refName'))}:${fmt(link.get('start'))}-${fmt(link.get('end'))}`,
             `${lower.assemblyName} ${lower.canon(mate.refName)}:${fmt(mate.start)}-${fmt(mate.end)}`,
@@ -377,7 +396,7 @@ export function buildRibbonGeometry({
       })
     }
   }
-  return { cells, layers, targets, groupTarget }
+  return { cells, layers, targets, groupTarget, linkTarget }
 }
 
 export interface TickGeometry {

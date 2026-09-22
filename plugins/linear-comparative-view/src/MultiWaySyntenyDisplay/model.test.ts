@@ -506,9 +506,9 @@ test('re-anchoring unhides the outgoing anchor', async () => {
 })
 
 // The clicked ribbon keeps an outline the way the pairwise view's does: the
-// click records the hover's target, the passes compare it per instance, and
-// only an empty-canvas click or a refetch lets it go.
-test('a ribbon click keeps its outline id until empty canvas or a refetch', () => {
+// click records the hover's target by key, and only an empty-canvas click lets
+// it go. hoverRelayout.test.ts pins what the key resolves to.
+test('a ribbon click holds its key until a click on empty canvas', () => {
   const display = createDisplay()
   const feature = new SimpleFeature({
     uniqueId: 'f1',
@@ -516,31 +516,24 @@ test('a ribbon click keeps its outline id until empty canvas or a refetch', () =
     start: 100,
     end: 300,
   })
-  display.setHoverTarget({ label: 'link', feature, targetIdx: 3 })
+  display.setHoverTarget({ label: 'link', feature, linkId: 'f1' })
   display.selectHovered()
-  expect(display.clickedFeatureId).toBe(4)
-  expect(display.renderState.clickedFeatureId).toBe(4)
+  expect(display.clickedTarget).toEqual({ groupKey: undefined, linkId: 'f1' })
 
   // the pointer leaving does not release it
   display.setHoverTarget(undefined)
-  expect(display.clickedFeatureId).toBe(4)
+  expect(display.clickedTarget?.linkId).toBe('f1')
 
   // a stationary click on empty canvas does
   display.selectHovered()
-  expect(display.clickedFeatureId).toBe(0)
+  expect(display.clickedTarget).toBeUndefined()
 
-  // and so does a refetch, whose targets a bare index no longer addresses
-  display.setHoverTarget({ label: 'link', feature, targetIdx: 3 })
+  // a refetch does not, since the click's own widget resizes the view and
+  // that refetches
+  display.setHoverTarget({ label: 'g', feature, groupKey: 'g1' })
   display.selectHovered()
   display.setFeatures([])
-  expect(display.clickedFeatureId).toBe(0)
-
-  // a group-keyed click re-resolves against the rebuilt geometry instead,
-  // since the click's own widget resizes the view and that refetches
-  display.setHoverTarget({ label: 'g', feature, groupKey: 'g1', targetIdx: 2 })
-  display.selectHovered()
-  display.setFeatures([])
-  expect(display.clickedTarget).toEqual({ groupKey: 'g1', targetIdx: 2 })
+  expect(display.clickedTarget).toEqual({ groupKey: 'g1', linkId: undefined })
 })
 
 // A stack past ~8 lanes used to divide whatever height there was and crush;
