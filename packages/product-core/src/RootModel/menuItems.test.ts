@@ -20,29 +20,27 @@ function clickOf(item: MenuItem) {
 describe('openTrackMenuItem', () => {
   it('warns instead of adding a widget when there are no views', () => {
     const notify = jest.fn()
-    const addWidget = jest.fn()
-    clickOf(openTrackMenuItem())({ views: [], notify, addWidget })
+    const openWidget = jest.fn()
+    clickOf(openTrackMenuItem())({ views: [], notify, openWidget })
     expect(notify).toHaveBeenCalledWith(
       'Please open a view to add a track first',
     )
-    expect(addWidget).not.toHaveBeenCalled()
+    expect(openWidget).not.toHaveBeenCalled()
   })
 
-  it('adds + shows a track widget for the first view', () => {
-    const widget = { id: 'w' }
-    const addWidget = jest.fn().mockReturnValue(widget)
-    const showWidget = jest.fn()
+  it('opens a track widget for the first view', () => {
+    const openWidget = jest.fn()
     const notify = jest.fn()
     clickOf(openTrackMenuItem())({
       views: [{ id: 'view1' }],
-      addWidget,
-      showWidget,
+      openWidget,
       notify,
     })
-    expect(addWidget).toHaveBeenCalledWith('AddTrackWidget', 'addTrackWidget', {
-      view: 'view1',
-    })
-    expect(showWidget).toHaveBeenCalledWith(widget)
+    expect(openWidget).toHaveBeenCalledWith(
+      'AddTrackWidget',
+      'addTrackWidget',
+      { view: 'view1' },
+    )
     expect(notify).not.toHaveBeenCalled()
   })
 
@@ -50,8 +48,7 @@ describe('openTrackMenuItem', () => {
     const notify = jest.fn()
     clickOf(openTrackMenuItem())({
       views: [{ id: 'view1' }, { id: 'view2' }],
-      addWidget: jest.fn().mockReturnValue({}),
-      showWidget: jest.fn(),
+      openWidget: jest.fn(),
       notify,
     })
     expect(notify).toHaveBeenCalledTimes(1)
@@ -60,16 +57,13 @@ describe('openTrackMenuItem', () => {
 })
 
 describe('openConnectionMenuItem', () => {
-  it('adds + shows the connection widget', () => {
-    const widget = { id: 'c' }
-    const addWidget = jest.fn().mockReturnValue(widget)
-    const showWidget = jest.fn()
-    clickOf(openConnectionMenuItem())({ addWidget, showWidget })
-    expect(addWidget).toHaveBeenCalledWith(
+  it('opens the connection widget', () => {
+    const openWidget = jest.fn()
+    clickOf(openConnectionMenuItem())({ openWidget })
+    expect(openWidget).toHaveBeenCalledWith(
       'AddConnectionWidget',
       'addConnectionWidget',
     )
-    expect(showWidget).toHaveBeenCalledWith(widget)
   })
 })
 

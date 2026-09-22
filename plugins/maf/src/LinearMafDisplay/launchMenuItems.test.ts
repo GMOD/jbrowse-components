@@ -15,11 +15,10 @@ const session = {
   assemblyManager: { getCanonicalAssemblyName: () => undefined },
   configuration: {},
   widgets: new Map(),
-  addWidget: (_type: string, _id: string, args: Record<string, unknown>) => {
+  openWidget: (_type: string, _id: string, args: Record<string, unknown>) => {
     widgets.push(args)
     return args
   },
-  showWidget: () => {},
   notifyError: () => {},
 }
 

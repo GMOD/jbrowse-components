@@ -61,9 +61,8 @@ function fakeSession(viewAssembly = 'hg19') {
       calls.addedTracks.push(conf)
       return conf
     },
-    addWidget: (_type: string, _id: string, args: Record<string, unknown>) =>
-      args,
-    showWidget: (widget: Record<string, unknown>) => calls.widgets.push(widget),
+    openWidget: (_type: string, _id: string, args: Record<string, unknown>) =>
+      calls.widgets.push(args),
     notify: (message: string) => calls.notifications.push(message),
   }
   return { session: session as unknown as AbstractSessionModel, calls }
