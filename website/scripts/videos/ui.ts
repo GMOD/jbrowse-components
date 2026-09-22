@@ -601,14 +601,18 @@ export const uiVideos: VideoSpec[] = [
   },
 
   // The same grouping as `ui/gene_track_sections`, written instead of picked:
-  // the spec names a section order the Group by dialog has no field for. The
-  // frame is taller so the dialog, with the spec pasted in, fits whole.
+  // the spec names a section order the Group by dialog has no field for.
+  //
+  // Wants a taller frame so the dialog, with the spec pasted in, fits whole —
+  // but the clip in the store is still the 740 take, so the height stays
+  // 740 until a refilm lands; bumping it here without one just leaves the
+  // page reserving a box the store's clip doesn't fill.
   {
     name: 'ui/gene_track_channel_spec',
     description:
       'NCBI RefSeq genes on hg38 grouped by gene_biotype in a declared section order and colored by the same attribute in a declared color order, written as JSON from the Group by dialog',
     url: geneGroupingVideoFixtures.channelSpecSession,
-    viewportHeight: 860,
+    viewportHeight: 740,
     readySelector: '::-p-text(NCBI RefSeq)',
     readyTimeout: 120000,
     steps: [

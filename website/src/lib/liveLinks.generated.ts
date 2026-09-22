@@ -816,7 +816,7 @@ export const videoFrames: Record<
   },
   "ui/gene_track_channel_spec": {
     "width": 1920,
-    "height": 860
+    "height": 740
   },
   "variants/trio_phased_matrix": {
     "width": 1920,
