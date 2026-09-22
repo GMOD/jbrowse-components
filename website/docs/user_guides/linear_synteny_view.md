@@ -147,8 +147,9 @@ following off to move one panel on its own.
 - Hover a ribbon to see a tooltip with the alignment's coordinates on both
   genomes and, when zoomed in, the CIGAR operation under the cursor
 - Click a ribbon to highlight it across both panels
-- Right-click a ribbon for a context menu with **Center on feature**, which
-  recenters both panels on that alignment's midpoint
+- Right-click a ribbon for a context menu with **Center view on this feature**,
+  which moves both panels to show that alignment, the same as the link in its
+  feature panel
 - The same menu offers **Move top panel to the matching region** and **Move
   bottom panel to the matching region**. These leave one panel alone and send
   the other to the sequence that panel's visible window aligns to, resolved

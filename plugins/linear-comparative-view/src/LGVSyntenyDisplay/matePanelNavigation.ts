@@ -120,9 +120,8 @@ export function matePanelIndexes({
  * rather than the whole alignment.
  *
  * A published liftOver-style chain is one
- * feature tens of Mb long, so its midpoint — what "Center on feature" moves to
- * — is nowhere near what is on screen, and its full extent is nothing a panel
- * can usefully show. `resolvedMateSpan` walks the CIGAR to place just the
+ * feature tens of Mb long, and its full extent — what "Center view on this
+ * feature" frames — is nothing a panel can usefully show. `resolvedMateSpan` walks the CIGAR to place just the
  * visible window on the other assembly, the same resolution the launch dialog
  * previews and the launched view opens on.
  *

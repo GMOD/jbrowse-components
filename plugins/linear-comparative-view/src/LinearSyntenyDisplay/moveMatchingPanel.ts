@@ -264,9 +264,10 @@ export async function resolveMatchingSpan({
  * Send one panel of a synteny view to the region the clicked band matches,
  * leaving its neighbour where it is.
  *
- * THE WINDOW, NOT THE FEATURE'S MIDPOINT, which is the whole difference from
- * "Center on feature": a published liftOver-style chain is one feature tens of
- * Mb long, so its midpoint is nowhere near what either panel is showing. And a
+ * THE WINDOW, NOT THE WHOLE FEATURE, which is the whole difference from
+ * "Center view on this feature": a published liftOver-style chain is one
+ * feature tens of Mb long, so framing it is nowhere near what either panel is
+ * showing. And a
  * span rather than a point, so the moved panel matches the staying panel's
  * SCALE too and the band between them comes back near-vertical.
  *

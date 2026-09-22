@@ -150,9 +150,10 @@ test('an uninitialized panel holds its index open', () => {
   ).toEqual([1])
 })
 
-// The whole reason this is not "Center on feature": the visible window, walked
-// through the CIGAR, lands past the block's 1000 bp deletion — 1000 bp short of
-// where the maternal coordinates sit, and nowhere near the block's midpoint.
+// The whole reason this is not "Center view on this feature": the visible
+// window, walked through the CIGAR, lands past the block's 1000 bp deletion —
+// 1000 bp short of where the maternal coordinates sit, and nowhere near the
+// block's midpoint.
 //
 // A span rather than a locstring, so `moveMatePanels` can hand it to
 // `navToResolvedSpan` and reach `navTo` — which moves the panel inside the

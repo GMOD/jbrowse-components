@@ -1,7 +1,7 @@
 import { assembleLocString } from '@jbrowse/core/util'
 import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 
-import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
+import type { FollowAnchorHost } from '../SyntenyFollow/followHost.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
 import type {
@@ -102,11 +102,12 @@ export function syntenyCenterTargets({
 }
 
 /**
- * "Center view on this feature": both sides onto their rows, each attempted
- * whichever fails, and a message for every side that could not move. Held as
- * one stack move, and the follow anchor goes to the first row that moved — the
- * feature's own, unless its `navTo` threw — so the follow brings the rest of
- * the stack to it rather than pulling the moved rows back to an unmoved one.
+ * "Center view on this feature", from the feature panel and a ribbon's context
+ * menu alike: both sides onto their rows, each attempted whichever fails, and
+ * a message for every side that could not move. Held as one stack move, and
+ * the follow anchor goes to the first row that moved — the feature's own,
+ * unless its `navTo` threw — so the follow brings the rest of the stack to it
+ * rather than pulling the moved rows back to an unmoved one.
  */
 export function centerStackOnFeature({
   view,
@@ -114,7 +115,7 @@ export function centerStackOnFeature({
   feat,
   assemblyManager,
 }: {
-  view: LinearSyntenyViewModel
+  view: FollowAnchorHost & { views: LinearGenomeViewModel[] }
   level: number | undefined
   feat: SimpleFeatureSerialized
   assemblyManager: AssemblyNameResolver
