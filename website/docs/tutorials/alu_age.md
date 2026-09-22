@@ -293,7 +293,13 @@ against the young share's swing.
     {
       "type": "LinearMarkDisplay",
       "displayId": "alu_young_share-LinearMarkDisplay",
-      "scales": { "y": { "domainMin": -1.5, "domainMax": 1.5 } },
+      "scales": {
+        "y": {
+          "domainMin": -1.5,
+          "domainMax": 1.5,
+          "title": "AluY share, log2"
+        }
+      },
       "marks": [
         {
           "shape": "bar",

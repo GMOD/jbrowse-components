@@ -238,7 +238,9 @@ for lane in young:youngLog2 strand:strandLog2; do
     {
       "type": "LinearMarkDisplay",
       "displayId": "@FAMILY@_@KIND@_share-LinearMarkDisplay",
-      "scales": { "y": { "domainMin": -1.5, "domainMax": 1.5 } },
+      "scales": {
+        "y": { "domainMin": -1.5, "domainMax": 1.5, "title": "@FAMILY@ @KIND@ share, log2" }
+      },
       "marks": [
         {
           "shape": "bar",
