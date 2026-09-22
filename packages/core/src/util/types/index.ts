@@ -180,6 +180,8 @@ export interface AbstractSessionModel
   setHighlights: (highlights: HighlightType[]) => void
   highlightsVisible: boolean
   setHighlightsVisible: (arg: boolean) => void
+  highlightLabelsVisible: boolean
+  setHighlightLabelsVisible: (arg: boolean) => void
   // The runtime user-preference store, all of it declared by `BaseSessionModel`
   // and therefore present on every session in every product — required, not
   // optional, so its readers (the scroll-zoom toggles, the preferences dialog)

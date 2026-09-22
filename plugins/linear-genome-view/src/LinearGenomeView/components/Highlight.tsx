@@ -27,7 +27,9 @@ const Highlight = observer(function Highlight({
   const theme = useStyleTheme()
   const coords = model.getHighlightCoords(highlight)
   const bandColor = getHighlightColor(highlight, theme)
-  const label = model.labelsVisible ? highlight.label : undefined
+  const label = getSession(model).highlightLabelsVisible
+    ? highlight.label
+    : undefined
 
   return coords ? (
     <HighlightBand

@@ -76,6 +76,11 @@ export function BaseSessionModel<
       highlightsVisible: types.stripDefault(types.boolean, true),
       /**
        * #property
+       * whether a band's label is written on it
+       */
+      highlightLabelsVisible: types.stripDefault(types.boolean, true),
+      /**
+       * #property
        * views, tracks, displays and widgets `pruneUnbuildableNodes` took out of
        * the tree because this build has no plugin for their type, each with the
        * anchor that puts it back. Nothing in the session reads its contents,
@@ -316,6 +321,12 @@ export function BaseSessionModel<
        */
       setHighlightsVisible(arg: boolean) {
         self.highlightsVisible = arg
+      },
+      /**
+       * #action
+       */
+      setHighlightLabelsVisible(arg: boolean) {
+        self.highlightLabelsVisible = arg
       },
       /**
        * #action

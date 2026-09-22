@@ -487,12 +487,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * controls whether highlight chip labels are shown inline
-         */
-        labelsVisible: types.stripDefault(types.boolean, true),
-
-        /**
-         * #property
          * color CDS segments by reading frame
          */
         colorByCDS: types.optional(types.boolean, () =>
@@ -1425,12 +1419,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setShowGridlines(b: boolean) {
         self.showGridlines = b
-      },
-      /**
-       * #action
-       */
-      setLabelsVisible(arg: boolean) {
-        self.labelsVisible = arg
       },
       /**
        * #action

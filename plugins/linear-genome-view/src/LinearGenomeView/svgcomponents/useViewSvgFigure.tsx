@@ -325,7 +325,7 @@ function figureKey(view: LinearGenomeViewModel, themeName: string | undefined) {
     view.tracks.map(track => [getSnapshot(track), track.displays[0]?.height]),
     session.getActiveThemeOptions?.(themeName),
     session.highlightsVisible ? view.highlights : false,
-    view.labelsVisible,
+    session.highlightLabelsVisible,
   ])
 }
 

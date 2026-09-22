@@ -25,7 +25,8 @@ export default function SVGHighlights({
   height: number
 }) {
   const theme = useStyleTheme()
-  return getSession(model).highlightsVisible
+  const session = getSession(model)
+  return session.highlightsVisible
     ? model.highlights.map((h, idx) => {
         const coords = model.getHighlightCoords(h)
         return coords ? (
@@ -34,7 +35,7 @@ export default function SVGHighlights({
             coords={coords}
             height={height}
             color={getHighlightColor(h, theme).toRgbString()}
-            label={model.labelsVisible ? h.label : undefined}
+            label={session.highlightLabelsVisible ? h.label : undefined}
             labelColor={theme.palette.text.primary}
           />
         ) : null

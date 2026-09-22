@@ -101,9 +101,9 @@ export function buildHighlightsSubMenuItems(
     {
       label: 'Show highlight labels',
       type: 'checkbox',
-      checked: self.labelsVisible,
+      checked: session.highlightLabelsVisible,
       onClick: () => {
-        self.setLabelsVisible(!self.labelsVisible)
+        session.setHighlightLabelsVisible(!session.highlightLabelsVisible)
       },
     },
   ]

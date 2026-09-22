@@ -29,7 +29,7 @@ every highlight with a link back to it.
   opens one, zoomed out a little for context. `Ctrl`/`Cmd` + `Shift` + `M`
   navigates to the newest highlight.
 - Click a Label cell and type to name a highlight. **Show… → Show highlight
-  labels** in an LGV's menu shows or hides the names on the bands.
+  labels** in an LGV's menu shows or hides the names on the bands in every view.
 - The Color column sets a band's color. Tick rows to recolor or delete several
   at once.
 

@@ -220,6 +220,7 @@ function initialize() {
       // mirrors BaseSession's highlight list and band toggle
       highlights: types.array(types.frozen<HighlightType>()),
       highlightsVisible: types.optional(types.boolean, true),
+      highlightLabelsVisible: types.optional(types.boolean, true),
       assemblyManager: types.optional(AssemblyManager, {
         assemblies: {
           volvox: {
@@ -272,6 +273,9 @@ function initialize() {
       },
       setHighlightsVisible(arg: boolean) {
         self.highlightsVisible = arg
+      },
+      setHighlightLabelsVisible(arg: boolean) {
+        self.highlightLabelsVisible = arg
       },
       addHighlight(h: HighlightType) {
         self.highlights.push(h)
@@ -2643,10 +2647,10 @@ describe('highlights', () => {
   })
 
   test('label toggle defaults to true and can be flipped', () => {
-    const model = setupHighlightModel()
-    expect(model.labelsVisible).toBe(true)
-    model.setLabelsVisible(false)
-    expect(model.labelsVisible).toBe(false)
+    const session = getSession(setupHighlightModel())
+    expect(session.highlightLabelsVisible).toBe(true)
+    session.setHighlightLabelsVisible(false)
+    expect(session.highlightLabelsVisible).toBe(false)
   })
 
   test('getHighlightCoords maps to pixel position', () => {
