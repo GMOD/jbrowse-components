@@ -534,7 +534,8 @@ chip in its corner naming the mark and the slot:
 - a `bar` or `point` drawn together with a stacked `span`, which stands in the
   first of the span's rows;
 - two marks each running their own `pileup`, which share row numbers, where one
-  `pileup` in the display's `transform` packs them together;
+  `pileup` in the display's `transform` packs them together, with each mark's
+  `encoding.row` naming the field it writes;
 - a zoom range whose `minBpPerPx` is not below its `maxBpPerPx`, which never
   draws.
 
@@ -542,8 +543,9 @@ chip in its corner naming the mark and the slot:
 the half-written states an editor passes through: a mark that draws nothing,
 never draws, or names a step that cannot run is an error, and a slot left unread
 — a channel the shape ignores, a `source` a second mark already stands in for —
-is a warning. Each finding names the mark and the slot, and `--json` carries the
-rule's id beside it.
+is a warning. The display's own `transform` steps are checked the way a mark's
+are. Each finding names the slot, and the mark when the slot is a mark's, and
+`--json` carries the rule's id beside it.
 
 ## What the track menu offers
 
