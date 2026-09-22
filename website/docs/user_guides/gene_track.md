@@ -180,7 +180,7 @@ and JBrowse remembers it across sessions.
 
 ## Color transcripts by a value in the file
 
-The [`color`](/docs/config/FeatureColor) object binds a field in the GFF3
+The [`color`](/docs/config/featurecolor) object binds a field in the GFF3
 attribute column to a scale. Under `categorical` each value takes its own color;
 under `threshold` a number takes the color of the interval it falls in, between
 the cut points `domain` lists, with one `range` color per interval. A
