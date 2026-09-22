@@ -67,8 +67,8 @@ Right-click the gene. The menu has **Launch protein view** from protein3d and
 **Launch MSA view** from msaview, which [the next section](#launching-an-msa)
 takes. Choose **Launch protein view**.
 
-The dialog opens on its **AlphaFoldDB search** tab with **Auto-detect using
-UniProt ID mapping API** selected. It maps the transcript's accession to UniProt
+The dialog opens on its **AlphaFoldDB search** tab with **Look up from the
+feature's identifiers** selected. It maps the transcript's accession to UniProt
 entries and picks the reviewed one. **Choose transcript isoform** picks which
 transcript becomes the query, tagging the isoforms whose translation matches the
 structure's residues. **Launch** renders the structure with
@@ -77,12 +77,10 @@ structure's residues. **Launch** renders the structure with
 The structure carries its own sequence, which often differs from the
 transcript's translation: an AlphaFold model covers one UniProt isoform, and a
 PDB entry can be a construct, a fragment or another species. When the two differ
-the dialog aligns them in the browser before mapping any position. The gear
-beside that notice opens **Alignment settings**: **Smith-Waterman (local
-alignment)**, the default and the one to keep for a structure covering part of
-the protein, **Needleman-Wunsch (global alignment)**, or **Import manual
-alignment...** for a pairwise alignment in Clustal format. The same options sit
-under **Advanced...** in the view menu afterwards.
+the dialog aligns them in the browser, with a local alignment that suits a
+structure covering part of the protein, before mapping any position. **Import
+manual alignment...** in the view menu afterwards takes a pairwise alignment of
+your own in Clustal format instead.
 
 <Video src="/media/proteins/genomes_protein_launch.mp4" caption="TP53 on the hosted hg38 with NCBI RefSeq and ClinVar loaded: the right-click launcher, the dialog resolving a UniProt entry and an isoform, and the structure Launch renders. Hovering a coding position afterwards picks out its residue on the structure and in the alignment above it; the intron between the two exons picks out nothing." />
 
@@ -103,8 +101,8 @@ ID, which the RefSeq gene tracks on the hosted configs carry.
 
 The protein view holds the AlphaFold structure, the genome-to-structure
 alignment, and per-residue tracks for pLDDT confidence, domains, helices and
-hydrophobicity. The gear beside the dialog's **Launch** button opens **Launch
-settings**, whose side-by-side option puts the protein view beside the genome
+hydrophobicity. **Open side by side**, at the foot of the list the arrow beside
+the dialog's **Launch** button opens, puts the protein view beside the genome
 view.
 
 <Figure caption="A connected session on human TP53 (UniProt P04637), NCBI RefSeq above the AlphaFold structure. A motif clicked on the protein's feature track selects its residues on the structure and bands the codons they came from on the gene." src="/img/protein/connected.png" />
