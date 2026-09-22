@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/modifications-utils",
-  "version": "5.0.0-beta.8",
+  "version": "5.0.0-beta.9",
   "type": "module",
   "description": "Pure MM/ML base-modification tag parsers (methylation, etc.)",
   "keywords": [

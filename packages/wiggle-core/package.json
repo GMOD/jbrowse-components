@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/wiggle-core",
-  "version": "5.0.0-beta.8",
+  "version": "5.0.0-beta.9",
   "type": "module",
   "description": "Score-axis scale, autoscale, config mixins and plot chrome shared by wiggle, Manhattan, mark and coverage displays",
   "keywords": [
