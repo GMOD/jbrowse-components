@@ -250,8 +250,9 @@ The short form takes a UniProt accession plus a transcript ID, from which the
 plugin derives the AlphaFold structure, finds the transcript in the
 `connectedView` tracks at `loc`, and translates its CDS. The explicit form takes
 a structure `url`, feature and protein sequence, for a transcript no loaded
-track serves. See the
-[protein3d developer docs](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/DEVELOPERS.md#connected-genome--protein-view).
+track serves. protein3d's
+[launching guide](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/docs/launching.md#a-structure-connected-to-the-genome)
+walks through both.
 
 A `ProteinView` with only a structure `url` and no `connectedView` opens as a
 standalone structure, with no genome to exchange highlights with.

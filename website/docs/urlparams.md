@@ -1016,12 +1016,13 @@ loaded, through the config's `plugins`, a hosted config, or a session's own
 `type`. Each plugin documents its own fields:
 
 - `ProteinView` from
-  [`jbrowse-plugin-protein3d`](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/DEVELOPERS.md)
-  (`uniprotId`, `transcriptId`, `url`, `connectedView`). See also the
-  [proteins tutorial](/docs/tutorials/genomes_proteins).
+  [`jbrowse-plugin-protein3d`](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/docs/launch-parameters.md)
+  (`uniprotId`, `pdbId`, `url`, `structures`, `transcriptId`, `connectedView`).
+  Every link in the [TP53 structures tutorial](/docs/tutorials/tp53_structures)
+  is one of these specs.
 - `MsaView` from
-  [`jbrowse-plugin-msaview`](https://github.com/GMOD/jbrowse-plugin-msaview/blob/main/DEVELOPERS.md)
-  (`msaFileLocation`, `treeFileLocation`, `connectedViewId`).
+  [`jbrowse-plugin-msaview`](https://github.com/GMOD/jbrowse-plugin-msaview/blob/main/docs/launch-parameters.md)
+  (`msa`, `tree`, `msaFileLocation`, `connectedViewId`, `connectedTranscript`).
 
 ### Tiled views / Workspaces
 
