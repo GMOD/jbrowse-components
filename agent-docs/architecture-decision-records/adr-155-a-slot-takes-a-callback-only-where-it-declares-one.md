@@ -58,9 +58,17 @@ colour editor, the JSON Schema (`PlainString` and `not: JexlString`) and
   variant displays' `featureColor` declares `feature`.
 - The volvox repeat wiggle tracks lost `jexl:repeatColor(feature)`, a function
   the volvox plugin no longer registers, on a display that colours per signal.
-- Not refused yet: a `jexl:` string inside an array slot's entry
-  (`jexlFilters`, `groupby`, `pileup.fields`), and `jb2export`'s `color:`
-  modifier, whose `:` split cannot carry a `jexl:` value.
+- A `jexl:` entry in a `stringArray` slot loads (`colorArray` and
+  `stringEnumArray` refuse one as not a colour or not a member). `jexlFilters`
+  entries are expressions, and `configuredJexlFilters` reads one the same with
+  or without the prefix. In a `groupby` or `pileup.fields`, the worker's
+  transform throws, pointing at a `formula` step, and in a mark's own
+  `transform` the `step-field-expression` rule says so first; the rule does not
+  read the display-level `transform`. Refusing entries at load was built and
+  backed out (2026-09-21): it replaced that pointer with a generic message, and
+  what it newly caught, such as a `jexl:` assembly name, nobody writes.
+- `jb2export`'s `color:` modifier cannot carry a `jexl:` value through its `:`
+  split.
 
 ## Rejected alternatives
 
