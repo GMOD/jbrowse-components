@@ -26,7 +26,6 @@ function rulerTexts(flip: boolean) {
             { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 800 },
           ],
           tracks: [],
-          configuration: {},
         },
       ],
     },

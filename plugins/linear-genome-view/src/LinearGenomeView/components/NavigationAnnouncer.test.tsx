@@ -21,7 +21,6 @@ async function setup() {
             { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50000 },
           ],
           tracks: [],
-          configuration: {},
         },
       ],
     },

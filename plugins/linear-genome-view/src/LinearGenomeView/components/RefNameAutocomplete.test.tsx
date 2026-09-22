@@ -36,7 +36,6 @@ const sessionSnapshot = {
         },
       ],
       tracks: [],
-      configuration: {},
     },
   ],
 }

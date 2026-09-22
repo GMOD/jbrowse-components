@@ -24,7 +24,6 @@ function overview(numRegions: number) {
             end: 250_000_000,
           })),
           tracks: [],
-          configuration: {},
         },
       ],
     },
