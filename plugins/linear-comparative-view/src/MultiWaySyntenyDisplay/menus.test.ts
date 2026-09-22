@@ -421,7 +421,12 @@ test('a lane drawn [rev] opens its assembly reversed', () => {
     ...peach,
     frame: { ...peach.frame, flipped: true },
   })
-  click(items.find(item => item.label === 'Open peach at the matching region'))
+  click(
+    items.find(
+      item =>
+        'label' in item && item.label === 'Open peach at the matching region',
+    ),
+  )
   expect(calls).toEqual(['open peach Pp1:101..2000[rev]'])
 })
 
