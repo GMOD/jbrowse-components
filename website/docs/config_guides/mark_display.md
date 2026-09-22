@@ -354,6 +354,11 @@ the legend and the value axis along with the plot.
 
 <Figure src="/img/mark_display/facet.png" caption="HG002 ONT reads faceted by their HP tag: each haplotype's reads packed into a separate band under the chip that names it, and the untagged reads in a third."/>
 
+`facet` and its `domain` are the same slot and the same ordering rule the gene,
+alignments, variant, multiway synteny and multi-row displays each take their own
+way — [grouping and lane order](/docs/config_guides/grouping_and_ordering) has
+the shared mechanism across all of them.
+
 ## Transforms
 
 A mark's `transform` is a list of steps over the region's features, run in the

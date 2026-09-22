@@ -30,6 +30,7 @@ applies wherever you run it. For copy-paste recipes, see the [](/docs/cookbook).
 ## Track types
 
 - [](/docs/config_guides/alignments_track)
+- [](/docs/config_guides/grouping_and_ordering)
 - [](/docs/config_guides/gwas_track)
 - [](/docs/config_guides/hic_track)
 - [](/docs/config_guides/maf_track)

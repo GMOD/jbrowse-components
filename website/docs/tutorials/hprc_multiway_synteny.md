@@ -226,6 +226,7 @@ bash build_hprc_multiway_synteny.sh
 - [](/docs/tutorials/primate_orthologs_synteny)
 - [](/docs/tutorials/ecoli_orthologs_synteny)
 - [](/docs/tutorials/allvsall_synteny)
+- [](/docs/config_guides/grouping_and_ordering)
 
 ## References
 

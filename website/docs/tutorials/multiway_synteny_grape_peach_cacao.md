@@ -557,5 +557,6 @@ The script needs the tools under [Prerequisites](#prerequisites).
 - [](/docs/tutorials/genomes_synteny)
 - [](/docs/user_guides/linear_synteny_view)
 - [](/docs/config_guides/synteny_track)
+- [](/docs/config_guides/grouping_and_ordering)
 - [](/docs/config/mcscanblocksadapter)
 - [](/docs/config/multiwaysyntenydisplay)

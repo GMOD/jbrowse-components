@@ -304,3 +304,4 @@ themselves are BED4 with no color.
 - [](/docs/tutorials/scatac_pseudobulk)
 - [](/docs/user_guides/clustering)
 - [](/docs/config_guides/tracks)
+- [](/docs/config_guides/grouping_and_ordering)

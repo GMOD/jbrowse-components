@@ -266,7 +266,7 @@ pass every expression, on variant tracks too:
     "height": 400,
     "color": { "field": "mapq" },
     "showSoftClipping": true,
-    "facet": "tags.HP",
+    "facet": { "field": "tags.HP", "domain": ["2", "1"] },
     "filterBy": {
       "flagExclude": 1540,
       "flagInclude": 0,
@@ -281,7 +281,10 @@ pass every expression, on variant tracks too:
 - `baseColor` draws a per-base layer over the reads, whatever `color` fills them
   with: `"modifications"`, `"bisulfite"`, `"baseQuality"` or `"base"`
 - `facet` also takes `strand`, `firstOfPairStrand`, `pairOrientation`,
-  `splitRead`, `mapq`, or any read field
+  `splitRead`, `mapq`, or any read field; `domain` pins which haplotype (or
+  other value) stacks first — the same slot
+  [feature, variant, mark and multiway synteny tracks](/docs/config_guides/grouping_and_ordering)
+  all take
 - `flagExclude` 1540 hides unmapped, vendor-failed, and duplicate reads; 3844
   also hides secondary and supplementary
   ([flag explainer](https://broadinstitute.github.io/picard/explain-flags.html))
@@ -402,7 +405,10 @@ jbrowse make-pif alignments.paf   # -> alignments.pif.gz (+ .tbi)
 
 The [synteny track guide](/docs/config_guides/synteny_track) has every adapter,
 and [all-vs-all synteny](/docs/tutorials/allvsall_synteny) stacks more than two
-genomes from one PAF.
+genomes from one PAF. Three or more genomes as one lane apiece, rather than
+every assembly anchored against one reference, is `MultiWaySyntenyDisplay`
+([grouping and lane order](/docs/config_guides/grouping_and_ordering#multiway-synteny)
+has a worked config).
 
 ## Instance-wide settings
 
@@ -458,6 +464,8 @@ share links.
 
 ## Where to go next
 
+- [](/docs/config_guides/grouping_and_ordering) - the `domain` slot that orders
+  sections, lanes and rows, across every display type that has one
 - [](/docs/config_guide) - structure of `config.json` and every per-track guide
 - [](/docs/cli) - `add-track --displayDefaults '<json>'` applies any recipe
   above

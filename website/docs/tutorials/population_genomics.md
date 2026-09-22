@@ -321,6 +321,7 @@ JBrowse Desktop.
 - [](/docs/tutorials/ld_human)
 - [](/docs/tutorials/ld_mosquitoes)
 - [](/docs/tutorials/dog10k_selection)
+- [](/docs/config_guides/grouping_and_ordering)
 - [](/docs/jbrowse_anywidget)
 
 ## References

@@ -296,5 +296,6 @@ the [gene density tutorial](/docs/tutorials/gene_density).
 
 - [](/docs/user_guides/sequence_track)
 - [](/docs/user_guides/feature_sequence)
+- [](/docs/config_guides/grouping_and_ordering)
 - [RNA-seq tutorial](/docs/tutorials/rnaseq)
 - [Track configuration](/docs/config_guides/tracks)

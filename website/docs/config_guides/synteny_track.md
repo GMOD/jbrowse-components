@@ -232,6 +232,16 @@ single haplotype (`grape#1`):
 - **A prefix matches only at a `#` boundary**, so `grape` cannot pick up
   `grapefruit#1#chr1`, and mates are labelled at the depth you listed
 
+## Three or more genomes
+
+`MCScanBlocksAdapter` and the two multi-genome PAF adapters pair with
+`MultiWaySyntenyDisplay` as well as with the two-way linear synteny view above —
+it draws one lane per assembly, each in its own local coordinate frame, with
+ribbons connecting orthologs between adjacent lanes rather than anchoring every
+assembly against one reference. Its lane order, colouring and the rest of its
+own config are
+[grouping and lane order](/docs/config_guides/grouping_and_ordering#multiway-synteny).
+
 ## In the circular view
 
 A `SyntenyTrack` opens in a [circular view](/docs/user_guides/circular_view)
@@ -294,6 +304,7 @@ and leaves the other whole.
 
 - [](/docs/user_guides/linear_synteny_view)
 - [](/docs/user_guides/dotplot_view)
+- [](/docs/config_guides/grouping_and_ordering)
 - [Synteny visualization tutorial](/docs/tutorials/synteny_visualization)
 - [ORTHOLOG_TABLES.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/ORTHOLOG_TABLES.md)
   — what a `.blocks` table can and cannot express, and why all-vs-all is a

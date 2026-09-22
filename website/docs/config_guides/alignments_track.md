@@ -42,4 +42,5 @@ given state from a link or an embedded view.
 ## See also
 
 - [](/docs/user_guides/alignments_track)
+- [](/docs/config_guides/grouping_and_ordering)
 - [Structural variant visualization](/docs/user_guides/sv_visualization)

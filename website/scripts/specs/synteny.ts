@@ -1267,6 +1267,56 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 680,
   },
 
+  // Same lanes, same domain, with ribbonColor added: relative strand between
+  // the two lanes each ribbon joins, which needs no attribute beyond what
+  // every synteny block already carries. Demonstrates `domain` (order) and
+  // `ribbonColor` (a colour channel) together, which the config docs describe
+  // separately but no figure had shown combined.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/lgv_track_lanes_colored',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/grape_peach_cacao/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'grape',
+            loc: '11:778,000-866,000',
+            tracks: [
+              {
+                trackId: 'grape_genes',
+                type: 'LinearBasicDisplay',
+                showOnlyGenes: true,
+                displayMode: 'compact',
+                showLabels: 'auto',
+              },
+              {
+                trackId: 'grape_peach_cacao_blocks',
+                type: 'MultiWaySyntenyDisplay',
+                domain: [
+                  'peach',
+                  'cacao',
+                  'poplar',
+                  'citrus',
+                  'arabidopsis',
+                  'tomato',
+                ],
+                ribbonColor: { field: 'strand' },
+                height: 340,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 120000,
+    viewportHeight: 680,
+  },
+
   // The gene-level zoom of the same lanes, with a ribbon clicked: a ~35 kb cut
   // around the tandem expansion the gene_orthologs figure reads, close enough
   // that each ribbon connects one gene to one gene. Clicking a ribbon keeps its
