@@ -487,6 +487,7 @@ if (fixStale && failed.length > 0) {
   const downstream = [...rewriting].filter(
     name => !failed.some(f => f.name === name),
   )
+  // .githooks/pre-push reads this line as the sign that a rewrite ran
   console.log(
     `\nChecked in ${Math.round(performance.now() - startedAt)}ms. Rewriting ` +
       `${rewriting.size} of ${selected.length}${

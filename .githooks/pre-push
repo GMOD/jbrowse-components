@@ -25,8 +25,11 @@
 # they write. It still runs, but every path that was dirty when the run started
 # is copied aside first and put back afterwards if a generator overwrote it —
 # the artifact stays stale on disk, which is reported, and the other agent's
-# edit stays theirs. The window in which they could have saved again is the
-# generator's own run, seconds, against losing the edit outright.
+# edit stays theirs. Only a run that rewrote something puts anything back: on
+# the ordinary push the check finds nothing stale and writes nothing, so a
+# dirty path that moved during it was saved by whoever is editing it, and
+# restoring it reverted their edit. On a push that does rewrite, the window
+# for that is the rewrite, against losing the edit outright.
 #
 # AND IT COMMITS AND PUSHES WHAT IT FIXED. The fixes land in the working tree,
 # not in the commits on their way out, so the push git is holding would send
@@ -362,14 +365,18 @@ fi
 # A generator that rewrote a path someone had already edited gets undone: the
 # edit goes back exactly as it was, the artifact stays stale on disk, and the
 # push goes on — CI's generated job names the staleness with a patch attached.
+# `--fix-stale` prints its "Rewriting" line only when it rewrites, and a run
+# without one wrote nothing to undo.
 restored=
-while IFS= read -r f; do
-  if [ -f "$tmp/snap/$f" ] && [ -f "$f" ] && ! cmp -s "$tmp/snap/$f" "$f"; then
-    cp -p "$tmp/snap/$f" "$f"
-    restored=$restored$f'
+if grep -q '^Checked in [0-9]*ms\. Rewriting ' "$tmp/autogen.log"; then
+  while IFS= read -r f; do
+    if [ -f "$tmp/snap/$f" ] && [ -f "$f" ] && ! cmp -s "$tmp/snap/$f" "$f"; then
+      cp -p "$tmp/snap/$f" "$f"
+      restored=$restored$f'
 '
-  fi
-done <"$tmp/dirty-before"
+    fi
+  done <"$tmp/dirty-before"
+fi
 if [ -n "$restored" ]; then
   echo >&2
   echo "pre-push: autogen rewrote files that were already modified; put back as they were:" >&2
