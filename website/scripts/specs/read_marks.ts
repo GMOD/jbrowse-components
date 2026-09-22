@@ -2,7 +2,10 @@ import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
 
-import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type {
+  ScreenshotSpec,
+  SessionUrlSpec,
+} from '../screenshot-spec-types.ts'
 
 // NA12878's 30x Illumina reads (1000 Genomes high coverage, GRCh38) read as
 // data by a mark display: depth as a coverage step, insert size as a point per
@@ -80,7 +83,7 @@ function readsSpec(
   loc: string,
   marks: [string, number][],
   sessionTracks: object[] = [],
-): ScreenshotSpec {
+): SessionUrlSpec {
   const tracks = marks.map(([trackId, height]) => ({
     trackId,
     type: 'LinearMarkDisplay',
