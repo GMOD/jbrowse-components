@@ -3547,6 +3547,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         {
+          "title": "FeatureColor",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -3610,6 +3611,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         {
+          "title": "Facet",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -4131,6 +4133,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         {
+          "title": "AlignmentsColor",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -4220,6 +4223,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         {
+          "title": "AlignmentsBaseColor",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -4793,6 +4797,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         {
+          "title": "LGVSyntenyColor",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -5194,6 +5199,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         {
+          "title": "RibbonColor",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -6119,6 +6125,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         {
+          "title": "WiggleColor",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -6198,6 +6205,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 0
         },
         {
+          "title": "ValueScaleRule",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -7137,6 +7145,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         {
+          "title": "ManhattanColor",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -7310,6 +7319,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         {
+          "title": "MarkColor",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -7408,6 +7418,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         {
+          "title": "MarkGlyph",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -7884,6 +7895,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "slot": "encoding.y"
           },
           "if": {
+            "type": "object",
             "properties": {
               "shape": {
                 "enum": [
@@ -18641,6 +18653,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         {
+          "title": "SyntenyColor",
           "type": "object",
           "x-closed": true,
           "properties": {

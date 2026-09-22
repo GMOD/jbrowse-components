@@ -184,13 +184,23 @@ function listed(keys: readonly string[]) {
     : (keys[0] ?? 'nothing')
 }
 
+// The keys Vega-Lite and GenomeSpy spell otherwise, by the schema that
+// declares this spelling
+const SPELLED_HERE: Record<string, Record<string, string>> = {
+  Mark: { mark: 'shape' },
+  MarkEncoding: { shape: 'glyph' },
+}
+
 function unknownKeyMessage(
   key: string,
   schema: Schema,
   accepted: string[],
 ): string {
   const title = typeof schema.title === 'string' ? schema.title : ''
-  const guess = didYouMean(key, accepted)
+  const here = SPELLED_HERE[title]?.[key]
+  const guess = here
+    ? ` — Vega-Lite's "${key}" is spelled "${here}" here`
+    : didYouMean(key, accepted)
   if (key === 'sequenceAdapter' && !title.endsWith('Snapshot')) {
     return 'JBrowse takes the sequence from the assembly the track is displayed against, and this adapter declares no `sequenceAdapter` slot, so the one written here is never read — delete it'
   }

@@ -3407,6 +3407,7 @@
           "type": "string"
         },
         {
+          "title": "FeatureColor",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -3466,6 +3467,7 @@
           "type": "string"
         },
         {
+          "title": "Facet",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -3945,6 +3947,7 @@
           "type": "string"
         },
         {
+          "title": "AlignmentsColor",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -4024,6 +4027,7 @@
           "type": "string"
         },
         {
+          "title": "AlignmentsBaseColor",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -4548,6 +4552,7 @@
           "type": "string"
         },
         {
+          "title": "LGVSyntenyColor",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -4915,6 +4920,7 @@
           "type": "string"
         },
         {
+          "title": "RibbonColor",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -5772,6 +5778,7 @@
           "type": "string"
         },
         {
+          "title": "WiggleColor",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -5842,6 +5849,7 @@
           "default": 0
         },
         {
+          "title": "ValueScaleRule",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -6706,6 +6714,7 @@
           "type": "string"
         },
         {
+          "title": "ManhattanColor",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -6873,6 +6882,7 @@
           "type": "string"
         },
         {
+          "title": "MarkColor",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -6961,6 +6971,7 @@
           "type": "string"
         },
         {
+          "title": "MarkGlyph",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -7398,6 +7409,7 @@
             "slot": "encoding.y"
           },
           "if": {
+            "type": "object",
             "properties": {
               "shape": {
                 "enum": ["bar", "point"]
@@ -17522,6 +17534,7 @@
           "type": "string"
         },
         {
+          "title": "SyntenyColor",
           "type": "object",
           "x-closed": true,
           "properties": {

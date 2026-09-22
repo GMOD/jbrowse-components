@@ -315,6 +315,38 @@ describe('a marks list in a config file', () => {
     ])
   })
 
+  it("names Vega-Lite's spelling of shape and glyph, and the schema refusing a key", () => {
+    const messages = (marks: unknown[]) =>
+      problemsOf(configOf(marks)).map(p => `${p.where}: ${p.message}`)
+    expect(messages([{ mark: 'bar', encoding: { y: 'score' } }])).toEqual([
+      `${DISPLAY}.marks[0].mark: unknown slot "mark" — Vega-Lite's "mark" is spelled "shape" here — Mark takes shape, encoding, transform, source, minBpPerPx and maxBpPerPx, and JBrowse refuses to load it rather than drop a key it does not declare`,
+    ])
+    const point = (encoding: Record<string, unknown>) => [
+      { shape: 'point', encoding: { y: 'score', ...encoding } },
+    ]
+    expect(messages(point({ shape: { field: 'strand' } }))).toEqual([
+      expect.stringMatching(
+        /encoding\.shape: unknown slot "shape" — Vega-Lite's "shape" is spelled "glyph" here — MarkEncoding takes /,
+      ),
+    ])
+    expect(
+      messages(point({ color: { field: 'strand', palette: ['red'] } })),
+    ).toEqual([
+      expect.stringMatching(
+        /encoding\.color\.palette: unknown slot "palette" — MarkColor takes value, field, /,
+      ),
+    ])
+  })
+
+  it('reports a mark that is not an object as that alone', () => {
+    expect(
+      found([null, 'bar', { shape: 'bar', encoding: { y: 'score' } }]),
+    ).toEqual([
+      `error undefined ${DISPLAY}.marks[0]`,
+      `error undefined ${DISPLAY}.marks[1]`,
+    ])
+  })
+
   it('points a jexl: field on a step at formula', () => {
     const grouped = (field: string) => [
       {

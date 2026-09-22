@@ -640,7 +640,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       allOf: rules.flatMap(rule =>
         rule.slots.map(slot => ({
           [REQUIREMENT]: { id: rule.id, slot },
-          if: whenSchema(meta, rule.when),
+          if: { type: 'object', ...whenSchema(meta, rule.when) },
           then: pathRequirement(meta, slot.split('.')),
           errorMessage: rule.message,
         })),
@@ -721,6 +721,9 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       ...(meta.options.closed ? { [CLOSED]: true } : {}),
     })
     const target = slots[stringTarget(meta)]
+    const base = defName ?? name
+    // titled as its def is, since a key the object refuses is reported
+    // against this branch rather than the union
     const schema = forms.bare
       ? {
           anyOf: [
@@ -729,11 +732,10 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
               type: forms.bare,
               description: `Shorthand for \`{ "${stringTarget(meta)}": ...${companionText(meta)} }\`.`,
             },
-            object,
+            { title: base, ...object },
           ],
         }
       : object
-    const base = defName ?? name
     const content = `${base}:${JSON.stringify(schema)}`
     let shared = sharedByContent.get(content)
     if (!shared) {
