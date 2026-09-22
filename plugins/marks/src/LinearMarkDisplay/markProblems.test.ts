@@ -276,6 +276,20 @@ test("the display's own steps are checked as a mark's are, under no mark", () =>
   )
 })
 
+test('a mark the caller could not read keeps its index as a gap', () => {
+  const packed: MarkSnapshot = {
+    shape: 'span',
+    transform: [{ type: 'pileup' }],
+  }
+  expect(
+    markProblems([undefined, packed, packed]).map(
+      p => `${p.rule} ${p.mark} ${p.message}`,
+    ),
+  ).toEqual([
+    "two-packings 2 packs rows of its own, as mark 1 does, and the two share row numbers; one pileup in the display's transform packs them together, with each mark's encoding.row naming the field the pileup writes",
+  ])
+})
+
 test("a field the display's steps make is one a mark reads", () => {
   expect(
     found([{ shape: 'bar', encoding: { y: 'depth' } }], undefined, [

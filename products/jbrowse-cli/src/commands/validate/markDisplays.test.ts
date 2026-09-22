@@ -286,6 +286,35 @@ describe('a marks list in a config file', () => {
     ).toEqual([`error step-expression ${DISPLAY}.transform[0].expr`])
   })
 
+  it("reports an unknown key on one mark beside its siblings' problems", () => {
+    const bar = { shape: 'bar', encoding: { y: 'score' } }
+    const problems = problemsOf(
+      configOf([{ ...bar, colour: 'red' }, PILEUP, PILEUP]),
+    )
+    expect(problems.map(p => `${p.level} ${p.rule} ${p.where}`)).toEqual([
+      `error undefined ${DISPLAY}.marks[0].colour`,
+      `warning two-packings ${DISPLAY}.marks[2].transform`,
+    ])
+    expect(problems[0]!.message).toMatch(/^unknown slot "colour" — Mark takes /)
+    expect(problems[1]!.message).toMatch(
+      /^packs rows of its own, as mark 1 does/,
+    )
+  })
+
+  it("reports an unknown key on one display step beside the others' problems", () => {
+    expect(
+      found([{ shape: 'bar', encoding: { y: 'score' } }], {
+        transform: [
+          { type: 'filter', expr: 'jexl:1', step: 5 },
+          { type: 'bin', step: -5 },
+        ],
+      }),
+    ).toEqual([
+      `error undefined ${DISPLAY}.transform[0].step`,
+      `error bin-width ${DISPLAY}.transform[1].step`,
+    ])
+  })
+
   it('points a jexl: field on a step at formula', () => {
     const grouped = (field: string) => [
       {

@@ -74,7 +74,8 @@ function resolve(schema: Schema): Schema {
 function acceptedKeys(schema: Schema): string[] {
   const own = Object.keys((schema.properties as Schema | undefined) ?? {})
   const composed = ((schema.allOf as Schema[] | undefined) ?? []).flatMap(
-    branch => Object.keys(resolve(branch).properties as Schema),
+    branch =>
+      Object.keys((resolve(branch).properties as Schema | undefined) ?? {}),
   )
   return [...new Set([...own, ...composed])]
 }

@@ -240,9 +240,12 @@ function madeFields(mark: MarkSnapshot) {
 }
 
 // What a list of steps cannot run as written, whether a mark's or the display's
-function stepProblems(steps: readonly StepSnapshot[]) {
+function stepProblems(steps: readonly (StepSnapshot | undefined)[]) {
   const problems: OwnProblem[] = []
   for (const [i, step] of steps.entries()) {
+    if (!step) {
+      continue
+    }
     const { type } = step
     if ((type === 'filter' || type === 'formula') && !isJexl(step.expr ?? '')) {
       problems.push(
@@ -381,25 +384,27 @@ function ownProblems(mark: MarkSnapshot) {
  * lifted, defaults left off. `facet` is the display's facet as written, naming
  * the field its sections stack by; under one, a rowless mark stands on each
  * section's first row by design. `transform` is the display's own steps,
- * checked as a mark's are and reported with no mark. A file's own spelling
- * goes through the schema's lift first, which `jbrowse validate` does from the
- * generated manifest.
+ * checked as a mark's are and reported with no mark. An `undefined` mark or
+ * step is one the caller could not read, such as one a file's schema refuses:
+ * it keeps its index, so the others are reported where they are, and is
+ * checked for nothing. A file's own spelling goes through the schema's lift
+ * first, which `jbrowse validate` does from the generated manifest.
  */
 export function markProblems(
-  marks: readonly MarkSnapshot[],
+  marks: readonly (MarkSnapshot | undefined)[],
   facet?: FacetSnapshot,
-  transform: readonly StepSnapshot[] = [],
+  transform: readonly (StepSnapshot | undefined)[] = [],
 ): MarkProblem[] {
   const faceted = typeof facet?.field === 'string' && facet.field !== ''
   const problems: MarkProblem[] = [
     ...stepProblems(transform),
     ...marks.flatMap((mark, i) =>
-      ownProblems(mark).map(p => ({ mark: i, ...p })),
+      mark ? ownProblems(mark).map(p => ({ mark: i, ...p })) : [],
     ),
   ]
   for (const [i, mark] of marks.entries()) {
     for (const [j, other] of marks.entries()) {
-      if (i === j || !drawTogether(mark, other)) {
+      if (i === j || !mark || !other || !drawTogether(mark, other)) {
         continue
       }
       if (

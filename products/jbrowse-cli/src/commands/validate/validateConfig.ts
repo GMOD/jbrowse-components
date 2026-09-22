@@ -456,17 +456,22 @@ const MARK_DISPLAY = 'LinearMarkDisplay'
 const SLOTS_POINTER = `/$defs/${MARK_DISPLAY}Slots/properties`
 
 // The rule list reads a config snapshot, which is what a file is once the
-// schema passes its keys and types and the manifest's lifts are applied; a
-// list the schema refuses is the schema's to report.
-function declaredList<T>(
+// schema passes its keys and types and the manifest's lifts are applied. An
+// entry the schema refuses is the schema's to report, and stands as a gap so
+// its siblings keep their indices and their own reports.
+function declaredEntries<T>(
   lifted: Record<string, unknown>,
   display: Record<string, unknown>,
   slot: string,
-): T[] {
+): (T | undefined)[] {
   const list = lifted[slot]
-  return Array.isArray(list) &&
-    hasDeclaredShape(display[slot], `${SLOTS_POINTER}/${slot}`)
-    ? (list as T[])
+  const written = display[slot]
+  return Array.isArray(list) && Array.isArray(written)
+    ? list.map((entry, i) =>
+        hasDeclaredShape(written[i], `${SLOTS_POINTER}/${slot}/items`)
+          ? (entry as T)
+          : undefined,
+      )
     : []
 }
 
@@ -499,9 +504,9 @@ function checkMarkDisplay(
   }
   const { facet } = lifted
   for (const { level, rule, mark, slot, message } of markProblems(
-    declaredList<MarkSnapshot>(lifted, display, 'marks'),
+    declaredEntries<MarkSnapshot>(lifted, display, 'marks'),
     isRecord(facet) ? facet : undefined,
-    declaredList<StepSnapshot>(lifted, display, 'transform'),
+    declaredEntries<StepSnapshot>(lifted, display, 'transform'),
   )) {
     report.problems.push({
       level,
