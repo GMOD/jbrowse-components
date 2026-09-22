@@ -120,7 +120,12 @@ export function laneHeaderMenuItems(
       label: openMateLabel(name),
       disabled: loc === undefined || !held,
       onClick: () => {
-        model.openInNewView(name, loc!)
+        // the way the lane reads, so its genes run as they did beside the
+        // anchor
+        model.openInNewView(
+          name,
+          assembleLocStringRaw({ ...region!, reversed: lane.frame?.flipped }),
+        )
       },
     },
     ...(model.canReanchor

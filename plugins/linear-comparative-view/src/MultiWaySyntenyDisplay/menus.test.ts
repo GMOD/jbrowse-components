@@ -415,6 +415,16 @@ test('a mate lane header opens its assembly elsewhere or re-anchors the track on
   ])
 })
 
+test('a lane drawn [rev] opens its assembly reversed', () => {
+  const { model, calls } = headerModel()
+  const items = laneHeaderMenuItems(model, {
+    ...peach,
+    frame: { ...peach.frame, flipped: true },
+  })
+  click(items.find(item => item.label === 'Open peach at the matching region'))
+  expect(calls).toEqual(['open peach Pp1:101..2000[rev]'])
+})
+
 // A star aligns every lane to its one anchor, so a mate made the anchor
 // places next to nothing: the row is left out rather than offered dead
 test('a source aligned to one anchor offers no re-anchor', () => {
