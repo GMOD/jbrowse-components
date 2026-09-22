@@ -756,6 +756,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
+       * Release the clicked ribbon in every band, ahead of a band pointing its
+       * own: the drawer shows one feature, so one ribbon is outlined
+       */
+      clearClickedFeatures() {
+        for (const display of self.allSyntenyDisplays) {
+          display.setClickedInstance(-1)
+        }
+      },
+      /**
+       * #action
        * Run a navigation of a row as the follow's own placement rather than as
        * a gesture. While following, a gesture on any row makes that row the
        * anchor, and the follow tells a gesture from its own work by root

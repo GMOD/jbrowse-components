@@ -75,6 +75,7 @@ export interface ParentViewDuck extends FollowAnchorHost {
   hideUnlabelled: boolean
   // a track's slot in the view's palette, keyed by trackId
   trackColorFor: (trackId: string) => string
+  clearClickedFeatures: () => void
 }
 
 // The two genome rows a level draws between. `v0` is the upper row, which is

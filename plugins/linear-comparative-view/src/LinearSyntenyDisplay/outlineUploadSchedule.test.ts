@@ -203,3 +203,56 @@ test('a refetch that dropped the feature releases the outline', async () => {
   expect(display.clickedFeatureId).toBe(0)
   expect(display.outlineCell).toBeUndefined()
 }, 20000)
+
+// The drawer shows one feature, so one ribbon is outlined across the whole
+// stack: a click in one band releases whatever another band had selected.
+test('a click in one band releases the outline in every other band', async () => {
+  const session = createTestSession()
+  session.addAssemblyConf(assembly('volvox'))
+  session.addAssemblyConf(assembly('volvox2'))
+  session.addSessionTrackConf({
+    type: 'SyntenyTrack',
+    trackId: 'pair',
+    name: 'pair',
+    assemblyNames: ['volvox', 'volvox2'],
+    adapter: {
+      type: 'PAFAdapter',
+      pafLocation: { uri: 'volvox.paf', locationType: 'UriLocation' },
+      queryAssembly: 'volvox',
+      targetAssembly: 'volvox2',
+    },
+  })
+  const view = (await session.launchView('LinearSyntenyView', {
+    views: [
+      { assembly: 'volvox' },
+      { assembly: 'volvox2' },
+      { assembly: 'volvox' },
+    ],
+    tracks: [['pair'], ['pair']],
+  })) as LinearSyntenyViewModel
+  view.setWidth(800)
+  await when(() => view.pendingLaunch === undefined)
+  await when(() =>
+    view.levels.every(level => level.linearSyntenyDisplays.length > 0),
+  )
+  const [upper, lower] = view.levels.map(level => ({
+    level,
+    display: level.linearSyntenyDisplays[0]!,
+  }))
+  for (const { display } of [upper!, lower!]) {
+    display.setRpcData(FEATURES, GEOMETRY, display.regionSignature)
+  }
+
+  upper!.level.setClickedFeature({
+    key: upper!.display.displayKey,
+    instanceIndex: 0,
+  })
+  expect(upper!.display.clickedFeatureId).toBe(1)
+
+  lower!.level.setClickedFeature({
+    key: lower!.display.displayKey,
+    instanceIndex: 1,
+  })
+  expect(lower!.display.clickedFeatureId).toBe(2)
+  expect(upper!.display.clickedFeatureId).toBe(0)
+}, 20000)

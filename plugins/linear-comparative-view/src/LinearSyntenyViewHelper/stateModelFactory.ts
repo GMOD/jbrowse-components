@@ -329,9 +329,11 @@ export function linearSyntenyViewHelperModelFactory(
         },
         /**
          * #action
-         * Clicked-state twin of `setHoveredFeature`.
+         * Clicked-state twin of `setHoveredFeature`, across the whole view
+         * rather than this band alone
          */
         setClickedFeature(hit: SyntenyPickResult | undefined) {
+          self.parentView.clearClickedFeatures()
           return point(hit, (display, idx) => {
             display.setClickedInstance(idx)
           })
