@@ -147,9 +147,10 @@ const aggregate = ConfigurationSchema(
     /**
      * #slot aggregate.groupby
      * The fields whose distinct value sets make the groups. Empty takes the
-     * edges a `bin` in front wrote, so binning and counting needs no
-     * restatement; with no `bin` in front it folds the whole region into one
-     * feature.
+     * edges a `bin` in front of it in the same `transform` wrote, so binning
+     * and counting needs no restatement; with none there it folds the whole
+     * region into one feature, even behind a `bin` in the display's own
+     * `transform`, which names its edges here.
      */
     groupby: {
       type: 'stringArray',
