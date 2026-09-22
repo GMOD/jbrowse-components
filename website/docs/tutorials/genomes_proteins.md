@@ -69,10 +69,10 @@ takes. Choose **Launch protein view**.
 
 The dialog opens on its **AlphaFoldDB search** tab with **Look up from the
 feature's identifiers** selected. It maps the transcript's accession to UniProt
-entries and picks the reviewed one. **Choose transcript isoform** picks which
-transcript becomes the query, tagging the isoforms whose translation matches the
-structure's residues. **Launch** renders the structure with
-[Mol\*](https://molstar.org/).
+entries and picks the reviewed one. **Choose transcript isoform** opens on the
+isoform you right-clicked and picks which transcript becomes the query, tagging
+the isoforms whose translation matches the structure's residues. **Launch**
+renders the structure with [Mol\*](https://molstar.org/).
 
 The structure carries its own sequence, which often differs from the
 transcript's translation: an AlphaFold model covers one UniProt isoform, and a
