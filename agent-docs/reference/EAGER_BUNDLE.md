@@ -519,8 +519,11 @@ wrote — `elt.stateModel = extend(elt.stateModel)` inside the callback — keep
 working because `stateModel` has a setter and the read sees a loaded model, and
 `extendViewType`/`extendDisplayType` compose the same way from inside that
 fold. The two published plugins that hit the gap (protein3d and msaview) each
-duck-typed `extendStateModel` as a workaround before this held; neither needs
-it. What a callback cannot do for a lazy element is mutate something the host
+duck-typed `extendStateModel` as a workaround before this held, and they still
+need it for one release: v5.0.0-beta.2 shipped the lazy loaders
+(`23995af455`) without the fire-on-load fix (`a124ddfbce`, beta.3), so on a
+beta.2 host the plain reassignment composes on an unloaded model. What a
+callback cannot do for a lazy element is mutate something the host
 reads before any model loads, the config schema above all, since the callback
 has not run yet then.
 
