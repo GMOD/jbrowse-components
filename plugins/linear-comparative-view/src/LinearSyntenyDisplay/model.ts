@@ -105,27 +105,11 @@ export interface FeatPos {
   attributes: Record<string, number>
 }
 
-// The 1-based featureId an instance index resolves to, or 0 for "no hit".
-function instanceFeatureId(
-  data: SyntenyGeometry | undefined,
-  idx: number,
-): number {
-  const featureIdx = idx >= 0 ? data?.instanceFeatureIdx[idx] : undefined
-  return featureIdx === undefined ? 0 : featureIdx + 1
-}
-
-// Unlike the positional featureId above, this survives a refetch — see
-// `agent-docs/mechanisms/ui-state-holds-keys-not-indices.md`.
-function instanceFeatureUniqueId(
-  featureData: SyntenyFeatureData | undefined,
-  instanceData: SyntenyGeometry | undefined,
-  idx: number,
-) {
-  const featureIdx =
-    idx >= 0 ? instanceData?.instanceFeatureIdx[idx] : undefined
-  return featureIdx === undefined
-    ? undefined
-    : featureData?.featureIds[featureIdx]
+// The feature an INSTANCE draws, which is what the pick, the hover and the
+// click carry: a CIGAR-detailed ribbon is a base block plus a tile per indel.
+// Undefined for -1 and for an index past the geometry.
+function featureIndexOf(data: SyntenyGeometry | undefined, idx: number) {
+  return idx >= 0 ? data?.instanceFeatureIdx[idx] : undefined
 }
 
 function featureIdOfUniqueId(
@@ -291,11 +275,11 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * feature behind it, not the index.
        */
       setClickedInstance(idx: number) {
-        self.clickedFeatureUniqueId = instanceFeatureUniqueId(
-          self.featureData,
-          self.instanceData,
-          idx,
-        )
+        const featureIdx = featureIndexOf(self.instanceData, idx)
+        self.clickedFeatureUniqueId =
+          featureIdx === undefined
+            ? undefined
+            : self.featureData?.featureIds[featureIdx]
       },
       openContextMenu(anchor: ClickCoord) {
         self.contextMenuAnchor = anchor
@@ -545,29 +529,18 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #method
-       * The parent feature under an INSTANCE index (what the pick engine and
-       * the hover/click state carry). Without instanceData the two spaces
-       * coincide. Deliberately not `instanceFeatureIdx[index] ?? index`: an
-       * out-of-range instance index reads `undefined` there, and falling back to
-       * the raw index would return a different feature where this returns
-       * undefined.
+       * The parent feature under an INSTANCE index, what the pick engine and
+       * the hover and click state carry; `getFeatureAtIndex` takes a feature
+       * index
        */
       getFeature(index: number) {
-        const { featureData, instanceData } = self
-        if (!featureData) {
-          return undefined
-        }
-        const featureIdx = instanceData
-          ? instanceData.instanceFeatureIdx[index]
-          : index
-        if (
-          featureIdx === undefined ||
-          featureIdx < 0 ||
-          featureIdx >= featureData.featureIds.length
-        ) {
-          return undefined
-        }
-        return getFeatureAtIndex(featureData, featureIdx)
+        const { featureData } = self
+        const featureIdx = featureIndexOf(self.instanceData, index)
+        return featureData &&
+          featureIdx !== undefined &&
+          featureIdx < featureData.featureIds.length
+          ? getFeatureAtIndex(featureData, featureIdx)
+          : undefined
       },
       /**
        * #getter
@@ -854,7 +827,9 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * engine.
        */
       get hoveredFeatureId() {
-        return instanceFeatureId(self.instanceData, self.hoveredInstanceIdx)
+        return (
+          (featureIndexOf(self.instanceData, self.hoveredInstanceIdx) ?? -1) + 1
+        )
       },
       /**
        * #getter

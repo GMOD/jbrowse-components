@@ -1,14 +1,12 @@
 import { waitFor } from '@testing-library/react'
 
 import { bandMoveTargets } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyDisplay/bandMoveTargets.ts'
+import { getFeatureAtIndex } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts'
 import { moveMatchingPanel } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyDisplay/moveMatchingPanel.ts'
 import { followSettled } from './syntenyFollowSettle.ts'
 import { doBeforeEach, getTestSession, setup } from './util.tsx'
 
-import type {
-  FeatPos,
-  LinearSyntenyDisplayModel,
-} from '../../../../plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts'
+import type { LinearSyntenyDisplayModel } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 setup()
@@ -98,15 +96,10 @@ async function followingSwap() {
 // axis, so the one to right-click is whichever block runs off the contig row 0
 // is showing.
 function bandFeature(display: LinearSyntenyDisplayModel, refName: string) {
-  const count = display.featureData?.featureIds.length ?? 0
-  const feats: FeatPos[] = []
-  for (let i = 0; i < count; i++) {
-    const feat = display.getFeature(i)
-    if (feat) {
-      feats.push(feat)
-    }
-  }
-  const found = feats.find(f => f.refName === refName)
+  const data = display.featureData!
+  const found = data.featureIds
+    .map((_id, i) => getFeatureAtIndex(data, i))
+    .find(f => f.refName === refName)
   expect(found).toBeDefined()
   return found!
 }
