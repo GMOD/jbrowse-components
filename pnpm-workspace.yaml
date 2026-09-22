@@ -21,7 +21,7 @@ overrides:
   # eslint-plugin-react-compiler (dead at 19.1.0-rc.2, hard dep on core ^7.24.4)
   # is a second puller and the one the commit that added this blamed, but
   # removing it does not make the override droppable — jest alone is enough.
-  '@babel/core': '^8.0.5'
+  '@babel/core': '^8.0.6'
   # nwsapi 2.2.26 rewrote the display-state pseudo-classes (:modal,
   # :fullscreen, :picture-in-picture, :popover-open) to fall back to a "native"
   # matches() when its own portable check can't answer — a real browser's
