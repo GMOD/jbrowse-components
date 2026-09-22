@@ -1,20 +1,22 @@
 ---
 title: Mark display
 description:
-  A grammar of graphics over a feature, alignments or variant track, where
-  LinearMarkDisplay draws the bars, points and spans its config declares
+  A grammar of graphics over a feature, alignments, variant or quantitative
+  track, where LinearMarkDisplay draws the bars, points and spans its config
+  declares
 guide_category: Track types
 ---
 
 `LinearMarkDisplay` is a grammar of graphics over a track, in the sense of
 Vega-Lite or ggplot: a picture is declared as marks, encodings and transforms
-rather than drawn by code. It goes on a `FeatureTrack`, an `AlignmentsTrack` or
-a `VariantTrack` and draws whatever its `marks` list declares — a `bar`, `point`
-or `span` per entry, each with an `encoding` naming which feature fields feed
-it, a `transform` list that can bin, count, pack or measure coverage before it,
-and a zoom range it draws in. A BED score column becomes a bar chart with one
-display entry and no code, the same file's density at wide zoom is a second
-entry, and a `pileup` step over a BAM packs the reads into rows.
+rather than drawn by code. It goes on a `FeatureTrack`, an `AlignmentsTrack`, a
+`VariantTrack`, a `QuantitativeTrack` or a `MultiQuantitativeTrack` and draws
+whatever its `marks` list declares — a `bar`, `point` or `span` per entry, each
+with an `encoding` naming which feature fields feed it, a `transform` list that
+can bin, count, pack or measure coverage before it, and a zoom range it draws
+in. A BED score column becomes a bar chart with one display entry and no code,
+the same file's density at wide zoom is a second entry, and a `pileup` step over
+a BAM packs the reads into rows.
 
 ## When to reach for it
 
