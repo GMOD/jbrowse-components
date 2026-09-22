@@ -261,10 +261,11 @@ protein, CDS, cDNA or genomic sequence. See
 
 The [Protein3d plugin](/docs/tutorials/genomes_proteins) uses the same
 transcript-to-protein mapping. Right click a gene and launch the protein
-structure viewer for an interactive 3D structure (AlphaFold DB or UniProt)
-linked to the genome view: hovering a position highlights the residue, and vice
-versa. See the [proteins tutorial](/docs/tutorials/genomes_proteins) for launch
-routes and installation.
+structure viewer for an interactive 3D structure (an AlphaFold model, a PDB
+entry, or a file of your own) linked to the genome view: hovering a position
+highlights the residue, and vice versa. See the
+[proteins tutorial](/docs/tutorials/genomes_proteins) for launch routes and
+installation.
 
 ## A whole chromosome of genes
 
