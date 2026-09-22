@@ -72,6 +72,7 @@ constant depth.
     {
       "type": "LinearMarkDisplay",
       "displayId": "na12878_read_depth-LinearMarkDisplay",
+      "scales": { "y": { "title": "Read depth" } },
       "marks": [
         {
           "shape": "bar",
@@ -119,6 +120,7 @@ draws one axis, so the insert goes on a track of its own over the same file:
     {
       "type": "LinearMarkDisplay",
       "displayId": "na12878_read_marks-LinearMarkDisplay",
+      "scales": { "y": { "title": "Insert size (bp)" } },
       "marks": [
         {
           "shape": "point",
@@ -135,7 +137,8 @@ draws one axis, so the insert goes on a track of its own over the same file:
               "scale": "linear",
               "domainMin": 0,
               "domainMax": 60,
-              "range": ["#bdbdbd", "#1f4e9a"]
+              "range": ["#bdbdbd", "#1f4e9a"],
+              "title": "Mapping quality"
             }
           }
         }
@@ -240,6 +243,7 @@ file:
     {
       "type": "LinearMarkDisplay",
       "displayId": "na12878_chr20_pairs-LinearMarkDisplay",
+      "scales": { "y": { "title": "Insert size (bp)" } },
       "marks": [
         {
           "shape": "point",
@@ -254,7 +258,8 @@ file:
               "scale": "linear",
               "domainMin": 0,
               "domainMax": 60,
-              "range": ["#bdbdbd", "#1f4e9a"]
+              "range": ["#bdbdbd", "#1f4e9a"],
+              "title": "Mapping quality"
             }
           }
         }
@@ -285,7 +290,9 @@ file:
     {
       "type": "LinearMarkDisplay",
       "displayId": "na12878_chr20_pair_counts-LinearMarkDisplay",
-      "scales": { "y": { "domainMin": 0, "domainMax": 60 } },
+      "scales": {
+        "y": { "domainMin": 0, "domainMax": 60, "title": "Pairs per bin" }
+      },
       "marks": [
         {
           "shape": "bar",
