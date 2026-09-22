@@ -33,6 +33,7 @@ See the [tutorials](/docs/tutorials/), or hosted genomes at
 - [](/docs/config_guide)
 - [](/docs/cookbook)
 - [](/docs/config_guides/file_types)
+- [Plots declared in a track's config](/docs/config_guides/mark_display)
 - [Config reference](/docs/config)
 - [@jbrowse/cli](/docs/cli)
 
