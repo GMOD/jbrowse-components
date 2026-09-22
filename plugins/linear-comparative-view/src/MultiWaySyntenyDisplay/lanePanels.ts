@@ -1,6 +1,7 @@
 import { doesIntersect2 } from '@jbrowse/core/util'
 
 import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/canLaunchSyntenyForMate.ts'
+import { mateSlice } from '../mateBpAt.ts'
 
 import type { MateDiscoveryResult } from '../LaunchSyntenyView/pickMatesForRegion.ts'
 import type { ResolvedPanel } from '../LaunchSyntenyView/resolvePanel.ts'
@@ -13,28 +14,6 @@ export type LanePlacementDecision = Pick<
   LaneDecision,
   'refName' | 'fitMin' | 'fitMax' | 'flipped'
 >
-
-// the part of one placement's mate interval that `region` maps into, in
-// proportion along the placement the way its ribbon is drawn
-function mateSliceOf(
-  anchor: { start: number; end: number },
-  placement: { start: number; end: number; orientation: number },
-  region: { start: number; end: number },
-) {
-  const lo = Math.max(anchor.start, region.start)
-  const hi = Math.min(anchor.end, region.end)
-  const scale =
-    (placement.end - placement.start) / Math.max(anchor.end - anchor.start, 1)
-  const from = (lo - anchor.start) * scale
-  const to = (hi - anchor.start) * scale
-  return {
-    anchorStart: lo,
-    anchorEnd: hi,
-    ...(placement.orientation < 0
-      ? { mateStart: placement.end - to, mateEnd: placement.end - from }
-      : { mateStart: placement.start + from, mateEnd: placement.start + to }),
-  }
-}
 
 /**
  * The panels a launch from the multiway display opens on: one per lane the
@@ -94,11 +73,19 @@ export function lanePanelsForRegion({
               placement.end,
             )
           ) {
-            const slice = mateSliceOf(group.anchor, placement, region)
-            anchorLo = Math.min(anchorLo, slice.anchorStart)
-            anchorHi = Math.max(anchorHi, slice.anchorEnd)
-            mateLo = Math.min(mateLo, slice.mateStart)
-            mateHi = Math.max(mateHi, slice.mateEnd)
+            const lo = Math.max(group.anchor.start, region.start)
+            const hi = Math.min(group.anchor.end, region.end)
+            const mate = mateSlice(
+              group.anchor,
+              placement,
+              placement.orientation,
+              lo,
+              hi,
+            )
+            anchorLo = Math.min(anchorLo, lo)
+            anchorHi = Math.max(anchorHi, hi)
+            mateLo = Math.min(mateLo, mate.start)
+            mateHi = Math.max(mateHi, mate.end)
           }
         }
       }
