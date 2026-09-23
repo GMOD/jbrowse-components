@@ -5,7 +5,12 @@ import {
   compareGroupKeys,
   overflowLabel,
 } from '@jbrowse/core/util/groupKeys'
-import { hitIndexOf, rampOverExtent } from '@jbrowse/core/util/markEncoding'
+import {
+  MISCONFIGURED_ABGR,
+  NO_VALUE_ABGR,
+  hitIndexOf,
+  rampOverExtent,
+} from '@jbrowse/core/util/markEncoding'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
@@ -121,13 +126,19 @@ function drawnScales(layer: StoredLayer): StoredLayer {
     yMin: valued ? yMin : layer.yMin,
     yMax: valued ? yMax : layer.yMax,
     scale:
-      (scale?.kind === 'categorical' || scale?.kind === 'threshold') && color
+      scale?.kind === 'categorical' && color
         ? { ...scale, entries: scale.entries.filter(e => colors.has(e.color)) }
-        : scale?.kind === 'ramp' && colorValue
-          ? scale.pinned[0] && scale.pinned[1]
-            ? { ...scale, extent: [vMin, vMax] }
-            : rampOverExtent(scale, [vMin, vMax])
-          : scale,
+        : scale?.kind === 'threshold' && color
+          ? {
+              ...scale,
+              missing: scale.missing && colors.has(NO_VALUE_ABGR),
+              notNumber: scale.notNumber && colors.has(MISCONFIGURED_ABGR),
+            }
+          : scale?.kind === 'ramp' && colorValue
+            ? scale.pinned[0] && scale.pinned[1]
+              ? { ...scale, extent: [vMin, vMax] }
+              : rampOverExtent(scale, [vMin, vMax])
+            : scale,
     glyphScale: glyphScale && {
       ...glyphScale,
       entries: glyphScale.entries.filter(e => glyphs.has(GLYPH_CODES[e.glyph])),

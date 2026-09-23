@@ -218,14 +218,33 @@ describe('LinearManhattanDisplay field coloring', () => {
     })
   })
 
-  it('keys threshold cuts written high to low in the order the points paint them', () => {
+  it('keys threshold cuts written high to low in the order the points paint them, and the keyless rows a region met', () => {
     const { display } = createTestEnvironment({
       color: { field: 'p', scale: 'threshold', domain: ['0.5', '0.1'] },
     }).createDisplay()
-    const [scale] = display.colorScales
-    expect(
-      scale?.kind === 'categorical' ? scale.entries.map(e => e.label) : [],
-    ).toEqual(['< 0.1', '0.1 – 0.5', '≥ 0.5'])
+    const rows = () => {
+      const [scale] = display.colorScales
+      return scale?.kind === 'categorical'
+        ? scale.entries.map(e => e.label)
+        : []
+    }
+    expect(rows()).toEqual(['< 0.1', '0.1 – 0.5', '≥ 0.5'])
+    display.setRpcData(
+      0,
+      manhattanFixture({
+        x: [100],
+        y: [3],
+        flatbush: false,
+        scale: {
+          kind: 'threshold',
+          field: 'p',
+          domain: [0.1, 0.5],
+          missing: true,
+        },
+      }),
+      REGION,
+    )
+    expect(rows()).toEqual(['< 0.1', '0.1 – 0.5', '≥ 0.5', '(no value)'])
   })
 
   it('LD is the ld field on a threshold scale, whose cuts default to the r² bins', () => {

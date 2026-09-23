@@ -23,6 +23,11 @@ test('a string value reads as its number, anything else as no bin', () => {
   expect(thresholdIndex('high', cuts)).toBe(-1)
 })
 
+test('an infinite value takes the end bin on its side', () => {
+  expect(thresholdIndex(Infinity, cuts)).toBe(4)
+  expect(thresholdIndex(-Infinity, cuts)).toBe(0)
+})
+
 test('an empty domain is one bin', () => {
   expect(thresholdIndex(7, [])).toBe(0)
   expect(thresholdLabels([])).toEqual(['any value'])

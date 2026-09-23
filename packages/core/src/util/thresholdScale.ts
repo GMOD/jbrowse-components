@@ -33,15 +33,17 @@ export function thresholdCuts(domain: readonly (string | number)[]): number[] {
  * #api
  * The bin a value falls in: how many of the ascending cut points it is at or
  * past, so a palette with one more entry than the domain paints it as
- * `palette[thresholdIndex(value, domain)]`. A value that is not a finite
- * number is in no bin and answers -1.
+ * `palette[thresholdIndex(value, domain)]`. A value that is not a number is
+ * in no bin and answers -1; an infinite one takes the end bin on its side, as
+ * d3's threshold scale places it, so a `-log10` of a zero p-value lands in
+ * the top bin.
  */
 export function thresholdIndex(
   value: unknown,
   domain: readonly number[],
 ): number {
   const v = numericValue(value)
-  if (!Number.isFinite(v)) {
+  if (Number.isNaN(v)) {
     return -1
   }
   let i = 0
@@ -89,6 +91,43 @@ export function thresholdLabels(domain: readonly number[]): string[] {
  * value.
  */
 export const NOT_A_NUMBER_LABEL = '(not a number)'
+
+/**
+ * #api
+ * A threshold key's rows: every interval, painted or not, since the bins are
+ * the whole domain, then the not-a-number and no-value rows where a feature
+ * took one, in the order `thresholdField` sorts them.
+ */
+export function thresholdKeyEntries(
+  cuts: readonly number[],
+  range: readonly string[] | undefined,
+  met: { missing?: boolean; notNumber?: boolean },
+): { value: string; label: string; color: string; missing?: true }[] {
+  const labels = thresholdLabels(cuts)
+  const colors = thresholdPalette(labels.length, range)
+  return [
+    ...labels.map((label, i) => ({ value: label, label, color: colors[i]! })),
+    ...(met.notNumber
+      ? [
+          {
+            value: NOT_A_NUMBER_LABEL,
+            label: NOT_A_NUMBER_LABEL,
+            color: MISCONFIGURED_COLOR,
+          },
+        ]
+      : []),
+    ...(met.missing
+      ? [
+          {
+            value: '',
+            label: NO_VALUE_LABEL,
+            color: NO_CATEGORY_COLOR,
+            missing: true as const,
+          },
+        ]
+      : []),
+  ]
+}
 
 /**
  * #api

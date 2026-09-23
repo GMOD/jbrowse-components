@@ -162,6 +162,12 @@ describe('a marks list in a config file', () => {
     expect(found([filtered('jexl:a'), filtered('jexl:b')])).toEqual([
       `warning two-packings ${DISPLAY}.marks[1].transform`,
     ])
+    expect(
+      found([PILEUP], { facet: 'HP', transform: [{ type: 'pileup' }] }),
+    ).toEqual([
+      `warning cross-section-packing ${DISPLAY}.transform[0]`,
+      `warning two-packings ${DISPLAY}.marks[0].transform`,
+    ])
   })
 
   it('names the fields the steps leave where y reads another', () => {

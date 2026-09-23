@@ -297,7 +297,7 @@ test('a facet packs each section on its own and stacks the sections', () => {
       feature(5, 25, { sample: 'b' }),
       feature(0, 20, { sample: 'a' }),
     ],
-    'sample',
+    { field: 'sample' },
     PILEUP,
   )
   expect(sections).toEqual([
@@ -321,7 +321,7 @@ test('a faceted section is the unfaceted layer over its own features, offset', (
     feature(12, 14, { sample: 'b' }),
   ]
   const steps = [{ type: 'pileup' as const }]
-  const { layers, sections } = facetLayers(features, 'sample', [
+  const { layers, sections } = facetLayers(features, { field: 'sample' }, [
     { transform: steps, row: 'row' },
   ])
   for (const { key, firstRow } of sections) {
@@ -343,7 +343,7 @@ test('a faceted layer hands on its features as its steps left them', () => {
     feature(0, 20, { sample: 'b' }),
     feature(0, 20, { sample: 'a' }),
   ]
-  const { layers } = facetLayers(features, 'sample', [{}])
+  const { layers } = facetLayers(features, { field: 'sample' }, [{}])
   const [first, second] = layers[0]!.features
   expect(first).toBe(features[1])
   expect(second).toBe(features[0])
@@ -352,13 +352,31 @@ test('a faceted layer hands on its features as its steps left them', () => {
 // The rowless layer's features carry a `row` field a display-level pileup
 // could have written: a layer naming no row field reads none, as the unfaceted
 // encoder reads none, rather than that field under its default name.
+test("a facet's own steps run over each section before every layer's, shared by all", () => {
+  const { layers, sections } = facetLayers(
+    [
+      feature(0, 20, { sample: 'a' }),
+      feature(5, 25, { sample: 'b' }),
+      feature(10, 30, { sample: 'a' }),
+    ],
+    { field: 'sample', transform: [{ type: 'pileup' }] },
+    [{}, { row: 'row' }],
+  )
+  expect(sections).toEqual([
+    { key: 'a', firstRow: 0, rowCount: 2 },
+    { key: 'b', firstRow: 2, rowCount: 1 },
+  ])
+  expect(layers[0]!.rows).toEqual([0, 0, 2])
+  expect(layers[1]!.rows).toEqual([0, 1, 2])
+})
+
 test('a section is as tall as the tallest layer packed it, and a rowless layer sits on its first row', () => {
   const { layers, sections } = facetLayers(
     [
       feature(0, 20, { sample: 'a', row: 3 }),
       feature(5, 25, { sample: 'a', row: 3 }),
     ],
-    'sample',
+    { field: 'sample' },
     [...PILEUP, {}],
   )
   expect(sections).toEqual([{ key: 'a', firstRow: 0, rowCount: 2 }])
@@ -368,7 +386,7 @@ test('a section is as tall as the tallest layer packed it, and a rowless layer s
 test('a facet orders digit keys by magnitude and files a missing value under its own section', () => {
   const { sections } = facetLayers(
     [feature(0, 10, { bin: 10 }), feature(0, 10, { bin: 2 }), feature(0, 10)],
-    'bin',
+    { field: 'bin' },
     PILEUP,
   )
   expect(sections.map(s => s.key)).toEqual(['2', '10', ''])
@@ -382,7 +400,7 @@ test('a strand facet stacks forward, reverse, unstranded, and a missing strand i
       feature(0, 10, { strand: 1 }),
       feature(0, 10),
     ],
-    'strand',
+    { field: 'strand' },
     PILEUP,
   )
   expect(sections).toEqual([
@@ -395,7 +413,7 @@ test('a strand facet stacks forward, reverse, unstranded, and a missing strand i
 test('a facet reads its field through a jexl expression', () => {
   const { sections } = facetLayers(
     [feature(0, 10, { tags: { HP: 1 } }), feature(0, 10, { tags: { HP: 2 } })],
-    "jexl:get(feature,'tags').HP",
+    { field: "jexl:get(feature,'tags').HP" },
     PILEUP,
     createJexlInstance(),
   )
@@ -407,7 +425,11 @@ test('a facet stacks a section of 200,000 features', () => {
     const start = Math.floor(i / 4) * 100
     return feature(start, start + 50, { sample: 'a' })
   })
-  const { layers, sections } = facetLayers(features, 'sample', PILEUP)
+  const { layers, sections } = facetLayers(
+    features,
+    { field: 'sample' },
+    PILEUP,
+  )
   expect(sections).toEqual([{ key: 'a', firstRow: 0, rowCount: 4 }])
   expect(layers[0]!.features).toHaveLength(200_000)
   expect(layers[0]!.rows).toHaveLength(200_000)

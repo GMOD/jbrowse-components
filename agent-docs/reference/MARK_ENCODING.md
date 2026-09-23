@@ -169,11 +169,15 @@ wire's `TransformStep` and the rule list's `StepSnapshot` — and the union's
 `bin` writes over `start` and `end` on purpose: an `aggregate` grouped by
 those two is then a density whose bars span the bins, with the encoding's
 `x`/`x2` defaults untouched and `y: 'count'`, and the group's extent is the
-bin's. Two defaults spare the config that restatement, both resolved where
-the display translates `marks` into the request rather than in `runTransforms`:
-an `aggregate` whose `groupby` is empty takes the edges the last `bin` in the
-same list wrote, and a mark whose `encoding.row` is empty reads the field its
-own `pileup` wrote. A feature is placed in one bin by one field; a feature that crosses
+bin's. Two defaults spare the config that restatement. An `aggregate` whose
+`groupby` is empty takes the edges the last `bin` before it wrote, in its own
+list, the facet's or the display's, resolved where the display translates
+`marks` into the request rather than in `runTransforms`. A mark whose
+`encoding.row` is empty reads the field the last `pileup` before its encode
+wrote — its own, the facet's per-section one, or the display's — unless an
+`aggregate` or `coverage` after that pileup made its features from nothing,
+resolved in the worker (`layerFeatures`) so a caller of the RPC gets the same
+row a display does. A feature is placed in one bin by one field; a feature that crosses
 a boundary counts where its `field` falls, which is what `coverage` is for
 when the question is overlap rather than count. A `formula` and a `bin`
 answer a `DerivedFeature` reading the new fields over the old ones, so no

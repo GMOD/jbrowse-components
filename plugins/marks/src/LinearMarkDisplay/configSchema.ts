@@ -8,7 +8,6 @@ import {
   paintedScale,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
-import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
@@ -16,6 +15,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { markColorSchema } from './markColorConfigSchema.ts'
+import { markFacetSchema } from './markFacetConfigSchema.ts'
 import { markTransformStep } from './markTransformConfigSchema.ts'
 import {
   DEFAULT_MARK_SHAPE,
@@ -382,10 +382,11 @@ export function configSchemaFactory() {
       /**
        * #slot facet
        * One band of rows per value of a field, split after `transform` and
-       * before any mark's own steps: `"HP"`, or `{ field, domain }` with the
-       * order the bands stack in.
+       * before any mark's own steps: `"HP"`, or `{ field, domain, transform }`
+       * with the order the bands stack in and the steps each section runs
+       * before any mark's, a per-section `pileup` among them.
        */
-      facet: facetConfigSchema,
+      facet: markFacetSchema,
       /**
        * #slot scales
        * The scales the marks are read through, owned by the display rather

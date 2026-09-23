@@ -301,24 +301,24 @@ band its field names.
 
 The display's `facet` gives each value of a field its own band of rows, named by
 a chip a reader can hide the section from. The facet splits the features first,
-and every mark then runs its own steps over each section alone, so a `pileup`
-packs each section on its own rows and a `coverage` counts each section's depth:
+runs its own `transform` over each section alone, and every mark then runs its
+own steps over each section, so a `pileup` in the facet's `transform` packs each
+section on its own rows with every mark standing in them, and a `coverage` in a
+mark's counts each section's depth:
 
 ```json
 "displays": [
   {
     "type": "LinearMarkDisplay",
-    "facet": "sample",
-    "marks": [
-      {
-        "shape": "span",
-        "transform": [{ "type": "pileup" }],
-        "encoding": { "row": "row" }
-      }
-    ]
+    "facet": { "field": "sample", "transform": [{ "type": "pileup" }] },
+    "marks": [{ "shape": "span" }]
   }
 ]
 ```
+
+A `pileup` in the display's own `transform` runs before the split, so it packs
+across every section and leaves each section the rows the others fill; the
+facet's is the one that packs per section.
 
 The field is read the way a channel reads one: a name, a dotted path into a
 structured field (`INFO.SVTYPE`), or a `jexl:` expression. Where the value has
@@ -332,13 +332,15 @@ the features:
     "transform": [
       { "type": "formula", "expr": "jexl:getTag(feature,'HP')", "as": "HP" }
     ],
-    "facet": { "field": "HP", "domain": ["2", "1"] },
+    "facet": {
+      "field": "HP",
+      "domain": ["2", "1"],
+      "transform": [{ "type": "pileup" }]
+    },
     "marks": [
       {
         "shape": "span",
-        "transform": [{ "type": "pileup" }],
         "encoding": {
-          "row": "row",
           "color": { "field": "HP", "scale": "categorical", "title": "Haplotype" }
         }
       }
@@ -439,11 +441,11 @@ that row draws the packing:
 ```
 
 Over an `AlignmentsTrack` that is a declared pileup, coloured by any field a
-read answers; the display's `facet` packs each section on rows of its own. A
-mark whose `encoding.row` is empty reads the field its own `pileup` wrote, so
-`"encoding": {}` draws the packing. The plot divides into as many bands as the
-highest row needs, so the rows thin as the depth on screen grows and the track
-keeps its height.
+read answers; a `pileup` in the display's `facet` packs each section on rows of
+its own. A mark whose `encoding.row` is empty reads the field the last `pileup`
+before it wrote, its own, the facet's or the display's, so `"encoding": {}`
+draws the packing. The plot divides into as many bands as the highest row needs,
+so the rows thin as the depth on screen grows and the track keeps its height.
 
 The display's `jexlFilters` run before every mark's own steps.
 
@@ -552,8 +554,10 @@ chip in its corner naming the slot, and the mark when the slot is a mark's:
 - a `bar` or `point` drawn together with a stacked `span`, which stands in the
   first of the span's rows;
 - two marks each running their own `pileup`, which share row numbers, where one
-  `pileup` in the display's `transform` packs them together, though under a
-  `facet` across every section at once;
+  `pileup` in the display's `transform`, or the facet's under a `facet`, packs
+  them together;
+- a `pileup` in the display's `transform` under a `facet`, which packs across
+  every section where the facet's own `transform` packs per section;
 - a zoom range whose `minBpPerPx` is not below its `maxBpPerPx`, which never
   draws.
 

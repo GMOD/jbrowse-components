@@ -12,6 +12,7 @@ import type {
   BinStep,
   CoverageStep,
   FacetSection,
+  FacetSpec,
   FieldRef,
   FlattenStep,
   PileupStep,
@@ -572,21 +573,22 @@ export interface FacetedLayer {
 
 /**
  * #api
- * A faceted request's layers: the features split on `field`'s key, each
- * layer's own steps run over each section alone, and the sections stacked —
- * a section's rows start where the one above it ends, and it is as tall as
- * the tallest layer packed it. Every layer's features come back in section
- * order beside their stacked rows, so a faceted display is the unfaceted one
- * drawn once per section, and a feature is handed on as its steps left it. A
- * layer naming no `row` field stands on each section's first row, the answer
- * the unfaceted encoder gives it.
+ * A faceted request's layers: the features split on the facet's field, the
+ * facet's own steps and then each layer's run over each section alone, and
+ * the sections stacked — a section's rows start where the one above it ends,
+ * and it is as tall as the tallest layer packed it. Every layer's features
+ * come back in section order beside their stacked rows, so a faceted display
+ * is the unfaceted one drawn once per section, and a feature is handed on as
+ * its steps left it. A layer naming no `row` field stands on each section's
+ * first row, the answer the unfaceted encoder gives it.
  */
 export function facetLayers(
   features: readonly Feature[],
-  field: FieldRef,
+  facet: FacetSpec,
   layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef }[],
   jexl?: JexlInstance,
 ): { layers: FacetedLayer[]; sections: FacetSection[] } {
+  const { field, transform: sectionSteps } = facet
   const categories = categoricalField(field)
   const read = fieldReader(field, jexl)
   const byKey = new Map<string, Feature[]>()
@@ -610,11 +612,14 @@ export function facetLayers(
   let next = 0
   for (const key of [...byKey.keys()].sort(categories.compare)) {
     const members = byKey.get(key)!
+    const section = sectionSteps?.length
+      ? runTransforms(members, sectionSteps, jexl)
+      : members
     let rowCount = 1
     for (const [l, { transform }] of layers.entries()) {
       const placed = transform?.length
-        ? runTransforms(members, transform, jexl)
-        : members
+        ? runTransforms(section, transform, jexl)
+        : section
       const readRow = readRows[l]
       const layer = out[l]!
       for (const f of placed) {

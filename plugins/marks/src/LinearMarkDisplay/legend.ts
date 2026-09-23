@@ -1,14 +1,8 @@
-import {
-  NO_VALUE_LABEL,
-  categoricalField,
-} from '@jbrowse/core/util/categoricalField'
-import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+import { categoricalField } from '@jbrowse/core/util/categoricalField'
+import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { rampOverExtent } from '@jbrowse/core/util/markEncoding'
-import {
-  NOT_A_NUMBER_LABEL,
-  thresholdLabels,
-} from '@jbrowse/core/util/thresholdScale'
+import { thresholdKeyEntries } from '@jbrowse/core/util/thresholdScale'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { CategoricalScale, ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -65,10 +59,10 @@ function copyOf(scale: ScaleTable): ScaleTable {
       }
     case 'categorical':
       return { ...scale, entries: [...scale.entries] }
-    case 'threshold':
-      return { ...scale, entries: [...scale.entries] }
     case 'glyph':
       return { ...scale, entries: [...scale.entries] }
+    case 'threshold':
+      return { ...scale }
   }
 }
 
@@ -104,7 +98,8 @@ function union(current: ScaleTable, next: ScaleTable) {
       break
     case 'threshold':
       if (next.kind === 'threshold') {
-        unionEntries(current.entries, next.entries)
+        current.missing = current.missing ?? next.missing
+        current.notNumber = current.notNumber ?? next.notNumber
       }
       break
     case 'ramp':
@@ -154,7 +149,7 @@ function sectionKey(markIndex: number, scale: ScaleTable, title: string) {
         scale.field,
         title,
         scale.domain,
-        scale.range,
+        scale.range ?? [],
       ])
     case 'glyph':
       return JSON.stringify([
@@ -331,38 +326,15 @@ export function markColorScales(
             facet,
           ),
         ]
-      case 'threshold': {
-        // Every interval, painted or not, since the bins are the whole domain;
-        // the two keyless rows once a feature took one.
-        const met = new Map(scale.entries.map(e => [e.value, e.color]))
+      case 'threshold':
         return [
           {
             kind: 'categorical',
             id,
             title,
-            entries: [
-              ...thresholdLabels(scale.domain).map((value, i) => ({
-                value,
-                label: value,
-                color: abgrToCssRgba(scale.range[i]!),
-              })),
-              ...['', NOT_A_NUMBER_LABEL].flatMap(value => {
-                const color = met.get(value)
-                return color === undefined
-                  ? []
-                  : [
-                      {
-                        value,
-                        label: value === '' ? NO_VALUE_LABEL : value,
-                        color: abgrToCssRgba(color),
-                        ...(value === '' ? { missing: true } : {}),
-                      },
-                    ]
-              }),
-            ],
+            entries: thresholdKeyEntries(scale.domain, scale.range, scale),
           },
         ]
-      }
       case 'ramp':
         return [
           {
@@ -408,18 +380,21 @@ export function glyphLabel(scale: ScaleTable | undefined, glyph: GlyphName) {
 }
 
 /**
- * The intervals or categories a packed colour names, if its table has any. An
+ * The interval or categories a packed colour names, if its table has any. An
  * instance carries its colour and not its value, so two values hashed onto one
- * palette entry are both named, as {@link glyphLabel} names a shared glyph.
+ * palette entry are both named, as {@link glyphLabel} names a shared glyph; a
+ * threshold's rows are read back off its palette and its two greys.
  */
 export function categoryLabel(scale: ScaleTable | undefined, color: number) {
-  if (scale?.kind !== 'threshold' && scale?.kind !== 'categorical') {
+  if (scale?.kind === 'threshold') {
+    return thresholdKeyEntries(scale.domain, scale.range, scale).find(
+      e => cssColorToABGR(e.color) === color,
+    )?.label
+  }
+  if (scale?.kind !== 'categorical') {
     return undefined
   }
-  const label =
-    scale.kind === 'categorical'
-      ? categoricalField(scale.field).label
-      : (value: string) => (value === '' ? NO_VALUE_LABEL : value)
+  const { label } = categoricalField(scale.field)
   const values = scale.entries
     .filter(e => e.color === color)
     .map(e => label(e.value))

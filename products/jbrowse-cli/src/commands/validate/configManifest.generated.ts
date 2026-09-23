@@ -6124,7 +6124,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "facet",
-          "type": "FacetConfigurationSchema",
+          "type": "MarkFacetConfigurationSchema",
           "subSlots": [
             {
               "name": "field",
@@ -6134,6 +6134,10 @@ export const configManifest: ConfigManifest = {
               "name": "domain",
               "type": "string[]",
               "liftsNumbers": true
+            },
+            {
+              "name": "transform",
+              "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | pileupConfigurationSchema)[]"
             }
           ],
           "shorthand": "field"

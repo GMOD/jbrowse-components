@@ -111,7 +111,12 @@ import type {
   MarkRenderState,
   StoredLayer,
 } from './markList.ts'
-import type { MarkProblem, MarkSnapshot, StepSnapshot } from './markProblems.ts'
+import type {
+  FacetSnapshot,
+  MarkProblem,
+  MarkSnapshot,
+  StepSnapshot,
+} from './markProblems.ts'
 import type { PlotFields, PlotSpec } from './plotFields.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -434,9 +439,34 @@ export function stateModelFactory(
        * empty slot for it would make the zoom a fetch input and refetch the
        * pair on every crossing, so there is none (ADR-112).
        */
+      /**
+       * #getter
+       * The facet's own steps as the worker takes them, run over each section
+       * before any mark's.
+       */
+      get facetSteps(): TransformStep[] {
+        return stepsOf(
+          self.conf.facet.transform,
+          self.host.bpPerPx,
+          lastBinEdges(self.conf.transform),
+        )
+      },
+      /**
+       * #getter
+       * The worker request, one layer per mark: its encoding and the lanes
+       * its shape reads. Every mark is sent, the one outside its zoom range
+       * included, so the worker encodes a layer the view will not draw:
+       * measured at 280 ns a feature, 28 ms per 100,000, for the excluded
+       * half of the default multiscale pair (`encodeFeatures.bench.ts`, the
+       * pair table), against a parse in the hundreds of milliseconds. An
+       * empty slot for it would make the zoom a fetch input and refetch the
+       * pair on every crossing, so there is none (ADR-112).
+       */
       get layerRequests(): LayerRequest[] {
         const { bpPerPx } = self.host
-        const binEdges = lastBinEdges(self.conf.transform)
+        const binEdges =
+          lastBinEdges(self.conf.facet.transform) ??
+          lastBinEdges(self.conf.transform)
         const { encodings } = this
         return self.conf.marks.map((m, i): LayerRequest => {
           const transform = stepsOf(m.transform, bpPerPx, binEdges)
@@ -728,7 +758,16 @@ export function stateModelFactory(
             })),
             ...stepsOf(self.conf.transform, self.host.bpPerPx),
           ],
-          ...(self.facet ? { facet: { field: self.facet.field } } : {}),
+          ...(self.facet
+            ? {
+                facet: {
+                  field: self.facet.field,
+                  ...(self.facetSteps.length > 0
+                    ? { transform: self.facetSteps }
+                    : {}),
+                },
+              }
+            : {}),
         }
       },
       /**
@@ -820,7 +859,11 @@ export function stateModelFactory(
         const transform = getSnapshot(self.conf.transform) as StepSnapshot[]
         return [
           ...markRequirementProblems(marks),
-          ...markProblems(marks, self.facet, transform),
+          ...markProblems(
+            marks,
+            getSnapshot(self.conf.facet) as FacetSnapshot,
+            transform,
+          ),
         ]
       },
       /**
@@ -862,7 +905,11 @@ export function stateModelFactory(
         const { visible } = self.markView
         const shared = self.conf.transform
         const positionFields = self.conf.marks.map((m, i) => {
-          const steps = [...shared, ...m.transform]
+          const steps = [
+            ...shared,
+            ...self.conf.facet.transform,
+            ...m.transform,
+          ]
           const { x = 'start', x2 = 'end' } = encodings[i] ?? {}
           return [
             ...new Set([positionSource(steps, x), positionSource(steps, x2)]),
@@ -990,11 +1037,12 @@ export function stateModelFactory(
       },
       /**
        * #action
-       * A field's own bands, in their sorted order. The whole object, so the
-       * outgoing field's domain goes with it.
+       * A field's own bands, in their sorted order: the outgoing field's
+       * domain goes with it, and the facet's steps stay.
        */
       setFacetField(field: string) {
-        setConf(self.conf, 'facet', field ? { field } : {})
+        setConf(self.conf, ['facet', 'field'], field)
+        setConf(self.conf, ['facet', 'domain'], [])
       },
       /**
        * #action
@@ -1183,8 +1231,10 @@ export function stateModelFactory(
        */
       fetchNeeded(needed: IndexedRegion[]) {
         const { bpPerPx, displayedRegions } = self.host
+        const { transform, facet } = self.rpcProps()
         const step = widestBinStep([
-          ...self.rpcProps().transform,
+          ...transform,
+          ...(facet?.transform ?? []),
           ...self.layerRequests.flatMap(l => l.transform ?? []),
         ])
         const regions =

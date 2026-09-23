@@ -244,18 +244,18 @@ stacked row of each, index for index.
 
 ## facetLayers
 
-A faceted request's layers: the features split on `field`'s key, each
-layer's own steps run over each section alone, and the sections stacked —
-a section's rows start where the one above it ends, and it is as tall as
-the tallest layer packed it. Every layer's features come back in section
-order beside their stacked rows, so a faceted display is the unfaceted one
-drawn once per section, and a feature is handed on as its steps left it. A
-layer naming no `row` field stands on each section's first row, the answer
-the unfaceted encoder gives it.
+A faceted request's layers: the features split on the facet's field, the
+facet's own steps and then each layer's run over each section alone, and
+the sections stacked — a section's rows start where the one above it ends,
+and it is as tall as the tallest layer packed it. Every layer's features
+come back in section order beside their stacked rows, so a faceted display
+is the unfaceted one drawn once per section, and a feature is handed on as
+its steps left it. A layer naming no `row` field stands on each section's
+first row, the answer the unfaceted encoder gives it.
 
 ```js
 // type signature
-(features: readonly Feature[], field: string, layers: readonly {…}[], jexl?: JexlInstance | undefined) => { ...; }
+(features: readonly Feature[], facet: FacetSpec, layers: readonly {…}[], jexl?: JexlInstance | undefined) => { ...; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
@@ -269,9 +269,9 @@ and how many rows it holds.
 
 ## FacetSpec
 
-A row facet: split the features on `field`'s value, run every layer's own
-steps over each section alone, and stack the sections, each starting on the
-row after the one above it ends.
+A row facet: split the features on `field`'s value, run `transform` and then
+every layer's own steps over each section alone, and stack the sections,
+each starting on the row after the one above it ends.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -420,6 +420,31 @@ may be a ChannelReader in place of its declared form, and `row` the
 values themselves, one per input feature, where the caller computed them —
 a facet's stacked rows. The declared form is what crosses the wire; a
 reader or a value list is built in the worker.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
+## MISCONFIGURED_ABGR
+
+The misconfiguration grey packed as the encoder paints it: a `jexl:` colour
+that answered no string, a ramp value that is no number, text a threshold
+cannot read.
+
+```js
+// type signature
+number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
+## NO_VALUE_ABGR
+
+The no-value grey packed as the encoder paints it: a feature with nothing in
+the field a threshold reads.
+
+```js
+// type signature
+number
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
@@ -658,12 +683,27 @@ The bins are the whole domain, so a key lists each one.
 
 The bin a value falls in: how many of the ascending cut points it is at or
 past, so a palette with one more entry than the domain paints it as
-`palette[thresholdIndex(value, domain)]`. A value that is not a finite
-number is in no bin and answers -1.
+`palette[thresholdIndex(value, domain)]`. A value that is not a number is
+in no bin and answers -1; an infinite one takes the end bin on its side, as
+d3's threshold scale places it, so a `-log10` of a zero p-value lands in
+the top bin.
 
 ```js
 // type signature
 (value: unknown, domain: readonly number[]) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
+
+## thresholdKeyEntries
+
+A threshold key's rows: every interval, painted or not, since the bins are
+the whole domain, then the not-a-number and no-value rows where a feature
+took one, in the order `thresholdField` sorts them.
+
+```js
+// type signature
+(cuts: readonly number[], range: readonly string[] | undefined, met: {…}) => { value: string; label: string; color: string; missing?: true | undefined; }[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)

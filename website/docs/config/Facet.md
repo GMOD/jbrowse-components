@@ -28,9 +28,10 @@ Auto-generated config schema for the current JBrowse release — see the [config
 
 _See the **Config slots** section below for all available configuration fields._
 
-The `facet` setting of the feature, mark, multi-sample variant and
-alignments displays: one labelled section of the track per value of a
-field. A string is the field; the object adds the order.
+The `facet` setting of the feature, multi-sample variant and alignments
+displays: one labelled section of the track per value of a field. A string
+is the field; the object adds the order. The mark display's `MarkFacet`
+adds the steps each section runs.
 
 ## Config slots
 

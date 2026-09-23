@@ -145,13 +145,8 @@ test('a facet runs every layer per section and stacks the sections', async () =>
   expect([...layers[1]!.y!]).toEqual([1, 1, 2, 1])
 })
 
-// The display used to write this default into the encoding it sent, so a
-// caller of the RPC itself read row 0 for every instance of a packed layer,
-// and a facet read `row` whatever field the pileup wrote. Then the facet read
-// `row` by name where a layer named none, so a display-level pileup stacked
-// its spans under a facet and drew them over each other without one. The reads
-// carry a `row` field of their own to pin that a layer nothing packs reads
-// none.
+// The reads carry a `row` field of their own, to pin that a layer nothing
+// packs reads none rather than that field by its default name.
 describe('a pileup is the row a layer stands in where its encoding names none', () => {
   const reads = (['a', 'b', 'c'] as const).map(
     (uniqueId, i) =>
@@ -224,6 +219,98 @@ describe('a pileup is the row a layer stands in where its encoding names none', 
     expect(await rowsOf([unpacked], { field: 'source' }, SHARED)).toEqual([
       [0, 1, 2],
     ])
+  })
+
+  test("the facet's, per section", async () => {
+    expect(
+      await rowsOf([unpacked], { field: 'source', transform: SHARED }),
+    ).toEqual([[0, 1, 2]])
+  })
+
+  test('none, where a layer of its own steps makes its features from nothing', async () => {
+    const depth: LayerRequest = {
+      encoding: {},
+      lanes: ['row'],
+      transform: [{ type: 'coverage' }],
+    }
+    expect(await rowsOf([depth], undefined, SHARED)).toEqual([[0, 0, 0]])
+    expect(
+      await rowsOf([depth], { field: 'source', transform: SHARED }),
+    ).toEqual([[0, 0, 0]])
+  })
+})
+
+// Three reads that all overlap, two of one source and one of another. The
+// display's pileup runs before the split and packs all three, so each section
+// keeps the row numbers the other's reads took; the facet's packs each
+// section on its own.
+describe("a facet's own pileup packs per section, the display's across every section", () => {
+  const reads = (
+    [
+      ['a', 'k1', 0],
+      ['b', 'k2', 10],
+      ['c', 'k1', 20],
+    ] as const
+  ).map(
+    ([uniqueId, source, start]) =>
+      new SimpleFeature({
+        uniqueId,
+        refName: 'ctgA',
+        start,
+        end: 100,
+        source,
+      }),
+  )
+  async function stacked(args: Partial<CoreEncodeFeaturesArgs>) {
+    jest.mocked(getAdapter).mockResolvedValue({
+      dataAdapter: {
+        getFeatures: () => {},
+        getFeaturesArray: async () => reads,
+        getZoomRange: async () => undefined,
+        setSequenceAdapterConfig: () => {},
+      },
+    } as unknown as Awaited<ReturnType<typeof getAdapter>>)
+    const method = new CoreEncodeFeatures({
+      jexl: createJexlInstance(),
+    } as PluginManager)
+    const result = await method.invoke({
+      sessionId: 's',
+      adapterConfig: { type: 'AnyAdapter' },
+      region: { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
+      layers: [{ encoding: {}, lanes: ['row'] }],
+      ...args,
+    })
+    const { value } = result as RpcResult<EncodedFeaturesResult>
+    return { rows: [...value.layers[0]!.row!], sections: value.facet }
+  }
+
+  test("the facet's", async () => {
+    expect(
+      await stacked({
+        facet: { field: 'source', transform: [{ type: 'pileup' }] },
+      }),
+    ).toEqual({
+      rows: [0, 1, 2],
+      sections: [
+        { key: 'k1', firstRow: 0, rowCount: 2 },
+        { key: 'k2', firstRow: 2, rowCount: 1 },
+      ],
+    })
+  })
+
+  test("the display's", async () => {
+    expect(
+      await stacked({
+        transform: [{ type: 'pileup' }],
+        facet: { field: 'source' },
+      }),
+    ).toEqual({
+      rows: [0, 2, 4],
+      sections: [
+        { key: 'k1', firstRow: 0, rowCount: 3 },
+        { key: 'k2', firstRow: 3, rowCount: 2 },
+      ],
+    })
   })
 })
 

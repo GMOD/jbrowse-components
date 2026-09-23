@@ -8198,6 +8198,57 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "MarkFacet": {
+      "title": "MarkFacet",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "$ref": "#/$defs/FeatureField",
+          "default": "",
+          "type": "string"
+        },
+        {
+          "title": "MarkFacet",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "feature field (or jexl expression) to group by, one labelled section per value.",
+              "$ref": "#/$defs/FeatureField",
+              "default": ""
+            },
+            "domain": {
+              "description": "values whose sections stack first, in order.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "transform": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/MarkTransform"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "ValueScale4": {
       "title": "ValueScale4",
       "type": "object",
@@ -8313,7 +8364,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "facet": {
-          "$ref": "#/$defs/Facet"
+          "$ref": "#/$defs/MarkFacet"
         },
         "scales": {
           "$ref": "#/$defs/Scales4"

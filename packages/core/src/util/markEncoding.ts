@@ -16,11 +16,9 @@ import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { numericValue } from './numericValue.ts'
 import { buildJexlContext } from './simpleFeature.ts'
 import {
-  NOT_A_NUMBER_LABEL,
   isMissing,
   thresholdCuts,
   thresholdIndex,
-  thresholdLabels,
   thresholdPalette,
 } from './thresholdScale.ts'
 
@@ -76,8 +74,22 @@ export { NO_VALUE_LABEL } from './categoricalField.ts'
 
 export const DEFAULT_MARK_COLOR = '#0068d1'
 
-const FALLBACK_COLOR = cssColorToABGR(MISCONFIGURED_COLOR)
-const NO_VALUE_COLOR = cssColorToABGR(NO_CATEGORY_COLOR)
+/**
+ * #api
+ * The misconfiguration grey packed as the encoder paints it: a `jexl:` colour
+ * that answered no string, a ramp value that is no number, text a threshold
+ * cannot read.
+ */
+export const MISCONFIGURED_ABGR = cssColorToABGR(MISCONFIGURED_COLOR)
+
+/**
+ * #api
+ * The no-value grey packed as the encoder paints it: a feature with nothing in
+ * the field a threshold reads.
+ */
+export const NO_VALUE_ABGR = cssColorToABGR(NO_CATEGORY_COLOR)
+
+const FALLBACK_COLOR = MISCONFIGURED_ABGR
 
 /**
  * #api
@@ -313,9 +325,6 @@ export function encodeFeatures<L extends LaneName>(
           c => cssColorToABGR(c),
         )
       : undefined
-  // Which intervals and which of the two keyless cases the walk met, for the
-  // table's entries: a byte per feature beside the interval lookup.
-  const binMet = binColors ? new Uint8Array(binColors.length) : undefined
   let missingMet = false
   let notNumberMet = false
   const { glyph: glyphEncoding } = encoding
@@ -383,14 +392,13 @@ export function encodeFeatures<L extends LaneName>(
       colorCategories.collect(f, count)
     } else if (rampValues && readColor) {
       rampValues[count] = numericValue(readColor(f))
-    } else if (binColors && binMet && cuts && color && readColor) {
+    } else if (binColors && cuts && color && readColor) {
       const v = readColor(f)
       const bin = thresholdIndex(v, cuts)
       if (bin >= 0) {
         color[count] = binColors[bin]!
-        binMet[bin] = 1
       } else if (isMissing(v)) {
-        color[count] = NO_VALUE_COLOR
+        color[count] = NO_VALUE_ABGR
         missingMet = true
       } else {
         color[count] = FALLBACK_COLOR
@@ -424,22 +432,16 @@ export function encodeFeatures<L extends LaneName>(
       ...(keysAreNumeric(entries) ? { numericKeys: true } : {}),
       entries: entries.map(e => ({ value: e.value, color: e.entry })),
     }
-  } else if (thresholdEncoding && cuts && binColors && binMet) {
-    const entries = thresholdLabels(cuts).flatMap((value, i) =>
-      binMet[i] ? [{ value, color: binColors[i]! }] : [],
-    )
-    if (missingMet) {
-      entries.push({ value: '', color: NO_VALUE_COLOR })
-    }
-    if (notNumberMet) {
-      entries.push({ value: NOT_A_NUMBER_LABEL, color: FALLBACK_COLOR })
-    }
+  } else if (thresholdEncoding && cuts && binColors) {
     scale = {
       kind: 'threshold',
       field: thresholdEncoding.field,
       domain: cuts,
-      range: [...binColors],
-      entries,
+      ...(thresholdEncoding.range
+        ? { range: [...thresholdEncoding.range] }
+        : {}),
+      ...(missingMet ? { missing: true } : {}),
+      ...(notNumberMet ? { notNumber: true } : {}),
     }
   } else if (rampEncoding && rampValues) {
     const extent = finiteExtremes(rampValues, count)

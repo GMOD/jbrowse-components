@@ -380,12 +380,19 @@ the alignments displays' sections, where a read dimension (`pairOrientation`,
 
 **The mark display's facet is the grammar's**
 ([ADR-130](../architecture-decision-records/adr-130-a-facet-is-the-displays-and-splits-before-each-layers-steps.md)).
-The display's own `transform` runs, the facet splits what it answers, and each
-mark runs its own steps over each section alone (`facetLayers`,
+The display's own `transform` runs, the facet splits what it answers, the
+facet's own `transform` runs over each section alone, and each mark then runs
+its own steps over each section (`facetLayers`,
 `packages/core/src/util/featureTransforms.ts`), so a faceted display is the
 unfaceted one drawn once per section — a `pileup` packs each section on its
-own, a `coverage` counts each section's depth, and a rowless mark sits on each
-section's first row. `featureTransforms.test.ts` pins that equivalence. The
+own, a `coverage` counts each section's depth, and a rowless mark stands in
+the rows the last `pileup` before its encode wrote, the facet's shared by
+every mark or its own, and on each section's first row where none did. That
+is Vega-Lite's facet spec `transform`, the shared per-panel stat ggplot2
+computes per layer. A `pileup` in the display's `transform` runs before the
+split and packs across every section, leaving each section the rows the
+others fill, which the validator says (`cross-section-packing`).
+`featureTransforms.test.ts` pins the per-section equivalence. The
 main thread folds the regions' section tables into one layout
 (`plugins/marks/src/LinearMarkDisplay/facet.ts`): the cap over every region's
 keys, the domain's order, the hidden sections gone from the drawn layers and

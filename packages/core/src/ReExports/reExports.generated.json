@@ -3116,6 +3116,8 @@
       "names": [
         "COLOR_SCHEMES",
         "DEFAULT_MARK_COLOR",
+        "MISCONFIGURED_ABGR",
+        "NO_VALUE_ABGR",
         "NO_VALUE_LABEL",
         "colorEvaluator",
         "encodeFeatures",
@@ -3373,6 +3375,7 @@
         "thresholdCuts",
         "thresholdField",
         "thresholdIndex",
+        "thresholdKeyEntries",
         "thresholdLabels",
         "thresholdPalette"
       ],

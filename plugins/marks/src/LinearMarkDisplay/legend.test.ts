@@ -1,6 +1,11 @@
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { legendEntries } from '@jbrowse/core/ui/legendSpec'
-import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import {
+  MISCONFIGURED_ABGR,
+  NO_VALUE_ABGR,
+  encodeFeatures,
+} from '@jbrowse/core/util/markEncoding'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import { buildMarkLegend, categoryLabel, markColorScales } from './legend.ts'
@@ -70,12 +75,7 @@ function thresholdTable(): Extract<ColorScaleTable, { kind: 'threshold' }> {
     kind: 'threshold',
     field: 'pip',
     domain: [0.1, 0.5],
-    range: [0xff111111, 0xff222222, 0xff333333],
-    entries: [
-      { value: '< 0.1', color: 0xff111111 },
-      { value: '0.1 \u2013 0.5', color: 0xff222222 },
-      { value: '\u2265 0.5', color: 0xff333333 },
-    ],
+    range: ['#111111', '#222222', '#333333'],
   }
 }
 
@@ -98,15 +98,14 @@ test('two regions of one threshold declaration share a key', () => {
   expect(markColorScales(sections)).toHaveLength(1)
 })
 
-// The feature display's threshold key grows the same row once a value-less
-// feature painted (ADR-156); a region that met none leaves it out.
-test('a threshold key lists every interval, and the no-value row once a region painted one', () => {
+// The feature display's threshold key grows the same two rows once a
+// value-less feature or unreadable text painted (ADR-156), in its order; a
+// region that met neither leaves them out.
+test('a threshold key lists every interval, and the two keyless rows once a region painted them', () => {
   const sparse: ColorScaleTable = {
     ...thresholdTable(),
-    entries: [
-      { value: '≥ 0.5', color: 0xff333333 },
-      { value: '', color: 0xffafafaf },
-    ],
+    missing: true,
+    notNumber: true,
   }
   const sections = buildMarkLegend([region(thresholdTable()), region(sparse)])
   expect(sections).toHaveLength(1)
@@ -118,9 +117,14 @@ test('a threshold key lists every interval, and the no-value row once a region p
     ['< 0.1', false],
     ['0.1 – 0.5', false],
     ['≥ 0.5', false],
+    ['(not a number)', false],
     ['(no value)', true],
   ])
-  expect(categoryLabel(sections[0]!.scale, 0xffafafaf)).toBe('(no value)')
+  expect(categoryLabel(sections[0]!.scale, NO_VALUE_ABGR)).toBe('(no value)')
+  expect(categoryLabel(sections[0]!.scale, MISCONFIGURED_ABGR)).toBe(
+    '(not a number)',
+  )
+  expect(categoryLabel(thresholdTable(), NO_VALUE_ABGR)).toBeUndefined()
 })
 
 test('a colour two values hashed onto names both of them on hover', () => {
@@ -195,15 +199,13 @@ test('a pinned floor holds across the union, and the open ceiling widens to it',
 test('two threshold marks over one field and cuts keep a key each when their ranges differ', () => {
   const recoloured: ColorScaleTable = {
     ...thresholdTable(),
-    range: thresholdTable().range.map(c => c + 1),
-    entries: thresholdTable().entries.map(e => ({
-      ...e,
-      color: e.color + 1,
-    })),
+    range: ['#111112', '#222223', '#333334'],
   }
   const sections = buildMarkLegend([region(thresholdTable(), recoloured)])
   expect(sections).toHaveLength(2)
-  expect(categoryLabel(sections[1]!.scale, 0xff222223)).toBe('0.1 – 0.5')
+  expect(categoryLabel(sections[1]!.scale, cssColorToABGR('#222223'))).toBe(
+    '0.1 – 0.5',
+  )
 })
 
 // A ramp with an open end follows each mark's own loaded values, so it stays

@@ -151,16 +151,22 @@ export type ColorScaleTable =
       field: string
       /** The cut points, ascending, as numbers. */
       domain: number[]
-      /** The colour of each interval, in order: one more than the cuts. */
-      range: number[]
       /**
-       * Each key met, in bin order: an interval's label, then `''` for a
-       * feature with no value, painted the no-value grey, and `(not a number)`
-       * for text that is no number, painted the misconfiguration grey — the
-       * rows the feature display's threshold gives its key (ADR-156), each
-       * listed only once painted.
+       * The declared interval colours, one more than the cuts; the default
+       * palette fills what the declaration leaves.
        */
-      entries: { value: string; color: number }[]
+      range?: string[]
+      /**
+       * Whether a feature with no value painted here, in the no-value grey:
+       * the key's `(no value)` row, as the feature display's threshold gives
+       * it (ADR-156).
+       */
+      missing?: boolean
+      /**
+       * Whether text that is no number painted here, in the misconfiguration
+       * grey: the key's `(not a number)` row.
+       */
+      notNumber?: boolean
     }
   | {
       kind: 'ramp'
@@ -434,12 +440,18 @@ export type CoreEncodeFeaturesArgs = {
 
 /**
  * #api
- * A row facet: split the features on `field`'s value, run every layer's own
- * steps over each section alone, and stack the sections, each starting on the
- * row after the one above it ends.
+ * A row facet: split the features on `field`'s value, run `transform` and then
+ * every layer's own steps over each section alone, and stack the sections,
+ * each starting on the row after the one above it ends.
  */
 export interface FacetSpec {
   field: FieldRef
+  /**
+   * Steps over each section's features, before every layer's own: a `pileup`
+   * here packs each section on its own rows, which every layer then stands
+   * in.
+   */
+  transform?: TransformStep[]
 }
 
 /**

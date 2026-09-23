@@ -12,7 +12,6 @@ import type {
   CoreEncodeFeaturesArgs,
   FieldRef,
   LayerRequest,
-  PileupStep,
   TransformStep,
 } from '../../util/markEncodingTypes.ts'
 import type { StatusCallback } from '../../util/progress.ts'
@@ -28,23 +27,38 @@ export interface LayerFeatures {
   row: FieldRef | readonly number[] | undefined
 }
 
-function pileupField(transform: readonly TransformStep[] = []) {
-  const pileup = transform.findLast((s): s is PileupStep => s.type === 'pileup')
-  return pileup === undefined ? undefined : (pileup.as ?? DEFAULT_PILEUP_AS)
+/**
+ * The field the last `pileup` of a step list wrote, unless an `aggregate` or
+ * `coverage` after it made its features from nothing and left no row on them.
+ */
+function survivingPileupField(steps: readonly TransformStep[]) {
+  for (let i = steps.length - 1; i >= 0; i--) {
+    const step = steps[i]!
+    if (step.type === 'pileup') {
+      return step.as ?? DEFAULT_PILEUP_AS
+    }
+    if (step.type === 'aggregate' || step.type === 'coverage') {
+      return undefined
+    }
+  }
+  return undefined
 }
 
 /**
- * The field a layer's `row` channel reads: the one its encoding names, else the
- * one its own `pileup` writes, else the one the request's shared `pileup`
- * writes, so a packed layer restates nothing. Resolved once here for the facet
- * split and the encoder alike, so a facet stacks the rows the unfaceted
- * encoder reads.
+ * The field a layer's `row` channel reads: the one its encoding names, else
+ * the one the last pileup before its encode wrote — the layer's own, the
+ * facet's per-section one, or the request's shared one — so a packed layer
+ * restates nothing. Resolved once here for the facet split and the encoder
+ * alike, so a facet stacks the rows the unfaceted encoder reads.
  */
-export function layerRow(
-  { encoding, transform }: LayerRequest,
-  shared?: readonly TransformStep[],
+function layerRow(
+  { encoding, transform = [] }: LayerRequest,
+  shared: readonly TransformStep[],
+  section: readonly TransformStep[],
 ) {
-  return encoding.row ?? pileupField(transform) ?? pileupField(shared)
+  return (
+    encoding.row ?? survivingPileupField([...shared, ...section, ...transform])
+  )
 }
 
 /**
@@ -84,11 +98,13 @@ export async function layerFeatures(
   checkAbortSignal(signal)
 
   const shared = runTransforms(fetched, transform, jexl)
-  const rowFields = requested.map(r => layerRow(r, transform))
+  const rowFields = requested.map(r =>
+    layerRow(r, transform, facet?.transform ?? []),
+  )
   const faceted = facet
     ? facetLayers(
         shared,
-        facet.field,
+        facet,
         requested.map((r, i) => ({
           transform: r.transform,
           row: rowFields[i],

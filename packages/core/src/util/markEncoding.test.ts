@@ -15,7 +15,7 @@ import {
   rampOverExtent,
 } from './markEncoding.ts'
 import SimpleFeature from './simpleFeature.ts'
-import { NOT_A_NUMBER_LABEL } from './thresholdScale.ts'
+import { thresholdPalette } from './thresholdScale.ts'
 
 import type { ContinuousRef, GlyphName, LaneName } from './markEncoding.ts'
 
@@ -544,31 +544,28 @@ test('a threshold colour packs one palette entry per interval', () => {
     noValue,
     notNumber,
   ])
-  expect(r.scale?.kind).toBe('threshold')
-  if (r.scale?.kind === 'threshold') {
-    expect(r.scale.domain).toEqual([20, 30])
-    expect(r.scale.range).toEqual(palette.map(c => cssColorToABGR(c)))
-    expect(r.scale.entries).toEqual([
-      { value: '< 20', color: cssColorToABGR(palette[0]!) },
-      { value: '20 – 30', color: cssColorToABGR(palette[1]!) },
-      { value: '≥ 30', color: cssColorToABGR(palette[2]!) },
-      { value: '', color: noValue },
-      { value: NOT_A_NUMBER_LABEL, color: notNumber },
-    ])
-  }
+  expect(r.scale).toEqual({
+    kind: 'threshold',
+    field: 'score',
+    domain: [20, 30],
+    range: palette,
+    missing: true,
+    notNumber: true,
+  })
 })
 
-test('a threshold table lists only the intervals a region met', () => {
+test('a threshold table flags only the keyless cases a region met', () => {
   const r = encodeFeatures(
     features.slice(0, 1),
     { color: { field: 'score', scale: 'threshold', domain: [20, 30] } },
     ALL,
     { jexl },
   )
-  expect(r.scale?.kind === 'threshold' && r.scale.range).toHaveLength(3)
-  expect(r.scale?.kind === 'threshold' && r.scale.entries).toEqual([
-    { value: '< 20', color: r.color[0] },
-  ])
+  expect(r.scale).toEqual({
+    kind: 'threshold',
+    field: 'score',
+    domain: [20, 30],
+  })
 })
 
 test('a threshold domain written as strings cuts at the numbers it names', () => {
@@ -578,12 +575,10 @@ test('a threshold domain written as strings cuts at the numbers it names', () =>
     ALL,
     { jexl },
   )
-  expect(r.color[0]).toBe(
-    r.scale?.kind === 'threshold' && r.scale.entries[0]!.color,
-  )
-  expect(r.color[1]).toBe(
-    r.scale?.kind === 'threshold' && r.scale.entries[1]!.color,
-  )
+  const [below, above] = thresholdPalette(2).map(c => cssColorToABGR(c))
+  expect(r.color[0]).toBe(below)
+  expect(r.color[1]).toBe(above)
+  expect(r.scale).toMatchObject({ kind: 'threshold', domain: [20] })
 })
 
 test('a categorical colour resolves in the worker whatever lanes are named', () => {

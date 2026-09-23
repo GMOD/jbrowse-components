@@ -346,14 +346,72 @@ test('a mark the caller could not read keeps its index as a gap', () => {
   ])
 })
 
-test('two packings under a facet are told a display pileup spans every section', () => {
+test("two packings under a facet are pointed at the facet's transform", () => {
   expect(
     problemsOf([PILEUP, PILEUP], { field: 'HP' })
       .filter(p => p.rule === 'two-packings')
       .map(p => p.message),
   ).toEqual([
-    "packs rows of its own, as mark 0 does, and the two share row numbers; one pileup in the display's transform packs them together, though across every section at once, leaving each section the rows the others fill",
+    "packs rows of its own, as mark 0 does, and the two share row numbers; one pileup in the facet's transform packs them together per section",
   ])
+})
+
+test("a mark packing over the facet's or the display's pileup is two packings", () => {
+  expect(found([PILEUP], undefined, [{ type: 'pileup' }])).toEqual([
+    'warning two-packings mark 0 transform',
+  ])
+  expect(
+    found([PILEUP], { field: 'HP', transform: [{ type: 'pileup' }] }),
+  ).toEqual(['warning two-packings mark 0 transform'])
+})
+
+test("a display pileup under a facet packs across every section, and the facet's is the fix", () => {
+  expect(
+    problemsOf([{ shape: 'span' }], { field: 'HP' }, [{ type: 'pileup' }]).map(
+      problemText,
+    ),
+  ).toEqual([
+    'transform.0: runs before the facet splits the features, so it packs across every section and leaves each section the rows the others fill; the same pileup in facet.transform packs each section on its own',
+  ])
+  expect(
+    found([{ shape: 'span' }], {
+      field: 'HP',
+      transform: [{ type: 'pileup' }],
+    }),
+  ).toEqual([])
+})
+
+// The reviewer's case: a shared pileup bands the span, and the coverage bar's
+// own step makes features that carry no row, so it stands beside the rows.
+test('a mark whose own step unmakes a shared pileup stands beside the rows', () => {
+  expect(
+    found([COVERAGE, { shape: 'span' }], undefined, [{ type: 'pileup' }]),
+  ).toEqual(['warning value-beside-rows mark 0 encoding.row'])
+  expect(
+    found(
+      [{ shape: 'bar', encoding: { y: 'score' } }, { shape: 'span' }],
+      undefined,
+      [{ type: 'pileup' }],
+    ),
+  ).toEqual([])
+})
+
+test("the facet's steps are checked under facet.transform, and what they make a mark may read", () => {
+  expect(
+    found([{ shape: 'span' }], {
+      field: 'HP',
+      transform: [{ type: 'bin', step: -1 }],
+    }),
+  ).toEqual(['error bin-width mark undefined facet.transform.0.step'])
+  expect(
+    found([{ shape: 'bar', encoding: { y: 'count' } }], {
+      field: 'HP',
+      transform: [
+        { type: 'bin', step: 1000 },
+        { type: 'aggregate', ops: [{ op: 'count' }] },
+      ],
+    }),
+  ).toEqual([])
 })
 
 test("a field the display's steps make is one a mark reads", () => {

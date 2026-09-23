@@ -957,6 +957,40 @@ test('a bin hands its edges to the aggregate behind it, and a pileup leaves the 
   ])
 })
 
+test("the facet's steps ride the request per section, hand their bin to the marks, and survive a field change", () => {
+  const { createDisplay } = createTestEnvironment(
+    [
+      {
+        shape: 'bar',
+        transform: [{ type: 'aggregate', ops: [{ op: 'count' }] }],
+        encoding: { y: 'count' },
+      },
+    ],
+    undefined,
+    undefined,
+    {
+      facet: {
+        field: 'sample',
+        transform: [{ type: 'bin', step: 500, as: ['lo', 'hi'] }],
+      },
+    },
+  )
+  const { display } = createDisplay()
+  expect(display.rpcProps().facet).toEqual({
+    field: 'sample',
+    transform: [{ type: 'bin', step: 500, field: 'start', as: ['lo', 'hi'] }],
+  })
+  expect(
+    (display.rpcProps().layers[0]!.transform![0] as { groupby: string[] })
+      .groupby,
+  ).toEqual(['lo', 'hi'])
+  display.setFacetField('name')
+  expect(display.rpcProps().facet).toMatchObject({
+    field: 'name',
+    transform: [{ type: 'bin' }],
+  })
+})
+
 test("a mark's aggregate behind a bin in the display's transform groups by that bin's edges", () => {
   const { createDisplay } = createTestEnvironment(
     [

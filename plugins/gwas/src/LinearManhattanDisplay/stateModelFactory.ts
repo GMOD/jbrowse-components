@@ -16,8 +16,7 @@ import {
 } from '@jbrowse/core/util/legendCandidates'
 import {
   thresholdCuts,
-  thresholdLabels,
-  thresholdPalette,
+  thresholdKeyEntries,
 } from '@jbrowse/core/util/thresholdScale'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import LegendMixin, {
@@ -563,18 +562,18 @@ export function stateModelFactory(
             if (isLdColoring(self.color)) {
               return []
             }
-            const labels = thresholdLabels(thresholdCuts(domain))
-            const colors = thresholdPalette(labels.length, range)
+            const tables = [...self.rpcDataMap.values()].map(d => d.scale)
+            const met = (flag: 'missing' | 'notNumber') =>
+              tables.some(t => t?.kind === 'threshold' && t[flag])
             return [
               {
                 kind: 'categorical',
                 id: 'field',
                 title: field,
-                entries: labels.map((label, i) => ({
-                  value: label,
-                  label,
-                  color: colors[i]!,
-                })),
+                entries: thresholdKeyEntries(thresholdCuts(domain), range, {
+                  missing: met('missing'),
+                  notNumber: met('notNumber'),
+                }),
               },
             ]
           }

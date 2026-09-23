@@ -55,6 +55,7 @@ export const MARK_RULES = {
   'unwritten-y': 'error',
   'value-beside-rows': 'warning',
   'two-packings': 'warning',
+  'cross-section-packing': 'warning',
   'second-density-mark': 'warning',
 } as const satisfies Record<string, MarkProblemLevel>
 
@@ -104,12 +105,13 @@ interface ColorSnapshot {
 }
 
 /**
- * The display's `facet` as a config snapshot holds it. A facet naming no field
- * groups nothing, the one thing the rule list reads of it, so a caller holding
- * a config object of its own passes that object.
+ * The display's `facet` as a config snapshot holds it: the field its sections
+ * stack by, a facet naming none grouping nothing, and the steps each section
+ * runs before any mark's.
  */
 export interface FacetSnapshot {
   field?: unknown
+  transform?: StepSnapshot[]
 }
 
 /**
@@ -209,10 +211,20 @@ function packs(mark: MarkSnapshot) {
   return packsIn(stepsOf(mark))
 }
 
-// Whether a mark stands in rows: its own pileup's, the display's, or a field
-// it names.
-function banded(mark: MarkSnapshot, transform: Steps) {
-  return packs(mark) || packsIn(transform) || !!mark.encoding?.row
+// Whether the last pileup of a step list still has its rows on the features
+// at the end, as the worker's `layerRow` reads it: an aggregate or coverage
+// after it makes features from nothing.
+function pileupSurvives(steps: readonly StepSnapshot[]) {
+  return (
+    steps.findLast(
+      s =>
+        s.type === 'pileup' || s.type === 'aggregate' || s.type === 'coverage',
+    )?.type === 'pileup'
+  )
+}
+
+function banded(mark: MarkSnapshot, shared: readonly StepSnapshot[]) {
+  return !!mark.encoding?.row || pileupSurvives([...shared, ...stepsOf(mark)])
 }
 
 // The fields the last step that makes its features from nothing leaves behind,
@@ -258,19 +270,21 @@ function madeFields(steps: readonly StepSnapshot[]) {
   return fields
 }
 
-// What a list of steps cannot run as written, whether a mark's or the display's
-function stepProblems(steps: readonly (StepSnapshot | undefined)[]) {
+// What a list of steps cannot run as written, a mark's, the facet's or the
+// display's, each slot under the list's own name.
+function stepProblems(steps: Steps, list = 'transform') {
   const problems: OwnProblem[] = []
   for (const [i, step] of steps.entries()) {
     if (!step) {
       continue
     }
     const { type } = step
+    const at = `${list}.${i}`
     if ((type === 'filter' || type === 'formula') && !isJexl(step.expr ?? '')) {
       problems.push(
         found(
           'step-expression',
-          `transform.${i}.expr`,
+          `${at}.expr`,
           `a ${type} reads a jexl: expression`,
         ),
       )
@@ -282,11 +296,7 @@ function stepProblems(steps: readonly (StepSnapshot | undefined)[]) {
       !(Number(step.step) > 0)
     ) {
       problems.push(
-        found(
-          'bin-width',
-          `transform.${i}.step`,
-          'a bin is a positive width in bp',
-        ),
+        found('bin-width', `${at}.step`, 'a bin is a positive width in bp'),
       )
     }
     const pair = pairSlot(step)
@@ -294,7 +304,7 @@ function stepProblems(steps: readonly (StepSnapshot | undefined)[]) {
       problems.push(
         found(
           'step-pair',
-          `transform.${i}.${pair.slot}`,
+          `${at}.${pair.slot}`,
           `a ${type} reads two field names from ${pair.slot} and this names ${pair.names.length}, so it reads ${pair.fallback.join(' and ')}`,
         ),
       )
@@ -307,7 +317,7 @@ function stepProblems(steps: readonly (StepSnapshot | undefined)[]) {
           problems.push(
             found(
               'op-field',
-              `transform.${i}.ops.${k}.field`,
+              `${at}.ops.${k}.field`,
               `${op} reads a field and names none`,
             ),
           )
@@ -319,7 +329,7 @@ function stepProblems(steps: readonly (StepSnapshot | undefined)[]) {
         problems.push(
           found(
             'step-field-expression',
-            `transform.${i}.${slot}`,
+            `${at}.${slot}`,
             `the ${type} step reads a field name or a dotted path; a formula step in front computes one`,
           ),
         )
@@ -329,7 +339,11 @@ function stepProblems(steps: readonly (StepSnapshot | undefined)[]) {
   return problems
 }
 
-function ownProblems(mark: MarkSnapshot, transform: Steps) {
+function ownProblems(
+  mark: MarkSnapshot,
+  display: readonly StepSnapshot[],
+  section: readonly StepSnapshot[],
+) {
   const shape = shapeOf(mark)
   const problems: OwnProblem[] = []
   const y = mark.encoding?.y
@@ -394,7 +408,16 @@ function ownProblems(mark: MarkSnapshot, transform: Steps) {
     )
   }
   problems.push(...stepProblems(stepsOf(mark)))
-  const fields = madeFields([...readable(transform), ...stepsOf(mark)])
+  if (packs(mark) && (packsIn(section) || packsIn(display))) {
+    problems.push(
+      found(
+        'two-packings',
+        'transform',
+        `packs rows of its own over the ${packsIn(section) ? "facet's" : "display's"} pileup, and the two share row numbers; one pileup packs every mark`,
+      ),
+    )
+  }
+  const fields = madeFields([...display, ...section, ...stepsOf(mark)])
   if (fields && y && !isJexl(y) && !fields.has(y)) {
     problems.push(
       found(
@@ -409,13 +432,14 @@ function ownProblems(mark: MarkSnapshot, transform: Steps) {
 
 /**
  * The problems of a `marks` list as a config snapshot holds it: shorthands
- * lifted, defaults left off. `facet` is the display's facet as written, naming
- * the field its sections stack by; under one, a rowless mark stands on each
- * section's first row by design. `transform` is the display's own steps,
- * checked as a mark's are and reported with no mark. An `undefined` mark or
- * step is one the caller could not read, such as one a file's schema refuses:
- * it keeps its index, so the others are reported where they are, and is
- * checked for nothing. A file's own spelling goes through the schema's lift
+ * lifted, defaults left off. `facet` is the display's facet as written, the
+ * field its sections stack by and the steps each section runs; under one, a
+ * rowless mark stands on each section's first row by design. `transform` is
+ * the display's own steps. Both lists are checked as a mark's are and reported
+ * with no mark, under `transform` and `facet.transform`. An `undefined` mark
+ * or step is one the caller could not read, such as one a file's schema
+ * refuses: it keeps its index, so the others are reported where they are, and
+ * is checked for nothing. A file's own spelling goes through the schema's lift
  * first, which `jbrowse validate` does from the generated manifest.
  */
 export function markProblems(
@@ -424,10 +448,29 @@ export function markProblems(
   transform: Steps = [],
 ): MarkProblem[] {
   const faceted = typeof facet?.field === 'string' && facet.field !== ''
+  const section = readable(facet?.transform ?? [])
+  const display = readable(transform)
+  const shared = [...display, ...section]
   const problems: MarkProblem[] = [
     ...stepProblems(transform),
+    ...stepProblems(facet?.transform ?? [], 'facet.transform'),
+    ...(faceted
+      ? transform.flatMap((step, i) =>
+          step?.type === 'pileup'
+            ? [
+                found(
+                  'cross-section-packing',
+                  `transform.${i}`,
+                  'runs before the facet splits the features, so it packs across every section and leaves each section the rows the others fill; the same pileup in facet.transform packs each section on its own',
+                ),
+              ]
+            : [],
+        )
+      : []),
     ...marks.flatMap((mark, i) =>
-      mark ? ownProblems(mark, transform).map(p => ({ mark: i, ...p })) : [],
+      mark
+        ? ownProblems(mark, display, section).map(p => ({ mark: i, ...p }))
+        : [],
     ),
   ]
   for (const [i, mark] of marks.entries()) {
@@ -438,8 +481,8 @@ export function markProblems(
       if (
         !faceted &&
         shapeOf(mark) !== 'span' &&
-        !banded(mark, transform) &&
-        banded(other, transform)
+        !banded(mark, shared) &&
+        banded(other, shared)
       ) {
         problems.push({
           mark: i,
@@ -456,7 +499,7 @@ export function markProblems(
           ...found(
             'two-packings',
             'transform',
-            `packs rows of its own, as mark ${j} does, and the two share row numbers; one pileup in the display's transform packs them together${faceted ? ', though across every section at once, leaving each section the rows the others fill' : ''}`,
+            `packs rows of its own, as mark ${j} does, and the two share row numbers; one pileup in the ${faceted ? "facet's transform packs them together per section" : "display's transform packs them together"}`,
           ),
         })
       }
