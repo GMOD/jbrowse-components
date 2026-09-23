@@ -14,8 +14,8 @@ const ROW_COLOR: ColorColumn<MafSource> = {
 /**
  * Reorder, relabel and recolor the species rows.
  *
- * Reordering clears the guide tree — rows would no longer line up with the
- * dendrogram — and the shared dialog warns when `rowOrderWillDropTree` says so.
+ * A reorder no rotation of the guide tree produces hides it, and the shared
+ * dialog warns when `rowOrderWillDropTree` says so.
  */
 export default function SetRowArrangementDialog({
   model,

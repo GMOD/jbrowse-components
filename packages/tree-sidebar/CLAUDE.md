@@ -58,9 +58,9 @@ order.
 supplied rather than computed. On `TreeSidebarMixin` provenance alone says so,
 because `rows.domain` is the arrangement itself: a run writes its tree's leaf
 order there in the same action as the tree. MAF's guide tree never enters
-`rows.tree`: MAF's `rowTree` draws the adapter's newick while `rows.domain` is
-the declared order, so it carries no provenance and rotates at parse, and maf
-reads its row order back off that same computed, so the leaves and the rows
+`rows.tree`: MAF's `rowTree` draws the adapter's newick while some rotation of
+it lists `rows.domain`, so it carries no provenance and rotates at parse, and
+maf reads its row order back off that same computed, so the leaves and the rows
 cannot drift. Everything else rotates in the run that produced it:
 `rotateClusterRun`, called from `applyClusterRun` and from variants'
 `applyClusterOrder`, which is the path `runGenotypeClustering` takes instead.

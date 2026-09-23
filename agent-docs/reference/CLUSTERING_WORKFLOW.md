@@ -143,7 +143,7 @@ store MAF last used, has no user left.
 | Row labels | `rows.labels` |
 
 MAF's adapter guide tree is data rather than config: `rowTree` draws it while
-`rows.domain` is the declared order and never writes it to `rows.tree`.
+some rotation of it lists `rows.domain` and never writes it to `rows.tree`.
 `treeAreaWidth`, the sidebar's pixel width (default 80), is config too.
 
 Key actions:

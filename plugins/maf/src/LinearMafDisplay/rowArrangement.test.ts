@@ -79,7 +79,10 @@ describe('a discovered row set widens under a custom arrangement', () => {
   })
 })
 
-describe('the guide tree positions only while it describes the rows', () => {
+// `((hg38,panTro4),mm10)` has four of the six orders of its leaves as
+// rotations; hg38, mm10, panTro4 parts the sister pair, so no rotation lists
+// it.
+describe('the guide tree draws while a rotation of it lists `rows.domain`', () => {
   function treedDisplay() {
     const { display } = createMafTestEnvironment().createDisplay()
     display.setSamples({
@@ -92,32 +95,89 @@ describe('the guide tree positions only while it describes the rows', () => {
     return display
   }
 
+  const named = (names: string[]) => names.map(name => ({ name }))
+
+  function reorder(display: ReturnType<typeof treedDisplay>, names: string[]) {
+    display.setRowOrder(named(names))
+  }
+
   it('positions against the worker tree with no arrangement', () => {
     const display = treedDisplay()
     expect(display.rowTree).toBe(TREE)
     expect(display.hierarchy).toBeDefined()
   })
 
-  it('stops positioning once the rows are reordered', () => {
+  it('keeps drawing after a reorder a rotation produces', () => {
     const display = treedDisplay()
-    display.setRowOrder([
-      { name: 'mm10' },
-      { name: 'hg38' },
-      { name: 'panTro4' },
-    ])
+    reorder(display, ['mm10', 'hg38', 'panTro4'])
+
+    expect(display.rowTree).toBe(TREE)
+    expect(display.hierarchy).toBeDefined()
+    expect(rowNames(display)).toEqual(['mm10', 'hg38', 'panTro4'])
+  })
+
+  it('rotates towards a partial order written in the session', () => {
+    const display = treedDisplay()
+    reorder(display, ['panTro4'])
+
+    expect(display.rowDomain).toEqual(['panTro4'])
+    expect(display.hierarchy).toBeDefined()
+    expect(rowNames(display)).toEqual(['panTro4', 'hg38', 'mm10'])
+  })
+
+  it('stops positioning after a reorder no rotation produces', () => {
+    const display = treedDisplay()
+    reorder(display, ['hg38', 'mm10', 'panTro4'])
 
     expect(display.rowTree).toBeUndefined()
     expect(display.hierarchy).toBeUndefined()
-    expect(rowNames(display)).toEqual(['mm10', 'hg38', 'panTro4'])
+    expect(rowNames(display)).toEqual(['hg38', 'mm10', 'panTro4'])
+  })
+
+  it('keeps drawing after a relabel-only dialog submit', () => {
+    const display = treedDisplay()
+    const [hg38, ...rest] = display.editableSources
+    display.applyRowEdits([{ ...hg38!, label: 'Human' }, ...rest])
+
+    expect(display.rowDomain).toEqual(['hg38', 'panTro4', 'mm10'])
+    expect(display.rowTree).toBe(TREE)
+    expect(display.hierarchy).toBeDefined()
+  })
+
+  it('warns of a drop only for an order no rotation produces', () => {
+    const display = treedDisplay()
+
+    expect(
+      display.rowOrderWillDropTree(named(['mm10', 'panTro4', 'hg38'])),
+    ).toBe(false)
+    expect(display.rowOrderWillDropTree(named(['panTro4']))).toBe(false)
+    expect(
+      display.rowOrderWillDropTree(named(['hg38', 'mm10', 'panTro4'])),
+    ).toBe(true)
+  })
+
+  it('draws a run tree over the guide tree, and a reset returns to it', () => {
+    const display = treedDisplay()
+    const runTree = '((hg38,mm10),panTro4);'
+    display.setRowOrder(named(['hg38', 'mm10', 'panTro4']), { tree: runTree })
+
+    expect(display.rowTree).toBe(runTree)
+    expect(display.hierarchy).toBeDefined()
+    expect(rowNames(display)).toEqual(['hg38', 'mm10', 'panTro4'])
+    expect(
+      display.rowOrderWillDropTree(named(['mm10', 'hg38', 'panTro4'])),
+    ).toBe(true)
+
+    display.resetRowArrangement()
+
+    expect(display.rowTree).toBe(TREE)
+    expect(display.hierarchy).toBeDefined()
+    expect(rowNames(display)).toEqual(['hg38', 'panTro4', 'mm10'])
   })
 
   it('restores the worker tree when the arrangement is cleared', () => {
     const display = treedDisplay()
-    display.setRowOrder([
-      { name: 'mm10' },
-      { name: 'hg38' },
-      { name: 'panTro4' },
-    ])
+    reorder(display, ['hg38', 'mm10', 'panTro4'])
 
     display.resetRowArrangement()
 
@@ -133,11 +193,7 @@ describe('the guide tree positions only while it describes the rows', () => {
     display.setRowFocus(['hg38', 'panTro4'])
     expect(rowNames(display)).toEqual(['hg38', 'panTro4'])
 
-    display.setRowOrder([
-      { name: 'panTro4' },
-      { name: 'hg38' },
-      { name: 'mm10' },
-    ])
+    reorder(display, ['panTro4', 'mm10', 'hg38'])
 
     expect(display.rowTree).toBeUndefined()
     expect(display.rowFocus).toEqual(['hg38', 'panTro4'])
@@ -200,14 +256,21 @@ describe('the declared `rows.domain` seeds the row order', () => {
     expect(display.hierarchy).toBeDefined()
   })
 
-  // The rotation is derived from the declared domain every time, never
-  // written into the tree. An order written over it in the session is a
-  // reorder like any other: the rows follow it and the guide tree, which no
-  // longer describes them, hides.
-  it('orders by a session domain and hides the guide tree', () => {
+  // Who wrote the domain does not matter: one written in the session rotates
+  // the tree as a declared one does.
+  it('rotates towards a session domain a rotation lists', () => {
     const display = domainDisplay(['mm10'])
     setConf(display, ['rows', 'domain'], ['panTro4', 'mm10'])
-    expect(rowNames(display)).toEqual(['panTro4', 'mm10', 'hg38'])
+    expect(rowNames(display)).toEqual(['panTro4', 'hg38', 'mm10'])
+    expect(display.rowTree).toBe(TREE)
+    expect(display.hierarchy).toBeDefined()
+  })
+
+  // A declared domain too: the rows follow it, and the guide tree, which
+  // cannot describe them, hides.
+  it('orders by a domain no rotation lists and hides the guide tree', () => {
+    const display = domainDisplay(['hg38', 'mm10', 'panTro4'])
+    expect(rowNames(display)).toEqual(['hg38', 'mm10', 'panTro4'])
     expect(display.rowTree).toBeUndefined()
     expect(display.hierarchy).toBeUndefined()
   })
@@ -330,17 +393,31 @@ describe('rowColor tints a row over the adapter colour', () => {
   })
 })
 
-// A focus saved against rows that have since gone, by a renamed species or
-// another adapter, shows every row rather than none.
-test('a focus naming no current species shows every row', () => {
-  const { display } = createMafTestEnvironment({
-    displayConfig: { rows: { kept: ['rn6'] } },
-  }).createDisplay()
-  display.setSamples({
-    samples: [sample('hg38'), sample('mm10')],
-    treeNewick: undefined,
-    samplesCanonical: true,
+// The rows agree with what the worker ships for the focus (`visibleSamples`).
+describe('a focus naming no current species', () => {
+  function focused(samplesCanonical: boolean) {
+    const { display } = createMafTestEnvironment({
+      displayConfig: { rows: { kept: ['rn6'] } },
+    }).createDisplay()
+    display.setSamples({
+      samples: [sample('hg38'), sample('mm10')],
+      treeNewick: undefined,
+      samplesCanonical,
+    })
+    return display
+  }
+
+  // Saved against rows that have since gone, by a renamed species or another
+  // adapter.
+  it('shows every row on a track that lists its species', () => {
+    const display = focused(true)
+    expect(rowNames(display)).toEqual(['hg38', 'mm10'])
+    expect(display.subtreeFilterSet).toEqual(['rn6'])
   })
-  expect(rowNames(display)).toEqual(['hg38', 'mm10'])
-  expect(display.subtreeFilterSet).toEqual(['rn6'])
+
+  it('shows no row on a track that discovers its species', () => {
+    const display = focused(false)
+    expect(rowNames(display)).toEqual([])
+    expect(display.subtreeFilterSet).toEqual(['rn6'])
+  })
 })

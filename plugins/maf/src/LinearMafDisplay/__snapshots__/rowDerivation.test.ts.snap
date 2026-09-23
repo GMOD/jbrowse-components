@@ -369,6 +369,110 @@ exports[`a dialog recolour over an adapter colour, in place 1`] = `
 }
 `;
 
+exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel and a recolour, and a reset returns 1`] = `
+{
+  "editableSources": [
+    {
+      "label": "House mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": "#123456",
+      "name": "panTro4",
+    },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowTree": "((hg38,panTro4),mm10);",
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "House mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": "#123456",
+      "name": "panTro4",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": true,
+  "treeLeaves": [
+    "mm10",
+    "hg38",
+    "panTro4",
+  ],
+}
+`;
+
+exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel and a recolour, and a reset returns 2`] = `
+{
+  "editableSources": [
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowTree": "((hg38,panTro4),mm10);",
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": true,
+  "treeLeaves": [
+    "hg38",
+    "panTro4",
+    "mm10",
+  ],
+}
+`;
+
 exports[`a discovered row joins after a reorder 1`] = `
 {
   "editableSources": [
@@ -686,14 +790,9 @@ exports[`a focused cluster run keeps the hidden row after the clade 2`] = `
 }
 `;
 
-exports[`a reorder drops the supplied tree and a reset restores it 1`] = `
+exports[`a reorder no rotation of the supplied tree produces drops it, and a reset restores it 1`] = `
 {
   "editableSources": [
-    {
-      "label": "Chimp",
-      "labelColor": undefined,
-      "name": "panTro4",
-    },
     {
       "label": "Human",
       "labelColor": "#aa0000",
@@ -703,6 +802,11 @@ exports[`a reorder drops the supplied tree and a reset restores it 1`] = `
       "label": "Mouse",
       "labelColor": "#0000aa",
       "name": "mm10",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
     },
   ],
   "rowArrangementIsCustom": true,
@@ -713,11 +817,6 @@ exports[`a reorder drops the supplied tree and a reset restores it 1`] = `
   },
   "sources": [
     {
-      "label": "Chimp",
-      "labelColor": undefined,
-      "name": "panTro4",
-    },
-    {
       "label": "Human",
       "labelColor": "#aa0000",
       "name": "hg38",
@@ -727,6 +826,11 @@ exports[`a reorder drops the supplied tree and a reset restores it 1`] = `
       "labelColor": "#0000aa",
       "name": "mm10",
     },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
   ],
   "subtreeFilterSet": undefined,
   "treeDrawn": false,
@@ -734,7 +838,7 @@ exports[`a reorder drops the supplied tree and a reset restores it 1`] = `
 }
 `;
 
-exports[`a reorder drops the supplied tree and a reset restores it 2`] = `
+exports[`a reorder no rotation of the supplied tree produces drops it, and a reset restores it 2`] = `
 {
   "editableSources": [
     {
@@ -883,106 +987,6 @@ exports[`adapter labels and colours are the rows own 1`] = `
   "subtreeFilterSet": undefined,
   "treeDrawn": false,
   "treeLeaves": undefined,
-}
-`;
-
-exports[`dialog edits reorder, relabel and recolour, and a reset returns 1`] = `
-{
-  "editableSources": [
-    {
-      "label": "House mouse",
-      "labelColor": "#0000aa",
-      "name": "mm10",
-    },
-    {
-      "label": "Human",
-      "labelColor": "#aa0000",
-      "name": "hg38",
-    },
-    {
-      "label": "Chimp",
-      "labelColor": "#123456",
-      "name": "panTro4",
-    },
-  ],
-  "rowArrangementIsCustom": true,
-  "rowTree": undefined,
-  "rpcProps": {
-    "annotationDataActive": false,
-    "subtreeFilter": undefined,
-  },
-  "sources": [
-    {
-      "label": "House mouse",
-      "labelColor": "#0000aa",
-      "name": "mm10",
-    },
-    {
-      "label": "Human",
-      "labelColor": "#aa0000",
-      "name": "hg38",
-    },
-    {
-      "label": "Chimp",
-      "labelColor": "#123456",
-      "name": "panTro4",
-    },
-  ],
-  "subtreeFilterSet": undefined,
-  "treeDrawn": false,
-  "treeLeaves": undefined,
-}
-`;
-
-exports[`dialog edits reorder, relabel and recolour, and a reset returns 2`] = `
-{
-  "editableSources": [
-    {
-      "label": "Human",
-      "labelColor": "#aa0000",
-      "name": "hg38",
-    },
-    {
-      "label": "Chimp",
-      "labelColor": undefined,
-      "name": "panTro4",
-    },
-    {
-      "label": "Mouse",
-      "labelColor": "#0000aa",
-      "name": "mm10",
-    },
-  ],
-  "rowArrangementIsCustom": false,
-  "rowTree": "((hg38,panTro4),mm10);",
-  "rpcProps": {
-    "annotationDataActive": false,
-    "subtreeFilter": undefined,
-  },
-  "sources": [
-    {
-      "label": "Human",
-      "labelColor": "#aa0000",
-      "name": "hg38",
-    },
-    {
-      "label": "Chimp",
-      "labelColor": undefined,
-      "name": "panTro4",
-    },
-    {
-      "label": "Mouse",
-      "labelColor": "#0000aa",
-      "name": "mm10",
-    },
-  ],
-  "subtreeFilterSet": undefined,
-  "treeDrawn": true,
-  "treeLeaves": [
-    "hg38",
-    "panTro4",
-    "mm10",
-  ],
 }
 `;
 

@@ -422,14 +422,14 @@ the replacement.
 
 The MAF display keeps its arrangement in `rows` with no `field`, since its rows
 are the species, as on the multi-sample variant displays. The adapter's guide
-tree stays the adapter's: it draws while `rows.domain` is the order the config
-declares, a reorder hides it and **Reset row order** brings it back, and a
-clustering run's tree in `rows.tree` replaces it. `rowColor: { domain, range }`
-pairs species with the label tint a reader set, over the adapter's
-`samples[].color`.
+tree stays the adapter's: it draws while some rotation of it lists the species
+in `rows.domain`'s order, so a reorder that splits a clade hides it and **Reset
+row order** brings it back, and a clustering run's tree in `rows.tree` replaces
+it. `rowColor: { domain, range }` pairs species with the label tint a reader
+set, over the adapter's `samples[].color`.
 
 <!-- prettier-ignore -->
-| v4 | v5 display config |
+| earlier v5 | v5 |
 | --- | --- |
 | `domain` config slot | `rows.domain` |
 | `layout` display prop, the rows in order with any label and color set on each | `rows.domain`, `rows.labels` and `rowColor` |

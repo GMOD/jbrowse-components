@@ -88,7 +88,7 @@ function liveArrangement(self: object): Arrangement {
  * declared row no loaded region holds yet keeps its place behind the rows on
  * screen.
  */
-function orderOver(
+export function orderOver(
   current: readonly string[],
   rows: readonly { name: string }[],
 ): string[] {

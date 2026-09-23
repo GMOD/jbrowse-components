@@ -134,7 +134,7 @@ before it is asked.
    ~~wiggle~~ (ADR-157), ~~the variant displays~~ (the hard case: two-point
    expansion, bands, tint; ADR-157), ~~multi-row~~ (ADR-157; `rowColor` holds
    `sampleColorMap` and the dialog's colours as one map), ~~MAF~~ (ADR-157; the
-   guide tree stays data, drawn while `rows.domain` is the declared order).
+   guide tree stays data, drawn while some rotation of it lists `rows.domain`).
    `rows` replaces `layout`, `clusterTree`, `clusterProvenance` and
    `subtreeFilter`; `facet.hidden` replaces the volatile hide-set. ~~The
    changes table's array summary~~ (`86cadb9f94`). About 7–11 days.

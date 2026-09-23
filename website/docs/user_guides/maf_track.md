@@ -210,14 +210,14 @@ track is configured with a Newick guide tree.
 - **Edit row arrangement...** reorders, relabels and recolours rows. The
   display's [`rows`](/docs/config/linearmafdisplay/#slot-rows) setting holds the
   arrangement, so it survives unticking the track and an undo takes it back. Its
-  `domain` states the order in the config: with a guide tree it rotates the tree
-  rather than overruling it, each node putting the clade holding the earliest
-  listed species first, so a listed species comes as early as the topology
-  allows and brings its relatives with it. The dendrogram keeps drawing, because
-  it is the same tree turned — `["mm10"]` on `((hg38,panTro4),mm10)` draws
-  mouse's branch at the top. With no guide tree the listed species simply lead.
-  A reorder moves the rows off the guide tree's leaves, so the tree hides until
-  **Reset row order** brings it back.
+  `domain` is the order: with a guide tree it rotates the tree rather than
+  overruling it, each node putting the clade holding the earliest listed species
+  first, so a listed species comes as early as the topology allows and brings
+  its relatives with it — `["mm10"]` on `((hg38,panTro4),mm10)` draws mouse's
+  branch at the top. With no guide tree the listed species simply lead. The tree
+  draws while some rotation of it lists the species in `domain`'s order, so a
+  reorder that splits a clade hides it until **Reset row order** brings it back,
+  and one that only turns a clade keeps it.
 - **Row height** offers squeeze-to-fit, normal, compact, and custom row heights.
 
 ### Selecting a subtree
@@ -226,8 +226,10 @@ Click an internal node of the tree to filter the track to that clade, or pick a
 set of species from **Edit row arrangement...**. The tree then redraws as the
 pruned dendrogram of the kept species, so it matches the visible rows, including
 for a selection that is not a single clade. **Clustering → Clear subtree
-filter** restores all species. The focus is `rows.kept`, and one naming no
-species the track has shows every row.
+filter** restores all species. The focus is `rows.kept`. On a track whose
+species come from a `samples` array or a Newick tree, a focus naming none of
+them shows every row; on one that finds its species in the alignment blocks, it
+shows only the species it names, so none where the alignment holds none of them.
 
 ### Clustering rows by identity
 

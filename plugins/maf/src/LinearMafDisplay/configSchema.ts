@@ -144,11 +144,12 @@ export default function configSchemaF() {
       /**
        * #slot rows
        * The arrangement a reader gives the species rows, each member by row
-       * name. `domain` is the row order: under a guide tree it rotates the
-       * tree so the species listed come as early as its topology allows, the
-       * way ggtree's rotate turns a clade, and the dendrogram keeps drawing;
-       * with no tree the species listed lead and the rest keep the order the
-       * adapter reported them in. `labels`, `tree`, `treeProvenance` and
+       * name. `domain` is the row order: while some rotation of the adapter's
+       * guide tree lists its species in that order, the tree turns to it, the
+       * way ggtree's rotate turns a clade, and keeps drawing with each listed
+       * species as early as the topology allows; otherwise, or with no tree,
+       * the species listed lead and the rest keep the order the adapter
+       * reported them in. `labels`, `tree`, `treeProvenance` and
        * `kept` are what the arrangement dialog, a clustering run and a focus
        * write, each as a session edit to this object. The adapter's guide tree
        * is never written here.

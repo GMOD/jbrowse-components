@@ -115,10 +115,10 @@ test('a declared order leads with no tree', () => {
   expect(derived(loaded({ domain: ['mm10', 'panTro4'] }))).toMatchSnapshot()
 })
 
-test('a reorder drops the supplied tree and a reset restores it', () => {
+test('a reorder no rotation of the supplied tree produces drops it, and a reset restores it', () => {
   const display = loaded({ tree: true, domain: ['mm10'] })
   const [mm10, hg38, panTro4] = display.editableSources
-  display.setRowOrder([panTro4!, hg38!, mm10!])
+  display.setRowOrder([hg38!, mm10!, panTro4!])
   expect(derived(display)).toMatchSnapshot()
   display.resetRowArrangement()
   expect(derived(display)).toMatchSnapshot()
@@ -178,7 +178,7 @@ test('hiding the reference row prunes it from the rows and the tree', () => {
   expect(derived(display)).toMatchSnapshot()
 })
 
-test('dialog edits reorder, relabel and recolour, and a reset returns', () => {
+test('a dialog reorder to a rotation keeps the supplied tree beside a relabel and a recolour, and a reset returns', () => {
   const display = loaded({ tree: true })
   const [hg38, panTro4, mm10] = display.editableSources
   display.applyRowEdits([

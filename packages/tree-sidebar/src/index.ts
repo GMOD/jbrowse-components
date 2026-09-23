@@ -83,7 +83,11 @@ export type { RpcMethodCaller } from './rpcMethodCaller.ts'
 export { default as ClusterModeSelector } from './ClusterModeSelector.tsx'
 export { default as ClusterProgress } from './ClusterProgress.tsx'
 export { useClusterRun } from './useClusterRun.ts'
-export { TreeSidebarMixin, baseDisplayConfig } from './TreeSidebarMixin.ts'
+export {
+  TreeSidebarMixin,
+  baseDisplayConfig,
+  orderOver,
+} from './TreeSidebarMixin.ts'
 export { rowEdits } from './rowEdits.ts'
 export type { RowEdit } from './rowEdits.ts'
 export { LayoutTreeSidebarMixin } from './LayoutTreeSidebarMixin.ts'

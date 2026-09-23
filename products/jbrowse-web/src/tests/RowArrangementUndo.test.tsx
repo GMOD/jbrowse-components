@@ -181,8 +181,9 @@ interface MafDisplay extends MultiRowDisplay {
 }
 
 // The same on the MAF display, whose rows are species and whose adapter
-// supplies a guide tree: a reorder hides that tree, and the undo that returns
-// the declared order brings it back.
+// supplies a guide tree: a reorder that parts the sister leaves volvox and
+// simvolvox, which no rotation of the tree does, hides it, and the undo that
+// returns the declared order brings it back.
 test('a MAF reorder lands in the session at once and undoes', async () => {
   const MAF = 'volvox_maf'
   const { view, session, rootModel, findByTestId } = await createView(
@@ -201,14 +202,14 @@ test('a MAF reorder lands in the session at once and undoes', async () => {
   const { displayId } = display.configuration
   const stepsBefore = history.undoIdx
   const before = display.sources.map(s => s.name)
-  const reversed = [...before].reverse()
+  const parted = [...before.filter(name => name !== 'simvolvox'), 'simvolvox']
 
-  display.setRowOrder(reversed.map(name => ({ name })))
+  display.setRowOrder(parted.map(name => ({ name })))
 
   expect(rowsDomainInDelta(session.trackConfigDeltas[MAF], displayId)).toEqual(
-    reversed,
+    parted,
   )
-  expect(display.sources.map(s => s.name)).toEqual(reversed)
+  expect(display.sources.map(s => s.name)).toEqual(parted)
   expect(display.rowTree).toBeUndefined()
 
   await sleep(350)

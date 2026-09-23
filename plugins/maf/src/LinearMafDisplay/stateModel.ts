@@ -40,9 +40,12 @@ import {
   applySubtreeFilter,
   baseDisplayConfig,
   buildSpatialIndex,
+  buildTree,
   computeClusterHierarchy,
+  filterRowsBySubtree,
   getLeafNames,
   keptRows,
+  orderOver,
   orderRowsByDomain,
   resetRowOrderMenuItems,
   rowEdits,
@@ -227,6 +230,25 @@ function editedSource(
 }
 
 /**
+ * Whether the names of `order` that `leaves` holds appear in `leaves`' order.
+ */
+function listsInOrder(leaves: readonly string[], order: readonly string[]) {
+  const position = new Map(leaves.map((name, i) => [name, i]))
+  let last = -1
+  for (const name of order) {
+    const at = position.get(name)
+    if (at !== undefined) {
+      if (at < last) {
+        return false
+      }
+      last = at
+      position.delete(name)
+    }
+  }
+  return true
+}
+
+/**
  * #stateModel LinearMafDisplay
  * #displayFoundation MultiRegionDisplayMixin
  *
@@ -307,10 +329,16 @@ export default function stateModelFactory(
         sourcesVolatile: [] as MafSource[],
         /**
          * #volatile
-         * The adapter's guide tree as newick, which `rowTree` draws while the
-         * row order is the declared one.
+         * The adapter's guide tree as newick, which `rowTree` draws while some
+         * rotation of it lists `rows.domain` in order.
          */
         treeNewickVolatile: undefined as string | undefined,
+        /**
+         * #volatile
+         * Whether the adapter lists its species, by a `samples` config or its
+         * guide tree, rather than discovering them from the blocks it reads.
+         */
+        speciesListed: false,
         /**
          * #volatile
          * Which sample row the worker resolved as the reference — off the block
@@ -558,6 +586,7 @@ export default function stateModelFactory(
           if (treeNewick !== self.treeNewickVolatile) {
             self.treeNewickVolatile = treeNewick
           }
+          self.speciesListed = samplesCanonical
         },
         /**
          * #action
@@ -756,33 +785,44 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Whether `rows.domain` is the order the config.json declares, an
-         * empty list and an absent one alike: the order the adapter's guide
-         * tree describes.
+         * The adapter's guide tree, parsed and rotated towards `rows.domain`;
+         * undefined when the adapter supplies none.
          */
-        get rowDomainIsDeclared(): boolean {
-          const base = baseDisplayConfig(self).rows as
-            | { domain?: string[] }
-            | undefined
-          return compareStructural(self.rowDomain, base?.domain ?? [])
+        get guideTree() {
+          const newick = self.treeNewickVolatile
+          return newick ? buildTree(newick, self.rowDomain) : undefined
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * Whether the rotated guide tree lists `rows.domain`'s species in
+         * `rows.domain`'s order, which holds exactly when some rotation of it
+         * does.
+         */
+        get guideTreeHonoursDomain(): boolean {
+          const { guideTree } = self
+          return (
+            !!guideTree && listsInOrder(getLeafNames(guideTree), self.rowDomain)
+          )
         },
       }))
       .views(self => ({
         /**
          * #getter
          * The tree the rows are arranged by: a clustering run's, `rows.tree`,
-         * else the adapter's guide tree while the row order is the declared
-         * one. A reorder writes `rows.domain`, so the guide tree hides once
-         * its leaves stop describing the rows, and a reset brings it back.
+         * else the adapter's guide tree while some rotation of it lists
+         * `rows.domain`'s species in that order. A reorder no rotation
+         * produces hides it, and a reset brings it back.
          *
-         * The guide tree is never written to `rows.tree`: the adapter supplies
-         * it on every load, so a stored copy would go stale behind an edited
+         * The guide tree never enters `rows.tree`: the adapter re-supplies it
+         * on every load, so a stored copy would go stale behind an edited
          * `.nh`.
          */
         get rowTree(): string | undefined {
           return (
             getConf(self, ['rows', 'tree']) ??
-            (self.rowDomainIsDeclared ? self.treeNewickVolatile : undefined)
+            (self.guideTreeHonoursDomain ? self.treeNewickVolatile : undefined)
           )
         },
         /**
@@ -797,6 +837,44 @@ export default function stateModelFactory(
           )
         },
       }))
+      .views(self => {
+        const { rowOrderWillDropTree: superRowOrderWillDropTree } = self
+        return {
+          /**
+           * #getter
+           * `TreeSidebarMixin`'s parse of `rowTree`, reusing `guideTree` for
+           * the guide tree rather than parsing its newick twice.
+           */
+          get parsedTree() {
+            const runTree: string | undefined = getConf(self, ['rows', 'tree'])
+            if (runTree) {
+              return buildTree(
+                runTree,
+                self.rowTreeProvenance ? [] : self.rowDomain,
+              )
+            }
+            return self.guideTreeHonoursDomain ? self.guideTree : undefined
+          },
+          /**
+           * #method
+           * Whether writing `next` as the row order hides the drawn tree: the
+           * mixin's answer for a run's tree, and for the guide tree whether no
+           * rotation of it lists the order `setRowOrder` would write.
+           */
+          rowOrderWillDropTree(next: readonly { name: string }[]) {
+            const newick = self.treeNewickVolatile
+            if (
+              getConf(self, ['rows', 'tree']) ||
+              !newick ||
+              !self.guideTreeHonoursDomain
+            ) {
+              return superRowOrderWillDropTree(next)
+            }
+            const order = orderOver(self.rowDomain, next)
+            return !listsInOrder(getLeafNames(buildTree(newick, order)), order)
+          },
+        }
+      })
       .views(self => ({
         /**
          * #getter
@@ -871,27 +949,26 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The display rows: `editableSources` narrowed to the focus
-         * (`keptRows`, so a focus naming no current row shows every row), and
-         * to the reference row when `showReferenceRow` is off.
+         * The display rows: `editableSources` narrowed to the focus, and to
+         * the reference row when `showReferenceRow` is off. The focus narrows
+         * as the worker's `visibleSamples` does: on a track that lists its
+         * species, a focus naming none of them shows every row (`keptRows`);
+         * on one that discovers them it applies as given, so a focus naming no
+         * species the blocks hold draws no rows.
          *
-         * Both narrowings are hide-only and both are here rather than at the
-         * fetch: the reference row is what the *other* rows' mismatches are
-         * scored against (the worker's `refSeqBytes`, the coverage and
-         * conservation bands), so it has to be read whether or not it is drawn.
+         * The reference row hides here rather than at the fetch, since the
+         * other rows' mismatches and the coverage and conservation bands are
+         * scored against it.
          *
-         * **Resolved — an array, never `undefined`**, the shared spelling across
-         * the row displays. The two consumers that used to read the absent case
-         * were both asking "has the species list arrived", which is
-         * `sourcesKnown`; everything else already collapsed it with `?.length`
-         * or `?? 0`. An empty array reaches here two ways that must stay
-         * indistinguishable to a *renderer* — no fetch yet, and a focus on the
-         * reference row alone while it is hidden — which is exactly why the
-         * readiness question needs its own name rather than a truthiness test
-         * on this.
+         * An array, never `undefined`: an empty one means either no fetch yet
+         * or a focus that leaves no row to draw, and `sourcesKnown` tells them
+         * apart.
          */
         get sources(): MafSource[] {
-          const rows = keptRows(self.editableSources, self.rowFocus)
+          const { editableSources, rowFocus } = self
+          const rows = self.speciesListed
+            ? keptRows(editableSources, rowFocus)
+            : filterRowsBySubtree(editableSources, rowFocus)
           const refSrc = self.referenceSampleId
           return self.showReferenceRow
             ? rows
@@ -918,9 +995,8 @@ export default function stateModelFactory(
          * sent and the key they are cached under cannot drift apart.
          *
          * Config alone, never the samples a fetch reports, so the key cannot
-         * move when a fetch lands. A focus naming no sample the worker knows is
-         * resolved to every row there (`visibleSamples`), as `keptRows` resolves
-         * it here for drawing.
+         * move when a fetch lands. The worker narrows by it the way `sources`
+         * does (`visibleSamples`).
          *
          * Sorted because the key is a JSON string while the worker consumes the
          * value as `new Set(...)` and places rows by species name — so order is
