@@ -1,17 +1,17 @@
 # Session mixins
 
-A non-admin's edits to an admin config track are stored in `trackConfigDeltas`
-as a **delta** against the base, not a full same-id shadow — so a later admin
-change to an untouched field still flows through. `sessionTracks` holds only
-genuinely user-added tracks.
+Edits to a config track are stored in `trackConfigDeltas` as a **delta** against
+the base, not a full same-id shadow — so a later change to an untouched field of
+the base still flows through. An admin's edits are deltas too, and reach
+`jbrowse.tracks` only through `promoteTrackConfigDeltas` (ADR-032).
+`sessionTracks` holds only genuinely user-added tracks.
 
 - A base entry with no delta is returned **unchanged by identity**, and merged
   objects are memoized per (base, delta), so the config hydration cache stays
   warm.
-- **An admin edit drops the track's delta.** Deltas ride along in a shared
-  session, so an admin can open a non-admin's session and edit the very tracks
-  it overrides; left in place the delta merges back over the new base and the
-  admin's edit silently reverts. Canary: `UpdateTrackConfiguration.test.ts`.
+- **A promote merges the delta into the base and drops it**, so an admin who
+  opens a non-admin's shared session and edits a track it overrides extends that
+  delta rather than fighting it. Canary: `UpdateTrackConfiguration.test.ts`.
 - A save that nets no change isn't stored, so editing a slot back to its base
   value is an implicit reset. **Unsetting a slot the base sets is a change**:
   the delta records it as a `null` (ADR-146), which survives a reload and a

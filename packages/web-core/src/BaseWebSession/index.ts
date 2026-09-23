@@ -122,20 +122,6 @@ export function BaseWebSessionModel({
       },
 
       /**
-       * #method
-       * whether `trackId` has a non-admin config override (a delta stored in
-       * trackConfigDeltas against an admin-owned config track, see
-       * updateTrackConfiguration), rather than a standalone user-added session
-       * track. Drives the "Reset track settings" menu swap and the edited badge.
-       */
-      isTrackOverride(trackId: string): boolean {
-        // real changed slots, not merely `trackId in trackConfigDeltas`: a delta
-        // can hold only content-free display stubs (see getTrackConfigChanges /
-        // flattenTrackConfigDelta), which must not read as an override
-        return self.getTrackConfigChanges(trackId).length > 0
-      },
-
-      /**
        * #getter
        */
       get shareURL() {

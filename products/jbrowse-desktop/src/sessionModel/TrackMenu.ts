@@ -24,10 +24,12 @@ import type { TrackActionView } from '@jbrowse/core/util/types'
 import type {
   BaseSession,
   SessionWithDrawerWidgets,
-  SessionWithTracks,
+  SessionWithSessionTracks,
 } from '@jbrowse/product-core'
 
-type SessionBase = BaseSession & SessionWithTracks & SessionWithDrawerWidgets
+type SessionBase = BaseSession &
+  SessionWithSessionTracks &
+  SessionWithDrawerWidgets
 
 /**
  * #stateModel DesktopSessionTrackMenuMixin
@@ -56,6 +58,7 @@ export function DesktopSessionTrackMenuMixin(pluginManager: PluginManager) {
             view,
             // desktop is always admin; copies go to the top level
             canEdit: true,
+            isSessionOverride: session.isTrackOverride(trackConfig.trackId),
             makeCopy: () =>
               copyTrackSnapshot(trackConfig, { clearCategory: true }),
           }),

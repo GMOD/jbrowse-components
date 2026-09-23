@@ -86,12 +86,15 @@ gymnastics. The mechanism:
   next edit re-diffed the stale copy and reinstated the undone change.
 - **Reset reverts the working copy in place** (`applySnapshot(node, base)`),
   keeping node identity so open views just re-render.
-- **Admin is unchanged.** `getEditableTrackConfig` returns undefined in admin
-  mode, so the resolver falls through to the frozen hydration cache (ADR-031);
-  admin edits the frozen entry in place, replacing its identity. The embedded
-  single-view products held their catalog as MST nodes, edited in place and
-  never persisted to the session, until their catalog went frozen too; they are
-  non-admin, so they take the working-copy path above.
+- ~~**Admin is unchanged.**~~ **Amended 2026-09-23: admin takes the same
+  path.** An admin's edit is a delta in the session like anyone's, and Desktop,
+  which is always admin, composes the session-tracks mixin to hold them. The
+  base changes only through `promoteTrackConfigDeltas` (Web's **Admin → Save
+  track settings to config**). The direct write put admin and Desktop edits
+  outside undo and reset, and on an admin server published every display tweak
+  to every visitor as it happened, which a row arrangement written to config
+  would have made routine. The embedded single-view products are non-admin and
+  took this path already.
 
 Because the base is never dirtied, `PluginManager.invalidateTrackConfigHydration`
 and the `writeDelta` re-pin were **deleted**, and the outer

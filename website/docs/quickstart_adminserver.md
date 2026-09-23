@@ -99,7 +99,9 @@ Provide a URL or select a local file. Supported formats and index types:
 
 In a Linear Genome View, click "Select tracks". Each track's three-dot (...)
 menu has a "Settings" button that opens the configuration editor. Edits apply
-live and, through the admin-server, persist to the config file.
+live and are held in your session, where undo and **Reset track settings** reach
+them. **Admin → Save track settings to config** writes them into the config file
+every visitor is served.
 
 ## Setting a default session
 

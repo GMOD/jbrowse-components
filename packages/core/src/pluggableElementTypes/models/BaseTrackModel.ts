@@ -391,13 +391,12 @@ export function createBaseTrackModel(
        *
        * `equals: compareStructural` is load-bearing, not an optimization:
        * `self.configuration` is a re-resolving reference, and persisting a save
-       * swaps the resolved node identity (admin `updateTrackConf` replaces the
-       * frozen `jbrowse.tracks` entry, rehydrating a brand-new MST node; the
-       * non-admin path reconciles in place but still churns once). Referential
-       * comparison would treat every such swap as a fresh change and re-fire the
-       * save, which for the admin/desktop path (new node every write) is an
-       * unbounded debounced loop. Structural comparison settles once the content
-       * stops changing.
+       * can swap the resolved node identity (the delta path reconciles in place
+       * but still churns once, and a session without deltas replaces the frozen
+       * `jbrowse.tracks` entry, rehydrating a brand-new MST node every write).
+       * Referential comparison would treat every such swap as a fresh change
+       * and re-fire the save, an unbounded debounced loop. Structural
+       * comparison settles once the content stops changing.
        */
       afterAttach() {
         let timeout: ReturnType<typeof setTimeout> | undefined

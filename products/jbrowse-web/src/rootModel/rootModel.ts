@@ -516,6 +516,17 @@ export default function RootModel({
                   label: 'Admin',
                   menuItems: () => [
                     {
+                      label: 'Save track settings to config',
+                      helpText:
+                        'Write the track settings edited in this session into the config.json every visitor is served',
+                      disabled: !Object.keys(
+                        self.session?.trackConfigDeltas ?? {},
+                      ).length,
+                      onClick: () => {
+                        self.session?.promoteTrackConfigDeltas()
+                      },
+                    },
+                    {
                       label: 'Set default session',
                       onClick: () => {
                         self.session?.queueDialog((onClose: () => void) => [

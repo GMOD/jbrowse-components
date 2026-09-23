@@ -226,10 +226,11 @@ has a filter box, so it is how to look up what one contig is called elsewhere.
 
 ## Editing track configs
 
-**Track actions → Settings** in the track menu edits any track's settings. For
-non-admin users, edits are saved as a "session track" override that shadows the
-original, so they persist and share with the session without touching the
-admin-owned track. In admin mode, edits change the track config in place.
+**Track actions → Settings** in the track menu edits any track's settings. Edits
+are saved in the session as an override of the track's config, so they persist,
+share with the session and undo without touching the config file everyone else
+is served. An admin can write them into that file with **Admin → Save track
+settings to config**.
 
 <Figure caption="Opening Settings from the track menu's Track actions submenu to edit any track's configuration directly." src="/img/edit_track_settings.png" />
 

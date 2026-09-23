@@ -9,8 +9,8 @@ import {
   MultipleViewsSessionMixin,
   PreferencesSessionMixin,
   ReferenceManagementSessionMixin,
+  SessionTracksManagerSessionMixin,
   ThemeManagerSessionMixin,
-  TracksManagerSessionMixin,
   finalizeSession,
 } from '@jbrowse/product-core'
 
@@ -41,7 +41,7 @@ export default function sessionModelFactory({
     ReferenceManagementSessionMixin(pluginManager),
     ConnectionManagementSessionMixin(pluginManager),
     ThemeManagerSessionMixin(pluginManager),
-    TracksManagerSessionMixin(pluginManager),
+    SessionTracksManagerSessionMixin(pluginManager),
     // nested to stay within types.compose's 10-argument limit
     types.compose(
       MultipleViewsSessionMixin(pluginManager),

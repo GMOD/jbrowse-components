@@ -49,8 +49,9 @@ interface TrackActionSession<C> {
  * The shared Settings / Copy / Copy-and-open / Delete track actions. Each
  * product supplies `makeCopy` (its own session-track/category rules) and
  * `canEdit`; reference sequence tracks can't be copied or deleted. When
- * `isSessionOverride` is set the track is a session edit shadowing an
- * admin-owned config track, so the final action resets it instead of deleting.
+ * `isSessionOverride` is set the track carries session edits over its base
+ * config, so a Reset is offered, and it replaces Delete for a user who cannot
+ * delete the base.
  */
 export function trackActionItems<C extends { trackId: string }>({
   session,
@@ -122,24 +123,29 @@ export function trackActionItems<C extends { trackId: string }>({
         }
       },
     },
-    isSessionOverride
-      ? {
-          // a session edit of an admin-owned track: the underlying config track
-          // can't be deleted, so offer to discard the edits instead
-          label: 'Reset track settings',
-          icon: SettingsBackupRestoreIcon,
-          onClick: () => {
-            session.resetTrackConfiguration?.(config.trackId)
+    ...(isSessionOverride
+      ? [
+          {
+            label: 'Reset track settings',
+            icon: SettingsBackupRestoreIcon,
+            onClick: () => {
+              session.resetTrackConfiguration?.(config.trackId)
+            },
           },
-        }
-      : {
-          label: 'Delete track',
-          icon: DeleteIcon,
-          disabled: !canEdit || isRefSeq,
-          onClick: () => {
-            session.deleteTrackConf(config)
+        ]
+      : []),
+    ...(isSessionOverride && !canEdit
+      ? []
+      : [
+          {
+            label: 'Delete track',
+            icon: DeleteIcon,
+            disabled: !canEdit || isRefSeq,
+            onClick: () => {
+              session.deleteTrackConf(config)
+            },
           },
-        },
+        ]),
   ]
 }
 

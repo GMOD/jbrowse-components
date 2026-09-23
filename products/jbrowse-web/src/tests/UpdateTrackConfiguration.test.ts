@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { reaction } from 'mobx'
 
 import { doBeforeEach, getPluginManager } from './util.tsx'
 
@@ -27,6 +28,7 @@ interface TestSession {
   trackConfigDeltas: Record<string, PlainConfig>
   updateTrackConfiguration: (snap: PlainConfig) => void
   resetTrackConfiguration: (trackId: string) => void
+  promoteTrackConfigDeltas: (trackId?: string) => void
   isTrackOverride: (trackId: string) => boolean
   getTrackActions: (config: AnyConfigurationModel) => { label?: string }[]
   addSessionTrackConf: (conf: PlainConfig) => AnyConfigurationModel | undefined
@@ -97,16 +99,45 @@ test('an admin change to an untouched field flows through the delta', async () =
   expect(readConfObject(resolved, 'category')).toEqual(['Corrected'])
 })
 
-test('admin edits update the jbrowse config in place, no delta', async () => {
+// An admin server writes jbrowse.tracks back into the config.json every
+// visitor is served, so an admin's edit is held in the session like anyone's,
+// where undo, reset and a share link reach it, until it is promoted.
+test("an admin's edit is a delta until promoted to the config", async () => {
   const { rootModel } = await getPluginManager(undefined, true)
   const session = rootModel.session as unknown as TestSession
+  const baseName = session.jbrowse.tracks.find(
+    t => t.trackId === TRACK_ID,
+  )!.name
 
   session.updateTrackConfiguration(editedSnapshot(session))
 
   expect(session.sessionTracks).toHaveLength(0)
-  expect(session.trackConfigDeltas).toEqual({})
+  expect(session.trackConfigDeltas[TRACK_ID]).toBeDefined()
+  expect(session.jbrowse.tracks.find(t => t.trackId === TRACK_ID)!.name).toBe(
+    baseName,
+  )
   const resolved = session.tracks.find(t => t.trackId === TRACK_ID)!
   expect(readConfObject(resolved, 'name')).toBe('Edited name')
+
+  session.promoteTrackConfigDeltas()
+
+  expect(session.trackConfigDeltas[TRACK_ID]).toBeUndefined()
+  expect(session.jbrowse.tracks.find(t => t.trackId === TRACK_ID)!.name).toBe(
+    'Edited name',
+  )
+  const promoted = session.tracks.find(t => t.trackId === TRACK_ID)!
+  expect(readConfObject(promoted, 'name')).toBe('Edited name')
+})
+
+test('only an admin can promote track edits to the config', async () => {
+  const { rootModel } = await getPluginManager(undefined, false)
+  const session = rootModel.session as unknown as TestSession
+  session.updateTrackConfiguration(editedSnapshot(session))
+
+  expect(() => {
+    session.promoteTrackConfigDeltas()
+  }).toThrow(/only an admin/)
+  expect(session.trackConfigDeltas[TRACK_ID]).toBeDefined()
 })
 
 test('a non-admin delta survives session export + reload (shareable)', async () => {
@@ -152,10 +183,9 @@ test('a legacy full-override session track migrates to a delta on load', async (
 })
 
 // A non-admin's deltas ride along in a shared session, so an admin can open one
-// and then edit the very tracks it overrides. An admin edit rewrites the base
-// config itself, so it has to supersede the delta -- otherwise the delta merges
-// straight back over the new base and the admin's edit silently reverts.
-test("an admin's edit clears a shared session's delta for that track", async () => {
+// and then edit the very tracks it overrides. The admin's edit extends that
+// delta, and a promote writes the result into the base.
+test("an admin's edit over a shared session's delta promotes to the config", async () => {
   const { rootModel: nonAdminRoot } = await getPluginManager(undefined, false)
   const nonAdmin = nonAdminRoot.session as unknown as TestSession
   nonAdmin.updateTrackConfiguration(editedSnapshot(nonAdmin, 'NonAdminName'))
@@ -170,8 +200,11 @@ test("an admin's edit clears a shared session's delta for that track", async () 
   expect(readConfObject(before, 'name')).toBe('NonAdminName')
 
   session.updateTrackConfiguration(editedSnapshot(session, 'AdminName'))
+  const edited = session.tracks.find(t => t.trackId === TRACK_ID)!
+  expect(readConfObject(edited, 'name')).toBe('AdminName')
 
-  // the admin's edit lands on the base config and actually takes effect
+  session.promoteTrackConfigDeltas(TRACK_ID)
+
   expect(session.jbrowse.tracks.find(t => t.trackId === TRACK_ID)!.name).toBe(
     'AdminName',
   )
@@ -210,6 +243,18 @@ test('isTrackOverride distinguishes a delta from a plain config track', async ()
   expect(session.isTrackOverride(TRACK_ID)).toBe(true)
 })
 
+test("an admin's override offers Reset beside Delete", async () => {
+  const { rootModel } = await getPluginManager(undefined, true)
+  const session = rootModel.session as unknown as TestSession
+
+  session.updateTrackConfiguration(editedSnapshot(session))
+
+  const override = session.tracks.find(t => t.trackId === TRACK_ID)!
+  const labels = session.getTrackActions(override).map(i => i.label)
+  expect(labels).toContain('Reset track settings')
+  expect(labels).toContain('Delete track')
+})
+
 test('track menu offers Reset for an override, Delete otherwise', async () => {
   const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
@@ -229,10 +274,9 @@ test('track menu offers Reset for an override, Delete otherwise', async () => {
 
 test('a live setSlot edit persists exactly once and does not loop (admin)', async () => {
   // Regression: BaseTrackModel's debounced save watches the re-resolving
-  // `self.configuration` reference. Admin `updateTrackConf` replaces the frozen
-  // jbrowse.tracks entry and rehydrates a new MST node on every write, so a
-  // referential-equality reaction would re-fire forever. Structural comparison
-  // must settle it.
+  // `self.configuration` reference, whose node identity a persisted save can
+  // swap, so a referential-equality reaction would re-fire forever. Structural
+  // comparison must settle it, and an admin's save must not reach the base.
   jest.useFakeTimers()
   try {
     const { rootModel } = await getPluginManager(undefined, true)
@@ -242,14 +286,23 @@ test('a live setSlot edit persists exactly once and does not loop (admin)', asyn
     const track = session.views[0].tracks.find(
       (t: any) => t.configuration.trackId === TRACK_ID,
     )
-    const spy = jest.spyOn(session.jbrowse, 'updateTrackConf')
+    const baseWrites = jest.spyOn(session.jbrowse, 'updateTrackConf')
+    let deltaWrites = 0
+    const dispose = reaction(
+      () => session.trackConfigDeltas,
+      () => {
+        deltaWrites++
+      },
+    )
 
     track.configuration.setSlot('name', 'Edited name')
     for (let i = 0; i < 20; i++) {
       jest.advanceTimersByTime(500)
     }
+    dispose()
 
-    expect(spy).toHaveBeenCalledTimes(1)
+    expect(deltaWrites).toBe(1)
+    expect(baseWrites).not.toHaveBeenCalled()
   } finally {
     jest.useRealTimers()
   }
@@ -521,51 +574,57 @@ test('hiding then re-showing a track keeps its edit (delta is the source of trut
 // The track stayed edited on screen against a session snapshot that said
 // default, and the next edit re-diffed that node and reinstated the undone
 // change. The three tests below pin the two directions and that last half.
-test('an undo that drops the delta drops the working copy with it', async () => {
-  jest.useFakeTimers()
-  try {
-    const { rootModel } = await getPluginManager(undefined, false)
-    const session = rootModel.session as unknown as TestSession
-    const view = session.views[0]!
-    await view.launchTrack(TRACK_ID)
-    const openConfig = () =>
-      view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
-        .configuration as AnyConfigurationModel & {
-        setSlot: (slot: string, value: unknown) => void
+test.each([
+  ['a non-admin', false],
+  ['an admin', true],
+])(
+  '%s: an undo that drops the delta drops the working copy with it',
+  async (_who, admin) => {
+    jest.useFakeTimers()
+    try {
+      const { rootModel } = await getPluginManager(undefined, admin)
+      const session = rootModel.session as unknown as TestSession
+      const view = session.views[0]!
+      await view.launchTrack(TRACK_ID)
+      const openConfig = () =>
+        view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
+          .configuration as AnyConfigurationModel & {
+          setSlot: (slot: string, value: unknown) => void
+        }
+      const originalName = readConfObject(openConfig(), 'name')
+
+      // let showTrack's own patch settle into history first, so the state undo
+      // returns to is "track shown, never edited"
+      jest.advanceTimersByTime(500)
+
+      openConfig().setSlot('name', 'Edited name')
+      jest.advanceTimersByTime(1000)
+      expect(session.trackConfigDeltas[TRACK_ID]).toBeDefined()
+      expect(readConfObject(openConfig(), 'name')).toBe('Edited name')
+      expect(rootModel.history.canUndo).toBe(true)
+
+      rootModel.history.undo()
+
+      // the delta is gone, and so is the edit the working copy was holding
+      expect(session.trackConfigDeltas[TRACK_ID]).toBeUndefined()
+      expect(session.isTrackOverride(TRACK_ID)).toBe(false)
+      expect(readConfObject(openConfig(), 'name')).toBe(originalName)
+      // and what a share link taken now says agrees with what is on screen
+      const snap = getSnapshot(rootModel.session) as {
+        trackConfigDeltas?: Record<string, unknown>
       }
-    const originalName = readConfObject(openConfig(), 'name')
+      expect(snap.trackConfigDeltas).toBeUndefined()
 
-    // let showTrack's own patch settle into history first, so the state undo
-    // returns to is "track shown, never edited"
-    jest.advanceTimersByTime(500)
-
-    openConfig().setSlot('name', 'Edited name')
-    jest.advanceTimersByTime(1000)
-    expect(session.trackConfigDeltas[TRACK_ID]).toBeDefined()
-    expect(readConfObject(openConfig(), 'name')).toBe('Edited name')
-    expect(rootModel.history.canUndo).toBe(true)
-
-    rootModel.history.undo()
-
-    // the delta is gone, and so is the edit the working copy was holding
-    expect(session.trackConfigDeltas[TRACK_ID]).toBeUndefined()
-    expect(session.isTrackOverride(TRACK_ID)).toBe(false)
-    expect(readConfObject(openConfig(), 'name')).toBe(originalName)
-    // and what a share link taken now says agrees with what is on screen
-    const snap = getSnapshot(rootModel.session) as {
-      trackConfigDeltas?: Record<string, unknown>
+      // BaseTrackModel's reaction sees the rebuilt node and re-persists it; that
+      // must not write the undone edit back
+      jest.advanceTimersByTime(1000)
+      expect(session.trackConfigDeltas[TRACK_ID]).toBeUndefined()
+      expect(readConfObject(openConfig(), 'name')).toBe(originalName)
+    } finally {
+      jest.useRealTimers()
     }
-    expect(snap.trackConfigDeltas).toBeUndefined()
-
-    // BaseTrackModel's reaction sees the rebuilt node and re-persists it; that
-    // must not write the undone edit back
-    jest.advanceTimersByTime(1000)
-    expect(session.trackConfigDeltas[TRACK_ID]).toBeUndefined()
-    expect(readConfObject(openConfig(), 'name')).toBe(originalName)
-  } finally {
-    jest.useRealTimers()
-  }
-})
+  },
+)
 
 test('an edit made after an undo does not reinstate the undone one', async () => {
   jest.useFakeTimers()

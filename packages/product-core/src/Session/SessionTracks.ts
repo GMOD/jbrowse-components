@@ -133,11 +133,12 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       ),
       /**
        * #property
-       * Per-track config overrides for a non-admin, keyed by trackId, stored as a
-       * *delta* against the admin-owned base config (jbrowse.tracks entry) rather
-       * than a full copy — so a later admin change to an untouched field still
-       * flows through (see trackConfigDelta.ts). A `null` member resets a slot
-       * the base sets. Frozen (not a typed track array) on purpose: a typed
+       * Per-track config overrides, keyed by trackId, stored as a *delta*
+       * against the base config (jbrowse.tracks entry) rather than a full copy —
+       * so a later change to an untouched field of the base still flows through
+       * (see trackConfigDelta.ts). A `null` member resets a slot the base sets.
+       * An admin's edits land here too, and reach jbrowse.tracks only through
+       * `promoteTrackConfigDeltas`. Frozen (not a typed track array) on purpose: a typed
        * create() would fill defaults, erasing the "unset vs default"
        * distinction the delta merge relies on.
        *
@@ -154,7 +155,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
     })
     .volatile(() => ({
       /**
-       * Per-track private working copies (non-admin), keyed by trackId. A plain
+       * Per-track private working copies, keyed by trackId. A plain
        * Map — not observable, not persisted — mirroring the pluginManager
        * hydration cache: it holds the live MST config node a shown track's
        * in-place quick-edits mutate, so the shared frozen base is never touched.
@@ -240,12 +241,21 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         },
         /**
          * #method
-         * A non-admin's private working copy of a track config, created on first
-         * access from the current frozen (base+delta) value and cached by
-         * trackId, so a shown track's in-place quick-edits (setSlot) mutate this
-         * copy and never the shared frozen base node (see ADR-032). Undefined in
-         * admin mode — there the base jbrowse.tracks entry is edited in place.
-         * Called by TrackConfigurationReference during lazy hydration.
+         * Whether `trackId` carries an edit over its base config, which drives
+         * the "Reset track settings" item and the edited badge. Changed slots,
+         * not mere presence in trackConfigDeltas: a delta can hold only
+         * content-free display stubs, which must not read as an override.
+         */
+        isTrackOverride(trackId: string): boolean {
+          return this.getTrackConfigChanges(trackId).length > 0
+        },
+        /**
+         * #method
+         * A private working copy of a track config, created on first access
+         * from the current frozen (base+delta) value and cached by trackId, so a
+         * shown track's in-place quick-edits (setSlot) mutate this copy and
+         * never the shared frozen base node (see ADR-032). Called by
+         * TrackConfigurationReference during lazy hydration.
          *
          * Cached against the delta it was built from, not by trackId alone. A
          * delta this mixin wrote re-stamps the entry, so the copy an edit is
@@ -260,10 +270,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           trackId: string,
           frozenConfig: unknown,
           schemaType: IAnyType,
-        ): IAnyStateTreeNode | undefined {
-          if (self.adminMode) {
-            return undefined
-          }
+        ): IAnyStateTreeNode {
           const delta = self.trackConfigDeltas[trackId]
           const existing = self.editableTrackConfigs.get(trackId)
           if (existing && existing.delta === delta) {
@@ -494,22 +501,21 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
-         * Persist a non-admin's edited track config as a delta (trackConfigDeltas)
-         * against the admin-owned base — only the changed slots — so the edits
-         * persist and are shared while admin changes to untouched fields still
-         * flow through. A user-added session track (no base) is edited in place.
-         * Everything else (admin edits, opened connection tracks) defers to the
-         * base mixin, which routes connection tracks to connectionTrackConfigs and
-         * the rest to the jbrowse config.
+         * Persist an edited track config as a delta (trackConfigDeltas) against
+         * its base — only the changed slots — so the edits persist, are shared,
+         * undo and reset, while changes to untouched fields of the base still
+         * flow through. An admin's edit is a delta like anyone's: it reaches the
+         * config.json the server hands every visitor only through
+         * `promoteTrackConfigDeltas`. A user-added session track (no base) is
+         * edited in place, and an opened connection track defers to the base
+         * mixin, which routes it to connectionTrackConfigs.
          */
         updateTrackConfiguration(trackConf: PlainTrackConfig) {
           const { trackId } = trackConf
-          const base = self.adminMode
-            ? undefined
-            : baseTracks(self).find(t => t.trackId === trackId)
-          const sessionIdx = self.adminMode
-            ? -1
-            : self.sessionTracks.findIndex(t => t.trackId === trackId)
+          const base = baseTracks(self).find(t => t.trackId === trackId)
+          const sessionIdx = self.sessionTracks.findIndex(
+            t => t.trackId === trackId,
+          )
           if (base) {
             const plainBase = toPlainConfig(base)
             const delta = diffTrackConfig(
@@ -545,17 +551,36 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
               )
             }
           } else {
-            // admin edit, or a track with no admin base / sessionTracks entry
-            // (an opened connection track, or a homeless in-memory-only edit):
-            // the base mixin routes these
+            // a track with no base and no sessionTracks entry: an opened
+            // connection track, or a homeless in-memory-only edit
             superUpdateTrackConfiguration(trackConf)
-            // An admin's edit rewrites the base config itself, so it supersedes
-            // any delta: a shared session authored by a non-admin carries their
-            // deltas, and an admin opening it edits jbrowse.tracks directly. Left
-            // in place, the delta merges straight back over that base in the
-            // `tracks` getter and the admin's own edit silently reverts.
-            if (self.adminMode && trackId in self.trackConfigDeltas) {
-              writeDelta(trackId, undefined)
+          }
+        },
+
+        /**
+         * #action
+         * Write this session's track edits into the base configs — the
+         * config.json an admin server hands every visitor — and drop the
+         * deltas they were held in. One track's, or every track's when
+         * `trackId` is omitted. An admin's alone: anyone else's base is the
+         * in-memory copy of a file they cannot write.
+         */
+        promoteTrackConfigDeltas(trackId?: string) {
+          if (!self.adminMode) {
+            throw new Error('only an admin can save track settings to config')
+          }
+          const ids =
+            trackId === undefined
+              ? Object.keys(self.trackConfigDeltas)
+              : [trackId]
+          for (const id of ids) {
+            const delta = self.trackConfigDeltas[id]
+            const base = baseTracks(self).find(t => t.trackId === id)
+            if (delta && base) {
+              self.jbrowse.updateTrackConf(
+                mergeTrackConfig(toPlainConfig(base), delta),
+              )
+              writeDelta(id, undefined)
             }
           }
         },

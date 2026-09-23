@@ -1,14 +1,9 @@
-// Desktop composes `TracksManagerSessionMixin`, not the session-tracks one, so
-// it has no `sessionTracks` array — and until the destination split it had no
-// `addSessionTrackConf` either. Every feature that had moved onto that action
-// therefore went dark HERE and nowhere else: the guard
-// `isSessionWithAddSessionTrack` simply read false, so the spreadsheet view's
-// imported callset track was skipped, silently and only on desktop.
-//
-// So the mixin defines it too, landing in the config — which on desktop is the
-// one user's own file, saved alongside the session, rather than something a
-// server hands other visitors. A test rather than a comment because the failure
-// is a guard going false, which throws nothing and shows up as a missing track.
+// Until the destination split desktop had no `addSessionTrackConf`, so every
+// feature that had moved onto that action went dark HERE and nowhere else: the
+// guard `isSessionWithAddSessionTrack` simply read false, and the spreadsheet
+// view's imported callset track was skipped, silently and only on desktop. A
+// test rather than a comment because the failure is a guard going false, which
+// throws nothing and shows up as a missing track.
 import PluginManager from '@jbrowse/core/PluginManager'
 import { isSessionWithAddSessionTrack } from '@jbrowse/core/util'
 
@@ -59,9 +54,8 @@ test('addSessionTrackConf lands the track where desktop keeps tracks', () => {
   )
 })
 
-// desktop's destination is the config, whose own adder appends without
-// looking — so a re-add used to leave two entries under one id, the first
-// winning. Same content answers the existing one; different content is refused.
+// A re-add used to leave two entries under one id, the first winning. Same
+// content answers the existing one; different content is refused.
 test('re-adding under a known trackId neither duplicates nor silently keeps the old one', () => {
   const session = createSession()
   session.addSessionTrackConf(CONF)
@@ -93,4 +87,27 @@ test('the deprecated addTrackConf alias dedupes the same way', () => {
       (t: { trackId: string }) => t.trackId === 'derivative-segments-1',
     ),
   ).toHaveLength(1)
+})
+
+// Desktop edits a track the way every session does, as a delta over the file's
+// own config, so undo and "Reset track settings" reach it.
+test('a desktop track edit is a delta that Reset discards', () => {
+  const session = createSession()
+  session.jbrowse.addTrackConf(CONF)
+  const base = session.jbrowse.tracks.find(
+    (t: { trackId: string }) => t.trackId === CONF.trackId,
+  )
+
+  session.updateTrackConfiguration({ ...CONF, name: 'Edited name' })
+
+  expect(session.trackConfigDeltas[CONF.trackId]).toBeDefined()
+  expect(session.isTrackOverride(CONF.trackId)).toBe(true)
+  expect(
+    session.jbrowse.tracks.find(
+      (t: { trackId: string }) => t.trackId === CONF.trackId,
+    ),
+  ).toBe(base)
+
+  session.resetTrackConfiguration(CONF.trackId)
+  expect(session.trackConfigDeltas[CONF.trackId]).toBeUndefined()
 })

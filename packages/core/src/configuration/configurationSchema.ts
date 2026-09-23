@@ -675,11 +675,11 @@ function TrackConfigurationReference(schemaType: IAnyType) {
         throw new Error(`Could not resolve trackId "${id}"`)
       }
       if (!isStateTreeNode(ret)) {
-        // A non-admin session hands back a private, per-track working copy so a
-        // shown track's in-place quick-edits (setSlot) mutate that copy and
-        // never the shared frozen base node (see agent-docs/ADR-032). An admin
-        // session returns undefined here and falls through to the frozen
-        // hydration cache (ADR-031) — admin edits the frozen entry in place.
+        // A session with track deltas hands back a private, per-track working
+        // copy so a shown track's in-place quick-edits (setSlot) mutate that
+        // copy and never the shared frozen base node (see agent-docs/ADR-032).
+        // A session without them falls through to the frozen hydration cache
+        // (ADR-031).
         const editable = (
           session as {
             getEditableTrackConfig?: (
