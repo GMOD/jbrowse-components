@@ -4045,13 +4045,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
-    "MultiRowRowColor": {
-      "title": "MultiRowRowColor",
+    "RowColor": {
+      "title": "RowColor",
       "type": "object",
       "x-closed": true,
       "properties": {
         "domain": {
-          "description": "the rows given a colour of their own, by value.",
+          "description": "the rows given a colour of their own, by name.",
           "anyOf": [
             {
               "type": "array",
@@ -4122,7 +4122,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/CssColorOrJexl"
         },
         "rowColor": {
-          "$ref": "#/$defs/MultiRowRowColor"
+          "$ref": "#/$defs/RowColor"
         },
         "rowHeight": {
           "description": "fixed row height in px; 0 (the default) auto-fits all rows to the display height, so adding rows shrinks them instead of growing the track.",
@@ -5875,11 +5875,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "x-closed": true,
           "properties": {
-            "field": {
-              "description": "the sample-metadata attribute (a column of the adapter's samplesTsvLocation, e.g. population) whose values each take a palette colour; while set it wins over a row's own colour.",
-              "$ref": "#/$defs/PlainString",
-              "default": ""
-            },
             "domain": {
               "description": "the rows given a colour of their own, by name.",
               "anyOf": [
@@ -5904,6 +5899,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "items": {
                 "$ref": "#/$defs/CssColor"
               }
+            },
+            "field": {
+              "description": "the sample-metadata attribute (a column of the adapter's samplesTsvLocation, e.g. population) whose values each take a palette colour; while set it wins over a row's own colour.",
+              "$ref": "#/$defs/PlainString",
+              "default": ""
             }
           },
           "patternProperties": {
@@ -6324,42 +6324,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
-    "WiggleRowColor": {
-      "title": "WiggleRowColor",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "domain": {
-          "description": "the subtracks given a colour of their own, by name.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "range": {
-          "description": "the CSS colour each subtrack in domain takes, in the same order.",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/CssColor"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
     "WiggleColor": {
       "title": "WiggleColor",
       "anyOf": [
@@ -6565,7 +6529,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/Rows"
         },
         "rowColor": {
-          "$ref": "#/$defs/WiggleRowColor"
+          "$ref": "#/$defs/RowColor"
         },
         "height": {
           "description": "default height for the track.",
@@ -6702,7 +6666,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/Rows"
         },
         "rowColor": {
-          "$ref": "#/$defs/WiggleRowColor"
+          "$ref": "#/$defs/RowColor"
         },
         "height": {
           "description": "default height for the track.",
@@ -6854,7 +6818,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/Rows"
         },
         "rowColor": {
-          "$ref": "#/$defs/WiggleRowColor"
+          "$ref": "#/$defs/RowColor"
         },
         "height": {
           "description": "default height for the track.",

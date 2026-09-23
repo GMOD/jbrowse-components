@@ -12,23 +12,18 @@ Auto-generated config schema for the current JBrowse release — see the [config
 { type: 'LinearMultiSampleVariantDisplay', rowColor: 'population' }
 ```
 
-```js
-{
-  type: 'LinearMultiSampleVariantDisplay',
-  rowColor: { domain: ['NA12878', 'NA12891'], range: ['#b2182b', '#2166ac'] },
-}
-```
-
 _See the **Config slots** section below for all available configuration fields._
 
-The multi-sample variant displays' `rowColor`: the tint beside each row's
-label. `field` names a sample-metadata attribute (a column of the adapter's
+The multi-sample variant displays' `rowColor`: `RowColor`'s pairs plus
+`field`, a sample-metadata attribute (a column of the adapter's
 samplesTsvLocation, e.g. `population`) whose values each take a palette
-colour; `domain`/`range` pair row names with the colour a reader set in the
-arrangement dialog. While `field` names an attribute the samples carry, its
-palette tints every row, ahead of those pairs and of a samplesTsv `color`
-column; with none, a row's pair wins, then its samplesTsv colour. A string
-is the field.
+colour. While `field` names an attribute the samples carry, its palette
+tints every row, ahead of the pairs and of a samplesTsv `color` column; with
+none, a row's pair wins, then its samplesTsv colour. A string is the field.
+
+## Related links
+
+- **Base config:** [RowColor](../rowcolor)
 
 ## Config slots
 
@@ -38,5 +33,6 @@ These slots go on a display entry: `"displays": [{ "type": "VariantRowColor", ..
 | Slot | Description |
 | --- | --- |
 | <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The sample-metadata attribute whose values each take a palette colour. Writing `rowColor: "population"` lands here; empty tints no row by attribute. |
+| <span class="slot-group">Inherited from [RowColor](../rowcolor)</span> | <span class="slot-group-count">2 slots</span> |
 | <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | the rows given a colour of their own, by name |
 | <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | the CSS colour each row in domain takes, in the same order |

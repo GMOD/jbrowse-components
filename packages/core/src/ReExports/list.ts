@@ -437,6 +437,7 @@ export default [
   '@jbrowse/display-kit/regionTooLargeUtils',
   '@jbrowse/display-kit/renderDisplaySvg',
   '@jbrowse/display-kit/rowArrangementConfigSchema',
+  '@jbrowse/display-kit/rowColorConfigSchema',
   '@jbrowse/display-kit/rowsConfigSchema',
   '@jbrowse/display-kit/rpcArgs',
   '@jbrowse/display-kit/SkippedFeaturesIndicator',

@@ -4278,6 +4278,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/rowColorConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "rowColorConfigSchema"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/rowsConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [

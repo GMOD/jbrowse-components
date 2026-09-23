@@ -3141,7 +3141,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rowColor",
-          "type": "MultiRowRowColorConfigurationSchema",
+          "type": "RowColorConfigurationSchema",
           "subSlots": [
             {
               "name": "domain",
@@ -4498,10 +4498,6 @@ export const configManifest: ConfigManifest = {
           "type": "VariantRowColorConfigurationSchema",
           "subSlots": [
             {
-              "name": "field",
-              "type": "string"
-            },
-            {
               "name": "domain",
               "type": "string[]",
               "liftsNumbers": true
@@ -4509,6 +4505,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "range",
               "type": "CssColorEntry[]"
+            },
+            {
+              "name": "field",
+              "type": "string"
             }
           ],
           "shorthand": "field"
@@ -4682,10 +4682,6 @@ export const configManifest: ConfigManifest = {
           "type": "VariantRowColorConfigurationSchema",
           "subSlots": [
             {
-              "name": "field",
-              "type": "string"
-            },
-            {
               "name": "domain",
               "type": "string[]",
               "liftsNumbers": true
@@ -4693,6 +4689,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "range",
               "type": "CssColorEntry[]"
+            },
+            {
+              "name": "field",
+              "type": "string"
             }
           ],
           "shorthand": "field"
@@ -4853,7 +4853,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rowColor",
-          "type": "WiggleRowColorConfigurationSchema",
+          "type": "RowColorConfigurationSchema",
           "subSlots": [
             {
               "name": "domain",
@@ -5092,7 +5092,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rowColor",
-          "type": "WiggleRowColorConfigurationSchema",
+          "type": "RowColorConfigurationSchema",
           "subSlots": [
             {
               "name": "domain",
@@ -5343,7 +5343,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rowColor",
-          "type": "WiggleRowColorConfigurationSchema",
+          "type": "RowColorConfigurationSchema",
           "subSlots": [
             {
               "name": "domain",
