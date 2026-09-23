@@ -82,7 +82,8 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-densitymarkindex">**densityMarkIndex**</span><br><code>number</code> | The mark the density sidecar stands in for, or -1. | LinearMarkDisplay |
 | <span id="getter-displaycrosshatches">**displayCrossHatches**</span><br><code>boolean</code> | The configured cross-hatch setting the menu toggles; `showCrossHatches` is what draws, and on this display the two are one — nothing here spends colour on the score instead of height. | LinearMarkDisplay |
 | <span id="getter-showcrosshatches">**showCrossHatches**</span><br><code>boolean</code> |  | LinearMarkDisplay |
-| <span id="getter-scatterpointsize">**scatterPointSize**</span><br><code>number</code> |  | LinearMarkDisplay |
+| <span id="getter-marksizes">**markSizes**</span><br><code>number[]</code> | Each mark's `size`: a point's glyph diameter in px, which a bar or span leaves unread. | LinearMarkDisplay |
+| <span id="getter-pointsize">**pointSize**</span><br><code>number</code> | The size the Point size menu shows: the first point mark's, or the default where no mark is a point. | LinearMarkDisplay |
 | <span id="getter-encodings">**encodings**</span><br><code>MarkEncoding[]</code> | The declared marks' encodings, as the worker takes them. | LinearMarkDisplay |
 | <span id="getter-layerrequests">**layerRequests**</span><br><code>LayerRequest[]</code> | The worker request, one layer per mark: its encoding and the lanes its shape reads. Every mark is sent, the one outside its zoom range included, so the worker encodes a layer the view will not draw: measured at 280 ns a feature, 28 ms per 100,000, for the excluded half of the default multiscale pair (`encodeFeatures.bench.ts`, the pair table), against a parse in the hundreds of milliseconds. An empty slot for it would make the zoom a fetch input and refetch the pair on every crossing, so there is none (ADR-112). | LinearMarkDisplay |
 | <span id="getter-origin">**origin**</span><br><code>number</code> |  | LinearMarkDisplay |
@@ -242,7 +243,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="action-ensureplotfields">**ensurePlotFields**</span><br><code>() =&gt; Promise&lt;PlotFields&gt;</code> | Scan the features for the fields a plot can read, once per display. | LinearMarkDisplay |
 | <span id="action-setplotmarks">**setPlotMarks**</span><br><code>(spec: PlotSpec) =&gt; void</code> | What the dialog writes: the plot's mark, and the binned count beside it where the user asked for one. | LinearMarkDisplay |
 | <span id="action-togglecrosshatches">**toggleCrossHatches**</span><br><code>() =&gt; void</code> |  | LinearMarkDisplay |
-| <span id="action-setscatterpointsize">**setScatterPointSize**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | LinearMarkDisplay |
+| <span id="action-setpointsize">**setPointSize**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> | Write every point mark's `size`; undefined returns each to the default. | LinearMarkDisplay |
 | <span id="action-openplotfielddialog">**openPlotFieldDialog**</span><br><code>() =&gt; void</code> | Open the dialog, prefilled from a single-mark config where the display already carries one, with the field scan running behind it. | LinearMarkDisplay |
 | <span id="action-fetchneeded">**fetchNeeded**</span><br><code>(needed: IndexedRegion[]) =&gt; Promise&lt;void&gt;</code> |  | LinearMarkDisplay |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: MarkRenderingBackend) =&gt; void</code> | identity encode — the stored payload is what the backend uploads | LinearMarkDisplay |

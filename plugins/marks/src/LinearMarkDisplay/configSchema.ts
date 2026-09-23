@@ -218,6 +218,17 @@ const markSchema = ConfigurationSchema(
       description: 'bar, point or span',
     },
     /**
+     * #slot marks.size
+     * A point mark's glyph diameter in px, the mark's own as a grammar's
+     * `size` is, so two point marks may differ; a bar or span reads none. The
+     * track menu's Point size writes it on every point mark.
+     */
+    size: {
+      type: 'number',
+      defaultValue: DEFAULT_POINT_DIAMETER_PX,
+      description: 'point diameter in px',
+    },
+    /**
      * #slot marks.encoding
      * Which feature fields feed the mark's channels. Every channel has a
      * default, so `{}` draws a bar from `start` to `end` with no value.
@@ -414,15 +425,6 @@ export function configSchemaFactory() {
         defaultValue: 1,
         description: 'minimum bar/span width in px',
         advanced: true,
-      },
-      /**
-       * #slot scatterPointSize
-       * Diameter in px of point marks.
-       */
-      scatterPointSize: {
-        type: 'number',
-        defaultValue: DEFAULT_POINT_DIAMETER_PX,
-        description: 'point diameter in px',
       },
       /**
        * #slot minimalTicks

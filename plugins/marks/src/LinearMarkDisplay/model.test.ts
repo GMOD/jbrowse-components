@@ -1628,7 +1628,7 @@ test('a point-only axis is inset by the glyph room the shape draws in', () => {
   ])
   const { display } = createDisplay()
   display.setRpcData(0, result([{ y: [3, 8] }]), REGION)
-  const inset = pointInsetPx(display.scatterPointSize)
+  const inset = pointInsetPx(display.pointSize)
   expect(inset).toBeGreaterThan(0)
   expect(display.valueScales[0]!.offset).toBe(YSCALEBAR_LABEL_OFFSET + inset)
   expect(display.renderState.valueInsetPx).toBe(inset)
@@ -1637,6 +1637,27 @@ test('a point-only axis is inset by the glyph room the shape draws in', () => {
   expect(axis!.ticks.yBottom).toBe(
     display.height - YSCALEBAR_LABEL_OFFSET - inset,
   )
+})
+
+test("a point mark's size is its own, the axis insets by the largest, and the menu writes them all", () => {
+  const { createDisplay } = createTestEnvironment([
+    { shape: 'point', encoding: { y: 'score' } },
+    { shape: 'point', size: 10, encoding: { y: 'other' } },
+    { shape: 'bar', size: 9, encoding: { y: 'score' }, maxBpPerPx: 0.001 },
+  ])
+  const { display } = createDisplay()
+  display.setRpcData(
+    0,
+    result([{ y: [3, 8] }, { y: [1, 2] }, { y: [5, 6] }]),
+    REGION,
+  )
+  expect(display.renderState.markSizes).toEqual([4, 10, 9])
+  expect(display.renderState.valueInsetPx).toBe(pointInsetPx(10))
+  expect(display.pointSize).toBe(4)
+  display.setPointSize(6)
+  expect(display.markSizes).toEqual([6, 6, 9])
+  display.setPointSize()
+  expect(display.markSizes).toEqual([4, 4, 9])
 })
 
 test('a bar sharing the axis keeps it on the plot box, where a bar top is drawn', () => {

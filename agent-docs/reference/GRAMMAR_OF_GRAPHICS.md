@@ -597,8 +597,9 @@ The gaps a user meets first, in order:
    an optional count per bin, the config editor edits transform steps but not
    marks (`db4ef2f82a`), and the track menu has no facet or colour picker.
 
-Point size (`scatterPointSize`) and `origin` are the display's rather than a
-mark's, and no mark declares its own tooltip fields. Line and area marks stay
+A point's `size` is the mark's own, as Vega-Lite's `mark.size` is, and a
+constant rather than a channel (ADR-095); `origin` is the display's rather
+than a mark's, and no mark declares its own tooltip fields. Line and area marks stay
 out ([ADR-127](../architecture-decision-records/adr-127-line-stays-wiggles.md)),
 and so do format-specific displays rebuilt on the grammar (ADR-114, ADR-118).
 

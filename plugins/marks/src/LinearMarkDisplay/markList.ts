@@ -85,7 +85,8 @@ export interface MarkRenderState extends MarkFrame {
   bpPerPx: number
   origin: number
   minWidthPx: number
-  pointDiameterPx: number
+  /** Mark `i`'s `size`: a point's glyph diameter in px. */
+  markSizes: number[]
   /** The px the y scale stands in from both ends of its band, the axis's own. */
   valueInsetPx: number
   /** The bands the plot is split into: the facet's, or the highest `row` any loaded layer carries plus one. */
@@ -159,7 +160,7 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
             domain: s.domainY,
             scaleType: s.scaleTypeY,
             ramp: s.colorRamps[i],
-            diameterPx: s.pointDiameterPx,
+            diameterPx: s.markSizes[i]!,
             insetPx: s.valueInsetPx,
             rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
           }),

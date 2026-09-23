@@ -285,6 +285,10 @@ points' colour a callback:
 ]
 ```
 
+A point mark's `size` is its glyph's diameter in px, so a second point mark can
+draw its features larger:
+`{ "shape": "point", "size": 8, "encoding": { "y": "score", "color": "red" } }`.
+
 A `span` has no `y`: it paints a band from `x` to `x2`, in its colour, for an
 interval whose extent is the point, such as a region of interest under the bars
 coloured by a class field. With no `row` every span shares one band across the
@@ -577,14 +581,14 @@ carry a numeric one, and opens this dialog where they do not.
 The score submenu writes `scales.y` and nothing else: **Set min/max score...**
 pins `domainMin` and `domainMax`, **Pin current min/max** writes the domain on
 screen into them, and **Clear manual min/max** clears both back to autoscaling.
-Beside it are **Point size**, **Show cross hatches** (`displayCrossHatches`),
-the legend toggle, and **Filter by...** for the same `jexlFilters` the basic
-feature and variant displays take. A filter runs in the worker before the
-encoding, so a filtered feature is neither drawn nor counted in the y-axis.
-Hovering a mark shows its location, value and colour class; clicking opens the
-feature's details. A click on a binned or coverage bar opens the bin or the run
-itself — its span, its count or depth and the other aggregates the mark's steps
-wrote — remade over the features under it.
+Beside it are **Point size**, which writes every point mark's `size`, **Show
+cross hatches** (`displayCrossHatches`), the legend toggle, and **Filter by...**
+for the same `jexlFilters` the basic feature and variant displays take. A filter
+runs in the worker before the encoding, so a filtered feature is neither drawn
+nor counted in the y-axis. Hovering a mark shows its location, value and colour
+class; clicking opens the feature's details. A click on a binned or coverage bar
+opens the bin or the run itself — its span, its count or depth and the other
+aggregates the mark's steps wrote — remade over the features under it.
 
 The full slot list is the
 [LinearMarkDisplay config reference](/docs/config/linearmarkdisplay); how the

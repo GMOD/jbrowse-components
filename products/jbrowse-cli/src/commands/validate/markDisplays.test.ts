@@ -126,6 +126,9 @@ describe('a marks list in a config file', () => {
     expect(
       found([{ shape: 'bar', encoding: { y: 'score', glyph: 'triangle' } }]),
     ).toEqual([`warning unread-channel ${DISPLAY}.marks[0].encoding.glyph`])
+    expect(found([{ shape: 'span', size: 8 }])).toEqual([
+      `warning unread-size ${DISPLAY}.marks[0].size`,
+    ])
   })
 
   it('tells a valued mark beside a packed span it stands in the first row, unless they never draw together or a facet bands them', () => {
@@ -319,7 +322,7 @@ describe('a marks list in a config file', () => {
     const messages = (marks: unknown[]) =>
       problemsOf(configOf(marks)).map(p => `${p.where}: ${p.message}`)
     expect(messages([{ mark: 'bar', encoding: { y: 'score' } }])).toEqual([
-      `${DISPLAY}.marks[0].mark: unknown slot "mark" — Vega-Lite's "mark" is spelled "shape" here — Mark takes shape, encoding, transform, source, minBpPerPx and maxBpPerPx, and JBrowse refuses to load it rather than drop a key it does not declare`,
+      `${DISPLAY}.marks[0].mark: unknown slot "mark" — Vega-Lite's "mark" is spelled "shape" here — Mark takes shape, size, encoding, transform, source, minBpPerPx and maxBpPerPx, and JBrowse refuses to load it rather than drop a key it does not declare`,
     ])
     const point = (encoding: Record<string, unknown>) => [
       { shape: 'point', encoding: { y: 'score', ...encoding } },

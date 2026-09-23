@@ -39,6 +39,7 @@ export type MarkProblemLevel = 'error' | 'warning'
  */
 export const MARK_RULES = {
   'unread-channel': 'warning',
+  'unread-size': 'warning',
   'span-density-source': 'warning',
   'threshold-cuts': 'warning',
   'threshold-range': 'warning',
@@ -117,6 +118,7 @@ export interface FacetSnapshot {
  */
 export type MarkSnapshot = {
   shape?: MarkShapeName
+  size?: number
   source?: MarkSourceName
   minBpPerPx?: number
   maxBpPerPx?: number
@@ -342,6 +344,15 @@ function ownProblems(mark: MarkSnapshot, transform: Steps) {
         ),
       )
     }
+  }
+  if (mark.size !== undefined && shape !== 'point') {
+    problems.push(
+      found(
+        'unread-size',
+        'size',
+        `a ${shape} draws no glyph, so it reads no size`,
+      ),
+    )
   }
   if (!readsValue(shape) && mark.source === 'density') {
     problems.push(

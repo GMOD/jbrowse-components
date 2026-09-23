@@ -1776,6 +1776,14 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/ui/makeSizeMenu": {
+      "package": "@jbrowse/core",
+      "names": [
+        "makeSizeMenu",
+        "makeSizeSubMenu"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/ui/measureLegendText": {
       "package": "@jbrowse/core",
       "names": [

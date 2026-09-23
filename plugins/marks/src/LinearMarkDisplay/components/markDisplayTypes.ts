@@ -29,7 +29,6 @@ export interface MarkDisplayModel extends WiggleGpuDisplayModel<
   markList: DisplayMark[]
   markShapes: MarkShapeName[]
   renderState: MarkRenderState
-  scatterPointSize: number
   hoveredFeature: MarkHitInfo | undefined
   legendSections: MarkLegendSection[]
   skippedFeatures: SkippedFeatures

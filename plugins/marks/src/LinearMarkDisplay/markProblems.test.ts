@@ -138,6 +138,15 @@ test('a channel the shape does not read waits unread', () => {
   ).toEqual(['warning unread-channel mark 0 encoding.glyph'])
 })
 
+test('a size on a mark that draws no glyph waits unread', () => {
+  expect(found([{ shape: 'span', size: 8 }])).toEqual([
+    'warning unread-size mark 0 size',
+  ])
+  expect(
+    found([{ shape: 'point', size: 8, encoding: { y: 'score' } }]),
+  ).toEqual([])
+})
+
 test('a valued mark beside a packed span is told it stands in the first row, unless they never draw together or a facet bands them', () => {
   expect(problemsOf([COVERAGE, PILEUP]).map(problemText)).toEqual([
     'mark 0 encoding.row: stands in the first of the rows mark 1 bands the plot into, its axis repeated per row',

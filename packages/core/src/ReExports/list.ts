@@ -223,6 +223,7 @@ export default [
   '@jbrowse/core/ui/LoadingEllipses',
   '@jbrowse/core/ui/LoadingOverlay',
   '@jbrowse/core/ui/Logo',
+  '@jbrowse/core/ui/makeSizeMenu',
   '@jbrowse/core/ui/measureLegendText',
   '@jbrowse/core/ui/Menu',
   '@jbrowse/core/ui/menuItems',

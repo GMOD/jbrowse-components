@@ -5992,6 +5992,10 @@ export const configManifest: ConfigManifest = {
               "type": "MarkShape"
             },
             {
+              "name": "size",
+              "type": "number"
+            },
+            {
               "name": "encoding",
               "type": "MarkEncodingConfigurationSchema",
               "subSlots": [
@@ -6199,10 +6203,6 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "minWidthPx",
-          "type": "number"
-        },
-        {
-          "name": "scatterPointSize",
           "type": "number"
         },
         {

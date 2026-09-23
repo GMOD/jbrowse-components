@@ -8160,6 +8160,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ],
           "default": "bar"
         },
+        "size": {
+          "description": "point diameter in px.",
+          "type": "number",
+          "default": 4
+        },
         "encoding": {
           "$ref": "#/$defs/MarkEncoding"
         },
@@ -8322,11 +8327,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "minimum bar/span width in px.",
           "type": "number",
           "default": 1
-        },
-        "scatterPointSize": {
-          "description": "point diameter in px.",
-          "type": "number",
-          "default": 4
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
@@ -8997,14 +8997,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "scatterPointSize": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scatterPointSize"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scatterPointSize"
-                }
-              ]
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scatterPointSize"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -9346,9 +9339,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
-            },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scatterPointSize"
             },
             "minimalTicks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
@@ -10107,9 +10097,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
             },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scatterPointSize"
-            },
             "minimalTicks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
             },
@@ -10429,14 +10416,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "scatterPointSize": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scatterPointSize"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scatterPointSize"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scatterPointSize"
             },
             "lineWidth": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
@@ -10679,14 +10659,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "scatterPointSize": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scatterPointSize"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scatterPointSize"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scatterPointSize"
             },
             "lineWidth": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"

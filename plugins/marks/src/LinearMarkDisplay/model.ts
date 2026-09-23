@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
+import { makeSizeMenu } from '@jbrowse/core/ui/makeSizeMenu'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import {
   getDialogHost,
@@ -64,13 +65,17 @@ import {
   visibleStatsDomain,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
-import { makePointSizeSubMenu } from '@jbrowse/wiggle-core/chrome'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import { autorun } from 'mobx'
 
 import { binStepWidth } from './autoBin.ts'
-import { markGlyphScale, markRequirementProblems } from './configSchema.ts'
+import {
+  DEFAULT_POINT_DIAMETER_PX,
+  markGlyphScale,
+  markRequirementProblems,
+} from './configSchema.ts'
 import { densityRegionData } from './densityLayer.ts'
 import { facetLayout, facetRegion } from './facet.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
@@ -541,9 +546,20 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * Each mark's `size`: a point's glyph diameter in px, which a bar or
+       * span leaves unread.
        */
-      get scatterPointSize(): number {
-        return getConf(self, 'scatterPointSize')
+      get markSizes(): number[] {
+        return self.conf.marks.map(m => m.size)
+      },
+      /**
+       * #getter
+       * The size the Point size menu shows: the first point mark's, or the
+       * default where no mark is a point.
+       */
+      get pointSize(): number {
+        const first = self.conf.marks.find(m => m.shape === 'point')
+        return first ? first.size : DEFAULT_POINT_DIAMETER_PX
       },
       /**
        * #getter
@@ -785,7 +801,7 @@ export function stateModelFactory(
         const indices = self.drawingMarkIndices
         return indices.length > 0 &&
           indices.every(i => self.markShapes[i] === 'point')
-          ? pointInsetPx(self.scatterPointSize)
+          ? pointInsetPx(Math.max(...indices.map(i => self.markSizes[i]!)))
           : 0
       },
       /**
@@ -911,7 +927,7 @@ export function stateModelFactory(
           bpPerPx: self.host.bpPerPx,
           origin: self.origin,
           minWidthPx: self.minWidthPx,
-          pointDiameterPx: self.scatterPointSize,
+          markSizes: self.markSizes,
           valueInsetPx: this.valueInsetPx,
           rowCount: this.rowCount,
         }))
@@ -1199,9 +1215,15 @@ export function stateModelFactory(
       },
       /**
        * #action
+       * Write every point mark's `size`; undefined returns each to the
+       * default.
        */
-      setScatterPointSize(val?: number) {
-        setConf(self, 'scatterPointSize', val)
+      setPointSize(val?: number) {
+        for (const mark of self.conf.marks) {
+          if (mark.shape === 'point') {
+            setConf(mark, 'size', val)
+          }
+        }
       },
     }))
     .actions(self => ({
@@ -1232,10 +1254,28 @@ export function stateModelFactory(
             },
           },
           makeScoreSubMenu(self, { domain: self.domain }),
-          ...makePointSizeSubMenu(self, {
-            label: 'Point size',
-            applies: self.hasPointMark,
-          }),
+          ...(self.hasPointMark
+            ? [
+                {
+                  label: 'Point size',
+                  icon: ScatterPlotIcon,
+                  subMenu: [
+                    makeSizeMenu({
+                      label: 'Point size',
+                      title: 'Point size',
+                      getValue: () => self.pointSize,
+                      isDefault: self.pointSize === DEFAULT_POINT_DIAMETER_PX,
+                      onChange: n => {
+                        self.setPointSize(n)
+                      },
+                      onReset: () => {
+                        self.setPointSize()
+                      },
+                    }),
+                  ],
+                },
+              ]
+            : []),
           ...filterMenuItems({
             narrowings: { jexlFilters: jexlFilterNarrowing(self) },
             onEdit: () => {

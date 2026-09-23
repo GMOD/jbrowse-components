@@ -76,7 +76,7 @@ const state: MarkRenderState = {
   bpPerPx: 1.25,
   origin: 0,
   minWidthPx: 1,
-  pointDiameterPx: 4,
+  markSizes: [4, 4, 4, 4],
   valueInsetPx: pointInsetPx(4),
   rowCount: 1,
 }
