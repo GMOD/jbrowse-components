@@ -615,7 +615,7 @@ export const svSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               scales: { y: { autoscale: 'localsd', numStdDev: 3 } },
               defaultRendering: 'scatter',
-              facet: '',
+              rows: '',
               // even finer binning (basesPerSpan = bpPerPx/resolution) so the
               // scatter resolves copy-number structure (even finer,
               // then bumped again for slightly higher resolution — the BigWig
@@ -2040,7 +2040,7 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'hg008_cnv_indexcov',
               type: 'LinearWiggleDisplay',
               defaultRendering: 'scatter',
-              facet: '',
+              rows: '',
               // Fixed 0..3, which is the manual min/max cap the walkthrough
               // tells the reader to apply, and which localsd autoscale was
               // quietly not doing: indexcov's few centromere and repeat spikes
@@ -2819,7 +2819,7 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'hg008_cnv_indexcov',
               type: 'LinearWiggleDisplay',
               defaultRendering: 'scatter',
-              facet: '',
+              rows: '',
               // fixed 0..3 as on chr5: indexcov's centromere and repeat spikes
               // run into the hundreds, and an autoscaled axis puts every
               // plateau in the bottom fifth of the lane

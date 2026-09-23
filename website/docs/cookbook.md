@@ -336,11 +336,11 @@ picks `xyplot`, `line`, `scatter`, or `density`.
       }
     ]
   },
-  "displayDefaults": { "defaultRendering": "line", "facet": "" }
+  "displayDefaults": { "defaultRendering": "line", "rows": "" }
 }
 ```
 
-`facet` decides the layout: `"source"` stacks one row per signal, and `""`,
+`rows` decides the layout: `"source"` stacks one row per signal, and `""`,
 above, draws every signal in one shared plot box. Pin
 `scales.y.domainMin`/`domainMax` when the quantity has an absolute meaning, or
 per-row autoscale draws a flat sample at the same height as an amplified one.

@@ -12,7 +12,7 @@ afterEach(() => {
 
 async function loadedDisplay(domain: string[]) {
   const env = createTestEnvironment({
-    displayConfig: { facet: { field: 'source', domain } },
+    displayConfig: { rows: { field: 'source', domain } },
   })
   env.mockRpcCall.mockImplementation(() =>
     Promise.resolve(makeMultiWiggleData('a', 'b', 'c')),
@@ -28,7 +28,7 @@ async function loadedDisplay(domain: string[]) {
 const rowNames = (display: { sources: { name: string }[] }) =>
   display.sources.map(s => s.name)
 
-describe('`facet.domain` seeds the subtrack order', () => {
+describe('`rows.domain` is the subtrack order', () => {
   it('leads with the subtracks it names and leaves the rest in adapter order', async () => {
     expect(rowNames(await loadedDisplay(['c']))).toEqual(['c', 'a', 'b'])
   })
@@ -41,25 +41,26 @@ describe('`facet.domain` seeds the subtrack order', () => {
     expect(rowNames(await loadedDisplay([]))).toEqual(['a', 'b', 'c'])
   })
 
-  // `rowDomain` reads the order back through `facet`, which is undefined while
-  // the sources share a plot, so a `setFaceted` writing the object whole wrote
-  // the empty order it had just read.
+  // `setRowLayout` writes the field alone, so the order survives the shared
+  // plot rather than going with the object.
   it('survives a trip through the shared plot', async () => {
     const display = await loadedDisplay(['c'])
-    display.setFaceted(false)
-    display.setFaceted(true)
+    display.setRowLayout(false)
+    display.setRowLayout(true)
     expect(rowNames(display)).toEqual(['c', 'a', 'b'])
   })
 
-  // `layout` is the runtime channel over the seed, and "Reset row order"
-  // returns to the domain rather than to the adapter's order.
-  it('gives way to a layout and comes back when it is cleared', async () => {
+  // A reorder writes the same member the config seeded, and "Reset row order"
+  // returns to what the config declared rather than to the adapter's order.
+  it('takes a reorder and returns to the declared order on reset', async () => {
     const display = await loadedDisplay(['c'])
     display.setRowOrder([{ name: 'b' }, { name: 'a' }, { name: 'c' }])
     expect(rowNames(display)).toEqual(['b', 'a', 'c'])
+    expect(display.rowArrangementIsCustom).toBe(true)
 
     display.resetRowArrangement()
 
     expect(rowNames(display)).toEqual(['c', 'a', 'b'])
+    expect(display.rowArrangementIsCustom).toBe(false)
   })
 })

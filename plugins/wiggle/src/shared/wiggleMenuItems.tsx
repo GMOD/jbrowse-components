@@ -27,7 +27,7 @@ const LAYOUTS = [
 
 // `<layout>:<renderingType>`, and MENU-LOCAL. The model still holds the two
 // axes apart — five `renderingType` names that say what a source is drawn as,
-// `facet` that says where it sits — and nothing outside this file reads a key
+// `rows` that says where it sits — and nothing outside this file reads a key
 // (plugins/wiggle/CLAUDE.md, ADR-143). Reviving the nine names as config values
 // is what put the layout back inside a plot name, where `isOverlayMode` had to
 // recover it by string-set membership.
@@ -45,18 +45,18 @@ export function makeRenderingTypeSubMenu(
   self: {
     renderingType: string
     setRenderingType: (t: string) => void
-    isFaceted: boolean
-    setFaceted: (on: boolean) => void
+    isRowLayout: boolean
+    setRowLayout: (on: boolean) => void
     sourcesWithoutLayout: readonly unknown[]
   },
   renderings: readonly (readonly [string, string])[],
 ): MenuItem {
   // One source has no layout axis to drill through, so it meets the five plots
-  // flat. It also cannot be faceted usefully — a lone row raises the tree and
+  // flat. It also cannot go on rows usefully — a lone row raises the tree and
   // row-label items over a dendrogram that can never draw, since clustering
-  // refuses a single row. Grouped while faceted, so a track whose sources
+  // refuses a single row. Grouped while on rows, so a track whose sources
   // dropped to one can still get back to one box.
-  if (!self.isFaceted && self.sourcesWithoutLayout.length <= 1) {
+  if (!self.isRowLayout && self.sourcesWithoutLayout.length <= 1) {
     return makeRadioSubMenu({
       label: 'Plot type',
       icon: ShowChartIcon,
@@ -68,7 +68,7 @@ export function makeRenderingTypeSubMenu(
     })
   }
   const current = leafKey(
-    self.isFaceted ? 'rows' : 'overlay',
+    self.isRowLayout ? 'rows' : 'overlay',
     self.renderingType,
   )
   return {
@@ -81,7 +81,7 @@ export function makeRenderingTypeSubMenu(
         onChange: key => {
           const cut = key.indexOf(':')
           self.setRenderingType(key.slice(cut + 1))
-          self.setFaceted(key.slice(0, cut) === 'rows')
+          self.setRowLayout(key.slice(0, cut) === 'rows')
         },
         options: renderings.map(
           ([value, label]) => [leafKey(layout, value), label] as const,

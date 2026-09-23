@@ -3,17 +3,20 @@ import { compareStructural } from 'mobx'
 
 import { normalizeChannel, paintedScale } from './colorConfigSchema.ts'
 import { facetConfigSchema } from './facetConfigSchema.ts'
+import { rowsConfigSchema } from './rowsConfigSchema.ts'
 
 import type { ColorSetting } from './colorConfigSchema.ts'
 
 /**
- * A display's grouping, color and filter as "Edit as JSON..." shows them:
- * `facet` and `color` are the display's own settings, in the shape their
- * config objects take, and `filter` is the runtime jexl list of Filter by....
- * A channel the spec leaves out is left as it is, and `null` clears one.
+ * A display's grouping, rows, color and filter as "Edit as JSON..." shows
+ * them: `facet`, `rows` and `color` are the display's own settings, in the
+ * shape their config objects take, and `filter` is the runtime jexl list of
+ * Filter by.... A channel the spec leaves out is left as it is, and `null`
+ * clears one.
  */
 export interface ChannelSpec {
   facet?: { field: string; domain?: string[] } | null
+  rows?: { field: string; domain?: string[] } | null
   color?: ColorChannel | null
   filter?: string[] | null
 }
@@ -39,7 +42,7 @@ export type ColorChannel =
       domainMid?: number
     }
 
-export const CHANNELS = ['facet', 'color', 'filter'] as const
+export const CHANNELS = ['facet', 'rows', 'color', 'filter'] as const
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -49,13 +52,19 @@ function strings(value: unknown) {
   return Array.isArray(value) ? value.map(String) : undefined
 }
 
-function parseFacet(value: unknown): ChannelSpec['facet'] {
+function parseKeyed(
+  name: 'facet' | 'rows',
+  schema: typeof facetConfigSchema | typeof rowsConfigSchema,
+  value: unknown,
+) {
   if (value === null) {
     return null
   }
-  const { field, domain } = preProcessConfigSnapshot(facetConfigSchema, value)
+  const { field, domain } = preProcessConfigSnapshot(schema, value)
   if (typeof field !== 'string' || !field.trim()) {
-    throw new Error('facet is a field name or { "field": …, "domain": [...] }')
+    throw new Error(
+      `${name} is a field name or { "field": …, "domain": [...] }`,
+    )
   }
   const order = strings(domain)
   return { field: field.trim(), ...(order?.length ? { domain: order } : {}) }
@@ -229,18 +238,23 @@ function parseFilter(value: unknown): ChannelSpec['filter'] {
 export function parseChannelSpec(text: string): ChannelSpec {
   const value: unknown = JSON.parse(text)
   if (!isRecord(value)) {
-    throw new Error('A spec is one JSON object: { "facet": …, "color": … }')
+    throw new Error('A spec is one JSON object: { "color": …, "facet": … }')
   }
   const unknown = Object.keys(value).filter(
     key => !(CHANNELS as readonly string[]).includes(key),
   )
   if (unknown.length) {
     throw new Error(
-      `The channels are facet, color and filter, not ${unknown.join(', ')}`,
+      `The channels are ${CHANNELS.join(', ')}, not ${unknown.join(', ')}`,
     )
   }
   return {
-    ...('facet' in value ? { facet: parseFacet(value.facet) } : {}),
+    ...('facet' in value
+      ? { facet: parseKeyed('facet', facetConfigSchema, value.facet) }
+      : {}),
+    ...('rows' in value
+      ? { rows: parseKeyed('rows', rowsConfigSchema, value.rows) }
+      : {}),
     ...('color' in value ? { color: parseColor(value.color) } : {}),
     ...('filter' in value ? { filter: parseFilter(value.filter) } : {}),
   }

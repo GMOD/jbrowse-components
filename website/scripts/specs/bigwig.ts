@@ -568,7 +568,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           type: 'LinearWiggleDisplay',
           height: 420,
           // one colored density strip per individual, off the track type's own
-          // `facet: 'source'` seed; `defaultRendering` is a config slot, so
+          // `rows: 'source'` seed; `defaultRendering` is a config slot, so
           // this flat key routes into the display's configOverrides
           defaultRendering: 'density',
           // copy number: most cells sit at the diploid baseline (~2), so the

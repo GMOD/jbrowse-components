@@ -33,7 +33,7 @@ import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
   RowHeightMixin,
-  TreeSidebarMixin,
+  LayoutTreeSidebarMixin,
   buildSpatialIndex,
   computeClusterHierarchy,
   filterRowsBySubtree,
@@ -383,7 +383,7 @@ export default function MultiSampleVariantBaseModelF(
         LegendMixin(),
         RowHeightMixin(),
         StoredHoverMixin<VariantHoverFields>(),
-        TreeSidebarMixin<Source>(),
+        LayoutTreeSidebarMixin<Source>(),
         ContextMenuMixin<VariantContextMenuInfo>(),
         types.model({
           type: types.string,
@@ -404,7 +404,7 @@ export default function MultiSampleVariantBaseModelF(
             types.maybe(types.array(types.string)),
             undefined,
           ),
-          // `runClustering` / `clusterRegion` are TreeSidebarMixin's — they
+          // `runClustering` / `clusterRegion` are LayoutTreeSidebarMixin's — they
           // trigger a run whose output is that mixin's state.
         }),
       )

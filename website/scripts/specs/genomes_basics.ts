@@ -130,23 +130,23 @@ const GNOMAD_TRACK_ID = 'hg38-gnomadExomesVariantsV4_1'
 // marks the active ones, so a promoter with both is doing something in that
 // cell type and one with only H3K4me3 is poised.
 //
-// `facet` is a config slot, so an inline key on the spec's tracks entry
+// `rows` is a config setting, so an inline key on the spec's tracks entry
 // reaches it; the empty string is every source in one plot box, which is what
 // the hub's own `aggregate: transparentOverlay` asks for and what the
-// MultiQuantitativeTrack's `facet: 'source'` seed otherwise overrides.
+// MultiQuantitativeTrack's `rows: 'source'` seed otherwise overrides.
 const H3K4ME3_OVERLAY = {
   trackId: 'hg38-wgEncodeRegMarkH3k4me3',
   type: 'LinearWiggleDisplay',
-  facet: '',
+  rows: '',
 }
 const H3K27AC_OVERLAY = {
   trackId: 'hg38-wgEncodeRegMarkH3k27ac',
   type: 'LinearWiggleDisplay',
-  facet: '',
+  rows: '',
 }
 
 // The leaf the two frames differ by, spelled once so the hovers, the callout
-// boxes and the prose cannot name it three ways. The tracks open at `facet: ''`
+// boxes and the prose cannot name it three ways. The tracks open at `rows: ''`
 // on the default plot, so the pick that splits them is the same plot under the
 // other layout. Written out rather than imported: check-menu-labels resolves
 // each segment against the app's own literals, which is the check that would
@@ -529,7 +529,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   // Side by side (`stageColumns`), because the frames are a before and an after
   // of one radio button and a reader compares them across rather than down.
   //
-  // Frame 1 is UCSC's layered arrangement, `facet: ''` on both marks, all
+  // Frame 1 is UCSC's layered arrangement, `rows: ''` on both marks, all
   // seven cell lines drawn over one another under the menu that separates
   // them. Frame 2 is the same six tracks at the track type's own default, one
   // row per cell line.

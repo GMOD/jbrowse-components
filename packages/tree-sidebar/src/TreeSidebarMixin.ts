@@ -1,310 +1,206 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
-import { cast, types } from '@jbrowse/mobx-state-tree'
+import { getContainingTrack, getSession } from '@jbrowse/core/util'
+import { isSessionWithBaseTrackConfig } from '@jbrowse/core/util/types'
+import { ROW_ARRANGEMENT_MEMBERS } from '@jbrowse/display-kit/rowsConfigSchema'
+import { getSnapshot, hasParent } from '@jbrowse/mobx-state-tree'
+import { compareStructural } from 'mobx'
 
-import { applySubtreeFilter, buildTree } from './clusterUtils.ts'
-import { maxNodeHeight } from './hierarchy.ts'
+import { buildTree } from './clusterUtils.ts'
+import {
+  orderDropsTree,
+  treeHeightViews,
+  treeSidebarBase,
+  treeViews,
+} from './treeSidebarBase.ts'
 
 import type { ClusterProvenance } from './clusterProvenance.ts'
-import type { RowSortSpec } from './rowSortAutorun.ts'
+import type { ClusterRun } from './treeSidebarBase.ts'
 import type { TreeSidebarConfigModel } from './treeSidebarConfigSchemaFields.ts'
-import type { HoveredTreeNode, RowSource } from './types.ts'
+import type { RowSource } from './types.ts'
 
 /**
- * The whole of what `TreeSidebarMixin` needs a composing display to be.
- * Exported because it is the mixin's contract and `TreeSidebarMixin.test.ts`
- * pins it: widen it and the `@ts-expect-error`s there go unused.
+ * The whole of what `TreeSidebarMixin` needs a composing display to be: the
+ * sidebar's toggle slots and the `rows` object.
  */
 export interface TreeSidebarHost {
-  configuration: TreeSidebarConfigModel
+  configuration: TreeSidebarConfigModel & { displayId: string }
 }
 
-// The mixin's own `self` is the model it declares, so it cannot see the
-// `configuration` the concrete display supplies — every display composing this
-// is a BaseDisplay, so it is really there. Same idiom, and the same reason, as
-// `HeightModeMixin`'s `confNode`. Narrowed to the sibling field table rather
-// than `AnyConfigurationModel`, which is what keeps the three slot names below
-// checked; `ConfigModelForFields` has the why.
 const confNode = (self: object) => self as TreeSidebarHost
+
+type ArrangementMember = (typeof ROW_ARRANGEMENT_MEMBERS)[number]
+type Arrangement = Partial<Record<ArrangementMember, unknown>>
+
+// What "Reset row order" is offered on: the focus has a clear of its own, and
+// a reset still takes it with the rest.
+const ORDER_MEMBERS = ROW_ARRANGEMENT_MEMBERS.filter(m => m !== 'kept')
+
+// An empty list or map is the member's default, which a stripped snapshot
+// leaves out, so the two spellings compare as one.
+function present(value: unknown) {
+  if (Array.isArray(value)) {
+    return value.length ? value : undefined
+  }
+  if (typeof value === 'object' && value !== null) {
+    return Object.keys(value).length ? value : undefined
+  }
+  return value
+}
+
+/**
+ * The config.json's entry for this display, hydrated, which a reset returns
+ * to and "is this the reader's" compares against: empty for a track the
+ * session owns, and in a session that keeps no base.
+ */
+export function baseDisplayConfig(self: object): Record<string, unknown> {
+  if (!hasParent(self)) {
+    return {}
+  }
+  const session = getSession(self)
+  if (!isSessionWithBaseTrackConfig(session)) {
+    return {}
+  }
+  const base = session.baseTrackConfig(
+    getConf(getContainingTrack(self), 'trackId'),
+  )
+  const { displayId } = confNode(self).configuration
+  const displays = base?.displays
+  return (
+    (Array.isArray(displays)
+      ? (displays as Record<string, unknown>[]).find(
+          d => d.displayId === displayId,
+        )
+      : undefined) ?? {}
+  )
+}
+
+function baseArrangement(self: object): Arrangement {
+  return (baseDisplayConfig(self).rows as Arrangement | undefined) ?? {}
+}
+
+function liveArrangement(self: object): Arrangement {
+  return getSnapshot(confNode(self).configuration.rows) as Arrangement
+}
 
 /**
  * #stateModel TreeSidebarMixin
  * #category display
- * #crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display rows, named), the `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC and the `sortRows` callback naming what a row carries at a column. Brings `layout` / `clusterTree` / `clusterProvenance` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` / `treeAreaWidth` getters and setters and the `rowDomain` getter over those slots, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through (`rowTree`, `rowTreeProvenance`, `rowFocus`, `rowArrangementIsCustom`, `rowOrderWillDropTree`, `setRowOrder`, `applyRowEdits`, `setRowFocus`, `resetRowArrangement`), the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through
- * Adds a dendrogram sidebar to a display: stores the leaf layout, newick cluster
- * tree, sidebar width and subtree filter, plus the hover/canvas volatile state
- * used while drawing the tree.
+ * #crossCuttingMixin Row set with a dendrogram sidebar, its arrangement the display's `rows` config object: the order, the labels, the tree with its provenance and the focus, each written as a session edit to the track's config so undo, reset and a share link reach it and it survives unticking the track. Brings the `showTree` / `showBranchLength` / `showRowLabels` / `treeAreaWidth` getters and setters, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through (`rowDomain`, `rowLabels`, `rowTree`, `rowTreeProvenance`, `rowFocus`, `rowArrangementIsCustom`, `rowOrderWillDropTree`, `setRowOrder`, `setRowLabels`, `setRowFocus`, `resetRowArrangement`), the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through. `applyRowEdits` stays the display's, since it writes colours the display keeps in its own object
  *
- * **The three toggles are declared here because this package reads them.**
- * `treeSidebarGeometry` reads `showTree`, `treeMenuItems` reads all three and
- * `setShowTree`, `computeClusterHierarchy` takes `showBranchLength` — so a
- * display composing this mixin and not supplying them would compile and then
- * fail at the first menu click. They were four hand-written `getConf` /
- * `setConf` copies, which is the same shape the config half was in before
- * `treeSidebarConfigSchemaFields`: that set had already drifted, three displays
- * spelling the labels toggle `showRowLabels` and the fourth
- * `showSidebarLabels`, so `"showRowLabels": false` on a multi-sample variant
- * track was dropped in silence. Slots and accessors now move together.
+ * Every arrangement write reaches the session at once rather than after the
+ * track's 400 ms save, so a clustering run is one undo step and undoable the
+ * moment its tree appears. "Reset row order" returns each member to what the
+ * config.json declares, or to nothing on a track the session owns, and never
+ * touches `rows.field`.
  */
 export function TreeSidebarMixin<S extends RowSource = RowSource>() {
-  return types
-    .model({
-      layout: types.stripDefault(types.frozen<S[]>(), []),
-      clusterTree: types.stripDefault(types.maybe(types.string), undefined),
-      /**
-       * #property
-       * What `clusterTree` was computed from — the locus and the settings.
-       * Set only for a tree this app computed; a supplied phylogeny (maf's
-       * `.nh`) leaves it undefined. Persisted with the tree so it survives a
-       * session snapshot, which is the case that most needs it: a shared link
-       * otherwise hands over a dendrogram with no way to learn its locus.
-       */
-      clusterProvenance: types.stripDefault(
-        types.maybe(types.frozen<ClusterProvenance>()),
-        undefined,
-      ),
-      subtreeFilter: types.stripDefault(
-        types.maybe(types.array(types.string)),
-        undefined,
-      ),
-      /**
-       * #property
-       * Transient declarative launch spec, the same idea as
-       * `LinearGenomeView`'s `init`: a session or config sets this true and the
-       * real clustering RPC runs once automatically, with no dialog, as soon as
-       * the display reports itself ready. `setupRunClusteringAutorun` clears it
-       * afterwards, so a saved session never re-triggers.
-       *
-       * Lives here rather than on each display because it is the trigger for a
-       * run whose *output* — `clusterTree`, `clusterProvenance`, `layout` — is
-       * this mixin's state. Three displays declared it identically, each with
-       * its own wrapper module that existed to code-split the clustering code
-       * and, along the way, hand-wrote the same six-member duck type of the
-       * display. Splitting inside the `run` callback does the same job and
-       * loads on a run rather than on every attach. What each run actually
-       * *is* stays per display, in that callback.
-       */
-      runClustering: types.maybe(types.boolean),
-      /**
-       * #property
-       * Where that run reads from, as a locstring (whitespace-separated for
-       * several). Clustering is region-scoped, so running it over the visible
-       * window feeds the estimator whatever happens to be on screen; naming the
-       * locus instead lets a session cluster on the signal and then show it
-       * against its context — otherwise a zoom the user has to perform in the
-       * right order. Cleared with `runClustering`, since it is that flag's
-       * argument and a locus left standing describes a run that is not coming.
-       */
-      clusterRegion: types.maybe(types.string),
-      /**
-       * #property
-       * Transient declarative launch spec, the same idea as `runClustering`:
-       * set `{refName, pos}` to order the rows once by the value each carries
-       * at that genomic column — the session-expressible form of the
-       * right-click "Sort rows by ... here". `setupRowSortAutorun` applies it
-       * once the region containing it has loaded and then clears it, so the
-       * resulting `layout` persists but a saved session never re-sorts.
-       *
-       * Clustering orders rows by the whole region in view, and `layout`
-       * states an order outright. This spec ranks rows at one position, so a
-       * figure can open a cohort ranked at a candidate locus with the
-       * surrounding context still on screen. Each display defines the value
-       * at the column in its `sortRows` callback.
-       */
-      // #region frozenProp
-      // `RowSortSpec`, not a second spelling of it: the autorun that consumes
-      // this and `setSortRowsBy` are both typed on it, so an inline shape here
-      // is a copy that can only ever drift away from the one doing the
-      // checking.
-      sortRowsBy: types.maybe(types.frozen<RowSortSpec>()),
-      // #endregion
-    })
-    .volatile(() => ({
-      hoveredTreeNode: undefined as HoveredTreeNode | undefined,
-      treeCanvas: null as HTMLCanvasElement | null,
-      mouseoverCanvas: null as HTMLCanvasElement | null,
-    }))
+  return treeSidebarBase()
     .views(self => ({
       /**
        * #getter
-       * Whether the dendrogram sidebar is drawn.
-       */
-      get showTree(): boolean {
-        return getConf(confNode(self), 'showTree')
-      },
-      /**
-       * #getter
-       * Whether tree nodes are positioned by branch length (dendrogram) or
-       * evenly by topology (cladogram).
-       */
-      get showBranchLength(): boolean {
-        return getConf(confNode(self), 'showBranchLength')
-      },
-      /**
-       * #getter
-       * Whether each row's name is drawn over the left of the plot.
-       */
-      get showRowLabels(): boolean {
-        return getConf(confNode(self), 'showRowLabels')
-      },
-      /**
-       * #getter
-       * The row axis's declared order off the `domain` slot — the config seed
-       * `orderRowsByDomain` places rows through, under whatever `layout` says.
-       *
-       * Named for the axis rather than `domain` alone because the wiggle
-       * display composes `WiggleCommonMixin`, whose `domain` is the score
-       * axis's autoscaled `[min, max]`. Two getters of that name on one model
-       * is the later one silently answering for both.
+       * The row order, `rows.domain`: the rows it names lead, in its order,
+       * and the rest keep the order they arrived in.
        */
       get rowDomain(): string[] {
-        const host = confNode(self)
-        if (!('domain' in host.configuration)) {
-          throw new Error(
-            'TreeSidebarMixin: this display declares no `domain` slot (treeSidebarConfigSchemaFields was called without a `rows` sentence), so it owes a `rowDomain` getter of its own in a `.views` layer after the mixin',
-          )
-        }
-        return getConf(host, 'domain')
+        return getConf(confNode(self), ['rows', 'domain'])
       },
       /**
        * #getter
-       * Width in px of the sidebar the dendrogram draws in. On the config
-       * rather than the display snapshot for the same reason `height` is: the
-       * config node outlives the display instance, so a dragged width survives
-       * unticking and reticking the track.
+       * The labels drawn in place of row names, `rows.labels`, by name.
        */
-      get treeAreaWidth(): number {
-        return getConf(confNode(self), 'treeAreaWidth')
+      get rowLabels(): Readonly<Record<string, string>> {
+        return getConf(confNode(self), ['rows', 'labels'])
       },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setShowTree(arg: boolean) {
-        setConf(confNode(self), 'showTree', arg)
-      },
-      /**
-       * #action
-       */
-      setShowBranchLength(arg: boolean) {
-        setConf(confNode(self), 'showBranchLength', arg)
-      },
-      /**
-       * #action
-       */
-      setShowRowLabels(arg: boolean) {
-        setConf(confNode(self), 'showRowLabels', arg)
-      },
-    }))
-    .views(self => ({
-      // `rowDomain` rotates a tree nothing has arranged under: no provenance,
-      // so it was supplied rather than computed (maf's `.nh`), and no `layout`,
-      // so the rows are the tree's own leaves. A run rotates its own tree in
-      // the same action as the `layout` it writes; rotating one again here
-      // would turn a restored session's dendrogram away from the rows saved
-      // beside it, and `treeDescribesRows` would then draw nothing at all.
-      get parsedTree() {
-        const arranged = !!self.clusterProvenance || self.layout.length > 0
-        return self.clusterTree
-          ? buildTree(self.clusterTree, arranged ? [] : self.rowDomain)
-          : undefined
-      },
-    }))
-    .views(self => ({
       /**
        * #getter
-       * The cluster tree the rows are arranged by, as newick: a run's, or a
-       * supplied phylogeny (maf's `.nh`).
+       * The cluster tree the rows are arranged by, `rows.tree`, as newick.
        */
       get rowTree(): string | undefined {
-        return self.clusterTree
+        return getConf(confNode(self), ['rows', 'tree'])
       },
       /**
        * #getter
        * What `rowTree` was computed from, the locus and the settings; undefined
-       * for a supplied tree.
+       * for a tree that arrived as data.
        */
       get rowTreeProvenance(): ClusterProvenance | undefined {
-        return self.clusterProvenance
+        return getConf(confNode(self), ['rows', 'treeProvenance'])
       },
       /**
        * #getter
-       * The row names a focus narrows the display to — a clade picked off the
-       * tree or a legend group — or undefined while every row shows.
+       * The row names a focus narrows the display to, `rows.kept` — a clade
+       * picked off the tree or a key row's rows — or undefined while every
+       * row shows.
        */
       get rowFocus(): readonly string[] | undefined {
-        return self.subtreeFilter
+        const kept: string[] = getConf(confNode(self), ['rows', 'kept'])
+        return kept.length ? kept : undefined
       },
-      get root() {
-        return self.parsedTree
-          ? applySubtreeFilter(self.parsedTree, self.subtreeFilter)
-          : undefined
+      /**
+       * #getter
+       * Overridable hook: whether the display keeps row styling of its own
+       * beyond the arrangement that differs from the config, so a reset is
+       * offered for it too. Nothing by default.
+       */
+      get rowStylingIsCustom(): boolean {
+        return false
       },
     }))
     .views(self => ({
-      // True when the tree carries cluster merge heights, i.e. a branch-length
-      // (dendrogram) layout would actually differ from the cladogram. Gates the
-      // "Tree branch lengths" toggle so it isn't a no-op on a height-less tree.
-      get treeHasBranchLengths() {
-        return !!self.root && maxNodeHeight(self.root) > 0
-      },
-
       /**
        * #getter
-       * Whether the rows have been arranged away from the order they arrived
-       * in — what "Reset row order" is offered on.
+       * Whether the arrangement differs from what the config declares — what
+       * "Reset row order" is offered on.
        */
       get rowArrangementIsCustom(): boolean {
-        return self.layout.length > 0
-      },
-
-      // True when ordering the rows as `next` would drop the cluster tree: the
-      // tree describes the current order, so any membership or order change
-      // makes it stale. Shared by `setRowOrder` and the color dialog's
-      // pre-submit warning, which has to be answerable before the write.
-      //
-      // Rows can also move without a write — a display decorating `sources`
-      // downstream of the arrangement, a discovered row set growing as regions
-      // load — so the backstop is derived, in `computeClusterHierarchy`, which
-      // declines to position a tree whose leaves aren't the rows on screen.
-      rowOrderWillDropTree(next: readonly { name: string }[]) {
+        const live = liveArrangement(self)
+        const base = baseArrangement(self)
         return (
-          !!self.clusterTree &&
-          (self.layout.length !== next.length ||
-            self.layout.some((source, idx) => source.name !== next[idx]?.name))
+          self.rowStylingIsCustom ||
+          ORDER_MEMBERS.some(
+            member =>
+              !compareStructural(present(live[member]), present(base[member])),
+          )
         )
       },
     }))
+    .views(self => ({
+      // A tree that arrived as data rotates towards the declared order at
+      // parse; a run's tree was rotated by the run, in the same write as the
+      // order it produced.
+      get parsedTree() {
+        return self.rowTree
+          ? buildTree(
+              self.rowTree,
+              self.rowTreeProvenance ? [] : self.rowDomain,
+            )
+          : undefined
+      },
+      rowOrderWillDropTree(next: readonly { name: string }[]) {
+        return orderDropsTree(self.rowTree, self.rowDomain, next)
+      },
+    }))
+    .views(self => treeViews(self))
+    .views(self => treeHeightViews(self))
+    .actions(() => ({
+      /**
+       * #action
+       * Overridable hook: return the row styling the display keeps of its
+       * own to what the config declares, with the arrangement. Nothing by
+       * default.
+       */
+      resetRowStyling() {},
+    }))
     .actions(self => {
-      // The ONLY place `clusterTree` is assigned, because `clusterProvenance`
-      // has to move with it in the same action — always. The failure that
-      // guards against is not a missing caption but a *wrong* one: provenance
-      // left standing from a previous run labels the new dendrogram with the
-      // old run's locus, which is worse than saying nothing at all.
-      //
-      // A helper rather than four hand-written pairs because taking both
-      // together is what makes "set the tree and keep the old provenance"
-      // unspellable. It also puts each caller's intent in its argument list:
-      // omitting `provenance` is how a tree that arrives as data (maf's `.nh`)
-      // says it has no locus, rather than being a separate line to forget.
-      function writeTree(tree?: string, provenance?: ClusterProvenance) {
-        self.clusterTree = tree
-        self.clusterProvenance = provenance
+      function write(member: ArrangementMember, value: unknown) {
+        setConf(confNode(self), ['rows', member], value)
       }
-      function orderRows(
-        rows: S[],
-        run?: { tree?: string; provenance?: ClusterProvenance },
-      ) {
-        if (run) {
-          self.layout = rows
-          writeTree(run.tree, run.provenance)
-        } else {
-          const dropTree = self.rowOrderWillDropTree(rows)
-          self.layout = rows
-          if (dropTree) {
-            writeTree(undefined)
-          }
-        }
+      function persist() {
+        getContainingTrack(self).persistConfigurationNow?.()
+      }
+      function writeTree(run?: ClusterRun) {
+        write('tree', run?.tree)
+        write('treeProvenance', run?.provenance)
       }
       return {
         /**
@@ -314,82 +210,48 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
          * other reorder that moves a row drops the tree, which no longer
          * describes it.
          */
-        setRowOrder(
-          rows: S[],
-          run?: { tree?: string; provenance?: ClusterProvenance },
-        ) {
-          orderRows(rows, run)
+        setRowOrder(rows: readonly S[], run?: ClusterRun) {
+          const dropTree = !run && self.rowOrderWillDropTree(rows)
+          write(
+            'domain',
+            rows.map(row => row.name),
+          )
+          if (run) {
+            writeTree(run)
+          } else if (dropTree) {
+            writeTree()
+          }
+          persist()
         },
         /**
          * #action
-         * The arrangement dialog's submit: the rows in their new order, each
-         * carrying the label and colours the reader set on it.
+         * The labels drawn in place of row names, whole: a row the map does
+         * not name shows the name it arrived with.
          */
-        applyRowEdits(rows: S[]) {
-          orderRows(rows)
-        },
-        /**
-         * #action
-         * Reset to no arrangement at all, focus included: the reader asked for
-         * the rows back as they came.
-         *
-         * The focus is otherwise **independent of the tree**. It is a set of
-         * row names, and `filterRowsBySubtree` matches on `name` with no tree
-         * involved, so a reorder or a re-cluster leaves it valid and
-         * `setRowOrder` keeps it — dropping a focused clade on every reorder
-         * would discard the reader's focus, and for maf (where the focus is a
-         * fetch argument) refetch every loaded region. What does invalidate it
-         * is a change to what rows are *called*: the multi-sample variant
-         * displays' rendering mode renames rows between sample and haplotype
-         * ("HG001" ↔ "HG001 HP0"), and `setPhasedMode` clears the focus for
-         * exactly that reason.
-         */
-        resetRowArrangement() {
-          self.layout = []
-          writeTree(undefined)
-          self.subtreeFilter = undefined
-        },
-        // For a tree that arrives as data rather than from a run — maf's `.nh`
-        // guide tree. It has no locus and no settings, so it passes no
-        // provenance, which is how it drops the previous tree's.
-        setClusterTree(tree?: string) {
-          writeTree(tree)
-        },
-        setTreeAreaWidth(width: number) {
-          setConf(confNode(self), 'treeAreaWidth', width)
+        setRowLabels(labels: Readonly<Record<string, string>>) {
+          write('labels', labels)
+          persist()
         },
         /**
          * #action
          * Narrow the display to `names`, or show every row again.
          */
         setRowFocus(names?: readonly string[]) {
-          // normalize empty to undefined so the field has one stripped state
-          self.subtreeFilter = names?.length ? cast([...names]) : undefined
-        },
-        setRunClustering(arg?: boolean) {
-          self.runClustering = arg
-        },
-        setClusterRegion(arg?: string) {
-          self.clusterRegion = arg
+          write('kept', names?.length ? [...names] : [])
+          persist()
         },
         /**
          * #action
-         * Trigger (or clear) a one-shot declarative row sort; consumed and
-         * reset by `setupRowSortAutorun`. A display's right-click item calls
-         * its own sort directly (instant, the data is already loaded); this is
-         * the session-level entry point.
+         * Return every arrangement member — order, labels, tree, provenance
+         * and focus — to what the config declares, leaving `rows.field`.
          */
-        setSortRowsBy(arg?: RowSortSpec) {
-          self.sortRowsBy = arg
-        },
-        setHoveredTreeNode(node?: HoveredTreeNode) {
-          self.hoveredTreeNode = node
-        },
-        setTreeCanvasRef(ref: HTMLCanvasElement | null) {
-          self.treeCanvas = ref
-        },
-        setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
-          self.mouseoverCanvas = ref
+        resetRowArrangement() {
+          const base = baseArrangement(self)
+          for (const member of ROW_ARRANGEMENT_MEMBERS) {
+            write(member, base[member])
+          }
+          self.resetRowStyling()
+          persist()
         },
       }
     })

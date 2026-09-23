@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
+import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
@@ -7,20 +7,21 @@ import {
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 
-import { checkFacetField } from '../shared/checkFacetField.ts'
+import { checkRowsField } from '../shared/checkRowsField.ts'
 import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
 import { wiggleColorSchema } from '../shared/wiggleColorConfigSchema.ts'
 import {
   wiggleConfigSchemaFields,
   wiggleValueScale,
 } from '../shared/wiggleConfigSchemaFields.ts'
+import { wiggleRowColorSchema } from '../shared/wiggleRowColorConfigSchema.ts'
 import { WIGGLE_RENDERING_TYPES } from '../util.ts'
 
 /**
  * #config LinearWiggleDisplay
  * #category display
  * configuration for the quantitative display: an XY plot, density, line or
- * scatter rendering of one source or of many, with `facet: 'source'` giving
+ * scatter rendering of one source or of many, with `rows: 'source'` giving
  * each source a row of its own
  *
  * Per-source metadata (a `name`, `color` and `group` for each) is preloaded on
@@ -65,7 +66,7 @@ import { WIGGLE_RENDERING_TYPES } from '../util.ts'
  *       'https://example.com/sample2.bw',
  *     ],
  *   },
- *   displayDefaults: { facet: 'source' },
+ *   displayDefaults: { rows: 'source' },
  * }
  * ```
  *
@@ -108,22 +109,39 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       description: 'Default rendering type',
     },
     /**
-     * #slot facet
+     * #slot rows
      * One row per value of a field, stacked down the track with a label, a
-     * separator and the clustering sidebar. `source` — one row per subtrack —
-     * is the only field this display reads; leave it unset and every source is
-     * drawn in one shared plot. `domain` is the row order: the subtracks it
-     * names lead, the rest keep the adapter's order, and a clustering run
-     * rotates its dendrogram towards it rather than discarding it.
+     * separator and the clustering sidebar, and the arrangement a reader gives
+     * them. `source` — one row per subtrack — is the only field this display
+     * reads; leave it unset and every source is drawn in one shared plot.
+     * `domain` is the row order: the subtracks it names lead, the rest keep
+     * the adapter's order, and a clustering run rotates its dendrogram towards
+     * it rather than discarding it. `labels`, `tree`, `treeProvenance` and
+     * `kept` are what the arrangement dialog, a clustering run and a focus
+     * write, each as a session edit to this object.
      * #example
      * ```json
      * {
      *   "type": "LinearWiggleDisplay",
-     *   "facet": "source"
+     *   "rows": "source"
      * }
      * ```
      */
-    facet: facetConfigSchema,
+    rows: rowsConfigSchema,
+    /**
+     * #slot rowColor
+     * The colour a reader set on a named subtrack, as `domain`/`range` pairs:
+     * its plot, or under a score gradient the tint beside its label, ahead of
+     * the adapter's colour and the palette.
+     * #example
+     * ```json
+     * {
+     *   "type": "LinearWiggleDisplay",
+     *   "rowColor": { "domain": ["tumor"], "range": ["#b2182b"] }
+     * }
+     * ```
+     */
+    rowColor: wiggleRowColorSchema,
     ...trackHeightConfigSchemaFields(),
     /**
      * #slot color
@@ -187,7 +205,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
   {
     explicitlyTyped: true,
     explicitIdentifier: 'displayId',
-    preProcessSnapshot: checkFacetField('LinearWiggleDisplay'),
+    preProcessSnapshot: checkRowsField('LinearWiggleDisplay'),
   },
 )
 

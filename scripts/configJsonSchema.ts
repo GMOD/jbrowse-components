@@ -409,6 +409,8 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
         }
       case 'numberMap':
         return { type: 'object', additionalProperties: { type: 'number' } }
+      case 'stringMap':
+        return { type: 'object', additionalProperties: { type: 'string' } }
       case 'boolean':
       case 'maybeBoolean':
         return { type: 'boolean' }

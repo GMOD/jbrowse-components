@@ -403,12 +403,12 @@ and the colour and glyph channels' legend order are that one word and rule
 sections' order. Three of the four tree-sidebar displays (MAF and the two
 multi-sample variant ones) share the word as a `domain` row-order slot, read as
 `rowDomain` and applied under `layout`; the quantitative display takes its row
-order off `facet.domain` instead, because its own `domain` is the score axis
-(ADR-143). Their unlisted rows keep the order they
-arrived in (`orderRowsByDomain`), since a phylogeny's leaf order and a file's
-sample order mean something, and where a tree describes the rows the domain
-rotates it as far as the topology allows (`rotateNewickByDomain`, ggtree's
-`rotate`) rather than costing the dendrogram. The runtime half is one menu,
+order off `rows.domain` instead, the object that also holds its labels, tree
+and focus, because its own `domain` is the score axis (ADR-157). Their unlisted
+rows keep the order they arrived in (`orderRowsByDomain`), since a phylogeny's
+leaf order and a file's sample order mean something, and where a tree describes
+the rows the domain rotates it as far as the topology allows
+(`rotateNewickByDomain`, ggtree's `rotate`) rather than costing the dendrogram. The runtime half is one menu,
 `sectionOrderMenuItems` in `groupByMenu.ts`, whose move writes the whole drawn
 order back as the domain (`mergeDomain`); a re-pick of the same grouping keeps
 the domain (`carryGroupDomain`); the chips are `GroupLabelChips.tsx`, and the
@@ -457,7 +457,7 @@ rather than a facet's.
 
 ## The row panel, against ggtree and react-msaview
 
-The four displays composing `TreeSidebarMixin` (`packages/tree-sidebar`) share
+The four displays with the dendrogram sidebar (`packages/tree-sidebar`) share
 a layout ComplexHeatmap states outright: a body, and beside it marginal
 annotations that each read a field of a row table. ggtree draws the same
 picture with the tree as the body and `gheatmap`, `msaplot` and `facet_plot`
@@ -466,7 +466,8 @@ idea works the same correspondence from its side) names it the other way
 round, the alignment as the body and the tree as
 the first row panel, and its `rowData` table is what every row panel reads.
 Here the rows are samples, species or subtracks, the tree is the sidebar, and
-the row table is `layout`. The table is the correspondence, so a proposal on
+the row table is `layout`, or on the quantitative display the adapter's rows
+arranged by its `rows` object. The table is the correspondence, so a proposal on
 the sidebar can be read against both libraries before it is spelled.
 
 | Notion                             | ggtree                                             | react-msaview                                          | The tree sidebar                                                                                                                                                                                    |

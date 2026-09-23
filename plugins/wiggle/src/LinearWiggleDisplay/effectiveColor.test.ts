@@ -7,7 +7,7 @@ import { createTestEnvironment, makeSource } from './testEnv.ts'
 function makeDisplay(names: string[], faceted: boolean) {
   const { createDisplay } = createTestEnvironment()
   const { display, view } = createDisplay()
-  display.setFaceted(faceted)
+  display.setRowLayout(faceted)
   display.setRpcData(
     0,
     { sources: names.map(n => makeSource(n)) },
@@ -185,7 +185,7 @@ test('a threshold range that does not fit its cuts is a notice', () => {
 function scoredDisplay(sources: { name: string; color?: string }[]) {
   const { createDisplay } = createTestEnvironment()
   const { display, view } = createDisplay()
-  display.setFaceted(true)
+  display.setRowLayout(true)
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
   display.setRpcData(
     0,
@@ -240,7 +240,7 @@ test.each([
 
 test('a colour per source on xyplot draws no gradient key', () => {
   const display = scoredDisplay([{ name: 'a' }, { name: 'b' }])
-  display.setFaceted(false)
+  display.setRowLayout(false)
   expect(display.wiggleColor.perSource).toBe(true)
   expect(display.domain).toBeDefined()
   expect(scoreKey(display)).toBeUndefined()

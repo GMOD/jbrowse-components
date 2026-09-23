@@ -222,6 +222,16 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         },
         /**
          * #method
+         * The config.json entry `trackId` edits over, hydrated, or undefined
+         * for a track the session owns. What a display's "is this arranged"
+         * and "reset" compare its live config against.
+         */
+        baseTrackConfig(trackId: string): PlainTrackConfig | undefined {
+          const base = baseTracks(self).find(t => t.trackId === trackId)
+          return base ? toPlainConfig(base) : undefined
+        },
+        /**
+         * #method
          * The overridden slots for `trackId` (empty when it has no delta): each
          * changed setting's path, its base/default value and the edited value.
          * Drives the "view changes" dialog opened from the edited badge.

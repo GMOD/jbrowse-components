@@ -48,7 +48,7 @@ describe('MultiLinearWiggleDisplay declarative sortRowsBy', () => {
     // one-shot: the trigger clears itself, so a saved session keeps the row
     // order it produced without re-sorting on every load
     expect(display.sortRowsBy).toBeUndefined()
-    expect(display.layout.map(s => s.name)).toEqual(['b', 'c', 'a'])
+    expect(display.rowDomain).toEqual(['b', 'c', 'a'])
   })
 
   // The provenance this prop exists for is a session or figure spec, where the
@@ -94,7 +94,7 @@ describe('MultiLinearWiggleDisplay declarative sortRowsBy', () => {
         expect(display.sourcesWithoutLayout.length).toBe(2)
       })
 
-      expect(display.layout).toEqual([])
+      expect(display.rowDomain).toEqual([])
       expect(reported).not.toHaveBeenCalled()
     } finally {
       reported.mockRestore()
@@ -114,7 +114,7 @@ describe('MultiLinearWiggleDisplay declarative sortRowsBy', () => {
       expect(display.sourcesWithoutLayout.length).toBe(2)
     })
 
-    expect(display.layout).toEqual([])
+    expect(display.rowDomain).toEqual([])
     expect(display.sortRowsBy).toEqual({ refName: 'ctgB', pos: 600 })
   })
 
@@ -132,7 +132,7 @@ describe('MultiLinearWiggleDisplay declarative sortRowsBy', () => {
       expect(display.sourcesWithoutLayout.length).toBe(1)
     })
 
-    expect(display.layout).toEqual([])
+    expect(display.rowDomain).toEqual([])
     expect(display.sortRowsBy).toEqual({ refName: 'ctgA', pos: 600 })
   })
 })

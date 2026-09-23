@@ -308,154 +308,175 @@ export function createBaseTrackModel(
         return pm.getAdapterType(type)
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setPinned(flag: boolean) {
-        self.pinned = flag
-      },
-      /**
-       * #action
-       */
-      setMinimized(flag: boolean) {
-        self.minimized = flag
-      },
-      /**
-       * #action
-       */
-      setResizing(flag: boolean) {
-        self.resizing = flag
-      },
-
-      /**
-       * #action
-       * `applyDisplaySettings` on the display being drawn (`activeDisplay`,
-       * which a shown track always has — this is not meaningful on a bare
-       * config node) — the track-level entry for "restyle this track in
-       * place" (a session spec's inline keys, an agent's settings bag). Only
-       * that one display: settings vocabularies are per display type, so
-       * broadcasting one bag across a track's other displays would mis-route
-       * keys; address a non-active display directly if that is what you mean.
-       * See BaseDisplayModel for the routing and the `allowSetters` opt-in.
-       */
-      applyDisplaySettings(
-        settings: Record<string, unknown>,
-        options?: { allowSetters?: boolean },
-      ) {
-        return self.activeDisplay.applyDisplaySettings(settings, options)
-      },
-
-      /**
-       * #action
-       */
-      replaceDisplay(
-        oldDisplayId: string,
-        newDisplayId: string,
-        initialSnapshot = {},
-      ) {
-        const idx = self.displays.findIndex(
-          d => d.configuration.displayId === oldDisplayId,
-        )
-        if (idx === -1) {
-          throw new Error(
-            `could not find display id ${oldDisplayId} to replace`,
+    .actions(self => {
+      let persistTimeout: ReturnType<typeof setTimeout> | undefined
+      // Reads the config when it fires rather than when it was scheduled, so
+      // what reaches the session is the config as it stands, whatever swapped
+      // the resolved node inside the wait.
+      function persistConfiguration() {
+        persistTimeout = undefined
+        const session = getSession(self)
+        if (isSessionModelWithConfigEditing(session)) {
+          session.updateTrackConfiguration(
+            getSnapshot(self.configuration) as {
+              trackId: string
+              [key: string]: unknown
+            },
           )
         }
-        const displays = self.configuration.displays as DisplayConf[]
-        const displayConf = getDisplayConf(displays, newDisplayId)
-        // same interception showTrackGeneric makes: a registered-but-unloaded
-        // display would otherwise fail as an opaque union mismatch below
-        pm.resolveDisplayTypeRecord(displayConf.type)?.assertStateModelLoaded()
-        self.displays[idx] = {
-          ...initialSnapshot,
-          type: displayConf.type,
-          configuration: newDisplayId,
-        }
-      },
+      }
+      return {
+        /**
+         * #action
+         * Write the config to the session now rather than after the 400 ms
+         * wait, for an edit that has to be undoable the moment it lands.
+         */
+        persistConfigurationNow() {
+          clearTimeout(persistTimeout)
+          persistConfiguration()
+        },
+        /**
+         * #action
+         */
+        setPinned(flag: boolean) {
+          self.pinned = flag
+        },
+        /**
+         * #action
+         */
+        setMinimized(flag: boolean) {
+          self.minimized = flag
+        },
+        /**
+         * #action
+         */
+        setResizing(flag: boolean) {
+          self.resizing = flag
+        },
 
-      /**
-       * #action
-       * Persist any config-schema mutation (quick track-menu edits calling
-       * `setSlot` directly, or the full Settings dialog) back to the session,
-       * debounced, mirroring ConfigurationEditorWidget's own save. Both savers
-       * intentionally coexist — this one covers direct setSlot edits on a shown
-       * track, the widget covers an unshown track edited from the selector (no
-       * BaseTrackModel). When both fire they compute an identical delta, deduped
-       * in updateTrackConfiguration; don't drop one to "simplify". `reaction`
-       * (not `autorun`) on purpose: `self.configuration` is defined
-       * immediately on attach, unlike ConfigurationEditorWidget's `target`
-       * (which starts undefined), so an autorun's guaranteed first run would
-       * otherwise schedule a spurious flush for every track ever shown, even
-       * completely untouched ones — `reaction` only fires on an actual change.
-       *
-       * `equals: compareStructural` is load-bearing, not an optimization:
-       * `self.configuration` is a re-resolving reference, and persisting a save
-       * can swap the resolved node identity (the delta path reconciles in place
-       * but still churns once, and a session without deltas replaces the frozen
-       * `jbrowse.tracks` entry, rehydrating a brand-new MST node every write).
-       * Referential comparison would treat every such swap as a fresh change
-       * and re-fire the save, an unbounded debounced loop. Structural
-       * comparison settles once the content stops changing.
-       */
-      afterAttach() {
-        let timeout: ReturnType<typeof setTimeout> | undefined
-        addDisposer(
-          self,
-          reaction(
-            () => getSnapshot(self.configuration),
-            snapshot => {
-              clearTimeout(timeout)
-              timeout = setTimeout(() => {
-                const session = getSession(self)
-                if (isSessionModelWithConfigEditing(session)) {
-                  session.updateTrackConfiguration(
-                    snapshot as { trackId: string; [key: string]: unknown },
-                  )
+        /**
+         * #action
+         * `applyDisplaySettings` on the display being drawn (`activeDisplay`,
+         * which a shown track always has — this is not meaningful on a bare
+         * config node) — the track-level entry for "restyle this track in
+         * place" (a session spec's inline keys, an agent's settings bag). Only
+         * that one display: settings vocabularies are per display type, so
+         * broadcasting one bag across a track's other displays would mis-route
+         * keys; address a non-active display directly if that is what you mean.
+         * See BaseDisplayModel for the routing and the `allowSetters` opt-in.
+         */
+        applyDisplaySettings(
+          settings: Record<string, unknown>,
+          options?: { allowSetters?: boolean },
+        ) {
+          return self.activeDisplay.applyDisplaySettings(settings, options)
+        },
+
+        /**
+         * #action
+         */
+        replaceDisplay(
+          oldDisplayId: string,
+          newDisplayId: string,
+          initialSnapshot = {},
+        ) {
+          const idx = self.displays.findIndex(
+            d => d.configuration.displayId === oldDisplayId,
+          )
+          if (idx === -1) {
+            throw new Error(
+              `could not find display id ${oldDisplayId} to replace`,
+            )
+          }
+          const displays = self.configuration.displays as DisplayConf[]
+          const displayConf = getDisplayConf(displays, newDisplayId)
+          // same interception showTrackGeneric makes: a registered-but-unloaded
+          // display would otherwise fail as an opaque union mismatch below
+          pm.resolveDisplayTypeRecord(
+            displayConf.type,
+          )?.assertStateModelLoaded()
+          self.displays[idx] = {
+            ...initialSnapshot,
+            type: displayConf.type,
+            configuration: newDisplayId,
+          }
+        },
+
+        /**
+         * #action
+         * Persist any config-schema mutation (quick track-menu edits calling
+         * `setSlot` directly, or the full Settings dialog) back to the session,
+         * debounced, mirroring ConfigurationEditorWidget's own save. Both savers
+         * intentionally coexist — this one covers direct setSlot edits on a shown
+         * track, the widget covers an unshown track edited from the selector (no
+         * BaseTrackModel). When both fire they compute an identical delta, deduped
+         * in updateTrackConfiguration; don't drop one to "simplify". `reaction`
+         * (not `autorun`) on purpose: `self.configuration` is defined
+         * immediately on attach, unlike ConfigurationEditorWidget's `target`
+         * (which starts undefined), so an autorun's guaranteed first run would
+         * otherwise schedule a spurious flush for every track ever shown, even
+         * completely untouched ones — `reaction` only fires on an actual change.
+         *
+         * `equals: compareStructural` is load-bearing, not an optimization:
+         * `self.configuration` is a re-resolving reference, and persisting a save
+         * can swap the resolved node identity (the delta path reconciles in place
+         * but still churns once, and a session without deltas replaces the frozen
+         * `jbrowse.tracks` entry, rehydrating a brand-new MST node every write).
+         * Referential comparison would treat every such swap as a fresh change
+         * and re-fire the save, an unbounded debounced loop. Structural
+         * comparison settles once the content stops changing.
+         */
+        afterAttach() {
+          addDisposer(
+            self,
+            reaction(
+              () => getSnapshot(self.configuration),
+              () => {
+                clearTimeout(persistTimeout)
+                persistTimeout = setTimeout(persistConfiguration, 400)
+              },
+              { equals: compareStructural },
+            ),
+          )
+          addDisposer(self, () => {
+            clearTimeout(persistTimeout)
+          })
+
+          // Hold a claim on this track's rpcSessionId for as long as the track is
+          // open, so closing the last track using an adapter config evicts that
+          // adapter from the worker's dataAdapterCache. Without this nothing in
+          // the app ever reaches CoreFreeResources, and an adapter — with its
+          // parsed chunks, or in the unindexed case its whole parsed file — is
+          // reachable from module scope for as long as the worker lives, which no
+          // amount of garbage collection can help with.
+          //
+          // The id is tracked by reaction rather than captured once: rpcSessionId
+          // is derived from the adapter config, which a settings edit can change
+          // under a live track, and releasing an id we never retained would free
+          // an adapter another track is still using.
+          const { rpcManager } = getSession(self)
+          let retained = self.rpcSessionId
+          retainAdapterSession(rpcManager, retained)
+          addDisposer(
+            self,
+            reaction(
+              () => self.rpcSessionId,
+              next => {
+                if (next !== retained) {
+                  const previous = retained
+                  retained = next
+                  retainAdapterSession(rpcManager, next)
+                  void releaseAdapterSession(rpcManager, previous)
                 }
-              }, 400)
-            },
-            { equals: compareStructural },
-          ),
-        )
-        addDisposer(self, () => {
-          clearTimeout(timeout)
-        })
-
-        // Hold a claim on this track's rpcSessionId for as long as the track is
-        // open, so closing the last track using an adapter config evicts that
-        // adapter from the worker's dataAdapterCache. Without this nothing in
-        // the app ever reaches CoreFreeResources, and an adapter — with its
-        // parsed chunks, or in the unindexed case its whole parsed file — is
-        // reachable from module scope for as long as the worker lives, which no
-        // amount of garbage collection can help with.
-        //
-        // The id is tracked by reaction rather than captured once: rpcSessionId
-        // is derived from the adapter config, which a settings edit can change
-        // under a live track, and releasing an id we never retained would free
-        // an adapter another track is still using.
-        const { rpcManager } = getSession(self)
-        let retained = self.rpcSessionId
-        retainAdapterSession(rpcManager, retained)
-        addDisposer(
-          self,
-          reaction(
-            () => self.rpcSessionId,
-            next => {
-              if (next !== retained) {
-                const previous = retained
-                retained = next
-                retainAdapterSession(rpcManager, next)
-                void releaseAdapterSession(rpcManager, previous)
-              }
-            },
-          ),
-        )
-        addDisposer(self, () => {
-          void releaseAdapterSession(rpcManager, retained)
-        })
-      },
-    }))
+              },
+            ),
+          )
+          addDisposer(self, () => {
+            void releaseAdapterSession(rpcManager, retained)
+          })
+        },
+      }
+    })
     .actions(self => ({
       /**
        * #action

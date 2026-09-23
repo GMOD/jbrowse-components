@@ -6116,6 +6116,122 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "Rows": {
+      "title": "Rows",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "$ref": "#/$defs/FeatureField",
+          "default": "",
+          "type": "string"
+        },
+        {
+          "title": "Rows",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "the field each value of which takes a row of its own.",
+              "$ref": "#/$defs/FeatureField",
+              "default": ""
+            },
+            "domain": {
+              "description": "the row order: the values listed lead, in this order, and the rest keep the order they arrived in.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "labels": {
+              "description": "a label drawn beside a row in place of its value, by value.",
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "tree": {
+              "description": "the dendrogram beside the rows, as newick, written by a clustering run beside the order it produced.",
+              "$ref": "#/$defs/PlainString"
+            },
+            "treeProvenance": {
+              "description": "what tree was computed from, the locus and the settings; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "not": {
+                "$ref": "#/$defs/JexlString"
+              }
+            },
+            "kept": {
+              "description": "the rows shown, by value; empty, or naming no current row, shows every row.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "WiggleRowColor": {
+      "title": "WiggleRowColor",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "domain": {
+          "description": "the subtracks given a colour of their own, by name.",
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "range": {
+          "description": "the CSS colour each subtrack in domain takes, in the same order.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CssColor"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "WiggleColor": {
       "title": "WiggleColor",
       "anyOf": [
@@ -6317,8 +6433,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ],
           "default": "xyplot"
         },
-        "facet": {
-          "$ref": "#/$defs/Facet"
+        "rows": {
+          "$ref": "#/$defs/Rows"
+        },
+        "rowColor": {
+          "$ref": "#/$defs/WiggleRowColor"
         },
         "height": {
           "description": "default height for the track.",
@@ -6451,8 +6570,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ],
           "default": "xyplot"
         },
-        "facet": {
-          "$ref": "#/$defs/Facet"
+        "rows": {
+          "$ref": "#/$defs/Rows"
+        },
+        "rowColor": {
+          "$ref": "#/$defs/WiggleRowColor"
         },
         "height": {
           "description": "default height for the track.",
@@ -6600,8 +6722,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ],
           "default": "xyplot"
         },
-        "facet": {
-          "$ref": "#/$defs/Facet"
+        "rows": {
+          "$ref": "#/$defs/Rows"
+        },
+        "rowColor": {
+          "$ref": "#/$defs/WiggleRowColor"
         },
         "height": {
           "description": "default height for the track.",
@@ -9266,8 +9391,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "defaultRendering": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/defaultRendering"
             },
-            "facet": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/facet"
+            "rows": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/rows"
+            },
+            "rowColor": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/rowColor"
             },
             "color": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/color"
@@ -10166,15 +10294,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
-            "facet": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/facet"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
-                }
-              ]
+            "rows": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rows"
+            },
+            "rowColor": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rowColor"
             },
             "height": {
               "anyOf": [
@@ -10296,6 +10420,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
+            },
+            "facet": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
             },
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
@@ -10417,15 +10544,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
-            "facet": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/facet"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
-                }
-              ]
+            "rows": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rows"
+            },
+            "rowColor": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rowColor"
             },
             "height": {
               "anyOf": [
@@ -10548,6 +10671,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
             },
+            "facet": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
+            },
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
             },
@@ -10668,8 +10794,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "defaultRendering": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/defaultRendering"
             },
-            "facet": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/facet"
+            "rows": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/rows"
+            },
+            "rowColor": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/rowColor"
             },
             "height": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/height"
@@ -14467,6 +14596,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearMultiRowFeatureDisplayState": {
       "type": "object",
       "properties": {
+        "runClustering": {
+          "type": "boolean"
+        },
+        "clusterRegion": {
+          "type": "string"
+        },
+        "sortRowsBy": {},
         "layout": {},
         "clusterTree": {
           "type": "string"
@@ -14478,13 +14614,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "string"
           }
         },
-        "runClustering": {
-          "type": "boolean"
-        },
-        "clusterRegion": {
-          "type": "string"
-        },
-        "sortRowsBy": {},
         "hiddenCategories": {
           "type": "array",
           "items": {
@@ -15030,6 +15159,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearMultiSampleVariantDisplayState": {
       "type": "object",
       "properties": {
+        "runClustering": {
+          "type": "boolean"
+        },
+        "clusterRegion": {
+          "type": "string"
+        },
+        "sortRowsBy": {},
         "layout": {},
         "clusterTree": {
           "type": "string"
@@ -15041,13 +15177,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "string"
           }
         },
-        "runClustering": {
-          "type": "boolean"
-        },
-        "clusterRegion": {
-          "type": "string"
-        },
-        "sortRowsBy": {},
         "jexlFiltersSetting": {
           "type": "array",
           "items": {
@@ -15105,6 +15234,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearMultiSampleVariantMatrixDisplayState": {
       "type": "object",
       "properties": {
+        "runClustering": {
+          "type": "boolean"
+        },
+        "clusterRegion": {
+          "type": "string"
+        },
+        "sortRowsBy": {},
         "layout": {},
         "clusterTree": {
           "type": "string"
@@ -15116,13 +15252,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "string"
           }
         },
-        "runClustering": {
-          "type": "boolean"
-        },
-        "clusterRegion": {
-          "type": "string"
-        },
-        "sortRowsBy": {},
         "jexlFiltersSetting": {
           "type": "array",
           "items": {
@@ -15224,17 +15353,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearWiggleDisplayState": {
       "type": "object",
       "properties": {
-        "layout": {},
-        "clusterTree": {
-          "type": "string"
-        },
-        "clusterProvenance": {},
-        "subtreeFilter": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
         "runClustering": {
           "type": "boolean"
         },
@@ -15286,17 +15404,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearGCContentDisplayState": {
       "type": "object",
       "properties": {
-        "layout": {},
-        "clusterTree": {
-          "type": "string"
-        },
-        "clusterProvenance": {},
-        "subtreeFilter": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
         "runClustering": {
           "type": "boolean"
         },
@@ -15348,17 +15455,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearGCContentTrackDisplayState": {
       "type": "object",
       "properties": {
-        "layout": {},
-        "clusterTree": {
-          "type": "string"
-        },
-        "clusterProvenance": {},
-        "subtreeFilter": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
         "runClustering": {
           "type": "boolean"
         },
@@ -15410,6 +15506,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearMafDisplayState": {
       "type": "object",
       "properties": {
+        "runClustering": {
+          "type": "boolean"
+        },
+        "clusterRegion": {
+          "type": "string"
+        },
+        "sortRowsBy": {},
         "layout": {},
         "clusterTree": {
           "type": "string"
@@ -15421,13 +15524,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "string"
           }
         },
-        "runClustering": {
-          "type": "boolean"
-        },
-        "clusterRegion": {
-          "type": "string"
-        },
-        "sortRowsBy": {},
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."

@@ -50,7 +50,7 @@ const perSourceColor: ResolvedWiggleColor = { ...baseColor, perSource: true }
 
 const baseGpuProps: WiggleGpuProps = {
   sources: [{ name: 'default' }],
-  faceted: true,
+  rowLayout: true,
   wiggleColor: baseColor,
   origin: 0,
   effectiveSummaryScoreMode: 'avg',
@@ -123,7 +123,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
       {
         ...baseGpuProps,
         sources: [{ name: 'default' }, { name: 'b' }],
-        faceted: false,
+        rowLayout: false,
         effectiveSummaryScoreMode: 'whiskers',
         renderingType: 'linecenter',
       },
@@ -148,7 +148,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
           { name: 'default', color: '#00ff00' },
           { name: 'b', color: '#ff00ff' },
         ],
-        faceted: false,
+        rowLayout: false,
         wiggleColor: perSourceColor,
         effectiveSummaryScoreMode: 'whiskers',
         renderingType: 'linecenter',
@@ -267,7 +267,7 @@ describe('buildSourceRenderData pos/neg coloring', () => {
           { name: 'default', color: '#00ff00' },
           { name: 'b', color: '#ff00ff' },
         ],
-        faceted: false,
+        rowLayout: false,
         wiggleColor: perSourceColor,
       },
     )
@@ -281,7 +281,7 @@ describe('buildSourceRenderData pos/neg coloring', () => {
     const [layer] = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
       effectiveSummaryScoreMode: 'avg',
-      faceted: false,
+      rowLayout: false,
     })
     const [above, below] = layer!.colorsAbgr!
     expect(above).not.toBe(below)

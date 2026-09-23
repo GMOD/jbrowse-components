@@ -3178,13 +3178,13 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
+        "runClustering",
+        "clusterRegion",
+        "sortRowsBy",
         "layout",
         "clusterTree",
         "clusterProvenance",
         "subtreeFilter",
-        "runClustering",
-        "clusterRegion",
-        "sortRowsBy",
         "configuration",
         "hiddenCategories"
       ]
@@ -4484,13 +4484,13 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
+        "runClustering",
+        "clusterRegion",
+        "sortRowsBy",
         "layout",
         "clusterTree",
         "clusterProvenance",
         "subtreeFilter",
-        "runClustering",
-        "clusterRegion",
-        "sortRowsBy",
         "configuration",
         "jexlFiltersSetting"
       ]
@@ -4616,13 +4616,13 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
+        "runClustering",
+        "clusterRegion",
+        "sortRowsBy",
         "layout",
         "clusterTree",
         "clusterProvenance",
         "subtreeFilter",
-        "runClustering",
-        "clusterRegion",
-        "sortRowsBy",
         "configuration",
         "jexlFiltersSetting"
       ]
@@ -4715,8 +4715,8 @@ export const configManifest: ConfigManifest = {
           "type": "Rendering type"
         },
         {
-          "name": "facet",
-          "type": "FacetConfigurationSchema",
+          "name": "rows",
+          "type": "RowsConfigurationSchema",
           "subSlots": [
             {
               "name": "field",
@@ -4726,9 +4726,41 @@ export const configManifest: ConfigManifest = {
               "name": "domain",
               "type": "string[]",
               "liftsNumbers": true
+            },
+            {
+              "name": "labels",
+              "type": "Map<string, string>"
+            },
+            {
+              "name": "tree",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "treeProvenance",
+              "type": "(frozen | undefined)"
+            },
+            {
+              "name": "kept",
+              "type": "string[]",
+              "liftsNumbers": true
             }
           ],
           "shorthand": "field"
+        },
+        {
+          "name": "rowColor",
+          "type": "WiggleRowColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "range",
+              "type": "CssColorEntry[]"
+            }
+          ]
         },
         {
           "name": "height",
@@ -4901,10 +4933,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "layout",
-        "clusterTree",
-        "clusterProvenance",
-        "subtreeFilter",
         "runClustering",
         "clusterRegion",
         "sortRowsBy",
@@ -4926,8 +4954,8 @@ export const configManifest: ConfigManifest = {
           "type": "Rendering type"
         },
         {
-          "name": "facet",
-          "type": "FacetConfigurationSchema",
+          "name": "rows",
+          "type": "RowsConfigurationSchema",
           "subSlots": [
             {
               "name": "field",
@@ -4937,9 +4965,41 @@ export const configManifest: ConfigManifest = {
               "name": "domain",
               "type": "string[]",
               "liftsNumbers": true
+            },
+            {
+              "name": "labels",
+              "type": "Map<string, string>"
+            },
+            {
+              "name": "tree",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "treeProvenance",
+              "type": "(frozen | undefined)"
+            },
+            {
+              "name": "kept",
+              "type": "string[]",
+              "liftsNumbers": true
             }
           ],
           "shorthand": "field"
+        },
+        {
+          "name": "rowColor",
+          "type": "WiggleRowColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "range",
+              "type": "CssColorEntry[]"
+            }
+          ]
         },
         {
           "name": "height",
@@ -5124,10 +5184,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "layout",
-        "clusterTree",
-        "clusterProvenance",
-        "subtreeFilter",
         "runClustering",
         "clusterRegion",
         "sortRowsBy",
@@ -5149,8 +5205,8 @@ export const configManifest: ConfigManifest = {
           "type": "Rendering type"
         },
         {
-          "name": "facet",
-          "type": "FacetConfigurationSchema",
+          "name": "rows",
+          "type": "RowsConfigurationSchema",
           "subSlots": [
             {
               "name": "field",
@@ -5160,9 +5216,41 @@ export const configManifest: ConfigManifest = {
               "name": "domain",
               "type": "string[]",
               "liftsNumbers": true
+            },
+            {
+              "name": "labels",
+              "type": "Map<string, string>"
+            },
+            {
+              "name": "tree",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "treeProvenance",
+              "type": "(frozen | undefined)"
+            },
+            {
+              "name": "kept",
+              "type": "string[]",
+              "liftsNumbers": true
             }
           ],
           "shorthand": "field"
+        },
+        {
+          "name": "rowColor",
+          "type": "WiggleRowColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "range",
+              "type": "CssColorEntry[]"
+            }
+          ]
         },
         {
           "name": "height",
@@ -5347,10 +5435,6 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "layout",
-        "clusterTree",
-        "clusterProvenance",
-        "subtreeFilter",
         "runClustering",
         "clusterRegion",
         "sortRowsBy",
@@ -5483,13 +5567,13 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
+        "runClustering",
+        "clusterRegion",
+        "sortRowsBy",
         "layout",
         "clusterTree",
         "clusterProvenance",
         "subtreeFilter",
-        "runClustering",
-        "clusterRegion",
-        "sortRowsBy",
         "configuration"
       ]
     },

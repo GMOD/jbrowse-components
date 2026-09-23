@@ -61,6 +61,7 @@ export {
   computeClusterHierarchy,
   filterRowsBySubtree,
   getLeafNames,
+  keptRows,
   orderRowsByDomain,
   parseClusterOrder,
   parseClusterTree,
@@ -82,7 +83,9 @@ export type { RpcMethodCaller } from './rpcMethodCaller.ts'
 export { default as ClusterModeSelector } from './ClusterModeSelector.tsx'
 export { default as ClusterProgress } from './ClusterProgress.tsx'
 export { useClusterRun } from './useClusterRun.ts'
-export { TreeSidebarMixin } from './TreeSidebarMixin.ts'
+export { TreeSidebarMixin, baseDisplayConfig } from './TreeSidebarMixin.ts'
+export { LayoutTreeSidebarMixin } from './LayoutTreeSidebarMixin.ts'
+export type { ClusterRun } from './treeSidebarBase.ts'
 // Moved to display-kit on 2026-08-27 — right-click state is a display concern
 // every plugin has, not a tree one. Re-exported so nothing importing the old
 // name breaks; new code names the display-kit subpath.

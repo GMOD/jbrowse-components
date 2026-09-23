@@ -33,11 +33,11 @@ export function makeMultiWiggleData(...names: string[]): WiggleDataResult[] {
 // ones declared. `createDisplay(snapshot)` takes display-instance keys, which
 // is how the clustering and sort autorun tests seed `runClustering`;
 // `displayConfig` takes config slots, for the ones with no setter
-// (`facet.domain`).
+// (`rows.domain`).
 //
 // The track type's own display defaults are a Core-preProcessTrackConfig
 // handler this bare harness does not install, so a test that wants one row per
-// source calls `setFaceted(true)`.
+// source calls `setRowLayout(true)`.
 export function createTestEnvironment({
   displayConfig,
 }: { displayConfig?: Record<string, unknown> } = {}) {

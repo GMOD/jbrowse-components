@@ -1,5 +1,6 @@
 import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
-import { filterRowsBySubtree, orderRowsByDomain } from '@jbrowse/tree-sidebar'
+import { isCssColor } from '@jbrowse/core/util/cssColorParse'
+import { keptRows, orderRowsByDomain } from '@jbrowse/tree-sidebar'
 
 import type { Source } from '../util.ts'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
@@ -154,26 +155,128 @@ function synthesizeColors(
 }
 
 // What the canvas/SVG renderers consume: the editable sources with their colors
-// resolved per the table above, then narrowed to the focused subtree. `palette`
-// is what a colour per source hands out, undefined where the colour is not one.
+// resolved per the table above, then narrowed to the focus. `palette` is what
+// a colour per source hands out, undefined where the colour is not one.
 //
-// **Synthesis runs over the full list and the filter applies after**, so a
+// **Synthesis runs over the full list and the focus applies after**, so a
 // source's color is keyed to its position among all sources rather than among
 // the survivors: focusing a clade hides rows without recoloring the ones it
 // keeps, and the legend a user just read stays valid. This is the ordering
 // `filterRowsBySubtree` documents as hide-only.
 export function buildSources(
   editableSources: Source[],
-  subtreeFilter: readonly string[] | undefined,
+  kept: readonly string[] | undefined,
   palette: SourcePalette | undefined,
   gradientPaints: boolean,
 ): Source[] {
   const colors = buildPaletteColors(editableSources, palette ?? DEFAULT_PALETTE)
-  return filterRowsBySubtree(
+  return keptRows(
     editableSources.map(s => ({
       ...s,
       ...synthesizeColors(s, palette !== undefined, gradientPaints, colors),
     })),
-    subtreeFilter,
+    kept,
   )
+}
+
+/**
+ * The channel a reader's colour for a row lands on: the label tint where the
+ * rows are labelled and a gradient has the plot, the plot colour otherwise —
+ * in one shared box there is no label to tint, so the colour goes to the plot
+ * whatever the gradient.
+ */
+function identityChannel({
+  gradientPaints,
+  rowLayout,
+}: {
+  gradientPaints: boolean
+  rowLayout: boolean
+}) {
+  return gradientPaints && rowLayout ? 'labelColor' : 'color'
+}
+
+/**
+ * The adapter's rows in the reader's arrangement: `domain` leading, a label
+ * from `labels` over the adapter's, and a `rowColors` entry on the channel a
+ * row's identity paints through — `labelColor` under a gradient, `color`
+ * otherwise, the same rule `synthesizeColors` reads by. Hands back `discovered`
+ * itself when nothing is arranged, so an identity-keyed consumer sees no
+ * change.
+ */
+export function arrangeSources(
+  discovered: Source[],
+  {
+    domain,
+    labels,
+    rowColors,
+    gradientPaints,
+    rowLayout,
+  }: {
+    domain: readonly string[]
+    labels: Readonly<Record<string, string>>
+    rowColors: ReadonlyMap<string, string>
+    gradientPaints: boolean
+    rowLayout: boolean
+  },
+): Source[] {
+  const ordered = orderRowsByDomain(discovered, domain)
+  if (rowColors.size === 0 && Object.keys(labels).length === 0) {
+    return ordered
+  }
+  const channel = identityChannel({ gradientPaints, rowLayout })
+  return ordered.map(s => {
+    const label = labels[s.name]
+    const color = rowColors.get(s.name)
+    return {
+      ...s,
+      ...(label === undefined ? {} : { label }),
+      ...(color === undefined ? {} : { [channel]: color }),
+    }
+  })
+}
+
+/**
+ * What the arrangement dialog's rows say beyond what the adapter supplied: a
+ * label or a colour on the mode's identity channel that differs from the
+ * discovered row's. The whole of `rows.labels` and `rowColor`, rebuilt, so an
+ * edit cleared in the dialog is cleared in the config. The colour pairs keep
+ * `baseOrder`, the config's own `rowColor.domain`, ahead of any new name, so a
+ * reorder that changes no colour writes the config's pairs back unchanged. A
+ * string the painters cannot parse is left out rather than stored.
+ */
+export function rowEditsOf(
+  rows: readonly Source[],
+  discovered: readonly Source[],
+  {
+    gradientPaints,
+    rowLayout,
+    baseOrder,
+  }: {
+    gradientPaints: boolean
+    rowLayout: boolean
+    baseOrder: readonly string[]
+  },
+) {
+  const byName = new Map(discovered.map(s => [s.name, s]))
+  const channel = identityChannel({ gradientPaints, rowLayout })
+  const labels: Record<string, string> = {}
+  const colors = new Map<string, string>()
+  for (const row of rows) {
+    const base = byName.get(row.name)
+    if (row.label !== undefined && row.label !== base?.label) {
+      labels[row.name] = row.label
+    }
+    const color = row[channel]
+    if (color !== undefined && color !== base?.[channel] && isCssColor(color)) {
+      colors.set(row.name, color)
+    }
+  }
+  const domain = [
+    ...baseOrder.filter(name => colors.has(name)),
+    ...[...colors.keys()].filter(name => !baseOrder.includes(name)),
+  ]
+  return {
+    labels,
+    rowColor: { domain, range: domain.map(name => colors.get(name)!) },
+  }
 }

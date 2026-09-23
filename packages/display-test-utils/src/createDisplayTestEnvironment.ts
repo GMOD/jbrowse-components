@@ -8,6 +8,7 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { displayTestSessionModel } from './displayTestSessionModel.ts'
 import { testAssembly, testAssemblyManager } from './testAssembly.ts'
@@ -276,6 +277,10 @@ export function createDisplayTestEnvironment<T>({
     },
     { pluginManager },
   )
+  const baseTrackSnapshot = getSnapshot(trackConfig) as {
+    trackId: string
+    [key: string]: unknown
+  }
 
   const Session = displayTestSessionModel({
     viewModel: ViewModel,
@@ -295,6 +300,8 @@ export function createDisplayTestEnvironment<T>({
     ),
     getTrackById: (id: string) =>
       id === 'test_track' ? trackConfig : undefined,
+    baseTrackConfig: (id: string) =>
+      id === 'test_track' ? baseTrackSnapshot : undefined,
   })
 
   /**

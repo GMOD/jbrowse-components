@@ -22,6 +22,7 @@ import NumberEditor from './NumberEditor.tsx'
 import NumberMapEditor from './NumberMapEditor.tsx'
 import StringArrayEditor from './StringArrayEditor.tsx'
 import StringArrayMapEditor from './StringArrayMapEditor.tsx'
+import StringMapEditor from './StringMapEditor.tsx'
 import { useSlotEditorStyles } from './useSlotEditorStyles.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -162,6 +163,7 @@ const valueComponents: Record<string, React.ComponentType<any>> = {
   stringEnumArray: StringEnumArrayEditor,
   stringArrayMap: StringArrayMapEditor,
   numberMap: NumberMapEditor,
+  stringMap: StringMapEditor,
   number: NumberEditor,
   maybeNumber: NumberEditor,
   integer: IntegerEditor,

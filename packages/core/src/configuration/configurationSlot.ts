@@ -60,6 +60,7 @@ const slotTypes = {
     fallbackDefault: {},
   },
   numberMap: { model: types.map(types.number), fallbackDefault: {} },
+  stringMap: { model: types.map(types.string), fallbackDefault: {} },
   boolean: { model: types.boolean, fallbackDefault: true },
   color: { model: CssColorType, fallbackDefault: 'black' },
   integer: { model: types.integer, fallbackDefault: 1 },

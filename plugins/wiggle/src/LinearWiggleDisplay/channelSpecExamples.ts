@@ -17,11 +17,11 @@ export const CHANNEL_SPEC_EXAMPLES = [
     description: 'one color per subtrack',
   },
   {
-    spec: '{ "facet": "source" }',
+    spec: '{ "rows": "source" }',
     description: 'one row per subtrack, with the sidebar',
   },
   {
-    spec: '{ "facet": null, "color": null }',
+    spec: '{ "rows": null, "color": null }',
     description: 'one shared plot, default color',
   },
 ]

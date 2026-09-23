@@ -80,9 +80,9 @@ function sourceLayers({
 // roundtrip.
 export interface WiggleGpuProps {
   sources: { name: string; color?: string }[]
-  // Whether the display sections its sources, one row each (`facet: 'source'`).
-  // Unfaceted, every source is drawn on row 0 in one shared plot.
-  faceted: boolean
+  // Whether the display puts its sources on rows, one each (`rows: 'source'`).
+  // Otherwise every source is drawn on row 0 in one shared plot.
+  rowLayout: boolean
   // The `color` object resolved: the pair each mode partitions by, the value
   // they part at, and whether each source paints its own colour on both sides.
   wiggleColor: ResolvedWiggleColor
@@ -142,7 +142,7 @@ export function buildSourceRenderData(
 ): SourceRenderData[] {
   const {
     sources,
-    faceted,
+    rowLayout,
     wiggleColor,
     origin,
     effectiveSummaryScoreMode: summaryScoreMode,
@@ -172,7 +172,7 @@ export function buildSourceRenderData(
   // payload. An empty list therefore draws nothing, which is what a subtree
   // filter matching no present source means; falling back to the payload there
   // painted its first source full-height underneath the "no subtracks match"
-  // message. Unfaceted, every source collapses onto row 0.
+  // message. In one shared plot, every source collapses onto row 0.
   for (let i = 0; i < sources.length; i++) {
     const orderedSource = sources[i]!
     const source = sourcesByName.get(orderedSource.name)
@@ -180,7 +180,7 @@ export function buildSourceRenderData(
       const posColor = orderedSource.color
         ? cssColorToNormalizedRgb(orderedSource.color)
         : defaultPosColor
-      const row = faceted ? i : 0
+      const row = rowLayout ? i : 0
       // With a row each the neg side keeps the shared negColor even when the
       // source has a colour of its own, so signed data still reads as a pos/neg
       // plot. Do NOT "fix" this to paint the whole row in the source's colour.

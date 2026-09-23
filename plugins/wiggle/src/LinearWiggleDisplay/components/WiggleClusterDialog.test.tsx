@@ -47,7 +47,7 @@ test('the auto tab runs clustering and closes', async () => {
   await waitFor(() => {
     expect(handleClose).toHaveBeenCalled()
   })
-  expect(display.layout.map(s => s.name)).toEqual(['b', 'a'])
+  expect(display.rowDomain).toEqual(['b', 'a'])
 })
 
 test('the manual tab offers no downloads until the matrix arrives', async () => {
@@ -96,7 +96,7 @@ test('a bad pasted order keeps the manual tab open and says why', async () => {
   const { createDisplay } = setup()
   const { display } = createDisplay()
   await loadSources(display)
-  const before = display.layout.map(s => s.name)
+  const before = display.rowDomain
 
   const handleClose = jest.fn()
   const { getByLabelText, getByText, findByText } = render(
@@ -107,7 +107,7 @@ test('a bad pasted order keeps the manual tab open and says why', async () => {
   await userEvent.click(getByText('Apply clustering'))
 
   expect(handleClose).not.toHaveBeenCalled()
-  expect(display.layout.map(s => s.name)).toEqual(before)
+  expect(display.rowDomain).toEqual(before)
   expect(await findByText(/expected 2 entries, got 1/)).toBeTruthy()
   expect(`${reported.mock.calls[0]?.[0]}`).toContain(
     'expected 2 entries, got 1',
@@ -128,6 +128,6 @@ test('a complete pasted order applies and closes', async () => {
   await userEvent.type(getByLabelText(/Paste result/), '2\n1')
   await userEvent.click(getByText('Apply clustering'))
 
-  expect(display.layout.map(s => s.name)).toEqual(['b', 'a'])
+  expect(display.rowDomain).toEqual(['b', 'a'])
   expect(handleClose).toHaveBeenCalled()
 })

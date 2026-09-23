@@ -45,34 +45,37 @@ distinguishes stale from "no tree" and from "deliberately not positioned"
 
 ## A declared row order rotates the tree, it does not reorder against it
 
-The `domain` slot is a preference wherever the rows are a tree's leaves: a
-phylogeny fixes its leaf order only up to a rotation at each node, so
-`rotateNewickByDomain` turns each node towards the earliest listed leaf below it
-and the dendrogram keeps drawing. It is pure over `NewickNode` — no jbrowse
-import, so it lifts into `@gmod/newick` as written — and builds fresh nodes
-iteratively. `parsedTree` is cached per newick string, so an in-place sort
+The declared row order — `rows.domain`, or the `domain` slot on a
+`LayoutTreeSidebarMixin` display — is a preference wherever the rows are a
+tree's leaves: a phylogeny fixes its leaf order only up to a rotation at each
+node, so `rotateNewickByDomain` turns each node towards the earliest listed leaf
+below it and the dendrogram keeps drawing. It is pure over `NewickNode` — no
+jbrowse import, so it lifts into `@gmod/newick` as written — and builds fresh
+nodes iteratively. `parsedTree` is cached per newick string, so an in-place sort
 compounds across domain changes and an unlisted clade never returns to file
 order.
 
-**Where it runs is the design.** Parse time rotates only a tree nothing has
-arranged under — no `clusterProvenance`, so it was supplied rather than
-computed, and no `layout`, so the rows are the tree's own leaves. maf reads its
-row order back off that same computed, so the leaves and the rows cannot drift.
-Everything else rotates in the run that produced it: `rotateClusterRun`, called
-from `applyClusterRun` and from variants' `applyClusterOrder`, which is the path
-`runGenotypeClustering` takes instead. Rotating an arranged tree on the way out
-would turn a restored session's dendrogram away from the `layout` saved beside
-it and draw nothing at all — and the `layout` is the stronger half of that gate,
-because a run's `setRowOrder` takes its provenance optionally. The R-paste
-`applyOrder` path carries no tree and rotates nothing: a paste is an explicit
-order.
+**Where it runs is the design.** Parse time rotates only a tree that was
+supplied rather than computed. On `TreeSidebarMixin` provenance alone says so,
+because `rows.domain` is the arrangement itself: a run writes its tree's leaf
+order there in the same action as the tree. On `LayoutTreeSidebarMixin` the gate
+is no `clusterProvenance` and no `layout`, so the rows are the tree's own
+leaves, and the `layout` is the stronger half, because a run's `setRowOrder`
+takes its provenance optionally. maf reads its row order back off that same
+computed, so the leaves and the rows cannot drift. Everything else rotates in
+the run that produced it: `rotateClusterRun`, called from `applyClusterRun` and
+from variants' `applyClusterOrder`, which is the path `runGenotypeClustering`
+takes instead. Rotating an arranged tree on the way out would turn a restored
+session's dendrogram away from the order saved beside it and draw nothing at
+all. The R-paste `applyOrder` path carries no tree and rotates nothing: a paste
+is an explicit order.
 
 `writeNewick` is the only thing here that writes the format rather than reading
 it, for that rotated run tree alone. It imports hclust's `quoteName` rather than
 restating the escaping rule, and it keeps whichever `length` encoding it was
 handed.
 
-## `clusterProvenance` is written in the same action as the tree, always
+## A tree's provenance is written in the same action as the tree, always
 
 `treeDescribesRows` gates on row **names**, which don't change when you pan, so
 the tree stays drawn over a different locus looking just as authoritative.
@@ -81,14 +84,48 @@ as an overlap fraction — `contentBlocks` shift a sub-bp amount on any pan, so
 equality would flag constantly.
 
 The invariant is not that provenance is present but that it is never **wrong**,
-so `clusterTree` has exactly one writer: the mixin's private
-`writeTree(tree, provenance)`. The four public actions differ only in what they
-pass — a reorder and `resetRowArrangement` pass nothing, and `setClusterTree`
-(maf's supplied `.nh`) passes nothing because a phylogeny has no locus — so a
-tree with no provenance is also the signal it was supplied rather than computed.
-`SvgTreeSidebar` draws the same drift-only hint in the export
-(`SvgClusterProvenanceHint`), and `clusterProvenanceMenuItems` puts the locus in
-the menu.
+so each mixin writes the tree through one private `writeTree`, which sets the
+provenance beside it. `TreeSidebarMixin`'s writes `rows.tree` and
+`rows.treeProvenance` together from `setRowOrder`: a run passes its result, and
+a reorder that moves a row passes nothing; `resetRowArrangement` returns both to
+the config.json's in one action. `LayoutTreeSidebarMixin`'s is the one writer of
+`clusterTree` and `clusterProvenance`: a reorder and `resetRowArrangement` pass
+nothing, and `setClusterTree` (maf's supplied `.nh`) passes nothing because a
+phylogeny has no locus. So a tree with no provenance is also the signal it was
+supplied rather than computed. `SvgTreeSidebar` draws the same drift-only hint
+in the export (`SvgClusterProvenanceHint`), and `clusterProvenanceMenuItems`
+puts the locus in the menu.
+
+## Two mixins until the last display moves
+
+`TreeSidebarMixin` keeps a display's arrangement in its `rows` config object;
+`LayoutTreeSidebarMixin` keeps it in display state (`layout`, `clusterTree`,
+`clusterProvenance`, `subtreeFilter`) for the multi-row feature display,
+`MultiSampleVariantBaseModel` and MAF until each moves (ADR-157).
+`treeSidebarBase` is the half the store does not change — the toggles, the
+launch specs, the hover and canvas volatiles — and both mixins put one API over
+it: `rowDomain`, `rowTree`, `rowTreeProvenance`, `rowFocus`,
+`rowArrangementIsCustom`, `rowOrderWillDropTree`, `setRowOrder`, `setRowFocus`,
+`resetRowArrangement`. **Shared code reads that API, never a prop behind it**,
+so the sidebar, clustering, the column sort and the menus work over either.
+
+What the config-backed mixin adds:
+
+- **Every writer flushes** through the track's `persistConfigurationNow()`, so
+  an arrangement is in the session, and undoable, the moment it lands rather
+  than after the track's 400 ms save, in which window a ctrl+z undoes the
+  previous change instead.
+- **A reset returns to the config.json** through `baseDisplayConfig(self)`, or
+  to nothing on a track the session owns, and never touches `rows.field`. A
+  reset to empty would write a delta erasing an admin's declared order for that
+  reader. `rowArrangementIsCustom` compares against the same base and leaves
+  `rows.kept` out, since the focus has a clear of its own; a reset still clears
+  it.
+- **Row styling stays the display's.** `applyRowEdits` is the display's own, and
+  `rowStylingIsCustom` / `resetRowStyling` are the hooks that bring its colours
+  (wiggle's `rowColor`) into "custom" and into a reset.
+- **A focus naming no current row shows every row** (`keptRows`), where
+  `subtreeFilter` matching none hides every row (`filterRowsBySubtree`).
 
 ## "Sort rows by … here" is three shared pieces and one per-display read
 
@@ -101,7 +138,7 @@ the score, multi-row the painted color). `rowSortColumn.ts` owns the rest:
   into, declines, and has its trigger cleared anyway.
 - **No covering region means leave the rows alone.** Every row reads "no value",
   which ranks them equally and writes back the order they already had — a sort
-  that silently did nothing, and a `layout` write that can still clear the tree.
+  that silently did nothing, and an order write that can still clear the tree.
   Filtering the regions on refName alone is the near-miss (multi-row shipped
   it): coordinates repeat across regions by refName, so two loaded windows on
   one contig both answer and the map's iteration order picks.
@@ -137,11 +174,11 @@ is gated on the filter alone.
 
 ## `RowSource` is the row vocabulary, and the mixin's bound
 
-`TreeSidebarMixin<S extends RowSource>`. Every field this package draws with is
-on `RowSource`, and `TreeSource` / `RowLabelSource` are picks of it rather than
-separate declarations — the bound used to be `{ name: string }`, the weakest
-possible, and the four displays composing the mixin each wrote their own row
-type against it.
+`TreeSidebarMixin<S extends RowSource>`, and `LayoutTreeSidebarMixin` the same.
+Every field this package draws with is on `RowSource`, and `TreeSource` /
+`RowLabelSource` are picks of it rather than separate declarations — the bound
+used to be `{ name: string }`, the weakest possible, and the four displays
+composing the mixin each wrote their own row type against it.
 
 **The tint is `labelColor`, always.** `SvgRowLabels` drops to a `labelColor`
 swatch below `MIN_TEXT_ROW_HEIGHT`, and because `RowLabelSource` is satisfied
@@ -153,18 +190,20 @@ bridged with a label gutter of their own, ~350 lines that existed because the
 shared one read the other name.
 
 `treeSidebarConfigSchemaFields` is the matching slot set (`showTree` /
-`showBranchLength` / `showRowLabels`, plus the `domain` row order the mixin
-reads as `rowDomain` — not `domain`, which is the score axis on the wiggle
-display), taking only the per-display descriptions, so a display cannot ship
-three of the four. **`rows` is the opt-out**: a display declaring its row order
-elsewhere (the wiggle display's is `facet.domain`) passes no `rows` sentence,
-gets no `domain` slot, and states its own `rowDomain` getter after the mixin —
-omitting both throws where the mixin reads the slot. **The mixin declares the
-accessors over those slots**, so a display composes both halves or neither.
-Hand-written `getConf` / `setConf` one-liners beside slots this package's own
-code reads are how the labels toggle came to be spelled `showSidebarLabels` on
-one display and silently ignore its config. `showRowLabelsMenuItem` is the row,
-and `treeSidebarShowMenuItems` the two tree toggles beside it — all three under
+`showBranchLength` / `showRowLabels` / `treeAreaWidth`), taking only the
+per-display descriptions, so a display cannot ship three of the four. The
+declared row order is not in it. The wiggle display declares the `rows` object
+and composes `TreeSidebarMixin`, which reads the order as `rows.domain`; the
+multi-row feature, multi-sample variant and MAF displays spread
+`rowDomainConfigSchemaFields` for a `domain` slot and compose
+`LayoutTreeSidebarMixin`, which reads it as `rowDomain` and throws where the
+slot is missing. Either way the getter is `rowDomain`, never `domain`, which is
+the score axis on the wiggle display. **The mixins declare the accessors over
+those slots**, so a display composes both halves or neither. Hand-written
+`getConf` / `setConf` one-liners beside slots this package's own code reads are
+how the labels toggle came to be spelled `showSidebarLabels` on one display and
+silently ignore its config. `showRowLabelsMenuItem` is the row, and
+`treeSidebarShowMenuItems` the two tree toggles beside it — all three under
 "Show..." on every display, with `RowLabelsOverlay` mounted whether or not a
 tree is showing.
 
@@ -249,7 +288,7 @@ Labels are offset right by `treeAreaWidth`, so rendering them without the tree
 leaves a blank gutter; `SvgTreeSidebar` owns the single gate driving both.
 
 **That gate is `treeIsShowing`, not `showTree && hierarchy`.** The gutter is
-reserved for the **positioned** tree, never `clusterTree` — a stale tree is
+reserved for the **positioned** tree, never `rowTree` — a stale tree is
 deliberately not positioned, and reserving off the newick string puts the labels
 right of an empty gutter. Three places decide it: `TreeSidebar`'s early return,
 `SvgTreeSidebar`, and `treeSidebarOffset`.

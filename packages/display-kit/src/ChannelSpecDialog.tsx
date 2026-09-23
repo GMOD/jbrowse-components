@@ -24,12 +24,28 @@ export interface ChannelSpecHost {
   applyDisplaySettings: (settings: Record<string, unknown>) => unknown
   /** Absent on a display with no runtime filter list, which then refuses one. */
   setJexlFilters?: (filters?: string[]) => void
+  /**
+   * On a display with rows: the field and the order, written the way its own
+   * reorder writes them, so the labels, the focus and a tree the order still
+   * describes survive the box.
+   */
+  setRowsSpec?: (rows: ChannelSpec['rows']) => void
+}
+
+// `facet` and `rows` each exist on the displays whose settings they are, so a
+// spec naming one the display lacks is refused here rather than reported as
+// an unapplied setting after the write.
+function keyedChannelProblems(spec: ChannelSpec, current: ChannelSpec) {
+  return (['facet', 'rows'] as const)
+    .filter(channel => spec[channel] !== undefined && !(channel in current))
+    .map(channel => `${channel}: this display has no ${channel}`)
 }
 
 function readSpec(host: ChannelSpecHost, text: string) {
   try {
     const spec = parseChannelSpec(text)
     const problems = [
+      ...keyedChannelProblems(spec, host.channelSpec),
       ...colorSpecProblems(spec, {
         scales: host.colorScaleChoices,
         members: host.colorMembers,
@@ -48,26 +64,43 @@ function summarize(spec: ChannelSpec, current: ChannelSpec) {
   const { sets, clears } = channelSpecChanges(spec, current)
   const dropsOrder =
     sets.includes('facet') && !spec.facet?.domain && !!current.facet?.domain
+  const dropsRowOrder =
+    sets.includes('rows') && !spec.rows?.domain && !!current.rows?.domain
   return (
     [
       sets.length ? `Sets ${sets.join(', ')}` : '',
       clears.length ? `Clears ${clears.join(', ')}` : '',
       dropsOrder ? 'The facet names no domain, so its sections sort' : '',
+      dropsRowOrder
+        ? 'The rows name no domain, so they return to the order they arrived in'
+        : '',
     ]
       .filter(Boolean)
       .join('. ') || 'No changes'
   )
 }
 
-// `facet` and `color` are the display's own settings and land through the
-// same door a session spec or an agent uses; `filter` is the runtime list.
+// Only the channels the box changed are written: a channel object replaces
+// its setting whole, so writing `rows` back unchanged would drop the members
+// the box does not show. `facet` and `color` land through the same door a
+// session spec or an agent uses, `rows` through the display's own reorder, and
+// `filter` is the runtime list.
 function apply(host: ChannelSpecHost, spec: ChannelSpec) {
-  const { filter, ...settings } = spec
+  const { sets, clears } = channelSpecChanges(spec, host.channelSpec)
+  const changed = new Set([...sets, ...clears])
+  const settings = Object.fromEntries(
+    (['facet', 'color'] as const)
+      .filter(channel => changed.has(channel))
+      .map(channel => [channel, spec[channel]]),
+  )
   if (Object.keys(settings).length > 0) {
     host.applyDisplaySettings(settings)
   }
-  if (filter !== undefined) {
-    host.setJexlFilters?.(filter?.map(ensureJexlPrefix) ?? [])
+  if (changed.has('rows')) {
+    host.setRowsSpec?.(spec.rows ?? null)
+  }
+  if (spec.filter !== undefined) {
+    host.setJexlFilters?.(spec.filter?.map(ensureJexlPrefix) ?? [])
   }
 }
 
@@ -102,8 +135,9 @@ const ChannelSpecDialog = observer(function ChannelSpecDialog({
       }}
     >
       <DialogContentText>
-        <code>facet</code> stacks one section per value of a field, in the order
-        its <code>domain</code> lists; <code>color</code> is a constant, or{' '}
+        <code>facet</code> stacks one section per value of a field, and{' '}
+        <code>rows</code> one row per value, each in the order its{' '}
+        <code>domain</code> lists; <code>color</code> is a constant, or{' '}
         <code>{'{ "field": … }'}</code> read through one of the scales{' '}
         <code>{model.colorScaleChoices.join(', ')}</code>; <code>filter</code>{' '}
         is the jexl list from Filter by.... A channel left out stays as it is,

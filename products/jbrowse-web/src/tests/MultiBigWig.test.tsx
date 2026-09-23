@@ -107,7 +107,7 @@ test('right-click offers the row-order sort, and the reset once it has run', asy
   // asserts is that a real one was written, over the same rows
   expect(display.sources.map(s => s.name).toSorted()).toEqual(before.toSorted())
 
-  // "Reset row order" is gated on a written `layout`, so its appearing is the
+  // "Reset row order" is gated on a written order, so its appearing is the
   // proof the sort landed
   fireEvent.contextMenu(container, { clientX: 400, clientY: 50 })
   fireEvent.click(await findByText('Reset row order', ...opts))

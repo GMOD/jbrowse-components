@@ -1,13 +1,12 @@
 import { render } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 
 import WiggleHint from './WiggleHint.tsx'
 
 import type { HintModel } from './WiggleHint.tsx'
 
-// The two states where the plot draws nothing but the data is fine, so the
-// blank is recoverable and worth naming. Everything else must stay silent —
-// a hint parked over a working figure is worse than no hint.
+// The one state where the plot draws but cannot be read, so the smear is worth
+// naming. Everything else must stay silent — a hint parked over a working
+// figure is worse than no hint.
 function makeModel(overrides: Partial<HintModel> = {}): HintModel {
   return {
     numSources: 2,
@@ -15,44 +14,9 @@ function makeModel(overrides: Partial<HintModel> = {}): HintModel {
     isDensityMode: false,
     effectiveRowHeight: 50,
     height: 100,
-    sourcesWithoutLayout: [{ name: 'a' }, { name: 'b' }],
-    rowFocus: undefined,
-    setRowFocus: jest.fn(),
     ...overrides,
   }
 }
-
-describe('subtree filter matching nothing', () => {
-  // Sources loaded but every one filtered out. Since buildSourceRenderData
-  // stopped falling back to the payload this really is a blank plot, so the
-  // message is the only thing on it.
-  it('names the filter and offers to clear it', async () => {
-    const setRowFocus = jest.fn()
-    const { getByText } = render(
-      <WiggleHint
-        model={makeModel({
-          numSources: 0,
-          rowFocus: ['nothing_here'],
-          setRowFocus,
-        })}
-      />,
-    )
-    getByText('No subtracks match the current subtree filter')
-    await userEvent.click(getByText('Clear subtree filter'))
-    expect(setRowFocus).toHaveBeenCalledWith(undefined)
-  })
-
-  // Before the first fetch lands there are no sources at all, which is loading
-  // rather than a filter that matched nothing.
-  it('stays quiet before any source has loaded', () => {
-    const { container } = render(
-      <WiggleHint
-        model={makeModel({ numSources: 0, sourcesWithoutLayout: [] })}
-      />,
-    )
-    expect(container.firstChild).toBeNull()
-  })
-})
 
 describe('rows packed below a pixel', () => {
   it('says how many rows are in how much height', () => {
@@ -66,21 +30,6 @@ describe('rows packed below a pixel', () => {
       />,
     )
     getByText(/400 subtracks in 100px leaves rows below 1px/)
-  })
-
-  // Clearing the filter is the fix for the other case and would make this one
-  // strictly worse, so it carries no button.
-  it('offers no clear-filter escape', () => {
-    const { queryByText } = render(
-      <WiggleHint
-        model={makeModel({
-          numSources: 400,
-          effectiveRowHeight: 0.25,
-          rowFocus: ['a'],
-        })}
-      />,
-    )
-    expect(queryByText('Clear subtree filter')).toBeNull()
   })
 
   // In density the escape the message names IS the mode the user picked, and

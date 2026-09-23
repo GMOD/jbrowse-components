@@ -27,12 +27,21 @@ export function displayTestSessionModel<VIEW extends IAnyModelType>({
   rpcManager = {},
   assemblyManager,
   getTrackById,
+  baseTrackConfig = () => undefined,
 }: {
   viewModel: VIEW
   rpcManager?: unknown
   assemblyManager: unknown
   /** the harness's own track-config lookup, closed over its `trackConfig` */
   getTrackById: (id: string) => unknown
+  /**
+   * The track config as the harness declared it, which stands for the
+   * config.json entry a display's "is this the reader's" and reset compare
+   * the live config against
+   */
+  baseTrackConfig?: (
+    id: string,
+  ) => { trackId: string; [key: string]: unknown } | undefined
 }) {
   return types
     .model('DisplayTestSession', {
@@ -86,6 +95,7 @@ export function displayTestSessionModel<VIEW extends IAnyModelType>({
     }))
     .views(() => ({
       getTrackById,
+      baseTrackConfig,
     }))
     .actions(self => ({
       setView(view: Instance<VIEW>) {

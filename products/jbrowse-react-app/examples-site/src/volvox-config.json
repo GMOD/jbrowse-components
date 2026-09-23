@@ -874,7 +874,7 @@
         {
           "type": "LinearWiggleDisplay",
           "defaultRendering": "line",
-          "facet": ""
+          "rows": ""
         }
       ]
     },

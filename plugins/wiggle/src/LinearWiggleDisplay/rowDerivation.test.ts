@@ -16,7 +16,7 @@ afterEach(() => {
 // The setting that puts each source on a row of its own, spelled once: the
 // derivation pinned below is what has to survive the setting's own rename.
 const rowsPerSource = (domain?: string[]) => ({
-  facet: domain ? { field: 'source', domain } : 'source',
+  rows: domain ? { field: 'source', domain } : 'source',
 })
 
 const GROUPED: SourceInfo[] = [
@@ -179,4 +179,54 @@ test('rows: a run lands its tree, a reorder drops it, a reset returns to the see
 
   display.resetRowArrangement()
   expect(derived(display)).toMatchSnapshot()
+})
+
+// In one shared box there is no label to tint, so a colour set in the dialog
+// goes to the plot whatever the gradient, as it did before the port.
+test('overlay, density: a dialog edit paints the plot', async () => {
+  const display = await loaded(GROUPED, { defaultRendering: 'density' })
+  const [g1, ...rest] = display.editableSources
+  display.applyRowEdits([{ ...g1!, color: '#00f' }, ...rest])
+  expect(display.sources[0]).toMatchObject({ name: 'Grain1', color: '#00f' })
+  expect(display.rowColors.get('Grain1')).toBe('#00f')
+})
+
+// The Edit as JSON box writes rows as a reorder does: the labels and the focus
+// stay, and a tree the new order no longer describes drops.
+test('rows: the JSON box keeps the labels and the focus across an order', async () => {
+  const display = await loaded(GROUPED, rowsPerSource())
+  const [g1, g2, g3, g4] = display.editableSources
+  display.applyRowEdits([{ ...g1!, label: 'One' }, g2!, g3!, g4!])
+  display.setRowFocus(['Grain1', 'Grain2'])
+  display.setRowOrder([g1!, g2!, g3!, g4!], {
+    tree: '((Grain1,Grain2),(Grain3,Grain4));',
+  })
+
+  display.setRowsSpec({ field: 'source', domain: ['Grain2', 'Grain1'] })
+
+  expect(display.sources.map(s => s.name)).toEqual(['Grain2', 'Grain1'])
+  expect(display.rowLabels).toEqual({ Grain1: 'One' })
+  expect(display.rowFocus).toEqual(['Grain1', 'Grain2'])
+  expect(display.rowTree).toBeUndefined()
+
+  display.setRowsSpec(null)
+  expect(display.isOverlay).toBe(true)
+  expect(display.rowArrangementIsCustom).toBe(false)
+})
+
+// A reorder alone writes the config's own colour pairs back in their order,
+// so it leaves no styling delta and offers no reset for a recolour.
+test('rows: a reorder keeps the declared rowColor as it was', async () => {
+  const display = await loaded(GROUPED, {
+    ...rowsPerSource(),
+    rowColor: { domain: ['Grain3', 'Grain1'], range: ['#0f0', '#00f'] },
+  })
+  expect(display.rowStylingIsCustom).toBe(false)
+  const [g1, g2, g3, g4] = display.editableSources
+  display.applyRowEdits([g1!, g3!, g2!, g4!])
+  expect(display.configuration.rowColor.domain).toEqual(['Grain3', 'Grain1'])
+  expect(display.rowStylingIsCustom).toBe(false)
+
+  display.applyRowEdits([{ ...g2!, color: 'reddish' }, g1!, g3!, g4!])
+  expect(display.rowColors.has('Grain2')).toBe(false)
 })

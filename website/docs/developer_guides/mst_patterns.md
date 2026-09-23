@@ -184,7 +184,7 @@ so the mixins cannot be chained on one at a time the way `.views()` and
   CoarseTierMixin<MafRegionPayload<MafSummaryRecord[]>>(),
   LegendMixin(),
   RowHeightMixin(),
-  TreeSidebarMixin<MafSource>(),
+  LayoutTreeSidebarMixin<MafSource>(),
   ContextMenuMixin<MafContextMenuInfo>(),
   types.model({
     /**
@@ -248,13 +248,9 @@ Use `types.frozen()` for data that is:
 - Stored as a plain JSON value and hydrated lazily into MST nodes on first
   access
 
-<!-- include: packages/tree-sidebar/src/TreeSidebarMixin.ts#frozenProp -->
+<!-- include: packages/tree-sidebar/src/treeSidebarBase.ts#frozenProp -->
 
 ```ts
-// `RowSortSpec`, not a second spelling of it: the autorun that consumes
-// this and `setSortRowsBy` are both typed on it, so an inline shape here
-// is a copy that can only ever drift away from the one doing the
-// checking.
 sortRowsBy: types.maybe(types.frozen<RowSortSpec>()),
 ```
 

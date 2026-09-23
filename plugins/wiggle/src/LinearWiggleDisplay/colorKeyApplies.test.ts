@@ -16,7 +16,7 @@ function makeDisplay(sources: WiggleSourceData[], height: number) {
   const { createDisplay } = createTestEnvironment()
   const { display, view } = createDisplay()
   display.setHeight(height)
-  display.setFaceted(true)
+  display.setRowLayout(true)
   display.setRpcData(0, { sources }, view.displayedRegions[0])
   return display
 }
@@ -63,7 +63,7 @@ it('does not apply when the sources cannot collapse into a short key', () => {
 // identification there has ever been, whatever the row height would have been.
 it('applies in overlay mode regardless of row height', () => {
   const display = makeDisplay(cells(9, 9), 600)
-  display.setFaceted(false)
+  display.setRowLayout(false)
   expect(display.overlayLegendApplies).toBe(true)
 })
 
@@ -76,7 +76,7 @@ it('does not apply in overlay mode when the key is longer than it is readable', 
     Array.from({ length: 40 }, (_, i) => makeSource(`cell${i}`)),
     600,
   )
-  display.setFaceted(false)
+  display.setRowLayout(false)
   expect(display.legendItems).toHaveLength(40)
   expect(display.overlayLegendApplies).toBe(false)
 })
@@ -85,7 +85,7 @@ it('does not apply in overlay mode when the key is longer than it is readable', 
 // the length bar is asking about — the row count was never the question.
 it('applies in overlay mode when the same sources collapse into a short key', () => {
   const display = makeDisplay(cells(40, 4), 600)
-  display.setFaceted(false)
+  display.setRowLayout(false)
   expect(display.legendItems).toHaveLength(4)
   expect(display.overlayLegendApplies).toBe(true)
 })

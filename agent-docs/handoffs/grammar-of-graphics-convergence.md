@@ -156,13 +156,17 @@ badges and scroll bucketing belong to that display.
 
 This workstream is
 [one-row-model-for-displays-that-stack-by-a-key](../ideas/ready/one-row-model-for-displays-that-stack-by-a-key.md),
-agreed and reviewed three times; its first two steps landed. Rule 2 answers it
-with two objects rather than one: `rows`, the row axis the dendrogram and the
-row labels are guides on (order, labels, the tree, the clade focus), and
-`facet`, the labelled bands over it. Row colour is a second scale on the colour
-object, not the row axis's range. Wiggle goes first because its `facet` is its
-rows; the variant displays already take `facet` beside the sidebar and are the
-hard case.
+agreed and reviewed three times; its first two steps, and the third for
+wiggle, landed. Rule 2 answers it with two objects rather than one: `rows`, the
+row axis the dendrogram and the row labels are guides on (order, labels, the
+tree, the clade focus), and `facet`, the labelled bands over it. Row colour is a
+second scale on the colour object, not the row axis's range. Wiggle has moved:
+its rows and a reader's arrangement of them are the `rows` config object, and a
+colour set on one subtrack is `rowColor`
+([ADR-157](../architecture-decision-records/adr-157-a-row-displays-arrangement-is-the-rows-config-object.md)).
+The variant displays, multi-row and MAF are next, still on
+`LayoutTreeSidebarMixin`; the variant displays already take `facet` beside the
+sidebar and are the hard case.
 
 ### 5. The copies
 

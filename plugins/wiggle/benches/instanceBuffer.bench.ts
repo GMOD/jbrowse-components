@@ -159,7 +159,7 @@ const dataAvg = payload(false)
 function props(renderingType: string, mode: string): WiggleGpuProps {
   return {
     sources: sourceList,
-    faceted: true,
+    rowLayout: true,
     origin: 0,
     wiggleColor: {
       posColor: WIGGLE_POS_COLOR_DEFAULT,

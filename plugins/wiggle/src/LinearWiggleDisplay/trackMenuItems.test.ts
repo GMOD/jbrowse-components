@@ -6,7 +6,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 // Driven off a real display instance rather than a structural stand-in: the menu
 // is built inline in the model's `trackMenuItems`, and its gates read getters
-// (`isFaceted`, `sourcesWithoutLayout`, `clusterTree`) that a stub would have to
+// (`isRowLayout`, `sourcesWithoutLayout`, `rowTree`) that a stub would have to
 // restate — and then wouldn't notice drifting from.
 function makeDisplay({
   sources = ['a', 'b'],
@@ -33,7 +33,7 @@ function makeDisplay({
   if (renderingType) {
     display.setRenderingType(renderingType)
   }
-  display.setFaceted(faceted)
+  display.setRowLayout(faceted)
   if (clusterTree) {
     // A real clustered state, not just a tree string: clustering writes the row
     // order and the tree together, and `computeClusterHierarchy` declines to
@@ -106,7 +106,7 @@ describe('the wiggle display Clustering submenu', () => {
       faceted: false,
       clusterTree: '(b,a);',
     })
-    display.setFaceted(true)
+    display.setRowLayout(true)
 
     expect(display.hierarchy).toBeDefined()
     expect(labels(subMenuOf(display.trackMenuItems(), 'Show...'))).toContain(
@@ -151,8 +151,8 @@ describe('the wiggle display Clustering submenu', () => {
     if ('onClick' in item) {
       item.onClick()
     }
-    expect(display.layout).toEqual([])
-    expect(display.clusterTree).toBeUndefined()
+    expect(display.rowDomain).toEqual([])
+    expect(display.rowTree).toBeUndefined()
   })
 })
 

@@ -233,6 +233,7 @@ interface SlotValueByType {
   stringArray: string[]
   stringArrayMap: Record<string, string[]>
   numberMap: Record<string, number>
+  stringMap: Record<string, string>
   fileLocation: FileLocation
   maybeNumber: number | undefined
   maybeBoolean: boolean | undefined

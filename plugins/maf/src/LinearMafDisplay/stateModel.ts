@@ -35,7 +35,7 @@ import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 import {
   ContextMenuMixin,
   RowHeightMixin,
-  TreeSidebarMixin,
+  LayoutTreeSidebarMixin,
   applySubtreeFilter,
   buildSpatialIndex,
   computeClusterHierarchy,
@@ -248,7 +248,7 @@ export default function stateModelFactory(
         CoarseTierMixin<MafRegionPayload<MafSummaryRecord[]>>(),
         LegendMixin(),
         RowHeightMixin(),
-        TreeSidebarMixin<MafSource>(),
+        LayoutTreeSidebarMixin<MafSource>(),
         ContextMenuMixin<MafContextMenuInfo>(),
         types.model({
           /**

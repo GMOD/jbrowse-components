@@ -166,7 +166,7 @@ it('does not lift the axis for a rule density will not draw', () => {
 it('rules every row of a faceted track, in the row its ticks were built in', () => {
   const display = makeDisplay(
     [15],
-    { facet: 'source' },
+    { rows: 'source' },
     { sources: [source('a', 30), source('b', 10)] },
   )
   const [axis] = display.axes

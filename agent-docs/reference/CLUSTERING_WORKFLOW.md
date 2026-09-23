@@ -10,8 +10,10 @@ kind: spec
 Applies to `plugins/wiggle` (the quantitative display) and `plugins/variants`
 (multi-sample variant displays). Both plugins share the same structural pattern:
 a dialog triggers an RPC call that builds a feature matrix, runs hierarchical
-clustering via `@gmod/hclust`, and writes the result into `TreeSidebarMixin`
-state, which drives dendrogram rendering.
+clustering via `@gmod/hclust`, and writes the result through the row
+arrangement's `setRowOrder`, which drives dendrogram rendering. Wiggle's
+`TreeSidebarMixin` stores it in the display's `rows` config object; the variant
+displays' `LayoutTreeSidebarMixin` stores it in display state.
 
 ## Data flow
 
@@ -32,9 +34,13 @@ Worker
 Dialog callback
   buildClusteredLayout(baseSources, existingLayout, order)
   model.setRowOrder(rows, { tree, provenance })     ← both plugins
-MST state updated (TreeSidebarMixin)
-  layout[]     → row order
-  clusterTree  → Newick string
+Arrangement written
+  wiggle   (TreeSidebarMixin: display config, flushed to the session)
+    rows.domain  → row order
+    rows.tree    → Newick string, rows.treeProvenance beside it
+  variants (LayoutTreeSidebarMixin: display state)
+    layout[]     → row order
+    clusterTree  → Newick string, clusterProvenance beside it
 Re-render
   hierarchy view  = clusterLayout(parsedTree, rowHeight, treeAreaWidth, showBranchLength)
   renderSvg.tsx   → <SvgTreePath hierarchy={hierarchy} /> + reordered rows
@@ -121,23 +127,33 @@ identically and the dialog holds no mode-specific branch.
 
 ---
 
-## TreeSidebarMixin (`packages/tree-sidebar/src/TreeSidebarMixin.ts`)
+## The two arrangement mixins (`packages/tree-sidebar`)
 
-Persistent MST state shared by both plugins:
+Both plugins reach their arrangement through one API, over two stores until
+every row display is on the `rows` config object (ADR-157):
 
-| Field | Type | Purpose |
+| Member | `TreeSidebarMixin` (wiggle), display config | `LayoutTreeSidebarMixin` (variants), display state |
 |---|---|---|
-| `layout` | `Source[]` | Ordered rows after clustering |
-| `clusterTree` | `string` (Newick) | Tree topology + branch lengths |
-| `treeAreaWidth` | `number` | Sidebar pixel width (default 80) |
-| `subtreeFilter` | `string[]` | Leaf names for collapsed subtree |
+| Row order | `rows.domain` (`string[]`) | `layout` (`Source[]`) |
+| Tree | `rows.tree` (Newick) | `clusterTree` (Newick) |
+| Provenance | `rows.treeProvenance` | `clusterProvenance` |
+| Focus | `rows.kept` | `subtreeFilter` |
+| Row labels | `rows.labels` | on each `layout` row |
+
+`treeAreaWidth`, the sidebar's pixel width (default 80), is config on both.
 
 Key actions:
 - `setRowOrder(rows)` — a reorder; clears the tree if the row order changed
 - `setRowOrder(rows, { tree, provenance })` — a run's order and tree, together
-- `applyRowEdits(rows)` — the arrangement dialog's submit
+- `applyRowEdits(rows)` — the arrangement dialog's submit, the display's own on
+  `TreeSidebarMixin`
 - `setRowFocus(names)` — collapses to deepest matching subtree (interactive click)
-- `resetRowArrangement()` — wipes the order, the tree and the focus
+- `resetRowArrangement()` — the order, the tree and the focus back to what the
+  config.json declares on `TreeSidebarMixin`, and wiped on
+  `LayoutTreeSidebarMixin`
+
+Every `TreeSidebarMixin` writer flushes to the session at once
+(`persistConfigurationNow`), so a run is one undo step.
 
 ### Staleness has one imperative half and one derived half
 
@@ -156,8 +172,8 @@ enforce that it does:
   a discovered row set growing as regions load, variants' phased expansion
   switching on when ploidy arrives.
 
-`subtreeFilter` is **not** invalidated by either: it is a set of row names that
-`filterRowsBySubtree` matches without a tree, so it survives a reorder on
+The focus (`rows.kept` or `subtreeFilter`) is **not** invalidated by either: it
+is a set of row names matched without a tree, so it survives a reorder on
 purpose. Only a change to what rows are *called* invalidates it — variants'
 `setPhasedMode`, which renames rows between `HG001` and `HG001 HP0`.
 
@@ -210,7 +226,8 @@ user-supplied order/tree instead of RPC output.
 **Variants:** `plugins/variants/src/shared/renderSvgUtils.ts`
 
 Both call `model.hierarchy` (a computed view) and pass it to `<SvgTreePath>`.
-The dendrogram appears in the left sidebar; rows are drawn in `layout` order.
+The dendrogram appears in the left sidebar; rows are drawn in the arranged
+order.
 Clicking a tree node calls `setRowFocus` to collapse/expand that clade.
 
 ---
@@ -319,5 +336,7 @@ the message, drops the staging copy and checks every malloc.
 | `plugins/variants/src/shared/components/MultiSampleVariantClusterDialog.tsx` | Dialog (Auto + Manual) |
 | `plugins/variants/src/shared/MultiSampleVariantBaseModel.ts` | Base model; `hierarchy` |
 | `plugins/variants/src/shared/applyClusterOrder.ts` | Turns an order into the next `layout`; expands haplotypes in phased mode |
-| `packages/tree-sidebar/src/TreeSidebarMixin.ts` | Shared MST state |
+| `packages/tree-sidebar/src/TreeSidebarMixin.ts` | The arrangement over the `rows` config object (wiggle) |
+| `packages/tree-sidebar/src/LayoutTreeSidebarMixin.ts` | The arrangement in display state (variants, multi-row, MAF) |
+| `packages/tree-sidebar/src/treeSidebarBase.ts` | What both share: toggles, launch specs, volatiles |
 | `packages/tree-sidebar/src/clusterUtils.ts` | `buildClusteredLayout`, `buildTree`, `applySubtreeFilter` |

@@ -45,7 +45,7 @@ TimeTraveller
 # members the structural pass cannot see (0)
 # fix: add #getter/#method/#action to the local declaration the shorthand returns
 
-# member tags in a file that documents no #stateModel (22)
+# member tags in a file that documents no #stateModel (33)
 # fix: give the file a #stateModel, reach the block from one via .views(name), or drop the tags
 packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts charactersPerRow
 packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts intronBp
@@ -58,6 +58,17 @@ packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts showCoordina
 packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts showCoordinatesSetting
 packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts upDownBp
 packages/core/src/BaseFeatureWidget/SequenceFeatureDetails/model.ts upperCaseCDS
+packages/tree-sidebar/src/treeSidebarBase.ts clusterRegion
+packages/tree-sidebar/src/treeSidebarBase.ts runClustering
+packages/tree-sidebar/src/treeSidebarBase.ts setShowBranchLength
+packages/tree-sidebar/src/treeSidebarBase.ts setShowRowLabels
+packages/tree-sidebar/src/treeSidebarBase.ts setShowTree
+packages/tree-sidebar/src/treeSidebarBase.ts setSortRowsBy
+packages/tree-sidebar/src/treeSidebarBase.ts showBranchLength
+packages/tree-sidebar/src/treeSidebarBase.ts showRowLabels
+packages/tree-sidebar/src/treeSidebarBase.ts showTree
+packages/tree-sidebar/src/treeSidebarBase.ts sortRowsBy
+packages/tree-sidebar/src/treeSidebarBase.ts treeAreaWidth
 plugins/grid-bookmark/src/index.ts activateHighlightWidget
 plugins/grid-bookmark/src/index.ts highlightMenuItems
 plugins/grid-bookmark/src/index.ts menuItems

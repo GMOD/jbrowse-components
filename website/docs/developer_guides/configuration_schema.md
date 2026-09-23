@@ -140,6 +140,7 @@ typed, a slot can be edited graphically without an author writing any UI.
 | <code>stringEnum</code> | the `model` the slot declares | the `model` enumeration's members | dropdown of the `model`'s members |
 | <code>maybeStringEnum</code> | the `model` the slot declares | the `model` enumeration's members | dropdown of the `model`'s members |
 | <code>stringEnumArray</code> | the `model` the slot declares | a list of the `model` enumeration's members | a dropdown of the `model`'s members per entry, with add and delete |
+| <code>stringMap</code> | <code>types.map(types.string)</code> | <code>Record&lt;string, string&gt;</code> | one card per key, each holding that key's text field |
 | <code>text</code> | <code>types.string</code> | <code>string</code> | multi-line textarea |
 
 <!-- SLOT_TYPES END -->

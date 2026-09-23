@@ -57,7 +57,7 @@ async function clusterAt(samplesPerPixel: string) {
     statusCallback: () => {},
   })
   return {
-    settings: display.clusterProvenance?.settings,
+    settings: display.rowTreeProvenance?.settings,
     calls,
     regions,
     width,

@@ -90,10 +90,29 @@ drawn in the sidebar.
 ## Encoding a clustering result in a session URL
 
 A finished clustering can be embedded in a session snapshot, which is how a
-pre-computed result travels through a shared link. Set `layout` and
-`clusterTree` (and optionally `treeAreaWidth` / `subtreeFilter`) in the
-display's `displaySnapshot`, described under
-[URL parameters → advanced track configuration](/docs/urlparams#advanced-track-configuration).
+pre-computed result travels through a shared link. Where it goes depends on the
+display.
+
+On a quantitative track the order, tree and focus are the display's
+[`rows`](/docs/config/linearwiggledisplay/#slot-rows) setting, written on the
+track entry the way
+[URL parameters → advanced track configuration](/docs/urlparams#advanced-track-configuration)
+describes. `rows` replaces the display's setting whole, so name `field` too:
+
+```json
+{
+  "trackId": "my_multiwig",
+  "rows": {
+    "field": "source",
+    "domain": ["s2", "s1", "s3"],
+    "tree": "((s2,s1),s3);"
+  }
+}
+```
+
+Add `kept` to open on one clade. On the multi-sample variant, multi-row feature
+and MAF displays, set `layout` and `clusterTree` (and optionally
+`subtreeFilter`) in the display's `displaySnapshot` instead.
 
 The per-display field references are
 [](/docs/models/multisamplevariantbasemodel) and

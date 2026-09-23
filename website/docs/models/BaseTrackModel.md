@@ -61,6 +61,7 @@ note that multiple displayed tracks could use the same configuration.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="action-persistconfigurationnow">**persistConfigurationNow**</span><br><code>() =&gt; void</code> | Write the config to the session now rather than after the 400 ms wait, for an edit that has to be undoable the moment it lands. |
 | <span id="action-setpinned">**setPinned**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setminimized">**setMinimized**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setresizing">**setResizing**</span><br><code>(flag: boolean) =&gt; void</code> |  |

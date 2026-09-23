@@ -22,8 +22,8 @@ import {
   colorMembersOf,
   colorScaleChoicesOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
-import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchAllRegions } from '@jbrowse/display-kit/fetchEachRegion'
+import { rowsSettingOf } from '@jbrowse/display-kit/rowsConfigSchema'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -33,10 +33,9 @@ import {
   buildSpatialIndex,
   clusteringMenuItem,
   computeClusterHierarchy,
-  filterRowsBySubtree,
+  baseDisplayConfig,
   focusRowGroup,
-  orderRowsByDomain,
-  reconcileLayout,
+  keptRows,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
   rowLabelsCarryText,
@@ -51,6 +50,7 @@ import {
 import { axisPlotBox, makeCrossHatchItem } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import { compareStructural } from 'mobx'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
@@ -74,11 +74,17 @@ import {
   makeResolutionSubMenu,
   makeWiggleScoreSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
+import { rowColorsOf } from '../shared/wiggleRowColorConfigSchema.ts'
 import { WIGGLE_RENDERINGS } from '../util.ts'
 import { CHANNEL_SPEC_EXAMPLES } from './channelSpecExamples.ts'
 import { buildLegendItems } from './legendItems.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
-import { buildSources, sourcesFromRegionData } from './sourcesLogic.ts'
+import {
+  arrangeSources,
+  buildSources,
+  rowEditsOf,
+  sourcesFromRegionData,
+} from './sourcesLogic.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { ResolvedWiggleColor } from '../shared/wiggleColor.ts'
@@ -91,8 +97,8 @@ import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
-import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
+import type { RowsSetting } from '@jbrowse/display-kit/rowsConfigSchema'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ValueScale, WiggleRenderingBackend } from '@jbrowse/wiggle-core'
@@ -111,9 +117,9 @@ const WiggleClusterDialog = lazy(
  * #category display
  *
  * The quantitative display: one plot per rendering, drawn over one source or
- * over many. `facet: 'source'` gives each source a row of its own, with the
- * clustering sidebar, row labels and separators beside them; unfaceted, every
- * source shares one plot box.
+ * over many. `rows: 'source'` gives each source a row of its own, with the
+ * clustering sidebar, row labels and separators beside them, and holds the
+ * arrangement a reader gives them; unset, every source shares one plot box.
  *
  * #example
  * A complete `QuantitativeTrack` config to paste into `tracks`:
@@ -262,46 +268,75 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * The `facet` object as written, or undefined while every source shares
-       * one plot. `source` is the only field the config admits here.
+       * The `rows` object's field and order, or undefined while every source
+       * shares one plot. `source` is the only field the config admits here.
        */
-      get facet(): FacetSetting | undefined {
-        return facetSettingOf({
-          field: getConf(self, ['facet', 'field']),
-          domain: getConf(self, ['facet', 'domain']),
+      get rows(): RowsSetting | undefined {
+        return rowsSettingOf({
+          field: getConf(self, ['rows', 'field']),
+          domain: self.rowDomain,
         })
+      },
+
+      /**
+       * #getter
+       * The colour a reader set on each named subtrack, off `rowColor`.
+       */
+      get rowColors(): ReadonlyMap<string, string> {
+        return rowColorsOf({
+          domain: getConf(self, ['rowColor', 'domain']),
+          range: getConf(self, ['rowColor', 'range']),
+        })
+      },
+
+      /**
+       * #getter
+       * The `rowColor` the config.json declares for this display, which a
+       * reset returns to and a dialog submit keeps the pair order of.
+       */
+      get baseRowColor(): {
+        domain: readonly string[]
+        range: readonly string[]
+      } {
+        const base = (baseDisplayConfig(self).rowColor ?? {}) as {
+          domain?: string[]
+          range?: string[]
+        }
+        return { domain: base.domain ?? [], range: base.range ?? [] }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * `TreeSidebarMixin`'s hook: whether `rowColor` names a colour the
+       * config does not, so "Reset row order" is offered for a recolour too.
+       */
+      get rowStylingIsCustom(): boolean {
+        return !compareStructural(
+          Object.fromEntries(self.rowColors),
+          Object.fromEntries(rowColorsOf(self.baseRowColor)),
+        )
       },
     }))
     .views(self => ({
       /**
        * #getter
        * Whether each source takes a row of its own, which is the whole of what
-       * the facet decides here: the tree sidebar, the row labels, the
-       * separators, the clustering menu and the row-order sort all hang off it.
+       * `rows` decides here: the tree sidebar, the row labels, the separators,
+       * the clustering menu and the row-order sort all hang off it.
        */
-      get isFaceted() {
-        return !!self.facet
-      },
-
-      /**
-       * #getter
-       * `TreeSidebarMixin`'s hook, overridden: this display declares no
-       * `domain` slot of its own, because the row order is the facet's — one
-       * word for one idea, and `domain` on a wiggle display is already the
-       * score axis.
-       */
-      get rowDomain(): string[] {
-        return [...(self.facet?.domain ?? [])]
+      get isRowLayout() {
+        return !!self.rows
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * Every source in one plot box. The complement of the facet, named for
-       * what is drawn rather than for the setting that is off.
+       * Every source in one plot box. The complement of the row layout, named
+       * for what is drawn rather than for the setting that is off.
        */
       get isOverlay() {
-        return !self.isFaceted
+        return !self.isRowLayout
       },
     }))
     .views(self => {
@@ -320,40 +355,9 @@ export default function stateModelFactory(
         get sourcesWithoutLayout(): Source[] {
           return sources.get()
         },
-
-        // Adapter rows merged with the user's saved arrangement, in layout order —
-        // no subtree filter and no palette synthesis, so the edit dialog only
-        // persists colors the user actually chose. `reconcileLayout` owns the
-        // membership rules (drop layout entries the adapter no longer reports,
-        // append subtracks the layout never saw) and is shared with every other
-        // multi-row display, so this display has nothing of its own to keep in
-        // step. It used to, and that was the whole job of the wrapper this
-        // replaced: aliasing `source` onto `name` before handing the rows over.
-        //
-        // The config `domain` seeds the order underneath: the subtracks it
-        // names lead, the rest keep adapter order. Both helpers hand back the
-        // array they were given when they change nothing, which is what keeps
-        // `gpuProps`'s identity steady on the ordinary track.
-        get editableSources(): Source[] {
-          return reconcileLayout(
-            orderRowsByDomain(this.sourcesWithoutLayout, self.rowDomain),
-            self.layout,
-          )
-        },
       }
     })
     .views(self => ({
-      /**
-       * #getter
-       * The rows a clustering run acts on: `editableSources` narrowed to the
-       * focused clade, and deliberately NOT the decorated `sources` below —
-       * `clusteredCladeLayout` writes what it is handed into `layout`, where a
-       * synthesized palette color has no business. Under no subtree filter this
-       * is `editableSources` itself.
-       */
-      get clusterableSources(): Source[] {
-        return filterRowsBySubtree(self.editableSources, self.rowFocus)
-      },
       /**
        * #getter
        * Whether several plots share one box, which is the one thing the layout
@@ -362,7 +366,7 @@ export default function stateModelFactory(
        * the pos/neg picture a quantitative track has always drawn.
        */
       get sharesOnePlot(): boolean {
-        return self.isOverlay && self.editableSources.length > 1
+        return self.isOverlay && self.sourcesWithoutLayout.length > 1
       },
     }))
     .views(self => ({
@@ -450,12 +454,12 @@ export default function stateModelFactory(
        * the box changes nothing on its own.
        */
       get channelSpec(): ChannelSpec {
-        const { facet } = self
+        const { rows } = self
         return {
-          facet: facet
+          rows: rows
             ? {
-                field: facet.field,
-                ...(facet.domain.length ? { domain: [...facet.domain] } : {}),
+                field: rows.field,
+                ...(rows.domain.length ? { domain: [...rows.domain] } : {}),
               }
             : null,
           color: colorSpecOf(self.colorSetting),
@@ -463,6 +467,35 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * The adapter's rows in the reader's arrangement — `rows.domain` leading,
+       * `rows.labels` over the adapter's labels, and each `rowColor` entry on
+       * the channel the row's identity paints through in this mode — with no
+       * focus and no palette synthesis, so the arrangement dialog seeds from
+       * what was chosen and nothing else.
+       */
+      get editableSources(): Source[] {
+        return arrangeSources(self.sourcesWithoutLayout, {
+          domain: self.rowDomain,
+          labels: self.rowLabels,
+          rowColors: self.rowColors,
+          gradientPaints: self.scoreGradientPaints,
+          rowLayout: self.isRowLayout,
+        })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The rows a clustering run acts on: `editableSources` narrowed to the
+       * focus, and deliberately NOT the decorated `sources` below, whose
+       * synthesized palette colours a run has no business writing back.
+       */
+      get clusterableSources(): Source[] {
+        return keptRows(self.editableSources, self.rowFocus)
+      },
+
       get sources(): Source[] {
         return buildSources(
           self.editableSources,
@@ -662,7 +695,7 @@ export default function stateModelFactory(
         return {
           ...self.sharedGpuProps(),
           sources: self.sources,
-          faceted: self.isFaceted,
+          rowLayout: self.isRowLayout,
         }
       },
     }))
@@ -752,7 +785,7 @@ export default function stateModelFactory(
        * axis (just a top score legend), so there let the label overlap.
        */
       get prefersOffset() {
-        return !self.isDensityMode || self.isFaceted
+        return !self.isDensityMode || self.isRowLayout
       },
     }))
     .views(self => ({
@@ -834,14 +867,47 @@ export default function stateModelFactory(
       /**
        * #action
        * The layout half of a Plot type leaf — `Multi-row` or `Overlapping`,
-       * each holding the five plot names. Writes the field alone: an order
-       * declared in `facet.domain` survives a trip through the shared plot and
-       * comes back with the rows. Writing the object whole would not —
-       * `rowDomain` reads the order back through `facet`, which is undefined
-       * while the sources share a plot.
+       * each holding the five plot names. Writes the field alone, so the
+       * arrangement survives a trip through the shared plot and comes back
+       * with the rows.
        */
-      setFaceted(on: boolean) {
-        setConf(self, ['facet', 'field'], on ? 'source' : '')
+      setRowLayout(on: boolean) {
+        setConf(self, ['rows', 'field'], on ? 'source' : '')
+      },
+
+      /**
+       * #action
+       * The arrangement dialog's submit: the rows in their new order, each
+       * carrying the label and the colour the reader set on it. The order and
+       * the labels go to `rows`, and the colour on this mode's identity channel
+       * to `rowColor`, each only where it differs from what the adapter
+       * supplied.
+       */
+      applyRowEdits(rows: Source[]) {
+        const { labels, rowColor } = rowEditsOf(
+          rows,
+          self.sourcesWithoutLayout,
+          {
+            gradientPaints: self.scoreGradientPaints,
+            rowLayout: self.isRowLayout,
+            baseOrder: self.baseRowColor.domain,
+          },
+        )
+        self.configuration.setSubschema('rowColor', rowColor)
+        self.setRowLabels(labels)
+        self.setRowOrder(rows)
+      },
+
+      /**
+       * #action
+       * `TreeSidebarMixin`'s hook, so "Reset row order" and the dialog's
+       * "Clear custom settings" return the row colours with the arrangement.
+       */
+      resetRowStyling() {
+        self.configuration.setSubschema(
+          'rowColor',
+          baseDisplayConfig(self).rowColor ?? {},
+        )
       },
 
       /**
@@ -861,7 +927,7 @@ export default function stateModelFactory(
 
       /**
        * #action
-       * The Edit color... row: the colour object, and the facet beside it,
+       * The Edit color... row: the colour object, and the rows beside it,
        * as JSON.
        */
       openChannelSpecDialog(seed?: ChannelSpec) {
@@ -875,13 +941,13 @@ export default function stateModelFactory(
        * #action
        * Rank the rows by each source's score at one genomic base. Reads the
        * region data already in hand — no refetch, no RPC — and writes the
-       * order through `layout`, the same channel clustering and the
+       * order through `rows.domain`, the same channel clustering and the
        * arrangement dialog write, so "Reset row order" undoes all three.
        *
        * Named by coordinate rather than by loaded-region index because both
        * entry points are: the right-click hit resolves to one, and a session's
        * `sortRowsBy` carries one across a reload. Resolving that region and
-       * refusing the two cases where a sort would only cost a `layout` write
+       * refusing the two cases where a sort would only cost a `rows.domain` write
        * are `sortRowsAtColumn`'s, shared with the multi-row feature display's
        * twin, and so is the returned "did it sort" the declarative entry point
        * reads to decide whether to keep its trigger for a later fetch.
@@ -900,6 +966,29 @@ export default function stateModelFactory(
               self.effectiveSummaryScoreMode,
             ),
         )
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * The Edit as JSON box's `rows`: the field through `setRowLayout`, and
+       * the order through `setRowOrder`, so a stale tree drops and the labels
+       * and the focus stay. `null` returns the rows to the config's own
+       * arrangement in one shared plot.
+       */
+      setRowsSpec(rows: { field: string; domain?: string[] } | null) {
+        if (!rows) {
+          self.setRowLayout(false)
+          self.resetRowArrangement()
+          return
+        }
+        if (rows.field !== 'source') {
+          throw new Error(
+            `rows.field is "${rows.field}", and a quantitative display puts "source" alone on rows`,
+          )
+        }
+        self.setRowLayout(true)
+        self.setRowOrder((rows.domain ?? []).map(name => ({ name })))
       },
     }))
     .actions(self => ({
@@ -994,7 +1083,7 @@ export default function stateModelFactory(
           // count below. "Reset row order" is top-level rather than inside the
           // Clustering submenu, where it used to sit as "Clear clustering" —
           // see resetRowOrderMenuItems.
-          ...(self.isFaceted
+          ...(self.isRowLayout
             ? [
                 clusteringMenuItem(
                   self,

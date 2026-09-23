@@ -86,7 +86,7 @@ test('a numeric domain value is the string a group key is', () => {
 // `normalizeChannel`); the box also wants the field or colour a spec is for,
 // where a config may keep an order waiting on one.
 test.each([
-  [{ group: 'x' }, 'The channels are facet, color and filter, not group'],
+  [{ group: 'x' }, 'The channels are facet, rows, color, filter, not group'],
   [{ facet: { field: '' } }, 'facet is a field name'],
   [{ facet: {} }, 'facet is a field name'],
   [

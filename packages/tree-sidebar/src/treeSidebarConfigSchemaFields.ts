@@ -1,4 +1,5 @@
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
+import type { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 
 /**
  * The config slots a display owes `TreeSidebarMixin` — one object, so a display
@@ -15,10 +16,9 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
  *
  * The row axis's declared order is {@link rowDomainConfigSchemaFields}, spread
  * beside this rather than folded into it — the same shape, and the same reason,
- * as the row separators below: the wiggle display declares its order as
- * `facet.domain`, one word for one idea, and a `domain` slot it ignores would
- * read as one it honors. A display spreading neither owes its own `rowDomain`
- * getter, which the mixin throws for rather than reading an empty order.
+ * as the row separators below: a display on the `rows` config object declares
+ * its order as `rows.domain`, one word for one idea, and a `domain` slot it
+ * ignores would read as one it honors.
  *
  * The **descriptions** are the parameter because they are the part that is
  * genuinely per display — a MAF row is a species, a multi-wiggle row a subtrack,
@@ -81,17 +81,15 @@ export function treeSidebarConfigSchemaFields({
 }
 
 /**
- * The row axis's declared order: the config seed under `layout`, which stays
- * the runtime arrangement every drag, dialog, clustering run and column sort
- * writes. The multi-row feature display had the only one; the other three had
- * no declared order at all, so a config or a session spec pinning rows had to
- * write the whole `layout` row table.
+ * The row axis's declared order for a display still on
+ * `LayoutTreeSidebarMixin`: the config seed under `layout`, which stays the
+ * runtime arrangement every drag, dialog, clustering run and column sort
+ * writes. A display on `TreeSidebarMixin` declares its order as `rows.domain`
+ * instead, and spreads nothing here.
  *
  * Spread beside {@link treeSidebarConfigSchemaFields} rather than folded into
- * it, because the quantitative display declares its order as `facet.domain` —
- * one word for one idea, and `domain` there is already the score axis's
- * autoscaled pair. It overrides the mixin's `rowDomain` getter instead, which
- * throws for a display that declares neither.
+ * it, because `domain` on the quantitative display is already the score axis's
+ * autoscaled pair — one word for one idea.
  *
  * **The description is the whole explanation**, for the reason
  * `rowSeparatorsConfigSchemaFields` states: a slot reached by spreading a table
@@ -175,11 +173,26 @@ export function rowSeparatorsConfigSchemaFields({
 }
 
 /**
- * What `TreeSidebarMixin` asks a composing display's `configuration` to be — the
- * four slots above and nothing else, which is all the mixin touches. Narrow so
- * `getConf`/`setConf` still check the slot name; see `ConfigModelForFields`.
+ * What the sidebar's own toggles ask a composing display's `configuration` to
+ * be — the four slots above and nothing else. Narrow so `getConf`/`setConf`
+ * still check the slot name; see `ConfigModelForFields`.
  */
+export type TreeSidebarToggleConfigModel = ConfigModelForFields<
+  ReturnType<typeof treeSidebarConfigSchemaFields>
+>
+
+/** What `TreeSidebarMixin` asks for: the toggles, and the `rows` object. */
 export type TreeSidebarConfigModel = ConfigModelForFields<
+  ReturnType<typeof treeSidebarConfigSchemaFields> & {
+    rows: typeof rowsConfigSchema
+  }
+>
+
+/**
+ * What `LayoutTreeSidebarMixin` asks for: the toggles, and the `domain` slot
+ * its display-state arrangement seeds from.
+ */
+export type LayoutTreeSidebarConfigModel = ConfigModelForFields<
   ReturnType<typeof treeSidebarConfigSchemaFields> &
     ReturnType<typeof rowDomainConfigSchemaFields>
 >

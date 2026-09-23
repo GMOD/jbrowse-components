@@ -25,7 +25,7 @@ function scored(name: string, score: number) {
 }
 
 // Driven off a real display, like trackMenuItems.test.ts: the menu's gates read
-// getters (`isFaceted`, `numSources`, `layout`) a stub would have to restate.
+// getters (`isRowLayout`, `numSources`, `rowDomain`) a stub would have to restate.
 //
 // The region is registered alongside its data, as a real fetch does: the sort
 // names a coordinate, so it resolves which loaded region covers it.
@@ -37,7 +37,7 @@ function makeDisplay(scores: Record<string, number>, faceted = true) {
     { sources: Object.entries(scores).map(([name, s]) => scored(name, s)) },
     { refName: 'ctgA', start: 0, end: 10_000, assemblyName: 'volvox' },
   )
-  display.setFaceted(faceted)
+  display.setRowLayout(faceted)
   return display
 }
 
@@ -94,7 +94,7 @@ test('acts on the column the menu was opened over, not the one it is closed from
 
 test('keeps a per-source color across the reorder', () => {
   const display = makeDisplay({ a: 1, b: 5 })
-  display.setRowOrder([{ name: 'a', color: 'red' }, { name: 'b' }])
+  display.applyRowEdits([{ name: 'a', color: 'red' }, { name: 'b' }])
   display.openContextMenu({
     clientX: 0,
     clientY: 0,
@@ -157,7 +157,7 @@ test('does nothing when the clicked region has since been discarded', () => {
 
   click(items, 'Sort rows by score here')
 
-  expect(display.layout).toEqual([])
+  expect(display.rowDomain).toEqual([])
 })
 
 test('leaves the rows alone at a position no loaded region covers', () => {
@@ -167,7 +167,7 @@ test('leaves the rows alone at a position no loaded region covers', () => {
 
   display.sortRowsByScoreAt('ctgB', 50)
 
-  expect(display.layout).toEqual([])
+  expect(display.rowDomain).toEqual([])
 })
 
 // The right-click item is gated on the row count already (it is absent below
@@ -182,7 +182,7 @@ test('sorts nothing when there is a single row to order', () => {
 
   display.sortRowsByScoreAt('ctgA', 50)
 
-  expect(display.layout).toEqual([])
+  expect(display.rowDomain).toEqual([])
 })
 
 // The same two rows the multi-row painting and the variant displays offer, so

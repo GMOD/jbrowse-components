@@ -6,61 +6,27 @@ sidebar_label: Mixin -> TreeSidebarMixin
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/TreeSidebarMixin.ts).
 
-#crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display rows, named), the `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC and the `sortRows` callback naming what a row carries at a column. Brings `layout` / `clusterTree` / `clusterProvenance` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` / `treeAreaWidth` getters and setters and the `rowDomain` getter over those slots, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through (`rowTree`, `rowTreeProvenance`, `rowFocus`, `rowArrangementIsCustom`, `rowOrderWillDropTree`, `setRowOrder`, `applyRowEdits`, `setRowFocus`, `resetRowArrangement`), the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through
-Adds a dendrogram sidebar to a display: stores the leaf layout, newick cluster
-tree, sidebar width and subtree filter, plus the hover/canvas volatile state
-used while drawing the tree.
+#crossCuttingMixin Row set with a dendrogram sidebar, its arrangement the display's `rows` config object: the order, the labels, the tree with its provenance and the focus, each written as a session edit to the track's config so undo, reset and a share link reach it and it survives unticking the track. Brings the `showTree` / `showBranchLength` / `showRowLabels` / `treeAreaWidth` getters and setters, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through (`rowDomain`, `rowLabels`, `rowTree`, `rowTreeProvenance`, `rowFocus`, `rowArrangementIsCustom`, `rowOrderWillDropTree`, `setRowOrder`, `setRowLabels`, `setRowFocus`, `resetRowArrangement`), the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through. `applyRowEdits` stays the display's, since it writes colours the display keeps in its own object
 
-**The three toggles are declared here because this package reads them.**
-`treeSidebarGeometry` reads `showTree`, `treeMenuItems` reads all three and
-`setShowTree`, `computeClusterHierarchy` takes `showBranchLength` — so a
-display composing this mixin and not supplying them would compile and then
-fail at the first menu click. They were four hand-written `getConf` /
-`setConf` copies, which is the same shape the config half was in before
-`treeSidebarConfigSchemaFields`: that set had already drifted, three displays
-spelling the labels toggle `showRowLabels` and the fourth
-`showSidebarLabels`, so `"showRowLabels": false` on a multi-sample variant
-track was dropped in silence. Slots and accessors now move together.
-
-## Properties
-
-<!-- prettier-ignore -->
-| Member | Description |
-| --- | --- |
-| <span id="property-layout">**layout**</span><br><code>layout: types.stripDefault(types.frozen&lt;S[]&gt;(), [])</code> |  |
-| <span id="property-clustertree">**clusterTree**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>clusterTree: types.stripDefault(types.maybe(types.string), unde…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>clusterTree: types.stripDefault(types.maybe(types.string), undefined)</code></pre></dialog></span> |  |
-| <span id="property-clusterprovenance">**clusterProvenance**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>clusterProvenance: types.stripDefault( types.maybe(types.frozen…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>clusterProvenance: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.maybe(types.frozen&lt;ClusterProvenance&gt;()),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;undefined,&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | What `clusterTree` was computed from — the locus and the settings. Set only for a tree this app computed; a supplied phylogeny (maf's `.nh`) leaves it undefined. Persisted with the tree so it survives a session snapshot, which is the case that most needs it: a shared link otherwise hands over a dendrogram with no way to learn its locus. |
-| <span id="property-subtreefilter">**subtreeFilter**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>subtreeFilter: types.stripDefault( types.maybe(types.array(type…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>subtreeFilter: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.maybe(types.array(types.string)),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;undefined,&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
-| <span id="property-runclustering">**runClustering**</span><br><code>runClustering: types.maybe(types.boolean)</code> | Transient declarative launch spec, the same idea as `LinearGenomeView`'s `init`: a session or config sets this true and the real clustering RPC runs once automatically, with no dialog, as soon as the display reports itself ready. `setupRunClusteringAutorun` clears it afterwards, so a saved session never re-triggers.<br><br>Lives here rather than on each display because it is the trigger for a run whose *output* — `clusterTree`, `clusterProvenance`, `layout` — is this mixin's state. Three displays declared it identically, each with its own wrapper module that existed to code-split the clustering code and, along the way, hand-wrote the same six-member duck type of the display. Splitting inside the `run` callback does the same job and loads on a run rather than on every attach. What each run actually *is* stays per display, in that callback. |
-| <span id="property-clusterregion">**clusterRegion**</span><br><code>clusterRegion: types.maybe(types.string)</code> | Where that run reads from, as a locstring (whitespace-separated for several). Clustering is region-scoped, so running it over the visible window feeds the estimator whatever happens to be on screen; naming the locus instead lets a session cluster on the signal and then show it against its context — otherwise a zoom the user has to perform in the right order. Cleared with `runClustering`, since it is that flag's argument and a locus left standing describes a run that is not coming. |
-| <span id="property-sortrowsby">**sortRowsBy**</span><br><code>sortRowsBy: types.maybe(types.frozen&lt;RowSortSpec&gt;())</code> | Transient declarative launch spec, the same idea as `runClustering`: set `{refName, pos}` to order the rows once by the value each carries at that genomic column — the session-expressible form of the right-click "Sort rows by ... here". `setupRowSortAutorun` applies it once the region containing it has loaded and then clears it, so the resulting `layout` persists but a saved session never re-sorts.<br><br>Clustering orders rows by the whole region in view, and `layout` states an order outright. This spec ranks rows at one position, so a figure can open a cohort ranked at a candidate locus with the surrounding context still on screen. Each display defines the value at the column in its `sortRows` callback. |
-
-## Volatiles
-
-<!-- prettier-ignore -->
-| Member | Description |
-| --- | --- |
-| <span id="volatile-hoveredtreenode">**hoveredTreeNode**</span><br><code>hoveredTreeNode: undefined as HoveredTreeNode &#124; undefined</code> |  |
-| <span id="volatile-treecanvas">**treeCanvas**</span><br><code>treeCanvas: null as HTMLCanvasElement &#124; null</code> |  |
-| <span id="volatile-mouseovercanvas">**mouseoverCanvas**</span><br><code>mouseoverCanvas: null as HTMLCanvasElement &#124; null</code> |  |
+Every arrangement write reaches the session at once rather than after the
+track's 400 ms save, so a clustering run is one undo step and undoable the
+moment its tree appears. "Reset row order" returns each member to what the
+config.json declares, or to nothing on a track the session owns, and never
+touches `rows.field`.
 
 ## Getters
 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-showtree">**showTree**</span><br><code>boolean</code> | Whether the dendrogram sidebar is drawn. |
-| <span id="getter-showbranchlength">**showBranchLength**</span><br><code>boolean</code> | Whether tree nodes are positioned by branch length (dendrogram) or evenly by topology (cladogram). |
-| <span id="getter-showrowlabels">**showRowLabels**</span><br><code>boolean</code> | Whether each row's name is drawn over the left of the plot. |
-| <span id="getter-rowdomain">**rowDomain**</span><br><code>string[]</code> | The row axis's declared order off the `domain` slot — the config seed `orderRowsByDomain` places rows through, under whatever `layout` says.<br><br>Named for the axis rather than `domain` alone because the wiggle display composes `WiggleCommonMixin`, whose `domain` is the score axis's autoscaled `[min, max]`. Two getters of that name on one model is the later one silently answering for both. |
-| <span id="getter-treeareawidth">**treeAreaWidth**</span><br><code>number</code> | Width in px of the sidebar the dendrogram draws in. On the config rather than the display snapshot for the same reason `height` is: the config node outlives the display instance, so a dragged width survives unticking and reticking the track. |
+| <span id="getter-rowdomain">**rowDomain**</span><br><code>string[]</code> | The row order, `rows.domain`: the rows it names lead, in its order, and the rest keep the order they arrived in. |
+| <span id="getter-rowlabels">**rowLabels**</span><br><code>Readonly&lt;Record&lt;string, string&gt;&gt;</code> | The labels drawn in place of row names, `rows.labels`, by name. |
+| <span id="getter-rowtree">**rowTree**</span><br><code>string &#124; undefined</code> | The cluster tree the rows are arranged by, `rows.tree`, as newick. |
+| <span id="getter-rowtreeprovenance">**rowTreeProvenance**</span><br><code>ClusterProvenance &#124; undefined</code> | What `rowTree` was computed from, the locus and the settings; undefined for a tree that arrived as data. |
+| <span id="getter-rowfocus">**rowFocus**</span><br><code>readonly string[] &#124; undefined</code> | The row names a focus narrows the display to, `rows.kept` — a clade picked off the tree or a key row's rows — or undefined while every row shows. |
+| <span id="getter-rowstylingiscustom">**rowStylingIsCustom**</span><br><code>boolean</code> | Overridable hook: whether the display keeps row styling of its own beyond the arrangement that differs from the config, so a reset is offered for it too. Nothing by default. |
+| <span id="getter-rowarrangementiscustom">**rowArrangementIsCustom**</span><br><code>boolean</code> | Whether the arrangement differs from what the config declares — what "Reset row order" is offered on. |
 | <span id="getter-parsedtree">**parsedTree**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> |  |
-| <span id="getter-rowtree">**rowTree**</span><br><code>string &#124; undefined</code> | The cluster tree the rows are arranged by, as newick: a run's, or a supplied phylogeny (maf's `.nh`). |
-| <span id="getter-rowtreeprovenance">**rowTreeProvenance**</span><br><code>ClusterProvenance &#124; undefined</code> | What `rowTree` was computed from, the locus and the settings; undefined for a supplied tree. |
-| <span id="getter-rowfocus">**rowFocus**</span><br><code>readonly string[] &#124; undefined</code> | The row names a focus narrows the display to — a clade picked off the tree or a legend group — or undefined while every row shows. |
-| <span id="getter-root">**root**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> |  |
-| <span id="getter-treehasbranchlengths">**treeHasBranchLengths**</span><br><code>boolean</code> |  |
-| <span id="getter-rowarrangementiscustom">**rowArrangementIsCustom**</span><br><code>boolean</code> | Whether the rows have been arranged away from the order they arrived in — what "Reset row order" is offered on. |
 
 ## Methods
 
@@ -74,18 +40,8 @@ track was dropped in silence. Slots and accessors now move together.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setshowtree">**setShowTree**</span><br><code>(arg: boolean) =&gt; void</code> |  |
-| <span id="action-setshowbranchlength">**setShowBranchLength**</span><br><code>(arg: boolean) =&gt; void</code> |  |
-| <span id="action-setshowrowlabels">**setShowRowLabels**</span><br><code>(arg: boolean) =&gt; void</code> |  |
-| <span id="action-setroworder">**setRowOrder**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(rows: S[], run?: { tree?: string &#124; undefined; provenance?: Clu…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(rows: S[], run?: { tree?: string &#124; undefined; provenance?: ClusterProvenance &#124; undefined; } &#124; undefined) =&gt; void</code></pre></dialog></span> | Arrange the rows in `rows`' order. A clustering run passes its result, and the tree and its provenance land with the order; any other reorder that moves a row drops the tree, which no longer describes it. |
-| <span id="action-applyrowedits">**applyRowEdits**</span><br><code>(rows: S[]) =&gt; void</code> | The arrangement dialog's submit: the rows in their new order, each carrying the label and colours the reader set on it. |
-| <span id="action-resetrowarrangement">**resetRowArrangement**</span><br><code>() =&gt; void</code> | Reset to no arrangement at all, focus included: the reader asked for the rows back as they came.<br><br>The focus is otherwise **independent of the tree**. It is a set of row names, and `filterRowsBySubtree` matches on `name` with no tree involved, so a reorder or a re-cluster leaves it valid and `setRowOrder` keeps it — dropping a focused clade on every reorder would discard the reader's focus, and for maf (where the focus is a fetch argument) refetch every loaded region. What does invalidate it is a change to what rows are *called*: the multi-sample variant displays' rendering mode renames rows between sample and haplotype ("HG001" ↔ "HG001 HP0"), and `setPhasedMode` clears the focus for exactly that reason. |
-| <span id="action-setclustertree">**setClusterTree**</span><br><code>(tree?: string &#124; undefined) =&gt; void</code> |  |
-| <span id="action-settreeareawidth">**setTreeAreaWidth**</span><br><code>(width: number) =&gt; void</code> |  |
+| <span id="action-resetrowstyling">**resetRowStyling**</span><br><code>() =&gt; void</code> | Overridable hook: return the row styling the display keeps of its own to what the config declares, with the arrangement. Nothing by default. |
+| <span id="action-setroworder">**setRowOrder**</span><br><code>(rows: readonly S[], run?: ClusterRun &#124; undefined) =&gt; void</code> | Arrange the rows in `rows`' order. A clustering run passes its result, and the tree and its provenance land with the order; any other reorder that moves a row drops the tree, which no longer describes it. |
+| <span id="action-setrowlabels">**setRowLabels**</span><br><code>(labels: Readonly&lt;Record&lt;string, string&gt;&gt;) =&gt; void</code> | The labels drawn in place of row names, whole: a row the map does not name shows the name it arrived with. |
 | <span id="action-setrowfocus">**setRowFocus**</span><br><code>(names?: readonly string[] &#124; undefined) =&gt; void</code> | Narrow the display to `names`, or show every row again. |
-| <span id="action-setrunclustering">**setRunClustering**</span><br><code>(arg?: boolean &#124; undefined) =&gt; void</code> |  |
-| <span id="action-setclusterregion">**setClusterRegion**</span><br><code>(arg?: string &#124; undefined) =&gt; void</code> |  |
-| <span id="action-setsortrowsby">**setSortRowsBy**</span><br><code>(arg?: RowSortSpec &#124; undefined) =&gt; void</code> | Trigger (or clear) a one-shot declarative row sort; consumed and reset by `setupRowSortAutorun`. A display's right-click item calls its own sort directly (instant, the data is already loaded); this is the session-level entry point. |
-| <span id="action-sethoveredtreenode">**setHoveredTreeNode**</span><br><code>(node?: HoveredTreeNode &#124; undefined) =&gt; void</code> |  |
-| <span id="action-settreecanvasref">**setTreeCanvasRef**</span><br><code>(ref: HTMLCanvasElement &#124; null) =&gt; void</code> |  |
-| <span id="action-setmouseovercanvasref">**setMouseoverCanvasRef**</span><br><code>(ref: HTMLCanvasElement &#124; null) =&gt; void</code> |  |
+| <span id="action-resetrowarrangement">**resetRowArrangement**</span><br><code>() =&gt; void</code> | Return every arrangement member — order, labels, tree, provenance and focus — to what the config declares, leaving `rows.field`. |

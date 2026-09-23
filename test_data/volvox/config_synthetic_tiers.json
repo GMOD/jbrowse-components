@@ -150,7 +150,7 @@
           "type": "LinearWiggleDisplay",
           "displayId": "synthetic_tiers_multiline_whiskers-LinearWiggleDisplay",
           "defaultRendering": "line",
-          "facet": "",
+          "rows": "",
           "summaryScoreMode": "whiskers"
         }
       ]

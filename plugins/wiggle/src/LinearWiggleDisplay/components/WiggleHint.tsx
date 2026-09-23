@@ -1,48 +1,33 @@
 import BlockMsg from '@jbrowse/display-kit/BlockMsg'
-import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
 // What the hint reads, spelled out like its sibling overlays (see
-// WiggleRowSeparators, WiggleRowLabels) rather than taking the whole
-// display — which is also what keeps the two blank-plot cases checkable without
-// standing one up.
+// WiggleRowSeparators, WiggleRowLabels) rather than taking the whole display.
 export interface HintModel {
   numSources: number
   isOverlay: boolean
   isDensityMode: boolean
   effectiveRowHeight: number
   height: number
-  sourcesWithoutLayout: { name: string }[]
-  rowFocus?: readonly string[]
-  setRowFocus: (names?: string[]) => void
 }
 
-// The plot would otherwise render as a silent blank in two recoverable cases;
-// name the escape inline instead of leaving the user staring at nothing. Each
-// case carries its own escape hatch: clearing the filter is the fix for the
-// first and would make the second (too many rows) strictly worse.
-function hint(model: HintModel) {
-  const { numSources, isOverlay, isDensityMode, effectiveRowHeight } = model
-  // A subtree filter that matches nothing: loaded adapter sources exist but the
-  // filter removed them all (numSources is the post-filter count). Otherwise,
-  // multi-row mode packed so tight rows are sub-pixel — the canvas draws, but
-  // as an unreadable smear.
-  //
-  // Not in density mode: there the escape the message names IS the mode the
-  // user is already in, and sub-pixel rows are the intended cohort view (a
-  // thousand-sample heatmap is read as a stack, not row by row), so the hint
-  // was advice that could not be taken sitting over the figure it described.
-  return model.sourcesWithoutLayout.length > 0 && numSources === 0
-    ? {
-        message: 'No subtracks match the current subtree filter',
-        clearFilter: true,
-      }
-    : !isOverlay && !isDensityMode && numSources > 0 && effectiveRowHeight < 1
-      ? {
-          message: `${numSources} subtracks in ${Math.round(model.height)}px leaves rows below 1px. Switch to an overlay or density rendering, or increase the track height.`,
-          clearFilter: false,
-        }
-      : undefined
+// Rows packed so tight they are sub-pixel draw as an unreadable smear rather
+// than a blank, so the escape is named inline. Not in density, where the
+// escape the message names IS the mode the user is in, and sub-pixel rows are
+// the intended cohort view: a thousand-sample heatmap is read as a stack.
+function hint({
+  numSources,
+  isOverlay,
+  isDensityMode,
+  effectiveRowHeight,
+  height,
+}: HintModel) {
+  return !isOverlay &&
+    !isDensityMode &&
+    numSources > 0 &&
+    effectiveRowHeight < 1
+    ? `${numSources} subtracks in ${Math.round(height)}px leaves rows below 1px. Switch to an overlay or density rendering, or increase the track height.`
+    : undefined
 }
 
 const WiggleHint = observer(function WiggleHint({
@@ -50,8 +35,8 @@ const WiggleHint = observer(function WiggleHint({
 }: {
   model: HintModel
 }) {
-  const shown = hint(model)
-  return shown ? (
+  const message = hint(model)
+  return message ? (
     <div
       style={{
         position: 'absolute',
@@ -61,21 +46,7 @@ const WiggleHint = observer(function WiggleHint({
         zIndex: 1,
       }}
     >
-      <BlockMsg
-        severity="warning"
-        message={shown.message}
-        action={
-          shown.clearFilter && model.rowFocus?.length ? (
-            <Button
-              onClick={() => {
-                model.setRowFocus(undefined)
-              }}
-            >
-              Clear subtree filter
-            </Button>
-          ) : undefined
-        }
-      />
+      <BlockMsg severity="warning" message={message} />
     </div>
   ) : null
 })

@@ -27,7 +27,7 @@ import { inkOfInstances } from '@jbrowse/render-core/marks'
 import {
   ContextMenuMixin,
   RowHeightMixin,
-  TreeSidebarMixin,
+  LayoutTreeSidebarMixin,
   buildSpatialIndex,
   computeClusterHierarchy,
   filterRowsBySubtree,
@@ -129,7 +129,7 @@ export default function stateModelFactory(
       DensityBandMixin(),
       LegendMixin(),
       RowHeightMixin(),
-      TreeSidebarMixin<MultiRowSource>(),
+      LayoutTreeSidebarMixin<MultiRowSource>(),
       ContextMenuMixin<MultiRowContextMenuInfo>(),
       StoredHoverMixin<MultiRowHit>(
         (a, b) => a.id === b.id && a.regionIndex === b.regionIndex,

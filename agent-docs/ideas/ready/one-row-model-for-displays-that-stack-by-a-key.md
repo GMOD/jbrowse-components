@@ -24,7 +24,7 @@ regex groups as a derived attribute, and wiggle's `group`, which ADR-143
 anticipated). Chips, the cap and the Sections menu hang here.
 
 **`rows: field | { field, domain, labels, tree, treeProvenance, kept }`** is the
-leaf level: one row per value. Wiggle takes `rows: 'source'` for today's
+leaf level: one row per value. Wiggle takes `rows: 'source'` where it took
 `facet: 'source'`, multi-row takes it for `partitionField`, and the variant
 displays and MAF, whose key is intrinsic (a sample, a species), write every
 member but `field`. The section displays leave it unset, because their rows
@@ -55,16 +55,22 @@ same track leaves the first view's dendrogram describing rows it no longer has.
 
 Three things this requires, from the third review:
 
-- **An arrangement writer flushes to the session synchronously.** Undo records
-  after 300 ms of quiet (`TimeTraveller.ts`) and `BaseTrackModel`'s persist
-  reaction debounces 400 ms, so a run that writes several members would
-  otherwise land in several undo steps.
+- **An arrangement writer flushes to the session synchronously.**
+  `BaseTrackModel`'s persist reaction waits 400 ms, and until it fires the
+  arrangement is not in the session, so a ctrl+z in that window undoes the
+  previous change instead. (The debounce already coalesces a run's several
+  members into one save; the flush is for immediacy.)
 - **"Reset row order" compares against the base config**, not against an empty
   domain, or a user's reset writes a `null` that erases the admin's declared
   order for that user (`trackConfigDelta.ts`). `getTrackConfigChanges` already
   hands over the base value.
 - **The "view changes" table summarises an array** rather than printing a
   2,500-sample order (`flattenTrackConfigDelta`).
+
+`rows.kept` does not count toward "Reset row order", since the focus has a clear
+of its own, though a reset clears it with the rest; `rows.domain` is both the
+declared seed and the arrangement, so a run after a reorder rotates its tree
+towards that reorder.
 
 ## Visibility
 
@@ -122,11 +128,12 @@ before it is asked.
 1. ~~Alignments sections key strand by the `strand` vocabulary and the key
    follows section order~~ (`2e734b0c2c`).
 2. ~~Every product edits track config as session deltas~~ (`130e41de08`).
-3. **The row model, one display at a time**, gated on a zero image diff: wiggle,
-   then the variant displays (the hard case: two-point expansion, bands, tint),
-   then multi-row, then MAF. `rows` replaces `layout`, `clusterTree`,
-   `clusterProvenance` and `subtreeFilter`; `facet.hidden` replaces the volatile
-   hide-set. About 7–11 days.
+3. **The row model, one display at a time**, gated on a zero image diff:
+   ~~wiggle~~ (this landing, ADR-157), then the variant displays (the hard case:
+   two-point expansion, bands, tint), then multi-row, then MAF. `rows` replaces
+   `layout`, `clusterTree`, `clusterProvenance` and `subtreeFilter`;
+   `facet.hidden` replaces the volatile hide-set. The changes table's array
+   summary is still owed, and the variant displays need it. About 7–11 days.
 4. **Colour**, as above.
 5. **A tree per band**, ComplexHeatmap's `row_split` with `cluster_rows`, which
    retires "a band yields to a tree".

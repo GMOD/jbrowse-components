@@ -277,6 +277,22 @@ export function isSessionModelWithConfigEditing(
 }
 
 /**
+ * A session that edits its config tracks as deltas over a base it can hand
+ * back: what a display compares its live config against to say whether a
+ * setting is the reader's or the admin's.
+ */
+export interface SessionWithBaseTrackConfig extends AbstractSessionModel {
+  baseTrackConfig(
+    trackId: string,
+  ): { trackId: string; [key: string]: unknown } | undefined
+}
+export function isSessionWithBaseTrackConfig(
+  t: unknown,
+): t is SessionWithBaseTrackConfig {
+  return isSessionModel(t) && 'baseTrackConfig' in t
+}
+
+/**
  * abstract interface for a session that keeps a list of views, so that `addView`
  * appends and the view a launch came out of survives it.
  *
@@ -787,6 +803,9 @@ export interface AbstractTrackModel {
   minimized: boolean
   resizing: boolean
   setResizing: (flag: boolean) => void
+  // Write the config to the session now rather than after the track's
+  // debounced save; absent on a track model that does not persist edits.
+  persistConfigurationNow?: () => void
 }
 
 export function isTrackModel(thing: unknown): thing is AbstractTrackModel {

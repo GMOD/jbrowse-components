@@ -335,18 +335,36 @@ updating.
 `MultiLinearWiggleDisplay` is gone. `LinearWiggleDisplay` draws one source or
 many and registers against both `QuantitativeTrack` and
 `MultiQuantitativeTrack`, which differ in adapter shorthand and add-track
-workflow rather than in what they draw. `facet: 'source'` puts each source on a
+workflow rather than in what they draw. `rows: 'source'` puts each source on a
 row of its own, with the tree sidebar, clustering, the row-order sort and the
-row labels, and `facet.domain` is that row order. A `MultiQuantitativeTrack`
-seeds `facet: 'source'`, `summaryScoreMode: 'avg'` and `height: 200` into its
-display defaults, so a multi track that names no display setting still opens as
-a stack of rows.
+row labels, and `rows: ''` draws every source in one shared plot. A
+`MultiQuantitativeTrack` seeds `rows: 'source'`, `summaryScoreMode: 'avg'` and
+`height: 200` into its display defaults, so a multi track that names no display
+setting still opens as a stack of rows.
 
 `renderingType` is the five plot names — `xyplot`, `density`, `line`,
 `linecenter` and `scatter`. The nine `multi*` and `multirow*` spellings stop
 loading, and so do `SINGLE_TO_MULTI_RENDERING` and `remapMultiWiggleRendering`,
 which used to remap them. A config that named one spells the plot name instead,
-plus `facet: ""` where it was an overlapping mode. Nothing migrates.
+plus `rows: ""` where it was an overlapping mode. Nothing migrates.
+
+`rows` also holds a reader's arrangement of the rows, which
+`MultiLinearWiggleDisplay` kept as display props. The arrangement is therefore
+one per track, shared by every view showing it, and an edit to it is a change to
+the track's settings that undo and reset reach. A color set on one subtrack is
+`rowColor: { domain, range }`. `runClustering`, `clusterRegion` and `sortRowsBy`
+stay display props.
+
+<!-- prettier-ignore -->
+| v4 display prop | v5 display config |
+| --- | --- |
+| `layout`, the rows in order with any label and color set on each | `rows.domain`, `rows.labels` and `rowColor` |
+| `clusterTree` | `rows.tree`, beside `rows.treeProvenance` |
+| `subtreeFilter` | `rows.kept` |
+
+**None of it migrates**: a session carrying those props reopens unarranged. A
+`facet` in the display's config, the spelling earlier v5 documentation used for
+`rows`, fails the track's load with a message naming `rows: "source"`.
 
 ## The wiggle color is one `color` object
 

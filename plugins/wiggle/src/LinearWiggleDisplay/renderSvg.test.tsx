@@ -145,7 +145,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     },
     gpuProps: () => ({
       sources: [{ name: 'a' }, { name: 'b' }],
-      faceted: true,
+      rowLayout: true,
       origin: 0,
       wiggleColor: {
         posColor: '#0068d1',

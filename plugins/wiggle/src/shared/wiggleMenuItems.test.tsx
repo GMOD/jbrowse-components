@@ -67,7 +67,7 @@ const PLOTS = [
 
 // minimal stand-in for the display: the two axes a leaf writes, and the raw
 // adapter rows that decide whether there is a layout axis at all
-function makePlotSelf(sourceCount: number, isFaceted: boolean) {
+function makePlotSelf(sourceCount: number, isRowLayout: boolean) {
   const writes: (string | boolean)[] = []
   return {
     writes,
@@ -75,8 +75,8 @@ function makePlotSelf(sourceCount: number, isFaceted: boolean) {
     setRenderingType: (t: string) => {
       writes.push(t)
     },
-    isFaceted,
-    setFaceted: (on: boolean) => {
+    isRowLayout,
+    setRowLayout: (on: boolean) => {
       writes.push(on)
     },
     sourcesWithoutLayout: Array.from({ length: sourceCount }, (_, i) => i),
@@ -92,8 +92,8 @@ const checkedIn = (item: MenuItem | undefined) =>
     .filter(i => 'checked' in i && i.checked)
     .map(i => ('label' in i ? i.label : undefined))
 
-function plotMenu(sourceCount: number, isFaceted = false) {
-  const self = makePlotSelf(sourceCount, isFaceted)
+function plotMenu(sourceCount: number, isRowLayout = false) {
+  const self = makePlotSelf(sourceCount, isRowLayout)
   return { self, item: makeRenderingTypeSubMenu(self, PLOTS) }
 }
 

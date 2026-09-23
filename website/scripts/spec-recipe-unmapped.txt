@@ -30,6 +30,7 @@ readConnections
 repeatKey
 repeatTrackId
 rowGroups
+rows
 sampleColorMap
 scales
 showAlignment

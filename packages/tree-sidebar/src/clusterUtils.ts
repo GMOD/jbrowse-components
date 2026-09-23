@@ -150,7 +150,7 @@ export function pruneNewickToLeaves(
 // kept leaf remains.
 export function applySubtreeFilter(
   root: HierarchyNode<ClusterNodeData>,
-  subtreeFilter: string[] | undefined,
+  subtreeFilter: readonly string[] | undefined,
 ): HierarchyNode<ClusterNodeData> {
   if (!subtreeFilter?.length) {
     return root
@@ -193,6 +193,21 @@ export function filterRowsBySubtree<T extends { name: string }>(
 ): T[] {
   const filterSet = subtreeFilter?.length ? new Set(subtreeFilter) : undefined
   return filterSet ? rows.filter(r => filterSet.has(r.name)) : rows
+}
+
+/**
+ * The rows a focus keeps: those `kept` names, in the order given. A focus
+ * naming no current row keeps every row rather than none, so a stale focus
+ * — one saved against rows that have since been renamed — never blanks the
+ * display. Synthesis keyed to a row's place among every row runs before
+ * this, for the reason {@link filterRowsBySubtree} states.
+ */
+export function keptRows<T extends { name: string }>(
+  rows: T[],
+  kept: readonly string[] | undefined,
+): T[] {
+  const focused = filterRowsBySubtree(rows, kept)
+  return focused.length ? focused : rows
 }
 
 // True when focusing this subtree would hide nothing: the node already contains

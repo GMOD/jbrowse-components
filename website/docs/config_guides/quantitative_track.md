@@ -30,19 +30,19 @@ apply to either, through `displayDefaults`.
 
 The axis is one object, [`scales.y`](/docs/config/valuescale), the colour is one
 object, [`color`](/docs/config/linearwiggledisplay/#slot-color), and
-[`facet`](/docs/config/linearwiggledisplay/#slot-facet) decides the layout; all
+[`rows`](/docs/config/linearwiggledisplay/#slot-rows) decides the layout; all
 three are [`LinearWiggleDisplay`](/docs/config/linearwiggledisplay) slots and
 all three go through `displayDefaults`.
 
 [`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
 picks `xyplot`, `density`, `line`, `linecenter` or `scatter`. Those five say
-what a signal is drawn as; `facet` says how many rows there are, so the two can
+what a signal is drawn as; `rows` says how many rows there are, so the two can
 be set independently.
 
 Reference lines belong to the axis object too.
 [`scales.y.rules`](/docs/config/valuescale/#slot-scalesyrules) draws a dashed
 line across the plot at each value, a bare number or `{ value, color, label }`,
-in every row of a faceted track:
+in every row of a track on `rows`:
 
 ```json addtrack
 {
@@ -151,12 +151,15 @@ per-subtrack `color`, `group`, and `source`.
 }
 ```
 
-The track type seeds `facet: "source"`, `summaryScoreMode: "avg"` and a 200px
+The track type seeds `rows: "source"`, `summaryScoreMode: "avg"` and a 200px
 height into its `displayDefaults`, so it opens as one row per source without
-saying so; a key the config spells wins over the seed. `facet: ""` puts every
+saying so; a key the config spells wins over the seed. `rows: ""` puts every
 source back in one shared plot box, and
-`facet: { "field": "source", "domain": […] }` names the sources that lead the
-row order.
+`rows: { "field": "source", "domain": […] }` names the sources that lead the row
+order. The same object takes `labels`, a label per source by name, and
+[`rowColor`](/docs/config/linearwiggledisplay/#slot-rowcolor) gives a source a
+color of its own. **Edit colors/arrangement...** in the track menu writes both,
+as settings a reader can undo or reset.
 
 ### The subadapters form
 

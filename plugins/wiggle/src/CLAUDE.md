@@ -64,13 +64,18 @@ for that frame.
 Each pass packs its own buffer and returns **empty** for renderings that are not
 its own — an empty pack is how a pass releases its buffer.
 
-## `facet` is the layout, and `plotGeometry` is where it lands
+## `rows` is the layout, and `plotGeometry` is where it lands
 
-`facet: 'source'` is one row per source — the tree sidebar, row labels,
-separators, clustering and the row-order sort all hang off `isFaceted`. Unset,
-every source shares one plot box. The five `renderingType` names say what a
-source is drawn as and nothing about the layout, which is why there is one table
-and not nine names.
+`rows: 'source'` is one row per source — the tree sidebar, row labels,
+separators, clustering and the row-order sort all hang off `isRowLayout`.
+`rows: ''` puts every source in one plot box. The five `renderingType` names say
+what a source is drawn as and nothing about the layout, which is why there is
+one table and not nine names. `rows.field` admits `source` alone, and a leftover
+`facet` in the display config fails the load naming `rows: "source"`
+(`checkRowsField`). The same object holds the reader's arrangement, which
+`TreeSidebarMixin` owns (`packages/tree-sidebar/CLAUDE.md`, ADR-157);
+`setRowLayout` writes the field alone, so the arrangement survives a trip
+through the shared plot.
 
 **One plot box takes the `YSCALEBAR_LABEL_OFFSET` inset** so its end labels
 aren't clipped; a stack of rows gives it up, because the axis is drawn per row
@@ -185,8 +190,8 @@ adapter carrying several sources in one file (bedMethyl, a bedGraph with a
 source column) falls back to grouping.
 
 `rowIndex` is never the payload's — a source missing from the payload leaves its
-row empty instead of shifting everything below it. Unfaceted, every source
-collapses onto row 0.
+row empty instead of shifting everything below it. With `rows` unset, every
+source collapses onto row 0.
 
 `findRowHit` picks `visibleSources[floor(offsetY / rowHeight)]`, so
 `effectiveRowHeight` must equal the renderer's `getRowHeight(...)`. `numRows` is
@@ -255,8 +260,21 @@ colour; a declared gradient ignores row colours, so it is keyed regardless, and
 only density gives the ramp the axis's place.
 
 **`scoreGradientPaints` moves a row's identity to `labelColor`** — the source
-key, the row-label swatches and the colour dialog all read it there, so no key
-shows a swatch the plot does not paint.
+key, the row-label swatches and the arrangement dialog's one Color column all
+read it there, so no key shows a swatch the plot does not paint.
+
+**A reader's colour for a row is `rowColor`, and its label is `rows.labels`.**
+The arrangement dialog's submit writes each only where it differs from what the
+adapter supplied (`rowEditsOf`). `arrangeSources` lands a `rowColor` entry on
+the identity channel for the current mode — `color`, or `labelColor` wherever
+`scoreGradientPaints` — ahead of the adapter's colour and the palette, so a
+colour set on the plot moves to the label tint when a gradient starts painting
+rather than into the ramp; in one shared box there is no label to tint, so the
+colour goes to the plot whatever the gradient. `group` has no config home, so a
+`group` pasted into the bulk editor is read for the palettizer's "Color by
+group" and not kept. `resetRowStyling` returns `rowColor` to the config.json's
+with the rest of the arrangement, and a submit keeps the config's pair order so
+a reorder alone writes no `rowColor` delta.
 
 **Density is where the fallback differs.** Outside it an unset row `color` is
 painted in the resolved `posColor`, so the key resolves to it; in density that

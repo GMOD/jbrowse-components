@@ -6,7 +6,5 @@ export interface ReducedModel extends IStateTreeNode, ClusterRunModel<Source> {
   // The rows a run clusters — the focused clade, undecorated. See the model's
   // `clusterableSources`, and `clusteredCladeLayout` for why not `sources`.
   clusterableSources: Source[]
-  layout: Source[]
   adapterConfig: Record<string, unknown>
-  setRowOrder: (arg: Source[]) => void
 }

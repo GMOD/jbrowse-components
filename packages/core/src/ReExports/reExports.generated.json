@@ -2698,6 +2698,15 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/cssColorParse": {
+      "package": "@jbrowse/core",
+      "names": [
+        "bedTriple",
+        "isCssColor",
+        "parseCssColorOr"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/deepEqual": {
       "package": "@jbrowse/core",
       "names": [
@@ -3477,6 +3486,7 @@
         "isSessionWithAddAssembly",
         "isSessionWithAddSessionTrack",
         "isSessionWithAddTracks",
+        "isSessionWithBaseTrackConfig",
         "isSessionWithDeleteTrackConf",
         "isSessionWithMultipleViews",
         "isSessionWithPermanentPlugins",
@@ -4258,6 +4268,15 @@
         "@mui/material",
         "react-dom"
       ]
+    },
+    "@jbrowse/display-kit/rowsConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "ROW_ARRANGEMENT_MEMBERS",
+        "rowsConfigSchema",
+        "rowsSettingOf"
+      ],
+      "worker": "real"
     },
     "@jbrowse/display-kit/rpcArgs": {
       "package": "@jbrowse/display-kit",

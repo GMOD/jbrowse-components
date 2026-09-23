@@ -35,9 +35,9 @@ describe('MultiLinearWiggleDisplay declarative runClustering', () => {
     await jest.runAllTimersAsync()
 
     await waitFor(() => {
-      expect(display.clusterTree).toBe('(b,a);')
+      expect(display.rowTree).toBe('(b,a);')
     })
-    expect(display.layout.map(s => s.name)).toEqual(['b', 'a'])
+    expect(display.rowDomain).toEqual(['b', 'a'])
 
     // one-shot: the flag clears itself so a saved session never re-triggers it
     expect(display.runClustering).toBeUndefined()
@@ -83,7 +83,7 @@ describe('MultiLinearWiggleDisplay declarative runClustering', () => {
     await jest.runAllTimersAsync()
 
     await waitFor(() => {
-      expect(display.clusterTree).toBe('(b,a);')
+      expect(display.rowTree).toBe('(b,a);')
     })
     expect(duringRun).toEqual(['Clustering rows', '0.25'])
     // a status left set outlives the run and would pin the chip up
@@ -121,7 +121,7 @@ describe('MultiLinearWiggleDisplay declarative runClustering', () => {
     await jest.runAllTimersAsync()
 
     await waitFor(() => {
-      expect(display.clusterTree).toBe('(b,a);')
+      expect(display.rowTree).toBe('(b,a);')
     })
 
     late?.({ message: 'Clustering rows', current: 3, total: 4 })

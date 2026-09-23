@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "`MultiLinearWiggleDisplay` is deleted as a display type and its model, generalised to one source, becomes `LinearWiggleDisplay` — registered against both quantitative track types, which differ in adapter shorthand and add-track workflow and not in what they draw. `facet: 'source'` decides the layout: one row per source with the tree sidebar, clustering and the row-order sort, or every source in one shared plot box. `renderingType` collapses from the nine plot-crossed-with-layout names to the five plot names, and `SINGLE_TO_MULTI_RENDERING` with the Core-preProcessTrackConfig handler that ran it goes. `facet.domain` is the row order, so the tree sidebar's `domain` slot becomes opt-out; `RenderWiggleData` goes and `RenderMultiWiggleData` serves every adapter, keeping the typed-array path for the one-signal ones"
+summary: "`MultiLinearWiggleDisplay` is deleted as a display type and its model, generalised to one source, becomes `LinearWiggleDisplay` — registered against both quantitative track types, which differ in adapter shorthand and add-track workflow and not in what they draw. `facet: 'source'` decides the layout: one row per source with the tree sidebar, clustering and the row-order sort, or every source in one shared plot box. `renderingType` collapses from the nine plot-crossed-with-layout names to the five plot names, and `SINGLE_TO_MULTI_RENDERING` with the Core-preProcessTrackConfig handler that ran it goes. `facet.domain` is the row order, so the tree sidebar's `domain` slot becomes opt-out; `RenderWiggleData` goes and `RenderMultiWiggleData` serves every adapter, keeping the typed-array path for the one-signal ones. ADR-157 supersedes the `facet` half: the layout is `rows: 'source'` and the row order `rows.domain`"
 ---
 
 # ADR-143: One quantitative display, and `facet` is the layout
@@ -14,6 +14,9 @@ Accepted (2026-09-19). Follows
 and [ADR-131](adr-131-a-categorical-channel-is-one-config-object.md)'s `facet`
 object to the quantitative display; ADR-016's pos/neg colour split is already
 superseded and untouched here.
+[ADR-157](adr-157-a-row-displays-arrangement-is-the-rows-config-object.md)
+supersedes the `facet` half: the layout is `rows: 'source'`, and the row order
+is `rows.domain`.
 [plugins/wiggle/src/CLAUDE.md](../../plugins/wiggle/src/CLAUDE.md) is the
 operational doc.
 
