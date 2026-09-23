@@ -263,9 +263,9 @@ export function variantTrackMenuItems(
               },
               ...sampleAttributeItems(
                 self.colorByAttributes,
-                self.rowColor,
+                self.rowColorField,
                 arg => {
-                  self.setRowColor(arg)
+                  self.setRowColorField(arg)
                 },
               ),
             ]

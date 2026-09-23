@@ -237,7 +237,7 @@ const suite: TestSuite = {
               JBrowseSession: {
                 views: {
                   tracks: {
-                    displays: { rowColor: string; sources?: Src[] }[]
+                    displays: { rowColorField: string; sources?: Src[] }[]
                   }[]
                 }[]
               }
@@ -245,7 +245,7 @@ const suite: TestSuite = {
           ).JBrowseSession
           const display = session.views[0]!.tracks[0]!.displays[0]!
           return {
-            rowColor: display.rowColor,
+            rowColorField: display.rowColorField,
             sources: (display.sources ?? []).map(s => ({
               name: s.name,
               population: s.population,
@@ -253,9 +253,9 @@ const suite: TestSuite = {
             })),
           }
         })
-        if (info.rowColor !== 'population') {
+        if (info.rowColorField !== 'population') {
           throw new Error(
-            `expected rowColor 'population', got '${info.rowColor}'`,
+            `expected rowColor.field 'population', got '${info.rowColorField}'`,
           )
         }
         if (info.sources.length === 0) {

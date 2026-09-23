@@ -28,7 +28,7 @@ function rowNames(display: { sources: { name: string }[] }) {
 describe('recoloring does not disturb the arrangement', () => {
   it('keeps a clustered order and its tree when coloring by a sample attribute', () => {
     const display = clusteredDisplay()
-    display.setRowColor('population')
+    display.setRowColorField('population')
 
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
     expect(display.rowTree).toBe(CLUSTERED_TREE)
@@ -39,8 +39,8 @@ describe('recoloring does not disturb the arrangement', () => {
 
   it('clearing the coloring strips the palette without resetting the order', () => {
     const display = clusteredDisplay()
-    display.setRowColor('population')
-    display.setRowColor('')
+    display.setRowColorField('population')
+    display.setRowColorField('')
 
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
     expect(display.rowTree).toBe(CLUSTERED_TREE)
@@ -61,7 +61,7 @@ describe('recoloring does not disturb the arrangement', () => {
       tree: '(((S2 HP0,S2 HP1),(S0 HP0,S0 HP1)),(S1 HP0,S1 HP1));',
     })
 
-    display.setRowColor('population')
+    display.setRowColorField('population')
 
     expect(rowNames(display)).toEqual(haplotypes.map(s => s.name))
     expect(display.hierarchy).toBeDefined()
@@ -210,7 +210,7 @@ describe('the config `domain` seeds the sample order', () => {
   it('does not re-seed a dragged order on a recolor', () => {
     const display = domainDisplay(['S2'])
     display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
-    display.setRowColor('population')
+    display.setRowColorField('population')
 
     expect(rowNames(display)).toEqual(['S1', 'S0', 'S2'])
     expect(display.rowArrangementIsCustom).toBe(true)
@@ -221,7 +221,7 @@ describe('the config `domain` seeds the sample order', () => {
     const clustered = [{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }]
     const tree = '((S1,S0),S2);'
     display.setRowOrder(clustered, { tree })
-    display.setRowColor('population')
+    display.setRowColorField('population')
 
     expect(rowNames(display)).toEqual(['S1', 'S0', 'S2'])
     expect(display.rowTree).toBe(tree)
@@ -259,11 +259,11 @@ describe('a rendering-mode switch renames the rows', () => {
   it('keeps the configured coloring on the renamed rows', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setSources(SOURCES)
-    display.setRowColor('population')
+    display.setRowColorField('population')
 
     display.setPhasedMode('phased')
 
-    expect(display.rowColor).toBe('population')
+    expect(display.rowColorField).toBe('population')
     expect(display.sources.every(s => s.labelColor)).toBe(true)
     const byName = Object.fromEntries(
       display.sources.map(s => [s.name, s.labelColor]),
@@ -302,7 +302,7 @@ describe('an adapter swap to a new cohort', () => {
   it('resets a stale arrangement, its tree and its subtree filter', () => {
     const display = clusteredDisplay()
     display.setRowFocus(['S2', 'S0'])
-    display.setRowColor('population')
+    display.setRowColorField('population')
 
     const cohortB = [
       { name: 'T0', population: 'EAS' },
@@ -357,7 +357,7 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
   // swatch went blank, while the menu still showed Population ticked.
   it('keeps the colorBy palette through a sort', () => {
     const display = sortableDisplay()
-    display.setRowColor('population')
+    display.setRowColorField('population')
     const before = new Map(display.sources.map(s => [s.name, s.labelColor]))
     expect([...before.values()].every(Boolean)).toBe(true)
 
@@ -386,7 +386,7 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
         S2: { maxPloidy: 2 },
       },
     } as unknown as Parameters<typeof display.setCellData>[0])
-    display.setRowColor('population')
+    display.setRowColorField('population')
     const before = new Map(display.sources.map(s => [s.name, s.labelColor]))
     expect(display.sources).toHaveLength(6)
     expect([...before.values()].every(Boolean)).toBe(true)

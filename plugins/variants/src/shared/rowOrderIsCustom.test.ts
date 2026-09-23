@@ -9,7 +9,7 @@ const SOURCES = [
 
 function colored() {
   const { display } = createTestEnvironment().createDisplay()
-  display.setRowColor('population')
+  display.setRowColorField('population')
   display.setSources(SOURCES)
   return display
 }
@@ -58,7 +58,7 @@ test('a reorder is custom, and the reset clears it', () => {
 
 test('a second color-by still writes no order', () => {
   const display = colored()
-  display.setRowColor('super_pop')
+  display.setRowColorField('super_pop')
 
   expect(display.rowDomain).toEqual([])
   expect(display.rowArrangementIsCustom).toBe(false)

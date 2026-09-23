@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
+import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import {
@@ -8,7 +9,6 @@ import {
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 
-import { multiRowRowColorSchema } from './multiRowRowColorConfigSchema.ts'
 import { refuseRetiredConfig } from './retiredSettings.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -148,7 +148,7 @@ export default function configSchemaF() {
        * { rowColor: { domain: ['HG00096'], range: ['#4e79a7'] } }
        * ```
        */
-      rowColor: multiRowRowColorSchema,
+      rowColor: rowColorConfigSchema,
       ...rowHeightConfigSchemaFields({
         rowHeight:
           'fixed row height in px; 0 (the default) auto-fits all rows to the display height, so adding rows shrinks them instead of growing the track',

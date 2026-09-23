@@ -3,7 +3,7 @@ import { UNLABELED_GROUP } from './variantLegend.ts'
 
 function display() {
   const { display } = createTestEnvironment().createDisplay()
-  display.setRowColor('population')
+  display.setRowColorField('population')
   display.setSources([
     { name: 'S0', population: 'AFR' },
     { name: 'S1', population: 'EUR' },

@@ -72,6 +72,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
   "./regionTooLargeUtils",
   "./renderDisplaySvg",
   "./rowArrangementConfigSchema",
+  "./rowColorConfigSchema",
   "./rowsConfigSchema",
   "./rpcArgs",
   "./squashToHeightMenuItem",

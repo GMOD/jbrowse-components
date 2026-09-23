@@ -65,7 +65,7 @@ describe('getPortableSettings', () => {
 
   it('ports a plain color and the non-jexl slots', () => {
     const { display, target, targetId } = setup('#ff0000')
-    display.setRowColor('population')
+    display.setRowColorField('population')
     display.getPortableSettings(targetId)
     expect(target.featureColor).toBe('#ff0000')
     expect(readConfObject(target, ['rowColor', 'field'])).toBe('population')

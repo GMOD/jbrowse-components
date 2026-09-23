@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -14,7 +15,6 @@ import {
   wiggleConfigSchemaFields,
   wiggleValueScale,
 } from '../shared/wiggleConfigSchemaFields.ts'
-import { wiggleRowColorSchema } from '../shared/wiggleRowColorConfigSchema.ts'
 import { WIGGLE_RENDERING_TYPES } from '../util.ts'
 
 /**
@@ -141,7 +141,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * }
      * ```
      */
-    rowColor: wiggleRowColorSchema,
+    rowColor: rowColorConfigSchema,
     ...trackHeightConfigSchemaFields(),
     /**
      * #slot color

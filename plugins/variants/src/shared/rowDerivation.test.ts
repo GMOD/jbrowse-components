@@ -175,7 +175,7 @@ describe('allele count', () => {
     const [s0, s1, ...rest] = display.editableSources
     display.applyRowEdits([s0!, { ...s1!, labelColor: '#123456' }, ...rest])
     expect(derived(display)).toMatchSnapshot()
-    display.setRowColor('')
+    display.setRowColorField('')
     expect(derived(display)).toMatchSnapshot()
   })
 

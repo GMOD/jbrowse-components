@@ -289,11 +289,12 @@ export function maybeApplyFacet<S extends Record<string, unknown>>(
 // Warn about both arrangement attributes at once, from the three actions that
 // can newly pair one with a source list: the load, and each setter.
 function warnUnknownArrangementAttributes(
-  self: { rowColor: string; facet: FacetSetting | undefined },
+  self: { rowColorField: string; facet: FacetSetting | undefined },
   sources: Source[],
 ) {
-  if (self.rowColor && !sources.some(source => self.rowColor in source)) {
-    warnMissingAttribute('rowColor', self.rowColor, sources)
+  const { rowColorField } = self
+  if (rowColorField && !sources.some(source => rowColorField in source)) {
+    warnMissingAttribute('rowColor', rowColorField, sources)
   }
   const field = self.facet?.field
   if (field && !sources.some(source => field in source)) {
@@ -761,7 +762,7 @@ export default function MultiSampleVariantBaseModelF(
          * `rowColor.field`. Drives the sidebar row coloring and the legend's
          * group section; '' means no grouping.
          */
-        get rowColor(): string {
+        get rowColorField(): string {
           return getConf(self, ['rowColor', 'field'])
         },
         /**
@@ -898,8 +899,8 @@ export default function MultiSampleVariantBaseModelF(
            * `sources`, so a recolor moves no rows, drops no cluster tree and
            * leaves the colours set row by row where they were.
            */
-          setRowColor(rowColor: string) {
-            setConf(self, ['rowColor', 'field'], rowColor)
+          setRowColorField(field: string) {
+            setConf(self, ['rowColor', 'field'], field)
             warnUnknownArrangementAttributes(self, self.sourcesVolatile ?? [])
           },
           /**
@@ -1111,7 +1112,7 @@ export default function MultiSampleVariantBaseModelF(
          * cohort. `undefined` when there is nothing to color by.
          */
         get rowPalette(): ReadonlyMap<string, string> | undefined {
-          return colorByPalette(self.rowColor, self.sourcesVolatile ?? [])
+          return colorByPalette(self.rowColorField, self.sourcesVolatile ?? [])
         },
         /**
          * #getter
@@ -1193,7 +1194,7 @@ export default function MultiSampleVariantBaseModelF(
           const rows = self.clusterableSources
           const palette = self.rowPalette
           const tinted = palette
-            ? applyColorByPalette(rows, self.rowColor, palette)
+            ? applyColorByPalette(rows, self.rowColorField, palette)
             : rows
           return self.root && treeDescribesRows(self.root, rows)
             ? tinted
@@ -1591,7 +1592,7 @@ export default function MultiSampleVariantBaseModelF(
             focusRowGroup(
               self,
               self.editableSources,
-              s => String(s[self.rowColor] ?? '') === value,
+              s => String(s[self.rowColorField] ?? '') === value,
             )
           }
         },
@@ -1732,7 +1733,7 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * `LegendMixin`'s hook: the cell coloring, the insertion marker where
-         * one is drawn, and (when rowColor is set) the sample-grouping coloring
+         * one is drawn, and (when `rowColor.field` is set) the sample-grouping coloring
          * shown on the sidebar row labels. Whether the marker is keyed is
          * `drawsInsertionMarkers`' answer, the painter's own test on the
          * painter's own blocks.
@@ -1747,7 +1748,7 @@ export default function MultiSampleVariantBaseModelF(
             shadeByDosage: self.shadeByDosage,
             featureColor: self.featureColor,
             svTypeColors: self.svTypeColors,
-            colorBy: self.rowColor,
+            colorBy: self.rowColorField,
             sources: self.sources,
             insertionMarkers: self.drawsInsertionMarkers,
           })

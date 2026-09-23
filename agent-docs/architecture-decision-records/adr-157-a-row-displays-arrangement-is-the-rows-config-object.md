@@ -131,7 +131,7 @@ the rows in silence. The model's `facet`, `isFaceted` and `setFaceted` are
 a trip through the shared plot.
 
 **`rowColor` holds a reader's colour for a subtrack.**
-`rowColor: { domain, range }` (`WiggleRowColor`, closed) pairs subtrack names
+`rowColor: { domain, range }` (`RowColor`, closed) pairs subtrack names
 with CSS colours. Each lands on the row's identity channel for the mode, ahead
 of the adapter's colour and the palette: `color`, the plot, or `labelColor`, the
 tint beside the label, wherever a score gradient paints (density, and bars or
@@ -169,7 +169,7 @@ the fetch, since a resolving read evaluates the expression against no feature
 the arrangement and the row colours stay, since a name keyed on another field
 matches nothing and comes back with the field. The rows the config
 does not list still sort, digits by magnitude, since discovered values arrive
-in no order of their own. `rowColor: { domain, range }` (`MultiRowRowColor`)
+in no order of their own. `rowColor: { domain, range }` (`RowColor`)
 holds what `sampleColorMap` and the dialog's per-row `color` held: one map, so
 the dialog shows the config's colours and writes its own beside them. An entry
 paints the row's blocks; a row without one takes the palette where no `color`

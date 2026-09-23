@@ -164,7 +164,7 @@ kept these displays on a label gutter of their own.
 **`rowColor.field` beats whatever color the row already carried** — the
 `rowColor` pairs and a `samplesTsv` column: a channel bound to a variable beats
 a per-row constant, and the palette is a pure function of the attribute, so
-"Color by… → Population" still moves on it. `setRowColor` writes the field
+"Color by… → Population" still moves on it. `setRowColorField` writes the field
 alone, and a reset returns the pairs, never the field.
 
 **The `facet` band yields while a cluster tree describes the rows**
