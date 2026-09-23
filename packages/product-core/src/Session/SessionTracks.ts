@@ -6,7 +6,7 @@ import {
 } from '@jbrowse/core/util'
 import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
 import { applySnapshot, getSnapshot, types } from '@jbrowse/mobx-state-tree'
-import { compareStructural } from 'mobx'
+import { compareStructural, computed } from 'mobx'
 
 import { TracksManagerSessionMixin } from './Tracks.ts'
 import { hydratedTrackForm } from './hydratedForms.ts'
@@ -23,6 +23,7 @@ import type {
   IAnyType,
   Instance,
 } from '@jbrowse/mobx-state-tree'
+import type { IComputedValue } from 'mobx'
 
 export interface PlainTrackConfig {
   trackId: string
@@ -183,16 +184,17 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       // TrackConfigurationReference, losing open display state (see CLAUDE.md).
       // Both keys have stable identity until they actually change: a track's
       // delta only when that track is edited, and the base only on a
-      // jbrowse.tracks write. This relies on a base config never mutating in
-      // place: the frozen array replaces the entry (new identity) on
-      // updateTrackConf. If an in-place base edit is ever added, key this cache
-      // on base content too.
+      // jbrowse.tracks write or a sessionTracks entry replaced. This relies on
+      // a base config never mutating in place. If an in-place base edit is ever
+      // added, key this cache on base content too.
       const mergeCache = new WeakMap<
         object,
         { delta: PlainTrackConfig; merged: AnyConfigurationModel }
       >()
-      function withDelta(base: PlainTrackConfig) {
-        const delta = self.trackConfigDeltas[base.trackId]
+      function withDelta(
+        base: PlainTrackConfig,
+        delta: PlainTrackConfig | undefined,
+      ) {
         if (!delta) {
           return base as unknown as AnyConfigurationModel
         }
@@ -207,6 +209,28 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         mergeCache.set(base, { delta, merged })
         return merged
       }
+      // Each track's base by trackId: the session's entry, else the first
+      // config.json entry. Rebuilt when either list changes and never on a
+      // delta write; `tracks` reads it, which keeps it cached for the
+      // per-id lookups below.
+      const basesRecord = computed(
+        () => {
+          const entries = getSnapshot(self.sessionTracks) as PlainTrackConfig[]
+          const byId = new Map(entries.map(t => [t.trackId, t]))
+          const sessionIds = new Set(byId.keys())
+          for (const base of baseTracks(self)) {
+            if (!byId.has(base.trackId)) {
+              byId.set(base.trackId, base)
+            }
+          }
+          return { entries, byId, sessionIds }
+        },
+        { name: 'basesRecord' },
+      )
+      const baseByIdComputeds = new Map<
+        string,
+        IComputedValue<PlainTrackConfig | undefined>
+      >()
       return {
         /**
          * #getter
@@ -216,26 +240,32 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * cache warm.
          */
         get tracks(): AnyConfigurationModel[] {
-          const sessionIds = new Set(self.sessionTracks.map(t => t.trackId))
+          const deltas = self.trackConfigDeltas
+          const { entries, sessionIds } = basesRecord.get()
           return [
-            ...self.sessionTracks.map(t => withDelta(getSnapshot(t))),
+            ...entries.map(t => withDelta(t, deltas[t.trackId])),
             ...baseTracks(self)
               .filter(t => !sessionIds.has(t.trackId))
-              .map(withDelta),
+              .map(t => withDelta(t, deltas[t.trackId])),
           ]
         },
         /**
          * #method
          * The entry `trackId` edits over, hydrated: the one the session added
          * it with, or its config.json entry. What a display's "is this
-         * arranged" and "reset" compare its live config against.
+         * arranged" and "reset" compare its live config against. Per-id
+         * reactive, like `getTrackById`.
          */
         baseTrackConfig(trackId: string): PlainTrackConfig | undefined {
-          const entry = self.sessionTracks.find(t => t.trackId === trackId)
-          const base = entry
-            ? (getSnapshot(entry) as PlainTrackConfig)
-            : baseTracks(self).find(t => t.trackId === trackId)
-          return base ? toPlainConfig(base) : undefined
+          let c = baseByIdComputeds.get(trackId)
+          if (!c) {
+            c = computed(() => {
+              const base = basesRecord.get().byId.get(trackId)
+              return base ? toPlainConfig(base) : undefined
+            })
+            baseByIdComputeds.set(trackId, c)
+          }
+          return c.get()
         },
         /**
          * #method
@@ -244,10 +274,8 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * Drives the "view changes" dialog opened from the edited badge.
          */
         getTrackConfigChanges(trackId: string) {
-          // Every rendered track row asks this (the edited badge), but only an
-          // edited track has a delta — so scan for the base only once one
-          // exists. Skipping it also keeps an unedited row from subscribing to
-          // the whole jbrowse.tracks array.
+          // Every rendered track row asks this (the edited badge); only an
+          // edited one has a delta, so an unedited row subscribes to no base.
           const delta = self.trackConfigDeltas[trackId]
           const base = delta ? this.baseTrackConfig(trackId) : undefined
           return delta && base ? flattenTrackConfigDelta(base, delta) : []

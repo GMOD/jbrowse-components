@@ -7,6 +7,7 @@ import {
 import { getEnv, getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { hydratedForms, planWebExport } from '@jbrowse/product-core'
 import { waitFor } from '@testing-library/react'
+import { autorun, getDependencyTree } from 'mobx'
 
 import { createViewState, createViewStateAsync } from './index.ts'
 
@@ -574,5 +575,72 @@ describe('a session track edits as a delta over its entry', () => {
     expect(nameOf(reopened.getTrackById(ID))).toBe('Edited name')
     reopened.resetTrackConfiguration(ID)
     expect(nameOf(reopened.getTrackById(ID))).toBe('Original name')
+  })
+})
+
+// A delta write hands every other track the config it had, so of the shown
+// tracks only the edited one resolves its config again, and no resolution
+// subscribes to the delta map or the session track list directly.
+describe('a delta write re-resolves only its own track', () => {
+  const ids = ['config', 'configEdited', 'session', 'sessionEdited']
+  const conf = (trackId: string) => ({ ...track, trackId, displays: [] })
+
+  async function fourShown() {
+    const state = createViewState({
+      assembly,
+      tracks: [conf('config'), conf('configEdited')],
+    })
+    const session = state.session as unknown as DeltaSession & {
+      addSessionTrackConf: (conf: Record<string, unknown>) => unknown
+    }
+    session.addSessionTrackConf(conf('session'))
+    session.addSessionTrackConf(conf('sessionEdited'))
+    session.updateTrackConfiguration({ ...conf('configEdited'), name: 'a' })
+    session.updateTrackConfiguration({ ...conf('sessionEdited'), name: 'b' })
+    const { view } = state.session
+    for (const id of ids) {
+      await view.launchTrack(id)
+    }
+    await waitFor(() => {
+      expect(view.tracks).toHaveLength(ids.length)
+    })
+    const runs = new Map<string, number>()
+    const disposers = ids.map(id => {
+      const shown = view.getTrack(id)!
+      return autorun(() => {
+        runs.set(id, (runs.get(id) ?? 0) + 1)
+        readConfObject(shown.configuration, 'name')
+      })
+    })
+    return { session, view, runs, disposers }
+  }
+
+  test.each(ids)('an edit to %s leaves the other three alone', async edited => {
+    const { session, runs, disposers } = await fourShown()
+    const before = new Map(session.tracks.map(t => [t.trackId, t]))
+    runs.clear()
+
+    session.updateTrackConfiguration({ ...conf(edited), name: 'edited' })
+
+    expect([...runs.keys()]).toEqual([edited])
+    for (const t of session.tracks) {
+      if (t.trackId !== edited) {
+        expect(t).toBe(before.get(t.trackId))
+      }
+    }
+    disposers.forEach(d => {
+      d()
+    })
+  })
+
+  test('no config resolution reads the delta map or the session tracks', async () => {
+    const { disposers } = await fourShown()
+    for (const d of disposers) {
+      const direct = getDependencyTree(d).dependencies?.map(dep => dep.name)
+      expect(direct).not.toContainEqual(
+        expect.stringMatching(/\.(trackConfigDeltas|sessionTracks)$/),
+      )
+      d()
+    }
   })
 })
