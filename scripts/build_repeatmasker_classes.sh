@@ -85,7 +85,7 @@ fi
 
 # ── .out to a UCSC-shaped BED ────────────────────────────────────────────────
 # The header line is what names the columns: BedTabixAdapter reads them off it,
-# which is why `partitionField: "repClass"` in the track config below can name a
+# which is why `rows: "repClass"` in the track config below can name a
 # column that is not part of the BED spec at all. `sort-bed` is what keeps it
 # first, where tabix expects it: it moves every `#` line to the top and sorts
 # the rest under LC_ALL=C, which a hand-rolled `sort` gets wrong in any other
@@ -121,11 +121,11 @@ echo "converted $(basename "$REPEATS") to rmsk.bed.gz, $CLASSES repeat classes"
 jb add-assembly "$FA" --name "$ASM" --load copy --force --out "$APP"
 cp -f rmsk.bed.gz rmsk.bed.gz.tbi "$APP"/
 
-# The CLI cannot set partitionField, so the track is written as JSON. The
+# The CLI cannot set `rows`, so the track is written as JSON. The
 # multi-row entry is listed first, which is what makes it the display the track
 # opens with; the plain one after it stays a menu click away.
 #
-# sampleColorMap is deliberately partial. A class not named in it still gets a
+# `rowColor` is deliberately partial. A class not named in it still gets a
 # lane, colored from the categorical palette by its position, so this is the
 # list of classes whose color should not move as you pan rather than a list of
 # what exists. @ASSEMBLY@ is a real JSON string so the heredoc parses on its
@@ -144,14 +144,10 @@ sed "s|@ASSEMBLY@|$ASM|" >track.json <<'JSON'
     {
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "rmsk_classes-LinearMultiRowFeatureDisplay",
-      "partitionField": "repClass",
-      "sampleColorMap": {
-        "SINE": "#e41a1c",
-        "LINE": "#377eb8",
-        "LTR": "#4daf4a",
-        "DNA": "#984ea3",
-        "Simple_repeat": "#ff7f00",
-        "Low_complexity": "#a65628"
+      "rows": "repClass",
+      "rowColor": {
+        "domain": ["SINE", "LINE", "LTR", "DNA", "Simple_repeat", "Low_complexity"],
+        "range": ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#a65628"]
       },
       "showRowSeparators": true,
       "height": 200

@@ -14,6 +14,7 @@ import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
@@ -27,12 +28,12 @@ import { inkOfInstances } from '@jbrowse/render-core/marks'
 import {
   ContextMenuMixin,
   RowHeightMixin,
-  LayoutTreeSidebarMixin,
+  TreeSidebarMixin,
+  baseDisplayConfig,
   buildSpatialIndex,
   computeClusterHierarchy,
-  filterRowsBySubtree,
   focusRowGroup,
-  reconcileLayout,
+  keptRows,
   resetRowOrderMenuItems,
   rowLabelsCarryText,
   setupTreeSidebarAutoruns,
@@ -42,6 +43,7 @@ import {
   treeSidebarOffset,
 } from '@jbrowse/tree-sidebar'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import { compareStructural } from 'mobx'
 
 import DensityBandMixin from '../shared/DensityBandMixin.ts'
 import { copyItem } from '../shared/copyMenuItem.ts'
@@ -73,11 +75,14 @@ import {
 } from './rendering/colorLegend.ts'
 import { buildMultiRowChannels } from './rendering/multiRowChannels.ts'
 import { MULTI_ROW_MARKS } from './rendering/multiRowMarks.ts'
+import { refuseRetiredState } from './retiredSettings.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
   applyRowGroups,
+  arrangeRows,
   orderPartitionValues,
   resolveRowColorStrings,
+  rowEditsOf,
 } from './rowSources.ts'
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
@@ -129,7 +134,7 @@ export default function stateModelFactory(
       DensityBandMixin(),
       LegendMixin(),
       RowHeightMixin(),
-      LayoutTreeSidebarMixin<MultiRowSource>(),
+      TreeSidebarMixin<MultiRowSource>(),
       ContextMenuMixin<MultiRowContextMenuInfo>(),
       StoredHoverMixin<MultiRowHit>(
         (a, b) => a.id === b.id && a.regionIndex === b.regionIndex,
@@ -151,6 +156,7 @@ export default function stateModelFactory(
         hiddenCategories: types.array(types.string),
       }),
     )
+    .preProcessSnapshot(refuseRetiredState)
     .views(self => ({
       /**
        * #getter
@@ -217,13 +223,13 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * The raw `partitionField` slot, forwarded to the worker which resolves
-       * it per feature. Reading it through `readConfObject` would evaluate a
-       * `jexl:` expression against no context and ship the empty string as an
+       * The raw `rows.field`, forwarded to the worker which resolves it per
+       * feature. Reading it through `readConfObject` would evaluate a `jexl:`
+       * expression against no context and ship the empty string as an
        * attribute name, drawing one unnamed row with nothing thrown.
        */
-      get partitionField(): string {
-        return self.conf.partitionField
+      get rowsField(): string {
+        return self.conf.rows.field
       },
       /**
        * #getter
@@ -257,11 +263,40 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * Map of partition value to color, painting that whole row over the
-       * per-feature `color`.
+       * The colour set on each named row, off `rowColor`, painting that whole
+       * row over the per-feature `color`.
        */
-      get sampleColorMap(): Record<string, string> {
-        return readConfObject(self.conf, 'sampleColorMap')
+      get rowColors(): ReadonlyMap<string, string> {
+        return pairedColorsOf({
+          domain: getConf(self, ['rowColor', 'domain']),
+          range: getConf(self, ['rowColor', 'range']),
+        })
+      },
+      /**
+       * #getter
+       * The `rowColor` the config.json declares for this display, which a
+       * reset returns to and a dialog submit keeps the pair order of.
+       */
+      get baseRowColor(): {
+        domain: readonly string[]
+        range: readonly string[]
+      } {
+        const base = (baseDisplayConfig(self).rowColor ?? {}) as {
+          domain?: string[]
+          range?: string[]
+        }
+        return { domain: base.domain ?? [], range: base.range ?? [] }
+      },
+      /**
+       * #getter
+       * The row order the config.json declares, which the palette is dealt
+       * over so that no arrangement recolours a row.
+       */
+      get baseRowDomain(): readonly string[] {
+        const base = (baseDisplayConfig(self).rows ?? {}) as {
+          domain?: string[]
+        }
+        return base.domain ?? []
       },
       /**
        * #getter
@@ -272,8 +307,8 @@ export default function stateModelFactory(
       /**
        * #getter
        * Regex-to-group entries tagging rows with a sidebar swatch color, applied
-       * downstream of `layout` so the derived color never lands in persisted
-       * state and loses to a stale copy.
+       * downstream of the arrangement so the derived color never lands in
+       * persisted state and loses to a stale copy.
        */
       get rowGroups(): RowGroup[] {
         return readConfObject(self.conf, 'rowGroups')
@@ -291,15 +326,15 @@ export default function stateModelFactory(
           }
         }
         const unanswered = `(no ${effectivePartitionField(self)})`
-        return orderPartitionValues(values, self.rowDomain).map(name =>
+        return orderPartitionValues(values, self.baseRowDomain).map(name =>
           name === '' ? { name, label: unanswered } : { name },
         )
       })
       return {
         /**
          * #getter
-         * The distinct partition values across all loaded regions, ordered by
-         * the config `domain` then sorted.
+         * The distinct partition values across all loaded regions, in the
+         * order the config.json declares, the rest sorted.
          */
         get sourcesWithoutLayout(): MultiRowSource[] {
           return sourcesWithoutLayout.get()
@@ -384,22 +419,39 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Discovered rows with the user's arrangement applied, not
-       * subtree-filtered.
+       * `TreeSidebarMixin`'s hook: whether `rowColor` names a colour the
+       * config does not, so "Reset row order" is offered for a recolour too.
+       */
+      get rowStylingIsCustom(): boolean {
+        return !compareStructural(
+          Object.fromEntries(self.rowColors),
+          Object.fromEntries(pairedColorsOf(self.baseRowColor)),
+        )
+      },
+      /**
+       * #getter
+       * The discovered rows in the reader's arrangement — `rows.domain`
+       * leading, `rows.labels` over the derived labels, each `rowColor` entry
+       * as the row's `color` — with no focus, so the arrangement dialog seeds
+       * from what was chosen.
        */
       get editableSources(): MultiRowSource[] {
-        return reconcileLayout(self.sourcesWithoutLayout, self.layout)
+        return arrangeRows(self.sourcesWithoutLayout, {
+          domain: self.rowDomain,
+          labels: self.rowLabels,
+          colors: self.rowColors,
+        })
       },
     }))
     .views(self => ({
       /**
        * #getter
        * The rows a clustering run acts on, deliberately not the decorated
-       * `sources` below: a run writes what it is handed into `layout`, where a
-       * `rowGroups` swatch color has no business.
+       * `sources` below, whose `rowGroups` swatch colour a run has no
+       * business writing back.
        */
       get clusterableSources(): MultiRowSource[] {
-        return filterRowsBySubtree(self.editableSources, self.rowFocus)
+        return keptRows(self.editableSources, self.rowFocus)
       },
       /**
        * #getter
@@ -443,7 +495,6 @@ export default function stateModelFactory(
       get rowColorStringsByIndex(): (string | undefined)[] {
         return resolveRowColorStrings(
           self.sources,
-          self.sampleColorMap,
           self.colorConfig === undefined && !self.usedItemRgb
             ? self.sourcesWithoutLayout
             : undefined,
@@ -672,8 +723,8 @@ export default function stateModelFactory(
        * #getter
        * Positioned dendrogram, when a cluster tree exists and describes the rows
        * on screen. Passing the drawn row names is the backstop against anything
-       * reordering `sources` downstream of `layout`: such a reorder drops the
-       * dendrogram rather than drawing it against rows it does not name.
+       * reordering `sources` downstream of the arrangement: such a reorder drops
+       * the dendrogram rather than drawing it against rows it does not name.
        */
       get hierarchy() {
         return computeClusterHierarchy(
@@ -748,7 +799,7 @@ export default function stateModelFactory(
        */
       rpcProps() {
         return {
-          partitionField: self.partitionField,
+          partitionField: self.rowsField,
           lengthField: self.lengthField,
           colorConfig: self.colorConfig,
         }
@@ -876,21 +927,48 @@ export default function stateModelFactory(
         },
         /**
          * #action
-         * Repartition, dropping the state keyed on the old rows: `layout` and
-         * `hiddenCategories` name rows by value, and the subtree filter does
-         * too — left set across a rename it matches nothing and `sources` comes
-         * back empty. Writing the slot refetches on its own.
+         * Repartition, dropping the state keyed on the old rows: the
+         * arrangement, the row colours and `hiddenCategories` all name rows by
+         * value. Writing `rows.field` refetches on its own.
          */
-        setPartitionField(field: string) {
+        setRowsField(field: string) {
           // Against the effective field, not the slot: under auto the menu
           // checks whatever auto picked, and picking that same radio would pin
           // it — a full refetch to produce the painting already on screen.
           if (field === self.effectivePartitionField) {
             return
           }
-          setConf(self, 'partitionField', field)
+          setConf(self, ['rows', 'field'], field)
           self.resetRowArrangement()
           self.hiddenCategories.clear()
+        },
+        /**
+         * #action
+         * The arrangement dialog's submit: the order and labels to `rows`, and
+         * the colours to `rowColor`, each only where it differs from what was
+         * discovered.
+         */
+        applyRowEdits(rows: MultiRowSource[]) {
+          const { labels, rowColor } = rowEditsOf(
+            rows,
+            self.sourcesWithoutLayout,
+            self.baseRowColor.domain,
+          )
+          self.configuration.setSubschema('rowColor', rowColor)
+          self.setRowLabels(labels)
+          self.setRowOrder(rows)
+        },
+        /**
+         * #action
+         * `TreeSidebarMixin`'s hook, so "Reset row order", a repartition and
+         * the dialog's "Clear custom settings" return the row colours with the
+         * arrangement.
+         */
+        resetRowStyling() {
+          self.configuration.setSubschema(
+            'rowColor',
+            baseDisplayConfig(self).rowColor ?? {},
+          )
         },
         /**
          * #action

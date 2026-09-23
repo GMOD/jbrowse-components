@@ -62,7 +62,7 @@ interface MultiRowMenuSelf
   effectivePartitionField: string
   partitionCandidates: string[]
   partitionRowCounts: ReadonlyMap<string, PartitionRowCount>
-  setPartitionField: (field: string) => void
+  setRowsField: (field: string) => void
   showBranchLength: boolean
   treeHasBranchLengths: boolean
   rowFocus?: readonly string[]
@@ -169,7 +169,7 @@ function partitionMenuItems(self: MultiRowMenuSelf): MenuItem[] {
           })),
           isExpression ? undefined : effectivePartitionField,
           (field: string) => {
-            self.setPartitionField(field)
+            self.setRowsField(field)
           },
         ),
       ],
@@ -195,7 +195,7 @@ export function buildMultiRowTrackMenuItems(
       },
     }),
     // Top-level, since clustering is only one of the three things writing
-    // `layout`.
+    // `rows.domain`.
     ...resetRowOrderMenuItems(self),
     clusteringMenuItem(
       self,

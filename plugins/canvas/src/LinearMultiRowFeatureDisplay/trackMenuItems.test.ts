@@ -33,7 +33,7 @@ function makeSelf(
     effectivePartitionField: 'name',
     partitionCandidates: [] as string[],
     partitionRowCounts: new Map<string, PartitionRowCount>(),
-    setPartitionField: () => {},
+    setRowsField: () => {},
     showBranchLength: true,
     treeHasBranchLengths: false,
     rowDomain: [],
@@ -333,7 +333,7 @@ describe('multi-row track menu', () => {
           makeSelf({
             partitionCandidates: ['repClass', 'repFamily'],
             effectivePartitionField: 'repClass',
-            setPartitionField: (f: string) => {
+            setRowsField: (f: string) => {
               picked.push(f)
             },
           }),

@@ -87,7 +87,7 @@ jb add-track "$VCF_URL" \
   --trackId khv_trio_vcf --assemblyNames hg38 --force --out "$APP"
 
 # hap-ibd track: copy the BED in, then add the FeatureTrack with the multi-row
-# display (the CLI can't set partitionField/domain, so patch config.json).
+# display (the CLI can't set `rows`, so patch config.json).
 cp trio.hapibd.bed.gz trio.hapibd.bed.gz.tbi "$APP"/
 python3 - "$APP/config.json" <<'PY'
 import json, sys
@@ -109,8 +109,10 @@ track = {
     "displays": [{
         "type": "LinearMultiRowFeatureDisplay",
         "displayId": "khv_trio_hapibd-LinearMultiRowFeatureDisplay",
-        "partitionField": "parenthap",
-        "domain": ["Father hap1", "Father hap2", "Mother hap1", "Mother hap2"],
+        "rows": {
+            "field": "parenthap",
+            "domain": ["Father hap1", "Father hap2", "Mother hap1", "Mother hap2"],
+        },
     }],
 }
 cfg["tracks"] = [t for t in cfg["tracks"] if t.get("trackId") != track["trackId"]]

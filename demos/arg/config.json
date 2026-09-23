@@ -163,7 +163,7 @@
         {
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "sim_introgression_painting-LinearMultiRowFeatureDisplay",
-          "partitionField": "row",
+          "rows": "row",
           "color": "jexl:get(feature,'color')",
           "height": 280,
           "rowGroups": [

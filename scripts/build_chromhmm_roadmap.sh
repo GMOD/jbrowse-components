@@ -37,7 +37,7 @@
 #
 #   * the row LABEL is `STD_NAME` from EID_metadata.tab. Two epigenomes share
 #     one ("Primary T helper naive cells from peripheral blood", E038 and E039),
-#     and `partitionField` groups by the value, so taking STD_NAME alone would
+#     and `rows` takes a row per value, so taking STD_NAME alone would
 #     silently merge two epigenomes into one row. Colliding names take their
 #     MNEMONIC in parentheses;
 #   * the row ORDER is GROUP then EID, which is what keeps a tissue's
@@ -117,8 +117,8 @@ if wanted:
     missing = wanted - {r['EID'] for r in rows}
     assert not missing, f'no metadata row for {sorted(missing)}'
 
-# STD_NAME is the label, except where two epigenomes share one: `partitionField`
-# groups by value, so a duplicate would draw the two as a single row. The
+# STD_NAME is the label, except where two epigenomes share one: `rows` takes a
+# row per value, so a duplicate would draw the two as a single row. The
 # MNEMONIC disambiguates and is itself unique.
 seen = collections.Counter(r['STD_NAME'] for r in rows)
 def label(r):
@@ -297,9 +297,8 @@ config = {
                 {
                     'type': 'LinearMultiRowFeatureDisplay',
                     'displayId': 'roadmap_chromhmm_multirow_hg19-LinearMultiRowFeatureDisplay',
-                    'partitionField': 'cellType',
+                    'rows': {'field': 'cellType', 'domain': row_order},
                     'legend': legend,
-                    'domain': row_order,
                     'rowGroups': row_groups,
                     'height': 700,
                 }

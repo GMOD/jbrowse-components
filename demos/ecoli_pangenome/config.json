@@ -321,8 +321,10 @@
       "displays": [
         {
           "type": "LinearMultiRowFeatureDisplay",
-          "partitionField": "strain",
-          "domain": ["Sakai", "CFT073", "NCTC86", "IAI39"],
+          "rows": {
+            "field": "strain",
+            "domain": ["Sakai", "CFT073", "NCTC86", "IAI39"]
+          },
           "legend": [
             {
               "label": "Same orientation as K12",
@@ -464,9 +466,11 @@
       "displays": [
         {
           "type": "LinearMultiRowFeatureDisplay",
-          "partitionField": "strain",
+          "rows": {
+            "field": "strain",
+            "domain": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
+          },
           "lengthField": "delta",
-          "domain": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
           "legend": [
             {
               "label": "reference path",

@@ -54,17 +54,17 @@ export function partitionCandidates(self: PartitionFieldSlice) {
 
 /**
  * The attribute the rows are partitioned on: what a region answered, else what
- * the worker's own resolver would make of the slot. Answering through
+ * the worker's own resolver would make of `rows.field`. Answering through
  * `resolvePartitionField` rather than a second copy of its default is what
  * keeps the menu's checked radio and the clustering matrix naming the field the
  * next fetch would use.
  */
 export function effectivePartitionField(
-  self: PartitionFieldSlice & { partitionField: string },
+  self: PartitionFieldSlice & { rowsField: string },
 ) {
   return (
     answeredPartitionField(self) ??
-    resolvePartitionField(self.partitionField, partitionCandidates(self))
+    resolvePartitionField(self.rowsField, partitionCandidates(self))
   )
 }
 

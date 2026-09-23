@@ -83,10 +83,10 @@ cp wgEncodeBroadHmm.multirow.bed.gz wgEncodeBroadHmm.multirow.bed.gz.tbi "$APP"/
 # ENCODE segmentation BEDs came from, so the whole demo reads from one place.
 # Column names come from the BED's own defline, so all the track has to say is
 # which of them partitions the rows; itemRgb paints each feature its state color
-# automatically. The CLI can't set partitionField/domain, so the track is
-# written straight into config.json.
+# automatically. The CLI can't set `rows`, so the track is written straight
+# into config.json.
 #
-# `domain` is substituted from CELL_TYPES rather than typed out a second time.
+# `rows.domain` is substituted from CELL_TYPES rather than typed out a second time.
 # The placeholder is a real JSON string so the heredoc still parses on its own,
 # which is what scripts/check-build-scripts.py validates it as.
 ROW_ORDER=$(printf '"%s", ' "${CELL_TYPES[@]#*:}")
@@ -126,8 +126,7 @@ sed "s|\"@ROW_ORDER@\"|${ROW_ORDER%, }|" > "$APP"/config.json <<'JSON'
       "displays": [
         {
           "type": "LinearMultiRowFeatureDisplay",
-          "partitionField": "cellType",
-          "domain": ["@ROW_ORDER@"],
+          "rows": { "field": "cellType", "domain": ["@ROW_ORDER@"] },
           "height": 200
         }
       ]

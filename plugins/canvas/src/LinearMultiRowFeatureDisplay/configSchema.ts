@@ -1,12 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
+import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import {
   rowSeparatorsConfigSchemaFields,
-  rowDomainConfigSchemaFields,
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
+
+import { multiRowRowColorSchema } from './multiRowRowColorConfigSchema.ts'
+import { refuseRetiredConfig } from './retiredSettings.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -25,8 +28,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * chr1    2000000  5500000  seg2  HG00096
  * chr1    0        3500000  seg3  HG00097
  * ```
- * Paint one row per `sample`, coloring each row from `sampleColorMap` and
- * fixing HG00097 above HG00096 regardless of file order:
+ * Paint one row per `sample`, coloring each row from `rowColor` and fixing
+ * HG00097 above HG00096 regardless of file order:
  * ```js
  * {
  *   type: 'FeatureTrack',
@@ -41,39 +44,49 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *     {
  *       type: 'LinearMultiRowFeatureDisplay',
  *       displayId: 'ancestry_painting-LinearMultiRowFeatureDisplay',
- *       partitionField: 'sample',
- *       sampleColorMap: { HG00096: '#4e79a7', HG00097: '#f28e2b' },
- *       domain: ['HG00097', 'HG00096'],
+ *       rows: { field: 'sample', domain: ['HG00097', 'HG00096'] },
+ *       rowColor: {
+ *         domain: ['HG00096', 'HG00097'],
+ *         range: ['#4e79a7', '#f28e2b'],
+ *       },
  *     },
  *   ],
  * }
  * ```
- * Omit `sampleColorMap` entirely and each row is auto-assigned a distinct
- * palette color — unless the features carry an `itemRgb`, which is honored as
- * the per-feature color with no configuration at all. To color per feature off
+ * Omit `rowColor` entirely and each row is auto-assigned a distinct palette
+ * color — unless the features carry an `itemRgb`, which is honored as the
+ * per-feature color with no configuration at all. To color per feature off
  * some other attribute, set the `color` slot to a `jexl:` expression reading it.
- * Omit `domain` and rows keep the order samples first appear in the file.
+ * Omit `rows.domain` and the rows sort by value.
  */
 export default function configSchemaF() {
   return ConfigurationSchema(
     'LinearMultiRowFeatureDisplay',
     {
       /**
-       * #slot
-       * Feature attribute whose value assigns each feature to a row; empty (the
-       * default) picks one off the data, and a `jexl:` expression derives one.
+       * #slot rows
+       * One row per value of a feature attribute, and the arrangement a reader
+       * gives the rows. `field` names the attribute, or a `jexl:` expression
+       * derives one; empty, the default, picks one off the data (`repClass`
+       * where the features carry it, else `name`). `domain` is the row order:
+       * the values it lists lead, and the rest sort, digits by magnitude, with
+       * the row of features carrying no value last. `labels`, `tree`,
+       * `treeProvenance` and `kept` are what the arrangement dialog, a
+       * clustering run and a focus write, each as a session edit to this
+       * object.
        *
        * #example
        * ```js
-       * { partitionField: "jexl:split(split(feature.name,'#')[1],'/')[0]" }
+       * { rows: 'sample' }
+       * ```
+       * ```js
+       * { rows: { field: 'sample', domain: ['HG00097', 'HG00096'] } }
+       * ```
+       * ```js
+       * { rows: "jexl:split(split(feature.name,'#')[1],'/')[0]" }
        * ```
        */
-      partitionField: {
-        type: 'featureField',
-        defaultValue: '',
-        description:
-          'feature attribute that assigns each feature to a row, or a jexl expression deriving one. Empty = pick one off the data (repClass if present, else name)',
-      },
+      rows: rowsConfigSchema,
       /**
        * #slot
        * Feature attribute whose value each row is clustered on; `auto` (the
@@ -102,7 +115,7 @@ export default function configSchemaF() {
        * A pangenome-graph path BED, where `delta` is each haplotype's bp gained
        * or lost at that bubble:
        * ```js
-       * { partitionField: 'strain', lengthField: 'delta' }
+       * { rows: 'strain', lengthField: 'delta' }
        * ```
        */
       lengthField: {
@@ -125,16 +138,17 @@ export default function configSchemaF() {
         contextVariable: ['feature'],
       },
       /**
-       * #slot
-       * Optional map of `partitionField` value to color, e.g.
-       * `{ HG00096: '#4e79a7' }`, overriding the `color` slot where it matches.
+       * #slot rowColor
+       * A colour per row, by value, as `domain`/`range` pairs, painting the
+       * row's blocks over each feature's own colour. The arrangement dialog
+       * writes it.
+       *
+       * #example
+       * ```js
+       * { rowColor: { domain: ['HG00096'], range: ['#4e79a7'] } }
+       * ```
        */
-      sampleColorMap: {
-        type: 'frozen',
-        defaultValue: {},
-        description:
-          'map of partition value to color; overrides the color slot for matching features',
-      },
+      rowColor: multiRowRowColorSchema,
       ...rowHeightConfigSchemaFields({
         rowHeight:
           'fixed row height in px; 0 (the default) auto-fits all rows to the display height, so adding rows shrinks them instead of growing the track',
@@ -155,8 +169,8 @@ export default function configSchemaF() {
       /**
        * #slot
        * Tint each sidebar label box with the color that row's blocks are painted
-       * in; `rowGroups` and a dialog-set color both win over it, and per-feature
-       * color mode leaves no one row color to tint with.
+       * in; a `rowGroups` swatch wins over it, and per-feature color mode leaves
+       * no one row color to tint with.
        */
       colorRowLabels: {
         type: 'boolean',
@@ -238,11 +252,6 @@ export default function configSchemaF() {
         tree: 'show the cluster tree sidebar',
         rowLabels: 'draw the row name over the left of each row',
       }),
-      ...rowDomainConfigSchemaFields({
-        // The one display whose unlisted rows ARE sorted: its rows are the
-        // partition's values, which arrive in no order of their own.
-        rows: 'optional row order; listed partition values first, the rest sorted; left off, every value the data holds, sorted',
-      }),
       /**
        * #slot
        * The byte axis is the only gate this display has: it paints into fixed
@@ -262,6 +271,7 @@ export default function configSchemaF() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
+      preProcessSnapshot: refuseRetiredConfig,
     },
   )
 }

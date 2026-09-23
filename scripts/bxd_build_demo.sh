@@ -141,7 +141,7 @@ cat > "$APP"/config.json <<'JSON'
         {
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "bxd_chromosome_painting_mm10-LinearMultiRowFeatureDisplay",
-          "partitionField": "sample",
+          "rows": "sample",
           "legend": [
             { "label": "B (C57BL/6J)", "color": "rgb(65,105,225)" },
             { "label": "D (DBA/2J)", "color": "rgb(220,60,50)" },

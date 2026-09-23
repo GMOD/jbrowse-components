@@ -95,7 +95,7 @@ for h in hits:
     rows.append((h['file_id'], bc))
 
 # A few cases carry replicate aliquots for one sample (two array runs of the
-# same tumor). partitionField would put both in the same row, painting
+# same tumor). `rows` would put both in the same row, painting
 # overlapping segments on top of each other, so keep one file per barcode.
 # Sorting by file_id first makes the choice deterministic across runs.
 rows.sort()
@@ -261,7 +261,7 @@ cfg['tracks'] += [
         'displays': [{
             'type': 'LinearMultiRowFeatureDisplay',
             'displayId': f'{out}-LinearMultiRowFeatureDisplay',
-            'partitionField': 'sample',
+            'rows': 'sample',
             'color': SEGMEAN_COLOR,
             'legend': [
                 {'label': 'Deep loss (log2 < -1)', 'color': '#2166ac'},

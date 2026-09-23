@@ -598,7 +598,7 @@ JSON
 jb add-track-json untangle_track.json --update --out "$APP"
 
 # projection 1c: the same untangle file as one lane per strain on REF's axis.
-# `partitionField` gives each strain its own row and the BED's own itemRgb colors
+# `rows` gives each strain its own row and the BED's own itemRgb colors
 # each block by orientation, so the track needs no color config; `legend` states
 # what the two colors mean, since the category lives only in the color.
 cp ecoli_pggb_untangle_rows.bed.gz ecoli_pggb_untangle_rows.bed.gz.tbi "$APP/"
@@ -615,9 +615,11 @@ cat > untangle_rows_track.json <<JSON
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "partitionField": "strain",
-      "domain": [$(echo "$STRAINS" | tr ' ' '\n' | grep -v "^$REF$" \
-        | paste -sd' ' - | sed 's/ /", "/g; s/^/"/; s/$/"/')],
+      "rows": {
+        "field": "strain",
+        "domain": [$(echo "$STRAINS" | tr ' ' '\n' | grep -v "^$REF$" \
+          | paste -sd' ' - | sed 's/ /", "/g; s/^/"/; s/$/"/')]
+      },
       "legend": [
         { "label": "Same orientation as $REF", "color": "rgb(153,153,153)" },
         { "label": "Inverted", "color": "rgb(214,39,40)" }
@@ -731,9 +733,11 @@ cat > paths_track.json <<JSON
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "partitionField": "strain",
+      "rows": {
+        "field": "strain",
+        "domain": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/$/"/')]
+      },
       "lengthField": "delta",
-      "domain": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/$/"/')],
       "legend": [
         { "label": "reference path", "color": "rgb(204,204,204)" },
         { "label": "insertion", "color": "rgb(192,0,192)" },

@@ -50,7 +50,7 @@ it('tints each label with the color its own row is painted in', () => {
   ])
 })
 
-// Clustering, a sort or a drag rewrites `layout`, and none of them is a
+// Clustering, a sort or a drag rewrites `rows.domain`, and none of them is a
 // request to recolor.
 it('keeps each row its color through a reorder', () => {
   const display = makeDisplay(rows(['mom', 'dad']))
@@ -65,12 +65,12 @@ it('keeps each row its color through a reorder', () => {
   ])
 })
 
-// A `sampleColorMap` row paints in the color the config named, so that is the
+// A `rowColor` row paints in the color the config named, so that is the
 // color the label has to show.
 it('follows the same precedence the blocks follow', () => {
   const display = makeDisplay(rows(['mom', 'dad']), {
     colorRowLabels: true,
-    sampleColorMap: { dad: 'blue' },
+    rowColor: { domain: ['dad'], range: ['blue'] },
   })
   expect(display.labelSources.map(s => s.labelColor)).toEqual([
     'blue',

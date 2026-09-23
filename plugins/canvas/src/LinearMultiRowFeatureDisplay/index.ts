@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
 import configSchemaFactory from './configSchema.ts'
+import MultiRowDisplayDefaultsF from './displayDefaults.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -11,6 +12,7 @@ const LinearMultiRowFeatureDisplayComponent = lazy(
 )
 
 export default function register(pluginManager: PluginManager) {
+  MultiRowDisplayDefaultsF(pluginManager)
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory()
     return new DisplayType({

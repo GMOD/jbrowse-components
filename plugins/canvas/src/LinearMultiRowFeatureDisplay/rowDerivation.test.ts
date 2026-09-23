@@ -20,9 +20,15 @@ interface Arrangement {
 // all of the file that move may change.
 function arrangementConfig({ field = 'sample', domain, colors }: Arrangement) {
   return {
-    partitionField: field,
-    ...(domain ? { domain } : {}),
-    ...(colors ? { sampleColorMap: colors } : {}),
+    rows: domain ? { field, domain } : field,
+    ...(colors
+      ? {
+          rowColor: {
+            domain: Object.keys(colors),
+            range: Object.values(colors),
+          },
+        }
+      : {}),
   }
 }
 
@@ -251,7 +257,7 @@ test('a repartition drops the arrangement keyed on the old rows', async () => {
   display.setRowFocus(['dad', 'mom'])
   display.setHiddenCategories(['x'])
 
-  display.setPartitionField('clade')
+  display.setRowsField('clade')
   display.setRpcData(
     0,
     regionData(

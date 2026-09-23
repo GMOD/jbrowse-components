@@ -1,4 +1,5 @@
 import { categoricalPalette } from '@jbrowse/core/ui/colors'
+import { isCssColor } from '@jbrowse/core/util/cssColorParse'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 
 // `labelColor` tints the sidebar swatch only, never the blocks.
@@ -61,15 +62,15 @@ export function applyRowGroups(
 
 /**
  * The one place "color a whole row" is decided, in CSS rather than ABGR because
- * the sidebar label is tinted with the same color its row paints in. An
- * `undefined` row falls through to the worker-baked per-feature `color`, so
- * per-row and per-feature coloring compose. The palette is dealt over
- * `paletteOrder`, the rows as discovered, and looked up by name, so a reorder or
- * a clade focus moves a row without recoloring it; undefined deals none.
+ * the sidebar label is tinted with the same color its row paints in: a row's
+ * `rowColor` entry, else a palette entry. An `undefined` row falls through to
+ * the worker-baked per-feature `color`, so per-row and per-feature coloring
+ * compose. The palette is dealt over `paletteOrder`, the rows in the order the
+ * config declares, and looked up by name, so a reorder or a clade focus moves a
+ * row without recoloring it; undefined deals none.
  */
 export function resolveRowColorStrings(
   rows: MultiRowSource[],
-  sampleColorMap: Record<string, string>,
   paletteOrder: readonly MultiRowSource[] | undefined,
 ): (string | undefined)[] {
   const slot = new Map(paletteOrder?.map((s, i) => [s.name, i]))
@@ -77,7 +78,6 @@ export function resolveRowColorStrings(
     const i = slot.get(s.name)
     return (
       s.color ??
-      sampleColorMap[s.name] ??
       (i === undefined
         ? undefined
         : categoricalPalette[i % categoricalPalette.length])
@@ -91,8 +91,75 @@ export function resolveRowColorStrings(
  * every in-track grouping sorts, digits by magnitude and the `''` row last.
  */
 export function orderPartitionValues(
-  values: Set<string>,
+  values: Iterable<string>,
   domain: readonly string[],
 ): string[] {
   return [...values].sort(groupKeyComparator(domain))
+}
+
+/**
+ * The discovered rows in the reader's arrangement: ordered by `domain` the way
+ * {@link orderPartitionValues} orders values, a `labels` entry over the
+ * derived label, and a `colors` entry as the row's `color`.
+ */
+export function arrangeRows(
+  discovered: readonly MultiRowSource[],
+  {
+    domain,
+    labels,
+    colors,
+  }: {
+    domain: readonly string[]
+    labels: Readonly<Record<string, string>>
+    colors: ReadonlyMap<string, string>
+  },
+): MultiRowSource[] {
+  const byName = new Map(discovered.map(s => [s.name, s]))
+  return orderPartitionValues(byName.keys(), domain).map(name => {
+    const row = byName.get(name)!
+    const label = labels[name]
+    const color = colors.get(name)
+    return label === undefined && color === undefined
+      ? row
+      : {
+          ...row,
+          ...(label === undefined ? {} : { label }),
+          ...(color === undefined ? {} : { color }),
+        }
+  })
+}
+
+/**
+ * What the arrangement dialog's rows say beyond what was discovered: a label
+ * other than the derived one, and a colour. The whole of `rows.labels` and
+ * `rowColor`, rebuilt, so an edit cleared in the dialog is cleared in the
+ * config. The colour pairs keep `baseOrder`, the config's own
+ * `rowColor.domain`, ahead of any new value, so a reorder that changes no
+ * colour writes the config's pairs back unchanged. A string the painters
+ * cannot parse is left out rather than stored.
+ */
+export function rowEditsOf(
+  rows: readonly MultiRowSource[],
+  discovered: readonly MultiRowSource[],
+  baseOrder: readonly string[],
+) {
+  const byName = new Map(discovered.map(s => [s.name, s]))
+  const labels: Record<string, string> = {}
+  const colors = new Map<string, string>()
+  for (const row of rows) {
+    if (row.label !== undefined && row.label !== byName.get(row.name)?.label) {
+      labels[row.name] = row.label
+    }
+    if (row.color !== undefined && isCssColor(row.color)) {
+      colors.set(row.name, row.color)
+    }
+  }
+  const domain = [
+    ...baseOrder.filter(name => colors.has(name)),
+    ...[...colors.keys()].filter(name => !baseOrder.includes(name)),
+  ]
+  return {
+    labels,
+    rowColor: { domain, range: domain.map(name => colors.get(name)!) },
+  }
 }

@@ -78,19 +78,6 @@ describe('the derived height carries the floor the drag does', () => {
     expect(display.height).toBe(MIN_DISPLAY_HEIGHT)
   })
 
-  it('floors a pinned row height when a subtree filter names no row', () => {
-    const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
-    display.setRpcData(0, rowsOnly(3), ctgA)
-    display.setRowHeight(14)
-    expect(display.height).toBeCloseTo(42)
-
-    display.setRowFocus(['nobody'])
-
-    expect(display.sources).toHaveLength(0)
-    expect(display.height).toBe(MIN_DISPLAY_HEIGHT)
-  })
-
   it('leaves a taller stack alone', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()

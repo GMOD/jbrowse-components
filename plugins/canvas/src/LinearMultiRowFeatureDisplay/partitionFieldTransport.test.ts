@@ -2,26 +2,26 @@ import { setConf } from '@jbrowse/core/configuration'
 
 import { createTestEnvironment, ctgA, ctgB } from './testEnv.ts'
 
-// The `partitionField` slot is a deferred expression the worker evaluates once
-// per feature, so the getter feeding `rpcProps()` must hand over the raw slot
-// string: reading it through a resolving reader evaluates the callback here,
-// with no feature in scope, and ships the empty string as an attribute name.
+// `rows.field` is a deferred expression the worker evaluates once per feature,
+// so the getter feeding `rpcProps()` must hand over the raw slot string:
+// reading it through a resolving reader evaluates the callback here, with no
+// feature in scope, and ships the empty string as an attribute name.
 const RMSK = "jexl:split(split(feature.name,'#')[1],'/')[0]"
 
-describe('partitionField reaches the worker unevaluated', () => {
+describe('rows.field reaches the worker unevaluated', () => {
   it('forwards a jexl slot as its raw expression string', () => {
     const { createDisplay } = createTestEnvironment({
-      displayConfig: { partitionField: RMSK },
+      displayConfig: { rows: RMSK },
     })
     const { display } = createDisplay()
 
-    expect(display.partitionField).toBe(RMSK)
+    expect(display.rowsField).toBe(RMSK)
     expect(display.rpcProps().partitionField).toBe(RMSK)
   })
 
   it('leaves a plain attribute name alone', () => {
     const { createDisplay } = createTestEnvironment({
-      displayConfig: { partitionField: 'sample' },
+      displayConfig: { rows: 'sample' },
     })
     const { display } = createDisplay()
 
@@ -44,7 +44,7 @@ describe('partitionField reaches the worker unevaluated', () => {
   // the config asked for rather than the auto fallback nobody chose.
   it('names the configured slot before any region has answered', () => {
     const { createDisplay } = createTestEnvironment({
-      displayConfig: { partitionField: 'sample' },
+      displayConfig: { rows: 'sample' },
     })
     const { display } = createDisplay()
 
@@ -109,7 +109,7 @@ describe('auto resolution is pinned once a region has answered', () => {
 
   it('leaves a configured slot alone', () => {
     const { createDisplay } = createTestEnvironment({
-      displayConfig: { partitionField: 'sample' },
+      displayConfig: { rows: 'sample' },
     })
     const { display } = createDisplay()
     display.setRpcData(0, regionData('sample'), ctgA)
@@ -178,7 +178,7 @@ describe('regions that resolved differently reconcile to the pin', () => {
 
   it('has nothing to reconcile against a configured slot', () => {
     const { createDisplay } = createTestEnvironment({
-      displayConfig: { partitionField: 'sample' },
+      displayConfig: { rows: 'sample' },
     })
     const { display } = createDisplay()
     display.setRpcData(0, regionData('sample'), ctgA)

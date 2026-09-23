@@ -74,7 +74,7 @@ describe('the dendrogram positions only while it describes the rows', () => {
     display.setRpcData(1, regionData(['a', 'd']), ctgB)
 
     expect(rowNames(display)).toEqual(['c', 'a', 'b', 'd'])
-    expect(display.clusterTree).toBe('((c,a),b);')
+    expect(display.rowTree).toBe('((c,a),b);')
     expect(display.hierarchy).toBeUndefined()
   })
 })
@@ -98,7 +98,7 @@ describe('repartitioning', () => {
   // checked radio names a field nothing in the config does.
   it('reports the field the worker actually partitioned on', () => {
     const { display } = createTestEnvironment().createDisplay()
-    expect(display.partitionField).toBe('')
+    expect(display.rowsField).toBe('')
     expect(display.effectivePartitionField).toBe('name')
 
     display.setRpcData(
@@ -108,29 +108,30 @@ describe('repartitioning', () => {
     )
 
     expect(display.effectivePartitionField).toBe('repClass')
-    expect(display.partitionField).toBe('')
+    expect(display.rowsField).toBe('')
   })
 
-  // `layout` names rows by value, and `getSources` appends a row a layout omits
-  // rather than dropping it, so under a new partition the old row set comes back
-  // beside the new one, empty, each with whatever color it had.
+  // The arrangement, the row colours and the hidden categories all name rows by
+  // value, so none of them means anything under a new partition.
   it('drops the row state keyed on the old partition', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, regionData(['a', 'b'], ['sample', 'clade']), ctgA)
     display.setRowOrder([{ name: 'b' }, { name: 'a' }], { tree: '(b,a);' })
+    display.applyRowEdits([{ name: 'b', color: '#00f' }, { name: 'a' }])
     display.setHiddenCategories(['a'])
 
-    display.setPartitionField('clade')
+    display.setRowsField('clade')
 
-    expect(display.partitionField).toBe('clade')
-    expect(display.layout).toEqual([])
+    expect(display.rowsField).toBe('clade')
+    expect(display.rowDomain).toEqual([])
+    expect(display.rowColors.size).toBe(0)
     expect(display.hiddenCategories).toEqual([])
-    expect(display.clusterTree).toBeUndefined()
+    expect(display.rowTree).toBeUndefined()
   })
 
-  // The subtree filter is a set of row names, so a reorder or re-cluster leaves
-  // it valid; a repartition is the one thing here that renames the rows.
-  it('drops a subtree filter naming rows the new partition cannot have', () => {
+  // The focus is a set of row names, so a reorder or re-cluster leaves it
+  // valid; a repartition is the one thing here that renames the rows.
+  it('drops a focus naming rows the new partition cannot have', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(
       0,
@@ -140,12 +141,22 @@ describe('repartitioning', () => {
     display.setRowFocus(['a', 'b'])
     expect(rowNames(display)).toEqual(['a', 'b'])
 
-    display.setPartitionField('clade')
+    display.setRowsField('clade')
     display.setRpcData(0, regionData(['x', 'y'], ['sample', 'clade']), ctgA)
 
-    // Without the clear this is [], a blank canvas with no row labels.
-    expect(display.subtreeFilter).toBeUndefined()
+    expect(display.rowFocus).toBeUndefined()
     expect(rowNames(display)).toEqual(['x', 'y'])
+  })
+
+  // A focus saved against rows since renamed would otherwise blank the
+  // display.
+  it('shows every row under a focus naming none of them', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setRpcData(0, regionData(['a', 'b', 'c']), ctgA)
+
+    display.setRowFocus(['nobody'])
+
+    expect(rowNames(display)).toEqual(['a', 'b', 'c'])
   })
 
   // Against the effective field, not the slot: under auto the menu checks
@@ -155,11 +166,11 @@ describe('repartitioning', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, regionData(['a', 'b'], ['sample']), ctgA)
     display.setRowOrder([{ name: 'b' }, { name: 'a' }], { tree: '(b,a);' })
-    expect(display.partitionField).toBe('')
+    expect(display.rowsField).toBe('')
 
-    display.setPartitionField(display.effectivePartitionField)
+    display.setRowsField(display.effectivePartitionField)
 
-    expect(display.layout).toEqual([{ name: 'b' }, { name: 'a' }])
-    expect(display.clusterTree).toBe('(b,a);')
+    expect(display.rowDomain).toEqual(['b', 'a'])
+    expect(display.rowTree).toBe('(b,a);')
   })
 })

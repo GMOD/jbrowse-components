@@ -378,7 +378,7 @@
         {
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "hg008_subclonal_cnv-LinearMultiRowFeatureDisplay",
-          "partitionField": "clone",
+          "rows": "clone",
           "color": "jexl:get(feature,'cn')<1?'#2166ac':get(feature,'cn')<2?'#92c5de':get(feature,'cn')<3?'#e0e0e0':get(feature,'cn')<4?'#f4a582':'#b2182b'",
           "legend": [
             {
@@ -423,7 +423,7 @@
         {
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "hg008_wakhan_haplotype-LinearMultiRowFeatureDisplay",
-          "partitionField": "haplotype",
+          "rows": "haplotype",
           "color": "jexl:get(feature,'copynumber_state')<0.5?'#2166ac':get(feature,'copynumber_state')<1.5?'#bdbdbd':'#f4a582'",
           "legend": [
             {

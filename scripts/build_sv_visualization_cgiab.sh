@@ -330,7 +330,7 @@ cat > wakhan_track.json <<JSON
     {
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "hg008_wakhan_haplotype-LinearMultiRowFeatureDisplay",
-      "partitionField": "haplotype",
+      "rows": "haplotype",
       "color": "jexl:get(feature,'copynumber_state')<0.5?'#2166ac':get(feature,'copynumber_state')<1.5?'#bdbdbd':'#f4a582'",
       "legend": [
         { "label": "Haplotype lost (0)", "color": "#2166ac" },

@@ -92,8 +92,8 @@ describe('"Sort rows by color here"', () => {
 
     display.sortRowsByValueAt('ctgA', 100)
 
-    expect(display.clusterTree).toBe('((c,a),b);')
-    expect(display.layout.map(s => s.name)).toEqual(['c', 'a', 'b'])
+    expect(display.rowTree).toBe('((c,a),b);')
+    expect(display.rowDomain).toEqual(['c', 'a', 'b'])
   })
 
   // One surviving row reorders to itself, so the sort is a no-op — but writing
@@ -106,21 +106,21 @@ describe('"Sort rows by color here"', () => {
     expect(display.editableSources.map(s => s.name)).toEqual(['b'])
     display.sortRowsByValueAt('ctgA', 100)
 
-    expect(display.clusterTree).toBe('((c,a),b);')
-    expect(display.layout.map(s => s.name)).toEqual(['c', 'a', 'b'])
+    expect(display.rowTree).toBe('((c,a),b);')
+    expect(display.rowDomain).toEqual(['c', 'a', 'b'])
   })
 
   // Rows aplenty, but the column is off the end of what was fetched, so there
   // is nothing to rank by and the unchanged order must not be written back as
-  // an explicit `layout`.
+  // an explicit `rows.domain`.
   it('declines a column no loaded region covers', () => {
     const display = clustered()
 
     display.sortRowsByValueAt('ctgA', 50_000)
-    expect(display.layout.map(s => s.name)).toEqual(['c', 'a', 'b'])
+    expect(display.rowDomain).toEqual(['c', 'a', 'b'])
 
     display.sortRowsByValueAt('ctgB', 100)
-    expect(display.layout.map(s => s.name)).toEqual(['c', 'a', 'b'])
+    expect(display.rowDomain).toEqual(['c', 'a', 'b'])
   })
 
   it('still sorts, and still clears a now-stale tree, with rows loaded', () => {
@@ -130,8 +130,8 @@ describe('"Sort rows by color here"', () => {
 
     // No features at that position, so every row sorts to its existing index
     // and the tree still describes the order.
-    expect(display.layout.map(s => s.name)).toEqual(['c', 'a', 'b'])
-    expect(display.clusterTree).toBe('((c,a),b);')
+    expect(display.rowDomain).toEqual(['c', 'a', 'b'])
+    expect(display.rowTree).toBe('((c,a),b);')
   })
 
   // Rows that actually move: the clustered order is c,a,b, `a` and `b` share a
@@ -155,7 +155,7 @@ describe('"Sort rows by color here"', () => {
 
     display.sortRowsByValueAt('ctgA', 100)
 
-    expect(display.layout.map(s => s.name)).toEqual(['a', 'b', 'c'])
-    expect(display.clusterTree).toBeUndefined()
+    expect(display.rowDomain).toEqual(['a', 'b', 'c'])
+    expect(display.rowTree).toBeUndefined()
   })
 })

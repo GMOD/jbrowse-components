@@ -106,7 +106,7 @@ test('every column lands in its own slot, blanks included', () => {
   expect(byName.thickStart).toBe('3000')
   expect(byName.thickEnd).toBe('4000')
   expect(byName.itemRgb).toBe(FORWARD_RGB)
-  // PanSN sample, which is what partitionField rows the lane on
+  // PanSN sample, the field the lane's `rows` names
   expect(byName.strain).toBe('Sakai')
   expect(byName.selfCov).toBe('1.0')
 

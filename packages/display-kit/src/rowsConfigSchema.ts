@@ -21,6 +21,9 @@ export interface RowsSetting {
  * { type: 'LinearWiggleDisplay', rows: 'source' }
  * ```
  * ```js
+ * { type: 'LinearMultiRowFeatureDisplay', rows: 'sample' }
+ * ```
+ * ```js
  * {
  *   type: 'LinearWiggleDisplay',
  *   rows: { field: 'source', domain: ['tumor', 'normal'], labels: { tumor: 'Tumor' } },
@@ -33,7 +36,9 @@ export const rowsConfigSchema = ConfigurationSchema(
     /**
      * #slot field
      * The field each value of which takes a row of its own. Writing
-     * `rows: "source"` lands here; empty draws no rows.
+     * `rows: "source"` lands here. Empty is the display's default: no rows on
+     * the quantitative display, and a field picked off the data on the
+     * multi-row feature display.
      */
     field: {
       type: 'featureField',

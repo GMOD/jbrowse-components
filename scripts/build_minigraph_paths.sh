@@ -31,7 +31,7 @@
 #            57 del / 52 ins), so it is its own field rather than a class value.
 #   itemRgb  the class color, so the track draws correctly with no color config
 #            at all. A `color` jexl on `class` or `strand` overrides it.
-#   strain   the row (partitionField)
+#   strain   the row (`rows`)
 #   class    ref | ins | del | sub | nocall
 #   delta    pathLen - refLen, the bp gained or lost against the reference
 #   pathLen  length of this sample's path through the bubble, in bp

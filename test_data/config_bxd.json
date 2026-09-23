@@ -70,7 +70,7 @@
         {
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "bxd_chromosome_painting_mm10-LinearMultiRowFeatureDisplay",
-          "partitionField": "sample",
+          "rows": "sample",
           "legend": [
             {
               "label": "B (C57BL/6J)",

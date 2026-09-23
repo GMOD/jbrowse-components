@@ -308,7 +308,7 @@
         {
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "volvox_mouse_inheritance_painting-LinearMultiRowFeatureDisplay",
-          "partitionField": "sample",
+          "rows": "sample",
           "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
           "rowHeight": 18,
           "legend": [
@@ -355,9 +355,11 @@
         {
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "volvox_mouse_inheritance_rows-LinearMultiRowFeatureDisplay",
-          "partitionField": "sample",
-          "domain": ["offspring10", "dad"],
-          "sampleColorMap": { "mom": "#222222", "offspring03": "#bbbbbb" },
+          "rows": { "field": "sample", "domain": ["offspring10", "dad"] },
+          "rowColor": {
+            "domain": ["mom", "offspring03"],
+            "range": ["#222222", "#bbbbbb"]
+          },
           "rowGroups": [
             { "match": "^(mom|dad)$", "group": "Parents", "color": "#e41a1c" }
           ],
