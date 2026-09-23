@@ -124,8 +124,10 @@ with no `field`. In phased mode the names are haplotypes, `"<sample> HP<n>"`:
 }
 ```
 
-On the multi-row feature and MAF displays, set `layout` and `clusterTree` (and
-optionally `subtreeFilter`) in the display's `displaySnapshot` instead.
+A multi-row feature track's `rows` names its partition `field` beside the same
+members, `{ "field": "sample", "domain": [...], "tree": "..." }`. On the MAF
+display, set `layout` and `clusterTree` (and optionally `subtreeFilter`) in the
+display's `displaySnapshot` instead.
 
 The per-display field references are
 [](/docs/models/multisamplevariantbasemodel) and
