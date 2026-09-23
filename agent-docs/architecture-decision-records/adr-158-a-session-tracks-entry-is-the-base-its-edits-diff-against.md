@@ -87,6 +87,16 @@ delta stays in the session.
   and a self-contained export, which turns desktop's config tracks into session
   tracks, now applies an unpromoted desktop delta over one where the web
   session carried it and ignored it.
+- A session-track edit costs what a config-track edit costs. Every delta
+  write rebuilds `tracks` and the trackId index over the whole catalog, about
+  6 ms a write at 10,000 config tracks in jsdom, where the in-place write
+  reconciled the entry and rebuilt nothing (1.5 ms); at 500 tracks the two
+  are equal. In exchange no resolved config reads `trackConfigDeltas`, so a
+  delta write re-resolves the edited track alone where it re-resolved every
+  shown config track, and `baseTrackConfig` is a per-id lookup (0.5 µs)
+  where it scanned `jbrowse.tracks` (430 µs at 10,000 tracks). Making a delta
+  write cost nothing per catalog track needs `getTrackById` to resolve from
+  the bases rather than from the merged `tracks` array.
 - Admin → Save track settings to config is enabled by any delta, so a session
   whose only deltas are over session tracks offers a promote that writes
   nothing.
