@@ -809,6 +809,7 @@ function bakedValueLegend(
   present: ReadonlySet<string> | undefined,
   refNamePosition: RefNamePosition | undefined,
   scale: BakedColorScale | undefined,
+  sectionOrder: ((a: string, b: string) => number) | undefined,
 ): LegendItem[] {
   const field = colorFieldOf(colorBy)
   if (scale?.kind === 'linear') {
@@ -825,9 +826,11 @@ function bakedValueLegend(
     }))
   }
   const values = [...(present ?? [])].filter(value => value !== '')
-  const sorted = scale?.declared
-    ? [...values].sort(groupKeyComparator(scale.domain))
-    : sortedBakedValues(values, colorBy, refNamePosition)
+  const sorted = sectionOrder
+    ? [...values].sort(sectionOrder)
+    : scale?.declared
+      ? [...values].sort(groupKeyComparator(scale.domain))
+      : sortedBakedValues(values, colorBy, refNamePosition)
   return sorted.map(value => ({
     color:
       scale?.color(value) ?? bakedValueColor(colorBy, value, refNamePosition),
@@ -898,6 +901,7 @@ type SchemeLegendArgs = Pick<
   | 'presentTagValues'
   | 'refNamePosition'
   | 'bakedScale'
+  | 'sectionOrder'
 > & { palette: ColorPalette }
 
 // The per-base layer's own key: the quality ramp, the base vocabulary, or the
@@ -939,6 +943,7 @@ function schemeLegend({
   refNamePosition,
   bakedScale,
   baseLayer,
+  sectionOrder,
 }: SchemeLegendArgs): LegendItem[] {
   // The normal scheme paints every read one flat color ('plain' → colorPairLR),
   // which isn't a CATEGORY_LEGEND bucket, so without an explicit entry its
@@ -976,6 +981,7 @@ function schemeLegend({
       presentTagValues,
       refNamePosition,
       bakedScale,
+      sectionOrder,
     )
   }
   if (colorType === 'mappingQuality') {
@@ -1030,6 +1036,8 @@ interface ReadDisplayLegendArgs {
   // The display's `bakedColorScale`: the scale the bake paints a tag, attribute
   // or mate reference through, so a swatch is the painted colour.
   bakedScale?: BakedColorScale
+  // Where the facet reads the colour's field, the key lists in its order.
+  sectionOrder?: (a: string, b: string) => number
 }
 
 /**
@@ -1055,6 +1063,7 @@ export function getReadDisplayLegendItems({
   presentModifications,
   refNamePosition,
   bakedScale,
+  sectionOrder,
   chainFramed = false,
   overlaps,
 }: ReadDisplayLegendArgs & {
@@ -1080,6 +1089,7 @@ export function getReadDisplayLegendItems({
     presentModifications,
     refNamePosition,
     bakedScale,
+    sectionOrder,
   }
   return [
     ...baseLayerLegend(scheme),

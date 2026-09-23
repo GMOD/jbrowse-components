@@ -181,6 +181,20 @@ describe('setColorBy', () => {
   })
 })
 
+describe('keySectionOrder', () => {
+  test('a facet on the colour field hands the key its section order', () => {
+    const display = createDisplay()
+    display.setColorBy({ type: 'tag', tag: 'HP' })
+    expect(display.keySectionOrder).toBeUndefined()
+
+    display.setFacet({ field: 'tags.HP', domain: ['2'] })
+    expect(['1', '2'].sort(display.keySectionOrder)).toEqual(['2', '1'])
+
+    display.setFacet({ field: 'tags.RG', domain: [] })
+    expect(display.keySectionOrder).toBeUndefined()
+  })
+})
+
 // Toggling "view as pairs" auto-switches coloring for the common case but must
 // not stomp on a color scheme the user picked deliberately (regression guard —
 // the auto-switch previously overwrote colorBy unconditionally).

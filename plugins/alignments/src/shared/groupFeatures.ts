@@ -4,12 +4,14 @@ import {
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
-import { categoricalField } from '@jbrowse/core/util/categoricalField'
+import {
+  STRAND_FIELD,
+  categoricalField,
+} from '@jbrowse/core/util/categoricalField'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import {
   OVERFLOW_GROUP_KEY,
   capGroupKeys,
-  compareGroupKeys,
   overflowLabel,
 } from '@jbrowse/core/util/groupKeys'
 
@@ -61,16 +63,37 @@ interface GroupKey {
 // each out also makes a dimension's sections countable here, which is the "keep
 // every dimension a closed set" rule of ../RenderAlignmentDataRPC/CLAUDE.md —
 // `mateAssembly`, a tag and a field are the ones that can't be listed, and
-// MAX_GROUPS guards them.
-const FWD_STRAND_GROUP: GroupKey = { key: '+', label: 'Forward strand' }
-const REV_STRAND_GROUP: GroupKey = { key: '-', label: 'Reverse strand' }
+// MAX_GROUPS guards them. Strand keys are the `strand` vocabulary's, so one
+// `facet.domain` names the same sections on the mark display beside this one.
+const STRANDS = categoricalField(STRAND_FIELD)
+const FWD_KEY = STRANDS.key(1)
+const REV_KEY = STRANDS.key(-1)
+const FWD_STRAND_GROUP: GroupKey = {
+  key: FWD_KEY,
+  label: STRANDS.sectionLabel(FWD_KEY),
+}
+const REV_STRAND_GROUP: GroupKey = {
+  key: REV_KEY,
+  label: STRANDS.sectionLabel(REV_KEY),
+}
 const FWD_FIRST_OF_PAIR_GROUP: GroupKey = {
-  key: '+',
+  key: FWD_KEY,
   label: 'First-of-pair forward',
 }
 const REV_FIRST_OF_PAIR_GROUP: GroupKey = {
-  key: '-',
+  key: REV_KEY,
   label: 'First-of-pair reverse',
+}
+
+const STRAND_VALUED: ReadonlySet<string> = new Set([
+  'strand',
+  'firstOfPairStrand',
+] satisfies ReadDimension[])
+
+export function sectionOrder(field: string, domain?: readonly string[]) {
+  return categoricalField(STRAND_VALUED.has(field) ? STRAND_FIELD : field, {
+    domain,
+  }).compare
 }
 
 // Everything but `-1` is forward, so an unstranded feature lands in an existing
@@ -191,8 +214,9 @@ function mapqKey(feature: Feature): GroupKey {
 // cross-region union can exceed MAX_GROUPS when regions expose wildly
 // different value sets; it bounds the per-group region-width cost, which is
 // what actually blows up.
-function orderGroups(groups: FeatureGroup[]) {
-  const ordered = groups.sort((a, b) => compareGroupKeys(a.key, b.key))
+function orderGroups(groups: FeatureGroup[], field: string) {
+  const compare = sectionOrder(field)
+  const ordered = groups.sort((a, b) => compare(a.key, b.key))
   const { sectionOf, mergedCount } = capGroupKeys(ordered.map(g => g.key))
   if (mergedCount === 0) {
     return ordered
@@ -244,7 +268,7 @@ export function partitionFeatures(
   for (const feature of features) {
     appendFeature(groups, feature, key(feature))
   }
-  return orderGroups([...groups.values()])
+  return orderGroups([...groups.values()], groupBy.field)
 }
 
 // The read a chain's group key comes from: a primary, preferring read1 so the
@@ -436,7 +460,7 @@ export function partitionChains(
       appendFeature(groups, feature, groupKey)
     }
   }
-  return orderGroups([...groups.values()])
+  return orderGroups([...groups.values()], groupBy.field)
 }
 
 /**

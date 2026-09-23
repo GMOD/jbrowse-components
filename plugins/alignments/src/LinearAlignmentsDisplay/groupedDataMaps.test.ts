@@ -5,6 +5,7 @@ import {
   OVERFLOW_GROUP_KEY,
   overflowLabel,
   partitionFeatures,
+  sectionOrder,
 } from '../shared/groupFeatures.ts'
 import {
   buildSashimiDownKeys,
@@ -54,45 +55,49 @@ test('orderedGroups dedupes group identities across regions, untagged last', () 
       [
         0,
         grouped([
-          { key: '+', data: data(['a']) },
-          { key: '-', data: data(['b']) },
+          { key: '1', data: data(['a']) },
+          { key: '-1', data: data(['b']) },
         ]),
       ],
-      // '-' already seen in region 0; '' is new and must still sort last.
+      // '-1' already seen in region 0; '' is new and must still sort last.
       [
         1,
         grouped([
-          { key: '-', data: data(['c']) },
+          { key: '-1', data: data(['c']) },
           { key: '', data: data(['d']) },
         ]),
       ],
     ]),
+    undefined,
+    sectionOrder('strand'),
   )
   expect(order).toEqual([
-    { key: '+', label: '+' },
-    { key: '-', label: '-' },
+    { key: '1', label: '1' },
+    { key: '-1', label: '-1' },
     { key: '', label: '' },
   ])
 })
 
 test('orderedGroups sorts the cross-region union, not by first-seen region', () => {
-  // Region 0 has only reverse-strand reads, so '-' is seen first; region 1 adds
-  // '+' and untagged. A plain first-seen merge would yield ['-','+',''] — reverse
-  // ahead of forward. The merged set must re-sort to ['+','-',''].
+  // Region 0 has only reverse-strand reads, so '-1' is seen first; region 1
+  // adds '1' and untagged. A plain first-seen merge would put reverse ahead of
+  // forward, and so would a numeric sort of the keys.
   const order = orderedGroups(
     new Map([
-      [0, grouped([{ key: '-', data: data(['a']) }])],
+      [0, grouped([{ key: '-1', data: data(['a']) }])],
       [
         1,
         grouped([
-          { key: '+', data: data(['b']) },
-          { key: '-', data: data(['c']) },
+          { key: '1', data: data(['b']) },
+          { key: '-1', data: data(['c']) },
           { key: '', data: data(['d']) },
         ]),
       ],
     ]),
+    undefined,
+    sectionOrder('strand'),
   )
-  expect(order.map(g => g.key)).toEqual(['+', '-', ''])
+  expect(order.map(g => g.key)).toEqual(['1', '-1', ''])
 })
 
 // `MAX_GROUPS` is enforced per worker call and one call sees one region, so each
@@ -127,6 +132,8 @@ test('orderedGroups counts the overflow lane over the cross-region union', () =>
         ]),
       ],
     ]),
+    undefined,
+    sectionOrder('tags.XX'),
   )
   expect(order.map(g => g.key)).toEqual(['v1', OVERFLOW_GROUP_KEY])
   // v8, v9, v10, v11 — the union, not either region's own count
@@ -138,6 +145,8 @@ test('orderedGroups counts the overflow lane over the cross-region union', () =>
 test('orderedGroups leaves an uncapped fetch alone', () => {
   const order = orderedGroups(
     new Map([[0, grouped([{ key: 'v1', data: data(['a']) }])]]),
+    undefined,
+    sectionOrder('tags.XX'),
   )
   expect(order).toEqual([{ key: 'v1', label: 'v1' }])
 })
@@ -156,12 +165,14 @@ test('orderedGroups keeps untagged last even when it is a region’s only group'
         ]),
       ],
     ]),
+    undefined,
+    sectionOrder('tags.HP'),
   )
   expect(order.map(g => g.key)).toEqual(['HP1', ''])
 })
 
 test('orderedGroups is empty for an empty fetch', () => {
-  expect(orderedGroups(new Map())).toEqual([])
+  expect(orderedGroups(new Map(), undefined, sectionOrder(''))).toEqual([])
 })
 
 // `groupOrder` IS the filtered order, so the drop belongs here rather than in a
@@ -172,31 +183,36 @@ test('orderedGroups drops a hidden lane', () => {
     [
       0,
       grouped([
-        { key: '+', data: data(['a']) },
-        { key: '-', data: data(['b']) },
+        { key: '1', data: data(['a']) },
+        { key: '-1', data: data(['b']) },
       ]),
     ],
   ])
-  expect(orderedGroups(rpcDataMap, new Set(['-']))).toEqual([
-    { key: '+', label: '+' },
+  const byStrand = sectionOrder('strand')
+  expect(orderedGroups(rpcDataMap, new Set(['-1']), byStrand)).toEqual([
+    { key: '1', label: '1' },
   ])
-  expect(orderedGroups(rpcDataMap)).toHaveLength(2)
+  expect(orderedGroups(rpcDataMap, undefined, byStrand)).toHaveLength(2)
 })
 
 test('orderedGroups stacks the domain first across regions', () => {
   const rpcDataMap = new Map([
-    [0, grouped([{ key: '+', data: data(['a']) }])],
+    [0, grouped([{ key: '1', data: data(['a']) }])],
     [
       1,
       grouped([
-        { key: '-', data: data(['b']) },
+        { key: '-1', data: data(['b']) },
         { key: '', data: data(['c']) },
       ]),
     ],
   ])
   expect(
-    orderedGroups(rpcDataMap, undefined, ['', '-']).map(g => g.key),
-  ).toEqual(['', '-', '+'])
+    orderedGroups(
+      rpcDataMap,
+      undefined,
+      sectionOrder('strand', ['', '-1']),
+    ).map(g => g.key),
+  ).toEqual(['', '-1', '1'])
 })
 
 // The labels gate reads the sections the worker actually emitted, because the
@@ -210,7 +226,7 @@ test('hasNamedGroups is false for an ungrouped or degraded fetch', () => {
 })
 
 test('hasNamedGroups is true whenever a section carries a name', () => {
-  expect(hasNamedGroups([{ key: '+', label: 'Forward strand' }])).toBe(true)
+  expect(hasNamedGroups([{ key: '1', label: 'Forward strand' }])).toBe(true)
   // a catch-all bucket is still a named section — every dimension names its own
   expect(hasNamedGroups([{ key: '', label: 'HP: none' }])).toBe(true)
 })
@@ -220,7 +236,7 @@ test('hasNamedGroups is true whenever a section carries a name', () => {
 // *real* main-thread merge (`orderedGroups`), and check the composed order.
 // The isolated `orderedGroups` tests above hand-build the merged input; these
 // remove that assumption by proving the worker actually emits the per-region
-// order the merge has to repair — the two halves share `compareGroupKeys`, so a
+// order the merge has to repair — the two halves share `sectionOrder`, so a
 // group missing from an early region still lands correctly.
 function feat(id: string, fields: Record<string, unknown>): Feature {
   return new SimpleFeature({
@@ -244,8 +260,8 @@ function partitionRegion(
 }
 
 test('cross-region strand: reverse-only early region does not stack above forward', () => {
-  // Region 0 has only reverse reads, so the worker emits ['-']; region 1 has
-  // both and emits ['+','-']. A first-seen merge would leave reverse first.
+  // Region 0 has only reverse reads, so the worker emits ['-1']; region 1 has
+  // both and emits ['1','-1']. A first-seen merge would leave reverse first.
   const region0 = partitionRegion([feat('a', { flags: 16, strand: -1 })], {
     field: 'strand',
   })
@@ -253,15 +269,17 @@ test('cross-region strand: reverse-only early region does not stack above forwar
     [feat('b', { flags: 0, strand: 1 }), feat('c', { flags: 16, strand: -1 })],
     { field: 'strand' },
   )
-  expect(region0.groups.map(g => g.key)).toEqual(['-'])
-  expect(region1.groups.map(g => g.key)).toEqual(['+', '-'])
+  expect(region0.groups.map(g => g.key)).toEqual(['-1'])
+  expect(region1.groups.map(g => g.key)).toEqual(['1', '-1'])
   const order = orderedGroups(
     new Map([
       [0, region0],
       [1, region1],
     ]),
+    undefined,
+    sectionOrder('strand'),
   )
-  expect(order.map(g => g.key)).toEqual(['+', '-'])
+  expect(order.map(g => g.key)).toEqual(['1', '-1'])
 })
 
 test('cross-region tag: untagged-only early region stays last after merge', () => {
@@ -280,6 +298,8 @@ test('cross-region tag: untagged-only early region stays last after merge', () =
       [0, region0],
       [1, region1],
     ]),
+    undefined,
+    sectionOrder(groupBy.field),
   )
   expect(order.map(g => g.key)).toEqual(['1', ''])
 })

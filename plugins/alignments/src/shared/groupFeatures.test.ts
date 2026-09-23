@@ -44,17 +44,18 @@ test('strand grouping splits forward/reverse reads', () => {
     feat('c', { flags: 0, strand: 1 }),
   ]
   const groups = partitionFeatures(features, { field: 'strand' })
-  expect(keys(groups)).toEqual(['+', '-'])
+  expect(keys(groups)).toEqual(['1', '-1'])
   expect(groups[0]!.features.map(f => f.id())).toEqual(['a', 'c'])
   expect(groups[1]!.features.map(f => f.id())).toEqual(['b'])
 })
 
 // Synteny (PAF) features carry a real strand and no SAM flags at all. Keying off
-// the reverse flag put every block in '+', silently collapsing the grouping.
+// the reverse flag put every block in the forward section, silently collapsing
+// the grouping.
 test('strand grouping splits synteny features, which have no SAM flags', () => {
   const features = [feat('a', { strand: 1 }), feat('b', { strand: -1 })]
   const groups = partitionFeatures(features, { field: 'strand' })
-  expect(keys(groups)).toEqual(['+', '-'])
+  expect(keys(groups)).toEqual(['1', '-1'])
   expect(groups[0]!.features.map(f => f.id())).toEqual(['a'])
   expect(groups[1]!.features.map(f => f.id())).toEqual(['b'])
 })
@@ -64,13 +65,13 @@ test('strand grouping splits synteny features, which have no SAM flags', () => {
 // no source produces.
 test('first-of-pair strand groups both mates of a pair together', () => {
   // read1 forward (flags 0x40) and read2 reverse (flags 0x10|0x80) are the two
-  // mates of one forward-strand fragment, so they share the '+' group.
+  // mates of one forward-strand fragment, so they share the forward section.
   const features = [
     feat('r1', { flags: 0x40, strand: 1 }),
     feat('r2', { flags: 0x10 | 0x80, strand: -1 }),
   ]
   const groups = partitionFeatures(features, { field: 'firstOfPairStrand' })
-  expect(keys(groups)).toEqual(['+'])
+  expect(keys(groups)).toEqual(['1'])
   expect(groups[0]!.features).toHaveLength(2)
 })
 
@@ -82,7 +83,7 @@ test('first-of-pair strand groups single-end reads by their own strand', () => {
     feat('rev', { flags: 0x10, strand: -1 }),
   ]
   const groups = partitionFeatures(features, { field: 'firstOfPairStrand' })
-  expect(keys(groups)).toEqual(['+', '-'])
+  expect(keys(groups)).toEqual(['1', '-1'])
   expect(groups[0]!.features.map(f => f.id())).toEqual(['fwd'])
   expect(groups[1]!.features.map(f => f.id())).toEqual(['rev'])
 })
@@ -93,7 +94,7 @@ test('first-of-pair strand groups single-end reads by their own strand', () => {
 test('first-of-pair strand falls back to own strand with no SAM flags', () => {
   const features = [feat('a', { strand: 1 }), feat('b', { strand: -1 })]
   const groups = partitionFeatures(features, { field: 'firstOfPairStrand' })
-  expect(keys(groups)).toEqual(['+', '-'])
+  expect(keys(groups)).toEqual(['1', '-1'])
   expect(groups[1]!.features.map(f => f.id())).toEqual(['b'])
 })
 

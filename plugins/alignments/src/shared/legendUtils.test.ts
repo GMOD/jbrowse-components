@@ -6,6 +6,7 @@ import {
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import { alignmentsColorEncoding } from './alignmentsColor.ts'
+import { sectionOrder } from './groupFeatures.ts'
 import {
   getAlignmentsColorScales,
   getArcLegendItems,
@@ -32,6 +33,7 @@ function legendFor(
     chainFramed?: boolean
     refNamePosition?: RefNamePosition
     bakedScale?: BakedColorScale
+    sectionOrder?: (a: string, b: string) => number
   },
 ) {
   return getReadDisplayLegendItems({
@@ -303,6 +305,16 @@ describe('getReadDisplayLegendItems', () => {
     // empty until reads carrying the tag are laid out
     expect(tagLabels({ type: 'tag', tag: 'HP' }, new Set())).toEqual([])
     expect(tagLabels({ type: 'tag', tag: 'HP' })).toEqual([])
+  })
+
+  test('a facet on the colour field orders the key as the sections stack', () => {
+    const labelsIn = (order?: (a: string, b: string) => number) =>
+      legendFor({ type: 'tag', tag: 'HP' }, ['tag'], {
+        presentTagValues: new Set(['1', '2', '']),
+        sectionOrder: order,
+      }).map(i => i.label)
+    expect(labelsIn()).toEqual(['1', '2'])
+    expect(labelsIn(sectionOrder('tags.HP', ['2']))).toEqual(['2', '1'])
   })
 
   // The swatch resolves through the same `bakedValueColor` the paint path runs

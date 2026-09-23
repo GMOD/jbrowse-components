@@ -1,8 +1,4 @@
-import {
-  OVERFLOW_GROUP_KEY,
-  groupKeyComparator,
-  overflowLabel,
-} from '@jbrowse/core/util/groupKeys'
+import { OVERFLOW_GROUP_KEY, overflowLabel } from '@jbrowse/core/util/groupKeys'
 import { NO_HIDDEN_GROUPS } from '@jbrowse/display-kit/HiddenGroupsMixin'
 
 import {
@@ -134,7 +130,7 @@ export function hasNamedGroups(order: readonly GroupId[]) {
 }
 
 // Ordered, de-duplicated group identities across every fetched region, by the
-// same `compareGroupKeys` the worker's per-region partition uses. Membership,
+// same `sectionOrder` the worker's per-region partition uses. Membership,
 // order and labels are a property of the *fetch*, so deriving them straight from
 // `rpcDataMap` keeps them stable across every relayout (sortedBy / softclip /
 // per-group height drag) rather than recomputing them in the layout pass.
@@ -150,8 +146,8 @@ export function hasNamedGroups(order: readonly GroupId[]) {
 // per-group collection is keyed by that already-filtered set.
 export function orderedGroups(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
-  hidden?: ReadonlySet<string>,
-  domain?: readonly string[],
+  hidden: ReadonlySet<string> | undefined,
+  compare: (a: string, b: string) => number,
 ): GroupId[] {
   const order = new Map<string, GroupId>()
   // The overflow lane is the one whose label a single region cannot answer for:
@@ -175,7 +171,6 @@ export function orderedGroups(
   if (overflow) {
     overflow.label = overflowLabel(merged.size)
   }
-  const compare = groupKeyComparator(domain)
   return [...order.values()].sort((a, b) => compare(a.key, b.key))
 }
 

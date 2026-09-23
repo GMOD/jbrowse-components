@@ -71,6 +71,7 @@ import { visibleRegionJunctions } from '../features/sashimi/computeOverlay.ts'
 import { mergeJunctions } from '../features/sashimi/junctions.ts'
 import {
   BASE_COLOR_FIELDS,
+  colorFieldOf,
   colorSnapshotFor,
   isBakedScheme,
 } from '../shared/alignmentsColor.ts'
@@ -80,7 +81,11 @@ import {
   paintsModifications,
   workerColorBy,
 } from '../shared/colorSchemes.ts'
-import { groupByForMode, workerGroupBy } from '../shared/groupFeatures.ts'
+import {
+  groupByForMode,
+  sectionOrder,
+  workerGroupBy,
+} from '../shared/groupFeatures.ts'
 import {
   arcKeyFoldsIntoReadKey,
   LEGEND_MAX_WIDTH,
@@ -1221,6 +1226,18 @@ export default function stateModelFactory(
           },
 
           /**
+           * #getter
+           * The sections' order, where the facet reads the field the reads are
+           * coloured by: a key over one field lists it as the sections stack.
+           */
+          get keySectionOrder() {
+            const facet = this.effectiveFacet
+            return facet && facet.field === colorFieldOf(self.colorBy)
+              ? sectionOrder(facet.field, facet.domain)
+              : undefined
+          },
+
+          /**
            * #method
            */
           legendItems() {
@@ -1240,6 +1257,7 @@ export default function stateModelFactory(
               presentModifications: this.presentModifications,
               refNamePosition: this.paintedRefNamePosition,
               bakedScale: this.bakedColorScale,
+              sectionOrder: this.keySectionOrder,
               chainFramed: this.framesChainStrand,
             })
           },
@@ -1696,10 +1714,11 @@ export default function stateModelFactory(
            * layout pass), so group identity/order stays stable across relayouts.
            */
           get groupOrder() {
+            const facet = this.effectiveFacet
             return orderedGroups(
               self.rpcDataMap,
               self.hiddenGroupKeys,
-              this.effectiveFacet?.domain,
+              sectionOrder(facet?.field ?? '', facet?.domain),
             )
           },
 

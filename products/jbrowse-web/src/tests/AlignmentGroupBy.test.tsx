@@ -176,8 +176,8 @@ test('group draws per-section sashimi arcs', async () => {
       // group whose reads produced them.
       expect(display.sashimiArcSections.length).toBe(2)
       const [forward, reverse] = display.sashimiArcSections
-      expect(forward!.groupKey).toBe('+')
-      expect(reverse!.groupKey).toBe('-')
+      expect(forward!.groupKey).toBe('1')
+      expect(reverse!.groupKey).toBe('-1')
       expect(forward!.up.length + forward!.down.length).toBe(0)
       expect(reverse!.up.length + reverse!.down.length).toBeGreaterThan(0)
     },
@@ -210,7 +210,7 @@ test('lowering the sashimi score reveals a group-specific junction', async () =>
 
   await waitFor(() => {
     const forward = display.sashimiArcSections[0]!
-    expect(forward.groupKey).toBe('+')
+    expect(forward.groupKey).toBe('1')
     // exactly one junction on this strand, supported by exactly one read.
     const arcs = [...forward.up, ...forward.down]
     expect(arcs.length).toBe(1)
