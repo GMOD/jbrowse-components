@@ -38,6 +38,7 @@ export interface PlainTrackConfig {
 export interface EditableTrackConfig {
   node: IAnyStateTreeNode
   delta: PlainTrackConfig | undefined
+  frozen: unknown
 }
 
 // jbrowse.tracks holds frozen plain objects in every product; single site for
@@ -267,14 +268,19 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * never the shared frozen base node (see ADR-032). Called by
          * TrackConfigurationReference during lazy hydration.
          *
-         * Cached against the delta it was built from, not by trackId alone. A
-         * delta this mixin wrote re-stamps the entry, so the copy an edit is
-         * still being typed into is never swapped out mid-keystroke; a delta
-         * replaced from outside — an undo's `applySnapshot` on the session, a
-         * session restore — cannot, so the next read rebuilds the copy from the
-         * delta that now exists. Reading `trackConfigDeltas` here is also what
-         * makes an undo re-resolve the reference at all: the resolver's caller
-         * is already subscribed to it through `getTrackById`.
+         * Cached against the delta and the frozen config it was built from, not
+         * by trackId alone. A delta this mixin wrote re-stamps the entry, so the
+         * copy an edit is still being typed into is never swapped out
+         * mid-keystroke; a delta replaced from outside — an undo's
+         * `applySnapshot` on the session, a session restore — cannot, so the
+         * next read rebuilds the copy from the delta that now exists. Reading
+         * `trackConfigDeltas` here is also what makes an undo re-resolve the
+         * reference at all: the resolver's caller is already subscribed to it
+         * through `getTrackById`. The frozen config is what that per-id lookup
+         * answers, stable until the delta or the base entry in `jbrowse.tracks`
+         * changes; a promote, or `updateTrackConf` from the agent surface,
+         * replaces the base, and a copy built from the old one would otherwise
+         * outlive it with no delta to notice.
          */
         getEditableTrackConfig(
           trackId: string,
@@ -283,13 +289,21 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         ): IAnyStateTreeNode {
           const delta = self.trackConfigDeltas[trackId]
           const existing = self.editableTrackConfigs.get(trackId)
-          if (existing && existing.delta === delta) {
+          if (
+            existing &&
+            existing.delta === delta &&
+            existing.frozen === frozenConfig
+          ) {
             return existing.node
           }
           const node = schemaType.create(frozenConfig, {
             pluginManager,
           }) as IAnyStateTreeNode
-          self.editableTrackConfigs.set(trackId, { node, delta })
+          self.editableTrackConfigs.set(trackId, {
+            node,
+            delta,
+            frozen: frozenConfig,
+          })
           return node
         },
       }
@@ -345,14 +359,16 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           applySnapshot(entry.node, toPlainConfig(base))
         }
       }
-      // Re-stamp a working copy with the delta now in trackConfigDeltas, so the
-      // copy this mixin just persisted from stays the one the next read
-      // resolves. Read back off the prop rather than reusing the written object,
-      // so the stamp is whatever `types.frozen` actually stored.
+      // Re-stamp a working copy with the delta now in trackConfigDeltas and the
+      // merged config it now resolves to, so the copy this mixin just persisted
+      // from stays the one the next read resolves. Read back off the prop and
+      // the lookup rather than reusing the written object, so the stamp is
+      // whatever `types.frozen` stored and whatever the merge cache answers.
       function stampEditableTrackConfig(trackId: string) {
         const entry = self.editableTrackConfigs.get(trackId)
         if (entry) {
           entry.delta = self.trackConfigDeltas[trackId]
+          entry.frozen = self.getTrackById(trackId)
         }
       }
       // Single writer for trackConfigDeltas (pass undefined to clear). Clearing
