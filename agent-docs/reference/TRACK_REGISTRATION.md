@@ -88,6 +88,8 @@ sets is not a net-back: the delta records it as a `null`.
 Case C (a connection track, or a track with no base — routed to the base
 mixin's `updateTrackConfiguration`): connection-track branch vs
 catalog-write branch, which writes nothing for a track the catalog lacks = 2.
+The embedded products' `jbrowse` (`createConfigModel`) has no `updateTrackConf`,
+so there the catalog-write branch throws instead.
 
 **`resetTrackConfiguration`**: delta present → cleared and the working copy
 reverted; delta absent → no-op. **2**.

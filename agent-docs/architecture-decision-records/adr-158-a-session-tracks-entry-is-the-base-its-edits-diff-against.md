@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A track the session owns edits the way a config.json track does: its `sessionTracks` entry is the base, and an edit is a `trackConfigDeltas` delta over it. `tracks` hands out each entry as a snapshot merged with its delta, so a shown session track resolves to a working copy, and one base lookup (the session entry, else the config.json entry) feeds `getTrackById`, `baseTrackConfig`, the changes list, `updateTrackConfiguration` and the reset. The edited badge, the changes table, Reset track settings and a row display's Reset row order reach a session track with no display code, in every product that composes the session-tracks mixin. A working copy is stamped with the resolved config it mirrors rather than the delta, since a session entry can be replaced under an unchanged delta. An edit re-resolves one track and rebuilds nothing over the catalog, so a persist of either kind costs less than main's. Promote writes only the edits over a config.json entry"
+summary: "A track the session owns edits the way a config.json track does: its `sessionTracks` entry is the base, and an edit is a `trackConfigDeltas` delta over it. `tracks` hands out each entry as a snapshot merged with its delta, so a shown session track resolves to a working copy, and one base lookup (the session entry, else the config.json entry) feeds `getTrackById`, `baseTrackConfig`, the changes list, `updateTrackConfiguration` and the reset. The edited badge, the changes table, Reset track settings and a row display's Reset row order reach a session track with no display code, in every product that composes the session-tracks mixin. A working copy is stamped with the resolved config it mirrors rather than the delta, since a session entry can be replaced under an unchanged delta. An edit re-resolves one track and rebuilds no index over the catalog, so a persist of either kind costs less than main's and a search-box keystroke no more. A working copy is per track type, so an id re-added as another type resolves. Promote writes only the edits over a config.json entry, into the last entry of a repeated trackId"
 ---
 
 # ADR-158: A session track's entry is the base its edits diff against
@@ -9,9 +9,11 @@ summary: "A track the session owns edits the way a config.json track does: its `
 
 Accepted (2026-09-23). Amends
 [ADR-032](adr-032-track-config-nodes-are-throwaway-views.md)'s working-copy
-stamp, and
+stamp,
 [ADR-157](adr-157-a-row-displays-arrangement-is-the-rows-config-object.md)'s
-reset on a track the session owns.
+reset on a track the session owns, and
+[ADR-100](adr-100-an-index-every-reader-shares-is-kept-alive.md)'s held index,
+which `getTrackById` no longer reads.
 
 ## Context
 
@@ -52,8 +54,13 @@ against stay one config.
 **An edit re-resolves one track.** `getTrackById`'s per-id computed lays the
 track's delta over its base (`withTrackEdits`), so a delta write re-evaluates
 the per-id computeds something observes, each in constant time, and rebuilds
-no index over the catalog; `tracks` rebuilds only while something observes it,
-the open track selector. `getEditableTrackConfig` is a per-id computed on the
+no index over the catalog. `tracks` is held beside the indexes, so a reader
+outside any reaction — the search box's adapter list on every keystroke, the jb
+API's track list — reads it as it stands, as on main. An edit copies the list
+of bases and lays each delta at its track's position, which costs the count of
+edited tracks rather than of tracks. `getTracksById`, deprecated and read by no
+in-tree code, is kept against the two lists it was built from and rebuilt on
+its first read after a change. `getEditableTrackConfig` is a per-id computed on the
 working copy, so a display's config reads depend on which node its track
 resolves to and not on the config that node mirrors: persisting the copy they
 read recomputes none of them, where main recomputed every one on each
@@ -70,6 +77,12 @@ edit is being typed into still stays. The connection-track branch of
 `updateTrackConfiguration` re-stamps and syncs as the delta branch does, since
 the new stamp would otherwise rebuild a connection track's copy on each save.
 
+**A working copy is per track type as well as per id.** Each track type's
+config reference resolves through its own schema, and an id deleted and added
+again as another type — a FeatureTrack re-added as a VariantTrack — resolves
+through the new type's reference. A computed keyed on the id alone kept the
+first caller's schema and failed to convert the new entry.
+
 **A re-add compares against the entry by id.** `addToSession` checked
 `sessionTracks.includes(existing)`, an identity read that would have skipped
 `assertNotReaddedDifferently` in silence once `tracks` handed out plain
@@ -83,6 +96,12 @@ read it. A session track has no file to write, so its delta stays in the
 session, and a delta diffed against a session entry is never merged into a
 config.json entry of the same id. The menu item is disabled while only session
 tracks carry edits.
+
+**A repeated trackId is a config error, resolved last-wins.** The base lookup
+answers the last config.json entry of an id, so that entry is what shows and
+what an edit diffs against. `jbrowse.updateTrackConf`, which a promote writes
+through, replaces the last entry too; it replaced the first, and a promoted
+edit vanished behind the entry that still resolved.
 
 ## Consequences
 
@@ -117,9 +136,25 @@ tracks carry edits.
 
   Main rebuilt `tracks` and the trackId index over the catalog on each
   config-track persist and scanned it on each session-track one. A persist
-  here is a diff, a merge and one per-id re-resolve. `baseTrackConfig` is a
-  per-id lookup, 0.3 µs at 10,000 tracks where main scanned `jbrowse.tracks`
-  in 216 µs.
+  here is a diff, a merge, one per-id re-resolve and a copy of the list of
+  bases. `baseTrackConfig` is a per-id lookup, 0.3 µs at 10,000 tracks where
+  main scanned `jbrowse.tracks` in 216 µs.
+- A search-box keystroke costs no more than main's. `relevantAdapters`, which
+  reads `tracks` outside any reaction, as the mean of 40 calls over the same
+  sessions:
+
+  | config.json tracks | main | this ADR |
+  | --- | --- | --- |
+  | 500 | 0.55 ms | 0.22 ms |
+  | 10,000 | 3.1 ms | 2.9 ms |
+
+  Main lists the session tracks as their live nodes, which read slower than
+  the plain entries listed here.
+- A session-track persist followed by a `getTracksById` read costs 1.8 ms at
+  10,000 tracks, where main's costs 0.6 ms: the record is rebuilt on that
+  first read, and main rebuilt it only on a config-track persist, which cost
+  6 ms there. No in-tree code reads it, and the two plugins known to call it
+  try `getTrackById` first.
 - The legacy `afterAttach` upgrade, `deleteTrackConf` (which already drops the
   delta), the `&sessionTracks=` URL form and the session migrations are
   unchanged. Settings a migration lifts into a session track land in its entry,

@@ -7,7 +7,14 @@ summary: "The session's trackId index is `keepAlive`, so it caches for readers o
 
 ## Status
 
-Accepted
+Accepted. Amended by
+[ADR-158](adr-158-a-session-tracks-entry-is-the-base-its-edits-diff-against.md):
+`getTrackById` no longer layers over a held whole-catalog record. It reads the
+track's base from `trackBasesById`, which an edit leaves alone, and the assembly
+and connection configs from their own record; `getTracksById`'s record is kept
+against the lists it was built from rather than held. The hold itself is an
+autorun the session disposes, not `keepAlive`, since a `keepAlive` subscription
+to `jbrowse.tracks` on the root pinned every superseded session.
 
 ## Context
 
