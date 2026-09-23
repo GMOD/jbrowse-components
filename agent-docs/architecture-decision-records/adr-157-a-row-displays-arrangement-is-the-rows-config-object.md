@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A row display's arrangement (the row order, per-row labels, the cluster tree with its provenance and the clade focus) is its `rows` config object, `field | { field, domain, labels, tree, treeProvenance, kept }` from display-kit, which every product edits as a session delta, so undo, reset and a share link reach it and it survives unticking the track. Every arrangement writer flushes to the session at once (`persistConfigurationNow`), so a clustering run is one undo step, and Reset row order returns each member to what the config.json declares rather than to empty. The quantitative display moves first: `facet: 'source'` is `rows: 'source'`, a leftover `facet` in a display config fails the load, and `rowColor: { domain, range }` holds the colour a reader sets on a subtrack, painted on the row's identity channel for the mode. `TreeSidebarMixin` is the config-backed arrangement. The multi-sample variant displays move second, onto the field-less `RowArrangement` their rows being the samples, with names at the rendering mode's granularity and `rowColor: field | { field, domain, range }`. The multi-row feature display moves third: `rows.field` is the attribute it partitions on, and `rowColor: { domain, range }` is the one map of row colours, the config's and the dialog's. MAF moves fourth, onto the field-less `RowArrangement`, its adapter's guide tree drawn while some rotation of it lists `rows.domain` and never written to `rows.tree`, and `rowColor: { domain, range }` its label tints; `LayoutTreeSidebarMixin` has no user left. Supersedes ADR-143's `facet` as the quantitative display's layout. No migration"
+summary: "A row display's arrangement (the row order, per-row labels, the cluster tree with its provenance and the clade focus) is its `rows` config object, `field | { field, domain, labels, tree, treeProvenance, kept }` from display-kit, which every product edits as a session delta, so undo, reset and a share link reach it and it survives unticking the track. Every arrangement writer flushes to the session at once (`persistConfigurationNow`), so a clustering run is one undo step, and Reset row order returns each member to what the config.json declares rather than to empty. The quantitative display moves first: `facet: 'source'` is `rows: 'source'`, a leftover `facet` in a display config fails the load, and `rowColor: { domain, range }` holds the colour a reader sets on a subtrack, painted on the row's identity channel for the mode. `TreeSidebarMixin` is the config-backed arrangement. The multi-sample variant displays move second, onto the field-less `RowArrangement` their rows being the samples, with names at the rendering mode's granularity and `rowColor: field | { field, domain, range }`. The multi-row feature display moves third: `rows.field` is the attribute it partitions on, and `rowColor: { domain, range }` is the one map of row colours, the config's and the dialog's. MAF moves fourth, onto the field-less `RowArrangement`, its adapter's guide tree drawn while some rotation of it lists `rows.domain` and never written to `rows.tree`, and `rowColor: { domain, range }` its label tints. `TreeSidebarMixin` then holds the row colours, the dialog's submit and the row derivation the four displays each carried, over hooks each supplies, and `LayoutTreeSidebarMixin` goes. Supersedes ADR-143's `facet` as the quantitative display's layout. No migration"
 ---
 
 # ADR-157: A row display's arrangement is the `rows` config object, written as session deltas
@@ -78,23 +78,29 @@ levels: `facet` for labelled bands, `rows` for one row per value.
 `labels` is core's new `stringMap` slot type, which the config editor edits
 with a map editor of its own.
 
-**Two mixins, one of them now unused.** `TreeSidebarMixin` is the arrangement
-over `rows`. `LayoutTreeSidebarMixin` kept the display-state props for the
-displays not yet ported, and MAF was the last. `treeSidebarBase` holds what the store does not
-change: the toggles, `treeAreaWidth`, the `runClustering` / `clusterRegion` /
-`sortRowsBy` launch specs and the hover and canvas volatiles. Both mixins answer
-one API — `rowDomain`, `rowTree`, `rowTreeProvenance`, `rowFocus`,
-`rowArrangementIsCustom`, `rowOrderWillDropTree`, `setRowOrder`, `setRowFocus`,
-`resetRowArrangement` and `root` — so the sidebar, clustering, the column sort
-and the menus read either without knowing which. The config-backed mixin adds
-`rowLabels` / `setRowLabels` and two hooks, `rowStylingIsCustom` and
-`resetRowStyling`, for styling a display keeps in an object of its own, and
-leaves `applyRowEdits` to the display, since it writes those colours. What a
-submit writes, `rowEdits` computes: the config's labels and colour pairs with
-the rows the dialog showed written over them, so a row the dialog never showed
-keeps its entry. The
+**One mixin.** `TreeSidebarMixin` is the arrangement over `rows`, with the
+toggles, `treeAreaWidth`, the `runClustering` / `clusterRegion` / `sortRowsBy`
+launch specs and the hover and canvas volatiles beside it. Its API —
+`rowDomain`, `rowLabels`, `rowTree`, `rowTreeProvenance`, `rowFocus`,
+`rowArrangementIsCustom`, `rowOrderWillDropTree`, `setRowOrder`,
+`setRowLabels`, `setRowFocus`, `resetRowArrangement` and `root` — is what the
+sidebar, clustering, the column sort and the menus read. It holds the
+`rowColor` pairs too (`rowColors`, `baseRowColor`, `rowStylingIsCustom`,
+`resetRowStyling`) and the dialog's submit, `applyRowEdits`, and it derives
+the rows every display used to build its own way: `editableSources`, the
+arranged rows the dialog edits, and `clusterableSources`, those narrowed to the
+focus, over one pure `arrangeRows`. A display supplies `discoveredRows` and the
+hooks its rows need — `expandRows` and `rowAlias` (the variant displays'
+haplotypes, each answering to its sample), `identityChannel`,
+`unlistedRowsSort` and `rowOrder` — and keeps its palette, bands and
+`focusLegendEntry`. What a submit writes, `rowEdits` computes: an entry the
+config holds stands unless the reader changed that row, a value changed back
+to what the row shows with no entry of its own removes the entry, and a row the
+dialog never showed keeps its entry; an order that moves no row is not
+written. `LayoutTreeSidebarMixin`, which kept the arrangement in display state
+for the displays not yet ported, went once MAF, the last, had moved. The
 quantitative display, `MultiSampleVariantBaseModel`, the multi-row feature
-display and MAF declare `rows` and compose `TreeSidebarMixin`.
+display and MAF declare `rows` and `rowColor` and compose `TreeSidebarMixin`.
 
 **Every arrangement writer flushes to the session.** `BaseTrackModel` gains
 `persistConfigurationNow()`, and each `TreeSidebarMixin` action calls it after
@@ -136,9 +142,9 @@ of the adapter's colour and the palette: `color`, the plot, or `labelColor`, the
 tint beside the label, wherever a score gradient paints (density, and bars or
 points under a `linear` or `log` colour). The arrangement dialog's Track color
 and Label color columns are one Color column editing that channel. Its submit
-writes the order and labels to `rows` and the colours to `rowColor`, each only
-where it differs from what the adapter supplied, and the bulk editor no longer
-writes `group`, an adapter attribute with no config home. The
+writes the order and labels to `rows` and the colours to `rowColor` over the
+entries the config holds, and the bulk editor no longer writes `group`, an
+adapter attribute with no config home. The
 `color: { field: 'source' }` overlay palette, the legend and the dealer are
 unchanged; converging row colour is the design's step 4.
 
@@ -271,6 +277,13 @@ one-shot trigger that clears itself.
   that lists its species; on one that discovers them from the blocks it applies
   as given, on the worker and in `sources` alike, since such a track lists no
   species before it reads, so a focus naming none the blocks hold draws no rows.
+- A clustered tree is session state now, where it was display state, so it
+  rides in every autosave and share link. hclust writes `name:length` at four
+  decimals, about 16 bytes a leaf and 10 an internal node, so a clustered
+  2,500-sample track carries about 65 KB of newick and 25 KB of `rows.domain`,
+  about 90 KB, and phased, with 5,000 quoted haplotype rows, about 210 KB. The
+  session's `current` copy is rewritten 400 ms after each change under a 5 MB
+  cap, which one such track takes 2–4 % of; a share link deflates it 2–3×.
 - A track the session owns has its `sessionTracks` entry as its base
   (ADR-158), so its palette is dealt over the `rows.domain` it was added with,
   and "Reset row order" returns to the arrangement and colours it was added

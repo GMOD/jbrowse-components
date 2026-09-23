@@ -86,9 +86,13 @@ the species it lists to every species.
 
 ## One derivation
 
-discovered → ordered (`rows.domain`, or a supplied tree's leaves) → focused
-(`kept`) → expanded (a display hook: phased haplotypes) → decorated (bands,
-colour, MAF's reference row).
+discovered → focused for the fetch (the variant displays' samples before
+expansion, `sourcesBase`) → expanded (a display hook: phased haplotypes) →
+ordered (`rows.domain`, or a drawn tree's leaves), relabelled and tinted by the
+`rowColor` pairs (`editableSources`) → focused (`kept`, `clusterableSources`) →
+palette and bands (`sources`, the display's, with MAF's reference row).
+`TreeSidebarMixin` holds the stages from expanded to focused as computeds of
+their own, over one `arrangeRows` and the hooks a display supplies.
 
 - **Nothing upstream of a fetch key reads a fetch result.** The variant
   displays' `sampleFilter` reads the focused, unexpanded rows because expansion
@@ -97,7 +101,7 @@ colour, MAF's reference row).
 - **Named consumers read named stages**: the arrangement dialog the expanded
   unfocused rows, clustering the focused rows, the fetch key the focused
   unexpanded rows, a legend focus and sort-at-column the ordered rows, rendering
-  the decorated rows. Colour deals over the unfocused rows, so a focus never
+  `sources`. Colour deals over the unfocused rows, so a focus never
   recolours.
 - **A display supplies the discovered rows and its hooks.** Discovered rows stay
   a stable-identity getter over region payloads (wiggle, multi-row) or a volatile

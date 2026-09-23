@@ -248,7 +248,7 @@ Use `types.frozen()` for data that is:
 - Stored as a plain JSON value and hydrated lazily into MST nodes on first
   access
 
-<!-- include: packages/tree-sidebar/src/treeSidebarBase.ts#frozenProp -->
+<!-- include: packages/tree-sidebar/src/TreeSidebarMixin.ts#frozenProp -->
 
 ```ts
 sortRowsBy: types.maybe(types.frozen<RowSortSpec>()),

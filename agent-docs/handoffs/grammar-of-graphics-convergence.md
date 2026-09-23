@@ -165,7 +165,7 @@ its rows and a reader's arrangement of them are the `rows` config object, and a
 colour set on one subtrack is `rowColor`
 ([ADR-157](../architecture-decision-records/adr-157-a-row-displays-arrangement-is-the-rows-config-object.md)).
 The variant displays, the multi-row feature display and MAF have moved since,
-and `LayoutTreeSidebarMixin` has no display left.
+and `TreeSidebarMixin` derives all four displays' rows.
 
 ### 5. The copies
 

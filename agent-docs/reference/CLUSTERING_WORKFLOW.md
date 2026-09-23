@@ -131,8 +131,8 @@ branch.
 
 Every row display reaches its arrangement through one API, `TreeSidebarMixin`,
 over the `rows` config object (ADR-157): wiggle, the variant displays, the
-multi-row feature display and MAF. `LayoutTreeSidebarMixin`, the display-state
-store MAF last used, has no user left.
+multi-row feature display and MAF. It also derives the rows a run clusters,
+`clusterableSources`, from the rows each display discovers.
 
 | Member | display config |
 |---|---|
@@ -141,6 +141,7 @@ store MAF last used, has no user left.
 | Provenance | `rows.treeProvenance` |
 | Focus | `rows.kept` |
 | Row labels | `rows.labels` |
+| Row colours | `rowColor` pairs |
 
 MAF's adapter guide tree is data rather than config: `rowTree` draws it while
 some rotation of it lists `rows.domain` and never writes it to `rows.tree`.
@@ -149,8 +150,8 @@ some rotation of it lists `rows.domain` and never writes it to `rows.tree`.
 Key actions:
 - `setRowOrder(rows)` — a reorder; clears the tree if the row order changed
 - `setRowOrder(rows, { tree, provenance })` — a run's order and tree, together
-- `applyRowEdits(rows)` — the arrangement dialog's submit, the display's own on
-  `TreeSidebarMixin`
+- `applyRowEdits(rows)` — the arrangement dialog's submit: labels, colours and
+  an order that moved
 - `setRowFocus(names)` — collapses to deepest matching subtree (interactive click)
 - `resetRowArrangement()` — the order, the tree and the focus back to what the
   config.json declares
@@ -340,7 +341,6 @@ the message, drops the staging copy and checks every malloc.
 | `plugins/variants/src/shared/components/MultiSampleVariantClusterDialog.tsx` | Dialog (Auto + Manual) |
 | `plugins/variants/src/shared/MultiSampleVariantBaseModel.ts` | Base model; `hierarchy` |
 | `plugins/variants/src/shared/applyClusterOrder.ts` | Turns an order over the clustered rows into the next `rows.domain`, the focused-out rows after the clade |
-| `packages/tree-sidebar/src/TreeSidebarMixin.ts` | The arrangement over the `rows` config object (wiggle, variants, multi-row) |
-| `packages/tree-sidebar/src/LayoutTreeSidebarMixin.ts` | The arrangement in display state (MAF) |
-| `packages/tree-sidebar/src/treeSidebarBase.ts` | What both share: toggles, launch specs, volatiles |
+| `packages/tree-sidebar/src/TreeSidebarMixin.ts` | The arrangement over the `rows` config object, and the rows derived from it |
+| `packages/tree-sidebar/src/arrangeRows.ts` | Orders, relabels and tints a display's rows |
 | `packages/tree-sidebar/src/clusterUtils.ts` | `buildClusteredLayout`, `buildTree`, `applySubtreeFilter` |

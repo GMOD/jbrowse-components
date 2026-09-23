@@ -438,12 +438,11 @@ export function validateClusterOrder(
  * way to the painting — multi-wiggle synthesizes a palette, the multi-row
  * feature display tags `rowGroups` colors and may reorder into blocks — and
  * the arrangement holds whatever it is handed, which is meant to be only what
- * the user chose. `editableSources` narrowed by the focus is the list, and it
- * already carries each row's own overrides.
+ * the user chose. `editableSources` narrowed by the focus is the list.
  *
- * The rows the focus is hiding are re-appended rather than dropped: the
- * arrangement records every row's position and overrides, so losing them here
- * would erase them for good the moment the focus is cleared. They land after
+ * The rows the focus is hiding are re-appended rather than dropped:
+ * `rows.domain` records every row's position, so losing them here would erase
+ * them for good the moment the focus is cleared. They land after
  * the clustered block, which is a no-op with no focus active.
  *
  * `matrixRowNames` comes from the R-script path and names the rows the exported

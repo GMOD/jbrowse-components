@@ -136,18 +136,18 @@ Every other channel resolves when the rows are read.
 haplotype in phased mode — and a row answers to its own name, then to its
 sample's, for an order, a label, a tint and the focus alike. So a config naming
 samples still arranges a phased track, and a mode switch resets the arrangement
-because it renames the rows. A dialog submit writes a label or tint only where
-it differs from the adapter's (`editedSource`, through tree-sidebar's
-`rowEdits`), and a run writes names beside its tree, re-appending the rows a
-focus hides after the clade.
+because it renames the rows. The answering is `rowAlias`, the hook this display
+gives `TreeSidebarMixin`, and a run writes names beside its tree, re-appending
+the rows a focus hides after the clade.
 
-**Named stages, named readers** (`MultiSampleVariantBaseModel`): `sourcesBase`
-is the adapter's samples narrowed to `rows.kept`, the fetch key's input, so it
-reads no `sampleInfo`: a focus naming a haplotype keeps its sample there
-(`keptRowsOf`, through `parseRowName`). `editableSources` expands, orders,
-relabels and tints by pair (`arrangeRows`), with no focus, palette or band — the
-dialog's list and the sort's. `clusterableSources` narrows it to the focus, and
-is what both clustering paths send. `sources` adds the palette and the band.
+**Named stages, named readers.** `sourcesBase` is the adapter's samples narrowed
+to `rows.kept`, the fetch key's input, so it reads no `sampleInfo`: a focus
+naming a haplotype keeps its sample there (`keptRows` with `rowAlias`, through
+`parseRowName`). The rest are `TreeSidebarMixin`'s over this display's hooks:
+`discoveredRows`, `expandRows` (`expandPhasedRows`), then `editableSources`,
+ordered, relabelled and tinted by pair with no focus, palette or band — the
+dialog's list and the sort's — and `clusterableSources`, narrowed to the focus,
+which both clustering paths send. `sources` adds the palette and the band.
 
 **Phased rows are the ploidy `sampleInfo` reports plus any haplotype the order
 names.** Until the ploidy lands, the named haplotypes stand in for it, so an
@@ -157,7 +157,7 @@ settings change triggers rather than folding back to samples.
 **The row tint is `labelColor`**, the channel tree-sidebar's `RowLabelsOverlay`
 and `SvgRowLabels` draw — the cells are colored by genotype, so a row has no
 `color` of its own to spend. `applyColorByPalette` writes it there, the group
-legend and the tooltip swatch read it there, and `arrangeRows` folds a
+legend and the tooltip swatch read it there, and `discoveredRows` folds a
 `samplesTsv` `color` column onto it. Carrying the tint under `color` is what
 kept these displays on a label gutter of their own.
 

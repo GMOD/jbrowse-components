@@ -68,10 +68,9 @@ export function loadedRegionIndexAt(
 // through.
 export interface RowSortColumnHost<S> {
   loadedRegions: { entries: () => Iterable<[number, LoadedRegionSpan]> }
-  // `editableSources`, never `sources`: layout-merged (so a user's colors
-  // survive the reorder) and unfiltered by the subtree, so a focused clade
-  // doesn't persist itself as the whole row order and drop everything it was
-  // hiding.
+  // `editableSources`, never `sources`: unfiltered by the subtree, so a
+  // focused clade doesn't persist itself as the whole row order and drop
+  // everything it was hiding.
   editableSources: S[]
   setRowOrder: (rows: S[]) => void
 }
@@ -92,12 +91,12 @@ export interface RowSortColumnHost<S> {
  * reads to decide whether to clear the trigger or leave it for a later fetch.
  *
  * **`order` is handed `editableSources`, which the subtree filter has not
- * touched** — the list being written to `layout`, not the rows on screen. So an
+ * touched** — the list whose order is written, not the rows on screen. So an
  * `order` that derives a STATISTIC from the row set it is given (block sizes,
  * ranks, a median) is computing it over rows a focused clade is hiding, which
  * is a different answer from the one the user is looking at. That is deliberate
  * for the ordering itself, for the reason on `RowSortColumnHost.editableSources`
- * — a hidden row must keep its place and its overrides. A display that wants the
+ * — a hidden row must keep its place. A display that wants the
  * drawn set for the statistic reads its own `sources` in the closure it passes
  * as `order`; nothing here can hand it over, because "which rows are drawn" is
  * downstream of decorations this module does not see.

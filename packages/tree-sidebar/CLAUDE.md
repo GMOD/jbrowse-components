@@ -34,8 +34,8 @@ rows come back scrambled.
 tree that no longer names the rows on screen draws against the wrong ones,
 silently. When writing a display:
 
-- **Every action that moves rows routes through `setRowOrder`**, never
-  `self.layout =`.
+- **Every action that moves rows routes through `setRowOrder`**, never a bare
+  write to `rows.domain`.
 - **Pass `sources` to `computeClusterHierarchy`** — after every reorder, filter
   and decoration, never the pre-layout list.
 
@@ -83,37 +83,69 @@ as an overlap fraction — `contentBlocks` shift a sub-bp amount on any pan, so
 equality would flag constantly.
 
 The invariant is not that provenance is present but that it is never **wrong**,
-so each mixin writes the tree through one private `writeTree`, which sets the
-provenance beside it. `TreeSidebarMixin`'s writes `rows.tree` and
-`rows.treeProvenance` together from `setRowOrder`: a run passes its result, and
-a reorder that moves a row passes nothing; `resetRowArrangement` returns both to
-the config.json's in one action. maf's supplied `.nh` has no provenance because
-a phylogeny has no locus, so a tree with no provenance is also the signal it was
-supplied rather than computed. `SvgTreeSidebar` draws the same drift-only hint
-in the export (`SvgClusterProvenanceHint`), and `clusterProvenanceMenuItems`
-puts the locus in the menu.
+so the mixin writes the tree through one private `writeTree`, which sets
+`rows.tree` and `rows.treeProvenance` together from `setRowOrder`: a run passes
+its result, and a reorder that moves a row passes nothing; `resetRowArrangement`
+returns both to the config.json's in one action. maf's supplied `.nh` has no
+provenance because a phylogeny has no locus, so a tree with no provenance is
+also the signal it was supplied rather than computed. `SvgTreeSidebar` draws the
+same drift-only hint in the export (`SvgClusterProvenanceHint`), and
+`clusterProvenanceMenuItems` puts the locus in the menu.
 
-## Two mixins, and the display-state one has no user
+## One mixin holds the arrangement and derives the rows
 
-`TreeSidebarMixin` keeps a display's arrangement in its `rows` config object —
-the quantitative display's, `MultiSampleVariantBaseModel`'s, the multi-row
-feature display's and MAF's (ADR-157). `LayoutTreeSidebarMixin` keeps it in
-display state (`layout`, `clusterTree`, `clusterProvenance`, `subtreeFilter`);
-MAF was its last user, and it stays until it is retired.
+`TreeSidebarMixin` keeps a display's arrangement in its `rows` config object and
+its row colours in the `rowColor` pairs — the quantitative display's,
+`MultiSampleVariantBaseModel`'s, the multi-row feature display's and MAF's
+(ADR-157) — and derives the rows from them.
 
 **`rows` comes in two schemas, and the mixin reads either.** display-kit's
 `RowArrangement` is the five members alone, for a display whose rows are
 intrinsic (a sample, a species), and `Rows` extends it with `field` for one
 whose rows are a field's values. The host is typed on `RowArrangement`, so the
-mixin never reaches for `field`, which stays the display's own.
-`treeSidebarBase` is the half the store does not change — the toggles, the
-launch specs, the hover and canvas volatiles — and both mixins put one API over
-it: `rowDomain`, `rowTree`, `rowTreeProvenance`, `rowFocus`,
-`rowArrangementIsCustom`, `rowOrderWillDropTree`, `setRowOrder`, `setRowFocus`,
-`resetRowArrangement`. **Shared code reads that API, never a prop behind it**,
-so the sidebar, clustering, the column sort and the menus work over either.
+mixin never reaches for `field`, which stays the display's own. `rowColor` is
+the same: the host names display-kit's `RowColor`, and variants'
+`VariantRowColor` satisfies it with a `field` the mixin never reads. **Shared
+code reads the mixin's API, never a config member behind it**: `rowDomain`,
+`rowTree`, `rowTreeProvenance`, `rowFocus`, `rowArrangementIsCustom`,
+`rowOrderWillDropTree`, `setRowOrder`, `setRowFocus`, `resetRowArrangement`.
 
-What the config-backed mixin adds:
+**The rows are derived in stages, each its own computed**, so a change reaches
+only the stages downstream of it:
+
+1. `discoveredRows`, the display's: a stable-identity getter over region
+   payloads (wiggle, multi-row) or over a volatile a header fetch fills
+   (variants, MAF).
+2. `expandedRows`, through `expandRows`: variants' phased haplotypes, the rows
+   themselves elsewhere. Variants' `sourcesBase`, the focused samples the fetch
+   asks for, is a stage of the display's beside this one and never reads it,
+   since expansion reads `sampleInfo`, a fetch result.
+3. `editableSources`: `arrangeRows` orders by `rowOrder`, relabels by
+   `rows.labels` and tints by the `rowColor` pairs on the `identityChannel`. It
+   hands back `expandedRows` itself while nothing is arranged, which the `!==`
+   caches downstream (`featurePaintInputs`, `createEncodeMemo`) key on.
+4. `clusterableSources`: the focus (`keptRows`).
+5. `sources`, the display's: palette, bands, MAF's reference row.
+
+The hooks are declared by the mixin and overridden by a getter in a later
+`.views` block, as `RowHeightMixin`'s `autoRowHeight` is; a `.volatile` of a
+hook's name throws at `create`:
+
+- `discoveredRows` — every display.
+- `expandRows(rows)` — variants.
+- `rowAlias` — variants: the sample a haplotype row answers to, so an order, a
+  label, a tint and a focus written against a sample reach its haplotypes, and
+  the edit diff falls back to the sample's entry.
+- `identityChannel` — `color` by default; wiggle's follows the mode, variants
+  and MAF tint the label.
+- `unlistedRowsSort` — `source` by default; multi-row's discovered values sort.
+- `rowOrder` — `rows.domain` by default; MAF leads with a drawn tree's leaves.
+
+MAF also overrides `clusterableSources`, since on a track that discovers its
+species a focus applies as given, as the worker's does. `focusLegendEntry` stays
+each display's: each key names rows by a different predicate.
+
+What else the mixin owns:
 
 - **Every writer flushes** through the track's `persistConfigurationNow()`, so
   an arrangement is in the session, and undoable, the moment it lands rather
@@ -121,24 +153,24 @@ What the config-backed mixin adds:
   previous change instead.
 - **A reset returns to the config.json** through `baseDisplayConfig(self)`, or
   to what a track the session owns was added with, and never touches
-  `rows.field`. A reset to empty would write a delta erasing an admin's declared
-  order for that reader. `rowArrangementIsCustom` compares against the same base
-  and leaves `rows.kept` out, since the focus has a clear of its own; a reset
-  still clears it.
-- **Row styling stays the display's.** `applyRowEdits` is the display's own, and
-  `rowStylingIsCustom` / `resetRowStyling` are the hooks that bring its colours
-  (wiggle's and multi-row's `rowColor`) into "custom" and into a reset. What a
-  submit writes, `rowEdits` computes: the config's labels and colour pairs with
-  the rows the dialog showed written over them, so a row no loaded region holds
-  keeps its entry; the display supplies what a shown row says beyond the
-  adapter's and writes the result.
+  `rows.field` or `rowColor.field`. A reset to empty would write a delta erasing
+  an admin's declared order for that reader. `rowArrangementIsCustom` compares
+  against the same base, with `rowStylingIsCustom` for the colour pairs, and
+  leaves `rows.kept` out, since the focus has a clear of its own; a reset still
+  clears it.
+- **The dialog's submit is `applyRowEdits`**, and `rowEdits` is its rule: an
+  entry the config holds stands unless the reader changed that row, so an entry
+  repeating the adapter's value survives an unchanged submit; a value changed
+  back to what the row shows with no entry of its own removes the entry; a row
+  the dialog never showed keeps its entry. An order that moves no row is not
+  written. The pairs are written with two `setConf`s, never `setSubschema`,
+  which would drop variants' `field`.
 - **A reorder keeps the names it did not show.** `setRowOrder` writes the rows
   it was handed ahead of every name the current order carries beyond them, so on
   the multi-row display, whose rows are discovered per region, a declared order
   keeps its unseen rows. `rowOrderWillDropTree` compares the same merged order,
   so a submit that moves no shown row keeps the tree.
-- **A focus naming no current row shows every row** (`keptRows`), where
-  `subtreeFilter` matching none hides every row (`filterRowsBySubtree`).
+- **A focus naming no current row shows every row** (`keptRows`).
 
 ## "Sort rows by … here" is three shared pieces and one per-display read
 
@@ -187,11 +219,11 @@ is gated on the filter alone.
 
 ## `RowSource` is the row vocabulary, and the mixin's bound
 
-`TreeSidebarMixin<S extends RowSource>`, and `LayoutTreeSidebarMixin` the same.
-Every field this package draws with is on `RowSource`, and `TreeSource` /
-`RowLabelSource` are picks of it rather than separate declarations — the bound
-used to be `{ name: string }`, the weakest possible, and the four displays
-composing the mixin each wrote their own row type against it.
+`TreeSidebarMixin<S extends RowSource>`. Every field this package draws with is
+on `RowSource`, and `TreeSource` / `RowLabelSource` are picks of it rather than
+separate declarations — the bound used to be `{ name: string }`, the weakest
+possible, and the four displays composing the mixin each wrote their own row
+type against it.
 
 **The tint is `labelColor`, always.** `SvgRowLabels` drops to a `labelColor`
 swatch below `MIN_TEXT_ROW_HEIGHT`, and because `RowLabelSource` is satisfied
@@ -205,15 +237,12 @@ shared one read the other name.
 `treeSidebarConfigSchemaFields` is the matching slot set (`showTree` /
 `showBranchLength` / `showRowLabels` / `treeAreaWidth`), taking only the
 per-display descriptions, so a display cannot ship three of the four. The
-declared row order is not in it. Every row display declares a `rows` object and
-composes `TreeSidebarMixin`, which reads the order as `rows.domain`;
-`rowDomainConfigSchemaFields`, the `domain` slot `LayoutTreeSidebarMixin` reads
-and throws without, has no display spreading it. Either way the getter is
-`rowDomain`, never `domain`, which is the score axis on the wiggle display.
-**The mixins declare the accessors over those slots**, so a display composes
-both halves or neither. Hand-written `getConf` / `setConf` one-liners beside
-slots this package's own code reads are how the labels toggle came to be spelled
-`showSidebarLabels` on one display and silently ignore its config.
+declared row order is not in it: every row display declares a `rows` object, and
+the getter is `rowDomain`, never `domain`, which is the score axis on the wiggle
+display. **The mixin declares the accessors over those slots**, so a display
+composes both halves or neither. Hand-written `getConf` / `setConf` one-liners
+beside slots this package's own code reads are how the labels toggle came to be
+spelled `showSidebarLabels` on one display and silently ignore its config.
 `showRowLabelsMenuItem` is the row, and `treeSidebarShowMenuItems` the two tree
 toggles beside it — all three under "Show..." on every display, with
 `RowLabelsOverlay` mounted whether or not a tree is showing.

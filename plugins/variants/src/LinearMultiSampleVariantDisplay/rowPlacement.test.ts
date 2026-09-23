@@ -126,9 +126,8 @@ describe('multi-sample variant row placement', () => {
     expect(display.sampleFilter).toEqual(['S0', 'S1', 'S2'])
     display.setRowOrder([{ name: 'S2' }, { name: 'S1' }, { name: 'S0' }])
     expect(display.sampleFilter).toEqual(['S0', 'S1', 'S2'])
-    // a layout is an ordering hint, not the row set: one that omits a sample
-    // still fetches it (the omitted row is appended), same rule the other row
-    // displays get from `reconcileLayout`
+    // an order is a hint, not the row set: one that omits a sample still
+    // fetches it (the omitted row is appended)
     display.setRowOrder([{ name: 'S2' }, { name: 'S0' }])
     expect(display.sampleFilter).toEqual(['S0', 'S1', 'S2'])
 

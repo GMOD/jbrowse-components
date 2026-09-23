@@ -1,6 +1,6 @@
 ---
 name: row-display-followups
-description: What the 2026-08-25 pass over the four row displays (multi-row features, multi-wiggle, MAF, the two multi-sample variant displays) left unbuilt — a fixed row height with a scroll viewport for multi-wiggle, one name for the "what do the rows look like" radio, MAF row separators, the row-source chain as mixin state, and a metadata filter dialog — with what each one costs and what already exists to build it from.
+description: What the 2026-08-25 pass over the four row displays (multi-row features, multi-wiggle, MAF, the two multi-sample variant displays) left unbuilt — a fixed row height with a scroll viewport for multi-wiggle, one name for the "what do the rows look like" radio, MAF row separators and a metadata filter dialog — with what each one costs and what already exists to build it from.
 ---
 
 # Row display follow-ups
@@ -44,17 +44,6 @@ it is taken up.
 the variant displays took. Not done because MAF's rows already carry a gap
 (`rowProportion` < 1), which is a separator by another name; a track configured
 at `rowProportion: 1` is the case that would want it.
-
-**The row-source chain as mixin state.** The row displays each spell
-`editableSources` as the discovered rows ordered by `rows.domain` with
-`rows.labels` and `rowColor` applied, and
-`sources = keptRows(editableSources, rows.kept)`, decorating in between (multi-row's `applyRowGroups`, wiggle's palette synthesis). The mixin
-could declare `sourcesWithoutLayout` as an overridable stub the way
-`RowHeightMixin` declares `autoRowHeight`, and derive `editableSources` — the
-variant displays would still override both (phased expansion, `getSources`'
-sampleName-keyed coverage). Priced at ~10 lines saved per display against a
-`sources` getter each display genuinely owns; agent-docs/architecture-decision-records/' entry on sharing
-`hierarchy` is the argument in the other direction.
 
 **A metadata filter dialog.** `focusRows` from a legend swatch covers "show
 only this population"; "cases only, in EUR, over 60" is a predicate over

@@ -113,14 +113,9 @@ function unsetBlanks(patch: Record<string, string>) {
   )
 }
 
-// Join parsed rows (by name) onto the current layout.
-// - Rows whose name is not in the paste are always kept unchanged.
-// - replace=false: patch pasted fields over existing fields.
-// - replace=true: for matched rows, start from {} so only pasted fields
-//   survive. Identity fields omitted from the paste (e.g. `source`, `baseUri`)
-//   drop out here but are restored by `reconcileLayout`, which merges each
-//   layout entry onto its discovered row — the layout is a partial override,
-//   never the whole record.
+// Join parsed rows (by name) onto the dialog's rows. A row the paste does not
+// name is kept unchanged; replace=true starts a matched row from {} so only
+// pasted fields survive, which the submit reads as a label or colour cleared.
 export function mergeParsedRows<S extends { name: string }>(
   currLayout: S[],
   byName: ParsedRows,

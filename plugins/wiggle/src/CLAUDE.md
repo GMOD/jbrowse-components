@@ -264,18 +264,14 @@ key, the row-label swatches and the arrangement dialog's one Color column all
 read it there, so no key shows a swatch the plot does not paint.
 
 **A reader's colour for a row is `rowColor`, and its label is `rows.labels`.**
-The arrangement dialog's submit writes each only where it differs from what the
-adapter supplied (`editedSource`, through tree-sidebar's `rowEdits`, which keeps
-the entries of rows the dialog did not show). `arrangeSources` lands a
-`rowColor` entry on the identity channel for the current mode — `color`, or
-`labelColor` wherever `scoreGradientPaints` — ahead of the adapter's colour and
-the palette, so a colour set on the plot moves to the label tint when a gradient
-starts painting rather than into the ramp; in one shared box there is no label
-to tint, so the colour goes to the plot whatever the gradient. `group` has no
-config home, so a `group` pasted into the bulk editor is read for the
-palettizer's "Color by group" and not kept. `resetRowStyling` returns `rowColor`
-to the config.json's with the rest of the arrangement, and a submit keeps the
-config's pair order so a reorder alone writes no `rowColor` delta.
+`TreeSidebarMixin` arranges them over `discoveredRows` and writes the dialog's
+submit; what is this display's is `identityChannel`, the channel a `rowColor`
+entry lands on — `color`, or `labelColor` wherever `scoreGradientPaints` — ahead
+of the adapter's colour and the palette, so a colour set on the plot moves to
+the label tint when a gradient starts painting rather than into the ramp; in one
+shared box there is no label to tint, so the colour goes to the plot whatever
+the gradient. `group` has no config home, so a `group` pasted into the bulk
+editor is read for the palettizer's "Color by group" and not kept.
 
 **Density is where the fallback differs.** Outside it an unset row `color` is
 painted in the resolved `posColor`, so the key resolves to it; in density that

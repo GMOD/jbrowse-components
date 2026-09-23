@@ -41,7 +41,7 @@ test('the host type checks the slot names the mixin reads through it', () => {
   }
   const writeColor = () => {
     // @ts-expect-error
-    setConf(host, ['rowColor', 'domian'], [])
+    setConf(host, ['rowColor', 'domains'], [])
   }
   expect([read, readMember, write, readColor, writeColor]).toHaveLength(5)
 })
