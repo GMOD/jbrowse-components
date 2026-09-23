@@ -218,13 +218,34 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         mergeCache.set(base, { delta, merged })
         return merged
       }
+      // The bases in `tracks` order, each id's base and each id's position.
+      // A config.json that repeats an id resolves to its last entry.
+      const trackBaseIndex = computed(
+        () => {
+          const entries = sessionEntries(self)
+          const sessionIds = new Set(entries.map(t => t.trackId))
+          const list = [
+            ...entries,
+            ...baseTracks(self).filter(t => !sessionIds.has(t.trackId)),
+          ]
+          const byId = new Map<string, PlainTrackConfig>()
+          const at = new Map<string, number>()
+          for (let i = 0; i < list.length; i++) {
+            const { trackId } = list[i]!
+            byId.set(trackId, list[i]!)
+            at.set(trackId, i)
+          }
+          return { list, byId, at }
+        },
+        { name: 'trackBaseIndex' },
+      )
       const baseByIdComputeds = new Map<
         string,
         IComputedValue<PlainTrackConfig | undefined>
       >()
-      const editableByIdComputeds = new Map<
-        string,
-        IComputedValue<AnyConfigurationModel | undefined>
+      const editableComputeds = new Map<
+        IAnyType,
+        Map<string, IComputedValue<AnyConfigurationModel | undefined>>
       >()
       return {
         /**
@@ -234,11 +255,10 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * edit.
          */
         get trackBasesById(): Map<string, AnyConfigurationModel> {
-          const byId = new Map(baseTracks(self).map(t => [t.trackId, t]))
-          for (const entry of sessionEntries(self)) {
-            byId.set(entry.trackId, entry)
-          }
-          return byId as unknown as Map<string, AnyConfigurationModel>
+          return trackBaseIndex.get().byId as unknown as Map<
+            string,
+            AnyConfigurationModel
+          >
         },
         /**
          * #method
@@ -253,15 +273,21 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         /**
          * #getter
          * Session tracks first, then the config tracks, each with its edits.
+         * An edit copies the list of bases and lays each delta at its track's
+         * position, so its cost is the count of edited tracks, not of tracks.
          */
         get tracks(): AnyConfigurationModel[] {
-          const deltas = self.trackConfigDeltas
-          const entries = sessionEntries(self)
-          const sessionIds = new Set(entries.map(t => t.trackId))
-          return [
-            ...entries,
-            ...baseTracks(self).filter(t => !sessionIds.has(t.trackId)),
-          ].map(t => withDelta(t, deltas[t.trackId]))
+          const { list, at } = trackBaseIndex.get()
+          const tracks = list.slice() as unknown as AnyConfigurationModel[]
+          for (const [trackId, delta] of Object.entries(
+            self.trackConfigDeltas,
+          )) {
+            const i = at.get(trackId)
+            if (i !== undefined) {
+              tracks[i] = withDelta(list[i]!, delta)
+            }
+          }
+          return tracks
         },
         /**
          * #method
@@ -299,13 +325,20 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * again under its id — cannot, so the next read rebuilds the copy from
          * what now resolves. Per-id reactive on the node rather than the
          * config, so a display reading its config does not recompute when
-         * its own working copy is persisted.
+         * its own working copy is persisted. Per schema type as well, since
+         * an id re-added under another track type resolves through that
+         * type's reference.
          */
         getEditableTrackConfig(
           trackId: string,
           schemaType: IAnyType,
         ): AnyConfigurationModel | undefined {
-          let c = editableByIdComputeds.get(trackId)
+          let byId = editableComputeds.get(schemaType)
+          if (!byId) {
+            byId = new Map()
+            editableComputeds.set(schemaType, byId)
+          }
+          let c = byId.get(trackId)
           if (!c) {
             c = computed(() => {
               const resolved = self.getTrackById(trackId)
@@ -320,7 +353,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
               self.editableTrackConfigs.set(trackId, { node, source: resolved })
               return node
             })
-            editableByIdComputeds.set(trackId, c)
+            byId.set(trackId, c)
           }
           return c.get()
         },

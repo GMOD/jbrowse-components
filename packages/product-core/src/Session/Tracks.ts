@@ -91,14 +91,15 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
         },
         { name: 'otherConfigsById' },
       )
-      const tracksByIdRecord = computed(
-        () =>
-          Object.fromEntries([
-            ...self.tracks.map(t => [t.trackId, t]),
-            ...Object.entries(otherConfigsById.get()),
-          ]) as Record<string, AnyConfigurationModel>,
-        { name: 'tracksByIdRecord' },
-      )
+      // Kept against the two lists it was built from rather than held, since
+      // holding it would rebuild it on every edit
+      let tracksById:
+        | {
+            tracks: AnyConfigurationModel[]
+            others: Record<string, AnyConfigurationModel>
+            record: Record<string, AnyConfigurationModel>
+          }
+        | undefined
       // Per-id computeds backing getTrackById. An edit re-resolves each
       // observed id in constant time, and an unedited id resolves to the same
       // object, so its observers never wake. Not evicted: bounded by the
@@ -136,28 +137,41 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
            * #method
            * Every track config the session can resolve, keyed by trackId.
            * Prefer the per-id reactive `getTrackById(id)`: this map is rebuilt
-           * over every track on any edit, and reading it subscribes the caller
-           * to all of them. Kept for plugins that look up ids in a
-           * non-reactive context.
+           * over every track on the first read after any edit, and reading it
+           * subscribes the caller to all of them. Kept for plugins that look
+           * up ids in a non-reactive context.
            *
            * @deprecated
            */
           getTracksById(): Record<string, AnyConfigurationModel> {
-            return tracksByIdRecord.get()
+            const { tracks } = self
+            const others = otherConfigsById.get()
+            if (tracksById?.tracks !== tracks || tracksById.others !== others) {
+              tracksById = {
+                tracks,
+                others,
+                record: Object.fromEntries([
+                  ...tracks.map(t => [t.trackId, t]),
+                  ...Object.entries(others),
+                ]) as Record<string, AnyConfigurationModel>,
+              }
+            }
+            return tracksById.record
           },
         },
         actions: {
-          // Holds the indexes getTrackById reads, so a reader outside any
-          // reaction (ranking search hits: 33ms per search unheld on a
-          // 2000-track config, 0.07ms held) gets the cache too. Not
-          // `keepAlive`: that subscription never ends, and it reaches
-          // jbrowse.tracks on the root, so it pinned every superseded session
-          // for the tab's life.
+          // Holds the indexes getTrackById reads and the track list, so a
+          // reader outside any reaction (ranking search hits: 33ms per search
+          // unheld on a 2000-track config, 0.07ms held; the search box's
+          // adapter list) gets the cache too. Not `keepAlive`: that
+          // subscription never ends, and it reaches jbrowse.tracks on the
+          // root, so it pinned every superseded session for the tab's life.
           afterAttach() {
             addDisposer(
               self,
               autorun(
                 () => {
+                  void self.tracks
                   void self.trackBasesById
                   otherConfigsById.get()
                 },

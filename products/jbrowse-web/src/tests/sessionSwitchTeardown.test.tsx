@@ -48,6 +48,9 @@ test('switching sessions does not read the session it replaced', async () => {
   // the read ranking search hits makes: outside any reaction, and the one that
   // subscribed a `keepAlive` index for good. The last assertion needs it made.
   expect(oldSession.getTrackById('gff3tabix_genes')).toBeDefined()
+  expect(
+    observerNames(getObserverTree(oldSession, 'trackBasesById')),
+  ).toContain('trackIndex')
 
   const deadReads: string[] = []
   const origWarn = console.warn

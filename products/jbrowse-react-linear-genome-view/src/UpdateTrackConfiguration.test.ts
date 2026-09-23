@@ -558,6 +558,26 @@ describe('a session track edits as a delta over its entry', () => {
     expect(nameOf(await shown(state))).toBe('Recomputed')
   })
 
+  test('a re-add under the id as another track type shows that type', async () => {
+    const { state, session } = added()
+    await shown(state)
+    session.deleteTrackConf(session.getTrackById(ID)!)
+    await waitFor(() => {
+      expect(state.session.view.tracks).toHaveLength(0)
+    })
+
+    session.addSessionTrackConf({
+      type: 'VariantTrack',
+      trackId: ID,
+      name: 'Variants',
+      assemblyNames: ['volvox'],
+      adapter: { type: 'FromConfigAdapter', features: [] },
+    })
+
+    expect(readConfObject(await shown(state), 'type')).toBe('VariantTrack')
+    expect(state.session.view.getTrack(ID)!.type).toBe('VariantTrack')
+  })
+
   test('a share link carries the entry and the delta', async () => {
     const { state, session } = added()
     session.updateTrackConfiguration({ ...sessionTrack, name: 'Edited name' })
@@ -580,6 +600,25 @@ describe('a session track edits as a delta over its entry', () => {
     reopened.resetTrackConfiguration(ID)
     expect(nameOf(reopened.getTrackById(ID))).toBe('Original name')
   })
+})
+
+// Nothing observes these in a session with no view open, and the search box
+// reads the list on every keystroke
+test('a read outside any reaction reuses the track list and the id record', () => {
+  const state = createViewState({ assembly, tracks: [track] })
+  const session = state.session as unknown as DeltaSession & {
+    getTracksById: () => Record<string, AnyConfigurationModel>
+  }
+  expect(session.tracks).toBe(session.tracks)
+  expect(session.getTracksById()).toBe(session.getTracksById())
+
+  session.updateTrackConfiguration({ ...track, name: 'Edited name' })
+
+  expect(session.tracks).toBe(session.tracks)
+  expect(readConfObject(session.tracks[0]!, 'name')).toBe('Edited name')
+  expect(readConfObject(session.getTracksById()[TRACK_ID]!, 'name')).toBe(
+    'Edited name',
+  )
 })
 
 // A delta write hands every other track the config it had, so of the shown
@@ -782,6 +821,7 @@ describe.each(['session', 'config'] as const)(
       const { state, session, copy } = await shown()
       const node = copy()
       const bases = session.trackBasesById
+      expect(bases).toBeInstanceOf(Map)
       let resolutions = 0
       const dispose = autorun(() => {
         resolutions += 1
