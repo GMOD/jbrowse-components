@@ -167,10 +167,10 @@ one-shot trigger that clears itself.
   one through Admin → Save track settings to config.
 - A focus naming no current row shows every row (`keptRows`), so the "No
   subtracks match the current subtree filter" hint and its button are gone.
-- The changes table still prints `rows.domain` and `rows.tree` whole
-  (`formatSettingValue` in `SettingsChangesTable.tsx`). The third review's
-  array summary is owed before the variant displays move, since their order can
-  run to thousands of samples.
+- The changes table summarises a long list, map or string by its count and
+  its head (`formatSettingValue` in `SettingsChangesTable.tsx`), so a
+  cohort's `rows.domain`, its `rows.labels` and its `rows.tree` each take one
+  line rather than printing every sample.
 - gccontent composes this model and extends this schema, so its displays carry
   `rows` and `rowColor` where they carried `facet`, as dead there as `facet` was
   (ADR-143).

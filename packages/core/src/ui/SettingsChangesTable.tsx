@@ -38,14 +38,55 @@ function isSoleTypeObject(v: object): v is { type: string } {
   )
 }
 
-function formatSettingValue(value: unknown): string {
-  return value === undefined
-    ? '(default)'
-    : typeof value === 'string'
-      ? value
-      : typeof value === 'object' && value !== null && isSoleTypeObject(value)
-        ? value.type
-        : JSON.stringify(value)
+// Past this many entries a list or a map is summarised by its count and its
+// first few members: a row order names every sample of a cohort, and a label
+// map every one the reader renamed, and a 2,500-name cell says nothing a
+// count and a glimpse do not.
+const LISTED_ENTRIES = 6
+// Past this many characters a string is a cluster tree's newick or a jexl
+// callback, and the head is what tells them apart.
+const STRING_HEAD = 80
+
+function summarizeList(values: unknown[]): string {
+  const head = values
+    .slice(0, LISTED_ENTRIES)
+    .map(v => (typeof v === 'string' ? v : JSON.stringify(v)))
+    .join(', ')
+  return `${values.length} values: ${head}, …`
+}
+
+function summarizeMap(entries: [string, unknown][]): string {
+  const head = entries
+    .slice(0, LISTED_ENTRIES)
+    .map(([k, v]) => `${k}: ${typeof v === 'string' ? v : JSON.stringify(v)}`)
+    .join(', ')
+  return `${entries.length} entries: ${head}, …`
+}
+
+export function formatSettingValue(value: unknown): string {
+  if (value === undefined) {
+    return '(default)'
+  }
+  if (typeof value === 'string') {
+    return value.length > STRING_HEAD
+      ? `${value.slice(0, STRING_HEAD)}… (${value.length} characters)`
+      : value
+  }
+  if (Array.isArray(value)) {
+    return value.length > LISTED_ENTRIES
+      ? summarizeList(value)
+      : JSON.stringify(value)
+  }
+  if (typeof value === 'object' && value !== null) {
+    if (isSoleTypeObject(value)) {
+      return value.type
+    }
+    const entries = Object.entries(value)
+    return entries.length > LISTED_ENTRIES
+      ? summarizeMap(entries)
+      : JSON.stringify(value)
+  }
+  return JSON.stringify(value)
 }
 
 /**
