@@ -70,7 +70,7 @@ gymnastics. The mechanism:
 
 - **A non-admin resolves each shown track to a private working copy.**
   `TrackConfigurationReference.get()` asks the session for
-  `getEditableTrackConfig(trackId, frozen, schemaType)` (SessionTracks.ts): a
+  `getEditableTrackConfig(trackId, schemaType)` (SessionTracks.ts): a
   per-track MST node, seeded from the current `base + delta`, cached in a
   session-owned (volatile, non-persisted) `Map`. In-place quick edits (`setSlot`)
   mutate **that** copy; the frozen `jbrowse.tracks` node is never handed out to a

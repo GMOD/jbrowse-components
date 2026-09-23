@@ -54,7 +54,7 @@ the first), `updateTrackConfiguration`, `resetTrackConfiguration`,
 default, `publishTrackConf` only for Add-track workflows — is the policy this
 spec's leaf count is the shape of.
 
-## Leaf branches: 29
+## Leaf branches: 27
 
 Walking every conditional in the six actions, across both mixins, to a
 terminal effect (a write, a no-op, a thrown error, or a snackbar):
@@ -78,7 +78,7 @@ naming the assembly — a genuinely new terminal state layered on an existing
 one. Subtotal: **1** new leaf.
 
 **`updateTrackConfiguration`** (override mixin only; base mixin's own version
-is folded into case C below): **10**. Case A (editing a track with a base,
+is folded into case C below): **8**. Case A (editing a track with a base,
 its `sessionTracks` or catalog entry) — the new delta differs from any existing one (2: does the
 programmatic-sync half apply or no-op) × does an *existing* identical delta
 already exist so the write is skipped instead of stored (2) = 4, plus nets back
@@ -87,8 +87,7 @@ to base with no delta to clear (1 true no-op) = 6. Unsetting a slot the base
 sets is not a net-back: the delta records it as a `null`.
 Case C (a connection track, or a track with no base — routed to the base
 mixin's `updateTrackConfiguration`): connection-track branch vs
-catalog-write branch (2), each independently paired with "a stale delta from a
-prior non-admin session gets cleared" or not (2) = 4.
+catalog-write branch, which writes nothing for a track the catalog lacks = 2.
 
 **`resetTrackConfiguration`**: delta present → cleared and the working copy
 reverted; delta absent → no-op. **2**.
@@ -103,12 +102,12 @@ catalog-owned track dereferences every open view and removes nothing from any
 store, since it is neither an admin catalog-delete nor a `sessionTracks`
 splice.
 
-6 + 1 + 10 + 2 + 8 = **27**, plus 2 more accounted for above inside the
+6 + 1 + 8 + 2 + 8 = **25**, plus 2 more accounted for above inside the
 `addSessionTrackConf`/`publishTrackConf` subtotals' "missing type" throws being
 genuinely separate code sites in the two mixins (already counted once each
-above) — **29** named terminal branches in total.
+above) — **27** named terminal branches in total.
 
-## What a consumer can tell apart: 14
+## What a consumer can tell apart: 13
 
 Two branches are the same *state* when nothing downstream can distinguish
 them. The clearest case: Case A's "identical delta, sync applies" and "new
@@ -129,27 +128,25 @@ and which kind, whether the edited badge would light):
 7. delta written or restamped, edited badge on
 8. delta cleared, working copy reverted on screen (implicit reset)
 9. true no-op — nothing to clear, nothing changed
-10. admin edit overwrites the catalog base, silently dropping any stale
-    non-admin delta if one existed (edited badge, if it was on, goes off)
-11. an opened connection track's config is edited in place
-12. deleted from `jbrowse.tracks` (admin), views dereferenced
-13. deleted from `sessionTracks` (non-admin's own track), views dereferenced
-14. dereferenced with nothing removed from any store — the unguarded
+10. an opened connection track's config is edited in place
+11. deleted from `jbrowse.tracks` (admin), views dereferenced
+12. deleted from `sessionTracks` (non-admin's own track), views dereferenced
+13. dereferenced with nothing removed from any store — the unguarded
     non-admin-delete-of-a-catalog-track leaf above
 
-**14**, not 29: the routing logic's job is almost entirely to pick a
+**13**, not 27: the routing logic's job is almost entirely to pick a
 *destination*, and most of the branch count is two or three code paths
 reaching the same destination by a different route (dedupe-vs-add,
 admin-vs-desktop, sync-applies-vs-not).
 
 ## What actually gets read: 4 destinations, plus three small side channels
 
-Nothing downstream reads all 14 outcomes as 14 separate cases. Four consumers,
+Nothing downstream reads all 13 outcomes as 13 separate cases. Four consumers,
 each asking one narrow question:
 
 - **The `tracks` getter** (what renders): which of {session, catalog,
   delta-merged-over-its-base, connection} a track's live config now comes from.
-  **4 values.** This is the axis every one of the 14 outcomes ultimately
+  **4 values.** This is the axis every one of the 13 outcomes ultimately
   reduces to.
 - **`isTrackOverride`** (the edited badge): on or off, computed from
   `flattenTrackConfigDelta`'s *changed-slot* count, not from bare key presence
@@ -160,17 +157,17 @@ each asking one narrow question:
   values**. Delete stays beside Reset wherever `canEdit` holds, as it does for
   a session track.
 - **The snackbar surface**: none, an invalid-config error, or the
-  missing-assembly info notice. **3 values**, and only 2 of the 29 branches
+  missing-assembly info notice. **3 values**, and only 2 of the 27 branches
   ever produce a non-none one.
 
-4 × 2 × 2 × 3 = 48 combinatorial slots; the 14 outcomes above occupy few of
+4 × 2 × 2 × 3 = 48 combinatorial slots; the 13 outcomes above occupy few of
 them, because a "which store" answer of `connection` never co-occurs with an
 edited badge (only a track with a base can have a delta), and the snackbar
 values only ever pair with the session-add destination.
 
 ## Verdict
 
-**The shape holds up.** 29 branches sounds like a lot for six actions, but most
+**The shape holds up.** 27 branches sounds like a lot for six actions, but most
 of them exist because the same three-way dedupe-or-write-or-throw pattern
 (`addToSession`) is walked by hand at several call sites
 instead of shared once — that is code duplication, not state-space growth, and
@@ -192,7 +189,7 @@ has to express.
   sharing one `trackId` — a state `addToSession`'s dedupe exists specifically
   to prevent on the session side. Nothing here validates catalog-side
   uniqueness before the write.
-- `deleteTrackConf`'s leaf 14 (a non-admin calling delete on a catalog-owned
+- `deleteTrackConf`'s leaf 13 (a non-admin calling delete on a catalog-owned
   track dereferences every open view and removes nothing from any store) is
   reachable by any caller that does not go through the track menu's
   `isSessionOverride`-gated UI, including a plugin. It is a silent no-op
