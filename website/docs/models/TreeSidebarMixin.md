@@ -18,8 +18,8 @@ display's, over those.
 Every arrangement write reaches the session at once rather than after the
 track's 400 ms save, so a clustering run is one undo step and undoable the
 moment its tree appears. "Reset row order" returns each member, and the
-`rowColor` pairs, to what the config.json declares, or to nothing on a
-track the session owns, and never touches `rows.field`.
+`rowColor` pairs, to what the config.json declares, or what a track the
+session owns was added with, and never touches `rows.field`.
 
 ## Properties
 
@@ -54,7 +54,7 @@ track the session owns, and never touches `rows.field`.
 | <span id="getter-rowtreeprovenance">**rowTreeProvenance**</span><br><code>ClusterProvenance &#124; undefined</code> | What `rowTree` was computed from, the locus and the settings; undefined for a tree that arrived as data. |
 | <span id="getter-rowfocus">**rowFocus**</span><br><code>readonly string[] &#124; undefined</code> | The row names a focus narrows the display to, `rows.kept` — a clade picked off the tree or a key row's rows — or undefined while every row shows. |
 | <span id="getter-rowcolors">**rowColors**</span><br><code>ReadonlyMap&lt;string, string&gt;</code> | The colour a reader set on each named row, off `rowColor`'s `domain`/`range` pairs. |
-| <span id="getter-baserowcolor">**baseRowColor**</span><br><code>{ domain: readonly string[]; range: readonly string[]; }</code> | The `rowColor` pairs the config.json declares for this display, which a reset returns to and a dialog submit keeps the pair order of. |
+| <span id="getter-baserowcolor">**baseRowColor**</span><br><code>{ domain: readonly string[]; range: readonly string[]; }</code> | The `rowColor` pairs this display's base declares, which a reset returns to and a dialog submit keeps the pair order of. |
 | <span id="getter-discoveredrows">**discoveredRows**</span><br><code>S[]</code> | Overridable hook, which every display overrides: the rows as the data reports them, before any arrangement. A getter, and a stable-identity one wherever the rows come off region payloads, so a refetch of the same rows re-derives nothing. |
 | <span id="getter-rowalias">**rowAlias**</span><br><code>RowAlias &#124; undefined</code> | Overridable hook: the name a row also answers to, for a display whose rows stand for something named by another name (a variant display's haplotype rows, each answering to its sample). An order, a label, a tint and a focus written against the alias reach every row answering to it. None by default. |
 | <span id="getter-identitychannel">**identityChannel**</span><br><code>IdentityChannel</code> | Overridable hook: the row channel a `rowColor` entry paints, `color` by default. |
