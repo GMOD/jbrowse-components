@@ -274,7 +274,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * #getter
          * Session tracks first, then the config tracks, each with its edits.
          * An edit copies the list of bases and lays each delta at its track's
-         * position, so its cost is the count of edited tracks, not of tracks.
+         * position, so past that copy it costs the count of edited tracks.
          */
         get tracks(): AnyConfigurationModel[] {
           const { list, at } = trackBaseIndex.get()

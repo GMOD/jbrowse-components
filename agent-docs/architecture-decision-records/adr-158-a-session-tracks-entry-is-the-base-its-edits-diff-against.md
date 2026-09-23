@@ -57,8 +57,8 @@ the per-id computeds something observes, each in constant time, and rebuilds
 no index over the catalog. `tracks` is held beside the indexes, so a reader
 outside any reaction — the search box's adapter list on every keystroke, the jb
 API's track list — reads it as it stands, as on main. An edit copies the list
-of bases and lays each delta at its track's position, which costs the count of
-edited tracks rather than of tracks. `getTracksById`, deprecated and read by no
+of bases, 5 µs at 10,000 tracks, and lays each delta at its track's position,
+so past that copy an edit costs the count of edited tracks. `getTracksById`, deprecated and read by no
 in-tree code, is kept against the two lists it was built from and rebuilt on
 its first read after a change. `getEditableTrackConfig` is a per-id computed on the
 working copy, so a display's config reads depend on which node its track
