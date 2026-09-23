@@ -482,13 +482,82 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
               "label": "Unknown",
             },
           ],
-          "partitionField": "sample",
           "rowHeight": 18,
+          "rows": "sample",
           "type": "LinearMultiRowFeatureDisplay",
         },
       ],
       "name": "Mouse inheritance (chromosome painting)",
       "trackId": "volvox_mouse_inheritance_painting",
+      "type": "FeatureTrack",
+    },
+    {
+      "adapter": {
+        "bedGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox_mouse_inheritance.bed.gz",
+        },
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "rgb",
+          "sample",
+        ],
+        "disableGeneHeuristic": true,
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox_mouse_inheritance.bed.gz.tbi",
+          },
+        },
+        "type": "BedTabixAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Miscellaneous",
+      ],
+      "displays": [
+        {
+          "colorRowLabels": true,
+          "displayId": "volvox_mouse_inheritance_rows-LinearMultiRowFeatureDisplay",
+          "rowColor": {
+            "domain": [
+              "mom",
+              "offspring03",
+            ],
+            "range": [
+              "#222222",
+              "#bbbbbb",
+            ],
+          },
+          "rowGroups": [
+            {
+              "color": "#e41a1c",
+              "group": "Parents",
+              "match": "^(mom|dad)$",
+            },
+          ],
+          "rowHeight": 14,
+          "rows": {
+            "domain": [
+              "offspring10",
+              "dad",
+            ],
+            "field": "sample",
+          },
+          "type": "LinearMultiRowFeatureDisplay",
+        },
+      ],
+      "name": "Mouse inheritance (arranged rows)",
+      "trackId": "volvox_mouse_inheritance_rows",
       "type": "FeatureTrack",
     },
     {
@@ -1296,12 +1365,52 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "defaultRendering": "line",
-          "facet": "",
+          "rows": "",
           "type": "LinearWiggleDisplay",
         },
       ],
       "name": "MultiWig (w/ colors and default line rendering)",
       "trackId": "mytrack",
+      "type": "MultiQuantitativeTrack",
+    },
+    {
+      "adapter": {
+        "subadapters": [
+          {
+            "color": "#f00",
+            "group": "Islet",
+            "name": "Grain1",
+            "type": "BigWigAdapter",
+            "uri": "v1.cram.bw",
+          },
+          {
+            "group": "Islet",
+            "name": "Grain2",
+            "type": "BigWigAdapter",
+            "uri": "v2.cram.bw",
+          },
+          {
+            "group": "Liver",
+            "name": "Grain3",
+            "type": "BigWigAdapter",
+            "uri": "v3.cram.bw",
+          },
+          {
+            "name": "Grain4",
+            "type": "BigWigAdapter",
+            "uri": "v4.cram.bw",
+          },
+        ],
+        "type": "MultiWiggleAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "MultiWiggle",
+      ],
+      "name": "MultiWig (grouped, w/ one adapter color)",
+      "trackId": "volvox_microarray_multi_grouped",
       "type": "MultiQuantitativeTrack",
     },
     {

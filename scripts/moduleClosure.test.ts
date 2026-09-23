@@ -87,13 +87,15 @@ const CEILINGS = [
     runtime: 5,
     types: 3,
   },
-  // 7 runtime / 7 type, and no headroom: `jbrowse validate` carries a copy of
+  // 8 runtime / 8 type, and no headroom: `jbrowse validate` carries a copy of
   // every file here (scripts/generateMarkRules.ts), so an edge added to the
-  // rule list is a file the CLI publishes.
+  // rule list is a file the CLI publishes. shapeSpecs.ts is the eighth: the
+  // rules read which channels a shape takes from the same table the encoder
+  // does.
   {
     entry: 'plugins/marks/src/LinearMarkDisplay/markProblems.ts',
-    runtime: 7,
-    types: 7,
+    runtime: 8,
+    types: 8,
   },
 ]
 
