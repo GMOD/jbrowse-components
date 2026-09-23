@@ -156,11 +156,11 @@ holds for the quantitative display, whose row per subtrack is `rows: 'source'`
 rather than `facet`
 ([ADR-157](../architecture-decision-records/adr-157-a-row-displays-arrangement-is-the-rows-config-object.md)):
 its entries sit in the `facet` row until the census is taken again. The
-multi-sample variant displays' `layout`, `subtreeFilter` and `domain` entries
-are `rows` now too, a `rows` with no field since those rows are the samples,
-and so are the multi-row feature display's, whose `partitionField` is
-`rows.field` and whose `sampleColorMap` is `rowColor`, so the same lag holds
-for those rows.
+`layout`, `subtreeFilter` and `domain` entries of the multi-sample variant and
+MAF displays are `rows` now too, a `rows` with no field since those rows are
+the samples or the species, and so are the multi-row feature display's, whose
+`partitionField` is `rows.field` and whose `sampleColorMap` is `rowColor`, so
+the same lag holds for those rows.
 
 **The long tail names mechanisms, not aesthetics.** The keys used on one
 display type — `readConnections`, `showSoftClipping`, `rowIdentityMode`,

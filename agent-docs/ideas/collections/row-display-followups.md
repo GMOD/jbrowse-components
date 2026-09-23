@@ -45,10 +45,10 @@ the variant displays took. Not done because MAF's rows already carry a gap
 (`rowProportion` < 1), which is a separator by another name; a track configured
 at `rowProportion: 1` is the case that would want it.
 
-**The row-source chain as mixin state.** Three displays spell
-`editableSources = reconcileLayout(sourcesWithoutLayout, layout)` and
-`sources = filterRowsBySubtree(editableSources, subtreeFilter)`, decorating in
-between (multi-row's `applyRowGroups`, wiggle's palette synthesis). The mixin
+**The row-source chain as mixin state.** The row displays each spell
+`editableSources` as the discovered rows ordered by `rows.domain` with
+`rows.labels` and `rowColor` applied, and
+`sources = keptRows(editableSources, rows.kept)`, decorating in between (multi-row's `applyRowGroups`, wiggle's palette synthesis). The mixin
 could declare `sourcesWithoutLayout` as an overridable stub the way
 `RowHeightMixin` declares `autoRowHeight`, and derive `editableSources` — the
 variant displays would still override both (phased expansion, `getSources`'
@@ -58,12 +58,12 @@ sampleName-keyed coverage). Priced at ~10 lines saved per display against a
 
 **A metadata filter dialog.** `focusRows` from a legend swatch covers "show
 only this population"; "cases only, in EUR, over 60" is a predicate over
-`samplesTsv` columns. The `subtreeFilter` mechanism is a name set, so a dialog
+`samplesTsv` columns. The focus, `rows.kept`, is a name set, so a dialog
 that evaluates a jexl over each source and writes the matching names is small;
 what it lacks is a persistent record of WHY those rows (the filter expression),
 which a name set cannot carry — a session would reopen with the rows narrowed
-and no way to widen the criterion. That wants a `rowFilter` slot beside
-`subtreeFilter`, resolved into the name set on read.
+and no way to widen the criterion. That wants a `rowFilter` member beside
+`rows.kept`, resolved into the name set on read.
 
 **MAF's pointer layer.** `PointerLayer` replaced the per-display leaf on three
 displays; MAF still reads the tracker in its body, because the same read feeds

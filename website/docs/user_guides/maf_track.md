@@ -207,14 +207,17 @@ track is configured with a Newick guide tree.
 
 - **Show... → Show tree** toggles the dendrogram and **Show row labels** the
   species names, and **Tree branch lengths** draws the tree to scale.
-- **Edit row arrangement...** reorders or hand-picks rows. The
-  [`domain`](/docs/config/linearmafdisplay/#slot-domain) slot states that order
-  in the config instead. With a guide tree it rotates the tree rather than
-  overruling it: each node puts the clade holding the earliest listed species
-  first, so a listed species comes as early as the topology allows and brings
-  its relatives with it. The dendrogram keeps drawing, because it is the same
-  tree turned — `["mm10"]` on `((hg38,panTro4),mm10)` draws mouse's branch at
-  the top. With no guide tree the listed species simply lead.
+- **Edit row arrangement...** reorders, relabels and recolours rows. The
+  display's [`rows`](/docs/config/linearmafdisplay/#slot-rows) setting holds the
+  arrangement, so it survives unticking the track and an undo takes it back. Its
+  `domain` states the order in the config: with a guide tree it rotates the tree
+  rather than overruling it, each node putting the clade holding the earliest
+  listed species first, so a listed species comes as early as the topology
+  allows and brings its relatives with it. The dendrogram keeps drawing, because
+  it is the same tree turned — `["mm10"]` on `((hg38,panTro4),mm10)` draws
+  mouse's branch at the top. With no guide tree the listed species simply lead.
+  A reorder moves the rows off the guide tree's leaves, so the tree hides until
+  **Reset row order** brings it back.
 - **Row height** offers squeeze-to-fit, normal, compact, and custom row heights.
 
 ### Selecting a subtree
@@ -223,7 +226,8 @@ Click an internal node of the tree to filter the track to that clade, or pick a
 set of species from **Edit row arrangement...**. The tree then redraws as the
 pruned dendrogram of the kept species, so it matches the visible rows, including
 for a selection that is not a single clade. **Clustering → Clear subtree
-filter** restores all species.
+filter** restores all species. The focus is `rows.kept`, and one naming no
+species the track has shows every row.
 
 ### Clustering rows by identity
 
@@ -241,9 +245,10 @@ the run covers the visible rows only, so it resolves the structure inside the
 clade.
 
 The submenu names the locus a tree was computed over, since clustering reads the
-region in view. A `domain` rotates the computed tree the same way it rotates a
-guide tree, so a run composes with a declared order instead of replacing it.
-**Reset row order** restores the file's own order and the guide tree with it.
+region in view. The run rotates its tree towards the current `rows.domain`, a
+declared order or an earlier reorder, so it composes with that order instead of
+replacing it. **Reset row order** restores the declared order and the guide tree
+with it.
 
 The dialog's manual tab exports the same scores as a TSV with an R script, for
 clustering elsewhere and pasting the order back.

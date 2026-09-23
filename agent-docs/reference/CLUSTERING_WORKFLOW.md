@@ -127,21 +127,24 @@ branch.
 
 ---
 
-## The two arrangement mixins (`packages/tree-sidebar`)
+## The arrangement mixin (`packages/tree-sidebar`)
 
-Every row display reaches its arrangement through one API, over two stores
-until the last one is on the `rows` config object (ADR-157). Wiggle, the
-variant displays and the multi-row feature display are; MAF is not yet:
+Every row display reaches its arrangement through one API, `TreeSidebarMixin`,
+over the `rows` config object (ADR-157): wiggle, the variant displays, the
+multi-row feature display and MAF. `LayoutTreeSidebarMixin`, the display-state
+store MAF last used, has no user left.
 
-| Member | `TreeSidebarMixin` (wiggle, variants, multi-row), display config | `LayoutTreeSidebarMixin` (MAF), display state |
-|---|---|---|
-| Row order | `rows.domain` (`string[]`) | `layout` (`Source[]`) |
-| Tree | `rows.tree` (Newick) | `clusterTree` (Newick) |
-| Provenance | `rows.treeProvenance` | `clusterProvenance` |
-| Focus | `rows.kept` | `subtreeFilter` |
-| Row labels | `rows.labels` | on each `layout` row |
+| Member | display config |
+|---|---|
+| Row order | `rows.domain` (`string[]`) |
+| Tree | `rows.tree` (Newick) |
+| Provenance | `rows.treeProvenance` |
+| Focus | `rows.kept` |
+| Row labels | `rows.labels` |
 
-`treeAreaWidth`, the sidebar's pixel width (default 80), is config on both.
+MAF's adapter guide tree is data rather than config: `rowTree` draws it while
+`rows.domain` is the declared order and never writes it to `rows.tree`.
+`treeAreaWidth`, the sidebar's pixel width (default 80), is config too.
 
 Key actions:
 - `setRowOrder(rows)` — a reorder; clears the tree if the row order changed
@@ -150,8 +153,7 @@ Key actions:
   `TreeSidebarMixin`
 - `setRowFocus(names)` — collapses to deepest matching subtree (interactive click)
 - `resetRowArrangement()` — the order, the tree and the focus back to what the
-  config.json declares on `TreeSidebarMixin`, and wiped on
-  `LayoutTreeSidebarMixin`
+  config.json declares
 
 Every `TreeSidebarMixin` writer flushes to the session at once
 (`persistConfigurationNow`), so a run is one undo step.
@@ -173,7 +175,7 @@ enforce that it does:
   a discovered row set growing as regions load, variants' phased expansion
   switching on when ploidy arrives.
 
-The focus (`rows.kept` or `subtreeFilter`) is **not** invalidated by either: it
+The focus (`rows.kept`) is **not** invalidated by either: it
 is a set of row names matched without a tree, so it survives a reorder on
 purpose. Only a change to what rows are *called* invalidates it — variants'
 `setPhasedMode`, which renames rows between `HG001` and `HG001 HP0`, and

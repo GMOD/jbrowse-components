@@ -578,7 +578,7 @@ function ecoliHoverSession() {
           {
             trackId: PGGB_MAF_TRACK,
             type: 'LinearMafDisplay',
-            layout: PGGB_STRAIN_ROWS,
+            rows: { domain: PGGB_STRAIN_ROWS },
             height: 130,
           },
           {
@@ -617,12 +617,8 @@ function ecoliHoverSession() {
 // maf and the graphgenomeview"). Cross-highlighting between the two is not
 // something either display does; what IS available is the same five rows in the
 // same order, one showing the aligned bases and one showing the segments each
-// strain takes, so a row can be read straight down. `layout` costs the MAF's
-// dendrogram, which at five strains carried nothing the row labels do not, and
-// the graph has no tree to agree with anyway.
-const PGGB_STRAIN_ROWS = ['K12', 'CFT073', 'IAI39', 'NCTC86', 'Sakai'].map(
-  name => ({ name }),
-)
+// strain takes, so a row can be read straight down.
+const PGGB_STRAIN_ROWS = ['K12', 'CFT073', 'IAI39', 'NCTC86', 'Sakai']
 
 // pggb's own `-M` MAF, as a session track: the shared graphgenomeview fixture
 // config carries the K12 assembly and nothing else, so every track in these
@@ -727,7 +723,7 @@ function pggbLocusSession(
                 {
                   trackId: PGGB_MAF_TRACK,
                   type: 'LinearMafDisplay',
-                  layout: PGGB_STRAIN_ROWS,
+                  rows: { domain: PGGB_STRAIN_ROWS },
                   showTree: true,
                   height: 150,
                 },
@@ -1912,7 +1908,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             {
               trackId: PGGB_MAF_TRACK,
               type: 'LinearMafDisplay',
-              layout: PGGB_STRAIN_ROWS,
+              rows: { domain: PGGB_STRAIN_ROWS },
               showTree: true,
               height: 150,
             },

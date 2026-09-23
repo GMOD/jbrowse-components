@@ -164,8 +164,8 @@ second scale on the colour object, not the row axis's range. Wiggle has moved:
 its rows and a reader's arrangement of them are the `rows` config object, and a
 colour set on one subtrack is `rowColor`
 ([ADR-157](../architecture-decision-records/adr-157-a-row-displays-arrangement-is-the-rows-config-object.md)).
-The variant displays and the multi-row feature display have moved since, and
-MAF is next, the last display on `LayoutTreeSidebarMixin`.
+The variant displays, the multi-row feature display and MAF have moved since,
+and `LayoutTreeSidebarMixin` has no display left.
 
 ### 5. The copies
 

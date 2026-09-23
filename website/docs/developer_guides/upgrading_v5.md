@@ -418,6 +418,29 @@ of the three, and a display snapshot carrying `layout`, `clusterTree`,
 `clusterProvenance` or `subtreeFilter` each fail the load with a message naming
 the replacement.
 
+## The MAF rows are config too
+
+The MAF display keeps its arrangement in `rows` with no `field`, since its rows
+are the species, as on the multi-sample variant displays. The adapter's guide
+tree stays the adapter's: it draws while `rows.domain` is the order the config
+declares, a reorder hides it and **Reset row order** brings it back, and a
+clustering run's tree in `rows.tree` replaces it. `rowColor: { domain, range }`
+pairs species with the label tint a reader set, over the adapter's
+`samples[].color`.
+
+<!-- prettier-ignore -->
+| v4 | v5 display config |
+| --- | --- |
+| `domain` config slot | `rows.domain` |
+| `layout` display prop, the rows in order with any label and color set on each | `rows.domain`, `rows.labels` and `rowColor` |
+| `clusterTree`, `clusterProvenance` display props | `rows.tree`, `rows.treeProvenance` |
+| `subtreeFilter` display prop | `rows.kept` |
+
+**None of it migrates.** A MAF display config carrying `domain`, a MAF track's
+`displayDefaults` carrying it, and a display snapshot carrying `layout`,
+`clusterTree`, `clusterProvenance` or `subtreeFilter` each fail the load with a
+message naming `rows`.
+
 ## The wiggle color is one `color` object
 
 `color` on `LinearWiggleDisplay` is a CSS color string, or

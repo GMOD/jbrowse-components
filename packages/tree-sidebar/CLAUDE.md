@@ -45,8 +45,7 @@ distinguishes stale from "no tree" and from "deliberately not positioned"
 
 ## A declared row order rotates the tree, it does not reorder against it
 
-The declared row order — `rows.domain`, or the `domain` slot on a
-`LayoutTreeSidebarMixin` display — is a preference wherever the rows are a
+The declared row order, `rows.domain`, is a preference wherever the rows are a
 tree's leaves: a phylogeny fixes its leaf order only up to a rotation at each
 node, so `rotateNewickByDomain` turns each node towards the earliest listed leaf
 below it and the dendrogram keeps drawing. It is pure over `NewickNode` — no
@@ -58,17 +57,17 @@ order.
 **Where it runs is the design.** Parse time rotates only a tree that was
 supplied rather than computed. On `TreeSidebarMixin` provenance alone says so,
 because `rows.domain` is the arrangement itself: a run writes its tree's leaf
-order there in the same action as the tree. On `LayoutTreeSidebarMixin` the gate
-is no `clusterProvenance` and no `layout`, so the rows are the tree's own
-leaves, and the `layout` is the stronger half, because a run's `setRowOrder`
-takes its provenance optionally. maf reads its row order back off that same
-computed, so the leaves and the rows cannot drift. Everything else rotates in
-the run that produced it: `rotateClusterRun`, called from `applyClusterRun` and
-from variants' `applyClusterOrder`, which is the path `runGenotypeClustering`
-takes instead. Rotating an arranged tree on the way out would turn a restored
-session's dendrogram away from the order saved beside it and draw nothing at
-all. The R-paste `applyOrder` path carries no tree and rotates nothing: a paste
-is an explicit order.
+order there in the same action as the tree. MAF's guide tree never enters
+`rows.tree`: MAF's `rowTree` draws the adapter's newick while `rows.domain` is
+the declared order, so it carries no provenance and rotates at parse, and maf
+reads its row order back off that same computed, so the leaves and the rows
+cannot drift. Everything else rotates in the run that produced it:
+`rotateClusterRun`, called from `applyClusterRun` and from variants'
+`applyClusterOrder`, which is the path `runGenotypeClustering` takes instead.
+Rotating an arranged tree on the way out would turn a restored session's
+dendrogram away from the order saved beside it and draw nothing at all. The
+R-paste `applyOrder` path carries no tree and rotates nothing: a paste is an
+explicit order.
 
 `writeNewick` is the only thing here that writes the format rather than reading
 it, for that rotated run tree alone. It imports hclust's `quoteName` rather than
@@ -88,21 +87,19 @@ so each mixin writes the tree through one private `writeTree`, which sets the
 provenance beside it. `TreeSidebarMixin`'s writes `rows.tree` and
 `rows.treeProvenance` together from `setRowOrder`: a run passes its result, and
 a reorder that moves a row passes nothing; `resetRowArrangement` returns both to
-the config.json's in one action. `LayoutTreeSidebarMixin`'s is the one writer of
-`clusterTree` and `clusterProvenance`: a reorder and `resetRowArrangement` pass
-nothing, and `setClusterTree` (maf's supplied `.nh`) passes nothing because a
-phylogeny has no locus. So a tree with no provenance is also the signal it was
+the config.json's in one action. maf's supplied `.nh` has no provenance because
+a phylogeny has no locus, so a tree with no provenance is also the signal it was
 supplied rather than computed. `SvgTreeSidebar` draws the same drift-only hint
 in the export (`SvgClusterProvenanceHint`), and `clusterProvenanceMenuItems`
 puts the locus in the menu.
 
-## Two mixins until the last display moves
+## Two mixins, and the display-state one has no user
 
 `TreeSidebarMixin` keeps a display's arrangement in its `rows` config object —
-the quantitative display's, `MultiSampleVariantBaseModel`'s and the multi-row
-feature display's; `LayoutTreeSidebarMixin` keeps it in display state (`layout`,
-`clusterTree`, `clusterProvenance`, `subtreeFilter`) for MAF, the only display
-still on it, until it moves (ADR-157).
+the quantitative display's, `MultiSampleVariantBaseModel`'s, the multi-row
+feature display's and MAF's (ADR-157). `LayoutTreeSidebarMixin` keeps it in
+display state (`layout`, `clusterTree`, `clusterProvenance`, `subtreeFilter`);
+MAF was its last user, and it stays until it is retired.
 
 **`rows` comes in two schemas, and the mixin reads either.** display-kit's
 `RowArrangement` is the five members alone, for a display whose rows are
@@ -208,11 +205,10 @@ shared one read the other name.
 `treeSidebarConfigSchemaFields` is the matching slot set (`showTree` /
 `showBranchLength` / `showRowLabels` / `treeAreaWidth`), taking only the
 per-display descriptions, so a display cannot ship three of the four. The
-declared row order is not in it. The wiggle, multi-sample variant and multi-row
-feature displays declare a `rows` object and compose `TreeSidebarMixin`, which
-reads the order as `rows.domain`; MAF spreads `rowDomainConfigSchemaFields` for
-a `domain` slot and composes `LayoutTreeSidebarMixin`, which reads it as
-`rowDomain` and throws where the slot is missing. Either way the getter is
+declared row order is not in it. Every row display declares a `rows` object and
+composes `TreeSidebarMixin`, which reads the order as `rows.domain`;
+`rowDomainConfigSchemaFields`, the `domain` slot `LayoutTreeSidebarMixin` reads
+and throws without, has no display spreading it. Either way the getter is
 `rowDomain`, never `domain`, which is the score axis on the wiggle display.
 **The mixins declare the accessors over those slots**, so a display composes
 both halves or neither. Hand-written `getConf` / `setConf` one-liners beside

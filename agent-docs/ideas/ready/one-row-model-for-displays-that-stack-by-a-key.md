@@ -80,7 +80,9 @@ a row discovered later and a hide-set shows one, and each is right for its
 level. Both sit inside their object, so a field change drops them the way
 `HiddenGroupsMixin` does today. A `kept` naming no current row resolves to every
 row, where `filterRowsBySubtree` returns none and blanks the display. MAF's fetch
-key reads the resolved set, as it reads `subtreeFilter` now.
+key reads `rows.kept` alone, since resolving it against the species a fetch
+reports would key on a fetch result; the worker resolves a focus naming none of
+the species it lists to every species.
 
 ## One derivation
 
@@ -131,10 +133,11 @@ before it is asked.
 3. **The row model, one display at a time**, gated on a zero image diff:
    ~~wiggle~~ (ADR-157), ~~the variant displays~~ (the hard case: two-point
    expansion, bands, tint; ADR-157), ~~multi-row~~ (ADR-157; `rowColor` holds
-   `sampleColorMap` and the dialog's colours as one map), then MAF. `rows` replaces
-   `layout`, `clusterTree`, `clusterProvenance` and `subtreeFilter`;
-   `facet.hidden` replaces the volatile hide-set. ~~The changes table's array
-   summary~~ (`86cadb9f94`). About 7–11 days.
+   `sampleColorMap` and the dialog's colours as one map), ~~MAF~~ (ADR-157; the
+   guide tree stays data, drawn while `rows.domain` is the declared order).
+   `rows` replaces `layout`, `clusterTree`, `clusterProvenance` and
+   `subtreeFilter`; `facet.hidden` replaces the volatile hide-set. ~~The
+   changes table's array summary~~ (`86cadb9f94`). About 7–11 days.
 4. **Colour**, as above.
 5. **A tree per band**, ComplexHeatmap's `row_split` with `cluster_rows`, which
    retires "a band yields to a tree".

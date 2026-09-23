@@ -353,7 +353,7 @@ the RPC, and each pays for it in a different currency:
 | display | what crosses | who assigns the row |
 | --- | --- | --- |
 | wiggle | the full canonical `sources` list, as a **structural** arg (absent from `rpcProps()`) | the main-thread encoder, from `gpuProps().sources` |
-| MAF | `subtreeFilter` only | `placeMafRegionData`, keyed on species name, re-run by the `rpcDataMap` memo over the store and the row order |
+| MAF | the focus (`rows.kept`, sorted) only | `placeMafRegionData`, keyed on species name, re-run by the `rpcDataMap` memo over the store and the row order |
 | multi-sample variant | `sampleFilter` (sorted sample names) | `placeVariantRows`, keyed on `rowNames`, re-run by the derived region map |
 
 The shared rule: **a fetch argument may name the row *set*, never the row

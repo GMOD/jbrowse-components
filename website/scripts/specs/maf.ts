@@ -55,8 +55,8 @@ export const HG38_470WAY = 'test_data/hg38_multiz470way.json'
 // xenarthra) plus opossum and platypus as marsupial/monotreme outgroups — close
 // to the classic UCSC "30-way vertebrate" sampling. Exact leaf names from
 // hg38.470way.nh (the Cactus alignment uses HL-prefixed names for many
-// assemblies). Used as a `subtreeFilter`; the pruned guide tree then reads as a
-// clean ~30-leaf dendrogram instead of the full 470-species tree.
+// assemblies). Used as the focus, `rows.kept`; the pruned guide tree then
+// reads as a clean ~30-leaf dendrogram instead of the full 470-species tree.
 export const HG38_470WAY_30 = [
   'hg38', // human
   'panTro6', // chimp
@@ -247,9 +247,9 @@ const HPRC_MAF_TRACK = {
 // reference is one of the MAF's own `s` lines, so it draws as a row — and under
 // mismatch rendering a sequence against itself has no mismatches, so that row is
 // a solid grey band that reads as a broken lane rather than as the reference.
-// `subtreeFilter` is the display's own "show these leaves" mechanism and prunes
-// the guide tree to match (pruneNewickToLeaves), so the dendrogram beside the
-// rows stays the tree of what is drawn. Left alone in maf_codon_tooltip, where
+// The focus, `rows.kept`, is the display's own "show these leaves" mechanism
+// and prunes the guide tree to match (pruneNewickToLeaves), so the dendrogram
+// beside the rows stays the tree of what is drawn. Left alone in maf_codon_tooltip, where
 // the reference codon row is what the tooltip is compared against.
 //
 // Names are the leaf labels of test_data/ce11.26way.nh, in its order.
@@ -318,7 +318,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               type: 'LinearMafDisplay',
               rowHeight: 8,
               rowProportion: 0.9,
-              subtreeFilter: CE11_26WAY_NON_REFERENCE,
+              rows: { kept: CE11_26WAY_NON_REFERENCE },
             },
           ],
         },
@@ -438,7 +438,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               rowHeight: 8,
               rowProportion: 0.9,
               colorByChromosome: true,
-              subtreeFilter: CE11_26WAY_NON_REFERENCE,
+              rows: { kept: CE11_26WAY_NON_REFERENCE },
             },
           ],
         },
@@ -523,7 +523,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     actions: [{ type: 'delay', ms: 2000 }],
   },
   {
-    // The hg38 470-way narrowed to a representative ~30 mammals (subtreeFilter,
+    // The hg38 470-way narrowed to a representative ~30 mammals (`rows.kept`,
     // HG38_470WAY_30) in codon view over a conserved GAPDH exon: each species'
     // coding sequence is translated in the human reading frame, so conserved
     // residues line up and the few amino-acid changes in the more distant
@@ -581,9 +581,9 @@ export const mafSpecs: ScreenshotSpec[] = [
               showTranslation: true,
               showConservation: true,
               conservationMode: 'codon',
-              subtreeFilter: HG38_470WAY_30,
+              rows: { kept: HG38_470WAY_30 },
               // Same reason as `maf_470way`: the gate is live below 20kb now.
-              // `subtreeFilter` narrows the rows *drawn*, not the download — the
+              // The focus narrows the rows *drawn*, not the download — the
               // adapter still pulls all 470 species and the worker filters — so
               // the estimate is the full 470-way's whatever the filter says.
               forceLoad: true,
@@ -608,7 +608,7 @@ export const mafSpecs: ScreenshotSpec[] = [
   // session, same ~30 mammals, same region centre — only the width changes, so
   // the figure isolates what the `summaryAdapter` does rather than confounding
   // it with a different locus or a different species set. Both parts pin
-  // `height` and `subtreeFilter` identically, so the two panels stack at the
+  // `height` and `rows.kept` identically, so the two panels stack at the
   // same width with the same species on the same lines.
   //
   // Each half carries its own label. A compose has no annotation layer — the
@@ -656,7 +656,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               trackId: 'hg38.multiz470way',
               type: 'LinearMafDisplay',
               height: 380,
-              subtreeFilter: HG38_470WAY_30,
+              rows: { kept: HG38_470WAY_30 },
               // Needed by both halves, for different reasons, which is fitting
               // since they are deliberately one display spec at two zooms. The
               // 200bp half is below the 20kb floor, where the byte gate is live
@@ -863,12 +863,12 @@ export const mafSpecs: ScreenshotSpec[] = [
               // same 232 samples the alignment holds two haplotypes of each.
               //
               // GRCh38 first, because it is the row everything else is a
-              // difference from and subtreeFilter drops any row it does not
+              // difference from and the focus drops any row it does not
               // name -- including the reference. CHM13 is listed but never
               // drawn (its rows are not named that way in this file).
               //
               // The filter SELECTS; ordering is `runClustering`'s, below.
-              subtreeFilter: HPRC_MAF_ROWS,
+              rows: { kept: HPRC_MAF_ROWS },
               // CLUSTERED, so the rows read like the callset lane above them
               // (review: "it would be useful to cluster the hprc samples, so it
               // looks similar to the multi-sample variant display").

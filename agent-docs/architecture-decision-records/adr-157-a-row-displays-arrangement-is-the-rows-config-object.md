@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A row display's arrangement (the row order, per-row labels, the cluster tree with its provenance and the clade focus) is its `rows` config object, `field | { field, domain, labels, tree, treeProvenance, kept }` from display-kit, which every product edits as a session delta, so undo, reset and a share link reach it and it survives unticking the track. Every arrangement writer flushes to the session at once (`persistConfigurationNow`), so a clustering run is one undo step, and Reset row order returns each member to what the config.json declares rather than to empty. The quantitative display moves first: `facet: 'source'` is `rows: 'source'`, a leftover `facet` in a display config fails the load, and `rowColor: { domain, range }` holds the colour a reader sets on a subtrack, painted on the row's identity channel for the mode. `TreeSidebarMixin` is the config-backed arrangement. The multi-sample variant displays move second, onto the field-less `RowArrangement` their rows being the samples, with names at the rendering mode's granularity and `rowColor: field | { field, domain, range }`. The multi-row feature display moves third: `rows.field` is the attribute it partitions on, and `rowColor: { domain, range }` is the one map of row colours, the config's and the dialog's. MAF keeps its arrangement in display state through `LayoutTreeSidebarMixin`, which answers the same API, until it moves. Supersedes ADR-143's `facet` as the quantitative display's layout. No migration"
+summary: "A row display's arrangement (the row order, per-row labels, the cluster tree with its provenance and the clade focus) is its `rows` config object, `field | { field, domain, labels, tree, treeProvenance, kept }` from display-kit, which every product edits as a session delta, so undo, reset and a share link reach it and it survives unticking the track. Every arrangement writer flushes to the session at once (`persistConfigurationNow`), so a clustering run is one undo step, and Reset row order returns each member to what the config.json declares rather than to empty. The quantitative display moves first: `facet: 'source'` is `rows: 'source'`, a leftover `facet` in a display config fails the load, and `rowColor: { domain, range }` holds the colour a reader sets on a subtrack, painted on the row's identity channel for the mode. `TreeSidebarMixin` is the config-backed arrangement. The multi-sample variant displays move second, onto the field-less `RowArrangement` their rows being the samples, with names at the rendering mode's granularity and `rowColor: field | { field, domain, range }`. The multi-row feature display moves third: `rows.field` is the attribute it partitions on, and `rowColor: { domain, range }` is the one map of row colours, the config's and the dialog's. MAF moves fourth, onto the field-less `RowArrangement`, its adapter's guide tree drawn while `rows.domain` is the declared order and never written to `rows.tree`, and `rowColor: { domain, range }` its label tints; `LayoutTreeSidebarMixin` has no user left. Supersedes ADR-143's `facet` as the quantitative display's layout. No migration"
 ---
 
 # ADR-157: A row display's arrangement is the `rows` config object, written as session deltas
@@ -10,8 +10,8 @@ summary: "A row display's arrangement (the row order, per-row labels, the cluste
 Accepted (2026-09-23). Step 3 of
 [one-row-model-for-displays-that-stack-by-a-key](../ideas/ready/one-row-model-for-displays-that-stack-by-a-key.md):
 the quantitative display moves first, the multi-sample variant displays
-second and the multi-row feature display third, and MAF follows, each gated on
-a zero image diff. Supersedes
+second, the multi-row feature display third and MAF fourth, each gated on a
+zero image diff. Supersedes
 [ADR-143](adr-143-one-quantitative-display-and-facet-is-the-layout.md)'s
 "`facet` is the layout" and its `facet.domain` row order; the rest of ADR-143
 stands. Builds on `130e41de08`, which made every product edit a track's config
@@ -78,9 +78,9 @@ levels: `facet` for labelled bands, `rows` for one row per value.
 `labels` is core's new `stringMap` slot type, which the config editor edits
 with a map editor of its own.
 
-**Two mixins until the last display moves.** `TreeSidebarMixin` is the
-arrangement over `rows`. `LayoutTreeSidebarMixin` keeps the display-state props
-for the displays not yet ported. `treeSidebarBase` holds what the store does not
+**Two mixins, one of them now unused.** `TreeSidebarMixin` is the arrangement
+over `rows`. `LayoutTreeSidebarMixin` kept the display-state props for the
+displays not yet ported, and MAF was the last. `treeSidebarBase` holds what the store does not
 change: the toggles, `treeAreaWidth`, the `runClustering` / `clusterRegion` /
 `sortRowsBy` launch specs and the hover and canvas volatiles. Both mixins answer
 one API — `rowDomain`, `rowTree`, `rowTreeProvenance`, `rowFocus`,
@@ -93,9 +93,8 @@ leaves `applyRowEdits` to the display, since it writes those colours. What a
 submit writes, `rowEdits` computes: the config's labels and colour pairs with
 the rows the dialog showed written over them, so a row the dialog never showed
 keeps its entry. The
-quantitative display, `MultiSampleVariantBaseModel` and the multi-row feature
-display declare `rows` and compose `TreeSidebarMixin`; MAF spreads
-`rowDomainConfigSchemaFields` and composes `LayoutTreeSidebarMixin`.
+quantitative display, `MultiSampleVariantBaseModel`, the multi-row feature
+display and MAF declare `rows` and compose `TreeSidebarMixin`.
 
 **Every arrangement writer flushes to the session.** `BaseTrackModel` gains
 `persistConfigurationNow()`, and each `TreeSidebarMixin` action calls it after
@@ -181,6 +180,24 @@ track's `displayDefaults`, and a `layout`, `clusterTree`, `clusterProvenance` or
 `subtreeFilter` on its display snapshot fail the load naming the replacement.
 It has no Edit as JSON box, so no `setRowsSpec`.
 
+**MAF moves fourth.** Its rows are the species, so `rows` is the field-less
+`RowArrangement` the variant displays declare. The adapter's guide tree is
+data, re-supplied on every load, so it never enters `rows.tree`, where a stored
+copy would go stale behind an edited `.nh`: MAF overrides `rowTree` to answer a
+run's `rows.tree`, else the supplied newick while `rows.domain` equals the
+config.json's. A reorder writes `rows.domain` and hides the guide tree, whose
+leaves no longer describe the rows, a reset brings it back, and the mixin's
+parse rotates it towards `rows.domain` because it carries no provenance. The
+fetch key is the sorted `rows.kept`, read from config alone; the worker resolves
+a focus naming none of the species the adapter lists to every species, as
+`keptRows` does for drawing, so the key reads no fetch result.
+`rowColor: { domain, range }` (`MafRowColor`) holds the label tint a reader
+sets, over the adapter's `samples[].color`, and the arrangement dialog's colour
+column edits that tint, where it had edited a `color` no renderer read. A
+`domain` in its config or in a MAF track's `displayDefaults`, and a `layout`,
+`clusterTree`, `clusterProvenance` or `subtreeFilter` on its display snapshot,
+fail the load naming `rows`.
+
 **Edit as JSON speaks `rows`.** `ChannelSpec` takes
 `rows: field | { field, domain }` beside `facet`, `color` and `filter`, and
 `ChannelSpecDialog` refuses `facet` on a display with no facet and `rows` on
@@ -205,8 +222,7 @@ one-shot trigger that clears itself.
   reads `rowDomain`), so a run after a hand reorder keeps those rows as early as
   the topology allows. At parse, provenance alone decides rotation: a tree
   carrying it is a run's and already rotated, and one without arrived as data
-  and turns towards `rows.domain`. `LayoutTreeSidebarMixin` also asks whether
-  `layout` is set.
+  and turns towards `rows.domain`.
 - An arrangement write is undoable at once rather than 400 ms later.
 - An arrangement survives unticking, can be written in a config file or
   `displayDefaults`, shows in the track's changes table, and an admin publishes
@@ -232,12 +248,21 @@ one-shot trigger that clears itself.
   carrying them opens unarranged; on a multi-sample variant display they fail
   the load, and so does a `domain` in its config, each naming `rows`. On the
   multi-row feature display they fail the load too, and so do `partitionField`,
-  `sampleColorMap` and `domain` in its config.
+  `sampleColorMap` and `domain` in its config. On MAF they fail the load, and
+  so does `domain` in its config or a MAF track's `displayDefaults`.
 - On the multi-row feature display a reorder or a dialog submit sees only the
   rows the loaded regions hold, and the names and entries it did not see stand
   behind them, so a declared order or colour map keeps the rows a window has
   not revealed. The arrangement dialog's bulk editor keeps only labels and
   colours, where `layout` kept any column pasted into it.
+- MAF's guide tree draws only while `rows.domain` is the config.json's, so a
+  `rows.domain` written in the session, by the config editor or a session spec
+  as much as by a drag, hides it where the `domain` slot had rotated it; a
+  declared order still rotates it. A reorder that lands on the declared order
+  keeps it, where `layout` had dropped it. A MAF focus naming no current species
+  shows every row, and on a track that discovers its species from the blocks
+  the worker still applies it as given, since it lists no species before it
+  reads.
 - A track the session owns has no base. The palette is dealt over the
   config.json's `rows.domain`, so such a track's rows take the palette in
   sorted order, and "Reset row order" there clears the arrangement and the
