@@ -32,7 +32,6 @@ repeatTrackId
 rowColor
 rowGroups
 rows
-sampleColorMap
 scales
 showAlignment
 showBranchLength
