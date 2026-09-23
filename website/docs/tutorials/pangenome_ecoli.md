@@ -286,8 +286,8 @@ no field for.
 
 `untangle_to_bed.py` projects the PAF onto the per-strain BED schema
 [`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh)
-defines, so `partitionField` and the colors carry across. The
-bubble-decomposition columns untangle does not report are left empty:
+defines, so `rows` and the colors carry across. The bubble-decomposition columns
+untangle does not report are left empty:
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
@@ -315,8 +315,10 @@ Load the result as a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`:
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "partitionField": "strain",
-      "domain": ["Sakai", "CFT073", "NCTC86", "IAI39"],
+      "rows": {
+        "field": "strain",
+        "domain": ["Sakai", "CFT073", "NCTC86", "IAI39"]
+      },
       "legend": [
         { "label": "Same orientation as K12", "color": "rgb(153,153,153)" },
         { "label": "Inverted", "color": "rgb(214,39,40)" }
@@ -326,9 +328,9 @@ Load the result as a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`:
 }
 ```
 
-`partitionField` gives each strain its own row, and the colors come from the
-file's `itemRgb`. The white gaps are where a strain has no untangle segment on
-that stretch of K12.
+`rows` gives each strain its own row, and the colors come from the file's
+`itemRgb`. The white gaps are where a strain has no untangle segment on that
+stretch of K12.
 
 <Figure caption="The untangle projection read two ways, with each of IAI39's five inverted arms boxed in a distinct color in both. Above, one row per strain over the whole K12 chromosome, red where the strain runs backwards and white where it has no segment at all; only IAI39 is inverted at length. Below, K12 against IAI39 as a dotplot, where every descending segment is an inversion." src="/img/pangenome/pggb_untangle_inversion.png" links="Rows=pangenome/pggb_untangle_rows,Dotplot=pangenome/pggb_untangle_dotplot" />
 

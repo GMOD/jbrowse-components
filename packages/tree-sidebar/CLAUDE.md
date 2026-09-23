@@ -99,10 +99,10 @@ puts the locus in the menu.
 ## Two mixins until the last display moves
 
 `TreeSidebarMixin` keeps a display's arrangement in its `rows` config object —
-the quantitative display's and `MultiSampleVariantBaseModel`'s;
-`LayoutTreeSidebarMixin` keeps it in display state (`layout`, `clusterTree`,
-`clusterProvenance`, `subtreeFilter`) for the multi-row feature display and MAF
-until each moves (ADR-157).
+the quantitative display's, `MultiSampleVariantBaseModel`'s and the multi-row
+feature display's; `LayoutTreeSidebarMixin` keeps it in display state (`layout`,
+`clusterTree`, `clusterProvenance`, `subtreeFilter`) for MAF, the only display
+still on it, until it moves (ADR-157).
 
 **`rows` comes in two schemas, and the mixin reads either.** display-kit's
 `RowArrangement` is the five members alone, for a display whose rows are
@@ -130,7 +130,7 @@ What the config-backed mixin adds:
   it.
 - **Row styling stays the display's.** `applyRowEdits` is the display's own, and
   `rowStylingIsCustom` / `resetRowStyling` are the hooks that bring its colours
-  (wiggle's `rowColor`) into "custom" and into a reset.
+  (wiggle's and multi-row's `rowColor`) into "custom" and into a reset.
 - **A focus naming no current row shows every row** (`keptRows`), where
   `subtreeFilter` matching none hides every row (`filterRowsBySubtree`).
 
@@ -199,20 +199,19 @@ shared one read the other name.
 `treeSidebarConfigSchemaFields` is the matching slot set (`showTree` /
 `showBranchLength` / `showRowLabels` / `treeAreaWidth`), taking only the
 per-display descriptions, so a display cannot ship three of the four. The
-declared row order is not in it. The wiggle and multi-sample variant displays
-declare a `rows` object and compose `TreeSidebarMixin`, which reads the order as
-`rows.domain`; the multi-row feature and MAF displays spread
-`rowDomainConfigSchemaFields` for a `domain` slot and compose
-`LayoutTreeSidebarMixin`, which reads it as `rowDomain` and throws where the
-slot is missing. Either way the getter is `rowDomain`, never `domain`, which is
-the score axis on the wiggle display. **The mixins declare the accessors over
-those slots**, so a display composes both halves or neither. Hand-written
-`getConf` / `setConf` one-liners beside slots this package's own code reads are
-how the labels toggle came to be spelled `showSidebarLabels` on one display and
-silently ignore its config. `showRowLabelsMenuItem` is the row, and
-`treeSidebarShowMenuItems` the two tree toggles beside it — all three under
-"Show..." on every display, with `RowLabelsOverlay` mounted whether or not a
-tree is showing.
+declared row order is not in it. The wiggle, multi-sample variant and multi-row
+feature displays declare a `rows` object and compose `TreeSidebarMixin`, which
+reads the order as `rows.domain`; MAF spreads `rowDomainConfigSchemaFields` for
+a `domain` slot and composes `LayoutTreeSidebarMixin`, which reads it as
+`rowDomain` and throws where the slot is missing. Either way the getter is
+`rowDomain`, never `domain`, which is the score axis on the wiggle display.
+**The mixins declare the accessors over those slots**, so a display composes
+both halves or neither. Hand-written `getConf` / `setConf` one-liners beside
+slots this package's own code reads are how the labels toggle came to be spelled
+`showSidebarLabels` on one display and silently ignore its config.
+`showRowLabelsMenuItem` is the row, and `treeSidebarShowMenuItems` the two tree
+toggles beside it — all three under "Show..." on every display, with
+`RowLabelsOverlay` mounted whether or not a tree is showing.
 
 ## Two row-height arguments, and neither is the display height
 

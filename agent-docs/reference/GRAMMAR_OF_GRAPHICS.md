@@ -450,8 +450,8 @@ One proposal was declined in review: filter shorthands such as
 `{ field, oneOf }` (jexl is the filter language, and reading structure back out
 of jexl is the fragile half).
 
-The multi-row display's `partitionField` is the same partition with one fixed
-row per value and no chip. What the mark display does not take is the
+The multi-row display's `rows` is the same partition with one fixed row per
+value and no chip. What the mark display does not take is the
 alignments display's per-section collapse, which is that display's lane budget
 rather than a facet's.
 
@@ -466,20 +466,20 @@ idea works the same correspondence from its side) names it the other way
 round, the alignment as the body and the tree as
 the first row panel, and its `rowData` table is what every row panel reads.
 Here the rows are samples, species or subtracks, the tree is the sidebar, and
-the row table is `layout`, or on the quantitative display the adapter's rows
-arranged by its `rows` object. The table is the correspondence, so a proposal on
+the row table is the discovered rows arranged by the display's `rows` object,
+or on MAF `layout`. The table is the correspondence, so a proposal on
 the sidebar can be read against both libraries before it is spelled.
 
 | Notion                             | ggtree                                             | react-msaview                                          | The tree sidebar                                                                                                                                                                                    |
 | ---------------------------------- | -------------------------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | The tree                           | data, given                                        | the `tree` prop, given                                 | computed (`runClustering`, `clusterTree`, `clusterProvenance` naming the locus and settings), or given (MAF's guide `.nh`)                                                                          |
 | A row's data                       | `%<+%` attaches a table keyed by tip               | `rowData`                                              | the adapter's sources: a samples TSV's columns, a subtrack's metadata                                                                                                                               |
-| Declared row order                 | `ladderize`, then `rotate` / `flip` on a clade     | tree order                                             | the `domain` slot (`rowDomain` on the model, since the wiggle score axis owns `domain`): the rows listed first, the rest in the file's or adapter's order; with a tree it rotates instead — `[B,C,D]` on `((A,B),(C,D))` gives `B,A,C,D` — so the dendrogram keeps drawing |
-| Arranged row order                 | —                                                  | —                                                      | `layout`: order plus per-row label and colour overrides, written by drag, the arrangement dialog, a clustering run and sort-at-column; "Reset row order" clears it                                    |
+| Declared row order                 | `ladderize`, then `rotate` / `flip` on a clade     | tree order                                             | `rows.domain` (`rowDomain` on the model, since the wiggle score axis owns `domain`; the `domain` slot on MAF): the rows listed first, the rest in the file's or adapter's order, or sorted on the multi-row display; with a tree it rotates instead — `[B,C,D]` on `((A,B),(C,D))` gives `B,A,C,D` — so the dendrogram keeps drawing |
+| Arranged row order                 | —                                                  | —                                                      | `rows.domain`, `rows.labels` and `rowColor` (MAF's `layout`), written by drag, the arrangement dialog, a clustering run and sort-at-column; "Reset row order" returns them to the config's                                    |
 | Order at one column                | —                                                  | —                                                      | `sortRowsBy` and the right-click "Sort rows by … here", ComplexHeatmap's `row_order` from one column                                                                                                |
-| Focus on a clade                   | `viewClade`, `tree_subset`                         | —                                                      | `subtreeFilter`, a row-name set                                                                                                                                                                     |
+| Focus on a clade                   | `viewClade`, `tree_subset`                         | —                                                      | `rows.kept` (MAF's `subtreeFilter`), a row-name set                                                                                                                                                                     |
 | Bands by a field                   | `groupOTU`, then a facet                           | —                                                      | the variant displays' `facet`, resolved over `layout` when the rows are read — so a cross-band drag snaps back, and the band yields while a cluster tree describes the rows, as the multi-row display's `rowGroups` partition does |
-| Row colour by a field              | `aes(color = field)` over the attached table       | `scale_row_color(field, channel)`                      | the variant displays' `colorBy` (a metadata column), resolved on the read and winning over a `labelColor` the row table holds; the multi-row display's `sampleColorMap` is the explicit map and `rowGroups` the match-to-group form |
+| Row colour by a field              | `aes(color = field)` over the attached table       | `scale_row_color(field, channel)`                      | the variant displays' `colorBy` (a metadata column), resolved on the read and winning over a `labelColor` the row table holds; the multi-row display's `rowColor` pairs are the explicit map and `rowGroups` the match-to-group form |
 | Row labels                         | `geom_tiplab`                                      | tip labels                                             | `showRowLabels`, `colorRowLabels`                                                                                                                                                                   |
 | Branch lengths                     | `branch.length = "none"` for a cladogram           | —                                                      | `showBranchLength`                                                                                                                                                                                  |
 | Collapse a clade                   | `collapse` / `expand`                              | `clades` with `mark: "collapse"`                       | —                                                                                                                                                                                                   |

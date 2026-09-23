@@ -143,7 +143,7 @@ first if you haven't. See the
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "partitionField": "sample",
+      "rows": "sample",
       "legend": [
         { "label": "B (C57BL/6J)", "color": "rgb(65,105,225)" },
         { "label": "D (DBA/2J)", "color": "rgb(220,60,50)" },
@@ -154,8 +154,7 @@ first if you haven't. See the
 }
 ```
 
-- `partitionField: "sample"` splits the one file into one labeled row per
-  strain.
+- `rows: "sample"` splits the one file into one labeled row per strain.
 - A BED carrying `itemRgb` is painted with it automatically
   ([`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color)), so every
   block gets its genotype color straight from the file.

@@ -741,8 +741,7 @@ export default function stateModelFactory(
          * Empty until the first fetch populates the worker set; `sourcesKnown`
          * is the readiness question.
          *
-         * The shared `reconcileLayout`, same as multi-row features and
-         * multi-wiggle. Its append half matters here: a sample-discovery track
+         * The shared `reconcileLayout`. Its append half matters here: a sample-discovery track
          * learns of a genome only from the region whose blocks contain it (see
          * `setSamples` / `unionSources`), and the hand-rolled merge this
          * replaced iterated `layout` alone — so with any custom arrangement

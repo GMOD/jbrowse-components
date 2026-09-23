@@ -525,15 +525,17 @@ per strain:
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "partitionField": "strain",
-      "lengthField": "delta",
-      "domain": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
+      "rows": {
+        "field": "strain",
+        "domain": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
+      },
+      "lengthField": "delta"
     }
   ]
 }
 ```
 
-- `partitionField` puts each strain in a separate row
+- `rows` puts each strain in a separate row, `domain` in the order given
 - `lengthField` sets the length channel. Without it, a large insertion and a 1
   bp one draw as the same box. Pointed at the BED's signed `delta` column, it
   draws the insertion and deletion marks the

@@ -2203,7 +2203,7 @@ export const svSpecs: ScreenshotSpec[] = [
         {
           // the later of the two published Wakhan runs, phased with Hi-C. Its
           // column-name line carries no leading '#', so the names come from
-          // columnNames or partitionField has nothing to partition on
+          // columnNames or `rows` has nothing to partition on
           type: 'FeatureTrack',
           trackId: 'hg008t_wakhan_hifi_hic',
           name: 'Wakhan copy number per haplotype (HiFi + Hi-C)',
@@ -2227,7 +2227,7 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               type: 'LinearMultiRowFeatureDisplay',
               displayId: 'hg008t_wakhan_hifi_hic-LinearMultiRowFeatureDisplay',
-              partitionField: 'haplotype',
+              rows: 'haplotype',
               color:
                 "jexl:get(feature,'copynumber_state')<0.5?'#2166ac':get(feature,'copynumber_state')<1.5?'#bdbdbd':'#f4a582'",
               legend: [

@@ -42,7 +42,7 @@ const TCGA_BRCA_CNV_TRACK = {
   displays: [
     {
       type: 'LinearMultiRowFeatureDisplay',
-      partitionField: 'sample',
+      rows: 'sample',
       // 0 = auto-fit: the display height divided across the rows, floored at
       // 1px. At 1104 rows every tumor is a single pixel line, which is the point
       color:

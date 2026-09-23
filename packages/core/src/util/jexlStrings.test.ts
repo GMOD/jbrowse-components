@@ -67,7 +67,7 @@ describe('function string parsing', () => {
 
     it('survives the nested form the jexl catalog documents', () => {
       // `bigRmskBed` carries the repeat class as a suffix on the name, and this
-      // is LinearMultiRowFeatureDisplay's documented partitionField recipe. The
+      // is LinearMultiRowFeatureDisplay's documented `rows` recipe. The
       // second case is the one that used to take out the whole display.
       const recipe = "split(split(feature.name,'#')[1],'/')[0]"
       expect(

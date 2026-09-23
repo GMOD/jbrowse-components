@@ -183,7 +183,7 @@ export const cookbookSpecs: ScreenshotSpec[] = [
   // (reviewer: "consider also making a multirow canvas display of same data,
   // with different repeat types in the rows as another screenshot").
   //
-  // `partitionField: 'repClass'` is the whole recipe: the display assigns each
+  // `rows: 'repClass'` is the whole recipe: the display assigns each
   // feature to the row named by that attribute, so the same BED and the same
   // six classes come out as six labelled lanes. It answers a question the
   // colored figure above cannot -- how much of the window each class covers,
@@ -191,8 +191,8 @@ export const cookbookSpecs: ScreenshotSpec[] = [
   // are interleaved with five others and the eye has to do the sorting.
   //
   // Same colors, from the same lookup, so the pair reads as one dataset seen
-  // two ways rather than two datasets. `sampleColorMap` is the row-keyed form
-  // of it and takes the class names as keys, so the color survives the
+  // two ways rather than two datasets. `rowColor` is the row-keyed form of it
+  // and takes the class names as its domain, so the color survives the
   // repartition without the jexl.
   //
   // No `legend` here: the rows carry their own labels, which is the point.
@@ -210,14 +210,24 @@ export const cookbookSpecs: ScreenshotSpec[] = [
             {
               trackId: 'rmsk_hg38_ucsc',
               type: 'LinearMultiRowFeatureDisplay',
-              partitionField: 'repClass',
-              sampleColorMap: {
-                SINE: '#e41a1c',
-                LINE: '#377eb8',
-                LTR: '#4daf4a',
-                DNA: '#984ea3',
-                Simple_repeat: '#ff7f00',
-                Low_complexity: '#a65628',
+              rows: 'repClass',
+              rowColor: {
+                domain: [
+                  'SINE',
+                  'LINE',
+                  'LTR',
+                  'DNA',
+                  'Simple_repeat',
+                  'Low_complexity',
+                ],
+                range: [
+                  '#e41a1c',
+                  '#377eb8',
+                  '#4daf4a',
+                  '#984ea3',
+                  '#ff7f00',
+                  '#a65628',
+                ],
               },
               // separators only: showRowLabels already defaults to true, and
               // the row names are the whole reason this form is worth showing

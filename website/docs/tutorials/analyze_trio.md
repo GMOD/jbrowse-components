@@ -179,9 +179,9 @@ the file and the order does not shift with your locale.
 
 Load the result as a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`:
 
-- `partitionField` draws one row per distinct value it finds, so `parenthap`
-  gives the four parental-haplotype rows
-- `domain` sets their top-to-bottom order
+- `rows` draws one row per distinct value of its `field`, so `parenthap` gives
+  the four parental-haplotype rows
+- its `domain` sets their top-to-bottom order
 - a BED carrying `itemRgb` is painted with it automatically, no extra color
   config needed
 
@@ -199,9 +199,11 @@ Load the result as a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`:
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "partitionField": "parenthap",
-      "showLegend": false,
-      "domain": ["Father hap1", "Father hap2", "Mother hap1", "Mother hap2"]
+      "rows": {
+        "field": "parenthap",
+        "domain": ["Father hap1", "Father hap2", "Mother hap1", "Mother hap2"]
+      },
+      "showLegend": false
     }
   ]
 }

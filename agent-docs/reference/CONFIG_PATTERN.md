@@ -232,13 +232,13 @@ because the obvious spelling is wrong:
 ```ts
 // WRONG in a curated rpcProps(): resolves the callback here, on the main
 // thread, against whatever context the read passes — which is none
-get partitionField(): string {
-  return readConfObject(self.conf, 'partitionField')
+get rowsField(): string {
+  return readConfObject(self.conf, ['rows', 'field'])
 }
 
 // RIGHT: a transport read. The worker binds `feature` and resolves it.
-get partitionField(): string {
-  return self.conf.partitionField
+get rowsField(): string {
+  return self.conf.rows.field
 }
 ```
 
@@ -252,7 +252,7 @@ spellings of that look nothing alike from the outside:
 | slot | expression | arg-less read | symptom |
 | --- | --- | --- | --- |
 | `LinearManhattanDisplay.color` | `jexl:get(feature,…)` | throws `reading 'get'` | escapes the model getter, banners the display |
-| `LinearMultiRowFeatureDisplay.partitionField` | `jexl:split(feature.name,…)` | `''`, because `split` is total | `''` ships as an attribute name; every feature lands in one unnamed row |
+| `LinearMultiRowFeatureDisplay.rows.field` | `jexl:split(feature.name,…)` | `''`, because `split` is total | `''` ships as an attribute name; every feature lands in one unnamed row |
 
 Both are pinned by canaries at the display — `colorSlotTransport.test.ts` and
 `partitionFieldTransport.test.ts` — because there is nothing in the reader that

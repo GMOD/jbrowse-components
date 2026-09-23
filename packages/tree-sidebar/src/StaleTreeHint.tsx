@@ -21,12 +21,9 @@ import type { TreeSidebarModel } from './types.ts'
  * message must not sit over the figure it is describing. Running clustering
  * again, or resetting the row order, brings a tree back.
  *
- * Click-to-dismiss because it does overlap the first row's label, and for one
- * display the state is permanent rather than transient: multi-row features'
- * `rowGroups` regroups `sources` downstream of `layout`, so a track configured
- * with both that and clustering can never position its tree. Dismissal is local
- * to the chip — it comes back on remount, since the condition genuinely still
- * holds.
+ * Click-to-dismiss because it does overlap the first row's label. Dismissal is
+ * local to the chip — it comes back on remount, since the condition genuinely
+ * still holds.
  */
 export const StaleTreeHint = observer(function StaleTreeHint({
   model,

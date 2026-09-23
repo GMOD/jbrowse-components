@@ -19,9 +19,8 @@ import type { GroupId } from '@jbrowse/core/util/groupKeys'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 
 /**
- * The `facet` object as written. The multi-row display's `partitionField` is
- * the same partition with one fixed row per value; a section here packs its
- * own rows.
+ * The `facet` object as written. The multi-row display's `rows` is the same
+ * partition with one fixed row per value; a section here packs its own rows.
  */
 export type FeatureFacet = FacetSetting
 

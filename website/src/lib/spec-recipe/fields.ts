@@ -1102,15 +1102,21 @@ export const trackFields: Record<string, FieldRecipe> = {
   // the label to click — except a `jexl:` partition, which that menu shows as a
   // disabled row it cannot write (partitionMenuItems in the display's
   // trackMenuItems.ts).
-  partitionField: (value, { displayType }) =>
-    typeof value === 'string' &&
-    !value.startsWith('jexl:') &&
-    displayType === 'LinearMultiRowFeatureDisplay'
+  rows: (value, { displayType }) => {
+    const field =
+      typeof value === 'object' && value !== null && 'field' in value
+        ? value.field
+        : value
+    return typeof field === 'string' &&
+      field &&
+      !field.startsWith('jexl:') &&
+      displayType === 'LinearMultiRowFeatureDisplay'
       ? {
-          path: `${TRACK_MENU} → Partition by... → ${value}`,
+          path: `${TRACK_MENU} → Partition by... → ${field}`,
           note: 'The list is built from the attributes the loaded features carry, so a track whose data has not loaded yet offers nothing.',
         }
-      : undefined,
+      : undefined
+  },
   showRowLabels: (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LinearWiggleDisplay'
       ? {

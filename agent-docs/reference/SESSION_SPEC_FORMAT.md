@@ -157,12 +157,14 @@ rather than `facet`
 ([ADR-157](../architecture-decision-records/adr-157-a-row-displays-arrangement-is-the-rows-config-object.md)):
 its entries sit in the `facet` row until the census is taken again. The
 multi-sample variant displays' `layout`, `subtreeFilter` and `domain` entries
-are `rows` now too, a `rows` with no field since those rows are the samples, so
-the same lag holds for those three rows.
+are `rows` now too, a `rows` with no field since those rows are the samples,
+and so are the multi-row feature display's, whose `partitionField` is
+`rows.field` and whose `sampleColorMap` is `rowColor`, so the same lag holds
+for those rows.
 
 **The long tail names mechanisms, not aesthetics.** The keys used on one
 display type — `readConnections`, `showSoftClipping`, `rowIdentityMode`,
-`hideSelfAlignments`, `maxMissingnessFilter`, `partitionField` — each name
+`hideSelfAlignments`, `maxMissingnessFilter` — each name
 something no other display has. A grammar has no channel to put them in; it
 would carry them as mark-specific options under a different key, which is the
 same tail with an extra level of nesting.
@@ -178,8 +180,8 @@ relayout (`plugins/alignments/src/RenderAlignmentDataRPC/sortLayout.ts` —
 main-thread despite the directory, [ADR-053](../architecture-decision-records/adr-053-alignments-layout-stays-on-the-main-thread.md));
 `sortRowsBy` is a one-shot launch spec that orders an already-fixed row set once
 the region covering its column has loaded, then clears itself and leaves the
-order it wrote behind — `rows.domain` on the quantitative and multi-sample
-variant displays, `layout` on the multi-row feature and MAF displays
+order it wrote behind — `rows.domain` on the quantitative, multi-sample
+variant and multi-row feature displays, `layout` on MAF
 (`packages/tree-sidebar/src/rowSortAutorun.ts`).
 `domain` is the shared word and names neither: it is the declared order a facet
 stacks its sections in, or a `rows` object its rows, whoever writes it. The pair that is just two spellings —

@@ -95,7 +95,7 @@ The segments themselves are a `FeatureTrack` whose
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "partitionField": "sample",
+      "rows": "sample",
       "color": "jexl:feature.segmean<-1?'#2166ac':feature.segmean<-0.3?'#92c5de':feature.segmean<0.3?'#f7f7f7':feature.segmean<1?'#f4a582':'#b2182b'",
       "legend": [
         { "label": "Deep loss (log2 < -1)", "color": "#2166ac" },
@@ -113,8 +113,8 @@ The segments themselves are a `FeatureTrack` whose
 auto-fits, which at this row count leaves every tumor a single pixel line. Three
 settings do the rest:
 
-- [`partitionField`](/docs/config/linearmultirowfeaturedisplay/#slot-partitionfield)
-  splits the file into one labeled row per `sample`
+- [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) splits the file
+  into one labeled row per `sample`
 - [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) is a
   [jexl](/docs/config_guides/jexl) expression binning `segmean` onto a diverging
   blue-to-red scale, since this BED carries no `itemRgb`

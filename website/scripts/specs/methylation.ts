@@ -137,7 +137,7 @@ const ARABIDOPSIS_CONTEXT_LANES = [
   // picture, so don't re-walk either half.
   //
   // The defect, for the record, since two rounds went into it:
-  // `LinearMultiRowFeatureDisplay.partitionField` documents
+  // `LinearMultiRowFeatureDisplay`'s `rows` documents
   // `jexl:split(split(feature.name,'#')[1],'/')[0]` for exactly this
   // file type, bigRmskBed carrying the class as a suffix on the name
   // (`META1_LTR#LTR/Copia`) rather than in a column. Two bugs stood in

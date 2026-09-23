@@ -201,9 +201,9 @@ called. The `#` header names them, so the track config needs no `columnNames`.
 
 ## Loading the blocks as a multi-row track
 
-`LinearMultiRowFeatureDisplay` draws one row per distinct value of
-`partitionField`, here `sample`, and `domain` sets their order. A BED carrying
-`itemRgb` is painted with it automatically.
+`LinearMultiRowFeatureDisplay` draws one row per distinct value of `rows.field`,
+here `sample`, and `rows.domain` sets their order. A BED carrying `itemRgb` is
+painted with it automatically.
 
 ```json addtrack
 {
@@ -219,25 +219,27 @@ called. The `#` header names them, so the track config needs no `columnNames`.
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "partitionField": "sample",
-      "domain": [
-        "Gray wolf 7 hap1",
-        "Gray wolf 7 hap2",
-        "Saarloos 1 hap1",
-        "Saarloos 1 hap2",
-        "Czechoslovakian 3 hap1",
-        "Czechoslovakian 3 hap2",
-        "German Shepherd hap1",
-        "German Shepherd hap2"
-      ]
+      "rows": {
+        "field": "sample",
+        "domain": [
+          "Gray wolf 7 hap1",
+          "Gray wolf 7 hap2",
+          "Saarloos 1 hap1",
+          "Saarloos 1 hap2",
+          "Czechoslovakian 3 hap1",
+          "Czechoslovakian 3 hap2",
+          "German Shepherd hap1",
+          "German Shepherd hap2"
+        ]
+      }
     }
   ]
 }
 ```
 
-`domain` is abbreviated here; the build script writes all sixty-four rows in
-descending order of chr1 wolf fraction from FLARE's summary. A second BED holds
-all 243 animals, loaded the same way with an empty `domain`; at 486 rows there
+`rows.domain` is abbreviated here; the build script writes all sixty-four rows
+in descending order of chr1 wolf fraction from FLARE's summary. A second BED
+holds all 243 animals, loaded the same way with no `domain`; at 486 rows there
 is no room for labels, so the small painting carries the labels and the big one
 the extent.
 
@@ -280,8 +282,8 @@ the region in view, and the chip in the tree's corner names the locus.
 
 ## Repartitioning the same display
 
-Pointing `partitionField` at a different column repartitions the same display:
-the [phased trio tutorial](/docs/tutorials/analyze_trio) points it at parental
+Pointing `rows` at a different column repartitions the same display: the
+[phased trio tutorial](/docs/tutorials/analyze_trio) points it at parental
 haplotype, and the [BXD QTL tutorial](/docs/tutorials/bxd_qtl) at strain.
 
 ## Reproduce it end to end

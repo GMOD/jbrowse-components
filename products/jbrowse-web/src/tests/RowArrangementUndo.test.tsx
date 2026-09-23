@@ -123,3 +123,54 @@ test('a variant row reorder lands in the session at once and undoes', async () =
   expect(undone.rowDomain).toEqual([])
   expect(undone.sources.map(s => s.name)).toEqual(before)
 }, 60000)
+
+// The multi-row feature display's model type is not a published export, so
+// the test names the four members it drives.
+interface MultiRowDisplay {
+  configuration: { displayId: string }
+  sources: { name: string }[]
+  rowDomain: string[]
+  setRowOrder: (rows: { name: string }[]) => void
+}
+
+// The same on the multi-row feature display, whose rows are the values of a
+// feature attribute rather than subtracks or samples.
+test('a multi-row reorder lands in the session at once and undoes', async () => {
+  const PAINTING = 'volvox_mouse_inheritance_painting'
+  const { view, session, rootModel, findByTestId } = await createView(
+    volvoxConfigWithTracks([PAINTING]),
+  )
+  const { history } = rootModel as WebRootModel
+  view.setNewView(50, 0)
+  fireEvent.click(await findByTestId(hts(PAINTING), {}, delay))
+  await findDisplayPainted('multirow-display', delay)
+  const display: MultiRowDisplay = view.tracks[0]!.displays[0]
+  await waitFor(() => {
+    expect(display.sources.length).toBeGreaterThan(2)
+  }, delay)
+  await sleep(700)
+  const { displayId } = display.configuration
+  const stepsBefore = history.undoIdx
+  const before = display.sources.map(s => s.name)
+  const reversed = [...before].reverse()
+
+  display.setRowOrder(reversed.map(name => ({ name })))
+
+  expect(
+    rowsDomainInDelta(session.trackConfigDeltas[PAINTING], displayId),
+  ).toEqual(reversed)
+  expect(display.sources.map(s => s.name)).toEqual(reversed)
+
+  await sleep(350)
+  expect(history.undoIdx).toBe(stepsBefore + 1)
+  history.undo()
+  expect(history.undoIdx).toBe(stepsBefore)
+
+  await sleep(500)
+  expect(
+    rowsDomainInDelta(session.trackConfigDeltas[PAINTING], displayId),
+  ).toBeUndefined()
+  const undone: MultiRowDisplay = view.tracks[0]!.displays[0]
+  expect(undone.rowDomain).toEqual([])
+  expect(undone.sources.map(s => s.name)).toEqual(before)
+}, 60000)

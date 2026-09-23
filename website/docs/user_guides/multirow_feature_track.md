@@ -31,8 +31,8 @@ all three name rows that the new partition does not have.
 <Figure src="/img/multirow/display_types_menu.png" caption="Turning the UCSC RepeatMasker track into rows: the track menu's Display types submenu (top), and the same window partitioned by repeat class (bottom). Any feature track can be switched over this way." />
 
 To fix the column in config, set
-[`partitionField`](/docs/config/linearmultirowfeaturedisplay/#slot-partitionfield)
-in the track config:
+[`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) in the track
+config:
 
 ```json addtrack
 {
@@ -48,15 +48,15 @@ in the track config:
     {
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "chromhmm-LinearMultiRowFeatureDisplay",
-      "partitionField": "cellType"
+      "rows": "cellType"
     }
   ]
 }
 ```
 
-`partitionField` names the feature attribute whose value assigns a feature to a
-row. Features sharing a value stack into the same row, and the value becomes the
-row label.
+`rows` names the feature attribute whose value assigns a feature to a row.
+Features sharing a value stack into the same row, and the value becomes the row
+label.
 
 The rows are discovered from the values the loaded region holds, so a file that
 gains a sample or a category needs no config change, and a region missing one
@@ -65,8 +65,8 @@ has no row for it.
 ### Partitioning with a jexl expression {#when-the-category-is-not-a-column}
 
 A file can carry the category without carrying a column for it, in which case
-`partitionField` takes a [jexl](/docs/config_guides/jexl) expression instead of
-an attribute name. UCSC's `bigRmskBed` is the common case: the repeat class is a
+`rows` takes a [jexl](/docs/config_guides/jexl) expression instead of an
+attribute name. UCSC's `bigRmskBed` is the common case: the repeat class is a
 suffix on the name (`L1HS#LINE/L1`), so an attribute lookup splits on the full
 repeat name, which is thousands of rows rather than twenty.
 
@@ -84,7 +84,7 @@ repeat name, which is thousands of rows rather than twenty.
     {
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "genark_rmsk-LinearMultiRowFeatureDisplay",
-      "partitionField": "jexl:split(split(feature.name,'#')[1],'/')[0]"
+      "rows": "jexl:split(split(feature.name,'#')[1],'/')[0]"
     }
   ]
 }
@@ -108,17 +108,18 @@ chr1    10000       10600     15_Repetitive/CNV  0      .       10000       1060
 chr1    10000       10600     15_Repetitive/CNV  0      .       10000       10600     245,245,245  K562
 ```
 
-Any extra column works the same way, so `partitionField` can be `sample`,
-`cellType`, `strain`, `haplotype`, or whatever you called it. GFF3/GTF
-attributes and BigBed extra fields are addressed by name identically.
+Any extra column works the same way, so `rows` can be `sample`, `cellType`,
+`strain`, `haplotype`, or whatever you called it. GFF3/GTF attributes and BigBed
+extra fields are addressed by name identically.
 
 ## Coloring the blocks
 
 Four sources of color, in precedence order:
 
-- [`sampleColorMap`](/docs/config/linearmultirowfeaturedisplay/#slot-samplecolormap)
-  gives a color per row, keyed by the `partitionField` value. Use it when the
-  row identity is the signal (one color per population, per treatment arm).
+- [`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) gives a
+  color per row as pairs, the row values in `domain` and their colors in
+  `range`. Use it when the row identity is the signal (one color per population,
+  per treatment arm).
 - [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) is a per-
   feature fill: a CSS color, or a [jexl](/docs/config_guides/jexl) expression
   reading any attribute. This is how a continuous value becomes a color scale,
@@ -146,7 +147,7 @@ segment mean copy number:
     {
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "tcga_brca_cnv-LinearMultiRowFeatureDisplay",
-      "partitionField": "sample",
+      "rows": "sample",
       "color": "jexl:feature.segmean<-1?'#2166ac':feature.segmean<-0.3?'#92c5de':feature.segmean<0.3?'#f7f7f7':feature.segmean<1?'#f4a582':'#b2182b'"
     }
   ]
@@ -164,9 +165,9 @@ sets the order those rows read in — the labels it lists first, the rest sorted
 the same word and rule `domain` orders the track's rows by. The blocks take
 their color per feature, so it moves the key and nothing on the plot.
 
-You can also recolor a single row by hand from **Edit colors/arrangement...**;
-that overrides every source above for that row and applies at render time, with
-no refetch.
+You can also recolor a single row by hand from **Edit colors/arrangement...**,
+which writes that row's `rowColor` entry and applies at render time, with no
+refetch.
 
 ## Row height
 
@@ -177,22 +178,26 @@ per row.
 
 ## Ordering and clustering rows
 
-Rows start in file order. Three ways to change that:
+Rows start sorted by value, digits by magnitude, with the row of features
+carrying no value last. Three ways to change that:
 
-- **Edit colors/arrangement...** reorders or hand-picks rows in a dialog, and
-  [`domain`](/docs/config/linearmultirowfeaturedisplay/#slot-domain) pins an
-  explicit order in config.
+- **Edit colors/arrangement...** reorders, relabels or hand-picks rows in a
+  dialog, and `rows.domain` pins an explicit order in config: the values it
+  lists lead, and the rest sort.
 - Right-click a position and choose **Sort rows by color here** to order rows by
   the value each carries at that exact base, the analogue of an alignments
   track's sort-by-base. Rows sharing a value become contiguous blocks, turning a
-  QTL painting at its peak into a clean split by allele. **Clear row sort**
-  restores the previous order.
+  QTL painting at its peak into a clean split by allele.
 - **Clustering → Cluster rows by similarity...** reorders rows so that samples
   with similar paintings sit together, and draws a dendrogram in the sidebar.
   See [](/docs/user_guides/clustering).
 
-**Reset row order** appears in the track menu once any of the three has run, and
-returns the rows to file order.
+All three write the track's
+[`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) setting, so undo
+reaches an arrangement, a shared session carries it, and it survives turning the
+track off and on. **Reset row order** appears in the track menu once any of the
+three has run, and returns the rows, their labels and their colors to what the
+config declares.
 
 **Show... → Show tree** toggles the dendrogram once one has been computed, and
 **Show... → Show row labels** the labels beside it, which are useful with no
@@ -200,10 +205,9 @@ clustering run.
 
 **Show... → Color row labels by row color** tints each label with the color that
 row's blocks are painted in, so a row can be found by color. It is off by
-default: the label box is also what `rowGroups` and a color set in **Edit
-colors/arrangement…** use, and both of those win over it. It does nothing on a
-track colored per feature (an `itemRgb` painting, a jexl `color` slot), where no
-single color represents the row.
+default: the label box is also what `rowGroups` uses, and a group's swatch wins
+over it. It does nothing on a track colored per feature (an `itemRgb` painting,
+a jexl `color` slot), where no single color represents the row.
 
 <Figure src="/img/tcga/cohort_cnv_erbb2.png" caption="chr17:39.0-40.5Mb, 1104 TCGA-BRCA tumors clustered by copy-number profile with the dendrogram and row labels beside them. Rows sort into amplified, gained, lost, and balanced bands." />
 

@@ -16,7 +16,7 @@ export const repeatVideos: VideoSpec[] = [
   // for.
   //
   // It also films a step the page does not have. Picking the display type
-  // leaves `partitionField` at its `name` default, which on RepeatMasker is one
+  // leaves `rows` picking `name`, which on RepeatMasker is one
   // row per repeat — the intermediate state here — and the class lanes are a
   // second pick, `Partition by...`. The page goes straight from the Display
   // types instruction to a figure of the finished lanes, so a reader following

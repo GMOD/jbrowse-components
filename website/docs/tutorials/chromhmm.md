@@ -119,32 +119,33 @@ partitioning on `cellType`. It references the `hg19` assembly; see the
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "partitionField": "cellType",
-      "domain": [
-        "GM12878",
-        "H1-hESC",
-        "K562",
-        "HepG2",
-        "HUVEC",
-        "HMEC",
-        "HSMM",
-        "NHEK",
-        "NHLF"
-      ],
+      "rows": {
+        "field": "cellType",
+        "domain": [
+          "GM12878",
+          "H1-hESC",
+          "K562",
+          "HepG2",
+          "HUVEC",
+          "HMEC",
+          "HSMM",
+          "NHEK",
+          "NHLF"
+        ]
+      },
       "height": 200
     }
   ]
 }
 ```
 
-The `uri` shorthand resolves the `.bed.gz.tbi` beside the file. Two display
-settings do the rest:
+The `uri` shorthand resolves the `.bed.gz.tbi` beside the file.
+[`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) does the rest:
 
-- [`partitionField`](/docs/config/linearmultirowfeaturedisplay/#slot-partitionfield)
-  is the attribute to split rows by; every distinct `cellType` becomes a labeled
-  sub-row
-- [`domain`](/docs/config/linearmultirowfeaturedisplay/#slot-domain) pins the
-  sub-rows to an order, here ENCODE's tiers; the default is alphabetical
+- `field` is the attribute to split rows by; every distinct `cellType` becomes a
+  labeled sub-row
+- `domain` pins the sub-rows to an order, here ENCODE's tiers; the default is
+  alphabetical
 
 [`rowHeight`](/docs/config/linearmultirowfeaturedisplay/#slot-rowheight) stays
 at its auto-fit default, dividing the track height across the rows.
@@ -204,7 +205,7 @@ them out in order. The merged file is hosted, so the whole track is:
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "partitionField": "cellType",
+      "rows": "cellType",
       "legend": [
         { "label": "1 Active TSS", "color": "rgb(255,0,0)" },
         { "label": "2 Flanking active TSS", "color": "rgb(255,69,0)" },
@@ -241,15 +242,16 @@ lines show PAX5 transcribed without the enhancers.
 
 <Figure src="/img/chromhmm.png" caption="All 127 Roadmap epigenomes over chr9 from FAM205A to ALDH1B1, rows in the paper's tissue order, each label tinted by its tissue group. Promoters are red in every tissue; PAX5 (boxed) is transcribed with genic enhancers only in the B cell rows and GM12878."/>
 
-A `domain` of six epigenome names narrows the same track to lung fibroblasts,
-foreskin fibroblasts and ES cells over HOXA, which reproduces the chromatin
-domains [Rinn et al. 2007](https://doi.org/10.1016/j.cell.2007.05.022) mapped in
+Six epigenome names in `rows.domain` and `rows.kept` narrow the same track to
+lung fibroblasts, foreskin fibroblasts and ES cells over HOXA, which reproduces
+the chromatin domains
+[Rinn et al. 2007](https://doi.org/10.1016/j.cell.2007.05.022) mapped in
 fibroblasts from different parts of the body.
 
 <Figure src="/img/chromhmm_hoxa_fibroblasts.png" caption="Lung fibroblasts, foreskin fibroblasts and ES cells over HOXA. Lung fibroblasts keep HOXA1-A7 (red box) active and HOXA9-A13 (blue box) Polycomb-repressed, foreskin fibroblasts the reverse, and ES cells hold the whole cluster repressed."/>
 
-Without a `domain`, **Cluster rows by similarity...** derives the row order of
-all 127 from the data at whatever locus is in view.
+Without a `rows.domain`, **Cluster rows by similarity...** derives the row order
+of all 127 from the data at whatever locus is in view.
 
 <Video src="/media/epigenomics/chromhmm_cluster.mp4" caption="Clustering the 127-epigenome ChromHMM track over HOXA. The rows open in Roadmap's tissue order; the track menu's Cluster rows by similarity re-lays them out into blocks and draws the dendrogram beside them." />
 

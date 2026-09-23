@@ -242,8 +242,8 @@ export function subtreeCoversEveryRow(
 //
 // This is a *derived* check on purpose. `setLayout` clears a stale
 // `clusterTree` for the writes that go through it, but rows also move without
-// any layout write at all: a display decorating `sources` downstream of
-// `layout` (multi-row features' `rowGroups` partition), a discovered row set
+// any layout write at all: a display decorating `sources` downstream of its
+// order (multi-row features' `rowGroups` partition), a discovered row set
 // growing as regions load (multi-row features, multi-wiggle), a phased
 // expansion switching on when the ploidy arrives (multi-sample variants). One
 // check where the tree is positioned covers all of them, and covers whatever
@@ -392,8 +392,8 @@ export function validateClusterOrder(
 // longer present, append newly-discovered rows in discovered order. Layout
 // fields win on merge (they are the user's overrides). Empty layout returns the
 // discovered array by reference, so callers can short-circuit on identity.
-// Shared by every multi-row display's `sources`/`editableSources` getter so the
-// membership rules can't drift. Layout entries are partial overrides keyed by
+// MAF's `editableSources` reads it; the displays on `rows` order by
+// `rows.domain` instead. Layout entries are partial overrides keyed by
 // `name`, so the discovered row supplies every field a layout entry omits.
 export function reconcileLayout<D extends { name: string }>(
   discovered: D[],

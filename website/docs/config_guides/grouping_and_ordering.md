@@ -174,9 +174,9 @@ works through picking the lane order itself.
 ## Row-partitioned tracks
 
 `LinearMultiRowFeatureDisplay` fixes one row per value rather than a foldable
-section — no chip, no hide, no overflow merge — through `partitionField` instead
-of `facet`, with the same `domain`. Nine ENCODE cell types, pinned to ENCODE's
-own tiers rather than alphabetical order:
+section — no chip, no hide, no overflow merge — through `rows` instead of
+`facet`, with the same `domain`. Nine ENCODE cell types, pinned to ENCODE's own
+tiers rather than alphabetical order:
 
 ```json addtrack
 {
@@ -192,33 +192,35 @@ own tiers rather than alphabetical order:
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "partitionField": "cellType",
-      "domain": [
-        "GM12878",
-        "H1-hESC",
-        "K562",
-        "HepG2",
-        "HUVEC",
-        "HMEC",
-        "HSMM",
-        "NHEK",
-        "NHLF"
-      ],
+      "rows": {
+        "field": "cellType",
+        "domain": [
+          "GM12878",
+          "H1-hESC",
+          "K562",
+          "HepG2",
+          "HUVEC",
+          "HMEC",
+          "HSMM",
+          "NHEK",
+          "NHLF"
+        ]
+      },
       "height": 200
     }
   ]
 }
 ```
 
-The same mechanism at a larger scale — a `domain` of six names narrowing a
-127-epigenome track to the three tissues a figure is actually about, in the
-order the comparison reads:
+The same mechanism at a larger scale — a `rows.domain` of six names, with
+`rows.kept` narrowing a 127-epigenome track to the three tissues a figure is
+actually about, in the order the comparison reads:
 
 <Figure src="/img/chromhmm_hoxa_fibroblasts.png" caption="Lung fibroblasts, foreskin fibroblasts and ES cells over HOXA. Lung fibroblasts keep HOXA1-A7 (red box) active and HOXA9-A13 (blue box) Polycomb-repressed, foreskin fibroblasts the reverse, and ES cells hold the whole cluster repressed."/>
 
 [The ChromHMM tutorial](/docs/tutorials/chromhmm#the-legend-filtering-and-row-order)
-has both tracks in full, plus what an unset `domain` does instead: **Cluster
-rows by similarity...** derives a row order from the data itself.
+has both tracks in full, plus what an unset `rows.domain` does instead:
+**Cluster rows by similarity...** derives a row order from the data itself.
 
 ## Reordering at runtime
 
@@ -226,8 +228,8 @@ Every one of these displays writes a drag-to-reorder back into the same `domain`
 slot it read the curated order from — the gene track and mark display's
 **Sections** list, the alignments track menu's group-by sections, multiway
 synteny's **Lanes** menu and lane-header drag, and the multi-row display's row
-drag. A session saved after reordering carries the new order in `config.json`
-terms, not as separate runtime-only state.
+drag, which writes `rows.domain`. A session saved after reordering carries the
+new order in `config.json` terms, not as separate runtime-only state.
 
 ## See also
 

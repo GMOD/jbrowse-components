@@ -424,9 +424,8 @@ itself loads as a feature on a refName no assembly has, so nothing draws it.
 
 Because a haplotype column already assigns each segment to a row, this is a
 [`LinearMultiRowFeatureDisplay`](/docs/config/linearmultirowfeaturedisplay)
-track: set
-[`partitionField`](/docs/config/linearmultirowfeaturedisplay/#slot-partitionfield)
-to `haplotype` and it paints one row per parental copy.
+track: set [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) to
+`haplotype` and it paints one row per parental copy.
 
 ```json addtrack
 {
@@ -450,7 +449,7 @@ to `haplotype` and it paints one row per parental copy.
     {
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "hg008_wakhan_haplotype-LinearMultiRowFeatureDisplay",
-      "partitionField": "haplotype",
+      "rows": "haplotype",
       "color": "jexl:get(feature,'copynumber_state')<0.5?'#2166ac':get(feature,'copynumber_state')<1.5?'#bdbdbd':'#f4a582'",
       "legend": [
         { "label": "Haplotype lost (0)", "color": "#2166ac" },
@@ -594,7 +593,7 @@ departs from the rest is a CNV private to that subclone:
     {
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "hg008_subclonal_cnv-LinearMultiRowFeatureDisplay",
-      "partitionField": "clone",
+      "rows": "clone",
       "color": "jexl:get(feature,'cn')<1?'#2166ac':get(feature,'cn')<2?'#92c5de':get(feature,'cn')<3?'#e0e0e0':get(feature,'cn')<4?'#f4a582':'#b2182b'",
       "legend": [
         { "label": "CN 0", "color": "#2166ac" },
@@ -1040,8 +1039,8 @@ minimap2, downloads JBrowse, and writes a `config.json` with all of it loaded
 beside the published Wakhan segments.
 
 The BAF and Wakhan tracks go in with `add-track-json`: the settings that make
-them readable (`resolutionMultiplier` on one, `partitionField` on the other) are
-track config, with no command-line flag.
+them readable (`resolutionMultiplier` on one, `rows` on the other) are track
+config, with no command-line flag.
 
 The script needs the tools listed under [Prerequisites](#prerequisites), plus
 `bcftools` and `bedGraphToBigWig`. It pulls down more than 200 GB, wants roughly

@@ -113,8 +113,8 @@ export const repeatVideoFixtures = {
   // the new display from its own config rather than carrying the old one's
   // height across, so a multi-row display arriving at the default height fits
   // the classes it discovers into it — eight lanes in the room one packed lane
-  // was using, with the labels overlapping. `partitionField` is deliberately
-  // absent: which column splits the rows is what the route picks.
+  // was using, with the labels overlapping. `rows` is deliberately absent:
+  // which column splits the rows is what the route picks.
   twoDisplaySession: sessionSpec(DEMO_CONFIG, {
     sessionTracks: [
       {
@@ -2424,9 +2424,12 @@ export const uiSpecs: ScreenshotSpec[] = [
         {
           trackId: 'roadmap_chromhmm_multirow_hg19',
           type: 'LinearMultiRowFeatureDisplay',
-          domain: HOXA_FIBROBLAST_ROWS,
-          subtreeFilter: HOXA_FIBROBLAST_ROWS,
-          // tissue grouping would reorder the rows out of `domain`
+          rows: {
+            field: 'cellType',
+            domain: HOXA_FIBROBLAST_ROWS,
+            kept: HOXA_FIBROBLAST_ROWS,
+          },
+          // tissue grouping would reorder the rows out of `rows.domain`
           rowGroups: [],
           height: 240,
         },
@@ -2490,7 +2493,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   // (review: "might want to make two-part figure showing result").
   //
   // It could not be built honestly until this round: picking the display type
-  // leaves `partitionField` at `name`, which on RepeatMasker is one row per
+  // leaves `rows` picking `name`, which on RepeatMasker is one row per
   // repeat -- thousands of hairlines -- and there was no menu item to get out of
   // it, so a result frame showing rows by CLASS would have claimed an effect the
   // click does not have. "Partition by..." is that item now, so this frame is
@@ -2517,9 +2520,9 @@ export const uiSpecs: ScreenshotSpec[] = [
               trackId: 'rmsk_hg38_ucsc',
               type: 'LinearMultiRowFeatureDisplay',
               // the class column, which is what "Partition by..." offers on this
-              // file. No sampleColorMap: this is what the menu path produces,
-              // and the cookbook figure is where a chosen palette belongs.
-              partitionField: 'repClass',
+              // file. No rowColor: this is what the menu path produces, and
+              // the cookbook figure is where a chosen palette belongs.
+              rows: 'repClass',
               showRowSeparators: true,
               height: 260,
             },

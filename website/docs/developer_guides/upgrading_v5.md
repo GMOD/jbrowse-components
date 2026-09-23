@@ -391,6 +391,33 @@ one is named.
 fails the load with a message naming `rows`; a `domain` in a session spec's
 track entry is reported as a setting no display takes.
 
+## The multi-row feature display's rows are config too
+
+The multi-row feature display is new in v5, and earlier v5 documentation spelled
+its settings differently. Its rows are the values of a feature attribute, and
+`rows` holds both halves: `rows.field` is the attribute, empty still picking one
+off the data, and the other members are the arrangement, as on the quantitative
+display. `rowColor: { domain, range }` pairs row values with colors, the one
+home for a color a config names and a color a reader sets in **Edit
+colors/arrangement...**.
+
+<!-- prettier-ignore -->
+| earlier v5 | v5 |
+| --- | --- |
+| `partitionField` config slot | `rows.field`, or `rows: "<field>"` |
+| `domain` config slot | `rows.domain` |
+| `sampleColorMap: { <row>: <color> }` config slot | `rowColor: { domain: [<row>], range: [<color>] }` |
+| `layout` display prop, the rows in order with any label and color set on each | `rows.domain`, `rows.labels` and `rowColor` |
+| `clusterTree`, `clusterProvenance` display props | `rows.tree`, `rows.treeProvenance` |
+| `subtreeFilter` display prop | `rows.kept` |
+| `setPartitionField` action | `setRowsField` |
+
+**None of it migrates.** A multi-row display config carrying `partitionField`,
+`domain` or `sampleColorMap`, a feature track's `displayDefaults` carrying one
+of the three, and a display snapshot carrying `layout`, `clusterTree`,
+`clusterProvenance` or `subtreeFilter` each fail the load with a message naming
+the replacement.
+
 ## The wiggle color is one `color` object
 
 `color` on `LinearWiggleDisplay` is a CSS color string, or

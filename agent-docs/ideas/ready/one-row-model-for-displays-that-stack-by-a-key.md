@@ -25,7 +25,7 @@ anticipated). Chips, the cap and the Sections menu hang here.
 
 **`rows: field | { field, domain, labels, tree, treeProvenance, kept }`** is the
 leaf level: one row per value. Wiggle takes `rows: 'source'` where it took
-`facet: 'source'`, multi-row takes it for `partitionField`, and the variant
+`facet: 'source'`, multi-row took it for `partitionField`, and the variant
 displays and MAF, whose key is intrinsic (a sample, a species), write every
 member but `field`. The section displays leave it unset, because their rows
 pack. The dendrogram, the row labels, sort-at-column and clustering hang here.
@@ -110,7 +110,7 @@ sort. Those are today's two rules, stated by their source.
 ## Colour, after the rows
 
 Each row display first states what a row's colour paints: the label (the
-variant displays), the row's content (multi-row's `sampleColorMap`), or the plot
+variant displays), the row's content (multi-row's `rowColor` pairs), or the plot
 (wiggle, which moves identity to `labelColor` under a gradient). Then one
 colour object (ADR-135's shape) carries it, with a declared target per display,
 and the label swatch always reads it, which retires `colorRowLabels`. Per-row
@@ -130,7 +130,8 @@ before it is asked.
 2. ~~Every product edits track config as session deltas~~ (`130e41de08`).
 3. **The row model, one display at a time**, gated on a zero image diff:
    ~~wiggle~~ (ADR-157), ~~the variant displays~~ (the hard case: two-point
-   expansion, bands, tint; ADR-157), then multi-row, then MAF. `rows` replaces
+   expansion, bands, tint; ADR-157), ~~multi-row~~ (ADR-157; `rowColor` holds
+   `sampleColorMap` and the dialog's colours as one map), then MAF. `rows` replaces
    `layout`, `clusterTree`, `clusterProvenance` and `subtreeFilter`;
    `facet.hidden` replaces the volatile hide-set. ~~The changes table's array
    summary~~ (`86cadb9f94`). About 7–11 days.

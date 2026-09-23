@@ -244,7 +244,7 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   systems-genetics data (multi-row painting + gwas Manhattan). Kept out of
   `config_demo.json`, which stays human-only.
 - **ChromHMM chromatin state** — `demos/chromhmm/`, hg19, row per epigenome via
-  `partitionField: cellType`, color from `itemRgb`. UCSC Broad ENCODE
+  `rows: cellType`, color from `itemRgb`. UCSC Broad ENCODE
   (9 cell types, 15-state, 74MB, 5.4M segments) and Roadmap 127-epigenome.
 - **1000 Genomes VCFs need no re-hosting.** The EBI FTP is CORS-open and
   byte-range capable, so a `VcfTabixAdapter` can point straight at it. Its

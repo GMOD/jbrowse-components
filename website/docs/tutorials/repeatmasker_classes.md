@@ -45,8 +45,7 @@ jbrowse.org.
 The two hub pipelines store it differently:
 
 - A **UCSC golden-path** assembly ships a BED whose header names its columns,
-  `repClass` among them. That is an attribute, so `partitionField` is just
-  `"repClass"`.
+  `repClass` among them. That is an attribute, so `rows` is just `"repClass"`.
 - A **GenArk** assembly ships a `bigRmskBed`, whose autoSql has no class column
   at all. The class is encoded in the name as a suffix, `L1HS#LINE/L1`, so the
   value has to be derived. That case is worked in
@@ -74,9 +73,9 @@ fetch:
 ## Pinning the lanes in a track config
 
 A track config makes the partitioned view the track's default, and two more
-slots come with it: `sampleColorMap` is keyed by the class, so a lane keeps its
-color as the window's class list changes, and `domain` fixes the lane order the
-same way.
+settings come with it: `rowColor` pairs a class with its color, so a lane keeps
+its color as the window's class list changes, and `rows.domain` fixes the lane
+order the same way.
 
 ```json addtrack
 {
@@ -89,14 +88,24 @@ same way.
     {
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "rmsk_hg38_rows-LinearMultiRowFeatureDisplay",
-      "partitionField": "repClass",
-      "sampleColorMap": {
-        "SINE": "#e41a1c",
-        "LINE": "#377eb8",
-        "LTR": "#4daf4a",
-        "DNA": "#984ea3",
-        "Simple_repeat": "#ff7f00",
-        "Low_complexity": "#a65628"
+      "rows": "repClass",
+      "rowColor": {
+        "domain": [
+          "SINE",
+          "LINE",
+          "LTR",
+          "DNA",
+          "Simple_repeat",
+          "Low_complexity"
+        ],
+        "range": [
+          "#e41a1c",
+          "#377eb8",
+          "#4daf4a",
+          "#984ea3",
+          "#ff7f00",
+          "#a65628"
+        ]
       },
       "showRowSeparators": true
     }
@@ -104,9 +113,8 @@ same way.
 }
 ```
 
-A lane not named in `sampleColorMap` takes a color from the categorical palette
-by its position in the stack, so its color moves as the window's class list
-changes.
+A lane not named in `rowColor` takes a color from the categorical palette by its
+position in the stack, so its color moves as the window's class list changes.
 
 Two details in the config are easy to miss:
 
@@ -134,10 +142,10 @@ The classes it prints are the lanes on screen, and their bp totals are the area
 drawn in each lane. A lane in the picture with no line here, or the reverse,
 means the view is not showing the file you think it is.
 
-The `Unknown` lane is the control: no entry in the `sampleColorMap` above and
-none in the cookbook's lookup table, and it is on screen anyway, because the
-lanes come from the file. Pan to a window whose output has no `Unknown` line and
-the lane goes away.
+The `Unknown` lane is the control: no entry in the `rowColor` above and none in
+the cookbook's lookup table, and it is on screen anyway, because the lanes come
+from the file. Pan to a window whose output has no `Unknown` line and the lane
+goes away.
 
 The same command with `$6` instead of `$7` counts `repFamily`, which is the
 finer partition (`L1`, `Alu`, `MIR`) if the classes turn out to be too coarse
@@ -155,7 +163,7 @@ two, under a header naming the columns, is the whole difference between the
 <!-- from: scripts/build_repeatmasker_classes.sh -->
 
 ```bash
-# the header names the columns, which is what lets `partitionField: "repClass"`
+# the header names the columns, which is what lets `rows: "repClass"`
 # name one the BED spec has never heard of
 {
   printf '#genoName\tgenoStart\tgenoEnd\tname\tstrand\trepFamily\trepClass\tswScore\tmilliDiv\n'

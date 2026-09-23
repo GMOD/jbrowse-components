@@ -81,7 +81,7 @@ const AXOLOTL_ASSEMBLY = 'GCF_040938575.1'
 //   display's `scales.y` domain, so a reader gets there through two track-menu
 //   trips or not at all.
 // - RepeatMasker wants one lane per repeat class.
-//   `LinearMultiRowFeatureDisplay` defaults `partitionField` to `name`, which on
+//   `LinearMultiRowFeatureDisplay`'s `rows` picks `name` by default, which on
 //   a GenArk bigRmskBed is one row per repeat -- thousands of hairlines,
 //   rendered rather than reasoned about. There IS a menu item for it now
 //   ("Partition by...", offering the attribute names the loaded features carry),

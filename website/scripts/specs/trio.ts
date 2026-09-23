@@ -465,7 +465,7 @@ export const trioSpecs: ScreenshotSpec[] = [
             trackId: TRIO_PAINT_TRACK,
             type: 'LinearMultiRowFeatureDisplay',
             // show only this parent's haplotype rows
-            subtreeFilter: paintingFilter,
+            rows: { field: 'parenthap', kept: paintingFilter },
           },
           {
             trackId: TRIO_VCF_TRACK,

@@ -368,7 +368,7 @@ Facts behind it, each measured rather than assumed:
   2026-08-06: the hosted E. coli projection is rebuilt with
   `-R target -Q queries -m 1000 -j 0.5 -e 5000 -p`, 2m13s, **3,923 records**
   (CFT073 919 / IAI39 956 / Sakai 981 / NCTC86 1,067). `scripts/untangle_to_bed.py`
-  drops it into `LinearMultiRowFeatureDisplay` with `partitionField` on the
+  drops it into `LinearMultiRowFeatureDisplay` with `rows` on the
   strain. Does not scale to human at that cost.
 
   **`-e` is the decision to re-read before reusing this, because it contradicts
