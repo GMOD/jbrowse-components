@@ -20,7 +20,7 @@ export interface ScoreRamp {
   negColor: string
   pivot: number
   rampMid: number | undefined
-  // the resolved densityColorRamp LUT — the same cached bytes both renderers
+  // the resolved rampLutOf LUT — the same cached bytes both renderers
   // color through — or null for the default white→track-color fade. Required
   // rather than optional so a new producer can't quietly leave the key on the
   // default fade while the track paints a named ramp, which is exactly how

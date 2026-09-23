@@ -1055,12 +1055,17 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       // 100px the figure was the top slice of that pyramid, which is its
       // faintest, longest-range corner painted at full saturation.
       //
-      // Linear ramp, where the intra-only file needed `useLogScale`, for the
+      // Linear ramp, where the intra-only file needed a log `color.scale`, for the
       // same reason inverted: log was compensating for a decayed self-contact
       // signal, and applied to a file that fills the whole pyramid it pushes
       // every bin to the top of the scale and the map comes back solid red.
       tracks: [
-        { trackId: 'hic_gm12878_encode', useLogScale: false, height: 700 },
+        {
+          trackId: 'hic_gm12878_encode',
+          type: 'LinearHicDisplay',
+          color: { scale: 'linear' },
+          height: 700,
+        },
       ],
     }),
     // 910, off the run's own clipped-below-the-fold report, for the 700px of

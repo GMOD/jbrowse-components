@@ -2662,6 +2662,7 @@
         "buildColorRampLut",
         "colorRampStops",
         "rampDomain",
+        "rampLutOf",
         "sampleColorRamp",
         "stopsFromRampLut"
       ],

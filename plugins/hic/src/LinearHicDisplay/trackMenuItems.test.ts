@@ -1,6 +1,6 @@
 import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 
-import { DEFAULT_HIC_COLOR_SCHEME } from './components/colorRamp.ts'
+import { DEFAULT_HIC_COLOR_SCHEME } from './hicColorConfigSchema.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -25,7 +25,7 @@ function baseSelf() {
     appliedNormalization: 'KR',
     effectiveResolution: 25000 as number | undefined,
     resolutionBias: 0,
-    setUseLogScale: jest.fn(),
+    setColorScale: jest.fn(),
     setUseColorPercentile: jest.fn(),
     setShowLegend: jest.fn(),
     setShowResolutionControls: jest.fn(),
@@ -68,9 +68,9 @@ describe('hic track menu shape', () => {
       ...subMenuOf(items, 'Normalization'),
     ].filter(i => i.type === 'radio' || i.type === 'checkbox')
 
-    // 5 visibility checkboxes + 3 schemes + 3 normalizations, so the assertion
+    // 5 visibility checkboxes + 5 schemes + 3 normalizations, so the assertion
     // below can't pass by finding no rows at all
-    expect(rows.length).toBe(11)
+    expect(rows.length).toBe(13)
     expect(rows.map(i => [labelOf(i), staysOpenOnClick(i)])).toEqual(
       rows.map(i => [labelOf(i), true]),
     )
@@ -84,9 +84,11 @@ describe('hic track menu shape', () => {
         'checked' in i && i.checked,
       ]),
     ).toEqual([
+      ['Viridis', true],
       ['Juicebox', false],
       ['Fall', false],
-      ['Viridis', true],
+      ['Reds', false],
+      ['Blues', false],
     ])
   })
 

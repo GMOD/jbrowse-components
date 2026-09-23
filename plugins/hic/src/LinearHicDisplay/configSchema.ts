@@ -1,11 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
-import { types } from '@jbrowse/mobx-state-tree'
 
-import {
-  DEFAULT_HIC_COLOR_SCHEME,
-  HIC_COLOR_SCHEMES,
-} from './components/colorRamp.ts'
+import { hicColorConfigSchema } from './hicColorConfigSchema.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -27,7 +23,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * ```
  *
  * #example
- * With log scale and a coarser resolution (`resolutionBias` nudges the
+ * With a log colour scale and a coarser resolution (`resolutionBias` nudges the
  * auto-picked binsize; negative = finer, positive = coarser). The
  * `displayDefaults` object shorthand applies settings to whichever display uses
  * them — equivalent to a full `displays: [{ type, displayId, ... }]` array. See
@@ -39,7 +35,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   name: 'Hi-C',
  *   assemblyNames: ['hg38'],
  *   adapter: { type: 'HicAdapter', uri: 'https://example.com/contacts.hic' },
- *   displayDefaults: { useLogScale: true, resolutionBias: 1 },
+ *   displayDefaults: { color: { scale: 'log' }, resolutionBias: 1 },
  * }
  * ```
  */
@@ -53,14 +49,11 @@ const HicTrackConfigFactory = () => {
         height: 'default height for the Hi-C track',
       }),
       /**
-       * #slot
+       * #slot color
+       * How a count becomes a colour: a `linear` or `log` scale onto a named
+       * `scheme` or the stops in `range`.
        */
-      colorScheme: {
-        type: 'stringEnum',
-        model: types.enumeration('HicColorScheme', [...HIC_COLOR_SCHEMES]),
-        defaultValue: DEFAULT_HIC_COLOR_SCHEME,
-        description: 'color ramp used to render contact intensity',
-      },
+      color: hicColorConfigSchema,
       /**
        * #slot
        */
@@ -79,14 +72,6 @@ const HicTrackConfigFactory = () => {
         type: 'number',
         defaultValue: 0,
         description: 'offset from the auto-picked resolution binsize',
-      },
-      /**
-       * #slot
-       */
-      useLogScale: {
-        type: 'boolean',
-        defaultValue: false,
-        description: 'map contact counts to color on a log2 scale',
       },
       /**
        * #slot

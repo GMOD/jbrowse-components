@@ -2,13 +2,13 @@ import {
   MISCONFIGURED_COLOR,
   NO_CATEGORY_COLOR,
 } from '@jbrowse/core/util/color'
+import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 import { thresholdCuts } from '@jbrowse/core/util/thresholdScale'
 import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { colorNotices, fieldScaleOf } from '@jbrowse/display-kit/colorScale'
 import { MAX_WIGGLE_CUTS } from '@jbrowse/wiggle-core'
 
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
-import { rampLutOf } from './densityColorRamp.ts'
 import { SOURCE_FIELD, WIGGLE_FIELD_SCALES } from './wiggleColorConfigSchema.ts'
 
 import type { SourcePalette } from '../LinearWiggleDisplay/sourcesLogic.ts'

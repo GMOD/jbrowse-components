@@ -1,85 +1,7 @@
-import {
-  VIRIDIS_STOPS,
-  buildColorRampLut,
-  stopsFromRampLut,
-} from '@jbrowse/core/util/colorRamp'
+import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { makeRampFillStyleLut } from '@jbrowse/render-core/canvas2dUtils'
 
 import { MIN_VISIBLE_ALPHA } from './shaders/hic.consts.generated.ts'
-
-import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
-
-export type RGBA = ColorRampStop
-
-// Single source of truth for each scheme. Used to build the GPU/Canvas2D
-// 256x1 RGBA ramp AND the legend gradient. Stops are evenly spaced, which is
-// what `sampleColorRamp` interpolates between.
-const FALL_STOPS: readonly RGBA[] = [
-  [255, 255, 255, 255],
-  [255, 255, 204, 255],
-  [255, 237, 160, 255],
-  [254, 217, 118, 255],
-  [254, 178, 76, 255],
-  [253, 141, 60, 255],
-  [252, 78, 42, 255],
-  [227, 26, 28, 255],
-  [189, 0, 38, 255],
-  [128, 0, 38, 255],
-  [0, 0, 0, 255],
-]
-
-const JUICEBOX_STOPS: readonly RGBA[] = [
-  [255, 0, 0, 0],
-  [255, 0, 0, 255],
-]
-
-// One source of truth for the scheme names, their menu labels and the default:
-// the config schema's `types.enumeration` spreads the value list, the track menu
-// builds its radios off the same table, and its slot reads the constant — so
-// adding a scheme is one edit here. `Record<HicColorScheme, …>` below makes that
-// addition a type error until its stops exist. Order is menu order.
-//
-// The track menu's default entry writes DEFAULT_HIC_COLOR_SCHEME and relies on
-// stripDefault omitting it (so picking it doesn't mark the track edited), which
-// holds by construction now that the slot default *is* this constant.
-export const HIC_COLOR_SCHEME_OPTIONS = [
-  ['juicebox', 'Juicebox'],
-  ['fall', 'Fall'],
-  ['viridis', 'Viridis'],
-] as const
-
-export type HicColorScheme = (typeof HIC_COLOR_SCHEME_OPTIONS)[number][0]
-
-export const HIC_COLOR_SCHEMES = HIC_COLOR_SCHEME_OPTIONS.map(
-  ([value]) => value,
-)
-
-export const DEFAULT_HIC_COLOR_SCHEME: HicColorScheme = 'juicebox'
-
-// Viridis is the full 256-stop spec (shared with wiggle density via
-// @jbrowse/core/util/colorRamp) so the heatmap gets the smooth
-// perceptually-uniform gradient; the legend reads an 11-stop subset out of the
-// built LUT, so a legend swatch is byte-identical to a heatmap entry.
-const SCHEMES: Record<HicColorScheme, readonly RGBA[]> = {
-  fall: FALL_STOPS,
-  juicebox: JUICEBOX_STOPS,
-  viridis: VIRIDIS_STOPS,
-}
-
-// Derived from SCHEMES rather than listing the three names a third time, so the
-// "adding a scheme is one edit" promise above actually holds: SCHEMES is the
-// only table keyed by HicColorScheme, and its Record type makes a missing entry
-// a type error.
-const RAMPS = Object.fromEntries(
-  Object.entries(SCHEMES).map(([name, stops]) => [
-    name,
-    buildColorRampLut(stops),
-  ]),
-) as Record<HicColorScheme, Uint8Array>
-
-export function generateColorRamp(colorScheme: HicColorScheme): Uint8Array {
-  return RAMPS[colorScheme]
-}
 
 const LEGEND_STOP_COUNT = 11
 
@@ -87,8 +9,8 @@ const LEGEND_STOP_COUNT = 11
 // round(t * 255) at bar fraction t — so the key and the heatmap are one table.
 // Alpha rides `opacity`, which is what keeps the juicebox scheme's
 // transparent→opaque fade through exporters with uneven rgba() support.
-export function legendStops(colorScheme: HicColorScheme) {
-  return stopsFromRampLut(RAMPS[colorScheme], LEGEND_STOP_COUNT)
+export function legendStops(ramp: Uint8Array) {
+  return stopsFromRampLut(ramp, LEGEND_STOP_COUNT)
 }
 
 // Per-cell fillStyle LUT for the Canvas2D + SVG hic draw: returns the cached
@@ -114,7 +36,3 @@ export function makeHicFillStyleLut(ramp: Uint8Array) {
     return opaque[idx] === 0 ? undefined : fill(t)
   }
 }
-
-// The count -> ramp-coordinate mapping that used to live here is now generated
-// from hic.slang itself: `mapHicCount` in ./shaders/hic.js.generated.ts, via
-// `//! js-export`. See adr-051 and hicShaderParity.test.ts.

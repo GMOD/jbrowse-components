@@ -223,11 +223,13 @@ lands before React re-renders.
 
 The named ramps a continuous colour scale's `scheme` takes, each one a stop
 table in `colorRamp.ts` that every ramp baker reads, so no display can name a
-scheme nothing bakes.
+scheme nothing bakes. `juicebox` fades from transparent to red, as Juicebox
+paints contacts; `fall` runs white through yellow and red to black, as HiGlass
+does; `reds` and `blues` run from white.
 
 ```js
 // type signature
-readonly['viridis']
+readonly[('viridis', 'juicebox', 'fall', 'reds', 'blues')]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)
@@ -261,7 +263,7 @@ under `reverse`.
 
 ```js
 // type signature
-({ range, scheme, reverse, }: { range?: readonly string[] | undefined; scheme?: "viridis" | undefined; reverse?: boolean | undefined; }) => readonly ColorRampStop[]
+({ range, scheme, reverse, }: RampDeclaration) => readonly ColorRampStop[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
@@ -321,7 +323,7 @@ so a declaration spelling it out and one leaving it unset resolve alike.
 
 ```js
 // type signature
-'viridis'
+;'blues' | 'fall' | 'juicebox' | 'reds' | 'viridis'
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)
@@ -867,6 +869,12 @@ Throws what the schema's `preProcessSnapshot` throws.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/snapshotPreprocess.ts)
 
+### RampDeclaration
+
+A continuous colour scale's ramp as a config declares it.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
+
 ### rampDomain
 
 The domain a continuous colour scale spans: each end `min` or `max` pins, else
@@ -877,6 +885,19 @@ holding no value (`[Infinity, -Infinity]`) spans [0, 1].
 ```js
 // type signature
 (min: number | undefined, max: number | undefined, extent: readonly [number, number]) => [number, number]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
+
+### rampLutOf
+
+The buildColorRampLut table a ramp declaration asks for, the same `Uint8Array`
+for the same declaration, since a GPU backend re-uploads its ramp texture when
+the identity changes and a render state is rebuilt far more often than its ramp.
+
+```js
+// type signature
+(ramp: RampDeclaration) => Uint8Array<ArrayBufferLike>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)

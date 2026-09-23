@@ -27,11 +27,7 @@ import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 import { bandPairIndex } from '../VariantRPC/ldBand.ts'
 import { clampLineZoneHeight } from '../shared/constants.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
-import {
-  generateLDColorRamp,
-  ldColorStops,
-  ldMetricLabel,
-} from './components/ldColorRamp.ts'
+import { generateLDColorRamp, ldMetricLabel } from './components/ldColorRamp.ts'
 import { toLDUploadData } from './components/ldRenderingBackendTypes.ts'
 import { buildLDTrackMenuItems } from './trackMenuItems.ts'
 
@@ -49,6 +45,8 @@ import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
+
+const LEGEND_STOP_COUNT = 8
 
 function upperBoundFloat32(arr: Float32Array, val: number) {
   let lo = 0
@@ -236,8 +234,7 @@ export default function sharedModelFactory(
        * #getter
        * `LegendMixin`'s hook: the metric's ramp, read out of the same 256-entry
        * LUT the cells are painted through (and the GPU samples as its ramp
-       * texture), one stop per source-table knot. Derived rather than restated,
-       * so the key cannot stop describing the plot beside it.
+       * texture), so the key cannot stop describing the plot beside it.
        */
       get colorScales(): ColorScale[] {
         const metric = this.effectiveLdMetric
@@ -249,7 +246,7 @@ export default function sharedModelFactory(
             domain: [0, 1],
             stops: stopsFromRampLut(
               generateLDColorRamp(metric),
-              ldColorStops(metric).length,
+              LEGEND_STOP_COUNT,
             ),
           },
         ]

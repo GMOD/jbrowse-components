@@ -596,10 +596,11 @@ The gaps a user meets first, in order:
    envelope; a mark reads `minScore`/`maxScore` (ADR-123) but draws them as two
    point sets. A range bar is the smallest channel with the widest reach.
 3. **No text mark**, for labelling a peak, an SV or a gene on a plot.
-4. **A thin colour and scale vocabulary.** One named ramp
-   (`COLOR_SCHEMES = ['viridis']` in `packages/core/src/util/colorSchemes.ts`),
-   and symlog, which the shared scale object and wiggle already have, is not a
-   mark type.
+4. **A thin colour and scale vocabulary.** Five named ramps
+   (`COLOR_SCHEMES` in `packages/core/src/util/colorSchemes.ts`): viridis,
+   and the four Hi-C and LD brought — `juicebox`, `fall`, `reds`, `blues`. No
+   other perceptual ramp and no diverging one, and symlog, which the shared
+   scale object and wiggle already have, is not a mark type.
 5. **In-app authoring stops at one mark.** **Plot field...** writes one mark and
    an optional count per bin, the config editor edits transform steps but not
    marks (`db4ef2f82a`), and the track menu has no facet or colour picker.

@@ -453,6 +453,9 @@ function colorStep(
   if (scale && displayType === 'LinearManhattanDisplay') {
     return manhattanColorStep(scale)
   }
+  if (scale && displayType === 'LinearHicDisplay') {
+    return hicColorStep(scale)
+  }
   if (displayType === 'LinearWiggleDisplay') {
     return {
       path: `${TRACK_MENU} → Edit color... → the JSON box`,
@@ -473,6 +476,20 @@ function colorStep(
       : { path: `${colorBy} → Attribute... → ${field}` }
   }
   return constantColorStep(value, context)
+}
+
+function hicColorStep(color: Record<string, unknown>): FieldStep | undefined {
+  const scheme = asString(color.scheme)
+  const schemeStep = scheme
+    ? `${TRACK_MENU} → Color scheme → ${capitalizeFirst(scheme)}`
+    : undefined
+  if (color.scale === undefined) {
+    return schemeStep ? { path: schemeStep } : undefined
+  }
+  return {
+    path: `${TRACK_MENU} → Show... → Log scale (${color.scale === 'log' ? 'checked' : 'unchecked'})`,
+    note: schemeStep ? `Then ${schemeStep}.` : undefined,
+  }
 }
 
 function asList(value: unknown) {
@@ -998,15 +1015,9 @@ export const trackFields: Record<string, FieldRecipe> = {
   facet: facetStep,
   jexlFilters: filterStep,
   jexlFiltersSetting: filterStep,
-  // These three are declared by LinearHicDisplay alone, so as with the
+  // These two are declared by LinearHicDisplay alone, so as with the
   // alignments-only fields the name settles the display and an unresolved entry
-  // can still be answered. All three are checkboxes in its Show submenu.
-  useLogScale: (value, { displayType }) =>
-    typeof value === 'boolean' && isHicOnlyField(displayType)
-      ? {
-          path: `${TRACK_MENU} → Show... → Log scale (${value ? 'checked' : 'unchecked'})`,
-        }
-      : undefined,
+  // can still be answered. Both are checkboxes in its Show submenu.
   showResolutionControls: (value, { displayType }) =>
     typeof value === 'boolean' && isHicOnlyField(displayType)
       ? {

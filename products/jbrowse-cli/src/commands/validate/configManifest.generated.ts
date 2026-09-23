@@ -5731,8 +5731,22 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "colorScheme",
-          "type": "HicColorScheme"
+          "name": "color",
+          "type": "HicColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "scale",
+              "type": "HicColorScale"
+            },
+            {
+              "name": "scheme",
+              "type": "ColorScheme"
+            },
+            {
+              "name": "reverse",
+              "type": "boolean"
+            }
+          ]
         },
         {
           "name": "showLegend",
@@ -5741,10 +5755,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "resolutionBias",
           "type": "number"
-        },
-        {
-          "name": "useLogScale",
-          "type": "boolean"
         },
         {
           "name": "useColorPercentile",

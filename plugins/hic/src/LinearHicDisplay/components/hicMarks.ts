@@ -1,7 +1,7 @@
 import { defineMark } from '@jbrowse/render-core/marks'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import { generateColorRamp, makeHicFillStyleLut } from './colorRamp.ts'
+import { makeHicFillStyleLut } from './colorRamp.ts'
 import { drawHicBlocks } from './drawHicBlocks.ts'
 import * as hicShader from './shaders/hic.generated.ts'
 
@@ -63,11 +63,8 @@ export const HIC_MARKS = [
       useLogScale: state.useLogScale,
       viewScale: state.viewScale,
       viewOffsetX: state.viewOffsetX,
-      colorRamp: generateColorRamp(state.colorScheme),
+      colorRamp: state.colorRamp,
     }),
-    // The scheme's table is module-level and handed back by identity, so the
-    // backend re-uploads the 256×1 texture only when the user picks another
-    // scheme — the second upload cell this replaced.
-    texture: (state: HicRenderState) => generateColorRamp(state.colorScheme),
+    texture: (state: HicRenderState) => state.colorRamp,
   }),
 ]

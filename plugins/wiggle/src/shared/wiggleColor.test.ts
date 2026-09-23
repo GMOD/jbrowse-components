@@ -1,5 +1,6 @@
+import { rampLutOf } from '@jbrowse/core/util/colorRamp'
+
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
-import { rampLutOf } from './densityColorRamp.ts'
 import { resolveWiggleColor, wiggleColorEncoding } from './wiggleColor.ts'
 
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'

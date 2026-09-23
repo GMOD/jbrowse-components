@@ -4,6 +4,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 import { installPrerequisiteFetch } from '@jbrowse/core/util/installPrerequisiteFetch'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin, {
@@ -32,14 +33,15 @@ import type {
   HicContactItem,
   HicDataResult,
 } from '../RenderHicDataRPC/types.ts'
-import type { HicColorScheme } from './components/colorRamp.ts'
 import type {
   HicRenderState,
   HicRenderingBackend,
   HicUploadData,
 } from './components/hicRenderingBackendTypes.ts'
 import type { HicTrackConfigModel } from './configSchema.ts'
+import type { HicColorScale } from './hicColorConfigSchema.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
@@ -75,7 +77,7 @@ export const RESOLUTION_ROW_CLEARANCE = 28
  *     {
  *       type: 'LinearHicDisplay',
  *       displayId: 'hic-LinearHicDisplay',
- *       useLogScale: true,
+ *       color: { scale: 'log' },
  *       resolutionBias: 1,
  *     },
  *   ],
@@ -156,10 +158,28 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
+       * Whether counts land on the ramp by their log2: the colour's `scale`.
        */
-      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST getter named after config slot
+      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- named after the shader's uniform
       get useLogScale(): boolean {
-        return getConf(self, 'useLogScale')
+        return getConf(self, ['color', 'scale']) === 'log'
+      },
+      /**
+       * #getter
+       */
+      get colorScheme(): ColorSchemeName {
+        return getConf(self, ['color', 'scheme'])
+      },
+      /**
+       * #getter
+       * The 256-entry ramp the colour declares, one table for the GPU's
+       * texture, the Canvas2D fill and the legend.
+       */
+      get colorRamp(): Uint8Array {
+        return rampLutOf({
+          scheme: this.colorScheme,
+          reverse: getConf(self, ['color', 'reverse']),
+        })
       },
       /**
        * #getter
@@ -249,9 +269,6 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       get appliedNormalization(): string {
         return self.rpcData?.appliedNormalization ?? self.activeNormalization
       },
-      get colorScheme(): HicColorScheme {
-        return getConf(self, 'colorScheme')
-      },
       /**
        * #getter
        * Where the color ramp saturates. `0` is the "no data to scale against"
@@ -297,7 +314,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
             id: 'contacts',
             title: useLogScale ? 'Contacts (log)' : 'Contacts',
             domain: hicScaleDomain(score, useLogScale),
-            stops: legendStops(this.colorScheme),
+            stops: legendStops(self.colorRamp),
           },
         ]
       },
@@ -490,7 +507,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           canvasHeight: self.height,
           colorMaxScore: self.colorMaxScore,
           useLogScale: self.useLogScale,
-          colorScheme: self.colorScheme,
+          colorRamp: self.colorRamp,
           viewScale,
           viewOffsetX,
         }
@@ -556,8 +573,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #action
        */
-      setUseLogScale(f: boolean) {
-        setConf(self, 'useLogScale', f)
+      setColorScale(scale: HicColorScale) {
+        setConf(self, ['color', 'scale'], scale)
       },
       /**
        * #action
@@ -574,8 +591,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #action
        */
-      setColorScheme(f: HicColorScheme) {
-        setConf(self, 'colorScheme', f)
+      setColorScheme(scheme: ColorSchemeName) {
+        setConf(self, ['color', 'scheme'], scheme)
       },
       /**
        * #action

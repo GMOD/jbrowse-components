@@ -47,10 +47,14 @@ auto-selected level, so resolution still tracks your zoom, just shifted.
 
 Pick the ramp from the track menu's **Color scheme**:
 
-- **Juicebox** - white to red
-- **Fall** - white through yellow and red to black
 - **Viridis** - perceptually uniform, and the safer choice for readers with
   color vision deficiency
+- **Juicebox** - transparent to red, the default
+- **Fall** - white through yellow and red to black
+- **Reds** and **Blues** - white to red, and white to blue
+
+These are the ramps every colour scale in JBrowse names, so the config spells
+one as [`color.scheme`](/docs/config/hiccolor/#slot-scheme).
 
 **Show → Show faint contacts (95th percentile)** decides what the ramp spans.
 Off, the diagonal owns the scale and everything below it washes out; on (the
@@ -106,10 +110,10 @@ against itself.
 How much figure this is depends on the file. A file storing only
 intra-chromosomal contacts leaves every block between the triangles empty, so
 check a candidate before reading anything into a blank off-diagonal. It also
-decides the sensible ramp: a sparse file needs
-[`useLogScale`](/docs/config/linearhicdisplay/#slot-uselogscale) to lift its
-decayed long-range bins off the floor, and a dense one comes back solid under
-the same setting, since every bin then reaches the top of the scale.
+decides the sensible ramp: a sparse file needs a log
+[`color.scale`](/docs/config/hiccolor/#slot-scale) to lift its decayed
+long-range bins off the floor, and a dense one comes back solid under the same
+setting, since every bin then reaches the top of the scale.
 
 The track has to be tall here. A pair's contacts are drawn in the wedge between
 its two regions, so the drawing is as tall as the widest pair on screen is wide,

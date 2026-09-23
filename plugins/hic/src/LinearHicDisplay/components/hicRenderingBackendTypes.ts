@@ -1,4 +1,3 @@
-import type { HicColorScheme } from './colorRamp.ts'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
 // What painting a bin actually depends on. Kept separate from the canvas dims
@@ -15,10 +14,9 @@ export interface HicDrawState {
 export interface HicRenderState extends HicDrawState {
   canvasWidth: number
   canvasHeight: number
-  // The palette, as the name of the scheme rather than its bytes: the mark
-  // resolves both the GPU's ramp texture and the painter's fillStyle LUT from
-  // it, and the table it resolves to is identity-stable.
-  colorScheme: HicColorScheme
+  // The ramp's bytes, identity-stable per declaration (`rampLutOf`), so the
+  // GPU re-uploads its texture only when the colour changes.
+  colorRamp: Uint8Array
 }
 
 // `binWidth` rides with the data, not the frame state: it's the px size the

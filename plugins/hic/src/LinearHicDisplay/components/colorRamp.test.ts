@@ -1,22 +1,19 @@
-import {
-  generateColorRamp,
-  legendStops,
-  makeHicFillStyleLut,
-} from './colorRamp.ts'
+import { rampLutOf } from '@jbrowse/core/util/colorRamp'
+import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
+
+import { legendStops, makeHicFillStyleLut } from './colorRamp.ts'
 import { MIN_VISIBLE_ALPHA } from './shaders/hic.consts.generated.ts'
 
-import type { HicColorScheme } from './colorRamp.ts'
+import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 
-const SCHEMES: HicColorScheme[] = ['juicebox', 'fall', 'viridis']
+function generateColorRamp(scheme: ColorSchemeName) {
+  return rampLutOf({ scheme })
+}
 
-function alphaAt(scheme: HicColorScheme, t: number) {
+function alphaAt(scheme: ColorSchemeName, t: number) {
   const ramp = generateColorRamp(scheme)
   return ramp[Math.round(t * 255) * 4 + 3]!
 }
-
-// mapHicCount used to live in colorRamp.ts as a hand-written mirror of
-// hic.slang's fragment shader; it is now generated from the shader itself, and
-// its behavior is pinned in hicShaderParity.test.ts.
 
 // The alpha cutoff lives in the hic-specific LUT rather than the shared
 // render-core primitive: the juicebox scheme fades alpha 0->255, and returning
@@ -71,7 +68,7 @@ describe('makeHicFillStyleLut', () => {
 })
 
 describe('color ramps', () => {
-  test.each(SCHEMES)('%s builds a 256-entry RGBA ramp', scheme => {
+  test.each(COLOR_SCHEMES)('%s builds a 256-entry RGBA ramp', scheme => {
     expect(generateColorRamp(scheme)).toHaveLength(256 * 4)
   })
 
@@ -80,7 +77,7 @@ describe('color ramps', () => {
   // ramp builds through too) can both be edited without any other test here
   // noticing: these entries are what says the heatmap still paints the colors
   // it painted, byte for byte.
-  const RAMP_BYTES: [HicColorScheme, number[][]][] = [
+  const RAMP_BYTES: [ColorSchemeName, number[][]][] = [
     [
       'juicebox',
       [
@@ -120,11 +117,11 @@ describe('color ramps', () => {
     ).toEqual(expected)
   })
 
-  test.each(SCHEMES)(
+  test.each(COLOR_SCHEMES)(
     '%s legend samples the same source as the ramp',
     scheme => {
-      const stops = legendStops(scheme)
       const ramp = generateColorRamp(scheme)
+      const stops = legendStops(ramp)
       expect(stops).toHaveLength(11)
       expect(stops[0]!.offset).toBe(0)
       expect(stops[10]!.offset).toBe(1)

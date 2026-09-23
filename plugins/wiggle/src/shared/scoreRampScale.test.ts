@@ -1,4 +1,5 @@
-import { rampLutOf } from './densityColorRamp.ts'
+import { rampLutOf } from '@jbrowse/core/util/colorRamp'
+
 import {
   makeDensityLutFillFn,
   makeDensityRgbStringFn,
@@ -10,7 +11,7 @@ import { makeWiggleRenderState } from './wiggleComponentUtils.ts'
 // score has to land on the same ink in both. `symlogConstant` is the input
 // that can separate them: the config slot holds a raw value whose `0` means
 // "derive from the domain", and only the renderer's resolution of it is the
-// number actually painted with. `densityColorRamp` is the other: a named ramp
+// number actually painted with. `rampLutOf` is the other: a named ramp
 // swaps the plot onto a LUT, and a key still drawing the default fade
 // describes a picture the track no longer paints.
 

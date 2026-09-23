@@ -318,8 +318,8 @@ describe('the LD painter', () => {
   })
 
   // Every ramp a display can reach is opaque, which is why the painter has no
-  // alpha gate: `generateLDColorRamp` returns one of two LUTs, both built by
-  // `opaqueRampLut`. A translucent one would need a matching `discard` in
+  // alpha gate: `generateLDColorRamp` returns the `reds` or `blues` LUT, both
+  // opaque at every stop. A translucent one would need a matching `discard` in
   // ldUniforms.slang, which gates on `ldValueComputed` alone — so a gate here
   // would be a Canvas2D-only skip.
   it.each(['r2', 'dprime'])('every %s ramp entry is opaque', metric => {

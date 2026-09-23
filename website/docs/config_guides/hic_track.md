@@ -42,8 +42,7 @@ shows what each does to the picture:
   },
   "displayDefaults": {
     "selectedNormalization": "KR",
-    "useLogScale": true,
-    "colorScheme": "viridis",
+    "color": { "scale": "log", "scheme": "viridis" },
     "showLegend": true
   }
 }

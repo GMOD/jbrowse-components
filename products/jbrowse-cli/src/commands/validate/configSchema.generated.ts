@@ -4294,7 +4294,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "const": "viridis"
+              "enum": [
+                "viridis",
+                "juicebox",
+                "fall",
+                "reds",
+                "blues"
+              ]
             },
             "reverse": {
               "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
@@ -4958,7 +4964,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "const": "viridis"
+              "enum": [
+                "viridis",
+                "juicebox",
+                "fall",
+                "reds",
+                "blues"
+              ]
             },
             "reverse": {
               "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
@@ -6385,7 +6397,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "const": "viridis"
+              "enum": [
+                "viridis",
+                "juicebox",
+                "fall",
+                "reds",
+                "blues"
+              ]
             },
             "reverse": {
               "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
@@ -7128,6 +7146,41 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "HicColor": {
+      "title": "HicColor",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "scale": {
+          "description": "linear, or log2 of the count.",
+          "enum": [
+            "linear",
+            "log"
+          ],
+          "default": "linear"
+        },
+        "scheme": {
+          "description": "the named ramp counts run across.",
+          "enum": [
+            "viridis",
+            "juicebox",
+            "fall",
+            "reds",
+            "blues"
+          ],
+          "default": "juicebox"
+        },
+        "reverse": {
+          "description": "run the ramp from its last colour.",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearHicDisplaySlots": {
       "type": "object",
       "properties": {
@@ -7136,14 +7189,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 300
         },
-        "colorScheme": {
-          "description": "color ramp used to render contact intensity.",
-          "enum": [
-            "juicebox",
-            "fall",
-            "viridis"
-          ],
-          "default": "juicebox"
+        "color": {
+          "$ref": "#/$defs/HicColor"
         },
         "showLegend": {
           "description": "show the color scale legend. Defaults to off.",
@@ -7154,11 +7201,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "offset from the auto-picked resolution binsize.",
           "type": "number",
           "default": 0
-        },
-        "useLogScale": {
-          "description": "map contact counts to color on a log2 scale.",
-          "type": "boolean",
-          "default": false
         },
         "useColorPercentile": {
           "description": "saturate color at the 95th percentile of counts.",
@@ -7594,7 +7636,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "const": "viridis"
+              "enum": [
+                "viridis",
+                "juicebox",
+                "fall",
+                "reds",
+                "blues"
+              ]
             },
             "reverse": {
               "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
@@ -11287,17 +11335,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "height": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/height"
             },
-            "colorScheme": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/colorScheme"
+            "color": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/color"
             },
             "showLegend": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/showLegend"
             },
             "resolutionBias": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/resolutionBias"
-            },
-            "useLogScale": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/useLogScale"
             },
             "useColorPercentile": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/useColorPercentile"

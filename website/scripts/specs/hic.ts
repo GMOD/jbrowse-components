@@ -62,12 +62,12 @@ function matrix(trackId: string, height: number) {
     // Named explicitly, though the track resolves to it anyway, because the
     // figure-recipe builder needs a display type to map `squashToHeight` to its
     // menu item: that slot is shared with the two LD heatmaps, so unlike
-    // `useLogScale` the field name alone cannot settle which display it means,
+    // `useColorPercentile` the field name alone cannot settle which display it means,
     // and an unresolved entry lands in spec-recipe-unmapped.txt instead of
     // giving the reader a click path.
     type: 'LinearHicDisplay',
     height,
-    useLogScale: false,
+    color: { scale: 'linear' },
     useColorPercentile: true,
     selectedNormalization: 'NONE',
     // Square bins, NOT squashToHeight. A pair's contacts are drawn at depth

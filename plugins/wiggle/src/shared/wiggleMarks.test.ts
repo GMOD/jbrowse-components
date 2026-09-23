@@ -1,3 +1,4 @@
+import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 import { MockHal } from '@jbrowse/render-core/hal'
 import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import {
@@ -10,7 +11,6 @@ import {
   SCALE_TYPE_LOG,
 } from '@jbrowse/wiggle-core'
 
-import { rampLutOf } from './densityColorRamp.ts'
 import {
   INSTANCE_OFFSET_F32 as FILL_F32,
   INSTANCE_OFFSET_U32 as FILL_U32,

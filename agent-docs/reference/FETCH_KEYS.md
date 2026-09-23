@@ -214,8 +214,8 @@ redundant refetch of regions already loaded and in budget.
 
 `gpuProps()` exists wherever the main thread encodes the GPU buffer — wiggle
 and MAF (and GC-content, which inherits wiggle's wholesale). HiC and
-multi-LGV synteny fill the same role without the method: HiC's upload callback
-reads `self.colorScheme` straight into `generateColorRamp`, and synteny's
+multi-LGV synteny fill the same role without the method: HiC's render state
+carries `self.colorRamp`, the cached LUT its colour declares, and synteny's
 `computedColors` getter is its re-upload-without-refetch half. Canvas's worker
 emits a color *class* per themed lane and
 the main-thread encode resolves classes against `session.palette`, so the

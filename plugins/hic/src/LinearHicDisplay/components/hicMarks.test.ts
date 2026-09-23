@@ -1,10 +1,10 @@
+import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 import { MockHal } from '@jbrowse/render-core/hal'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
 import { packTestInstances } from '../../testInstances.ts'
-import { generateColorRamp } from './colorRamp.ts'
 import { HIC_MARKS } from './hicMarks.ts'
 import {
   INSTANCE_STRIDE_BYTES,
@@ -45,7 +45,7 @@ function makeRenderState(overrides?: Partial<HicRenderState>): HicRenderState {
     yScalar: 1,
     colorMaxScore: 100,
     useLogScale: false,
-    colorScheme: 'juicebox',
+    colorRamp: rampLutOf({ scheme: 'juicebox' }),
     viewScale: 1,
     viewOffsetX: 0,
     ...overrides,
@@ -157,15 +157,15 @@ describe('the hic mark list', () => {
     expect(texCalls[0]!.args[0]).toBe('main')
     expect(texCalls[0]!.args[2]).toBe(256)
     expect(texCalls[0]!.args[3]).toBe(1)
-    expect(hal.getTexture('main')).toEqual(generateColorRamp('juicebox'))
+    expect(hal.getTexture('main')).toEqual(rampLutOf({ scheme: 'juicebox' }))
 
     backend.renderBlocks(
       blocks,
       regions,
-      makeRenderState({ colorScheme: 'viridis' }),
+      makeRenderState({ colorRamp: rampLutOf({ scheme: 'viridis' }) }),
     )
     expect(hal.callsOf('uploadTexture').length).toBe(2)
-    expect(hal.getTexture('main')).toEqual(generateColorRamp('viridis'))
+    expect(hal.getTexture('main')).toEqual(rampLutOf({ scheme: 'viridis' }))
   })
 })
 

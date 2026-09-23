@@ -1,6 +1,6 @@
 ---
 name: grammar-of-graphics-convergence
-description: The grammar thread as of 2026-09-23. Four rules for how far to take it (the parser's output is the data, one object per concept, generality resolves before the loop, a track stays its format and the grammar supplies its parts), a census of the copies between each gmod parser and its GPU buffer, and the work they rank — one ramp table, y scales shared across tracks, a text layer, one row scale, the copies. Waiting on Colin's call on the order and on y2. Read before proposing a grammar feature, or converging a display's colour ramp, rows or labels.
+description: The grammar thread as of 2026-09-23. Four rules for how far to take it (the parser's output is the data, one object per concept, generality resolves before the loop, a track stays its format and the grammar supplies its parts), a census of the copies between each gmod parser and its GPU buffer, Colin's calls of 2026-09-23 (Vega-Lite's mark/shape naming, a DOM text layer, colour stays per mark), and the work left — which ramps to add, y scales shared across tracks, the rename, a text layer, one row scale, the copies. y2 waits on a picture. Read before proposing a grammar feature, or converging a display's colour ramp, rows or labels.
 ---
 
 # Grammar of graphics: the convergence thread
@@ -45,6 +45,28 @@ are channels (ADR-091, and SESSION_SPEC_FORMAT.md §"The assessment"). The
 grammar converges the parts every display shares, not the displays. A new mark
 or channel arrives when it retires a hand-written spelling somewhere, which is
 ADR-040's two-consumer bar stated as a goal.
+
+## Decided on 2026-09-23
+
+Colin's answers to the calls a Fable review of the mark display left open:
+
+- **Vega-Lite's names.** A mark's kind is `mark` and the point symbol is
+  `encoding.shape`, where the mark display says `shape` and `encoding.glyph`
+  today, so a Vega-Lite or GenomeSpy layer object drops into `marks` as
+  written and `jbrowse validate`'s `SPELLED_HERE` table goes. render-core's
+  `MarkShape`, the painter/shader/hit triple, keeps its name.
+- **The text layer draws DOM text on screen**, for accessibility. A label
+  layer is sparse once overlaps are culled, so DOM costs little there; dense
+  per-base text (sequence letters, MAF bases) stays on canvas and outside the
+  layer. The placement rule is shared, and only the emit differs between the
+  screen and the SVG export.
+- **Colour stays per mark.** Scale members on each mark's `encoding.color` is
+  Vega-Lite's own spelling, and marks declaring one alike already share a
+  scale and a key. Only two open-ended ramps unioning one domain is missing,
+  and nothing in the tree asks for it. A display-level `scales.color` would
+  be a second spelling.
+- **`y2` needs a picture first**: the mark display's BigWig min and max as two
+  point sets beside the range bar `y2` would draw, and wiggle's whisker band.
 
 ## Withdrawn on 2026-09-23
 
@@ -95,27 +117,22 @@ two copies deep.
 
 ### 1. One ramp table
 
-Named ramps live in three tables today:
+Landed: every named ramp is a stop table in `packages/core/src/util/colorRamp.ts`
+under a name in `COLOR_SCHEMES` — `viridis`, `juicebox`, `fall`, `reds`,
+`blues` — and `rampLutOf` there is the one identity-cached LUT. Hi-C's colour
+is the `HicColor` object (`scale: linear | log`, `scheme`, `reverse`), which
+retired `colorScheme` and `useLogScale`; its menu lists every scheme. LD paints
+R² through `reds` and D′ through `blues`, bytes unchanged, and declares no
+colour slot, since nothing asks to pick an LD ramp. Hi-C's percentile domain
+is a domain rule of its own and stays the `useColorPercentile` slot.
 
-- `COLOR_SCHEMES = ['viridis']` in `packages/core/src/util/colorSchemes.ts`,
-  the `scheme` every colour object takes.
-- Hi-C's own `fall`, `juicebox` and `viridis`
-  (`plugins/hic/src/LinearHicDisplay/components/colorRamp.ts`), picked by a
-  `colorScheme` enum beside `useLogScale` and `useColorPercentile`
-  (`configSchema.ts:58`). None of those three slots is the colour object.
-- LD's R² red and D′ blue ramps, fixed per metric
-  (`plugins/variants/src/LDDisplay/components/ldColorRamp.ts`).
-
-Every one of them already builds its LUT through `buildColorRampLut`, so the
-move is a data move. The stop tables go into core's scheme table, Hi-C's colour
-becomes the colour object (`scale: linear | log`, `scheme`), and LD names its
-metric's scheme as a default. The perceptual ramps (magma, inferno, plasma,
-cividis) and one or two diverging ones then cost a stop table each and no new
-shader: ADR-095's named-ramp gauge is one uniform flag and a 1024-byte LUT.
-Hi-C's percentile domain is a domain rule of its own and stays Hi-C's.
-
-Choosing which ramps to add is a visual call: capture the candidates side by
-side on a Hi-C locus and a wiggle density track before asking.
+What is left is which ramps to add. The perceptual ramps (magma, inferno,
+plasma, cividis) and one or two diverging ones cost a stop table each and no
+new shader: ADR-095's named-ramp gauge is one uniform flag and a 1024-byte LUT.
+Choosing is a visual call: capture the candidates side by side on a Hi-C locus
+and a wiggle density track before asking. Whether `reds` and `blues` should
+become ColorBrewer's (Vega's) stops rather than LD's hand-picked ones is part
+of the same capture.
 
 ### 2. y scales shared across tracks
 
@@ -146,8 +163,8 @@ pass (`packages/render-core/src/marks/types.ts:125`) and GPU text would need a
 glyph atlas nobody has asked for. What fits is a declared overlay layer: an
 `encoding.text` field and one placement rule (anchor, cull overlaps, halo from
 `usePalette`, clip to the region) that the screen and `SvgCanvas` export both
-run. Its first design question is the on-screen medium, DOM or overlay canvas.
-The mark display is the first consumer; the second has to retire one of the
+run. On screen it emits DOM text (decided above). The mark display is the first
+consumer; the second has to retire one of the
 hand-written paths, and the arc and off-screen-mate labels are the simplest.
 Canvas's feature labels move only on a bench at parity, since their isoform
 badges and scroll bucketing belong to that display.
@@ -178,7 +195,7 @@ per row, is the rule-1 form of ADR-152's column encoder, and ADR-152's two lane
 fixes (no `featureIndex` when nothing reorders, a constant colour as a scalar)
 still gate wiggle itself.
 
-### 6. A `y2` channel — needs Colin's call
+### 6. A `y2` channel — needs a picture for Colin
 
 `y2` is a second value position. A bar with only `y` stands from the baseline
 to `y`; a bar with `y` and `y2` stands from `y` to `y2`, so it can draw a range:
@@ -192,15 +209,16 @@ of points. Wiggle's whiskers band would be the second consumer.
 ### 7. Colours still spelt outside the colour object
 
 The alignments, feature, Manhattan, mark, wiggle, synteny and multi-way
-displays resolve colour through `colorEncodingOf`. Hi-C and LD go with the ramp
-table, and the variant and multi-row row colours with the row scale. MAF's
+displays resolve colour through `colorEncodingOf`. Hi-C's is the `HicColor` object
+now, LD's is named per metric, and the variant and multi-row row colours go
+with the row scale. MAF's
 `colorByChromosome` and the arc displays' `color` are what remains, through
 ADR-135.
 
 ## Order
 
 The row model (§4) is under way, ahead of the rest: it converges code that
-exists, which rule 2 ranks first. Then ramps, since they move data and touch no
-hot loop; then shared y, one mixin and a real tutorial step it removes; then the
-text layer, whose on-screen medium is still open. The copies run beside any of
-them, one bench each. `y2` waits on the call.
+exists, which rule 2 ranks first. The ramp table has landed. Next the
+`mark`/`shape` rename, then shared y, one mixin and a real tutorial step it
+removes, then the text layer. The ramps to add and `y2` each wait on a capture
+put to Colin. The copies run beside any of them, one bench each.

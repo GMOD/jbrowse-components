@@ -1,6 +1,7 @@
 import {
   buildColorRampLut,
   colorRampStops,
+  rampLutOf,
   sampleColorRamp,
 } from '@jbrowse/core/util/colorRamp'
 import { COLOR_RAMP_LUT_ENTRIES } from '@jbrowse/render-core/colorRampLut'
@@ -14,7 +15,6 @@ import {
   SCALE_TYPE_SYMLOG,
 } from '@jbrowse/wiggle-core'
 
-import { rampLutOf } from './densityColorRamp.ts'
 import {
   makeDensityLutFillFn,
   makeDensityRgbStringFn,

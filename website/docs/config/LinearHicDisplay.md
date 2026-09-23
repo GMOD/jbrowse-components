@@ -21,7 +21,7 @@ A minimal `HicTrack` config. See the
 }
 ```
 
-With log scale and a coarser resolution (`resolutionBias` nudges the
+With a log colour scale and a coarser resolution (`resolutionBias` nudges the
 auto-picked binsize; negative = finer, positive = coarser). The
 `displayDefaults` object shorthand applies settings to whichever display uses
 them — equivalent to a full `displays: [{ type, displayId, ... }]` array. See
@@ -34,7 +34,7 @@ them — equivalent to a full `displays: [{ type, displayId, ... }]` array. See
   name: 'Hi-C',
   assemblyNames: ['hg38'],
   adapter: { type: 'HicAdapter', uri: 'https://example.com/contacts.hic' },
-  displayDefaults: { useLogScale: true, resolutionBias: 1 },
+  displayDefaults: { color: { scale: 'log' }, resolutionBias: 1 },
 }
 ```
 
@@ -58,10 +58,9 @@ These slots go on a display entry: `"displays": [{ "type": "LinearHicDisplay", .
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-colorscheme">**colorScheme**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (juicebox, fall, viridis) = <code>'juicebox'</code> | color ramp used to render contact intensity |
+| <span id="slot-color">**color**</span><br>[HicColor](../hiccolor) | How a count becomes a colour: a `linear` or `log` scale onto a named `scheme` or the stops in `range`. |
 | <span id="slot-showlegend">**showLegend**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | show the color scale legend. Defaults to off |
 | <span id="slot-resolutionbias">**resolutionBias**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | Signed integer offset from the zoom-derived auto-picked binsize. `0` means pure auto; `-1` is one step finer, `+1` one step coarser. Tracking the offset (not an absolute binsize) keeps the intent valid across zoom. |
-| <span id="slot-uselogscale">**useLogScale**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | map contact counts to color on a log2 scale |
 | <span id="slot-usecolorpercentile">**useColorPercentile**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | false → maxScore/20 (linear) or maxScore (log); true → 95th percentile of counts, so off-diagonal contacts read more strongly. |
 | <span id="slot-showresolutioncontrols">**showResolutionControls**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | show the on-figure resolution dropdown in the overlay |
 | <span id="slot-selectednormalization">**selectedNormalization**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'KR'</code> | The user's chosen matrix normalization scheme (e.g. KR, SCALE, VC, NONE). Resolved at runtime against what the `.hic` file actually provides — see the model's `activeNormalization` getter. |

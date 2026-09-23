@@ -4,7 +4,8 @@ import {
   toggleItem,
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { getBpDisplayStr } from '@jbrowse/core/util'
+import { capitalizeFirst, getBpDisplayStr } from '@jbrowse/core/util'
+import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import { squashToHeightCheckboxItem } from '@jbrowse/display-kit/squashToHeightMenuItem'
 import { makeResolutionSubMenuItem } from '@jbrowse/wiggle-core/chrome'
@@ -12,10 +13,13 @@ import GridOnIcon from '@mui/icons-material/GridOn'
 import PaletteIcon from '@mui/icons-material/Palette'
 import TuneIcon from '@mui/icons-material/Tune'
 
-import { HIC_COLOR_SCHEME_OPTIONS } from './components/colorRamp.ts'
-
-import type { HicColorScheme } from './components/colorRamp.ts'
+import type { HicColorScale } from './hicColorConfigSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
+
+const COLOR_SCHEME_OPTIONS = COLOR_SCHEMES.map(
+  scheme => [scheme, capitalizeFirst(scheme)] as const,
+)
 
 interface HicMenuSelf {
   useLogScale: boolean
@@ -23,7 +27,7 @@ interface HicMenuSelf {
   showLegend: boolean
   showResolutionControls: boolean
   squashToHeight: boolean
-  colorScheme: HicColorScheme
+  colorScheme: ColorSchemeName
   hasResolutions: boolean
   canStepResolutionFiner: boolean
   canStepResolutionCoarser: boolean
@@ -32,12 +36,12 @@ interface HicMenuSelf {
   appliedNormalization: string
   effectiveResolution: number | undefined
   resolutionBias: number
-  setUseLogScale: (f: boolean) => void
+  setColorScale: (scale: HicColorScale) => void
   setUseColorPercentile: (f: boolean) => void
   setShowLegend: (f: boolean) => void
   setShowResolutionControls: (f: boolean) => void
   setSquashToHeight: (f: boolean) => void
-  setColorScheme: (s: HicColorScheme) => void
+  setColorScheme: (scheme: ColorSchemeName) => void
   setActiveNormalization: (s: string) => void
   stepResolution: (delta: number) => void
   resetResolutionBias: () => void
@@ -104,7 +108,9 @@ function showMenuItems(self: HicMenuSelf): MenuItem[] {
         ]
       : []),
     squashToHeightCheckboxItem(self),
-    toggleItem('Log scale', self.useLogScale, self.setUseLogScale),
+    toggleItem('Log scale', self.useLogScale, log => {
+      self.setColorScale(log ? 'log' : 'linear')
+    }),
     toggleItem(
       'Show faint contacts (95th percentile)',
       self.useColorPercentile,
@@ -166,7 +172,7 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
       onChange: scheme => {
         self.setColorScheme(scheme)
       },
-      options: HIC_COLOR_SCHEME_OPTIONS,
+      options: COLOR_SCHEME_OPTIONS,
     }),
     ...normalizationMenuItems(self),
   ]

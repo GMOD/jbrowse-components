@@ -9,7 +9,7 @@ digraph hic_colour {
   pct -> p95 [label=" on"]
   pct -> ls  [label=" off"]
   p95 [label="the 95th percentile"]
-  ls [label="useLogScale"]
+  ls [label="color.scale is log"]
   ls -> max       [label=" on"]
   ls -> twentieth [label=" off"]
   max [label="the max"]
