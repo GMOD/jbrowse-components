@@ -314,6 +314,18 @@ stretches nothing overlaps left out.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+### DEFAULT_COLOR_SCHEME
+
+The ramp a continuous scale samples while it names no `range` and no `scheme`,
+so a declaration spelling it out and one leaving it unset resolve alike.
+
+```js
+// type signature
+'viridis'
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)
+
 ### EncodeContext
 
 What surrounds an encode: the jexl instance a `jexl:` channel compiles against —

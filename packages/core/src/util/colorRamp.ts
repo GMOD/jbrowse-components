@@ -1,6 +1,7 @@
 import { COLOR_RAMP_LUT_ENTRIES } from '@jbrowse/render-core/colorRampLut'
 
 import { cssColorToRgba } from './colorBits.ts'
+import { DEFAULT_COLOR_SCHEME } from './colorSchemes.ts'
 
 import type { RampStop } from '../ui/colorScale.ts'
 import type { ColorSchemeName } from './colorSchemes.ts'
@@ -86,7 +87,7 @@ export function colorRampStops({
 }): readonly ColorRampStop[] {
   const stops = range?.length
     ? range.map(c => cssColorToRgba(c))
-    : SCHEME_STOPS[scheme ?? 'viridis']
+    : SCHEME_STOPS[scheme ?? DEFAULT_COLOR_SCHEME]
   return reverse ? stops.toReversed() : stops
 }
 

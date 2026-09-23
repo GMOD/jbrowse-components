@@ -47,7 +47,10 @@ import {
   visibleStatsDomain,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
-import { makePointSizeSubMenu } from '@jbrowse/wiggle-core/chrome'
+import {
+  makePointSizeSubMenu,
+  scatterPointSizeAccess,
+} from '@jbrowse/wiggle-core/chrome'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 
@@ -709,9 +712,10 @@ export function stateModelFactory(
             // loaded regions with the manual bounds applied on top. Set min/max
             // score is the one score control that does anything here.
             makeScoreSubMenu(self, { domain: self.domain }),
-            ...makePointSizeSubMenu(self, {
+            ...makePointSizeSubMenu({
               label: 'Point size',
               applies: true,
+              ...scatterPointSizeAccess(self),
             }),
             ...makeShowSubMenu([
               makeCrossHatchItem(self),

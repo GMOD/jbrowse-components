@@ -957,6 +957,37 @@ test('a bin hands its edges to the aggregate behind it, and a pileup leaves the 
   ])
 })
 
+// Group by → None keeps the facet's steps, so with no field to split on they
+// run over the one section there is, or a mark grouping by the bin they wrote
+// folds every feature into one group.
+test("a facet with no field still runs its steps, on the shared list after the display's", () => {
+  const { createDisplay } = createTestEnvironment(
+    [
+      {
+        shape: 'bar',
+        transform: [{ type: 'aggregate', ops: [{ op: 'count' }] }],
+        encoding: { y: 'count' },
+      },
+    ],
+    undefined,
+    undefined,
+    {
+      transform: [{ type: 'filter', expr: 'jexl:true' }],
+      facet: { transform: [{ type: 'bin', step: 500, as: ['lo', 'hi'] }] },
+    },
+  )
+  const { display } = createDisplay()
+  const props = display.rpcProps()
+  expect(props.facet).toBeUndefined()
+  expect(props.transform).toEqual([
+    { type: 'filter', expr: 'jexl:true' },
+    { type: 'bin', step: 500, field: 'start', as: ['lo', 'hi'] },
+  ])
+  expect(
+    (props.layers[0]!.transform![0] as { groupby: string[] }).groupby,
+  ).toEqual(['lo', 'hi'])
+})
+
 test("the facet's steps ride the request per section, hand their bin to the marks, and survive a field change", () => {
   const { createDisplay } = createTestEnvironment(
     [

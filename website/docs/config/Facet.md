@@ -33,6 +33,10 @@ displays: one labelled section of the track per value of a field. A string
 is the field; the object adds the order. The mark display's `MarkFacet`
 adds the steps each section runs.
 
+## Related links
+
+- **Extended by:** [MarkFacet](../markfacet)
+
 ## Config slots
 
 These slots go on a display entry: `"displays": [{ "type": "Facet", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.

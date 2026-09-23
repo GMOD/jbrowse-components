@@ -67,14 +67,14 @@ from an `origin` of 0, and the y-axis autoscales to the values on screen.
 
 Each mark's `encoding` maps feature fields to the channels its shape reads:
 
-| Channel | Read by        | Value                                                                                                                                                  |
-| ------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `x`     | every shape    | a field holding the left edge in bp; `start` by default                                                                                                |
-| `x2`    | every shape    | the right edge; `end` by default                                                                                                                       |
-| `y`     | `bar`, `point` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped            |
-| `row`   | every shape    | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows a `pileup` step, this mark's own or the display's |
-| `color` | every shape    | a CSS colour, a jexl callback returning one, or a scale (below)                                                                                        |
-| `glyph` | `point`        | `disc`, `triangle` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                         |
+| Channel | Read by        | Value                                                                                                                                                                                |
+| ------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `x`     | every shape    | a field holding the left edge in bp; `start` by default                                                                                                                              |
+| `x2`    | every shape    | the right edge; `end` by default                                                                                                                                                     |
+| `y`     | `bar`, `point` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped                                          |
+| `row`   | every shape    | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, this mark's own, the facet's or the display's |
+| `color` | every shape    | a CSS colour, a jexl callback returning one, or a scale (below)                                                                                                                      |
+| `glyph` | `point`        | `disc`, `triangle` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                                       |
 
 A field name is read straight off the feature (`score`, `strand`, or any column
 a BED `columnNames` or a GFF attribute names). A `jexl:` expression over

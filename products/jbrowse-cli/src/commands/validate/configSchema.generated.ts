@@ -8212,7 +8212,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "feature field (or jexl expression) to group by, one labelled section per value.",
+              "description": "feature field (or jexl expression) to group by, one labelled section per value; \`strand\` for one per strand.",
               "$ref": "#/$defs/FeatureField",
               "default": ""
             },

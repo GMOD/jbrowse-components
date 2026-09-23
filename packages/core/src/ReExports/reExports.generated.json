@@ -1776,14 +1776,6 @@
       ],
       "worker": "real"
     },
-    "@jbrowse/core/ui/makeSizeMenu": {
-      "package": "@jbrowse/core",
-      "names": [
-        "makeSizeMenu",
-        "makeSizeSubMenu"
-      ],
-      "worker": "real"
-    },
     "@jbrowse/core/ui/measureLegendText": {
       "package": "@jbrowse/core",
       "names": [
@@ -2678,7 +2670,8 @@
     "@jbrowse/core/util/colorSchemes": {
       "package": "@jbrowse/core",
       "names": [
-        "COLOR_SCHEMES"
+        "COLOR_SCHEMES",
+        "DEFAULT_COLOR_SCHEME"
       ],
       "worker": "real"
     },

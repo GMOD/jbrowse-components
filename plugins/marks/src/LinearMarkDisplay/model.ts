@@ -7,7 +7,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
-import { makeSizeMenu } from '@jbrowse/core/ui/makeSizeMenu'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import {
   getDialogHost,
@@ -64,8 +63,8 @@ import {
   visibleStatsDomain,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
+import { makePointSizeSubMenu } from '@jbrowse/wiggle-core/chrome'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import { autorun } from 'mobx'
 
@@ -442,7 +441,8 @@ export function stateModelFactory(
       /**
        * #getter
        * The facet's own steps as the worker takes them, run over each section
-       * before any mark's.
+       * before any mark's; with no field to split on they run over the one
+       * section there is, after the display's own steps.
        */
       get facetSteps(): TransformStep[] {
         return stepsOf(
@@ -757,6 +757,7 @@ export function stateModelFactory(
               expr,
             })),
             ...stepsOf(self.conf.transform, self.host.bpPerPx),
+            ...(self.facet ? [] : self.facetSteps),
           ],
           ...(self.facet
             ? {
@@ -1157,28 +1158,15 @@ export function stateModelFactory(
             },
           },
           makeScoreSubMenu(self, { domain: self.domain }),
-          ...(self.hasPointMark
-            ? [
-                {
-                  label: 'Point size',
-                  icon: ScatterPlotIcon,
-                  subMenu: [
-                    makeSizeMenu({
-                      label: 'Point size',
-                      title: 'Point size',
-                      getValue: () => self.pointSize,
-                      isDefault: self.pointSize === DEFAULT_POINT_DIAMETER_PX,
-                      onChange: n => {
-                        self.setPointSize(n)
-                      },
-                      onReset: () => {
-                        self.setPointSize()
-                      },
-                    }),
-                  ],
-                },
-              ]
-            : []),
+          ...makePointSizeSubMenu({
+            label: 'Point size',
+            applies: self.hasPointMark,
+            value: () => self.pointSize,
+            defaultValue: DEFAULT_POINT_DIAMETER_PX,
+            set: n => {
+              self.setPointSize(n)
+            },
+          }),
           ...filterMenuItems({
             narrowings: { jexlFilters: jexlFilterNarrowing(self) },
             onEdit: () => {

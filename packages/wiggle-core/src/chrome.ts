@@ -15,6 +15,7 @@ export {
 export { makeResolutionSubMenuItem } from './ResolutionStepper.tsx'
 export {
   makePointSizeSubMenu,
-  makeScatterPointSizeMenuItem,
+  scatterPointSizeAccess,
 } from './pointSizeMenu.tsx'
+export type { PointSizeAccess } from './pointSizeMenu.tsx'
 export { default as SetMinMaxDialog } from './SetMinMaxDialog.tsx'

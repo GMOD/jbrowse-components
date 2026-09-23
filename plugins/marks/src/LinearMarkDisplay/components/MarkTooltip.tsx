@@ -116,14 +116,17 @@ function rowRow(
   facetLayout: FacetLayout,
 ): ChannelRow | undefined {
   const { row } = hit
-  if (row === undefined || encoding?.row === undefined) {
+  if (row === undefined) {
     return undefined
   }
   const section = facetLayout.sections.find(
     s => row >= s.firstRow && row < s.firstRow + s.rowCount,
   )
-  return section
-    ? { channel: 'row', value: section.label }
+  if (section) {
+    return { channel: 'row', value: section.label }
+  }
+  return encoding?.row === undefined
+    ? undefined
     : { channel: 'row', field: channelName(encoding.row), value: String(row) }
 }
 

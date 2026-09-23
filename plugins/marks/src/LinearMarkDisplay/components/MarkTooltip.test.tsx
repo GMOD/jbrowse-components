@@ -100,6 +100,38 @@ test('a span stacked by a transform names the band it stands in', async () => {
   expect(box.textContent).toContain('row: 2')
 })
 
+// A mark standing in the facet's or the display's pileup names no row field,
+// and its hover still says which section it is in; outside a facet a bare row
+// number says nothing.
+test('a mark in an implicit pileup names its section', async () => {
+  const box = await tooltip({
+    hoveredFeature: { ...HIT, color: 0xff123456, row: 3 },
+    encodings: [{ color: 'red' }],
+    markShapes: ['span'],
+    facetLayout: {
+      sections: [
+        { key: 'DEL', label: 'svtype: DEL', firstRow: 0, rowCount: 2 },
+        { key: 'DUP', label: 'svtype: DUP', firstRow: 2, rowCount: 3 },
+      ],
+      rowCount: 5,
+      firstRowOf: new Map([
+        ['DEL', 0],
+        ['DUP', 2],
+      ]),
+    },
+  })
+  expect(box.textContent).toContain('svtype: DUP')
+})
+
+test('a mark in an implicit pileup outside a facet shows no bare row number', async () => {
+  const box = await tooltip({
+    hoveredFeature: { ...HIT, color: 0xff123456, row: 3 },
+    encodings: [{ color: 'red' }],
+    markShapes: ['span'],
+  })
+  expect(box.textContent).not.toContain('row')
+})
+
 test('under a facet the band reads as the section chip rather than an index', async () => {
   const box = await tooltip({
     hoveredFeature: { ...HIT, color: 0xff123456, row: 3 },

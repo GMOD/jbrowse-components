@@ -1,8 +1,12 @@
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
+import { DEFAULT_COLOR_SCHEME } from '@jbrowse/core/util/colorSchemes'
 import { rampOverExtent } from '@jbrowse/core/util/markEncoding'
-import { thresholdKeyEntries } from '@jbrowse/core/util/thresholdScale'
+import {
+  thresholdKeyEntries,
+  thresholdPalette,
+} from '@jbrowse/core/util/thresholdScale'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { CategoricalScale, ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -131,7 +135,7 @@ function sectionKey(markIndex: number, scale: ScaleTable, title: string) {
             scale.scale,
             scale.domain,
             scale.domainMid ?? null,
-            scale.range ?? scale.scheme ?? null,
+            scale.range ?? scale.scheme ?? DEFAULT_COLOR_SCHEME,
             scale.reverse ?? false,
           ])
         : JSON.stringify(['ramp', markIndex])
@@ -149,7 +153,7 @@ function sectionKey(markIndex: number, scale: ScaleTable, title: string) {
         scale.field,
         title,
         scale.domain,
-        scale.range ?? [],
+        thresholdPalette(scale.domain.length + 1, scale.range),
       ])
     case 'glyph':
       return JSON.stringify([

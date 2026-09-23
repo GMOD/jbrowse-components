@@ -7,6 +7,7 @@ import {
   encodeFeatures,
 } from '@jbrowse/core/util/markEncoding'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { thresholdPalette } from '@jbrowse/core/util/thresholdScale'
 
 import { buildMarkLegend, categoryLabel, markColorScales } from './legend.ts'
 
@@ -211,6 +212,25 @@ test('two threshold marks over one field and cuts keep a key each when their ran
 // A ramp with an open end follows each mark's own loaded values, so it stays
 // that mark's; pinned at both ends there is nothing left to follow, and the
 // declaration is the key, as a categorical one's is.
+// A key is the scale as resolved, so a declaration spelling the default out
+// and one leaving it unset are one key.
+test('a key compares the resolved ramp or palette, not its spelling', () => {
+  const pinned = { domainMin: 0, domainMax: 100 }
+  const scaleOf = (color: Partial<ContinuousRef>) =>
+    rampRegion([10, 20], color).layers[0]!.scale
+  expect(
+    buildMarkLegend([
+      region(scaleOf(pinned), scaleOf({ ...pinned, scheme: 'viridis' })),
+    ]),
+  ).toHaveLength(1)
+  const spelt: ColorScaleTable = {
+    ...thresholdTable(),
+    range: thresholdPalette(3),
+  }
+  const unspelt: ColorScaleTable = { ...thresholdTable(), range: undefined }
+  expect(buildMarkLegend([region(spelt, unspelt)])).toHaveLength(1)
+})
+
 test('two marks declaring one ramp pinned at both ends share a key, and open ramps stay per mark', () => {
   const pinned = { domainMin: 0, domainMax: 100, range: ['white', 'red'] }
   const scaleOf = (values: number[], color: Partial<ContinuousRef>) =>

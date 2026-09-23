@@ -1,0 +1,37 @@
+{
+  "id": "feature-getter-prototype",
+  "measured": "2026-09-23",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node packages/core/benches/featureGetter.bench.ts",
+    "notes": "Two synthetic classes of the shape a bin step's DerivedFeature has, one spelling `get` as a class-field arrow and one as a prototype method, over a million SimpleFeatures, arms interleaved in one process, min of 7 rounds, machine on AC. The arrow allocates a closure per instance beside the object; the prototype method is shared. DerivedFeature, MadeFeature and FlattenedFeature moved to the prototype spelling on the strength of this."
+  },
+  "columns": [
+    { "key": "arm", "label": "arm" },
+    { "key": "arrowMs", "label": "class-field arrow", "format": "ms" },
+    { "key": "prototypeMs", "label": "prototype method", "format": "ms" },
+    {
+      "key": "ratio",
+      "label": "prototype vs arrow",
+      "format": "x",
+      "derived": "prototypeMs / arrowMs"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "arm": "construct one derived feature per input",
+        "arrowMs": 114,
+        "prototypeMs": 35
+      }
+    },
+    {
+      "values": {
+        "arm": "construct, then read two fields off each",
+        "arrowMs": 187,
+        "prototypeMs": 125
+      }
+    }
+  ]
+}
