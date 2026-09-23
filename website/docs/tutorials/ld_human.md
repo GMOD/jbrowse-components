@@ -255,10 +255,9 @@ Run the clustering two ways:
 
 - from the track menu, **Clustering** → **Cluster rows by genotype...**
 - baked into a session with the
-  [`runClustering`](/docs/models/multisamplevariantbasemodel/#property-runclustering)
-  and
-  [`clusterRegion`](/docs/models/multisamplevariantbasemodel/#property-clusterregion)
-  model properties, as the figure below does
+  [`runClustering`](/docs/models/treesidebarmixin/#property-runclustering) and
+  [`clusterRegion`](/docs/models/treesidebarmixin/#property-clusterregion) model
+  properties, as the figure below does
 
 <Figure src="/img/ld/lct_haploblock.png" caption="An LD triangle over the haplotypes it summarises: 1000 Genomes chromosomes at LCT/MCM6, one row each, clustered by genotype. The pale slab is one cluster of near-identical chromosomes, uniform across the block that fills the triangle above."/>
 

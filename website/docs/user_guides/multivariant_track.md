@@ -165,9 +165,9 @@ any attribute you supply. Two slots wire it up:
   applied over whatever order you have arranged, so dragging a sample into
   another band snaps it back, and it steps aside while a clustering dendrogram
   is positioned against the rows.
-- [`domain`](/docs/config/linearmultisamplevariantdisplay/#slot-domain) names
-  the samples that lead the rows; the rest keep the file's order, and a grouping
-  attribute bands within that order.
+- [`rows.domain`](/docs/config/rowarrangement/#slot-domain) names the samples
+  that lead the rows; the rest keep the file's order, and a grouping attribute
+  bands within that order.
 
 The JBrowse demo wires up the 1000 Genomes phase 3 chr1 callset (2,504 samples
 across 26 population codes) this way. For the TSV layout and the adapter and
