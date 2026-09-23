@@ -1,5 +1,6 @@
 import { fireEvent, waitFor } from '@testing-library/react'
 
+import { openMultiSampleVariantDisplay } from './testLinearMultiSampleVariantDisplay.tsx'
 import {
   createView,
   doBeforeEach,
@@ -10,6 +11,7 @@ import {
 } from './util.tsx'
 
 import type { WebRootModel } from '../rootModel/rootModel.ts'
+import type { LinearMultiSampleVariantDisplayModel } from '@jbrowse/plugin-variants'
 import type { LinearWiggleDisplayModel } from '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel'
 
 setup()
@@ -28,13 +30,20 @@ const sleep = (ms: number) =>
     setTimeout(resolve, ms)
   })
 
-// The display's `rows.domain` as the session's delta for the track carries it.
-function rowsDomainInDelta(delta: unknown) {
+// A display's `rows.domain` as the session's delta for the track carries it.
+function rowsDomainInDelta(delta: unknown, displayId?: string) {
   const displays = (delta as { displays?: unknown } | undefined)?.displays
-  return Array.isArray(displays)
-    ? (displays[0] as { rows?: { domain?: string[] } } | undefined)?.rows
-        ?.domain
-    : undefined
+  if (!Array.isArray(displays)) {
+    return undefined
+  }
+  const entries = displays as {
+    displayId?: string
+    rows?: { domain?: string[] }
+  }[]
+  const entry = displayId
+    ? entries.find(d => d.displayId === displayId)
+    : entries[0]
+  return entry?.rows?.domain
 }
 
 // An arrangement write reaches the session's delta at once rather than after
@@ -72,4 +81,45 @@ test('a row reorder lands in the session at once and stays undone across the def
   const undone: LinearWiggleDisplayModel = view.tracks[0]!.displays[0]
   expect(undone.rowDomain).toEqual([])
   expect(undone.sources.map(s => s.name)).toEqual(['k1', 'k2'])
+}, 60000)
+
+// The same on the multi-sample variant display, whose rows are its samples and
+// whose `rows` object has no field.
+test('a variant row reorder lands in the session at once and undoes', async () => {
+  const { view, session, rootModel } = await openMultiSampleVariantDisplay({
+    displayType: 'regular',
+  })
+  const { history } = rootModel as WebRootModel
+  await findDisplayPainted('variant-display', delay)
+  const display: LinearMultiSampleVariantDisplayModel =
+    view.tracks[0]!.displays[0]
+  await waitFor(() => {
+    expect(display.sources.length).toBeGreaterThan(2)
+  }, delay)
+  await sleep(700)
+  const { displayId } = display.configuration
+  const stepsBefore = history.undoIdx
+  const before = display.sources.map(s => s.name)
+  const reversed = [...before].reverse()
+
+  display.setRowOrder(reversed.map(name => ({ name })))
+
+  expect(
+    rowsDomainInDelta(session.trackConfigDeltas.volvox_test_vcf, displayId),
+  ).toEqual(reversed)
+  expect(display.sources.map(s => s.name)).toEqual(reversed)
+
+  await sleep(350)
+  expect(history.undoIdx).toBe(stepsBefore + 1)
+  history.undo()
+  expect(history.undoIdx).toBe(stepsBefore)
+
+  await sleep(500)
+  expect(
+    rowsDomainInDelta(session.trackConfigDeltas.volvox_test_vcf, displayId),
+  ).toBeUndefined()
+  const undone: LinearMultiSampleVariantDisplayModel =
+    view.tracks[0]!.displays[0]
+  expect(undone.rowDomain).toEqual([])
+  expect(undone.sources.map(s => s.name)).toEqual(before)
 }, 60000)

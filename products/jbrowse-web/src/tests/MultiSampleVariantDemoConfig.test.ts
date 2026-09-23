@@ -68,7 +68,7 @@ test('v4.1.1 multi-sample variant demo config still hydrates', async () => {
     throw new Error('LinearMultiSampleVariantDisplay not found after remap')
   }
 
-  expect(readConfObject(display, 'rowColor')).toBe('population')
+  expect(readConfObject(display, ['rowColor', 'field'])).toBe('population')
   expect(readConfObject(display, 'height')).toBe(800)
   expect(readConfObject(display, 'referenceDrawingMode')).toBe('draw')
 })

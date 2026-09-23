@@ -20,9 +20,9 @@ export const TRIO_VCF_TRACK = 'HG02024_VN049_KHVTrio.chr1.vcf'
 
 // The six VCF haplotype rows, top→bottom, sharing the hap-ibd painting's
 // Father/Mother hapN names so the sidebar and the painting read consistently.
-// `name`/`sampleName` keep the canonical "HG020xx HPn" identity; `label` is the
-// friendly sidebar text. trioRowFrac(label) is that row's top as a fraction of
-// the display's height.
+// The row keeps its canonical "HG020xx HPn" name; `label` is the friendly
+// sidebar text. trioRowFrac(label) is that row's top as a fraction of the
+// display's height.
 export const TRIO_HAPLOTYPES = [
   { sample: 'HG02024', hp: 0, label: 'Child hap1' },
   { sample: 'HG02024', hp: 1, label: 'Child hap2' },
@@ -31,12 +31,12 @@ export const TRIO_HAPLOTYPES = [
   { sample: 'HG02026', hp: 0, label: 'Father hap1' },
   { sample: 'HG02026', hp: 1, label: 'Father hap2' },
 ]
-export const trioVcfLayout = TRIO_HAPLOTYPES.map(h => ({
-  name: `${h.sample} HP${h.hp}`,
-  sampleName: h.sample,
-  HP: h.hp,
-  label: h.label,
-}))
+export const trioVcfRows = {
+  domain: TRIO_HAPLOTYPES.map(h => `${h.sample} HP${h.hp}`),
+  labels: Object.fromEntries(
+    TRIO_HAPLOTYPES.map(h => [`${h.sample} HP${h.hp}`, h.label]),
+  ),
+}
 // the VCF display auto-fits its `TRIO_VCF_DISPLAY_H` px body across the 6
 // haplotype rows (LinearMultiSampleVariantDisplay has no line zone), so the true
 // per-row pitch is height/rows ≈ 43.33 — NOT a round 44, which drifts the frames
@@ -382,10 +382,10 @@ export const trioSpecs: ScreenshotSpec[] = [
   //
   // Both crossovers sit at the horizontal center of their 400 kb window, and
   // every callout below is placed from that coordinate rather than from the
-  // pixel it lands on. The multi-sample VCF rows are relabeled via the
-  // display `layout` (trioVcfLayout — a friendly `label` per haplotype row,
-  // leaving the stable `name`/`sampleName` identity intact) so the sidebar reads
-  // Child/Mother/Father hapN, matching the hap-ibd painting's own row names.
+  // pixel it lands on. The multi-sample VCF rows are relabeled through the
+  // display's `rows` (trioVcfRows — a friendly label per haplotype row, keyed by
+  // its stable name) so the sidebar reads Child/Mother/Father hapN, matching the
+  // hap-ibd painting's own row names.
   //
   // The callouts make the crossover concrete by colour-coding the two segments
   // with a translucent frame each (maternal greens/oranges, paternal
@@ -472,9 +472,9 @@ export const trioSpecs: ScreenshotSpec[] = [
             type: 'LinearMultiSampleVariantDisplay',
             renderingMode: 'phased',
             height: TRIO_VCF_DISPLAY_H,
-            // relabel sidebar rows Child/Mother/Father hapN (keeps the
-            // canonical HG020xx HPn identity in `name`/`sampleName`)
-            layout: trioVcfLayout,
+            // relabel sidebar rows Child/Mother/Father hapN, keyed by the
+            // canonical HG020xx HPn names
+            rows: trioVcfRows,
           },
         ],
       }),

@@ -644,7 +644,6 @@ exports[`every registered schema slot default 1`] = `
     "treeAreaWidth": "number = 80",
   },
   "display: LinearMultiSampleVariantDisplay": {
-    "domain": "stringArray = []",
     "featureColor": "string = """,
     "fetchSizeLimit": "number = 1000000",
     "forceLoad": "boolean = false",
@@ -656,7 +655,6 @@ exports[`every registered schema slot default 1`] = `
     "mouseover": "string = "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"",
     "referenceDrawingMode": "stringEnum = "skip" of ["draw","skip"]",
     "renderingMode": "stringEnum = "alleleCount" of ["alleleCount","phased"]",
-    "rowColor": "string = """,
     "rowHeight": "number = 0",
     "shadeByDosage": "boolean = true",
     "showBranchLength": "boolean = true",
@@ -672,7 +670,6 @@ exports[`every registered schema slot default 1`] = `
     "variantLaneLabels": "stringEnum = "auto" of ["auto","nameAndDescription","name","description","none"]",
   },
   "display: LinearMultiSampleVariantMatrixDisplay": {
-    "domain": "stringArray = []",
     "featureColor": "string = """,
     "fetchSizeLimit": "number = 1000000",
     "forceLoad": "boolean = false",
@@ -684,7 +681,6 @@ exports[`every registered schema slot default 1`] = `
     "mouseover": "string = "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"",
     "referenceDrawingMode": "stringEnum = "skip" of ["draw","skip"]",
     "renderingMode": "stringEnum = "alleleCount" of ["alleleCount","phased"]",
-    "rowColor": "string = """,
     "rowHeight": "number = 0",
     "shadeByDosage": "boolean = true",
     "showBranchLength": "boolean = true",

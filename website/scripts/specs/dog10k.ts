@@ -12,6 +12,33 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 const DOG_CONFIG = 'test_data/dog10k/config.json'
 
+interface SampleRow {
+  name: string
+  label: string
+  color?: string
+}
+
+// A sidebar arrangement as the multi-sample variant display's config: the
+// order and a label per sample in `rows`, and a tint per sample in `rowColor`
+// where the rows carry one.
+function arrangedSamples(rows: SampleRow[]) {
+  const tinted = rows.filter(r => r.color)
+  return {
+    rows: {
+      domain: rows.map(r => r.name),
+      labels: Object.fromEntries(rows.map(r => [r.name, r.label])),
+    },
+    ...(tinted.length
+      ? {
+          rowColor: {
+            domain: tinted.map(r => r.name),
+            range: tinted.map(r => r.color!),
+          },
+        }
+      : {}),
+  }
+}
+
 // Where the four local-ancestry pills start on the x axis. They name bands of
 // rows rather than loci, so this is a place to put a label and nothing else: one
 // shared value so they left-align into a single column instead of reading as
@@ -88,12 +115,14 @@ const CYP_GROUPS = [
   { label: 'Wolf', color: '#E69F00', n: 4, prefix: 'CLUPGR' },
 ]
 
-const CYP_LAYOUT = CYP_GROUPS.flatMap(({ label, color, n, prefix, from = 1 }) =>
-  Array.from({ length: n }, (_, i) => ({
-    name: `${prefix}${String(from + i).padStart(6, '0')}`,
-    label: `${label} ${i + 1}`,
-    color,
-  })),
+const CYP_ROWS = arrangedSamples(
+  CYP_GROUPS.flatMap(({ label, color, n, prefix, from = 1 }) =>
+    Array.from({ length: n }, (_, i) => ({
+      name: `${prefix}${String(from + i).padStart(6, '0')}`,
+      label: `${label} ${i + 1}`,
+      color,
+    })),
+  ),
 )
 
 // Row labels for the AMY2B figure, in the order build_dog10k_amy2b_sv.sh writes
@@ -102,17 +131,10 @@ const CYP_LAYOUT = CYP_GROUPS.flatMap(({ label, color, n, prefix, from = 1 }) =>
 // there is no CLUPCN000008 in the callset, and the Tajikistan wolves are 3 and 5
 // with 4 and 6 in the sample table but not in the header.
 //
-// A `layout` replaces the sidebar sources wholesale, so supplying only labels
-// left every row with no color and took the swatch column away with it. The
-// group and its color are therefore repeated here, matching the `group` column
-// of dog10k_amy2b_samples.tsv that the track's `rowColor` reads. Wolves are
-// labelled by country, because which countries the five carriers come from is
-// the reading this panel supports.
-const AMY2B_COLORS: Record<string, string> = {
-  'Breed dog': '#0072B2',
-  'Village dog': '#009E73',
-  'Gray wolf': '#E69F00',
-}
+// The swatch is the track's own `rowColor: 'group'`, off the `group` column of
+// dog10k_amy2b_samples.tsv, so only the order and the labels are here. Wolves
+// are labelled by country, because which countries the five carriers come from
+// is the reading this panel supports.
 
 const AMY2B_GROUPS: [string, string[]][] = [
   [
@@ -219,19 +241,14 @@ const AMY2B_GROUPS: [string, string[]][] = [
   ['Kazakhstan wolf', ['CLUPKZ000002']],
 ]
 
-const AMY2B_LAYOUT = AMY2B_GROUPS.flatMap(([label, ids]) => {
-  const group = label.endsWith(' wolf')
-    ? 'Gray wolf'
-    : label.includes('village')
-      ? 'Village dog'
-      : 'Breed dog'
-  return ids.map((name, i) => ({
-    name,
-    label: ids.length === 1 ? label : `${label} ${i + 1}`,
-    group,
-    color: AMY2B_COLORS[group],
-  }))
-})
+const AMY2B_ROWS = arrangedSamples(
+  AMY2B_GROUPS.flatMap(([label, ids]) =>
+    ids.map((name, i) => ({
+      name,
+      label: ids.length === 1 ? label : `${label} ${i + 1}`,
+    })),
+  ),
+)
 
 // Where the AMY2B pill and its arrow sit in the 86-row lane. It was 0.62,
 // which is blank: the lane holds one record, so a row is painted only where
@@ -247,12 +264,14 @@ const AMY2B_LAYOUT = AMY2B_GROUPS.flatMap(([label, ids]) => {
 // breakpoint at any row, which is why it sits there.
 const AMY2B_CALLOUT_FRAC_Y = 0.23
 
-const CEA_LAYOUT = CEA_GROUPS.flatMap(({ label, color, ids }) =>
-  ids.map((name, i) => ({
-    name,
-    label: ids.length > 1 ? `${label} ${i + 1}` : label,
-    color,
-  })),
+const CEA_ROWS = arrangedSamples(
+  CEA_GROUPS.flatMap(({ label, color, ids }) =>
+    ids.map((name, i) => ({
+      name,
+      label: ids.length > 1 ? `${label} ${i + 1}` : label,
+      color,
+    })),
+  ),
 )
 
 // One score domain for both halves of dog10k-size-fst-scan, so the peak the
@@ -723,7 +742,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           trackId: 'dog10k_nhej1_svs',
           type: 'LinearMultiSampleVariantDisplay',
           height: 560,
-          layout: CEA_LAYOUT,
+          ...CEA_ROWS,
           // The window holds nine SV records, and unfiltered they defeat the
           // figure: the 3,432 bp deletion 4 kb downstream is no-call in exactly
           // the four Collies homozygous for this one (its region is gone, so it
@@ -844,7 +863,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // panel's whole content is which animals sit on the wrong side of the
           // split, and "GREE000001" and "CLUPIR000003" only say that to someone
           // holding the prefix key.
-          layout: AMY2B_LAYOUT,
+          ...AMY2B_ROWS,
         },
       ],
     }),
@@ -937,7 +956,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // halves differ in the glyph as well as in the genotypes
           showVariantLane: true,
           height: 900,
-          layout: AMY2B_LAYOUT,
+          ...AMY2B_ROWS,
         },
       ],
     }),
@@ -1231,7 +1250,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // the gene model above them. A matrix spaces one column per record and throws
   // that geometry away.
   //
-  // No `layout` array. The row labels and the swatch groups come from
+  // No `rows` arrangement. The row labels and the swatch groups come from
   // `samplesTsvLocation` on the adapter (`dog10k_fgf4_samples.tsv`, written by
   // the build script off the Dog10K sample table), so the sample-to-breed
   // mapping lives beside the data instead of being restated here. The TSV's own
@@ -1428,7 +1447,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // described the way two separately-filtered tracks could.
           showVariantLane: true,
           height: 500,
-          layout: CYP_LAYOUT,
+          ...CYP_ROWS,
           // Only the stop-gained site. THREE neighbours are in frame otherwise
           // and the middle one is why this filter exists: 38,261,636 (the same
           // codon's second base) and 38,261,662 are reference in every animal of
