@@ -58,7 +58,7 @@ These slots go on a display entry: `"displays": [{ "type": "LinearHicDisplay", .
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-color">**color**</span><br>[HicColor](../hiccolor) | How a count becomes a colour: a `linear` or `log` scale onto a named `scheme` or the stops in `range`. |
+| <span id="slot-color">**color**</span><br>[HicColor](../hiccolor) | How a count becomes a colour: a `linear` or `log` scale onto a named `scheme`. |
 | <span id="slot-showlegend">**showLegend**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | show the color scale legend. Defaults to off |
 | <span id="slot-resolutionbias">**resolutionBias**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | Signed integer offset from the zoom-derived auto-picked binsize. `0` means pure auto; `-1` is one step finer, `+1` one step coarser. Tracking the offset (not an absolute binsize) keeps the intent valid across zoom. |
 | <span id="slot-usecolorpercentile">**useColorPercentile**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | false → maxScore/20 (linear) or maxScore (log); true → 95th percentile of counts, so off-diagonal contacts read more strongly. |

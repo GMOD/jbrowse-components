@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
+import { colorReverseSlot } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
@@ -51,16 +52,7 @@ export const hicColorConfigSchema = ConfigurationSchema(
       defaultValue: DEFAULT_HIC_COLOR_SCHEME,
       description: 'the named ramp counts run across',
     },
-    /**
-     * #slot reverse
-     * Runs the ramp from its last colour, so the scheme's end paints the
-     * fewest contacts.
-     */
-    reverse: {
-      type: 'boolean',
-      defaultValue: false,
-      description: 'run the ramp from its last colour',
-    },
+    ...colorReverseSlot,
   },
   { closed: true },
 )

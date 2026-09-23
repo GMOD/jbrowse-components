@@ -390,6 +390,32 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
+  test('a translucent ramp paints the reads and the key the same opaque colours', () => {
+    const NM: ColorBy = { type: 'tag', tag: 'NM' }
+    const ramp = bakedColorScale(
+      NM,
+      alignmentsColorEncoding({
+        value: undefined,
+        field: 'tags.NM',
+        scale: 'linear',
+        domain: [],
+        range: [],
+        scheme: 'juicebox',
+        reverse: false,
+        domainMin: 0,
+        domainMax: 10,
+        domainMid: undefined,
+      }),
+      undefined,
+      undefined,
+    )
+    expect(ramp.color('0')).toBe('rgb(255,255,255)')
+    expect(ramp.color('10')).toBe('rgb(255,0,0)')
+    const rows = legendFor(NM, ['tag'], { bakedScale: ramp })
+    expect(rows[0]!.color).toBe(ramp.color('0'))
+    expect(rows.at(-1)!.color).toBe(ramp.color('10'))
+  })
+
   test('value tag swatches are the color the reads are painted', () => {
     const items = legendFor({ type: 'tag', tag: 'HP' }, ['tag'], {
       presentTagValues: new Set(['1', '2']),

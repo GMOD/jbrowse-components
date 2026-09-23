@@ -3794,6 +3794,7 @@
         "colorMembersOf",
         "colorRampSlots",
         "colorRangeSlot",
+        "colorReverseSlot",
         "colorScaleChoicesOf",
         "normalizeChannel",
         "paintedScale",

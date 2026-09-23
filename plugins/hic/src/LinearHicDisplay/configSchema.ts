@@ -51,7 +51,7 @@ const HicTrackConfigFactory = () => {
       /**
        * #slot color
        * How a count becomes a colour: a `linear` or `log` scale onto a named
-       * `scheme` or the stops in `range`.
+       * `scheme`.
        */
       color: hicColorConfigSchema,
       /**

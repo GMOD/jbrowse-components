@@ -494,14 +494,12 @@ describe('color routing', () => {
     )
   })
 
-  test('color warns on a hic track, which has no color slot of either kind', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-    const { snap } = buildDisplaySnapshot('hic', ['color:red'])
-    expect(snap.color).toBeUndefined()
-    expect(warn).toHaveBeenCalledWith(
-      expect.stringContaining('"color" has no effect on a hic track'),
+  test('color names the ramp on a hic track, and refuses what is not a scheme', () => {
+    const { snap } = buildDisplaySnapshot('hic', ['color:viridis'])
+    expect(snap.color).toEqual({ scheme: 'viridis' })
+    expect(() => buildDisplaySnapshot('hic', ['color:red'])).toThrow(
+      /Invalid color value "red"\. Expected a colour scheme: viridis, /,
     )
-    warn.mockRestore()
   })
 })
 

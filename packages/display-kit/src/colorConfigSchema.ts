@@ -151,6 +151,16 @@ export function pairedColorsOf({
   return colors
 }
 
+/** A ramp's direction. */
+export const colorReverseSlot = {
+  reverse: {
+    type: 'boolean',
+    defaultValue: false,
+    description:
+      "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain",
+  },
+} as const
+
 /** What a linear or log scale adds: a named ramp, its direction, its middle. */
 export const colorRampSlots = {
   scheme: {
@@ -159,12 +169,7 @@ export const colorRampSlots = {
     description:
       "a named ramp for a linear or log scale; range's colours, where it lists any, win over it",
   },
-  reverse: {
-    type: 'boolean',
-    defaultValue: false,
-    description:
-      "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain",
-  },
+  ...colorReverseSlot,
   domainMid: {
     type: 'maybeNumber',
     description:

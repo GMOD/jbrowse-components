@@ -122,9 +122,7 @@ function ldParams(state: LDRenderState, data: LDUploadData): LDCellParams {
     band: data.band,
     genomic: isGenomic(data),
     // Off the payload's own metric rather than the requested one: a
-    // pre-computed file with no D' column downgrades the request, and the two
-    // tables are module-level, so the backend re-uploads the 256×1 texture only
-    // when the loaded metric actually moves.
+    // pre-computed file with no D' column downgrades the request.
     colorRamp: generateLDColorRamp(data.metric),
   }
 }

@@ -22,8 +22,7 @@ export function ldValueText(ldValue: number) {
   return ldValue.toFixed(3)
 }
 
-/** The named ramp a metric paints through: R² in reds, D′ in blues. */
-export function ldColorScheme(metric: string): ColorSchemeName {
+function ldColorScheme(metric: string): ColorSchemeName {
   return metric === 'dprime' ? 'blues' : 'reds'
 }
 

@@ -465,6 +465,21 @@ shared channel-spec dialog on the same object a config file holds.
 
 [](/docs/config/wigglecolor) lists the members.
 
+## The Hi-C color is a `color` object
+
+`LinearHicDisplay` names its ramp in `color: { scale, scheme, reverse }`, and
+its schemes are the ones every color scale names. `colorScheme` and
+`useLogScale` stop loading, with no migration.
+
+<!-- prettier-ignore -->
+| v4 | v5 |
+| --- | --- |
+| `colorScheme: 'fall'` | `color: { scheme: 'fall' }` |
+| `useLogScale: true` | `color: { scale: 'log' }` |
+
+`setUseLogScale` is `setColorScale('log' | 'linear')`. [](/docs/config/hiccolor)
+lists the members.
+
 ## Adapter types renamed
 
 `AllVsAllPAFAdapter` is now `MultiGenomePAFAdapter` and

@@ -158,11 +158,9 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
-       * Whether counts land on the ramp by their log2: the colour's `scale`.
        */
-      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- named after the shader's uniform
-      get useLogScale(): boolean {
-        return getConf(self, ['color', 'scale']) === 'log'
+      get colorScale(): HicColorScale {
+        return getConf(self, ['color', 'scale'])
       },
       /**
        * #getter
@@ -290,7 +288,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         if (self.useColorPercentile) {
           return data.percentile95
         }
-        return self.useLogScale ? data.maxScore : data.maxScore / 20
+        return self.colorScale === 'log' ? data.maxScore : data.maxScore / 20
       },
       /**
        * #getter
@@ -307,7 +305,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         if (score <= 0) {
           return []
         }
-        const { useLogScale } = self
+        const useLogScale = self.colorScale === 'log'
         return [
           {
             kind: 'ramp',
@@ -506,7 +504,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           canvasWidth: self.canvasWidth,
           canvasHeight: self.height,
           colorMaxScore: self.colorMaxScore,
-          useLogScale: self.useLogScale,
+          useLogScale: self.colorScale === 'log',
           colorRamp: self.colorRamp,
           viewScale,
           viewOffsetX,

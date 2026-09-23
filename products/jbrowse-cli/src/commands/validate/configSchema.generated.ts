@@ -7171,7 +7171,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "juicebox"
         },
         "reverse": {
-          "description": "run the ramp from its last colour.",
+          "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
           "type": "boolean",
           "default": false
         }

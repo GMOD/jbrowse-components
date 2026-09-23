@@ -117,7 +117,8 @@ two copies deep.
 
 Landed: every named ramp is a stop table in `packages/core/src/util/colorRamp.ts`
 under a name in `COLOR_SCHEMES` — `viridis`, `juicebox`, `fall`, `reds`,
-`blues` — and `rampLutOf` there is the one identity-cached LUT. Hi-C's colour
+`blues` — and `rampLutOf` there bakes a declaration's LUT once, bounded, as
+`rampOverExtent` does for a ramp over a loaded extent. Hi-C's colour
 is the `HicColor` object (`scale: linear | log`, `scheme`, `reverse`), which
 retired `colorScheme` and `useLogScale`; its menu lists every scheme. LD paints
 R² through `reds` and D′ through `blues`, bytes unchanged, and declares no

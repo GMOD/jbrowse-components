@@ -30,4 +30,4 @@ These slots go on a display entry: `"displays": [{ "type": "HicColor", ... }]`, 
 | --- | --- |
 | <span id="slot-scale">**scale**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (linear, log) = <code>'linear'</code> | `log` places a count on the ramp by its log2, which lifts a sparse file's decayed long-range bins off the floor and turns a dense file's matrix solid. |
 | <span id="slot-scheme">**scheme**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (viridis, juicebox, fall, reds, blues) = <code>'juicebox'</code> | The named ramp counts run across; `juicebox` fades from transparent to red. |
-| <span id="slot-reverse">**reverse**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Runs the ramp from its last colour, so the scheme's end paints the fewest contacts. |
+| <span id="slot-reverse">**reverse**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain |

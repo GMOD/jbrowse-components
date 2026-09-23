@@ -22,7 +22,7 @@ const COLOR_SCHEME_OPTIONS = COLOR_SCHEMES.map(
 )
 
 interface HicMenuSelf {
-  useLogScale: boolean
+  colorScale: HicColorScale
   useColorPercentile: boolean
   showLegend: boolean
   showResolutionControls: boolean
@@ -108,7 +108,7 @@ function showMenuItems(self: HicMenuSelf): MenuItem[] {
         ]
       : []),
     squashToHeightCheckboxItem(self),
-    toggleItem('Log scale', self.useLogScale, log => {
+    toggleItem('Log scale', self.colorScale === 'log', log => {
       self.setColorScale(log ? 'log' : 'linear')
     }),
     toggleItem(

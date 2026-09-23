@@ -555,7 +555,6 @@ exports[`every registered schema slot default 1`] = `
     "windowSize": "number = 100",
   },
   "display: LinearHicDisplay": {
-    "colorScheme": "stringEnum = "juicebox" of ["juicebox","fall","viridis"]",
     "height": "number = 300",
     "resolutionBias": "number = 0",
     "selectedNormalization": "string = "KR"",
@@ -563,7 +562,6 @@ exports[`every registered schema slot default 1`] = `
     "showResolutionControls": "boolean = false",
     "squashToHeight": "boolean = false",
     "useColorPercentile": "boolean = true",
-    "useLogScale": "boolean = false",
   },
   "display: LinearMafDisplay": {
     "colorByChromosome": "boolean = false",

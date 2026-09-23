@@ -11,7 +11,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 function baseSelf() {
   return {
-    useLogScale: false,
+    colorScale: 'linear' as const,
     useColorPercentile: true,
     showLegend: false,
     showResolutionControls: false,

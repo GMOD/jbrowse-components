@@ -62,6 +62,17 @@ export type BakedColorScale =
 
 const LEGEND_RAMP_STOPS = 8
 
+function flattenOntoWhite(lut: Uint8Array) {
+  for (let o = 0; o < lut.length; o += 4) {
+    const a = lut[o + 3]! / 255
+    for (let c = o; c < o + 3; c++) {
+      lut[c] = Math.round(255 + (lut[c]! - 255) * a)
+    }
+    lut[o + 3] = 255
+  }
+  return lut
+}
+
 function linearScale(
   encoding: ContinuousRef,
   [min, max]: NumericExtent,
@@ -69,9 +80,11 @@ function linearScale(
   const span = max - min
   const norm = (v: number) => (span > 0 ? (v - min) / span : 0.5)
   const { domainMid } = encoding
-  const lut = buildColorRampLut(
-    colorRampStops(encoding),
-    domainMid === undefined ? 0.5 : norm(domainMid),
+  const lut = flattenOntoWhite(
+    buildColorRampLut(
+      colorRampStops(encoding),
+      domainMid === undefined ? 0.5 : norm(domainMid),
+    ),
   )
   const last = lut.length / 4 - 1
   const css = new Map<number, string>()

@@ -200,6 +200,7 @@ export interface RampDeclaration {
   reverse?: boolean
 }
 
+const MAX_RAMP_LUTS = 32
 const luts = new Map<string, Uint8Array>()
 
 /**
@@ -215,6 +216,9 @@ export function rampLutOf(ramp: RampDeclaration): Uint8Array {
     .join('|')
   let lut = luts.get(key)
   if (!lut) {
+    if (luts.size >= MAX_RAMP_LUTS) {
+      luts.delete(luts.keys().next().value!)
+    }
     lut = buildColorRampLut(colorRampStops(ramp))
     luts.set(key, lut)
   }

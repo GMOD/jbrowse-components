@@ -1,4 +1,5 @@
 import { samFlagNames } from '@jbrowse/cigar-utils'
+import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import {
@@ -215,6 +216,7 @@ interface ColorObject {
   field?: string
   domain?: string[]
   range?: string[]
+  scheme?: string
 }
 
 interface DisplaySnapshot {
@@ -791,10 +793,14 @@ const modifiers: Record<string, Modifier> = {
           r.snap.color = value
         }
       } else if (category === 'hic') {
-        // the hic display has no color slot of either kind
-        console.warn(
-          'Warning: track option "color" has no effect on a hic track',
-        )
+        if (!(COLOR_SCHEMES as readonly string[]).includes(value)) {
+          invalid(
+            'color',
+            value,
+            `a colour scheme: ${COLOR_SCHEMES.join(', ')}`,
+          )
+        }
+        mergeColor(r, { scheme: value })
       } else if (category === 'wiggle') {
         // A string on the quantitative display's colour object is the
         // constant, so this is the whole of "render in one solid color".

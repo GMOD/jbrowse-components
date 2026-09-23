@@ -14,8 +14,6 @@ export interface HicDrawState {
 export interface HicRenderState extends HicDrawState {
   canvasWidth: number
   canvasHeight: number
-  // The ramp's bytes, identity-stable per declaration (`rampLutOf`), so the
-  // GPU re-uploads its texture only when the colour changes.
   colorRamp: Uint8Array
 }
 
