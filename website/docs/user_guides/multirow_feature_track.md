@@ -25,8 +25,9 @@ column the file turns out to carry: a RepeatMasker table opens as ~20 rows of
 assigns a feature to a row is then **Partition by…** in the same track menu,
 which lists the attribute names the loaded features carry — so RepeatMasker also
 offers `repFamily` and `name` beside the class it started on. Repartitioning
-discards a saved row order, a clustering run and any hidden categories, since
-all three name rows that the new partition does not have.
+leaves a saved row order, its labels and colors and a clustering run in place:
+they name rows by value, so they sit idle under the new partition and come back
+with the field. Hidden legend categories clear.
 
 <Figure src="/img/multirow/display_types_menu.png" caption="Turning the UCSC RepeatMasker track into rows: the track menu's Display types submenu (top), and the same window partitioned by repeat class (bottom). Any feature track can be switched over this way." />
 

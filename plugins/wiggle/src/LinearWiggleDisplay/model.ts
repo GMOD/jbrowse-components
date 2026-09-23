@@ -39,6 +39,7 @@ import {
   keptRows,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
+  rowEdits,
   rowLabelsCarryText,
   setupTreeSidebarAutoruns,
   showRowLabelsMenuItem,
@@ -82,7 +83,7 @@ import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
 import {
   arrangeSources,
   buildSources,
-  rowEditsOf,
+  editedSource,
   sourcesFromRegionData,
 } from './sourcesLogic.ts'
 
@@ -884,15 +885,16 @@ export default function stateModelFactory(
        * supplied.
        */
       applyRowEdits(rows: Source[]) {
-        const { labels, rowColor } = rowEditsOf(
+        const { labels, rowColor } = rowEdits({
           rows,
-          self.sourcesWithoutLayout,
-          {
+          labels: self.rowLabels,
+          colors: self.rowColors,
+          baseOrder: self.baseRowColor.domain,
+          edited: editedSource(self.sourcesWithoutLayout, {
             gradientPaints: self.scoreGradientPaints,
             rowLayout: self.isRowLayout,
-            baseOrder: self.baseRowColor.domain,
-          },
-        )
+          }),
+        })
         self.configuration.setSubschema('rowColor', rowColor)
         self.setRowLabels(labels)
         self.setRowOrder(rows)

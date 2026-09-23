@@ -1,8 +1,8 @@
 import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
-import { isCssColor } from '@jbrowse/core/util/cssColorParse'
 import { keptRows, orderRowsByDomain } from '@jbrowse/tree-sidebar'
 
 import type { Source } from '../util.ts'
+import type { RowEdit } from '@jbrowse/tree-sidebar'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 /**
@@ -236,47 +236,21 @@ export function arrangeSources(
 }
 
 /**
- * What the arrangement dialog's rows say beyond what the adapter supplied: a
- * label or a colour on the mode's identity channel that differs from the
- * discovered row's. The whole of `rows.labels` and `rowColor`, rebuilt, so an
- * edit cleared in the dialog is cleared in the config. The colour pairs keep
- * `baseOrder`, the config's own `rowColor.domain`, ahead of any new name, so a
- * reorder that changes no colour writes the config's pairs back unchanged. A
- * string the painters cannot parse is left out rather than stored.
+ * What a dialog row says beyond what the adapter supplied: a label, or a
+ * colour on the mode's identity channel, that differs from the discovered
+ * row's.
  */
-export function rowEditsOf(
-  rows: readonly Source[],
+export function editedSource(
   discovered: readonly Source[],
-  {
-    gradientPaints,
-    rowLayout,
-    baseOrder,
-  }: {
-    gradientPaints: boolean
-    rowLayout: boolean
-    baseOrder: readonly string[]
-  },
-) {
+  mode: { gradientPaints: boolean; rowLayout: boolean },
+): (row: Source) => RowEdit {
   const byName = new Map(discovered.map(s => [s.name, s]))
-  const channel = identityChannel({ gradientPaints, rowLayout })
-  const labels: Record<string, string> = {}
-  const colors = new Map<string, string>()
-  for (const row of rows) {
+  const channel = identityChannel(mode)
+  return row => {
     const base = byName.get(row.name)
-    if (row.label !== undefined && row.label !== base?.label) {
-      labels[row.name] = row.label
+    return {
+      label: row.label === base?.label ? undefined : row.label,
+      color: row[channel] === base?.[channel] ? undefined : row[channel],
     }
-    const color = row[channel]
-    if (color !== undefined && color !== base?.[channel] && isCssColor(color)) {
-      colors.set(row.name, color)
-    }
-  }
-  const domain = [
-    ...baseOrder.filter(name => colors.has(name)),
-    ...[...colors.keys()].filter(name => !baseOrder.includes(name)),
-  ]
-  return {
-    labels,
-    rowColor: { domain, range: domain.map(name => colors.get(name)!) },
   }
 }

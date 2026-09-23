@@ -35,6 +35,7 @@ import {
   focusRowGroup,
   keptRows,
   resetRowOrderMenuItems,
+  rowEdits,
   rowLabelsCarryText,
   setupTreeSidebarAutoruns,
   sortRowsAtColumn,
@@ -80,9 +81,9 @@ import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
   applyRowGroups,
   arrangeRows,
+  editedRow,
   orderPartitionValues,
   resolveRowColorStrings,
-  rowEditsOf,
 } from './rowSources.ts'
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
@@ -515,8 +516,8 @@ export default function stateModelFactory(
       /**
        * #getter
        * The rows as the sidebar draws them, with each row's painted color
-       * carried into `labelColor` when `colorRowLabels` is on. A `rowGroups` or
-       * dialog-set `labelColor` wins, and per-feature color mode is a no-op.
+       * carried into `labelColor` when `colorRowLabels` is on. A `rowGroups`
+       * `labelColor` wins, and per-feature color mode is a no-op.
        */
       get labelSources(): MultiRowSource[] {
         const colors = self.rowColorStringsByIndex
@@ -927,9 +928,10 @@ export default function stateModelFactory(
         },
         /**
          * #action
-         * Repartition, dropping the state keyed on the old rows: the
-         * arrangement, the row colours and `hiddenCategories` all name rows by
-         * value. Writing `rows.field` refetches on its own.
+         * Repartition. The arrangement and the row colours stay: a name keyed
+         * on another field matches nothing and comes back with the field. The
+         * legend's hidden categories clear. Writing `rows.field` refetches on
+         * its own.
          */
         setRowsField(field: string) {
           // Against the effective field, not the slot: under auto the menu
@@ -939,21 +941,22 @@ export default function stateModelFactory(
             return
           }
           setConf(self, ['rows', 'field'], field)
-          self.resetRowArrangement()
           self.hiddenCategories.clear()
         },
         /**
          * #action
          * The arrangement dialog's submit: the order and labels to `rows`, and
-         * the colours to `rowColor`, each only where it differs from what was
-         * discovered.
+         * the colours to `rowColor`, over the rows the dialog showed; a row no
+         * loaded region holds keeps its entries.
          */
         applyRowEdits(rows: MultiRowSource[]) {
-          const { labels, rowColor } = rowEditsOf(
+          const { labels, rowColor } = rowEdits({
             rows,
-            self.sourcesWithoutLayout,
-            self.baseRowColor.domain,
-          )
+            labels: self.rowLabels,
+            colors: self.rowColors,
+            baseOrder: self.baseRowColor.domain,
+            edited: editedRow(self.sourcesWithoutLayout),
+          })
           self.configuration.setSubschema('rowColor', rowColor)
           self.setRowLabels(labels)
           self.setRowOrder(rows)

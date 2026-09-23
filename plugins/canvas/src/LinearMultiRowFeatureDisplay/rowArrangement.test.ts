@@ -111,9 +111,10 @@ describe('repartitioning', () => {
     expect(display.rowsField).toBe('')
   })
 
-  // The arrangement, the row colours and the hidden categories all name rows by
-  // value, so none of them means anything under a new partition.
-  it('drops the row state keyed on the old partition', () => {
+  // The arrangement and the row colours name rows by value, so under a new
+  // partition they match nothing and come back with the field; the hidden
+  // categories are the legend's and clear.
+  it('keeps the arrangement across a repartition, idle until the field returns', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, regionData(['a', 'b'], ['sample', 'clade']), ctgA)
     display.setRowOrder([{ name: 'b' }, { name: 'a' }], { tree: '(b,a);' })
@@ -121,17 +122,18 @@ describe('repartitioning', () => {
     display.setHiddenCategories(['a'])
 
     display.setRowsField('clade')
+    display.setRpcData(0, regionData(['x', 'y'], ['sample', 'clade']), ctgA)
 
     expect(display.rowsField).toBe('clade')
-    expect(display.rowDomain).toEqual([])
-    expect(display.rowColors.size).toBe(0)
+    expect(rowNames(display)).toEqual(['x', 'y'])
+    expect(display.hierarchy).toBeUndefined()
     expect(display.hiddenCategories).toEqual([])
-    expect(display.rowTree).toBeUndefined()
+    expect(display.rowDomain).toEqual(['b', 'a'])
+    expect(display.rowColors.get('b')).toBe('#00f')
+    expect(display.rowTree).toBe('(b,a);')
   })
 
-  // The focus is a set of row names, so a reorder or re-cluster leaves it
-  // valid; a repartition is the one thing here that renames the rows.
-  it('drops a focus naming rows the new partition cannot have', () => {
+  it('shows every row under a focus the new partition cannot match', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(
       0,
@@ -144,7 +146,7 @@ describe('repartitioning', () => {
     display.setRowsField('clade')
     display.setRpcData(0, regionData(['x', 'y'], ['sample', 'clade']), ctgA)
 
-    expect(display.rowFocus).toBeUndefined()
+    expect(display.rowFocus).toEqual(['a', 'b'])
     expect(rowNames(display)).toEqual(['x', 'y'])
   })
 
@@ -172,5 +174,43 @@ describe('repartitioning', () => {
 
     expect(display.rowDomain).toEqual(['b', 'a'])
     expect(display.rowTree).toBe('(b,a);')
+  })
+})
+
+// The rows are discovered per region, so a reorder sees only the rows the
+// loaded regions hold; the declared names it did not see keep their place.
+describe('a reorder over the rows a window holds', () => {
+  function declared() {
+    return createTestEnvironment({
+      displayConfig: {
+        rows: { field: 'sample', domain: ['a', 'b', 'c', 'd'] },
+      },
+    }).createDisplay().display
+  }
+
+  it('keeps the declared names it did not show behind the rows it did', () => {
+    const display = declared()
+    display.setRpcData(0, regionData(['b', 'd'], [], 'sample'), ctgA)
+    display.setRowOrder([{ name: 'd' }, { name: 'b' }])
+    expect(display.rowDomain).toEqual(['d', 'b', 'a', 'c'])
+
+    display.setRpcData(1, regionData(['a', 'c'], [], 'sample'), ctgB)
+    expect(rowNames(display)).toEqual(['d', 'b', 'a', 'c'])
+  })
+
+  it('drops the tree only when a shown row moves', () => {
+    const display = declared()
+    display.setRpcData(0, regionData(['b', 'd'], [], 'sample'), ctgA)
+    display.setRowOrder([{ name: 'd' }, { name: 'b' }], { tree: '(d,b);' })
+    expect(display.rowDomain).toEqual(['d', 'b', 'a', 'c'])
+    expect(display.rowOrderWillDropTree([{ name: 'd' }, { name: 'b' }])).toBe(
+      false,
+    )
+
+    display.applyRowEdits([{ name: 'd', color: '#f00' }, { name: 'b' }])
+    expect(display.rowTree).toBe('(d,b);')
+
+    display.setRowOrder([{ name: 'b' }, { name: 'd' }])
+    expect(display.rowTree).toBeUndefined()
   })
 })

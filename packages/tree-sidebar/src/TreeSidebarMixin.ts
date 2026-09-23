@@ -83,6 +83,21 @@ function liveArrangement(self: object): Arrangement {
 }
 
 /**
+ * The order a reorder writes: the rows it named lead, and the names the
+ * current order carries beyond them follow in their current order, so a
+ * declared row no loaded region holds yet keeps its place behind the rows on
+ * screen.
+ */
+function orderOver(
+  current: readonly string[],
+  rows: readonly { name: string }[],
+): string[] {
+  const named = rows.map(row => row.name)
+  const shown = new Set(named)
+  return [...named, ...current.filter(name => !shown.has(name))]
+}
+
+/**
  * #stateModel TreeSidebarMixin
  * #category display
  * #crossCuttingMixin Row set with a dendrogram sidebar, its arrangement the display's `rows` config object: the order, the labels, the tree with its provenance and the focus, each written as a session edit to the track's config so undo, reset and a share link reach it and it survives unticking the track. Brings the `showTree` / `showBranchLength` / `showRowLabels` / `treeAreaWidth` getters and setters, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through (`rowDomain`, `rowLabels`, `rowTree`, `rowTreeProvenance`, `rowFocus`, `rowArrangementIsCustom`, `rowOrderWillDropTree`, `setRowOrder`, `setRowLabels`, `setRowFocus`, `resetRowArrangement`), the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through. `applyRowEdits` stays the display's, since it writes colours the display keeps in its own object
@@ -177,7 +192,11 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           : undefined
       },
       rowOrderWillDropTree(next: readonly { name: string }[]) {
-        return orderDropsTree(self.rowTree, self.rowDomain, next)
+        return orderDropsTree(
+          self.rowTree,
+          self.rowDomain,
+          orderOver(self.rowDomain, next),
+        )
       },
     }))
     .views(self => treeViews(self))
@@ -207,17 +226,17 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       return {
         /**
          * #action
-         * Arrange the rows in `rows`' order. A clustering run passes its
+         * Arrange the rows in `rows`' order, ahead of any name the current
+         * order carries that `rows` does not. A clustering run passes its
          * result, and the tree and its provenance land with the order; any
          * other reorder that moves a row drops the tree, which no longer
          * describes it.
          */
         setRowOrder(rows: readonly S[], run?: ClusterRun) {
-          const dropTree = !run && self.rowOrderWillDropTree(rows)
-          write(
-            'domain',
-            rows.map(row => row.name),
-          )
+          const domain = orderOver(self.rowDomain, rows)
+          const dropTree =
+            !run && orderDropsTree(self.rowTree, self.rowDomain, domain)
+          write('domain', domain)
           if (run) {
             writeTree(run)
           } else if (dropTree) {

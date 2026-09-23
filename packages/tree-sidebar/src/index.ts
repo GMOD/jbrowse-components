@@ -84,6 +84,8 @@ export { default as ClusterModeSelector } from './ClusterModeSelector.tsx'
 export { default as ClusterProgress } from './ClusterProgress.tsx'
 export { useClusterRun } from './useClusterRun.ts'
 export { TreeSidebarMixin, baseDisplayConfig } from './TreeSidebarMixin.ts'
+export { rowEdits } from './rowEdits.ts'
+export type { RowEdit } from './rowEdits.ts'
 export { LayoutTreeSidebarMixin } from './LayoutTreeSidebarMixin.ts'
 export type { ClusterRun } from './treeSidebarBase.ts'
 // Moved to display-kit on 2026-08-27 — right-click state is a display concern

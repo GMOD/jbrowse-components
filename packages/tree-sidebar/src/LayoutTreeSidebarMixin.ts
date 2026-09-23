@@ -119,7 +119,7 @@ export function LayoutTreeSidebarMixin<S extends RowSource = RowSource>() {
         return orderDropsTree(
           self.clusterTree,
           self.layout.map(source => source.name),
-          next,
+          next.map(source => source.name),
         )
       },
     }))

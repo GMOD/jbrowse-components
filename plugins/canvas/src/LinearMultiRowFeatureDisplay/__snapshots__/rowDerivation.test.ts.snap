@@ -463,7 +463,7 @@ exports[`a focus hides rows without recolouring the kept ones 1`] = `
 }
 `;
 
-exports[`a repartition drops the arrangement keyed on the old rows 1`] = `
+exports[`a repartition keeps the arrangement, idle under rows it does not name 1`] = `
 {
   "editableSources": [
     {
@@ -485,7 +485,7 @@ exports[`a repartition drops the arrangement keyed on the old rows 1`] = `
       "name": "wolf",
     },
   ],
-  "rowArrangementIsCustom": false,
+  "rowArrangementIsCustom": true,
   "rowColorStringsByIndex": [
     "#4e79a7",
     "#f28e2c",

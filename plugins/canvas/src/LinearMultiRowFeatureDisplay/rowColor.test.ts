@@ -84,3 +84,22 @@ test('the unanswered row stores a label only once it is renamed', () => {
   expect(display.rowLabels).toEqual({ '': 'Unassigned' })
   expect(display.sources.at(-1)?.label).toBe('Unassigned')
 })
+
+test('a submit over a window holding a fraction of the rows leaves the rest standing', () => {
+  const { display } = createTestEnvironment({
+    displayConfig: {
+      rows: { field: 'sample', labels: { c: 'Sea' } },
+      ...DECLARED,
+    },
+  }).createDisplay()
+  display.setRpcData(0, rows(['a', 'b']), ctgA)
+  const [a, b] = display.editableSources
+  display.applyRowEdits([b!, { ...a!, color: '#f00' }])
+  expect(display.configuration.rowColor.domain).toEqual(['c', 'a'])
+  expect(Object.fromEntries(display.rowColors)).toEqual({
+    c: '#0f0',
+    a: '#f00',
+  })
+  expect(display.rowLabels).toEqual({ c: 'Sea' })
+  expect(display.rowDomain).toEqual(['b', 'a'])
+})

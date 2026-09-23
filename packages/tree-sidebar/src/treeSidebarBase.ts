@@ -195,11 +195,11 @@ export interface ClusterRun {
 export function orderDropsTree(
   tree: string | undefined,
   current: readonly string[],
-  next: readonly { name: string }[],
+  next: readonly string[],
 ) {
   return (
     !!tree &&
     (current.length !== next.length ||
-      current.some((name, idx) => name !== next[idx]?.name))
+      current.some((name, idx) => name !== next[idx]))
   )
 }

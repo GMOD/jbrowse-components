@@ -89,7 +89,10 @@ one API — `rowDomain`, `rowTree`, `rowTreeProvenance`, `rowFocus`,
 and the menus read either without knowing which. The config-backed mixin adds
 `rowLabels` / `setRowLabels` and two hooks, `rowStylingIsCustom` and
 `resetRowStyling`, for styling a display keeps in an object of its own, and
-leaves `applyRowEdits` to the display, since it writes those colours. The
+leaves `applyRowEdits` to the display, since it writes those colours. What a
+submit writes, `rowEdits` computes: the config's labels and colour pairs with
+the rows the dialog showed written over them, so a row the dialog never showed
+keeps its entry. The
 quantitative display, `MultiSampleVariantBaseModel` and the multi-row feature
 display declare `rows` and compose `TreeSidebarMixin`; MAF spreads
 `rowDomainConfigSchemaFields` and composes `LayoutTreeSidebarMixin`.
@@ -102,6 +105,11 @@ one undo step, undoable the moment its tree appears
 fires rather than when it was scheduled, the simpler form; an undo inside the
 wait was already safe, since it re-resolves the config node and re-arms the
 saver with what it finds.
+
+**A reorder keeps the names it did not show.** `setRowOrder` writes the rows
+it was handed ahead of every name the current order carries beyond them, so a
+declared row no loaded region holds yet keeps its place behind the rows on
+screen, and `rowOrderWillDropTree` compares the same merged order.
 
 **Reset row order returns to the base config.** The session's
 `baseTrackConfig(trackId)` hands back the config.json entry a track's delta
@@ -157,8 +165,9 @@ feature attribute, so `rows` is the field-keyed `Rows` wiggle declares.
 `rows.field` is what `partitionField` was: empty still picks an attribute off
 the data, a `jexl:` expression derives one, and the display reads it raw into
 the fetch, since a resolving read evaluates the expression against no feature
-(ADR-066). `setRowsField` writes it and resets the arrangement, the row colours
-and the hidden categories, all of which name rows by value. The rows the config
+(ADR-066). `setRowsField` writes it and clears the legend's hidden categories;
+the arrangement and the row colours stay, since a name keyed on another field
+matches nothing and comes back with the field. The rows the config
 does not list still sort, digits by magnitude, since discovered values arrive
 in no order of their own. `rowColor: { domain, range }` (`MultiRowRowColor`)
 holds what `sampleColorMap` and the dialog's per-row `color` held: one map, so
@@ -224,13 +233,16 @@ one-shot trigger that clears itself.
   the load, and so does a `domain` in its config, each naming `rows`. On the
   multi-row feature display they fail the load too, and so do `partitionField`,
   `sampleColorMap` and `domain` in its config.
-- On the multi-row feature display a reorder writes the rows on screen, so a
-  declared `rows.domain` naming a row no loaded region holds yet loses that
-  entry once a reader reorders; before, `layout` sat over an untouched seed.
-  The arrangement dialog's bulk editor keeps only labels and colours, where
-  `layout` kept any column pasted into it. The palette is dealt over the
-  config.json's `rows.domain`, which a track the session owns does not have, so
-  its rows take the palette in sorted order.
+- On the multi-row feature display a reorder or a dialog submit sees only the
+  rows the loaded regions hold, and the names and entries it did not see stand
+  behind them, so a declared order or colour map keeps the rows a window has
+  not revealed. The arrangement dialog's bulk editor keeps only labels and
+  colours, where `layout` kept any column pasted into it.
+- A track the session owns has no base. The palette is dealt over the
+  config.json's `rows.domain`, so such a track's rows take the palette in
+  sorted order, and "Reset row order" there clears the arrangement and the
+  colours the track was added with, undoably, where a config.json track
+  returns to its declared ones.
 
 ## Rejected alternatives
 

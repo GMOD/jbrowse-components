@@ -137,8 +137,9 @@ haplotype in phased mode — and a row answers to its own name, then to its
 sample's, for an order, a label, a tint and the focus alike. So a config naming
 samples still arranges a phased track, and a mode switch resets the arrangement
 because it renames the rows. A dialog submit writes a label or tint only where
-it differs from the adapter's (`rowEditsOf`), and a run writes names beside its
-tree, re-appending the rows a focus hides after the clade.
+it differs from the adapter's (`editedSource`, through tree-sidebar's
+`rowEdits`), and a run writes names beside its tree, re-appending the rows a
+focus hides after the clade.
 
 **Named stages, named readers** (`MultiSampleVariantBaseModel`): `sourcesBase`
 is the adapter's samples narrowed to `rows.kept`, the fetch key's input, so it

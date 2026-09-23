@@ -245,7 +245,7 @@ test('sort at a column orders rows by the colour painted there', () => {
   expect(derived(display)).toMatchSnapshot()
 })
 
-test('a repartition drops the arrangement keyed on the old rows', async () => {
+test('a repartition keeps the arrangement, idle under rows it does not name', async () => {
   const display = loaded({ domain: ['s10'] })
   await clusterRun(display, '((dad,s2),(mom,s10));')
   const [a, b, ...rest] = display.editableSources

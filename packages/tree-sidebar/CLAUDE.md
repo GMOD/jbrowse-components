@@ -130,7 +130,16 @@ What the config-backed mixin adds:
   it.
 - **Row styling stays the display's.** `applyRowEdits` is the display's own, and
   `rowStylingIsCustom` / `resetRowStyling` are the hooks that bring its colours
-  (wiggle's and multi-row's `rowColor`) into "custom" and into a reset.
+  (wiggle's and multi-row's `rowColor`) into "custom" and into a reset. What a
+  submit writes, `rowEdits` computes: the config's labels and colour pairs with
+  the rows the dialog showed written over them, so a row no loaded region holds
+  keeps its entry; the display supplies what a shown row says beyond the
+  adapter's and writes the result.
+- **A reorder keeps the names it did not show.** `setRowOrder` writes the rows
+  it was handed ahead of every name the current order carries beyond them, so on
+  the multi-row display, whose rows are discovered per region, a declared order
+  keeps its unseen rows. `rowOrderWillDropTree` compares the same merged order,
+  so a submit that moves no shown row keeps the tree.
 - **A focus naming no current row shows every row** (`keptRows`), where
   `subtreeFilter` matching none hides every row (`filterRowsBySubtree`).
 

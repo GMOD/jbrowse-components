@@ -1,6 +1,7 @@
 import { categoricalPalette } from '@jbrowse/core/ui/colors'
-import { isCssColor } from '@jbrowse/core/util/cssColorParse'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
+
+import type { RowEdit } from '@jbrowse/tree-sidebar'
 
 // `labelColor` tints the sidebar swatch only, never the blocks.
 export interface MultiRowSource {
@@ -130,36 +131,15 @@ export function arrangeRows(
 }
 
 /**
- * What the arrangement dialog's rows say beyond what was discovered: a label
- * other than the derived one, and a colour. The whole of `rows.labels` and
- * `rowColor`, rebuilt, so an edit cleared in the dialog is cleared in the
- * config. The colour pairs keep `baseOrder`, the config's own
- * `rowColor.domain`, ahead of any new value, so a reorder that changes no
- * colour writes the config's pairs back unchanged. A string the painters
- * cannot parse is left out rather than stored.
+ * What a dialog row says beyond what was discovered: a label other than the
+ * derived one, and its colour.
  */
-export function rowEditsOf(
-  rows: readonly MultiRowSource[],
+export function editedRow(
   discovered: readonly MultiRowSource[],
-  baseOrder: readonly string[],
-) {
+): (row: MultiRowSource) => RowEdit {
   const byName = new Map(discovered.map(s => [s.name, s]))
-  const labels: Record<string, string> = {}
-  const colors = new Map<string, string>()
-  for (const row of rows) {
-    if (row.label !== undefined && row.label !== byName.get(row.name)?.label) {
-      labels[row.name] = row.label
-    }
-    if (row.color !== undefined && isCssColor(row.color)) {
-      colors.set(row.name, row.color)
-    }
-  }
-  const domain = [
-    ...baseOrder.filter(name => colors.has(name)),
-    ...[...colors.keys()].filter(name => !baseOrder.includes(name)),
-  ]
-  return {
-    labels,
-    rowColor: { domain, range: domain.map(name => colors.get(name)!) },
-  }
+  return row => ({
+    label: row.label === byName.get(row.name)?.label ? undefined : row.label,
+    color: row.color,
+  })
 }

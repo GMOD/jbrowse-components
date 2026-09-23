@@ -13,7 +13,6 @@ import {
   SimpleFeature,
 } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
-import { isCssColor } from '@jbrowse/core/util/cssColorParse'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import {
@@ -42,6 +41,7 @@ import {
   focusRowGroup,
   loadedRegionIndexAt,
   paletteColorsByRow,
+  rowEdits,
   treeDescribesRows,
 } from '@jbrowse/tree-sidebar'
 import { compareStructural } from 'mobx'
@@ -83,6 +83,7 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
+import type { RowEdit } from '@jbrowse/tree-sidebar'
 
 type VariantHoverFields = Record<string, unknown> & {
   genotype: string
@@ -127,44 +128,20 @@ export function applyColorByPalette<S extends Source>(
 }
 
 /**
- * What the arrangement dialog's rows say beyond what the adapter supplied: a
- * label or a tint that differs from the adapter row's — a haplotype row's
- * being its sample's. The whole of `rows.labels` and of `rowColor`'s pairs,
- * rebuilt, so an edit cleared in the dialog is cleared in the config. The
- * pairs keep `baseOrder`, the config's own `rowColor.domain`, ahead of any new
- * name, so a reorder that changes no colour writes the config's pairs back
- * unchanged. A string the painters cannot parse is left out rather than
- * stored.
+ * What a dialog row says beyond what the adapter supplied: a label or a tint
+ * that differs from the adapter row's, a haplotype row's being its sample's.
  */
-export function rowEditsOf(
-  rows: readonly Source[],
-  discovered: readonly Source[],
-  baseOrder: readonly string[],
-) {
+function editedSource(discovered: readonly Source[]): (row: Source) => RowEdit {
   const byName = new Map(discovered.map(s => [s.name, s]))
-  const labels: Record<string, string> = {}
-  const colors = new Map<string, string>()
-  for (const row of rows) {
+  return row => {
     const base = byName.get(row.name) ?? byName.get(resolveSampleName(row))
-    if (row.label !== undefined && row.label !== base?.label) {
-      labels[row.name] = row.label
+    return {
+      label: row.label === base?.label ? undefined : row.label,
+      color:
+        row.labelColor === (base?.labelColor ?? base?.color)
+          ? undefined
+          : row.labelColor,
     }
-    const color = row.labelColor
-    if (
-      color !== undefined &&
-      color !== (base?.labelColor ?? base?.color) &&
-      isCssColor(color)
-    ) {
-      colors.set(row.name, color)
-    }
-  }
-  const domain = [
-    ...baseOrder.filter(name => colors.has(name)),
-    ...[...colors.keys()].filter(name => !baseOrder.includes(name)),
-  ]
-  return {
-    labels,
-    rowColor: { domain, range: domain.map(name => colors.get(name)!) },
   }
 }
 
@@ -1038,11 +1015,13 @@ export default function MultiSampleVariantBaseModelF(
          * it differs from what the adapter supplied.
          */
         applyRowEdits(rows: Source[]) {
-          const { labels, rowColor } = rowEditsOf(
+          const { labels, rowColor } = rowEdits({
             rows,
-            self.sourcesVolatile ?? [],
-            self.baseRowColor.domain,
-          )
+            labels: self.rowLabels,
+            colors: self.rowColors,
+            baseOrder: self.baseRowColor.domain,
+            edited: editedSource(self.sourcesVolatile ?? []),
+          })
           setConf(self, ['rowColor', 'domain'], rowColor.domain)
           setConf(self, ['rowColor', 'range'], rowColor.range)
           self.setRowLabels(labels)
