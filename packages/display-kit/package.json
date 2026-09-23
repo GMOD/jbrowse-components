@@ -186,6 +186,7 @@
       "./installGlobalFetchAutorun": "./esm/installGlobalFetchAutorun.js",
       "./installPerRegionFetchAutoruns": "./esm/installPerRegionFetchAutoruns.js",
       "./facetConfigSchema": "./esm/facetConfigSchema.js",
+      "./rowArrangementConfigSchema": "./esm/rowArrangementConfigSchema.js",
       "./rowsConfigSchema": "./esm/rowsConfigSchema.js",
       "./colorConfigSchema": "./esm/colorConfigSchema.js",
       "./colorScale": "./esm/colorScale.js",

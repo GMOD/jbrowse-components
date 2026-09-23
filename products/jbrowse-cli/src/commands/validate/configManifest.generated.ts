@@ -4402,8 +4402,32 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "domain",
-          "type": "string[]"
+          "name": "rows",
+          "type": "RowArrangementConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "labels",
+              "type": "Map<string, string>"
+            },
+            {
+              "name": "tree",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "treeProvenance",
+              "type": "(frozen | undefined)"
+            },
+            {
+              "name": "kept",
+              "type": "string[]",
+              "liftsNumbers": true
+            }
+          ]
         },
         {
           "name": "showRowSeparators",
@@ -4439,7 +4463,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rowColor",
-          "type": "string"
+          "type": "VariantRowColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "range",
+              "type": "CssColorEntry[]"
+            }
+          ],
+          "shorthand": "field"
         },
         {
           "name": "facet",
@@ -4487,10 +4527,6 @@ export const configManifest: ConfigManifest = {
         "runClustering",
         "clusterRegion",
         "sortRowsBy",
-        "layout",
-        "clusterTree",
-        "clusterProvenance",
-        "subtreeFilter",
         "configuration",
         "jexlFiltersSetting"
       ]
@@ -4550,8 +4586,32 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "domain",
-          "type": "string[]"
+          "name": "rows",
+          "type": "RowArrangementConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "labels",
+              "type": "Map<string, string>"
+            },
+            {
+              "name": "tree",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "treeProvenance",
+              "type": "(frozen | undefined)"
+            },
+            {
+              "name": "kept",
+              "type": "string[]",
+              "liftsNumbers": true
+            }
+          ]
         },
         {
           "name": "showRowSeparators",
@@ -4587,7 +4647,23 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rowColor",
-          "type": "string"
+          "type": "VariantRowColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "range",
+              "type": "CssColorEntry[]"
+            }
+          ],
+          "shorthand": "field"
         },
         {
           "name": "facet",
@@ -4619,10 +4695,6 @@ export const configManifest: ConfigManifest = {
         "runClustering",
         "clusterRegion",
         "sortRowsBy",
-        "layout",
-        "clusterTree",
-        "clusterProvenance",
-        "subtreeFilter",
         "configuration",
         "jexlFiltersSetting"
       ]
@@ -4719,10 +4791,6 @@ export const configManifest: ConfigManifest = {
           "type": "RowsConfigurationSchema",
           "subSlots": [
             {
-              "name": "field",
-              "type": "string"
-            },
-            {
               "name": "domain",
               "type": "string[]",
               "liftsNumbers": true
@@ -4743,6 +4811,10 @@ export const configManifest: ConfigManifest = {
               "name": "kept",
               "type": "string[]",
               "liftsNumbers": true
+            },
+            {
+              "name": "field",
+              "type": "string"
             }
           ],
           "shorthand": "field"
@@ -4958,10 +5030,6 @@ export const configManifest: ConfigManifest = {
           "type": "RowsConfigurationSchema",
           "subSlots": [
             {
-              "name": "field",
-              "type": "string"
-            },
-            {
               "name": "domain",
               "type": "string[]",
               "liftsNumbers": true
@@ -4982,6 +5050,10 @@ export const configManifest: ConfigManifest = {
               "name": "kept",
               "type": "string[]",
               "liftsNumbers": true
+            },
+            {
+              "name": "field",
+              "type": "string"
             }
           ],
           "shorthand": "field"
@@ -5209,10 +5281,6 @@ export const configManifest: ConfigManifest = {
           "type": "RowsConfigurationSchema",
           "subSlots": [
             {
-              "name": "field",
-              "type": "string"
-            },
-            {
               "name": "domain",
               "type": "string[]",
               "liftsNumbers": true
@@ -5233,6 +5301,10 @@ export const configManifest: ConfigManifest = {
               "name": "kept",
               "type": "string[]",
               "liftsNumbers": true
+            },
+            {
+              "name": "field",
+              "type": "string"
             }
           ],
           "shorthand": "field"

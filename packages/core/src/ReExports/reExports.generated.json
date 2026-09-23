@@ -3784,7 +3784,8 @@
         "colorRangeSlot",
         "colorScaleChoicesOf",
         "normalizeChannel",
-        "paintedScale"
+        "paintedScale",
+        "pairedColorsOf"
       ],
       "worker": "real"
     },
@@ -4269,10 +4270,17 @@
         "react-dom"
       ]
     },
-    "@jbrowse/display-kit/rowsConfigSchema": {
+    "@jbrowse/display-kit/rowArrangementConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [
         "ROW_ARRANGEMENT_MEMBERS",
+        "rowArrangementConfigSchema"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/rowsConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
         "rowsConfigSchema",
         "rowsSettingOf"
       ],

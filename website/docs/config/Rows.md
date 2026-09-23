@@ -21,11 +21,14 @@ Auto-generated config schema for the current JBrowse release — see the [config
 
 _See the **Config slots** section below for all available configuration fields._
 
-The `rows` setting of the displays that draw one row per value of a key,
+The `rows` setting of the displays that draw one row per value of a field,
 with the dendrogram sidebar beside them: the field, and the arrangement a
-reader gives the rows, which every product writes as a session edit to this
-object. A string is the field; the object adds the order, the labels, the
-tree with its provenance and the focus.
+reader gives the rows. A string is the field; the object adds the order,
+the labels, the tree with its provenance and the focus, each by value.
+
+## Related links
+
+- **Base config:** [RowArrangement](../rowarrangement)
 
 ## Config slots
 
@@ -35,8 +38,9 @@ These slots go on a display entry: `"displays": [{ "type": "Rows", ... }]`, or i
 | Slot | Description |
 | --- | --- |
 | <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The field each value of which takes a row of its own. Writing `rows: "source"` lands here; empty draws no rows. |
-| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | The row order: the values listed lead, in this order, and the rest keep the order they arrived in. A clustering run, the arrangement dialog and "Sort rows here" all write it, and a run rotates its dendrogram towards it rather than discarding it. |
-| <span id="slot-labels">**labels**</span><br>`stringMap` = <code>{}</code> | A label drawn beside a row in place of its value, by value. |
+| <span class="slot-group">Inherited from [RowArrangement](../rowarrangement)</span> | <span class="slot-group-count">5 slots</span> |
+| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | The row order: the rows listed lead, in this order, and the rest keep the order they arrived in. A clustering run, the arrangement dialog and "Sort rows here" all write it, and a run rotates its dendrogram towards it rather than discarding it. |
+| <span id="slot-labels">**labels**</span><br>`stringMap` = <code>{}</code> | A label drawn beside a row in place of its name, by name. |
 | <span id="slot-tree">**tree**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | The dendrogram beside the rows, as newick. A clustering run writes it beside the order it produced, and a reorder that moves a row drops it. |
 | <span id="slot-treeprovenance">**treeProvenance**</span><br>[`maybeFrozen`](/docs/config_guides/slot_types#the-maybe-types) | What `tree` was computed from, the locus and the settings; unset for a tree that arrived as data. |
-| <span id="slot-kept">**kept**</span><br>`stringArray` = <code>[]</code> | The rows shown, by value: a clade picked off the tree, or the rows one key row stands for. Empty, or naming no current row, shows every row. |
+| <span id="slot-kept">**kept**</span><br>`stringArray` = <code>[]</code> | The rows shown, by name: a clade picked off the tree, or the rows one key row stands for. Empty, or naming no current row, shows every row. |

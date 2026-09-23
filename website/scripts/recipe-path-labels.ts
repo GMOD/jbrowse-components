@@ -112,7 +112,6 @@ export const PATH_PROSE = new Set([
   // the tree sidebar's own drag/checkbox/swatch affordances, none of them menu
   // rows
   'drag the rows into order',
-  "set each row's color",
   'untick the rows you do not want',
   // ChannelSpecDialog's text area, which the quantitative display's colour
   // object is written into whole

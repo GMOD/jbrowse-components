@@ -5373,6 +5373,122 @@
       },
       "unevaluatedProperties": false
     },
+    "RowArrangement": {
+      "title": "RowArrangement",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "domain": {
+          "description": "the row order: the rows listed lead, in this order, and the rest keep the order they arrived in.",
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "labels": {
+          "description": "a label drawn beside a row in place of its name, by name.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "tree": {
+          "description": "the dendrogram beside the rows, as newick, written by a clustering run beside the order it produced.",
+          "$ref": "#/$defs/PlainString"
+        },
+        "treeProvenance": {
+          "description": "what tree was computed from, the locus and the settings; unset for a tree that arrived as data. Any JSON value: the slot is `frozen`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
+        },
+        "kept": {
+          "description": "the rows shown, by name; empty, or naming no current row, shows every row.",
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "VariantRowColor": {
+      "title": "VariantRowColor",
+      "anyOf": [
+        {
+          "description": "Shorthand for `{ \"field\": ... }`.",
+          "$ref": "#/$defs/PlainString",
+          "default": "",
+          "type": "string"
+        },
+        {
+          "title": "VariantRowColor",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "the sample-metadata attribute (a column of the adapter's samplesTsvLocation, e.g. population) whose values each take a palette colour; while set it wins over a row's own colour.",
+              "$ref": "#/$defs/PlainString",
+              "default": ""
+            },
+            "domain": {
+              "description": "the rows given a colour of their own, by name.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "range": {
+              "description": "the CSS colour each row in domain takes, in the same order.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/CssColor"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "LinearMultiSampleVariantDisplaySlots": {
       "type": "object",
       "properties": {
@@ -5432,12 +5548,8 @@
           "type": "number",
           "default": 80
         },
-        "domain": {
-          "description": "Row order: the samples listed come first, in this order, and the rest keep the file's order; a facet groups within it. A clustering run rotates its dendrogram towards this order instead of discarding it, so the listed samples come as early as the tree allows.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+        "rows": {
+          "$ref": "#/$defs/RowArrangement"
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
@@ -5479,9 +5591,7 @@
           "default": true
         },
         "rowColor": {
-          "description": "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping. While set it overrides a per-row color from the samplesTsv or the arrangement dialog.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "$ref": "#/$defs/VariantRowColor"
         },
         "facet": {
           "$ref": "#/$defs/Facet"
@@ -5596,12 +5706,8 @@
           "type": "number",
           "default": 80
         },
-        "domain": {
-          "description": "Row order: the samples listed come first, in this order, and the rest keep the file's order; a facet groups within it. A clustering run rotates its dendrogram towards this order instead of discarding it, so the listed samples come as early as the tree allows.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+        "rows": {
+          "$ref": "#/$defs/RowArrangement"
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
@@ -5643,9 +5749,7 @@
           "default": true
         },
         "rowColor": {
-          "description": "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping. While set it overrides a per-row color from the samplesTsv or the arrangement dialog.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "$ref": "#/$defs/VariantRowColor"
         },
         "facet": {
           "$ref": "#/$defs/Facet"
@@ -5783,13 +5887,8 @@
           "type": "object",
           "x-closed": true,
           "properties": {
-            "field": {
-              "description": "the field each value of which takes a row of its own.",
-              "$ref": "#/$defs/FeatureField",
-              "default": ""
-            },
             "domain": {
-              "description": "the row order: the values listed lead, in this order, and the rest keep the order they arrived in.",
+              "description": "the row order: the rows listed lead, in this order, and the rest keep the order they arrived in.",
               "anyOf": [
                 {
                   "type": "array",
@@ -5807,7 +5906,7 @@
               ]
             },
             "labels": {
-              "description": "a label drawn beside a row in place of its value, by value.",
+              "description": "a label drawn beside a row in place of its name, by name.",
               "type": "object",
               "additionalProperties": {
                 "type": "string"
@@ -5824,7 +5923,7 @@
               }
             },
             "kept": {
-              "description": "the rows shown, by value; empty, or naming no current row, shows every row.",
+              "description": "the rows shown, by name; empty, or naming no current row, shows every row.",
               "anyOf": [
                 {
                   "type": "array",
@@ -5840,6 +5939,11 @@
                   }
                 }
               ]
+            },
+            "field": {
+              "description": "the field each value of which takes a row of its own.",
+              "$ref": "#/$defs/FeatureField",
+              "default": ""
             }
           },
           "patternProperties": {
@@ -9337,13 +9441,13 @@
                 }
               ]
             },
-            "domain": {
+            "rows": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/domain"
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/rows"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/domain"
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/rows"
                 }
               ]
             },
@@ -14257,17 +14361,6 @@
           "type": "string"
         },
         "sortRowsBy": {},
-        "layout": {},
-        "clusterTree": {
-          "type": "string"
-        },
-        "clusterProvenance": {},
-        "subtreeFilter": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
         "jexlFiltersSetting": {
           "type": "array",
           "items": {
@@ -14330,17 +14423,6 @@
           "type": "string"
         },
         "sortRowsBy": {},
-        "layout": {},
-        "clusterTree": {
-          "type": "string"
-        },
-        "clusterProvenance": {},
-        "subtreeFilter": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
         "jexlFiltersSetting": {
           "type": "array",
           "items": {

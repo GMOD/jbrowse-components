@@ -29,6 +29,7 @@ paneHeight
 readConnections
 repeatKey
 repeatTrackId
+rowColor
 rowGroups
 rows
 sampleColorMap
