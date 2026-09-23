@@ -118,11 +118,20 @@ function orderDropsTree(
   )
 }
 
-function sameOrder(
-  a: readonly { name: string }[],
-  b: readonly { name: string }[],
+/**
+ * Whether the dialog's rows keep the order they have among the current rows,
+ * so a row a region added while the dialog was open reads as no move.
+ */
+function movesNoRow(
+  dialog: readonly { name: string }[],
+  current: readonly { name: string }[],
 ) {
-  return a.length === b.length && a.every((row, i) => row.name === b[i]!.name)
+  const named = new Set(dialog.map(row => row.name))
+  const among = current.filter(row => named.has(row.name))
+  return (
+    among.length === dialog.length &&
+    among.every((row, i) => row.name === dialog[i]!.name)
+  )
 }
 
 /** A clustering run's result, landed beside the order it produced. */
@@ -426,7 +435,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        */
       rowOrderWillDropTree(next: readonly { name: string }[]) {
         return (
-          !sameOrder(next, self.editableSources) &&
+          !movesNoRow(next, self.editableSources) &&
           orderDropsTree(
             self.rowTree,
             self.rowDomain,
@@ -586,7 +595,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
             identityChannel: self.identityChannel,
             rowAlias: self.rowAlias,
           })
-          const moved = !sameOrder(rows, self.editableSources)
+          const moved = !movesNoRow(rows, self.editableSources)
           writeRowColor(rowColor.domain, rowColor.range)
           write('labels', labels)
           if (moved) {

@@ -53,6 +53,27 @@ test('a row the dialog never showed keeps its label and colour', () => {
   expect(rowColor).toEqual({ domain: ['c', 'a'], range: ['#0f0', '#00f'] })
 })
 
+// A variant dialog opened before the first genotypes land shows sample rows.
+test('a dialog row the current rows no longer hold writes nothing', () => {
+  const haplotypes: RowSource[] = ['S0 HP0', 'S0 HP1'].map(name => ({
+    name,
+    label: 'Sample zero',
+    labelColor: '#a00',
+  }))
+  const { labels, rowColor } = rowEdits({
+    rows: [{ name: 'S0', label: 'Sample zero', labelColor: '#a00' }],
+    shown: haplotypes,
+    adapter: haplotypes,
+    labels: {},
+    colors: new Map(),
+    baseOrder: [],
+    identityChannel: 'labelColor',
+    rowAlias: name => name.replace(/ HP\d+$/, ''),
+  })
+  expect(labels).toEqual({})
+  expect(rowColor).toEqual({ domain: [], range: [] })
+})
+
 test('a changed row is written as the reader left it', () => {
   const { labels, rowColor } = rowEdits({
     ...live,

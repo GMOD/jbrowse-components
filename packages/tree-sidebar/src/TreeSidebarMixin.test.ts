@@ -166,6 +166,49 @@ describe('a display supplying the hooks', () => {
         )
         .volatile(() => ({ discoveredRows: [] }))
         .create({ configuration: {} }),
-    ).toThrow()
+    ).toThrow(/computed value/)
+  })
+})
+
+describe('a dialog submit after a region adds a row', () => {
+  function makeGrowing() {
+    return types
+      .compose(
+        'GrowingTreeDisplay',
+        TreeSidebarMixin(),
+        types.model({
+          type: types.literal('GrowingTreeDisplay'),
+          configuration: configSchema,
+        }),
+      )
+      .volatile(() => ({ names: ['b', 'c'] }))
+      .views(self => ({
+        get discoveredRows() {
+          return self.names.map(name => ({ name }))
+        },
+        get unlistedRowsSort(): 'source' | 'sorted' {
+          return 'sorted'
+        },
+      }))
+      .actions(self => ({
+        reveal(name: string) {
+          self.names = [...self.names, name]
+        },
+      }))
+      .create({
+        type: 'GrowingTreeDisplay',
+        configuration: { rows: { tree: '(b:1,c:1);' } },
+      })
+  }
+
+  it('reads the rows left in place as no move', () => {
+    const display = makeGrowing()
+    const dialog = display.editableSources
+    display.reveal('a')
+    expect(display.rowOrderWillDropTree(dialog)).toBe(false)
+    display.applyRowEdits(dialog)
+    expect(display.rowDomain).toEqual([])
+    expect(display.rowTree).toBe('(b:1,c:1);')
+    expect(display.editableSources.map(r => r.name)).toEqual(['a', 'b', 'c'])
   })
 })

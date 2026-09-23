@@ -14,8 +14,9 @@ import type { RowSource } from './types.ts'
  * even where an entry repeats the adapter's value. A changed value is stored,
  * or, where it is what the row shows with no entry of its own (its alias's
  * entry, else the adapter's), its entry is removed. A row the dialog never
- * showed keeps its entry, and a colour the painters cannot parse is not
- * stored. The pairs keep the config.json's order first.
+ * showed keeps its entry, a dialog row the current rows no longer hold writes
+ * nothing, and a colour the painters cannot parse is not stored. The pairs
+ * keep the config.json's order first.
  */
 export function rowEdits<S extends RowSource>({
   rows,
@@ -45,10 +46,13 @@ export function rowEdits<S extends RowSource>({
   const nextColors = new Map(colors)
   for (const row of rows) {
     const seed = before.get(row.name)
+    if (!seed) {
+      continue
+    }
     const own = fromAdapter.get(row.name)
     const alias = rowAlias?.(row.name)
     const other = alias === row.name ? undefined : alias
-    if (row.label !== seed?.label) {
+    if (row.label !== seed.label) {
       const fallback =
         other !== undefined && Object.hasOwn(labels, other)
           ? labels[other]
@@ -59,7 +63,7 @@ export function rowEdits<S extends RowSource>({
       }
     }
     const color = row[identityChannel]
-    if (color !== seed?.[identityChannel]) {
+    if (color !== seed[identityChannel]) {
       const fallback =
         (other === undefined ? undefined : colors.get(other)) ??
         own?.[identityChannel]
