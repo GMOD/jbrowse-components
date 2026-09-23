@@ -2428,6 +2428,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/aggregateFieldName": {
+      "package": "@jbrowse/core",
+      "names": [
+        "aggregateFieldName"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/analytics": {
       "package": "@jbrowse/core",
       "names": [
@@ -2751,7 +2758,6 @@
         "DEFAULT_FLATTEN_FIELD",
         "DEFAULT_PILEUP_AS",
         "DEFAULT_PILEUP_FIELDS",
-        "aggregateFieldName",
         "facetLayers",
         "runTransforms"
       ],
@@ -3354,6 +3360,7 @@
       "package": "@jbrowse/core",
       "names": [
         "NOT_A_NUMBER_LABEL",
+        "isMissing",
         "numericDomain",
         "thresholdCuts",
         "thresholdField",

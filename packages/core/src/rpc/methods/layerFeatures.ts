@@ -10,23 +10,41 @@ import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter/ind
 import type { JexlInstance } from '../../util/jexlStrings.ts'
 import type {
   CoreEncodeFeaturesArgs,
-  FacetSection,
+  FieldRef,
   LayerRequest,
   PileupStep,
+  TransformStep,
 } from '../../util/markEncodingTypes.ts'
 import type { StatusCallback } from '../../util/progress.ts'
 import type { Feature } from '../../util/simpleFeature.ts'
 
 /**
- * The field a layer's `row` channel reads: the one its encoding names, else the
- * one its own `pileup` writes, so a packed layer restates nothing.
+ * One layer of a request as the encoder takes it: its features, and the row
+ * each stands in — the field the layer reads, or under a facet each feature's
+ * stacked row.
  */
-export function layerRow({ encoding, transform = [] }: LayerRequest) {
-  const pileup = transform.find((s): s is PileupStep => s.type === 'pileup')
-  return (
-    encoding.row ??
-    (pileup === undefined ? undefined : (pileup.as ?? DEFAULT_PILEUP_AS))
-  )
+export interface LayerFeatures {
+  features: readonly Feature[]
+  row: FieldRef | readonly number[] | undefined
+}
+
+function pileupField(transform: readonly TransformStep[] = []) {
+  const pileup = transform.findLast((s): s is PileupStep => s.type === 'pileup')
+  return pileup === undefined ? undefined : (pileup.as ?? DEFAULT_PILEUP_AS)
+}
+
+/**
+ * The field a layer's `row` channel reads: the one its encoding names, else the
+ * one its own `pileup` writes, else the one the request's shared `pileup`
+ * writes, so a packed layer restates nothing. Resolved once here for the facet
+ * split and the encoder alike, so a facet stacks the rows the unfaceted
+ * encoder reads.
+ */
+export function layerRow(
+  { encoding, transform }: LayerRequest,
+  shared?: readonly TransformStep[],
+) {
+  return encoding.row ?? pileupField(transform) ?? pileupField(shared)
 }
 
 /**
@@ -66,23 +84,26 @@ export async function layerFeatures(
   checkAbortSignal(signal)
 
   const shared = runTransforms(fetched, transform, jexl)
+  const rowFields = requested.map(r => layerRow(r, transform))
   const faceted = facet
     ? facetLayers(
         shared,
         facet.field,
-        requested.map(r => ({ transform: r.transform, row: layerRow(r) })),
+        requested.map((r, i) => ({
+          transform: r.transform,
+          row: rowFields[i],
+        })),
         jexl,
       )
     : undefined
-  const layers: (readonly Feature[])[] = requested.map(
-    ({ transform: own }, i) =>
-      faceted
-        ? faceted.layers[i]!.features
-        : own
-          ? runTransforms(shared, own, jexl)
-          : shared,
-  )
-  const rows = faceted?.layers.map(l => l.rows)
-  const sections: FacetSection[] | undefined = faceted?.sections
-  return { layers, rows, sections, zoomRange }
+  const layers = requested.map(({ transform: own }, i): LayerFeatures => {
+    const split = faceted?.layers[i]
+    return split
+      ? { features: split.features, row: split.rows }
+      : {
+          features: own ? runTransforms(shared, own, jexl) : shared,
+          row: rowFields[i],
+        }
+  })
+  return { layers, sections: faceted?.sections, zoomRange }
 }

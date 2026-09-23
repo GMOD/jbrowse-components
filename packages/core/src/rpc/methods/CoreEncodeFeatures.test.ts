@@ -147,8 +147,12 @@ test('a facet runs every layer per section and stacks the sections', async () =>
 
 // The display used to write this default into the encoding it sent, so a
 // caller of the RPC itself read row 0 for every instance of a packed layer,
-// and a facet read `row` whatever field the pileup wrote.
-describe("a layer's own pileup is the row it stands in where its encoding names none", () => {
+// and a facet read `row` whatever field the pileup wrote. Then the facet read
+// `row` by name where a layer named none, so a display-level pileup stacked
+// its spans under a facet and drew them over each other without one. The reads
+// carry a `row` field of their own to pin that a layer nothing packs reads
+// none.
+describe('a pileup is the row a layer stands in where its encoding names none', () => {
   const reads = (['a', 'b', 'c'] as const).map(
     (uniqueId, i) =>
       new SimpleFeature({
@@ -157,9 +161,14 @@ describe("a layer's own pileup is the row it stands in where its encoding names 
         start: i * 10,
         end: 100,
         source: 'k',
+        row: 2,
       }),
   )
-  async function rowsOf(layers: LayerRequest[], facet?: FacetSpec) {
+  async function rowsOf(
+    layers: LayerRequest[],
+    facet?: FacetSpec,
+    transform?: CoreEncodeFeaturesArgs['transform'],
+  ) {
     jest.mocked(getAdapter).mockResolvedValue({
       dataAdapter: {
         getFeatures: () => {},
@@ -177,6 +186,7 @@ describe("a layer's own pileup is the row it stands in where its encoding names 
       region: { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
       layers,
       facet,
+      transform,
     })
     const { value } = result as RpcResult<EncodedFeaturesResult>
     return value.layers.map(l => [...l.row!])
@@ -186,16 +196,34 @@ describe("a layer's own pileup is the row it stands in where its encoding names 
     lanes: ['row'],
     transform: [{ type: 'pileup', as: 'lane' }],
   })
+  const unpacked: LayerRequest = { encoding: {}, lanes: ['row'] }
+  const SHARED: CoreEncodeFeaturesArgs['transform'] = [
+    { type: 'pileup', as: 'lane' },
+  ]
 
-  test('without a facet', async () => {
-    expect(await rowsOf([packed(), packed('score')])).toEqual([
+  test("the layer's own, without a facet", async () => {
+    expect(await rowsOf([packed(), packed('score'), unpacked])).toEqual([
+      [0, 1, 2],
+      [0, 0, 0],
+      [0, 0, 0],
+    ])
+  })
+
+  test("the layer's own, under a facet", async () => {
+    expect(await rowsOf([packed(), unpacked], { field: 'source' })).toEqual([
       [0, 1, 2],
       [0, 0, 0],
     ])
   })
 
-  test('under a facet', async () => {
-    expect(await rowsOf([packed()], { field: 'source' })).toEqual([[0, 1, 2]])
+  test("the display's, without a facet", async () => {
+    expect(await rowsOf([unpacked], undefined, SHARED)).toEqual([[0, 1, 2]])
+  })
+
+  test("the display's, under a facet", async () => {
+    expect(await rowsOf([unpacked], { field: 'source' }, SHARED)).toEqual([
+      [0, 1, 2],
+    ])
   })
 })
 

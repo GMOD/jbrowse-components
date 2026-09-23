@@ -1,3 +1,4 @@
+import { aggregateFieldName } from './aggregateFieldName.ts'
 import { categoricalField } from './categoricalField.ts'
 import { fieldReader, isPlainFieldRef } from './fieldReader.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
@@ -28,6 +29,10 @@ export const DEFAULT_PILEUP_FIELDS: [string, string] = ['start', 'end']
 /**
  * A feature with fields written over another's: what `formula` and `bin`
  * produce, without copying the base feature's data per step.
+ *
+ * Each class here spells `get` as a prototype method with the interface's
+ * overloads restated: a class-field arrow allocates a closure per instance,
+ * one more allocation beside the object for every feature a step answers.
  */
 class DerivedFeature implements Feature {
   private readonly base: Feature
@@ -38,10 +43,17 @@ class DerivedFeature implements Feature {
     this.fields = fields
   }
 
-  get = ((name: string) =>
-    name in this.fields
-      ? this.fields[name]
-      : this.base.get(name)) as Feature['get']
+  get(name: 'refName'): string
+  get(name: 'name' | 'type' | 'id' | 'source'): string | undefined
+  get(name: 'start' | 'end'): number
+  get(name: 'phase'): 0 | 1 | 2 | undefined
+  get(name: 'strand'): -1 | 0 | 1 | undefined
+  get(name: 'score'): number | undefined
+  get(name: 'subfeatures'): Feature[] | undefined
+  get(name: string): unknown
+  get(name: string): unknown {
+    return name in this.fields ? this.fields[name] : this.base.get(name)
+  }
 
   id() {
     return this.base.id()
@@ -74,8 +86,17 @@ class MadeFeature implements Feature {
     this.tag = tag
   }
 
-  get = ((name: string) =>
-    name === 'uniqueId' ? this.id() : this.data[name]) as Feature['get']
+  get(name: 'refName'): string
+  get(name: 'name' | 'type' | 'id' | 'source'): string | undefined
+  get(name: 'start' | 'end'): number
+  get(name: 'phase'): 0 | 1 | 2 | undefined
+  get(name: 'strand'): -1 | 0 | 1 | undefined
+  get(name: 'score'): number | undefined
+  get(name: 'subfeatures'): Feature[] | undefined
+  get(name: string): unknown
+  get(name: string): unknown {
+    return name === 'uniqueId' ? this.id() : this.data[name]
+  }
 
   id() {
     const { refName, start, end } = this.data
@@ -155,10 +176,18 @@ class FlattenedFeature implements Feature {
     this.item = item
   }
 
-  get = ((name: string) => {
+  get(name: 'refName'): string
+  get(name: 'name' | 'type' | 'id' | 'source'): string | undefined
+  get(name: 'start' | 'end'): number
+  get(name: 'phase'): 0 | 1 | 2 | undefined
+  get(name: 'strand'): -1 | 0 | 1 | undefined
+  get(name: 'score'): number | undefined
+  get(name: 'subfeatures'): Feature[] | undefined
+  get(name: string): unknown
+  get(name: string): unknown {
     const v = this.item.get(name)
     return v === undefined ? this.container.get(name) : v
-  }) as Feature['get']
+  }
 
   id() {
     return this.item.id()
@@ -225,10 +254,6 @@ function bin(features: readonly Feature[], step: BinStep) {
     const start = Math.floor(v / size) * size
     return new DerivedFeature(f, { [asStart]: start, [asEnd]: start + size })
   })
-}
-
-export function aggregateFieldName({ op, field, as }: AggregateOp) {
-  return as ?? (op === 'count' || field === undefined ? op : `${op}_${field}`)
 }
 
 // The groups keyed by their raw field values, one Map level per groupby
@@ -552,7 +577,9 @@ export interface FacetedLayer {
  * a section's rows start where the one above it ends, and it is as tall as
  * the tallest layer packed it. Every layer's features come back in section
  * order beside their stacked rows, so a faceted display is the unfaceted one
- * drawn once per section, and a feature is handed on as its steps left it.
+ * drawn once per section, and a feature is handed on as its steps left it. A
+ * layer naming no `row` field stands on each section's first row, the answer
+ * the unfaceted encoder gives it.
  */
 export function facetLayers(
   features: readonly Feature[],
@@ -573,7 +600,7 @@ export function facetLayers(
     }
   }
   const readRows = layers.map(l =>
-    fieldReader(l.row ?? DEFAULT_PILEUP_AS, jexl),
+    l.row === undefined ? undefined : fieldReader(l.row, jexl),
   )
   const out = layers.map((): { features: Feature[]; rows: number[] } => ({
     features: [],
@@ -588,10 +615,10 @@ export function facetLayers(
       const placed = transform?.length
         ? runTransforms(members, transform, jexl)
         : members
-      const readRow = readRows[l]!
+      const readRow = readRows[l]
       const layer = out[l]!
       for (const f of placed) {
-        const row = rowOf(readRow(f))
+        const row = readRow ? rowOf(readRow(f)) : 0
         if (row + 1 > rowCount) {
           rowCount = row + 1
         }

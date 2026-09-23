@@ -150,8 +150,9 @@ const markEncodingSchema = ConfigurationSchema(
      * #slot marks.encoding.row
      * The feature field, or jexl expression, naming the band the mark stands in,
      * an integer from 0; a feature with nothing there sits on band 0. Empty
-     * puts every mark on one band across the whole plot, unless this mark's
-     * own `transform` holds a `pileup`, whose output field it then reads.
+     * reads the field a `pileup` step wrote, this mark's own or the display's,
+     * and puts every mark on one band across the whole plot where neither
+     * packs.
      */
     row: {
       type: 'featureField',

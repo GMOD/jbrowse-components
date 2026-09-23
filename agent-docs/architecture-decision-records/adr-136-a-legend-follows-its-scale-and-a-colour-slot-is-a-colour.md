@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Three legend and colour-slot rules brought level with ggplot2. A derived key row is a colour naming every value painted in it (`CategoricalEntry.values`), so two values on one palette slot read as one swatch with both labels and Pin distinct colors pins them both. Two marks colouring or glyphing by one field through one domain and palette share one key section (`buildMarkLegend` keys on the declaration, not the mark); ramps stay per mark. A `color` / `maybeColor` slot refuses a value the painters cannot parse — `color: 'biotype'` fails at load naming the slot and the value — and the JSON schema carries the same check as `CssColor`"
+summary: "Three legend and colour-slot rules brought level with ggplot2. A derived key row is a colour naming every value painted in it (`CategoricalEntry.values`), so two values on one palette slot read as one swatch with both labels and Pin distinct colors pins them both. Two marks colouring or glyphing by one field through one domain and palette share one key section (`buildMarkLegend` keys on the declaration, not the mark); a ramp with an open end stays per mark. A `color` / `maybeColor` slot refuses a value the painters cannot parse — `color: 'biotype'` fails at load naming the slot and the value — and the JSON schema carries the same check as `CssColor`. Amended 2026-09-23: a ramp pinned at both ends is its declaration, so marks declaring one alike share its key"
 ---
 
 # ADR-136: A legend follows its scale, and a colour slot is a colour
@@ -62,8 +62,11 @@ ggplot2 accepted three findings.
   sections apart, so per-mark palettes stay a feature. A glyph key folds into
   a colour key over the same field when the colour keys every mark the glyph
   does. Visibility is handed to the build, so a hidden mark's values leave a
-  shared key. **A ramp stays per mark**: its domain is the uniform that mark's
-  shapes read.
+  shared key. **A ramp with an open end stays per mark**: its domain is the
+  uniform that mark's shapes read off its own loaded values. Amended
+  2026-09-23: pinned at both ends there is nothing left to follow, so the
+  table carries the declared `range`, `scheme` and `reverse` and marks
+  declaring one such ramp alike share its key, as they share a categorical one.
 - **A colour slot refuses what is not a colour.** `color` and `maybeColor`
   (`packages/core/src/configuration/configurationSlot.ts`) refine
   `types.string` with `isCssColor`, the parse the painters run
@@ -106,10 +109,11 @@ ggplot2 accepted three findings.
   hide toggle hides features by colour, so a row keyed by value would hide
   its neighbour's features on the shared colour; the row stays a colour and
   names every value instead.
-- **A shared ramp across marks.** Two marks with unpinned ramps over one
-  field could union their extents into one domain and one key, but the domain
-  is a uniform each mark's shaders read, so sharing it is one uniform for two
-  shaders — a rendering change to measure first, not a legend change.
+- **A shared ramp across marks with an open end.** Two marks with unpinned
+  ramps over one field could union their extents into one domain and one key,
+  but the domain is a uniform each mark's shaders read, so sharing it is one
+  uniform for two shaders — a rendering change to measure first, not a legend
+  change.
 - **A hand-listed set of CSS colour names for the check or the schema.** The
   painters' table (`cssColorsLevel4.ts`) is the one list; the slot predicate
   calls the parser and the schema pattern is generated from the same table.

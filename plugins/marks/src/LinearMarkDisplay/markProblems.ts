@@ -1,5 +1,10 @@
 import { AUTO_BIN } from './autoBin.ts'
-import { colorProblems, isJexl, paintedScale } from './markRuleFacts.ts'
+import {
+  aggregateFieldName,
+  colorProblems,
+  isJexl,
+  paintedScale,
+} from './markRuleFacts.ts'
 import {
   DEFAULT_AGGREGATE_OP,
   DEFAULT_BIN_AS,
@@ -187,19 +192,31 @@ function pairSlot(step: StepSnapshot) {
       : undefined
 }
 
-function packs(mark: MarkSnapshot) {
-  return stepsOf(mark).some(s => s.type === 'pileup')
+type Steps = readonly (StepSnapshot | undefined)[]
+
+function readable(steps: Steps): StepSnapshot[] {
+  return steps.filter(s => s !== undefined)
 }
 
-function banded(mark: MarkSnapshot) {
-  return packs(mark) || !!mark.encoding?.row
+function packsIn(steps: Steps) {
+  return steps.some(s => s?.type === 'pileup')
+}
+
+function packs(mark: MarkSnapshot) {
+  return packsIn(stepsOf(mark))
+}
+
+// Whether a mark stands in rows: its own pileup's, the display's, or a field
+// it names.
+function banded(mark: MarkSnapshot, transform: Steps) {
+  return packs(mark) || packsIn(transform) || !!mark.encoding?.row
 }
 
 // The fields the last step that makes its features from nothing leaves behind,
-// with what the steps after it add; undefined where no step does, and every
-// field of the file is still there.
-function madeFields(mark: MarkSnapshot) {
-  const steps = stepsOf(mark)
+// with what the steps after it add, over the display's steps and then the
+// mark's; undefined where no step does, and every field of the file is still
+// there.
+function madeFields(steps: readonly StepSnapshot[]) {
   const made = steps.findLastIndex(
     s => s.type === 'aggregate' || s.type === 'coverage',
   )
@@ -223,7 +240,7 @@ function madeFields(mark: MarkSnapshot) {
       fields.add(field)
     }
     for (const { op = DEFAULT_AGGREGATE_OP, field, as } of last.ops ?? []) {
-      fields.add(as || (op === 'count' || !field ? op : `${op}_${field}`))
+      fields.add(aggregateFieldName({ op, field, as }))
     }
   }
   for (const step of steps.slice(made + 1)) {
@@ -309,7 +326,7 @@ function stepProblems(steps: readonly (StepSnapshot | undefined)[]) {
   return problems
 }
 
-function ownProblems(mark: MarkSnapshot) {
+function ownProblems(mark: MarkSnapshot, transform: Steps) {
   const shape = shapeOf(mark)
   const problems: OwnProblem[] = []
   const y = mark.encoding?.y
@@ -365,13 +382,13 @@ function ownProblems(mark: MarkSnapshot) {
     )
   }
   problems.push(...stepProblems(stepsOf(mark)))
-  const fields = madeFields(mark)
+  const fields = madeFields([...readable(transform), ...stepsOf(mark)])
   if (fields && y && !isJexl(y) && !fields.has(y)) {
     problems.push(
       found(
         'unwritten-y',
         'encoding.y',
-        `reads "${y}", which its steps do not write; they leave ${[...fields].join(', ')}`,
+        `reads "${y}", which no step before it writes; they leave ${[...fields].join(', ')}`,
       ),
     )
   }
@@ -392,13 +409,13 @@ function ownProblems(mark: MarkSnapshot) {
 export function markProblems(
   marks: readonly (MarkSnapshot | undefined)[],
   facet?: FacetSnapshot,
-  transform: readonly (StepSnapshot | undefined)[] = [],
+  transform: Steps = [],
 ): MarkProblem[] {
   const faceted = typeof facet?.field === 'string' && facet.field !== ''
   const problems: MarkProblem[] = [
     ...stepProblems(transform),
     ...marks.flatMap((mark, i) =>
-      mark ? ownProblems(mark).map(p => ({ mark: i, ...p })) : [],
+      mark ? ownProblems(mark, transform).map(p => ({ mark: i, ...p })) : [],
     ),
   ]
   for (const [i, mark] of marks.entries()) {
@@ -409,8 +426,8 @@ export function markProblems(
       if (
         !faceted &&
         shapeOf(mark) !== 'span' &&
-        !banded(mark) &&
-        banded(other)
+        !banded(mark, transform) &&
+        banded(other, transform)
       ) {
         problems.push({
           mark: i,
@@ -427,7 +444,7 @@ export function markProblems(
           ...found(
             'two-packings',
             'transform',
-            `packs rows of its own, as mark ${j} does, and the two share row numbers; one pileup in the display's transform packs them together, ${faceted ? 'though across every section at once, leaving each section the rows the others fill' : "with each mark's encoding.row naming the field the pileup writes"}`,
+            `packs rows of its own, as mark ${j} does, and the two share row numbers; one pileup in the display's transform packs them together${faceted ? ', though across every section at once, leaving each section the rows the others fill' : ''}`,
           ),
         })
       }

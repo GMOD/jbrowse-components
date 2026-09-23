@@ -70,6 +70,7 @@ function thresholdTable(): Extract<ColorScaleTable, { kind: 'threshold' }> {
     kind: 'threshold',
     field: 'pip',
     domain: [0.1, 0.5],
+    range: [0xff111111, 0xff222222, 0xff333333],
     entries: [
       { value: '< 0.1', color: 0xff111111 },
       { value: '0.1 \u2013 0.5', color: 0xff222222 },
@@ -95,6 +96,31 @@ test('two regions of one threshold declaration share a key', () => {
   ])
   expect(sections).toHaveLength(1)
   expect(markColorScales(sections)).toHaveLength(1)
+})
+
+// The feature display's threshold key grows the same row once a value-less
+// feature painted (ADR-156); a region that met none leaves it out.
+test('a threshold key lists every interval, and the no-value row once a region painted one', () => {
+  const sparse: ColorScaleTable = {
+    ...thresholdTable(),
+    entries: [
+      { value: '≥ 0.5', color: 0xff333333 },
+      { value: '', color: 0xffafafaf },
+    ],
+  }
+  const sections = buildMarkLegend([region(thresholdTable()), region(sparse)])
+  expect(sections).toHaveLength(1)
+  const [key] = markColorScales(sections)
+  expect(
+    key?.kind === 'categorical' &&
+      key.entries.map(e => [e.label, e.missing ?? false]),
+  ).toEqual([
+    ['< 0.1', false],
+    ['0.1 – 0.5', false],
+    ['≥ 0.5', false],
+    ['(no value)', true],
+  ])
+  expect(categoryLabel(sections[0]!.scale, 0xffafafaf)).toBe('(no value)')
 })
 
 test('a colour two values hashed onto names both of them on hover', () => {
@@ -169,6 +195,7 @@ test('a pinned floor holds across the union, and the open ceiling widens to it',
 test('two threshold marks over one field and cuts keep a key each when their ranges differ', () => {
   const recoloured: ColorScaleTable = {
     ...thresholdTable(),
+    range: thresholdTable().range.map(c => c + 1),
     entries: thresholdTable().entries.map(e => ({
       ...e,
       color: e.color + 1,
@@ -177,6 +204,31 @@ test('two threshold marks over one field and cuts keep a key each when their ran
   const sections = buildMarkLegend([region(thresholdTable(), recoloured)])
   expect(sections).toHaveLength(2)
   expect(categoryLabel(sections[1]!.scale, 0xff222223)).toBe('0.1 – 0.5')
+})
+
+// A ramp with an open end follows each mark's own loaded values, so it stays
+// that mark's; pinned at both ends there is nothing left to follow, and the
+// declaration is the key, as a categorical one's is.
+test('two marks declaring one ramp pinned at both ends share a key, and open ramps stay per mark', () => {
+  const pinned = { domainMin: 0, domainMax: 100, range: ['white', 'red'] }
+  const scaleOf = (values: number[], color: Partial<ContinuousRef>) =>
+    rampRegion(values, color).layers[0]!.scale
+  expect(
+    buildMarkLegend([
+      region(scaleOf([10, 20], pinned), scaleOf([30, 40], pinned)),
+    ]),
+  ).toMatchObject([{ markIndexes: [0, 1] }])
+  expect(
+    buildMarkLegend([
+      region(
+        scaleOf([10, 20], pinned),
+        scaleOf([30, 40], { ...pinned, range: ['white', 'blue'] }),
+      ),
+    ]),
+  ).toHaveLength(2)
+  expect(
+    buildMarkLegend([region(scaleOf([10, 20], {}), scaleOf([10, 20], {}))]),
+  ).toHaveLength(2)
 })
 
 // Each region bakes its table with the middle stop placed by its own domain,

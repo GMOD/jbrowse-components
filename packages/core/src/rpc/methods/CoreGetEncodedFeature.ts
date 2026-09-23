@@ -35,6 +35,6 @@ export default class CoreGetEncodedFeature extends RpcMethodTypeWithRenameRegion
       { ...args, layers: [asked] },
       pluginManager.jexl,
     )
-    return layers[0]?.[featureIndex]?.toJSON()
+    return layers[0]?.features[featureIndex]?.toJSON()
   }
 }

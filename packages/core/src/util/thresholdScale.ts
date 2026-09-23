@@ -90,9 +90,12 @@ export function thresholdLabels(domain: readonly number[]): string[] {
  */
 export const NOT_A_NUMBER_LABEL = '(not a number)'
 
-// A VCF's `AF=.` arrives as `[undefined]`, which is no value rather than text
-// that fails to parse.
-function isMissing(value: unknown) {
+/**
+ * #api
+ * Whether a field holds no value at all, as against text that fails to parse:
+ * absent, empty, or a VCF's `AF=.`, which arrives as `[undefined]`.
+ */
+export function isMissing(value: unknown) {
   return Array.isArray(value)
     ? value.every(v => v === undefined || v === null)
     : valueText(value) === ''

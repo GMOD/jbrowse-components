@@ -6,7 +6,7 @@ import { GLYPH_DISC } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
 import { categoricalScale } from '../ui/colors.ts'
 import { categoricalField } from './categoricalField.ts'
-import { MISCONFIGURED_COLOR } from './color/index.ts'
+import { MISCONFIGURED_COLOR, NO_CATEGORY_COLOR } from './color/index.ts'
 import { cssColorToABGR, packAbgr } from './colorBits.ts'
 import { buildColorRampLut, colorRampStops, rampDomain } from './colorRamp.ts'
 import { fieldReader } from './fieldReader.ts'
@@ -16,6 +16,8 @@ import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { numericValue } from './numericValue.ts'
 import { buildJexlContext } from './simpleFeature.ts'
 import {
+  NOT_A_NUMBER_LABEL,
+  isMissing,
   thresholdCuts,
   thresholdIndex,
   thresholdLabels,
@@ -75,6 +77,7 @@ export { NO_VALUE_LABEL } from './categoricalField.ts'
 export const DEFAULT_MARK_COLOR = '#0068d1'
 
 const FALLBACK_COLOR = cssColorToABGR(MISCONFIGURED_COLOR)
+const NO_VALUE_COLOR = cssColorToABGR(NO_CATEGORY_COLOR)
 
 /**
  * #api
@@ -310,6 +313,11 @@ export function encodeFeatures<L extends LaneName>(
           c => cssColorToABGR(c),
         )
       : undefined
+  // Which intervals and which of the two keyless cases the walk met, for the
+  // table's entries: a byte per feature beside the interval lookup.
+  const binMet = binColors ? new Uint8Array(binColors.length) : undefined
+  let missingMet = false
+  let notNumberMet = false
   const { glyph: glyphEncoding } = encoding
   const glyphScaled =
     glyph && typeof glyphEncoding === 'object' ? glyphEncoding : undefined
@@ -375,9 +383,19 @@ export function encodeFeatures<L extends LaneName>(
       colorCategories.collect(f, count)
     } else if (rampValues && readColor) {
       rampValues[count] = numericValue(readColor(f))
-    } else if (binColors && cuts && color && readColor) {
-      const bin = thresholdIndex(readColor(f), cuts)
-      color[count] = bin < 0 ? FALLBACK_COLOR : binColors[bin]!
+    } else if (binColors && binMet && cuts && color && readColor) {
+      const v = readColor(f)
+      const bin = thresholdIndex(v, cuts)
+      if (bin >= 0) {
+        color[count] = binColors[bin]!
+        binMet[bin] = 1
+      } else if (isMissing(v)) {
+        color[count] = NO_VALUE_COLOR
+        missingMet = true
+      } else {
+        color[count] = FALLBACK_COLOR
+        notNumberMet = true
+      }
     } else if (color && readColor) {
       color[count] = readColor(f) as number
     }
@@ -406,19 +424,27 @@ export function encodeFeatures<L extends LaneName>(
       ...(keysAreNumeric(entries) ? { numericKeys: true } : {}),
       entries: entries.map(e => ({ value: e.value, color: e.entry })),
     }
-  } else if (thresholdEncoding && cuts && binColors) {
+  } else if (thresholdEncoding && cuts && binColors && binMet) {
+    const entries = thresholdLabels(cuts).flatMap((value, i) =>
+      binMet[i] ? [{ value, color: binColors[i]! }] : [],
+    )
+    if (missingMet) {
+      entries.push({ value: '', color: NO_VALUE_COLOR })
+    }
+    if (notNumberMet) {
+      entries.push({ value: NOT_A_NUMBER_LABEL, color: FALLBACK_COLOR })
+    }
     scale = {
       kind: 'threshold',
       field: thresholdEncoding.field,
       domain: cuts,
-      entries: thresholdLabels(cuts).map((value, i) => ({
-        value,
-        color: binColors[i]!,
-      })),
+      range: [...binColors],
+      entries,
     }
   } else if (rampEncoding && rampValues) {
     const extent = finiteExtremes(rampValues, count)
-    const { domainMin, domainMax, domainMid } = rampEncoding
+    const { domainMin, domainMax, domainMid, range, scheme, reverse } =
+      rampEncoding
     const domain = rampDomain(domainMin, domainMax, extent)
     const norm = makeScoreNormalizer(
       domain[0],
@@ -443,6 +469,9 @@ export function encodeFeatures<L extends LaneName>(
       domain,
       pinned: [domainMin !== undefined, domainMax !== undefined],
       ...(domainMid === undefined ? {} : { domainMid, stops }),
+      ...(range ? { range: [...range] } : {}),
+      ...(scheme ? { scheme } : {}),
+      ...(reverse ? { reverse } : {}),
       extent,
       lut,
     }

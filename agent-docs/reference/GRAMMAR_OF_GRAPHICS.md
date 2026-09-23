@@ -361,8 +361,9 @@ The seams, named honestly:
   canvas display's `colorField` stay categorical, for the facet, Group by and
   "Pin distinct colors", which would write values into the cuts
   ([ADR-156](../architecture-decision-records/adr-156-the-feature-colour-takes-a-threshold.md)).
-  The mark encoder still paints a threshold's value-less point the
-  misconfiguration grey, with no key row.
+  The mark encoder files the same two keys beside its interval lookup: a
+  value-less feature paints the no-value grey and text that is no number the
+  misconfiguration grey, each a row of the key once painted.
 
 ## The facet stage
 
@@ -517,9 +518,11 @@ the row axis in the vocabulary above, and none is a new channel.
   matching guides — and any difference in the declaration keeps them apart
   ([ADR-136](../architecture-decision-records/adr-136-a-legend-follows-its-scale-and-a-colour-slot-is-a-colour.md)),
   a colour's `title` included, since ggplot2 merges only guides titled alike.
-  Two marks with two unpinned ramps over one field still union nothing and
-  each key is its own: the domain is a uniform each mark's shaders read, so
-  sharing it is a rendering change to measure, not a legend change.
+  A ramp pinned at both ends is its declaration too, and marks declaring one
+  alike share its key. Two marks with two open ramps over one field still
+  union nothing and each key is its own: the domain is a uniform each mark's
+  shaders read off its own loaded values, so sharing it is a rendering change
+  to measure, not a legend change.
 - **A reference line is the scale's, so it has no zoom range.**
   `scales.y.rules` and `scales.y.title` are members of the one value scale
   ([ADR-142](../architecture-decision-records/adr-142-one-value-scale-object.md)

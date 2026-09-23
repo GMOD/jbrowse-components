@@ -255,6 +255,7 @@ export default [
   '@jbrowse/core/util/aborting',
   '@jbrowse/core/util/adapterMetadata',
   '@jbrowse/core/util/addRelativeUris',
+  '@jbrowse/core/util/aggregateFieldName',
   '@jbrowse/core/util/analytics',
   '@jbrowse/core/util/animationAllowed',
   '@jbrowse/core/util/assemblyConfigUtils',

@@ -178,7 +178,7 @@ describe('a marks list in a config file', () => {
         where: `${DISPLAY}.marks[0].encoding.y`,
         rule: 'unwritten-y',
         message:
-          'reads "score", which its steps do not write; they leave refName, start, end',
+          'reads "score", which no step before it writes; they leave refName, start, end',
       },
     ])
     expect(

@@ -65,13 +65,17 @@ the key prints a line naming `scale` once the rows pass a handful.
 A **threshold** scale is the third kind, and it is only ever declared: `domain`
 is the ascending cut points, `range` holds one colour more, and a value takes
 `range[thresholdIndex(value, domain)]` — the count of cut points it is at or
-past, `-1` and the fallback grey for a value that is not a number
-(`@jbrowse/core/util/thresholdScale`). It resolves per region in the worker the
-way a categorical scale does, so it needs no lane, no ramp and no shader
-change, and the table it ships lists one row per interval labelled `< a`,
-`a – b`, `≥ b`. Every region of one declaration ships the same table, so the
-legend's union is a no-op. Manhattan's LocusZoom r² bins are this scale over
-`field: 'ld'`, which is what makes them a config an author can move.
+past (`@jbrowse/core/util/thresholdScale`). A feature with no value paints the
+no-value grey and text that is no number the misconfiguration grey, the two
+keys the feature display's threshold files (ADR-156), decided on the miss
+branch alone so the interval lookup stays an integer. It resolves per region
+in the worker the way a categorical scale does, so it needs no lane, no ramp
+and no shader change, and the table it ships is shaped as a categorical one:
+`range` the interval colours, the whole declaration, and `entries` the keys the
+region met — interval labels `< a`, `a – b`, `≥ b`, then the two keyless rows —
+which the legend unions across regions and marks. Manhattan's LocusZoom r²
+bins are this scale over `field: 'ld'`, which is what makes them a config an
+author can move.
 
 A **quantitative** ramp resolves on the main thread instead, the way y does:
 a caller whose shape reads the ramp itself names the `colorValue` lane and the

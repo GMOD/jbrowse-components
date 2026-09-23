@@ -121,7 +121,7 @@ function drawnScales(layer: StoredLayer): StoredLayer {
     yMin: valued ? yMin : layer.yMin,
     yMax: valued ? yMax : layer.yMax,
     scale:
-      scale?.kind === 'categorical' && color
+      (scale?.kind === 'categorical' || scale?.kind === 'threshold') && color
         ? { ...scale, entries: scale.entries.filter(e => colors.has(e.color)) }
         : scale?.kind === 'ramp' && colorValue
           ? scale.pinned[0] && scale.pinned[1]

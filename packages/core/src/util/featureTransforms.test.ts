@@ -288,7 +288,7 @@ test('pileup with placeRect padding assigns the rows placeRect does', () => {
   expect(Math.max(...expected)).toBeGreaterThan(3)
 })
 
-const PILEUP = [{ transform: [{ type: 'pileup' as const }] }]
+const PILEUP = [{ transform: [{ type: 'pileup' as const }], row: 'row' }]
 
 test('a facet packs each section on its own and stacks the sections', () => {
   const { layers, sections } = facetLayers(
@@ -322,7 +322,7 @@ test('a faceted section is the unfaceted layer over its own features, offset', (
   ]
   const steps = [{ type: 'pileup' as const }]
   const { layers, sections } = facetLayers(features, 'sample', [
-    { transform: steps },
+    { transform: steps, row: 'row' },
   ])
   for (const { key, firstRow } of sections) {
     const alone = runTransforms(
@@ -349,9 +349,15 @@ test('a faceted layer hands on its features as its steps left them', () => {
   expect(second).toBe(features[0])
 })
 
+// The rowless layer's features carry a `row` field a display-level pileup
+// could have written: a layer naming no row field reads none, as the unfaceted
+// encoder reads none, rather than that field under its default name.
 test('a section is as tall as the tallest layer packed it, and a rowless layer sits on its first row', () => {
   const { layers, sections } = facetLayers(
-    [feature(0, 20, { sample: 'a' }), feature(5, 25, { sample: 'a' })],
+    [
+      feature(0, 20, { sample: 'a', row: 3 }),
+      feature(5, 25, { sample: 'a', row: 3 }),
+    ],
     'sample',
     [...PILEUP, {}],
   )

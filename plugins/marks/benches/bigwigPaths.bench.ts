@@ -42,10 +42,8 @@ import { resolve } from 'node:path'
 // the most a validCnt could buy.
 import { performance } from 'node:perf_hooks'
 
-import {
-  aggregateFieldName,
-  runTransforms,
-} from '@jbrowse/core/util/featureTransforms'
+import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
+import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
 

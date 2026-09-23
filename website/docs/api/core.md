@@ -249,7 +249,9 @@ layer's own steps run over each section alone, and the sections stacked —
 a section's rows start where the one above it ends, and it is as tall as
 the tallest layer packed it. Every layer's features come back in section
 order beside their stacked rows, so a faceted display is the unfaceted one
-drawn once per section, and a feature is handed on as its steps left it.
+drawn once per section, and a feature is handed on as its steps left it. A
+layer naming no `row` field stands on each section's first row, the answer
+the unfaceted encoder gives it.
 
 ```js
 // type signature
@@ -357,6 +359,18 @@ The hit index over `count` instances: each a box from `x` to `x2` at its
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
+## isMissing
+
+Whether a field holds no value at all, as against text that fails to parse:
+absent, empty, or a VCF's `AF=.`, which arrives as `[undefined]`.
+
+```js
+// type signature
+(value: unknown) => boolean
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
 
 ## isPlainFieldRef
 
@@ -486,7 +500,7 @@ re-uploads a ramp on identity.
 
 ```js
 // type signature
-(table: {…}, extent: [...]) => { ...; }
+(table: {…}, extent: [number, number]) => {…}
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)

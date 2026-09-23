@@ -67,14 +67,14 @@ from an `origin` of 0, and the y-axis autoscales to the values on screen.
 
 Each mark's `encoding` maps feature fields to the channels its shape reads:
 
-| Channel | Read by        | Value                                                                                                                                       |
-| ------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `x`     | every shape    | a field holding the left edge in bp; `start` by default                                                                                     |
-| `x2`    | every shape    | the right edge; `end` by default                                                                                                            |
-| `y`     | `bar`, `point` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped |
-| `row`   | `span`         | an integer field naming the band a span stacks on, from 0; missing is 0, and left empty it follows this mark's own `pileup` step            |
-| `color` | every shape    | a CSS colour, a jexl callback returning one, or a scale (below)                                                                             |
-| `glyph` | `point`        | `disc`, `triangle` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                              |
+| Channel | Read by        | Value                                                                                                                                                  |
+| ------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `x`     | every shape    | a field holding the left edge in bp; `start` by default                                                                                                |
+| `x2`    | every shape    | the right edge; `end` by default                                                                                                                       |
+| `y`     | `bar`, `point` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped            |
+| `row`   | every shape    | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows a `pileup` step, this mark's own or the display's |
+| `color` | every shape    | a CSS colour, a jexl callback returning one, or a scale (below)                                                                                        |
+| `glyph` | `point`        | `disc`, `triangle` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                         |
 
 A field name is read straight off the feature (`score`, `strand`, or any column
 a BED `columnNames` or a GFF attribute names). A `jexl:` expression over
@@ -223,7 +223,8 @@ describes that binding:
   `{ "field": "signal", "scale": "threshold", "domain": [10, 50], "range": ["#eee", "#f90", "#c00"] }`
   cuts the value at each `domain` point and hands each interval a `range`
   colour, so `range` carries one more than `domain` does. The legend lists one
-  row per interval.
+  row per interval, and a grey row for the features with no value once one is
+  drawn.
 
 Whichever way a scale resolves, the legend reads the same table the colours came
 from.
@@ -234,7 +235,8 @@ that text; `"title": ""` draws the key with no heading. On an alignments track,
 `{ "field": "score", "scale": "linear", "title": "Mapping quality" }` heads the
 ramp with what a read's `score` measures. Marks sharing a scale share one key
 only under one title, so a second mark titling the same scale differently draws
-a key of its own.
+a key of its own. A ramp is shared only with both ends pinned, since an open end
+follows each mark's own loaded values.
 
 ## Glyph scales
 
@@ -368,15 +370,15 @@ Each step names its `type` and takes that step's own settings, which the
 [MarkTransform config reference](/docs/config/marktransform) lists; a key
 belonging to another step is refused where the config is read:
 
-| Step        | What it does                                                                                                                                                                                                                                    |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `filter`    | keeps the features a jexl `expr` admits                                                                                                                                                                                                         |
-| `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                                                                                                                |
-| `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges to the two fields `as` names (`start`, `end`)                                                                                                   |
-| `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field; an empty `groupby` takes the edges a preceding `bin` in the same `transform` wrote |
-| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                                                                                |
-| `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`), each reading its parent for what it lacks, with its position in the field `index` names; `keepEmpty` holds on to a feature whose array is empty                 |
-| `pileup`    | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row                                                              |
+| Step        | What it does                                                                                                                                                                                                                                                                |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `filter`    | keeps the features a jexl `expr` admits                                                                                                                                                                                                                                     |
+| `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                                                                                                                                            |
+| `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges to the two fields `as` names (`start`, `end`)                                                                                                                               |
+| `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field; an empty `groupby` takes the edges the last `bin` before it wrote, in this mark's `transform` or the display's |
+| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                                                                                                            |
+| `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`), each reading its parent for what it lacks, with its position in the field `index` names; `keepEmpty` holds on to a feature whose array is empty                                             |
+| `pileup`    | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row                                                                                          |
 
 A field a step reads is a name or a dotted path into a structured field, so a
 VCF's `INFO.DP` is the `field` of a `mean` and `INFO.SVTYPE` a `groupby`; a
@@ -386,9 +388,8 @@ field holding a one-element list groups by its element. A computed value is a
 A `bin` followed by an `aggregate` is a density: one bar per bin, its height the
 count of features whose start fell in it. The `aggregate` groups by the edges
 the `bin` wrote unless it names `groupby` fields of its own, so the grouping is
-written once. That needs the `bin` in the same `transform`: a mark's `aggregate`
-behind a `bin` in the display's `transform` names the edges, `["start", "end"]`
-by default.
+written once, whether the `bin` sits in the same `transform` or in the
+display's.
 
 ```json
 {
@@ -542,14 +543,13 @@ chip in its corner naming the slot, and the mark when the slot is a mark's:
 
 - a `bar` or `point` naming no `y`, which draws nothing;
 - a channel the shape does not read, such as `y` on a `span`;
-- a `y` naming a field the mark's own `aggregate` or `coverage` step does not
-  write, with the fields those steps leave;
+- a `y` naming a field that no `aggregate` or `coverage` step before it, the
+  display's or the mark's own, writes, with the fields those steps leave;
 - a `bar` or `point` drawn together with a stacked `span`, which stands in the
   first of the span's rows;
 - two marks each running their own `pileup`, which share row numbers, where one
-  `pileup` in the display's `transform` packs them together: without a `facet`
-  each mark's `encoding.row` names the field the pileup writes, and under one
-  the pileup packs across every section at once;
+  `pileup` in the display's `transform` packs them together, though under a
+  `facet` across every section at once;
 - a zoom range whose `minBpPerPx` is not below its `maxBpPerPx`, which never
   draws.
 

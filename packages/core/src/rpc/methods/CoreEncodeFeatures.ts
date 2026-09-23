@@ -7,7 +7,7 @@ import {
 } from '../../util/markEncoding.ts'
 import { createProgressReporter } from '../../util/progress.ts'
 import { measureRegionBytes } from '../byteBudget.ts'
-import { layerFeatures, layerRow } from './layerFeatures.ts'
+import { layerFeatures } from './layerFeatures.ts'
 
 import type { EncodedFeaturesResult } from '../../util/markEncoding.ts'
 import type { RpcExecuteArgs } from '../RpcRegistry.ts'
@@ -56,27 +56,27 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
 
     const { jexl } = pluginManager
     const {
-      layers: features,
-      rows,
+      layers: layered,
       sections,
       zoomRange,
     } = await layerFeatures(dataAdapter, args, jexl)
-    const layers = requested.map((request, i) =>
-      encodeFeatures(
-        features[i]!,
-        { ...request.encoding, row: rows ? rows[i] : layerRow(request) },
+    const layers = requested.map((request, i) => {
+      const { features, row } = layered[i]!
+      return encodeFeatures(
+        features,
+        { ...request.encoding, row },
         request.lanes,
         {
           jexl,
           report: createProgressReporter({
             label: 'Encoding features',
-            total: features[i]!.length,
+            total: features.length,
             statusCallback,
             signal,
           }),
         },
-      ),
-    )
+      )
+    })
     const result: EncodedFeaturesResult = {
       layers,
       facet: sections,

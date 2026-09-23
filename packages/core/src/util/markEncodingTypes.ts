@@ -151,7 +151,15 @@ export type ColorScaleTable =
       field: string
       /** The cut points, ascending, as numbers. */
       domain: number[]
-      /** One row per interval, in order, labelled by the interval it spans. */
+      /** The colour of each interval, in order: one more than the cuts. */
+      range: number[]
+      /**
+       * Each key met, in bin order: an interval's label, then `''` for a
+       * feature with no value, painted the no-value grey, and `(not a number)`
+       * for text that is no number, painted the misconfiguration grey — the
+       * rows the feature display's threshold gives its key (ADR-156), each
+       * listed only once painted.
+       */
       entries: { value: string; color: number }[]
     }
   | {
@@ -167,6 +175,14 @@ export type ColorScaleTable =
       pinned: [boolean, boolean]
       /** The declared {@link ColorEncoding} `domainMid`, already baked into `lut`. */
       domainMid?: number
+      /**
+       * The declared stops — `range`'s colours or the `scheme` — and
+       * `reverse`, which with both ends pinned make up the whole declaration,
+       * so marks declaring one ramp alike share a key on it.
+       */
+      range?: string[]
+      scheme?: ColorSchemeName
+      reverse?: boolean
       /**
        * This region's own extremes of the field, what a display unions;
        * `[Infinity, -Infinity]` where it holds no number, so a union passes

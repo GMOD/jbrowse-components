@@ -1,7 +1,14 @@
-import { categoricalField } from '@jbrowse/core/util/categoricalField'
+import {
+  NO_VALUE_LABEL,
+  categoricalField,
+} from '@jbrowse/core/util/categoricalField'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { rampOverExtent } from '@jbrowse/core/util/markEncoding'
+import {
+  NOT_A_NUMBER_LABEL,
+  thresholdLabels,
+} from '@jbrowse/core/util/thresholdScale'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { CategoricalScale, ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -26,9 +33,11 @@ export type ScaledChannel = 'color' | 'glyph'
 /**
  * One scaled channel's key: the table the worker resolved, the marks it is
  * the key of, and its heading. Marks whose channel reads one field through
- * one declared order and palette (or glyph range) under one title share a
- * section, the way ggplot2 keeps one scale per aesthetic across layers and
- * merges only guides titled alike; a ramp is each mark's own.
+ * one declaration under one title share a section, the way ggplot2 keeps one
+ * scale per aesthetic across layers and merges only guides titled alike. A
+ * ramp with an open end is each mark's own, its domain following that mark's
+ * loaded values; pinned at both ends it is its declaration, shared like the
+ * rest.
  */
 export interface MarkLegendSection {
   markIndexes: number[]
@@ -94,8 +103,9 @@ function union(current: ScaleTable, next: ScaleTable) {
       }
       break
     case 'threshold':
-      // Identical in every region: the section key already holds the field,
-      // the cut points and the colours.
+      if (next.kind === 'threshold') {
+        unionEntries(current.entries, next.entries)
+      }
       break
     case 'ramp':
       // A ramp's open ends are the union of the regions' extremes, which is
@@ -111,14 +121,25 @@ function union(current: ScaleTable, next: ScaleTable) {
   }
 }
 
-// What a section is keyed on: the declaration that assigns a categorical
-// value its colour or glyph, and the title over it, so two marks sharing both
-// share the key; a ramp stays the mark's, its domain being the uniform that
-// mark's shapes read.
+// What a section is keyed on: the declaration that assigns a value its colour
+// or glyph, and the title over it, so two marks sharing both share the key. A
+// ramp with an open end stays the mark's, its domain being the uniform that
+// mark's shapes read off its own loaded values.
 function sectionKey(markIndex: number, scale: ScaleTable, title: string) {
   switch (scale.kind) {
     case 'ramp':
-      return JSON.stringify(['ramp', markIndex])
+      return fullyPinned(scale)
+        ? JSON.stringify([
+            'ramp',
+            scale.field,
+            title,
+            scale.scale,
+            scale.domain,
+            scale.domainMid ?? null,
+            scale.range ?? scale.scheme ?? null,
+            scale.reverse ?? false,
+          ])
+        : JSON.stringify(['ramp', markIndex])
     case 'categorical':
       return JSON.stringify([
         'categorical',
@@ -133,7 +154,7 @@ function sectionKey(markIndex: number, scale: ScaleTable, title: string) {
         scale.field,
         title,
         scale.domain,
-        scale.entries.map(e => e.color),
+        scale.range,
       ])
     case 'glyph':
       return JSON.stringify([
@@ -148,13 +169,13 @@ function sectionKey(markIndex: number, scale: ScaleTable, title: string) {
 
 /**
  * The keys the loaded regions carry, one per scale, in the order of the first
- * mark drawing through each with colour before glyph. A categorical table is
- * the union over regions and over the marks declaring it alike, in the
- * field's order; a key's entry is the same in every region. A ramp's domain
- * takes each pinned end as the config wrote it and each open one from the
- * union of the regions' own extremes — the same number the shapes read as a
- * uniform. A colour key is headed with `colorTitleOf` for its mark where
- * that answers a string, and every other key with its field.
+ * mark drawing through each with colour before glyph. A categorical or
+ * threshold table is the union over regions and over the marks declaring it
+ * alike, in the field's order; a key's entry is the same in every region. A
+ * ramp's domain takes each pinned end as the config wrote it and each open one
+ * from the union of the regions' own extremes — the same number the shapes
+ * read as a uniform. A colour key is headed with `colorTitleOf` for its mark
+ * where that answers a string, and every other key with its field.
  */
 export function buildMarkLegend(
   regions: Iterable<MarkRegionData>,
@@ -310,19 +331,38 @@ export function markColorScales(
             facet,
           ),
         ]
-      case 'threshold':
+      case 'threshold': {
+        // Every interval, painted or not, since the bins are the whole domain;
+        // the two keyless rows once a feature took one.
+        const met = new Map(scale.entries.map(e => [e.value, e.color]))
         return [
           {
             kind: 'categorical',
             id,
             title,
-            entries: scale.entries.map(e => ({
-              value: e.value,
-              label: e.value,
-              color: abgrToCssRgba(e.color),
-            })),
+            entries: [
+              ...thresholdLabels(scale.domain).map((value, i) => ({
+                value,
+                label: value,
+                color: abgrToCssRgba(scale.range[i]!),
+              })),
+              ...['', NOT_A_NUMBER_LABEL].flatMap(value => {
+                const color = met.get(value)
+                return color === undefined
+                  ? []
+                  : [
+                      {
+                        value,
+                        label: value === '' ? NO_VALUE_LABEL : value,
+                        color: abgrToCssRgba(color),
+                        ...(value === '' ? { missing: true } : {}),
+                      },
+                    ]
+              }),
+            ],
           },
         ]
+      }
       case 'ramp':
         return [
           {
@@ -379,7 +419,7 @@ export function categoryLabel(scale: ScaleTable | undefined, color: number) {
   const label =
     scale.kind === 'categorical'
       ? categoricalField(scale.field).label
-      : (value: string) => value
+      : (value: string) => (value === '' ? NO_VALUE_LABEL : value)
   const values = scale.entries
     .filter(e => e.color === color)
     .map(e => label(e.value))

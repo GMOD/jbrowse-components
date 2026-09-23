@@ -15,10 +15,10 @@ import {
   pluralize,
   withFeatureDetails,
 } from '@jbrowse/core/util'
+import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
-import { aggregateFieldName } from '@jbrowse/core/util/featureTransforms'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import {
@@ -230,16 +230,27 @@ function positionSource(
   return field
 }
 
+function binEdgesOf(step: { as: readonly string[] }) {
+  return pairOf(step.as, DEFAULT_BIN_AS)
+}
+
+// The edges the last `bin` of the display's own steps wrote, which a mark's
+// `aggregate` behind it groups by when it names no fields of its own, as one
+// behind a bin in the mark's own steps does.
+function lastBinEdges(steps: readonly MarkTransformStepConfig[]) {
+  const bin = steps.findLast(step => step.type === 'bin')
+  return bin?.type === 'bin' ? binEdgesOf(bin) : undefined
+}
+
 // A step list as the worker's, every slot written out so a slot left at its
 // default and one written at it are one fetch, and an `auto` bin resolved at
-// `bpPerPx`.
+// `bpPerPx`. `binEdges` is what an aggregate naming no groupby groups by
+// before any bin of this list: the display's last bin's, for a mark's list.
 function stepsOf(
   steps: readonly MarkTransformStepConfig[],
   bpPerPx: number,
+  binEdges?: [string, string],
 ): TransformStep[] {
-  // The edges the last `bin` wrote, which an `aggregate` behind it groups by
-  // when it names no fields of its own.
-  let binEdges: [string, string] | undefined
   return steps.map((step): TransformStep => {
     switch (step.type) {
       case 'filter':
@@ -247,7 +258,7 @@ function stepsOf(
       case 'formula':
         return { type: 'formula', expr: step.expr, as: step.as }
       case 'bin':
-        binEdges = pairOf(step.as, DEFAULT_BIN_AS)
+        binEdges = binEdgesOf(step)
         return {
           type: 'bin',
           step: binStepWidth(step.step, bpPerPx),
@@ -496,8 +507,8 @@ export function stateModelFactory(
       get markView(): MarkView {
         const { bpPerPx } = self.host
         const { marks } = self.conf
-        const visible: boolean[] = marks.map(m =>
-          markDrawsAt(markEntryOf(m), bpPerPx),
+        const visible = this.markEntries.map(entry =>
+          markDrawsAt(entry, bpPerPx),
         )
         return {
           visible,
@@ -554,10 +565,12 @@ export function stateModelFactory(
        */
       get layerRequests(): LayerRequest[] {
         const { bpPerPx } = self.host
-        return self.conf.marks.map((m): LayerRequest => {
-          const transform = stepsOf(m.transform, bpPerPx)
+        const binEdges = lastBinEdges(self.conf.transform)
+        const { encodings } = this
+        return self.conf.marks.map((m, i): LayerRequest => {
+          const transform = stepsOf(m.transform, bpPerPx, binEdges)
           return {
-            encoding: encodingOf(m),
+            encoding: encodings[i]!,
             lanes: markLanes(m.shape),
             ...(transform.length > 0 ? { transform } : {}),
           }
@@ -710,9 +723,10 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The marks folded into the y domain: every one drawing at this zoom.
+       * Every mark drawing at this zoom, in list order: what folds into the y
+       * domain and what the plot's inset and row count are read from.
        */
-      get valuedMarkIndices(): number[] {
+      get drawingMarkIndices(): number[] {
         const { visible } = self.markView
         return self.markShapes.flatMap((_, i) => (visible[i] ? [i] : []))
       },
@@ -726,7 +740,7 @@ export function stateModelFactory(
        * or undefined before any valued mark loads
        */
       get domain() {
-        const indices = self.valuedMarkIndices
+        const indices = self.drawingMarkIndices
         const folded = new Set(indices)
         const shapes = indices.map(i => self.markShapes[i]!)
         const { origin, autoscaleType, numStdDev, numQuantile } = self
@@ -768,7 +782,7 @@ export function stateModelFactory(
        * itself.
        */
       get valueInsetPx(): number {
-        const indices = self.valuedMarkIndices
+        const indices = self.drawingMarkIndices
         return indices.length > 0 &&
           indices.every(i => self.markShapes[i] === 'point')
           ? pointInsetPx(self.scatterPointSize)

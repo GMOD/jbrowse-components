@@ -957,6 +957,35 @@ test('a bin hands its edges to the aggregate behind it, and a pileup leaves the 
   ])
 })
 
+test("a mark's aggregate behind a bin in the display's transform groups by that bin's edges", () => {
+  const { createDisplay } = createTestEnvironment(
+    [
+      {
+        shape: 'bar',
+        transform: [{ type: 'aggregate', ops: [{ op: 'count' }] }],
+        encoding: { y: 'count' },
+      },
+      {
+        shape: 'bar',
+        transform: [
+          { type: 'bin', step: 500, as: ['a', 'b'] },
+          { type: 'aggregate', ops: [{ op: 'count' }] },
+        ],
+        encoding: { y: 'count' },
+      },
+    ],
+    undefined,
+    undefined,
+    { transform: [{ type: 'bin', step: 1000, as: ['lo', 'hi'] }] },
+  )
+  const { display } = createDisplay()
+  const { layers } = display.rpcProps()
+  const groupbyOf = (i: number, step: number) =>
+    (layers[i]!.transform![step] as { groupby: string[] }).groupby
+  expect(groupbyOf(0, 0)).toEqual(['lo', 'hi'])
+  expect(groupbyOf(1, 1)).toEqual(['a', 'b'])
+})
+
 test('a flatten keeping its empty features says so on the wire', () => {
   const { createDisplay } = createTestEnvironment([
     {

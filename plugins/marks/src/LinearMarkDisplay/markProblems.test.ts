@@ -174,7 +174,7 @@ test('a y the steps do not write names what they leave', () => {
       },
     ]).map(problemText),
   ).toEqual([
-    'mark 0 encoding.y: reads "score", which its steps do not write; they leave refName, start, end',
+    'mark 0 encoding.y: reads "score", which no step before it writes; they leave refName, start, end',
   ])
   expect(
     found([
@@ -200,6 +200,51 @@ test('a y the steps do not write names what they leave', () => {
       },
     ]),
   ).toEqual(['error unwritten-y mark 0 encoding.y'])
+})
+
+// The display's steps run before every mark's, so a field they make is one a
+// mark may read, and a bin among them is the one a mark's empty groupby folds
+// by.
+test("a y the display's steps write is written, and one they unmake is not", () => {
+  const binned = [
+    { type: 'bin', step: 1000 },
+    { type: 'aggregate', ops: [{ op: 'count' }] },
+  ]
+  expect(
+    found([{ shape: 'bar', encoding: { y: 'count' } }], undefined, binned),
+  ).toEqual([])
+  expect(
+    problemsOf(
+      [{ shape: 'bar', encoding: { y: 'score' } }],
+      undefined,
+      binned,
+    ).map(problemText),
+  ).toEqual([
+    'mark 0 encoding.y: reads "score", which no step before it writes; they leave refName, start, end, count',
+  ])
+  expect(
+    found(
+      [
+        {
+          shape: 'bar',
+          transform: [{ type: 'aggregate', ops: [{ op: 'count' }] }],
+          encoding: { y: 'count' },
+        },
+      ],
+      undefined,
+      [{ type: 'bin', step: 1000, as: ['lo', 'hi'] }],
+    ),
+  ).toEqual([])
+})
+
+test("a display pileup bands every mark, so none stands beside another's rows", () => {
+  expect(
+    found(
+      [{ shape: 'bar', encoding: { y: 'score' } }, { shape: 'span' }],
+      undefined,
+      [{ type: 'pileup' }],
+    ),
+  ).toEqual([])
 })
 
 test('a step says which of its slots cannot run', () => {
@@ -264,12 +309,14 @@ test("the display's own steps are checked as a mark's are, under no mark", () =>
     { type: 'pileup', fields: ['start'] },
     { type: 'aggregate', groupby: ['jexl:feature.x'], ops: [{ op: 'sum' }] },
   ])
+  // the display's aggregate unmakes `score` for the mark under it
   expect(problems.map(p => `${p.rule} ${p.mark} ${p.slot}`)).toEqual([
     'step-expression undefined transform.0.expr',
     'bin-width undefined transform.1.step',
     'step-pair undefined transform.2.fields',
     'op-field undefined transform.3.ops.0.field',
     'step-field-expression undefined transform.3.groupby.0',
+    'unwritten-y 0 encoding.y',
   ])
   expect(problemText(problems[1]!)).toBe(
     'transform.1.step: a bin is a positive width in bp',
@@ -286,7 +333,7 @@ test('a mark the caller could not read keeps its index as a gap', () => {
       p => `${p.rule} ${p.mark} ${p.message}`,
     ),
   ).toEqual([
-    "two-packings 2 packs rows of its own, as mark 1 does, and the two share row numbers; one pileup in the display's transform packs them together, with each mark's encoding.row naming the field the pileup writes",
+    "two-packings 2 packs rows of its own, as mark 1 does, and the two share row numbers; one pileup in the display's transform packs them together",
   ])
 })
 

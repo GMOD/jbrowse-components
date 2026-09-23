@@ -5,7 +5,7 @@ import {
 } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
 import { categoricalPalette, categoricalValueColor } from '../ui/colors.ts'
-import { NO_CATEGORY_COLOR } from './color/index.ts'
+import { MISCONFIGURED_COLOR, NO_CATEGORY_COLOR } from './color/index.ts'
 import { cssColorToABGR } from './colorBits.ts'
 import Flatbush from './flatbush/index.ts'
 import createJexlInstance from './jexl.ts'
@@ -15,6 +15,7 @@ import {
   rampOverExtent,
 } from './markEncoding.ts'
 import SimpleFeature from './simpleFeature.ts'
+import { NOT_A_NUMBER_LABEL } from './thresholdScale.ts'
 
 import type { ContinuousRef, GlyphName, LaneName } from './markEncoding.ts'
 
@@ -531,24 +532,43 @@ test('a threshold colour packs one palette entry per interval', () => {
     { jexl },
   )
   expect(r.colorValue).toBeUndefined()
-  // scores 10, 40, 25; the two scoreless features read no interval
-  expect([...r.color].slice(0, 3)).toEqual([
+  // scores 10, 40 and 25, then no score, then text that is no number: the
+  // two keyless cases paint the greys the feature display's threshold paints
+  // and file under its two rows
+  const noValue = cssColorToABGR(NO_CATEGORY_COLOR)
+  const notNumber = cssColorToABGR(MISCONFIGURED_COLOR)
+  expect([...r.color]).toEqual([
     cssColorToABGR(palette[0]!),
     cssColorToABGR(palette[2]!),
     cssColorToABGR(palette[1]!),
+    noValue,
+    notNumber,
   ])
   expect(r.scale?.kind).toBe('threshold')
   if (r.scale?.kind === 'threshold') {
     expect(r.scale.domain).toEqual([20, 30])
-    expect(r.scale.entries.map(e => e.value)).toEqual([
-      '< 20',
-      '20 – 30',
-      '≥ 30',
+    expect(r.scale.range).toEqual(palette.map(c => cssColorToABGR(c)))
+    expect(r.scale.entries).toEqual([
+      { value: '< 20', color: cssColorToABGR(palette[0]!) },
+      { value: '20 – 30', color: cssColorToABGR(palette[1]!) },
+      { value: '≥ 30', color: cssColorToABGR(palette[2]!) },
+      { value: '', color: noValue },
+      { value: NOT_A_NUMBER_LABEL, color: notNumber },
     ])
-    expect(r.scale.entries.map(e => e.color)).toEqual(
-      palette.map(c => cssColorToABGR(c)),
-    )
   }
+})
+
+test('a threshold table lists only the intervals a region met', () => {
+  const r = encodeFeatures(
+    features.slice(0, 1),
+    { color: { field: 'score', scale: 'threshold', domain: [20, 30] } },
+    ALL,
+    { jexl },
+  )
+  expect(r.scale?.kind === 'threshold' && r.scale.range).toHaveLength(3)
+  expect(r.scale?.kind === 'threshold' && r.scale.entries).toEqual([
+    { value: '< 20', color: r.color[0] },
+  ])
 })
 
 test('a threshold domain written as strings cuts at the numbers it names', () => {
