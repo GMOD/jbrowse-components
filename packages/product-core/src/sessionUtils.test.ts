@@ -411,6 +411,34 @@ test('planWebExport preserves a prior trackConfigDeltas entry alongside an edit'
   })
 })
 
+// A session track's edits are a delta over its `sessionTracks` entry, so the
+// entry and the delta ship together whichever way the export goes
+test('planWebExport keeps the delta over a prior session track', () => {
+  const sessionTrack = { trackId: 'mine', name: 'Mine' }
+  const deltas = { mine: { trackId: 'mine', name: 'Renamed' } }
+  const defaultSession = {
+    name: 'session',
+    views: [],
+    sessionTracks: [sessionTrack],
+    trackConfigDeltas: deltas,
+  }
+  const plans = [
+    planWebExport({ ...hubExport, tracks: [], defaultSession }),
+    planWebExport(
+      { ...hubExport, tracks: [], defaultSession },
+      hub({ assemblies: [{ name: 'hg38' }], tracks: [] }),
+    ),
+  ]
+  expect(plans.map(p => p.strategy)).toEqual([
+    'selfContained',
+    'hostedConfigBase',
+  ])
+  for (const plan of plans) {
+    expect(plan.session.sessionTracks).toEqual([sessionTrack])
+    expect(plan.session.trackConfigDeltas).toEqual(deltas)
+  }
+})
+
 test('planWebExport dedupes a track carried by both prior session and snapshot', () => {
   const prior = { trackId: 'user-track', name: 'Old' }
   const current = { trackId: 'user-track', name: 'New' }
