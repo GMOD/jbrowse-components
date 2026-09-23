@@ -54,6 +54,24 @@ export function parseRowName(
     : undefined
 }
 
+/**
+ * The sample each row name answers to, per `parseRowName`, remembered per
+ * name: the arrangement asks once per row on every region arrival, and the
+ * samples change far less often.
+ */
+export function rowAliasOf(sources: readonly Source[]) {
+  const samples = new Set(sources.map(resolveSampleName))
+  const memo = new Map<string, string | undefined>()
+  return (name: string) => {
+    let sample = memo.get(name)
+    if (sample === undefined && !memo.has(name)) {
+      sample = parseRowName(name, samples)?.sampleName
+      memo.set(name, sample)
+    }
+    return sample
+  }
+}
+
 // The "<sampleName> HP<n>" haplotype-row convention, with `parseRowName` its
 // inverse, for the worker's cell computation and genotype matrix and the
 // display's rows alike. A source that already carries an HP index (a row of a

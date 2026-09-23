@@ -29,38 +29,46 @@ export interface ArrangeRowsHooks {
   readonly rowAlias: RowAlias | undefined
 }
 
+type OtherOf = (index: number) => string | undefined
+
+function otherName(alias: RowAlias, name: string) {
+  const other = alias(name)
+  return other === name ? undefined : other
+}
+
+function otherOfRow(
+  rows: readonly { name: string }[],
+  alias: RowAlias | undefined,
+): OtherOf | undefined {
+  return alias && (i => otherName(alias, rows[i]!.name))
+}
+
 /**
  * A row's own entry, else its alias's. Own-property reads, since row names
  * come from files and a row called `constructor` would otherwise read one off
  * `Object.prototype`.
  */
-export function labelEntry(
+function labelEntry(
   labels: Readonly<Record<string, string>>,
   name: string,
-  alias: RowAlias | undefined,
+  other: string | undefined,
 ) {
-  if (Object.hasOwn(labels, name)) {
-    return labels[name]
-  }
-  const other = alias?.(name)
-  return other !== undefined && other !== name && Object.hasOwn(labels, other)
-    ? labels[other]
-    : undefined
+  return Object.hasOwn(labels, name)
+    ? labels[name]
+    : other !== undefined && Object.hasOwn(labels, other)
+      ? labels[other]
+      : undefined
 }
 
-export function colorEntry(
+function colorEntry(
   rowColors: ReadonlyMap<string, string>,
   name: string,
-  alias: RowAlias | undefined,
+  other: string | undefined,
 ) {
-  const own = rowColors.get(name)
-  if (own !== undefined) {
-    return own
-  }
-  const other = alias?.(name)
-  return other === undefined || other === name
-    ? undefined
-    : rowColors.get(other)
+  return (
+    rowColors.get(name) ??
+    (other === undefined ? undefined : rowColors.get(other))
+  )
 }
 
 function sortedRows<S extends RowSource>(rows: S[], domain: readonly string[]) {
@@ -71,6 +79,85 @@ function sortedRows<S extends RowSource>(rows: S[], domain: readonly string[]) {
     }
   }
   return rows
+}
+
+function orderByRank<S extends { name: string }>(
+  rows: S[],
+  domain: readonly string[],
+  otherOf: OtherOf | undefined,
+): S[] {
+  if (!domain.length) {
+    return rows
+  }
+  const rank = new Map<string, number>()
+  for (let i = 0; i < domain.length; i++) {
+    if (!rank.has(domain[i]!)) {
+      rank.set(domain[i]!, i)
+    }
+  }
+  const ranks = new Int32Array(rows.length).fill(-1)
+  const starts = new Int32Array(domain.length + 1)
+  let listed = 0
+  for (let i = 0; i < rows.length; i++) {
+    let r = rank.get(rows[i]!.name)
+    if (r === undefined && otherOf) {
+      const other = otherOf(i)
+      r = other === undefined ? undefined : rank.get(other)
+    }
+    if (r !== undefined) {
+      ranks[i] = r
+      starts[r + 1]! += 1
+      listed++
+    }
+  }
+  if (!listed) {
+    return rows
+  }
+  for (let r = 1; r < starts.length; r++) {
+    starts[r]! += starts[r - 1]!
+  }
+  const ordered = new Array<S>(rows.length)
+  let unlisted = listed
+  let moved = false
+  for (let i = 0; i < rows.length; i++) {
+    const r = ranks[i]!
+    const at = r < 0 ? unlisted++ : starts[r]!++
+    ordered[at] = rows[i]!
+    moved ||= at !== i
+  }
+  return moved ? ordered : rows
+}
+
+function relabelRows<S extends RowSource>(
+  rows: S[],
+  labels: Readonly<Record<string, string>>,
+  rowColors: ReadonlyMap<string, string>,
+  channel: IdentityChannel,
+  others: readonly (string | undefined)[] | undefined,
+) {
+  let out: S[] | undefined
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i]!
+    const other = others?.[i]
+    const label = labelEntry(labels, row.name, other)
+    const color = colorEntry(rowColors, row.name, other)
+    if (
+      (label !== undefined && label !== row.label) ||
+      (color !== undefined && color !== row[channel])
+    ) {
+      out ??= [...rows]
+      out[i] = {
+        ...row,
+        ...(label === undefined ? {} : { label }),
+        ...(color === undefined
+          ? {}
+          : channel === 'color'
+            ? { color }
+            : { labelColor: color }),
+      }
+    }
+  }
+  return out ?? rows
 }
 
 /**
@@ -95,34 +182,7 @@ export function orderRowsByDomain<S extends { name: string }>(
   domain: readonly string[],
   rowAlias?: RowAlias,
 ): S[] {
-  if (!domain.length) {
-    return rows
-  }
-  const rank = new Map<string, number>()
-  for (const [i, name] of domain.entries()) {
-    if (!rank.has(name)) {
-      rank.set(name, i)
-    }
-  }
-  const buckets: S[][] = []
-  const unlisted: S[] = []
-  let listed = false
-  for (const row of rows) {
-    const other = rowAlias?.(row.name)
-    const r =
-      rank.get(row.name) ?? (other === undefined ? undefined : rank.get(other))
-    if (r === undefined) {
-      unlisted.push(row)
-    } else {
-      ;(buckets[r] ??= []).push(row)
-      listed = true
-    }
-  }
-  if (!listed) {
-    return rows
-  }
-  const ordered = [...buckets.flat(), ...unlisted]
-  return ordered.every((row, i) => row === rows[i]) ? rows : ordered
+  return orderByRank(rows, domain, otherOfRow(rows, rowAlias))
 }
 
 /**
@@ -142,36 +202,17 @@ export function arrangeRows<S extends RowSource>(
   hooks: ArrangeRowsHooks,
 ): S[] {
   const alias = hooks.rowAlias
-  const ordered =
-    hooks.unlistedRowsSort === 'sorted'
-      ? sortedRows(rows, domain)
-      : orderRowsByDomain(rows, domain, alias)
-  if (rowColors.size === 0 && Object.keys(labels).length === 0) {
-    return ordered
-  }
-  const channel = hooks.identityChannel
-  let changed = ordered !== rows
-  const out = ordered.map(row => {
-    const label = labelEntry(labels, row.name, alias)
-    const color = colorEntry(rowColors, row.name, alias)
-    if (
-      (label === undefined || label === row.label) &&
-      (color === undefined || color === row[channel])
-    ) {
-      return row
-    }
-    changed = true
-    const tint =
-      color === undefined
-        ? {}
-        : channel === 'color'
-          ? { color }
-          : { labelColor: color }
-    return {
-      ...row,
-      ...(label === undefined ? {} : { label }),
-      ...tint,
-    }
-  })
-  return changed ? out : rows
+  const relabel = rowColors.size > 0 || Object.keys(labels).length > 0
+  const others =
+    alias && relabel ? rows.map(row => otherName(alias, row.name)) : undefined
+  const relabelled = relabel
+    ? relabelRows(rows, labels, rowColors, hooks.identityChannel, others)
+    : rows
+  return hooks.unlistedRowsSort === 'sorted'
+    ? sortedRows(relabelled, domain)
+    : orderByRank(
+        relabelled,
+        domain,
+        others ? i => others[i] : otherOfRow(rows, alias),
+      )
 }

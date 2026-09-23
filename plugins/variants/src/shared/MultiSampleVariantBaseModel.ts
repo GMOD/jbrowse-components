@@ -55,6 +55,7 @@ import {
   expandPhasedRows,
   parseRowName,
   resolveSampleName,
+  rowAliasOf,
 } from './getSources.ts'
 import {
   variantContextMenuItems,
@@ -1057,10 +1058,7 @@ export default function MultiSampleVariantBaseModelF(
          * sample reaches each of its haplotypes.
          */
         get rowAlias(): RowAlias {
-          const samples = new Set(
-            (self.sourcesVolatile ?? []).map(resolveSampleName),
-          )
-          return name => parseRowName(name, samples)?.sampleName
+          return rowAliasOf(self.sourcesVolatile ?? [])
         },
         /**
          * #getter

@@ -2,6 +2,7 @@ import {
   expandPhasedRows,
   expandSourcesToHaplotypes,
   parseRowName,
+  rowAliasOf,
 } from './getSources.ts'
 
 describe('expandSourcesToHaplotypes', () => {
@@ -111,6 +112,15 @@ describe('parseRowName', () => {
     expect(parseRowName('HG002 HP0', samples)).toBeUndefined()
     expect(parseRowName('HG002', samples)).toBeUndefined()
   })
+})
+
+test('rowAliasOf answers as parseRowName does, asked again', () => {
+  const alias = rowAliasOf([{ name: 'a', sampleName: 'HG001' }])
+  for (let i = 0; i < 2; i++) {
+    expect(alias('HG001 HP1')).toBe('HG001')
+    expect(alias('HG001')).toBe('HG001')
+    expect(alias('a')).toBeUndefined()
+  }
 })
 
 describe('expandPhasedRows', () => {
