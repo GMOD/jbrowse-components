@@ -1,0 +1,1313 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`a cluster run lands its tree turned towards the seed, and a reorder drops it 1`] = `
+{
+  "editableSources": [
+    {
+      "label": undefined,
+      "name": "s10",
+    },
+    {
+      "label": undefined,
+      "name": "mom",
+    },
+    {
+      "label": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "name": "s2",
+    },
+  ],
+  "labelSources": [
+    {
+      "labelColor": undefined,
+      "name": "s10",
+    },
+    {
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s2",
+    },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowColorStringsByIndex": [
+    "#4e79a7",
+    "#e15759",
+    "#f28e2c",
+    "#76b7b2",
+  ],
+  "rowGroupsScale": undefined,
+  "rowTree": "((s10,mom),(dad,s2));",
+  "sources": [
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s10",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s2",
+    },
+  ],
+  "treeDrawn": true,
+}
+`;
+
+exports[`a cluster run lands its tree turned towards the seed, and a reorder drops it 2`] = `
+{
+  "regions": [
+    {
+      "assemblyName": "volvox",
+      "end": 1000,
+      "refName": "ctgA",
+      "start": 0,
+    },
+  ],
+  "settings": [
+    {
+      "name": "rows",
+      "value": "sample",
+    },
+    {
+      "name": "field",
+      "value": "presence",
+    },
+  ],
+}
+`;
+
+exports[`a cluster run lands its tree turned towards the seed, and a reorder drops it 3`] = `
+{
+  "editableSources": [
+    {
+      "label": undefined,
+      "name": "mom",
+    },
+    {
+      "label": undefined,
+      "name": "s10",
+    },
+    {
+      "label": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "name": "s2",
+    },
+  ],
+  "labelSources": [
+    {
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s10",
+    },
+    {
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s2",
+    },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowColorStringsByIndex": [
+    "#e15759",
+    "#4e79a7",
+    "#f28e2c",
+    "#76b7b2",
+  ],
+  "rowGroupsScale": undefined,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s10",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s2",
+    },
+  ],
+  "treeDrawn": false,
+}
+`;
+
+exports[`a color slot turns the palette off, a colour entry still paints 1`] = `
+{
+  "editableSources": [
+    {
+      "label": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "name": "mom",
+    },
+    {
+      "label": undefined,
+      "name": "s2",
+    },
+    {
+      "label": undefined,
+      "name": "s10",
+    },
+  ],
+  "labelSources": [
+    {
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s2",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowColorStringsByIndex": [
+    "#00ff00",
+    undefined,
+    undefined,
+    undefined,
+  ],
+  "rowGroupsScale": undefined,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s2",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s10",
+    },
+  ],
+  "treeDrawn": false,
+}
+`;
+
+exports[`a colour entry paints its row, the rest keep their palette entries 1`] = `
+{
+  "editableSources": [
+    {
+      "label": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "name": "mom",
+    },
+    {
+      "label": undefined,
+      "name": "s2",
+    },
+    {
+      "label": undefined,
+      "name": "s10",
+    },
+  ],
+  "labelSources": [
+    {
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s2",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowColorStringsByIndex": [
+    "#4e79a7",
+    "#123456",
+    "#e15759",
+    "#76b7b2",
+  ],
+  "rowGroupsScale": undefined,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s2",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s10",
+    },
+  ],
+  "treeDrawn": false,
+}
+`;
+
+exports[`a declared order leads and the rest sort 1`] = `
+{
+  "editableSources": [
+    {
+      "label": undefined,
+      "name": "s10",
+    },
+    {
+      "label": undefined,
+      "name": "mom",
+    },
+    {
+      "label": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "name": "s2",
+    },
+  ],
+  "labelSources": [
+    {
+      "labelColor": undefined,
+      "name": "s10",
+    },
+    {
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s2",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowColorStringsByIndex": [
+    "#4e79a7",
+    "#f28e2c",
+    "#e15759",
+    "#76b7b2",
+  ],
+  "rowGroupsScale": undefined,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s10",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s2",
+    },
+  ],
+  "treeDrawn": false,
+}
+`;
+
+exports[`a focus hides rows without recolouring the kept ones 1`] = `
+{
+  "editableSources": [
+    {
+      "label": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "name": "mom",
+    },
+    {
+      "label": undefined,
+      "name": "s2",
+    },
+    {
+      "label": undefined,
+      "name": "s10",
+    },
+  ],
+  "labelSources": [
+    {
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowColorStringsByIndex": [
+    "#f28e2c",
+    "#76b7b2",
+  ],
+  "rowGroupsScale": undefined,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s10",
+    },
+  ],
+  "treeDrawn": false,
+}
+`;
+
+exports[`a repartition drops the arrangement keyed on the old rows 1`] = `
+{
+  "editableSources": [
+    {
+      "label": undefined,
+      "name": "coyote",
+    },
+    {
+      "label": undefined,
+      "name": "wolf",
+    },
+  ],
+  "labelSources": [
+    {
+      "labelColor": undefined,
+      "name": "coyote",
+    },
+    {
+      "labelColor": undefined,
+      "name": "wolf",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowColorStringsByIndex": [
+    "#4e79a7",
+    "#f28e2c",
+  ],
+  "rowGroupsScale": undefined,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "coyote",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "wolf",
+    },
+  ],
+  "treeDrawn": false,
+}
+`;
+
+exports[`colorRowLabels carries the painted colour, a group swatch winning 1`] = `
+{
+  "editableSources": [
+    {
+      "label": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "name": "mom",
+    },
+    {
+      "label": undefined,
+      "name": "s2",
+    },
+    {
+      "label": undefined,
+      "name": "s10",
+    },
+  ],
+  "labelSources": [
+    {
+      "labelColor": "#377eb8",
+      "name": "dad",
+    },
+    {
+      "labelColor": "#377eb8",
+      "name": "mom",
+    },
+    {
+      "labelColor": "#123456",
+      "name": "s2",
+    },
+    {
+      "labelColor": "#76b7b2",
+      "name": "s10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowColorStringsByIndex": [
+    "#4e79a7",
+    "#f28e2c",
+    "#123456",
+    "#76b7b2",
+  ],
+  "rowGroupsScale": undefined,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "group": "Parents",
+      "label": undefined,
+      "labelColor": "#377eb8",
+      "name": "dad",
+    },
+    {
+      "group": "Parents",
+      "label": undefined,
+      "labelColor": "#377eb8",
+      "name": "mom",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s2",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s10",
+    },
+  ],
+  "treeDrawn": false,
+}
+`;
+
+exports[`dialog edits reorder, relabel and recolour, and a reset returns to the seed 1`] = `
+{
+  "editableSources": [
+    {
+      "label": "Mother",
+      "name": "mom",
+    },
+    {
+      "label": "(no sample)",
+      "name": "",
+    },
+    {
+      "label": undefined,
+      "name": "s2",
+    },
+    {
+      "label": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "name": "s10",
+    },
+  ],
+  "labelSources": [
+    {
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "labelColor": undefined,
+      "name": "",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s2",
+    },
+    {
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s10",
+    },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowColorStringsByIndex": [
+    "#e15759",
+    "#59a14f",
+    "#0000ff",
+    "#f28e2c",
+    "#4e79a7",
+  ],
+  "rowGroupsScale": undefined,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "group": undefined,
+      "label": "Mother",
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "group": undefined,
+      "label": "(no sample)",
+      "labelColor": undefined,
+      "name": "",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s2",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s10",
+    },
+  ],
+  "treeDrawn": false,
+}
+`;
+
+exports[`dialog edits reorder, relabel and recolour, and a reset returns to the seed 2`] = `
+{
+  "editableSources": [
+    {
+      "label": undefined,
+      "name": "s10",
+    },
+    {
+      "label": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "name": "mom",
+    },
+    {
+      "label": undefined,
+      "name": "s2",
+    },
+    {
+      "label": "(no sample)",
+      "name": "",
+    },
+  ],
+  "labelSources": [
+    {
+      "labelColor": undefined,
+      "name": "s10",
+    },
+    {
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s2",
+    },
+    {
+      "labelColor": undefined,
+      "name": "",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowColorStringsByIndex": [
+    "#4e79a7",
+    "#f28e2c",
+    "#e15759",
+    "#76b7b2",
+    "#59a14f",
+  ],
+  "rowGroupsScale": undefined,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s10",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s2",
+    },
+    {
+      "group": undefined,
+      "label": "(no sample)",
+      "labelColor": undefined,
+      "name": "",
+    },
+  ],
+  "treeDrawn": false,
+}
+`;
+
+exports[`itemRgb turns the palette off 1`] = `
+{
+  "editableSources": [
+    {
+      "label": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "name": "mom",
+    },
+    {
+      "label": undefined,
+      "name": "s2",
+    },
+    {
+      "label": undefined,
+      "name": "s10",
+    },
+  ],
+  "labelSources": [
+    {
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s2",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowColorStringsByIndex": [
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+  ],
+  "rowGroupsScale": undefined,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s2",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s10",
+    },
+  ],
+  "treeDrawn": false,
+}
+`;
+
+exports[`rowGroups tag and partition the rows, keyed under short rows 1`] = `
+{
+  "editableSources": [
+    {
+      "label": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "name": "mom",
+    },
+    {
+      "label": undefined,
+      "name": "s2",
+    },
+    {
+      "label": undefined,
+      "name": "s10",
+    },
+    {
+      "label": "(no sample)",
+      "name": "",
+    },
+  ],
+  "labelSources": [
+    {
+      "labelColor": "#e41a1c",
+      "name": "s2",
+    },
+    {
+      "labelColor": "#e41a1c",
+      "name": "s10",
+    },
+    {
+      "labelColor": "#377eb8",
+      "name": "dad",
+    },
+    {
+      "labelColor": "#377eb8",
+      "name": "mom",
+    },
+    {
+      "labelColor": undefined,
+      "name": "",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowColorStringsByIndex": [
+    "#e15759",
+    "#76b7b2",
+    "#4e79a7",
+    "#f28e2c",
+    "#59a14f",
+  ],
+  "rowGroupsScale": {
+    "entries": [
+      {
+        "color": "#e41a1c",
+        "label": "Kids",
+        "value": "Kids",
+      },
+      {
+        "color": "#377eb8",
+        "label": "Parents",
+        "value": "Parents",
+      },
+    ],
+    "focusesRows": true,
+    "id": "rowGroups",
+    "kind": "categorical",
+    "title": "Row groups",
+  },
+  "rowTree": undefined,
+  "sources": [
+    {
+      "group": "Kids",
+      "label": undefined,
+      "labelColor": "#e41a1c",
+      "name": "s2",
+    },
+    {
+      "group": "Kids",
+      "label": undefined,
+      "labelColor": "#e41a1c",
+      "name": "s10",
+    },
+    {
+      "group": "Parents",
+      "label": undefined,
+      "labelColor": "#377eb8",
+      "name": "dad",
+    },
+    {
+      "group": "Parents",
+      "label": undefined,
+      "labelColor": "#377eb8",
+      "name": "mom",
+    },
+    {
+      "group": undefined,
+      "label": "(no sample)",
+      "labelColor": undefined,
+      "name": "",
+    },
+  ],
+  "treeDrawn": false,
+}
+`;
+
+exports[`rowGroups yield the order to a tree that describes the rows 1`] = `
+{
+  "editableSources": [
+    {
+      "label": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "name": "s2",
+    },
+    {
+      "label": undefined,
+      "name": "mom",
+    },
+    {
+      "label": undefined,
+      "name": "s10",
+    },
+  ],
+  "labelSources": [
+    {
+      "labelColor": "#377eb8",
+      "name": "dad",
+    },
+    {
+      "labelColor": "#e41a1c",
+      "name": "s2",
+    },
+    {
+      "labelColor": "#377eb8",
+      "name": "mom",
+    },
+    {
+      "labelColor": "#e41a1c",
+      "name": "s10",
+    },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowColorStringsByIndex": [
+    "#4e79a7",
+    "#e15759",
+    "#f28e2c",
+    "#76b7b2",
+  ],
+  "rowGroupsScale": {
+    "entries": [
+      {
+        "color": "#377eb8",
+        "label": "Parents",
+        "value": "Parents",
+      },
+      {
+        "color": "#e41a1c",
+        "label": "Kids",
+        "value": "Kids",
+      },
+    ],
+    "focusesRows": true,
+    "id": "rowGroups",
+    "kind": "categorical",
+    "title": "Row groups",
+  },
+  "rowTree": "((dad,s2),(mom,s10));",
+  "sources": [
+    {
+      "group": "Parents",
+      "label": undefined,
+      "labelColor": "#377eb8",
+      "name": "dad",
+    },
+    {
+      "group": "Kids",
+      "label": undefined,
+      "labelColor": "#e41a1c",
+      "name": "s2",
+    },
+    {
+      "group": "Parents",
+      "label": undefined,
+      "labelColor": "#377eb8",
+      "name": "mom",
+    },
+    {
+      "group": "Kids",
+      "label": undefined,
+      "labelColor": "#e41a1c",
+      "name": "s10",
+    },
+  ],
+  "treeDrawn": true,
+}
+`;
+
+exports[`sort at a column orders rows by the colour painted there 1`] = `
+{
+  "editableSources": [
+    {
+      "label": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "name": "s2",
+    },
+    {
+      "label": "(no sample)",
+      "name": "",
+    },
+    {
+      "label": undefined,
+      "name": "mom",
+    },
+    {
+      "label": undefined,
+      "name": "s10",
+    },
+  ],
+  "labelSources": [
+    {
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s2",
+    },
+    {
+      "labelColor": undefined,
+      "name": "",
+    },
+    {
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s10",
+    },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowColorStringsByIndex": [
+    "#4e79a7",
+    "#e15759",
+    "#59a14f",
+    "#f28e2c",
+    "#76b7b2",
+  ],
+  "rowGroupsScale": undefined,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s2",
+    },
+    {
+      "group": undefined,
+      "label": "(no sample)",
+      "labelColor": undefined,
+      "name": "",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s10",
+    },
+  ],
+  "treeDrawn": false,
+}
+`;
+
+exports[`the rows sort, digits by magnitude, each dealt a palette entry 1`] = `
+{
+  "editableSources": [
+    {
+      "label": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "name": "mom",
+    },
+    {
+      "label": undefined,
+      "name": "s2",
+    },
+    {
+      "label": undefined,
+      "name": "s10",
+    },
+  ],
+  "labelSources": [
+    {
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s2",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowColorStringsByIndex": [
+    "#4e79a7",
+    "#f28e2c",
+    "#e15759",
+    "#76b7b2",
+  ],
+  "rowGroupsScale": undefined,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s2",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s10",
+    },
+  ],
+  "treeDrawn": false,
+}
+`;
+
+exports[`the unanswered row sorts last and is labelled for the field 1`] = `
+{
+  "editableSources": [
+    {
+      "label": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "name": "mom",
+    },
+    {
+      "label": undefined,
+      "name": "s2",
+    },
+    {
+      "label": undefined,
+      "name": "s10",
+    },
+    {
+      "label": "(no sample)",
+      "name": "",
+    },
+  ],
+  "labelSources": [
+    {
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s2",
+    },
+    {
+      "labelColor": undefined,
+      "name": "s10",
+    },
+    {
+      "labelColor": undefined,
+      "name": "",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowColorStringsByIndex": [
+    "#4e79a7",
+    "#f28e2c",
+    "#e15759",
+    "#76b7b2",
+    "#59a14f",
+  ],
+  "rowGroupsScale": undefined,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s2",
+    },
+    {
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s10",
+    },
+    {
+      "group": undefined,
+      "label": "(no sample)",
+      "labelColor": undefined,
+      "name": "",
+    },
+  ],
+  "treeDrawn": false,
+}
+`;

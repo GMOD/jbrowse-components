@@ -320,6 +320,53 @@
       ]
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "volvox_mouse_inheritance_rows",
+      "name": "Mouse inheritance (arranged rows)",
+      "category": ["Miscellaneous"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "disableGeneHeuristic": true,
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "rgb",
+          "sample"
+        ],
+        "bedGzLocation": {
+          "uri": "volvox_mouse_inheritance.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox_mouse_inheritance.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "volvox_mouse_inheritance_rows-LinearMultiRowFeatureDisplay",
+          "partitionField": "sample",
+          "domain": ["offspring10", "dad"],
+          "sampleColorMap": { "mom": "#222222", "offspring03": "#bbbbbb" },
+          "rowGroups": [
+            { "match": "^(mom|dad)$", "group": "Parents", "color": "#e41a1c" }
+          ],
+          "colorRowLabels": true,
+          "rowHeight": 14
+        }
+      ]
+    },
+    {
       "type": "GWASTrack",
       "trackId": "volvox_gwas",
       "name": "Manhattan plot",

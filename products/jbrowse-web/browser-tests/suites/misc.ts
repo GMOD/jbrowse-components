@@ -45,6 +45,20 @@ const suite: TestSuite = {
       loc: 'ctgA:907..15,319',
       tracks: ['gff3tabix_genes'],
     }),
+    lgvSnapshotTest({
+      name: 'Multi-row painting in per-feature colour',
+      snapshot: 'misc-multirow-painting',
+      loc: 'ctgA:1..50,000',
+      tracks: ['volvox_mouse_inheritance_painting'],
+      displayTestId: 'multirow-display',
+    }),
+    lgvSnapshotTest({
+      name: 'Multi-row painting with a declared order, row colours and groups',
+      snapshot: 'misc-multirow-arranged',
+      loc: 'ctgA:1..50,000',
+      tracks: ['volvox_mouse_inheritance_rows'],
+      displayTestId: 'multirow-display',
+    }),
   ],
 }
 
