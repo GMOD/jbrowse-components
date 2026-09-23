@@ -14,10 +14,9 @@ const ROW_COLOR: ColorColumn<ProcessedSource> = {
   bulkLabel: 'Change color of selected rows',
 }
 
-// Variants' `editableSources` is the haplotype-expanded, layout-merged,
-// non-subtree-filtered view; reordering it persists haplotype rows directly.
-// `sampleName`/`HP` are internal plumbing — keep them out of the auto-derived
-// extras list and the palettizer choices.
+// Variants' `editableSources` is the arranged, unfocused view, haplotype
+// rows in phased mode. `sampleName`/`HP` are internal plumbing — keep them out
+// of the auto-derived extras list and the palettizer choices.
 const RESERVED_EXTRA = new Set(['sampleName', 'HP', 'color'])
 
 export default function MultiSampleVariantSetColorDialog({
