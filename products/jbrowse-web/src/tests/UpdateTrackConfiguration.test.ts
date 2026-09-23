@@ -22,13 +22,18 @@ interface TestView {
 
 interface TestSession {
   views: TestView[]
-  jbrowse: { updateTrackConf: (c: PlainConfig) => void; tracks: PlainConfig[] }
+  jbrowse: {
+    addTrackConf: (c: PlainConfig) => void
+    updateTrackConf: (c: PlainConfig) => void
+    tracks: PlainConfig[]
+  }
   tracks: AnyConfigurationModel[]
   sessionTracks: AnyConfigurationModel[]
   trackConfigDeltas: Record<string, PlainConfig>
   updateTrackConfiguration: (snap: PlainConfig) => void
   resetTrackConfiguration: (trackId: string) => void
   promoteTrackConfigDeltas: (trackId?: string) => void
+  promotableTrackIds: string[]
   isTrackOverride: (trackId: string) => boolean
   getTrackActions: (config: AnyConfigurationModel) => { label?: string }[]
   addSessionTrackConf: (conf: PlainConfig) => AnyConfigurationModel | undefined
@@ -127,6 +132,54 @@ test("an admin's edit is a delta until promoted to the config", async () => {
   )
   const promoted = session.tracks.find(t => t.trackId === TRACK_ID)!
   expect(readConfObject(promoted, 'name')).toBe('Edited name')
+})
+
+// Admin → Save track settings to config offers a promote only where one
+// writes: a session track's edits have no file to go to.
+test('only an edit over a config track is promotable', async () => {
+  const { rootModel } = await getPluginManager(undefined, true)
+  const session = rootModel.session as unknown as TestSession
+  const saveItem = () => {
+    const admin = rootModel.menus().find(m => m.label === 'Admin')!
+    return (
+      admin.menuItems as () => { label?: string; disabled?: boolean }[]
+    )().find(i => i.label === 'Save track settings to config')!
+  }
+  const added = { ...editedSnapshot(session, 'Added'), trackId: 'added' }
+  session.addSessionTrackConf(added)
+  session.updateTrackConfiguration({ ...added, name: 'Edited added' })
+
+  expect(session.promotableTrackIds).toEqual([])
+  expect(saveItem().disabled).toBe(true)
+
+  session.updateTrackConfiguration(editedSnapshot(session))
+
+  expect(session.promotableTrackIds).toEqual([TRACK_ID])
+  expect(saveItem().disabled).toBe(false)
+
+  session.promoteTrackConfigDeltas()
+
+  expect(Object.keys(session.trackConfigDeltas)).toEqual(['added'])
+  expect(session.jbrowse.tracks.some(t => t.trackId === 'added')).toBe(false)
+})
+
+// An id in both lists shows its session entry, so its delta diffs against that
+// entry and says nothing about the config.json one
+test('a delta over a session entry is not promoted onto a config entry of its id', async () => {
+  const { rootModel } = await getPluginManager(undefined, true)
+  const session = rootModel.session as unknown as TestSession
+  const added = { ...editedSnapshot(session, 'Added'), trackId: 'added' }
+  session.addSessionTrackConf(added)
+  session.updateTrackConfiguration({ ...added, name: 'Edited added' })
+  session.jbrowse.addTrackConf({ ...added, name: 'Catalog' })
+
+  expect(session.promotableTrackIds).toEqual([])
+  session.promoteTrackConfigDeltas('added')
+
+  expect(session.jbrowse.tracks.find(t => t.trackId === 'added')!.name).toBe(
+    'Catalog',
+  )
+  expect(session.trackConfigDeltas.added).toBeDefined()
 })
 
 test('only an admin can promote track edits to the config', async () => {

@@ -5,7 +5,12 @@ import {
   mergeTrackConfig,
 } from '@jbrowse/core/util'
 import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
-import { applySnapshot, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import {
+  applySnapshot,
+  getSnapshot,
+  isStateTreeNode,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { compareStructural, computed } from 'mobx'
 
 import { TracksManagerSessionMixin } from './Tracks.ts'
@@ -47,6 +52,10 @@ function baseTracks(self: {
   jbrowse: { tracks: unknown }
 }): PlainTrackConfig[] {
   return self.jbrowse.tracks as PlainTrackConfig[]
+}
+
+function sessionEntries(self: { sessionTracks: IAnyStateTreeNode }) {
+  return getSnapshot(self.sessionTracks) as PlainTrackConfig[]
 }
 
 // Not a key count: every delta keeps its trackId, and one can hold nothing but
@@ -209,45 +218,50 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         mergeCache.set(base, { delta, merged })
         return merged
       }
-      // Each track's base by trackId: the session's entry, else the first
-      // config.json entry. Rebuilt when either list changes and never on a
-      // delta write; `tracks` reads it, which keeps it cached for the
-      // per-id lookups below.
-      const basesRecord = computed(
-        () => {
-          const entries = getSnapshot(self.sessionTracks) as PlainTrackConfig[]
-          const byId = new Map(entries.map(t => [t.trackId, t]))
-          const sessionIds = new Set(byId.keys())
-          for (const base of baseTracks(self)) {
-            if (!byId.has(base.trackId)) {
-              byId.set(base.trackId, base)
-            }
-          }
-          return { entries, byId, sessionIds }
-        },
-        { name: 'basesRecord' },
-      )
       const baseByIdComputeds = new Map<
         string,
         IComputedValue<PlainTrackConfig | undefined>
       >()
+      const editableByIdComputeds = new Map<
+        string,
+        IComputedValue<AnyConfigurationModel | undefined>
+      >()
       return {
         /**
          * #getter
-         * Session tracks first, then the config tracks, each a plain config
-         * with its delta (trackConfigDeltas) merged over its base. A track
-         * without a delta is its base by identity, which keeps the hydration
-         * cache warm.
+         * Each track's base by trackId: its sessionTracks entry, else its
+         * config.json entry. Rebuilt when either list changes, never on an
+         * edit.
+         */
+        get trackBasesById(): Map<string, AnyConfigurationModel> {
+          const byId = new Map(baseTracks(self).map(t => [t.trackId, t]))
+          for (const entry of sessionEntries(self)) {
+            byId.set(entry.trackId, entry)
+          }
+          return byId as unknown as Map<string, AnyConfigurationModel>
+        },
+        /**
+         * #method
+         * `base` with its delta (trackConfigDeltas) merged over it, or `base`
+         * itself by identity when it has none, which keeps the hydration cache
+         * warm.
+         */
+        withTrackEdits(base: AnyConfigurationModel): AnyConfigurationModel {
+          const plain = base as unknown as PlainTrackConfig
+          return withDelta(plain, self.trackConfigDeltas[plain.trackId])
+        },
+        /**
+         * #getter
+         * Session tracks first, then the config tracks, each with its edits.
          */
         get tracks(): AnyConfigurationModel[] {
           const deltas = self.trackConfigDeltas
-          const { entries, sessionIds } = basesRecord.get()
+          const entries = sessionEntries(self)
+          const sessionIds = new Set(entries.map(t => t.trackId))
           return [
-            ...entries.map(t => withDelta(t, deltas[t.trackId])),
-            ...baseTracks(self)
-              .filter(t => !sessionIds.has(t.trackId))
-              .map(t => withDelta(t, deltas[t.trackId])),
-          ]
+            ...entries,
+            ...baseTracks(self).filter(t => !sessionIds.has(t.trackId)),
+          ].map(t => withDelta(t, deltas[t.trackId]))
         },
         /**
          * #method
@@ -260,8 +274,10 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           let c = baseByIdComputeds.get(trackId)
           if (!c) {
             c = computed(() => {
-              const base = basesRecord.get().byId.get(trackId)
-              return base ? toPlainConfig(base) : undefined
+              const base = self.trackBasesById.get(trackId)
+              return base
+                ? toPlainConfig(base as unknown as PlainTrackConfig)
+                : undefined
             })
             baseByIdComputeds.set(trackId, c)
           }
@@ -269,33 +285,10 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         },
         /**
          * #method
-         * The overridden slots for `trackId` (empty when it has no delta): each
-         * changed setting's path, its base/default value and the edited value.
-         * Drives the "view changes" dialog opened from the edited badge.
-         */
-        getTrackConfigChanges(trackId: string) {
-          // Every rendered track row asks this (the edited badge); only an
-          // edited one has a delta, so an unedited row subscribes to no base.
-          const delta = self.trackConfigDeltas[trackId]
-          const base = delta ? this.baseTrackConfig(trackId) : undefined
-          return delta && base ? flattenTrackConfigDelta(base, delta) : []
-        },
-        /**
-         * #method
-         * Whether `trackId` carries an edit over its base config, which drives
-         * the "Reset track settings" item and the edited badge. Changed slots,
-         * not mere presence in trackConfigDeltas: a delta can hold only
-         * content-free display stubs, which must not read as an override.
-         */
-        isTrackOverride(trackId: string): boolean {
-          return this.getTrackConfigChanges(trackId).length > 0
-        },
-        /**
-         * #method
-         * A private working copy of a track config, created on first access
-         * from the current frozen (base+delta) value and cached by trackId, so a
-         * shown track's in-place quick-edits (setSlot) mutate this copy and
-         * never the shared frozen base node (see ADR-032). Called by
+         * The config node `trackId` resolves to: a live node as it stands,
+         * otherwise a private working copy of its current frozen (base+delta)
+         * config, so a shown track's in-place quick-edits (setSlot) mutate
+         * this copy and never the shared frozen base (see ADR-032). Called by
          * TrackConfigurationReference during lazy hydration.
          *
          * Cached against the resolved config it was built from, not by trackId
@@ -304,25 +297,74 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * a delta or base replaced from outside — an undo's `applySnapshot` on
          * the session, a session restore, a session track deleted and added
          * again under its id — cannot, so the next read rebuilds the copy from
-         * what now resolves.
+         * what now resolves. Per-id reactive on the node rather than the
+         * config, so a display reading its config does not recompute when
+         * its own working copy is persisted.
          */
         getEditableTrackConfig(
           trackId: string,
-          frozenConfig: unknown,
           schemaType: IAnyType,
-        ): IAnyStateTreeNode {
-          const existing = self.editableTrackConfigs.get(trackId)
-          if (existing && existing.source === frozenConfig) {
-            return existing.node
+        ): AnyConfigurationModel | undefined {
+          let c = editableByIdComputeds.get(trackId)
+          if (!c) {
+            c = computed(() => {
+              const resolved = self.getTrackById(trackId)
+              if (!resolved || isStateTreeNode(resolved)) {
+                return resolved
+              }
+              const existing = self.editableTrackConfigs.get(trackId)
+              if (existing?.source === resolved) {
+                return existing.node
+              }
+              const node = schemaType.create(resolved, { pluginManager })
+              self.editableTrackConfigs.set(trackId, { node, source: resolved })
+              return node
+            })
+            editableByIdComputeds.set(trackId, c)
           }
-          const node = schemaType.create(frozenConfig, {
-            pluginManager,
-          }) as IAnyStateTreeNode
-          self.editableTrackConfigs.set(trackId, { node, source: frozenConfig })
-          return node
+          return c.get()
         },
       }
     })
+    .views(self => ({
+      /**
+       * #method
+       * The overridden slots for `trackId` (empty when it has no delta): each
+       * changed setting's path, its base/default value and the edited value.
+       * Drives the "view changes" dialog opened from the edited badge.
+       */
+      getTrackConfigChanges(trackId: string) {
+        // Every rendered track row asks this (the edited badge); only an
+        // edited one has a delta, so an unedited row subscribes to no base.
+        const delta = self.trackConfigDeltas[trackId]
+        const base = delta ? self.baseTrackConfig(trackId) : undefined
+        return delta && base ? flattenTrackConfigDelta(base, delta) : []
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Whether `trackId` carries an edit over its base config, which drives
+       * the "Reset track settings" item and the edited badge. Changed slots,
+       * not mere presence in trackConfigDeltas: a delta can hold only
+       * content-free display stubs, which must not read as an override.
+       */
+      isTrackOverride(trackId: string): boolean {
+        return self.getTrackConfigChanges(trackId).length > 0
+      },
+      /**
+       * #getter
+       * The edited tracks `promoteTrackConfigDeltas` can write: those whose
+       * base is a config.json entry. A session track's delta has no file to
+       * go to.
+       */
+      get promotableTrackIds(): string[] {
+        const sessionIds = new Set(self.sessionTracks.map(t => t.trackId))
+        return Object.keys(self.trackConfigDeltas).filter(
+          id => !sessionIds.has(id) && self.trackBasesById.has(id),
+        )
+      },
+    }))
     .actions(self => ({
       afterAttach() {
         // One-time format upgrade: a legacy session stored a non-admin's edits as
@@ -407,6 +449,14 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           applySnapshot(entry.node, fullConfig)
         }
       }
+      // A working copy's own snapshot, which both savers pass, is already in
+      // the schema's form; anything else a caller hands in may not be.
+      function inTrackForm(trackConf: PlainTrackConfig) {
+        const entry = self.editableTrackConfigs.get(trackConf.trackId)
+        return entry && getSnapshot(entry.node) === trackConf
+          ? trackConf
+          : hydrate(trackConf)
+      }
       // The session-scoped add, shared by the action that always means the
       // session and the one that means it only for a non-admin. A plain closure
       // rather than `this.addSessionTrackConf` so neither action's inferred
@@ -465,6 +515,9 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * `sessionTracks`, a URL's `&sessionTracks=`, and every track a feature
          * stands up on the user's behalf. Mirrors `addSessionConnectionConf` in
          * the connections mixins.
+         *
+         * Returns the entry, which is the track's base: edit the track through
+         * `updateTrackConfiguration` or a display's `setConf`, not the entry.
          */
         addSessionTrackConf(trackConf: AnyConfiguration) {
           return addToSession(trackConf)
@@ -550,7 +603,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           if (plainBase) {
             const delta = diffTrackConfig(
               plainBase,
-              hydrate(trackConf),
+              inTrackForm(trackConf),
             ) as PlainTrackConfig
             // an edit that nets back to the base clears any prior override
             if (deltaHasChanges(plainBase, delta)) {
@@ -582,26 +635,31 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * Write this session's track edits into the base configs — the
          * config.json an admin server hands every visitor — and drop the
          * deltas they were held in. One track's, or every track's when
-         * `trackId` is omitted. An admin's alone: anyone else's base is the
-         * in-memory copy of a file they cannot write.
+         * `trackId` is omitted, of `promotableTrackIds`: a session track's
+         * edits stay in the session. An admin's alone: anyone else's base is
+         * the in-memory copy of a file they cannot write.
          */
         promoteTrackConfigDeltas(trackId?: string) {
           if (!self.adminMode) {
             throw new Error('only an admin can save track settings to config')
           }
+          const promotable = self.promotableTrackIds
           const ids =
             trackId === undefined
-              ? Object.keys(self.trackConfigDeltas)
-              : [trackId]
+              ? promotable
+              : promotable.includes(trackId)
+                ? [trackId]
+                : []
+          const bases = self.trackBasesById
           for (const id of ids) {
-            const delta = self.trackConfigDeltas[id]
-            const base = baseTracks(self).find(t => t.trackId === id)
-            if (delta && base) {
-              self.jbrowse.updateTrackConf(
-                mergeTrackConfig(toPlainConfig(base), delta),
-              )
-              writeDelta(id, undefined)
-            }
+            const base = bases.get(id) as unknown as PlainTrackConfig
+            self.jbrowse.updateTrackConf(
+              mergeTrackConfig(
+                toPlainConfig(base),
+                self.trackConfigDeltas[id]!,
+              ),
+            )
+            writeDelta(id, undefined)
           }
         },
 

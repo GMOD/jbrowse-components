@@ -30,21 +30,32 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
+       * Each track's base by trackId: the entry its edits diff against. Here
+       * the config.json entry, which an edit writes directly.
+       */
+      get trackBasesById(): Map<string, AnyConfigurationModel> {
+        const tracks: AnyConfigurationModel[] = self.jbrowse.tracks
+        return new Map(tracks.map(t => [t.trackId, t]))
+      },
+      /**
+       * #method
+       * A track's base as the session resolves it, its edits applied. Here the
+       * base itself.
+       */
+      withTrackEdits(base: AnyConfigurationModel): AnyConfigurationModel {
+        return base
+      },
+      /**
+       * #getter
        */
       get tracks(): AnyConfigurationModel[] {
         return self.jbrowse.tracks
       },
     }))
-    .views(self => {
-      // One index trackId → config for all tracks, assembly sequences, and
-      // connection tracks. Frozen jbrowse.tracks entries stay plain objects
-      // here; hydration to MST nodes happens lazily in TrackConfigurationReference
-      // on first access. Held hot by the autorun in afterAttach, so a reader
-      // outside any reaction (ranking search hits: 33ms per search unheld on a
-      // 2000-track config, 0.07ms held) gets the cache too. Not `keepAlive`: that
-      // subscription never ends, and it reaches jbrowse.tracks on the root, so
-      // it pinned every superseded session for the tab's life.
-      const tracksByIdRecord = computed<Record<string, AnyConfigurationModel>>(
+    .extend(self => {
+      // Assembly sequences and connection tracks by trackId, which win over a
+      // track base of the same id.
+      const otherConfigsById = computed<Record<string, AnyConfigurationModel>>(
         () => {
           const temporaryAssemblies =
             'temporaryAssemblies' in self
@@ -64,8 +75,6 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
             : {}
 
           return Object.fromEntries([
-            ...self.tracks.map(t => [t.trackId, t]),
-            // assembly sequence tracks, so they resolve by trackId
             ...self.assemblies.map(a => [a.sequence.trackId, a.sequence]),
             ...temporaryAssemblies.map(a => [a.sequence.trackId, a.sequence]),
             ...connectionInstances.flatMap(c =>
@@ -80,62 +89,85 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
             ]),
           ])
         },
+        { name: 'otherConfigsById' },
+      )
+      const tracksByIdRecord = computed(
+        () =>
+          Object.fromEntries([
+            ...self.tracks.map(t => [t.trackId, t]),
+            ...Object.entries(otherConfigsById.get()),
+          ]) as Record<string, AnyConfigurationModel>,
         { name: 'tracksByIdRecord' },
       )
-      // Per-id computed cache backing getTrackById. Resolving one track's config
-      // subscribes only to that id's computed, so editing track A leaves track
-      // B's observers untouched: an unedited id's entry keeps its object identity
-      // across a sibling edit, so its computed re-evaluates equal and MobX
-      // short-circuits — B never wakes. Derived on read (no reconcile autorun),
-      // so it is never stale mid-action: session hydration and add-and-show
-      // resolve straight through it. Not evicted — bounded by the distinct ids
-      // resolved this session, and holds no authoritative state.
+      // Per-id computeds backing getTrackById. An edit re-resolves each
+      // observed id in constant time, and an unedited id resolves to the same
+      // object, so its observers never wake. Not evicted: bounded by the
+      // distinct ids resolved this session.
       const trackByIdComputeds = new Map<
         string,
         IComputedValue<AnyConfigurationModel | undefined>
       >()
       return {
-        /**
-         * #method
-         * Config for one trackId — a track, assembly sequence, or connection
-         * track — or undefined. Per-id reactive: every display resolves its
-         * config through this (via TrackConfigurationReference) and subscribes
-         * only to its own id, so one track's settings edit doesn't re-render the
-         * others.
-         */
-        getTrackById(id: string): AnyConfigurationModel | undefined {
-          let c = trackByIdComputeds.get(id)
-          if (!c) {
-            c = computed(() => tracksByIdRecord.get()[id])
-            trackByIdComputeds.set(id, c)
-          }
-          return c.get()
+        views: {
+          /**
+           * #method
+           * Config for one trackId — a track, assembly sequence, or connection
+           * track — or undefined. Per-id reactive: every display resolves its
+           * config through this (via TrackConfigurationReference) and
+           * subscribes only to its own id, so one track's settings edit doesn't
+           * re-render the others.
+           */
+          getTrackById(id: string): AnyConfigurationModel | undefined {
+            let c = trackByIdComputeds.get(id)
+            if (!c) {
+              c = computed(() => {
+                const other = otherConfigsById.get()[id]
+                if (other) {
+                  return other
+                }
+                const base = self.trackBasesById.get(id)
+                return base && self.withTrackEdits(base)
+              })
+              trackByIdComputeds.set(id, c)
+            }
+            return c.get()
+          },
+          /**
+           * #method
+           * Every track config the session can resolve, keyed by trackId.
+           * Prefer the per-id reactive `getTrackById(id)`: this map is rebuilt
+           * over every track on any edit, and reading it subscribes the caller
+           * to all of them. Kept for plugins that look up ids in a
+           * non-reactive context.
+           *
+           * @deprecated
+           */
+          getTracksById(): Record<string, AnyConfigurationModel> {
+            return tracksByIdRecord.get()
+          },
         },
-        /**
-         * #method
-         * Every track config the session can resolve, keyed by trackId. Prefer
-         * the per-id reactive `getTrackById(id)`: reading this whole map
-         * subscribes the caller to *every* track, so an edit to any one of them
-         * wakes it — the reason internal display config resolution moved off
-         * it. Kept for plugins that look up ids in a non-reactive context.
-         *
-         * @deprecated
-         */
-        getTracksById(): Record<string, AnyConfigurationModel> {
-          return tracksByIdRecord.get()
+        actions: {
+          // Holds the indexes getTrackById reads, so a reader outside any
+          // reaction (ranking search hits: 33ms per search unheld on a
+          // 2000-track config, 0.07ms held) gets the cache too. Not
+          // `keepAlive`: that subscription never ends, and it reaches
+          // jbrowse.tracks on the root, so it pinned every superseded session
+          // for the tab's life.
+          afterAttach() {
+            addDisposer(
+              self,
+              autorun(
+                () => {
+                  void self.trackBasesById
+                  otherConfigsById.get()
+                },
+                { name: 'trackIndex' },
+              ),
+            )
+          },
         },
       }
     })
-    .actions(self => ({
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(() => {
-            self.getTracksById()
-          }),
-        )
-      },
-    }))
     .actions(self => {
       function addToSession(trackConf: AnyConfiguration) {
         assertTrackConfOutlivesItsAssemblies(self, trackConf, 'jbrowse.tracks')

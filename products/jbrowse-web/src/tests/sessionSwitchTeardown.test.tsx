@@ -106,9 +106,9 @@ test('switching sessions does not read the session it replaced', async () => {
   // computed there never unsubscribed, so the root kept each superseded
   // session reachable for the tab's life. The index is held by a disposer the
   // session owns now, and this is the check that the disposer ran.
-  expect(observerNames(getObserverTree(oldSession, 'tracks'))).not.toContain(
-    'tracksByIdRecord',
-  )
+  expect(
+    observerNames(getObserverTree(oldSession, 'trackBasesById')),
+  ).not.toContain('trackIndex')
 }, 60000)
 
 function observerNames(tree: IObserverTree): string[] {

@@ -519,9 +519,7 @@ export default function RootModel({
                       label: 'Save track settings to config',
                       helpText:
                         'Write the track settings edited in this session into the config.json every visitor is served',
-                      disabled: !Object.keys(
-                        self.session?.trackConfigDeltas ?? {},
-                      ).length,
+                      disabled: !self.session?.promotableTrackIds.length,
                       onClick: () => {
                         self.session?.promoteTrackConfigDeltas()
                       },

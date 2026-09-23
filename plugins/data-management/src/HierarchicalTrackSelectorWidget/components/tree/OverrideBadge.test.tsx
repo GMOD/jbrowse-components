@@ -19,9 +19,17 @@ function theme(node: React.ReactNode) {
   return <ThemeProvider theme={createJBrowseTheme()}>{node}</ThemeProvider>
 }
 
+const genes = {
+  trackId: 'genes',
+  name: 'Genes',
+  assemblyNames: ['volMyt1'],
+  type: 'FeatureTrack',
+  adapter: { type: 'FromConfigAdapter', features: [] },
+}
+
 // A session with one open FeatureTrack plus its track selector, so the badge
 // runs against real display models.
-async function openTrackSelector() {
+async function openTrackSelector(kind: 'session' | 'config' = 'session') {
   const session = createTestSession()
   session.addAssemblyConf({
     name: 'volMyt1',
@@ -36,13 +44,11 @@ async function openTrackSelector() {
       },
     },
   })
-  session.addSessionTrackConf({
-    trackId: 'genes',
-    name: 'Genes',
-    assemblyNames: ['volMyt1'],
-    type: 'FeatureTrack',
-    adapter: { type: 'FromConfigAdapter', features: [] },
-  })
+  if (kind === 'session') {
+    session.addSessionTrackConf(genes)
+  } else {
+    session.jbrowse.addTrackConf(genes)
+  }
   const view = session.addView('LinearGenomeView', {
     displayedRegions: [
       { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
@@ -62,6 +68,18 @@ describe('OverrideBadge', () => {
     await findAllByTestId(/htsTrackLabel/)
     expect(queryByTestId('track_edited_badge')).toBeNull()
   })
+
+  it.each(['session', 'config'] as const)(
+    'badges an edited open %s track',
+    async kind => {
+      const { session, model } = await openTrackSelector(kind)
+      session.updateTrackConfiguration({ ...genes, name: 'Edited' })
+      const { findByTestId } = render(
+        theme(<HierarchicalTrackSelector model={model} toolbarHeight={20} />),
+      )
+      expect(await findByTestId('track_edited_badge')).toBeTruthy()
+    },
+  )
 })
 
 describe('TrackSettingsChangesDialog', () => {

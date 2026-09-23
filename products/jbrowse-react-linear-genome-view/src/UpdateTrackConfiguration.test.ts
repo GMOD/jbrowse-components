@@ -4,7 +4,13 @@ import {
   readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
-import { getEnv, getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import {
+  applySnapshot,
+  getEnv,
+  getSnapshot,
+  isStateTreeNode,
+  recordPatches,
+} from '@jbrowse/mobx-state-tree'
 import { hydratedForms, planWebExport } from '@jbrowse/product-core'
 import { waitFor } from '@testing-library/react'
 import { autorun, getDependencyTree } from 'mobx'
@@ -226,7 +232,6 @@ describe('a reset of an admin-set slot survives a reload', () => {
     getTrackConfigChanges: (trackId: string) => unknown[]
     getEditableTrackConfig: (
       trackId: string,
-      frozenConfig: unknown,
       schemaType: unknown,
     ) => AnyConfigurationModel
   }
@@ -254,7 +259,6 @@ describe('a reset of an admin-set slot survives a reload', () => {
     const session = sessionOf(state)
     const workingCopy = session.getEditableTrackConfig(
       FST,
-      session.tracks.find(t => t.trackId === FST),
       pluginManagerOf(state).pluggableConfigSchemaType('track'),
     )
     change(workingCopy)
@@ -644,3 +648,152 @@ describe('a delta write re-resolves only its own track', () => {
     }
   })
 })
+
+// A shown track's working copy stays while its own edits persist and while
+// anything else changes, and is rebuilt when what its track resolves to is
+// replaced from outside.
+describe.each(['session', 'config'] as const)(
+  'a %s track working copy',
+  kind => {
+    const ID = 'copied'
+    const conf = (trackId: string, name = 'Original name') => ({
+      ...track,
+      trackId,
+      name,
+      displays: [],
+    })
+
+    interface CopySession extends DeltaSession {
+      jbrowse: IStateTreeNode
+      sessionTracks: IStateTreeNode[]
+      trackBasesById: Map<string, unknown>
+      addSessionTrackConf: (conf: Record<string, unknown>) => unknown
+      isTrackOverride: (trackId: string) => boolean
+    }
+
+    async function shown() {
+      const state = createViewState({
+        assembly,
+        tracks: kind === 'config' ? [conf(ID)] : [],
+      })
+      const session = state.session as unknown as CopySession
+      if (kind === 'session') {
+        session.addSessionTrackConf(conf(ID))
+      }
+      const { view } = state.session
+      await view.launchTrack(ID)
+      await waitFor(() => {
+        expect(view.getTrack(ID)).toBeTruthy()
+      })
+      const copy = () =>
+        view.getTrack(ID)!.configuration as AnyConfigurationModel
+      const nameOf = () => readConfObject(copy(), 'name') as string
+      return { state, session, copy, nameOf }
+    }
+
+    function persist(session: CopySession, node: AnyConfigurationModel) {
+      session.updateTrackConfiguration(getSnapshot(node) as { trackId: string })
+    }
+
+    test('persisting mid-typing keeps the copy and its unsaved keystroke', async () => {
+      const { session, copy, nameOf } = await shown()
+      const node = copy()
+      setConf(node, 'name', 'A')
+      persist(session, node)
+      setConf(node, 'name', 'AB')
+      persist(session, node)
+      setConf(node, 'name', 'ABC')
+
+      expect(copy()).toBe(node)
+      expect(nameOf()).toBe('ABC')
+    })
+
+    test('adding another track mid-edit keeps the copy', async () => {
+      const { session, copy, nameOf } = await shown()
+      const node = copy()
+      setConf(node, 'name', 'A')
+      persist(session, node)
+      setConf(node, 'name', 'AB')
+
+      session.addSessionTrackConf(conf('other'))
+      session.updateTrackConfiguration({ ...conf('other'), name: 'x' })
+
+      expect(copy()).toBe(node)
+      expect(nameOf()).toBe('AB')
+    })
+
+    test('undoing a persist rebuilds the copy from what it was added with', async () => {
+      const { state, session, copy, nameOf } = await shown()
+      const node = copy()
+      const recorder = recordPatches(state.session)
+      setConf(node, 'name', 'A')
+      persist(session, node)
+      recorder.stop()
+
+      recorder.undo()
+
+      expect(session.trackConfigDeltas).toEqual({})
+      expect(nameOf()).toBe('Original name')
+      expect(session.isTrackOverride(ID)).toBe(false)
+    })
+
+    test('a snapshot applied with another delta rebuilds the copy', async () => {
+      const { state, session, copy, nameOf } = await shown()
+      const node = copy()
+      setConf(node, 'name', 'A')
+      persist(session, node)
+
+      applySnapshot(state.session, {
+        ...getSnapshot(state.session),
+        trackConfigDeltas: { [ID]: { trackId: ID, name: 'From snapshot' } },
+      })
+
+      expect(nameOf()).toBe('From snapshot')
+    })
+
+    // the entry replaced under an unchanged delta, as a re-add under the id or
+    // `jb.setSession` does
+    test('a snapshot applied with another entry rebuilds the copy', async () => {
+      const { state, session, copy, nameOf } = await shown()
+      const node = copy()
+      setConf(node, 'name', 'A')
+      persist(session, node)
+      const replaced = { ...conf(ID), description: 'Replaced entry' }
+
+      if (kind === 'session') {
+        applySnapshot(state.session, {
+          ...getSnapshot(state.session),
+          sessionTracks: [replaced],
+        })
+      } else {
+        applySnapshot(session.jbrowse, {
+          ...getSnapshot(session.jbrowse),
+          tracks: [replaced],
+        })
+      }
+
+      expect(readConfObject(copy(), 'description')).toBe('Replaced entry')
+      expect(nameOf()).toBe('A')
+    })
+
+    // An edit writes one delta: no index over the catalog is rebuilt, and a
+    // display reading its config does not recompute when its own copy persists
+    test('persisting its copy rebuilds no index and re-resolves no reference', async () => {
+      const { state, session, copy } = await shown()
+      const node = copy()
+      const bases = session.trackBasesById
+      let resolutions = 0
+      const dispose = autorun(() => {
+        resolutions += 1
+        void state.session.view.getTrack(ID)!.configuration
+      })
+
+      setConf(node, 'name', 'A')
+      persist(session, node)
+
+      expect(session.trackBasesById).toBe(bases)
+      expect(resolutions).toBe(1)
+      dispose()
+    })
+  },
+)

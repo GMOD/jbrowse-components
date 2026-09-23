@@ -666,37 +666,32 @@ function idOrSnapshotUnion(ref: IAnyType, schemaType: IAnyType) {
 function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
     get(id, parent) {
-      const session = getSession(parent)
+      const session = getSession(parent) as ReturnType<typeof getSession> & {
+        getEditableTrackConfig?: (
+          trackId: string,
+          schemaType: IAnyType,
+        ) => AnyConfigurationModel | undefined
+      }
+      const trackId = String(id)
       // Per-id lookup: subscribes only to this trackId's derivation, so
-      // resolving one track's config doesn't re-render the others. Derived on
-      // read, so it's fresh during hydration and add-and-show — no dual path.
-      let ret: unknown = session.getTrackById(String(id))
+      // resolving one track's config doesn't re-render the others. A session
+      // with track deltas hands back a private, per-track working copy so a
+      // shown track's in-place quick-edits (setSlot) mutate that copy and never
+      // the shared frozen base (ADR-032); any other session falls through to
+      // the frozen hydration cache (ADR-031).
+      const ret = session.getEditableTrackConfig
+        ? session.getEditableTrackConfig(trackId, schemaType)
+        : session.getTrackById(trackId)
       if (!ret) {
         throw new Error(`Could not resolve trackId "${id}"`)
       }
-      if (!isStateTreeNode(ret)) {
-        // A session with track deltas hands back a private, per-track working
-        // copy so a shown track's in-place quick-edits (setSlot) mutate that
-        // copy and never the shared frozen base node (see agent-docs/ADR-032).
-        // A session without them falls through to the frozen hydration cache
-        // (ADR-031).
-        const editable = (
-          session as {
-            getEditableTrackConfig?: (
-              trackId: string,
-              frozenConfig: unknown,
-              schemaType: IAnyType,
-            ) => unknown
-          }
-        ).getEditableTrackConfig?.(String(id), ret, schemaType)
-        if (editable) {
-          ret = editable
-        } else {
-          const env = getEnv<{ pluginManager: PluginManager }>(parent)
-          ret = hydrateInto(env.pluginManager, schemaType, ret)
-        }
-      }
-      return ret
+      return isStateTreeNode(ret)
+        ? ret
+        : hydrateInto(
+            getEnv<{ pluginManager: PluginManager }>(parent).pluginManager,
+            schemaType,
+            ret,
+          )
     },
     set(value) {
       return value.trackId
