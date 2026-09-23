@@ -1,6 +1,5 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
-import { baseDisplayConfig } from '@jbrowse/tree-sidebar'
 import { waitFor } from '@testing-library/react'
 
 import createViewState from './createViewState.ts'
@@ -37,6 +36,9 @@ const assemblies = [
 
 interface Session {
   addSessionTrackConf: (conf: Record<string, unknown>) => unknown
+  baseTrackConfig: (
+    trackId: string,
+  ) => { displays: { displayId: string }[] } | undefined
   addView: (type: string, snapshot: Record<string, unknown>) => View
   trackConfigDeltas: Record<string, Record<string, unknown>>
 }
@@ -53,6 +55,7 @@ interface Track {
 
 interface RowDisplay {
   configuration: AnyConfigurationModel
+  baseRowColor: unknown
   rowArrangementIsCustom: boolean
   setRowOrder: (rows: { name: string }[]) => void
   resetRowArrangement: () => void
@@ -121,7 +124,12 @@ test('a row display on a session track resets to the arrangement it was added wi
   const arrangement = () =>
     getSnapshot(display.configuration.rows) as Record<string, unknown>
 
-  expect(baseDisplayConfig(display)).toMatchObject(added)
+  expect(
+    session
+      .baseTrackConfig('subtracks')!
+      .displays.find(d => d.displayId === displayId),
+  ).toMatchObject(added)
+  expect(display.baseRowColor).toEqual(added.rowColor)
   expect(display.rowArrangementIsCustom).toBe(false)
 
   display.setRowOrder([{ name: 'b' }, { name: 'a' }, { name: 'c' }])

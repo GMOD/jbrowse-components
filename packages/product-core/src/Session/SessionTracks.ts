@@ -284,7 +284,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           schemaType: IAnyType,
         ): IAnyStateTreeNode {
           const existing = self.editableTrackConfigs.get(trackId)
-          if (existing?.source === frozenConfig) {
+          if (existing && existing.source === frozenConfig) {
             return existing.node
           }
           const node = schemaType.create(frozenConfig, {
