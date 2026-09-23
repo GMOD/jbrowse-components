@@ -184,7 +184,7 @@ so the mixins cannot be chained on one at a time the way `.views()` and
   CoarseTierMixin<MafRegionPayload<MafSummaryRecord[]>>(),
   LegendMixin(),
   RowHeightMixin(),
-  LayoutTreeSidebarMixin<MafSource>(),
+  TreeSidebarMixin<MafSource>(),
   ContextMenuMixin<MafContextMenuInfo>(),
   types.model({
     /**

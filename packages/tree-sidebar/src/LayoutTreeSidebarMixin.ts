@@ -28,7 +28,10 @@ const confNode = (self: object) => self as LayoutTreeSidebarHost
 /**
  * #stateModel LayoutTreeSidebarMixin
  * #category display
- * #crossCuttingMixin The dendrogram sidebar with its arrangement in display state — `layout`, `clusterTree`, `clusterProvenance` and `subtreeFilter`. The same arrangement API as `TreeSidebarMixin` over those props. No display composes it since MAF moved onto the `rows` config object
+ * The dendrogram sidebar with its arrangement in display state — `layout`,
+ * `clusterTree`, `clusterProvenance` and `subtreeFilter` — under the same
+ * arrangement API as `TreeSidebarMixin`. No display composes it since MAF
+ * moved onto the `rows` config object.
  *
  * The row axis's declared order is the `domain` slot, read as `rowDomain`
  * and applied under `layout`, which stays the runtime arrangement every drag,

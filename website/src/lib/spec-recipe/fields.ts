@@ -655,11 +655,9 @@ const ROW_ARRANGEMENT_EDITORS: Record<string, string> = {
   LinearMultiRowFeatureDisplay: 'Edit colors/arrangement...',
   LinearMultiSampleVariantDisplay: 'Edit colors/arrangement...',
   LinearMultiSampleVariantMatrixDisplay: 'Edit colors/arrangement...',
-  // The quantitative display reaches the same dialog from the same item, so it
-  // belongs here as much as the four above — it was simply never added, and
-  // `layout` / `subtreeFilter` on a wiggle went unmapped as a result. Its own
-  // `Edit color...` row is a different dialog: that one edits the channel, this
-  // one the adapter row metadata under the facet.
+  // The quantitative display reaches the same dialog from the same item. Its
+  // own `Edit color...` row is a different dialog: that one edits the channel,
+  // this one the adapter row metadata under the rows.
   LinearWiggleDisplay: 'Edit colors/arrangement...',
 }
 
@@ -1101,19 +1099,37 @@ export const trackFields: Record<string, FieldRecipe> = {
   // the loaded features rather than configured, so the figure's own value is
   // the label to click — except a `jexl:` partition, which that menu shows as a
   // disabled row it cannot write (partitionMenuItems in the display's
-  // trackMenuItems.ts).
+  // trackMenuItems.ts). Otherwise the arrangement: a focus is the rows left
+  // ticked in the display's arrangement dialog, and an order the rows dragged
+  // there.
   rows: (value, { displayType }) => {
-    const field =
-      typeof value === 'object' && value !== null && 'field' in value
-        ? value.field
-        : value
-    return typeof field === 'string' &&
+    const members =
+      typeof value === 'object' && value !== null
+        ? (value as { field?: unknown; domain?: unknown; kept?: unknown })
+        : { field: value }
+    const { field, domain, kept } = members
+    const editor = displayType ? ROW_ARRANGEMENT_EDITORS[displayType] : undefined
+    if (
+      typeof field === 'string' &&
       field &&
       !field.startsWith('jexl:') &&
       displayType === 'LinearMultiRowFeatureDisplay'
+    ) {
+      return {
+        path: `${TRACK_MENU} → Partition by... → ${field}`,
+        note: 'The list is built from the attributes the loaded features carry, so a track whose data has not loaded yet offers nothing.',
+      }
+    }
+    if (editor && Array.isArray(kept)) {
+      return {
+        path: `${TRACK_MENU} → ${editor} → untick the rows you do not want`,
+        note: `This figure keeps ${kept.length} row${kept.length === 1 ? '' : 's'}. The dendrogram is pruned to match, so it stays the tree of what is drawn.`,
+      }
+    }
+    return editor && Array.isArray(domain)
       ? {
-          path: `${TRACK_MENU} → Partition by... → ${field}`,
-          note: 'The list is built from the attributes the loaded features carry, so a track whose data has not loaded yet offers nothing.',
+          path: `${TRACK_MENU} → ${editor} → drag the rows into order`,
+          note: `The same dialog renames a row and recolors it, so a figure's ${domain.length} rows carry their order, any labels it shows, and any color it picked.`,
         }
       : undefined
   },
@@ -1296,38 +1312,6 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: `Each preset there sets the row height and the glyph's share of it (${value} here) together, so this follows from the same click as the height above.`,
         }
       : undefined,
-  subtreeFilter: (value, { displayType }) => {
-    const editor = displayType ? ROW_ARRANGEMENT_EDITORS[displayType] : undefined
-    return Array.isArray(value) && editor
-      ? {
-          path: `${TRACK_MENU} → ${editor} → untick the rows you do not want`,
-          note: `This figure keeps ${value.length} row${value.length === 1 ? '' : 's'}. The dendrogram is pruned to match, so it stays the tree of what is drawn.`,
-        }
-      : undefined
-  },
-  layout: (value, { displayType }) => {
-    const editor = displayType ? ROW_ARRANGEMENT_EDITORS[displayType] : undefined
-    if (!Array.isArray(value) || !editor) {
-      return undefined
-    }
-    // One slot, two quite different reasons to set it, and the click inside the
-    // dialog is not the same one: a saved order comes from dragging, a saved
-    // color from the swatch column. A layout whose rows all carry a color was
-    // written for the color, so lead with that rather than telling the reader
-    // to drag rows that are already in adapter order.
-    const colored = value.filter(
-      row => typeof row === 'object' && row !== null && 'color' in row,
-    ).length
-    return colored === value.length
-      ? {
-          path: `${TRACK_MENU} → ${editor} → set each row's color`,
-          note: `This figure colors all ${value.length} of its rows by hand rather than taking the palette. The same dialog also holds their order and labels.`,
-        }
-      : {
-          path: `${TRACK_MENU} → ${editor} → drag the rows into order`,
-          note: `The same dialog renames a row and recolors it, so a figure's ${value.length} rows carry their order, any labels it shows, and any color it picked.`,
-        }
-  },
   origin: (value, { displayType }) =>
     typeof value === 'number' && displayType === 'LinearWiggleDisplay'
       ? {

@@ -5608,8 +5608,47 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "domain",
-          "type": "string[]"
+          "name": "rows",
+          "type": "RowArrangementConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "labels",
+              "type": "Map<string, string>"
+            },
+            {
+              "name": "tree",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "treeProvenance",
+              "type": "(frozen | undefined)"
+            },
+            {
+              "name": "kept",
+              "type": "string[]",
+              "liftsNumbers": true
+            }
+          ]
+        },
+        {
+          "name": "rowColor",
+          "type": "MafRowColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "range",
+              "type": "CssColorEntry[]"
+            }
+          ]
         },
         {
           "name": "showLegend",
@@ -5674,10 +5713,6 @@ export const configManifest: ConfigManifest = {
         "runClustering",
         "clusterRegion",
         "sortRowsBy",
-        "layout",
-        "clusterTree",
-        "clusterProvenance",
-        "subtreeFilter",
         "configuration"
       ]
     },

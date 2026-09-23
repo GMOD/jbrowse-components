@@ -6952,6 +6952,42 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "MafRowColor": {
+      "title": "MafRowColor",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "domain": {
+          "description": "the species rows given a tint of their own, by row name.",
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "range": {
+          "description": "the CSS colour each row in domain takes, in the same order.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CssColor"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearMafDisplaySlots": {
       "type": "object",
       "properties": {
@@ -7019,12 +7055,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 80
         },
-        "domain": {
-          "description": "row order: the guide tree rotates so the species listed come as early as its topology allows, the way ggtree's rotate turns a clade — a species brings its clade with it, so this is a preference the tree honours rather than a placement. The dendrogram keeps drawing. With no guide tree the species listed simply lead, and the rest keep the order the adapter reported them in.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+        "rows": {
+          "$ref": "#/$defs/RowArrangement"
+        },
+        "rowColor": {
+          "$ref": "#/$defs/MafRowColor"
         },
         "showLegend": {
           "description": "show the color key for the active row rendering. Defaults to on.",
@@ -11126,8 +11161,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "treeAreaWidth": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/treeAreaWidth"
             },
-            "domain": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/domain"
+            "rows": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/rows"
+            },
+            "rowColor": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowColor"
             },
             "showLegend": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/showLegend"
@@ -15593,17 +15631,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         "sortRowsBy": {},
-        "layout": {},
-        "clusterTree": {
-          "type": "string"
-        },
-        "clusterProvenance": {},
-        "subtreeFilter": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."

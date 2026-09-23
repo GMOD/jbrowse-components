@@ -6,7 +6,10 @@ sidebar_label: Mixin -> LayoutTreeSidebarMixin
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/LayoutTreeSidebarMixin.ts).
 
-#crossCuttingMixin The dendrogram sidebar with its arrangement in display state — `layout`, `clusterTree`, `clusterProvenance` and `subtreeFilter` — as the MAF display still keeps it. The same arrangement API as `TreeSidebarMixin` over those props, until MAF moves onto the `rows` config object
+The dendrogram sidebar with its arrangement in display state — `layout`,
+`clusterTree`, `clusterProvenance` and `subtreeFilter` — under the same
+arrangement API as `TreeSidebarMixin`. No display composes it since MAF
+moved onto the `rows` config object.
 
 The row axis's declared order is the `domain` slot, read as `rowDomain`
 and applied under `layout`, which stays the runtime arrangement every drag,
