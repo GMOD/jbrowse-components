@@ -41,7 +41,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="getter-trackbasesbyid">**trackBasesById**</span><br><code>Map&lt;string, AnyConfigurationModel&gt;</code> | Each track's base by trackId: its sessionTracks entry, else its config.json entry. Rebuilt when either list changes, never on an edit. | SessionTracksManagerSessionMixin |
-| <span id="getter-tracks">**tracks**</span><br><code>AnyConfigurationModel[]</code> | Session tracks first, then the config tracks, each with its edits. An edit copies the list of bases and lays each delta at its track's position, so its cost is the count of edited tracks, not of tracks. | SessionTracksManagerSessionMixin |
+| <span id="getter-tracks">**tracks**</span><br><code>AnyConfigurationModel[]</code> | Session tracks first, then the config tracks, each with its edits. An edit copies the list of bases and lays each delta at its track's position, so past that copy it costs the count of edited tracks. | SessionTracksManagerSessionMixin |
 | <span id="getter-promotabletrackids">**promotableTrackIds**</span><br><code>string[]</code> | The edited tracks `promoteTrackConfigDeltas` can write: those whose base is a config.json entry. A session track's delta has no file to go to. | SessionTracksManagerSessionMixin |
 | <span id="getter-root">**root**</span><br><code>TypeOrStateTreeNodeToStateTreeNode&lt;ROOT_MODEL_TYPE&gt;</code> |  | [BaseSessionModel](../basesessionmodel#getter-root) |
 | <span id="getter-jbrowse">**jbrowse**</span><br><code>any</code> |  | [BaseSessionModel](../basesessionmodel#getter-jbrowse) |
