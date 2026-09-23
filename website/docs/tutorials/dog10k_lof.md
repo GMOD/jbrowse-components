@@ -130,8 +130,8 @@ attached to the rows afterwards:
 
 The display draws one row per sample, and the rows keep the Dog10K IDs, which
 mean nothing to a reader. Two mechanisms relabel them without touching the VCF:
-a `layout` array for named animals ([](/docs/tutorials/dog10k_svs)), or a
-`samplesTsvLocation` for a panel too large to write one entry each for
+the display's `rows` labels for named animals ([](/docs/tutorials/dog10k_svs)),
+or a `samplesTsvLocation` for a panel too large to write one entry each for
 ([Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection)).
 
 A SNV is one base wide however far you zoom out, so a whole-gene view of 490 of

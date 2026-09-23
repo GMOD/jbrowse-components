@@ -366,6 +366,29 @@ stay display props.
 `facet` in the display's config, the spelling earlier v5 documentation used for
 `rows`, fails the track's load with a message naming `rows: "source"`.
 
+## The multi-sample variant rows are config too
+
+The multi-sample variant displays keep their arrangement in `rows` as well, with
+no `field`, since their rows are the samples: `rows.domain` is the row order,
+`rows.labels` the relabels, `rows.tree` and `rows.treeProvenance` a clustering
+run's tree, and `rows.kept` the focus. In phased mode the names are haplotypes,
+`"<sample> HP<n>"`, and a sample's name stands for all of its haplotypes.
+`rowColor` is `field | { field, domain, range }`: the string is still the
+sample-metadata attribute that tints every row, and `domain`/`range` pair row
+names with the colours a reader set, which the attribute's palette beats while
+one is named.
+
+<!-- prettier-ignore -->
+| v4 | v5 display config |
+| --- | --- |
+| `layout` display prop, the rows in order with any label and color set on each | `rows.domain`, `rows.labels` and `rowColor.domain`/`range` |
+| `clusterTree`, `clusterProvenance` display props | `rows.tree`, `rows.treeProvenance` |
+| `subtreeFilter` display prop | `rows.kept` |
+| `domain` config slot | `rows.domain` |
+
+**None of it migrates**, and a session or config carrying the old spellings
+fails the load with a message naming `rows`.
+
 ## The wiggle color is one `color` object
 
 `color` on `LinearWiggleDisplay` is a CSS color string, or

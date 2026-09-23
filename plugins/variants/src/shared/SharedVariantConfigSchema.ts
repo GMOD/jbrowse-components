@@ -185,6 +185,14 @@ export default function sharedVariantConfigFactory() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
+      preProcessSnapshot: snap => {
+        if (snap.domain !== undefined) {
+          throw new Error(
+            'domain on a multi-sample variant display is rows: { "domain": [...] }, the row order beside the labels, tree and focus',
+          )
+        }
+        return snap
+      },
     },
   )
 }

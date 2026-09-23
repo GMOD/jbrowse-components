@@ -19,14 +19,12 @@ interface FocusRowsModel {
  * Focus the rows a legend group stands for — what clicking that swatch does on
  * the two displays whose key names rows rather than values.
  *
- * `rows` must be the list BEFORE the subtree filter, which is the whole reason
- * this is worth sharing: a second click on another group has to reach the rows
- * the first click hid, and it is also the granularity `filterRowsBySubtree`
- * matches on — variants' `editableSources` is haplotype-expanded in phased
- * mode, so those names matched nothing and the click drew zero rows. What stays
- * per display is only which rows one key row stands for, since each derives its
- * key differently (multi-wiggle from `group ?? label ?? name`, the variant
- * displays from the `colorBy` metadata column).
+ * `rows` must be the list BEFORE the focus, which is the whole reason this is
+ * worth sharing: a second click on another group has to reach the rows the
+ * first click hid. What stays per display is only which rows one key row stands
+ * for, since each derives its key differently (multi-wiggle from
+ * `group ?? label ?? name`, the variant displays from the `rowColor` metadata
+ * column).
  */
 export function focusRowGroup<S extends { name: string }>(
   model: FocusRowsModel,

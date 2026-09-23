@@ -128,11 +128,11 @@ is a 7.8 kb block.
 }
 ```
 
-The sample rows keep the Dog10K IDs. `layout` renames them for the sidebar and
-gives each group a swatch without touching the VCF. It is display **state**, the
-same thing the tree sidebar writes when you rearrange rows by hand, so it
-belongs on a session's track entry; a `layout` put in `displays` is ignored with
-no error:
+The sample rows keep the Dog10K IDs. The display's `rows` renames them for the
+sidebar, in the order its `domain` lists them, and `rowColor` gives each a
+swatch, pairing sample names with colours, without touching the VCF. Both are
+the settings the tree sidebar writes when you rearrange and recolour rows by
+hand, and a session's track entry carries them like any other:
 
 ```json session config=test_data/dog10k/config.json
 {
@@ -147,18 +147,14 @@ no error:
           {
             "trackId": "dog10k_nhej1_svs",
             "type": "LinearMultiSampleVariantDisplay",
-            "layout": [
-              {
-                "name": "COLL000001",
-                "label": "Collie 1",
-                "color": "#0072B2"
-              },
-              {
-                "name": "CLUPGR000001",
-                "label": "Wolf 1",
-                "color": "#E69F00"
-              }
-            ]
+            "rows": {
+              "domain": ["COLL000001", "CLUPGR000001"],
+              "labels": { "COLL000001": "Collie 1", "CLUPGR000001": "Wolf 1" }
+            },
+            "rowColor": {
+              "domain": ["COLL000001", "CLUPGR000001"],
+              "range": ["#0072B2", "#E69F00"]
+            }
           }
         ]
       }
@@ -311,10 +307,10 @@ every gray wolf labelled by country.
 }
 ```
 
-Too many rows for a `layout` entry each, so the labels come from a TSV: first
-column the sample name, every other column an attribute, and `colorBy` naming
-the one that paints the swatch. The _RNASE1_ track is the same config with the
-other slice's `uri`.
+Too many rows to label one by one, so the labels come from a TSV: first column
+the sample name, every other column an attribute, and `rowColor` naming the one
+that paints the swatch. The _RNASE1_ track is the same config with the other
+slice's `uri`.
 
 <Figure caption="Left: a 14.9 kb duplication over pancreatic amylase. Right: a 223 bp insertion in pancreatic ribonuclease. Same 86 animals in the same order in both, so a row reads straight across: the dogs carry the amylase duplication and the wolves the ribonuclease insertion." src="/img/dog10k-diet-genes.png" />
 

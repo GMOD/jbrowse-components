@@ -28,8 +28,10 @@ elsewhere.
   decode as MISSING to the anchored sort.
 - **`NaN` is the only missing marker.** A value-scale sentinel made samples
   cluster by missingness.
-- The `"<sampleName> HP<n>"` convention lives only in
-  `expandSourcesToHaplotypes`; `buildGenotypeMatrix.ts` alone picks a matrix.
+- The `"<sampleName> HP<n>"` convention lives in `getSources.ts` alone:
+  `expandSourcesToHaplotypes` writes it and `parseRowName` reads it back, a
+  current sample's own name winning. `buildGenotypeMatrix.ts` alone picks a
+  matrix.
 
 ## Cells
 
@@ -122,51 +124,57 @@ the anchored haplotype sort.
 - **Matrix mode is zoom-cache-strict** and fetches visible-only; regular is
   neither.
 
-## `layout` holds what the reader did; the channels derive
+## The arrangement is `rows` and `rowColor`, by row name
 
-**`layout` is only a drag, the arrangement dialog, "Sort rows by genotype here"
-and a clustering run.** Every config-declared channel resolves when the rows are
-read, in `sources`: the row `domain` seeds the adapter order, `layout` merges
-over that seed, phased mode expands to haplotypes, then `rowColor` tints and
-`facet` bands. So `resetRowArrangement` is the whole reset, and the mixin's
-plain `rowArrangementIsCustom` answers. Writing the derived arrangement into
-`layout` instead gave every recolor a way to drop a clustering run.
+**`rows` (`RowArrangement`, no field: the rows are the samples) holds the order,
+labels, tree, provenance and focus; `rowColor` holds the tints.** Both are
+config, written by a drag, the arrangement dialog, "Sort rows by genotype here"
+and a clustering run, and every product writes them as session deltas (ADR-157).
+Every other channel resolves when the rows are read.
 
-`getSources` appends a sample a `layout` omits rather than dropping it — spelled
-here because the phased case keys "already covered" on `sampleName`. Row-moving
-actions persist through `setRowOrder`, never `self.layout =`.
+**Names are at the mode's granularity** — a sample in allele-count mode, a
+haplotype in phased mode — and a row answers to its own name, then to its
+sample's, for an order, a label, a tint and the focus alike. So a config naming
+samples still arranges a phased track, and a mode switch resets the arrangement
+because it renames the rows. A dialog submit writes a label or tint only where
+it differs from the adapter's (`rowEditsOf`), and a run writes names beside its
+tree, re-appending the rows a focus hides after the clade.
 
-**The tint and the band go on downstream of everything written back to
-`layout`** — `editableSources` (the dialog's list, which submit persists) and
-`sourcesBase` (what a clustering run is handed, and `buildClusteredLayout`
-spreads into the layout) carry neither, or a session would store a channel as if
-the reader had picked it row by row.
+**Named stages, named readers** (`MultiSampleVariantBaseModel`): `sourcesBase`
+is the adapter's samples narrowed to `rows.kept`, the fetch key's input, so it
+reads no `sampleInfo`: a focus naming a haplotype keeps its sample there
+(`keptRowsOf`, through `parseRowName`). `editableSources` expands, orders,
+relabels and tints by pair (`arrangeRows`), with no focus, palette or band — the
+dialog's list and the sort's. `clusterableSources` narrows it to the focus, and
+is what both clustering paths send. `sources` adds the palette and the band.
 
-**An action computing a NEW order keeps the label and labelColor that only
-`layout` holds** — by sorting rows that already carry them (`editableSources`,
-as `sortByGenotype` does) or by merging a fresh order back with
-`applyLayoutOverrides` (`@jbrowse/tree-sidebar`, as clustering does through
-`buildClusteredLayout`). `applyLayoutOverrides` matches on `name`, so it cannot
-merge across granularities: in phased mode a fresh order is haplotypes and
-`layout` is sample-level, and nothing matches.
+**Phased rows are the ploidy `sampleInfo` reports plus any haplotype the order
+names.** Until the ploidy lands, the named haplotypes stand in for it, so an
+arranged track keeps its haplotype rows and its tree across the refetch a
+settings change triggers rather than folding back to samples.
 
 **The row tint is `labelColor`**, the channel tree-sidebar's `RowLabelsOverlay`
 and `SvgRowLabels` draw — the cells are colored by genotype, so a row has no
 `color` of its own to spend. `applyColorByPalette` writes it there, the group
-legend and the tooltip swatch read it there, and `getSources` folds a
+legend and the tooltip swatch read it there, and `arrangeRows` folds a
 `samplesTsv` `color` column onto it. Carrying the tint under `color` is what
 kept these displays on a label gutter of their own.
 
-**`rowColor` beats whatever color the row already carried**, `samplesTsv`
-included: a channel bound to a variable beats a per-row constant. It is also
-what keeps a session saved before the derivation looking identical — the palette
-is a pure function of the attribute, so recomputing it reproduces what that
-session wrote into `layout`, and "Color by… → Population" still moves on it.
+**`rowColor.field` beats whatever color the row already carried** — the
+`rowColor` pairs and a `samplesTsv` column: a channel bound to a variable beats
+a per-row constant, and the palette is a pure function of the attribute, so
+"Color by… → Population" still moves on it. `setRowColor` writes the field
+alone, and a reset returns the pairs, never the field.
 
 **The `facet` band yields while a cluster tree describes the rows**
 (`treeDescribesRows`), the mechanism `LinearMultiRowFeatureDisplay` uses for its
 row groups. That is what lets a clustering run leave the `facet` slot alone: a
 run that cleared it would erase a session spec's own `facet` on load.
+
+**A `layout`, `clusterTree`, `clusterProvenance` or `subtreeFilter` on the
+display snapshot, or a `domain` in its config, fails the load**, naming `rows`:
+MST drops an undeclared key in silence, and the track would otherwise open
+unarranged.
 
 ## Which display: the matrix is for genotype PATTERN, not spans
 

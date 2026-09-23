@@ -350,3 +350,16 @@ describe('maybeApplyFacet', () => {
     warn.mockRestore()
   })
 })
+
+// The row order moved into `rows`, and an undeclared slot is dropped in
+// silence, so a config still naming `domain` would open in file order.
+test('a domain slot on the display config fails the load, naming rows', () => {
+  const configSchema = sharedVariantConfigFactory()
+  expect(() =>
+    configSchema.create({
+      type: 'SharedVariantDisplay',
+      displayId: 'stale-domain',
+      domain: ['S1'],
+    }),
+  ).toThrow(/rows: \{ "domain"/)
+})

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A row display's arrangement (the row order, per-row labels, the cluster tree with its provenance and the clade focus) is its `rows` config object, `field | { field, domain, labels, tree, treeProvenance, kept }` from display-kit, which every product edits as a session delta, so undo, reset and a share link reach it and it survives unticking the track. Every arrangement writer flushes to the session at once (`persistConfigurationNow`), so a clustering run is one undo step, and Reset row order returns each member to what the config.json declares rather than to empty. The quantitative display moves first: `facet: 'source'` is `rows: 'source'`, a leftover `facet` in a display config fails the load, and `rowColor: { domain, range }` holds the colour a reader sets on a subtrack, painted on the row's identity channel for the mode. `TreeSidebarMixin` is the config-backed arrangement; the multi-row, multi-sample variant and MAF displays keep theirs in display state through `LayoutTreeSidebarMixin`, which answers the same API, until each moves. Supersedes ADR-143's `facet` as the quantitative display's layout. No migration"
+summary: "A row display's arrangement (the row order, per-row labels, the cluster tree with its provenance and the clade focus) is its `rows` config object, `field | { field, domain, labels, tree, treeProvenance, kept }` from display-kit, which every product edits as a session delta, so undo, reset and a share link reach it and it survives unticking the track. Every arrangement writer flushes to the session at once (`persistConfigurationNow`), so a clustering run is one undo step, and Reset row order returns each member to what the config.json declares rather than to empty. The quantitative display moves first: `facet: 'source'` is `rows: 'source'`, a leftover `facet` in a display config fails the load, and `rowColor: { domain, range }` holds the colour a reader sets on a subtrack, painted on the row's identity channel for the mode. `TreeSidebarMixin` is the config-backed arrangement. The multi-sample variant displays move second, onto the field-less `RowArrangement` their rows being the samples, with names at the rendering mode's granularity and `rowColor: field | { field, domain, range }`; the multi-row and MAF displays keep theirs in display state through `LayoutTreeSidebarMixin`, which answers the same API, until each moves. Supersedes ADR-143's `facet` as the quantitative display's layout. No migration"
 ---
 
 # ADR-157: A row display's arrangement is the `rows` config object, written as session deltas
@@ -8,10 +8,10 @@ summary: "A row display's arrangement (the row order, per-row labels, the cluste
 ## Status
 
 Accepted (2026-09-23). Step 3 of
-[one-row-model-for-displays-that-stack-by-a-key](../ideas/ready/one-row-model-for-displays-that-stack-by-a-key.md)
-for its first display: the quantitative display moves, and the multi-sample
-variant, multi-row and MAF displays follow one at a time, each gated on a zero
-image diff. Supersedes
+[one-row-model-for-displays-that-stack-by-a-key](../ideas/ready/one-row-model-for-displays-that-stack-by-a-key.md):
+the quantitative display moves first and the multi-sample variant displays
+second, and the multi-row and MAF displays follow one at a time, each gated on
+a zero image diff. Supersedes
 [ADR-143](adr-143-one-quantitative-display-and-facet-is-the-layout.md)'s
 "`facet` is the layout" and its `facet.domain` row order; the rest of ADR-143
 stands. Builds on `130e41de08`, which made every product edit a track's config
@@ -90,8 +90,8 @@ and the menus read either without knowing which. The config-backed mixin adds
 `rowLabels` / `setRowLabels` and two hooks, `rowStylingIsCustom` and
 `resetRowStyling`, for styling a display keeps in an object of its own, and
 leaves `applyRowEdits` to the display, since it writes those colours. The
-quantitative display declares `rows` and composes `TreeSidebarMixin`; the
-multi-row feature display, `MultiSampleVariantBaseModel` and MAF spread
+quantitative display and `MultiSampleVariantBaseModel` declare `rows` and
+compose `TreeSidebarMixin`; the multi-row feature display and MAF spread
 `rowDomainConfigSchemaFields` and compose `LayoutTreeSidebarMixin`.
 
 **Every arrangement writer flushes to the session.** `BaseTrackModel` gains
@@ -135,6 +135,23 @@ writes `group`, an adapter attribute with no config home. The
 `color: { field: 'source' }` overlay palette, the legend and the dealer are
 unchanged; converging row colour is the design's step 4.
 
+**The multi-sample variant displays move second.** Their rows are the samples,
+so `rows` there is display-kit's `RowArrangement`, the five members with no
+field and no shorthand, which `Rows` extends with `field`; `TreeSidebarMixin`'s
+host is typed on the intrinsic one and reads either. The names are at the
+rendering mode's granularity — a sample in allele-count mode, `"<sample> HP<n>"`
+in phased mode, where a sample's name stands for its haplotypes — and
+`parseRowName`, beside `expandSourcesToHaplotypes`, reads a haplotype name back
+to its sample, so a focus naming haplotypes still asks the fetch for samples
+without reading `sampleInfo`. Phased rows are the ploidy `sampleInfo` reports
+plus any haplotype the order names, which stand in for the ploidy until it
+lands. `rowColor` is `field | { field, domain, range }` (`VariantRowColor`):
+the field is the samplesTsv attribute whose palette tints every row, as the
+string was, and the pairs hold the dialog's per-row tints, which the palette
+still beats. A `layout`, `clusterTree`, `clusterProvenance` or `subtreeFilter`
+on a variant display snapshot, or a `domain` in its config, fails the load
+naming `rows`.
+
 **Edit as JSON speaks `rows`.** `ChannelSpec` takes
 `rows: field | { field, domain }` beside `facet`, `color` and `filter`, and
 `ChannelSpecDialog` refuses `facet` on a display with no facet and `rows` on
@@ -171,13 +188,20 @@ one-shot trigger that clears itself.
   its head (`formatSettingValue` in `SettingsChangesTable.tsx`), so a
   cohort's `rows.domain`, its `rows.labels` and its `rows.tree` each take one
   line rather than printing every sample.
+- A variant arrangement is by row name, so a clustering run after a hand
+  reorder rotates its tree towards that reorder, as on the quantitative display,
+  where it rotated only towards the declared `domain` before. A focus naming no
+  current row shows every row, and in phased mode a legend focus names the
+  haplotypes drawn; before, a group focused and then clustered in phased mode
+  drew nothing, since the focus named samples and the rows haplotypes.
 - gccontent composes this model and extends this schema, so its displays carry
   `rows` and `rowColor` where they carried `facet`, as dead there as `facet` was
   (ADR-143).
 - No migration (v5 breaks compat). `facet` in a `LinearWiggleDisplay` config
   fails the load. `layout`, `clusterTree`, `clusterProvenance` and `subtreeFilter` on a
   wiggle display snapshot name nothing the display declares, so a session
-  carrying them opens unarranged.
+  carrying them opens unarranged; on a multi-sample variant display they fail
+  the load, and so does a `domain` in its config, each naming `rows`.
 
 ## Rejected alternatives
 

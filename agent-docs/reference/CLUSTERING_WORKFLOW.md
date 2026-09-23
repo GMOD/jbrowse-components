@@ -11,9 +11,10 @@ Applies to `plugins/wiggle` (the quantitative display) and `plugins/variants`
 (multi-sample variant displays). Both plugins share the same structural pattern:
 a dialog triggers an RPC call that builds a feature matrix, runs hierarchical
 clustering via `@gmod/hclust`, and writes the result through the row
-arrangement's `setRowOrder`, which drives dendrogram rendering. Wiggle's
-`TreeSidebarMixin` stores it in the display's `rows` config object; the variant
-displays' `LayoutTreeSidebarMixin` stores it in display state.
+arrangement's `setRowOrder`, which drives dendrogram rendering. Both compose
+`TreeSidebarMixin`, which stores it in the display's `rows` config object: the
+field-keyed `Rows` on the quantitative display, the intrinsic `RowArrangement`
+on the variant displays, whose rows are the samples.
 
 ## Data flow
 
@@ -32,15 +33,12 @@ Worker
   3. toNewick() → Newick string
   Return { order: number[], tree: string }
 Dialog callback
-  buildClusteredLayout(baseSources, existingLayout, order)
+  wiggle:   buildClusteredLayout(baseSources, existingLayout, order)
+  variants: applyClusterOrder({ rows, arranged, order, tree, domain })
   model.setRowOrder(rows, { tree, provenance })     ← both plugins
-Arrangement written
-  wiggle   (TreeSidebarMixin: display config, flushed to the session)
-    rows.domain  → row order
-    rows.tree    → Newick string, rows.treeProvenance beside it
-  variants (LayoutTreeSidebarMixin: display state)
-    layout[]     → row order
-    clusterTree  → Newick string, clusterProvenance beside it
+Arrangement written (TreeSidebarMixin: display config, flushed to the session)
+  rows.domain  → row order, by name
+  rows.tree    → Newick string, rows.treeProvenance beside it
 Re-render
   hierarchy view  = clusterLayout(parsedTree, rowHeight, treeAreaWidth, showBranchLength)
   renderSvg.tsx   → <SvgTreePath hierarchy={hierarchy} /> + reordered rows
@@ -118,21 +116,24 @@ phase 3 slices carry none, which is why the measurements behind
 HP0`, `HG001 HP1`). Values are a per-haplotype alt indicator in `Float32Array`,
 0 or 1, with `NaN` for a no-call or an unphased genotype, imputed the same way.
 
-The dialog commits a finished run through one `applyOrder(order)` callback,
-which calls `applyClusterOrder` (`plugins/variants/src/shared/`) and hands the
-result to `model.setRowOrder`. Haplotype expansion is inside that helper — it
-calls `expandSourcesToHaplotypes` itself off `renderingMode` / `sampleInfo` —
-rather than at the call site, so the phased and unphased paths commit
-identically and the dialog holds no mode-specific branch.
+Both clustering paths cluster `clusterableSources`, the rows the display
+draws before its tint and band: haplotype rows in phased mode, already
+expanded, which the worker passes through. The dialog commits a finished run
+through one `applyOrder(order)` callback, which calls `applyClusterOrder`
+(`plugins/variants/src/shared/`) and hands the result, row names, to
+`model.setRowOrder`; the auto path does the same with its tree. So the phased
+and unphased paths commit identically and neither holds a mode-specific
+branch.
 
 ---
 
 ## The two arrangement mixins (`packages/tree-sidebar`)
 
-Both plugins reach their arrangement through one API, over two stores until
-every row display is on the `rows` config object (ADR-157):
+Every row display reaches its arrangement through one API, over two stores
+until the last one is on the `rows` config object (ADR-157). Wiggle and the
+variant displays are; the multi-row feature and MAF displays are not yet:
 
-| Member | `TreeSidebarMixin` (wiggle), display config | `LayoutTreeSidebarMixin` (variants), display state |
+| Member | `TreeSidebarMixin` (wiggle, variants), display config | `LayoutTreeSidebarMixin` (multi-row, MAF), display state |
 |---|---|---|
 | Row order | `rows.domain` (`string[]`) | `layout` (`Source[]`) |
 | Tree | `rows.tree` (Newick) | `clusterTree` (Newick) |
@@ -164,11 +165,11 @@ enforce that it does:
 - **`setRowOrder` → `rowOrderWillDropTree`**, for the writes that go through it. It also
   backs the color dialog's pre-submit warning, which has to answer before the
   write happens. Every action that moves rows must route through `setRowOrder`,
-  never a direct `self.layout =`.
+  never a direct write to the order.
 - **`computeClusterHierarchy`**, which takes the *drawn rows* and returns
   `undefined` unless the tree's leaves are exactly those names in that order.
-  This is the backstop for the ways rows move with no layout write at all — a
-  `sources` decoration downstream of `layout` (multi-row features' `rowGroups`),
+  This is the backstop for the ways rows move with no order write at all — a
+  `sources` decoration downstream of the order (multi-row features' `rowGroups`),
   a discovered row set growing as regions load, variants' phased expansion
   switching on when ploidy arrives.
 
@@ -182,13 +183,13 @@ purpose. Only a change to what rows are *called* invalidates it — variants'
 ## Why the tree no longer waits
 
 Variants used to hold the dendrogram in a `pendingClusterTree` volatile and
-apply it in `setCellData`, because `layout` was an RPC input: a clustering run
+apply it in `setCellData`, because the row order was an RPC input: a clustering run
 refetched, and until the new cells arrived the rows on screen were still in the
 old order while the tree already showed the new one.
 
 **Row order stopped being a fetch input**, so that window closed — the worker
 names its rows and `rowRemap` places them onto screen rows, re-derived from
-`sources` the moment `layout` changes (FETCH_KEYS.md, "Row order is not a
+`sources` the moment the order changes (FETCH_KEYS.md, "Row order is not a
 fetch input"). Deferring anyway then meant the tree waited on a refetch that no
 longer happens, and a `runClustering: true` display drew no dendrogram at all.
 Layout and tree now land together, immediately, on both plugins.
@@ -335,8 +336,8 @@ the message, drops the staging copy and checks every malloc.
 | `plugins/variants/src/VariantRPC/getPhasedGenotypeMatrix.ts` | Phased haplotype matrix |
 | `plugins/variants/src/shared/components/MultiSampleVariantClusterDialog.tsx` | Dialog (Auto + Manual) |
 | `plugins/variants/src/shared/MultiSampleVariantBaseModel.ts` | Base model; `hierarchy` |
-| `plugins/variants/src/shared/applyClusterOrder.ts` | Turns an order into the next `layout`; expands haplotypes in phased mode |
-| `packages/tree-sidebar/src/TreeSidebarMixin.ts` | The arrangement over the `rows` config object (wiggle) |
-| `packages/tree-sidebar/src/LayoutTreeSidebarMixin.ts` | The arrangement in display state (variants, multi-row, MAF) |
+| `plugins/variants/src/shared/applyClusterOrder.ts` | Turns an order over the clustered rows into the next `rows.domain`, the focused-out rows after the clade |
+| `packages/tree-sidebar/src/TreeSidebarMixin.ts` | The arrangement over the `rows` config object (wiggle, variants) |
+| `packages/tree-sidebar/src/LayoutTreeSidebarMixin.ts` | The arrangement in display state (multi-row, MAF) |
 | `packages/tree-sidebar/src/treeSidebarBase.ts` | What both share: toggles, launch specs, volatiles |
 | `packages/tree-sidebar/src/clusterUtils.ts` | `buildClusteredLayout`, `buildTree`, `applySubtreeFilter` |

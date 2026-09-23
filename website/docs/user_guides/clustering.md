@@ -110,9 +110,22 @@ describes. `rows` replaces the display's setting whole, so name `field` too:
 }
 ```
 
-Add `kept` to open on one clade. On the multi-sample variant, multi-row feature
-and MAF displays, set `layout` and `clusterTree` (and optionally
-`subtreeFilter`) in the display's `displaySnapshot` instead.
+Add `kept` to open on one clade. On a multi-sample variant track the rows are
+the samples, so its [`rows`](/docs/config/rowarrangement) takes the same members
+with no `field`. In phased mode the names are haplotypes, `"<sample> HP<n>"`:
+
+```json
+{
+  "trackId": "my_vcf",
+  "rows": {
+    "domain": ["HG002", "HG001", "HG003"],
+    "tree": "((HG002,HG001),HG003);"
+  }
+}
+```
+
+On the multi-row feature and MAF displays, set `layout` and `clusterTree` (and
+optionally `subtreeFilter`) in the display's `displaySnapshot` instead.
 
 The per-display field references are
 [](/docs/models/multisamplevariantbasemodel) and

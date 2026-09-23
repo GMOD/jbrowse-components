@@ -98,10 +98,17 @@ puts the locus in the menu.
 
 ## Two mixins until the last display moves
 
-`TreeSidebarMixin` keeps a display's arrangement in its `rows` config object;
+`TreeSidebarMixin` keeps a display's arrangement in its `rows` config object —
+the quantitative display's and `MultiSampleVariantBaseModel`'s;
 `LayoutTreeSidebarMixin` keeps it in display state (`layout`, `clusterTree`,
-`clusterProvenance`, `subtreeFilter`) for the multi-row feature display,
-`MultiSampleVariantBaseModel` and MAF until each moves (ADR-157).
+`clusterProvenance`, `subtreeFilter`) for the multi-row feature display and MAF
+until each moves (ADR-157).
+
+**`rows` comes in two schemas, and the mixin reads either.** display-kit's
+`RowArrangement` is the five members alone, for a display whose rows are
+intrinsic (a sample, a species), and `Rows` extends it with `field` for one
+whose rows are a field's values. The host is typed on `RowArrangement`, so the
+mixin never reaches for `field`, which stays the display's own.
 `treeSidebarBase` is the half the store does not change — the toggles, the
 launch specs, the hover and canvas volatiles — and both mixins put one API over
 it: `rowDomain`, `rowTree`, `rowTreeProvenance`, `rowFocus`,
@@ -192,9 +199,9 @@ shared one read the other name.
 `treeSidebarConfigSchemaFields` is the matching slot set (`showTree` /
 `showBranchLength` / `showRowLabels` / `treeAreaWidth`), taking only the
 per-display descriptions, so a display cannot ship three of the four. The
-declared row order is not in it. The wiggle display declares the `rows` object
-and composes `TreeSidebarMixin`, which reads the order as `rows.domain`; the
-multi-row feature, multi-sample variant and MAF displays spread
+declared row order is not in it. The wiggle and multi-sample variant displays
+declare a `rows` object and compose `TreeSidebarMixin`, which reads the order as
+`rows.domain`; the multi-row feature and MAF displays spread
 `rowDomainConfigSchemaFields` for a `domain` slot and compose
 `LayoutTreeSidebarMixin`, which reads it as `rowDomain` and throws where the
 slot is missing. Either way the getter is `rowDomain`, never `domain`, which is

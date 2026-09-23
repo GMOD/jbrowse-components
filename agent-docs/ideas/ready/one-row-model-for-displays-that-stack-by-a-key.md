@@ -129,11 +129,11 @@ before it is asked.
    follows section order~~ (`2e734b0c2c`).
 2. ~~Every product edits track config as session deltas~~ (`130e41de08`).
 3. **The row model, one display at a time**, gated on a zero image diff:
-   ~~wiggle~~ (this landing, ADR-157), then the variant displays (the hard case:
-   two-point expansion, bands, tint), then multi-row, then MAF. `rows` replaces
+   ~~wiggle~~ (ADR-157), ~~the variant displays~~ (the hard case: two-point
+   expansion, bands, tint; ADR-157), then multi-row, then MAF. `rows` replaces
    `layout`, `clusterTree`, `clusterProvenance` and `subtreeFilter`;
-   `facet.hidden` replaces the volatile hide-set. The changes table's array
-   summary is still owed, and the variant displays need it. About 7–11 days.
+   `facet.hidden` replaces the volatile hide-set. ~~The changes table's array
+   summary~~ (`86cadb9f94`). About 7–11 days.
 4. **Colour**, as above.
 5. **A tree per band**, ComplexHeatmap's `row_split` with `cluster_rows`, which
    retires "a band yields to a tree".

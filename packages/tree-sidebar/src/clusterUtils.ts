@@ -473,8 +473,7 @@ export function orderRowsByDomain<T extends { name: string }>(
  * states — so rows naming the same thing two ways match nothing and every
  * override is dropped, silently, which reads exactly like a layout that covers
  * none of the rows. A caller holding rows at one granularity and a layout at
- * another wants the merge its own layer already does: variants' "Sort by
- * genotype" sorts `editableSources`, which arrive merged.
+ * another wants the merge its own layer already does.
  */
 export function applyLayoutOverrides<S extends { name: string }>(
   ordered: S[],

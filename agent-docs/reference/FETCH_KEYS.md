@@ -322,9 +322,10 @@ computed from user-controlled inputs only; any part that needs fetch-result data
 is kept in a separate view used only for rendering or passed directly to the
 server.
 
-In the variant case, `rpcProps().sampleFilter` calls `getSources` with
-`renderingMode: 'alleleCount'` internally (through `sourcesBase`) so haplotype
-expansion — which needs `sampleInfo` — is never triggered. The client's `sources`
+In the variant case, `rpcProps().sampleFilter` reads `sourcesBase`, the
+adapter's samples narrowed to the focus before any haplotype expansion — which
+needs `sampleInfo` — so a focus naming haplotypes asks for their samples
+(`parseRowName`, the inverse of the haplotype naming). The client's `sources`
 view still reads `sampleInfo` for rendering, safe because it is not in
 `rpcProps()`. The worker expands to haplotype rows itself, after computing
 `sampleInfo` from the features.
