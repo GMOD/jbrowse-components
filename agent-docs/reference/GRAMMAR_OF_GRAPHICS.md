@@ -62,10 +62,10 @@ one encoder — reaches three consumers.** The mark display (`plugins/marks`) is
 where a user gets all seven stages from JSON over any feature adapter, and
 `AlignmentsTrack`, `VariantTrack` and `FeatureTrack` may all carry it.
 Manhattan and wiggle's array-less fallback are the other two callers of
-`encodeFeatures`. Every format-typed display — canvas's feature glyphs, the
-alignments pileup, variants' genotype grid, wiggle's main path, Hi-C — still
-hand-wires features into its arrays, and two of those refusals are measured
-and stand: canvas's packer at 3.11x the encoder's cost
+`encodeFeatures`. Canvas's feature glyphs, the alignments pileup and variants'
+genotype grid still hand-wire features into their arrays; wiggle's main path and
+Hi-C build no `Feature` and pack the parser's typed arrays directly. Two of
+those refusals are measured and stand: canvas's packer at 3.11x the encoder's cost
 ([ADR-114](../architecture-decision-records/adr-114-canvas-keeps-its-hand-written-packer.md))
 and the pileup's layout at 4.23x
 ([ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)),

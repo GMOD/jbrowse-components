@@ -26,10 +26,12 @@ is", and
 [ADR-127](adr-127-line-stays-wiggles.md)
 refused a `line` shape over 16 retained bytes a feature rather than over speed.
 
-Wiggle's main path never builds a `Feature`. `RawFeatureArrays {starts, ends,
-scores}` goes straight into interleaved instance records, `EncodedChannels` is
-already a struct of arrays, and `bar`'s 20-byte instance record is wiggle's fill
-record word for word. So the substitution worth pricing is the encoder reading
+Wiggle's main path never builds a `Feature`. `processFeaturesFromArrays` copies
+`RawFeatureArrays {starts, ends, scores}` into interleaved positions and a score
+array, and the main thread lays those out per source into instance records.
+`EncodedChannels` is already a struct of arrays, and `bar`'s 20-byte instance
+record is wiggle's fill record in four of its five words: wiggle's row is an
+`f32` and `bar`'s a `u32`, so the two agree byte for byte only on row 0. So the substitution worth pricing is the encoder reading
 typed columns: an `encodeColumns` emitting the same `EncodedChannels`, the
 transform steps as index-array kernels, and one reusable row cursor implementing
 `Feature` so a `jexl:` channel evaluates without a `SimpleFeature`.
@@ -124,16 +126,19 @@ one fired, and it is the one about retained bytes:
 
 ## Consequences for ADR-114, ADR-118 and ADR-127
 
-**The `features` arm is a `SimpleFeature` per row, and no display runs that
-path.** A BAM, CRAM or VCF adapter hands the encoder its own feature objects
-and the encoder reads `feature.get(field)` off them; the BigWig adapter hands
-it a two-field `BigWigFeature` cursor over the array view it already holds
-(`plugins/wiggle/src/BigWigAdapter/BigWigAdapter.ts`), which is the row cursor
-the spike reinvents. So the
+**The `features` arm builds a `SimpleFeature` per row from typed arrays, and no
+display runs that path.** A BAM, CRAM or VCF adapter hands the encoder its own
+feature objects, a BED adapter a `SimpleFeature` it built from the parsed line,
+and the encoder reads `feature.get(field)` off them. The BigWig adapter hands it
+one `BigWigFeature` per row (`plugins/wiggle/src/BigWigAdapter/BigWigAdapter.ts`),
+@gmod/bbi's two-field object over the array view it already holds: lazy, but an
+allocation per row rather than the one moving cursor the spike builds. So the
 5.09-9.99x<!--m:column-encode.featuresVsWiggle.range--> in the encode table prices building
-a `SimpleFeature` per row, and the shipping mark display over a BigWig is
-unmeasured; a `BigWigFeature` arm comes before this figure is quoted anywhere
-else.
+a `SimpleFeature` per row. The shipping mark display over a BigWig is measured
+at screen scale, 1.25-2.67x wiggle
+([MARK_ENCODING.md](../reference/MARK_ENCODING.md) §"The mark display over a
+BigWig, measured"), and unmeasured at this bench's 500,000 to 14 million rows; a
+`BigWigFeature` arm comes before this figure is quoted anywhere else.
 
 **ADR-114's number was the `Feature[]` and the lane mismatch, and its decision
 was neither.** The `SimpleFeature` encode runs
