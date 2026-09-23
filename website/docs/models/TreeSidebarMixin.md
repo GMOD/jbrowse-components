@@ -11,8 +11,8 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 Every arrangement write reaches the session at once rather than after the
 track's 400 ms save, so a clustering run is one undo step and undoable the
 moment its tree appears. "Reset row order" returns each member to what the
-config.json declares, or to nothing on a track the session owns, and never
-touches `rows.field`.
+config.json declares, or what a track the session owns was added with, and
+never touches `rows.field`.
 
 ## Getters
 
