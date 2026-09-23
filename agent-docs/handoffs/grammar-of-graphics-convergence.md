@@ -155,21 +155,14 @@ badges and scroll bucketing belong to that display.
 ### 4. One row scale
 
 This workstream is
-[wiggle-and-the-tree-sidebar-converge-on-one-row-grammar](../ideas/waiting-on-a-call/wiggle-and-the-tree-sidebar-converge-on-one-row-grammar.md),
-with an answer to its open question. That doc asks whether the row vocabulary
-is a `rowGuides` object beside `facet` or slots `facet` grows. Rule 2 answers
-neither: the row axis is a band scale, the way ADR-142 made y one value-scale
-object. Its members are already in the tree under five names — order
-(`rowDomain`, `layout`), filter (`subtreeFilter`), sort (`sortRowsBy`),
-bandwidth (`effectiveRowHeight`) — and its range is each row's label and
-colour, which
-[per-row-styling-has-no-config-tier](../ideas/ready/per-row-styling-has-no-config-tier.md)
-finds has no config home. The body, the dendrogram, the row labels and any
-metadata strip then read one object, as ComplexHeatmap's panels and
-react-msaview's `rowPanels` do. The variant displays' row colours and the
-multi-row display's `sampleColorMap` are that range. Wiggle proves it first, as
-the idea doc says, because it is the one display on both the `facet` and the
-sidebar seams.
+[one-row-model-for-displays-that-stack-by-a-key](../ideas/ready/one-row-model-for-displays-that-stack-by-a-key.md),
+agreed and reviewed three times; its first two steps landed. Rule 2 answers it
+with two objects rather than one: `rows`, the row axis the dendrogram and the
+row labels are guides on (order, labels, the tree, the clade focus), and
+`facet`, the labelled bands over it. Row colour is a second scale on the colour
+object, not the row axis's range. Wiggle goes first because its `facet` is its
+rows; the variant displays already take `facet` beside the sidebar and are the
+hard case.
 
 ### 5. The copies
 
@@ -203,7 +196,8 @@ ADR-135.
 
 ## Order
 
-Ramps first, since they move data and touch no hot loop. Then shared y, one
-mixin and a real tutorial step it removes. Then the text layer, then the row
-scale, which is the largest. The copies run beside any of them, one bench each.
-`y2` waits on the call.
+The row model (§4) is under way, ahead of the rest: it converges code that
+exists, which rule 2 ranks first. Then ramps, since they move data and touch no
+hot loop; then shared y, one mixin and a real tutorial step it removes; then the
+text layer, whose on-screen medium is still open. The copies run beside any of
+them, one bench each. `y2` waits on the call.
