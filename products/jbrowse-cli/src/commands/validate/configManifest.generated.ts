@@ -3095,8 +3095,37 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
-          "name": "partitionField",
-          "type": "string"
+          "name": "rows",
+          "type": "RowsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "labels",
+              "type": "Map<string, string>"
+            },
+            {
+              "name": "tree",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "treeProvenance",
+              "type": "(frozen | undefined)"
+            },
+            {
+              "name": "kept",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "field",
+              "type": "string"
+            }
+          ],
+          "shorthand": "field"
         },
         {
           "name": "clusterField",
@@ -3111,8 +3140,19 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | (CssColor | undefined))"
         },
         {
-          "name": "sampleColorMap",
-          "type": "frozen"
+          "name": "rowColor",
+          "type": "MultiRowRowColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "range",
+              "type": "CssColorEntry[]"
+            }
+          ]
         },
         {
           "name": "rowHeight",
@@ -3169,10 +3209,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "treeAreaWidth",
           "type": "number"
-        },
-        {
-          "name": "domain",
-          "type": "string[]"
         }
       ],
       "stateModelProps": [
@@ -3181,10 +3217,6 @@ export const configManifest: ConfigManifest = {
         "runClustering",
         "clusterRegion",
         "sortRowsBy",
-        "layout",
-        "clusterTree",
-        "clusterProvenance",
-        "subtreeFilter",
         "configuration",
         "hiddenCategories"
       ]

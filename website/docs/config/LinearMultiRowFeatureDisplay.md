@@ -18,8 +18,8 @@ chr1    2000000  5500000  seg2  HG00096
 chr1    0        3500000  seg3  HG00097
 ```
 
-Paint one row per `sample`, coloring each row from `sampleColorMap` and
-fixing HG00097 above HG00096 regardless of file order:
+Paint one row per `sample`, coloring each row from `rowColor` and fixing
+HG00097 above HG00096 regardless of file order:
 
 ```js
 {
@@ -35,19 +35,21 @@ fixing HG00097 above HG00096 regardless of file order:
     {
       type: 'LinearMultiRowFeatureDisplay',
       displayId: 'ancestry_painting-LinearMultiRowFeatureDisplay',
-      partitionField: 'sample',
-      sampleColorMap: { HG00096: '#4e79a7', HG00097: '#f28e2b' },
-      domain: ['HG00097', 'HG00096'],
+      rows: { field: 'sample', domain: ['HG00097', 'HG00096'] },
+      rowColor: {
+        domain: ['HG00096', 'HG00097'],
+        range: ['#4e79a7', '#f28e2b'],
+      },
     },
   ],
 }
 ```
 
-Omit `sampleColorMap` entirely and each row is auto-assigned a distinct
-palette color — unless the features carry an `itemRgb`, which is honored as
-the per-feature color with no configuration at all. To color per feature off
+Omit `rowColor` entirely and each row is auto-assigned a distinct palette
+color — unless the features carry an `itemRgb`, which is honored as the
+per-feature color with no configuration at all. To color per feature off
 some other attribute, set the `color` slot to a `jexl:` expression reading it.
-Omit `domain` and rows keep the order samples first appear in the file.
+Omit `rows.domain` and the rows sort by value.
 
 _See the **Config slots** section below for all available configuration fields._
 
@@ -78,13 +80,13 @@ These slots go on a display entry: `"displays": [{ "type": "LinearMultiRowFeatur
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-partitionfield">**partitionField**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | Feature attribute whose value assigns each feature to a row; empty (the default) picks one off the data, and a `jexl:` expression derives one.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ partitionField: "jexl:split(split(feature.name,'#')[1],'/')[0]" }</code></pre></dialog></span> |
+| <span id="slot-rows">**rows**</span><br>[Rows](../rows) | One row per value of a feature attribute, and the arrangement a reader gives the rows. `field` names the attribute, or a `jexl:` expression derives one; empty, the default, picks one off the data (`repClass` where the features carry it, else `name`). `domain` is the row order: the values it lists lead, and the rest sort, digits by magnitude, with the row of features carrying no value last. `labels`, `tree`, `treeProvenance` and `kept` are what the arrangement dialog, a clustering run and a focus write, each as a session edit to this object.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ rows: 'sample' }</code></pre><pre><code>{ rows: { field: 'sample', domain: ['HG00097', 'HG00096'] } }</code></pre><pre><code>{ rows: "jexl:split(split(feature.name,'#')[1],'/')[0]" }</code></pre></dialog></span> |
 | <span id="slot-clusterfield">**clusterField**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>'auto'</code> | Feature attribute whose value each row is clustered on; `auto` (the default) takes the attribute the `color` slot reads, else `name`, and an empty string clusters on presence alone — which bins each row covers. A `jexl:` expression derives the value.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ clusterField: 'state' }</code></pre></dialog></span> |
-| <span id="slot-lengthfield">**lengthField**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | Feature attribute holding a signed bp length change against the reference, which turns on indel glyphs over the blocks; empty (the default) leaves the display a plain block painter.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><p>A pangenome-graph path BED, where `delta` is each haplotype's bp gained or lost at that bubble:</p><pre><code>{ partitionField: 'strain', lengthField: 'delta' }</code></pre></dialog></span> |
+| <span id="slot-lengthfield">**lengthField**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | Feature attribute holding a signed bp length change against the reference, which turns on indel glyphs over the blocks; empty (the default) leaves the display a plain block painter.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><p>A pangenome-graph path BED, where `delta` is each haplotype's bp gained or lost at that bubble:</p><pre><code>{ rows: 'strain', lengthField: 'delta' }</code></pre></dialog></span> |
 | <span id="slot-color">**color**</span><br>`maybeColor` | Per-block fill: a CSS color, or a `jexl:` expression for per-feature coloring (e.g. ``jexl:`rgb(${get(feature,'ancestryRgb')})` ``).<br>_callback args:_ `feature` |
-| <span id="slot-samplecolormap">**sampleColorMap**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | Optional map of `partitionField` value to color, e.g. `{ HG00096: '#4e79a7' }`, overriding the `color` slot where it matches. |
+| <span id="slot-rowcolor">**rowColor**</span><br>[MultiRowRowColor](../multirowrowcolor) | A colour per row, by value, as `domain`/`range` pairs, painting the row's blocks over each feature's own colour. The arrangement dialog writes it.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ rowColor: { domain: ['HG00096'], range: ['#4e79a7'] } }</code></pre></dialog></span> |
 | <span id="slot-rowproportion">**rowProportion**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | Fraction of the row height each block fills (1 = full, leaving no gap between rows).<br>_advanced_ |
-| <span id="slot-colorrowlabels">**colorRowLabels**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Tint each sidebar label box with the color that row's blocks are painted in; `rowGroups` and a dialog-set color both win over it, and per-feature color mode leaves no one row color to tint with. |
+| <span id="slot-colorrowlabels">**colorRowLabels**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Tint each sidebar label box with the color that row's blocks are painted in; a `rowGroups` swatch wins over it, and per-feature color mode leaves no one row color to tint with. |
 | <span id="slot-showlegend">**showLegend**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Show the categorical color key, which appears only in per-feature color mode — elsewhere the sidebar labels are already the key. |
 | <span id="slot-legend">**legend**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | Explicit color key, for a category encoded only in the block color and so unavailable to the auto-derived legend this overrides.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>legend: [&#10;&#160;&#160;{ label: 'Maternal', color: 'rgb(227,26,28)' },&#10;&#160;&#160;{ label: 'Paternal', color: 'rgb(31,120,180)' },&#10;&#160;&#160;{ label: 'Unknown', color: 'rgb(170,170,170)' },&#10;]</code></pre></dialog></span> |
 | <span id="slot-colordomain">**colorDomain**</span><br>`stringArray` = <code>[]</code> | The order the colour key lists its categories in: the labels listed here first, the rest sorted. The blocks take their colour per feature, from `itemRgb` or the `color` jexl, so this orders the key alone and paints nothing differently.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>colorDomain: ['Pathogenic', 'Likely pathogenic', 'Benign']</code></pre></dialog></span> |
@@ -98,7 +100,6 @@ These slots go on a display entry: `"displays": [{ "type": "LinearMultiRowFeatur
 | <span id="slot-showbranchlength">**showBranchLength**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram) |
 | <span id="slot-showrowlabels">**showRowLabels**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the row name over the left of each row |
 | <span id="slot-treeareawidth">**treeAreaWidth**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>80</code> | width in px of the tree sidebar, which a drag on its edge also writes |
-| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | optional row order; listed partition values first, the rest sorted; left off, every value the data holds, sorted |
 | <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">3 slots</span> |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | default height for the track |
 | <span id="slot-mouseover">**mouseover**</span><br>[`string`](/docs/config_guides/slot_types#string) = <span class="cell-more"><button type="button" class="cell-more-trigger"><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(featu…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>'jexl:get(feature,'_mouseOver')&#124;&#124;get(feature,'name')&#124;&#124;get(feature,'function')&#124;&#124;get(feature,'id')'</code></pre></dialog></span> | text to display when the cursor hovers over a feature<br>_callback args:_ `feature` |

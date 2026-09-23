@@ -13,6 +13,10 @@ Auto-generated config schema for the current JBrowse release — see the [config
 ```
 
 ```js
+{ type: 'LinearMultiRowFeatureDisplay', rows: 'sample' }
+```
+
+```js
 {
   type: 'LinearWiggleDisplay',
   rows: { field: 'source', domain: ['tumor', 'normal'], labels: { tumor: 'Tumor' } },
@@ -37,7 +41,7 @@ These slots go on a display entry: `"displays": [{ "type": "Rows", ... }]`, or i
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The field each value of which takes a row of its own. Writing `rows: "source"` lands here; empty draws no rows. |
+| <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The field each value of which takes a row of its own. Writing `rows: "source"` lands here. Empty is the display's default: no rows on the quantitative display, and a field picked off the data on the multi-row feature display. |
 | <span class="slot-group">Inherited from [RowArrangement](../rowarrangement)</span> | <span class="slot-group-count">5 slots</span> |
 | <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | The row order: the rows listed lead, in this order, and the rest keep the order they arrived in. A clustering run, the arrangement dialog and "Sort rows here" all write it, and a run rotates its dendrogram towards it rather than discarding it. |
 | <span id="slot-labels">**labels**</span><br>`stringMap` = <code>{}</code> | A label drawn beside a row in place of its name, by name. |
