@@ -41,7 +41,7 @@ touches `rows.field`.
 | Member | Description |
 | --- | --- |
 | <span id="action-resetrowstyling">**resetRowStyling**</span><br><code>() =&gt; void</code> | Overridable hook: return the row styling the display keeps of its own to what the config declares, with the arrangement. Nothing by default. |
-| <span id="action-setroworder">**setRowOrder**</span><br><code>(rows: readonly S[], run?: ClusterRun &#124; undefined) =&gt; void</code> | Arrange the rows in `rows`' order. A clustering run passes its result, and the tree and its provenance land with the order; any other reorder that moves a row drops the tree, which no longer describes it. |
+| <span id="action-setroworder">**setRowOrder**</span><br><code>(rows: readonly S[], run?: ClusterRun &#124; undefined) =&gt; void</code> | Arrange the rows in `rows`' order, ahead of any name the current order carries that `rows` does not. A clustering run passes its result, and the tree and its provenance land with the order; any other reorder that moves a row drops the tree, which no longer describes it. |
 | <span id="action-setrowlabels">**setRowLabels**</span><br><code>(labels: Readonly&lt;Record&lt;string, string&gt;&gt;) =&gt; void</code> | The labels drawn in place of row names, whole: a row the map does not name shows the name it arrived with. |
 | <span id="action-setrowfocus">**setRowFocus**</span><br><code>(names?: readonly string[] &#124; undefined) =&gt; void</code> | Narrow the display to `names`, or show every row again. |
 | <span id="action-resetrowarrangement">**resetRowArrangement**</span><br><code>() =&gt; void</code> | Return every arrangement member — order, labels, tree, provenance and focus — to what the config declares, leaving `rows.field`. |
