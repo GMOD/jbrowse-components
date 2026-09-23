@@ -561,6 +561,9 @@ describe('the dependency set is the contract', () => {
     expect(dependencies(display)).toEqual(
       [
         'DisplayTestSession.assemblyManager',
+        // the track's config reference asks the session for a working copy
+        // before resolving by id, and a session keeping none registers the probe
+        'DisplayTestSession.getEditableTrackConfig?',
         'FeatureTrack.configuration',
         'FeatureTrack.minimized',
         'FeatureTrackConfigurationSchema.assemblyNames',
