@@ -1,0 +1,1129 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`a cluster run lands its tree with provenance, and a reset restores the supplied one 1`] = `
+{
+  "editableSources": [
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowTree": "(mm10,(hg38,panTro4));",
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": true,
+  "treeLeaves": [
+    "mm10",
+    "hg38",
+    "panTro4",
+  ],
+}
+`;
+
+exports[`a cluster run lands its tree with provenance, and a reset restores the supplied one 2`] = `
+{
+  "regions": [
+    {
+      "assemblyName": "volvox",
+      "end": 1000,
+      "refName": "ctgA",
+      "start": 0,
+    },
+  ],
+}
+`;
+
+exports[`a cluster run lands its tree with provenance, and a reset restores the supplied one 3`] = `
+{
+  "editableSources": [
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowTree": "((hg38,panTro4),mm10);",
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": true,
+  "treeLeaves": [
+    "hg38",
+    "panTro4",
+    "mm10",
+  ],
+}
+`;
+
+exports[`a cluster run rotates towards the declared order 1`] = `
+{
+  "editableSources": [
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowTree": "((panTro4,hg38),mm10);",
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": true,
+  "treeLeaves": [
+    "panTro4",
+    "hg38",
+    "mm10",
+  ],
+}
+`;
+
+exports[`a declared order leads with no tree 1`] = `
+{
+  "editableSources": [
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowTree": undefined,
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": false,
+  "treeLeaves": undefined,
+}
+`;
+
+exports[`a declared order rotates a supplied tree 1`] = `
+{
+  "editableSources": [
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowTree": "((hg38,panTro4),mm10);",
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": true,
+  "treeLeaves": [
+    "mm10",
+    "hg38",
+    "panTro4",
+  ],
+}
+`;
+
+exports[`a declared order rotates a supplied tree 2`] = `
+{
+  "editableSources": [
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowTree": "((hg38,panTro4),mm10);",
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": true,
+  "treeLeaves": [
+    "panTro4",
+    "hg38",
+    "mm10",
+  ],
+}
+`;
+
+exports[`a dialog recolour over an adapter colour, in place 1`] = `
+{
+  "editableSources": [
+    {
+      "label": "Human",
+      "labelColor": "#00ff00",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowTree": undefined,
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "Human",
+      "labelColor": "#00ff00",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": false,
+  "treeLeaves": undefined,
+}
+`;
+
+exports[`a discovered row joins after a reorder 1`] = `
+{
+  "editableSources": [
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Rat",
+      "labelColor": undefined,
+      "name": "rn6",
+    },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowTree": undefined,
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Rat",
+      "labelColor": undefined,
+      "name": "rn6",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": false,
+  "treeLeaves": undefined,
+}
+`;
+
+exports[`a focus narrows the rows and the fetch key 1`] = `
+{
+  "editableSources": [
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowTree": "((hg38,panTro4),mm10);",
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": [
+      "hg38",
+      "panTro4",
+    ],
+  },
+  "sources": [
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+  ],
+  "subtreeFilterSet": [
+    "hg38",
+    "panTro4",
+  ],
+  "treeDrawn": true,
+  "treeLeaves": [
+    "hg38",
+    "panTro4",
+  ],
+}
+`;
+
+exports[`a focus narrows the rows and the fetch key 2`] = `
+{
+  "editableSources": [
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowTree": "((hg38,panTro4),mm10);",
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": [
+      "hg38",
+      "mm10",
+    ],
+  },
+  "sources": [
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "subtreeFilterSet": [
+    "hg38",
+    "mm10",
+  ],
+  "treeDrawn": true,
+  "treeLeaves": [
+    "hg38",
+    "mm10",
+  ],
+}
+`;
+
+exports[`a focus narrows the rows and the fetch key 3`] = `
+{
+  "editableSources": [
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowTree": "((hg38,panTro4),mm10);",
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": true,
+  "treeLeaves": [
+    "hg38",
+    "panTro4",
+    "mm10",
+  ],
+}
+`;
+
+exports[`a focused cluster run keeps the hidden row after the clade 1`] = `
+{
+  "editableSources": [
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowTree": "(panTro4,hg38);",
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": [
+      "hg38",
+      "panTro4",
+    ],
+  },
+  "sources": [
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+  ],
+  "subtreeFilterSet": [
+    "hg38",
+    "panTro4",
+  ],
+  "treeDrawn": true,
+  "treeLeaves": [
+    "panTro4",
+    "hg38",
+  ],
+}
+`;
+
+exports[`a focused cluster run keeps the hidden row after the clade 2`] = `
+{
+  "editableSources": [
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowTree": "(panTro4,hg38);",
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": false,
+  "treeLeaves": [
+    "panTro4",
+    "hg38",
+  ],
+}
+`;
+
+exports[`a reorder drops the supplied tree and a reset restores it 1`] = `
+{
+  "editableSources": [
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowTree": undefined,
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": false,
+  "treeLeaves": undefined,
+}
+`;
+
+exports[`a reorder drops the supplied tree and a reset restores it 2`] = `
+{
+  "editableSources": [
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowTree": "((hg38,panTro4),mm10);",
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": true,
+  "treeLeaves": [
+    "mm10",
+    "hg38",
+    "panTro4",
+  ],
+}
+`;
+
+exports[`a supplied guide tree leads the rows 1`] = `
+{
+  "editableSources": [
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowTree": "((hg38,panTro4),mm10);",
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": true,
+  "treeLeaves": [
+    "hg38",
+    "panTro4",
+    "mm10",
+  ],
+}
+`;
+
+exports[`adapter labels and colours are the rows own 1`] = `
+{
+  "editableSources": [
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowTree": undefined,
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": false,
+  "treeLeaves": undefined,
+}
+`;
+
+exports[`dialog edits reorder, relabel and recolour, and a reset returns 1`] = `
+{
+  "editableSources": [
+    {
+      "label": "House mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": "#123456",
+      "name": "panTro4",
+    },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowTree": undefined,
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "House mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": "#123456",
+      "name": "panTro4",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": false,
+  "treeLeaves": undefined,
+}
+`;
+
+exports[`dialog edits reorder, relabel and recolour, and a reset returns 2`] = `
+{
+  "editableSources": [
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowTree": "((hg38,panTro4),mm10);",
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": true,
+  "treeLeaves": [
+    "hg38",
+    "panTro4",
+    "mm10",
+  ],
+}
+`;
+
+exports[`hiding the reference row prunes it from the rows and the tree 1`] = `
+{
+  "editableSources": [
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowTree": "((hg38,panTro4),mm10);",
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": true,
+  "treeLeaves": [
+    "hg38",
+    "panTro4",
+    "mm10",
+  ],
+}
+`;
+
+exports[`hiding the reference row prunes it from the rows and the tree 2`] = `
+{
+  "editableSources": [
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowTree": "((hg38,panTro4),mm10);",
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": [
+      "hg38",
+      "panTro4",
+    ],
+  },
+  "sources": [
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+  ],
+  "subtreeFilterSet": [
+    "hg38",
+    "panTro4",
+  ],
+  "treeDrawn": true,
+  "treeLeaves": [
+    "hg38",
+    "panTro4",
+  ],
+}
+`;
+
+exports[`sort at a column orders the rows by base and drops the supplied tree 1`] = `
+{
+  "editableSources": [
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowTree": undefined,
+  "rpcProps": {
+    "annotationDataActive": false,
+    "subtreeFilter": undefined,
+  },
+  "sources": [
+    {
+      "label": "Chimp",
+      "labelColor": undefined,
+      "name": "panTro4",
+    },
+    {
+      "label": "Mouse",
+      "labelColor": "#0000aa",
+      "name": "mm10",
+    },
+    {
+      "label": "Human",
+      "labelColor": "#aa0000",
+      "name": "hg38",
+    },
+  ],
+  "subtreeFilterSet": undefined,
+  "treeDrawn": false,
+  "treeLeaves": undefined,
+}
+`;
