@@ -1,13 +1,13 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
+import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 
 import { CONSERVATION_MODE_VALUES } from './conservationModes.ts'
 import { DEFAULTS } from './displayDefaults.ts'
-import { mafRowColorSchema } from './mafRowColorConfigSchema.ts'
 import { refuseRetiredConfig } from './retiredSettings.ts'
 import { ROW_IDENTITY_MODE_VALUES } from './rowIdentityModes.ts'
 
@@ -169,7 +169,7 @@ export default function configSchemaF() {
        * { rowColor: { domain: ['mm10'], range: ['#f28e2b'] } }
        * ```
        */
-      rowColor: mafRowColorSchema,
+      rowColor: rowColorConfigSchema,
       /**
        * #slot
        * Show the color key for the active row rendering — the codon-change

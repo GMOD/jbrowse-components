@@ -14,7 +14,8 @@ import {
  * writes it, and each display paints it on the channel that carries a row's
  * identity: the quantitative display's plot, or the tint beside its label
  * while a score gradient paints; the multi-row feature display's blocks; the
- * multi-sample variant displays' label tint. `VariantRowColor` is this plus
+ * multi-sample variant displays' label tint; the MAF display's label tint,
+ * over the adapter's `samples[].color`. `VariantRowColor` is this plus
  * `field`.
  *
  * #example

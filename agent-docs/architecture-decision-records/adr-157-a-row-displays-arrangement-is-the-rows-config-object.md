@@ -191,9 +191,9 @@ parse rotates it towards `rows.domain` because it carries no provenance. The
 fetch key is the sorted `rows.kept`, read from config alone; the worker resolves
 a focus naming none of the species the adapter lists to every species, as
 `keptRows` does for drawing, so the key reads no fetch result.
-`rowColor: { domain, range }` (`MafRowColor`) holds the label tint a reader
-sets, over the adapter's `samples[].color`, and the arrangement dialog's colour
-column edits that tint, where it had edited a `color` no renderer read. A
+`rowColor: { domain, range }` (`RowColor`) holds the label tint a reader sets,
+over the adapter's `samples[].color`, and the arrangement dialog's colour column
+edits that tint, where it had edited a `color` no renderer read. A
 `domain` in its config or in a MAF track's `displayDefaults`, and a `layout`,
 `clusterTree`, `clusterProvenance` or `subtreeFilter` on its display snapshot,
 fail the load naming `rows`.
