@@ -2,6 +2,7 @@ import {
   isBlobLocation,
   isFileHandleLocation,
   isLocalPathLocation,
+  mergeTrackConfig,
 } from '@jbrowse/core/util'
 
 // A blob, a localPath and a file handle all live in the sender's browser or
@@ -27,9 +28,23 @@ function entries(snap: Record<string, unknown>, key: string) {
   return Array.isArray(value) ? (value as Record<string, unknown>[]) : []
 }
 
+function sessionTracksWithEdits(snap: Record<string, unknown>) {
+  const deltas = (snap.trackConfigDeltas ?? {}) as Record<
+    string,
+    Record<string, unknown> | undefined
+  >
+  return entries(snap, 'sessionTracks').map(entry => {
+    const delta = deltas[entry.trackId as string]
+    return delta ? mergeTrackConfig(entry, delta) : entry
+  })
+}
+
 export function findLocalFileNames(snap: Record<string, unknown>) {
-  return ['sessionTracks', 'sessionAssemblies', 'temporaryAssemblies']
-    .flatMap(key => entries(snap, key))
+  return [
+    ...sessionTracksWithEdits(snap),
+    ...entries(snap, 'sessionAssemblies'),
+    ...entries(snap, 'temporaryAssemblies'),
+  ]
     .filter(entry => hasLocalFile(entry))
     .map(entry =>
       typeof entry.name === 'string'
