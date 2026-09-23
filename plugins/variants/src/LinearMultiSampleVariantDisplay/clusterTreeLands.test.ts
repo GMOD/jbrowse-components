@@ -30,7 +30,7 @@ async function cluster() {
 }
 
 // The regression: the tree used to be stashed as `pendingClusterTree` and only
-// promoted in `setCellData`, from back when `layout` was an RPC input and a
+// promoted in `setCellData`, from back when row order was an RPC input and a
 // clustering run therefore refetched. Row order is not a fetch input any more —
 // the worker names its rows and `rowRemap` places them — so nothing refetches
 // after a cluster, the promotion never fired, and a display whose session asked
@@ -39,7 +39,7 @@ async function cluster() {
 test('a clustering run leaves a drawable dendrogram with no further fetch', async () => {
   const display = await cluster()
 
-  expect(display.clusterTree).toBe(RPC_RESULT.tree)
+  expect(display.rowTree).toBe(RPC_RESULT.tree)
   expect(display.sources.map(s => s.name)).toEqual(['S2', 'S0', 'S1'])
   // positions, i.e. computeClusterHierarchy agrees the tree names these rows
   expect(display.hierarchy).toBeDefined()

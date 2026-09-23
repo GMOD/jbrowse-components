@@ -20,7 +20,7 @@ test('focuses the rows of a colorBy group by its value', () => {
   const d = display()
   d.focusGroup('AFR')
   expect(d.sources.map(s => s.name)).toEqual(['S0', 'S2'])
-  expect(d.subtreeFilter).toEqual(['S0', 'S2'])
+  expect(d.rowFocus).toEqual(['S0', 'S2'])
 })
 
 test('the unlabeled group is the rows with no value', () => {
@@ -36,14 +36,13 @@ test('a legend click on the group scale focuses it, on the genotype scale nothin
   const group = d.legendSpec.sections!.find(s => s.id === 'group')!
   expect(group.items.find(i => i.label === UNLABELED_GROUP)!.value).toBe('')
   d.focusLegendEntry('genotypes', 'ref')
-  expect(d.subtreeFilter).toBeUndefined()
+  expect(d.rowFocus).toBeUndefined()
   d.focusLegendEntry('group', 'AFR')
-  expect(d.subtreeFilter).toEqual(['S0', 'S2'])
+  expect(d.rowFocus).toEqual(['S0', 'S2'])
 })
 
-// The filter names sample-level rows, which is what `sourcesBase` is still
-// spelling here: the haplotype expansion happens downstream of it, so a filter
-// naming "S0 HP0" matched nothing and the click drew an empty display.
+// The focus names the rows drawn, haplotypes here, and the fetch asks for their
+// samples.
 test('a legend focus in phased mode shows the group as haplotype rows', () => {
   const d = display()
   d.setPhasedMode('phased')
@@ -57,8 +56,9 @@ test('a legend focus in phased mode shows the group as haplotype rows', () => {
     rowNames: [],
   } as unknown as Parameters<typeof d.setCellData>[0])
   d.focusGroup('AFR')
-  expect(d.subtreeFilter).toEqual(['S0', 'S2'])
-  // The filter narrows `sampleFilter`, so the cells are refetched for the two
+  expect(d.rowFocus).toEqual(['S0 HP0', 'S0 HP1', 'S2 HP0', 'S2 HP1'])
+  expect(d.sampleFilter).toEqual(['S0', 'S2'])
+  // The focus narrows `sampleFilter`, so the cells are refetched for the two
   // samples that are left and the haplotype rows come back with them
   expect(d.sources.map(s => s.name)).toEqual(['S0', 'S2'])
   d.setCellData({
@@ -73,8 +73,8 @@ test('a legend focus in phased mode shows the group as haplotype rows', () => {
   ])
 })
 
-// A phased clustering run puts haplotype rows in `layout`, and then those ARE
-// the names the filter matches — the tree-node path writes them too.
+// After a phased clustering run the order names haplotypes too, and the
+// tree-node path writes the same names.
 test('a legend focus after a phased clustering run names the haplotype rows', () => {
   const d = display()
   d.setPhasedMode('phased')
@@ -94,7 +94,7 @@ test('a legend focus after a phased clustering run names the haplotype rows', ()
     ]),
   )
   d.focusGroup('AFR')
-  expect(d.subtreeFilter).toEqual(['S0 HP0', 'S0 HP1', 'S2 HP0', 'S2 HP1'])
+  expect(d.rowFocus).toEqual(['S0 HP0', 'S0 HP1', 'S2 HP0', 'S2 HP1'])
   expect(d.sources.map(s => s.name)).toEqual([
     'S0 HP0',
     'S0 HP1',

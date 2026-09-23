@@ -1,87 +1,45 @@
-import {
-  buildClusteredLayout,
-  rotateClusterRun,
-  validateClusterOrder,
-} from '@jbrowse/tree-sidebar'
+import { rotateClusterRun, validateClusterOrder } from '@jbrowse/tree-sidebar'
 
-import { expandSourcesToHaplotypes, resolveSampleName } from './getSources.ts'
-
-import type { ProcessedSource, SampleInfo, Source } from './types.ts'
-
-// Turn a cluster order into the display's next `layout`, and the run's
-// dendrogram into the one to store beside it. One home for the four steps that
-// have to agree, because the auto ("Run clustering") and manual (R script
-// paste) paths both take them and would otherwise drift:
+// Turn a cluster order over `rows` into the display's next row order, and the
+// run's dendrogram into the one to store beside it. One home for the steps
+// the auto ("Run clustering") and manual (R script paste) paths both take:
 //
-// - rotate the run's tree towards the config `domain` and re-read the order off
-//   it, so a domain-seeded track composes with the run instead of losing its
-//   leading rows to it. The paste path passes no tree and rotates nothing.
-// - expand to haplotype rows in phased mode, so the order lines up with the
-//   per-haplotype matrix the worker built (sources already carrying `HP` pass
-//   through, so a re-cluster of an already-expanded set is idempotent)
-// - merge against the existing layout, so colors and labels survive
-// - re-append the rows a subtree filter is hiding. They weren't clustered and
-//   aren't in the tree, but `layout` is the persisted record of every row's
-//   position and color — dropping them here erases them for good once the
-//   filter is cleared. Matching them is by `name` for a haplotype row and by
-//   SAMPLE for a bare sample row, which is the same "covered" rule `getSources`
-//   states: a phased run replaces one sample row with its haplotypes, and a
-//   name-only test reads "NA07056" as uncovered by "NA07056 HP0" and appends the
-//   sample back on top of its own haplotypes. That layout then expands a second
-//   time on the way to `sources` — 150 samples came back as 450 layout rows and
-//   600 drawn rows against a 300-leaf tree, so `treeDescribesRows` refused the
-//   dendrogram and half the rows had no cells. A bare sample row is the only
-//   thing superseded; a hidden HAPLOTYPE row is kept even when its sibling
-//   clustered, since the filter may be hiding exactly one of a pair.
+// - rotate the run's tree towards `rows.domain` and re-read the order off it,
+//   so a declared order composes with the run instead of losing its leading
+//   rows to it. The paste path passes no tree and rotates nothing.
+// - re-append, after the clade, every row the focus hides, in the order
+//   `arranged` gives them, so clearing the focus finds them where they were.
 //
-// Validation lives here rather than at the paste box because the rows an order
-// must cover are the *expanded* ones, which only this function knows: in phased
-// mode a 2x-ploidy haplotype set is what the matrix (and so the order) was built
-// over. An order from the RPC always covers it; a hand-pasted one is where a
-// short or duplicated list would otherwise silently drop or double rows, and
-// where `matrixRowNames` catches a row set that moved during the trip to R —
-// a sample filter, or phasing switching on as `sampleInfo` arrives.
+// `rows` are the rows clustered — at the mode's granularity, the haplotypes in
+// phased mode, which the matrix was built over — so validation lives here: a
+// hand-pasted order is where a short or duplicated list would otherwise drop or
+// double rows, and where `matrixRowNames` catches a row set that moved during
+// the trip to R, a focus or phasing switching on as `sampleInfo` arrives.
 export function applyClusterOrder({
-  sourcesBase,
-  layout,
+  rows,
+  arranged,
   order,
   tree,
   domain = [],
-  renderingMode,
-  sampleInfo,
   matrixRowNames,
 }: {
-  sourcesBase: ProcessedSource[]
-  layout: Source[]
+  rows: readonly { name: string }[]
+  arranged: readonly { name: string }[]
   order: number[]
   tree?: string
   domain?: readonly string[]
-  renderingMode: string
-  sampleInfo?: Record<string, SampleInfo>
   matrixRowNames?: string[]
-}): { layout: Source[]; tree?: string } {
-  const baseSources =
-    renderingMode === 'phased' && sampleInfo
-      ? expandSourcesToHaplotypes({ sources: sourcesBase, sampleInfo })
-      : sourcesBase
-  const rotated = rotateClusterRun({
-    rows: baseSources,
-    order,
-    tree,
-    domain,
-  })
-  validateClusterOrder(rotated.order, baseSources, matrixRowNames)
-  const clustered = buildClusteredLayout(baseSources, layout, rotated.order)
-  const clusteredNames = new Set(clustered.map(s => s.name))
-  const clusteredSamples = new Set(clustered.map(resolveSampleName))
+}): { order: { name: string }[]; tree?: string } {
+  const rotated = rotateClusterRun({ rows, order, tree, domain })
+  validateClusterOrder(rotated.order, rows, matrixRowNames)
+  const clustered = rotated.order.map(idx => ({ name: rows[idx]!.name }))
+  const names = new Set(clustered.map(row => row.name))
   return {
-    layout: [
+    order: [
       ...clustered,
-      ...layout.filter(
-        s =>
-          !clusteredNames.has(s.name) &&
-          !(s.HP === undefined && clusteredSamples.has(resolveSampleName(s))),
-      ),
+      ...arranged
+        .filter(row => !names.has(row.name))
+        .map(row => ({ name: row.name })),
     ],
     tree: rotated.tree,
   }

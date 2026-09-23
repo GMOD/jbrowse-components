@@ -38,7 +38,9 @@ describe('multi-sample variant colorBy', () => {
     model.setRowColor('population')
 
     expect(model.rowColor).toBe('population')
-    expect(readConfObject(model.configuration, 'rowColor')).toBe('population')
+    expect(readConfObject(model.configuration, ['rowColor', 'field'])).toBe(
+      'population',
+    )
     // same population => same color, different => different
     const byName = Object.fromEntries(
       model.sources.map(s => [s.name, s.labelColor]),
@@ -74,8 +76,8 @@ describe('multi-sample variant colorBy', () => {
   })
 
   // While a channel is bound to a variable it beats a per-row constant — the
-  // samplesTsv `color` column here, and equally a color the arrangement dialog
-  // wrote or a palette an older session persisted into `layout`.
+  // samplesTsv `color` column here, and equally a colour the arrangement
+  // dialog wrote into `rowColor`.
   it('wins over a samplesTsv color column, and hands it back when cleared', () => {
     const model = makeModel()
     model.setSources(sources.map(s => ({ ...s, color: 'rebeccapurple' })))
@@ -90,12 +92,13 @@ describe('multi-sample variant colorBy', () => {
     )
   })
 
-  it('writes no layout at all', () => {
+  it('writes no arrangement at all', () => {
     const model = makeModel()
     model.setSources(sources)
     model.setRowColor('population')
 
-    expect(model.layout).toHaveLength(0)
+    expect(model.rowDomain).toEqual([])
+    expect(model.rowArrangementIsCustom).toBe(false)
   })
 
   // The scale ranks values by how many rows carry them, so resolving it over

@@ -50,9 +50,9 @@ test('picking an attribute bands the rows and ticks itself', () => {
 
   expect(d.facet?.field).toBe('population')
   // No domain, so the bands sort: AFR before EUR, whatever their sizes. The
-  // band is resolved on the read, so nothing lands in `layout`.
+  // band is resolved on the read, so nothing lands in `rows`.
   expect(d.sources.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
-  expect(d.layout).toHaveLength(0)
+  expect(d.rowDomain).toEqual([])
   const next = facetSubMenu(d)[1]!
   expect('checked' in next && next.checked).toBe(true)
 })

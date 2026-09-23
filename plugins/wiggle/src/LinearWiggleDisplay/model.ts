@@ -21,6 +21,7 @@ import { colorSpecOf } from '@jbrowse/display-kit/channelSpec'
 import {
   colorMembersOf,
   colorScaleChoicesOf,
+  pairedColorsOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { fetchAllRegions } from '@jbrowse/display-kit/fetchEachRegion'
 import { rowsSettingOf } from '@jbrowse/display-kit/rowsConfigSchema'
@@ -74,7 +75,6 @@ import {
   makeResolutionSubMenu,
   makeWiggleScoreSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
-import { rowColorsOf } from '../shared/wiggleRowColorConfigSchema.ts'
 import { WIGGLE_RENDERINGS } from '../util.ts'
 import { CHANNEL_SPEC_EXAMPLES } from './channelSpecExamples.ts'
 import { buildLegendItems } from './legendItems.ts'
@@ -283,7 +283,7 @@ export default function stateModelFactory(
        * The colour a reader set on each named subtrack, off `rowColor`.
        */
       get rowColors(): ReadonlyMap<string, string> {
-        return rowColorsOf({
+        return pairedColorsOf({
           domain: getConf(self, ['rowColor', 'domain']),
           range: getConf(self, ['rowColor', 'range']),
         })
@@ -314,7 +314,7 @@ export default function stateModelFactory(
       get rowStylingIsCustom(): boolean {
         return !compareStructural(
           Object.fromEntries(self.rowColors),
-          Object.fromEntries(rowColorsOf(self.baseRowColor)),
+          Object.fromEntries(pairedColorsOf(self.baseRowColor)),
         )
       },
     }))

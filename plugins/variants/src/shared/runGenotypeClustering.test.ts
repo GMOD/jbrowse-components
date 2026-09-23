@@ -18,7 +18,7 @@ const regions = [
 ]
 
 // What a run records about itself, so a dendrogram can say which locus and
-// which site filters produced it. Asserted alongside the layout and tree
+// which site filters produced it. Asserted alongside the order and tree
 // because it has to be written in the same action as the tree — provenance left
 // over from a previous run would caption this one with the wrong region.
 const withMode = (mode: string) => [
@@ -32,16 +32,19 @@ const PROVENANCE = {
   settings: withMode('alleleCount'),
 }
 
+const THREE = [
+  { name: 'sampleA', sampleName: 'sampleA' },
+  { name: 'sampleB', sampleName: 'sampleB' },
+  { name: 'sampleC', sampleName: 'sampleC' },
+]
+
 function makeModel(overrides: Partial<ReducedModel> = {}): ReducedModel {
   return {
-    layout: [],
     minorAlleleFrequencyFilter: 0,
     maxMissingnessFilter: 1,
-    sourcesBase: [
-      { name: 'sampleA', sampleName: 'sampleA' },
-      { name: 'sampleB', sampleName: 'sampleB' },
-      { name: 'sampleC', sampleName: 'sampleC' },
-    ],
+    sourcesBase: THREE,
+    clusterableSources: THREE,
+    editableSources: THREE,
     adapterConfig,
     renderingMode: 'alleleCount',
     rowDomain: [],
@@ -80,24 +83,20 @@ describe('runGenotypeClustering', () => {
       'MultiSampleVariantClusterGenotypeMatrix',
       expect.objectContaining({
         regions,
-        sources: model.sourcesBase,
+        sources: model.clusterableSources,
         minorAlleleFrequencyFilter: 0,
         maxMissingnessFilter: 1,
         renderingMode: 'alleleCount',
       }),
     )
     expect(model.setRowOrder).toHaveBeenCalledWith(
-      [
-        { name: 'sampleC', sampleName: 'sampleC' },
-        { name: 'sampleA', sampleName: 'sampleA' },
-        { name: 'sampleB', sampleName: 'sampleB' },
-      ],
+      [{ name: 'sampleC' }, { name: 'sampleA' }, { name: 'sampleB' }],
       { tree: '(a,b,c);', provenance: PROVENANCE },
     )
   })
 
   // A run on a domain-seeded track composes with the seed: the dendrogram turns
-  // towards the declared order and the layout follows its leaves, so the tree
+  // towards the declared order and the order follows its leaves, so the tree
   // still describes the rows. Placing each named sample outright instead would
   // read sampleB, sampleC, sampleA and leave the dendrogram describing nobody.
   it('rotates the run towards the config domain', async () => {
@@ -116,10 +115,10 @@ describe('runGenotypeClustering', () => {
       statusCallback: jest.fn(),
     })
 
-    const [layout, run] = jest.mocked(model.setRowOrder).mock.calls[0]!
+    const [order, run] = jest.mocked(model.setRowOrder).mock.calls[0]!
     const tree = run?.tree
-    expect(layout.map(s => s.name)).toEqual(['sampleB', 'sampleA', 'sampleC'])
-    expect(treeDescribesRows(parseClusterTree(tree!), layout)).toBe(true)
+    expect(order.map(s => s.name)).toEqual(['sampleB', 'sampleA', 'sampleC'])
+    expect(treeDescribesRows(parseClusterTree(tree!), order)).toBe(true)
   })
 
   it('passes through the display filter values', async () => {
@@ -169,12 +168,16 @@ describe('runGenotypeClustering', () => {
     expect(model.setRowOrder).not.toHaveBeenCalled()
   })
 
-  it('expands sources into per-haplotype rows before laying out, in phased mode', async () => {
+  // Phased mode clusters the haplotype rows the display draws, so the order
+  // indexes those and lands as their names.
+  it('orders the haplotype rows in phased mode', async () => {
+    const haplotypes = ['sampleA', 'sampleB'].flatMap(sampleName => [
+      { name: `${sampleName} HP0`, sampleName, HP: 0 },
+      { name: `${sampleName} HP1`, sampleName, HP: 1 },
+    ])
     const model = makeModel({
-      sourcesBase: [
-        { name: 'sampleA', sampleName: 'sampleA' },
-        { name: 'sampleB', sampleName: 'sampleB' },
-      ],
+      clusterableSources: haplotypes,
+      editableSources: haplotypes,
       renderingMode: 'phased',
       sampleInfo: {
         sampleA: { isPhased: true, maxPloidy: 2 },
@@ -197,10 +200,10 @@ describe('runGenotypeClustering', () => {
 
     expect(model.setRowOrder).toHaveBeenCalledWith(
       [
-        { name: 'sampleB HP1', sampleName: 'sampleB', HP: 1 },
-        { name: 'sampleB HP0', sampleName: 'sampleB', HP: 0 },
-        { name: 'sampleA HP1', sampleName: 'sampleA', HP: 1 },
-        { name: 'sampleA HP0', sampleName: 'sampleA', HP: 0 },
+        { name: 'sampleB HP1' },
+        { name: 'sampleB HP0' },
+        { name: 'sampleA HP1' },
+        { name: 'sampleA HP0' },
       ],
       {
         tree: '(...);',
@@ -211,21 +214,13 @@ describe('runGenotypeClustering', () => {
     )
   })
 
-  it('clusters the visible rows and keeps the hidden ones in the layout', async () => {
-    // What a subtree filter leaves: sourcesBase is the filtered set, while
-    // layout still records every row. The hidden row isn't clustered — it isn't
-    // in the tree — but dropping it from layout would erase its position and
-    // color for good once the filter is cleared.
+  it('clusters the visible rows and keeps the hidden ones in the order', async () => {
+    // What a focus leaves: the clustered rows are the focused set, while the
+    // order still records every row. The hidden row isn't clustered — it isn't
+    // in the tree — but dropping it from the order would move it to the end
+    // once the focus is cleared.
     const model = makeModel({
-      sourcesBase: [
-        { name: 'sampleA', sampleName: 'sampleA' },
-        { name: 'sampleB', sampleName: 'sampleB' },
-      ],
-      layout: [
-        { name: 'sampleA' },
-        { name: 'sampleB' },
-        { name: 'sampleC', color: 'red' },
-      ],
+      clusterableSources: THREE.slice(0, 2),
     })
     const rpcManager = makeRpcManager(async () => ({
       order: [1, 0],
@@ -244,14 +239,10 @@ describe('runGenotypeClustering', () => {
     expect(rpcManager.call).toHaveBeenCalledWith(
       'session-1',
       'MultiSampleVariantClusterGenotypeMatrix',
-      expect.objectContaining({ sources: model.sourcesBase }),
+      expect.objectContaining({ sources: model.clusterableSources }),
     )
     expect(model.setRowOrder).toHaveBeenCalledWith(
-      [
-        { name: 'sampleB', sampleName: 'sampleB' },
-        { name: 'sampleA', sampleName: 'sampleA' },
-        { name: 'sampleC', color: 'red' },
-      ],
+      [{ name: 'sampleB' }, { name: 'sampleA' }, { name: 'sampleC' }],
       { tree: '(a,b);', provenance: PROVENANCE },
     )
   })

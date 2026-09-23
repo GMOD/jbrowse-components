@@ -37,21 +37,3 @@ export const wiggleRowColorSchema = ConfigurationSchema(
     preProcessSnapshot: snap => normalizeChannel(snap, 'rowColor'),
   },
 )
-
-/** The colour `rowColor` sets on each named row. */
-export function rowColorsOf({
-  domain,
-  range,
-}: {
-  domain: readonly string[]
-  range: readonly string[]
-}): ReadonlyMap<string, string> {
-  const colors = new Map<string, string>()
-  domain.forEach((name, i) => {
-    const color = range[i]
-    if (color !== undefined) {
-      colors.set(name, color)
-    }
-  })
-  return colors
-}

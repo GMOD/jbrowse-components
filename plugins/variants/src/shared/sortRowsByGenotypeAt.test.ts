@@ -61,7 +61,7 @@ test('anchors the genotype sort on the record covering the column', () => {
 test('leaves the rows alone at a column no record covers', () => {
   const display = displayWithCells()
   display.sortRowsByGenotypeAt('ctgA', 600)
-  expect(display.layout).toEqual([])
+  expect(display.rowDomain).toEqual([])
 })
 
 // The shared gate only knows a region covers the column; the record it needs is

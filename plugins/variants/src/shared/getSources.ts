@@ -15,29 +15,50 @@ export function resolveSampleName(source: Source) {
 // ploidy fallback of their own.
 export type HaplotypeSource = ProcessedSource & { HP: number }
 
+const HAPLOTYPE_ROW_NAME = /^(.*) HP(\d+)$/
+
+function haplotypeRow(
+  source: Source,
+  sampleName: string,
+  HP: number,
+): HaplotypeSource {
+  return { ...source, name: `${sampleName} HP${HP}`, sampleName, HP }
+}
+
 function makeHaplotypeSources(
   source: Source,
   ploidy: number,
 ): HaplotypeSource[] {
-  const results: HaplotypeSource[] = []
   const sampleName = resolveSampleName(source)
-  for (let i = 0; i < ploidy; i++) {
-    results.push({
-      ...source,
-      name: `${sampleName} HP${i}`,
-      sampleName,
-      HP: i,
-    })
-  }
-  return results
+  return Array.from({ length: ploidy }, (_, i) =>
+    haplotypeRow(source, sampleName, i),
+  )
 }
 
-// Single source of truth for the "<sampleName> HP<n>" haplotype-row convention.
-// Shared by the worker (cell computation), the model `sources` getter (sidebar
-// rows / row count), and the cluster dialog — keeping the naming + ploidy rules
-// in one place so the three sites can't drift. Sources that already carry an HP
-// index (e.g. from haplotype clustering) pass through unchanged; the rest expand
-// into maxPloidy rows, keyed by sampleName, defaulting to diploid.
+/**
+ * The inverse of the haplotype naming: the sample a row name belongs to, and
+ * the haplotype where it names one. A current sample's own name wins, so a
+ * sample called "X HP0" never reads as a haplotype of "X". Undefined for a
+ * name no current sample answers to.
+ */
+export function parseRowName(
+  name: string,
+  samples: ReadonlySet<string>,
+): { sampleName: string; HP?: number } | undefined {
+  if (samples.has(name)) {
+    return { sampleName: name }
+  }
+  const match = HAPLOTYPE_ROW_NAME.exec(name)
+  return match && samples.has(match[1]!)
+    ? { sampleName: match[1]!, HP: Number(match[2]) }
+    : undefined
+}
+
+// The "<sampleName> HP<n>" haplotype-row convention, with `parseRowName` its
+// inverse, for the worker's cell computation and genotype matrix and the
+// display's rows alike. A source that already carries an HP index (a row of a
+// phased clustering run) passes through; the rest expand into maxPloidy rows,
+// keyed by sampleName, defaulting to diploid.
 export function expandSourcesToHaplotypes({
   sources,
   sampleInfo,
@@ -101,77 +122,158 @@ export function buildCanonicalRows({
     : rows
 }
 
-/**
- * `layout` is an ordering/override hint, never the row set — the same membership
- * rule tree-sidebar's `reconcileLayout` gives maf, multi-row features and
- * multi-wiggle: a sample it omits belongs at the end, not dropped. Narrowing the
- * rows is `subtreeFilter`'s job in all four, and it is the one that reaches the
- * fetch (`sampleFilter`).
- *
- * "Covered" is keyed by **sampleName**, not `name`: after a phased clustering run
- * the layout rows are haplotypes ("HG001 HP0"), which match no sample name, so a
- * `name` key would read the layout as covering nothing and re-append every sample
- * on top of its own haplotypes.
- *
- * Returns `layout` itself when it already covers everything — the case every
- * layout the app can produce is in, since each of them (`buildClusteredLayout`, `sortSourcesAroundVariant`, the arrangement dialog)
- * covers all rows.
- */
-function appendUncoveredSamples(sources: Source[], layout: Source[]): Source[] {
-  const covered = new Set(layout.map(resolveSampleName))
-  const uncovered = sources.filter(s => !covered.has(s.name))
-  return uncovered.length ? [...layout, ...uncovered] : layout
+/** What a reader arranged, by row name: the order, the labels, the tints. */
+export interface RowArrangement {
+  domain: readonly string[]
+  labels: Readonly<Record<string, string>>
+  rowColors: ReadonlyMap<string, string>
 }
 
-export function getSources({
+// The haplotypes a sample takes a row for: the ploidy `sampleInfo` reports,
+// plus any the arrangement names beyond it. Until `sampleInfo` lands the names
+// alone stand for it, so an arranged track keeps its haplotype rows across a
+// refetch rather than folding back to samples.
+function haplotypesOf(
+  sampleName: string,
+  sampleInfo: Record<string, SampleInfo> | undefined,
+  named: ReadonlyMap<string, readonly number[]>,
+) {
+  const ploidy = sampleInfo ? (sampleInfo[sampleName]?.maxPloidy ?? 2) : 0
+  const hps = new Set(named.get(sampleName))
+  for (let i = 0; i < ploidy; i++) {
+    hps.add(i)
+  }
+  return [...hps].sort((a, b) => a - b)
+}
+
+function haplotypesNamed(domain: readonly string[], samples: Set<string>) {
+  const named = new Map<string, number[]>()
+  for (const name of domain) {
+    const row = parseRowName(name, samples)
+    if (row?.HP !== undefined) {
+      const hps = named.get(row.sampleName) ?? []
+      hps.push(row.HP)
+      named.set(row.sampleName, hps)
+    }
+  }
+  return named
+}
+
+// A row answers to its own name and then to its sample's, so an order, a label
+// or a tint written against a sample reaches each of its haplotypes. The rows
+// the domain lists lead, in its order; the rest keep the order they came in.
+function orderByDomain(rows: ProcessedSource[], domain: readonly string[]) {
+  if (!domain.length) {
+    return rows
+  }
+  const rank = new Map<string, number>()
+  domain.forEach((name, i) => {
+    if (!rank.has(name)) {
+      rank.set(name, i)
+    }
+  })
+  const ranked = rows.map(row => ({
+    row,
+    rank: rank.get(row.name) ?? rank.get(row.sampleName),
+  }))
+  const listed = ranked.filter(r => r.rank !== undefined)
+  return listed.length
+    ? [
+        ...listed.sort((a, b) => a.rank! - b.rank!).map(r => r.row),
+        ...ranked.filter(r => r.rank === undefined).map(r => r.row),
+      ]
+    : rows
+}
+
+// Own-property reads: row names come from the file, and a sample called
+// `constructor` would otherwise read a label off Object.prototype.
+function labelOf(labels: Readonly<Record<string, string>>, row: Source) {
+  const { name, sampleName } = row
+  return Object.hasOwn(labels, name)
+    ? labels[name]
+    : sampleName !== undefined && Object.hasOwn(labels, sampleName)
+      ? labels[sampleName]
+      : undefined
+}
+
+/**
+ * The adapter's samples as the rows of the rendering mode — one per sample in
+ * allele-count mode, one per haplotype in phased mode (`haplotypesOf`) — in
+ * the reader's arrangement: the order `domain` gives, a label from `labels`
+ * over the adapter's, and the tint `labelColor` from `rowColors`, then the
+ * adapter's `labelColor`, then a samplesTsv `color` column. A sample the order
+ * omits is appended, not dropped.
+ *
+ * No focus, and no `rowColor` palette: this is the list the arrangement
+ * dialog edits, and it writes back only what it differs from the adapter in.
+ */
+export function arrangeRows({
   sources,
-  layout = sources,
   renderingMode,
   sampleInfo,
+  arrangement: { domain, labels, rowColors },
 }: {
   sources: Source[]
-  layout?: Source[]
   renderingMode: string
   sampleInfo?: Record<string, SampleInfo>
+  arrangement: RowArrangement
 }): ProcessedSource[] {
-  // A Map, not an object keyed by sample name: names come from the file, and on
-  // a plain object a sample called `constructor` or `toString` reads back an
-  // inherited value instead of `undefined`, so the miss check below would keep a
-  // row that has no source. It also builds and probes faster at cohort sizes,
-  // and this runs on every reorder (`sourcesBase` is a computed).
-  const sourceMap = new Map(sources.map(s => [s.name, s]))
-
-  return appendUncoveredSamples(sources, layout).flatMap(row => {
-    const sampleName = resolveSampleName(row)
-    const baseSource = sourceMap.get(sampleName)
-
-    if (!baseSource) {
-      return []
-    }
-
-    const merged = { ...baseSource, ...row }
-    // The row tint is `labelColor`, the channel tree-sidebar draws. A
-    // `samplesTsv` `color` column, and a session saved when the palette was
-    // written there, both reach the sidebar through this one fallback.
-    if (merged.labelColor === undefined && merged.color !== undefined) {
-      merged.labelColor = merged.color
-    }
-
-    // Phased expansion needs sampleInfo to know ploidy. Without it we fall
-    // through and return the sample row as-is — matches the `sources` getter
-    // in MultiSampleVariantBaseModel, which waits for sampleInfo before
-    // expanding. Once sampleInfo is present, missing samples default to
-    // diploid to match `expandSourcesToHaplotypes`.
-    if (
-      renderingMode === 'phased' &&
-      row.HP === undefined &&
-      sampleInfo !== undefined
-    ) {
-      return makeHaplotypeSources(
-        merged,
-        sampleInfo[sampleName]?.maxPloidy ?? 2,
-      )
-    }
-    return [{ ...merged, sampleName }]
+  const phased = renderingMode === 'phased'
+  const samples = new Set(sources.map(resolveSampleName))
+  const named = phased ? haplotypesNamed(domain, samples) : new Map()
+  const rows = sources.flatMap((source): ProcessedSource[] => {
+    const sampleName = resolveSampleName(source)
+    const hps = phased ? haplotypesOf(sampleName, sampleInfo, named) : []
+    return hps.length
+      ? hps.map(HP => haplotypeRow(source, sampleName, HP))
+      : [{ ...source, sampleName }]
   })
+  return orderByDomain(rows, domain).map(row => {
+    const label = labelOf(labels, row)
+    const labelColor =
+      rowColors.get(row.name) ??
+      rowColors.get(row.sampleName) ??
+      row.labelColor ??
+      row.color
+    return {
+      ...row,
+      ...(label === undefined ? {} : { label }),
+      ...(labelColor === undefined ? {} : { labelColor }),
+    }
+  })
+}
+
+/**
+ * The rows a focus keeps. A name in `kept` keeps that row, and a sample's name
+ * keeps all of its haplotypes; a sample row not yet expanded stands for its
+ * haplotypes, so it is kept when any of them is. That makes the same `kept`
+ * narrow the adapter's samples to the set the fetch asks for and the arranged
+ * rows to the ones drawn. A focus naming no current row keeps every row.
+ */
+export function keptRowsOf<S extends Source>(
+  rows: S[],
+  kept: readonly string[] | undefined,
+): S[] {
+  if (!kept?.length) {
+    return rows
+  }
+  const current = new Set(rows.map(resolveSampleName))
+  const samples = new Set(
+    kept.flatMap(name => {
+      const row = parseRowName(name, current)
+      return row ? [row.sampleName] : []
+    }),
+  )
+  const ofSamples = rows.filter(row => samples.has(resolveSampleName(row)))
+  if (!ofSamples.length) {
+    return rows
+  }
+  const names = new Set(kept)
+  const exact = ofSamples.filter(
+    row =>
+      row.HP === undefined ||
+      names.has(row.name) ||
+      names.has(resolveSampleName(row)),
+  )
+  return exact.length ? exact : ofSamples
 }

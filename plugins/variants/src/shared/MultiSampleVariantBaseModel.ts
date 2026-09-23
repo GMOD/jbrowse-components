@@ -13,6 +13,7 @@ import {
   SimpleFeature,
 } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
+import { isCssColor } from '@jbrowse/core/util/cssColorParse'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import {
@@ -26,6 +27,7 @@ import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
@@ -33,16 +35,16 @@ import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
   RowHeightMixin,
-  LayoutTreeSidebarMixin,
+  TreeSidebarMixin,
+  baseDisplayConfig,
   buildSpatialIndex,
   computeClusterHierarchy,
-  filterRowsBySubtree,
   focusRowGroup,
   loadedRegionIndexAt,
-  orderRowsByDomain,
   paletteColorsByRow,
   treeDescribesRows,
 } from '@jbrowse/tree-sidebar'
+import { compareStructural } from 'mobx'
 
 import { sortSourcesAroundVariant } from './anchoredHaplotypeSort.ts'
 import {
@@ -52,8 +54,9 @@ import {
 } from './constants.ts'
 import { buildSampleIndex } from './genotypeCodec.ts'
 import {
-  expandSourcesToHaplotypes,
-  getSources,
+  arrangeRows,
+  keptRowsOf,
+  parseRowName,
   resolveSampleName,
 } from './getSources.ts'
 import {
@@ -109,8 +112,8 @@ export function colorByPalette(
 // cells by genotype, so a row has no `color` of its own to spend.
 //
 // **The scale wins over whatever the row already carried** — a `samplesTsv`
-// `color` column, a color the arrangement dialog wrote, a palette an older
-// session persisted into `layout`. See the class docstring for why.
+// `color` column, or a colour the arrangement dialog wrote into `rowColor`.
+// See the class docstring for why.
 export function applyColorByPalette<S extends Source>(
   rows: S[],
   colorBy: string,
@@ -120,6 +123,48 @@ export function applyColorByPalette<S extends Source>(
     ...s,
     labelColor: palette.get(String(s[colorBy] ?? '')) ?? s.labelColor,
   }))
+}
+
+/**
+ * What the arrangement dialog's rows say beyond what the adapter supplied: a
+ * label or a tint that differs from the adapter row's — a haplotype row's
+ * being its sample's. The whole of `rows.labels` and of `rowColor`'s pairs,
+ * rebuilt, so an edit cleared in the dialog is cleared in the config. The
+ * pairs keep `baseOrder`, the config's own `rowColor.domain`, ahead of any new
+ * name, so a reorder that changes no colour writes the config's pairs back
+ * unchanged. A string the painters cannot parse is left out rather than
+ * stored.
+ */
+export function rowEditsOf(
+  rows: readonly Source[],
+  discovered: readonly Source[],
+  baseOrder: readonly string[],
+) {
+  const byName = new Map(discovered.map(s => [s.name, s]))
+  const labels: Record<string, string> = {}
+  const colors = new Map<string, string>()
+  for (const row of rows) {
+    const base = byName.get(row.name) ?? byName.get(resolveSampleName(row))
+    if (row.label !== undefined && row.label !== base?.label) {
+      labels[row.name] = row.label
+    }
+    const color = row.labelColor
+    if (
+      color !== undefined &&
+      color !== (base?.labelColor ?? base?.color) &&
+      isCssColor(color)
+    ) {
+      colors.set(row.name, color)
+    }
+  }
+  const domain = [
+    ...baseOrder.filter(name => colors.has(name)),
+    ...[...colors.keys()].filter(name => !baseOrder.includes(name)),
+  ]
+  return {
+    labels,
+    rowColor: { domain, range: domain.map(name => colors.get(name)!) },
+  }
 }
 
 // One spelling of "the config names an attribute the metadata doesn't have", for
@@ -173,18 +218,27 @@ const PORTABLE_CONFIG_KEYS = [
   'showLegend',
   'showTree',
   'showBranchLength',
-  // The row `domain` seeds the order at read time rather than being written
-  // into `layout`, so a display-type switch that left it behind would drop the
-  // configured order along with it.
-  'domain',
   'referenceDrawingMode',
   'shadeByDosage',
-  'rowColor',
   // the sidebar width is a drag on a config slot, like `height`: returned in
   // the instance snapshot instead, MST would drop it and a display-type switch
   // would silently reset the gutter
   'treeAreaWidth',
 ] as const
+
+// The config objects that travel whole: the arrangement with them, since
+// `rows` holds the order, labels, tree and focus.
+const PORTABLE_CONFIG_OBJECTS = ['facet', 'rows', 'rowColor'] as const
+
+// The display-state arrangement these displays kept before `rows`. Named on
+// the way in because MST drops an undeclared key in silence, and a session
+// carrying one would open unarranged with nothing said.
+const RETIRED_ARRANGEMENT_PROPS = [
+  'layout',
+  'clusterTree',
+  'clusterProvenance',
+  'subtreeFilter',
+]
 
 // Loaded features in genomic order plus their interned genotype codes: what an
 // anchored sort needs. `simplifiedFeatures` is the single ordered list spanning
@@ -304,9 +358,9 @@ function fetchRegionsForMode(
  * #category display
  *
  * #example
- * `renderingMode`, `rowColor`, and `minorAlleleFrequencyFilter` are config slots
- * (see `SharedVariantConfigSchema`) read at runtime through `getConf` and
- * written through `self.configuration.setSlot` — they are NOT plain MST
+ * `renderingMode`, `rowColor`, `rows` and `minorAlleleFrequencyFilter` are
+ * config (see `SharedVariantConfigSchema`), read at runtime through `getConf`
+ * and written as session edits to the track's config — they are NOT plain MST
  * properties. Set them in a track's `displays` array to change the default:
  * ```js
  * displays: [
@@ -314,6 +368,8 @@ function fetchRegionsForMode(
  *     type: 'LinearMultiSampleVariantMatrixDisplay',
  *     displayId: 'my-matrix',
  *     renderingMode: 'phased',
+ *     rowColor: 'population',
+ *     rows: { domain: ['NA12878', 'NA12891'] },
  *   },
  * ]
  * ```
@@ -333,27 +389,25 @@ function fetchRegionsForMode(
  *
  * ## How the rows are arranged
  *
- * `layout` holds only what a user or a clustering run did — a drag, the
- * arrangement dialog, "Sort rows by genotype here", a run's order. The three
- * config-declared channels are derived over `sourcesVolatile` on every read, in
- * this order:
+ * The arrangement is config: `rows` holds the order, the labels, the cluster
+ * tree with its provenance and the focus, and `rowColor` the tint, each by row
+ * name at the mode's granularity — a sample in allele-count mode, a haplotype
+ * (`"<sample> HP<n>"`) in phased mode, where a sample name stands for its
+ * haplotypes. A drag, the arrangement dialog, "Sort rows by genotype here" and
+ * a clustering run write it; the rows are derived from it on every read:
  *
- * 1. the row `domain` seeds the adapter order (the samples it names lead),
- * 2. `layout` is merged over that seed,
- * 3. phased mode expands each row to its haplotypes,
- * 4. `rowColor` tints and `facet` bands the result.
+ * 1. the adapter's samples (`sourcesVolatile`) are focused by `rows.kept`,
+ *    which is the set the fetch asks for (`sourcesBase`, `sampleFilter`),
+ * 2. phased mode expands each sample to its haplotypes, `rows.domain` orders
+ *    and `rows.labels` relabels them (`editableSources`, the dialog's list),
+ * 3. the focus narrows those (`clusterableSources`, what a run clusters),
+ * 4. `rowColor` tints and `facet` bands the result (`sources`).
  *
- * So `resetRowArrangement` is the whole reset, "Reset row order" appears exactly when
- * `layout` is non-empty, and nothing has to re-derive an arrangement when a
- * setting changes. The same shape MAF and multi-wiggle already had.
- *
- * **The `rowColor` scale wins over a color the row already carried** — a
- * `samplesTsv` `color` column, one the arrangement dialog wrote, one an older
- * session persisted into `layout`. A channel bound to a variable beats a
- * per-row constant, which is also what keeps every pre-change session looking
- * exactly as it did and keeps the menu live on it: the palette is a pure
- * function of the attribute, so recomputing it reproduces what that session
- * stored. "Color by… → (none)" is what hands the row back its own color.
+ * **The `rowColor` palette wins over a colour the row already carried** — a
+ * `samplesTsv` `color` column, or a `rowColor.domain` entry the dialog wrote. A
+ * channel bound to a variable beats a per-row constant, and the palette is a
+ * pure function of the attribute, so "Color by… → (none)" is what hands the row
+ * back its own colour.
  *
  * **The `facet` band yields while a cluster tree describes the rows**, the
  * mechanism `LinearMultiRowFeatureDisplay` uses for its row groups: the
@@ -383,7 +437,7 @@ export default function MultiSampleVariantBaseModelF(
         LegendMixin(),
         RowHeightMixin(),
         StoredHoverMixin<VariantHoverFields>(),
-        LayoutTreeSidebarMixin<Source>(),
+        TreeSidebarMixin<Source>(),
         ContextMenuMixin<VariantContextMenuInfo>(),
         types.model({
           type: types.string,
@@ -404,8 +458,8 @@ export default function MultiSampleVariantBaseModelF(
             types.maybe(types.array(types.string)),
             undefined,
           ),
-          // `runClustering` / `clusterRegion` are LayoutTreeSidebarMixin's — they
-          // trigger a run whose output is that mixin's state.
+          // `runClustering` / `clusterRegion` are TreeSidebarMixin's — they
+          // trigger a run whose output is that mixin's `rows`.
         }),
       )
       // Unknown keys in an old display snapshot (blockState, the removed
@@ -426,6 +480,12 @@ export default function MultiSampleVariantBaseModelF(
       // dropped is silent. Prefixed on the way in, since the property stores the
       // runtime form and the old one stored whatever the dialog was handed.
       .preProcessSnapshot((snap: Record<string, unknown>) => {
+        const retired = RETIRED_ARRANGEMENT_PROPS.filter(key => key in snap)
+        if (retired.length) {
+          throw new Error(
+            `${retired.join(', ')} on a ${String(snap.type)}: the row arrangement is the display config's \`rows\` object (domain, labels, tree, treeProvenance, kept) and its colours \`rowColor\`, written by the arrangement dialog, a clustering run or a session spec's \`rows\``,
+          )
+        }
         const { jexlFilters, ...rest } = snap
         return Array.isArray(jexlFilters)
           ? {
@@ -717,12 +777,39 @@ export default function MultiSampleVariantBaseModelF(
 
         /**
          * #getter
-         * The effective sample-grouping attribute (config default or runtime
-         * override). Drives the sidebar row coloring and the legend's group
-         * section; '' means no grouping.
+         * The sample-metadata attribute the rows are tinted by,
+         * `rowColor.field`. Drives the sidebar row coloring and the legend's
+         * group section; '' means no grouping.
          */
         get rowColor(): string {
-          return getConf(self, 'rowColor')
+          return getConf(self, ['rowColor', 'field'])
+        },
+        /**
+         * #getter
+         * The tint a reader set on each named row, off `rowColor`'s
+         * `domain`/`range` pairs.
+         */
+        get rowColors(): ReadonlyMap<string, string> {
+          return pairedColorsOf({
+            domain: getConf(self, ['rowColor', 'domain']),
+            range: getConf(self, ['rowColor', 'range']),
+          })
+        },
+        /**
+         * #getter
+         * The `rowColor` pairs the config.json declares for this display,
+         * which a reset returns to and a dialog submit keeps the pair order
+         * of.
+         */
+        get baseRowColor(): {
+          domain: readonly string[]
+          range: readonly string[]
+        } {
+          const base = (baseDisplayConfig(self).rowColor ?? {}) as {
+            domain?: string[]
+            range?: string[]
+          }
+          return { domain: base.domain ?? [], range: base.range ?? [] }
         },
         /**
          * #getter
@@ -804,22 +891,20 @@ export default function MultiSampleVariantBaseModelF(
            */
           setSources(sources: Source[]) {
             if (!deepEqual(sources, self.sourcesVolatile)) {
-              // A layout none of whose rows name a current sample is a previous
-              // dataset's: an adapter edit swapped the cohort out from under it
-              // and from under the `subtreeFilter` naming its rows, and left
-              // standing the filter matches nothing and the display goes blank.
-              // (The layout alone would survive — `getSources` drops a row no
-              // sample answers to — so the filter is what this is for.)
-              // `resetRowArrangement` is the same reset `setPhasedMode` takes when it
-              // renames the rows. Keyed on total mismatch, not any mismatch — a
-              // partial overlap is the same cohort with samples added or
-              // removed, and the user's order survives that.
-              const names = new Set(sources.map(s => resolveSampleName(s)))
-              const layoutIsStale =
-                self.layout.length > 0 &&
-                !self.layout.some(row => names.has(resolveSampleName(row)))
+              // An order none of whose names is a current row is a previous
+              // dataset's: an adapter edit swapped the cohort out from under it,
+              // and the tree beside it names rows that are gone. The same reset
+              // `setPhasedMode` takes when it renames the rows. Keyed on total
+              // mismatch — a partial overlap is the same cohort with samples
+              // added or removed, and the reader's order survives that.
+              const names = new Set(sources.map(resolveSampleName))
+              const domain = self.rowDomain
+              const arrangementIsStale =
+                self.rowArrangementIsCustom &&
+                domain.length > 0 &&
+                !domain.some(name => parseRowName(name, names))
               self.sourcesVolatile = sources
-              if (layoutIsStale) {
+              if (arrangementIsStale) {
                 self.resetRowArrangement()
               }
               warnUnknownArrangementAttributes(self, sources)
@@ -828,13 +913,13 @@ export default function MultiSampleVariantBaseModelF(
           /**
            * #action
            * Recolor sample rows by a metadata attribute (e.g. 'population'), or
-           * pass '' to clear the coloring. Records the choice in the `rowColor`
-           * config slot, which is the whole of it: the tint is resolved on every
-           * read of `sources`, so a recolor moves no rows, drops no cluster tree
-           * and writes nothing into `layout`.
+           * pass '' to clear the coloring. Writes `rowColor.field` alone, which
+           * is the whole of it: the tint is resolved on every read of
+           * `sources`, so a recolor moves no rows, drops no cluster tree and
+           * leaves the colours set row by row where they were.
            */
           setRowColor(rowColor: string) {
-            setConf(self, 'rowColor', rowColor)
+            setConf(self, ['rowColor', 'field'], rowColor)
             warnUnknownArrangementAttributes(self, self.sourcesVolatile ?? [])
           },
           /**
@@ -843,8 +928,8 @@ export default function MultiSampleVariantBaseModelF(
            * 'population') is contiguous, or pass '' to clear the facet. Writes
            * the `facet` object, keeping a declared band order while the field
            * is the one already banding, which is the whole of it: the banding
-           * is applied on every read of `sources`, over whatever `layout`
-           * holds, and it yields while a cluster tree describes those rows.
+           * is applied on every read of `sources`, over the arranged order,
+           * and it yields while a cluster tree describes those rows.
            */
           setFacet(field: string) {
             const current = self.facet
@@ -879,13 +964,9 @@ export default function MultiSampleVariantBaseModelF(
             setConf(self, 'renderingMode', arg)
             if (renamesRows) {
               // The mode decides what a row is *called* — sample names in
-              // allele-count mode, "HG001 HP0" haplotype names in phased — so the
-              // layout, the tree built from it, and the subtree filter naming that
-              // tree's leaves all go stale together. The filter is otherwise
-              // independent of the tree (`filterRowsBySubtree` keys on `name` and
-              // needs no tree, so a reorder leaves it perfectly valid); this is the
-              // one action that renames the rows out from under it, and leaving it
-              // set here matched nothing and blanked the display.
+              // allele-count mode, "HG001 HP0" haplotype names in phased — so
+              // the order, the labels, the tints, the tree and the focus naming
+              // its leaves all go stale together.
               self.resetRowArrangement()
             }
           },
@@ -932,8 +1013,39 @@ export default function MultiSampleVariantBaseModelF(
           setShadeByDosage(arg: boolean) {
             setConf(self, 'shadeByDosage', arg)
           },
+          /**
+           * #action
+           * `TreeSidebarMixin`'s hook, so "Reset row order" and the dialog's
+           * "Clear custom settings" return the row tints with the arrangement.
+           * `rowColor.field` stays: the attribute is a setting of its own.
+           */
+          resetRowStyling() {
+            const { domain, range } = self.baseRowColor
+            setConf(self, ['rowColor', 'domain'], [...domain])
+            setConf(self, ['rowColor', 'range'], [...range])
+          },
         }
       })
+      .actions(self => ({
+        /**
+         * #action
+         * The arrangement dialog's submit: the rows in their new order, each
+         * carrying the label and tint the reader set on it. The order and the
+         * labels go to `rows`, the tints to `rowColor`'s pairs, each only where
+         * it differs from what the adapter supplied.
+         */
+        applyRowEdits(rows: Source[]) {
+          const { labels, rowColor } = rowEditsOf(
+            rows,
+            self.sourcesVolatile ?? [],
+            self.baseRowColor.domain,
+          )
+          setConf(self, ['rowColor', 'domain'], rowColor.domain)
+          setConf(self, ['rowColor', 'range'], rowColor.range)
+          self.setRowLabels(labels)
+          self.setRowOrder(rows)
+        },
+      }))
       .views(self => ({
         /**
          * #getter
@@ -1012,20 +1124,6 @@ export default function MultiSampleVariantBaseModelF(
 
         /**
          * #getter
-         * Adapter rows in the order the config `domain` declares: the samples it
-         * names lead, the rest keep the file's order. The seed `layout` merges
-         * over — it is never written into `layout`, so `resetRowArrangement` returns
-         * here and a domain-seeded track offers no "Reset row order" until the
-         * rows actually move. Same shape as MAF's and multi-wiggle's
-         * `editableSources`.
-         */
-        get domainSeededSources(): Source[] | undefined {
-          const sources = self.sourcesVolatile
-          return sources && orderRowsByDomain(sources, self.rowDomain)
-        },
-
-        /**
-         * #getter
          * The `rowColor` scale, attribute value -> color, held apart from the
          * rows so a drag or a clade focus does not rebuild it over the whole
          * cohort. `undefined` when there is nothing to color by.
@@ -1033,56 +1131,66 @@ export default function MultiSampleVariantBaseModelF(
         get rowPalette(): ReadonlyMap<string, string> | undefined {
           return colorByPalette(self.rowColor, self.sourcesVolatile ?? [])
         },
-
-        // Five views on the source list, each with a different consumer:
-        //
-        // - domainSeededSources: adapter rows, domain-seeded. The base every
-        //   other one merges `layout` over.
-        // - sourcesBeforeSubtreeFilter: layout-merged, NOT phased-expanded,
-        //   NOT subtree-filtered, NOT tinted or banded. The granularity
-        //   `subtreeFilter` names, so it is what an action computing a filter
-        //   has to pick its names off.
-        // - sourcesBase: that, subtree-filtered. Used by rpcProps — must not
-        //   read sampleInfo (which is fetch-result-derived; reading it would
-        //   loop SettingsInvalidate) — and by a clustering run, which writes
-        //   what it is handed into `layout`, where a palette color has no
-        //   business.
-        // - sources: rendering view — sourcesBase + phased expansion (reads
-        //   sampleInfo) + the `rowColor` tint + the `facet` band.
-        // - editableSources: dialog view — like `sources` but without the
-        //   subtree filter, so submit doesn't wipe filtered samples from
-        //   `layout`, and without the tint and the band, so submit persists
-        //   only what the reader actually chose.
-        get sourcesBeforeSubtreeFilter() {
-          const seeded = this.domainSeededSources
-          return seeded
-            ? getSources({
-                sources: seeded,
-                layout: self.layout.length ? self.layout : undefined,
-                renderingMode: 'alleleCount',
-              })
-            : undefined
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: whether `rowColor` names a colour the
+         * config does not, so "Reset row order" is offered for a recolour too.
+         */
+        get rowStylingIsCustom(): boolean {
+          return !compareStructural(
+            Object.fromEntries(self.rowColors),
+            Object.fromEntries(pairedColorsOf(self.baseRowColor)),
+          )
         },
-        get sourcesBase() {
-          // filterRowsBySubtree keys on `name`, not `sampleName`: phased
-          // clustering stores haplotype names ("HG001 HP0") as tree leaves and
-          // that is what subtreeFilter holds.
-          const base = this.sourcesBeforeSubtreeFilter
-          return base && filterRowsBySubtree(base, self.rowFocus)
+        /**
+         * #getter
+         * The adapter's samples narrowed to the focus, `rows.kept` — a
+         * haplotype named there keeps its sample. The row set the fetch asks
+         * for, and so it must not read `sampleInfo` (see `sampleFilter`).
+         * `undefined` until the samples land.
+         */
+        get sourcesBase(): Source[] | undefined {
+          const sources = self.sourcesVolatile
+          return sources && keptRowsOf(sources, self.rowFocus)
+        },
+        /**
+         * #getter
+         * The rows of the rendering mode in the reader's arrangement — phased
+         * mode's haplotypes once `sampleInfo` gives their ploidy, ordered by
+         * `rows.domain`, relabelled by `rows.labels` and tinted by the
+         * `rowColor` pairs — with no focus, no palette and no band. The list
+         * the arrangement dialog edits, so a submit writes back only what the
+         * reader chose.
+         */
+        get editableSources(): ProcessedSource[] {
+          return arrangeRows({
+            sources: self.sourcesVolatile ?? [],
+            renderingMode: self.renderingMode,
+            sampleInfo: self.sampleInfo,
+            arrangement: {
+              domain: self.rowDomain,
+              labels: self.rowLabels,
+              rowColors: self.rowColors,
+            },
+          })
         },
       }))
       .views(self => ({
         /**
          * #getter
-         * The display rows: `sourcesBase` expanded for phased rendering when
-         * sampleInfo is available (sources already carrying HP, from clustering,
-         * pass through unchanged), then tinted by `rowColor` and banded by
-         * `facet`.
-         *
-         * Expansion comes first so both channels read a haplotype row's own
-         * copy of its sample's metadata — a phased clustering run writes
-         * haplotype rows into `layout`, and `expandSourcesToHaplotypes` spreads
-         * every source field onto each one.
+         * `editableSources` narrowed to the focus: the rows a clustering run
+         * clusters, and deliberately not the decorated `sources`, whose palette
+         * tint and band a run has no business writing back.
+         */
+        get clusterableSources(): ProcessedSource[] {
+          return keptRowsOf(self.editableSources, self.rowFocus)
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The display rows: `clusterableSources` tinted by the `rowColor`
+         * palette and banded by `facet`.
          *
          * **The band yields while a cluster tree describes these rows**, the
          * mechanism `LinearMultiRowFeatureDisplay` uses for its row groups: the
@@ -1092,27 +1200,15 @@ export default function MultiSampleVariantBaseModelF(
          * needs no facet write of its own.
          *
          * **Resolved — an array, never `undefined`**, which is the shared
-         * spelling across the row displays (canvas's multi-row painting and
-         * multi-wiggle already answered this way). `sourcesVolatile` and
-         * `sourcesBase` keep their `undefined`, because there it is genuinely
-         * load-bearing: `sampleFilter` and `fetchNeeded` both read
-         * `sourcesBase`, and its `undefined` → list transition is what wakes the
-         * fetch autorun (reference/FETCH_SKELETON.md §"The global-fetch trigger list must
-         * be read unconditionally"). Nothing reads
-         * *this* getter for that — every consumer immediately collapsed the
-         * absent case with `?.length`, `?? []` or `?? 0`, so the option was
-         * about eighteen defensive reads and no decision.
+         * spelling across the row displays. `sourcesVolatile` and `sourcesBase`
+         * keep their `undefined`, because there it is genuinely load-bearing:
+         * `sampleFilter` and `fetchNeeded` both read `sourcesBase`, and its
+         * `undefined` → list transition is what wakes the fetch autorun
+         * (reference/FETCH_SKELETON.md §"The global-fetch trigger list must be
+         * read unconditionally").
          */
         get sources(): ProcessedSource[] {
-          const base = self.sourcesBase
-          if (!base) {
-            return []
-          }
-          const sampleInfo = self.sampleInfo
-          const rows =
-            self.renderingMode === 'phased' && sampleInfo
-              ? expandSourcesToHaplotypes({ sources: base, sampleInfo })
-              : base
+          const rows = self.clusterableSources
           const palette = self.rowPalette
           const tinted = palette
             ? applyColorByPalette(rows, self.rowColor, palette)
@@ -1121,27 +1217,8 @@ export default function MultiSampleVariantBaseModelF(
             ? tinted
             : (maybeApplyFacet(self.facet, tinted) ?? tinted)
         },
-        /**
-         * #getter
-         * Layout-merged, phased-expanded view for the Edit Color/Arrangement
-         * dialog. Does NOT apply the subtree filter — submitting the dialog
-         * persists every row it was shown back to `layout`, so a filtered list
-         * would submit the focused clade as the whole order and leave every
-         * other sample appended after it. Same reason the other row displays'
-         * `editableSources` sit upstream of `filterRowsBySubtree`.
-         *
-         * Neither the `rowColor` tint nor the `facet` band is on these rows:
-         * submit writes them straight to `layout`, so a channel resolved here
-         * would be persisted as if the reader had picked it row by row.
-         */
-        get editableSources(): ProcessedSource[] {
-          return getSources({
-            sources: self.domainSeededSources ?? [],
-            layout: self.layout.length ? self.layout : undefined,
-            renderingMode: self.renderingMode,
-            sampleInfo: self.sampleInfo,
-          })
-        },
+      }))
+      .views(self => ({
         /**
          * #getter
          * Whether the fetched inputs clustering needs are present yet. Phased
@@ -1167,13 +1244,13 @@ export default function MultiSampleVariantBaseModelF(
          * asks `sourcesVolatile` itself which of the two it is.
          *
          * **The rows on screen**, which is the list the run clusters
-         * (`sourcesBase`, expanded here exactly as the worker expands it) and
-         * so the row set the tree comes back describing. Counting the
-         * unfiltered list instead offered — and let the declarative path fire —
-         * a run over a clade focused down to one row.
+         * (`clusterableSources`) and so the row set the tree comes back
+         * describing. Counting the unfiltered list instead offered — and let
+         * the declarative path fire — a run over a clade focused down to one
+         * row.
          */
         get hasClusterableRows() {
-          return this.sources.length > 1
+          return self.clusterableSources.length > 1
         },
         /**
          * #getter
@@ -1199,24 +1276,20 @@ export default function MultiSampleVariantBaseModelF(
          * a fetch input here; reference/FETCH_KEYS.md §"Row order is not a fetch input",
          * has the why and how the three row displays each do it.
          *
-         * Two local rules:
+         * `undefined` means the sources haven't loaded, and is deliberately not
+         * reused for "all of them". `fetchNeeded` declines until `sourcesBase`
+         * exists and this key changing is the only thing that wakes it, so
+         * collapsing the two would leave it unchanged when sources landed and
+         * wedge the display with nothing drawn.
          *
-         * - `undefined` means the sources haven't loaded, and is deliberately not
-         *   reused for "all of them". `fetchNeeded` declines until `sourcesBase`
-         *   exists and this key changing is the only thing that wakes it, so
-         *   collapsing the two would leave it unchanged when sources landed and
-         *   wedge the display with nothing drawn.
-         * - Deduped because after a phased clustering run `sourcesBase` is
-         *   haplotype-level, listing a sample once per haplotype. The worker
-         *   takes samples and expands them itself, so a key that moved with
-         *   ploidy would refetch on a rendering-mode round trip that changed no
-         *   sample.
-         *
-         * Reads `sourcesBase`, never `sources`, for the loop reason below.
+         * Reads `sourcesBase`, the focused samples before phased expansion,
+         * never `sources`, for the loop reason below: expansion reads
+         * `sampleInfo`, a fetch result. A focus naming haplotypes asks for their
+         * samples, and the worker expands them itself.
          */
         get sampleFilter(): string[] | undefined {
           const base = self.sourcesBase
-          return base && [...new Set(base.map(s => s.sampleName))].sort()
+          return base?.map(resolveSampleName).sort()
         },
       }))
       .views(self => ({
@@ -1246,10 +1319,9 @@ export default function MultiSampleVariantBaseModelF(
       .views(self => ({
         /**
          * #getter
-         * Row name -> source, for the hover tooltip. A Map for the same reason
-         * `getSources`' is: row names come from the file, and on a plain object
-         * a sample called `constructor` resolves to something inherited rather
-         * than to a miss.
+         * Row name -> source, for the hover tooltip. A Map because row names
+         * come from the file, and on a plain object a sample called
+         * `constructor` resolves to something inherited rather than to a miss.
          */
         get sourceMap() {
           return new Map(self.sources.map(source => [source.name, source]))
@@ -1393,8 +1465,8 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * Screen row -> worker row, the inverse of `rowRemap`; `-1` for a screen
-         * row this window's data has no cells for (a sample the layout draws but
-         * whose genotypes never appear in the fetched variants).
+         * row this window's data has no cells for (a sample the display draws
+         * but whose genotypes never appear in the fetched variants).
          *
          * The hit test needs this direction, and needs it separately, because the
          * cell arrays stay in the worker's numbering: they are sorted by
@@ -1456,18 +1528,11 @@ export default function MultiSampleVariantBaseModelF(
          * and their shared block frays outward at the recombination
          * breakpoints that end it.
          *
-         * Sorts `editableSources`, so the label and labelColor only `layout`
-         * holds move with each row and nothing has to be merged back — and so
-         * the order written back carries no `rowColor` tint, which those rows
-         * deliberately do not have.
+         * Sorts `editableSources`, the rows at the mode's granularity with no
+         * focus, so the order written to `rows.domain` names every row.
          */
         sortByGenotype(featureId: string) {
           const { cellData } = self
-          // Merging a fresh order back against `layout` by name cannot work in
-          // phased mode — the sorted rows are haplotypes ("S0 HP0") and the
-          // layout is sample-level, so nothing matched and every swatch went
-          // blank. Not subtree-filtered, so a hidden row keeps its overrides
-          // instead of being dropped from `layout` for good.
           const sources = self.editableSources
           // Fewer than two rows has nothing to order, and the write is not a
           // harmless no-op: `setRowOrder` drops the cluster tree whenever the row
@@ -1538,14 +1603,12 @@ export default function MultiSampleVariantBaseModelF(
          * for the rows the attribute is blank on.
          */
         focusGroup(value: string) {
-          // `sourcesBeforeSubtreeFilter` for both of `focusRowGroup`'s reasons,
-          // and it is the one list here that can be absent: the samples arrive
-          // on their own RPC, and before it lands there is no group to focus.
-          const rows = self.sourcesBeforeSubtreeFilter
-          if (rows) {
+          // Before the samples land there is no group to focus, and an empty
+          // pick would read as clearing the focus.
+          if (self.sourcesVolatile) {
             focusRowGroup(
               self,
-              rows,
+              self.editableSources,
               s => String(s[self.rowColor] ?? '') === value,
             )
           }
@@ -1614,19 +1677,11 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #method
          * Called by BaseTrackModel.replaceDisplay when switching between the
-         * regular and matrix variant displays. The config-slot settings
-         * (rowColor, renderingMode, etc.) now live on each display's own
-         * config-schema node rather than a display-instance override map, so
-         * porting them means writing directly into the *target* display's
-         * config (via setSlot) rather than spreading them into the new
-         * display's instance snapshot — hence the `newDisplayId` param. Only
-         * genuine display-instance state (not config-backed) is returned for
-         * the instance-snapshot spread.
-         *
-         * `clusterProvenance` and `subtreeFilter` travel with `clusterTree`
-         * and `layout`: the tree without its provenance loses the "Clustered
-         * on <locus>" row and the drift chip, and the layout without the
-         * filter un-focuses a clade the reader had narrowed to.
+         * regular and matrix variant displays. The settings, the arrangement
+         * included, live on each display's own config node, so porting them
+         * means writing into the *target* display's config — hence the
+         * `newDisplayId` param. Only genuine display-instance state is
+         * returned for the instance-snapshot spread.
          */
         getPortableSettings(newDisplayId?: string) {
           if (newDisplayId) {
@@ -1641,7 +1696,9 @@ export default function MultiSampleVariantBaseModelF(
               for (const key of PORTABLE_CONFIG_KEYS) {
                 target.setSlot(key, getConf(self, key))
               }
-              target.setSubschema('facet', getConf(self, 'facet'))
+              for (const key of PORTABLE_CONFIG_OBJECTS) {
+                target.setSubschema(key, getConf(self, key))
+              }
               // Raw, never through getConf: featureColor can hold a `jexl:...`
               // string, and getConf evaluates one on read with no `feature`
               // bound — so the consequence-impact preset
@@ -1652,10 +1709,6 @@ export default function MultiSampleVariantBaseModelF(
           }
           return {
             jexlFiltersSetting: self.jexlFiltersSetting,
-            clusterTree: self.clusterTree,
-            clusterProvenance: self.clusterProvenance,
-            subtreeFilter: self.subtreeFilter,
-            layout: self.layout,
           }
         },
       }))

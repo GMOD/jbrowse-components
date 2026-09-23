@@ -55,7 +55,7 @@ test('clusters when the session asks and there are two samples', async () => {
 
   expect(clusterCalls).toHaveLength(1)
   await waitFor(() => {
-    expect(display.clusterTree).toBe('(b,a);')
+    expect(display.rowTree).toBe('(b,a);')
   })
 })
 
@@ -65,5 +65,5 @@ test('a single sample runs no clustering RPC at all', async () => {
   const { display, clusterCalls } = await runWith(['HG001'])
 
   expect(clusterCalls).toHaveLength(0)
-  expect(display.clusterTree).toBeUndefined()
+  expect(display.rowTree).toBeUndefined()
 })

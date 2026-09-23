@@ -14,32 +14,35 @@ function colored() {
   return display
 }
 
-// `layout` holds only what a user or a clustering run did, so the mixin's plain
-// `layout.length > 0` answers for these displays too. Both channels used to
-// seed `layout` on first load, which offered "Reset row order" on every
-// population-colored track before anyone had touched it.
-test('a configured colorBy writes no layout and is not a custom row order', () => {
+// `rows` holds only what a reader or a clustering run did, so the tint and the
+// band leave it alone. Both channels used to seed the order on first load,
+// which offered "Reset row order" on every population-colored track before
+// anyone had touched it.
+test('a configured colorBy writes no order and is not a custom row order', () => {
   const display = colored()
-  expect(display.layout).toHaveLength(0)
+  expect(display.rowDomain).toEqual([])
   expect(display.rowArrangementIsCustom).toBe(false)
   expect(display.sources.every(s => s.labelColor)).toBe(true)
 })
 
-test('a configured facet writes no layout and is not a custom row order', () => {
+test('a configured facet writes no order and is not a custom row order', () => {
   const { display } = createTestEnvironment().createDisplay()
   display.setFacet('population')
   display.setSources(SOURCES)
 
-  expect(display.layout).toHaveLength(0)
+  expect(display.rowDomain).toEqual([])
   expect(display.rowArrangementIsCustom).toBe(false)
   expect(display.sources.map(s => s.name)).toEqual(['HG002', 'HG001'])
 })
 
-// The palette is a pure function of the attribute, so persisting it bought
-// nothing and cost every session a row table it had to carry and re-merge.
-test('a session snapshot after setColorBy carries no palette colors', () => {
+// The palette is a pure function of the attribute, so persisting it would buy
+// nothing and cost every session a row table it had to carry.
+test('the config after setColorBy carries no palette colours', () => {
   const display = colored()
-  expect(getSnapshot(display).layout).toBeUndefined()
+  expect(getSnapshot(display.configuration).rows).toBeUndefined()
+  expect(getSnapshot(display.configuration).rowColor).toEqual({
+    field: 'population',
+  })
 })
 
 test('a reorder is custom, and the reset clears it', () => {
@@ -53,10 +56,10 @@ test('a reorder is custom, and the reset clears it', () => {
   expect(display.sources.map(s => s.name)).toEqual(['HG001', 'HG002'])
 })
 
-test('a second color-by still writes no layout', () => {
+test('a second color-by still writes no order', () => {
   const display = colored()
   display.setRowColor('super_pop')
 
-  expect(display.layout).toHaveLength(0)
+  expect(display.rowDomain).toEqual([])
   expect(display.rowArrangementIsCustom).toBe(false)
 })

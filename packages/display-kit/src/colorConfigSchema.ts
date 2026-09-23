@@ -133,6 +133,24 @@ export function colorRangeSlot({
   } as const
 }
 
+/** The colour a `domain`/`range` pair list sets on each value it names. */
+export function pairedColorsOf({
+  domain,
+  range,
+}: {
+  domain: readonly string[]
+  range: readonly string[]
+}): ReadonlyMap<string, string> {
+  const colors = new Map<string, string>()
+  domain.forEach((name, i) => {
+    const color = range[i]
+    if (color !== undefined) {
+      colors.set(name, color)
+    }
+  })
+  return colors
+}
+
 /** What a linear or log scale adds: a named ramp, its direction, its middle. */
 export const colorRampSlots = {
   scheme: {

@@ -1,4 +1,9 @@
-import { expandSourcesToHaplotypes, getSources } from './getSources.ts'
+import {
+  arrangeRows,
+  expandSourcesToHaplotypes,
+  keptRowsOf,
+  parseRowName,
+} from './getSources.ts'
 
 describe('expandSourcesToHaplotypes', () => {
   test('expands diploid samples to two haplotypes', () => {
@@ -87,266 +92,150 @@ describe('expandSourcesToHaplotypes', () => {
   })
 })
 
-describe('getSources', () => {
-  const baseSources = [{ name: 'HG001' }, { name: 'HG002' }, { name: 'HG003' }]
-  // For the cases about ordering/expansion rather than membership: `layout` is
-  // an ordering hint, so a source it omits is appended (see the membership
-  // tests below), which would otherwise add rows those cases aren't about.
-  const twoSources = [{ name: 'HG001' }, { name: 'HG002' }]
+describe('parseRowName', () => {
+  const samples = new Set(['HG001', 'X HP0'])
 
-  const sampleInfo = {
-    HG001: { isPhased: true, maxPloidy: 2 },
-    HG002: { isPhased: true, maxPloidy: 2 },
-    HG003: { isPhased: true, maxPloidy: 2 },
-  }
-
-  test('non-phased mode returns sources as-is', () => {
-    const result = getSources({
-      sources: baseSources,
-      renderingMode: 'alleleCount',
-      sampleInfo,
-    })
-
-    expect(result).toHaveLength(3)
-    expect(result[0]).toMatchObject({ name: 'HG001' })
-  })
-
-  test('phased mode expands samples to haplotypes', () => {
-    const result = getSources({
-      sources: baseSources,
-      renderingMode: 'phased',
-      sampleInfo,
-    })
-
-    expect(result).toHaveLength(6)
-    expect(result[0]).toMatchObject({
-      name: 'HG001 HP0',
-      sampleName: 'HG001',
-      HP: 0,
-    })
-    expect(result[1]).toMatchObject({
-      name: 'HG001 HP1',
+  test('reads a sample, and a haplotype back to its sample', () => {
+    expect(parseRowName('HG001', samples)).toEqual({ sampleName: 'HG001' })
+    expect(parseRowName('HG001 HP1', samples)).toEqual({
       sampleName: 'HG001',
       HP: 1,
     })
   })
 
-  test('phased mode with haplotype layout preserves order', () => {
-    const haplotypeLayout = [
-      { name: 'HG001 HP0', sampleName: 'HG001', HP: 0 },
-      { name: 'HG002 HP1', sampleName: 'HG002', HP: 1 },
-      { name: 'HG001 HP1', sampleName: 'HG001', HP: 1 },
-      { name: 'HG002 HP0', sampleName: 'HG002', HP: 0 },
-    ]
-
-    const result = getSources({
-      sources: twoSources,
-      layout: haplotypeLayout,
-      renderingMode: 'phased',
-      sampleInfo,
-    })
-
-    expect(result).toHaveLength(4)
-    expect(result[0]).toMatchObject({ name: 'HG001 HP0', HP: 0 })
-    expect(result[1]).toMatchObject({ name: 'HG002 HP1', HP: 1 })
-    expect(result[2]).toMatchObject({ name: 'HG001 HP1', HP: 1 })
-    expect(result[3]).toMatchObject({ name: 'HG002 HP0', HP: 0 })
+  // A sample's own name wins over the haplotype reading of it.
+  test('a sample called like a haplotype is the sample', () => {
+    expect(parseRowName('X HP0', samples)).toEqual({ sampleName: 'X HP0' })
   })
 
-  test('phased mode with sample layout expands each sample', () => {
-    const sampleLayout = [{ name: 'HG002' }, { name: 'HG001' }]
-
-    const result = getSources({
-      sources: twoSources,
-      layout: sampleLayout,
-      renderingMode: 'phased',
-      sampleInfo,
-    })
-
-    expect(result).toHaveLength(4)
-    expect(result[0]).toMatchObject({ name: 'HG002 HP0', sampleName: 'HG002' })
-    expect(result[1]).toMatchObject({ name: 'HG002 HP1', sampleName: 'HG002' })
-    expect(result[2]).toMatchObject({ name: 'HG001 HP0', sampleName: 'HG001' })
-    expect(result[3]).toMatchObject({ name: 'HG001 HP1', sampleName: 'HG001' })
+  test('a name no current sample answers to is undefined', () => {
+    expect(parseRowName('HG002 HP0', samples)).toBeUndefined()
+    expect(parseRowName('HG002', samples)).toBeUndefined()
   })
+})
 
-  // Both halves of the membership rule in one call: a layout row the sources
-  // don't have is dropped, and a source the layout doesn't have is appended.
-  // Narrowing the rows is `subtreeFilter`'s job, not the layout's.
-  test('drops layout rows with no source, appends sources with no layout row', () => {
-    const layout = [{ name: 'HG001' }, { name: 'UNKNOWN' }, { name: 'HG002' }]
+describe('arrangeRows', () => {
+  const sources = [
+    { name: 'HG001', color: 'red' },
+    { name: 'HG002', label: 'Two' },
+    { name: 'HG003' },
+  ]
+  const sampleInfo = {
+    HG001: { isPhased: true, maxPloidy: 2 },
+    HG002: { isPhased: true, maxPloidy: 2 },
+    HG003: { isPhased: true, maxPloidy: 1 },
+  }
+  const none = { domain: [], labels: {}, rowColors: new Map() }
+  const names = (rows: { name: string }[]) => rows.map(r => r.name)
 
-    const result = getSources({
-      sources: baseSources,
-      layout,
+  test('allele count: one row per sample, samplesTsv color as the tint', () => {
+    const rows = arrangeRows({
+      sources,
       renderingMode: 'alleleCount',
       sampleInfo,
+      arrangement: none,
     })
-
-    expect(result.map(r => r.name)).toEqual(['HG001', 'HG002', 'HG003'])
+    expect(names(rows)).toEqual(['HG001', 'HG002', 'HG003'])
+    expect(rows[0]).toMatchObject({ sampleName: 'HG001', labelColor: 'red' })
   })
 
-  // A phased layout's rows are haplotypes, which match no sample name — keying
-  // "already covered" on `name` would re-append every sample on top of its own
-  // haplotype rows.
-  test('a phased layout covers its samples, so nothing is re-appended', () => {
-    const result = getSources({
-      sources: twoSources,
-      layout: [
-        { name: 'HG001 HP0', sampleName: 'HG001', HP: 0 },
-        { name: 'HG001 HP1', sampleName: 'HG001', HP: 1 },
-        { name: 'HG002 HP0', sampleName: 'HG002', HP: 0 },
-        { name: 'HG002 HP1', sampleName: 'HG002', HP: 1 },
-      ],
+  test('the listed rows lead, and a sample the order omits is appended', () => {
+    const rows = arrangeRows({
+      sources,
       renderingMode: 'alleleCount',
+      arrangement: { ...none, domain: ['HG003', 'UNKNOWN', 'HG001'] },
     })
+    expect(names(rows)).toEqual(['HG003', 'HG001', 'HG002'])
+  })
 
-    expect(result.map(r => r.name)).toEqual([
+  test('phased: haplotypes by ploidy, a sample name ordering all of them', () => {
+    const rows = arrangeRows({
+      sources,
+      renderingMode: 'phased',
+      sampleInfo,
+      arrangement: { ...none, domain: ['HG003', 'HG002 HP1'] },
+    })
+    expect(names(rows)).toEqual([
+      'HG003 HP0',
+      'HG002 HP1',
       'HG001 HP0',
       'HG001 HP1',
       'HG002 HP0',
-      'HG002 HP1',
     ])
   })
 
-  test('haplotype entries use sampleName for source lookup', () => {
-    const haplotypeLayout = [{ name: 'HG001 HP0', sampleName: 'HG001', HP: 0 }]
-
-    const result = getSources({
-      sources: [{ name: 'HG001' }],
-      layout: haplotypeLayout,
+  // Until the ploidy lands the names stand for it, so an arranged track keeps
+  // its haplotype rows across a refetch; a sample the order names only as a
+  // sample waits for the ploidy.
+  test('phased without sampleInfo: the haplotypes the order names', () => {
+    const rows = arrangeRows({
+      sources,
       renderingMode: 'phased',
-      sampleInfo,
+      arrangement: { ...none, domain: ['HG002 HP1', 'HG002 HP0', 'HG001'] },
     })
-
-    expect(result).toHaveLength(1)
-    expect(result[0]).toMatchObject({
-      name: 'HG001 HP0',
-      sampleName: 'HG001',
-      HP: 0,
-    })
+    expect(names(rows)).toEqual(['HG002 HP1', 'HG002 HP0', 'HG001', 'HG003'])
   })
 
-  test('layout colors are preserved when reordering (e.g. after clustering)', () => {
-    const layout = [
-      { name: 'HG003', color: 'blue' },
-      { name: 'HG001', color: 'red' },
-      { name: 'HG002', color: 'green' },
-    ]
+  test('a label or tint by row name, then by sample name, over the adapter', () => {
+    const rows = arrangeRows({
+      sources,
+      renderingMode: 'phased',
+      sampleInfo,
+      arrangement: {
+        domain: [],
+        labels: { 'HG001 HP1': 'One, second', HG002: 'Second' },
+        rowColors: new Map([
+          ['HG001', 'blue'],
+          ['HG002 HP0', 'green'],
+        ]),
+      },
+    })
+    expect(
+      rows.map(({ name, label, labelColor }) => ({ name, label, labelColor })),
+    ).toEqual([
+      { name: 'HG001 HP0', label: undefined, labelColor: 'blue' },
+      { name: 'HG001 HP1', label: 'One, second', labelColor: 'blue' },
+      { name: 'HG002 HP0', label: 'Second', labelColor: 'green' },
+      { name: 'HG002 HP1', label: 'Second', labelColor: undefined },
+      { name: 'HG003 HP0', label: undefined, labelColor: undefined },
+    ])
+  })
 
-    const result = getSources({
-      sources: baseSources,
-      layout,
+  test('a sample called constructor reads no inherited label', () => {
+    const [row] = arrangeRows({
+      sources: [{ name: 'constructor' }],
       renderingMode: 'alleleCount',
-      sampleInfo,
+      arrangement: none,
     })
+    expect(row!.label).toBeUndefined()
+  })
+})
 
-    expect(result).toHaveLength(3)
-    expect(result[0]).toMatchObject({ name: 'HG003', color: 'blue' })
-    expect(result[1]).toMatchObject({ name: 'HG001', color: 'red' })
-    expect(result[2]).toMatchObject({ name: 'HG002', color: 'green' })
+describe('keptRowsOf', () => {
+  const samples = [{ name: 'HG001' }, { name: 'HG002' }, { name: 'HG003' }]
+  const haplotypes = ['HG001', 'HG002'].flatMap(sampleName => [
+    { name: `${sampleName} HP0`, sampleName, HP: 0 },
+    { name: `${sampleName} HP1`, sampleName, HP: 1 },
+  ])
+  const names = (rows: { name: string }[]) => rows.map(r => r.name)
+
+  test('a focus on a haplotype keeps its sample, for the fetch', () => {
+    expect(names(keptRowsOf(samples, ['HG002 HP1']))).toEqual(['HG002'])
   })
 
-  // Regression: ploidy lookup previously used row.name instead of sampleName,
-  // so layout rows whose display name differed from the VCF sample name (the
-  // key sampleInfo is built with) silently produced zero haplotype rows.
-  test('phased mode looks up ploidy via sampleName, not row.name', () => {
-    const layout = [{ name: 'displayLabel', sampleName: 'HG001' }]
-
-    const result = getSources({
-      sources: [{ name: 'HG001' }],
-      layout,
-      renderingMode: 'phased',
-      sampleInfo,
-    })
-
-    expect(result).toHaveLength(2)
-    expect(result.map(r => r.HP)).toEqual([0, 1])
-    expect(result.map(r => r.sampleName)).toEqual(['HG001', 'HG001'])
+  test('and only that haplotype among the rows drawn', () => {
+    expect(names(keptRowsOf(haplotypes, ['HG002 HP1']))).toEqual(['HG002 HP1'])
   })
 
-  // Regression: previously returned [] when sampleInfo lacked the sample,
-  // dropping the row entirely. `sources` and `expandSourcesToHaplotypes` both
-  // default to ploidy 2, so getSources should match.
-  test('phased mode defaults to ploidy 2 when sampleInfo lacks the sample', () => {
-    const result = getSources({
-      sources: [{ name: 'HG999' }],
-      renderingMode: 'phased',
-      sampleInfo: {},
-    })
-
-    expect(result).toHaveLength(2)
-    expect(result.map(r => r.HP)).toEqual([0, 1])
-    expect(result.map(r => r.sampleName)).toEqual(['HG999', 'HG999'])
+  test('a sample name keeps all of its haplotypes', () => {
+    expect(names(keptRowsOf(haplotypes, ['HG001']))).toEqual([
+      'HG001 HP0',
+      'HG001 HP1',
+    ])
   })
 
-  // Regression: without sampleInfo at all, the row should pass through
-  // unexpanded — matches the `sources` getter, which waits for sampleInfo
-  // before expanding rather than dropping rows.
-  test('phased mode without sampleInfo returns samples unexpanded', () => {
-    const result = getSources({
-      sources: [{ name: 'HG001' }, { name: 'HG002' }],
-      renderingMode: 'phased',
-    })
-
-    expect(result).toHaveLength(2)
-    expect(result.map(r => r.name)).toEqual(['HG001', 'HG002'])
-    expect(result.every(r => r.HP === undefined)).toBe(true)
-  })
-
-  // Regression: sourcesBase uses alleleCount mode + haplotype layout (from
-  // phased clustering), then applies the subtreeFilter set by clicking a tree
-  // node. Leaf names in the phased tree are HP names ("HG001 HP0"), and base
-  // entries have name="HG001 HP0" / sampleName="HG001". Filtering by s.name
-  // is correct; filtering by s.sampleName would drop everything.
-  test('alleleCount mode with HP layout can be filtered by HP names via s.name', () => {
-    const haplotypeLayout = [
-      { name: 'HG001 HP0', sampleName: 'HG001', HP: 0 },
-      { name: 'HG001 HP1', sampleName: 'HG001', HP: 1 },
-      { name: 'HG002 HP0', sampleName: 'HG002', HP: 0 },
-      { name: 'HG002 HP1', sampleName: 'HG002', HP: 1 },
-    ]
-
-    const base = getSources({
-      sources: baseSources,
-      layout: haplotypeLayout,
-      renderingMode: 'alleleCount',
-    })
-
-    // Simulate the subtreeFilter set when user clicks a phased tree node
-    const subtreeFilter = new Set(['HG001 HP0', 'HG001 HP1'])
-    const filtered = base.filter(s => subtreeFilter.has(s.name))
-
-    expect(filtered).toHaveLength(2)
-    expect(filtered[0]).toMatchObject({
-      name: 'HG001 HP0',
-      sampleName: 'HG001',
-    })
-    expect(filtered[1]).toMatchObject({
-      name: 'HG001 HP1',
-      sampleName: 'HG001',
-    })
-  })
-
-  test('layout colors are preserved in phased mode with haplotype layout', () => {
-    const haplotypeLayout = [
-      { name: 'HG002 HP0', sampleName: 'HG002', HP: 0, color: 'green' },
-      { name: 'HG001 HP1', sampleName: 'HG001', HP: 1, color: 'red' },
-      { name: 'HG001 HP0', sampleName: 'HG001', HP: 0, color: 'red' },
-      { name: 'HG002 HP1', sampleName: 'HG002', HP: 1, color: 'green' },
-    ]
-
-    const result = getSources({
-      sources: twoSources,
-      layout: haplotypeLayout,
-      renderingMode: 'phased',
-      sampleInfo,
-    })
-
-    expect(result).toHaveLength(4)
-    expect(result[0]).toMatchObject({ name: 'HG002 HP0', color: 'green' })
-    expect(result[1]).toMatchObject({ name: 'HG001 HP1', color: 'red' })
-    expect(result[2]).toMatchObject({ name: 'HG001 HP0', color: 'red' })
-    expect(result[3]).toMatchObject({ name: 'HG002 HP1', color: 'green' })
+  test('a focus naming no current row keeps every row', () => {
+    expect(keptRowsOf(samples, ['NA0001'])).toBe(samples)
+    expect(keptRowsOf(samples, undefined)).toBe(samples)
   })
 })

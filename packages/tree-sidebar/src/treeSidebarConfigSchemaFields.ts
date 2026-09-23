@@ -1,5 +1,5 @@
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
-import type { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
+import type { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 
 /**
  * The config slots a display owes `TreeSidebarMixin` — one object, so a display
@@ -181,10 +181,14 @@ export type TreeSidebarToggleConfigModel = ConfigModelForFields<
   ReturnType<typeof treeSidebarConfigSchemaFields>
 >
 
-/** What `TreeSidebarMixin` asks for: the toggles, and the `rows` object. */
+/**
+ * What `TreeSidebarMixin` asks for: the toggles, and a `rows` object carrying
+ * the arrangement — the intrinsic-key `RowArrangement`, or `Rows`, which
+ * extends it with a field.
+ */
 export type TreeSidebarConfigModel = ConfigModelForFields<
   ReturnType<typeof treeSidebarConfigSchemaFields> & {
-    rows: typeof rowsConfigSchema
+    rows: typeof rowArrangementConfigSchema
   }
 >
 

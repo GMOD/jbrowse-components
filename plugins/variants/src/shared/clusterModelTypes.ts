@@ -1,15 +1,19 @@
-import type { ProcessedSource, SampleInfo, Source } from './types.ts'
+import type { ProcessedSource, SampleInfo } from './types.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { ClusterProvenance } from '@jbrowse/tree-sidebar'
+import type { ClusterRun } from '@jbrowse/tree-sidebar'
 
 export interface ReducedModel extends IStateTreeNode {
-  layout: Source[]
-  // The rows the display is showing: layout-ordered and subtree-filtered, and
-  // already haplotype-expanded once a phased clustering has written `layout`.
-  // What both clustering paths cluster, so a re-run inside a filtered clade
-  // resolves that clade rather than the whole cohort.
-  sourcesBase?: ProcessedSource[]
+  // Undefined until the samples land, which is what the matrix export keys its
+  // "nothing yet" on.
+  sourcesBase?: readonly unknown[]
+  // The rows the display is showing, at the mode's granularity and narrowed to
+  // the focus: what both clustering paths cluster, so a re-run inside a
+  // focused clade resolves that clade rather than the whole cohort.
+  clusterableSources: ProcessedSource[]
+  // Every row in its current order, unfocused: what a run re-appends the rows
+  // the focus hides from, after the clade.
+  editableSources: readonly { name: string }[]
   // Always resolved off a config slot with a default (0 / 1), so both clustering
   // entry points forward the display's real thresholds rather than restating
   // "off" defaults of their own.
@@ -19,8 +23,8 @@ export interface ReducedModel extends IStateTreeNode {
   adapterConfig: Record<string, unknown>
   renderingMode: string
   sampleInfo?: Record<string, SampleInfo>
-  // The config `domain`, off `LayoutTreeSidebarMixin`. A run rotates its dendrogram
-  // towards it rather than discarding it, so both entry points forward it.
+  // `rows.domain`, off `TreeSidebarMixin`. A run rotates its dendrogram towards
+  // it rather than discarding it, so both entry points forward it.
   rowDomain: string[]
   // Whether the fetched inputs clustering needs have arrived. Phased mode
   // clusters haplotypes, which needs per-sample ploidy from `sampleInfo` — and
@@ -38,8 +42,5 @@ export interface ReducedModel extends IStateTreeNode {
   // hand back a one-leaf dendrogram — which `clusterMatrix` now refuses outright
   // (MIN_CLUSTER_ROWS), so ungated it is an error dialog rather than a no-op.
   hasClusterableRows: boolean
-  setRowOrder: (
-    rows: Source[],
-    run?: { tree?: string; provenance?: ClusterProvenance },
-  ) => void
+  setRowOrder: (rows: readonly { name: string }[], run?: ClusterRun) => void
 }

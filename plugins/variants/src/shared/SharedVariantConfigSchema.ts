@@ -2,13 +2,15 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
+import { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import {
   rowSeparatorsConfigSchemaFields,
-  rowDomainConfigSchemaFields,
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
+
+import { variantRowColorSchema } from './variantRowColorConfigSchema.ts'
 
 /**
  * #config SharedVariantDisplay
@@ -35,9 +37,15 @@ export default function sharedVariantConfigFactory() {
         tree: 'Show the sample clustering tree in the sidebar',
         rowLabels: 'Show the per-sample row labels in the sidebar',
       }),
-      ...rowDomainConfigSchemaFields({
-        rows: "Row order: the samples listed come first, in this order, and the rest keep the file's order; a facet groups within it. A clustering run rotates its dendrogram towards this order instead of discarding it, so the listed samples come as early as the tree allows",
-      }),
+      /**
+       * #slot rows
+       * The arrangement a reader gives the rows, each member by row name: a
+       * sample in allele-count mode, a haplotype (`"<sample> HP<n>"`) in phased
+       * mode, where a sample name stands for all of its haplotypes. The
+       * samples `domain` lists come first and the rest keep the file's order; a
+       * facet groups within it.
+       */
+      rows: rowArrangementConfigSchema,
       ...rowSeparatorsConfigSchemaFields(),
       /**
        * #slot
@@ -134,19 +142,11 @@ export default function sharedVariantConfigFactory() {
         defaultValue: true,
       },
       /**
-       * #slot
-       * The tint is resolved when the rows are read, and while it is set it
-       * **wins over any color a row already carried** — a `color` column in the
-       * samplesTsv, one the arrangement dialog wrote, one an older session
-       * persisted. A channel bound to a variable beats a per-row constant;
-       * clear this to hand each row back its own color.
+       * #slot rowColor
+       * The tint beside each row's label: a sample-metadata attribute whose
+       * palette tints every row, and the colours a reader set row by row.
        */
-      rowColor: {
-        type: 'string',
-        defaultValue: '',
-        description:
-          "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping. While set it overrides a per-row color from the samplesTsv or the arrangement dialog",
-      },
+      rowColor: variantRowColorSchema,
       /**
        * #slot facet
        * A sample-metadata attribute (a column in the adapter's

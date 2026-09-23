@@ -1,4 +1,4 @@
-import { readConfObject, setConf } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { getContainingTrack } from '@jbrowse/core/util'
 
 import matrixConfigSchemaFactory from '../LinearMultiSampleVariantMatrixDisplay/configSchema.ts'
@@ -68,7 +68,7 @@ describe('getPortableSettings', () => {
     display.setRowColor('population')
     display.getPortableSettings(targetId)
     expect(target.featureColor).toBe('#ff0000')
-    expect(readConfObject(target, 'rowColor')).toBe('population')
+    expect(readConfObject(target, ['rowColor', 'field'])).toBe('population')
   })
 
   // Both are config slots, so they have to go through the slot copy: `height`
@@ -97,14 +97,22 @@ describe('getPortableSettings', () => {
     expect(readConfObject(target, 'showLegend')).toBe(false)
   })
 
-  // The row `domain` is derived at read time rather than written into
-  // `layout`, so a switch that left the slot behind would drop the configured
-  // order with nothing in the ported layout to stand in for it.
-  it('ports the row domain', () => {
+  it('ports the rows and their tints', () => {
     const { display, target, targetId } = setup('')
-    setConf(display, 'domain', ['HG002', 'HG001'])
+    display.applyDisplaySettings({
+      rows: { domain: ['HG002', 'HG001'], labels: { HG002: 'Two' } },
+      rowColor: { field: 'population', domain: ['HG001'], range: ['#123456'] },
+    })
     display.getPortableSettings(targetId)
-    expect([...readConfObject(target, 'domain')]).toEqual(['HG002', 'HG001'])
+    expect(readConfObject(target, 'rows')).toEqual({
+      domain: ['HG002', 'HG001'],
+      labels: { HG002: 'Two' },
+    })
+    expect(readConfObject(target, 'rowColor')).toEqual({
+      field: 'population',
+      domain: ['HG001'],
+      range: ['#123456'],
+    })
   })
 
   // A drag on the sidebar edge writes a config slot, like the track height
@@ -130,11 +138,10 @@ describe('getPortableSettings', () => {
     })
   })
 
-  // The tree's provenance and the subtree filter are the two pieces of
-  // instance state that only mean something beside the tree and the layout they
-  // came with.
-  it('carries the cluster provenance and subtree filter with the tree', () => {
-    const { display, targetId } = setup('')
+  // The tree only means something beside the order it came with, and the
+  // provenance and the focus beside the tree, so all four travel in `rows`.
+  it('carries the tree, its provenance and the focus with the order', () => {
+    const { display, target, targetId } = setup('')
     const provenance = {
       regions: [{ refName: 'chr1', start: 0, end: 100 }],
       settings: [],
@@ -144,10 +151,14 @@ describe('getPortableSettings', () => {
       provenance,
     })
     display.setRowFocus(['a'])
-    expect(display.getPortableSettings(targetId)).toMatchObject({
-      clusterTree: '(a);',
-      clusterProvenance: provenance,
-      subtreeFilter: ['a'],
+    expect(display.getPortableSettings(targetId)).toEqual({
+      jexlFiltersSetting: undefined,
+    })
+    expect(readConfObject(target, 'rows')).toEqual({
+      domain: ['a'],
+      tree: '(a);',
+      treeProvenance: provenance,
+      kept: ['a'],
     })
   })
 })

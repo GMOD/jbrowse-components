@@ -31,7 +31,7 @@ describe('recoloring does not disturb the arrangement', () => {
     display.setRowColor('population')
 
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
-    expect(display.clusterTree).toBe(CLUSTERED_TREE)
+    expect(display.rowTree).toBe(CLUSTERED_TREE)
     // the dendrogram still positions, i.e. its leaves are still these rows
     expect(display.hierarchy).toBeDefined()
     expect(display.sources.every(s => s.labelColor)).toBe(true)
@@ -43,7 +43,7 @@ describe('recoloring does not disturb the arrangement', () => {
     display.setRowColor('')
 
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
-    expect(display.clusterTree).toBe(CLUSTERED_TREE)
+    expect(display.rowTree).toBe(CLUSTERED_TREE)
     expect(display.sources.some(s => s.labelColor)).toBe(false)
   })
 
@@ -68,7 +68,7 @@ describe('recoloring does not disturb the arrangement', () => {
   })
 })
 
-describe('the facet bands over the layout', () => {
+describe('the facet bands over the arranged order', () => {
   it('bands the rows a drag left behind', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setSources(SOURCES)
@@ -79,7 +79,7 @@ describe('the facet bands over the layout', () => {
     expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
   })
 
-  // The band is resolved on the read, over whatever `layout` holds, so a drag
+  // The band is resolved on the read, over whatever `rows.domain` holds, so a drag
   // that moves a sample into another band has nowhere to land.
   it('snaps a cross-band drag back', () => {
     const { display } = createTestEnvironment().createDisplay()
@@ -91,7 +91,7 @@ describe('the facet bands over the layout', () => {
     display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
 
     expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
-    expect(display.layout.map(s => s.name)).toEqual(['S1', 'S0', 'S2'])
+    expect(display.rowDomain).toEqual(['S1', 'S0', 'S2'])
   })
 
   // A dendrogram positions leaf i on row i, so a band under it would draw it
@@ -109,7 +109,7 @@ describe('the facet bands over the layout', () => {
 
     expect(rowNames(display)).toEqual(['S0', 'S1', 'S2'])
     expect(display.facet?.field).toBe('population')
-    expect(display.clusterTree).toBe('((S0,S1),S2);')
+    expect(display.rowTree).toBe('((S0,S1),S2);')
     expect(display.hierarchy).toBeDefined()
   })
 
@@ -124,11 +124,11 @@ describe('the facet bands over the layout', () => {
 
     display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
 
-    expect(display.clusterTree).toBeUndefined()
+    expect(display.rowTree).toBeUndefined()
     expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
   })
 
-  // A phased run's layout is haplotype rows, and expansion spreads every source
+  // A phased run's order names haplotype rows, and expansion spreads every source
   // field onto each one — so the attribute the band reads is there.
   it('bands the haplotype rows a phased run produced', () => {
     const { display } = createTestEnvironment().createDisplay()
@@ -162,7 +162,7 @@ describe('the facet bands over the layout', () => {
 describe('the config `domain` seeds the sample order', () => {
   function domainDisplay(domain: string[]) {
     const { display } = createTestEnvironment({
-      displayConfig: { domain },
+      displayConfig: { rows: { domain } },
     }).createDisplay()
     display.setSources(SOURCES)
     return display
@@ -185,11 +185,11 @@ describe('the config `domain` seeds the sample order', () => {
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
   })
 
-  // The seed is derived, never written, so a track nobody has touched has an
-  // empty layout and is not offered "Reset row order".
+  // The seed is the config's own `rows.domain`, so a track nobody has touched
+  // is not offered "Reset row order".
   it('is not a custom row order', () => {
     const display = domainDisplay(['S2'])
-    expect(display.layout).toHaveLength(0)
+    expect(display.rowDomain).toEqual(['S2'])
     expect(display.rowArrangementIsCustom).toBe(false)
   })
 
@@ -224,7 +224,7 @@ describe('the config `domain` seeds the sample order', () => {
     display.setRowColor('population')
 
     expect(rowNames(display)).toEqual(['S1', 'S0', 'S2'])
-    expect(display.clusterTree).toBe(tree)
+    expect(display.rowTree).toBe(tree)
     expect(display.hierarchy).toBeDefined()
   })
 
@@ -241,21 +241,21 @@ describe('a rendering-mode switch renames the rows', () => {
   // The filter holds tree *leaf* names, and the mode decides whether those are
   // sample names or "S0 HP0" haplotype names. Left behind it matched nothing
   // and the display went blank.
-  it('clears the subtree filter along with the layout and tree', () => {
+  it('clears the focus along with the order and tree', () => {
     const display = clusteredDisplay()
     display.setRowFocus(['S2', 'S0'])
     expect(rowNames(display)).toEqual(['S2', 'S0'])
 
     display.setPhasedMode('phased')
 
-    expect(display.subtreeFilter).toBeUndefined()
-    expect(display.layout).toEqual([])
-    expect(display.clusterTree).toBeUndefined()
+    expect(display.rowFocus).toBeUndefined()
+    expect(display.rowDomain).toEqual([])
+    expect(display.rowTree).toBeUndefined()
     expect(rowNames(display)).toEqual(['S0', 'S1', 'S2'])
   })
 
-  // The coloring used to be seeded into `layout` and so went with it; it is
-  // now resolved on the read, so the renamed rows arrive already tinted.
+  // The coloring is resolved on the read, so the renamed rows arrive already
+  // tinted.
   it('keeps the configured coloring on the renamed rows', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setSources(SOURCES)
@@ -278,8 +278,8 @@ describe('a rendering-mode switch renames the rows', () => {
 
     display.setPhasedMode(display.renderingMode)
 
-    expect(display.subtreeFilter?.slice()).toEqual(['S2', 'S0'])
-    expect(display.clusterTree).toBe(CLUSTERED_TREE)
+    expect(display.rowFocus?.slice()).toEqual(['S2', 'S0'])
+    expect(display.rowTree).toBe(CLUSTERED_TREE)
   })
 
   // A reorder is not a rename: the filter still names rows that exist, so the
@@ -290,17 +290,15 @@ describe('a rendering-mode switch renames the rows', () => {
 
     display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
 
-    expect(display.clusterTree).toBeUndefined()
-    expect(display.subtreeFilter?.slice()).toEqual(['S2', 'S0'])
+    expect(display.rowTree).toBeUndefined()
+    expect(display.rowFocus?.slice()).toEqual(['S2', 'S0'])
     expect(rowNames(display)).toEqual(['S0', 'S2'])
   })
 })
 
 describe('an adapter swap to a new cohort', () => {
-  // A layout none of whose rows name a current sample is a previous dataset's:
-  // getSources drops every stale row and a subtreeFilter keyed on the old names
-  // matches nothing, so left standing they drew a blank display with colorBy
-  // still ticked in the menu.
+  // An order none of whose names is a current sample is a previous dataset's,
+  // and the tree beside it names rows that are gone.
   it('resets a stale arrangement, its tree and its subtree filter', () => {
     const display = clusteredDisplay()
     display.setRowFocus(['S2', 'S0'])
@@ -312,8 +310,8 @@ describe('an adapter swap to a new cohort', () => {
     ]
     display.setSources(cohortB)
 
-    expect(display.subtreeFilter).toBeUndefined()
-    expect(display.clusterTree).toBeUndefined()
+    expect(display.rowFocus).toBeUndefined()
+    expect(display.rowTree).toBeUndefined()
     expect(rowNames(display)).toEqual(['T0', 'T1'])
     // the configured coloring is re-seeded against the new cohort
     expect(display.sources.every(s => s.labelColor)).toBe(true)
@@ -324,8 +322,8 @@ describe('an adapter swap to a new cohort', () => {
 
     display.setSources([...SOURCES, { name: 'S3', population: 'EUR' }])
 
-    expect(display.clusterTree).toBe(CLUSTERED_TREE)
-    // the layout keeps its order and the new sample appends
+    expect(display.rowTree).toBe(CLUSTERED_TREE)
+    // the order keeps and the new sample appends
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1', 'S3'])
   })
 })
@@ -354,10 +352,9 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
     return display
   }
 
-  // The sort is the only writer of `layout` that computed a fresh order without
-  // merging it back, so the palette "Color by…" had just written went with it:
-  // the rows reordered correctly and every sidebar swatch went blank, while the
-  // menu still showed Population ticked. Nothing re-seeds it afterwards.
+  // The sort computes a fresh order, and the palette "Color by…" had just
+  // written once went with it: the rows reordered correctly and every sidebar
+  // swatch went blank, while the menu still showed Population ticked.
   it('keeps the colorBy palette through a sort', () => {
     const display = sortableDisplay()
     display.setRowColor('population')
@@ -375,9 +372,8 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
     }
   })
 
-  // In phased mode the sorted rows are haplotypes and `layout` is sample-level,
-  // so a merge by name matched nothing and dropped every colour — the same
-  // failure as above, in the mode neither test above runs in.
+  // In phased mode the sorted rows are haplotypes — the same failure as above,
+  // in the mode neither test above runs in.
   it('keeps the colorBy palette through a sort in phased mode', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setPhasedMode('phased')
@@ -405,13 +401,15 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
   })
 
   // Same rule, for the overrides the arrangement dialog writes rather than a
-  // palette. These have no other home than `layout` either.
+  // palette: `rows.labels` and `rowColor` hold them by name, so they follow the
+  // row.
   it('keeps a hand-set label and labelColor through a sort', () => {
     const display = sortableDisplay()
-    display.setRowOrder([
-      { name: 'S0', label: 'first', labelColor: 'red' },
-      { name: 'S1' },
-      { name: 'S2' },
+    const [s0, s1, s2] = display.editableSources
+    display.applyRowEdits([
+      { ...s0!, label: 'first', labelColor: 'red' },
+      s1!,
+      s2!,
     ])
 
     display.sortByGenotype('v1')

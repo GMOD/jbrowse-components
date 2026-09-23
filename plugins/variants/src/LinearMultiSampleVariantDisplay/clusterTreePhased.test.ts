@@ -61,7 +61,7 @@ test('phased mode reports itself ready to cluster once sampleInfo lands', () => 
 test('a phased clustering run leaves a drawable dendrogram', async () => {
   const display = await clusterPhased()
 
-  expect(display.clusterTree).toBe(HAPLOTYPE_TREE)
+  expect(display.rowTree).toBe(HAPLOTYPE_TREE)
   expect(display.sources.map(s => s.name)).toEqual([
     'S2 HP0',
     'S2 HP1',
@@ -77,7 +77,7 @@ test('a phased clustering run leaves a drawable dendrogram', async () => {
 test('a phased cluster does not change the sample set the fetch asks for', async () => {
   const display = await clusterPhased()
 
-  // sampleFilter is deduped back to samples, so a haplotype-level layout must
-  // not look like a new row set and trigger a refetch
+  // sampleFilter names samples, so a haplotype-level order must not look like
+  // a new row set and trigger a refetch
   expect(display.sampleFilter).toEqual(['S0', 'S1', 'S2'])
 })

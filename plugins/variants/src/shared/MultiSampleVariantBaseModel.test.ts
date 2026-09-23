@@ -139,15 +139,15 @@ describe('SharedVariantConfigSchema', () => {
   })
 })
 
-describe('colorBy config slot', () => {
+describe('rowColor config object', () => {
   const configSchema = sharedVariantConfigFactory()
 
-  it('has default value of empty string', () => {
+  it('names no attribute by default', () => {
     const config = configSchema.create({
       type: 'SharedVariantDisplay',
       displayId: 'test-colorby-1',
     })
-    expect(readConfObject(config, 'rowColor')).toBe('')
+    expect(readConfObject(config, ['rowColor', 'field'])).toBe('')
   })
 
   it('can be set to a metadata attribute name', () => {
@@ -156,7 +156,7 @@ describe('colorBy config slot', () => {
       displayId: 'test-colorby-2',
       rowColor: 'population',
     })
-    expect(readConfObject(config, 'rowColor')).toBe('population')
+    expect(readConfObject(config, ['rowColor', 'field'])).toBe('population')
   })
 })
 

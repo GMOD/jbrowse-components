@@ -30,7 +30,7 @@ export async function runGenotypeClustering({
   statusCallback: (status: RpcStatus) => void
 }) {
   const {
-    sourcesBase,
+    clusterableSources: rows,
     minorAlleleFrequencyFilter,
     maxMissingnessFilter,
     filters,
@@ -38,60 +38,51 @@ export async function runGenotypeClustering({
     renderingMode,
     sampleInfo,
   } = model
-  // `sourcesBase` rather than every discovered sample: it is the row set the
-  // display is actually showing, so with a subtree filter active this
-  // re-resolves the structure *within* the filtered clade instead of handing
-  // back the same whole-cohort tree.
-  if (sourcesBase) {
-    const ret = await rpcManager.call(
-      sessionId,
-      'MultiSampleVariantClusterGenotypeMatrix',
-      {
-        regions,
-        sources: sourcesBase,
-        minorAlleleFrequencyFilter,
-        maxMissingnessFilter,
-        filters,
-        adapterConfig,
-        signal,
-        renderingMode,
-        sampleInfo,
-        statusCallback,
-      },
-    )
-    // Layout and tree land together, immediately. They used to be split, with
-    // the tree held until the next cellData arrived, because `layout` was an
-    // RPC input: a clustering run refetched, and during that window the cells
-    // on screen were still in the old order while the tree already showed the
-    // new one. Row order is not a fetch input any more (see the plugin's
-    // CLAUDE.md) — the worker names its rows and `rowRemap` places them onto
-    // screen rows, re-derived from `sources` the moment `layout` changes — so
-    // there is no window left to defer across. Deferring anyway meant the tree
-    // waited on a refetch that no longer happens, and a
-    // `runClustering: true` display drew no dendrogram at all.
-    const arranged = applyClusterOrder({
-      sourcesBase,
-      layout: model.layout,
-      order: ret.order,
-      tree: ret.tree,
-      domain: model.rowDomain,
+  if (!model.sourcesBase) {
+    return
+  }
+  // The rows the display is showing rather than every discovered sample, so
+  // with a focus this re-resolves the structure *within* the clade instead of
+  // handing back the same whole-cohort tree.
+  const ret = await rpcManager.call(
+    sessionId,
+    'MultiSampleVariantClusterGenotypeMatrix',
+    {
+      regions,
+      sources: rows,
+      minorAlleleFrequencyFilter,
+      maxMissingnessFilter,
+      filters,
+      adapterConfig,
+      signal,
       renderingMode,
       sampleInfo,
-    })
-    model.setRowOrder(arranged.layout, {
-      tree: arranged.tree,
-      // The settings recorded are the ones that change which sites entered the
-      // matrix, so a reader can tell a tree built over common variants from one
-      // built over everything. `filters` (a jexl chain) is deliberately reduced
-      // to whether one was active: the expressions are long, the caption is one
-      // line, and "there was a filter" is what changes how the tree should be
-      // read.
-      provenance: clusterProvenanceFromRegions(regions, [
-        { name: 'mode', value: renderingMode },
-        { name: 'MAF filter', value: String(minorAlleleFrequencyFilter) },
-        { name: 'max missingness', value: String(maxMissingnessFilter) },
-        ...(filters ? [{ name: 'track filters', value: 'active' }] : []),
-      ]),
-    })
-  }
+      statusCallback,
+    },
+  )
+  // The order and the tree land together, immediately: row order is not a
+  // fetch input (see the plugin's CLAUDE.md), so the cells already in hand are
+  // placed under the new order the moment it is written.
+  const arranged = applyClusterOrder({
+    rows,
+    arranged: model.editableSources,
+    order: ret.order,
+    tree: ret.tree,
+    domain: model.rowDomain,
+  })
+  model.setRowOrder(arranged.order, {
+    tree: arranged.tree,
+    // The settings recorded are the ones that change which sites entered the
+    // matrix, so a reader can tell a tree built over common variants from one
+    // built over everything. `filters` (a jexl chain) is deliberately reduced
+    // to whether one was active: the expressions are long, the caption is one
+    // line, and "there was a filter" is what changes how the tree should be
+    // read.
+    provenance: clusterProvenanceFromRegions(regions, [
+      { name: 'mode', value: renderingMode },
+      { name: 'MAF filter', value: String(minorAlleleFrequencyFilter) },
+      { name: 'max missingness', value: String(maxMissingnessFilter) },
+      ...(filters ? [{ name: 'track filters', value: 'active' }] : []),
+    ]),
+  })
 }

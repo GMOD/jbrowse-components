@@ -196,7 +196,9 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         setConf(confNode(self), ['rows', member], value)
       }
       function persist() {
-        getContainingTrack(self).persistConfigurationNow?.()
+        if (hasParent(self)) {
+          getContainingTrack(self).persistConfigurationNow?.()
+        }
       }
       function writeTree(run?: ClusterRun) {
         write('tree', run?.tree)

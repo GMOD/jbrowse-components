@@ -44,7 +44,7 @@ const MultiSampleVariantClusterDialog = observer(
         // sample set than "Run clustering" would have produced.
         fetchMatrix={({ rpcManager, sessionId, ...args }) =>
           rpcManager.call(sessionId, 'MultiSampleVariantGetGenotypeMatrix', {
-            sources: model.sourcesBase ?? [],
+            sources: model.clusterableSources,
             minorAlleleFrequencyFilter: model.minorAlleleFrequencyFilter,
             maxMissingnessFilter: model.maxMissingnessFilter,
             filters: model.filters,
@@ -55,19 +55,14 @@ const MultiSampleVariantClusterDialog = observer(
           })
         }
         applyOrder={(order, matrixRowNames) => {
-          const { sourcesBase, sampleInfo, renderingMode, layout } = model
-          if (sourcesBase) {
-            model.setRowOrder(
-              applyClusterOrder({
-                sourcesBase,
-                layout,
-                order,
-                renderingMode,
-                sampleInfo,
-                matrixRowNames,
-              }).layout,
-            )
-          }
+          model.setRowOrder(
+            applyClusterOrder({
+              rows: model.clusterableSources,
+              arranged: model.editableSources,
+              order,
+              matrixRowNames,
+            }).order,
+          )
         }}
       />
     )
