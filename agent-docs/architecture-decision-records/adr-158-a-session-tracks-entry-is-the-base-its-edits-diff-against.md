@@ -129,10 +129,10 @@ edit vanished behind the entry that still resolved.
 
   | config.json tracks | track edited | main | this ADR |
   | --- | --- | --- | --- |
-  | 500 | config.json | 1.53 ms | 0.18 ms |
-  | 500 | session | 0.18 ms | 0.15 ms |
-  | 10,000 | config.json | 6.04 ms | 0.13 ms |
-  | 10,000 | session | 0.54 ms | 0.12 ms |
+  | 500 | config.json | 1.53 ms | 0.20 ms |
+  | 500 | session | 0.18 ms | 0.16 ms |
+  | 10,000 | config.json | 6.04 ms | 0.16 ms |
+  | 10,000 | session | 0.54 ms | 0.14 ms |
 
   Main rebuilt `tracks` and the trackId index over the catalog on each
   config-track persist and scanned it on each session-track one. A persist
@@ -148,8 +148,6 @@ edit vanished behind the entry that still resolved.
   | 500 | 0.55 ms | 0.22 ms |
   | 10,000 | 3.1 ms | 2.9 ms |
 
-  Main lists the session tracks as their live nodes, which read slower than
-  the plain entries listed here.
 - A session-track persist followed by a `getTracksById` read costs 1.8 ms at
   10,000 tracks, where main's costs 0.6 ms: the record is rebuilt on that
   first read, and main rebuilt it only on a config-track persist, which cost
