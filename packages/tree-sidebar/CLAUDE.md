@@ -120,11 +120,11 @@ What the config-backed mixin adds:
   than after the track's 400 ms save, in which window a ctrl+z undoes the
   previous change instead.
 - **A reset returns to the config.json** through `baseDisplayConfig(self)`, or
-  to nothing on a track the session owns, and never touches `rows.field`. A
-  reset to empty would write a delta erasing an admin's declared order for that
-  reader. `rowArrangementIsCustom` compares against the same base and leaves
-  `rows.kept` out, since the focus has a clear of its own; a reset still clears
-  it.
+  to what a track the session owns was added with, and never touches
+  `rows.field`. A reset to empty would write a delta erasing an admin's declared
+  order for that reader. `rowArrangementIsCustom` compares against the same base
+  and leaves `rows.kept` out, since the focus has a clear of its own; a reset
+  still clears it.
 - **Row styling stays the display's.** `applyRowEdits` is the display's own, and
   `rowStylingIsCustom` / `resetRowStyling` are the hooks that bring its colours
   (wiggle's and multi-row's `rowColor`) into "custom" and into a reset. What a

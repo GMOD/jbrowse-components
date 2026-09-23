@@ -111,11 +111,11 @@ declared row no loaded region holds yet keeps its place behind the rows on
 screen, and `rowOrderWillDropTree` compares the same merged order.
 
 **Reset row order returns to the base config.** The session's
-`baseTrackConfig(trackId)` hands back the config.json entry a track's delta
-edits over, hydrated, and `baseDisplayConfig(self)` finds the display's entry in
+`baseTrackConfig(trackId)` hands back the entry a track's delta edits over,
+hydrated: the config.json entry, or the `sessionTracks` entry for a track the
+session owns (ADR-158). `baseDisplayConfig(self)` finds the display's entry in
 it. `resetRowArrangement` writes every arrangement member back to that entry's
-value, or to nothing on a track the session owns, and never touches
-`rows.field`. `rowArrangementIsCustom`, which offers the reset, compares the
+value and never touches `rows.field`. `rowArrangementIsCustom`, which offers the reset, compares the
 order, labels, tree and provenance against the same entry. The focus does not
 count, because it has a clear of its own, but a reset takes it with the rest.
 
@@ -271,11 +271,10 @@ one-shot trigger that clears itself.
   that lists its species; on one that discovers them from the blocks it applies
   as given, on the worker and in `sources` alike, since such a track lists no
   species before it reads, so a focus naming none the blocks hold draws no rows.
-- A track the session owns has no base. The palette is dealt over the
-  config.json's `rows.domain`, so such a track's rows take the palette in
-  sorted order, and "Reset row order" there clears the arrangement and the
-  colours the track was added with, undoably, where a config.json track
-  returns to its declared ones.
+- A track the session owns has its `sessionTracks` entry as its base
+  (ADR-158), so its palette is dealt over the `rows.domain` it was added with,
+  and "Reset row order" returns to the arrangement and colours it was added
+  with, as a config.json track returns to its declared ones.
 
 ## Rejected alternatives
 

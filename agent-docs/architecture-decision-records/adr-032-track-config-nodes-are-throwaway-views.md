@@ -77,13 +77,17 @@ gymnastics. The mechanism:
   non-admin and so is never mutated. The delta is still computed the same way
   (`diffTrackConfig(base, workingCopy)` via `updateTrackConfiguration`), from a
   node that was never the base.
-- **The cache entry is stamped with the delta it was seeded from**, and that
-  stamp is the key. `writeDelta` — the single writer — re-stamps, so the copy a
-  value is still being typed into is never swapped out mid-keystroke; nothing
-  outside the mixin can, so a delta replaced by an undo's `applySnapshot` or a
-  session restore makes the next read rebuild the copy. Keyed by trackId alone,
-  an undone edit stayed on screen against a snapshot that said default, and the
-  next edit re-diffed the stale copy and reinstated the undone change.
+- **The cache entry is stamped with the resolved config it was seeded from**,
+  and that stamp is the key. Every write the mixin makes re-stamps, so the copy
+  a value is still being typed into is never swapped out mid-keystroke; nothing
+  outside the mixin can, so a delta or base replaced by an undo's
+  `applySnapshot` or a session restore makes the next read rebuild the copy.
+  Keyed by trackId alone, an undone edit stayed on screen against a snapshot
+  that said default, and the next edit re-diffed the stale copy and reinstated
+  the undone change. The stamp was the delta until
+  [ADR-158](adr-158-a-session-tracks-entry-is-the-base-its-edits-diff-against.md)
+  made a `sessionTracks` entry a base, which can be replaced under an unchanged
+  delta.
 - **Reset reverts the working copy in place** (`applySnapshot(node, base)`),
   keeping node identity so open views just re-render.
 - ~~**Admin is unchanged.**~~ **Amended 2026-09-23: admin takes the same
@@ -132,5 +136,5 @@ copy, which fixes the same bug class with no edit-site changes.
   session-owned cache should move into the fork's reference cache. ADR-031's
   "Revisit if" now carries the answer for the fork at 6.5.1: the only memo a
   custom reference can grow generically is per-reference-site, and this cache
-  is per-track *and* stamped with the delta it mirrors — neither of which a
+  is per-track *and* stamped with the config it mirrors — neither of which a
   fork-level memo can express.

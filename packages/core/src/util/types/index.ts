@@ -277,9 +277,9 @@ export function isSessionModelWithConfigEditing(
 }
 
 /**
- * A session that edits its config tracks as deltas over a base it can hand
- * back: what a display compares its live config against to say whether a
- * setting is the reader's or the admin's.
+ * A session that edits its tracks as deltas over a base it can hand back: what
+ * a display compares its live config against to say whether a setting is the
+ * reader's or the one the track was configured or added with.
  */
 export interface SessionWithBaseTrackConfig extends AbstractSessionModel {
   baseTrackConfig(

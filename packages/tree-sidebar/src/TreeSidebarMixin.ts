@@ -48,9 +48,10 @@ function present(value: unknown) {
 }
 
 /**
- * The config.json's entry for this display, hydrated, which a reset returns
- * to and "is this the reader's" compares against: empty for a track the
- * session owns, and in a session that keeps no base.
+ * The base's entry for this display, hydrated, which a reset returns to and
+ * "is this the reader's" compares against: the config.json's, or the one a
+ * track the session owns was added with; empty in a session that keeps no
+ * base.
  */
 export function baseDisplayConfig(self: object): Record<string, unknown> {
   if (!hasParent(self)) {
@@ -105,8 +106,8 @@ export function orderOver(
  * Every arrangement write reaches the session at once rather than after the
  * track's 400 ms save, so a clustering run is one undo step and undoable the
  * moment its tree appears. "Reset row order" returns each member to what the
- * config.json declares, or to nothing on a track the session owns, and never
- * touches `rows.field`.
+ * config.json declares, or what a track the session owns was added with, and
+ * never touches `rows.field`.
  */
 export function TreeSidebarMixin<S extends RowSource = RowSource>() {
   return treeSidebarBase()

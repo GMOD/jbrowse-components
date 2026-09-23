@@ -467,10 +467,11 @@ export type AnyConfigurationSnapshot = SnapshotOut<AnyConfigurationModel>
 
 /**
  * A value readable as configuration: either a live configuration model or a
- * plain snapshot of one. `session.tracks` legitimately holds a mix (live
- * `sessionTracks` nodes, plus plain frozen/merged base entries that hydrate to
- * MST only on first reference access), and `readConfObject` reads both — so this
- * is the honest type at those boundaries. Reserve `AnyConfigurationModel` for
- * values that must be live (actions, identity, reference resolution).
+ * plain snapshot of one. `session.tracks` holds plain base or merged configs
+ * that hydrate to MST only on first reference access, `getTrackById` also
+ * answers live assembly-sequence and connection nodes, and `readConfObject`
+ * reads both — so this is the honest type at those boundaries. Reserve
+ * `AnyConfigurationModel` for values that must be live (actions, identity,
+ * reference resolution).
  */
 export type AnyConfiguration = AnyConfigurationModel | AnyConfigurationSnapshot
