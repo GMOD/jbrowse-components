@@ -92,6 +92,7 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { RowsSetting } from '@jbrowse/display-kit/rowsConfigSchema'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { IdentityChannel } from '@jbrowse/tree-sidebar'
 import type { ValueScale, WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
@@ -427,7 +428,7 @@ export default function stateModelFactory(
        * plot, on the plot colour otherwise. In one shared box there is no
        * label to tint, so the colour goes to the plot whatever the gradient.
        */
-      get identityChannel(): 'color' | 'labelColor' {
+      get identityChannel(): IdentityChannel {
         return self.scoreGradientPaints && self.isRowLayout
           ? 'labelColor'
           : 'color'

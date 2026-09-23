@@ -207,9 +207,8 @@ it just never fires.
 
 ## Cluster utilities (`packages/tree-sidebar/src/clusterUtils.ts`)
 
-- **`buildClusteredLayout(baseSources, existingLayout, order)`** — reorders
-  `baseSources` by the clustering `order` array, preserving existing color/label
-  properties from `existingLayout`.
+- **`buildClusteredLayout(baseSources, order)`** — reorders `baseSources` by
+  the clustering `order` array, throwing on an index out of range.
 - **`buildTree(newick)`** / **`applySubtreeFilter(root, filter)`** — parses
   Newick, wraps in d3-hierarchy `HierarchyNode`, and optionally filters to the
   deepest subtree whose leaves exactly match `filter`. Single post-order pass.

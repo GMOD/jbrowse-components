@@ -79,6 +79,7 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
+import type { IdentityChannel, RowAlias } from '@jbrowse/tree-sidebar'
 
 type VariantHoverFields = Record<string, unknown> & {
   genotype: string
@@ -1055,7 +1056,7 @@ export default function MultiSampleVariantBaseModelF(
          * name, so an order, a label, a tint or a focus written against a
          * sample reaches each of its haplotypes.
          */
-        get rowAlias(): (name: string) => string | undefined {
+        get rowAlias(): RowAlias {
           const samples = new Set(
             (self.sourcesVolatile ?? []).map(resolveSampleName),
           )
@@ -1066,7 +1067,7 @@ export default function MultiSampleVariantBaseModelF(
          * `TreeSidebarMixin`'s hook: a `rowColor` entry tints the label, the
          * one channel a row has, since the cells paint by genotype.
          */
-        get identityChannel(): 'color' | 'labelColor' {
+        get identityChannel(): IdentityChannel {
           return 'labelColor'
         },
         /**

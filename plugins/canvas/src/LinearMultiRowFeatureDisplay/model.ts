@@ -104,6 +104,7 @@ import type {
 } from '@jbrowse/display-kit/highlightHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { UnlistedRowsSort } from '@jbrowse/tree-sidebar'
 import type React from 'react'
 
 const EMPTY_REGION_DATA: ReadonlyMap<number, MultiRowRegionData> = new Map()
@@ -315,7 +316,7 @@ export default function stateModelFactory(
          * digits by magnitude and the unanswered row last, since discovered
          * values arrive in no order of their own.
          */
-        get unlistedRowsSort(): 'source' | 'sorted' {
+        get unlistedRowsSort(): UnlistedRowsSort {
           return 'sorted'
         },
         /**

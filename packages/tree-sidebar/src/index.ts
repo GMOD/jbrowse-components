@@ -67,6 +67,11 @@ export {
   validateClusterOrder,
 } from './clusterUtils.ts'
 export { orderRowsByDomain } from './arrangeRows.ts'
+export type {
+  IdentityChannel,
+  RowAlias,
+  UnlistedRowsSort,
+} from './arrangeRows.ts'
 export { applyClusterRun } from './applyClusterRun.ts'
 export { rotateClusterRun } from './rotateClusterRun.ts'
 export { rotateNewickByDomain } from './rotateNewickByDomain.ts'
