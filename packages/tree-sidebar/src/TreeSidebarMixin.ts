@@ -1,7 +1,7 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import { isSessionWithBaseTrackConfig } from '@jbrowse/core/util/types'
-import { ROW_ARRANGEMENT_MEMBERS } from '@jbrowse/display-kit/rowsConfigSchema'
+import { ROW_ARRANGEMENT_MEMBERS } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { getSnapshot, hasParent } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 

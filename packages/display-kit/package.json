@@ -80,6 +80,7 @@
     "./installGlobalFetchAutorun": "./src/installGlobalFetchAutorun.ts",
     "./installPerRegionFetchAutoruns": "./src/installPerRegionFetchAutoruns.ts",
     "./facetConfigSchema": "./src/facetConfigSchema.ts",
+    "./rowArrangementConfigSchema": "./src/rowArrangementConfigSchema.ts",
     "./rowsConfigSchema": "./src/rowsConfigSchema.ts",
     "./colorConfigSchema": "./src/colorConfigSchema.ts",
     "./colorScale": "./src/colorScale.ts",

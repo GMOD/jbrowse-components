@@ -1,5 +1,5 @@
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
-import type { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
+import type { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 
 /**
  * The config slots a display owes `TreeSidebarMixin` — one object, so a display
