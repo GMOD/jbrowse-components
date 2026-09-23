@@ -1,14 +1,14 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
-import {
-  rowDomainConfigSchemaFields,
-  treeSidebarConfigSchemaFields,
-} from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
+import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 
 import { CONSERVATION_MODE_VALUES } from './conservationModes.ts'
 import { DEFAULTS } from './displayDefaults.ts'
+import { mafRowColorSchema } from './mafRowColorConfigSchema.ts'
+import { refuseRetiredConfig } from './retiredSettings.ts'
 import { ROW_IDENTITY_MODE_VALUES } from './rowIdentityModes.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -141,9 +141,35 @@ export default function configSchemaF() {
         tree: 'show the species tree sidebar',
         rowLabels: 'draw the species name over the left of each row',
       }),
-      ...rowDomainConfigSchemaFields({
-        rows: "row order: the guide tree rotates so the species listed come as early as its topology allows, the way ggtree's rotate turns a clade — a species brings its clade with it, so this is a preference the tree honours rather than a placement. The dendrogram keeps drawing. With no guide tree the species listed simply lead, and the rest keep the order the adapter reported them in",
-      }),
+      /**
+       * #slot rows
+       * The arrangement a reader gives the species rows, each member by row
+       * name. `domain` is the row order: under a guide tree it rotates the
+       * tree so the species listed come as early as its topology allows, the
+       * way ggtree's rotate turns a clade, and the dendrogram keeps drawing;
+       * with no tree the species listed lead and the rest keep the order the
+       * adapter reported them in. `labels`, `tree`, `treeProvenance` and
+       * `kept` are what the arrangement dialog, a clustering run and a focus
+       * write, each as a session edit to this object. The adapter's guide tree
+       * is never written here.
+       *
+       * #example
+       * ```js
+       * { rows: { domain: ['mm10'], labels: { mm10: 'Mouse' } } }
+       * ```
+       */
+      rows: rowArrangementConfigSchema,
+      /**
+       * #slot rowColor
+       * A tint per species row, over the colour the adapter's `samples` entry
+       * gives it.
+       *
+       * #example
+       * ```js
+       * { rowColor: { domain: ['mm10'], range: ['#f28e2b'] } }
+       * ```
+       */
+      rowColor: mafRowColorSchema,
       /**
        * #slot
        * Show the color key for the active row rendering — the codon-change
@@ -319,6 +345,7 @@ export default function configSchemaF() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
+      preProcessSnapshot: refuseRetiredConfig,
     },
   )
 }

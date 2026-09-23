@@ -25,6 +25,7 @@ import CoarseTierMixin from '@jbrowse/display-kit/CoarseTierMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
@@ -35,15 +36,16 @@ import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 import {
   ContextMenuMixin,
   RowHeightMixin,
-  LayoutTreeSidebarMixin,
+  TreeSidebarMixin,
   applySubtreeFilter,
+  baseDisplayConfig,
   buildSpatialIndex,
   computeClusterHierarchy,
-  filterRowsBySubtree,
   getLeafNames,
+  keptRows,
   orderRowsByDomain,
-  reconcileLayout,
   resetRowOrderMenuItems,
+  rowEdits,
   setupTreeSidebarAutoruns,
   sortRowsAtColumn,
   sortRowsHereMenuItem,
@@ -52,6 +54,7 @@ import { visibleStatsDomain } from '@jbrowse/wiggle-core'
 import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core/normalize'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import { compareStructural } from 'mobx'
 
 import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.ts'
 import {
@@ -97,6 +100,7 @@ import { mafLaunchMenuItems } from './launchMenuItems.ts'
 import { openInsertionWidget } from './openInsertionWidget.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
+import { refuseRetiredState } from './retiredSettings.ts'
 import { isRowIdentityMode } from './rowIdentityModes.ts'
 import {
   ZOOM_IN_FOR_BAND,
@@ -153,7 +157,7 @@ import type {
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { RowSource } from '@jbrowse/tree-sidebar'
+import type { RowEdit, RowSource } from '@jbrowse/tree-sidebar'
 import type { YAxis } from '@jbrowse/wiggle-core'
 
 /**
@@ -163,12 +167,13 @@ import type { YAxis } from '@jbrowse/wiggle-core'
  *
  * The adapter's `samples[].color` slot lands on **`labelColor`**, the name the
  * sidebar tints with, because that is the only thing MAF ever does with it —
- * nothing here paints a row in it. It used to be carried as `color` and
- * translated by a `labelSources` computed, which existed because
- * `RowLabelSource` is satisfied structurally: handing `sources` straight to the
- * sidebar type-checked and dropped the tint in silence, which is how the slot
- * came to be documented in three adapter schemas while reaching no renderer at
- * all. Naming it what it is removes the translation and the trap together.
+ * nothing here paints a row in it, and a `rowColor` entry tints over it. It
+ * used to be carried as `color` and translated by a `labelSources` computed,
+ * which existed because `RowLabelSource` is satisfied structurally: handing
+ * `sources` straight to the sidebar type-checked and dropped the tint in
+ * silence, which is how the slot came to be documented in three adapter
+ * schemas while reaching no renderer at all. Naming it what it is removes the
+ * translation and the trap together.
  */
 export interface MafSource extends RowSource {
   /** assembly this row's genome is loaded as, when it is navigable */
@@ -202,6 +207,23 @@ function unionSources(
     byName.set(source.name, source)
   }
   return [...byName.values()]
+}
+
+/**
+ * What a dialog row says beyond what the adapter supplied: a label or a tint
+ * that differs from the adapter row's.
+ */
+function editedSource(
+  discovered: readonly MafSource[],
+): (row: MafSource) => RowEdit {
+  const byName = new Map(discovered.map(s => [s.name, s]))
+  return row => {
+    const base = byName.get(row.name)
+    return {
+      label: row.label === base?.label ? undefined : row.label,
+      color: row.labelColor === base?.labelColor ? undefined : row.labelColor,
+    }
+  }
 }
 
 /**
@@ -248,7 +270,7 @@ export default function stateModelFactory(
         CoarseTierMixin<MafRegionPayload<MafSummaryRecord[]>>(),
         LegendMixin(),
         RowHeightMixin(),
-        LayoutTreeSidebarMixin<MafSource>(),
+        TreeSidebarMixin<MafSource>(),
         ContextMenuMixin<MafContextMenuInfo>(),
         types.model({
           /**
@@ -278,18 +300,15 @@ export default function stateModelFactory(
         framesGateBlocked: false,
         /**
          * #volatile
-         * The worker's authoritative row set, in tree (leaf) order. `layout`
-         * overlays any user reorder/relabel on top; `editableSources` merges the
-         * two and `sources` narrows that by the subtree filter.
+         * The worker's authoritative row set, in tree (leaf) order.
+         * `editableSources` arranges it by `rows` and `rowColor`, and `sources`
+         * narrows that by the focus.
          */
         sourcesVolatile: [] as MafSource[],
         /**
          * #volatile
-         * The worker's guide-tree Newick (the default, before any reorder). The
-         * active displayed tree lives in the mixin's `clusterTree`, which a
-         * reorder clears (rows no longer match the dendrogram) and "Clear
-         * arrangement" restores from here — so we keep the worker tree separately
-         * rather than re-fetching it.
+         * The adapter's guide tree as newick, which `rowTree` draws while the
+         * row order is the declared one.
          */
         treeNewickVolatile: undefined as string | undefined,
         /**
@@ -496,15 +515,11 @@ export default function stateModelFactory(
          *
          * With either resolution the deepEqual guard makes this fire once and
          * skips the redundant frozen-array reassignment (and downstream
-         * `sources`/instance-buffer recompute) on later scroll/zoom. The active
-         * `clusterTree` is set from the worker tree only when there's no custom
-         * arrangement — a reorder has cleared it and must keep it cleared until
-         * the user clears the layout.
+         * `sources`/instance-buffer recompute) on later scroll/zoom.
          *
          * The guard covers the sample set only: a tree can change while the set
          * doesn't (an edited `.nh`), and folding it in left `treeNewickVolatile`
-         * — and so what "Clear arrangement" restores — pinned to the first tree
-         * the session ever saw.
+         * pinned to the first tree the session ever saw.
          *
          * A set that *changes* after one was already established invalidates
          * nothing: the fetched rows name their species rather than a row index,
@@ -514,7 +529,7 @@ export default function stateModelFactory(
          * the worker narrowed each region's blocks to the client's sample list
          * and so genuinely lost rows it had not been told about. It no longer
          * takes one — the row set is config-derived or discovered per region in
-         * the worker, and the only thing the client sends is `subtreeFilter` —
+         * the worker, and the only thing the client sends is the focus —
          * so the counter had become a pure refetch of every loaded region, once
          * per newly seen genome, on exactly the discovery tracks that can least
          * afford it.
@@ -542,9 +557,6 @@ export default function stateModelFactory(
           }
           if (treeNewick !== self.treeNewickVolatile) {
             self.treeNewickVolatile = treeNewick
-            if (!self.layout.length) {
-              self.setClusterTree(treeNewick)
-            }
           }
         },
         /**
@@ -620,23 +632,6 @@ export default function stateModelFactory(
           setConf(self, 'showReferenceRow', arg)
         },
       }))
-      .actions(self => {
-        const superResetRowArrangement = self.resetRowArrangement
-        return {
-          /**
-           * #action
-           * Drop the custom arrangement and restore the worker's guide tree (the
-           * base `resetRowArrangement` only clears it — the worker tree lives in
-           * `treeNewickVolatile`).
-           */
-          resetRowArrangement() {
-            superResetRowArrangement()
-            if (self.treeNewickVolatile) {
-              self.setClusterTree(self.treeNewickVolatile)
-            }
-          },
-        }
-      })
       .views(self => ({
         /**
          * #getter
@@ -734,44 +729,151 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The full row set with the user's arrangement applied: `layout` supplies
-         * order + label/color overrides, merged over the worker's `sourcesVolatile`
-         * by name. Empty `layout` (no customization) passes the worker set through.
-         * Not subtree-filtered — this is what the arrangement dialog edits.
-         * Empty until the first fetch populates the worker set; `sourcesKnown`
-         * is the readiness question.
-         *
-         * The shared `reconcileLayout`. Its append half matters here: a sample-discovery track
-         * learns of a genome only from the region whose blocks contain it (see
-         * `setSamples` / `unionSources`), and the hand-rolled merge this
-         * replaced iterated `layout` alone — so with any custom arrangement
-         * saved, a species revealed by a later region never got a row at all.
-         *
-         * Under it the config `domain` states the order. With a guide tree the
-         * rows follow the tree's own leaves, read off the rotated `parsedTree`
-         * the domain already turned — one computed for both, so the row order
-         * and the leaf order cannot drift and `treeDescribesRows` holds by
-         * construction. The domain is a preference there rather than a
-         * placement: a species leads its clade, and its clade leads. Without a
-         * tree the named species lead outright and the rest keep the order the
-         * adapter reported them in.
+         * The tint a reader set on each named row, off `rowColor`'s
+         * `domain`/`range` pairs.
          */
-        get editableSources(): MafSource[] {
-          const { parsedTree } = self
-          return reconcileLayout(
-            orderRowsByDomain(
-              self.sourcesVolatile,
-              parsedTree ? getLeafNames(parsedTree) : self.rowDomain,
-            ),
-            self.layout,
+        get rowColors(): ReadonlyMap<string, string> {
+          return pairedColorsOf({
+            domain: getConf(self, ['rowColor', 'domain']),
+            range: getConf(self, ['rowColor', 'range']),
+          })
+        },
+        /**
+         * #getter
+         * The `rowColor` pairs the config.json declares for this display,
+         * which a reset returns to and a dialog submit keeps the pair order
+         * of.
+         */
+        get baseRowColor(): {
+          domain: readonly string[]
+          range: readonly string[]
+        } {
+          const base = (baseDisplayConfig(self).rowColor ?? {}) as {
+            domain?: string[]
+            range?: string[]
+          }
+          return { domain: base.domain ?? [], range: base.range ?? [] }
+        },
+        /**
+         * #getter
+         * Whether `rows.domain` is the order the config.json declares, an
+         * empty list and an absent one alike: the order the adapter's guide
+         * tree describes.
+         */
+        get rowDomainIsDeclared(): boolean {
+          const base = baseDisplayConfig(self).rows as
+            | { domain?: string[] }
+            | undefined
+          return compareStructural(self.rowDomain, base?.domain ?? [])
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The tree the rows are arranged by: a clustering run's, `rows.tree`,
+         * else the adapter's guide tree while the row order is the declared
+         * one. A reorder writes `rows.domain`, so the guide tree hides once
+         * its leaves stop describing the rows, and a reset brings it back.
+         *
+         * The guide tree is never written to `rows.tree`: the adapter supplies
+         * it on every load, so a stored copy would go stale behind an edited
+         * `.nh`.
+         */
+        get rowTree(): string | undefined {
+          return (
+            getConf(self, ['rows', 'tree']) ??
+            (self.rowDomainIsDeclared ? self.treeNewickVolatile : undefined)
+          )
+        },
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: whether `rowColor` names a tint the
+         * config does not, so "Reset row order" is offered for a recolour too.
+         */
+        get rowStylingIsCustom(): boolean {
+          return !compareStructural(
+            Object.fromEntries(self.rowColors),
+            Object.fromEntries(pairedColorsOf(self.baseRowColor)),
           )
         },
       }))
       .views(self => ({
         /**
          * #getter
-         * The display rows: `editableSources` narrowed to the selected subtree,
-         * and to the reference row when `showReferenceRow` is off.
+         * The full row set in the reader's arrangement, unfocused: the list the
+         * arrangement dialog edits. Empty until the first fetch populates the
+         * worker set; `sourcesKnown` is the readiness question.
+         *
+         * With a tree the rows follow its leaves, read off the `parsedTree`
+         * that `rows.domain` already rotated, so the row order and the leaf
+         * order cannot drift and `treeDescribesRows` holds by construction;
+         * the rows the tree does not name follow in `rows.domain`'s order.
+         * Without one the species `rows.domain` lists lead and the rest keep
+         * the order the adapter reported them in, so a species a later region
+         * reveals joins the end. A `rows.labels` entry replaces the adapter's
+         * label and a `rowColor` entry its tint.
+         */
+        get editableSources(): MafSource[] {
+          const { parsedTree, rowDomain, rowLabels, rowColors } = self
+          const ordered = orderRowsByDomain(
+            self.sourcesVolatile,
+            parsedTree
+              ? [...getLeafNames(parsedTree), ...rowDomain]
+              : rowDomain,
+          )
+          return rowColors.size === 0 && Object.keys(rowLabels).length === 0
+            ? ordered
+            : ordered.map(row => {
+                const label = Object.hasOwn(rowLabels, row.name)
+                  ? rowLabels[row.name]
+                  : undefined
+                const labelColor = rowColors.get(row.name)
+                return {
+                  ...row,
+                  ...(label === undefined ? {} : { label }),
+                  ...(labelColor === undefined ? {} : { labelColor }),
+                }
+              })
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         * `TreeSidebarMixin`'s hook, so "Reset row order" and the dialog's
+         * "Clear custom settings" return the row tints with the arrangement.
+         */
+        resetRowStyling() {
+          const { domain, range } = self.baseRowColor
+          setConf(self, ['rowColor', 'domain'], [...domain])
+          setConf(self, ['rowColor', 'range'], [...range])
+        },
+        /**
+         * #action
+         * The arrangement dialog's submit: the rows in their new order, each
+         * carrying the label and tint the reader set on it. The order and the
+         * labels go to `rows`, the tints to `rowColor`'s pairs, each only where
+         * it differs from what the adapter supplied.
+         */
+        applyRowEdits(rows: MafSource[]) {
+          const { labels, rowColor } = rowEdits({
+            rows,
+            labels: self.rowLabels,
+            colors: self.rowColors,
+            baseOrder: self.baseRowColor.domain,
+            edited: editedSource(self.sourcesVolatile),
+          })
+          setConf(self, ['rowColor', 'domain'], rowColor.domain)
+          setConf(self, ['rowColor', 'range'], rowColor.range)
+          self.setRowLabels(labels)
+          self.setRowOrder(rows)
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The display rows: `editableSources` narrowed to the focus
+         * (`keptRows`, so a focus naming no current row shows every row), and
+         * to the reference row when `showReferenceRow` is off.
          *
          * Both narrowings are hide-only and both are here rather than at the
          * fetch: the reference row is what the *other* rows' mismatches are
@@ -783,12 +885,13 @@ export default function stateModelFactory(
          * were both asking "has the species list arrived", which is
          * `sourcesKnown`; everything else already collapsed it with `?.length`
          * or `?? 0`. An empty array reaches here two ways that must stay
-         * indistinguishable to a *renderer* — no fetch yet, and a subtree filter
-         * that matched nothing — which is exactly why the readiness question
-         * needs its own name rather than a truthiness test on this.
+         * indistinguishable to a *renderer* — no fetch yet, and a focus on the
+         * reference row alone while it is hidden — which is exactly why the
+         * readiness question needs its own name rather than a truthiness test
+         * on this.
          */
         get sources(): MafSource[] {
-          const rows = filterRowsBySubtree(self.editableSources, self.rowFocus)
+          const rows = keptRows(self.editableSources, self.rowFocus)
           const refSrc = self.referenceSampleId
           return self.showReferenceRow
             ? rows
@@ -800,8 +903,8 @@ export default function stateModelFactory(
          * The species list has arrived from the adapter. The readiness half of
          * what `sources` used to answer by being `undefined`: `rowsVisible` and
          * the render callback's first-paint gate both need "a fetch has landed",
-         * and neither can get it from an empty `sources`, which a subtree filter
-         * narrowing to nothing also produces.
+         * and neither can get it from an empty `sources`, which a focus on a
+         * hidden reference row also produces.
          */
         get sourcesKnown(): boolean {
           return self.sourcesVolatile.length > 0
@@ -809,10 +912,15 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * `subtreeFilter` as the worker sees it: a **set**, sorted, and a plain
-         * array. The one expression both the RPC payload (`fetchMafData`) and
-         * the cache key (`rpcProps`) read, so the bytes sent and the key they
-         * are cached under cannot drift apart.
+         * The focus, `rows.kept`, as the worker sees it: a **set**, sorted, and
+         * a plain array. The one expression both the RPC payload
+         * (`fetchMafData`) and the cache key (`rpcProps`) read, so the bytes
+         * sent and the key they are cached under cannot drift apart.
+         *
+         * Config alone, never the samples a fetch reports, so the key cannot
+         * move when a fetch lands. A focus naming no sample the worker knows is
+         * resolved to every row there (`visibleSamples`), as `keptRows` resolves
+         * it here for drawing.
          *
          * Sorted because the key is a JSON string while the worker consumes the
          * value as `new Set(...)` and places rows by species name — so order is
@@ -868,7 +976,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * The summary read carries the same settings the detail fetch does
-         * (`subtreeFilter`, and the frames read beside it), so a settings
+         * (the focus, and the frames read beside it), so a settings
          * change re-reads it.
          */
         get coarseReadKey() {
@@ -961,7 +1069,7 @@ export default function stateModelFactory(
          * every row (UCSC `codonDefault`). Tied to the *reference assembly*, not
          * the top display row: every species' codon is compared against the
          * reference sequence (`block.refSeqBytes`), so the frame must be enumerated
-         * from the reference's own frames. A row reorder (layout) can move a
+         * from the reference's own frames. A row reorder can move a
          * non-reference species to row 0 — reading `sources[0]` there would
          * enumerate codons in the wrong frame. Falls back to the worker's canonical
          * first row (pre-reorder) when the reference isn't itself a listed sample.
@@ -1292,7 +1400,7 @@ export default function stateModelFactory(
          */
         get hierarchy() {
           // The tree as it gets drawn. `root` is already narrowed to the
-          // subtree filter; a hidden reference row has to be pruned out of it
+          // focus; a hidden reference row has to be pruned out of it
           // too, because `computeClusterHierarchy` declines to position a tree
           // whose leaves are no longer the rows on screen — so narrowing on the
           // row side alone would take the whole dendrogram with it.
@@ -1381,9 +1489,9 @@ export default function stateModelFactory(
          * Reorder the rows by the base each species carries in the reference
          * column at (refName, pos) — the MAF analogue of the multi-row
          * painting's "sort rows by color here". Reads the placed region data
-         * already in hand, no refetch, and writes the order through `layout`,
-         * the channel clustering and the arrangement dialog write, so "Reset
-         * row order" undoes all three.
+         * already in hand, no refetch, and writes the order to `rows.domain`,
+         * as clustering and the arrangement dialog do, so "Reset row order"
+         * undoes all three.
          *
          * Declines with fewer than two rows, and at a column no loaded region
          * covers, for the reasons the other two displays' twins state: the
@@ -1400,7 +1508,7 @@ export default function stateModelFactory(
             index => self.rpcDataMap.get(index),
             // `sources` is the drawn list, which is what the block's
             // `rowIndex` names — `sortRowsAtColumn` hands over the editable
-            // one, the list being written back to `layout`
+            // one, the list being written back as the order
             (sources, region) =>
               orderMafRowsByBaseAt(sources, self.sources, region, pos),
           )
@@ -1540,10 +1648,10 @@ export default function stateModelFactory(
          * places them (`placeMafRegionData`). A reorder therefore re-places the
          * cached payload — the heaviest in the plugin — instead of refetching it.
          *
-         * `subtreeFilter` stays because it is a fetch argument, and the *set* is
-         * the only thing about the rows that is: the worker ships only the rows
-         * in it and scopes coverage/identity to them. It is sent as a set, never
-         * an order, so reordering inside a filter is still free.
+         * The focus stays because it is a fetch argument, and the *set* is the
+         * only thing about the rows that is: the worker ships only the rows in
+         * it and scopes coverage/identity to them. It is sent as a set, never
+         * an order, so reordering inside a focus is still free.
          *
          * The discovered row set growing is deliberately NOT a key — see
          * `setSamples` for why re-placement covers it.
@@ -2705,24 +2813,7 @@ export default function stateModelFactory(
           })
         },
       }))
-      .postProcessSnapshot(snap => {
-        // A GUIDE tree is derived — rebuilt from worker output on fetch, or
-        // restored from treeNewickVolatile on clear — so persisting it would
-        // store a copy of something the adapter re-supplies. A CLUSTERED tree is
-        // not: nothing recomputes it, and a session that dropped it would come
-        // back with the clustered row order and no dendrogram beside it.
-        //
-        // `clusterProvenance` is what tells the two apart, and it is the same
-        // distinction it was introduced for: set only for a tree this app
-        // computed, absent for a supplied phylogeny. `layout` is persisted
-        // either way — it is the user's own row arrangement; stripDefault omits
-        // it when empty, which is the common case.
-        if (snap.clusterProvenance) {
-          return snap
-        }
-        const { clusterTree: _clusterTree, ...rest } = snap
-        return rest
-      })
+      .preProcessSnapshot(refuseRetiredState)
   )
 }
 

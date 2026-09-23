@@ -392,9 +392,9 @@ export function validateClusterOrder(
 // longer present, append newly-discovered rows in discovered order. Layout
 // fields win on merge (they are the user's overrides). Empty layout returns the
 // discovered array by reference, so callers can short-circuit on identity.
-// MAF's `editableSources` reads it; the displays on `rows` order by
-// `rows.domain` instead. Layout entries are partial overrides keyed by
-// `name`, so the discovered row supplies every field a layout entry omits.
+// The displays on `rows` order by `rows.domain` instead. Layout entries are
+// partial overrides keyed by `name`, so the discovered row supplies every
+// field a layout entry omits.
 export function reconcileLayout<D extends { name: string }>(
   discovered: D[],
   layout: (Partial<D> & { name: string })[],

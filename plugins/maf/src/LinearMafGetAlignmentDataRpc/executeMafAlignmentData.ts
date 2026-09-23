@@ -3,6 +3,7 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
 
 import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
+import { visibleSamples } from '../util/visibleSamples.ts'
 import { buildMafCoverageRegion } from './buildMafCoverageRegion.ts'
 import { collectMafTransferables } from './collectTransferables.ts'
 import { MafWirePacker } from './mafWirePacker.ts'
@@ -19,10 +20,10 @@ import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature } from '@jbrowse/core/util'
 
 export interface LinearMafGetAlignmentDataArgs extends BaseMafRpcArgs {
-  // The display's subtree filter, as a SET. Rows outside it are neither emitted
-  // nor counted in coverage/identity, so a filtered subtree ships (and scores)
-  // only the genomes it draws. No order travels with it: rows name their
-  // species and the client places them (see `placeMafRegionData`).
+  // The display's focus, `rows.kept`, as a SET. Rows outside it are neither
+  // emitted nor counted in coverage/identity, so a focused clade ships (and
+  // scores) only the genomes it draws. No order travels with it: rows name
+  // their species and the client places them (see `placeMafRegionData`).
   subtreeFilter?: string[]
 }
 
@@ -144,11 +145,11 @@ export async function executeMafAlignmentData({
   // hand-listed sample list.
   const opts = hasConfiguredSamples ? { ...args, samples: configSamples } : args
 
-  // Rows outside the active subtree are dropped rather than shipped and hidden.
-  // The returned `samples` stays the full set so the sidebar tree + "clear
-  // filter" still see every genome. Resolved before the fetch because the pack
-  // below runs inside it.
-  const visible = subtreeFilter?.length ? new Set(subtreeFilter) : undefined
+  // Rows outside the focus are dropped rather than shipped and hidden. The
+  // returned `samples` stays the full set so the sidebar tree + "clear filter"
+  // still see every genome. Resolved before the fetch because the pack below
+  // runs inside it.
+  const visible = visibleSamples(subtreeFilter, configSamples)
   const isVisible = (sampleId: string) => !visible || visible.has(sampleId)
 
   // One MAF feature = one alignment block, packed as it arrives; a single

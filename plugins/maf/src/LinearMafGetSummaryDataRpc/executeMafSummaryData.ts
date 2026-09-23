@@ -2,13 +2,14 @@ import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
 
 import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
+import { visibleSamples } from '../util/visibleSamples.ts'
 
 import type { BaseMafRpcArgs, MafSummaryRecord, Sample } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 export interface LinearMafGetSummaryDataArgs extends BaseMafRpcArgs {
-  // The display's subtree filter, as a SET — same contract as the detail path's
+  // The display's focus, as a SET — same contract as the detail path's
   // arg of the same name. Records for species outside it are dropped here
   // rather than shipped and discarded by the client's `rowIndexBySrc` lookup.
   subtreeFilter?: string[]
@@ -91,12 +92,12 @@ export async function executeMafSummaryData({
     return tooLarge
   }
 
-  // Rows outside the active subtree are dropped here rather than shipped and
-  // hidden, exactly as the detail path does. `samples` stays the full set so
+  // Rows outside the focus are dropped here rather than shipped and hidden,
+  // exactly as the detail path does. `samples` stays the full set so
   // the sidebar tree and "clear filter" still see every genome — so discovery
   // reads every record's `src`, before the filter, as the alignment path
   // discovers from every block row before narrowing `blocks`.
-  const visible = subtreeFilter?.length ? new Set(subtreeFilter) : undefined
+  const visible = visibleSamples(subtreeFilter, configSamples)
   const records: MafSummaryRecord[] = []
   // Insertion-ordered, so a discovered row set has a stable order the way the
   // alignment path's `discoveredOrder` does.

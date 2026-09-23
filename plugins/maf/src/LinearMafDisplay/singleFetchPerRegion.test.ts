@@ -204,7 +204,7 @@ describe('LinearMafDisplay alignment fetch count', () => {
     expect(alignmentCalls(mockRpcCall)).toHaveLength(2)
   })
 
-  // `subtreeFilter` is a fetch argument, but as a SET: the worker turns it into
+  // The focus, `rows.kept`, is a fetch argument, but as a SET: the worker turns it into
   // `new Set(...)` and places nothing by it, so order is unobservable to the
   // fetch. The cache key is a JSON string though, so an unsorted array put the
   // order back in — re-picking the same clade after a re-cluster hands
@@ -245,7 +245,7 @@ describe('LinearMafDisplay alignment fetch count', () => {
 
 describe('LinearMafDisplay row placement', () => {
   // A session that ARRIVES with a row arrangement (share link, screenshot spec)
-  // has a `layout` before it has any data, and labels its rows from it. The
+  // has a `rows.domain` before it has any data, and labels its rows from it. The
   // fetch that DISCOVERS the row set cannot state that set, so it used to send
   // canonical order and the client drew every row under another row's name.
   // Nothing about order is sent now: rows come back named, and the client
@@ -254,13 +254,12 @@ describe('LinearMafDisplay row placement', () => {
     const { createDisplay, mockRpcCall } = createMafTestEnvironment({
       assemblyEnd: 50_000,
       viewRegionEnd: 10_000,
+      displayConfig: { rows: { domain: ['mm10', 'hg38'] } },
     })
     mockRpcCall.mockImplementation(() =>
       Promise.resolve(makeMafResult(HG38_MM10)),
     )
-    const { display } = createDisplay({
-      displaySnapshot: { layout: [{ name: 'mm10' }, { name: 'hg38' }] },
-    })
+    const { display } = createDisplay()
     await settle(display)
 
     const calls = alignmentCalls(mockRpcCall)
@@ -306,14 +305,15 @@ describe('LinearMafDisplay row placement', () => {
     expect(alignmentCalls(mockRpcCall)).toHaveLength(1)
   })
 
-  // The bug this all comes from: a session ARRIVES with a saved layout naming a
+  // The bug this all comes from: a session ARRIVES with a saved order naming a
   // genome this region has no alignment for. The reply's rows used to be
   // numbered against a list the display did not draw, so every row below the
   // missing one drew under another row's name.
-  it('places correctly when the layout names a genome the reply lacks', async () => {
+  it('places correctly when the order names a genome the reply lacks', async () => {
     const { createDisplay, mockRpcCall } = createMafTestEnvironment({
       assemblyEnd: 50_000,
       viewRegionEnd: 10_000,
+      displayConfig: { rows: { domain: ['mm10', 'rn6', 'hg38'] } },
     })
     mockRpcCall.mockImplementation((_id, method) =>
       Promise.resolve(
@@ -322,15 +322,11 @@ describe('LinearMafDisplay row placement', () => {
           : makeMafResult([]),
       ),
     )
-    const { display } = createDisplay({
-      displaySnapshot: {
-        layout: [{ name: 'mm10' }, { name: 'rn6' }, { name: 'hg38' }],
-      },
-    })
+    const { display } = createDisplay()
     await settle(display)
 
-    // rn6 is in the layout but not in the sample set, so it is not a drawn row;
-    // the two that are drawn keep their layout positions rather than sliding up
+    // rn6 is in the order but not in the sample set, so it is not a drawn row;
+    // the two that are drawn keep their ordered positions rather than sliding up
     expect(display.sources.map((s: { name: string }) => s.name)).toEqual([
       'mm10',
       'hg38',
@@ -341,28 +337,48 @@ describe('LinearMafDisplay row placement', () => {
     ])
   })
 
-  // The subtree filter still travels, as a row *set*: the worker ships only
-  // those genomes and scopes coverage to them.
-  it('sends the subtree filter as a set', async () => {
+  // The focus still travels, as a row *set* read off the config alone: the
+  // worker ships only those genomes and scopes coverage to them.
+  it('sends the focus as a set', async () => {
     const { createDisplay, mockRpcCall } = createMafTestEnvironment({
       assemblyEnd: 50_000,
       viewRegionEnd: 10_000,
+      displayConfig: { rows: { domain: ['mm10', 'hg38'], kept: ['hg38'] } },
     })
     mockRpcCall.mockImplementation(() =>
       Promise.resolve(makeMafResult(HG38_MM10)),
     )
-    const { display } = createDisplay({
-      displaySnapshot: {
-        layout: [{ name: 'mm10' }, { name: 'hg38' }],
-        subtreeFilter: ['hg38'],
-      },
-    })
+    const { display } = createDisplay()
     await settle(display)
 
     const [first] = alignmentCalls(mockRpcCall)
     expect(first![2].subtreeFilter).toEqual(['hg38'])
     expect(display.sources.map((s: { name: string }) => s.name)).toEqual([
       'hg38',
+    ])
+  })
+
+  // A focus naming no sample the adapter reports keeps its key, since the key
+  // reads no fetch result, and the display draws every row; the worker, which
+  // knows the listed samples, resolves the same focus to every row there. One
+  // fetch, and no key flip when the samples land.
+  it('keys a focus naming no current row without refetching', async () => {
+    const { createDisplay, mockRpcCall } = createMafTestEnvironment({
+      assemblyEnd: 50_000,
+      viewRegionEnd: 10_000,
+      displayConfig: { rows: { kept: ['rn6'] } },
+    })
+    mockRpcCall.mockImplementation(() =>
+      Promise.resolve(makeMafResult(HG38_MM10)),
+    )
+    const { display } = createDisplay()
+    await settle(display)
+
+    expect(alignmentCalls(mockRpcCall)).toHaveLength(1)
+    expect(alignmentCalls(mockRpcCall)[0]![2].subtreeFilter).toEqual(['rn6'])
+    expect(display.sources.map((s: { name: string }) => s.name)).toEqual([
+      'hg38',
+      'mm10',
     ])
   })
 })

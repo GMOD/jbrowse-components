@@ -52,10 +52,14 @@ function payload<T>(result: T | RegionTooLargeResult) {
   return result
 }
 
-async function run(features: Feature[], subtreeFilter?: string[]) {
+async function run(
+  features: Feature[],
+  subtreeFilter?: string[],
+  samples: { id: string; label: string }[] = [],
+) {
   mockLoadAdapter.mockResolvedValue({
     adapter: { getFeatures: () => of(...features) },
-    samples: [],
+    samples,
     treeNewick: undefined,
   })
   const result = await executeMafAlignmentData({
@@ -136,6 +140,18 @@ test('the subtree filter drops rows but the sample list keeps every genome', asy
   // why this cannot be read off the packer's own dictionary.
   expect(samples.map(s => s.id)).toEqual(['hg38', 'mm10', 'rn6'])
   expect(samples.length).toBe(3)
+})
+
+test('a focus naming no configured species packs every row', async () => {
+  const { regionData } = await run(
+    [feature(10, 'ACGT', { hg38: row('ACGT'), mm10: row('AC-T') })],
+    ['rn6'],
+    [
+      { id: 'hg38', label: 'hg38' },
+      { id: 'mm10', label: 'mm10' },
+    ],
+  )
+  expect(regionData.sampleIds).toEqual(['hg38', 'mm10'])
 })
 
 test('a species seen only on an e line is discovered and packed as an empty', async () => {

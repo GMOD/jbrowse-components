@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 
 import configSchemaF from './configSchema.ts'
+import { routeRetiredShorthandF } from './retiredSettings.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -11,6 +12,7 @@ const ReactComponent = lazy(
 )
 
 export default function LinearMafDisplayF(pluginManager: PluginManager) {
+  routeRetiredShorthandF(pluginManager)
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaF()
     return new DisplayType({

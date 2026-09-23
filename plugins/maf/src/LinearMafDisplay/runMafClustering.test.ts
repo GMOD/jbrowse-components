@@ -27,7 +27,6 @@ function makeModel(overrides: Partial<MafClusterSelf> = {}) {
       src('HG00099.2'),
       src('HG00146.1'),
     ],
-    layout: [],
     rowDomain: [],
     adapterConfig: { type: 'BgzipTaffyAdapter' },
     setRowOrder: jest.fn(),
@@ -83,9 +82,9 @@ describe('runMafClustering', () => {
     expect(tree).toBe('((HG00099.2,GRCh38),x);')
   })
 
-  // `layout` is the persisted record of every row's position and colour, so a
-  // row a subtree filter is hiding has to survive the write. Dropping it here
-  // erases it for good the moment the filter is cleared.
+  // The order written is every row's position, so a row a focus is hiding has
+  // to survive the write. Dropping it here erases its place for good the
+  // moment the focus is cleared.
   it('re-appends the rows a subtree filter is hiding', async () => {
     const model = makeModel()
     await run(model, makeRpcManager([0, 1, 2], '(a,b,c);'))

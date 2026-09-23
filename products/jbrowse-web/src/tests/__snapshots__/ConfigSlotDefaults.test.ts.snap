@@ -570,7 +570,6 @@ exports[`every registered schema slot default 1`] = `
     "conservationHeight": "number = 40",
     "conservationMode": "stringEnum = "base" of ["base","codon"]",
     "coverageHeight": "number = 45",
-    "domain": "stringArray = []",
     "fetchSizeLimit": "number = 5000000",
     "forceLoad": "boolean = false",
     "height": "maybeNumber = undefined",

@@ -73,7 +73,6 @@ interface MafMenuSelf extends IStateTreeNode, MafClusterSelf {
   mismatchRendering: boolean
   showAsUpperCase: boolean
   showTree: boolean
-  clusterTree?: string
   showRowLabels: boolean
   setShowRowLabels: (arg: boolean) => void
   showBranchLength: boolean
@@ -104,7 +103,6 @@ interface MafMenuSelf extends IStateTreeNode, MafClusterSelf {
   // shared "Custom..." dialog grow its second field.
   rowHeight: number
   rowProportion: number
-  subtreeFilter?: readonly string[]
   editableSources: MafSource[]
   sourcesKnown: boolean
   setRowHeight: (n: number) => void

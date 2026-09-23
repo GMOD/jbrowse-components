@@ -1,15 +1,5 @@
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { getConf } from '@jbrowse/core/configuration'
 import { waitFor } from '@testing-library/react'
-
-import type { LinearMafDisplayModel } from './stateModel.ts'
-
-// postProcessSnapshot returns the stripped shape on one branch and the whole
-// snapshot on the other, and MST's signature collapses that to the stripped one
-// — so the declared type says `clusterTree` is never persisted, which is the
-// thing these assertions are about. Read through a record rather than asserting
-// against a type that cannot express the case.
-const snapshotOf = (display: LinearMafDisplayModel) =>
-  getSnapshot(display) as unknown as Record<string, unknown>
 
 import { emptyMafWireRegionData } from './components/coverageTestFixture.ts'
 import { createMafTestEnvironment } from './testEnv.ts'
@@ -65,7 +55,7 @@ describe('LinearMafDisplay declarative runClustering', () => {
     await jest.runAllTimersAsync()
 
     await waitFor(() => {
-      expect(display.clusterTree).toBe('(panTro4,hg38);')
+      expect(display.rowTree).toBe('(panTro4,hg38);')
     })
     expect(display.sources.map(s => s.name)).toEqual(['panTro4', 'hg38'])
 
@@ -101,11 +91,11 @@ describe('LinearMafDisplay declarative runClustering', () => {
     ).toHaveLength(0)
   })
 
-  // A guide tree is re-supplied by the adapter on every fetch, so persisting it
-  // would store a copy of something derived. A CLUSTERED tree is not: nothing
-  // recomputes it, and dropping it would restore the clustered row order with no
-  // dendrogram beside it. `clusterProvenance` is what tells the two apart.
-  it('drops the guide tree from a snapshot and keeps a clustered one', () => {
+  // The adapter re-supplies its guide tree on every fetch, so a stored copy
+  // would go stale behind an edited `.nh`. A clustered tree is not supplied:
+  // nothing recomputes it, and dropping it would restore the clustered row
+  // order with no dendrogram beside it.
+  it('keeps the guide tree out of rows.tree and lands a clustered one there', () => {
     const env = createMafTestEnvironment()
     const { display } = env.createDisplay()
     display.setSamples({
@@ -113,41 +103,19 @@ describe('LinearMafDisplay declarative runClustering', () => {
       treeNewick: '(hg38,panTro4);',
       samplesCanonical: true,
     })
-    expect(snapshotOf(display).clusterTree).toBeUndefined()
+    expect(display.rowTree).toBe('(hg38,panTro4);')
+    expect(getConf(display, ['rows', 'tree'])).toBeUndefined()
 
     display.setRowOrder([{ name: 'panTro4' }, { name: 'hg38' }], {
       tree: '(panTro4,hg38);',
       provenance: { regions: [{ refName: 'chr1', start: 0, end: 100 }] },
     })
-    expect(snapshotOf(display).clusterTree).toBe('(panTro4,hg38);')
+    expect(getConf(display, ['rows', 'tree'])).toBe('(panTro4,hg38);')
+    expect(display.rowTreeProvenance).toBeDefined()
 
-    // Reset row order puts the guide tree back, and with it the snapshot rule:
-    // `resetRowArrangement` writes the tree with no provenance, so what comes back is a
-    // supplied tree again and the snapshot stops carrying it. Pinned because
-    // the postProcessSnapshot branch reads `clusterProvenance` and would
-    // otherwise persist a guide tree the adapter re-supplies on every fetch.
     display.resetRowArrangement()
-    expect(display.clusterTree).toBe('(hg38,panTro4);')
-    expect(display.clusterProvenance).toBeUndefined()
-    expect(snapshotOf(display).clusterTree).toBeUndefined()
-  })
-
-  it('persists a computed tree and not a supplied one', () => {
-    const env = createMafTestEnvironment()
-    const { display } = env.createDisplay()
-    display.setSamples({
-      samples: [sample('hg38'), sample('panTro4')],
-      treeNewick: '(hg38,panTro4);',
-      samplesCanonical: true,
-    })
-    expect(display.clusterTree).toBe('(hg38,panTro4);')
-    expect(display.clusterProvenance).toBeUndefined()
-
-    display.setRowOrder([{ name: 'panTro4' }, { name: 'hg38' }], {
-      tree: '(panTro4,hg38);',
-      provenance: { regions: [{ refName: 'chr1', start: 0, end: 100 }] },
-    })
-    expect(display.clusterTree).toBe('(panTro4,hg38);')
-    expect(display.clusterProvenance).toBeDefined()
+    expect(display.rowTree).toBe('(hg38,panTro4);')
+    expect(display.rowTreeProvenance).toBeUndefined()
+    expect(getConf(display, ['rows', 'tree'])).toBeUndefined()
   })
 })

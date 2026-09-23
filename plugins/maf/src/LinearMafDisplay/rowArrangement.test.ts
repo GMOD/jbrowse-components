@@ -1,4 +1,4 @@
-import { setConf } from '@jbrowse/core/configuration'
+import { getConf, setConf } from '@jbrowse/core/configuration'
 
 import { createMafTestEnvironment } from './testEnv.ts'
 
@@ -14,9 +14,9 @@ function rowNames(display: { sources?: { name: string }[] }) {
 
 describe('a discovered row set widens under a custom arrangement', () => {
   // A sample-discovery track learns of a genome only from the region whose
-  // blocks contain it, so the row set grows as the user scrolls. `layout` is an
-  // ordering hint, never the row set — a merge that iterated it alone meant a
-  // species revealed by a later region never got a row at all.
+  // blocks contain it, so the row set grows as the user scrolls. `rows.domain`
+  // is an ordering hint, never the row set, so a species revealed by a later
+  // region still gets a row.
   it('gives a newly discovered species a row after a reorder', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     display.setSamples({
@@ -61,7 +61,7 @@ describe('a discovered row set widens under a custom arrangement', () => {
     })
   })
 
-  it('drops a layout row the data no longer has', () => {
+  it('drops an ordered row the data no longer has', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     display.setSamples({
       samples: [sample('hg38'), sample('panTro4')],
@@ -94,7 +94,7 @@ describe('the guide tree positions only while it describes the rows', () => {
 
   it('positions against the worker tree with no arrangement', () => {
     const display = treedDisplay()
-    expect(display.clusterTree).toBe(TREE)
+    expect(display.rowTree).toBe(TREE)
     expect(display.hierarchy).toBeDefined()
   })
 
@@ -106,7 +106,7 @@ describe('the guide tree positions only while it describes the rows', () => {
       { name: 'panTro4' },
     ])
 
-    expect(display.clusterTree).toBeUndefined()
+    expect(display.rowTree).toBeUndefined()
     expect(display.hierarchy).toBeUndefined()
     expect(rowNames(display)).toEqual(['mm10', 'hg38', 'panTro4'])
   })
@@ -121,7 +121,7 @@ describe('the guide tree positions only while it describes the rows', () => {
 
     display.resetRowArrangement()
 
-    expect(display.clusterTree).toBe(TREE)
+    expect(display.rowTree).toBe(TREE)
     expect(display.hierarchy).toBeDefined()
     expect(rowNames(display)).toEqual(['hg38', 'panTro4', 'mm10'])
   })
@@ -139,16 +139,16 @@ describe('the guide tree positions only while it describes the rows', () => {
       { name: 'mm10' },
     ])
 
-    expect(display.clusterTree).toBeUndefined()
-    expect(display.subtreeFilter?.slice()).toEqual(['hg38', 'panTro4'])
+    expect(display.rowTree).toBeUndefined()
+    expect(display.rowFocus).toEqual(['hg38', 'panTro4'])
     expect(rowNames(display)).toEqual(['panTro4', 'hg38'])
   })
 })
 
-describe('the config `domain` seeds the row order', () => {
+describe('the declared `rows.domain` seeds the row order', () => {
   function domainDisplay(domain: string[]) {
     const { display } = createMafTestEnvironment({
-      displayConfig: { domain },
+      displayConfig: { rows: { domain } },
     }).createDisplay()
     display.setSamples({
       samples: [sample('hg38'), sample('panTro4'), sample('mm10')],
@@ -180,7 +180,7 @@ describe('the config `domain` seeds the row order', () => {
   // construction rather than by luck.
   it('rotates the guide tree it leads with, and still draws it', () => {
     const display = domainDisplay(['mm10'])
-    expect(display.clusterTree).toBe(TREE)
+    expect(display.rowTree).toBe(TREE)
     expect(display.hierarchy).toBeDefined()
     expect(rowNames(display)).toEqual(['mm10', 'hg38', 'panTro4'])
   })
@@ -200,14 +200,16 @@ describe('the config `domain` seeds the row order', () => {
     expect(display.hierarchy).toBeDefined()
   })
 
-  // The rotation is derived from the current domain every time, never written
-  // into the tree, so emptying the slot puts the rows and the dendrogram back
-  // in file order.
-  it('returns to the file order when the domain is emptied', () => {
+  // The rotation is derived from the declared domain every time, never
+  // written into the tree. An order written over it in the session is a
+  // reorder like any other: the rows follow it and the guide tree, which no
+  // longer describes them, hides.
+  it('orders by a session domain and hides the guide tree', () => {
     const display = domainDisplay(['mm10'])
-    setConf(display, 'domain', [])
-    expect(rowNames(display)).toEqual(['hg38', 'panTro4', 'mm10'])
-    expect(display.hierarchy).toBeDefined()
+    setConf(display, ['rows', 'domain'], ['panTro4', 'mm10'])
+    expect(rowNames(display)).toEqual(['panTro4', 'mm10', 'hg38'])
+    expect(display.rowTree).toBeUndefined()
+    expect(display.hierarchy).toBeUndefined()
   })
 
   // The filter runs over the rotated tree, so focusing the clade keeps the
@@ -222,10 +224,10 @@ describe('the config `domain` seeds the row order', () => {
     expect(display.hierarchy).toBeDefined()
   })
 
-  // `layout` is the runtime channel over the seed: a drag, a clustering run or
-  // the arrangement dialog still wins, and "Reset row order" returns to the
-  // domain rather than to the adapter order.
-  it('gives way to a layout and comes back when it is cleared', () => {
+  // A drag, a clustering run or the arrangement dialog writes over the
+  // declared order, and "Reset row order" returns to it rather than to the
+  // adapter order.
+  it('gives way to a reorder and comes back on a reset', () => {
     const display = domainDisplay(['mm10'])
     display.setRowOrder([
       { name: 'panTro4' },
@@ -272,4 +274,73 @@ describe('the configured per-sample color reaches the sidebar', () => {
     expect(display.sources).toEqual([])
     expect(display.sourcesKnown).toBe(false)
   })
+})
+
+describe('rowColor tints a row over the adapter colour', () => {
+  const SAMPLES = [
+    { id: 'hg38', label: 'Human', color: 'red' },
+    { id: 'mm10', label: 'Mouse' },
+  ]
+
+  function tinted(rowColor?: { domain: string[]; range: string[] }) {
+    const { display } = createMafTestEnvironment({
+      displayConfig: rowColor ? { rowColor } : {},
+    }).createDisplay()
+    display.setSamples({
+      samples: SAMPLES,
+      treeNewick: undefined,
+      samplesCanonical: true,
+    })
+    return display
+  }
+
+  const tints = (display: { sources: { labelColor?: string }[] }) =>
+    display.sources.map(s => s.labelColor)
+
+  it('paints a declared entry ahead of the adapter colour', () => {
+    const display = tinted({ domain: ['hg38'], range: ['#00ff00'] })
+    expect(tints(display)).toEqual(['#00ff00', undefined])
+    expect(display.rowArrangementIsCustom).toBe(false)
+  })
+
+  // The dialog shows the adapter colour and edits over it, so a row left at
+  // that colour writes nothing and a row set back to it drops its entry.
+  it('writes only what differs from the adapter, and a reset returns', () => {
+    const display = tinted({ domain: ['hg38'], range: ['#00ff00'] })
+    const [hg38, mm10] = display.editableSources
+    display.applyRowEdits([
+      { ...hg38!, labelColor: 'red' },
+      { ...mm10!, labelColor: '#0000ff' },
+    ])
+    expect(getConf(display, ['rowColor', 'domain'])).toEqual(['mm10'])
+    expect(getConf(display, ['rowColor', 'range'])).toEqual(['#0000ff'])
+    expect(tints(display)).toEqual(['red', '#0000ff'])
+    expect(display.rowArrangementIsCustom).toBe(true)
+
+    display.resetRowArrangement()
+    expect(tints(display)).toEqual(['#00ff00', undefined])
+    expect(display.rowArrangementIsCustom).toBe(false)
+  })
+
+  it('offers a reset for a recolour alone', () => {
+    const display = tinted()
+    setConf(display, ['rowColor', 'domain'], ['mm10'])
+    setConf(display, ['rowColor', 'range'], ['#0000ff'])
+    expect(display.rowArrangementIsCustom).toBe(true)
+  })
+})
+
+// A focus saved against rows that have since gone, by a renamed species or
+// another adapter, shows every row rather than none.
+test('a focus naming no current species shows every row', () => {
+  const { display } = createMafTestEnvironment({
+    displayConfig: { rows: { kept: ['rn6'] } },
+  }).createDisplay()
+  display.setSamples({
+    samples: [sample('hg38'), sample('mm10')],
+    treeNewick: undefined,
+    samplesCanonical: true,
+  })
+  expect(rowNames(display)).toEqual(['hg38', 'mm10'])
+  expect(display.subtreeFilterSet).toEqual(['rn6'])
 })

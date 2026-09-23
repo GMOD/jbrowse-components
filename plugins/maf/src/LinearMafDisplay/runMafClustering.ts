@@ -21,7 +21,7 @@ export interface MafClusterSelf
   extends IStateTreeNode, ClusterRunModel<MafSource> {
   sources: MafSource[]
   adapterConfig: Record<string, unknown>
-  setRowOrder: (layout: MafSource[]) => void
+  setRowOrder: (rows: MafSource[]) => void
 }
 
 /**

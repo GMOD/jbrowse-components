@@ -11,7 +11,7 @@ import type { MafClusterSelf } from '../runMafClustering.ts'
 // same function the declarative `runClustering` autorun calls.
 //
 // A MAF track can already have a tree -- the adapter's guide phylogeny -- and
-// running this replaces it for as long as the clustered layout stands. That is
+// running this replaces it for as long as the clustered order stands. That is
 // the point rather than a side effect: a guide tree states how the genomes are
 // related in general, and clustering states how they differ HERE, which for a
 // cohort of one species is the only one of the two that varies by locus.

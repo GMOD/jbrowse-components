@@ -35,7 +35,7 @@ export function createMafTestEnvironment({
   assemblyEnd?: number
   // How much of the assembly `createDisplay` displays by default.
   viewRegionEnd?: number
-  // Display config slots, for the ones with no setter (`domain`).
+  // Display config slots, for the ones with no setter (`rows`, `rowColor`).
   displayConfig?: Record<string, unknown>
 } = {}) {
   const env = createDisplayTestEnvironment<LinearMafDisplayModel>({

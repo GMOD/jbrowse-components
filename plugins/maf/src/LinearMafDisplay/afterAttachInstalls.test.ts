@@ -11,9 +11,9 @@ test('the placed-rows observer tracks the store and the row order', () => {
   const { display } = createMafTestEnvironment().createDisplay()
   expect(reactionDependencies(display, 'Maf:placedRows')).toEqual(
     expect.arrayContaining([
-      'LinearMafDisplay.layout',
+      'RowArrangementConfigurationSchema.domain',
       'LinearMafDisplay.sourcesVolatile',
-      'LinearMafDisplay.subtreeFilter',
+      'RowArrangementConfigurationSchema.kept',
       // Both halves of "hide the reference row": which row it is, and whether
       // it is hidden. Rows move when either changes, so the placement has to
       // see both.

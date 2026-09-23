@@ -78,8 +78,8 @@ export interface MafWireRegionData {
    * and is only ever viewed, never copied, on the way to the GPU encoder.
    *
    * The reference is stored again as its own slice rather than aliasing the
-   * reference species' row: that row is normally present but a `subtreeFilter`
-   * can exclude it, and a malformed stanza can resolve no reference row at all.
+   * reference species' row: that row is normally present but a focus can
+   * exclude it, and a malformed stanza can resolve no reference row at all.
    * It costs one row's bytes per block (~4% of the arena on a 26-way).
    */
   arena: Uint8Array

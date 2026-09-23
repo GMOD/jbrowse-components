@@ -24,9 +24,10 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 
 interface MafFetchSelf extends FetchEachRegionModel {
   adapterConfig: Record<string, unknown>
-  // The sorted-set form, never the raw `subtreeFilter` node: this is also what
-  // `rpcProps()` returns, so the payload and the cache key it is stored under
-  // are one expression. See the getter for why the sort is load-bearing.
+  // The sorted-set form of `rows.kept`, never the raw config node: this is
+  // also what `rpcProps()` returns, so the payload and the cache key it is
+  // stored under are one expression. See the getter for why the sort is
+  // load-bearing.
   subtreeFilterSet: string[] | undefined
   annotationDataActive: boolean
   annotationAdapterConfig: Record<string, unknown> | undefined
@@ -363,8 +364,8 @@ export async function fetchMafSummaryData(
       regions: [region],
       byteLimit: self.resolvedByteLimit(),
       // Same row set as the detail path. It has to be sent even though the
-      // records are small: `subtreeFilter` is in the read key, so narrowing
-      // the clade already re-reads — a summary fetch that ignored the filter
+      // records are small: the focus is in the read key, so narrowing the
+      // clade already re-reads — a summary fetch that ignored the focus
       // would re-download byte-identical rows and then drop the same ones
       // client-side.
       subtreeFilter: self.subtreeFilterSet,
