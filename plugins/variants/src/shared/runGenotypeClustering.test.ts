@@ -47,8 +47,7 @@ function makeModel(overrides: Partial<ReducedModel> = {}): ReducedModel {
     rowDomain: [],
     clusteringReady: true,
     hasClusterableRows: true,
-    setLayout: jest.fn(),
-    setLayoutAndClusterTree: jest.fn(),
+    setRowOrder: jest.fn(),
     ...overrides,
   }
 }
@@ -87,14 +86,13 @@ describe('runGenotypeClustering', () => {
         renderingMode: 'alleleCount',
       }),
     )
-    expect(model.setLayoutAndClusterTree).toHaveBeenCalledWith(
+    expect(model.setRowOrder).toHaveBeenCalledWith(
       [
         { name: 'sampleC', sampleName: 'sampleC' },
         { name: 'sampleA', sampleName: 'sampleA' },
         { name: 'sampleB', sampleName: 'sampleB' },
       ],
-      '(a,b,c);',
-      PROVENANCE,
+      { tree: '(a,b,c);', provenance: PROVENANCE },
     )
   })
 
@@ -118,8 +116,8 @@ describe('runGenotypeClustering', () => {
       statusCallback: jest.fn(),
     })
 
-    const [layout, tree] = jest.mocked(model.setLayoutAndClusterTree).mock
-      .calls[0]!
+    const [layout, run] = jest.mocked(model.setRowOrder).mock.calls[0]!
+    const tree = run?.tree
     expect(layout.map(s => s.name)).toEqual(['sampleB', 'sampleA', 'sampleC'])
     expect(treeDescribesRows(parseClusterTree(tree!), layout)).toBe(true)
   })
@@ -168,7 +166,7 @@ describe('runGenotypeClustering', () => {
     })
 
     expect(rpcManager.call).not.toHaveBeenCalled()
-    expect(model.setLayoutAndClusterTree).not.toHaveBeenCalled()
+    expect(model.setRowOrder).not.toHaveBeenCalled()
   })
 
   it('expands sources into per-haplotype rows before laying out, in phased mode', async () => {
@@ -197,17 +195,19 @@ describe('runGenotypeClustering', () => {
       statusCallback: jest.fn(),
     })
 
-    expect(model.setLayoutAndClusterTree).toHaveBeenCalledWith(
+    expect(model.setRowOrder).toHaveBeenCalledWith(
       [
         { name: 'sampleB HP1', sampleName: 'sampleB', HP: 1 },
         { name: 'sampleB HP0', sampleName: 'sampleB', HP: 0 },
         { name: 'sampleA HP1', sampleName: 'sampleA', HP: 1 },
         { name: 'sampleA HP0', sampleName: 'sampleA', HP: 0 },
       ],
-      '(...);',
-      // the recorded mode follows the run, since a phased tree clusters
-      // haplotype rows rather than sample rows
-      { ...PROVENANCE, settings: withMode('phased') },
+      {
+        tree: '(...);',
+        provenance: // the recorded mode follows the run, since a phased tree clusters
+          // haplotype rows rather than sample rows
+          { ...PROVENANCE, settings: withMode('phased') },
+      },
     )
   })
 
@@ -246,14 +246,13 @@ describe('runGenotypeClustering', () => {
       'MultiSampleVariantClusterGenotypeMatrix',
       expect.objectContaining({ sources: model.sourcesBase }),
     )
-    expect(model.setLayoutAndClusterTree).toHaveBeenCalledWith(
+    expect(model.setRowOrder).toHaveBeenCalledWith(
       [
         { name: 'sampleB', sampleName: 'sampleB' },
         { name: 'sampleA', sampleName: 'sampleA' },
         { name: 'sampleC', color: 'red' },
       ],
-      '(a,b);',
-      PROVENANCE,
+      { tree: '(a,b);', provenance: PROVENANCE },
     )
   })
 })

@@ -104,7 +104,7 @@ describe('multi-sample variant row placement', () => {
 
   test('a reorder re-places the cells already in hand', () => {
     const display = setup()
-    display.setLayout([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
+    display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
     // worker rows are ["S2","S1","S0"], screen order is S1,S0,S2
     expect(placement(display)).toEqual({ 0: 2, 1: 0, 2: 1 })
   })
@@ -112,7 +112,7 @@ describe('multi-sample variant row placement', () => {
   test('a reorder does not invalidate the fetch', () => {
     const display = setup()
     const before = display.settingsFetchInputs
-    display.setLayout([{ name: 'S2' }, { name: 'S0' }, { name: 'S1' }])
+    display.setRowOrder([{ name: 'S2' }, { name: 'S0' }, { name: 'S1' }])
 
     // `SettingsInvalidate` watches exactly this value — an unchanged key is
     // what makes a reorder a re-upload instead of a fresh download of the whole
@@ -124,19 +124,19 @@ describe('multi-sample variant row placement', () => {
   test('the fetched row set is sent sorted, so only membership can change it', () => {
     const display = setup()
     expect(display.sampleFilter).toEqual(['S0', 'S1', 'S2'])
-    display.setLayout([{ name: 'S2' }, { name: 'S1' }, { name: 'S0' }])
+    display.setRowOrder([{ name: 'S2' }, { name: 'S1' }, { name: 'S0' }])
     expect(display.sampleFilter).toEqual(['S0', 'S1', 'S2'])
     // a layout is an ordering hint, not the row set: one that omits a sample
     // still fetches it (the omitted row is appended), same rule the other row
     // displays get from `reconcileLayout`
-    display.setLayout([{ name: 'S2' }, { name: 'S0' }])
+    display.setRowOrder([{ name: 'S2' }, { name: 'S0' }])
     expect(display.sampleFilter).toEqual(['S0', 'S1', 'S2'])
 
     // membership genuinely changing does invalidate: fewer rows is less to
     // compute, so it stays a fetch input. Narrowing is the subtree filter's
     // job — the same call maf makes.
     const key = display.settingsFetchInputs
-    display.setSubtreeFilter(['S0', 'S2'])
+    display.setRowFocus(['S0', 'S2'])
     expect(display.sampleFilter).toEqual(['S0', 'S2'])
     expect(display.settingsFetchInputs).not.toEqual(key)
   })
@@ -148,7 +148,7 @@ describe('multi-sample variant row placement', () => {
     // carries a row the display has no place for. Doing it the other way round
     // clears the cells outright — a membership change IS a fetch input, as the
     // test above pins — so this is the order the case actually occurs in.
-    display.setSubtreeFilter(['S0', 'S2'])
+    display.setRowFocus(['S0', 'S2'])
     display.setCellData(regularCellData(['S2', 'S1', 'S0']))
 
     // S1 has no screen row; placing it at 0 would paint it under S0's label

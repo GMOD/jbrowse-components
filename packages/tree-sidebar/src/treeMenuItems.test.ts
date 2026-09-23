@@ -17,7 +17,7 @@ const CLUSTERED_AT = { refName: 'ctgA', start: 1000, end: 2000 }
 describe('clusterProvenanceMenuItems', () => {
   it('names the locus the tree was computed from', () => {
     const [item] = clusterProvenanceMenuItems({
-      clusterProvenance: clusterProvenanceFromRegions([CLUSTERED_AT]),
+      rowTreeProvenance: clusterProvenanceFromRegions([CLUSTERED_AT]),
     })
     expect(item).toMatchObject({
       label: 'Clustered on ctgA:1,001..2,000',
@@ -27,7 +27,7 @@ describe('clusterProvenanceMenuItems', () => {
 
   it('carries the run settings alongside the locus', () => {
     const [item] = clusterProvenanceMenuItems({
-      clusterProvenance: clusterProvenanceFromRegions(
+      rowTreeProvenance: clusterProvenanceFromRegions(
         [CLUSTERED_AT],
         [{ name: 'MAF filter', value: '0.05' }],
       ),
@@ -51,17 +51,17 @@ describe('clusterProvenanceMenuItems', () => {
 // asserting they were one action.
 describe('resetRowOrderMenuItems', () => {
   it('offers the reset once a row order has been written', () => {
-    const clearLayout = jest.fn()
+    const resetRowArrangement = jest.fn()
     const [item] = resetRowOrderMenuItems({
-      rowOrderIsCustom: true,
-      clearLayout,
+      rowArrangementIsCustom: true,
+      resetRowArrangement,
     })
 
     expect(item).toMatchObject({ label: 'Reset row order' })
     if (item && 'onClick' in item) {
       item.onClick()
     }
-    expect(clearLayout).toHaveBeenCalled()
+    expect(resetRowArrangement).toHaveBeenCalled()
   })
 
   // Gated on `layout`, not on `clusterTree`: a clustering run is only one of the
@@ -70,8 +70,8 @@ describe('resetRowOrderMenuItems', () => {
   it('contributes nothing while the rows are in discovered order', () => {
     expect(
       resetRowOrderMenuItems({
-        rowOrderIsCustom: false,
-        clearLayout: jest.fn(),
+        rowArrangementIsCustom: false,
+        resetRowArrangement: jest.fn(),
       }),
     ).toEqual([])
   })
@@ -82,7 +82,7 @@ describe('resetRowOrderMenuItems', () => {
 // let one row through. Passing `rowCount` moves the menu half of it here.
 describe('clusteringMenuItem', () => {
   const runItem = { label: 'Cluster rows by score...', onClick: () => {} }
-  const model = { setSubtreeFilter: () => {} }
+  const model = { setRowFocus: () => {} }
   const subMenuOf = (item: ReturnType<typeof clusteringMenuItem>) =>
     'subMenu' in item ? resolveSubMenu(item) : []
 

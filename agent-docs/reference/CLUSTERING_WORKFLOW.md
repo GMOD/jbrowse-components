@@ -31,7 +31,7 @@ Worker
   Return { order: number[], tree: string }
 Dialog callback
   buildClusteredLayout(baseSources, existingLayout, order)
-  model.setLayoutAndClusterTree(layout, tree)        ← both plugins
+  model.setRowOrder(rows, { tree, provenance })     ← both plugins
 MST state updated (TreeSidebarMixin)
   layout[]     → row order
   clusterTree  → Newick string
@@ -114,7 +114,7 @@ HP0`, `HG001 HP1`). Values are a per-haplotype alt indicator in `Float32Array`,
 
 The dialog commits a finished run through one `applyOrder(order)` callback,
 which calls `applyClusterOrder` (`plugins/variants/src/shared/`) and hands the
-result to `model.setLayout`. Haplotype expansion is inside that helper — it
+result to `model.setRowOrder`. Haplotype expansion is inside that helper — it
 calls `expandSourcesToHaplotypes` itself off `renderingMode` / `sampleInfo` —
 rather than at the call site, so the phased and unphased paths commit
 identically and the dialog holds no mode-specific branch.
@@ -133,10 +133,11 @@ Persistent MST state shared by both plugins:
 | `subtreeFilter` | `string[]` | Leaf names for collapsed subtree |
 
 Key actions:
-- `setLayout(layout)` — clears tree if sample names changed
-- `setLayoutAndClusterTree(layout, tree)` — atomic update (wiggle)
-- `setSubtreeFilter(names)` — collapses to deepest matching subtree (interactive click)
-- `clearLayout()` — wipes layout + tree + subtree filter
+- `setRowOrder(rows)` — a reorder; clears the tree if the row order changed
+- `setRowOrder(rows, { tree, provenance })` — a run's order and tree, together
+- `applyRowEdits(rows)` — the arrangement dialog's submit
+- `setRowFocus(names)` — collapses to deepest matching subtree (interactive click)
+- `resetRowArrangement()` — wipes the order, the tree and the focus
 
 ### Staleness has one imperative half and one derived half
 
@@ -144,9 +145,9 @@ Key actions:
 that no longer names the rows on screen draws against the wrong ones. Two things
 enforce that it does:
 
-- **`setLayout` → `willClearTree`**, for the writes that go through it. It also
+- **`setRowOrder` → `rowOrderWillDropTree`**, for the writes that go through it. It also
   backs the color dialog's pre-submit warning, which has to answer before the
-  write happens. Every action that moves rows must route through `setLayout`,
+  write happens. Every action that moves rows must route through `setRowOrder`,
   never a direct `self.layout =`.
 - **`computeClusterHierarchy`**, which takes the *drawn rows* and returns
   `undefined` unless the tree's leaves are exactly those names in that order.
@@ -198,7 +199,7 @@ it just never fires.
 
 Both dialogs offer a Manual tab that generates an R script. The user runs it
 locally and pastes the resulting Newick tree. The dialog calls the same
-`buildClusteredLayout` + `setLayout*` path as auto mode, just with
+`buildClusteredLayout` + `setRowOrder` path as auto mode, just with
 user-supplied order/tree instead of RPC output.
 
 ---
@@ -210,7 +211,7 @@ user-supplied order/tree instead of RPC output.
 
 Both call `model.hierarchy` (a computed view) and pass it to `<SvgTreePath>`.
 The dendrogram appears in the left sidebar; rows are drawn in `layout` order.
-Clicking a tree node calls `setSubtreeFilter` to collapse/expand that clade.
+Clicking a tree node calls `setRowFocus` to collapse/expand that clade.
 
 ---
 

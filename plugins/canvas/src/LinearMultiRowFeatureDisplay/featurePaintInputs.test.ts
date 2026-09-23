@@ -71,13 +71,13 @@ describe('featurePaintInputs', () => {
     [
       'a reorder',
       (d: ReturnType<typeof makeDisplay>) => {
-        d.setLayout([{ name: 'sampleB' }, { name: 'sampleA' }])
+        d.setRowOrder([{ name: 'sampleB' }, { name: 'sampleA' }])
       },
     ],
     [
       'a recolor',
       (d: ReturnType<typeof makeDisplay>) => {
-        d.setLayout([{ name: 'sampleA', color: 'red' }, { name: 'sampleB' }])
+        d.setRowOrder([{ name: 'sampleA', color: 'red' }, { name: 'sampleB' }])
       },
     ],
     [
@@ -106,7 +106,7 @@ describe('featurePaintInputs', () => {
     const first = display.encodedChannels
     expect(display.encodedChannels).toBe(first)
 
-    display.setLayout([{ name: 'sampleB' }, { name: 'sampleA' }])
+    display.setRowOrder([{ name: 'sampleB' }, { name: 'sampleA' }])
     expect(display.encodedChannels).not.toBe(first)
   })
 
@@ -201,7 +201,7 @@ describe('featurePaintInputs', () => {
     display.setRpcData(1, regionData(), ctgB)
     expect(uploads).toEqual([0, 1])
 
-    display.setLayout([{ name: 'sampleB' }, { name: 'sampleA' }])
+    display.setRowOrder([{ name: 'sampleB' }, { name: 'sampleA' }])
     expect(uploads.slice(2).sort()).toEqual([0, 1])
     expect(uploads).toHaveLength(4)
 

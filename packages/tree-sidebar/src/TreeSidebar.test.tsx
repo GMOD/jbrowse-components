@@ -29,7 +29,7 @@ function model(props: Partial<TreeSidebarModel> = {}): TreeSidebarModel {
     setMouseoverCanvasRef: () => {},
     setHoveredTreeNode: () => {},
     setTreeAreaWidth: () => {},
-    setSubtreeFilter: () => {},
+    setRowFocus: () => {},
     setScrollTop: () => {},
     ...props,
   }

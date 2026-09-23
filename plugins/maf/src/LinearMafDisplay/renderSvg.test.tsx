@@ -33,8 +33,11 @@ function clusteredDisplay() {
     treeNewick: undefined,
     samplesCanonical: true,
   })
-  display.setLayoutAndClusterTree([...display.sources], '(hg38:1,mm10:1);', {
-    regions: [{ refName: 'ctgA', start: 0, end: 1000 }],
+  display.setRowOrder([...display.sources], {
+    tree: '(hg38:1,mm10:1);',
+    provenance: {
+      regions: [{ refName: 'ctgA', start: 0, end: 1000 }],
+    },
   })
   return { display, view }
 }
@@ -44,8 +47,11 @@ function clusteredDisplay() {
 test('an exported dendrogram warns when it was clustered elsewhere', async () => {
   const { display } = clusteredDisplay()
   expect(draw(await renderSvg(display, {}))).not.toContain('⚠')
-  display.setLayoutAndClusterTree([...display.sources], '(hg38:1,mm10:1);', {
-    regions: [{ refName: 'ctgB', start: 0, end: 1000 }],
+  display.setRowOrder([...display.sources], {
+    tree: '(hg38:1,mm10:1);',
+    provenance: {
+      regions: [{ refName: 'ctgB', start: 0, end: 1000 }],
+    },
   })
   expect(draw(await renderSvg(display, {}))).toContain('⚠ ctgB:1..1,000')
 })

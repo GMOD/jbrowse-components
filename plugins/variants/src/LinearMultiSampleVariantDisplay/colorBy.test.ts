@@ -106,7 +106,7 @@ describe('multi-sample variant colorBy', () => {
     model.setRowColor('population')
     const before = new Map(model.sources.map(s => [s.name, s.labelColor]))
 
-    model.setSubtreeFilter(['HG002'])
+    model.setRowFocus(['HG002'])
 
     expect(model.sources.map(s => s.name)).toEqual(['HG002'])
     expect(model.sources[0]!.labelColor).toBe(before.get('HG002'))

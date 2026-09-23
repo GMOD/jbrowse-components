@@ -102,7 +102,7 @@ export function showRowSeparatorsMenuItem(
 }
 
 interface TreeSidebarMenuModel extends BranchLengthMenuModel {
-  clusterTree?: string
+  rowTree?: string
   setShowTree: (arg: boolean) => void
 }
 
@@ -112,7 +112,7 @@ interface TreeSidebarMenuModel extends BranchLengthMenuModel {
 // with no `clusterTree` flipping `showTree` draws nothing either way.
 export function showTreeSidebarMenuItem(self: TreeSidebarMenuModel): MenuItem {
   return toggleItem(TREE_SIDEBAR_LABEL, self.showTree, self.setShowTree, {
-    disabled: !self.clusterTree,
+    disabled: !self.rowTree,
     disabledHelpText: 'Run clustering first',
   })
 }
@@ -136,8 +136,8 @@ export function treeSidebarShowMenuItems(
 }
 
 interface SubtreeFilterMenuModel {
-  subtreeFilter?: readonly string[]
-  setSubtreeFilter: (arg?: string[]) => void
+  rowFocus?: readonly string[]
+  setRowFocus: (arg?: readonly string[]) => void
 }
 
 // "Clear subtree filter", or nothing when no filter is set — spread, don't
@@ -150,12 +150,12 @@ interface SubtreeFilterMenuModel {
 export function clearSubtreeFilterMenuItems(
   self: SubtreeFilterMenuModel,
 ): MenuItem[] {
-  return self.subtreeFilter?.length
+  return self.rowFocus?.length
     ? [
         {
           label: 'Clear subtree filter',
           onClick: () => {
-            self.setSubtreeFilter(undefined)
+            self.setRowFocus(undefined)
           },
         },
       ]
@@ -163,8 +163,8 @@ export function clearSubtreeFilterMenuItems(
 }
 
 interface RowOrderMenuModel {
-  rowOrderIsCustom: boolean
-  clearLayout: () => void
+  rowArrangementIsCustom: boolean
+  resetRowArrangement: () => void
 }
 
 // "Reset row order", or nothing when the rows are still in discovered order —
@@ -182,13 +182,13 @@ interface RowOrderMenuModel {
 // out per call site it was four copies held together by a comment asserting
 // they were one action.
 export function resetRowOrderMenuItems(self: RowOrderMenuModel): MenuItem[] {
-  return self.rowOrderIsCustom
+  return self.rowArrangementIsCustom
     ? [
         {
           label: 'Reset row order',
           icon: RestartAltIcon,
           onClick: () => {
-            self.clearLayout()
+            self.resetRowArrangement()
           },
         },
       ]
@@ -225,7 +225,7 @@ export function sortRowsHereMenuItem({
 }
 
 interface ClusterProvenanceMenuModel {
-  clusterProvenance?: ClusterProvenance
+  rowTreeProvenance?: ClusterProvenance
 }
 
 // "Clustered on <locus>", or nothing when the tree was supplied rather than
@@ -244,7 +244,7 @@ interface ClusterProvenanceMenuModel {
 export function clusterProvenanceMenuItems(
   self: ClusterProvenanceMenuModel,
 ): MenuItem[] {
-  const provenance = self.clusterProvenance
+  const provenance = self.rowTreeProvenance
   return provenance
     ? [
         {

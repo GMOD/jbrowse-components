@@ -37,8 +37,8 @@ function model(props: Partial<TreeSidebarModel>) {
     setMouseoverCanvasRef: () => {},
     setHoveredTreeNode: () => {},
     setTreeAreaWidth: () => {},
-    setSubtreeFilter: () => {},
-    clusterProvenance: clusterProvenanceFromRegions([CLUSTERED_AT]),
+    setRowFocus: () => {},
+    rowTreeProvenance: clusterProvenanceFromRegions([CLUSTERED_AT]),
     ...props,
   } as TreeSidebarModel
 }
@@ -61,7 +61,7 @@ describe('ClusterProvenanceHint', () => {
 
   it('carries the settings in the tooltip, where there is room for them', () => {
     const { chip } = draw({
-      clusterProvenance: clusterProvenanceFromRegions(
+      rowTreeProvenance: clusterProvenanceFromRegions(
         [CLUSTERED_AT],
         [{ name: 'MAF filter', value: '0.05' }],
       ),
@@ -74,7 +74,7 @@ describe('ClusterProvenanceHint', () => {
   // A tree that arrives as data (maf's `.nh` phylogeny) records no locus, and
   // captioning it with one would be a claim the tree does not make.
   it('says nothing for a tree with no provenance', () => {
-    expect(draw({ clusterProvenance: undefined }).chip).toBeNull()
+    expect(draw({ rowTreeProvenance: undefined }).chip).toBeNull()
   })
 
   // The tree is what the caption describes, so with no tree drawn there is

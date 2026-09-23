@@ -38,10 +38,8 @@ export interface ReducedModel extends IStateTreeNode {
   // hand back a one-leaf dendrogram — which `clusterMatrix` now refuses outright
   // (MIN_CLUSTER_ROWS), so ungated it is an error dialog rather than a no-op.
   hasClusterableRows: boolean
-  setLayout: (arg: Source[]) => void
-  setLayoutAndClusterTree: (
-    layout: Source[],
-    tree?: string,
-    provenance?: ClusterProvenance,
+  setRowOrder: (
+    rows: Source[],
+    run?: { tree?: string; provenance?: ClusterProvenance },
   ) => void
 }

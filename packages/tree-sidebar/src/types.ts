@@ -69,7 +69,7 @@ export interface TreeSidebarModel extends IStateTreeNode {
   // What the tree was computed from, when this app computed it. Undefined for
   // a supplied phylogeny (maf's `.nh`) and for a session that predates the
   // field — `ClusterProvenanceHint` simply renders nothing in both cases.
-  clusterProvenance?: ClusterProvenance
+  rowTreeProvenance?: ClusterProvenance
   treeAreaWidth: number
   height: number
   // Px the display reserves above its rows, so the sidebar starts where the
@@ -80,7 +80,7 @@ export interface TreeSidebarModel extends IStateTreeNode {
   scrollTop?: number
   showTree: boolean
   sources: TreeSource[]
-  subtreeFilter?: string[]
+  rowFocus?: readonly string[]
   hoveredTreeNode?: HoveredTreeNode
   // exactly what `buildSpatialIndex` returns, named rather than restructured:
   // the array and the index into it are only meaningful together
@@ -89,7 +89,7 @@ export interface TreeSidebarModel extends IStateTreeNode {
   setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
   setHoveredTreeNode: (node?: HoveredTreeNode) => void
   setTreeAreaWidth: (width: number) => void
-  setSubtreeFilter: (names?: string[]) => void
+  setRowFocus: (names?: readonly string[]) => void
   // Every host composes TrackHeightMixin, which is where this comes from.
   // Displays with a virtual scroll reset it when the subtree filter
   // re-lays-out the tree, so it shows from the top instead of a stale offset.

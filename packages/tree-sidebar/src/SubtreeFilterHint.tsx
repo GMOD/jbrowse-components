@@ -22,7 +22,7 @@ export const SubtreeFilterHint = observer(function SubtreeFilterHint({
   model: TreeSidebarModel
   top?: number
 }) {
-  const count = model.subtreeFilter?.length
+  const count = model.rowFocus?.length
   return (
     <SidebarHintChip
       top={top}

@@ -8,5 +8,5 @@ export interface ReducedModel extends IStateTreeNode, ClusterRunModel<Source> {
   clusterableSources: Source[]
   layout: Source[]
   adapterConfig: Record<string, unknown>
-  setLayout: (arg: Source[]) => void
+  setRowOrder: (arg: Source[]) => void
 }

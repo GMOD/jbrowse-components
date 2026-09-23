@@ -170,11 +170,11 @@ describe('MultiLinearWiggleDisplay reorder', () => {
     const fetches = mockRpcCall.mock.calls.length
     const fetchKey = JSON.stringify(display.rpcProps())
 
-    display.setLayout([{ name: 'c' }, { name: 'a' }, { name: 'b' }])
+    display.setRowOrder([{ name: 'c' }, { name: 'a' }, { name: 'b' }])
     jest.advanceTimersByTime(700)
 
     // The reorder reached the rows that get uploaded — without this the
-    // unchanged-key assertion below would also pass if setLayout did nothing.
+    // unchanged-key assertion below would also pass if setRowOrder did nothing.
     expect(display.sources.map(s => s.name)).toEqual(['c', 'a', 'b'])
     expect(display.gpuProps().sources.map(s => s.name)).toEqual(['c', 'a', 'b'])
 

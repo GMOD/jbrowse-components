@@ -45,7 +45,7 @@ export const ClusterProvenanceHint = observer(function ClusterProvenanceHint({
   // whatever the display reserves above it.
   top?: number
 }) {
-  const { clusterProvenance, treeAreaWidth } = model
+  const { rowTreeProvenance: clusterProvenance, treeAreaWidth } = model
   const view = containingLgv(model)
   // Gate on the *positioned* tree: a tree that isn't drawn has no locus worth
   // captioning, and `StaleTreeHint` is already explaining that case. Through

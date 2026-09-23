@@ -19,9 +19,9 @@ interface Src {
 function fakeModel(overrides: Partial<TreeLayoutModel<Src>> = {}) {
   return {
     editableSources: [{ name: 'a', color: '#f00' }, { name: 'b' }] as Src[],
-    setLayout: jest.fn(),
-    clearLayout: jest.fn(),
-    willClearTree: jest.fn(() => false),
+    applyRowEdits: jest.fn(),
+    resetRowArrangement: jest.fn(),
+    rowOrderWillDropTree: jest.fn(() => false),
     ...overrides,
   }
 }
@@ -43,24 +43,24 @@ test('Submit persists the layout and closes when no tree would be cleared', () =
 
   fireEvent.click(screen.getByText('Submit'))
 
-  expect(model.setLayout).toHaveBeenCalledWith(model.editableSources)
+  expect(model.applyRowEdits).toHaveBeenCalledWith(model.editableSources)
   expect(handleClose).toHaveBeenCalled()
   expect(screen.queryByText(/Clear cluster tree/)).toBeNull()
 })
 
 test('Submit warns first when it would invalidate a loaded cluster tree', () => {
-  const model = fakeModel({ willClearTree: jest.fn(() => true) })
+  const model = fakeModel({ rowOrderWillDropTree: jest.fn(() => true) })
   const { handleClose } = setup(model)
 
   fireEvent.click(screen.getByText('Submit'))
 
   // warning shown, nothing committed yet
   expect(screen.getByText(/Clear cluster tree/)).toBeInTheDocument()
-  expect(model.setLayout).not.toHaveBeenCalled()
+  expect(model.applyRowEdits).not.toHaveBeenCalled()
   expect(handleClose).not.toHaveBeenCalled()
 
   fireEvent.click(screen.getByText('Continue'))
-  expect(model.setLayout).toHaveBeenCalled()
+  expect(model.applyRowEdits).toHaveBeenCalled()
   expect(handleClose).toHaveBeenCalled()
 })
 
@@ -96,11 +96,11 @@ test('the header toggle switches which color column the grid edits', () => {
 // mode — where the grid edits `labelColor` because `color` drives the score
 // ramp — palettizing silently painted a field the user wasn't looking at.
 test('Color by paints the active color column, not always `color`', () => {
-  const setLayout = jest.fn()
+  const applyRowEdits = jest.fn()
   render(
     <SetColorDialog
       model={fakeModel({
-        setLayout,
+        applyRowEdits,
         editableSources: [
           { name: 'a', group: 'g1' },
           { name: 'b', group: 'g2' },
@@ -117,7 +117,7 @@ test('Color by paints the active color column, not always `color`', () => {
   fireEvent.click(screen.getByRole('menuitem', { name: 'group' }))
   fireEvent.click(screen.getByText('Submit'))
 
-  const submitted = setLayout.mock.calls[0]![0] as Src[]
+  const submitted = applyRowEdits.mock.calls[0]![0] as Src[]
   expect(submitted.every(s => !!s.labelColor)).toBe(true)
   expect(submitted.every(s => s.color === undefined)).toBe(true)
   // distinct groups get distinct palette entries
@@ -125,11 +125,11 @@ test('Color by paints the active color column, not always `color`', () => {
 })
 
 test('Clear names the active color column and unsets only that field', () => {
-  const setLayout = jest.fn()
+  const applyRowEdits = jest.fn()
   render(
     <SetColorDialog
       model={fakeModel({
-        setLayout,
+        applyRowEdits,
         editableSources: [{ name: 'a', color: '#f00', labelColor: '#0f0' }],
       })}
       handleClose={jest.fn()}
@@ -143,7 +143,7 @@ test('Clear names the active color column and unsets only that field', () => {
   fireEvent.click(screen.getByRole('menuitem', { name: 'Clear label colors' }))
   fireEvent.click(screen.getByText('Submit'))
 
-  const submitted = setLayout.mock.calls[0]![0] as Src[]
+  const submitted = applyRowEdits.mock.calls[0]![0] as Src[]
   expect(submitted[0]!.labelColor).toBeUndefined()
   expect(submitted[0]!.color).toBe('#f00')
 })
@@ -152,17 +152,17 @@ test('Clear names the active color column and unsets only that field', () => {
 // render. Clearing custom settings drops the tree, so a subsequent Submit must
 // not pop the (now-spurious) warning.
 test('no spurious warning after Clear custom settings drops the tree', () => {
-  const willClearTree = jest.fn(() => true)
-  const clearLayout = jest.fn(() => {
-    willClearTree.mockReturnValue(false)
+  const rowOrderWillDropTree = jest.fn(() => true)
+  const resetRowArrangement = jest.fn(() => {
+    rowOrderWillDropTree.mockReturnValue(false)
   })
-  const model = fakeModel({ willClearTree, clearLayout })
+  const model = fakeModel({ rowOrderWillDropTree, resetRowArrangement })
   setup(model)
 
   fireEvent.click(screen.getByText('Clear custom settings'))
-  expect(clearLayout).toHaveBeenCalled()
+  expect(resetRowArrangement).toHaveBeenCalled()
 
   fireEvent.click(screen.getByText('Submit'))
   expect(screen.queryByText(/Clear cluster tree/)).toBeNull()
-  expect(model.setLayout).toHaveBeenCalled()
+  expect(model.applyRowEdits).toHaveBeenCalled()
 })

@@ -269,7 +269,7 @@ puts a UMAP beside this track in an embedded view. Selecting cell types calls
 the display's row filter:
 
 ```ts
-display.setSubtreeFilter(['CD8 T', 'NK'])
+display.setRowFocus(['CD8 T', 'NK'])
 ```
 
 Filtering also tightens the shared score axis onto the rows still drawn.

@@ -208,7 +208,7 @@ describe('LinearMafDisplay alignment fetch count', () => {
   // `new Set(...)` and places nothing by it, so order is unobservable to the
   // fetch. The cache key is a JSON string though, so an unsorted array put the
   // order back in — re-picking the same clade after a re-cluster hands
-  // `setSubtreeFilter` the same names in the tree's new leaf order and
+  // `setRowFocus` the same names in the tree's new leaf order and
   // refetched every loaded region for identical data. reference/FETCH_KEYS.md, "Row
   // order is not a fetch input".
   it('keys the subtree filter on the set, not the order it was picked in', async () => {
@@ -222,12 +222,12 @@ describe('LinearMafDisplay alignment fetch count', () => {
     const { display } = createDisplay()
     await settle(display)
 
-    display.setSubtreeFilter(['mm10', 'hg38'])
+    display.setRowFocus(['mm10', 'hg38'])
     await settle(display)
     const afterFirstPick = alignmentCalls(mockRpcCall).length
 
     // same clade, opposite leaf order — a re-place at most, never a refetch
-    display.setSubtreeFilter(['hg38', 'mm10'])
+    display.setRowFocus(['hg38', 'mm10'])
     await settle(display)
     expect(alignmentCalls(mockRpcCall)).toHaveLength(afterFirstPick)
 
@@ -237,7 +237,7 @@ describe('LinearMafDisplay alignment fetch count', () => {
     expect(last?.[2].subtreeFilter).toEqual(['hg38', 'mm10'])
 
     // a genuine membership change still invalidates
-    display.setSubtreeFilter(['hg38'])
+    display.setRowFocus(['hg38'])
     await settle(display)
     expect(alignmentCalls(mockRpcCall).length).toBeGreaterThan(afterFirstPick)
   })
@@ -296,7 +296,7 @@ describe('LinearMafDisplay row placement', () => {
       ['mm10', 1],
     ])
 
-    display.setLayout([{ name: 'mm10' }, { name: 'hg38' }])
+    display.setRowOrder([{ name: 'mm10' }, { name: 'hg38' }])
     await settle(display)
 
     expect(placedRows(display)).toEqual([

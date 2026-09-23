@@ -5,12 +5,10 @@ import type { ClusterProvenance } from './clusterProvenance.ts'
 
 export interface ClusterRunModel<S extends { name: string }> {
   editableSources: S[]
-  layout: readonly S[]
   rowDomain: string[]
-  setLayoutAndClusterTree: (
-    layout: S[],
-    tree?: string,
-    provenance?: ClusterProvenance,
+  setRowOrder: (
+    rows: S[],
+    run?: { tree?: string; provenance?: ClusterProvenance },
   ) => void
 }
 
@@ -35,15 +33,14 @@ export async function applyClusterRun<S extends { name: string }>({
   provenance: ClusterProvenance
   matrix: () => Promise<{ order: number[]; tree?: string }>
 }) {
-  const { editableSources, layout, rowDomain } = model
+  const { editableSources, rowDomain } = model
   const { order, tree } = rotateClusterRun({
     rows,
     domain: rowDomain,
     ...(await matrix()),
   })
-  model.setLayoutAndClusterTree(
-    clusteredCladeLayout({ rows, editableSources, layout, order }),
+  model.setRowOrder(clusteredCladeLayout({ rows, editableSources, order }), {
     tree,
     provenance,
-  )
+  })
 }

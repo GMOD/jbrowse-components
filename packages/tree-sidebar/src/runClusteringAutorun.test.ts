@@ -89,7 +89,7 @@ test('aborts the in-flight signal when the display is destroyed mid-run', async 
     seen.push(signal)
     await g.opened
     checkAbortSignal(signal)
-    wrote.push('setLayoutAndClusterTree')
+    wrote.push('setRowOrder')
   })
 
   await settle()

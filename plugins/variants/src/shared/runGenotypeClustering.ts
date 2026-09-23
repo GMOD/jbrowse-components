@@ -78,21 +78,20 @@ export async function runGenotypeClustering({
       renderingMode,
       sampleInfo,
     })
-    model.setLayoutAndClusterTree(
-      arranged.layout,
-      arranged.tree,
+    model.setRowOrder(arranged.layout, {
+      tree: arranged.tree,
       // The settings recorded are the ones that change which sites entered the
       // matrix, so a reader can tell a tree built over common variants from one
       // built over everything. `filters` (a jexl chain) is deliberately reduced
       // to whether one was active: the expressions are long, the caption is one
       // line, and "there was a filter" is what changes how the tree should be
       // read.
-      clusterProvenanceFromRegions(regions, [
+      provenance: clusterProvenanceFromRegions(regions, [
         { name: 'mode', value: renderingMode },
         { name: 'MAF filter', value: String(minorAlleleFrequencyFilter) },
         { name: 'max missingness', value: String(maxMissingnessFilter) },
         ...(filters ? [{ name: 'track filters', value: 'active' }] : []),
       ]),
-    )
+    })
   }
 }

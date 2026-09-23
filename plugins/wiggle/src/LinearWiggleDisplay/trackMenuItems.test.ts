@@ -39,9 +39,9 @@ function makeDisplay({
     // order and the tree together, and `computeClusterHierarchy` declines to
     // position a tree whose leaves aren't the rows on screen. `leafOrder` is
     // what the run would have persisted as `layout`.
-    display.setLayoutAndClusterTree(
+    display.setRowOrder(
       leafOrder.map(name => ({ name })),
-      clusterTree,
+      { tree: clusterTree },
     )
   }
   return { display, session }
@@ -144,7 +144,7 @@ describe('the wiggle display Clustering submenu', () => {
 
     // gated on `layout`, not on the tree: the score sort and the arrangement
     // dialog write an order without one, and this is what undoes those too
-    display.setLayout([{ name: 'b' }, { name: 'a' }])
+    display.setRowOrder([{ name: 'b' }, { name: 'a' }])
     expect(labels(display.trackMenuItems())).toContain('Reset row order')
 
     const item = itemIn(display.trackMenuItems(), 'Reset row order')

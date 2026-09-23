@@ -57,7 +57,7 @@ it('keeps each row its color through a reorder', () => {
   const before = new Map(
     display.sources.map((s, i) => [s.name, display.rowColorStringsByIndex[i]]),
   )
-  display.setLayout([{ name: 'mom' }, { name: 'dad' }])
+  display.setRowOrder([{ name: 'mom' }, { name: 'dad' }])
   expect(display.sources.map(s => s.name)).toEqual(['mom', 'dad'])
   expect(display.rowColorStringsByIndex).toEqual([
     before.get('mom'),

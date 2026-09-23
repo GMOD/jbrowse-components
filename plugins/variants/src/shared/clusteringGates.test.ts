@@ -62,11 +62,11 @@ test('a subtree filter down to one row closes the gate', () => {
   const d = display(two)
   expect(d.hasClusterableRows).toBe(true)
 
-  d.setSubtreeFilter(['HG001'])
+  d.setRowFocus(['HG001'])
   expect(d.hasClusterableRows).toBe(false)
   expect(d.autoClusterReady).toBe(false)
 
-  d.setSubtreeFilter(undefined)
+  d.setRowFocus(undefined)
   expect(d.hasClusterableRows).toBe(true)
 })
 

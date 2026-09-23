@@ -37,10 +37,9 @@ describe('the dendrogram positions only while it describes the rows', () => {
   it('positions against a clustered order', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, regionData(['a', 'b', 'c']), ctgA)
-    display.setLayoutAndClusterTree(
-      [{ name: 'c' }, { name: 'a' }, { name: 'b' }],
-      '((c,a),b);',
-    )
+    display.setRowOrder([{ name: 'c' }, { name: 'a' }, { name: 'b' }], {
+      tree: '((c,a),b);',
+    })
 
     expect(rowNames(display)).toEqual(['c', 'a', 'b'])
     expect(display.hierarchy).toBeDefined()
@@ -51,10 +50,9 @@ describe('the dendrogram positions only while it describes the rows', () => {
   it('puts each leaf on its row where the track is taller than the rows', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, regionData(['a', 'b', 'c']), ctgA)
-    display.setLayoutAndClusterTree(
-      [{ name: 'c' }, { name: 'a' }, { name: 'b' }],
-      '((c,a),b);',
-    )
+    display.setRowOrder([{ name: 'c' }, { name: 'a' }, { name: 'b' }], {
+      tree: '((c,a),b);',
+    })
     display.setRowHeight(5)
 
     expect(display.height).toBeGreaterThan(15)
@@ -64,15 +62,14 @@ describe('the dendrogram positions only while it describes the rows', () => {
     expect(rowCenters).toEqual([2.5, 7.5, 12.5])
   })
 
-  // No `setLayout` call happens here: the rows move because a later region
+  // No `setRowOrder` call happens here: the rows move because a later region
   // revealed a partition value the clustering run never saw.
   it('stops positioning when a later region widens the row set', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, regionData(['a', 'b', 'c']), ctgA)
-    display.setLayoutAndClusterTree(
-      [{ name: 'c' }, { name: 'a' }, { name: 'b' }],
-      '((c,a),b);',
-    )
+    display.setRowOrder([{ name: 'c' }, { name: 'a' }, { name: 'b' }], {
+      tree: '((c,a),b);',
+    })
 
     display.setRpcData(1, regionData(['a', 'd']), ctgB)
 
@@ -120,7 +117,7 @@ describe('repartitioning', () => {
   it('drops the row state keyed on the old partition', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, regionData(['a', 'b'], ['sample', 'clade']), ctgA)
-    display.setLayoutAndClusterTree([{ name: 'b' }, { name: 'a' }], '(b,a);')
+    display.setRowOrder([{ name: 'b' }, { name: 'a' }], { tree: '(b,a);' })
     display.setHiddenCategories(['a'])
 
     display.setPartitionField('clade')
@@ -140,7 +137,7 @@ describe('repartitioning', () => {
       regionData(['a', 'b', 'c'], ['sample', 'clade']),
       ctgA,
     )
-    display.setSubtreeFilter(['a', 'b'])
+    display.setRowFocus(['a', 'b'])
     expect(rowNames(display)).toEqual(['a', 'b'])
 
     display.setPartitionField('clade')
@@ -157,7 +154,7 @@ describe('repartitioning', () => {
   it('leaves everything alone when the partition is already that', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, regionData(['a', 'b'], ['sample']), ctgA)
-    display.setLayoutAndClusterTree([{ name: 'b' }, { name: 'a' }], '(b,a);')
+    display.setRowOrder([{ name: 'b' }, { name: 'a' }], { tree: '(b,a);' })
     expect(display.partitionField).toBe('')
 
     display.setPartitionField(display.effectivePartitionField)

@@ -21,7 +21,7 @@ function colored() {
 test('a configured colorBy writes no layout and is not a custom row order', () => {
   const display = colored()
   expect(display.layout).toHaveLength(0)
-  expect(display.rowOrderIsCustom).toBe(false)
+  expect(display.rowArrangementIsCustom).toBe(false)
   expect(display.sources.every(s => s.labelColor)).toBe(true)
 })
 
@@ -31,7 +31,7 @@ test('a configured facet writes no layout and is not a custom row order', () => 
   display.setSources(SOURCES)
 
   expect(display.layout).toHaveLength(0)
-  expect(display.rowOrderIsCustom).toBe(false)
+  expect(display.rowArrangementIsCustom).toBe(false)
   expect(display.sources.map(s => s.name)).toEqual(['HG002', 'HG001'])
 })
 
@@ -44,12 +44,12 @@ test('a session snapshot after setColorBy carries no palette colors', () => {
 
 test('a reorder is custom, and the reset clears it', () => {
   const display = colored()
-  display.setLayout([...display.sources].reverse())
-  expect(display.rowOrderIsCustom).toBe(true)
+  display.setRowOrder([...display.sources].reverse())
+  expect(display.rowArrangementIsCustom).toBe(true)
 
-  display.clearLayout()
+  display.resetRowArrangement()
 
-  expect(display.rowOrderIsCustom).toBe(false)
+  expect(display.rowArrangementIsCustom).toBe(false)
   expect(display.sources.map(s => s.name)).toEqual(['HG001', 'HG002'])
 })
 
@@ -58,5 +58,5 @@ test('a second color-by still writes no layout', () => {
   display.setRowColor('super_pop')
 
   expect(display.layout).toHaveLength(0)
-  expect(display.rowOrderIsCustom).toBe(false)
+  expect(display.rowArrangementIsCustom).toBe(false)
 })

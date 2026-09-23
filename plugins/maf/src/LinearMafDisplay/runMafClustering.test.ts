@@ -30,12 +30,10 @@ function makeModel(overrides: Partial<MafClusterSelf> = {}) {
     layout: [],
     rowDomain: [],
     adapterConfig: { type: 'BgzipTaffyAdapter' },
-    setLayout: jest.fn(),
-    setLayoutAndClusterTree: jest.fn(),
+    setRowOrder: jest.fn(),
     ...overrides,
   } as unknown as MafClusterSelf & {
-    setLayout: jest.Mock
-    setLayoutAndClusterTree: jest.Mock
+    setRowOrder: jest.Mock
   }
 }
 
@@ -76,7 +74,7 @@ describe('runMafClustering', () => {
       sources: ['GRCh38', 'HG00099.1', 'HG00099.2'],
       adapterConfig: { type: 'BgzipTaffyAdapter' },
     })
-    const [layout, tree] = model.setLayoutAndClusterTree.mock.calls[0]!
+    const [layout, { tree }] = model.setRowOrder.mock.calls[0]!
     expect(layout.slice(0, 3).map((s: MafSource) => s.name)).toEqual([
       'HG00099.2',
       'GRCh38',
@@ -91,7 +89,7 @@ describe('runMafClustering', () => {
   it('re-appends the rows a subtree filter is hiding', async () => {
     const model = makeModel()
     await run(model, makeRpcManager([0, 1, 2], '(a,b,c);'))
-    const [layout] = model.setLayoutAndClusterTree.mock.calls[0]!
+    const [layout] = model.setRowOrder.mock.calls[0]!
     expect(layout.map((s: MafSource) => s.name)).toEqual([
       'GRCh38',
       'HG00099.1',
@@ -106,7 +104,7 @@ describe('runMafClustering', () => {
   it('records the locus it clustered over', async () => {
     const model = makeModel()
     await run(model, makeRpcManager([0, 1, 2], '(a,b,c);'))
-    const [, , provenance] = model.setLayoutAndClusterTree.mock.calls[0]!
+    const [, { provenance }] = model.setRowOrder.mock.calls[0]!
     expect(provenance).toEqual({
       regions: [{ refName: 'chr6', start: 0, end: 100, assemblyName: 'hg38' }],
     })
@@ -119,7 +117,6 @@ describe('runMafClustering', () => {
       clusteredCladeLayout({
         rows: [src('a'), src('b'), src('c')],
         editableSources: [],
-        layout: [],
         order: [0, 1],
       }),
     ).toThrow()

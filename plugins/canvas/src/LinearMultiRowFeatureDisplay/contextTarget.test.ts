@@ -83,10 +83,7 @@ describe('contextTargetAt', () => {
 
   it('resolves nothing over the tree sidebar, which owns its own menu', () => {
     const display = setup()
-    display.setLayoutAndClusterTree(
-      [{ name: 'a' }, { name: 'b' }],
-      '(a:1,b:1);',
-    )
+    display.setRowOrder([{ name: 'a' }, { name: 'b' }], { tree: '(a:1,b:1);' })
     const edge = display.sidebarOffset + 4
 
     expect(display.contextTargetAt(edge - 1, 10)).toBeUndefined()

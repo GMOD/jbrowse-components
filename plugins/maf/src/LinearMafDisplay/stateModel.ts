@@ -621,16 +621,16 @@ export default function stateModelFactory(
         },
       }))
       .actions(self => {
-        const superClearLayout = self.clearLayout
+        const superResetRowArrangement = self.resetRowArrangement
         return {
           /**
            * #action
            * Drop the custom arrangement and restore the worker's guide tree (the
-           * base `clearLayout` only clears it — the worker tree lives in
+           * base `resetRowArrangement` only clears it — the worker tree lives in
            * `treeNewickVolatile`).
            */
-          clearLayout() {
-            superClearLayout()
+          resetRowArrangement() {
+            superResetRowArrangement()
             if (self.treeNewickVolatile) {
               self.setClusterTree(self.treeNewickVolatile)
             }
@@ -789,10 +789,7 @@ export default function stateModelFactory(
          * needs its own name rather than a truthiness test on this.
          */
         get sources(): MafSource[] {
-          const rows = filterRowsBySubtree(
-            self.editableSources,
-            self.subtreeFilter,
-          )
+          const rows = filterRowsBySubtree(self.editableSources, self.rowFocus)
           const refSrc = self.referenceSampleId
           return self.showReferenceRow
             ? rows
@@ -821,7 +818,7 @@ export default function stateModelFactory(
          * Sorted because the key is a JSON string while the worker consumes the
          * value as `new Set(...)` and places rows by species name — so order is
          * unobservable to the fetch but would still move the key. Re-picking the
-         * same clade after a re-cluster hands `setSubtreeFilter` the same names
+         * same clade after a re-cluster hands `setRowFocus` the same names
          * in the tree's new leaf order, which refetched every loaded region for
          * identical data. reference/FETCH_KEYS.md §"Row order is not a fetch input".
          *
@@ -830,7 +827,7 @@ export default function stateModelFactory(
          * on.
          */
         get subtreeFilterSet(): string[] | undefined {
-          const filter = self.subtreeFilter
+          const filter = self.rowFocus
           return filter?.length ? [...filter].sort() : undefined
         },
       }))
@@ -1391,7 +1388,7 @@ export default function stateModelFactory(
          *
          * Declines with fewer than two rows, and at a column no loaded region
          * covers, for the reasons the other two displays' twins state: the
-         * empty write is not a no-op (`setLayout` drops the tree — here the
+         * empty write is not a no-op (`setRowOrder` drops the tree — here the
          * guide phylogeny — whenever the row set changes), and every row
          * reading "no base" writes back the order it already had. Both gates
          * and the returned "did it sort" are `sortRowsAtColumn`'s.

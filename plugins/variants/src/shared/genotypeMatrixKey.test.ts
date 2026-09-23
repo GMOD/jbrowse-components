@@ -33,6 +33,6 @@ test('the arguments the matrix is built from do re-key it', () => {
   const withMaf = JSON.stringify(genotypeMatrixKey(d))
   expect(withMaf).not.toBe(before)
 
-  d.setSubtreeFilter(['S0'])
+  d.setRowFocus(['S0'])
   expect(JSON.stringify(genotypeMatrixKey(d))).not.toBe(withMaf)
 })

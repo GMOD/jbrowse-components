@@ -73,7 +73,7 @@ export interface RowSortColumnHost<S> {
   // doesn't persist itself as the whole row order and drop everything it was
   // hiding.
   editableSources: S[]
-  setLayout: (rows: S[]) => void
+  setRowOrder: (rows: S[]) => void
 }
 
 /**
@@ -82,7 +82,7 @@ export interface RowSortColumnHost<S> {
  *
  * Declines twice, and neither is a no-op. A column no loaded region covers has
  * no value to sort by at all — see `loadedRegionIndexAt`. And fewer than two
- * rows has nothing to order, but `setLayout` drops the cluster tree whenever the
+ * rows has nothing to order, but `setRowOrder` drops the cluster tree whenever the
  * row set changes, so an adapter that reported no sources for the loaded region
  * would trade a dendrogram for an empty layout. The right-click item is gated on
  * the same count already; the declarative `sortRowsBy` entry point is not, and
@@ -113,7 +113,7 @@ export function sortRowsAtColumn<S extends { name: string }, D>(
   const data = index === undefined ? undefined : dataAt(index)
   const sortable = data !== undefined && self.editableSources.length > 1
   if (sortable) {
-    self.setLayout(order(self.editableSources, data))
+    self.setRowOrder(order(self.editableSources, data))
   }
   return sortable
 }

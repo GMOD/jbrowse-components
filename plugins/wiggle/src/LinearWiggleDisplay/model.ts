@@ -352,7 +352,7 @@ export default function stateModelFactory(
        * is `editableSources` itself.
        */
       get clusterableSources(): Source[] {
-        return filterRowsBySubtree(self.editableSources, self.subtreeFilter)
+        return filterRowsBySubtree(self.editableSources, self.rowFocus)
       },
       /**
        * #getter
@@ -466,7 +466,7 @@ export default function stateModelFactory(
       get sources(): Source[] {
         return buildSources(
           self.editableSources,
-          self.subtreeFilter,
+          self.rowFocus,
           sourcePalette(self.colorEncoding),
           self.scoreGradientPaints,
         )

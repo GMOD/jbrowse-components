@@ -305,7 +305,7 @@ const UmapAndGenomeView = observer(function UmapAndGenomeView({
     const display = view.getTrack(TRACK_ID)?.activeDisplay as
       | WiggleDisplayModel
       | undefined
-    display?.setSubtreeFilter(next.length ? next : undefined)
+    display?.setRowFocus(next.length ? next : undefined)
   }
 
   return (

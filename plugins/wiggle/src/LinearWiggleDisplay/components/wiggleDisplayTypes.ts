@@ -45,7 +45,7 @@ export interface WiggleDisplayModel
   showTree: boolean
   showRowSeparators: boolean
   showRowLabels: boolean
-  subtreeFilter?: string[]
+  rowFocus?: readonly string[]
   hoveredTreeNode?: HoveredTreeNode
   treeCanvas?: HTMLCanvasElement | null
   mouseoverCanvas?: HTMLCanvasElement | null
@@ -54,7 +54,7 @@ export interface WiggleDisplayModel
   setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
   setHoveredTreeNode: (node?: HoveredTreeNode) => void
   setTreeAreaWidth: (width: number) => void
-  setSubtreeFilter: (names?: string[]) => void
+  setRowFocus: (names?: readonly string[]) => void
   setScrollTop: (scrollTop: number) => void
   setHoveredFeature: (feat?: WiggleHoveredFeature) => void
   clearHoveredFeature: () => void

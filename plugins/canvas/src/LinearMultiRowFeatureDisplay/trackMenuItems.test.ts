@@ -36,15 +36,13 @@ function makeSelf(
     setPartitionField: () => {},
     showBranchLength: true,
     treeHasBranchLengths: false,
-    layout: [],
     rowDomain: [],
-    rowOrderIsCustom: false,
+    rowArrangementIsCustom: false,
     editableSources: rows,
     clusterableSources: rows,
     adapterConfig: {},
     effectiveClusterField: 'name',
     setClusterField: () => {},
-    setLayoutAndClusterTree: () => {},
     rowHeight: 0,
     setShowTree: () => {},
     setShowLegend: () => {},
@@ -52,10 +50,11 @@ function makeSelf(
     toggleCategory: () => {},
     setHiddenCategories: () => {},
     setShowBranchLength: () => {},
-    setSubtreeFilter: () => {},
-    setLayout: () => {},
-    clearLayout: () => {},
-    willClearTree: () => false,
+    setRowFocus: () => {},
+    setRowOrder: () => {},
+    applyRowEdits: () => {},
+    resetRowArrangement: () => {},
+    rowOrderWillDropTree: () => false,
     setRowHeight: () => {},
     setFitToHeight: () => {},
     ...overrides,
@@ -257,7 +256,7 @@ describe('multi-row track menu', () => {
       'Reset row order',
     )
     const reordered = buildMultiRowTrackMenuItems(
-      makeSelf({ layout: [{ name: 'b' }], rowOrderIsCustom: true }),
+      makeSelf({ rowArrangementIsCustom: true }),
     )
     expect(labels(reordered)).toContain('Reset row order')
     expect(reordered.every(i => 'icon' in i && i.icon)).toBe(true)

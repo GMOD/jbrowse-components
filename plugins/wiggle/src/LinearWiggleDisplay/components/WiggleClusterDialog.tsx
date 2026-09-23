@@ -55,11 +55,10 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
         })
       }
       applyOrder={(order, matrixRowNames) => {
-        model.setLayout(
+        model.setRowOrder(
           clusteredCladeLayout({
             rows: model.clusterableSources,
             editableSources: model.editableSources,
-            layout: model.layout,
             order,
             matrixRowNames,
           }),

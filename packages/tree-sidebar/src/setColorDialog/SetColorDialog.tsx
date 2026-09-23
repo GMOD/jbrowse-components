@@ -38,11 +38,11 @@ const useStyles = makeStyles()({
 // until Submit.
 export interface TreeLayoutModel<S extends { name: string }> {
   editableSources: S[]
-  setLayout: (s: S[]) => void
-  clearLayout: () => void
+  applyRowEdits: (s: S[]) => void
+  resetRowArrangement: () => void
   // Whether submitting `next` would invalidate a loaded cluster tree; when true
   // the ClearTreeWarning is shown before Submit.
-  willClearTree: (next: S[]) => boolean
+  rowOrderWillDropTree: (next: S[]) => boolean
 }
 
 export interface SetColorDialogProps<
@@ -112,12 +112,12 @@ export default observer(function SetColorDialog<
   ])
 
   const submit = () => {
-    model.setLayout(currLayout)
+    model.applyRowEdits(currLayout)
     handleClose()
   }
 
   const onSubmit = () => {
-    if (model.willClearTree(currLayout)) {
+    if (model.rowOrderWillDropTree(currLayout)) {
       setPendingReorderConfirm(true)
     } else {
       submit()
@@ -126,7 +126,7 @@ export default observer(function SetColorDialog<
 
   // Drop custom settings and re-seed the grid from the model's persisted state.
   const resetToModel = () => {
-    model.clearLayout()
+    model.resetRowArrangement()
     setCurrLayout(getSources())
   }
 

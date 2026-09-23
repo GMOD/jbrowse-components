@@ -65,9 +65,9 @@ interface MultiRowMenuSelf
   setPartitionField: (field: string) => void
   showBranchLength: boolean
   treeHasBranchLengths: boolean
-  subtreeFilter?: readonly string[]
-  rowOrderIsCustom: boolean
-  clusterTree?: string
+  rowFocus?: readonly string[]
+  rowArrangementIsCustom: boolean
+  rowTree?: string
   rowHeight: number
   setShowTree: (f: boolean) => void
   setShowLegend: (f: boolean) => void
@@ -75,7 +75,7 @@ interface MultiRowMenuSelf
   toggleCategory: (label: string) => void
   setHiddenCategories: (labels: string[]) => void
   setShowBranchLength: (f: boolean) => void
-  setSubtreeFilter: (names?: string[]) => void
+  setRowFocus: (names?: readonly string[]) => void
   setRowHeight: (n: number) => void
   setFitToHeight: () => void
 }

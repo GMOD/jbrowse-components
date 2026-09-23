@@ -13,8 +13,8 @@ export interface HintModel {
   effectiveRowHeight: number
   height: number
   sourcesWithoutLayout: { name: string }[]
-  subtreeFilter?: readonly string[]
-  setSubtreeFilter: (names?: string[]) => void
+  rowFocus?: readonly string[]
+  setRowFocus: (names?: string[]) => void
 }
 
 // The plot would otherwise render as a silent blank in two recoverable cases;
@@ -65,10 +65,10 @@ const WiggleHint = observer(function WiggleHint({
         severity="warning"
         message={shown.message}
         action={
-          shown.clearFilter && model.subtreeFilter?.length ? (
+          shown.clearFilter && model.rowFocus?.length ? (
             <Button
               onClick={() => {
-                model.setSubtreeFilter(undefined)
+                model.setRowFocus(undefined)
               }}
             >
               Clear subtree filter

@@ -6,7 +6,7 @@ sidebar_label: Mixin -> TreeSidebarMixin
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/TreeSidebarMixin.ts).
 
-#crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display rows, named), the `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC and the `sortRows` callback naming what a row carries at a column. Brings `layout` / `clusterTree` / `clusterProvenance` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` / `treeAreaWidth` getters and setters and the `rowDomain` getter over those slots, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the `root`, `willClearTree` and `rowOrderIsCustom` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through
+#crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display rows, named), the `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC and the `sortRows` callback naming what a row carries at a column. Brings `layout` / `clusterTree` / `clusterProvenance` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` / `treeAreaWidth` getters and setters and the `rowDomain` getter over those slots, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through (`rowTree`, `rowTreeProvenance`, `rowFocus`, `rowArrangementIsCustom`, `rowOrderWillDropTree`, `setRowOrder`, `applyRowEdits`, `setRowFocus`, `resetRowArrangement`), the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through
 Adds a dendrogram sidebar to a display: stores the leaf layout, newick cluster
 tree, sidebar width and subtree filter, plus the hover/canvas volatile state
 used while drawing the tree.
@@ -55,16 +55,19 @@ track was dropped in silence. Slots and accessors now move together.
 | <span id="getter-rowdomain">**rowDomain**</span><br><code>string[]</code> | The row axis's declared order off the `domain` slot — the config seed `orderRowsByDomain` places rows through, under whatever `layout` says.<br><br>Named for the axis rather than `domain` alone because the wiggle display composes `WiggleCommonMixin`, whose `domain` is the score axis's autoscaled `[min, max]`. Two getters of that name on one model is the later one silently answering for both. |
 | <span id="getter-treeareawidth">**treeAreaWidth**</span><br><code>number</code> | Width in px of the sidebar the dendrogram draws in. On the config rather than the display snapshot for the same reason `height` is: the config node outlives the display instance, so a dragged width survives unticking and reticking the track. |
 | <span id="getter-parsedtree">**parsedTree**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> |  |
+| <span id="getter-rowtree">**rowTree**</span><br><code>string &#124; undefined</code> | The cluster tree the rows are arranged by, as newick: a run's, or a supplied phylogeny (maf's `.nh`). |
+| <span id="getter-rowtreeprovenance">**rowTreeProvenance**</span><br><code>ClusterProvenance &#124; undefined</code> | What `rowTree` was computed from, the locus and the settings; undefined for a supplied tree. |
+| <span id="getter-rowfocus">**rowFocus**</span><br><code>readonly string[] &#124; undefined</code> | The row names a focus narrows the display to — a clade picked off the tree or a legend group — or undefined while every row shows. |
 | <span id="getter-root">**root**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> |  |
 | <span id="getter-treehasbranchlengths">**treeHasBranchLengths**</span><br><code>boolean</code> |  |
-| <span id="getter-roworderiscustom">**rowOrderIsCustom**</span><br><code>boolean</code> | Whether the rows have been arranged away from the order they arrived in — what "Reset row order" is offered on: a written `layout`. |
+| <span id="getter-rowarrangementiscustom">**rowArrangementIsCustom**</span><br><code>boolean</code> | Whether the rows have been arranged away from the order they arrived in — what "Reset row order" is offered on. |
 
 ## Methods
 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-willcleartree">**willClearTree**</span><br><code>(next: S[]) =&gt; boolean</code> |  |
+| <span id="method-roworderwilldroptree">**rowOrderWillDropTree**</span><br><code>(next: readonly { name: string; }[]) =&gt; boolean</code> |  |
 
 ## Actions
 
@@ -74,12 +77,12 @@ track was dropped in silence. Slots and accessors now move together.
 | <span id="action-setshowtree">**setShowTree**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshowbranchlength">**setShowBranchLength**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshowrowlabels">**setShowRowLabels**</span><br><code>(arg: boolean) =&gt; void</code> |  |
-| <span id="action-setlayout">**setLayout**</span><br><code>(layout: S[]) =&gt; void</code> |  |
-| <span id="action-clearlayout">**clearLayout**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-setroworder">**setRowOrder**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(rows: S[], run?: { tree?: string &#124; undefined; provenance?: Clu…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(rows: S[], run?: { tree?: string &#124; undefined; provenance?: ClusterProvenance &#124; undefined; } &#124; undefined) =&gt; void</code></pre></dialog></span> | Arrange the rows in `rows`' order. A clustering run passes its result, and the tree and its provenance land with the order; any other reorder that moves a row drops the tree, which no longer describes it. |
+| <span id="action-applyrowedits">**applyRowEdits**</span><br><code>(rows: S[]) =&gt; void</code> | The arrangement dialog's submit: the rows in their new order, each carrying the label and colours the reader set on it. |
+| <span id="action-resetrowarrangement">**resetRowArrangement**</span><br><code>() =&gt; void</code> | Reset to no arrangement at all, focus included: the reader asked for the rows back as they came.<br><br>The focus is otherwise **independent of the tree**. It is a set of row names, and `filterRowsBySubtree` matches on `name` with no tree involved, so a reorder or a re-cluster leaves it valid and `setRowOrder` keeps it — dropping a focused clade on every reorder would discard the reader's focus, and for maf (where the focus is a fetch argument) refetch every loaded region. What does invalidate it is a change to what rows are *called*: the multi-sample variant displays' rendering mode renames rows between sample and haplotype ("HG001" ↔ "HG001 HP0"), and `setPhasedMode` clears the focus for exactly that reason. |
 | <span id="action-setclustertree">**setClusterTree**</span><br><code>(tree?: string &#124; undefined) =&gt; void</code> |  |
-| <span id="action-setlayoutandclustertree">**setLayoutAndClusterTree**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(layout: S[], tree?: string &#124; undefined, provenance?: ClusterPr…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(layout: S[], tree?: string &#124; undefined, provenance?: ClusterProvenance &#124; undefined) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-settreeareawidth">**setTreeAreaWidth**</span><br><code>(width: number) =&gt; void</code> |  |
-| <span id="action-setsubtreefilter">**setSubtreeFilter**</span><br><code>(names?: string[] &#124; undefined) =&gt; void</code> |  |
+| <span id="action-setrowfocus">**setRowFocus**</span><br><code>(names?: readonly string[] &#124; undefined) =&gt; void</code> | Narrow the display to `names`, or show every row again. |
 | <span id="action-setrunclustering">**setRunClustering**</span><br><code>(arg?: boolean &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setclusterregion">**setClusterRegion**</span><br><code>(arg?: string &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setsortrowsby">**setSortRowsBy**</span><br><code>(arg?: RowSortSpec &#124; undefined) =&gt; void</code> | Trigger (or clear) a one-shot declarative row sort; consumed and reset by `setupRowSortAutorun`. A display's right-click item calls its own sort directly (instant, the data is already loaded); this is the session-level entry point. |

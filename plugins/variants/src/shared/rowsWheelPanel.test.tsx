@@ -19,12 +19,12 @@ const SOURCES = [{ name: 'S0' }, { name: 'S1' }]
 
 interface Clusterable {
   setSources(s: { name: string }[]): void
-  setLayoutAndClusterTree(l: { name: string }[], t: string): void
+  setRowOrder(l: { name: string }[], run: { tree: string }): void
 }
 
 function clustered<T extends Clusterable>(display: T) {
   display.setSources(SOURCES)
-  display.setLayoutAndClusterTree(SOURCES, '(S0,S1);')
+  display.setRowOrder(SOURCES, { tree: '(S0,S1);' })
   return display
 }
 

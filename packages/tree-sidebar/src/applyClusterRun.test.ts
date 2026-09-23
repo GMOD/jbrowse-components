@@ -8,9 +8,8 @@ test('lands the layout from the row lists the run started with', async () => {
   const c = row('c')
   const model = {
     editableSources: [a, b, c],
-    layout: [] as { name: string }[],
     rowDomain: [] as string[],
-    setLayoutAndClusterTree: jest.fn(),
+    setRowOrder: jest.fn(),
   }
   await applyClusterRun({
     model,
@@ -18,15 +17,13 @@ test('lands the layout from the row lists the run started with', async () => {
     provenance: { regions: [], settings: [] },
     matrix: async () => {
       model.editableSources = [a, b]
-      model.layout = [c]
       return { order: [1, 0], tree: '(b,a);' }
     },
   })
-  expect(model.setLayoutAndClusterTree).toHaveBeenCalledWith(
-    [b, a, c],
-    '(b,a);',
-    { regions: [], settings: [] },
-  )
+  expect(model.setRowOrder).toHaveBeenCalledWith([b, a, c], {
+    tree: '(b,a);',
+    provenance: { regions: [], settings: [] },
+  })
 })
 
 // A run on a domain-seeded track composes with the seed instead of overwriting
@@ -38,9 +35,8 @@ test('rotates the run towards the config domain', async () => {
   const c = row('c')
   const model = {
     editableSources: [a, b, c],
-    layout: [] as { name: string }[],
     rowDomain: ['c'],
-    setLayoutAndClusterTree: jest.fn(),
+    setRowOrder: jest.fn(),
   }
   await applyClusterRun({
     model,
@@ -51,7 +47,7 @@ test('rotates the run towards the config domain', async () => {
       tree: '((a:1,b:1):1,c:2);',
     }),
   })
-  const [layout, tree] = model.setLayoutAndClusterTree.mock.calls[0]!
-  expect(layout).toEqual([c, a, b])
-  expect(tree).toBe('(c:2,(a:1,b:1):1);')
+  const [rows, run] = model.setRowOrder.mock.calls[0]!
+  expect(rows).toEqual([c, a, b])
+  expect(run.tree).toBe('(c:2,(a:1,b:1):1);')
 })

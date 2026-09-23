@@ -177,10 +177,10 @@ test('buildClusteredLayout reorders base sources and merges existing fields', ()
   expect(result[0]).toEqual({ name: 'C', color: 'blue' })
 })
 
-// The four displays' one commit path. A run under a subtree filter clusters the
-// clade, so the order covers only those rows -- the rest of `layout` is the
-// user's record of where they sit and what they were named, and dropping it
-// would erase that the moment the filter cleared.
+// The four displays' one commit path. A run under a focus clusters the clade, so
+// the order covers only those rows -- the rest are the user's record of where
+// they sit and what they were named, and dropping them would erase that the
+// moment the focus cleared.
 test('clusteredCladeLayout re-appends the rows the filter is hiding', () => {
   const editableSources = [
     { name: 'A' },
@@ -191,7 +191,6 @@ test('clusteredCladeLayout re-appends the rows the filter is hiding', () => {
   const result = clusteredCladeLayout({
     rows: [{ name: 'A' }, { name: 'C' }],
     editableSources,
-    layout: [{ name: 'B', color: 'yellow' }],
     order: [1, 0],
   })
 
@@ -204,7 +203,6 @@ test('clusteredCladeLayout rejects an order that misses a clustered row', () => 
     clusteredCladeLayout({
       rows: abc,
       editableSources: abc,
-      layout: [],
       order: [0, 1],
     }),
   ).toThrow(/expected 3 entries/)
@@ -370,7 +368,7 @@ describe('orderRowsByDomain', () => {
 // (leaf i lands on row i), so a tree that no longer names the rows on screen
 // draws the whole dendrogram against the wrong ones. `computeClusterHierarchy`
 // is where every display positions its tree, so it is where that is caught —
-// including for the ways rows move with no `setLayout` call to hook.
+// including for the ways rows move with no `setRowOrder` call to hook.
 // The root always contains every row, and clicking it is a natural "show me
 // everything" gesture — which is the click that must not apply a filter. It
 // would leave the rows where they are while making "Clear subtree filter"

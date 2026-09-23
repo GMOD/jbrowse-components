@@ -123,16 +123,15 @@ interface MafMenuSelf extends IStateTreeNode, MafClusterSelf {
   setShowAnnotations: (f: boolean) => void
   setShowInversions: (f: boolean) => void
   setRowIdentityAutoZoom: (f: boolean) => void
-  setSubtreeFilter: (names?: string[]) => void
-  // The row order the arrangement dialog writes, and the reset that drops it
-  // (`resetRowOrderMenuItems` gates on the first and calls the second).
-  layout: readonly MafSource[]
-  rowOrderIsCustom: boolean
-  clearLayout: () => void
+  rowFocus?: readonly string[]
+  setRowFocus: (names?: readonly string[]) => void
+  // `resetRowOrderMenuItems` gates on the first and calls the second.
+  rowArrangementIsCustom: boolean
+  resetRowArrangement: () => void
   // Consumed structurally by SetRowArrangementDialog's TreeLayoutModel<MafSource>
   // prop (model={self}), not directly in this file.
-  setLayout: (s: MafSource[]) => void
-  willClearTree: (s: MafSource[]) => boolean
+  applyRowEdits: (s: MafSource[]) => void
+  rowOrderWillDropTree: (s: MafSource[]) => boolean
 }
 
 // The CDS-frame overlays only mean anything with a reading frame, so they
@@ -340,7 +339,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
       self.sources.length,
     ),
     // The way back from a drag-reorder in the arrangement dialog and from a
-    // clustering run alike: both write `layout`, and `clearLayout` also restores
+    // clustering run alike: both write `layout`, and `resetRowArrangement` also restores
     // the guide tree the run replaced.
     ...resetRowOrderMenuItems(self),
   ]

@@ -10,23 +10,22 @@ const regions = [
 ]
 
 function makeModel(names: string[]) {
-  const setLayoutAndClusterTree = jest.fn()
+  const setRowOrder = jest.fn()
   const rows = names.map(name => ({ name }))
   const model = {
     clusterableSources: rows,
     editableSources: rows,
-    layout: [],
     rowDomain: [],
     adapterConfig: { type: 'BedTabixAdapter' },
     effectivePartitionField: 'sample',
     effectiveClusterField: 'state',
-    setLayoutAndClusterTree,
+    setRowOrder,
   } satisfies MultiRowClusterModel
-  return { model, setLayoutAndClusterTree }
+  return { model, setRowOrder }
 }
 
 test('calls the registry RPC and applies the clustered order + tree', async () => {
-  const { model, setLayoutAndClusterTree } = makeModel(['a', 'b', 'c'])
+  const { model, setRowOrder } = makeModel(['a', 'b', 'c'])
   const call = jest
     .fn()
     .mockResolvedValue({ order: [2, 0, 1], tree: '((c,a),b);' })
@@ -50,8 +49,8 @@ test('calls the registry RPC and applies the clustered order + tree', async () =
   expect(args.regions).toHaveLength(1)
 
   // Order [2,0,1] reorders [a,b,c] to [c,a,b].
-  expect(setLayoutAndClusterTree).toHaveBeenCalledTimes(1)
-  const [layout, tree] = setLayoutAndClusterTree.mock.calls[0]!
+  expect(setRowOrder).toHaveBeenCalledTimes(1)
+  const [layout, { tree }] = setRowOrder.mock.calls[0]!
   expect(layout.map((s: { name: string }) => s.name)).toEqual(['c', 'a', 'b'])
   expect(tree).toBe('((c,a),b);')
 })
@@ -60,19 +59,18 @@ test('calls the registry RPC and applies the clustered order + tree', async () =
 // hides keep their place in `layout` below the clustered block rather than being
 // dropped from it.
 test('clusters the focused clade and keeps the hidden rows', async () => {
-  const setLayoutAndClusterTree = jest.fn()
+  const setRowOrder = jest.fn()
   const call = jest.fn().mockResolvedValue({ order: [1, 0], tree: '(b,a);' })
 
   await runMultiRowClustering({
     model: {
       clusterableSources: [{ name: 'a' }, { name: 'b' }],
       editableSources: [{ name: 'a' }, { name: 'b' }, { name: 'hidden' }],
-      layout: [],
       rowDomain: [],
       adapterConfig: { type: 'BedTabixAdapter' },
       effectivePartitionField: 'sample',
       effectiveClusterField: '',
-      setLayoutAndClusterTree,
+      setRowOrder,
     },
     regions,
     rpcManager: { call },
@@ -83,9 +81,7 @@ test('clusters the focused clade and keeps the hidden rows', async () => {
 
   expect(call.mock.calls[0]![2].sources).toEqual(['a', 'b'])
   expect(
-    setLayoutAndClusterTree.mock.calls[0]![0].map(
-      (s: { name: string }) => s.name,
-    ),
+    setRowOrder.mock.calls[0]![0].map((s: { name: string }) => s.name),
   ).toEqual(['b', 'a', 'hidden'])
 })
 
@@ -97,12 +93,11 @@ describe('featureMatrixKey', () => {
   const model = {
     clusterableSources: rows,
     editableSources: rows,
-    layout: [],
     rowDomain: [],
     adapterConfig: { type: 'BedTabixAdapter' },
     effectivePartitionField: 'repClass',
     effectiveClusterField: 'name',
-    setLayoutAndClusterTree: () => {},
+    setRowOrder: () => {},
   } satisfies MultiRowClusterModel
 
   it('carries the arguments that decide what comes back', () => {
@@ -120,11 +115,11 @@ describe('featureMatrixKey', () => {
     expect(
       featureMatrixKey({ ...model, effectiveClusterField: '' }),
     ).not.toEqual(base)
-    // The layout is not a run argument: the matrix is keyed by row name, and
-    // reordering the rows does not change what the worker returns.
-    expect(featureMatrixKey({ ...model, layout: [{ name: 'SINE' }] })).toEqual(
-      base,
-    )
+    // The row order is not a run argument: the matrix is keyed by row name,
+    // and reordering the rows does not change what the worker returns.
+    expect(
+      featureMatrixKey({ ...model, editableSources: [...rows].reverse() }),
+    ).toEqual(base)
   })
 
   it('is null before any row has been discovered', () => {

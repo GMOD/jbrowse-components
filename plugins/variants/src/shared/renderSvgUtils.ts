@@ -20,5 +20,5 @@ export interface RenderSvgBaseModel extends LgvSvgExportable, VariantRowsModel {
   topBands: VariantTopBands
   // Captioned above the exported tree: which locus and settings produced it.
   // Undefined when no clustering has been run.
-  clusterProvenance?: ClusterProvenance
+  rowTreeProvenance?: ClusterProvenance
 }

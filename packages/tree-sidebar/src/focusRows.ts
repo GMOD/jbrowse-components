@@ -6,12 +6,12 @@
  * the bottom, out of view.
  */
 export function focusRows(model: FocusRowsModel, names?: string[]) {
-  model.setSubtreeFilter(names)
+  model.setRowFocus(names)
   model.setScrollTop(0)
 }
 
 interface FocusRowsModel {
-  setSubtreeFilter: (names?: string[]) => void
+  setRowFocus: (names?: readonly string[]) => void
   setScrollTop: (scrollTop: number) => void
 }
 

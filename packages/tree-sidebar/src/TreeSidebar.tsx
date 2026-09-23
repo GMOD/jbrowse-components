@@ -324,7 +324,7 @@ const TreeSidebar = observer(function TreeSidebar({
           menuAnchor ? { top: menuAnchor.y, left: menuAnchor.x } : undefined
         }
       >
-        {model.subtreeFilter?.length ? (
+        {model.rowFocus?.length ? (
           <MenuItem
             onClick={() => {
               applyFilter(undefined)

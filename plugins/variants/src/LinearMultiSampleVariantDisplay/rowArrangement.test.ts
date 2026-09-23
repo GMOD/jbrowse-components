@@ -17,7 +17,7 @@ const CLUSTERED_TREE = '((S2,S0),S1);'
 function clusteredDisplay() {
   const { display } = createTestEnvironment().createDisplay()
   display.setSources(SOURCES)
-  display.setLayoutAndClusterTree(CLUSTERED, CLUSTERED_TREE)
+  display.setRowOrder(CLUSTERED, { tree: CLUSTERED_TREE })
   return display
 }
 
@@ -57,10 +57,9 @@ describe('recoloring does not disturb the arrangement', () => {
       { name: `${sampleName} HP0`, sampleName, HP: 0 },
       { name: `${sampleName} HP1`, sampleName, HP: 1 },
     ])
-    display.setLayoutAndClusterTree(
-      haplotypes,
-      '(((S2 HP0,S2 HP1),(S0 HP0,S0 HP1)),(S1 HP0,S1 HP1));',
-    )
+    display.setRowOrder(haplotypes, {
+      tree: '(((S2 HP0,S2 HP1),(S0 HP0,S0 HP1)),(S1 HP0,S1 HP1));',
+    })
 
     display.setRowColor('population')
 
@@ -73,7 +72,7 @@ describe('the facet bands over the layout', () => {
   it('bands the rows a drag left behind', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setSources(SOURCES)
-    display.setLayout([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
+    display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
     display.setFacet('population')
 
     // AFR (S0, S2) leads; within the band the dragged order survives
@@ -89,7 +88,7 @@ describe('the facet bands over the layout', () => {
     expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
 
     // drag the EUR sample to the top, across the AFR band
-    display.setLayout([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
+    display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
 
     expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
     expect(display.layout.map(s => s.name)).toEqual(['S1', 'S0', 'S2'])
@@ -102,10 +101,9 @@ describe('the facet bands over the layout', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setSources(SOURCES)
     // clustered in adapter order, which the facet would not preserve
-    display.setLayoutAndClusterTree(
-      [{ name: 'S0' }, { name: 'S1' }, { name: 'S2' }],
-      '((S0,S1),S2);',
-    )
+    display.setRowOrder([{ name: 'S0' }, { name: 'S1' }, { name: 'S2' }], {
+      tree: '((S0,S1),S2);',
+    })
 
     display.setFacet('population')
 
@@ -119,13 +117,12 @@ describe('the facet bands over the layout', () => {
   it('bands again once the rows move off the tree', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setSources(SOURCES)
-    display.setLayoutAndClusterTree(
-      [{ name: 'S0' }, { name: 'S1' }, { name: 'S2' }],
-      '((S0,S1),S2);',
-    )
+    display.setRowOrder([{ name: 'S0' }, { name: 'S1' }, { name: 'S2' }], {
+      tree: '((S0,S1),S2);',
+    })
     display.setFacet('population')
 
-    display.setLayout([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
+    display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
 
     expect(display.clusterTree).toBeUndefined()
     expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
@@ -142,7 +139,7 @@ describe('the facet bands over the layout', () => {
         SOURCES.map(s => [s.name, { maxPloidy: 2 }]),
       ),
     } as unknown as Parameters<typeof display.setCellData>[0])
-    display.setLayout(
+    display.setRowOrder(
       ['S0', 'S1', 'S2'].flatMap(sampleName => [
         { name: `${sampleName} HP0`, sampleName, HP: 0 },
         { name: `${sampleName} HP1`, sampleName, HP: 1 },
@@ -193,18 +190,18 @@ describe('the config `domain` seeds the sample order', () => {
   it('is not a custom row order', () => {
     const display = domainDisplay(['S2'])
     expect(display.layout).toHaveLength(0)
-    expect(display.rowOrderIsCustom).toBe(false)
+    expect(display.rowArrangementIsCustom).toBe(false)
   })
 
   it('offers the reset once the rows move off it, and returns to it', () => {
     const display = domainDisplay(['S2'])
-    display.setLayout([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
-    expect(display.rowOrderIsCustom).toBe(true)
+    display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
+    expect(display.rowArrangementIsCustom).toBe(true)
 
-    display.clearLayout()
+    display.resetRowArrangement()
 
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
-    expect(display.rowOrderIsCustom).toBe(false)
+    expect(display.rowArrangementIsCustom).toBe(false)
   })
 
   // The seed is applied once, to the adapter order. A recolor or a refacet
@@ -212,18 +209,18 @@ describe('the config `domain` seeds the sample order', () => {
   // to the front over a drag and, over a clustering run, drop the tree.
   it('does not re-seed a dragged order on a recolor', () => {
     const display = domainDisplay(['S2'])
-    display.setLayout([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
+    display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
     display.setRowColor('population')
 
     expect(rowNames(display)).toEqual(['S1', 'S0', 'S2'])
-    expect(display.rowOrderIsCustom).toBe(true)
+    expect(display.rowArrangementIsCustom).toBe(true)
   })
 
   it('keeps a clustered order and its tree on a recolor', () => {
     const display = domainDisplay(['S2'])
     const clustered = [{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }]
     const tree = '((S1,S0),S2);'
-    display.setLayoutAndClusterTree(clustered, tree)
+    display.setRowOrder(clustered, { tree })
     display.setRowColor('population')
 
     expect(rowNames(display)).toEqual(['S1', 'S0', 'S2'])
@@ -233,7 +230,7 @@ describe('the config `domain` seeds the sample order', () => {
 
   it('bands a facet within a dragged order rather than the seed', () => {
     const display = domainDisplay(['S2'])
-    display.setLayout([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
+    display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
     display.setFacet('population')
 
     expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
@@ -246,7 +243,7 @@ describe('a rendering-mode switch renames the rows', () => {
   // and the display went blank.
   it('clears the subtree filter along with the layout and tree', () => {
     const display = clusteredDisplay()
-    display.setSubtreeFilter(['S2', 'S0'])
+    display.setRowFocus(['S2', 'S0'])
     expect(rowNames(display)).toEqual(['S2', 'S0'])
 
     display.setPhasedMode('phased')
@@ -277,7 +274,7 @@ describe('a rendering-mode switch renames the rows', () => {
 
   it('leaves everything alone when the mode does not change', () => {
     const display = clusteredDisplay()
-    display.setSubtreeFilter(['S2', 'S0'])
+    display.setRowFocus(['S2', 'S0'])
 
     display.setPhasedMode(display.renderingMode)
 
@@ -289,9 +286,9 @@ describe('a rendering-mode switch renames the rows', () => {
   // user's focused clade survives a "Sort by genotype" or a dialog reorder.
   it('survives a reorder that invalidates the tree', () => {
     const display = clusteredDisplay()
-    display.setSubtreeFilter(['S2', 'S0'])
+    display.setRowFocus(['S2', 'S0'])
 
-    display.setLayout([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
+    display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
 
     expect(display.clusterTree).toBeUndefined()
     expect(display.subtreeFilter?.slice()).toEqual(['S2', 'S0'])
@@ -306,7 +303,7 @@ describe('an adapter swap to a new cohort', () => {
   // still ticked in the menu.
   it('resets a stale arrangement, its tree and its subtree filter', () => {
     const display = clusteredDisplay()
-    display.setSubtreeFilter(['S2', 'S0'])
+    display.setRowFocus(['S2', 'S0'])
     display.setRowColor('population')
 
     const cohortB = [
@@ -411,7 +408,7 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
   // palette. These have no other home than `layout` either.
   it('keeps a hand-set label and labelColor through a sort', () => {
     const display = sortableDisplay()
-    display.setLayout([
+    display.setRowOrder([
       { name: 'S0', label: 'first', labelColor: 'red' },
       { name: 'S1' },
       { name: 'S2' },

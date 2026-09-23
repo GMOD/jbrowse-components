@@ -16,8 +16,8 @@ function makeModel(overrides: Partial<HintModel> = {}): HintModel {
     effectiveRowHeight: 50,
     height: 100,
     sourcesWithoutLayout: [{ name: 'a' }, { name: 'b' }],
-    subtreeFilter: undefined,
-    setSubtreeFilter: jest.fn(),
+    rowFocus: undefined,
+    setRowFocus: jest.fn(),
     ...overrides,
   }
 }
@@ -27,19 +27,19 @@ describe('subtree filter matching nothing', () => {
   // stopped falling back to the payload this really is a blank plot, so the
   // message is the only thing on it.
   it('names the filter and offers to clear it', async () => {
-    const setSubtreeFilter = jest.fn()
+    const setRowFocus = jest.fn()
     const { getByText } = render(
       <WiggleHint
         model={makeModel({
           numSources: 0,
-          subtreeFilter: ['nothing_here'],
-          setSubtreeFilter,
+          rowFocus: ['nothing_here'],
+          setRowFocus,
         })}
       />,
     )
     getByText('No subtracks match the current subtree filter')
     await userEvent.click(getByText('Clear subtree filter'))
-    expect(setSubtreeFilter).toHaveBeenCalledWith(undefined)
+    expect(setRowFocus).toHaveBeenCalledWith(undefined)
   })
 
   // Before the first fetch lands there are no sources at all, which is loading
@@ -76,7 +76,7 @@ describe('rows packed below a pixel', () => {
         model={makeModel({
           numSources: 400,
           effectiveRowHeight: 0.25,
-          subtreeFilter: ['a'],
+          rowFocus: ['a'],
         })}
       />,
     )

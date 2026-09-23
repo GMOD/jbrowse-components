@@ -165,7 +165,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     showTree: false,
     treeAreaWidth: 40,
     hierarchy: undefined,
-    clusterProvenance: undefined,
+    rowTreeProvenance: undefined,
     sources: [{ name: 'a' }, { name: 'b' }],
     isOverlay: false,
     isDensityMode: false,
@@ -307,7 +307,7 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
         makeModel({
           showTree: true,
           hierarchy: makeHierarchy(),
-          clusterProvenance: {
+          rowTreeProvenance: {
             regions: [{ refName: 'ctgA', start: 0, end: 1000 }],
           },
         }),
@@ -319,7 +319,7 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
         makeModel({
           showTree: true,
           hierarchy: makeHierarchy(),
-          clusterProvenance: {
+          rowTreeProvenance: {
             regions: [{ refName: 'ctgB', start: 0, end: 1000 }],
           },
         }),

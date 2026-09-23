@@ -27,8 +27,8 @@ const LABEL_COLOR: ColorColumn<Source> = {
 const OVERLAY_RESERVED: ReadonlySet<string> = new Set(['labelColor'])
 
 // Seed from `editableSources` (not `sources`) so overlay-palette synthesis
-// doesn't bake unset colors into the persisted layout on Submit. setLayout
-// already clears the cluster tree on reorder (via willClearTree), but the
+// doesn't bake unset colors into the persisted layout on Submit. setRowOrder
+// already clears the cluster tree on reorder (via rowOrderWillDropTree), but the
 // warning dialog surfaces that destruction to the user first.
 export default observer(function WiggleSetColorDialog({
   model,

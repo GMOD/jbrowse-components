@@ -29,55 +29,88 @@ const a = { name: 'a' }
 const b = { name: 'b' }
 const c = { name: 'c' }
 
-describe('willClearTree', () => {
+describe('the row arrangement', () => {
+  it('answers the tree, its provenance and the focus it was given', () => {
+    const m = makeModel()
+    const run = {
+      tree: '(a,b);',
+      provenance: { regions: [], settings: [] },
+    }
+    m.setRowOrder([a, b], run)
+    m.setRowFocus(['a'])
+    expect(m.rowTree).toBe(run.tree)
+    expect(m.rowTreeProvenance).toEqual(run.provenance)
+    expect(m.rowFocus).toEqual(['a'])
+    expect(m.rowArrangementIsCustom).toBe(true)
+  })
+
+  it('drops the tree when the dialog reorders the rows', () => {
+    const m = makeModel()
+    m.setRowOrder([a, b], { tree: '(a,b);' })
+    m.applyRowEdits([b, a])
+    expect(m.rowTree).toBeUndefined()
+  })
+
+  it('resets order, tree and focus together', () => {
+    const m = makeModel()
+    m.setRowOrder([a, b], { tree: '(a,b);' })
+    m.setRowFocus(['a'])
+    m.resetRowArrangement()
+    expect(m.rowTree).toBeUndefined()
+    expect(m.rowFocus).toBeUndefined()
+    expect(m.rowArrangementIsCustom).toBe(false)
+  })
+})
+
+describe('rowOrderWillDropTree', () => {
   it('is false with no cluster tree, whatever the reorder', () => {
     const m = makeModel()
-    m.setLayout([a, b])
-    expect(m.willClearTree([b, a])).toBe(false)
+    m.setRowOrder([a, b])
+    expect(m.rowOrderWillDropTree([b, a])).toBe(false)
   })
 
   it('is true when a loaded tree would be reordered', () => {
     const m = makeModel()
-    m.setLayoutAndClusterTree([a, b], '(a,b);')
-    expect(m.willClearTree([b, a])).toBe(true)
+    m.setRowOrder([a, b], { tree: '(a,b);' })
+    expect(m.rowOrderWillDropTree([b, a])).toBe(true)
   })
 
   it('is false when the order is unchanged', () => {
     const m = makeModel()
-    m.setLayoutAndClusterTree([a, b], '(a,b);')
-    expect(m.willClearTree([a, b])).toBe(false)
+    m.setRowOrder([a, b], { tree: '(a,b);' })
+    expect(m.rowOrderWillDropTree([a, b])).toBe(false)
   })
 
   it('is true when membership changes (different length)', () => {
     const m = makeModel()
-    m.setLayoutAndClusterTree([a, b], '(a,b);')
-    expect(m.willClearTree([a, b, c])).toBe(true)
+    m.setRowOrder([a, b], { tree: '(a,b);' })
+    expect(m.rowOrderWillDropTree([a, b, c])).toBe(true)
   })
 })
 
-describe('setLayout', () => {
+describe('setRowOrder', () => {
   it('clears the cluster tree on reorder', () => {
     const m = makeModel()
-    m.setLayoutAndClusterTree([a, b], '(a,b);')
-    m.setLayout([b, a])
+    m.setRowOrder([a, b], { tree: '(a,b);' })
+    m.setRowOrder([b, a])
     expect(m.clusterTree).toBeUndefined()
     expect(m.layout.map(s => s.name)).toEqual(['b', 'a'])
   })
 
   it('keeps the cluster tree when only colors change (order intact)', () => {
     const m = makeModel()
-    m.setLayoutAndClusterTree([a, b], '(a,b);')
-    m.setLayout([{ name: 'a' }, { name: 'b' }])
+    m.setRowOrder([a, b], { tree: '(a,b);' })
+    m.setRowOrder([{ name: 'a' }, { name: 'b' }])
     expect(m.clusterTree).toBe('(a,b);')
   })
 })
 
-describe('clearLayout', () => {
+describe('resetRowArrangement', () => {
   it('drops the subtree filter along with the tree it names leaves of', () => {
     const m = makeModel()
-    m.setLayoutAndClusterTree([a, b, c], '((a,b),c);')
-    m.setSubtreeFilter(['a', 'b'])
-    m.clearLayout()
+    m.setRowOrder([a, b, c], { tree: '((a,b),c);' })
+    m.setRowFocus(['a', 'b'])
+    m.resetRowArrangement()
     expect(m.layout).toEqual([])
     expect(m.clusterTree).toBeUndefined()
     expect(m.subtreeFilter).toBeUndefined()
@@ -95,29 +128,29 @@ describe('clusterProvenance', () => {
 
   it('is stored with the tree it describes', () => {
     const m = makeModel()
-    m.setLayoutAndClusterTree([a, b], '(a,b);', here)
+    m.setRowOrder([a, b], { tree: '(a,b);', provenance: here })
     expect(m.clusterProvenance).toEqual(here)
   })
 
   it('is cleared whenever a reorder clears the tree', () => {
     const m = makeModel()
-    m.setLayoutAndClusterTree([a, b], '(a,b);', here)
-    m.setLayout([b, a])
+    m.setRowOrder([a, b], { tree: '(a,b);', provenance: here })
+    m.setRowOrder([b, a])
     expect(m.clusterTree).toBeUndefined()
     expect(m.clusterProvenance).toBeUndefined()
   })
 
   it('survives a layout write that keeps the tree', () => {
     const m = makeModel()
-    m.setLayoutAndClusterTree([a, b], '(a,b);', here)
-    m.setLayout([{ name: 'a' }, { name: 'b' }])
+    m.setRowOrder([a, b], { tree: '(a,b);', provenance: here })
+    m.setRowOrder([{ name: 'a' }, { name: 'b' }])
     expect(m.clusterProvenance).toEqual(here)
   })
 
-  it('is cleared by clearLayout', () => {
+  it('is cleared by resetRowArrangement', () => {
     const m = makeModel()
-    m.setLayoutAndClusterTree([a, b], '(a,b);', here)
-    m.clearLayout()
+    m.setRowOrder([a, b], { tree: '(a,b);', provenance: here })
+    m.resetRowArrangement()
     expect(m.clusterProvenance).toBeUndefined()
   })
 
@@ -126,7 +159,7 @@ describe('clusterProvenance', () => {
   // clustering run's region — worse than saying nothing.
   it('is cleared when a tree is supplied rather than computed', () => {
     const m = makeModel()
-    m.setLayoutAndClusterTree([a, b], '(a,b);', here)
+    m.setRowOrder([a, b], { tree: '(a,b);', provenance: here })
     m.setClusterTree('(b,a);')
     expect(m.clusterTree).toBe('(b,a);')
     expect(m.clusterProvenance).toBeUndefined()
@@ -135,17 +168,17 @@ describe('clusterProvenance', () => {
   // A re-run over a different locus must replace, not merge.
   it('is replaced by the next run rather than kept', () => {
     const m = makeModel()
-    m.setLayoutAndClusterTree([a, b], '(a,b);', here)
+    m.setRowOrder([a, b], { tree: '(a,b);', provenance: here })
     const elsewhere = {
       regions: [{ refName: 'ctgB', start: 900, end: 1000 }],
     }
-    m.setLayoutAndClusterTree([b, a], '(b,a);', elsewhere)
+    m.setRowOrder([b, a], { tree: '(b,a);', provenance: elsewhere })
     expect(m.clusterProvenance).toEqual(elsewhere)
   })
 
   it('is undefined for a run that supplies none', () => {
     const m = makeModel()
-    m.setLayoutAndClusterTree([a, b], '(a,b);')
+    m.setRowOrder([a, b], { tree: '(a,b);' })
     expect(m.clusterProvenance).toBeUndefined()
   })
 })
@@ -261,9 +294,12 @@ describe('the row domain', () => {
   // its own rows, and `treeDescribesRows` would then draw nothing at all.
   it('leaves a computed tree as the run stored it', () => {
     const m = makeConfigured({ domain: ['c'] })
-    m.setLayoutAndClusterTree([], '((a,b),(c,d));', {
-      regions: [],
-      settings: [],
+    m.setRowOrder([], {
+      tree: '((a,b),(c,d));',
+      provenance: {
+        regions: [],
+        settings: [],
+      },
     })
     expect(leafNames(m)).toEqual(['a', 'b', 'c', 'd'])
   })

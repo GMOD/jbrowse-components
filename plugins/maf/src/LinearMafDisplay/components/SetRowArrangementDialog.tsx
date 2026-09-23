@@ -15,7 +15,7 @@ import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
  * config able to set something the UI could not.
  *
  * Reordering clears the guide tree — rows would no longer line up with the
- * dendrogram — and the shared dialog warns when `willClearTree` says so.
+ * dendrogram — and the shared dialog warns when `rowOrderWillDropTree` says so.
  */
 export default function SetRowArrangementDialog({
   model,

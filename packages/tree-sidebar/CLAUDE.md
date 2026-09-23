@@ -34,7 +34,7 @@ rows come back scrambled.
 tree that no longer names the rows on screen draws against the wrong ones,
 silently. When writing a display:
 
-- **Every action that moves rows routes through `setLayout`**, never
+- **Every action that moves rows routes through `setRowOrder`**, never
   `self.layout =`.
 - **Pass `sources` to `computeClusterHierarchy`** — after every reorder, filter
   and decoration, never the pre-layout list.
@@ -63,7 +63,7 @@ from `applyClusterRun` and from variants' `applyClusterOrder`, which is the path
 `runGenotypeClustering` takes instead. Rotating an arranged tree on the way out
 would turn a restored session's dendrogram away from the `layout` saved beside
 it and draw nothing at all — and the `layout` is the stronger half of that gate,
-because `setLayoutAndClusterTree` takes its provenance optionally. The R-paste
+because a run's `setRowOrder` takes its provenance optionally. The R-paste
 `applyOrder` path carries no tree and rotates nothing: a paste is an explicit
 order.
 
@@ -83,9 +83,9 @@ equality would flag constantly.
 The invariant is not that provenance is present but that it is never **wrong**,
 so `clusterTree` has exactly one writer: the mixin's private
 `writeTree(tree, provenance)`. The four public actions differ only in what they
-pass — `setLayout`/`clearLayout` pass nothing, and `setClusterTree` (maf's
-supplied `.nh`) passes nothing because a phylogeny has no locus — so a tree with
-no provenance is also the signal it was supplied rather than computed.
+pass — a reorder and `resetRowArrangement` pass nothing, and `setClusterTree`
+(maf's supplied `.nh`) passes nothing because a phylogeny has no locus — so a
+tree with no provenance is also the signal it was supplied rather than computed.
 `SvgTreeSidebar` draws the same drift-only hint in the export
 (`SvgClusterProvenanceHint`), and `clusterProvenanceMenuItems` puts the locus in
 the menu.
@@ -109,11 +109,11 @@ the score, multi-row the painted color). `rowSortColumn.ts` owns the rest:
   only values that exist. A neutral fill-in instead (`0`) ranks a valueless row
   above every negative score and into the middle of every color block.
 
-## `subtreeFilter` goes with the row _names_, not with the tree
+## The row focus goes with the row _names_, not with the tree
 
 Matched without a tree, so a reorder or re-cluster leaves it valid and
-`setLayout` keeps it. `clearLayout` clears it; "Clear subtree filter" is gated
-on the filter alone.
+`setRowOrder` keeps it. `resetRowArrangement` clears it; "Clear subtree filter"
+is gated on the filter alone.
 
 ## Newick
 

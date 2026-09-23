@@ -24,7 +24,7 @@ describe('a discovered row set widens under a custom arrangement', () => {
       treeNewick: undefined,
       samplesCanonical: false,
     })
-    display.setLayout([{ name: 'panTro4' }, { name: 'hg38' }])
+    display.setRowOrder([{ name: 'panTro4' }, { name: 'hg38' }])
 
     display.setSamples({
       samples: [sample('mm10')],
@@ -69,7 +69,11 @@ describe('a discovered row set widens under a custom arrangement', () => {
       // config/tree-derived sets are authoritative, so they replace
       samplesCanonical: true,
     })
-    display.setLayout([{ name: 'panTro4' }, { name: 'hg38' }, { name: 'gone' }])
+    display.setRowOrder([
+      { name: 'panTro4' },
+      { name: 'hg38' },
+      { name: 'gone' },
+    ])
 
     expect(rowNames(display)).toEqual(['panTro4', 'hg38'])
   })
@@ -96,7 +100,11 @@ describe('the guide tree positions only while it describes the rows', () => {
 
   it('stops positioning once the rows are reordered', () => {
     const display = treedDisplay()
-    display.setLayout([{ name: 'mm10' }, { name: 'hg38' }, { name: 'panTro4' }])
+    display.setRowOrder([
+      { name: 'mm10' },
+      { name: 'hg38' },
+      { name: 'panTro4' },
+    ])
 
     expect(display.clusterTree).toBeUndefined()
     expect(display.hierarchy).toBeUndefined()
@@ -105,9 +113,13 @@ describe('the guide tree positions only while it describes the rows', () => {
 
   it('restores the worker tree when the arrangement is cleared', () => {
     const display = treedDisplay()
-    display.setLayout([{ name: 'mm10' }, { name: 'hg38' }, { name: 'panTro4' }])
+    display.setRowOrder([
+      { name: 'mm10' },
+      { name: 'hg38' },
+      { name: 'panTro4' },
+    ])
 
-    display.clearLayout()
+    display.resetRowArrangement()
 
     expect(display.clusterTree).toBe(TREE)
     expect(display.hierarchy).toBeDefined()
@@ -118,10 +130,14 @@ describe('the guide tree positions only while it describes the rows', () => {
   // "Clear subtree filter" track-menu item is not gated on one.
   it('keeps a subtree filter across a reorder that drops the tree', () => {
     const display = treedDisplay()
-    display.setSubtreeFilter(['hg38', 'panTro4'])
+    display.setRowFocus(['hg38', 'panTro4'])
     expect(rowNames(display)).toEqual(['hg38', 'panTro4'])
 
-    display.setLayout([{ name: 'panTro4' }, { name: 'hg38' }, { name: 'mm10' }])
+    display.setRowOrder([
+      { name: 'panTro4' },
+      { name: 'hg38' },
+      { name: 'mm10' },
+    ])
 
     expect(display.clusterTree).toBeUndefined()
     expect(display.subtreeFilter?.slice()).toEqual(['hg38', 'panTro4'])
@@ -200,7 +216,7 @@ describe('the config `domain` seeds the row order', () => {
     const display = domainDisplay(['panTro4'])
     expect(rowNames(display)).toEqual(['panTro4', 'hg38', 'mm10'])
 
-    display.setSubtreeFilter(['hg38', 'panTro4'])
+    display.setRowFocus(['hg38', 'panTro4'])
 
     expect(rowNames(display)).toEqual(['panTro4', 'hg38'])
     expect(display.hierarchy).toBeDefined()
@@ -211,10 +227,14 @@ describe('the config `domain` seeds the row order', () => {
   // domain rather than to the adapter order.
   it('gives way to a layout and comes back when it is cleared', () => {
     const display = domainDisplay(['mm10'])
-    display.setLayout([{ name: 'panTro4' }, { name: 'hg38' }, { name: 'mm10' }])
+    display.setRowOrder([
+      { name: 'panTro4' },
+      { name: 'hg38' },
+      { name: 'mm10' },
+    ])
     expect(rowNames(display)).toEqual(['panTro4', 'hg38', 'mm10'])
 
-    display.clearLayout()
+    display.resetRowArrangement()
 
     expect(rowNames(display)).toEqual(['mm10', 'hg38', 'panTro4'])
   })

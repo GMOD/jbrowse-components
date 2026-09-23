@@ -343,7 +343,7 @@ function fetchRegionsForMode(
  * 3. phased mode expands each row to its haplotypes,
  * 4. `rowColor` tints and `facet` bands the result.
  *
- * So `clearLayout` is the whole reset, "Reset row order" appears exactly when
+ * So `resetRowArrangement` is the whole reset, "Reset row order" appears exactly when
  * `layout` is non-empty, and nothing has to re-derive an arrangement when a
  * setting changes. The same shape MAF and multi-wiggle already had.
  *
@@ -810,7 +810,7 @@ export default function MultiSampleVariantBaseModelF(
               // standing the filter matches nothing and the display goes blank.
               // (The layout alone would survive — `getSources` drops a row no
               // sample answers to — so the filter is what this is for.)
-              // `clearLayout` is the same reset `setPhasedMode` takes when it
+              // `resetRowArrangement` is the same reset `setPhasedMode` takes when it
               // renames the rows. Keyed on total mismatch, not any mismatch — a
               // partial overlap is the same cohort with samples added or
               // removed, and the user's order survives that.
@@ -820,7 +820,7 @@ export default function MultiSampleVariantBaseModelF(
                 !self.layout.some(row => names.has(resolveSampleName(row)))
               self.sourcesVolatile = sources
               if (layoutIsStale) {
-                self.clearLayout()
+                self.resetRowArrangement()
               }
               warnUnknownArrangementAttributes(self, sources)
             }
@@ -886,7 +886,7 @@ export default function MultiSampleVariantBaseModelF(
               // needs no tree, so a reorder leaves it perfectly valid); this is the
               // one action that renames the rows out from under it, and leaving it
               // set here matched nothing and blanked the display.
-              self.clearLayout()
+              self.resetRowArrangement()
             }
           },
           /**
@@ -1014,7 +1014,7 @@ export default function MultiSampleVariantBaseModelF(
          * #getter
          * Adapter rows in the order the config `domain` declares: the samples it
          * names lead, the rest keep the file's order. The seed `layout` merges
-         * over — it is never written into `layout`, so `clearLayout` returns
+         * over — it is never written into `layout`, so `resetRowArrangement` returns
          * here and a domain-seeded track offers no "Reset row order" until the
          * rows actually move. Same shape as MAF's and multi-wiggle's
          * `editableSources`.
@@ -1068,7 +1068,7 @@ export default function MultiSampleVariantBaseModelF(
           // clustering stores haplotype names ("HG001 HP0") as tree leaves and
           // that is what subtreeFilter holds.
           const base = this.sourcesBeforeSubtreeFilter
-          return base && filterRowsBySubtree(base, self.subtreeFilter)
+          return base && filterRowsBySubtree(base, self.rowFocus)
         },
       }))
       .views(self => ({
@@ -1470,7 +1470,7 @@ export default function MultiSampleVariantBaseModelF(
           // instead of being dropped from `layout` for good.
           const sources = self.editableSources
           // Fewer than two rows has nothing to order, and the write is not a
-          // harmless no-op: `setLayout` drops the cluster tree whenever the row
+          // harmless no-op: `setRowOrder` drops the cluster tree whenever the row
           // set changes. The same decline the other "sort rows here" actions
           // make in `sortRowsAtColumn`.
           let sorted: ProcessedSource[] | undefined
@@ -1487,7 +1487,7 @@ export default function MultiSampleVariantBaseModelF(
               phased: self.renderingMode === 'phased',
             })
             if (sorted) {
-              self.setLayout(sorted)
+              self.setRowOrder(sorted)
             }
           }
           return sorted !== undefined

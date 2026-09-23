@@ -115,19 +115,18 @@ describe('LinearMafDisplay declarative runClustering', () => {
     })
     expect(snapshotOf(display).clusterTree).toBeUndefined()
 
-    display.setLayoutAndClusterTree(
-      [{ name: 'panTro4' }, { name: 'hg38' }],
-      '(panTro4,hg38);',
-      { regions: [{ refName: 'chr1', start: 0, end: 100 }] },
-    )
+    display.setRowOrder([{ name: 'panTro4' }, { name: 'hg38' }], {
+      tree: '(panTro4,hg38);',
+      provenance: { regions: [{ refName: 'chr1', start: 0, end: 100 }] },
+    })
     expect(snapshotOf(display).clusterTree).toBe('(panTro4,hg38);')
 
     // Reset row order puts the guide tree back, and with it the snapshot rule:
-    // `clearLayout` writes the tree with no provenance, so what comes back is a
+    // `resetRowArrangement` writes the tree with no provenance, so what comes back is a
     // supplied tree again and the snapshot stops carrying it. Pinned because
     // the postProcessSnapshot branch reads `clusterProvenance` and would
     // otherwise persist a guide tree the adapter re-supplies on every fetch.
-    display.clearLayout()
+    display.resetRowArrangement()
     expect(display.clusterTree).toBe('(hg38,panTro4);')
     expect(display.clusterProvenance).toBeUndefined()
     expect(snapshotOf(display).clusterTree).toBeUndefined()
@@ -144,11 +143,10 @@ describe('LinearMafDisplay declarative runClustering', () => {
     expect(display.clusterTree).toBe('(hg38,panTro4);')
     expect(display.clusterProvenance).toBeUndefined()
 
-    display.setLayoutAndClusterTree(
-      [{ name: 'panTro4' }, { name: 'hg38' }],
-      '(panTro4,hg38);',
-      { regions: [{ refName: 'chr1', start: 0, end: 100 }] },
-    )
+    display.setRowOrder([{ name: 'panTro4' }, { name: 'hg38' }], {
+      tree: '(panTro4,hg38);',
+      provenance: { regions: [{ refName: 'chr1', start: 0, end: 100 }] },
+    })
     expect(display.clusterTree).toBe('(panTro4,hg38);')
     expect(display.clusterProvenance).toBeDefined()
   })

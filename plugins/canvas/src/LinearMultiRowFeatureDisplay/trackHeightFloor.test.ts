@@ -85,7 +85,7 @@ describe('the derived height carries the floor the drag does', () => {
     display.setRowHeight(14)
     expect(display.height).toBeCloseTo(42)
 
-    display.setSubtreeFilter(['nobody'])
+    display.setRowFocus(['nobody'])
 
     expect(display.sources).toHaveLength(0)
     expect(display.height).toBe(MIN_DISPLAY_HEIGHT)

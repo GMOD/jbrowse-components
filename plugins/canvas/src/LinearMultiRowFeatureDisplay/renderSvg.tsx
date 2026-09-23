@@ -48,7 +48,7 @@ export interface RenderSvgModel extends SvgExportable {
   showTree: boolean
   hierarchy: ClusterHierarchyNode | undefined
   // Records the color scheme, which is the clustering matrix here.
-  clusterProvenance?: ClusterProvenance
+  rowTreeProvenance?: ClusterProvenance
   showRowSeparators: boolean
   showRowLabels: boolean
 }
@@ -132,7 +132,7 @@ function MultiRowSvgBody({
           rowHeight={self.effectiveRowHeight}
           treeAreaWidth={self.treeAreaWidth}
           availableHeight={height}
-          clusterProvenance={self.clusterProvenance}
+          clusterProvenance={self.rowTreeProvenance}
           contentBlocks={view.dynamicBlocks.contentBlocks}
         />
       ) : null}

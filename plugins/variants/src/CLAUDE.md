@@ -128,13 +128,13 @@ the anchored haplotype sort.
 and a clustering run.** Every config-declared channel resolves when the rows are
 read, in `sources`: the row `domain` seeds the adapter order, `layout` merges
 over that seed, phased mode expands to haplotypes, then `rowColor` tints and
-`facet` bands. So `clearLayout` is the whole reset, and the mixin's plain
-`rowOrderIsCustom` answers. Writing the derived arrangement into `layout`
-instead gave every recolor a way to drop a clustering run.
+`facet` bands. So `resetRowArrangement` is the whole reset, and the mixin's
+plain `rowArrangementIsCustom` answers. Writing the derived arrangement into
+`layout` instead gave every recolor a way to drop a clustering run.
 
 `getSources` appends a sample a `layout` omits rather than dropping it — spelled
 here because the phased case keys "already covered" on `sampleName`. Row-moving
-actions persist through `setLayout`, never `self.layout =`.
+actions persist through `setRowOrder`, never `self.layout =`.
 
 **The tint and the band go on downstream of everything written back to
 `layout`** — `editableSources` (the dialog's list, which submit persists) and

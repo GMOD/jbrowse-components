@@ -5,7 +5,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 // "Sort rows by color here" cannot wait for the region the way the declarative
 // `sortRowsBy` does, and the empty result is destructive rather than inert:
-// `setLayout` drops the cluster tree whenever the row set changes.
+// `setRowOrder` drops the cluster tree whenever the row set changes.
 
 const SORT = 'Sort rows by color here'
 
@@ -55,10 +55,9 @@ function clustered() {
   // Loaded, not the whole contig: the span the sort resolves its column
   // against, so `50_000` below really is off the end of what was fetched.
   display.setRpcData(0, regionData(['a', 'b', 'c']), LOADED)
-  display.setLayoutAndClusterTree(
-    [{ name: 'c' }, { name: 'a' }, { name: 'b' }],
-    '((c,a),b);',
-  )
+  display.setRowOrder([{ name: 'c' }, { name: 'a' }, { name: 'b' }], {
+    tree: '((c,a),b);',
+  })
   display.openContextMenu({
     clientX: 0,
     clientY: 0,
@@ -85,7 +84,7 @@ describe('"Sort rows by color here"', () => {
     expect(item.disabledHelpText).toBe('Needs at least two rows to sort')
   })
 
-  // With the row live, the click writes the empty sort result and `setLayout`
+  // With the row live, the click writes the empty sort result and `setRowOrder`
   // reads the row-set change as a reason to drop the dendrogram.
   it('leaves the arrangement and the cluster tree alone with no rows', () => {
     const display = clustered()

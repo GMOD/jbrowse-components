@@ -29,7 +29,7 @@ const confNode = (self: object) => self as TreeSidebarHost
 /**
  * #stateModel TreeSidebarMixin
  * #category display
- * #crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display rows, named), the `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC and the `sortRows` callback naming what a row carries at a column. Brings `layout` / `clusterTree` / `clusterProvenance` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` / `treeAreaWidth` getters and setters and the `rowDomain` getter over those slots, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the `root`, `willClearTree` and `rowOrderIsCustom` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through
+ * #crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display rows, named), the `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC and the `sortRows` callback naming what a row carries at a column. Brings `layout` / `clusterTree` / `clusterProvenance` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` / `treeAreaWidth` getters and setters and the `rowDomain` getter over those slots, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through (`rowTree`, `rowTreeProvenance`, `rowFocus`, `rowArrangementIsCustom`, `rowOrderWillDropTree`, `setRowOrder`, `applyRowEdits`, `setRowFocus`, `resetRowArrangement`), the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through
  * Adds a dendrogram sidebar to a display: stores the leaf layout, newick cluster
  * tree, sidebar width and subtree filter, plus the hover/canvas volatile state
  * used while drawing the tree.
@@ -211,6 +211,30 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * The cluster tree the rows are arranged by, as newick: a run's, or a
+       * supplied phylogeny (maf's `.nh`).
+       */
+      get rowTree(): string | undefined {
+        return self.clusterTree
+      },
+      /**
+       * #getter
+       * What `rowTree` was computed from, the locus and the settings; undefined
+       * for a supplied tree.
+       */
+      get rowTreeProvenance(): ClusterProvenance | undefined {
+        return self.clusterProvenance
+      },
+      /**
+       * #getter
+       * The row names a focus narrows the display to — a clade picked off the
+       * tree or a legend group — or undefined while every row shows.
+       */
+      get rowFocus(): readonly string[] | undefined {
+        return self.subtreeFilter
+      },
       get root() {
         return self.parsedTree
           ? applySubtreeFilter(self.parsedTree, self.subtreeFilter)
@@ -228,24 +252,22 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       /**
        * #getter
        * Whether the rows have been arranged away from the order they arrived
-       * in — what "Reset row order" is offered on: a written `layout`.
+       * in — what "Reset row order" is offered on.
        */
-      get rowOrderIsCustom(): boolean {
+      get rowArrangementIsCustom(): boolean {
         return self.layout.length > 0
       },
 
-      // True when persisting `next` would invalidate the cluster tree: the tree
-      // was built from the current `layout`, so any membership/order change
-      // (with a tree loaded) makes it stale. Single source of truth shared by
-      // `setLayout` and the color dialog's pre-submit warning.
+      // True when ordering the rows as `next` would drop the cluster tree: the
+      // tree describes the current order, so any membership or order change
+      // makes it stale. Shared by `setRowOrder` and the color dialog's
+      // pre-submit warning, which has to be answerable before the write.
       //
-      // This covers the writes that go *through* `setLayout`. Rows can also move
-      // without one — a display decorating `sources` downstream of `layout`, a
-      // discovered row set growing as regions load — so the backstop is derived,
-      // in `computeClusterHierarchy`, which declines to position a tree whose
-      // leaves aren't the rows on screen. This getter stays because a warning
-      // has to be answerable before the write, not after it.
-      willClearTree(next: S[]) {
+      // Rows can also move without a write — a display decorating `sources`
+      // downstream of the arrangement, a discovered row set growing as regions
+      // load — so the backstop is derived, in `computeClusterHierarchy`, which
+      // declines to position a tree whose leaves aren't the rows on screen.
+      rowOrderWillDropTree(next: readonly { name: string }[]) {
         return (
           !!self.clusterTree &&
           (self.layout.length !== next.length ||
@@ -269,28 +291,60 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         self.clusterTree = tree
         self.clusterProvenance = provenance
       }
-      return {
-        setLayout(layout: S[]) {
-          const clearTree = self.willClearTree(layout)
-          self.layout = layout
-          if (clearTree) {
+      function orderRows(
+        rows: S[],
+        run?: { tree?: string; provenance?: ClusterProvenance },
+      ) {
+        if (run) {
+          self.layout = rows
+          writeTree(run.tree, run.provenance)
+        } else {
+          const dropTree = self.rowOrderWillDropTree(rows)
+          self.layout = rows
+          if (dropTree) {
             writeTree(undefined)
           }
+        }
+      }
+      return {
+        /**
+         * #action
+         * Arrange the rows in `rows`' order. A clustering run passes its
+         * result, and the tree and its provenance land with the order; any
+         * other reorder that moves a row drops the tree, which no longer
+         * describes it.
+         */
+        setRowOrder(
+          rows: S[],
+          run?: { tree?: string; provenance?: ClusterProvenance },
+        ) {
+          orderRows(rows, run)
         },
-        // Reset to no arrangement at all, which includes the subtree filter: the
-        // user asked for the rows back as they came.
-        //
-        // The filter is otherwise **independent of the tree**. It is a set of
-        // row names, and `filterRowsBySubtree` matches on `name` with no tree
-        // involved, so a reorder or a re-cluster leaves it perfectly valid and
-        // `setLayout` deliberately keeps it — dropping a focused clade on every
-        // reorder would discard the user's focus, and for maf (where
-        // `subtreeFilter` is a fetch argument) refetch every loaded region. What
-        // does invalidate it is a change to what rows are *called*: the
-        // multi-sample variant displays' rendering mode renames rows between
-        // sample and haplotype ("HG001" ↔ "HG001 HP0"), and `setPhasedMode`
-        // clears the filter for exactly that reason.
-        clearLayout() {
+        /**
+         * #action
+         * The arrangement dialog's submit: the rows in their new order, each
+         * carrying the label and colours the reader set on it.
+         */
+        applyRowEdits(rows: S[]) {
+          orderRows(rows)
+        },
+        /**
+         * #action
+         * Reset to no arrangement at all, focus included: the reader asked for
+         * the rows back as they came.
+         *
+         * The focus is otherwise **independent of the tree**. It is a set of
+         * row names, and `filterRowsBySubtree` matches on `name` with no tree
+         * involved, so a reorder or a re-cluster leaves it valid and
+         * `setRowOrder` keeps it — dropping a focused clade on every reorder
+         * would discard the reader's focus, and for maf (where the focus is a
+         * fetch argument) refetch every loaded region. What does invalidate it
+         * is a change to what rows are *called*: the multi-sample variant
+         * displays' rendering mode renames rows between sample and haplotype
+         * ("HG001" ↔ "HG001 HP0"), and `setPhasedMode` clears the focus for
+         * exactly that reason.
+         */
+        resetRowArrangement() {
           self.layout = []
           writeTree(undefined)
           self.subtreeFilter = undefined
@@ -301,20 +355,16 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         setClusterTree(tree?: string) {
           writeTree(tree)
         },
-        setLayoutAndClusterTree(
-          layout: S[],
-          tree?: string,
-          provenance?: ClusterProvenance,
-        ) {
-          self.layout = layout
-          writeTree(tree, provenance)
-        },
         setTreeAreaWidth(width: number) {
           setConf(confNode(self), 'treeAreaWidth', width)
         },
-        setSubtreeFilter(names?: string[]) {
+        /**
+         * #action
+         * Narrow the display to `names`, or show every row again.
+         */
+        setRowFocus(names?: readonly string[]) {
           // normalize empty to undefined so the field has one stripped state
-          self.subtreeFilter = names?.length ? cast(names) : undefined
+          self.subtreeFilter = names?.length ? cast([...names]) : undefined
         },
         setRunClustering(arg?: boolean) {
           self.runClustering = arg

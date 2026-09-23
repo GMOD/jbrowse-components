@@ -87,7 +87,7 @@ test('a legend focus after a phased clustering run names the haplotype rows', ()
     },
     rowNames: [],
   } as unknown as Parameters<typeof d.setCellData>[0])
-  d.setLayout(
+  d.setRowOrder(
     ['S0', 'S1', 'S2', 'S3'].flatMap(sampleName => [
       { name: `${sampleName} HP0`, sampleName, HP: 0 },
       { name: `${sampleName} HP1`, sampleName, HP: 1 },

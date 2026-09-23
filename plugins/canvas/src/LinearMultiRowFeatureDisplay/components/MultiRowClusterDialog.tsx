@@ -59,11 +59,10 @@ const MultiRowClusterDialog = observer(function MultiRowClusterDialog({
         // `matrixRowNames` is the rows `fetchMatrix` keyed the matrix by, so a
         // partition value discovered while the user was in R cannot shift every
         // rank below it onto the wrong row
-        model.setLayout(
+        model.setRowOrder(
           clusteredCladeLayout({
             rows: clusterableSources,
             editableSources: model.editableSources,
-            layout: model.layout,
             order,
             matrixRowNames,
           }),

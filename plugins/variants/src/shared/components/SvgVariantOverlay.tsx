@@ -78,7 +78,7 @@ const SvgVariantOverlay = ({
             showLabels={showRowLabels}
             scrollTop={scrollTop}
             availableHeight={availableHeight}
-            clusterProvenance={model.clusterProvenance}
+            clusterProvenance={model.rowTreeProvenance}
             contentBlocks={contentBlocks}
           />
         ) : null}

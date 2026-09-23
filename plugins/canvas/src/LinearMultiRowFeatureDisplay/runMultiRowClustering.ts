@@ -7,11 +7,7 @@ import type { MatrixEncoding } from '../MultiRowClusterFeaturesRPC/buildMultiRow
 import type { MultiRowSource } from './rowSources.ts'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type {
-  ClusterRunModel,
-  RpcMethodCaller,
-  TreeLayoutModel,
-} from '@jbrowse/tree-sidebar'
+import type { ClusterRunModel, RpcMethodCaller } from '@jbrowse/tree-sidebar'
 
 type MultiRowClusterCaller = RpcMethodCaller<'MultiRowClusterFeatures'>
 
@@ -26,10 +22,7 @@ export interface MultiRowClusterModel extends ClusterRunModel<MultiRowSource> {
 }
 
 export interface MultiRowClusterDialogModel
-  extends
-    IStateTreeNode,
-    MultiRowClusterModel,
-    Pick<TreeLayoutModel<MultiRowSource>, 'setLayout'> {
+  extends IStateTreeNode, MultiRowClusterModel {
   partitionCandidates: string[]
   setClusterField: (field: string) => void
 }

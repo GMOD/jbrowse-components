@@ -399,7 +399,7 @@ export default function stateModelFactory(
        * `rowGroups` swatch color has no business.
        */
       get clusterableSources(): MultiRowSource[] {
-        return filterRowsBySubtree(self.editableSources, self.subtreeFilter)
+        return filterRowsBySubtree(self.editableSources, self.rowFocus)
       },
       /**
        * #getter
@@ -889,7 +889,7 @@ export default function stateModelFactory(
             return
           }
           setConf(self, 'partitionField', field)
-          self.clearLayout()
+          self.resetRowArrangement()
           self.hiddenCategories.clear()
         },
         /**

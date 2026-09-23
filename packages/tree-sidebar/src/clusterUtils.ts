@@ -473,8 +473,8 @@ export function applyLayoutOverrides<S extends { name: string }>(
 }
 
 /**
- * A clustering run's `order` turned into the display's next `layout` — the one
- * write behind both the "Run clustering" RPC and a hand-pasted R order, on
+ * A clustering run's `order` turned into the display's next row order — the
+ * one write behind both the "Run clustering" RPC and a hand-pasted R order, on
  * every display that clusters its rows.
  *
  * `rows` is the row set the run CLUSTERED, and it is what the order indexes:
@@ -487,15 +487,14 @@ export function applyLayoutOverrides<S extends { name: string }>(
  * **Undecorated rows, not the drawn `sources`.** Every display decorates on the
  * way to the painting — multi-wiggle synthesizes a palette, the multi-row
  * feature display tags `rowGroups` colors and may reorder into blocks — and
- * `applyLayoutOverrides` spreads whatever it is handed into the persisted
- * layout. Passing the decorated list writes synthesized colors into `layout`,
- * which is meant to hold only what the user chose. `editableSources` narrowed
- * by the filter is the list.
+ * the arrangement holds whatever it is handed, which is meant to be only what
+ * the user chose. `editableSources` narrowed by the focus is the list, and it
+ * already carries each row's own overrides.
  *
- * The rows the filter is hiding are re-appended rather than dropped: `layout`
- * is the persisted record of every row's position and overrides, so losing them
- * here would erase them for good the moment the filter is cleared. They land
- * after the clustered block, which is a no-op with no filter active.
+ * The rows the focus is hiding are re-appended rather than dropped: the
+ * arrangement records every row's position and overrides, so losing them here
+ * would erase them for good the moment the focus is cleared. They land after
+ * the clustered block, which is a no-op with no focus active.
  *
  * `matrixRowNames` comes from the R-script path and names the rows the exported
  * matrix held, so a paste applied after the clustered rows moved (a filter
@@ -506,18 +505,16 @@ export function applyLayoutOverrides<S extends { name: string }>(
 export function clusteredCladeLayout<S extends { name: string }>({
   rows,
   editableSources,
-  layout,
   order,
   matrixRowNames,
 }: {
   rows: S[]
   editableSources: S[]
-  layout: readonly S[]
   order: number[]
   matrixRowNames?: string[]
 }): S[] {
   validateClusterOrder(order, rows, matrixRowNames)
-  const clustered = buildClusteredLayout(rows, [...layout], order)
+  const clustered = buildClusteredLayout(rows, [], order)
   const clusteredNames = new Set(clustered.map(s => s.name))
   return [
     ...clustered,

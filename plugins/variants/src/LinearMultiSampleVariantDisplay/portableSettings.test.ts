@@ -139,8 +139,11 @@ describe('getPortableSettings', () => {
       regions: [{ refName: 'chr1', start: 0, end: 100 }],
       settings: [],
     }
-    display.setLayoutAndClusterTree([{ name: 'a' }], '(a);', provenance)
-    display.setSubtreeFilter(['a'])
+    display.setRowOrder([{ name: 'a' }], {
+      tree: '(a);',
+      provenance,
+    })
+    display.setRowFocus(['a'])
     expect(display.getPortableSettings(targetId)).toMatchObject({
       clusterTree: '(a);',
       clusterProvenance: provenance,

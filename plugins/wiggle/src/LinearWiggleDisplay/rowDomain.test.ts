@@ -55,10 +55,10 @@ describe('`facet.domain` seeds the subtrack order', () => {
   // returns to the domain rather than to the adapter's order.
   it('gives way to a layout and comes back when it is cleared', async () => {
     const display = await loadedDisplay(['c'])
-    display.setLayout([{ name: 'b' }, { name: 'a' }, { name: 'c' }])
+    display.setRowOrder([{ name: 'b' }, { name: 'a' }, { name: 'c' }])
     expect(rowNames(display)).toEqual(['b', 'a', 'c'])
 
-    display.clearLayout()
+    display.resetRowArrangement()
 
     expect(rowNames(display)).toEqual(['c', 'a', 'b'])
   })

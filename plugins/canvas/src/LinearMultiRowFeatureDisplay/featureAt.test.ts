@@ -381,7 +381,7 @@ describe('featureAt', () => {
           { usedItemRgb: true },
         ),
       )
-      display.setLayout([{ name: 'a', color: 'green' }, { name: 'b' }])
+      display.setRowOrder([{ name: 'a', color: 'green' }, { name: 'b' }])
       display.toggleCategory('cat1')
 
       expect(display.featureAt(150, 10)?.id).toBe('a1')
@@ -402,7 +402,7 @@ describe('featureAt', () => {
     expect(display.hoveredRow?.name).toBe('b')
     const [before] = display.hoverInk
 
-    display.setLayout([{ name: 'b' }, { name: 'a' }])
+    display.setRowOrder([{ name: 'b' }, { name: 'a' }])
 
     expect(display.hoveredRow?.name).toBe('b')
     expect(display.hoverInk[0]!.top).toBeLessThan(before!.top)
@@ -418,10 +418,7 @@ describe('featureAt', () => {
       ]),
     )
     // The gutter is only reserved once a tree is positioned against the rows.
-    display.setLayoutAndClusterTree(
-      [{ name: 'a' }, { name: 'b' }],
-      '(a:1,b:1);',
-    )
+    display.setRowOrder([{ name: 'a' }, { name: 'b' }], { tree: '(a:1,b:1);' })
     expect(display.sidebarOffset).toBeGreaterThan(0)
     const edge = display.sidebarOffset + 4
 

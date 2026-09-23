@@ -44,7 +44,7 @@ export interface RenderSvgModel extends LgvSvgExportable {
   showTree: boolean
   treeAreaWidth: number
   hierarchy?: ClusterHierarchyNode
-  clusterProvenance?: ClusterProvenance
+  rowTreeProvenance?: ClusterProvenance
 
   // read by WiggleRowLabels
   sources: {
@@ -107,7 +107,7 @@ function WiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
             sources={[]}
             rowHeight={model.effectiveRowHeight}
             treeAreaWidth={model.treeAreaWidth}
-            clusterProvenance={model.clusterProvenance}
+            clusterProvenance={model.rowTreeProvenance}
             contentBlocks={view.dynamicBlocks.contentBlocks}
           />
         </>

@@ -125,7 +125,7 @@ describe('sortRowsAtColumn', () => {
     return {
       loadedRegions: regions([0, 'chr1', 0, 1000]),
       editableSources: rows(...names),
-      setLayout: (next: { name: string }[]) => {
+      setRowOrder: (next: { name: string }[]) => {
         written.push(next.map(s => s.name))
       },
       written,
@@ -162,7 +162,7 @@ describe('sortRowsAtColumn', () => {
     expect(seen).toEqual([['a', 'hidden', 'c']])
   })
 
-  // `setLayout` drops the cluster tree whenever the row set changes, so neither
+  // `setRowOrder` drops the cluster tree whenever the row set changes, so neither
   // decline is a harmless no-op — each would trade a dendrogram for a write
   // that reorders nothing.
   test('declines when no loaded region covers the column', () => {

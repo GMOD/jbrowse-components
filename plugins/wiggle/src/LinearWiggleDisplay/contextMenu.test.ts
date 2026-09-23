@@ -94,7 +94,7 @@ test('acts on the column the menu was opened over, not the one it is closed from
 
 test('keeps a per-source color across the reorder', () => {
   const display = makeDisplay({ a: 1, b: 5 })
-  display.setLayout([{ name: 'a', color: 'red' }, { name: 'b' }])
+  display.setRowOrder([{ name: 'a', color: 'red' }, { name: 'b' }])
   display.openContextMenu({
     clientX: 0,
     clientY: 0,
@@ -173,7 +173,7 @@ test('leaves the rows alone at a position no loaded region covers', () => {
 // The right-click item is gated on the row count already (it is absent below
 // two rows, above), but `sortRowsByScoreAt` is also the declarative
 // `sortRowsBy` entry point a session spec reaches directly, and a write there
-// is not a harmless no-op: `setLayout` drops the cluster tree whenever the row
+// is not a harmless no-op: `setRowOrder` drops the cluster tree whenever the row
 // set changes, so one source would trade a dendrogram for a layout naming the
 // only row there is. The multi-row feature display's twin carries the same
 // guard.
