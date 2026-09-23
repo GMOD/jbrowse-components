@@ -1,0 +1,847 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`overlay: a declared source palette leads the default one 1`] = `
+{
+  "effectiveColor": {
+    "domain": [],
+    "domainMid": undefined,
+    "field": "source",
+    "range": [
+      "#111111",
+      "#222222",
+    ],
+    "reverse": false,
+    "scale": undefined,
+    "scheme": undefined,
+    "value": undefined,
+  },
+  "isOverlay": true,
+  "legendItems": [
+    {
+      "color": "#f00",
+      "label": "Islet",
+    },
+    {
+      "color": "#111111",
+      "label": "Islet",
+    },
+    {
+      "color": "#222222",
+      "label": "Liver",
+    },
+    {
+      "color": "#377eb8",
+      "label": "Grain4",
+    },
+  ],
+  "numRows": 1,
+  "overlayLegendApplies": true,
+  "rowArrangementIsCustom": false,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "color": "#f00",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain1",
+    },
+    {
+      "color": "#111111",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain2",
+    },
+    {
+      "color": "#222222",
+      "group": "Liver",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain3",
+    },
+    {
+      "color": "#377eb8",
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain4",
+    },
+  ],
+}
+`;
+
+exports[`overlay: a group palette, then a per-row palette for the ungrouped 1`] = `
+{
+  "effectiveColor": {
+    "domain": [],
+    "domainMid": undefined,
+    "field": "source",
+    "range": [],
+    "reverse": false,
+    "scale": "categorical",
+    "scheme": undefined,
+    "value": undefined,
+  },
+  "isOverlay": true,
+  "legendItems": [
+    {
+      "color": "#f00",
+      "label": "Islet",
+    },
+    {
+      "color": "#377eb8",
+      "label": "Islet",
+    },
+    {
+      "color": "#e41a1c",
+      "label": "Liver",
+    },
+    {
+      "color": "#4daf4a",
+      "label": "Grain4",
+    },
+  ],
+  "numRows": 1,
+  "overlayLegendApplies": true,
+  "rowArrangementIsCustom": false,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "color": "#f00",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain1",
+    },
+    {
+      "color": "#377eb8",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain2",
+    },
+    {
+      "color": "#e41a1c",
+      "group": "Liver",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain3",
+    },
+    {
+      "color": "#4daf4a",
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain4",
+    },
+  ],
+}
+`;
+
+exports[`overlay: adapter colours paint the plot 1`] = `
+{
+  "effectiveColor": {
+    "domain": [],
+    "domainMid": undefined,
+    "field": "source",
+    "range": [],
+    "reverse": false,
+    "scale": "categorical",
+    "scheme": undefined,
+    "value": undefined,
+  },
+  "isOverlay": true,
+  "legendItems": [
+    {
+      "color": "#f00",
+      "label": "Grain1",
+    },
+    {
+      "color": "#f60",
+      "label": "Grain2",
+    },
+    {
+      "color": "#fa0",
+      "label": "Grain3",
+    },
+  ],
+  "numRows": 1,
+  "overlayLegendApplies": true,
+  "rowArrangementIsCustom": false,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "color": "#f00",
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain1",
+    },
+    {
+      "color": "#f60",
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain2",
+    },
+    {
+      "color": "#fa0",
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain3",
+    },
+  ],
+}
+`;
+
+exports[`rows, density: a dialog edit tints the label 1`] = `
+{
+  "effectiveColor": {
+    "domain": [],
+    "domainMid": undefined,
+    "field": "score",
+    "range": [],
+    "reverse": false,
+    "scale": "threshold",
+    "scheme": undefined,
+    "value": undefined,
+  },
+  "isOverlay": false,
+  "legendItems": [
+    {
+      "color": "#f00",
+      "label": "Islet",
+    },
+    {
+      "color": "#00f",
+      "label": "Islet",
+    },
+    {
+      "color": "#e41a1c",
+      "label": "Liver",
+    },
+  ],
+  "numRows": 4,
+  "overlayLegendApplies": false,
+  "rowArrangementIsCustom": true,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "color": "#f00",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": "#f00",
+      "name": "Grain1",
+    },
+    {
+      "color": undefined,
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": "#00f",
+      "name": "Grain2",
+    },
+    {
+      "color": undefined,
+      "group": "Liver",
+      "label": undefined,
+      "labelColor": "#e41a1c",
+      "name": "Grain3",
+    },
+    {
+      "color": undefined,
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain4",
+    },
+  ],
+}
+`;
+
+exports[`rows, density: identity moves to the label tint 1`] = `
+{
+  "effectiveColor": {
+    "domain": [],
+    "domainMid": undefined,
+    "field": "score",
+    "range": [],
+    "reverse": false,
+    "scale": "threshold",
+    "scheme": undefined,
+    "value": undefined,
+  },
+  "isOverlay": false,
+  "legendItems": [
+    {
+      "color": "#f00",
+      "label": "Islet",
+    },
+    {
+      "color": "#377eb8",
+      "label": "Islet",
+    },
+    {
+      "color": "#e41a1c",
+      "label": "Liver",
+    },
+  ],
+  "numRows": 4,
+  "overlayLegendApplies": false,
+  "rowArrangementIsCustom": false,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "color": "#f00",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": "#f00",
+      "name": "Grain1",
+    },
+    {
+      "color": undefined,
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": "#377eb8",
+      "name": "Grain2",
+    },
+    {
+      "color": undefined,
+      "group": "Liver",
+      "label": undefined,
+      "labelColor": "#e41a1c",
+      "name": "Grain3",
+    },
+    {
+      "color": undefined,
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain4",
+    },
+  ],
+}
+`;
+
+exports[`rows, line: dialog edits reorder, recolour the plot and relabel 1`] = `
+{
+  "effectiveColor": {
+    "domain": [],
+    "domainMid": undefined,
+    "field": "score",
+    "range": [],
+    "reverse": false,
+    "scale": "threshold",
+    "scheme": undefined,
+    "value": undefined,
+  },
+  "isOverlay": false,
+  "legendItems": [
+    {
+      "color": "#377eb8",
+      "label": "Liver",
+    },
+    {
+      "color": "#00f",
+      "label": "Islet",
+    },
+    {
+      "color": "#0068d1",
+      "label": "Grain4",
+    },
+    {
+      "color": "#f00",
+      "label": "Islet",
+    },
+  ],
+  "numRows": 4,
+  "overlayLegendApplies": false,
+  "rowArrangementIsCustom": true,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "color": "#377eb8",
+      "group": "Liver",
+      "label": "Liver 3",
+      "labelColor": undefined,
+      "name": "Grain3",
+    },
+    {
+      "color": "#00f",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain2",
+    },
+    {
+      "color": undefined,
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain4",
+    },
+    {
+      "color": "#f00",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain1",
+    },
+  ],
+}
+`;
+
+exports[`rows, line: dialog edits reorder, recolour the plot and relabel 2`] = `
+{
+  "effectiveColor": {
+    "domain": [],
+    "domainMid": undefined,
+    "field": "score",
+    "range": [],
+    "reverse": false,
+    "scale": "threshold",
+    "scheme": undefined,
+    "value": undefined,
+  },
+  "isOverlay": false,
+  "legendItems": [
+    {
+      "color": "#f00",
+      "label": "Islet",
+    },
+    {
+      "color": "#377eb8",
+      "label": "Islet",
+    },
+    {
+      "color": "#e41a1c",
+      "label": "Liver",
+    },
+    {
+      "color": "#0068d1",
+      "label": "Grain4",
+    },
+  ],
+  "numRows": 4,
+  "overlayLegendApplies": false,
+  "rowArrangementIsCustom": false,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "color": "#f00",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain1",
+    },
+    {
+      "color": "#377eb8",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain2",
+    },
+    {
+      "color": "#e41a1c",
+      "group": "Liver",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain3",
+    },
+    {
+      "color": undefined,
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain4",
+    },
+  ],
+}
+`;
+
+exports[`rows, line: the adapter colour, then the group palette, then posColor 1`] = `
+{
+  "effectiveColor": {
+    "domain": [],
+    "domainMid": undefined,
+    "field": "score",
+    "range": [],
+    "reverse": false,
+    "scale": "threshold",
+    "scheme": undefined,
+    "value": undefined,
+  },
+  "isOverlay": false,
+  "legendItems": [
+    {
+      "color": "#f00",
+      "label": "Islet",
+    },
+    {
+      "color": "#377eb8",
+      "label": "Islet",
+    },
+    {
+      "color": "#e41a1c",
+      "label": "Liver",
+    },
+    {
+      "color": "#0068d1",
+      "label": "Grain4",
+    },
+  ],
+  "numRows": 4,
+  "overlayLegendApplies": false,
+  "rowArrangementIsCustom": false,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "color": "#f00",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain1",
+    },
+    {
+      "color": "#377eb8",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain2",
+    },
+    {
+      "color": "#e41a1c",
+      "group": "Liver",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain3",
+    },
+    {
+      "color": undefined,
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain4",
+    },
+  ],
+}
+`;
+
+exports[`rows: a focus hides rows without recolouring the kept ones 1`] = `
+{
+  "effectiveColor": {
+    "domain": [],
+    "domainMid": undefined,
+    "field": "score",
+    "range": [],
+    "reverse": false,
+    "scale": "threshold",
+    "scheme": undefined,
+    "value": undefined,
+  },
+  "isOverlay": false,
+  "legendItems": [
+    {
+      "color": "#377eb8",
+      "label": "Islet",
+    },
+    {
+      "color": "#0068d1",
+      "label": "Grain4",
+    },
+  ],
+  "numRows": 2,
+  "overlayLegendApplies": false,
+  "rowArrangementIsCustom": false,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "color": "#377eb8",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain2",
+    },
+    {
+      "color": undefined,
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain4",
+    },
+  ],
+}
+`;
+
+exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the seed 1`] = `
+{
+  "effectiveColor": {
+    "domain": [],
+    "domainMid": undefined,
+    "field": "score",
+    "range": [],
+    "reverse": false,
+    "scale": "threshold",
+    "scheme": undefined,
+    "value": undefined,
+  },
+  "isOverlay": false,
+  "legendItems": [
+    {
+      "color": "#377eb8",
+      "label": "Islet",
+    },
+    {
+      "color": "#f00",
+      "label": "Islet",
+    },
+    {
+      "color": "#e41a1c",
+      "label": "Liver",
+    },
+    {
+      "color": "#0068d1",
+      "label": "Grain4",
+    },
+  ],
+  "numRows": 4,
+  "overlayLegendApplies": false,
+  "rowArrangementIsCustom": true,
+  "rowTree": "((Grain2,Grain1),(Grain3,Grain4));",
+  "sources": [
+    {
+      "color": "#377eb8",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain2",
+    },
+    {
+      "color": "#f00",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain1",
+    },
+    {
+      "color": "#e41a1c",
+      "group": "Liver",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain3",
+    },
+    {
+      "color": undefined,
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain4",
+    },
+  ],
+}
+`;
+
+exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the seed 2`] = `
+{
+  "effectiveColor": {
+    "domain": [],
+    "domainMid": undefined,
+    "field": "score",
+    "range": [],
+    "reverse": false,
+    "scale": "threshold",
+    "scheme": undefined,
+    "value": undefined,
+  },
+  "isOverlay": false,
+  "legendItems": [
+    {
+      "color": "#f00",
+      "label": "Islet",
+    },
+    {
+      "color": "#377eb8",
+      "label": "Islet",
+    },
+    {
+      "color": "#e41a1c",
+      "label": "Liver",
+    },
+    {
+      "color": "#0068d1",
+      "label": "Grain4",
+    },
+  ],
+  "numRows": 4,
+  "overlayLegendApplies": false,
+  "rowArrangementIsCustom": true,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "color": "#f00",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain1",
+    },
+    {
+      "color": "#377eb8",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain2",
+    },
+    {
+      "color": "#e41a1c",
+      "group": "Liver",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain3",
+    },
+    {
+      "color": undefined,
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain4",
+    },
+  ],
+}
+`;
+
+exports[`rows: a run lands its tree, a reorder drops it, a reset returns to the seed 3`] = `
+{
+  "effectiveColor": {
+    "domain": [],
+    "domainMid": undefined,
+    "field": "score",
+    "range": [],
+    "reverse": false,
+    "scale": "threshold",
+    "scheme": undefined,
+    "value": undefined,
+  },
+  "isOverlay": false,
+  "legendItems": [
+    {
+      "color": "#377eb8",
+      "label": "Liver",
+    },
+    {
+      "color": "#f00",
+      "label": "Islet",
+    },
+    {
+      "color": "#e41a1c",
+      "label": "Islet",
+    },
+    {
+      "color": "#0068d1",
+      "label": "Grain4",
+    },
+  ],
+  "numRows": 4,
+  "overlayLegendApplies": false,
+  "rowArrangementIsCustom": false,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "color": "#377eb8",
+      "group": "Liver",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain3",
+    },
+    {
+      "color": "#f00",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain1",
+    },
+    {
+      "color": "#e41a1c",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain2",
+    },
+    {
+      "color": undefined,
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain4",
+    },
+  ],
+}
+`;
+
+exports[`rows: the declared order leads and the rest keep adapter order 1`] = `
+{
+  "effectiveColor": {
+    "domain": [],
+    "domainMid": undefined,
+    "field": "score",
+    "range": [],
+    "reverse": false,
+    "scale": "threshold",
+    "scheme": undefined,
+    "value": undefined,
+  },
+  "isOverlay": false,
+  "legendItems": [
+    {
+      "color": "#377eb8",
+      "label": "Liver",
+    },
+    {
+      "color": "#f00",
+      "label": "Islet",
+    },
+    {
+      "color": "#e41a1c",
+      "label": "Islet",
+    },
+    {
+      "color": "#0068d1",
+      "label": "Grain4",
+    },
+  ],
+  "numRows": 4,
+  "overlayLegendApplies": false,
+  "rowArrangementIsCustom": false,
+  "rowTree": undefined,
+  "sources": [
+    {
+      "color": "#377eb8",
+      "group": "Liver",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain3",
+    },
+    {
+      "color": "#f00",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain1",
+    },
+    {
+      "color": "#e41a1c",
+      "group": "Islet",
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain2",
+    },
+    {
+      "color": undefined,
+      "group": undefined,
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "Grain4",
+    },
+  ],
+}
+`;

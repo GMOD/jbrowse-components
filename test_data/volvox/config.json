@@ -1008,6 +1008,42 @@
       ]
     },
     {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "volvox_microarray_multi_grouped",
+      "name": "MultiWig (grouped, w/ one adapter color)",
+      "category": ["MultiWiggle"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "Grain1",
+            "group": "Islet",
+            "color": "#f00",
+            "uri": "v1.cram.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Grain2",
+            "group": "Islet",
+            "uri": "v2.cram.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Grain3",
+            "group": "Liver",
+            "uri": "v3.cram.bw"
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Grain4",
+            "uri": "v4.cram.bw"
+          }
+        ]
+      }
+    },
+    {
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_color",
       "name": "wiggle_track xyplot color",

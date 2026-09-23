@@ -170,6 +170,43 @@ const suite: TestSuite = {
       tracks: ['volvox_microarray_multi_multirowline'],
       displayTestId: 'wiggle-display',
     }),
+    lgvSnapshotTest({
+      name: 'MultiBigWig overlay with adapter colours',
+      snapshot: 'bigwig-multibigwig-overlay-colors',
+      loc: 'ctgA:1-4000',
+      tracks: ['mytrack'],
+      displayTestId: 'wiggle-display',
+    }),
+    lgvSnapshotTest({
+      name: 'MultiBigWig grouped rows, line',
+      snapshot: 'bigwig-multibigwig-grouped-line',
+      loc: 'ctgA:1-4000',
+      tracks: [
+        {
+          trackId: 'volvox_microarray_multi_grouped',
+          displaySnapshot: {
+            type: 'LinearWiggleDisplay',
+            defaultRendering: 'line',
+          },
+        },
+      ],
+      displayTestId: 'wiggle-display',
+    }),
+    lgvSnapshotTest({
+      name: 'MultiBigWig grouped rows, density',
+      snapshot: 'bigwig-multibigwig-grouped-density',
+      loc: 'ctgA:1-4000',
+      tracks: [
+        {
+          trackId: 'volvox_microarray_multi_grouped',
+          displaySnapshot: {
+            type: 'LinearWiggleDisplay',
+            defaultRendering: 'density',
+          },
+        },
+      ],
+      displayTestId: 'wiggle-display',
+    }),
     syntheticTierTest({ track: 'synthetic_tiers_line_avg', bin: 16 }),
     syntheticTierTest({ track: 'synthetic_tiers_line_whiskers', bin: 16 }),
     syntheticTierTest({ track: 'synthetic_tiers_xyplot_avg', bin: 16 }),
