@@ -7193,24 +7193,24 @@
         }
       ]
     },
-    "MarkGlyph": {
-      "title": "MarkGlyph",
+    "MarkShape": {
+      "title": "MarkShape",
       "anyOf": [
         {
           "description": "Shorthand for `{ \"value\": ... }`.",
           "anyOf": [
             {
-              "enum": ["disc", "triangle", "diamond"]
+              "enum": ["circle", "triangle", "diamond"]
             },
             {
               "$ref": "#/$defs/JexlString"
             }
           ],
-          "default": "disc",
+          "default": "circle",
           "type": "string"
         },
         {
-          "title": "MarkGlyph",
+          "title": "MarkShape",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -7218,13 +7218,13 @@
               "description": "disc, triangle, diamond or jexl callback.",
               "anyOf": [
                 {
-                  "enum": ["disc", "triangle", "diamond"]
+                  "enum": ["circle", "triangle", "diamond"]
                 },
                 {
                   "$ref": "#/$defs/JexlString"
                 }
               ],
-              "default": "disc"
+              "default": "circle"
             },
             "field": {
               "description": "feature field, or jexl expression.",
@@ -7236,10 +7236,10 @@
               "enum": ["none", "categorical"]
             },
             "range": {
-              "description": "glyph names, in order.",
+              "description": "shape names, in order.",
               "type": "array",
               "items": {
-                "enum": ["disc", "triangle", "diamond"]
+                "enum": ["circle", "triangle", "diamond"]
               }
             },
             "domain": {
@@ -7296,8 +7296,8 @@
         "color": {
           "$ref": "#/$defs/MarkColor"
         },
-        "glyph": {
-          "$ref": "#/$defs/MarkGlyph"
+        "shape": {
+          "$ref": "#/$defs/MarkShape"
         }
       },
       "patternProperties": {
@@ -7650,7 +7650,7 @@
           "if": {
             "type": "object",
             "properties": {
-              "shape": {
+              "mark": {
                 "enum": ["bar", "point"]
               }
             }
@@ -7676,7 +7676,7 @@
       ],
       "x-closed": true,
       "properties": {
-        "shape": {
+        "mark": {
           "description": "bar, point or span.",
           "enum": ["bar", "point", "span"],
           "default": "bar"

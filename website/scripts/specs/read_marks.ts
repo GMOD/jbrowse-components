@@ -44,7 +44,7 @@ const PILEUP_TRACK = {
       displayId: 'na12878_read_pileup-LinearMarkDisplay',
       marks: [
         {
-          shape: 'span',
+          mark: 'span',
           transform: [
             {
               type: 'formula',

@@ -23,13 +23,13 @@ const NEEDED = [
 
 const BINNED_MARKS = [
   {
-    shape: 'bar',
+    mark: 'bar',
     transform: [{ type: 'bin', step: 1000 }],
     encoding: { y: 'count' },
   },
 ]
 
-const RAW_MARKS = [{ shape: 'bar', encoding: { y: 'score' } }]
+const RAW_MARKS = [{ mark: 'bar', encoding: { y: 'score' } }]
 
 async function setup(marks: unknown[]) {
   const env = createDisplayTestEnvironment<LinearMarkDisplayModel>({

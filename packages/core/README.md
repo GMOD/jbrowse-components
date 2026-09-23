@@ -174,7 +174,7 @@ color depends only on the key and the declaration, so every region agrees on it.
 ### CategoricalRef
 
 A field bound to a categorical scale: each distinct value takes one entry of the
-channel's `range` — a colour for `color`, a glyph name for `glyph`. Every value
+channel's `range` — a colour for `color`, a shape name for `shape`. Every value
 derives its entry from itself (an integer takes the slot it names, anything else
 hashes in), so every region agrees on a value it shares with another at the cost
 of an occasional collision. A `domain` spends the range deliberately: the listed
@@ -639,32 +639,6 @@ module actually uses.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
 
-### GLYPH_CODES
-
-The `point` shape's glyph code for each name an encoding can say.
-
-```js
-// type signature
-Record<GlyphName, number>
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/glyphNames.ts)
-
-### GlyphEncoding
-
-A GlyphName, a `jexl:` expression over `feature` returning one, or a field bound
-to a categorical scale whose `range` lists the glyph names handed out — the
-three glyphs, in order, when absent.
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
-
-### GlyphScaleTable
-
-The scale a glyph channel was resolved through: which glyph each value of the
-field took.
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
-
 ### hitIndexOf
 
 The hit index over `count` instances: each a box from `x` to `x2` at its `y`, or
@@ -736,7 +710,7 @@ the direct call, and only a config that writes a path pays for one.
 ### LaneName
 
 The lanes a caller asks the encoder to fill, beyond `x`, `x2` and
-`featureIndex`, which every payload carries: a shape's channels, and `index` for
+`featureIndex`, which every payload carries: a mark's channels, and `index` for
 the Flatbush a hover reads. A lane not asked for is neither allocated nor
 transferred, and a caller that never hovers declines the index, which is most of
 the encoder's cost after the walk.
@@ -758,7 +732,7 @@ synchronous `addOrReplaceView` requires it loaded already.
 ### LayerRequest
 
 One layer of a `CoreEncodeFeatures` request: the encoding to evaluate and the
-lanes the display's shape reads.
+lanes the display's mark reads.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -767,9 +741,9 @@ lanes the display's shape reads.
 The declared mapping from a feature's fields to a mark's channels. Every
 positional channel is a field: `x` defaults to `start` and `x2` to `end`, a mark
 that plots no value leaves `y` off, and the scale `y` is read through belongs to
-the display rather than to the encoding. `glyph` is read by the `point` shape
-alone, `row` — an integer field, 0 where missing — by every shape, which stands
-a feature in the band it names.
+the display rather than to the encoding. `shape` is read by the `point` mark
+alone, `row` — an integer field, 0 where missing — by every mark, which stands a
+feature in the band it names.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -1120,6 +1094,32 @@ the declared slot value type doesn't include it.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
+
+### SHAPE_CODES
+
+The `point` mark's painter code for each shape an encoding can name.
+
+```js
+// type signature
+Record<ShapeName, number>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/shapeNames.ts)
+
+### ShapeEncoding
+
+A ShapeName, a `jexl:` expression over `feature` returning one, or a field bound
+to a categorical scale whose `range` lists the shape names handed out — the
+three shapes, in order, when absent.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+### ShapeScaleTable
+
+The scale a shape channel was resolved through: which shape each value of the
+field took.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### stackBands
 

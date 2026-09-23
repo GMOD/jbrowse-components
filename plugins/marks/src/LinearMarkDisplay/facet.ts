@@ -1,4 +1,3 @@
-import { GLYPH_CODES } from '@jbrowse/core/util/glyphNames'
 import {
   OVERFLOW_GROUP_KEY,
   capGroupKeys,
@@ -11,6 +10,7 @@ import {
   hitIndexOf,
   rampOverExtent,
 } from '@jbrowse/core/util/markEncoding'
+import { SHAPE_CODES } from '@jbrowse/core/util/shapeNames'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
@@ -103,7 +103,7 @@ function rowRemap(region: MarkRegionData, layout: FacetLayout) {
 // The key and the extents over the instances a layer draws, so a hidden
 // section leaves the legend and the axis the way it leaves the plot.
 function drawnScales(layer: StoredLayer): StoredLayer {
-  const { y, color, colorValue, glyph, scale, glyphScale } = layer
+  const { y, color, colorValue, glyph, scale, shapeScale } = layer
   const colors = new Set(color)
   const glyphs = new Set(glyph)
   let yMin = Infinity
@@ -139,9 +139,9 @@ function drawnScales(layer: StoredLayer): StoredLayer {
               ? { ...scale, extent: [vMin, vMax] }
               : rampOverExtent(scale, [vMin, vMax])
             : scale,
-    glyphScale: glyphScale && {
-      ...glyphScale,
-      entries: glyphScale.entries.filter(e => glyphs.has(GLYPH_CODES[e.glyph])),
+    shapeScale: shapeScale && {
+      ...shapeScale,
+      entries: shapeScale.entries.filter(e => glyphs.has(SHAPE_CODES[e.shape])),
     },
   }
 }

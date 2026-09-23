@@ -105,13 +105,13 @@ function result(
     row?: number[]
     color?: number[]
     scale?: Layer['scale']
-    glyphScale?: Layer['glyphScale']
+    shapeScale?: Layer['shapeScale']
   }[],
   facet?: EncodedFeaturesResult['facet'],
 ): EncodedFeaturesResult {
   return {
     facet,
-    layers: layers.map(({ y, row, color, scale, glyphScale }) => ({
+    layers: layers.map(({ y, row, color, scale, shapeScale }) => ({
       count: y.length,
       skipped: 0,
       x: Uint32Array.from(y.map((_, i) => i * 100)),
@@ -119,11 +119,11 @@ function result(
       y: Float32Array.from(y),
       row: row ? Uint32Array.from(row) : undefined,
       color: color ? Uint32Array.from(color) : new Uint32Array(y.length),
-      glyph: new Uint8Array(y.length),
+      shape: new Uint8Array(y.length),
       featureIndex: Uint32Array.from(y.map((_, i) => i)),
       ...extremes(y),
       scale,
-      glyphScale,
+      shapeScale,
     })),
   }
 }
@@ -131,23 +131,23 @@ function result(
 test('the config reaches the worker as one encoding per mark, jexl unevaluated', () => {
   const { createDisplay } = createTestEnvironment([
     {
-      shape: 'bar',
+      mark: 'bar',
       encoding: {
         y: 'score',
         color: { field: 'strand', scale: 'categorical', domain: [1, -1] },
       },
     },
     {
-      shape: 'point',
+      mark: 'point',
       encoding: {
         x: "jexl:get(feature,'thickStart')",
         y: 'jexl:feature.score*2',
         color: "jexl:get(feature,'name')=='a'?'red':'blue'",
-        glyph: 'triangle',
+        shape: 'triangle',
       },
     },
     {
-      shape: 'span',
+      mark: 'span',
       encoding: {
         color: {
           field: 'score',
@@ -160,7 +160,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
     },
   ])
   const { display } = createDisplay()
-  expect(display.markShapes).toEqual(['bar', 'point', 'span'])
+  expect(display.markTypes).toEqual(['bar', 'point', 'span'])
   expect(display.rpcProps()).toEqual({
     transform: [],
     layers: [
@@ -176,7 +176,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
             range: undefined,
             domain: ['1', '-1'],
           },
-          glyph: 'disc',
+          shape: 'circle',
         },
         lanes: ['y', 'row', 'color', 'colorValue', 'index'],
       },
@@ -187,7 +187,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
           y: 'jexl:feature.score*2',
           row: undefined,
           color: "jexl:get(feature,'name')=='a'?'red':'blue'",
-          glyph: 'triangle',
+          shape: 'triangle',
         },
         lanes: ['y', 'row', 'color', 'colorValue', 'glyph', 'index'],
       },
@@ -205,7 +205,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
             range: ['white', 'red'],
             reverse: false,
           },
-          glyph: 'disc',
+          shape: 'circle',
         },
         lanes: ['row', 'color', 'index'],
       },
@@ -220,8 +220,8 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
 
 test('the domain spans every valued layer and widens to the origin for a bar', () => {
   const { createDisplay } = createTestEnvironment([
-    { shape: 'bar', encoding: { y: 'score' } },
-    { shape: 'point', encoding: { y: 'other' } },
+    { mark: 'bar', encoding: { y: 'score' } },
+    { mark: 'point', encoding: { y: 'other' } },
   ])
   const { display } = createDisplay()
   expect(display.domain).toBeUndefined()
@@ -232,7 +232,7 @@ test('the domain spans every valued layer and widens to the origin for a bar', (
 
 test("the display's y scale is the axis: its type and its pinned ends", () => {
   const { createDisplay } = createTestEnvironment(
-    [{ shape: 'bar', encoding: { y: 'score' } }],
+    [{ mark: 'bar', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
     { scales: { y: { type: 'log', domainMin: 1, domainMax: 1000 } } },
@@ -249,7 +249,7 @@ test("the display's y scale is the axis: its type and its pinned ends", () => {
 
 test('nothing declared is the linear autoscaled form it always was', () => {
   const { createDisplay } = createTestEnvironment([
-    { shape: 'bar', encoding: { y: 'score' } },
+    { mark: 'bar', encoding: { y: 'score' } },
   ])
   const { display } = createDisplay()
   expect(display.scaleType).toBe('linear')
@@ -264,7 +264,7 @@ test('nothing declared is the linear autoscaled form it always was', () => {
 test('the autoscale mode scales.y names is the one the domain takes', () => {
   const spiky = [...Array.from({ length: 99 }, () => 2), 1000]
   const local = createTestEnvironment(
-    [{ shape: 'bar', encoding: { y: 'score' } }],
+    [{ mark: 'bar', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
     { scales: { y: { autoscale: 'local' } } },
@@ -273,7 +273,7 @@ test('the autoscale mode scales.y names is the one the domain takes', () => {
   expect(local.domain![1]).toBe(1000)
 
   const clipped = createTestEnvironment(
-    [{ shape: 'bar', encoding: { y: 'score' } }],
+    [{ mark: 'bar', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
     { scales: { y: { autoscale: 'localpercentile' } } },
@@ -286,7 +286,7 @@ test('the autoscale mode scales.y names is the one the domain takes', () => {
 // autoscale member present.
 test('the score menu offers the scale-type and autoscale radios', () => {
   const { createDisplay } = createTestEnvironment([
-    { shape: 'bar', encoding: { y: 'score' } },
+    { mark: 'bar', encoding: { y: 'score' } },
   ])
   const { display } = createDisplay()
   expect(display.scaleTypeChoices).toEqual(['linear', 'log'])
@@ -303,7 +303,7 @@ test('the score menu offers the scale-type and autoscale radios', () => {
 
 test('one end of the declared domain pins and the other autoscales', () => {
   const { createDisplay } = createTestEnvironment(
-    [{ shape: 'bar', encoding: { y: 'score' } }],
+    [{ mark: 'bar', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
     { scales: { y: { domainMax: 50 } } },
@@ -315,7 +315,7 @@ test('one end of the declared domain pins and the other autoscales', () => {
 
 test("pinning the current range lands on the display's scale", () => {
   const { createDisplay } = createTestEnvironment([
-    { shape: 'bar', encoding: { y: 'score' } },
+    { mark: 'bar', encoding: { y: 'score' } },
   ])
   const { display } = createDisplay()
   display.setRpcData(0, result([{ y: [3, 40] }]), REGION)
@@ -331,8 +331,8 @@ test("pinning the current range lands on the display's scale", () => {
 
 test('the score menu edits scales.y, the one place the axis is written', () => {
   const { createDisplay } = createTestEnvironment([
-    { shape: 'bar', encoding: { y: 'score' } },
-    { shape: 'point', encoding: { y: 'other' } },
+    { mark: 'bar', encoding: { y: 'score' } },
+    { mark: 'point', encoding: { y: 'other' } },
   ])
   const { display } = createDisplay()
   display.setMaxScore(200)
@@ -349,7 +349,7 @@ test('the score menu edits scales.y, the one place the axis is written', () => {
 test('an unpinned ramp domain is the union of the loaded regions extremes', () => {
   const { createDisplay } = createTestEnvironment([
     {
-      shape: 'bar',
+      mark: 'bar',
       encoding: { y: 'score', color: { field: 'score', scale: 'linear' } },
     },
   ])
@@ -367,7 +367,7 @@ test('an unpinned ramp domain is the union of the loaded regions extremes', () =
 test('a pinned ramp domain is every region s, whatever they hold', () => {
   const { createDisplay } = createTestEnvironment([
     {
-      shape: 'bar',
+      mark: 'bar',
       encoding: {
         y: 'score',
         color: {
@@ -397,8 +397,8 @@ test('a pinned ramp domain is every region s, whatever they hold', () => {
 // declares one scale and every drawing mark folds into it.
 test('two valued marks share the one axis, whatever they measure', () => {
   const { createDisplay } = createTestEnvironment([
-    { shape: 'bar', encoding: { y: 'score' } },
-    { shape: 'point', encoding: { y: 'coverage' } },
+    { mark: 'bar', encoding: { y: 'score' } },
+    { mark: 'point', encoding: { y: 'coverage' } },
   ])
   const { display } = createDisplay()
   display.setRpcData(0, result([{ y: [3, 8] }, { y: [200, 900] }]), REGION)
@@ -418,7 +418,7 @@ function ruleMarksOf(display: LinearMarkDisplayModel) {
 
 test('a rule widens the axis to reach it and lands on its own value', () => {
   const { createDisplay } = createTestEnvironment(
-    [{ shape: 'point', encoding: { y: 'neg_log10_p' } }],
+    [{ mark: 'point', encoding: { y: 'neg_log10_p' } }],
     REGION,
     'BedAdapter',
     {
@@ -445,7 +445,7 @@ test('a rule widens the axis to reach it and lands on its own value', () => {
 
 test('a rule at zero is a rule, and a pinned end that excludes one drops it', () => {
   const { createDisplay } = createTestEnvironment(
-    [{ shape: 'point', encoding: { y: 'log_ratio' } }],
+    [{ mark: 'point', encoding: { y: 'log_ratio' } }],
     REGION,
     'BedAdapter',
     { scales: { y: { rules: [0, 100], domainMax: 10 } } },
@@ -458,7 +458,7 @@ test('a rule at zero is a rule, and a pinned end that excludes one drops it', ()
 
 test('a rule on a log axis sits where the log places its value', () => {
   const { createDisplay } = createTestEnvironment(
-    [{ shape: 'point', encoding: { y: 'score' } }],
+    [{ mark: 'point', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
     {
@@ -473,7 +473,7 @@ test('a rule on a log axis sits where the log places its value', () => {
 
 test('a rule in a banded plot is placed in the band every row repeats', () => {
   const { createDisplay } = createTestEnvironment(
-    [{ shape: 'bar', encoding: { y: 'score' } }],
+    [{ mark: 'bar', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
     { facet: 'source', scales: { y: { rules: [4] } } },
@@ -500,8 +500,8 @@ test('a rule in a banded plot is placed in the band every row repeats', () => {
 
 test('the axis carries only the caption title writes, at every zoom', () => {
   const multiscale = [
-    { shape: 'bar', encoding: { y: 'score' }, maxBpPerPx: 4 },
-    { shape: 'bar', encoding: { y: 'count' }, minBpPerPx: 4 },
+    { mark: 'bar', encoding: { y: 'score' }, maxBpPerPx: 4 },
+    { mark: 'bar', encoding: { y: 'count' }, minBpPerPx: 4 },
   ]
   const captions = (y: Record<string, unknown>) => {
     const { display, view } = createTestEnvironment(
@@ -527,14 +527,14 @@ test('two fields, or an expression, leave the axis untitled until title names it
     createTestEnvironment(marks, REGION, 'BedAdapter', {
       scales: { y },
     }).createDisplay().display.valueScales[0]!.caption
-  const expression = [{ shape: 'bar', encoding: { y: 'jexl:feature.score*2' } }]
+  const expression = [{ mark: 'bar', encoding: { y: 'jexl:feature.score*2' } }]
   expect(caption(expression)).toBe('')
   expect(caption(expression, { title: 'doubled score' })).toBe('doubled score')
   expect(
     caption(
       [
-        { shape: 'bar', encoding: { y: 'score' } },
-        { shape: 'point', encoding: { y: 'score' } },
+        { mark: 'bar', encoding: { y: 'score' } },
+        { mark: 'point', encoding: { y: 'score' } },
       ],
       { title: '-log10 p' },
     ),
@@ -542,7 +542,7 @@ test('two fields, or an expression, leave the axis untitled until title names it
 })
 
 test('an unset or empty title leaves the axis bare, and a reset returns it there', () => {
-  const marks = [{ shape: 'bar', encoding: { y: 'score' } }]
+  const marks = [{ mark: 'bar', encoding: { y: 'score' } }]
   const titled = (y: Record<string, unknown>) =>
     createTestEnvironment(marks, REGION, 'BedAdapter', {
       scales: { y },
@@ -557,7 +557,7 @@ test('an unset or empty title leaves the axis bare, and a reset returns it there
 
 test('a banded plot carries its one caption, which the chrome draws once', () => {
   const { createDisplay } = createTestEnvironment(
-    [{ shape: 'bar', encoding: { y: 'score' } }],
+    [{ mark: 'bar', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
     { facet: 'source', scales: { y: { title: 'score' } } },
@@ -591,14 +591,14 @@ function noticesOf(marks: unknown[], display: Record<string, unknown> = {}) {
 // colour was an empty track with no message, and then a track that would not
 // load. It loads, draws nothing for that mark, and says so.
 test('a bar or point naming no y loads, draws nothing and says so', () => {
-  expect(noticesOf([{ shape: 'bar', encoding: { color: 'red' } }])).toEqual([
+  expect(noticesOf([{ mark: 'bar', encoding: { color: 'red' } }])).toEqual([
     'mark 0 encoding.y: a bar or a point stands at a value and names no y field to plot, so it draws nothing',
   ])
-  expect(noticesOf([{ shape: 'point', encoding: { y: '' } }])).toHaveLength(1)
-  expect(noticesOf([{ shape: 'span', encoding: {} }])).toEqual([])
+  expect(noticesOf([{ mark: 'point', encoding: { y: '' } }])).toHaveLength(1)
+  expect(noticesOf([{ mark: 'span', encoding: {} }])).toEqual([])
   const { display } = createTestEnvironment([
-    { shape: 'bar', encoding: { color: 'red' } },
-    { shape: 'bar', encoding: { y: 'score' } },
+    { mark: 'bar', encoding: { color: 'red' } },
+    { mark: 'bar', encoding: { y: 'score' } },
   ]).createDisplay()
   expect(display.markView.visible).toEqual([false, true])
 })
@@ -606,19 +606,19 @@ test('a bar or point naming no y loads, draws nothing and says so', () => {
 test('an encoding channel refuses a key it does not declare', () => {
   expect(() =>
     createTestEnvironment([
-      { shape: 'span', encoding: { color: { colour: 'strand' } } },
+      { mark: 'span', encoding: { color: { colour: 'strand' } } },
     ]).createDisplay(),
   ).toThrow(
     'MarkColor takes value, field, scale, domain, domainMin, domainMax, range, scheme, reverse, domainMid and title, not colour',
   )
   expect(() =>
     createTestEnvironment([
-      { shape: 'point', encoding: { y: 'score', glyph: { shape: 'disc' } } },
+      { mark: 'point', encoding: { y: 'score', shape: { glyph: 'circle' } } },
     ]).createDisplay(),
-  ).toThrow('MarkGlyph takes value, field, scale, range and domain, not shape')
+  ).toThrow('MarkShape takes value, field, scale, range and domain, not glyph')
   expect(() =>
     createTestEnvironment(
-      [{ shape: 'bar', encoding: { y: 'score' } }],
+      [{ mark: 'bar', encoding: { y: 'score' } }],
       REGION,
       'BedAdapter',
       { scales: { y: { min: 0 } } },
@@ -628,7 +628,7 @@ test('an encoding channel refuses a key it does not declare', () => {
   )
   expect(() =>
     createTestEnvironment(
-      [{ shape: 'bar', encoding: { y: 'score' } }],
+      [{ mark: 'bar', encoding: { y: 'score' } }],
       REGION,
       'BedAdapter',
       { scales: { y: { rules: [{ value: 5, colour: 'red' }] } } },
@@ -637,8 +637,8 @@ test('an encoding channel refuses a key it does not declare', () => {
 })
 
 // Each of these loaded and painted something else: a scheme name inside a
-// list of colour stops painted the invalid-colour sentinel, and a glyph range
-// or value naming no glyph drew a disc under a key saying otherwise, or made
+// list of colour stops painted the invalid-colour sentinel, and a shape range
+// or value naming no shape drew a disc under a key saying otherwise, or made
 // the worker throw for every mark.
 test.each([
   [
@@ -654,16 +654,16 @@ test.each([
   [undefined, { field: 'svtype', range: ['star', 'triangle'] }, '"star"'],
   [undefined, 'triangl', '"triangl"'],
 ])(
-  'a colour %j or glyph %j naming nothing the display paints fails the load',
-  (color, glyph, message) => {
+  'a colour %j or shape %j naming nothing the display paints fails the load',
+  (color, shape, message) => {
     expect(() =>
       createTestEnvironment([
         {
-          shape: 'point',
+          mark: 'point',
           encoding: {
             y: 'score',
             ...(color ? { color } : {}),
-            ...(glyph ? { glyph } : {}),
+            ...(shape ? { shape } : {}),
           },
         },
       ]).createDisplay(),
@@ -677,7 +677,7 @@ test('a span painting an unpinned colour ramp says its colours differ by region,
   expect(
     noticesOf([
       {
-        shape: 'span',
+        mark: 'span',
         encoding: {
           color: { field: 'score', scale: 'linear', range: ['white', 'red'] },
         },
@@ -689,7 +689,7 @@ test('a span painting an unpinned colour ramp says its colours differ by region,
   expect(
     noticesOf([
       {
-        shape: 'span',
+        mark: 'span',
         encoding: {
           color: {
             field: 'score',
@@ -704,41 +704,39 @@ test('a span painting an unpinned colour ramp says its colours differ by region,
   ).toEqual([])
 })
 
-test('a channel the shape does not read is named, and the rest still draws', () => {
-  expect(noticesOf([{ shape: 'span', encoding: { y: 'score' } }])).toEqual([
+test('a channel the mark does not read is named, and the rest still draws', () => {
+  expect(noticesOf([{ mark: 'span', encoding: { y: 'score' } }])).toEqual([
     'mark 0 encoding.y: a span does not read y',
   ])
   expect(
-    noticesOf([{ shape: 'bar', encoding: { y: 'score', glyph: 'triangle' } }]),
-  ).toEqual(['mark 0 encoding.glyph: a bar does not read glyph'])
+    noticesOf([{ mark: 'bar', encoding: { y: 'score', shape: 'triangle' } }]),
+  ).toEqual(['mark 0 encoding.shape: a bar does not read shape'])
   expect(
-    noticesOf([{ shape: 'span', source: 'density', encoding: {} }]),
+    noticesOf([{ mark: 'span', source: 'density', encoding: {} }]),
   ).toEqual(['mark 0 source: a span does not draw the density sidecar'])
   expect(
-    noticesOf([
-      { shape: 'point', encoding: { y: 'score', glyph: 'triangle' } },
-    ]),
+    noticesOf([{ mark: 'point', encoding: { y: 'score', shape: 'triangle' } }]),
   ).toEqual([])
 })
 
-test('a shape the display does not draw is named as the problem, not the channels it carries', () => {
+test('a mark type the display does not draw is named as the problem, not the channels it carries', () => {
   expect(() =>
     createTestEnvironment([
-      { shape: 'rule', encoding: { y: 'score' } },
+      { mark: 'rule', encoding: { y: 'score' } },
     ]).createDisplay(),
-  ).toThrow(/mark 0 names shape "rule", and a shape is bar, point, span/)
+  ).toThrow(/marks.0.mark is "rule", and a mark is one of bar, point, span/)
 })
 
 test('a mistyped key on a mark, a step or an op is refused where the config is read', () => {
   expect(() =>
     createTestEnvironment([
-      { shape: 'bar', encoding: { y: 'score' }, transforms: [] },
+      { mark: 'bar', encoding: { y: 'score' }, transforms: [] },
     ]).createDisplay(),
   ).toThrow(/Mark takes .* not transforms/)
   expect(() =>
     createTestEnvironment([
       {
-        shape: 'bar',
+        mark: 'bar',
         encoding: { y: 'count' },
         transform: [{ type: 'aggregate', groupBy: ['type'] }],
       },
@@ -747,7 +745,7 @@ test('a mistyped key on a mark, a step or an op is refused where the config is r
   expect(() =>
     createTestEnvironment([
       {
-        shape: 'bar',
+        mark: 'bar',
         encoding: { y: 'score' },
         transform: [{ type: 'filter', expr: 'jexl:true', step: 50 }],
       },
@@ -755,7 +753,7 @@ test('a mistyped key on a mark, a step or an op is refused where the config is r
   ).toThrow('filter takes expr and type, not step')
   expect(() =>
     createTestEnvironment([
-      { shape: 'bar', encoding: { y: 'score' }, transform: [{ step: 1000 }] },
+      { mark: 'bar', encoding: { y: 'score' }, transform: [{ step: 1000 }] },
     ]).createDisplay(),
   ).toThrow(
     'a MarkTransform names its type, one of filter, formula, bin, aggregate, coverage, flatten and pileup, and names none',
@@ -763,7 +761,7 @@ test('a mistyped key on a mark, a step or an op is refused where the config is r
   expect(() =>
     createTestEnvironment([
       {
-        shape: 'bar',
+        mark: 'bar',
         encoding: { y: 'mean_score' },
         transform: [
           { type: 'aggregate', ops: [{ op: 'mean', fields: 'score' }] },
@@ -779,7 +777,7 @@ test('a mistyped key on a mark, a step or an op is refused where the config is r
 test('a colour ramp pins the end it names, and a domain beside it is named as unread', () => {
   const { display } = createTestEnvironment([
     {
-      shape: 'bar',
+      mark: 'bar',
       encoding: {
         y: 'score',
         color: {
@@ -804,7 +802,7 @@ test('a colour ramp pins the end it names, and a domain beside it is named as un
 
 test('a span-only display has no score domain', () => {
   const { createDisplay } = createTestEnvironment([
-    { shape: 'span', encoding: {} },
+    { mark: 'span', encoding: {} },
   ])
   const { display } = createDisplay()
   display.setRpcData(0, result([{ y: [0, 0], row: [0, 0] }]), REGION)
@@ -814,7 +812,7 @@ test('a span-only display has no score domain', () => {
 
 test('a span stacked by a row field asks the worker for the row lane and bands the plot by the highest row', () => {
   const { createDisplay } = createTestEnvironment([
-    { shape: 'span', encoding: { row: 'sampleIndex' } },
+    { mark: 'span', encoding: { row: 'sampleIndex' } },
   ])
   const { display } = createDisplay()
   expect(display.rpcProps().layers[0]).toEqual({
@@ -824,7 +822,7 @@ test('a span stacked by a row field asks the worker for the row lane and bands t
       y: undefined,
       row: 'sampleIndex',
       color: DEFAULT_MARK_COLOR,
-      glyph: 'disc',
+      shape: 'circle',
     },
     lanes: ['row', 'color', 'index'],
   })
@@ -835,8 +833,8 @@ test('a span stacked by a row field asks the worker for the row lane and bands t
 
 test('a span outside its zoom range adds no bands', () => {
   const { createDisplay } = createTestEnvironment([
-    { shape: 'span', encoding: { row: 'sampleIndex' }, minBpPerPx: 4 },
-    { shape: 'span', encoding: {} },
+    { mark: 'span', encoding: { row: 'sampleIndex' }, minBpPerPx: 4 },
+    { mark: 'span', encoding: {} },
   ])
   const { display, view } = createDisplay()
   display.setRpcData(
@@ -853,7 +851,7 @@ test('a span outside its zoom range adds no bands', () => {
 test("a transform list reaches the worker as its own layer's steps, every slot written out", () => {
   const { createDisplay } = createTestEnvironment([
     {
-      shape: 'bar',
+      mark: 'bar',
       encoding: { y: 'count' },
       transform: [
         { type: 'filter', expr: "jexl:get(feature,'score') > 1" },
@@ -873,7 +871,7 @@ test("a transform list reaches the worker as its own layer's steps, every slot w
         { type: 'pileup', as: 'lane', fields: ['s', 'e'], padding: 20 },
       ],
     },
-    { shape: 'bar', encoding: { y: 'score' } },
+    { mark: 'bar', encoding: { y: 'score' } },
   ])
   const { display } = createDisplay()
   const { layers } = display.rpcProps()
@@ -910,7 +908,7 @@ test("a transform list reaches the worker as its own layer's steps, every slot w
 test('a bin hands its edges to the aggregate behind it, and a pileup leaves the row to the worker', () => {
   const { createDisplay } = createTestEnvironment([
     {
-      shape: 'bar',
+      mark: 'bar',
       transform: [
         { type: 'bin', step: 5000 },
         { type: 'aggregate', ops: [{ op: 'count' }] },
@@ -918,7 +916,7 @@ test('a bin hands its edges to the aggregate behind it, and a pileup leaves the 
       encoding: { y: 'count' },
     },
     {
-      shape: 'bar',
+      mark: 'bar',
       transform: [
         { type: 'bin', step: 5000, as: ['lo', 'hi'] },
         { type: 'aggregate', ops: [{ op: 'count' }] },
@@ -926,17 +924,17 @@ test('a bin hands its edges to the aggregate behind it, and a pileup leaves the 
       encoding: { y: 'count' },
     },
     {
-      shape: 'bar',
+      mark: 'bar',
       transform: [{ type: 'aggregate', ops: [{ op: 'count' }] }],
       encoding: { y: 'count' },
     },
-    { shape: 'span', transform: [{ type: 'pileup' }], encoding: {} },
+    { mark: 'span', transform: [{ type: 'pileup' }], encoding: {} },
     {
-      shape: 'span',
+      mark: 'span',
       transform: [{ type: 'pileup', as: 'lane' }],
       encoding: {},
     },
-    { shape: 'span', encoding: {} },
+    { mark: 'span', encoding: {} },
   ])
   const { display } = createDisplay()
   const { layers } = display.rpcProps()
@@ -964,7 +962,7 @@ test("a facet with no field still runs its steps, on the shared list after the d
   const { createDisplay } = createTestEnvironment(
     [
       {
-        shape: 'bar',
+        mark: 'bar',
         transform: [{ type: 'aggregate', ops: [{ op: 'count' }] }],
         encoding: { y: 'count' },
       },
@@ -992,7 +990,7 @@ test("the facet's steps ride the request per section, hand their bin to the mark
   const { createDisplay } = createTestEnvironment(
     [
       {
-        shape: 'bar',
+        mark: 'bar',
         transform: [{ type: 'aggregate', ops: [{ op: 'count' }] }],
         encoding: { y: 'count' },
       },
@@ -1026,12 +1024,12 @@ test("a mark's aggregate behind a bin in the display's transform groups by that 
   const { createDisplay } = createTestEnvironment(
     [
       {
-        shape: 'bar',
+        mark: 'bar',
         transform: [{ type: 'aggregate', ops: [{ op: 'count' }] }],
         encoding: { y: 'count' },
       },
       {
-        shape: 'bar',
+        mark: 'bar',
         transform: [
           { type: 'bin', step: 500, as: ['a', 'b'] },
           { type: 'aggregate', ops: [{ op: 'count' }] },
@@ -1054,7 +1052,7 @@ test("a mark's aggregate behind a bin in the display's transform groups by that 
 test('a flatten keeping its empty features says so on the wire', () => {
   const { createDisplay } = createTestEnvironment([
     {
-      shape: 'span',
+      mark: 'span',
       transform: [
         { type: 'flatten', keepEmpty: true },
         { type: 'flatten', field: 'exons' },
@@ -1090,7 +1088,7 @@ function defaultWrites(schema: IAnyType): StepPair[] {
 
 function stepFetch(steps: Record<string, unknown>[]) {
   return createTestEnvironment(
-    [{ shape: 'bar', encoding: { y: 'score' } }],
+    [{ mark: 'bar', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
     { transform: steps },
@@ -1149,9 +1147,9 @@ test('a step slot left at its default and one written at it are one fetch, for e
 
 test('a mark outside its zoom range leaves the shared domain and the legend', () => {
   const { createDisplay } = createTestEnvironment([
-    { shape: 'bar', encoding: { y: 'score' }, maxBpPerPx: 4 },
+    { mark: 'bar', encoding: { y: 'score' }, maxBpPerPx: 4 },
     {
-      shape: 'bar',
+      mark: 'bar',
       encoding: { y: 'count', color: { field: 'type', scale: 'categorical' } },
       minBpPerPx: 4,
     },
@@ -1187,7 +1185,7 @@ test('a mark outside its zoom range leaves the shared domain and the legend', ()
 test('the legend reads the scale table the worker resolved', () => {
   const { createDisplay } = createTestEnvironment([
     {
-      shape: 'bar',
+      mark: 'bar',
       encoding: { y: 'score', color: { field: 'type', scale: 'categorical' } },
     },
   ])
@@ -1226,7 +1224,7 @@ test('the legend reads the scale table the worker resolved', () => {
 test("the colour's title heads its key, and a write retitles it without a fetch", () => {
   const { createDisplay } = createTestEnvironment([
     {
-      shape: 'point',
+      mark: 'point',
       encoding: {
         y: 'score',
         color: { field: 'score', scale: 'linear', title: 'Mapping quality' },
@@ -1265,14 +1263,14 @@ test('two marks colouring by one field through one range share a key', () => {
   })
   const marks = [
     {
-      shape: 'bar',
+      mark: 'bar',
       encoding: {
         y: 'score',
         color: { field: 'strand', scale: 'categorical' },
       },
     },
     {
-      shape: 'bar',
+      mark: 'bar',
       encoding: {
         y: 'score',
         color: { field: 'strand', scale: 'categorical' },
@@ -1322,16 +1320,16 @@ test('two marks colouring by one field through one range share a key', () => {
   ])
 })
 
-// Colour and glyph over one field listed the same values twice under one
+// Colour and shape over one field listed the same values twice under one
 // title, and on a short display the second key ran past the bottom edge.
-test('a glyph scale over the field the colour classifies folds into one key', () => {
+test('a shape scale over the field the colour classifies folds into one key', () => {
   const { createDisplay } = createTestEnvironment([
     {
-      shape: 'point',
+      mark: 'point',
       encoding: {
         y: 'score',
         color: { field: 'strand', scale: 'categorical' },
-        glyph: { field: 'strand', scale: 'categorical' },
+        shape: { field: 'strand', scale: 'categorical' },
       },
     },
   ])
@@ -1350,13 +1348,13 @@ test('a glyph scale over the field the colour classifies folds into one key', ()
             { value: '-1', color: 0xff00ff00 },
           ],
         },
-        glyphScale: {
-          kind: 'glyph',
+        shapeScale: {
+          kind: 'shape',
           field: 'strand',
           domain: [],
           entries: [
-            { value: '1', glyph: 'triangle' },
-            { value: '-1', glyph: 'diamond' },
+            { value: '1', shape: 'triangle' },
+            { value: '-1', shape: 'diamond' },
           ],
         },
       },
@@ -1373,26 +1371,26 @@ test('a glyph scale over the field the colour classifies folds into one key', ()
         {
           value: '1',
           label: 'Forward strand',
-          swatches: [{ color: 'rgba(255,0,0,1)', glyph: 'triangle' }],
+          swatches: [{ color: 'rgba(255,0,0,1)', shape: 'triangle' }],
         },
         {
           value: '-1',
           label: 'Reverse strand',
-          swatches: [{ color: 'rgba(0,255,0,1)', glyph: 'diamond' }],
+          swatches: [{ color: 'rgba(0,255,0,1)', shape: 'diamond' }],
         },
       ],
     },
   ])
 })
 
-test('a glyph scale reaches the worker beside the colour, and its key draws the glyphs', () => {
+test('a shape scale reaches the worker beside the colour, and its key draws the shapes', () => {
   const { createDisplay } = createTestEnvironment([
     {
-      shape: 'point',
+      mark: 'point',
       encoding: {
         y: 'score',
         color: 'red',
-        glyph: {
+        shape: {
           field: 'strand',
           scale: 'categorical',
           domain: [1, -1],
@@ -1402,7 +1400,7 @@ test('a glyph scale reaches the worker beside the colour, and its key draws the 
     },
   ])
   const { display } = createDisplay()
-  expect(display.rpcProps().layers[0]?.encoding.glyph).toEqual({
+  expect(display.rpcProps().layers[0]?.encoding.shape).toEqual({
     field: 'strand',
     scale: 'categorical',
     domain: ['1', '-1'],
@@ -1413,13 +1411,13 @@ test('a glyph scale reaches the worker beside the colour, and its key draws the 
     result([
       {
         y: [1, 2],
-        glyphScale: {
-          kind: 'glyph',
+        shapeScale: {
+          kind: 'shape',
           field: 'strand',
           domain: [],
           entries: [
-            { value: '1', glyph: 'triangle' },
-            { value: '-1', glyph: 'diamond' },
+            { value: '1', shape: 'triangle' },
+            { value: '-1', shape: 'diamond' },
           ],
         },
       },
@@ -1429,14 +1427,14 @@ test('a glyph scale reaches the worker beside the colour, and its key draws the 
   expect(display.legendSections).toEqual([
     {
       markIndexes: [0],
-      channel: 'glyph',
+      channel: 'shape',
       scale: {
-        kind: 'glyph',
+        kind: 'shape',
         field: 'strand',
         domain: [],
         entries: [
-          { value: '1', glyph: 'triangle' },
-          { value: '-1', glyph: 'diamond' },
+          { value: '1', shape: 'triangle' },
+          { value: '-1', shape: 'diamond' },
         ],
       },
       title: 'strand',
@@ -1445,27 +1443,27 @@ test('a glyph scale reaches the worker beside the colour, and its key draws the 
   expect(display.colorScales).toEqual([
     {
       kind: 'categorical',
-      id: 'mark-0-glyph',
+      id: 'mark-0-shape',
       title: 'strand',
       entries: [
         {
           value: '1',
           label: 'Forward strand',
-          swatches: [{ color: 'currentColor', glyph: 'triangle' }],
+          swatches: [{ color: 'currentColor', shape: 'triangle' }],
         },
         {
           value: '-1',
           label: 'Reverse strand',
-          swatches: [{ color: 'currentColor', glyph: 'diamond' }],
+          swatches: [{ color: 'currentColor', shape: 'diamond' }],
         },
       ],
     },
   ])
 })
 
-test('the hovered instance lights the box its shape painted, inset by the plot top', () => {
+test('the hovered instance lights the box its mark painted, inset by the plot top', () => {
   const { createDisplay } = createTestEnvironment([
-    { shape: 'span', encoding: { row: 'sampleIndex' } },
+    { mark: 'span', encoding: { row: 'sampleIndex' } },
   ])
   const { display } = createDisplay()
   display.setRpcData(0, result([{ y: [0, 0], row: [0, 1] }]), REGION)
@@ -1498,9 +1496,9 @@ test('the hovered instance lights the box its shape painted, inset by the plot t
 })
 
 const DENSITY_MARKS = [
-  { shape: 'bar', encoding: { y: 'score' } },
+  { mark: 'bar', encoding: { y: 'score' } },
   {
-    shape: 'bar',
+    mark: 'bar',
     transform: [
       { type: 'bin', step: 1000 },
       { type: 'aggregate', ops: [{ op: 'count' }] },
@@ -1592,7 +1590,7 @@ test('a region no worker fetch produced holds no request, and a click on it asks
 
 const AUTO_BIN_MARKS = [
   {
-    shape: 'bar',
+    mark: 'bar',
     transform: [
       { type: 'bin', step: 'auto' },
       { type: 'aggregate', groupby: ['start', 'end'], ops: [{ op: 'count' }] },
@@ -1619,7 +1617,7 @@ test('an auto bin resolves to the 1/2/5 rung above four pixels of bp', () => {
 
 test('a zoom sweep over a BigWig refetches once per tier, not once per step', () => {
   const { createDisplay } = createTestEnvironment(
-    [{ shape: 'bar', encoding: { y: 'score' } }],
+    [{ mark: 'bar', encoding: { y: 'score' } }],
     WIDE_REGION,
     'BigWigAdapter',
   )
@@ -1670,7 +1668,7 @@ test('a fixed bin width ignores the zoom, and its fetch key with it', () => {
   const { createDisplay } = createTestEnvironment(
     [
       {
-        shape: 'bar',
+        mark: 'bar',
         transform: [{ type: 'bin', step: 5000 }],
         encoding: { y: 'count' },
       },
@@ -1687,9 +1685,9 @@ test('a fixed bin width ignores the zoom, and its fetch key with it', () => {
   })
 })
 
-test('a point-only axis is inset by the glyph room the shape draws in', () => {
+test('a point-only axis is inset by the room the point draws in', () => {
   const { createDisplay } = createTestEnvironment([
-    { shape: 'point', encoding: { y: 'score' } },
+    { mark: 'point', encoding: { y: 'score' } },
   ])
   const { display } = createDisplay()
   display.setRpcData(0, result([{ y: [3, 8] }]), REGION)
@@ -1706,9 +1704,9 @@ test('a point-only axis is inset by the glyph room the shape draws in', () => {
 
 test("a point mark's size is its own, the axis insets by the largest, and the menu writes them all", () => {
   const { createDisplay } = createTestEnvironment([
-    { shape: 'point', encoding: { y: 'score' } },
-    { shape: 'point', size: 10, encoding: { y: 'other' } },
-    { shape: 'bar', size: 9, encoding: { y: 'score' }, maxBpPerPx: 0.001 },
+    { mark: 'point', encoding: { y: 'score' } },
+    { mark: 'point', size: 10, encoding: { y: 'other' } },
+    { mark: 'bar', size: 9, encoding: { y: 'score' }, maxBpPerPx: 0.001 },
   ])
   const { display } = createDisplay()
   display.setRpcData(
@@ -1727,8 +1725,8 @@ test("a point mark's size is its own, the axis insets by the largest, and the me
 
 test('a bar sharing the axis keeps it on the plot box, where a bar top is drawn', () => {
   const { createDisplay } = createTestEnvironment([
-    { shape: 'bar', encoding: { y: 'score' } },
-    { shape: 'point', encoding: { y: 'other' } },
+    { mark: 'bar', encoding: { y: 'score' } },
+    { mark: 'point', encoding: { y: 'other' } },
   ])
   const { display } = createDisplay()
   display.setRpcData(0, result([{ y: [3, 8] }, { y: [12, 20] }]), REGION)
@@ -1738,7 +1736,7 @@ test('a bar sharing the axis keeps it on the plot box, where a bar top is drawn'
 })
 
 const FACET_MARKS = [
-  { shape: 'span', transform: [{ type: 'pileup' }], encoding: { row: 'row' } },
+  { mark: 'span', transform: [{ type: 'pileup' }], encoding: { row: 'row' } },
 ]
 
 function facetedEnvironment(display: Record<string, unknown> = {}) {
@@ -1765,7 +1763,7 @@ function rowsOf(display: LinearMarkDisplayModel, region = 0) {
 
 test('bars faceted by a field stand in a band each, the axis ruling every band', () => {
   const { createDisplay } = createTestEnvironment(
-    [{ shape: 'bar', encoding: { y: 'score' } }],
+    [{ mark: 'bar', encoding: { y: 'score' } }],
     REGION,
     'BedAdapter',
     { facet: 'source' },
@@ -1797,7 +1795,7 @@ test('bars faceted by a field stand in a band each, the axis ruling every band',
   })
   // the one-row display keeps the plot box as its axis
   const single = createTestEnvironment([
-    { shape: 'bar', encoding: { y: 'score' } },
+    { mark: 'bar', encoding: { y: 'score' } },
   ]).createDisplay().display
   single.setRpcData(0, result([{ y: [3, 8] }]), REGION)
   expect(single.valueScales[0]).toMatchObject({
@@ -1947,7 +1945,7 @@ test('a hidden section leaves the key and the axis the way it leaves the plot', 
   const { display } = createTestEnvironment(
     [
       {
-        shape: 'bar',
+        mark: 'bar',
         encoding: {
           y: 'score',
           color: { field: 'type', scale: 'categorical' },
@@ -2001,7 +1999,7 @@ test("a key over the facet's field follows the sections' order", () => {
   const { display } = createTestEnvironment(
     [
       {
-        shape: 'bar',
+        mark: 'bar',
         encoding: {
           y: 'score',
           color: { field: 'sample', scale: 'categorical' },
@@ -2073,13 +2071,13 @@ test('the chip row names each section at the top of the rows it labels', () => {
 test('nothing declared draws nothing, and the default rule is a bar of score', () => {
   const { createDisplay } = createTestEnvironment([])
   const { display } = createDisplay()
-  expect(display.markShapes).toEqual([])
+  expect(display.markTypes).toEqual([])
   expect(display.rpcProps().layers).toEqual([])
   display.conf.setSubschemaArray(
     'marks',
     defaultPlotMarks({ numeric: ['score'], categorical: ['name'] })!,
   )
-  expect(display.markShapes).toEqual(['bar'])
+  expect(display.markTypes).toEqual(['bar'])
   expect(display.rpcProps().layers[0]!.encoding.y).toBe('score')
 })
 
@@ -2089,11 +2087,11 @@ test('the dialog submit writes the plot and its binned count into config', () =>
   display.setPlotFields({ numeric: ['score'], categorical: ['repClass'] })
   display.setPlotMarks({
     field: 'score',
-    shape: 'point',
+    mark: 'point',
     colorField: 'repClass',
     binned: true,
   })
-  expect(display.markShapes).toEqual(['point', 'bar'])
+  expect(display.markTypes).toEqual(['point', 'bar'])
   expect(display.conf.marks[0]!.encoding.color.scale).toBe('categorical')
   expect(display.conf.marks[0]!.maxBpPerPx).toBe(BINNED_BP_PER_PX)
   expect(display.conf.marks[1]!.minBpPerPx).toBe(BINNED_BP_PER_PX)
@@ -2102,7 +2100,7 @@ test('the dialog submit writes the plot and its binned count into config', () =>
   ).toEqual(['bin', 'aggregate'])
   expect(display.plotSpec).toMatchObject({
     field: 'score',
-    shape: 'point',
+    mark: 'point',
     colorField: 'repClass',
     binned: true,
   })
@@ -2113,8 +2111,8 @@ test('the dialog submit writes the plot and its binned count into config', () =>
 // dialog says so before it does.
 test('a declared list the dialog cannot read counts as what a save replaces', () => {
   const { createDisplay } = createTestEnvironment([
-    { shape: 'span', transform: [{ type: 'pileup' }], encoding: {} },
-    { shape: 'bar', encoding: { y: 'score' } },
+    { mark: 'span', transform: [{ type: 'pileup' }], encoding: {} },
+    { mark: 'bar', encoding: { y: 'score' } },
   ])
   const { display } = createDisplay()
   expect(display.plotSpecReplaces).toBe(2)
@@ -2125,7 +2123,7 @@ test('a declared list the dialog cannot read counts as what a save replaces', ()
 test('a reopened plot keeps the colour domain and range it was declared with', () => {
   const { createDisplay } = createTestEnvironment([
     {
-      shape: 'bar',
+      mark: 'bar',
       encoding: {
         y: 'score',
         color: {
@@ -2147,18 +2145,18 @@ test('a reopened plot keeps the colour domain and range it was declared with', (
 
 // Categorical whatever else is written: a range beside an unset scale used to
 // make it linear, so emptying the range in the editor flipped the scale.
-test('a color or glyph naming a field and no scale reads it categorically, a range beside it or not', () => {
+test('a color or shape naming a field and no scale reads it categorically, a range beside it or not', () => {
   const { createDisplay } = createTestEnvironment([
     {
-      shape: 'point',
+      mark: 'point',
       encoding: {
         y: 'score',
         color: { field: 'source' },
-        glyph: { field: 'type' },
+        shape: { field: 'type' },
       },
     },
     {
-      shape: 'bar',
+      mark: 'bar',
       encoding: {
         y: 'score',
         color: { field: 'score', range: ['white', 'red'] },
@@ -2170,7 +2168,7 @@ test('a color or glyph naming a field and no scale reads it categorically, a ran
     field: 'source',
     scale: 'categorical',
   })
-  expect(display.encodings[0]!.glyph).toMatchObject({
+  expect(display.encodings[0]!.shape).toMatchObject({
     field: 'type',
     scale: 'categorical',
   })
@@ -2187,7 +2185,7 @@ test('a color or glyph naming a field and no scale reads it categorically, a ran
 test('a feature skipped for its position names the field the bin could not read', () => {
   const { createDisplay } = createTestEnvironment([
     {
-      shape: 'bar',
+      mark: 'bar',
       transform: [
         { type: 'bin', field: 'INFO.AF', step: 0.1 },
         { type: 'aggregate', ops: [{ op: 'count' }] },

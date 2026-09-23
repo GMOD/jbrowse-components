@@ -1,16 +1,16 @@
 import { appendGlyph } from '@jbrowse/render-core/marks/glyphPaint'
 import { DIAMOND_GLYPH_SCALE } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
-import { GLYPH_CODES } from '../util/glyphNames.ts'
+import { SHAPE_CODES } from '../util/shapeNames.ts'
 
-import type { GlyphName } from '../util/markEncodingTypes.ts'
+import type { ShapeName } from '../util/markEncodingTypes.ts'
 import type { LegendSwatch } from './legendSpec.ts'
 import type { GlyphPath } from '@jbrowse/render-core/marks/glyphPaint'
 
-// The point shape's own painter, recorded as SVG path data, so the key draws
+// The point mark's own painter, recorded as SVG path data, so the key draws
 // the glyph the plot draws. The diamond paints wider than its diameter and
 // is scaled down to fit the box.
-function glyphPathData(glyph: GlyphName, size: number, x: number, y: number) {
+function glyphPathData(shape: ShapeName, size: number, x: number, y: number) {
   const d: string[] = []
   const path: GlyphPath = {
     moveTo: (px, py) => d.push(`M${px} ${py}`),
@@ -22,8 +22,8 @@ function glyphPathData(glyph: GlyphName, size: number, x: number, y: number) {
         `A${r} ${r} 0 1 0 ${cx - r} ${cy}A${r} ${r} 0 1 0 ${cx + r} ${cy}Z`,
       ),
   }
-  const diameter = glyph === 'diamond' ? size / DIAMOND_GLYPH_SCALE : size
-  appendGlyph(path, GLYPH_CODES[glyph], x + size / 2, y + size / 2, diameter)
+  const diameter = shape === 'diamond' ? size / DIAMOND_GLYPH_SCALE : size
+  appendGlyph(path, SHAPE_CODES[shape], x + size / 2, y + size / 2, diameter)
   return d.join('')
 }
 
@@ -45,8 +45,8 @@ export function LegendSwatchGlyph({
   x?: number
   y?: number
 }) {
-  return swatch.glyph ? (
-    <path d={glyphPathData(swatch.glyph, size, x, y)} fill={swatch.color} />
+  return swatch.shape ? (
+    <path d={glyphPathData(swatch.shape, size, x, y)} fill={swatch.color} />
   ) : (
     <rect x={x} y={y} width={size} height={size} fill={swatch.color} />
   )

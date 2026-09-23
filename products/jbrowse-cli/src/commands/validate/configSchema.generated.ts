@@ -7665,15 +7665,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
-    "MarkGlyph": {
-      "title": "MarkGlyph",
+    "MarkShape": {
+      "title": "MarkShape",
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"value\\": ... }\`.",
           "anyOf": [
             {
               "enum": [
-                "disc",
+                "circle",
                 "triangle",
                 "diamond"
               ]
@@ -7682,11 +7682,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/JexlString"
             }
           ],
-          "default": "disc",
+          "default": "circle",
           "type": "string"
         },
         {
-          "title": "MarkGlyph",
+          "title": "MarkShape",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -7695,7 +7695,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "anyOf": [
                 {
                   "enum": [
-                    "disc",
+                    "circle",
                     "triangle",
                     "diamond"
                   ]
@@ -7704,7 +7704,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/JexlString"
                 }
               ],
-              "default": "disc"
+              "default": "circle"
             },
             "field": {
               "description": "feature field, or jexl expression.",
@@ -7719,11 +7719,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "range": {
-              "description": "glyph names, in order.",
+              "description": "shape names, in order.",
               "type": "array",
               "items": {
                 "enum": [
-                  "disc",
+                  "circle",
                   "triangle",
                   "diamond"
                 ]
@@ -7783,8 +7783,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "color": {
           "$ref": "#/$defs/MarkColor"
         },
-        "glyph": {
-          "$ref": "#/$defs/MarkGlyph"
+        "shape": {
+          "$ref": "#/$defs/MarkShape"
         }
       },
       "patternProperties": {
@@ -8165,7 +8165,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "if": {
             "type": "object",
             "properties": {
-              "shape": {
+              "mark": {
                 "enum": [
                   "bar",
                   "point"
@@ -8198,7 +8198,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       ],
       "x-closed": true,
       "properties": {
-        "shape": {
+        "mark": {
           "description": "bar, point or span.",
           "enum": [
             "bar",

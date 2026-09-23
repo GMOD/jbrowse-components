@@ -7,13 +7,13 @@ import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
 import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { binStepWidth } from './autoBin.ts'
-import { markGlyphScale } from './configSchema.ts'
+import { markShapeScale } from './configSchema.ts'
 import { DEFAULT_BIN_AS, DEFAULT_PILEUP_FIELDS } from './markVocabulary.ts'
 
 import type { MarkConfig, MarkTransformStepConfig } from './configSchema.ts'
 import type {
   AggregateOp,
-  GlyphEncoding,
+  ShapeEncoding,
   MarkEncoding,
   TransformStep,
 } from '@jbrowse/core/util/markEncoding'
@@ -22,16 +22,16 @@ import type { Region } from '@jbrowse/core/util/types/data'
 // The config's raw slot values as the worker's encoding: a `jexl:` string
 // crosses untouched, which is why nothing here reads through `getConf`.
 export function encodingOf(mark: MarkConfig): MarkEncoding {
-  const { x, x2, y, row, glyph, color } = mark.encoding
+  const { x, x2, y, row, shape, color } = mark.encoding
   const scaled = colorEncodingOf(color, 'categorical')
-  const glyphEncoding: GlyphEncoding =
-    markGlyphScale(glyph) === 'none'
-      ? glyph.value
+  const shapeEncoding: ShapeEncoding =
+    markShapeScale(shape) === 'none'
+      ? shape.value
       : {
-          field: glyph.field,
+          field: shape.field,
           scale: 'categorical',
-          range: glyph.range.length > 0 ? [...glyph.range] : undefined,
-          domain: glyph.domain.length > 0 ? [...glyph.domain] : undefined,
+          range: shape.range.length > 0 ? [...shape.range] : undefined,
+          domain: shape.domain.length > 0 ? [...shape.domain] : undefined,
         }
   return {
     x,
@@ -43,7 +43,7 @@ export function encodingOf(mark: MarkConfig): MarkEncoding {
     y: y === '' ? undefined : y,
     row: row || undefined,
     color: scaled,
-    glyph: glyphEncoding,
+    shape: shapeEncoding,
   }
 }
 

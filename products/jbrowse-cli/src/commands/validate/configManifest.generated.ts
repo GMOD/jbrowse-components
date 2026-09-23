@@ -6033,8 +6033,8 @@ export const configManifest: ConfigManifest = {
           "type": "MarkConfigurationSchema[]",
           "subSlots": [
             {
-              "name": "shape",
-              "type": "MarkShape"
+              "name": "mark",
+              "type": "MarkType"
             },
             {
               "name": "size",
@@ -6116,12 +6116,12 @@ export const configManifest: ConfigManifest = {
                   }
                 },
                 {
-                  "name": "glyph",
-                  "type": "MarkGlyphConfigurationSchema",
+                  "name": "shape",
+                  "type": "MarkShapeConfigurationSchema",
                   "subSlots": [
                     {
                       "name": "value",
-                      "type": "(JexlString | GlyphName)"
+                      "type": "(JexlString | ShapeName)"
                     },
                     {
                       "name": "field",
@@ -6129,11 +6129,11 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "scale",
-                      "type": "(MarkGlyphScale | undefined)"
+                      "type": "(MarkShapeScale | undefined)"
                     },
                     {
                       "name": "range",
-                      "type": "GlyphName[]"
+                      "type": "ShapeName[]"
                     },
                     {
                       "name": "domain",

@@ -40,7 +40,7 @@ test('a field is numeric only where every value it carries reads as a number', (
 test('the default is a bar of score, and nothing where the features carry none', () => {
   expect(
     defaultPlotMarks({ numeric: ['score', 'qual'], categorical: [] }),
-  ).toEqual([{ shape: 'bar', encoding: { y: 'score' } }])
+  ).toEqual([{ mark: 'bar', encoding: { y: 'score' } }])
   expect(
     defaultPlotMarks({ numeric: ['qual'], categorical: ['name'] }),
   ).toBeUndefined()
@@ -55,7 +55,7 @@ test('features from more than one source name source as the facet field', () => 
   )
   expect(multi.facet).toBe('source')
   expect(defaultPlotMarks(multi)).toEqual([
-    { shape: 'bar', encoding: { y: 'score' } },
+    { mark: 'bar', encoding: { y: 'score' } },
   ])
   const single = scanPlotFields(
     features([
@@ -65,7 +65,7 @@ test('features from more than one source name source as the facet field', () => 
   )
   expect(single.facet).toBeUndefined()
   expect(defaultPlotMarks(single)).toEqual([
-    { shape: 'bar', encoding: { y: 'score' } },
+    { mark: 'bar', encoding: { y: 'score' } },
   ])
 })
 
@@ -73,12 +73,12 @@ test('a colour field takes a categorical or a linear scale by what it holds', ()
   const fields = { numeric: ['score', 'depth'], categorical: ['repClass'] }
   expect(
     plotMarks(
-      { field: 'score', shape: 'point', colorField: 'repClass', binned: false },
+      { field: 'score', mark: 'point', colorField: 'repClass', binned: false },
       fields,
     ),
   ).toEqual([
     {
-      shape: 'point',
+      mark: 'point',
       encoding: {
         y: 'score',
         color: { field: 'repClass', scale: 'categorical' },
@@ -87,7 +87,7 @@ test('a colour field takes a categorical or a linear scale by what it holds', ()
   ])
   expect(
     plotMarks(
-      { field: 'score', shape: 'bar', colorField: 'depth', binned: false },
+      { field: 'score', mark: 'bar', colorField: 'depth', binned: false },
       fields,
     )[0]!.encoding!.color,
   ).toEqual({ field: 'depth', scale: 'linear' })
@@ -95,16 +95,16 @@ test('a colour field takes a categorical or a linear scale by what it holds', ()
 
 test('the binned box adds a zoom-following count and hands the axis over', () => {
   const marks = plotMarks(
-    { field: 'score', shape: 'bar', colorField: '', binned: true },
+    { field: 'score', mark: 'bar', colorField: '', binned: true },
     { numeric: ['score'], categorical: [] },
   )
   expect(marks[0]).toEqual({
-    shape: 'bar',
+    mark: 'bar',
     encoding: { y: 'score' },
     maxBpPerPx: BINNED_BP_PER_PX,
   })
   expect(marks[1]).toEqual({
-    shape: 'bar',
+    mark: 'bar',
     transform: [
       { type: 'bin', step: 'auto' },
       { type: 'aggregate', groupby: ['start', 'end'], ops: [{ op: 'count' }] },
@@ -131,9 +131,9 @@ const FIELDS = { numeric: ['score', 'depth'], categorical: ['repClass'] }
 
 test('a config the dialog wrote reopens on the spec that wrote it', () => {
   for (const spec of [
-    { field: 'score', shape: 'point', colorField: 'repClass', binned: false },
-    { field: 'score', shape: 'bar', colorField: 'depth', binned: true },
-    { field: 'score', shape: 'bar', colorField: '', binned: true },
+    { field: 'score', mark: 'point', colorField: 'repClass', binned: false },
+    { field: 'score', mark: 'bar', colorField: 'depth', binned: true },
+    { field: 'score', mark: 'bar', colorField: '', binned: true },
   ] as const) {
     expect(specOf(plotMarks(spec, FIELDS))).toMatchObject(spec)
   }
@@ -142,7 +142,7 @@ test('a config the dialog wrote reopens on the spec that wrote it', () => {
 test('a colour field kept under the none scale reopens as no colour, and a save keeps it', () => {
   const declared: MarkSnapshot[] = [
     {
-      shape: 'point',
+      mark: 'point',
       encoding: { y: 'score', color: { field: 'repClass', scale: 'none' } },
     },
   ]
@@ -151,7 +151,7 @@ test('a colour field kept under the none scale reopens as no colour, and a save 
   expect(canonical(plotMarks(spec, FIELDS))).toEqual(canonical(declared))
 })
 
-// The dialog offers a field and a shape; every other member of the colour is
+// The dialog offers a field and a mark; every other member of the colour is
 // the config author's, and a save used to drop them one slot at a time.
 test('a reopened colour carries the members the dialog does not ask about', () => {
   const color = {
@@ -162,7 +162,7 @@ test('a reopened colour carries the members the dialog does not ask about', () =
     range: ['blue', 'white', 'red'],
     domainMid: 0,
   }
-  const spec = specOf([{ shape: 'bar', encoding: { y: 'score', color } }])!
+  const spec = specOf([{ mark: 'bar', encoding: { y: 'score', color } }])!
   expect(plotMarks(spec, FIELDS)[0]!.encoding!.color).toEqual(color)
   expect(
     plotMarks({ ...spec, colorField: 'score' }, FIELDS)[0]!.encoding!.color,
@@ -171,7 +171,7 @@ test('a reopened colour carries the members the dialog does not ask about', () =
 
 test('a constant colour survives a save that picks no colour field', () => {
   const declared = [
-    { shape: 'bar', encoding: { y: 'score', color: 'steelblue' } },
+    { mark: 'bar', encoding: { y: 'score', color: 'steelblue' } },
   ]
   const spec = specOf(declared)!
   expect(spec.colorField).toBe('')
@@ -179,20 +179,20 @@ test('a constant colour survives a save that picks no colour field', () => {
 })
 
 test('a config saying more than the dialog can write back reopens empty', () => {
-  const plot = { shape: 'bar', encoding: { y: 'score' } }
+  const plot = { mark: 'bar', encoding: { y: 'score' } }
   const unreadable: MarkSnapshot[][] = [
     [],
-    [{ shape: 'span', encoding: {} }],
+    [{ mark: 'span', encoding: {} }],
     [{ ...plot, transform: [{ type: 'coverage' }] }],
     [plot, plot, plot],
-    [{ shape: 'point', encoding: { y: 'score', glyph: { field: 'svtype' } } }],
-    [{ shape: 'bar', encoding: { y: 'score', x: 'thickStart' } }],
+    [{ mark: 'point', encoding: { y: 'score', shape: { field: 'svtype' } } }],
+    [{ mark: 'bar', encoding: { y: 'score', x: 'thickStart' } }],
     [{ ...plot, maxBpPerPx: 50 }],
     [{ ...plot, source: 'density' }],
     [
       { ...plot, maxBpPerPx: BINNED_BP_PER_PX },
       {
-        shape: 'bar',
+        mark: 'bar',
         transform: [
           { type: 'bin', step: 10000 },
           { type: 'aggregate', ops: [{ op: 'count' }] },

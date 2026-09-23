@@ -1,4 +1,4 @@
-import type { MarkShapeName } from '../configSchema.ts'
+import type { MarkType } from '../configSchema.ts'
 import type { FacetLayout } from '../facet.ts'
 import type { MarkHitInfo } from '../findMarkHit.ts'
 import type { MarkLegendSection } from '../legend.ts'
@@ -27,7 +27,7 @@ export interface MarkDisplayModel extends WiggleGpuDisplayModel<
   configuration: { displayId: string }
   renderBlocks: RenderBlock[]
   markList: DisplayMark[]
-  markShapes: MarkShapeName[]
+  markTypes: MarkType[]
   renderState: MarkRenderState
   hoveredFeature: MarkHitInfo | undefined
   legendSections: MarkLegendSection[]

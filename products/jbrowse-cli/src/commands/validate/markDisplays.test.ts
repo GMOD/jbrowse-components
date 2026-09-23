@@ -58,19 +58,19 @@ function found(marks: unknown[], display?: Record<string, unknown>) {
 
 const DISPLAY = 'tracks[0].displays[0]'
 const COVERAGE = {
-  shape: 'bar',
+  mark: 'bar',
   transform: [{ type: 'coverage' }],
   encoding: { y: 'coverage' },
 }
-const PILEUP = { shape: 'span', transform: [{ type: 'pileup' }] }
+const PILEUP = { mark: 'span', transform: [{ type: 'pileup' }] }
 
 describe('a marks list in a config file', () => {
   it('passes the guide examples', () => {
     expect(
       found([
-        { shape: 'bar', encoding: { y: 'score' }, maxBpPerPx: 100 },
+        { mark: 'bar', encoding: { y: 'score' }, maxBpPerPx: 100 },
         {
-          shape: 'bar',
+          mark: 'bar',
           transform: [
             { type: 'bin', step: 'auto' },
             { type: 'aggregate', ops: [{ op: 'count' }] },
@@ -86,7 +86,7 @@ describe('a marks list in a config file', () => {
 
   it('reports a bar or point naming no y once, from the schema requirement', () => {
     expect(
-      problemsOf(configOf([{ shape: 'bar' }, { encoding: { x: 'start' } }])),
+      problemsOf(configOf([{ mark: 'bar' }, { encoding: { x: 'start' } }])),
     ).toEqual(
       [0, 1].map(mark => ({
         level: 'error',
@@ -96,18 +96,18 @@ describe('a marks list in a config file', () => {
           'a bar or a point stands at a value and names no y field to plot, so it draws nothing',
       })),
     )
-    expect(found([{ shape: 'point', encoding: { y: '' } }])).toEqual([
+    expect(found([{ mark: 'point', encoding: { y: '' } }])).toEqual([
       `error mark-without-value ${DISPLAY}.marks[0].encoding.y`,
     ])
-    expect(found([{ shape: 'span' }])).toEqual([])
+    expect(found([{ mark: 'span' }])).toEqual([])
   })
 
   it('reports the rules of the other marks beside a requirement failure', () => {
     expect(
       found([
-        { shape: 'bar' },
+        { mark: 'bar' },
         {
-          shape: 'bar',
+          mark: 'bar',
           encoding: { y: 'score' },
           minBpPerPx: 100,
           maxBpPerPx: 20,
@@ -119,14 +119,14 @@ describe('a marks list in a config file', () => {
     ])
   })
 
-  it('warns on a channel the shape does not read', () => {
-    expect(found([{ shape: 'span', encoding: { y: 'score' } }])).toEqual([
+  it('warns on a channel the mark does not read', () => {
+    expect(found([{ mark: 'span', encoding: { y: 'score' } }])).toEqual([
       `warning unread-channel ${DISPLAY}.marks[0].encoding.y`,
     ])
     expect(
-      found([{ shape: 'bar', encoding: { y: 'score', glyph: 'triangle' } }]),
-    ).toEqual([`warning unread-channel ${DISPLAY}.marks[0].encoding.glyph`])
-    expect(found([{ shape: 'span', size: 8 }])).toEqual([
+      found([{ mark: 'bar', encoding: { y: 'score', shape: 'triangle' } }]),
+    ).toEqual([`warning unread-channel ${DISPLAY}.marks[0].encoding.shape`])
+    expect(found([{ mark: 'span', size: 8 }])).toEqual([
       `warning unread-size ${DISPLAY}.marks[0].size`,
     ])
   })
@@ -156,7 +156,7 @@ describe('a marks list in a config file', () => {
 
   it('points two marks packing rows of their own at one shared pileup', () => {
     const filtered = (expr: string) => ({
-      shape: 'span',
+      mark: 'span',
       transform: [{ type: 'filter', expr }, { type: 'pileup' }],
     })
     expect(found([filtered('jexl:a'), filtered('jexl:b')])).toEqual([
@@ -175,7 +175,7 @@ describe('a marks list in a config file', () => {
       problemsOf(
         configOf([
           {
-            shape: 'bar',
+            mark: 'bar',
             transform: [{ type: 'bin', step: 1000 }, { type: 'aggregate' }],
             encoding: { y: 'score' },
           },
@@ -193,7 +193,7 @@ describe('a marks list in a config file', () => {
     expect(
       found([
         {
-          shape: 'bar',
+          mark: 'bar',
           transform: [
             { type: 'aggregate', ops: [{ op: 'mean', field: 'score' }] },
             { type: 'formula', expr: 'jexl:feature.mean_score*2', as: 'twice' },
@@ -210,7 +210,7 @@ describe('a marks list in a config file', () => {
   it('reads a step output by the name the step writes it to', () => {
     const depth = (as: unknown) => [
       {
-        shape: 'bar',
+        mark: 'bar',
         transform: [{ type: 'coverage', as }],
         encoding: { y: 'depth' },
       },
@@ -225,7 +225,7 @@ describe('a marks list in a config file', () => {
     expect(
       found([
         {
-          shape: 'span',
+          mark: 'span',
           transform: [{ type: 'bin', step: 10, as: ['lo'] }],
         },
       ]),
@@ -236,7 +236,7 @@ describe('a marks list in a config file', () => {
     expect(
       found([
         {
-          shape: 'bar',
+          mark: 'bar',
           encoding: { y: 'sum' },
           transform: [
             { type: 'filter', expr: 'feature.score > 1' },
@@ -253,7 +253,7 @@ describe('a marks list in a config file', () => {
   })
 
   it("checks the display's own steps, at the display's path", () => {
-    const bar = { shape: 'bar', encoding: { y: 'score' } }
+    const bar = { mark: 'bar', encoding: { y: 'score' } }
     expect(
       found([bar], {
         transform: [
@@ -282,7 +282,7 @@ describe('a marks list in a config file', () => {
     const config = configOf([])
     const [track] = config.tracks as Record<string, unknown>[]
     track!.displayDefaults = {
-      marks: [{ shape: 'bar', encoding: { y: 'score' } }],
+      marks: [{ mark: 'bar', encoding: { y: 'score' } }],
     }
     track!.displays = [
       {
@@ -296,7 +296,7 @@ describe('a marks list in a config file', () => {
   })
 
   it("reports an unknown key on one mark beside its siblings' problems", () => {
-    const bar = { shape: 'bar', encoding: { y: 'score' } }
+    const bar = { mark: 'bar', encoding: { y: 'score' } }
     const problems = problemsOf(
       configOf([{ ...bar, colour: 'red' }, PILEUP, PILEUP]),
     )
@@ -312,7 +312,7 @@ describe('a marks list in a config file', () => {
 
   it("reports an unknown key on one display step beside the others' problems", () => {
     expect(
-      found([{ shape: 'bar', encoding: { y: 'score' } }], {
+      found([{ mark: 'bar', encoding: { y: 'score' } }], {
         transform: [
           { type: 'filter', expr: 'jexl:1', step: 5 },
           { type: 'bin', step: -5 },
@@ -324,18 +324,16 @@ describe('a marks list in a config file', () => {
     ])
   })
 
-  it("names Vega-Lite's spelling of shape and glyph, and the schema refusing a key", () => {
+  it('takes a Vega-Lite layer as written, and refuses a key the schema does not declare', () => {
     const messages = (marks: unknown[]) =>
       problemsOf(configOf(marks)).map(p => `${p.where}: ${p.message}`)
-    expect(messages([{ mark: 'bar', encoding: { y: 'score' } }])).toEqual([
-      `${DISPLAY}.marks[0].mark: unknown slot "mark" — Vega-Lite's "mark" is spelled "shape" here — Mark takes shape, size, encoding, transform, source, minBpPerPx and maxBpPerPx, and JBrowse refuses to load it rather than drop a key it does not declare`,
-    ])
     const point = (encoding: Record<string, unknown>) => [
-      { shape: 'point', encoding: { y: 'score', ...encoding } },
+      { mark: 'point', encoding: { y: 'score', ...encoding } },
     ]
-    expect(messages(point({ shape: { field: 'strand' } }))).toEqual([
+    expect(messages(point({ shape: { field: 'strand' } }))).toEqual([])
+    expect(messages(point({ glyph: { field: 'strand' } }))).toEqual([
       expect.stringMatching(
-        /encoding\.shape: unknown slot "shape" — Vega-Lite's "shape" is spelled "glyph" here — MarkEncoding takes /,
+        /encoding\.glyph: unknown slot "glyph" — MarkEncoding takes /,
       ),
     ])
     expect(
@@ -349,7 +347,7 @@ describe('a marks list in a config file', () => {
 
   it('reports a mark that is not an object as that alone', () => {
     expect(
-      found([null, 'bar', { shape: 'bar', encoding: { y: 'score' } }]),
+      found([null, 'bar', { mark: 'bar', encoding: { y: 'score' } }]),
     ).toEqual([
       `error undefined ${DISPLAY}.marks[0]`,
       `error undefined ${DISPLAY}.marks[1]`,
@@ -359,7 +357,7 @@ describe('a marks list in a config file', () => {
   it('points a jexl: field on a step at formula', () => {
     const grouped = (field: string) => [
       {
-        shape: 'bar',
+        mark: 'bar',
         encoding: { y: 'count' },
         transform: [
           { type: 'aggregate', groupby: [field], ops: [{ op: 'count' }] },
@@ -373,10 +371,10 @@ describe('a marks list in a config file', () => {
   })
 
   it('reads threshold cuts written as numbers or as strings, and the ends of a ramp', () => {
-    const colored = (shape: string, color: Record<string, unknown>) => [
+    const colored = (mark: string, color: Record<string, unknown>) => [
       {
-        shape,
-        encoding: { ...(shape === 'span' ? {} : { y: 'score' }), color },
+        mark,
+        encoding: { ...(mark === 'span' ? {} : { y: 'score' }), color },
       },
     ]
     const cuts = (domain: unknown[]) =>
@@ -414,14 +412,14 @@ describe('a marks list in a config file', () => {
       `warning unpinned-span-ramp ${color}.domainMin`,
     ])
     expect(found(colored('span', { value: 'red' }))).toEqual([])
-    expect(found([{ shape: 'span', encoding: { color: 'red' } }])).toEqual([])
+    expect(found([{ mark: 'span', encoding: { color: 'red' } }])).toEqual([])
   })
 
   it('reports a zoom range that admits no zoom', () => {
     expect(
       found([
         {
-          shape: 'bar',
+          mark: 'bar',
           encoding: { y: 'score' },
           minBpPerPx: 100,
           maxBpPerPx: 20,
@@ -432,14 +430,14 @@ describe('a marks list in a config file', () => {
 
   it('warns on a density source a span or a second mark leaves unread', () => {
     const density = {
-      shape: 'bar',
+      mark: 'bar',
       source: 'density',
       encoding: { y: 'count' },
     }
     expect(found([density, density])).toEqual([
       `warning second-density-mark ${DISPLAY}.marks[1].source`,
     ])
-    expect(found([{ shape: 'span', source: 'density' }])).toEqual([
+    expect(found([{ mark: 'span', source: 'density' }])).toEqual([
       `warning span-density-source ${DISPLAY}.marks[0].source`,
     ])
   })
@@ -447,7 +445,7 @@ describe('a marks list in a config file', () => {
   it('leaves a list whose keys or types are wrong to the schema', () => {
     const problems = problemsOf(
       configOf([
-        { shape: 'span', encoding: { y: 'score' }, transform: 'pileup' },
+        { mark: 'span', encoding: { y: 'score' }, transform: 'pileup' },
       ]),
     )
     expect(problems.map(p => p.where)).toEqual([
@@ -463,8 +461,8 @@ describe('a marks list in a config file', () => {
 })
 
 describe('where a config holds a marks list', () => {
-  const marks = [{ shape: 'span', encoding: { y: 'score' } }]
-  const base = () => configOf([{ shape: 'bar', encoding: { y: 'score' } }])
+  const marks = [{ mark: 'span', encoding: { y: 'score' } }]
+  const base = () => configOf([{ mark: 'bar', encoding: { y: 'score' } }])
 
   // Why the walk is the whole file and an untyped node carrying `marks` is one
   // of this display's: no other type declares the slot, at any depth.
@@ -552,7 +550,7 @@ describe('where a config holds a marks list', () => {
 describe('a transform step in a config file', () => {
   const stepProblems = (step: Record<string, unknown>) =>
     problemsOf(
-      configOf([{ shape: 'bar', encoding: { y: 'score' }, transform: [step] }]),
+      configOf([{ mark: 'bar', encoding: { y: 'score' }, transform: [step] }]),
     ).map(p => `${p.where}: ${p.message}`)
   const STEP = `${DISPLAY}.marks[0].transform[0]`
 
@@ -596,7 +594,7 @@ describe('the lift a file takes before the rules read it', () => {
             {
               encoding: {
                 color: 'red',
-                glyph: 'triangle',
+                shape: 'triangle',
               },
               transform: [{ type: 'coverage', as: 'depth' }],
             },
@@ -615,7 +613,7 @@ describe('the lift a file takes before the rules read it', () => {
         {
           encoding: {
             color: { value: 'red' },
-            glyph: { value: 'triangle' },
+            shape: { value: 'triangle' },
           },
           transform: [{ type: 'coverage', as: 'depth' }],
         },

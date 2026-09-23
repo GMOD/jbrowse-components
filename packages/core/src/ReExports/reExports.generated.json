@@ -2862,14 +2862,6 @@
       ],
       "worker": "real"
     },
-    "@jbrowse/core/util/glyphNames": {
-      "package": "@jbrowse/core",
-      "names": [
-        "GLYPH_CODES",
-        "GLYPH_NAMES"
-      ],
-      "worker": "real"
-    },
     "@jbrowse/core/util/groupKeys": {
       "package": "@jbrowse/core",
       "names": [
@@ -3301,6 +3293,14 @@
       "package": "@jbrowse/core",
       "names": [
         "setStackTraceLimit"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/shapeNames": {
+      "package": "@jbrowse/core",
+      "names": [
+        "SHAPE_CODES",
+        "SHAPE_NAMES"
       ],
       "worker": "real"
     },

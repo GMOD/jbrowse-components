@@ -51,11 +51,11 @@ function found(marks: unknown[], facet?: unknown, transform?: unknown[]) {
 }
 
 const COVERAGE = {
-  shape: 'bar',
+  mark: 'bar',
   transform: [{ type: 'coverage' }],
   encoding: { y: 'coverage' },
 }
-const PILEUP = { shape: 'span', transform: [{ type: 'pileup' }] }
+const PILEUP = { mark: 'span', transform: [{ type: 'pileup' }] }
 
 interface ShippedConfig {
   tracks: {
@@ -97,9 +97,9 @@ test.each(SHIPPED)('%s draws every mark it declares as written', path => {
 test('the guide examples have no problems', () => {
   expect(
     found([
-      { shape: 'bar', encoding: { y: 'score' }, maxBpPerPx: 100 },
+      { mark: 'bar', encoding: { y: 'score' }, maxBpPerPx: 100 },
       {
-        shape: 'bar',
+        mark: 'bar',
         transform: [
           { type: 'bin', step: 'auto' },
           { type: 'aggregate', ops: [{ op: 'count' }] },
@@ -115,7 +115,7 @@ test('the guide examples have no problems', () => {
 
 test('a bar or point naming no y is the schema requirement, said once', () => {
   expect(
-    problemsOf([{ shape: 'bar' }, { shape: 'point', encoding: {} }]),
+    problemsOf([{ mark: 'bar' }, { mark: 'point', encoding: {} }]),
   ).toEqual(
     [0, 1].map(mark => ({
       rule: 'mark-without-value',
@@ -126,25 +126,25 @@ test('a bar or point naming no y is the schema requirement, said once', () => {
         'a bar or a point stands at a value and names no y field to plot, so it draws nothing',
     })),
   )
-  expect(found([{ shape: 'span' }])).toEqual([])
+  expect(found([{ mark: 'span' }])).toEqual([])
 })
 
-test('a channel the shape does not read waits unread', () => {
-  expect(found([{ shape: 'span', encoding: { y: 'score' } }])).toEqual([
+test('a channel the mark does not read waits unread', () => {
+  expect(found([{ mark: 'span', encoding: { y: 'score' } }])).toEqual([
     'warning unread-channel mark 0 encoding.y',
   ])
   expect(
-    found([{ shape: 'bar', encoding: { y: 'score', glyph: 'triangle' } }]),
-  ).toEqual(['warning unread-channel mark 0 encoding.glyph'])
+    found([{ mark: 'bar', encoding: { y: 'score', shape: 'triangle' } }]),
+  ).toEqual(['warning unread-channel mark 0 encoding.shape'])
 })
 
-test('a size on a mark that draws no glyph waits unread', () => {
-  expect(found([{ shape: 'span', size: 8 }])).toEqual([
+test('a size on a mark that draws no shape waits unread', () => {
+  expect(found([{ mark: 'span', size: 8 }])).toEqual([
     'warning unread-size mark 0 size',
   ])
-  expect(
-    found([{ shape: 'point', size: 8, encoding: { y: 'score' } }]),
-  ).toEqual([])
+  expect(found([{ mark: 'point', size: 8, encoding: { y: 'score' } }])).toEqual(
+    [],
+  )
 })
 
 test('a valued mark beside a packed span is told it stands in the first row, unless they never draw together or a facet bands them', () => {
@@ -165,7 +165,7 @@ test('a valued mark beside a packed span is told it stands in the first row, unl
 
 test('two marks packing rows of their own are pointed at one shared pileup', () => {
   const filtered = (expr: string) => ({
-    shape: 'span',
+    mark: 'span',
     transform: [{ type: 'filter', expr }, { type: 'pileup' }],
   })
   expect(found([filtered('jexl:a'), filtered('jexl:b')])).toEqual([
@@ -177,7 +177,7 @@ test('a y the steps do not write names what they leave', () => {
   expect(
     problemsOf([
       {
-        shape: 'bar',
+        mark: 'bar',
         transform: [{ type: 'bin', step: 1000 }, { type: 'aggregate' }],
         encoding: { y: 'score' },
       },
@@ -188,7 +188,7 @@ test('a y the steps do not write names what they leave', () => {
   expect(
     found([
       {
-        shape: 'bar',
+        mark: 'bar',
         transform: [
           { type: 'aggregate', ops: [{ op: 'mean', field: 'score' }] },
           { type: 'formula', expr: 'jexl:feature.mean_score*2', as: 'twice' },
@@ -203,7 +203,7 @@ test('a y the steps do not write names what they leave', () => {
   expect(
     found([
       {
-        shape: 'bar',
+        mark: 'bar',
         transform: [{ type: 'coverage', as: 'depth' }],
         encoding: { y: 'coverage' },
       },
@@ -220,11 +220,11 @@ test("a y the display's steps write is written, and one they unmake is not", () 
     { type: 'aggregate', ops: [{ op: 'count' }] },
   ]
   expect(
-    found([{ shape: 'bar', encoding: { y: 'count' } }], undefined, binned),
+    found([{ mark: 'bar', encoding: { y: 'count' } }], undefined, binned),
   ).toEqual([])
   expect(
     problemsOf(
-      [{ shape: 'bar', encoding: { y: 'score' } }],
+      [{ mark: 'bar', encoding: { y: 'score' } }],
       undefined,
       binned,
     ).map(problemText),
@@ -235,7 +235,7 @@ test("a y the display's steps write is written, and one they unmake is not", () 
     found(
       [
         {
-          shape: 'bar',
+          mark: 'bar',
           transform: [{ type: 'aggregate', ops: [{ op: 'count' }] }],
           encoding: { y: 'count' },
         },
@@ -249,7 +249,7 @@ test("a y the display's steps write is written, and one they unmake is not", () 
 test("a display pileup bands every mark, so none stands beside another's rows", () => {
   expect(
     found(
-      [{ shape: 'bar', encoding: { y: 'score' } }, { shape: 'span' }],
+      [{ mark: 'bar', encoding: { y: 'score' } }, { mark: 'span' }],
       undefined,
       [{ type: 'pileup' }],
     ),
@@ -260,7 +260,7 @@ test('a step says which of its slots cannot run', () => {
   expect(
     found([
       {
-        shape: 'bar',
+        mark: 'bar',
         encoding: { y: 'sum' },
         transform: [
           { type: 'filter', expr: 'feature.score > 1' },
@@ -280,7 +280,7 @@ test('a pair slot naming another number of fields says it reads the default', ()
   expect(
     problemsOf([
       {
-        shape: 'span',
+        mark: 'span',
         encoding: {},
         transform: [
           { type: 'bin', step: 10, as: ['lo'] },
@@ -297,7 +297,7 @@ test('a pair slot naming another number of fields says it reads the default', ()
 test('a jexl: field on a step is pointed at formula, where a dotted path is read', () => {
   const grouped = (field: string) => [
     {
-      shape: 'bar',
+      mark: 'bar',
       encoding: { y: 'count' },
       transform: [
         { type: 'aggregate', groupby: [field], ops: [{ op: 'count' }] },
@@ -311,7 +311,7 @@ test('a jexl: field on a step is pointed at formula, where a dotted path is read
 })
 
 test("the display's own steps are checked as a mark's are, under no mark", () => {
-  const bar = { shape: 'bar', encoding: { y: 'score' } }
+  const bar = { mark: 'bar', encoding: { y: 'score' } }
   const problems = problemsOf([bar], undefined, [
     { type: 'filter', expr: "get(feature,'score') > 1" },
     { type: 'bin', step: -5 },
@@ -334,7 +334,7 @@ test("the display's own steps are checked as a mark's are, under no mark", () =>
 
 test('a mark the caller could not read keeps its index as a gap', () => {
   const packed: MarkSnapshot = {
-    shape: 'span',
+    mark: 'span',
     transform: [{ type: 'pileup' }],
   }
   expect(
@@ -367,14 +367,14 @@ test("a mark packing over the facet's or the display's pileup is two packings", 
 
 test("a display pileup under a facet packs across every section, and the facet's is the fix", () => {
   expect(
-    problemsOf([{ shape: 'span' }], { field: 'HP' }, [{ type: 'pileup' }]).map(
+    problemsOf([{ mark: 'span' }], { field: 'HP' }, [{ type: 'pileup' }]).map(
       problemText,
     ),
   ).toEqual([
     'transform.0: runs before the facet splits the features, so it packs across every section and leaves each section the rows the others fill; the same pileup in facet.transform packs each section on its own',
   ])
   expect(
-    found([{ shape: 'span' }], {
+    found([{ mark: 'span' }], {
       field: 'HP',
       transform: [{ type: 'pileup' }],
     }),
@@ -385,11 +385,11 @@ test("a display pileup under a facet packs across every section, and the facet's
 // own step makes features that carry no row, so it stands beside the rows.
 test('a mark whose own step unmakes a shared pileup stands beside the rows', () => {
   expect(
-    found([COVERAGE, { shape: 'span' }], undefined, [{ type: 'pileup' }]),
+    found([COVERAGE, { mark: 'span' }], undefined, [{ type: 'pileup' }]),
   ).toEqual(['warning value-beside-rows mark 0 encoding.row'])
   expect(
     found(
-      [{ shape: 'bar', encoding: { y: 'score' } }, { shape: 'span' }],
+      [{ mark: 'bar', encoding: { y: 'score' } }, { mark: 'span' }],
       undefined,
       [{ type: 'pileup' }],
     ),
@@ -398,13 +398,13 @@ test('a mark whose own step unmakes a shared pileup stands beside the rows', () 
 
 test("the facet's steps are checked under facet.transform, and what they make a mark may read", () => {
   expect(
-    found([{ shape: 'span' }], {
+    found([{ mark: 'span' }], {
       field: 'HP',
       transform: [{ type: 'bin', step: -1 }],
     }),
   ).toEqual(['error bin-width mark undefined facet.transform.0.step'])
   expect(
-    found([{ shape: 'bar', encoding: { y: 'count' } }], {
+    found([{ mark: 'bar', encoding: { y: 'count' } }], {
       field: 'HP',
       transform: [
         { type: 'bin', step: 1000 },
@@ -416,7 +416,7 @@ test("the facet's steps are checked under facet.transform, and what they make a 
 
 test("a field the display's steps make is one a mark reads", () => {
   expect(
-    found([{ shape: 'bar', encoding: { y: 'depth' } }], undefined, [
+    found([{ mark: 'bar', encoding: { y: 'depth' } }], undefined, [
       { type: 'formula', expr: 'jexl:1', as: 'depth' },
     ]),
   ).toEqual([])
@@ -425,7 +425,7 @@ test("a field the display's steps make is one a mark reads", () => {
 test('threshold cuts written high to low are told which way they are read', () => {
   const cuts = (domain: unknown[]) => [
     {
-      shape: 'point',
+      mark: 'point',
       encoding: {
         y: 'score',
         color: { field: 'pip', scale: 'threshold', domain },
@@ -445,7 +445,7 @@ test('threshold cuts written high to low are told which way they are read', () =
 test('a threshold range with other than one colour per interval is named', () => {
   const colors = (range: string[]) => [
     {
-      shape: 'point',
+      mark: 'point',
       encoding: {
         y: 'score',
         color: { field: 'pip', scale: 'threshold', domain: [0.1, 0.5], range },
@@ -461,11 +461,11 @@ test('a threshold range with other than one colour per interval is named', () =>
 })
 
 test('a ramp reads its ends, not a domain, and a span wants both ends pinned', () => {
-  const ramp = (shape: string, color: Record<string, unknown>) => [
+  const ramp = (mark: string, color: Record<string, unknown>) => [
     {
-      shape,
+      mark,
       encoding: {
-        ...(shape === 'span' ? {} : { y: 'score' }),
+        ...(mark === 'span' ? {} : { y: 'score' }),
         color: { field: 'score', scale: 'linear', ...color },
       },
     },
@@ -492,7 +492,7 @@ test('a ramp reads its ends, not a domain, and a span wants both ends pinned', (
 test('a range under an unset scale is categorical, whatever it lists', () => {
   const marks = [
     {
-      shape: 'bar',
+      mark: 'bar',
       encoding: {
         y: 'score',
         color: { field: 'score', range: ['white', 'red'], domain: ['0'] },
@@ -506,7 +506,7 @@ test('a zoom range that admits no zoom never draws', () => {
   expect(
     problemsOf([
       {
-        shape: 'bar',
+        mark: 'bar',
         encoding: { y: 'score' },
         minBpPerPx: 100,
         maxBpPerPx: 20,
@@ -524,11 +524,11 @@ test('a zoom range that admits no zoom never draws', () => {
 })
 
 test('a density source on a span, or on a second mark, waits unread', () => {
-  const density = { shape: 'bar', source: 'density', encoding: { y: 'count' } }
+  const density = { mark: 'bar', source: 'density', encoding: { y: 'count' } }
   expect(found([density, density])).toEqual([
     'warning second-density-mark mark 1 source',
   ])
-  expect(found([{ shape: 'span', source: 'density' }])).toEqual([
+  expect(found([{ mark: 'span', source: 'density' }])).toEqual([
     'warning span-density-source mark 0 source',
   ])
 })

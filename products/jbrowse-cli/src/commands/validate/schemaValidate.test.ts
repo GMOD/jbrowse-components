@@ -318,8 +318,8 @@ describe('the schema', () => {
         {
           type: 'LinearMarkDisplay',
           marks: [
-            { shape: 'bar', encoding: { y: 'score' } },
-            { shape: 'point', encoding: { y: 'score', colour: 'red' } },
+            { mark: 'bar', encoding: { y: 'score' } },
+            { mark: 'point', encoding: { y: 'score', colour: 'red' } },
           ],
         },
       ],
@@ -336,15 +336,15 @@ describe('the schema', () => {
         'a bar or a point stands at a value and names no y field to plot, so it draws nothing',
     }
     expect(
-      problemsOfMarks([{ shape: 'bar', encoding: { x: 'start' } }]),
+      problemsOfMarks([{ mark: 'bar', encoding: { x: 'start' } }]),
     ).toEqual([unmet])
-    expect(problemsOfMarks([{ shape: 'point' }])).toEqual([unmet])
+    expect(problemsOfMarks([{ mark: 'point' }])).toEqual([unmet])
     expect(problemsOfMarks([{ encoding: {} }])).toEqual([unmet])
-    expect(problemsOfMarks([{ shape: 'bar', encoding: { y: '' } }])).toEqual([
+    expect(problemsOfMarks([{ mark: 'bar', encoding: { y: '' } }])).toEqual([
       unmet,
     ])
     const config = baseConfig()
-    config.tracks[0]!.displayDefaults = { marks: [{ shape: 'bar' }] }
+    config.tracks[0]!.displayDefaults = { marks: [{ mark: 'bar' }] }
     expect(schemaProblems(config).map(p => p.rule)).toEqual([
       'mark-without-value',
     ])
@@ -352,11 +352,11 @@ describe('the schema', () => {
 
   it('tells a wrong key or type from an unmet requirement', () => {
     const pointer = '/$defs/LinearMarkDisplaySlots/properties/marks'
-    expect(hasDeclaredShape([{ shape: 'bar' }], pointer)).toBe(true)
-    expect(hasDeclaredShape([{ shape: 'bar', transform: 'x' }], pointer)).toBe(
+    expect(hasDeclaredShape([{ mark: 'bar' }], pointer)).toBe(true)
+    expect(hasDeclaredShape([{ mark: 'bar', transform: 'x' }], pointer)).toBe(
       false,
     )
-    expect(hasDeclaredShape([{ shape: 'bar', colour: 'red' }], pointer)).toBe(
+    expect(hasDeclaredShape([{ mark: 'bar', colour: 'red' }], pointer)).toBe(
       false,
     )
   })
@@ -365,12 +365,12 @@ describe('the schema', () => {
     expect(
       problemsOfMarks([
         {
-          shape: 'bar',
+          mark: 'bar',
           encoding: { y: 'depth', color: 'red' },
           transform: [{ type: 'coverage', as: 'depth' }],
         },
         {
-          shape: 'span',
+          mark: 'span',
           encoding: {
             color: {
               field: 'score',
@@ -386,14 +386,14 @@ describe('the schema', () => {
 
   it('takes a y-less span, and a y naming a field', () => {
     expect(
-      problemsOfMarks([{ shape: 'span', encoding: { row: 'name' } }]),
+      problemsOfMarks([{ mark: 'span', encoding: { row: 'name' } }]),
     ).toEqual([])
-    expect(problemsOfMarks([{ shape: 'span' }])).toEqual([])
+    expect(problemsOfMarks([{ mark: 'span' }])).toEqual([])
     expect(
-      problemsOfMarks([{ shape: 'bar', encoding: { y: 'score' } }]),
+      problemsOfMarks([{ mark: 'bar', encoding: { y: 'score' } }]),
     ).toEqual([])
     expect(
-      problemsOfMarks([{ shape: 'point', encoding: { y: 'score' } }]),
+      problemsOfMarks([{ mark: 'point', encoding: { y: 'score' } }]),
     ).toEqual([])
   })
 

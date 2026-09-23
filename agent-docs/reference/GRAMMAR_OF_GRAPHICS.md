@@ -87,10 +87,10 @@ in full and of the format-typed displays only where it says so.
 | --- | --- | --- | --- |
 | data | rows in memory | a feature adapter's `getFeaturesArray`, any format, and past the byte gate the adapter's `densityAdapter` sidecar as a mark's layer (ADR-117) | whole; the adapter is the format's, and the grammar has no lazy source of its own. An adapter with zoom levels is sent the view's `bpPerPx` ([ADR-123](../architecture-decision-records/adr-123-a-mark-reads-a-bigwig-at-the-rungs-floor.md)), so a BigWig answers from the summary tier the wiggle display reads |
 | transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `pileup` — each step its own schema taking only its own slots ([ADR-150](../architecture-decision-records/adr-150-a-transform-step-is-one-schema-per-type.md)), run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreEncodeFeatures` request and then each layer's own | whole, layout included — `pileup` is a read pileup's packing as a step, and not the format-typed displays' ([ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)); a `bin`'s width may follow the zoom; `window` and `sample` are absent |
-| scale | domain → range, separate from the encoding | the colour and glyph channels carry their own, `{ field, scale, domain, range }` and on a ramp `domainMin`, `domainMax` and `scheme`, read by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`) and resolved either in the worker (categorical) or on the main thread against a domain uniform (a quantitative ramp); the value scale is the display's one `scales.y`, which every mark's `encoding.y` field is read through and `ScoreAxisMixin` derives the axis from ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md), generalised to every quantitative display by [ADR-142](../architecture-decision-records/adr-142-one-value-scale-object.md)) | whole, declared in one place |
+| scale | domain → range, separate from the encoding | the colour and shape channels carry their own, `{ field, scale, domain, range }` and on a ramp `domainMin`, `domainMax` and `scheme`, read by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`) and resolved either in the worker (categorical) or on the main thread against a domain uniform (a quantitative ramp); the value scale is the display's one `scales.y`, which every mark's `encoding.y` field is read through and `ScoreAxisMixin` derives the axis from ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md), generalised to every quantitative display by [ADR-142](../architecture-decision-records/adr-142-one-value-scale-object.md)) | whole, declared in one place |
 | mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`) | whole, for the shapes the library has |
 | guide | axis and legend derived from a scale; a highlight derived from a selection | `colorScales` → legend (`packages/display-kit/src/LegendMixin.ts`), `valueScales` → axis, its title, hatches, and the reference lines `scales.y.rules` declares (`packages/wiggle-core/src/ScoreAxisMixin.ts`), `hoverInk` / `selectionInk` / `pinnedInk` / `soloInk` → the highlight (`packages/display-kit/src/highlightHost.ts`), each instance's box read off its shape's `ink`; `DisplayChrome` places all three guides, and `renderDisplaySvg` exports the legend, the axis and the pinned highlight — a hover, a selection and a solo are live-session UI, a pin is what the figure is about | whole, for the displays that declare |
-| layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; every drawing mark folds into the display's one y domain, ggplot2's one-scale-per-aesthetic rule ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md)); a mark's `minBpPerPx`/`maxBpPerPx` is the zoom range it draws in, and the domain, legend and row count fold only the marks drawing | y is the plot's, colour and glyph are each mark's; semantic zoom per layer; the display's `facet` splits the features before every mark's steps and stacks one section of rows per value, with a chip |
+| layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; every drawing mark folds into the display's one y domain, ggplot2's one-scale-per-aesthetic rule ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md)); a mark's `minBpPerPx`/`maxBpPerPx` is the zoom range it draws in, and the domain, legend and row count fold only the marks drawing | y is the plot's, colour and shape are each mark's; semantic zoom per layer; the display's `facet` splits the features before every mark's steps and stacks one section of rows per value, with a chip |
 | coordinates | a transform of the plane | genomic x along a strip, and the circular view's ring pass over it: the view is a `RegionHost` whose axis is the circumference, a display renders its strip as into a linear track, and one pass per ring resamples the strip's canvas in polar coordinates (`plugins/circular-view/src/rings/`, [ADR-119](../architecture-decision-records/adr-119-the-circular-view-is-a-coordinate-stage-over-the-linear-displays.md)) | polar, as a resampling of the finished picture rather than a twin per shape — measured at 4.3 ms a ring against 5.4–6.8 ms for the twin, exact at every bin width; the dotplot stays a display |
 
 The encoding — field to channel, evaluated once — is the grammar's central
@@ -150,7 +150,7 @@ derived from. Each guide has one source, and each source is tested against
 its consumer. The two backends are held to each other in a browser as well:
 the cross-backend gate's `Mark Display` suite
 (`products/jbrowse-web/browser-tests/suites/mark-display.ts`) renders nine
-`marks` configs — a categorical bar chart with its key and axis, a glyph
+`marks` configs — a categorical bar chart with its key and axis, a shape
 scale, a stacked pileup over a BAM, two axes, a multiscale pair, a
 quantitative ramp, a variant strip and a pileup faceted by mismatch count — on
 Canvas2D and WebGL and blocks CI past 1.5% drift. Its first run found two
@@ -168,8 +168,8 @@ ends now print through `formatScore`, the rule the score caption already used.
 
 The seams, named honestly:
 
-- **A colour or glyph scale is declared on its channel; the value scale is the
-  plot's.** `encoding.color` and `encoding.glyph` carry
+- **A colour or shape scale is declared on its channel; the value scale is the
+  plot's.** `encoding.color` and `encoding.shape` carry
   `{ field, scale, domain, ... }`, and a positional channel is a bare field:
   `scales.y` is the one scale every `encoding.y` is read through, the score
   menu writes into it, and `ScoreAxisMixin` derives the ticks and the
@@ -184,7 +184,8 @@ The seams, named honestly:
   The four score-axis displays that are not the mark display keep their axis
   in those slots, which is what the hook's default answers.
 - **Two channel vocabularies remain.** The encoder and the three shared
-  shapes say `x`, `x2`, `y`, `row`, `color`, `glyph`. Variants' cell
+  shapes say `x`, `x2`, `y`, `row`, `color`, `shape`, and the point painter
+  reads `shape` as its `glyph` lane. Variants' cell
   (`plugins/variants/src/LinearMultiSampleVariantDisplay/components/cellMark.ts`)
   says `startEnd` and `row`; canvas's rect
   (`plugins/canvas/src/LinearBasicDisplay/marks/featureGlyphShapes.ts`) says
@@ -331,7 +332,7 @@ The seams, named honestly:
   colours leave the key; Manhattan hands it the entries of the scale table
   `encodeFeatures` resolved; synteny and the mark display map their own
   resolved tables — already in their channel's order, and the mark's rows
-  carrying a glyph swatch — but place the rows through the same
+  carrying a shape swatch — but place the rows through the same
   `legendSpecOf`. The multiway lane glyphs' `color` is the `FeatureColor`
   object, so a field there hands the union the values its packer filed each
   mark under (`laneFieldKey`), `cluster` among them. Two keys stay outside
@@ -406,7 +407,7 @@ never decides which sections exist**, so no worker request carries one and a
 reorder refetches nothing: the listed values stack first, the rest follow
 sorted, and a listed value the data lacks takes no section. The multi-row and
 multiway synteny displays' `domain` slots, every display's `facet.domain`
-and the colour and glyph channels' legend order are that one word and rule
+and the colour and shape channels' legend order are that one word and rule
 (`groupKeyComparator`); a key over the facet's own field lists its rows in the
 sections' order. Three of the four tree-sidebar displays (MAF and the two
 multi-sample variant ones) share the word as a `domain` row-order slot, read as
@@ -518,7 +519,7 @@ the row axis in the vocabulary above, and none is a new channel.
   ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md)).
   The form for a config that does want two quantities in one display is a
   stacked band per mark with a free y, drawn through `ValueScale.bandTops`,
-  and nothing is built for it. Two marks colouring or glyphing by one field through one domain
+  and nothing is built for it. Two marks colouring or shaping by one field through one domain
   and palette share one key section — `buildMarkLegend` keys a section on the
   declaration rather than the mark, the way ggplot2's `ScalesList$add_defaults`
   keeps one scale per aesthetic across layers and `Guides$merge` folds
@@ -569,7 +570,7 @@ vocabulary; its lead is the browser around it and scaling past the fetch budget.
 | | JBrowse marks | GenomeSpy v0.88 | Gosling 1.0.5 |
 | --- | --- | --- | --- |
 | Marks | bar, point, span | rect, point, rule, tick, text, link, arrow | point, line, area, bar, rect, text, links, rule, triangles |
-| Channels | x, x2, y, row, color, glyph | adds y2, size, opacity, stroke, angle, text, tooltip | adds ye, size, opacity, stroke, text |
+| Channels | x, x2, y, row, color, shape | adds y2, size, opacity, stroke, angle, text, tooltip | adds ye, size, opacity, stroke, text |
 | y scales | linear, log | 13 kinds, incl. symlog and sqrt | none on y |
 | Named colour ramps | viridis only | the d3 set | — |
 | Transforms | 7 | ~27, incl. window, lookup, stack, regexExtract | ~10 |

@@ -44,7 +44,7 @@ const aluTrack = (
       showLegend: false,
       marks: [
         {
-          shape: 'bar',
+          mark: 'bar',
           transform,
           encoding: { y: 'milliDiv', color },
         },

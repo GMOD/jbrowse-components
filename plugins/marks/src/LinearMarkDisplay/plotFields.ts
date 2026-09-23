@@ -81,8 +81,8 @@ export function scanPlotFields(features: Feature[]): PlotFields {
   }
 }
 
-export const MARK_SHAPE_CHOICES = ['bar', 'point'] as const
-export type PlotShape = (typeof MARK_SHAPE_CHOICES)[number]
+export const MARK_TYPE_CHOICES = ['bar', 'point'] as const
+export type PlotMark = (typeof MARK_TYPE_CHOICES)[number]
 
 /** A mark's `encoding.color` as a config snapshot holds it. */
 type ColorSnapshot =
@@ -96,7 +96,7 @@ type ColorSnapshot =
 /** What the Plot field dialog asks for, and what the marks are built from. */
 export interface PlotSpec {
   field: string
-  shape: PlotShape
+  mark: PlotMark
   colorField: string
   binned: boolean
   /**
@@ -109,14 +109,14 @@ export interface PlotSpec {
 
 export const EMPTY_PLOT_SPEC: PlotSpec = {
   field: '',
-  shape: 'bar',
+  mark: 'bar',
   colorField: '',
   binned: false,
 }
 
 /** One `marks` entry as a config snapshot holds it, defaults left off. */
 export interface MarkSnapshot {
-  shape?: string
+  mark?: string
   encoding?: { y?: string; color?: ColorSnapshot; [channel: string]: unknown }
   transform?: Record<string, unknown>[]
   minBpPerPx?: number
@@ -143,7 +143,7 @@ function colorEncoding(
 export function plotMarks(spec: PlotSpec, fields: PlotFields): MarkSnapshot[] {
   const color = colorEncoding(spec, fields)
   const plot: MarkSnapshot = {
-    shape: spec.shape,
+    mark: spec.mark,
     encoding: { y: spec.field, ...(color === undefined ? {} : { color }) },
     ...(spec.binned ? { maxBpPerPx: BINNED_BP_PER_PX } : {}),
   }
@@ -151,7 +151,7 @@ export function plotMarks(spec: PlotSpec, fields: PlotFields): MarkSnapshot[] {
     ? [
         plot,
         {
-          shape: 'bar',
+          mark: 'bar',
           transform: [
             { type: 'bin', step: 'auto' },
             {
@@ -191,8 +191,8 @@ function paintedField(color: ColorSnapshot | undefined) {
   return paintedScale({ field, scale }, 'categorical') === 'none' ? '' : field
 }
 
-function isPlotShape(shape: string): shape is PlotShape {
-  return (MARK_SHAPE_CHOICES as readonly string[]).includes(shape)
+function isPlotMark(mark: string): mark is PlotMark {
+  return (MARK_TYPE_CHOICES as readonly string[]).includes(mark)
 }
 
 /**
@@ -208,15 +208,15 @@ export function specOfMarks(
   canonical: (marks: readonly MarkSnapshot[]) => unknown,
 ): PlotSpec | undefined {
   const [plot, second] = declared
-  const shape = plot?.shape ?? 'bar'
-  if (!plot || !isPlotShape(shape)) {
+  const mark = plot?.mark ?? 'bar'
+  if (!plot || !isPlotMark(mark)) {
     return undefined
   }
   const color = plot.encoding?.color
   const colorField = paintedField(color)
   const spec: PlotSpec = {
     field: plot.encoding?.y ?? '',
-    shape,
+    mark,
     colorField,
     binned: second !== undefined,
     ...(color === undefined

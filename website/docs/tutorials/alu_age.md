@@ -9,7 +9,7 @@ tutorial_category: Grammar of graphics
 ---
 
 `LinearMarkDisplay` is a grammar of graphics over a track: each entry in `marks`
-names a shape, a `transform` list and an `encoding` from feature fields to
+names a mark type, a `transform` list and an `encoding` from feature fields to
 channels, so a numeric column of any feature file becomes a plot with a JSON
 entry and no code. Here the file is RepeatMasker's Alu rows, whose divergence
 column is an age, and the plots ask where the young copies sit. The mark display
@@ -74,7 +74,7 @@ the legend order and colours.
       "displayId": "alu_age-LinearMarkDisplay",
       "marks": [
         {
-          "shape": "bar",
+          "mark": "bar",
           "transform": [
             {
               "type": "formula",
@@ -117,7 +117,7 @@ over the copies a `filter` admits, in AluY's colour.
 ```json
 "marks": [
   {
-    "shape": "bar",
+    "mark": "bar",
     "transform": [
       { "type": "formula", "expr": "jexl:substring(feature.name, 0, 4)", "as": "lineage" }
     ],
@@ -128,7 +128,7 @@ over the copies a `filter` admits, in AluY's colour.
     "maxBpPerPx": 100
   },
   {
-    "shape": "bar",
+    "mark": "bar",
     "transform": [
       { "type": "bin", "step": "auto" },
       { "type": "aggregate", "groupby": ["start", "end"], "ops": [{ "op": "count" }] }
@@ -137,7 +137,7 @@ over the copies a `filter` admits, in AluY's colour.
     "minBpPerPx": 100
   },
   {
-    "shape": "bar",
+    "mark": "bar",
     "transform": [
       { "type": "filter", "expr": "jexl:startsWith(feature.name, 'AluY')" },
       { "type": "bin", "step": "auto" },
@@ -199,7 +199,7 @@ The adapter gains a `densityAdapter` and the count mark gains
       "displayId": "alu_age-LinearMarkDisplay",
       "marks": [
         {
-          "shape": "bar",
+          "mark": "bar",
           "transform": [
             {
               "type": "formula",
@@ -220,7 +220,7 @@ The adapter gains a `densityAdapter` and the count mark gains
           "maxBpPerPx": 100
         },
         {
-          "shape": "bar",
+          "mark": "bar",
           "source": "density",
           "transform": [
             { "type": "bin", "step": "auto" },
@@ -234,7 +234,7 @@ The adapter gains a `densityAdapter` and the count mark gains
           "minBpPerPx": 100
         },
         {
-          "shape": "bar",
+          "mark": "bar",
           "transform": [
             {
               "type": "filter",
@@ -302,7 +302,7 @@ against the young share's swing.
       },
       "marks": [
         {
-          "shape": "bar",
+          "mark": "bar",
           "encoding": {
             "y": "youngLog2",
             "color": "jexl:feature.youngLog2 > 0 ? '#d73027' : '#4575b4'"

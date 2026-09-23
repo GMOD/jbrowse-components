@@ -9,7 +9,7 @@ import type { PlotFieldDialogModel } from './PlotFieldDialog.tsx'
 
 const EMPTY: PlotSpec = {
   field: '',
-  shape: 'bar',
+  mark: 'bar',
   colorField: '',
   binned: false,
 }
@@ -46,16 +46,16 @@ test('Apply is refused until a field is chosen', () => {
   expect(setPlotMarks).toHaveBeenCalledWith({ ...EMPTY, field: 'score' })
 })
 
-test('the shape, the colour field and the binned box reach the submit', () => {
+test('the mark, the colour field and the binned box reach the submit', () => {
   const { getByText, setPlotMarks } = setup({})
   pick('Value field', 'score')
-  pick('Shape', 'point')
+  pick('Mark', 'point')
   pick('Color by', 'repClass')
   fireEvent.click(getByText('Count per bin zoomed out'))
   fireEvent.click(getByText('Apply'))
   expect(setPlotMarks).toHaveBeenCalledWith({
     field: 'score',
-    shape: 'point',
+    mark: 'point',
     colorField: 'repClass',
     binned: true,
   })
@@ -64,7 +64,7 @@ test('the shape, the colour field and the binned box reach the submit', () => {
 test('an existing plot reopens prefilled', () => {
   const plotSpec: PlotSpec = {
     field: 'score',
-    shape: 'point',
+    mark: 'point',
     colorField: 'repClass',
     binned: true,
   }

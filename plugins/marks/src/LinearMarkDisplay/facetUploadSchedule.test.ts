@@ -34,7 +34,7 @@ function facetedDisplay() {
       stateModel: (pm, schema) => stateModelFactory(pm, schema),
       viewModel: linearGenomeViewStateModelFactory,
       displayConfig: {
-        marks: [{ shape: 'bar', encoding: { y: 'score' } }],
+        marks: [{ mark: 'bar', encoding: { y: 'score' } }],
         facet: 'sample',
       },
       regions: [REGION],

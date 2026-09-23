@@ -280,7 +280,7 @@ test('a density ring: a BED binned and counted by the mark display, over the str
           height: 40,
           marks: [
             {
-              shape: 'bar',
+              mark: 'bar',
               transform: [
                 { type: 'bin', step: 1000 },
                 {
@@ -328,7 +328,7 @@ test('a coverage ring: an alignment-shaped track through the mark display covera
           height: 30,
           marks: [
             {
-              shape: 'bar',
+              mark: 'bar',
               transform: [{ type: 'coverage' }],
               encoding: { y: 'coverage' },
             },

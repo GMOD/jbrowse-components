@@ -44,7 +44,7 @@
           "displayId": "alu_age-LinearMarkDisplay",
           "marks": [
             {
-              "shape": "bar",
+              "mark": "bar",
               "transform": [
                 {
                   "type": "formula",
@@ -71,7 +71,7 @@
               "maxBpPerPx": 100
             },
             {
-              "shape": "bar",
+              "mark": "bar",
               "source": "density",
               "transform": [
                 { "type": "bin", "step": "auto" },
@@ -85,7 +85,7 @@
               "minBpPerPx": 100
             },
             {
-              "shape": "bar",
+              "mark": "bar",
               "transform": [
                 {
                   "type": "filter",
@@ -127,7 +127,7 @@
           },
           "marks": [
             {
-              "shape": "bar",
+              "mark": "bar",
               "encoding": {
                 "y": "youngLog2",
                 "color": "jexl:feature.youngLog2 > 0 ? '#d73027' : '#4575b4'"
@@ -159,7 +159,7 @@
           },
           "marks": [
             {
-              "shape": "bar",
+              "mark": "bar",
               "encoding": {
                 "y": "strandLog2",
                 "color": "jexl:feature.strandLog2 > 0 ? '#d73027' : '#4575b4'"

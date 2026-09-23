@@ -134,7 +134,7 @@ rather than with the schema: a `marks` list loads whenever its keys and value
 types are right, and the app says what it cannot draw in a corner notice rather
 than refusing the track; `jb2export` prints the same problems and fails on the
 errors among them. The validator runs that same rule list over the file — a bar
-or point naming no `y`, a channel the shape does not read, a `y` no step writes,
+or point naming no `y`, a channel the mark does not read, a `y` no step writes,
 a zoom range that admits no zoom — so a marks config is worth validating even
 when you are sure of the slot names. `--json` carries each finding's stable
 `rule` id.

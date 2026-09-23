@@ -18,13 +18,13 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 const schema = configSchemaFactory()
 
 const STARTS: Record<string, unknown> = {
-  'a bar of score': { shape: 'bar', encoding: { y: 'score' } },
-  'a point with a glyph scale': {
-    shape: 'point',
-    encoding: { y: 'score', glyph: { field: 'svtype' } },
+  'a bar of score': { mark: 'bar', encoding: { y: 'score' } },
+  'a point with a shape scale': {
+    mark: 'point',
+    encoding: { y: 'score', shape: { field: 'svtype' } },
   },
   'a span with a pinned ramp and a pileup': {
-    shape: 'span',
+    mark: 'span',
     transform: [{ type: 'pileup' }],
     encoding: {
       color: {
@@ -37,25 +37,25 @@ const STARTS: Record<string, unknown> = {
     },
   },
   'a constant colour': {
-    shape: 'bar',
+    mark: 'bar',
     encoding: { y: 'score', color: 'steelblue' },
   },
   'a categorical colour with a range': {
-    shape: 'bar',
+    mark: 'bar',
     encoding: {
       y: 'score',
       color: { field: 'strand', domain: ['1'], range: ['red', 'blue'] },
     },
   },
   'an open-ended ramp': {
-    shape: 'bar',
+    mark: 'bar',
     encoding: {
       y: 'score',
       color: { field: 'score', scale: 'linear', domainMin: 0 },
     },
   },
   'a diverging ramp': {
-    shape: 'bar',
+    mark: 'bar',
     encoding: {
       y: 'score',
       color: {
@@ -69,7 +69,7 @@ const STARTS: Record<string, unknown> = {
     },
   },
   'a threshold': {
-    shape: 'point',
+    mark: 'point',
     encoding: {
       y: 'score',
       color: {
@@ -81,19 +81,19 @@ const STARTS: Record<string, unknown> = {
     },
   },
   'a reversed scheme': {
-    shape: 'bar',
+    mark: 'bar',
     encoding: {
       y: 'score',
       color: { field: 'score', scale: 'log', scheme: 'viridis', reverse: true },
     },
   },
   'a density bar': {
-    shape: 'bar',
+    mark: 'bar',
     source: 'density',
     encoding: { y: 'count' },
   },
   'a binned count': {
-    shape: 'bar',
+    mark: 'bar',
     transform: [
       { type: 'bin', step: 1000 },
       { type: 'aggregate', ops: [{ op: 'mean', field: 'score' }] },
@@ -156,7 +156,7 @@ const NODES: Path[] = [
   ['marks', 0],
   ['marks', 0, 'encoding'],
   ['marks', 0, 'encoding', 'color'],
-  ['marks', 0, 'encoding', 'glyph'],
+  ['marks', 0, 'encoding', 'shape'],
 ]
 
 test.each(Object.entries(STARTS))(

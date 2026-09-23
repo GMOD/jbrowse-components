@@ -165,7 +165,7 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@FAMILY@|$FAMILY|g" -e "s|@BED@|$BED|g" \
       "displayId": "@FAMILY@_age-LinearMarkDisplay",
       "marks": [
         {
-          "shape": "bar",
+          "mark": "bar",
           "transform": [
             {
               "type": "formula",
@@ -186,7 +186,7 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@FAMILY@|$FAMILY|g" -e "s|@BED@|$BED|g" \
           "maxBpPerPx": 100
         },
         {
-          "shape": "bar",
+          "mark": "bar",
           "source": "density",
           "transform": [
             { "type": "bin", "step": "auto" },
@@ -200,7 +200,7 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@FAMILY@|$FAMILY|g" -e "s|@BED@|$BED|g" \
           "minBpPerPx": 100
         },
         {
-          "shape": "bar",
+          "mark": "bar",
           "transform": [
             { "type": "filter", "expr": "jexl:startsWith(feature.name, '@YOUNG@')" },
             { "type": "bin", "step": "auto" },
@@ -243,7 +243,7 @@ for lane in young:youngLog2 strand:strandLog2; do
       },
       "marks": [
         {
-          "shape": "bar",
+          "mark": "bar",
           "encoding": {
             "y": "@FIELD@",
             "color": "jexl:feature.@FIELD@ > 0 ? '#d73027' : '#4575b4'"

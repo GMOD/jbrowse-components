@@ -157,11 +157,11 @@ describe('a mark display the rule list finds a problem in', () => {
     configWith({ type: 'LinearMarkDisplay', marks: list })
 
   test.each([
-    ['a bar naming no y', marks({ shape: 'bar', encoding: {} })],
+    ['a bar naming no y', marks({ mark: 'bar', encoding: {} })],
     [
       'a y its aggregate does not write',
       marks({
-        shape: 'bar',
+        mark: 'bar',
         transform: [
           { type: 'bin', step: 'auto' },
           {
@@ -187,7 +187,7 @@ describe('a mark display the rule list finds a problem in', () => {
     await expect(
       exportTrack(
         marks({
-          shape: 'bar',
+          mark: 'bar',
           transform: [{ type: 'filter', expr: 'score>5' }],
           encoding: { y: 'score' },
         }),
@@ -201,7 +201,7 @@ describe('a mark display the rule list finds a problem in', () => {
         configWith({
           type: 'LinearMarkDisplay',
           transform: [{ type: 'filter', expr: 'score>5' }],
-          marks: [{ shape: 'bar', encoding: { y: 'score' } }],
+          marks: [{ mark: 'bar', encoding: { y: 'score' } }],
         }),
       ),
     ).rejects.toThrow(/track "genes" transform\.0\.expr: /)
@@ -210,7 +210,7 @@ describe('a mark display the rule list finds a problem in', () => {
   test('says a warning and draws', async () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const svg = await exportTrack(
-      marks({ shape: 'span', encoding: { y: 'score' } }),
+      marks({ mark: 'span', encoding: { y: 'score' } }),
     )
     expect(svg).toContain('<svg')
     expect(warn).toHaveBeenCalledWith(

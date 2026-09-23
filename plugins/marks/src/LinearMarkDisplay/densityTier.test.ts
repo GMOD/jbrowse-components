@@ -27,9 +27,9 @@ const SIDECAR = {
 }
 
 const DENSITY_MARKS = [
-  { shape: 'bar', encoding: { y: 'score' } },
+  { mark: 'bar', encoding: { y: 'score' } },
   {
-    shape: 'bar',
+    mark: 'bar',
     source: 'density',
     encoding: { y: 'count', color: 'red' },
     minBpPerPx: 100,
@@ -103,8 +103,8 @@ test('a density mark draws the sidecar in the refused fetch place', () => {
 test('a point density mark draws the sidecar too, its layer carrying the lanes a point reads', () => {
   const { createDisplay } = createTestEnvironment(
     [
-      { shape: 'bar', encoding: { y: 'score' } },
-      { shape: 'point', source: 'density', encoding: { y: 'count' } },
+      { mark: 'bar', encoding: { y: 'score' } },
+      { mark: 'point', source: 'density', encoding: { y: 'count' } },
     ],
     SIDECAR,
   )
@@ -144,7 +144,7 @@ test('a zoom that keeps the density mark rebuilds no payload', () => {
 
 test('the banner stands where no mark declares the sidecar', () => {
   const { createDisplay } = createTestEnvironment(
-    [{ shape: 'bar', encoding: { y: 'score' } }],
+    [{ mark: 'bar', encoding: { y: 'score' } }],
     SIDECAR,
   )
   const { display, view } = createDisplay()

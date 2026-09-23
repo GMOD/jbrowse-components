@@ -17,7 +17,7 @@ import {
 import SimpleFeature from './simpleFeature.ts'
 import { thresholdPalette } from './thresholdScale.ts'
 
-import type { ContinuousRef, GlyphName, LaneName } from './markEncoding.ts'
+import type { ContinuousRef, ShapeName, LaneName } from './markEncoding.ts'
 
 const jexl = createJexlInstance()
 const ALL: LaneName[] = ['y', 'color', 'glyph', 'row', 'index']
@@ -601,12 +601,12 @@ test('y is a field name, read the same way a reader in its place is', () => {
   expect(read.yMin).toBe(named.yMin)
 })
 
-test('glyph is a name or a jexl expression returning one', () => {
-  const named = encodeFeatures(features, { glyph: 'triangle' }, ALL, { jexl })
+test('shape is a name or a jexl expression returning one', () => {
+  const named = encodeFeatures(features, { shape: 'triangle' }, ALL, { jexl })
   expect(new Set(named.glyph)).toEqual(new Set([GLYPH_TRIANGLE]))
   const derived = encodeFeatures(
     features,
-    { glyph: "jexl:get(feature,'type')=='exon'?'triangle':'disc'" },
+    { shape: "jexl:get(feature,'type')=='exon'?'triangle':'circle'" },
     ALL,
     { jexl },
   )
@@ -619,29 +619,29 @@ test('glyph is a name or a jexl expression returning one', () => {
   ])
 })
 
-const GLYPHS: GlyphName[] = ['disc', 'triangle', 'diamond']
+const GLYPHS: ShapeName[] = ['circle', 'triangle', 'diamond']
 const CODE = {
-  disc: GLYPH_DISC,
+  circle: GLYPH_DISC,
   triangle: GLYPH_TRIANGLE,
   diamond: GLYPH_DIAMOND,
 }
 
-test('an unpinned glyph scale derives each glyph from the value, so two regions agree', () => {
+test('an unpinned shape scale derives each shape from the value, so two regions agree', () => {
   const r = encodeFeatures(
     features,
-    { glyph: { field: 'type', scale: 'categorical' } },
+    { shape: { field: 'type', scale: 'categorical' } },
     ALL,
     { jexl },
   )
   const of = (label: string) => categoricalValueColor(label, GLYPHS)
-  expect(r.glyphScale).toEqual({
-    kind: 'glyph',
+  expect(r.shapeScale).toEqual({
+    kind: 'shape',
     field: 'type',
     domain: [],
     entries: [
-      { value: 'cds', glyph: of('cds') },
-      { value: 'exon', glyph: of('exon') },
-      { value: 'gene', glyph: of('gene') },
+      { value: 'cds', shape: of('cds') },
+      { value: 'exon', shape: of('exon') },
+      { value: 'gene', shape: of('gene') },
     ],
   })
   expect([...r.glyph]).toEqual(
@@ -650,23 +650,23 @@ test('an unpinned glyph scale derives each glyph from the value, so two regions 
   expect(r.scale).toBeUndefined()
   const other = encodeFeatures(
     [feature(9, { type: 'exon' }), feature(10, {})],
-    { glyph: { field: 'type', scale: 'categorical' } },
+    { shape: { field: 'type', scale: 'categorical' } },
     ALL,
     { jexl },
   )
   expect(other.glyph[0]).toBe(CODE[of('exon')])
   expect(other.glyph[1]).toBe(GLYPH_DISC)
-  expect(other.glyphScale?.entries).toEqual([
-    { value: 'exon', glyph: of('exon') },
-    { value: '', glyph: 'disc' },
+  expect(other.shapeScale?.entries).toEqual([
+    { value: 'exon', shape: of('exon') },
+    { value: '', shape: 'circle' },
   ])
 })
 
-test('a pinned glyph domain walks the range in order', () => {
+test('a pinned shape domain walks the range in order', () => {
   const r = encodeFeatures(
     features,
     {
-      glyph: {
+      shape: {
         field: 'strand',
         scale: 'categorical',
         domain: [1, -1],
@@ -676,14 +676,14 @@ test('a pinned glyph domain walks the range in order', () => {
     ALL,
     { jexl },
   )
-  expect(r.glyphScale).toEqual({
-    kind: 'glyph',
+  expect(r.shapeScale).toEqual({
+    kind: 'shape',
     field: 'strand',
     domain: ['1', '-1'],
     range: ['triangle', 'diamond'],
     entries: [
-      { value: '1', glyph: 'triangle' },
-      { value: '-1', glyph: 'diamond' },
+      { value: '1', shape: 'triangle' },
+      { value: '-1', shape: 'diamond' },
     ],
   })
   expect([...r.glyph]).toEqual([
@@ -695,18 +695,18 @@ test('a pinned glyph domain walks the range in order', () => {
   ])
 })
 
-test('colour and glyph scales over different fields resolve side by side', () => {
+test('colour and shape scales over different fields resolve side by side', () => {
   const r = encodeFeatures(
     features,
     {
       color: { field: 'type', scale: 'categorical', domain: ['gene', 'exon'] },
-      glyph: { field: 'strand', scale: 'categorical', domain: [1, -1] },
+      shape: { field: 'strand', scale: 'categorical', domain: [1, -1] },
     },
     ALL,
     { jexl },
   )
   expect(r.scale?.kind).toBe('categorical')
-  expect(r.glyphScale?.kind).toBe('glyph')
+  expect(r.shapeScale?.kind).toBe('shape')
   expect([...r.glyph]).toEqual([
     GLYPH_DISC,
     GLYPH_TRIANGLE,
@@ -730,7 +730,7 @@ test("a channel spelled as a reader is read in the field ref's place", () => {
     {
       y: f => Number(f.get('score')) * 2,
       color: f => (f.get('strand') === 1 ? 0xff0000ff : 0xff00ff00),
-      glyph: f => (f.get('type') === 'exon' ? GLYPH_TRIANGLE : GLYPH_DISC),
+      shape: f => (f.get('type') === 'exon' ? GLYPH_TRIANGLE : GLYPH_DISC),
     },
     ALL,
     { jexl },

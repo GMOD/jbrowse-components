@@ -122,7 +122,7 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|\"@ADAPTER@\"|$ADAP
       "displayId": "@SAMPLE@_read_depth-LinearMarkDisplay",
       "marks": [
         {
-          "shape": "bar",
+          "mark": "bar",
           "transform": [{ "type": "coverage" }],
           "encoding": { "y": "coverage", "color": "#c8d8ee" }
         }
@@ -146,7 +146,7 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|\"@ADAPTER@\"|$ADAP
       "displayId": "@SAMPLE@_read_marks-LinearMarkDisplay",
       "marks": [
         {
-          "shape": "point",
+          "mark": "point",
           "transform": [
             {
               "type": "filter",
@@ -192,7 +192,7 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|@CHROM@|$CHROM|g" -
       "displayId": "@SAMPLE@_@CHROM@_pairs-LinearMarkDisplay",
       "marks": [
         {
-          "shape": "point",
+          "mark": "point",
           "transform": [{ "type": "filter", "expr": "jexl:feature.tlen < 20000" }],
           "encoding": {
             "x2": "start",
@@ -231,7 +231,7 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|@CHROM@|$CHROM|g" -
       "scales": { "y": { "domainMin": 0, "domainMax": 60 } },
       "marks": [
         {
-          "shape": "bar",
+          "mark": "bar",
           "transform": [
             { "type": "filter", "expr": "jexl:feature.tlen > 2000 && feature.tlen < 10000" },
             { "type": "bin", "step": "auto" },

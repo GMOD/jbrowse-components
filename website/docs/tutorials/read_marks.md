@@ -9,7 +9,7 @@ tutorial_category: Grammar of graphics
 ---
 
 `LinearMarkDisplay` is a grammar of graphics over a track: each entry in `marks`
-names a shape, a `transform` list and an `encoding` from feature fields to
+names a mark type, a `transform` list and an `encoding` from feature fields to
 channels, the way a BED column feeds a plot in the
 [Alu tutorial](/docs/tutorials/alu_age). Here the file is a BAM, and the fields
 are the ones the aligner wrote. A pair straddling a deletion maps with a long
@@ -75,7 +75,7 @@ constant depth.
       "scales": { "y": { "title": "Read depth" } },
       "marks": [
         {
-          "shape": "bar",
+          "mark": "bar",
           "transform": [{ "type": "coverage" }],
           "encoding": { "y": "coverage", "color": "#c8d8ee" }
         }
@@ -123,7 +123,7 @@ draws one axis, so the insert goes on a track of its own over the same file:
       "scales": { "y": { "title": "Insert size (bp)" } },
       "marks": [
         {
-          "shape": "point",
+          "mark": "point",
           "transform": [
             {
               "type": "filter",
@@ -165,7 +165,7 @@ spanning pair red.
 ```json
 "marks": [
   {
-    "shape": "span",
+    "mark": "span",
     "transform": [
       { "type": "formula", "expr": "jexl:abs(feature.template_length)", "as": "insert" },
       { "type": "pileup" }
@@ -247,7 +247,7 @@ file:
       "scales": { "y": { "title": "Insert size (bp)" } },
       "marks": [
         {
-          "shape": "point",
+          "mark": "point",
           "transform": [
             { "type": "filter", "expr": "jexl:feature.tlen < 20000" }
           ],
@@ -296,7 +296,7 @@ file:
       },
       "marks": [
         {
-          "shape": "bar",
+          "mark": "bar",
           "transform": [
             {
               "type": "filter",

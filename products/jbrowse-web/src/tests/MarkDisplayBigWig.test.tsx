@@ -37,7 +37,7 @@ function config(uri?: string) {
           {
             type: 'LinearMarkDisplay',
             displayId: 'microarray_marks-marks',
-            marks: [{ shape: 'bar', encoding: { y: 'score' } }],
+            marks: [{ mark: 'bar', encoding: { y: 'score' } }],
           },
         ],
       },

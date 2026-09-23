@@ -311,7 +311,7 @@ session.addSessionTrackConf({
       displayId: `${trackId}-LinearMarkDisplay`,
       marks: [
         {
-          shape: 'point',
+          mark: 'point',
           transform: [
             { type: 'filter', expr: 'jexl:feature.template_length > 0' },
           ],

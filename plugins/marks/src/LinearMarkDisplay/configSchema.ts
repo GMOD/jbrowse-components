@@ -2,7 +2,7 @@ import {
   ConfigurationSchema,
   requirementProblems,
 } from '@jbrowse/core/configuration'
-import { GLYPH_NAMES } from '@jbrowse/core/util/glyphNames'
+import { SHAPE_NAMES } from '@jbrowse/core/util/shapeNames'
 import {
   normalizeChannel,
   paintedScale,
@@ -16,52 +16,52 @@ import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { markColorSchema } from './markColorConfigSchema.ts'
 import { markFacetSchema } from './markFacetConfigSchema.ts'
+import { readsValue } from './markSpecs.ts'
 import { markTransformStep } from './markTransformConfigSchema.ts'
 import {
-  DEFAULT_MARK_SHAPE,
+  DEFAULT_MARK_TYPE,
   DEFAULT_MARK_SOURCE,
-  MARK_SHAPES,
+  MARK_TYPES,
   MARK_SOURCES,
 } from './markVocabulary.ts'
-import { readsValue } from './shapeSpecs.ts'
 
 import type { MarkProblem, MarkSnapshot } from './markProblems.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-export { MARK_SHAPES, MARK_SOURCES } from './markVocabulary.ts'
-export type { MarkShapeName, MarkSourceName } from './markVocabulary.ts'
+export { MARK_TYPES, MARK_SOURCES } from './markVocabulary.ts'
+export type { MarkType, MarkSourceName } from './markVocabulary.ts'
 
 export const DEFAULT_POINT_DIAMETER_PX = 4
 
-const MARK_GLYPH_SCALES = ['none', 'categorical'] as const
-export type MarkGlyphScale = (typeof MARK_GLYPH_SCALES)[number]
+const MARK_SHAPE_SCALES = ['none', 'categorical'] as const
+export type MarkShapeScale = (typeof MARK_SHAPE_SCALES)[number]
 
-/** The scale a mark's glyph is drawn through: `categorical` beside a `field`. */
-export function markGlyphScale(glyph: {
-  scale: MarkGlyphScale | undefined
+/** The scale a mark's shape is drawn through: `categorical` beside a `field`. */
+export function markShapeScale(shape: {
+  scale: MarkShapeScale | undefined
   field: string
 }) {
-  return paintedScale(glyph, 'categorical')
+  return paintedScale(shape, 'categorical')
 }
 
-const markGlyphSchema = ConfigurationSchema(
-  'MarkGlyph',
+const markShapeSchema = ConfigurationSchema(
+  'MarkShape',
   {
     /**
-     * #slot marks.encoding.glyph.value
+     * #slot marks.encoding.shape.value
      * `disc`, `triangle` or `diamond`, or a jexl callback over `feature`
-     * returning one, for a point mark whose glyph is not a scale. Writing
-     * `glyph: 'triangle'` directly on the encoding lands here.
+     * returning one, for a point mark whose shape is not a scale. Writing
+     * `shape: 'triangle'` directly on the encoding lands here.
      */
     value: {
       type: 'stringEnum',
-      model: types.enumeration('GlyphName', [...GLYPH_NAMES]),
-      defaultValue: 'disc',
+      model: types.enumeration('ShapeName', [...SHAPE_NAMES]),
+      defaultValue: 'circle',
       description: 'disc, triangle, diamond or jexl callback',
       contextVariable: ['feature'],
     },
     /**
-     * #slot marks.encoding.glyph.field
+     * #slot marks.encoding.shape.field
      * The feature field a categorical scale reads — or a jexl expression over
      * `feature`, which is slower per feature and so the opt-in.
      */
@@ -71,31 +71,31 @@ const markGlyphSchema = ConfigurationSchema(
       description: 'feature field, or jexl expression',
     },
     /**
-     * #slot marks.encoding.glyph.scale
-     * `categorical` hands a glyph from `range` to each distinct value of
+     * #slot marks.encoding.shape.scale
+     * `categorical` hands a shape from `range` to each distinct value of
      * `field`; `none` draws `value`. Unset beside a `field`, it is
      * `categorical`.
      */
     scale: {
       type: 'maybeStringEnum',
-      model: types.enumeration('MarkGlyphScale', [...MARK_GLYPH_SCALES]),
+      model: types.enumeration('MarkShapeScale', [...MARK_SHAPE_SCALES]),
       description: 'none or categorical; unset follows field',
     },
     /**
-     * #slot marks.encoding.glyph.range
-     * The glyph names a categorical scale hands out, in order. Empty is
+     * #slot marks.encoding.shape.range
+     * The shape names a categorical scale hands out, in order. Empty is
      * `disc`, `triangle`, `diamond`.
      */
     range: {
       type: 'stringEnumArray',
-      model: types.enumeration('GlyphName', [...GLYPH_NAMES]),
+      model: types.enumeration('ShapeName', [...SHAPE_NAMES]),
       defaultValue: [],
-      description: 'glyph names, in order',
+      description: 'shape names, in order',
     },
     /**
-     * #slot marks.encoding.glyph.domain
+     * #slot marks.encoding.shape.domain
      * The values in legend order, walking `range` from the first entry;
-     * left empty, each value derives its glyph from itself, so every region
+     * left empty, each value derives its shape from itself, so every region
      * agrees.
      */
     domain: {
@@ -107,7 +107,7 @@ const markGlyphSchema = ConfigurationSchema(
   {
     shorthand: 'value',
     closed: true,
-    preProcessSnapshot: snap => normalizeChannel(snap, 'glyph'),
+    preProcessSnapshot: snap => normalizeChannel(snap, 'shape'),
   },
 )
 
@@ -167,17 +167,17 @@ const markEncodingSchema = ConfigurationSchema(
      */
     color: markColorSchema,
     /**
-     * #slot marks.encoding.glyph
+     * #slot marks.encoding.shape
      * For a point mark: `disc`, `triangle` or `diamond`, a jexl callback over
      * `feature` returning one, or an object binding a field to a categorical
      * scale over those names. A scale is what the legend describes.
      */
-    glyph: markGlyphSchema,
+    shape: markShapeSchema,
   },
   { closed: true },
 )
 
-// The one thing a load refuses of a `marks` list: a shape the display does
+// The one thing a load refuses of a `marks` list: a mark type the display does
 // not draw, which the slot's own enumeration refuses on a write too, named
 // here because its message would otherwise be the enumeration's. Everything
 // that depends on two slots at once is reported, by the mark schema's
@@ -189,15 +189,15 @@ function checkMarks(snap: Record<string, unknown>) {
   if (!Array.isArray(marks)) {
     return snap
   }
-  const shapeless = (marks as { shape?: string }[]).flatMap((mark, i) =>
-    mark.shape === undefined ||
-    (MARK_SHAPES as readonly string[]).includes(mark.shape)
+  const unknownMarks = (marks as { mark?: string }[]).flatMap((mark, i) =>
+    mark.mark === undefined ||
+    (MARK_TYPES as readonly string[]).includes(mark.mark)
       ? []
-      : [`mark ${i} names shape "${mark.shape}"`],
+      : [`marks.${i}.mark is "${mark.mark}"`],
   )
-  if (shapeless.length > 0) {
+  if (unknownMarks.length > 0) {
     throw new Error(
-      `LinearMarkDisplay: ${shapeless.join(', ')}, and a shape is ${MARK_SHAPES.join(', ')}`,
+      `LinearMarkDisplay: ${unknownMarks.join(', ')}, and a mark is one of ${MARK_TYPES.join(', ')}`,
     )
   }
   return snap
@@ -207,19 +207,19 @@ const markSchema = ConfigurationSchema(
   'Mark',
   {
     /**
-     * #slot marks.shape
-     * `bar` stands between `origin` and `y`; `point` is a glyph at `y`; `span`
+     * #slot marks.mark
+     * `bar` stands between `origin` and `y`; `point` is a shape at `y`; `span`
      * is a band across the whole plot from `x` to `x2`.
      */
-    shape: {
+    mark: {
       type: 'stringEnum',
-      model: types.enumeration('MarkShape', [...MARK_SHAPES]),
-      defaultValue: DEFAULT_MARK_SHAPE,
+      model: types.enumeration('MarkType', [...MARK_TYPES]),
+      defaultValue: DEFAULT_MARK_TYPE,
       description: 'bar, point or span',
     },
     /**
      * #slot marks.size
-     * A point mark's glyph diameter in px, the mark's own as a grammar's
+     * A point mark's diameter in px, the mark's own as a grammar's
      * `size` is, so two point marks may differ; a bar or span reads none. The
      * track menu's Point size writes it on every point mark.
      */
@@ -283,7 +283,7 @@ const markSchema = ConfigurationSchema(
     requires: [
       {
         id: 'mark-without-value',
-        when: { shape: MARK_SHAPES.filter(readsValue) },
+        when: { mark: MARK_TYPES.filter(readsValue) },
         slots: ['encoding.y'],
         message:
           'a bar or a point stands at a value and names no y field to plot, so it draws nothing',
@@ -340,12 +340,12 @@ export function markRequirementProblems(
  *       displayId: 'scores-LinearMarkDisplay',
  *       marks: [
  *         {
- *           shape: 'bar',
+ *           mark: 'bar',
  *           encoding: { y: 'score', color: { field: 'strand', scale: 'categorical' } },
  *           maxBpPerPx: 100,
  *         },
  *         {
- *           shape: 'bar',
+ *           mark: 'bar',
  *           transform: [
  *             { type: 'bin', step: 10000 },
  *             { type: 'aggregate', groupby: ['start', 'end'], ops: [{ op: 'count' }] },
@@ -369,7 +369,7 @@ export function configSchemaFactory() {
       /**
        * #slot marks
        * The marks to draw, in order — a later one paints over an earlier one.
-       * Each is a `shape` and an `encoding`.
+       * Each is a `mark` and an `encoding`.
        */
       marks: types.array(markSchema),
       /**

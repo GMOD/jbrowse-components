@@ -552,7 +552,7 @@ describe('an array of a ConfigurationSchemaUnion', () => {
 
   test('offers none of it on an array of one schema', () => {
     const { queryByLabelText, queryByRole } = renderHost({
-      marks: [{ shape: 'bar' }, { shape: 'point' }],
+      marks: [{ mark: 'bar' }, { mark: 'point' }],
     })
     expect(queryByLabelText('remove mark 1')).toBeNull()
     expect(queryByRole('combobox', { name: 'Add mark' })).toBeNull()

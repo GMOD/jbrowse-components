@@ -21,8 +21,8 @@ export type FieldRef = string
 /**
  * #api
  * A field bound to a categorical scale: each distinct value takes one entry
- * of the channel's `range` — a colour for `color`, a glyph name for
- * `glyph`. Every value derives its entry from itself (an integer takes the
+ * of the channel's `range` — a colour for `color`, a shape name for
+ * `shape`. Every value derives its entry from itself (an integer takes the
  * slot it names, anything else hashes in), so every region agrees on a value
  * it shares with another at the cost of an occasional collision. A `domain`
  * spends the range deliberately: the listed values take it in order, and a
@@ -82,27 +82,27 @@ export type ColorEncoding =
   | ContinuousRef
   | ThresholdRef
 
-export type GlyphName = 'disc' | 'triangle' | 'diamond'
+export type ShapeName = 'circle' | 'triangle' | 'diamond'
 
 /**
  * #api
- * A {@link GlyphName}, a `jexl:` expression over `feature` returning one, or
- * a field bound to a categorical scale whose `range` lists the glyph names
- * handed out — the three glyphs, in order, when absent.
+ * A {@link ShapeName}, a `jexl:` expression over `feature` returning one, or
+ * a field bound to a categorical scale whose `range` lists the shape names
+ * handed out — the three shapes, in order, when absent.
  */
-export type GlyphEncoding =
-  | GlyphName
+export type ShapeEncoding =
+  | ShapeName
   | `jexl:${string}`
-  | (CategoricalRef & { range?: GlyphName[] })
+  | (CategoricalRef & { range?: ShapeName[] })
 
 /**
  * #api
  * The declared mapping from a feature's fields to a mark's channels. Every
  * positional channel is a field: `x` defaults to `start` and `x2` to `end`, a
  * mark that plots no value leaves `y` off, and the scale `y` is read through
- * belongs to the display rather than to the encoding. `glyph` is read by the
- * `point` shape alone, `row` — an integer field, 0 where missing — by every
- * shape, which stands a feature in the band it names.
+ * belongs to the display rather than to the encoding. `shape` is read by the
+ * `point` mark alone, `row` — an integer field, 0 where missing — by every
+ * mark, which stands a feature in the band it names.
  */
 export interface MarkEncoding {
   x?: FieldRef
@@ -110,13 +110,13 @@ export interface MarkEncoding {
   y?: FieldRef
   row?: FieldRef
   color?: ColorEncoding
-  glyph?: GlyphEncoding
+  shape?: ShapeEncoding
 }
 
 /**
  * #api
  * The lanes a caller asks the encoder to fill, beyond `x`, `x2` and
- * `featureIndex`, which every payload carries: a shape's channels, and
+ * `featureIndex`, which every payload carries: a mark's channels, and
  * `index` for the Flatbush a hover reads. A lane not asked for is neither
  * allocated nor transferred, and a caller that never hovers declines the
  * index, which is most of the encoder's cost after the walk.
@@ -206,22 +206,22 @@ export type ColorScaleTable =
 
 /**
  * #api
- * The scale a glyph channel was resolved through: which glyph each value of
+ * The scale a shape channel was resolved through: which shape each value of
  * the field took.
  */
-export interface GlyphScaleTable {
-  kind: 'glyph'
+export interface ShapeScaleTable {
+  kind: 'shape'
   field: string
   domain: string[]
-  range?: GlyphName[]
-  entries: { value: string; glyph: GlyphName }[]
+  range?: ShapeName[]
+  entries: { value: string; shape: ShapeName }[]
 }
 
 /**
  * #api
  * Any channel's scale table; the kind names the channel.
  */
-export type ScaleTable = ColorScaleTable | GlyphScaleTable
+export type ScaleTable = ColorScaleTable | ShapeScaleTable
 
 /**
  * #api
@@ -257,6 +257,7 @@ export interface EncodedChannels {
    * region's contribution to it.
    */
   colorValue?: Float32Array
+  /** The point painter's code for each feature's `shape`. */
   glyph?: Uint8Array
   row?: Uint32Array
   /** The finite `y` extremes, `Infinity`/`-Infinity` when nothing plotted. */
@@ -266,8 +267,8 @@ export interface EncodedChannels {
   flatbushData?: ArrayBuffer
   /** The colour channel's table, when `color` is a scale. */
   scale?: ColorScaleTable
-  /** The glyph channel's table, when `glyph` is a scale. */
-  glyphScale?: GlyphScaleTable
+  /** The shape channel's table, when `shape` is a scale. */
+  shapeScale?: ShapeScaleTable
 }
 
 /**
@@ -281,7 +282,7 @@ export type Encoded<L extends LaneName> = EncodedChannels &
 /**
  * #api
  * One layer of a `CoreEncodeFeatures` request: the encoding to evaluate and
- * the lanes the display's shape reads.
+ * the lanes the display's mark reads.
  */
 export interface LayerRequest {
   encoding: MarkEncoding

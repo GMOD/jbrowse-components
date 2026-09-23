@@ -38,9 +38,9 @@ const ALU_MARKS_TRACK = {
       type: 'LinearMarkDisplay',
       displayId: 'alu_marks-LinearMarkDisplay',
       marks: [
-        { shape: 'bar', encoding: { y: 'milliDiv' }, maxBpPerPx: 100 },
+        { mark: 'bar', encoding: { y: 'milliDiv' }, maxBpPerPx: 100 },
         {
-          shape: 'bar',
+          mark: 'bar',
           transform: [
             { type: 'bin', step: 10000 },
             {
@@ -67,9 +67,9 @@ const ALU_SIDECAR_TRACK = {
       type: 'LinearMarkDisplay',
       displayId: 'alu_sidecar-LinearMarkDisplay',
       marks: [
-        { shape: 'bar', encoding: { y: 'milliDiv' }, maxBpPerPx: 100 },
+        { mark: 'bar', encoding: { y: 'milliDiv' }, maxBpPerPx: 100 },
         {
-          shape: 'bar',
+          mark: 'bar',
           source: 'density',
           encoding: { y: 'count' },
           minBpPerPx: 100,
@@ -89,7 +89,7 @@ const ALU_PLOT_FIELD_TRACK = {
     {
       type: 'LinearMarkDisplay',
       displayId: 'alu_plot_field-LinearMarkDisplay',
-      marks: [{ shape: 'bar', encoding: { y: 'milliDiv' } }],
+      marks: [{ mark: 'bar', encoding: { y: 'milliDiv' } }],
     },
   ],
 }
@@ -118,7 +118,7 @@ const SNRPN_FACET_TRACK = {
       facet: 'HP',
       marks: [
         {
-          shape: 'span',
+          mark: 'span',
           transform: [{ type: 'pileup' }],
           encoding: {
             row: 'row',

@@ -47,7 +47,7 @@ Bars from a BED score column, coloured by strand, with the colour key on screen:
       "displayId": "scores-LinearMarkDisplay",
       "marks": [
         {
-          "shape": "bar",
+          "mark": "bar",
           "encoding": {
             "y": "score",
             "color": { "field": "strand", "scale": "categorical" }
@@ -65,16 +65,16 @@ from an `origin` of 0, and the y-axis autoscales to the values on screen.
 
 ## The encoding
 
-Each mark's `encoding` maps feature fields to the channels its shape reads:
+Each mark's `encoding` maps feature fields to the channels its type reads:
 
 | Channel | Read by        | Value                                                                                                                                                                                |
 | ------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `x`     | every shape    | a field holding the left edge in bp; `start` by default                                                                                                                              |
-| `x2`    | every shape    | the right edge; `end` by default                                                                                                                                                     |
+| `x`     | every mark     | a field holding the left edge in bp; `start` by default                                                                                                                              |
+| `x2`    | every mark     | the right edge; `end` by default                                                                                                                                                     |
 | `y`     | `bar`, `point` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped                                          |
-| `row`   | every shape    | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, this mark's own, the facet's or the display's |
-| `color` | every shape    | a CSS colour, a jexl callback returning one, or a scale (below)                                                                                                                      |
-| `glyph` | `point`        | `disc`, `triangle` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                                       |
+| `row`   | every mark     | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, this mark's own, the facet's or the display's |
+| `color` | every mark     | a CSS colour, a jexl callback returning one, or a scale (below)                                                                                                                      |
+| `shape` | `point`        | `circle`, `triangle` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                                     |
 
 A field name is read straight off the feature (`score`, `strand`, or any column
 a BED `columnNames` or a GFF attribute names). A `jexl:` expression over
@@ -97,7 +97,7 @@ which declares it once as `scales.y`:
   {
     "type": "LinearMarkDisplay",
     "scales": { "y": { "type": "log", "domainMin": 1, "domainMax": 1000 } },
-    "marks": [{ "shape": "bar", "encoding": { "y": "score" } }]
+    "marks": [{ "mark": "bar", "encoding": { "y": "score" } }]
   }
 ]
 ```
@@ -140,7 +140,7 @@ horizontal lines at chosen values, and `title`, the caption beside the axis.
           "rules": [{ "value": 7.3, "color": "red", "label": "p = 5e-8" }, 5]
         }
       },
-      "marks": [{ "shape": "point", "encoding": { "y": "score" } }]
+      "marks": [{ "mark": "point", "encoding": { "y": "score" } }]
     }
   ]
 }
@@ -174,12 +174,12 @@ still does it: give each mark a zoom range and they never draw together.
 ```json
 "marks": [
   {
-    "shape": "bar",
+    "mark": "bar",
     "transform": [{ "type": "coverage" }],
     "encoding": { "y": "coverage", "color": "#c8d8ee" },
     "minBpPerPx": 20
   },
-  { "shape": "point", "encoding": { "y": "score" }, "maxBpPerPx": 20 }
+  { "mark": "point", "encoding": { "y": "score" }, "maxBpPerPx": 20 }
 ]
 ```
 
@@ -238,22 +238,22 @@ only under one title, so a second mark titling the same scale differently draws
 a key of its own. A ramp is shared only with both ends pinned, since an open end
 follows each mark's own loaded values.
 
-## Glyph scales
+## Shape scales
 
-A scale belongs to a channel, not only to colour. `glyph` takes the same
+A scale belongs to a channel, not only to colour. `shape` takes the same
 categorical form — `{ "field": "svtype", "scale": "categorical" }` — with
-`range` listing the glyph names to hand out as a colour scale's lists colours
-(`disc`, `triangle`, `diamond` in that order when left off) and `domain` the
+`range` listing the shapes to hand out as a colour scale's lists colours
+(`circle`, `triangle`, `diamond` in that order when left off) and `domain` the
 values in legend order. The legend then carries a second key whose swatches are
-the glyphs themselves:
+the shapes themselves:
 
 ```json
 {
-  "shape": "point",
+  "mark": "point",
   "encoding": {
     "y": "score",
     "color": { "field": "strand", "scale": "categorical" },
-    "glyph": {
+    "shape": {
       "field": "svtype",
       "scale": "categorical",
       "domain": ["INS", "DEL"],
@@ -274,9 +274,9 @@ points' colour a callback:
 
 ```json
 "marks": [
-  { "shape": "bar", "encoding": { "y": "score" } },
+  { "mark": "bar", "encoding": { "y": "score" } },
   {
-    "shape": "point",
+    "mark": "point",
     "encoding": {
       "y": "score",
       "color": "jexl:feature.name=='EDEN.1' ? 'red' : 'blue'"
@@ -285,15 +285,15 @@ points' colour a callback:
 ]
 ```
 
-A point mark's `size` is its glyph's diameter in px, so a second point mark can
-draw its features larger:
-`{ "shape": "point", "size": 8, "encoding": { "y": "score", "color": "red" } }`.
+A point mark's `size` is its diameter in px, so a second point mark can draw its
+features larger:
+`{ "mark": "point", "size": 8, "encoding": { "y": "score", "color": "red" } }`.
 
 A `span` has no `y`: it paints a band from `x` to `x2`, in its colour, for an
 interval whose extent is the point, such as a region of interest under the bars
 coloured by a class field. With no `row` every span shares one band across the
 whole plot; with one —
-`{ "shape": "span", "encoding": { "row": "sampleIndex" } }` — the plot divides
+`{ "mark": "span", "encoding": { "row": "sampleIndex" } }` — the plot divides
 into as many bands as the highest row on screen needs, and each span sits on the
 band its field names.
 
@@ -311,7 +311,7 @@ mark's counts each section's depth:
   {
     "type": "LinearMarkDisplay",
     "facet": { "field": "sample", "transform": [{ "type": "pileup" }] },
-    "marks": [{ "shape": "span" }]
+    "marks": [{ "mark": "span" }]
   }
 ]
 ```
@@ -339,7 +339,7 @@ the features:
     },
     "marks": [
       {
-        "shape": "span",
+        "mark": "span",
         "encoding": {
           "color": { "field": "HP", "scale": "categorical", "title": "Haplotype" }
         }
@@ -399,7 +399,7 @@ display's.
 
 ```json
 {
-  "shape": "bar",
+  "mark": "bar",
   "transform": [
     { "type": "bin", "step": 10000 },
     {
@@ -419,7 +419,7 @@ file with no summary track beside it:
 
 ```json
 {
-  "shape": "bar",
+  "mark": "bar",
   "transform": [{ "type": "coverage" }],
   "encoding": { "y": "coverage" }
 }
@@ -431,7 +431,7 @@ that row draws the packing:
 
 ```json
 {
-  "shape": "span",
+  "mark": "span",
   "transform": [{ "type": "pileup", "padding": 10 }],
   "encoding": {
     "row": "row",
@@ -460,12 +460,12 @@ one fetch per region:
 ```json
 "marks": [
   {
-    "shape": "bar",
+    "mark": "bar",
     "encoding": { "y": "milliDiv" },
     "maxBpPerPx": 100
   },
   {
-    "shape": "bar",
+    "mark": "bar",
     "transform": [
       { "type": "bin", "step": 10000 },
       { "type": "aggregate", "groupby": ["start", "end"], "ops": [{ "op": "count" }] }
@@ -523,8 +523,8 @@ that layer draws the sidecar's bins there instead of the banner:
     "type": "LinearMarkDisplay",
     "displayId": "genes-LinearMarkDisplay",
     "marks": [
-      { "shape": "bar", "encoding": { "y": "score" }, "maxBpPerPx": 100 },
-      { "shape": "bar", "source": "density", "encoding": { "y": "count" }, "minBpPerPx": 100 }
+      { "mark": "bar", "encoding": { "y": "score" }, "maxBpPerPx": 100 },
+      { "mark": "bar", "source": "density", "encoding": { "y": "count" }, "minBpPerPx": 100 }
     ]
   }
 ]
@@ -548,7 +548,7 @@ display draws what it can. Where two slots disagree, the track shows a warning
 chip in its corner naming the slot, and the mark when the slot is a mark's:
 
 - a `bar` or `point` naming no `y`, which draws nothing;
-- a channel the shape does not read, such as `y` on a `span`;
+- a channel the mark does not read, such as `y` on a `span`;
 - a `y` naming a field that no `aggregate` or `coverage` step before it, the
   display's or the mark's own, writes, with the fields those steps leave;
 - a `bar` or `point` drawn together with a stacked `span`, which stands in the
@@ -564,7 +564,7 @@ chip in its corner naming the slot, and the mark when the slot is a mark's:
 `jbrowse validate` reports the same list over a config file, which has none of
 the half-written states an editor passes through: a mark that draws nothing,
 never draws, or names a step that cannot run is an error, and a slot left unread
-— a channel the shape ignores, a `source` a second mark already stands in for —
+— a channel the mark ignores, a `source` a second mark already stands in for —
 is a warning. The display's own `transform` steps are checked the way a mark's
 are. Each finding names the slot, and the mark when the slot is a mark's, and
 `--json` carries the rule's id beside it.
@@ -580,7 +580,7 @@ what a single-mark config already declares, so editing is the same dialog. A
 display shown with no `marks` at all plots `score` as bars where the features
 carry a numeric one, and opens this dialog where they do not.
 
-<Figure src="/img/mark_display/plot_field.png" caption="The Plot field dialog over an Alu track, reopened on the mark that track declares: the numeric fields the loaded features carry, the shape, the colour field and the count-per-bin box."/>
+<Figure src="/img/mark_display/plot_field.png" caption="The Plot field dialog over an Alu track, reopened on the mark that track declares: the numeric fields the loaded features carry, the mark, the colour field and the count-per-bin box."/>
 
 The score submenu writes `scales.y` and nothing else: **Set min/max score...**
 pins `domainMin` and `domainMax`, **Pin current min/max** writes the domain on
@@ -620,10 +620,10 @@ unless the session names the mark display for it.
 
 ## When a plugin is the next step
 
-A drawing that is not a bar, a point or a span needs a **shape** of its own: one
-shader, one painter and one hit test, declared as a mark over the same worker
-channels this display reads: [](/docs/developer_guides/creating_gpu_display)
-writes one. A display that lays features out its own way, or gives a channel a
-meaning the encoding cannot say — Manhattan's colour by LD to an index SNP — is
-the rung after that, and [](/docs/developer_guides/plotting_features) composes
-one.
+A drawing that is not a bar, a point or a span needs a **mark type** of its own:
+one shader, one painter and one hit test, declared as a mark over the same
+worker channels this display reads:
+[](/docs/developer_guides/creating_gpu_display) writes one. A display that lays
+features out its own way, or gives a channel a meaning the encoding cannot say —
+Manhattan's colour by LD to an index SNP — is the rung after that, and
+[](/docs/developer_guides/plotting_features) composes one.

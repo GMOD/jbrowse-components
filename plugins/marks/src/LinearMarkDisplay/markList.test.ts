@@ -58,9 +58,9 @@ function layer(
   }
 }
 
-function entries(...shapes: MarkEntry['shape'][]): MarkEntry[] {
-  return shapes.map(shape => ({
-    shape,
+function entries(...types: MarkEntry['type'][]): MarkEntry[] {
+  return types.map(type => ({
+    type,
     minBpPerPx: 0,
     maxBpPerPx: 0,
     placed: true,
@@ -117,7 +117,7 @@ test('a region with fewer layers than marks packs nothing for the missing one', 
   expect(marks[1]!.pass.pack(data).byteLength).toBe(0)
 })
 
-test('a layer without the lanes its shape reads packs nothing', () => {
+test('a layer without the lanes its type reads packs nothing', () => {
   const [span] = buildMarkList(entries('span'))
   const withoutRow: MarkRegionData = { layers: [layer([1], [1], [RED])] }
   expect(span!.pass.pack(withoutRow).byteLength).toBe(0)
@@ -276,7 +276,7 @@ test('every mark places its value through the display s one domain', () => {
   expect(domainMaxOf(1, pointShader.UNIFORM_OFFSET_F32.domainMax)).toBe(100)
 
   // 80 on [0, 100] over 400 px is y=80, and the hit test measures in the same
-  // scale the shapes drew in.
+  // scale the marks drew in.
   const hit = findMarkHit(
     641,
     81,
@@ -291,7 +291,7 @@ test('every mark places its value through the display s one domain', () => {
 
 test('a mark outside its zoom range neither draws nor answers a hover', () => {
   const [mark] = buildMarkList([
-    { shape: 'bar', minBpPerPx: 10, maxBpPerPx: 0, placed: true },
+    { type: 'bar', minBpPerPx: 10, maxBpPerPx: 0, placed: true },
   ])
   const hal = new MockHal([mark!.pass])
   const scratch = new ArrayBuffer(mark!.pass.uniformByteSize)
@@ -358,7 +358,7 @@ describe('findMarkHit', () => {
     ).toBeUndefined()
   })
 
-  test('a point answers at its glyph', () => {
+  test('a point answers at its shape', () => {
     // 800 bp is x=640; value 8 is y=80
     const hit = findMarkHit(641, 81, [block], regions, marks, state, REGIONS)
     expect(hit).toMatchObject({ markIndex: 1, start: 800, y: 8, color: BLUE })

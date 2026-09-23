@@ -6,9 +6,9 @@
  * and `jbrowse validate` carries a copy of both.
  */
 
-export const MARK_SHAPES = ['bar', 'point', 'span'] as const
-export type MarkShapeName = (typeof MARK_SHAPES)[number]
-export const DEFAULT_MARK_SHAPE: MarkShapeName = 'bar'
+export const MARK_TYPES = ['bar', 'point', 'span'] as const
+export type MarkType = (typeof MARK_TYPES)[number]
+export const DEFAULT_MARK_TYPE: MarkType = 'bar'
 
 export const MARK_SOURCES = ['features', 'density'] as const
 export type MarkSourceName = (typeof MARK_SOURCES)[number]

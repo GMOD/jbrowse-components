@@ -170,49 +170,49 @@ import * as m165 from '../util/frameCoalescer.ts'
 import * as m166 from '../util/freezeDeep.ts'
 import * as m167 from '../util/geneticCodes.ts'
 import * as m168 from '../util/getRelativeX.ts'
-import * as m169 from '../util/glyphNames.ts'
-import * as m170 from '../util/groupKeys.ts'
-import * as m171 from '../util/highlights.ts'
-import * as m172 from '../util/hooks.ts'
-import * as m173 from '../util/htmlText.ts'
-import * as m174 from '../util/indexCandidates.ts'
-import * as m175 from '../util/installClearHoverOnSurfaceMove.ts'
-import * as m176 from '../util/installFetch.ts'
-import * as m177 from '../util/installInitAutorun.ts'
-import * as m178 from '../util/installPrerequisiteFetch.ts'
-import * as m179 from '../util/io/index.ts'
-import * as m180 from '../util/io/RemoteFileWithRangeCache.ts'
-import * as m181 from '../util/isDataCurrent.ts'
-import * as m182 from '../util/jexl.ts'
-import * as m183 from '../util/jexlFilters.ts'
-import * as m184 from '../util/jexlStrings.ts'
-import * as m185 from '../util/layouts/index.ts'
-import * as m186 from '../util/layouts/GranularRectLayout.ts'
-import * as m187 from '../util/layouts/placeRect.ts'
-import * as m188 from '../util/lazyAfterAttach.ts'
-import * as m189 from '../util/leadingEdgeAutorun.ts'
-import * as m190 from '../util/legendCandidates.ts'
-import * as m191 from '../util/librpc.ts'
-import * as m192 from '../util/localStorage.ts'
-import * as m193 from '../util/makeAssembly.ts'
-import * as m194 from '../util/markEncoding.ts'
-import * as m195 from '../util/measureText.ts'
-import * as m196 from '../util/mst-reflection.ts'
-import * as m197 from '../util/mstUtils.ts'
-import * as m198 from '../util/nanoid.ts'
-import * as m199 from '../util/numericUtils.ts'
-import * as m200 from '../util/offscreenCanvasPonyfill.ts'
-import * as m201 from '../util/openViews.ts'
-import * as m202 from '../util/paintLayer.tsx'
-import * as m203 from '../util/parseLineByLine.ts'
-import * as m204 from '../util/progress.ts'
-import * as m205 from '../util/range.ts'
-import * as m206 from '../util/renderToStaticMarkup.ts'
-import * as m207 from '../util/resolveRowHeight.ts'
-import * as m208 from '../util/rowStackGeometry.ts'
-import * as m209 from '../util/rxjs.ts'
-import * as m210 from '../util/sameStrings.ts'
-import * as m211 from '../util/setStackTraceLimit.ts'
+import * as m169 from '../util/groupKeys.ts'
+import * as m170 from '../util/highlights.ts'
+import * as m171 from '../util/hooks.ts'
+import * as m172 from '../util/htmlText.ts'
+import * as m173 from '../util/indexCandidates.ts'
+import * as m174 from '../util/installClearHoverOnSurfaceMove.ts'
+import * as m175 from '../util/installFetch.ts'
+import * as m176 from '../util/installInitAutorun.ts'
+import * as m177 from '../util/installPrerequisiteFetch.ts'
+import * as m178 from '../util/io/index.ts'
+import * as m179 from '../util/io/RemoteFileWithRangeCache.ts'
+import * as m180 from '../util/isDataCurrent.ts'
+import * as m181 from '../util/jexl.ts'
+import * as m182 from '../util/jexlFilters.ts'
+import * as m183 from '../util/jexlStrings.ts'
+import * as m184 from '../util/layouts/index.ts'
+import * as m185 from '../util/layouts/GranularRectLayout.ts'
+import * as m186 from '../util/layouts/placeRect.ts'
+import * as m187 from '../util/lazyAfterAttach.ts'
+import * as m188 from '../util/leadingEdgeAutorun.ts'
+import * as m189 from '../util/legendCandidates.ts'
+import * as m190 from '../util/librpc.ts'
+import * as m191 from '../util/localStorage.ts'
+import * as m192 from '../util/makeAssembly.ts'
+import * as m193 from '../util/markEncoding.ts'
+import * as m194 from '../util/measureText.ts'
+import * as m195 from '../util/mst-reflection.ts'
+import * as m196 from '../util/mstUtils.ts'
+import * as m197 from '../util/nanoid.ts'
+import * as m198 from '../util/numericUtils.ts'
+import * as m199 from '../util/offscreenCanvasPonyfill.ts'
+import * as m200 from '../util/openViews.ts'
+import * as m201 from '../util/paintLayer.tsx'
+import * as m202 from '../util/parseLineByLine.ts'
+import * as m203 from '../util/progress.ts'
+import * as m204 from '../util/range.ts'
+import * as m205 from '../util/renderToStaticMarkup.ts'
+import * as m206 from '../util/resolveRowHeight.ts'
+import * as m207 from '../util/rowStackGeometry.ts'
+import * as m208 from '../util/rxjs.ts'
+import * as m209 from '../util/sameStrings.ts'
+import * as m210 from '../util/setStackTraceLimit.ts'
+import * as m211 from '../util/shapeNames.ts'
 import * as m212 from '../util/simpleFeature.ts'
 import * as m213 from '../util/starFusion.ts'
 import * as m214 from '../util/stats.ts'
@@ -417,49 +417,49 @@ const libs: Record<string, unknown> = {
   '@jbrowse/core/util/freezeDeep': m166,
   '@jbrowse/core/util/geneticCodes': m167,
   '@jbrowse/core/util/getRelativeX': m168,
-  '@jbrowse/core/util/glyphNames': m169,
-  '@jbrowse/core/util/groupKeys': m170,
-  '@jbrowse/core/util/highlights': m171,
-  '@jbrowse/core/util/hooks': m172,
-  '@jbrowse/core/util/htmlText': m173,
-  '@jbrowse/core/util/indexCandidates': m174,
-  '@jbrowse/core/util/installClearHoverOnSurfaceMove': m175,
-  '@jbrowse/core/util/installFetch': m176,
-  '@jbrowse/core/util/installInitAutorun': m177,
-  '@jbrowse/core/util/installPrerequisiteFetch': m178,
-  '@jbrowse/core/util/io': m179,
-  '@jbrowse/core/util/io/RemoteFileWithRangeCache': m180,
-  '@jbrowse/core/util/isDataCurrent': m181,
-  '@jbrowse/core/util/jexl': m182.default,
-  '@jbrowse/core/util/jexlFilters': m183,
-  '@jbrowse/core/util/jexlStrings': m184,
-  '@jbrowse/core/util/layouts': m185,
-  '@jbrowse/core/util/layouts/GranularRectLayout': m186.default,
-  '@jbrowse/core/util/layouts/placeRect': m187,
-  '@jbrowse/core/util/lazyAfterAttach': m188,
-  '@jbrowse/core/util/leadingEdgeAutorun': m189,
-  '@jbrowse/core/util/legendCandidates': m190,
-  '@jbrowse/core/util/librpc': m191,
-  '@jbrowse/core/util/localStorage': m192,
-  '@jbrowse/core/util/makeAssembly': m193,
-  '@jbrowse/core/util/markEncoding': m194,
-  '@jbrowse/core/util/measureText': m195,
-  '@jbrowse/core/util/mst-reflection': m196,
-  '@jbrowse/core/util/mstUtils': m197,
-  '@jbrowse/core/util/nanoid': m198,
-  '@jbrowse/core/util/numericUtils': m199,
-  '@jbrowse/core/util/offscreenCanvasPonyfill': m200,
-  '@jbrowse/core/util/openViews': m201,
-  '@jbrowse/core/util/paintLayer': m202,
-  '@jbrowse/core/util/parseLineByLine': m203,
-  '@jbrowse/core/util/progress': m204,
-  '@jbrowse/core/util/range': m205,
-  '@jbrowse/core/util/renderToStaticMarkup': m206,
-  '@jbrowse/core/util/resolveRowHeight': m207,
-  '@jbrowse/core/util/rowStackGeometry': m208,
-  '@jbrowse/core/util/rxjs': m209,
-  '@jbrowse/core/util/sameStrings': m210,
-  '@jbrowse/core/util/setStackTraceLimit': m211,
+  '@jbrowse/core/util/groupKeys': m169,
+  '@jbrowse/core/util/highlights': m170,
+  '@jbrowse/core/util/hooks': m171,
+  '@jbrowse/core/util/htmlText': m172,
+  '@jbrowse/core/util/indexCandidates': m173,
+  '@jbrowse/core/util/installClearHoverOnSurfaceMove': m174,
+  '@jbrowse/core/util/installFetch': m175,
+  '@jbrowse/core/util/installInitAutorun': m176,
+  '@jbrowse/core/util/installPrerequisiteFetch': m177,
+  '@jbrowse/core/util/io': m178,
+  '@jbrowse/core/util/io/RemoteFileWithRangeCache': m179,
+  '@jbrowse/core/util/isDataCurrent': m180,
+  '@jbrowse/core/util/jexl': m181.default,
+  '@jbrowse/core/util/jexlFilters': m182,
+  '@jbrowse/core/util/jexlStrings': m183,
+  '@jbrowse/core/util/layouts': m184,
+  '@jbrowse/core/util/layouts/GranularRectLayout': m185.default,
+  '@jbrowse/core/util/layouts/placeRect': m186,
+  '@jbrowse/core/util/lazyAfterAttach': m187,
+  '@jbrowse/core/util/leadingEdgeAutorun': m188,
+  '@jbrowse/core/util/legendCandidates': m189,
+  '@jbrowse/core/util/librpc': m190,
+  '@jbrowse/core/util/localStorage': m191,
+  '@jbrowse/core/util/makeAssembly': m192,
+  '@jbrowse/core/util/markEncoding': m193,
+  '@jbrowse/core/util/measureText': m194,
+  '@jbrowse/core/util/mst-reflection': m195,
+  '@jbrowse/core/util/mstUtils': m196,
+  '@jbrowse/core/util/nanoid': m197,
+  '@jbrowse/core/util/numericUtils': m198,
+  '@jbrowse/core/util/offscreenCanvasPonyfill': m199,
+  '@jbrowse/core/util/openViews': m200,
+  '@jbrowse/core/util/paintLayer': m201,
+  '@jbrowse/core/util/parseLineByLine': m202,
+  '@jbrowse/core/util/progress': m203,
+  '@jbrowse/core/util/range': m204,
+  '@jbrowse/core/util/renderToStaticMarkup': m205,
+  '@jbrowse/core/util/resolveRowHeight': m206,
+  '@jbrowse/core/util/rowStackGeometry': m207,
+  '@jbrowse/core/util/rxjs': m208,
+  '@jbrowse/core/util/sameStrings': m209,
+  '@jbrowse/core/util/setStackTraceLimit': m210,
+  '@jbrowse/core/util/shapeNames': m211,
   '@jbrowse/core/util/simpleFeature': { ...m212, __esModule: true },
   '@jbrowse/core/util/starFusion': m213,
   '@jbrowse/core/util/stats': m214,

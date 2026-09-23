@@ -19,13 +19,13 @@ BED score column, a segment ratio, a bedGraph-shaped interval.
 
 | Piece | Where | What it owns |
 | --- | --- | --- |
-| `MarkEncoding`, `encodeFeatures` | `packages/core/src/util/markEncoding.ts` | the declaration and its evaluation over the **lanes** the caller names: native `feature.get(field)` per channel, `jexl:` as the opt-in escape, a `y` that is a field, a colour that is a constant, a jexl expression, a categorical palette or a ramp over a domain, a glyph that is a name, a jexl expression or a categorical scale over the glyph names, an integer `row`, the `y` extremes, a Flatbush over `(x, y, x2, y)` when `index` is named, and the `ScaleTable` per scaled channel |
+| `MarkEncoding`, `encodeFeatures` | `packages/core/src/util/markEncoding.ts` | the declaration and its evaluation over the **lanes** the caller names: native `feature.get(field)` per channel, `jexl:` as the opt-in escape, a `y` that is a field, a colour that is a constant, a jexl expression, a categorical palette or a ramp over a domain, a shape that is a name, a jexl expression or a categorical scale over the shape names, an integer `row`, the `y` extremes, a Flatbush over `(x, y, x2, y)` when `index` is named, and the `ScaleTable` per scaled channel |
 | `runTransforms` | `packages/core/src/util/featureTransforms.ts` | the transform stage: a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `pileup` — run in order over a feature list, each step reading what the last answered |
 | `CoreEncodeFeatures` | `packages/core/src/rpc/methods/CoreEncodeFeatures.ts` | one region's features fetched once, the request's shared `transform` steps run (the display's `jexlFilters` as `filter` steps), then each layer of the request — its own `transform`, an encoding and its lanes — run over that list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for the request's `layers[i]`, the buffers transferred |
-| `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ shape, encoding, transform, source, minBpPerPx, maxBpPerPx }` sub-schemas, one `defineMark` per entry reading `layers[i]` through a lens that checks its shape's lanes are present (`markLanes` over `SHAPE_SPECS`) and `enabled` inside the entry's zoom range, the wiggle-core score axis **resolved from the display's `scales.y`**, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over its layer's Flatbush, spans stacked on `row` into `rowCount` bands |
+| `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ mark, encoding, transform, source, minBpPerPx, maxBpPerPx }` sub-schemas, one `defineMark` per entry reading `layers[i]` through a lens that checks its type's lanes are present (`markLanes` over `MARK_SPECS`) and `enabled` inside the entry's zoom range, the wiggle-core score axis **resolved from the display's `scales.y`**, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over its layer's Flatbush, spans stacked on `row` into `rowCount` bands |
 
 **A positional channel is a field and the value scale is the plot's**, where
-`color` and `glyph` each carry their own scale object.
+`color` and `shape` each carry their own scale object.
 The display's own `scales.y` — `type`, `domainMin`, `domainMax`, the
 autoscale members, and the two guides it owns, `rules` and `title` — is the one
 value scale, and every mark's `encoding.y` names a field read through it, so
@@ -100,18 +100,19 @@ ramp's stops are `range`'s colours or the named `scheme`, turned round under
 `reverse` (`colorRampStops`), so a direction is a member rather than a domain
 written high to low.
 
-**A scale belongs to a channel, not to colour alone.** `glyph` takes the
+**A scale belongs to a channel, not to colour alone.** `shape` takes the
 same `{ field, scale: 'categorical', domain? }` that `color` does, with
-`range` — glyph names, the three in order by default — as colour's `range`
+`range` — shape names, the three in order by default — as colour's `range`
 lists colours, and `encodeFeatures` resolves both through one categorical arm:
 the walk records which distinct value each admitted instance carried and
 `resolve` hands every value its range entry once the table is known, pinned
 by `domain` or derived from the value. The payload carries `scale` for the
-colour channel and `glyphScale` for the glyph channel, and the mark display's
-legend draws a glyph table as rows whose swatch is the glyph — recorded from
+colour channel and `shapeScale` for the shape channel, and the mark display's
+legend draws a shape table as rows whose swatch is the shape — recorded from
 render-core's own `appendGlyph` as SVG path data, so the key cannot draw a
-triangle the plot draws as a disc. Only `point` reads the lane; a scale on a
-bar's glyph resolves and is never drawn.
+triangle the plot draws as a circle. The shape fills the `glyph` lane, the
+point painter's code per instance, and only `point` reads it; a scale on a
+bar's shape resolves and is never drawn.
 
 **A lane is filled because a shape reads it.** `encodeFeatures` takes the
 lane set beside the encoding — `y`, `color`, `colorValue`, `glyph`, `row`, and
@@ -299,8 +300,8 @@ own worker method reaches the one loop for a channel no field name can say.
 Three packers moved onto it on 2026-09-09:
 
 - **Manhattan** (`plugins/gwas/src/ManhattanRPC/executeGetManhattanData.ts`)
-  is `encodeFeatures(features, { y: scoreField, color, glyph })` where `color`
-  and `glyph` are the colouring mode's readers — a constant or `jexl:` colour
+  is `encodeFeatures(features, { y: scoreField, color, shape: glyph })` where
+  `color` and `glyph` are the colouring mode's readers — a constant or `jexl:` colour
   through `colorEvaluator`, the field mode's value-hashed colour, or LD's
   join against the PLINK adapter — and `ManhattanRpcResult` is
   `EncodedChannels` plus `r2s` and `indexFound`. The r² channel is read after
@@ -385,7 +386,7 @@ evaluation per feature over `buildJexlContext`'s proxy; the colour arm was
 rather than per feature, which is the cache `colorEvaluator` holds. The scale
 rows are the same rule declared as a scale — a field read, a map lookup per
 feature and one pass after the walk — and are why shape-by-field is a scale
-on `glyph` rather than the jexl ternary it used to need. The two ramp rows
+on `shape` rather than the jexl ternary it used to need. The two ramp rows
 are the same colour scale resolved on either side of the wire: `ramp-color`
 is the worker indexing the LUT per feature, `ramp-value` is the walk keeping
 the raw values for the display to resolve (ADR-113), and the second is

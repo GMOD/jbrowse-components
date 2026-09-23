@@ -18,13 +18,13 @@ export interface MarkHitInfo {
   end: number
   /** The plotted value, or undefined for a mark with no `y`. */
   y: number | undefined
-  /** The packed colour the worker resolved for this instance, if its shape reads one. */
+  /** The packed colour the worker resolved for this instance, if its mark reads one. */
   color: number | undefined
   /** The raw value of a ramp colour channel, where the display resolves it. */
   colorValue: number | undefined
-  /** The glyph code the worker resolved, if its shape reads one. */
+  /** The point painter's code for the instance's shape, if its mark reads one. */
   glyph: number | undefined
-  /** The band this instance stands in, if its shape reads a row. */
+  /** The band this instance stands in, if its mark reads a row. */
   row: number | undefined
   screenX: number
   screenY: number

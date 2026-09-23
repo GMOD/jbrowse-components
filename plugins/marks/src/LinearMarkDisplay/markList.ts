@@ -6,7 +6,7 @@ import {
   spanMark,
 } from '@jbrowse/render-core/marks'
 
-import type { MarkShapeName } from './configSchema.ts'
+import type { MarkType } from './configSchema.ts'
 import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter/zoomRange'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 import type {
@@ -32,13 +32,13 @@ export interface StoredLayer extends EncodedChannels {
 type ChannelLane = Exclude<LaneName, 'index'>
 
 // Colour is checked apart from these, since either of two lanes carries it.
-const SHAPE_VALUE_LANES = {
+const MARK_VALUE_LANES = {
   bar: ['y'],
   point: ['y', 'glyph'],
   span: ['row', 'color'],
-} as const satisfies Record<MarkShapeName, readonly ChannelLane[]>
+} as const satisfies Record<MarkType, readonly ChannelLane[]>
 
-// A payload fetched before a shape change packs nothing rather than a lane of
+// A payload fetched before a mark type change packs nothing rather than a lane of
 // zeros.
 function hasLanes<L extends ChannelLane>(
   layer: StoredLayer,
@@ -85,7 +85,7 @@ export interface MarkRenderState extends MarkFrame {
   bpPerPx: number
   origin: number
   minWidthPx: number
-  /** Mark `i`'s `size`: a point's glyph diameter in px. */
+  /** Mark `i`'s `size`: a point's diameter in px. */
   markSizes: number[]
   /** The px the y scale stands in from both ends of its band, the axis's own. */
   valueInsetPx: number
@@ -95,9 +95,9 @@ export interface MarkRenderState extends MarkFrame {
 
 export type DisplayMark = Mark<MarkRegionData, MarkRenderState>
 
-/** A `marks` entry's shape and zoom range in bp per px, 0 for no bound. */
+/** A `marks` entry's type and zoom range in bp per px, 0 for no bound. */
 export interface MarkEntry {
-  shape: MarkShapeName
+  type: MarkType
   minBpPerPx: number
   maxBpPerPx: number
   /** Whether the mark has somewhere to stand: a bar or point naming no `y` draws nowhere. */
@@ -120,7 +120,7 @@ export function markDrawsAt(
   )
 }
 
-// A pass id keys the instance buffer and texture, so two marks on one shape
+// A pass id keys the instance buffer and texture, so two marks of one type
 // need two ids; pipelines are keyed by content, so the clone compiles nothing.
 function withPassId<C, P>(shape: MarkShape<C, P>, id: string): MarkShape<C, P> {
   return { ...shape, id, pass: { ...shape.pass, id } }
@@ -129,15 +129,15 @@ function withPassId<C, P>(shape: MarkShape<C, P>, id: string): MarkShape<C, P> {
 /** One mark per `marks` entry, reading `layers[i]` inside its zoom range. */
 export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
   return entries.map((entry, i) => {
-    const { shape } = entry
-    const id = `${shape}#${i}`
+    const { type } = entry
+    const id = `${type}#${i}`
     const enabled = (s: MarkRenderState) => markDrawsAt(entry, s.bpPerPx)
-    switch (shape) {
+    switch (type) {
       case 'bar': {
         return defineMark({
           shape: withPassId(barMark, id),
           channels: (d: MarkRegionData) =>
-            withLanes(d.layers[i], SHAPE_VALUE_LANES.bar),
+            withLanes(d.layers[i], MARK_VALUE_LANES.bar),
           params: (s: MarkRenderState) => ({
             domain: s.domainY,
             scaleType: s.scaleTypeY,
@@ -155,7 +155,7 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
         return defineMark({
           shape: withPassId(pointMark, id),
           channels: (d: MarkRegionData) =>
-            withLanes(d.layers[i], SHAPE_VALUE_LANES.point),
+            withLanes(d.layers[i], MARK_VALUE_LANES.point),
           params: (s: MarkRenderState) => ({
             domain: s.domainY,
             scaleType: s.scaleTypeY,
@@ -172,7 +172,7 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
         return defineMark({
           shape: withPassId(spanMark, id),
           channels: (d: MarkRegionData) =>
-            withLanes(d.layers[i], SHAPE_VALUE_LANES.span),
+            withLanes(d.layers[i], MARK_VALUE_LANES.span),
           params: (s: MarkRenderState) => ({
             rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
             rowProportion: 1,

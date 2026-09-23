@@ -146,7 +146,7 @@ test('draws nothing with no entries', () => {
   expect(container.querySelector('g')).toBeNull()
 })
 
-test('a glyph swatch is the point shape drawn as a path, in the row colour', () => {
+test('a shape swatch is the point shape drawn as a path, in the row colour', () => {
   const { container } = renderSvg(
     <SvgColorLegend
       canvasWidth={500}
@@ -154,17 +154,17 @@ test('a glyph swatch is the point shape drawn as a path, in the row colour', () 
         {
           key: 'tri',
           label: 'INS',
-          swatches: [{ color: 'currentColor', glyph: 'triangle' }],
+          swatches: [{ color: 'currentColor', shape: 'triangle' }],
         },
         {
           key: 'dia',
           label: 'DEL',
-          swatches: [{ color: 'currentColor', glyph: 'diamond' }],
+          swatches: [{ color: 'currentColor', shape: 'diamond' }],
         },
         {
-          key: 'disc',
+          key: 'circle',
           label: 'SNV',
-          swatches: [{ color: 'currentColor', glyph: 'disc' }],
+          swatches: [{ color: 'currentColor', shape: 'circle' }],
         },
       ]}
     />,

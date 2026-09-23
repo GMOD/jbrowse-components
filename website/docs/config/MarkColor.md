@@ -9,19 +9,19 @@ Auto-generated config schema for the current JBrowse release — see the [config
 ## Example usage
 
 ```js
-{ shape: 'bar', encoding: { y: 'score', color: 'steelblue' } }
+{ mark: 'bar', encoding: { y: 'score', color: 'steelblue' } }
 ```
 
 ```js
 {
-  shape: 'point',
+  mark: 'point',
   encoding: { y: 'score', color: { field: 'strand', domain: ['1', '-1'] } },
 }
 ```
 
 ```js
 {
-  shape: 'span',
+  mark: 'span',
   encoding: {
     color: {
       field: 'score',
@@ -36,7 +36,7 @@ Auto-generated config schema for the current JBrowse release — see the [config
 
 ```js
 {
-  shape: 'bar',
+  mark: 'bar',
   encoding: {
     y: 'score',
     color: {
@@ -53,7 +53,7 @@ Auto-generated config schema for the current JBrowse release — see the [config
 
 ```js
 {
-  shape: 'point',
+  mark: 'point',
   encoding: {
     y: 'score',
     color: {

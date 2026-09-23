@@ -51,10 +51,8 @@ ADR-040's two-consumer bar stated as a goal.
 Colin's answers to the calls a Fable review of the mark display left open:
 
 - **Vega-Lite's names.** A mark's kind is `mark` and the point symbol is
-  `encoding.shape`, where the mark display says `shape` and `encoding.glyph`
-  today, so a Vega-Lite or GenomeSpy layer object drops into `marks` as
-  written and `jbrowse validate`'s `SPELLED_HERE` table goes. render-core's
-  `MarkShape`, the painter/shader/hit triple, keeps its name.
+  `encoding.shape`, landed as
+  [ADR-159](../architecture-decision-records/adr-159-a-mark-is-spelt-as-vega-lite-spells-one.md).
 - **The text layer draws DOM text on screen**, for accessibility. A label
   layer is sparse once overlaps are culled, so DOM costs little there; dense
   per-base text (sequence letters, MAF bases) stays on canvas and outside the
@@ -218,7 +216,7 @@ ADR-135.
 ## Order
 
 The row model (§4) is under way, ahead of the rest: it converges code that
-exists, which rule 2 ranks first. The ramp table has landed. Next the
-`mark`/`shape` rename, then shared y, one mixin and a real tutorial step it
+exists, which rule 2 ranks first. The ramp table and the `mark`/`shape`
+rename have landed. Next shared y, one mixin and a real tutorial step it
 removes, then the text layer. The ramps to add and `y2` each wait on a capture
 put to Colin. The copies run beside any of them, one bench each.

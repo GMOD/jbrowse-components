@@ -23,17 +23,17 @@ import {
  *
  * #example
  * ```js
- * { shape: 'bar', encoding: { y: 'score', color: 'steelblue' } }
+ * { mark: 'bar', encoding: { y: 'score', color: 'steelblue' } }
  * ```
  * ```js
  * {
- *   shape: 'point',
+ *   mark: 'point',
  *   encoding: { y: 'score', color: { field: 'strand', domain: ['1', '-1'] } },
  * }
  * ```
  * ```js
  * {
- *   shape: 'span',
+ *   mark: 'span',
  *   encoding: {
  *     color: {
  *       field: 'score',
@@ -47,7 +47,7 @@ import {
  * ```
  * ```js
  * {
- *   shape: 'bar',
+ *   mark: 'bar',
  *   encoding: {
  *     y: 'score',
  *     color: {
@@ -63,7 +63,7 @@ import {
  * ```
  * ```js
  * {
- *   shape: 'point',
+ *   mark: 'point',
  *   encoding: {
  *     y: 'score',
  *     color: {

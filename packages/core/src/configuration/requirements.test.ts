@@ -18,7 +18,7 @@ const Encoding = ConfigurationSchema('RequirementEncoding', {
 const Mark = ConfigurationSchema(
   'RequirementMark',
   {
-    shape: { type: 'string', defaultValue: 'bar' },
+    mark: { type: 'string', defaultValue: 'bar' },
     source: { type: 'string', defaultValue: 'features' },
     encoding: Encoding,
   },
@@ -26,13 +26,13 @@ const Mark = ConfigurationSchema(
     requires: [
       {
         id: 'value',
-        when: { shape: ['bar', 'point'] },
+        when: { mark: ['bar', 'point'] },
         slots: ['encoding.y'],
         message: 'a bar or point names a y',
       },
       {
         id: 'density-colour',
-        when: { shape: ['span'], source: ['density'] },
+        when: { mark: ['span'], source: ['density'] },
         slots: ['encoding.color'],
         message: 'a density span names a colour',
       },
@@ -42,7 +42,7 @@ const Mark = ConfigurationSchema(
 
 test('a snapshot meeting every requirement has no problems', () => {
   expect(requirementProblems(Mark, { encoding: { y: 'score' } })).toEqual([])
-  expect(requirementProblems(Mark, { shape: 'span' })).toEqual([])
+  expect(requirementProblems(Mark, { mark: 'span' })).toEqual([])
 })
 
 test('a when value that is the slot default fires for an absent slot', () => {
@@ -56,7 +56,7 @@ test('a when value that is the slot default fires for an absent slot', () => {
 
 test('every when slot has to hold a listed value', () => {
   expect(
-    requirementProblems(Mark, { shape: 'span', source: 'density' }),
+    requirementProblems(Mark, { mark: 'span', source: 'density' }),
   ).toEqual([
     {
       id: 'density-colour',
@@ -64,11 +64,11 @@ test('every when slot has to hold a listed value', () => {
       message: 'a density span names a colour',
     },
   ])
-  expect(requirementProblems(Mark, { shape: 'span' })).toEqual([])
+  expect(requirementProblems(Mark, { mark: 'span' })).toEqual([])
 })
 
 test('a sub-schema names a value through the slot a string lifts into', () => {
-  const span = { shape: 'span', source: 'density' }
+  const span = { mark: 'span', source: 'density' }
   expect(
     requirementProblems(Mark, { ...span, encoding: { color: 'red' } }),
   ).toEqual([])

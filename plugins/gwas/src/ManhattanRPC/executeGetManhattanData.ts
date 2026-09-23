@@ -113,12 +113,12 @@ function r2Channel(
 export function buildManhattanResult(
   features: readonly Feature[],
   scoreField: string,
-  { r2, indexFound, ...readers }: ManhattanReaders,
+  { r2, indexFound, color, glyph }: ManhattanReaders,
   ctx: { jexl: JexlInstance; report?: ProgressReporter },
 ): { result: ManhattanRpcResult; transferables: ArrayBufferLike[] } {
   const encoded = encodeFeatures(
     features,
-    { y: scoreField, ...readers },
+    { y: scoreField, color, shape: glyph },
     MANHATTAN_LANES,
     ctx,
   )

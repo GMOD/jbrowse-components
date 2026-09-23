@@ -12,7 +12,7 @@ Auto-generated config schema for the current JBrowse release — see the [config
 {
   type: 'LinearMarkDisplay',
   facet: { field: 'HP', transform: [{ type: 'pileup' }] },
-  marks: [{ shape: 'span' }],
+  marks: [{ mark: 'span' }],
 }
 ```
 

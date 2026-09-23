@@ -6,21 +6,21 @@ import {
   isJexl,
   paintedScale,
 } from './markRuleFacts.ts'
+import { MARK_SPECS, rampResolvesPerRegion, readsValue } from './markSpecs.ts'
 import {
   DEFAULT_AGGREGATE_OP,
   DEFAULT_BIN_AS,
   DEFAULT_COVERAGE_AS,
   DEFAULT_FORMULA_AS,
-  DEFAULT_MARK_SHAPE,
+  DEFAULT_MARK_TYPE,
   DEFAULT_PILEUP_AS,
   DEFAULT_PILEUP_FIELDS,
 } from './markVocabulary.ts'
-import { SHAPE_SPECS, rampResolvesPerRegion, readsValue } from './shapeSpecs.ts'
 
 import type { ColorScaleName } from './markRuleFacts.ts'
 import type {
   AggregateOpName,
-  MarkShapeName,
+  MarkType,
   MarkSourceName,
 } from './markVocabulary.ts'
 
@@ -119,7 +119,7 @@ export interface FacetSnapshot {
  * off. A type alias, which a `Record<string, unknown>` reader takes.
  */
 export type MarkSnapshot = {
-  shape?: MarkShapeName
+  mark?: MarkType
   size?: number
   source?: MarkSourceName
   minBpPerPx?: number
@@ -130,7 +130,7 @@ export type MarkSnapshot = {
     y?: string
     row?: string
     color?: ColorSnapshot
-    glyph?: unknown
+    shape?: unknown
   }
   transform?: StepSnapshot[]
 }
@@ -139,8 +139,8 @@ function found(rule: MarkRuleId, slot: string, message: string): OwnProblem {
   return { rule, level: MARK_RULES[rule], slot, message }
 }
 
-function shapeOf(mark: MarkSnapshot) {
-  return mark.shape ?? DEFAULT_MARK_SHAPE
+function markTypeOf(mark: MarkSnapshot) {
+  return mark.mark ?? DEFAULT_MARK_TYPE
 }
 
 function stepsOf(mark: MarkSnapshot) {
@@ -344,36 +344,36 @@ function ownProblems(
   display: readonly StepSnapshot[],
   section: readonly StepSnapshot[],
 ) {
-  const shape = shapeOf(mark)
+  const type = markTypeOf(mark)
   const problems: OwnProblem[] = []
   const y = mark.encoding?.y
-  const channels = new Set<string>(['x', 'x2', ...SHAPE_SPECS[shape].channels])
+  const channels = new Set<string>(['x', 'x2', ...MARK_SPECS[type].channels])
   for (const channel of Object.keys(mark.encoding ?? {})) {
     if (!channels.has(channel)) {
       problems.push(
         found(
           'unread-channel',
           `encoding.${channel}`,
-          `a ${shape} does not read ${channel}`,
+          `a ${type} does not read ${channel}`,
         ),
       )
     }
   }
-  if (mark.size !== undefined && shape !== 'point') {
+  if (mark.size !== undefined && type !== 'point') {
     problems.push(
       found(
         'unread-size',
         'size',
-        `a ${shape} draws no glyph, so it reads no size`,
+        `a ${type} draws no point, so it reads no size`,
       ),
     )
   }
-  if (!readsValue(shape) && mark.source === 'density') {
+  if (!readsValue(type) && mark.source === 'density') {
     problems.push(
       found(
         'span-density-source',
         'source',
-        `a ${shape} does not draw the density sidecar`,
+        `a ${type} does not draw the density sidecar`,
       ),
     )
   }
@@ -385,7 +385,7 @@ function ownProblems(
   if (ramp) {
     const { domainMin, domainMax } = ramp
     if (
-      rampResolvesPerRegion(shape) &&
+      rampResolvesPerRegion(type) &&
       (domainMin === undefined || domainMax === undefined)
     ) {
       problems.push(
@@ -480,7 +480,7 @@ export function markProblems(
       }
       if (
         !faceted &&
-        shapeOf(mark) !== 'span' &&
+        markTypeOf(mark) !== 'span' &&
         !banded(mark, shared) &&
         banded(other, shared)
       ) {

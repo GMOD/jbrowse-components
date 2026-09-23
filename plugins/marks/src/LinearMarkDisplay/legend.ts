@@ -12,7 +12,7 @@ import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { CategoricalScale, ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { LegendSwatch } from '@jbrowse/core/ui/legendSpec'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
-import type { GlyphName, ScaleTable } from '@jbrowse/core/util/markEncoding'
+import type { ShapeName, ScaleTable } from '@jbrowse/core/util/markEncoding'
 
 const RAMP_STOPS = 8
 
@@ -26,7 +26,7 @@ const NUMERIC_KEY_HINT_ROWS = 8
 const NUMERIC_KEY_HINT =
   "numeric values drawn as categories; set scale: 'linear' for a color scale"
 
-export type ScaledChannel = 'color' | 'glyph'
+export type ScaledChannel = 'color' | 'shape'
 
 /**
  * One scaled channel's key: the table the worker resolved, the marks it is
@@ -50,7 +50,7 @@ const CHANNELS: {
   tableOf: (layer: StoredLayer) => ScaleTable | undefined
 }[] = [
   { channel: 'color', tableOf: l => l.scale },
-  { channel: 'glyph', tableOf: l => l.glyphScale },
+  { channel: 'shape', tableOf: l => l.shapeScale },
 ]
 
 function copyOf(scale: ScaleTable): ScaleTable {
@@ -63,7 +63,7 @@ function copyOf(scale: ScaleTable): ScaleTable {
       }
     case 'categorical':
       return { ...scale, entries: [...scale.entries] }
-    case 'glyph':
+    case 'shape':
       return { ...scale, entries: [...scale.entries] }
     case 'threshold':
       return { ...scale }
@@ -95,8 +95,8 @@ function union(current: ScaleTable, next: ScaleTable) {
         current.numericKeys = current.numericKeys && next.numericKeys
       }
       break
-    case 'glyph':
-      if (next.kind === 'glyph') {
+    case 'shape':
+      if (next.kind === 'shape') {
         unionEntries(current.entries, next.entries)
       }
       break
@@ -108,7 +108,7 @@ function union(current: ScaleTable, next: ScaleTable) {
       break
     case 'ramp':
       // A ramp's open ends are the union of the regions' extremes, which is
-      // the same number the shapes read as a uniform, so the key and the
+      // the same number the shaders read as a uniform, so the key and the
       // painting cannot disagree across a pan. A pinned end already agrees.
       if (next.kind === 'ramp' && !fullyPinned(current)) {
         current.extent = [
@@ -121,9 +121,9 @@ function union(current: ScaleTable, next: ScaleTable) {
 }
 
 // What a section is keyed on: the declaration that assigns a value its colour
-// or glyph, and the title over it, so two marks sharing both share the key. A
+// or shape, and the title over it, so two marks sharing both share the key. A
 // ramp with an open end stays the mark's, its domain being the uniform that
-// mark's shapes read off its own loaded values.
+// mark's shaders read off its own loaded values.
 function sectionKey(markIndex: number, scale: ScaleTable, title: string) {
   switch (scale.kind) {
     case 'ramp':
@@ -155,9 +155,9 @@ function sectionKey(markIndex: number, scale: ScaleTable, title: string) {
         scale.domain,
         thresholdPalette(scale.domain.length + 1, scale.range),
       ])
-    case 'glyph':
+    case 'shape':
       return JSON.stringify([
-        'glyph',
+        'shape',
         scale.field,
         title,
         scale.domain,
@@ -168,11 +168,11 @@ function sectionKey(markIndex: number, scale: ScaleTable, title: string) {
 
 /**
  * The keys the loaded regions carry, one per scale, in the order of the first
- * mark drawing through each with colour before glyph. A categorical or
+ * mark drawing through each with colour before shape. A categorical or
  * threshold table is the union over regions and over the marks declaring it
  * alike, in the field's order; a key's entry is the same in every region. A
  * ramp's domain takes each pinned end as the config wrote it and each open one
- * from the union of the regions' own extremes — the same number the shapes
+ * from the union of the regions' own extremes — the same number the shaders
  * read as a uniform. A colour key is headed with `colorTitleOf` for its mark
  * where that answers a string, and every other key with its field.
  */
@@ -227,23 +227,23 @@ export function buildMarkLegend(
   )
 }
 
-// A glyph table over the same field a categorical colour reads, on marks
+// A shape table over the same field a categorical colour reads, on marks
 // that colour also keys: the two keys would list the same values twice, so
-// the colour key draws the glyph as its swatch, under the colour's title, and
-// the glyph key is folded away.
-function glyphOverSameField(
+// the colour key draws the shape as its swatch, under the colour's title, and
+// the shape key is folded away.
+function shapeOverSameField(
   sections: MarkLegendSection[],
   colour: MarkLegendSection,
 ) {
   const field = colour.scale.kind === 'categorical' && colour.scale.field
-  const glyph = sections.find(
+  const shape = sections.find(
     s =>
-      s.channel === 'glyph' &&
-      s.scale.kind === 'glyph' &&
+      s.channel === 'shape' &&
+      s.scale.kind === 'shape' &&
       s.scale.field === field &&
       s.markIndexes.every(i => colour.markIndexes.includes(i)),
   )
-  return glyph?.scale.kind === 'glyph' ? glyph : undefined
+  return shape?.scale.kind === 'shape' ? shape : undefined
 }
 
 // A key over the facet's own field lists its rows in the sections' order, so
@@ -276,10 +276,10 @@ function categoricalKey<E extends { value: string }>(
 
 /**
  * The keys as the color scales `LegendMixin` derives the legend from. A
- * glyph table is a categorical scale whose swatches are the glyphs, drawn in
- * the text colour: the key describes the glyph channel, not the colour one —
+ * shape table is a categorical scale whose swatches are the shapes, drawn in
+ * the text colour: the key describes the shape channel, not the colour one —
  * unless the colour is a categorical scale over the same field, when one key
- * carries both, each swatch the value's glyph in the value's colour.
+ * carries both, each swatch the value's shape in the value's colour.
  */
 export function markColorScales(
   sections: MarkLegendSection[],
@@ -295,13 +295,13 @@ export function markColorScales(
     const title = section.title || undefined
     switch (scale.kind) {
       case 'categorical': {
-        const glyph = glyphOverSameField(sections, section)
-        if (glyph) {
-          folded.add(glyph)
+        const shape = shapeOverSameField(sections, section)
+        if (shape) {
+          folded.add(shape)
         }
-        const glyphOf = (value: string) =>
-          glyph?.scale.kind === 'glyph'
-            ? glyph.scale.entries.find(e => e.value === value)?.glyph
+        const shapeOf = (value: string) =>
+          shape?.scale.kind === 'shape'
+            ? shape.scale.entries.find(e => e.value === value)?.shape
             : undefined
         const key = categoricalKey(
           id,
@@ -309,8 +309,8 @@ export function markColorScales(
           scale,
           ({ value, color }) => {
             const css = abgrToCssRgba(color)
-            const g = glyphOf(value)
-            return g ? { swatches: [{ color: css, glyph: g }] } : { color: css }
+            const g = shapeOf(value)
+            return g ? { swatches: [{ color: css, shape: g }] } : { color: css }
           },
           facet,
         )
@@ -320,13 +320,13 @@ export function markColorScales(
             : key,
         ]
       }
-      case 'glyph':
+      case 'shape':
         return [
           categoricalKey(
             id,
             title,
             scale,
-            e => ({ swatches: [{ color: 'currentColor', glyph: e.glyph }] }),
+            e => ({ swatches: [{ color: 'currentColor', shape: e.shape }] }),
             facet,
           ),
         ]
@@ -360,25 +360,25 @@ export function colorSection(sections: MarkLegendSection[], markIndex: number) {
   )?.scale
 }
 
-/** The glyph key of one mark, if its glyph is a scale. */
-export function glyphSection(sections: MarkLegendSection[], markIndex: number) {
+/** The shape key of one mark, if its shape is a scale. */
+export function shapeSection(sections: MarkLegendSection[], markIndex: number) {
   return sections.find(
-    s => s.channel === 'glyph' && s.markIndexes.includes(markIndex),
+    s => s.channel === 'shape' && s.markIndexes.includes(markIndex),
   )?.scale
 }
 
 /**
- * The categories a glyph names in a glyph table: three glyphs over any number
- * of values, so a glyph the range handed out twice names both, the way a key
+ * The categories a shape names in a shape table: three shapes over any number
+ * of values, so a shape the range handed out twice names both, the way a key
  * derived from the painting lists every value drawn in one colour.
  */
-export function glyphLabel(scale: ScaleTable | undefined, glyph: GlyphName) {
-  if (scale?.kind !== 'glyph') {
+export function shapeLabel(scale: ScaleTable | undefined, shape: ShapeName) {
+  if (scale?.kind !== 'shape') {
     return undefined
   }
   const field = categoricalField(scale.field)
   const values = scale.entries
-    .filter(e => e.glyph === glyph)
+    .filter(e => e.shape === shape)
     .map(e => field.label(e.value))
   return values.length > 0 ? values.join(', ') : undefined
 }
@@ -386,7 +386,7 @@ export function glyphLabel(scale: ScaleTable | undefined, glyph: GlyphName) {
 /**
  * The interval or categories a packed colour names, if its table has any. An
  * instance carries its colour and not its value, so two values hashed onto one
- * palette entry are both named, as {@link glyphLabel} names a shared glyph; a
+ * palette entry are both named, as {@link shapeLabel} names a shared shape; a
  * threshold's rows are read back off its palette and its two greys.
  */
 export function categoryLabel(scale: ScaleTable | undefined, color: number) {

@@ -87,20 +87,20 @@ import {
   toBinEdges,
   widestBinStep,
 } from './markRequest.ts'
+import { markLanes, readsValue } from './markSpecs.ts'
 import {
   EMPTY_PLOT_SPEC,
   defaultPlotMarks,
   plotMarks,
   specOfMarks,
 } from './plotFields.ts'
-import { markLanes, readsValue } from './shapeSpecs.ts'
 
 import type { MarkDisplayContextMenuInfo } from './components/markDisplayTypes.ts'
 import type {
   LinearMarkDisplayConfig,
   LinearMarkDisplayConfigModel,
   MarkConfig,
-  MarkShapeName,
+  MarkType,
 } from './configSchema.ts'
 import type { FacetLayout } from './facet.ts'
 import type { MarkHitInfo } from './findMarkHit.ts'
@@ -191,10 +191,10 @@ function markConstantColor(mark: MarkConfig): number {
 
 function markEntryOf(mark: MarkConfig): MarkEntry {
   return {
-    shape: mark.shape,
+    type: mark.mark,
     minBpPerPx: mark.minBpPerPx,
     maxBpPerPx: mark.maxBpPerPx,
-    placed: !readsValue(mark.shape) || mark.encoding.y !== '',
+    placed: !readsValue(mark.mark) || mark.encoding.y !== '',
   }
 }
 
@@ -332,10 +332,10 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The declared marks' shapes, in draw order.
+       * The declared marks' types, in draw order.
        */
-      get markShapes(): MarkShapeName[] {
-        return self.conf.marks.map(m => m.shape)
+      get markTypes(): MarkType[] {
+        return self.conf.marks.map(m => m.mark)
       },
       /**
        * #getter
@@ -357,7 +357,7 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * Each mark's shape and zoom range, what the mark list is built from.
+       * Each mark's type and zoom range, what the mark list is built from.
        */
       get markEntries(): MarkEntry[] {
         return self.conf.marks.map(m => markEntryOf(m))
@@ -405,7 +405,7 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * Each mark's `size`: a point's glyph diameter in px, which a bar or
+       * Each mark's `size`: a point's diameter in px, which a bar or
        * span leaves unread.
        */
       get markSizes(): number[] {
@@ -417,7 +417,7 @@ export function stateModelFactory(
        * default where no mark is a point.
        */
       get pointSize(): number {
-        const first = self.conf.marks.find(m => m.shape === 'point')
+        const first = self.conf.marks.find(m => m.mark === 'point')
         return first ? first.size : DEFAULT_POINT_DIAMETER_PX
       },
       /**
@@ -430,7 +430,7 @@ export function stateModelFactory(
       /**
        * #getter
        * The worker request, one layer per mark: its encoding and the lanes
-       * its shape reads. Every mark is sent, the one outside its zoom range
+       * its type reads. Every mark is sent, the one outside its zoom range
        * included, so the worker encodes a layer the view will not draw:
        * measured at 280 ns a feature, 28 ms per 100,000, for the excluded
        * half of the default multiscale pair (`encodeFeatures.bench.ts`, the
@@ -454,7 +454,7 @@ export function stateModelFactory(
       /**
        * #getter
        * The worker request, one layer per mark: its encoding and the lanes
-       * its shape reads. Every mark is sent, the one outside its zoom range
+       * its type reads. Every mark is sent, the one outside its zoom range
        * included, so the worker encodes a layer the view will not draw:
        * measured at 280 ns a feature, 28 ms per 100,000, for the excluded
        * half of the default multiscale pair (`encodeFeatures.bench.ts`, the
@@ -472,7 +472,7 @@ export function stateModelFactory(
           const transform = stepsOf(m.transform, bpPerPx, binEdges)
           return {
             encoding: encodings[i]!,
-            lanes: markLanes(m.shape),
+            lanes: markLanes(m.mark),
             ...(transform.length > 0 ? { transform } : {}),
           }
         })
@@ -593,7 +593,7 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * The mark list the shapes declare — one `defineMark` per config entry,
+       * The mark list the marks declare — one `defineMark` per config entry,
        * reading `layers[i]`, off outside its zoom range. Recomputed only when
        * the entries move, so the component can key its backend factory on
        * it.
@@ -603,17 +603,17 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The shapes drawing at the view's zoom.
+       * The mark types drawing at the view's zoom.
        */
-      get visibleShapes(): MarkShapeName[] {
+      get visibleMarkTypes(): MarkType[] {
         const { visible } = self.markView
-        return self.markShapes.filter((_, i) => visible[i])
+        return self.markTypes.filter((_, i) => visible[i])
       },
       /**
        * #getter
        */
       get hasPointMark(): boolean {
-        return this.visibleShapes.includes('point')
+        return this.visibleMarkTypes.includes('point')
       },
       /**
        * #getter
@@ -629,7 +629,7 @@ export function stateModelFactory(
        */
       get drawingMarkIndices(): number[] {
         const { visible } = self.markView
-        return self.markShapes.flatMap((_, i) => (visible[i] ? [i] : []))
+        return self.markTypes.flatMap((_, i) => (visible[i] ? [i] : []))
       },
     }))
     .views(self => ({
@@ -643,14 +643,14 @@ export function stateModelFactory(
       get domain() {
         const indices = self.drawingMarkIndices
         const folded = new Set(indices)
-        const shapes = indices.map(i => self.markShapes[i]!)
+        const types = indices.map(i => self.markTypes[i]!)
         const { origin, autoscaleType, numStdDev, numQuantile } = self
         const reached = [
           ...self.scoreRules.map(rule => rule.value),
-          ...(shapes.includes('bar') ? [origin] : []),
+          ...(types.includes('bar') ? [origin] : []),
         ]
         return visibleStatsDomain({
-          active: shapes.some(readsValue),
+          active: types.some(readsValue),
           view: self.host,
           payloadFor: index => self.rpcDataMap.get(index),
           itemsFor: data =>
@@ -678,14 +678,14 @@ export function stateModelFactory(
       /**
        * #getter
        * The px the y scale stands in from both ends of its band, one number
-       * for the axis and every shape: glyph room where only points draw, and
+       * for the axis and every mark: point room where only points draw, and
        * none beside a bar, whose top edge is its datum and wants the plot box
        * itself.
        */
       get valueInsetPx(): number {
         const indices = self.drawingMarkIndices
         return indices.length > 0 &&
-          indices.every(i => self.markShapes[i] === 'point')
+          indices.every(i => self.markTypes[i] === 'point')
           ? pointInsetPx(Math.max(...indices.map(i => self.markSizes[i]!)))
           : 0
       },
@@ -701,12 +701,12 @@ export function stateModelFactory(
        * #getter
        * The one y scale the chrome draws the axis from — `scales.y` resolved:
        * its type, its domain autoscaled where it pins nothing, its title as
-       * the caption and its rules. Every mark's shapes read the same pair.
+       * the caption and its rules. Every mark reads the same pair.
        */
       get valueScales(): ValueScale[] {
         const minimalTicks = getConf(self, 'minimalTicks')
         const height = self.height
-        const glyphInset = this.valueInsetPx
+        const pointInset = this.valueInsetPx
         // One band per row where the marks stand in rows, the scale ruling
         // each on its own the way the multi-wiggle display's does; the whole
         // plot box otherwise.
@@ -717,7 +717,7 @@ export function stateModelFactory(
           rowCount > 1
             ? {
                 height: rowHeight,
-                offset: glyphInset,
+                offset: pointInset,
                 bandTops: Array.from(
                   { length: rowCount },
                   (_, row) => yTop + row * rowHeight,
@@ -725,7 +725,7 @@ export function stateModelFactory(
               }
             : {
                 height,
-                offset: YSCALEBAR_LABEL_OFFSET + glyphInset,
+                offset: YSCALEBAR_LABEL_OFFSET + pointInset,
               }
         return [
           {
@@ -1022,7 +1022,7 @@ export function stateModelFactory(
       },
       /**
        * #action
-       * Stage a region as fetched, with this display's payload shape.
+       * Stage a region as fetched, with this display's payload layout.
        */
       setRpcData(idx: number, data: EncodedFeaturesResult, region: Region) {
         self.setLoadedRegion(idx, region, storedRegionData(data))
@@ -1124,7 +1124,7 @@ export function stateModelFactory(
        */
       setPointSize(val?: number) {
         for (const mark of self.conf.marks) {
-          if (mark.shape === 'point') {
+          if (mark.mark === 'point') {
             setConf(mark, 'size', val)
           }
         }

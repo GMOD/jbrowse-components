@@ -10,9 +10,9 @@ import { pluralize } from '@jbrowse/core/util'
 import { Alert, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { MARK_SHAPE_CHOICES } from '../plotFields.ts'
+import { MARK_TYPE_CHOICES } from '../plotFields.ts'
 
-import type { PlotFields, PlotShape, PlotSpec } from '../plotFields.ts'
+import type { PlotFields, PlotMark, PlotSpec } from '../plotFields.ts'
 
 export interface PlotFieldDialogModel {
   plotFields: PlotFields | undefined
@@ -101,14 +101,14 @@ const PlotFieldDialog = observer(function PlotFieldDialog({
       <TextField
         select
         fullWidth
-        label="Shape"
-        value={spec.shape}
+        label="Mark"
+        value={spec.mark}
         onChange={event => {
-          update({ shape: event.target.value as PlotShape })
+          update({ mark: event.target.value as PlotMark })
         }}
         slotProps={{ select: { native: true }, inputLabel: { shrink: true } }}
       >
-        {MARK_SHAPE_CHOICES.map(s => (
+        {MARK_TYPE_CHOICES.map(s => (
           <option key={s} value={s}>
             {s}
           </option>

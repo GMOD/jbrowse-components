@@ -57,12 +57,12 @@ const EVERY_SPELLING: Record<string, unknown> = {
   transform: [{ type: 'formula', expr: "jexl:getTag(feature,'HP')", as: 'HP' }],
   marks: [
     {
-      shape: 'point',
-      encoding: { y: 'score', color: 'red', glyph: 'triangle' },
+      mark: 'point',
+      encoding: { y: 'score', color: 'red', shape: 'triangle' },
       transform: [{ type: 'coverage', as: 'depth' }],
     },
     {
-      shape: 'span',
+      mark: 'span',
       encoding: {
         color: {
           field: 'score',
@@ -72,7 +72,7 @@ const EVERY_SPELLING: Record<string, unknown> = {
           domainMax: 10,
           reverse: true,
         },
-        glyph: { field: 'svtype', domain: [1, 2] },
+        shape: { field: 'svtype', domain: [1, 2] },
       },
       transform: [{ type: 'bin', step: 1000, as: ['from', 'to'] }],
     },

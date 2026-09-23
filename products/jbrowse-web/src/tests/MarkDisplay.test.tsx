@@ -76,7 +76,7 @@ test('bars from a BED score column, coloured by strand, with the key on screen',
   const { view, findByTestId } = await createView(
     markTrackConfig('mark_bars', [
       {
-        shape: 'bar',
+        mark: 'bar',
         encoding: {
           y: 'score',
           color: { field: 'strand', scale: 'categorical' },
@@ -101,7 +101,7 @@ test('the SVG export paints the same bars and carries the key under its title', 
   const { view, findByTestId, findByText } = await createView(
     markTrackConfig('mark_bars', [
       {
-        shape: 'bar',
+        mark: 'bar',
         encoding: {
           y: 'score',
           color: {
@@ -140,7 +140,7 @@ test('points over the same file with a jexl colour', async () => {
   const { view, findByTestId } = await createView(
     markTrackConfig('mark_points', [
       {
-        shape: 'point',
+        mark: 'point',
         encoding: {
           y: 'score',
           color: "jexl:get(feature,'name')=='EDEN.1'?'red':'blue'",
@@ -156,14 +156,14 @@ test('points over the same file with a jexl colour', async () => {
   expect(el.dataset.displayDrawn).toBe('true')
 }, 30000)
 
-test('points with the glyph a scale over a field, and the key drawing each glyph', async () => {
+test('points with the shape a scale over a field, and the key drawing each shape', async () => {
   const { view, findByTestId } = await createView(
     markTrackConfig('mark_glyphs', [
       {
-        shape: 'point',
+        mark: 'point',
         encoding: {
           y: 'score',
-          glyph: {
+          shape: {
             field: 'name',
             scale: 'categorical',
             domain: ['EDEN.1', 'EDEN.2'],
@@ -179,8 +179,8 @@ test('points with the glyph a scale over a field, and the key drawing each glyph
   const el = await findDisplayPainted('mark-display', { timeout })
   expect(el.dataset.displayDrawn).toBe('true')
   // the pinned domain's rows lead the key and the region's other name follows
-  // with the glyph derived from its value, which a range the domain has spent
-  // can only repeat; every swatch is the glyph itself
+  // with the shape derived from its value, which a range the domain has spent
+  // can only repeat; every swatch is the shape itself
   const legend = await findByTestId('floating-legend', {}, { timeout })
   await waitFor(() => {
     expect(legend.textContent).toContain('EDEN.3')
@@ -198,7 +198,7 @@ test('points with the glyph a scale over a field, and the key drawing each glyph
 
 test('a y field naming no column is a skipped count in the corner, not an empty track', async () => {
   const { view, findByTestId } = await createView(
-    markTrackConfig('mark_typo', [{ shape: 'bar', encoding: { y: 'scroe' } }]),
+    markTrackConfig('mark_typo', [{ mark: 'bar', encoding: { y: 'scroe' } }]),
   )
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('mark_typo'), {}, { timeout }))
@@ -213,7 +213,7 @@ test('spans stacked by a row channel band the plot by the highest row', async ()
   const { view, findByTestId } = await createView(
     markTrackConfig('mark_rows', [
       {
-        shape: 'span',
+        mark: 'span',
         encoding: {
           row: "jexl:get(feature,'name')=='EDEN.1'?0:1",
           color: { field: 'name', scale: 'categorical' },
@@ -235,9 +235,9 @@ test('spans stacked by a row channel band the plot by the highest row', async ()
 test('a binned count and the raw features share one fetch, and each draws in its own zoom range', async () => {
   const { view, session, findByTestId } = await createView(
     markTrackConfig('mark_density', [
-      { shape: 'bar', encoding: { y: 'score' }, maxBpPerPx: 20 },
+      { mark: 'bar', encoding: { y: 'score' }, maxBpPerPx: 20 },
       {
-        shape: 'bar',
+        mark: 'bar',
         transform: [
           { type: 'bin', step: 2000 },
           {
@@ -343,9 +343,9 @@ test('past a forced-small byte limit the density sidecar draws in the banner s p
           // refuses the features and the tier is what is left
           fetchSizeLimit: 1,
           marks: [
-            { shape: 'bar', encoding: { y: 'score' } },
+            { mark: 'bar', encoding: { y: 'score' } },
             {
-              shape: 'bar',
+              mark: 'bar',
               source: 'density',
               encoding: { y: 'count', color: 'red' },
             },
@@ -402,7 +402,7 @@ test('a stack over the volvox BAM is a declared pileup, its rows packed in the w
       'mark_pileup',
       [
         {
-          shape: 'span',
+          mark: 'span',
           transform: [{ type: 'pileup' }],
           encoding: { row: 'row', color: 'red' },
         },
@@ -438,9 +438,9 @@ test('a coverage run and the raw reads fold into the one axis', async () => {
     markTrackConfig(
       'mark_two_axes',
       [
-        { shape: 'bar', encoding: { y: 'score' } },
+        { mark: 'bar', encoding: { y: 'score' } },
         {
-          shape: 'bar',
+          mark: 'bar',
           transform: [{ type: 'coverage' }],
           encoding: { y: 'coverage', color: 'blue' },
         },
@@ -471,7 +471,7 @@ test('spans over a VCF stack the variants the worker packed', async () => {
       'mark_variants',
       [
         {
-          shape: 'span',
+          mark: 'span',
           transform: [{ type: 'pileup', padding: 10000 }],
           encoding: { row: 'row', color: 'green' },
         },

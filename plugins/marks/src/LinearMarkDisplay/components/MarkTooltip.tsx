@@ -2,19 +2,19 @@ import HoverTooltip from '@jbrowse/core/ui/HoverTooltip'
 import { LegendSwatchGlyph } from '@jbrowse/core/ui/LegendSwatchGlyph'
 import { assembleLocString } from '@jbrowse/core/util'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
-import { GLYPH_CODES, GLYPH_NAMES } from '@jbrowse/core/util/glyphNames'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
+import { SHAPE_CODES, SHAPE_NAMES } from '@jbrowse/core/util/shapeNames'
 import { toP } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import {
   categoryLabel,
   colorSection,
-  glyphLabel,
-  glyphSection,
+  shapeLabel,
+  shapeSection,
 } from '../legend.ts'
 
-import type { MarkShapeName } from '../configSchema.ts'
+import type { MarkType } from '../configSchema.ts'
 import type { FacetLayout } from '../facet.ts'
 import type { MarkHitInfo } from '../findMarkHit.ts'
 import type { MarkLegendSection } from '../legend.ts'
@@ -25,7 +25,7 @@ import type { MarkEncoding } from '@jbrowse/core/util/markEncoding'
 export interface MarkTooltipModel {
   hoveredFeature: MarkHitInfo | undefined
   encodings: MarkEncoding[]
-  markShapes: MarkShapeName[]
+  markTypes: MarkType[]
   legendSections: MarkLegendSection[]
   facetLayout: FacetLayout
   coarseTierStandsIn: boolean
@@ -47,8 +47,8 @@ function channelName(ref: string) {
   return isJexl(ref) ? 'jexl' : ref
 }
 
-function glyphNameOf(code: number | undefined) {
-  return GLYPH_NAMES.find(name => GLYPH_CODES[name] === code)
+function shapeNameOf(code: number | undefined) {
+  return SHAPE_NAMES.find(name => SHAPE_CODES[name] === code)
 }
 
 function colorRow(
@@ -85,28 +85,28 @@ function colorRow(
   }
 }
 
-function glyphRow(
+function shapeRow(
   hit: MarkHitInfo,
   encoding: MarkEncoding | undefined,
   sections: MarkLegendSection[],
 ): ChannelRow | undefined {
-  const name = glyphNameOf(hit.glyph)
+  const name = shapeNameOf(hit.glyph)
   if (!name) {
     return undefined
   }
-  const swatch: LegendSwatch = { color: 'currentColor', glyph: name }
-  const scale = glyphSection(sections, hit.markIndex)
+  const swatch: LegendSwatch = { color: 'currentColor', shape: name }
+  const scale = shapeSection(sections, hit.markIndex)
   if (scale) {
     return {
-      channel: 'glyph',
-      field: scale.kind === 'glyph' ? scale.field : undefined,
-      value: glyphLabel(scale, name),
+      channel: 'shape',
+      field: scale.kind === 'shape' ? scale.field : undefined,
+      value: shapeLabel(scale, name),
       swatch,
     }
   }
-  const declared = encoding?.glyph
+  const declared = encoding?.shape
   return typeof declared === 'string' && isJexl(declared)
-    ? { channel: 'glyph', field: 'jexl', value: name, swatch }
+    ? { channel: 'shape', field: 'jexl', value: name, swatch }
     : undefined
 }
 
@@ -132,7 +132,7 @@ function rowRow(
 
 /**
  * Every channel the hovered mark encodes, each off the hovered instance: the
- * value channel, then colour, glyph and the band, so a reader sees the fields
+ * value channel, then colour, shape and the band, so a reader sees the fields
  * the plot was drawn from rather than the two it happens to print. A bin of
  * the density sidecar standing in is the sidecar's level, whatever field the
  * mark names.
@@ -154,7 +154,7 @@ function markTooltipRows(
         }
       : undefined,
     colorRow(hit, encoding, sections),
-    glyphRow(hit, encoding, sections),
+    shapeRow(hit, encoding, sections),
     rowRow(hit, encoding, facetLayout),
   ].filter(row => row !== undefined)
 }
@@ -166,7 +166,7 @@ const MarkTooltip = observer(function MarkTooltip({
   model: MarkTooltipModel
   mouseState: MouseState | undefined
 }) {
-  const { hoveredFeature: hit, encodings, markShapes, legendSections } = model
+  const { hoveredFeature: hit, encodings, markTypes, legendSections } = model
   return (
     <HoverTooltip hit={hit} mouseState={mouseState}>
       {hit ? (
@@ -194,7 +194,7 @@ const MarkTooltip = observer(function MarkTooltip({
               {value}
             </div>
           ))}
-          <small>{markShapes[hit.markIndex]}</small>
+          <small>{markTypes[hit.markIndex]}</small>
         </div>
       ) : null}
     </HoverTooltip>

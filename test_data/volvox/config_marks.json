@@ -77,7 +77,7 @@
           "displayId": "marks_bars-LinearMarkDisplay",
           "marks": [
             {
-              "shape": "bar",
+              "mark": "bar",
               "encoding": {
                 "y": "score",
                 "color": {
@@ -114,14 +114,14 @@
           "displayId": "marks_points-LinearMarkDisplay",
           "marks": [
             {
-              "shape": "point",
+              "mark": "point",
               "encoding": {
                 "y": "score",
                 "color": {
                   "field": "name",
                   "scale": "categorical"
                 },
-                "glyph": {
+                "shape": {
                   "field": "name",
                   "scale": "categorical",
                   "domain": ["EDEN.1", "EDEN.2"],
@@ -157,7 +157,7 @@
           "displayId": "marks_pileup-LinearMarkDisplay",
           "marks": [
             {
-              "shape": "span",
+              "mark": "span",
               "transform": [
                 {
                   "type": "pileup"
@@ -199,7 +199,7 @@
           "displayId": "marks_two_axes-LinearMarkDisplay",
           "marks": [
             {
-              "shape": "bar",
+              "mark": "bar",
               "transform": [
                 {
                   "type": "coverage"
@@ -212,7 +212,7 @@
               "minBpPerPx": 20
             },
             {
-              "shape": "point",
+              "mark": "point",
               "encoding": {
                 "y": "score"
               },
@@ -246,14 +246,14 @@
           "displayId": "marks_density-LinearMarkDisplay",
           "marks": [
             {
-              "shape": "bar",
+              "mark": "bar",
               "encoding": {
                 "y": "score"
               },
               "maxBpPerPx": 20
             },
             {
-              "shape": "bar",
+              "mark": "bar",
               "transform": [
                 {
                   "type": "bin",
@@ -303,7 +303,7 @@
           "displayId": "marks_ramp-LinearMarkDisplay",
           "marks": [
             {
-              "shape": "bar",
+              "mark": "bar",
               "transform": [
                 {
                   "type": "coverage"
@@ -346,7 +346,7 @@
           "displayId": "marks_variants-LinearMarkDisplay",
           "marks": [
             {
-              "shape": "span",
+              "mark": "span",
               "transform": [
                 {
                   "type": "pileup",
@@ -397,7 +397,7 @@
           "facet": "nm",
           "marks": [
             {
-              "shape": "span",
+              "mark": "span",
               "transform": [
                 {
                   "type": "pileup"
@@ -460,7 +460,7 @@
           "facet": "source",
           "marks": [
             {
-              "shape": "bar",
+              "mark": "bar",
               "encoding": {
                 "y": "score"
               }

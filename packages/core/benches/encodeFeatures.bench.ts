@@ -21,8 +21,8 @@
 //               field read plus a LUT index per feature
 //   ramp-value  the same ramp with the `colorValue` lane named, so the walk
 //               keeps the raw values and the display resolves the scale
-//   jexl-glyph  y native, glyph a jexl ternary over strand
-//   scale-glyph y native, glyph a categorical scale over strand
+//   jexl-glyph  y native, shape a jexl ternary over strand
+//   scale-glyph y native, shape a categorical scale over strand
 //
 // The last two decline lanes:
 //
@@ -117,7 +117,7 @@ const ARMS: {
     encoding: {
       y: 'score',
       color: 'red',
-      glyph: "jexl:get(feature,'strand')==1?'triangle':'disc'",
+      shape: "jexl:get(feature,'strand')==1?'triangle':'circle'",
     },
   },
   {
@@ -125,7 +125,7 @@ const ARMS: {
     encoding: {
       y: 'score',
       color: 'red',
-      glyph: { field: 'strand', scale: 'categorical' },
+      shape: { field: 'strand', scale: 'categorical' },
     },
   },
   {

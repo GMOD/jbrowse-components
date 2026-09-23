@@ -1,4 +1,4 @@
-import { GLYPH_CODES } from '@jbrowse/core/util/glyphNames'
+import { SHAPE_CODES } from '@jbrowse/core/util/shapeNames'
 import { render, screen } from '@testing-library/react'
 
 import MarkTooltip from './MarkTooltip.tsx'
@@ -38,7 +38,7 @@ async function tooltip(model: Partial<MarkTooltipModel>) {
       model={{
         hoveredFeature: HIT,
         encodings: [{}],
-        markShapes: ['bar'],
+        markTypes: ['bar'],
         legendSections: [],
         facetLayout: NO_FACET,
         coarseTierStandsIn: false,
@@ -50,24 +50,24 @@ async function tooltip(model: Partial<MarkTooltipModel>) {
   return await screen.findByRole('tooltip')
 }
 
-test('a point reads its glyph scale, naming the category the plot drew', async () => {
+test('a point reads its shape scale, naming the category the plot drew', async () => {
   const box = await tooltip({
-    hoveredFeature: { ...HIT, y: 7, glyph: GLYPH_CODES.triangle },
+    hoveredFeature: { ...HIT, y: 7, glyph: SHAPE_CODES.triangle },
     encodings: [
-      { y: 'score', glyph: { field: 'svtype', scale: 'categorical' } },
+      { y: 'score', shape: { field: 'svtype', scale: 'categorical' } },
     ],
-    markShapes: ['point'],
+    markTypes: ['point'],
     legendSections: [
       {
         markIndexes: [0],
-        channel: 'glyph',
+        channel: 'shape',
         scale: {
-          kind: 'glyph',
+          kind: 'shape',
           field: 'svtype',
           domain: [],
           entries: [
-            { value: 'DEL', glyph: 'triangle' },
-            { value: 'DUP', glyph: 'diamond' },
+            { value: 'DEL', shape: 'triangle' },
+            { value: 'DUP', shape: 'diamond' },
           ],
         },
         title: 'svtype',
@@ -95,7 +95,7 @@ test('a span stacked by a transform names the band it stands in', async () => {
   const box = await tooltip({
     hoveredFeature: { ...HIT, color: 0xff123456, row: 2 },
     encodings: [{ row: 'row', color: 'red' }],
-    markShapes: ['span'],
+    markTypes: ['span'],
   })
   expect(box.textContent).toContain('row: 2')
 })
@@ -107,7 +107,7 @@ test('a mark in an implicit pileup names its section', async () => {
   const box = await tooltip({
     hoveredFeature: { ...HIT, color: 0xff123456, row: 3 },
     encodings: [{ color: 'red' }],
-    markShapes: ['span'],
+    markTypes: ['span'],
     facetLayout: {
       sections: [
         { key: 'DEL', label: 'svtype: DEL', firstRow: 0, rowCount: 2 },
@@ -127,7 +127,7 @@ test('a mark in an implicit pileup outside a facet shows no bare row number', as
   const box = await tooltip({
     hoveredFeature: { ...HIT, color: 0xff123456, row: 3 },
     encodings: [{ color: 'red' }],
-    markShapes: ['span'],
+    markTypes: ['span'],
   })
   expect(box.textContent).not.toContain('row')
 })
@@ -136,7 +136,7 @@ test('under a facet the band reads as the section chip rather than an index', as
   const box = await tooltip({
     hoveredFeature: { ...HIT, color: 0xff123456, row: 3 },
     encodings: [{ row: 'row', color: 'red' }],
-    markShapes: ['span'],
+    markTypes: ['span'],
     facetLayout: {
       sections: [
         { key: 'DEL', label: 'svtype: DEL', firstRow: 0, rowCount: 2 },

@@ -11,9 +11,9 @@ import { cssColorToABGR, packAbgr } from './colorBits.ts'
 import { buildColorRampLut, colorRampStops, rampDomain } from './colorRamp.ts'
 import { fieldReader } from './fieldReader.ts'
 import Flatbush from './flatbush/index.ts'
-import { GLYPH_CODES, GLYPH_NAMES } from './glyphNames.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { numericValue } from './numericValue.ts'
+import { SHAPE_CODES, SHAPE_NAMES } from './shapeNames.ts'
 import { buildJexlContext } from './simpleFeature.ts'
 import {
   isMissing,
@@ -31,9 +31,9 @@ import type {
   Encoded,
   EncodedChannels,
   FieldRef,
-  GlyphEncoding,
-  GlyphName,
-  GlyphScaleTable,
+  ShapeEncoding,
+  ShapeName,
+  ShapeScaleTable,
   LaneName,
 } from './markEncodingTypes.ts'
 import type { ProgressReporter } from './progress.ts'
@@ -57,9 +57,9 @@ export type {
   FieldRef,
   FilterStep,
   FormulaStep,
-  GlyphEncoding,
-  GlyphName,
-  GlyphScaleTable,
+  ShapeEncoding,
+  ShapeName,
+  ShapeScaleTable,
   LaneName,
   LayerRequest,
   MarkEncoding,
@@ -114,7 +114,7 @@ export interface MarkEncodingInput {
   y?: FieldRef | ChannelReader
   row?: FieldRef | ChannelReader | ArrayLike<number>
   color?: ColorEncoding | ChannelReader<number>
-  glyph?: GlyphEncoding | ChannelReader<number>
+  shape?: ShapeEncoding | ChannelReader<number>
 }
 
 /**
@@ -142,28 +142,28 @@ function channelReader(
   return typeof ref === 'function' ? ref : fieldReader(ref, jexl)
 }
 
-function isGlyphName(glyph: string): glyph is GlyphName {
-  return glyph in GLYPH_CODES
+function isShapeName(shape: string): shape is ShapeName {
+  return shape in SHAPE_CODES
 }
 
-function glyphReader(
-  glyph: Exclude<GlyphEncoding, object> | ChannelReader<number> | undefined,
+function shapeReader(
+  shape: Exclude<ShapeEncoding, object> | ChannelReader<number> | undefined,
   jexl: JexlInstance | undefined,
 ): ChannelReader<number> {
-  if (glyph === undefined) {
+  if (shape === undefined) {
     return () => GLYPH_DISC
   }
-  if (typeof glyph === 'function') {
-    return glyph
+  if (typeof shape === 'function') {
+    return shape
   }
-  if (isGlyphName(glyph)) {
-    const code = GLYPH_CODES[glyph]
+  if (isShapeName(shape)) {
+    const code = SHAPE_CODES[shape]
     return () => code
   }
-  const expr = jexlExpression(glyph, jexl)
+  const expr = jexlExpression(shape, jexl)
   return feature => {
     const v = expr.eval(buildJexlContext({ feature }))
-    return typeof v === 'string' && isGlyphName(v) ? GLYPH_CODES[v] : GLYPH_DISC
+    return typeof v === 'string' && isShapeName(v) ? SHAPE_CODES[v] : GLYPH_DISC
   }
 }
 
@@ -174,7 +174,7 @@ function lutColorAt(lut: Uint8Array, t: number) {
   return packAbgr(lut[o]!, lut[o + 1]!, lut[o + 2]!, lut[o + 3]!)
 }
 
-// The categorical arm `color` and `glyph` share: the walk records which
+// The categorical arm `color` and `shape` share: the walk records which
 // key each admitted instance carried, `''` for none, and `resolve` hands
 // every key met its entry in the field's order, so two regions that met
 // different key sets still agree on every key they share.
@@ -284,7 +284,7 @@ export function encodeFeatures<L extends LaneName>(
       ? declaredScale
       : undefined
   // Which side of the wire a ramp resolves on is the caller's lane choice: a
-  // shape that reads the ramp itself names `colorValue` and gets the raw
+  // mark that reads the ramp itself names `colorValue` and gets the raw
   // values, and the display unions the regions' extremes into one domain.
   // Anything else names `color` and the walk resolves per region.
   const colorValue =
@@ -327,25 +327,25 @@ export function encodeFeatures<L extends LaneName>(
       : undefined
   let missingMet = false
   let notNumberMet = false
-  const { glyph: glyphEncoding } = encoding
-  const glyphScaled =
-    glyph && typeof glyphEncoding === 'object' ? glyphEncoding : undefined
-  const glyphField = glyphScaled
-    ? categoricalField(glyphScaled.field, {
-        domain: glyphScaled.domain?.map(String),
+  const { shape: shapeEncoding } = encoding
+  const shapeScaled =
+    glyph && typeof shapeEncoding === 'object' ? shapeEncoding : undefined
+  const shapeField = shapeScaled
+    ? categoricalField(shapeScaled.field, {
+        domain: shapeScaled.domain?.map(String),
       })
     : undefined
-  const glyphCategories =
-    glyphScaled && glyphField
+  const shapeCategories =
+    shapeScaled && shapeField
       ? categoricalChannel(
-          channelReader(glyphScaled.field, jexl),
-          glyphField,
+          channelReader(shapeScaled.field, jexl),
+          shapeField,
           n,
         )
       : undefined
-  const readGlyph = glyph
-    ? glyphReader(
-        typeof glyphEncoding === 'object' ? undefined : glyphEncoding,
+  const readShape = glyph
+    ? shapeReader(
+        typeof shapeEncoding === 'object' ? undefined : shapeEncoding,
         jexl,
       )
     : undefined
@@ -382,10 +382,10 @@ export function encodeFeatures<L extends LaneName>(
       const rv = rowValues[i]!
       row[count] = rv > 0 ? rv : 0
     }
-    if (glyphCategories) {
-      glyphCategories.collect(f, count)
-    } else if (glyph && readGlyph) {
-      glyph[count] = readGlyph(f)
+    if (shapeCategories) {
+      shapeCategories.collect(f, count)
+    } else if (glyph && readShape) {
+      glyph[count] = readShape(f)
     }
     featureIndex[count] = i
     if (colorCategories) {
@@ -479,26 +479,26 @@ export function encodeFeatures<L extends LaneName>(
     }
   }
 
-  let glyphScale: GlyphScaleTable | undefined
-  if (glyphScaled && glyphField && glyphCategories && glyph) {
-    const glyphOf = categoricalScale(
-      glyphField.domain,
-      glyphScaled.range ?? GLYPH_NAMES,
+  let shapeScale: ShapeScaleTable | undefined
+  if (shapeScaled && shapeField && shapeCategories && glyph) {
+    const shapeOf = categoricalScale(
+      shapeField.domain,
+      shapeScaled.range ?? SHAPE_NAMES,
     )
-    const { ofIndex, entries } = glyphCategories.resolve((key): GlyphName =>
-      key === '' ? 'disc' : glyphOf(key),
+    const { ofIndex, entries } = shapeCategories.resolve((key): ShapeName =>
+      key === '' ? 'circle' : shapeOf(key),
     )
-    const codeOfIndex = Uint8Array.from(ofIndex, name => GLYPH_CODES[name])
-    const { indexOf } = glyphCategories
+    const codeOfIndex = Uint8Array.from(ofIndex, name => SHAPE_CODES[name])
+    const { indexOf } = shapeCategories
     for (let i = 0; i < count; i++) {
       glyph[i] = codeOfIndex[indexOf[i]!]!
     }
-    glyphScale = {
-      kind: 'glyph',
-      field: glyphScaled.field,
-      domain: [...glyphField.domain],
-      ...(glyphScaled.range ? { range: [...glyphScaled.range] } : {}),
-      entries: entries.map(e => ({ value: e.value, glyph: e.entry })),
+    shapeScale = {
+      kind: 'shape',
+      field: shapeScaled.field,
+      domain: [...shapeField.domain],
+      ...(shapeScaled.range ? { range: [...shapeScaled.range] } : {}),
+      entries: entries.map(e => ({ value: e.value, shape: e.entry })),
     }
   }
 
@@ -536,8 +536,8 @@ export function encodeFeatures<L extends LaneName>(
   if (scale) {
     encoded.scale = scale
   }
-  if (glyphScale) {
-    encoded.glyphScale = glyphScale
+  if (shapeScale) {
+    encoded.shapeScale = shapeScale
   }
   return encoded as Encoded<L>
 }
