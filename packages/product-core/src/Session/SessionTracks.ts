@@ -29,16 +29,15 @@ export interface PlainTrackConfig {
   [key: string]: unknown
 }
 
-// One non-admin working copy, plus the trackConfigDeltas value it mirrors. That
-// stamp is the cache key, not trackId — see getEditableTrackConfig.
+// One working copy, plus the resolved config it mirrors. That stamp is the
+// cache key, not trackId — see getEditableTrackConfig.
 //
 // Exported because it reaches an exported signature, so un-exporting it fails
 // TS4058 in three files — and only under `pnpm typecheck`, since jest strips
 // types.
 export interface EditableTrackConfig {
   node: IAnyStateTreeNode
-  delta: PlainTrackConfig | undefined
-  frozen: unknown
+  source: unknown
 }
 
 // jbrowse.tracks holds frozen plain objects in every product; single site for
@@ -124,9 +123,9 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
     .props({
       /**
        * #property
-       * User-added session tracks (no matching admin config track). A non-admin's
-       * *edits* to an existing config track are stored as deltas
-       * (trackConfigDeltas), not here.
+       * Tracks the session added, each entry the base its edits
+       * (trackConfigDeltas) diff against, as a config.json entry is for a
+       * config track.
        */
       sessionTracks: types.stripDefault(
         types.array(pluginManager.pluggableConfigSchemaType('track')),
@@ -135,7 +134,8 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       /**
        * #property
        * Per-track config overrides, keyed by trackId, stored as a *delta*
-       * against the base config (jbrowse.tracks entry) rather than a full copy —
+       * against the base config (the sessionTracks or jbrowse.tracks entry)
+       * rather than a full copy —
        * so a later change to an untouched field of the base still flows through
        * (see trackConfigDelta.ts). A `null` member resets a slot the base sets.
        * An admin's edits land here too, and reach jbrowse.tracks only through
@@ -170,8 +170,9 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
        * sync. Retention is volatile RAM only (never serialized), so it's not
        * worth a reference-counted prune at every track-removal path.
        *
-       * Each entry carries the delta it mirrors, so a delta replaced from
-       * outside this mixin invalidates it — see `getEditableTrackConfig`.
+       * Each entry carries the resolved config it mirrors, so a delta or base
+       * replaced from outside this mixin invalidates it — see
+       * `getEditableTrackConfig`.
        */
       editableTrackConfigs: new Map<string, EditableTrackConfig>(),
     }))
@@ -190,45 +191,50 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         object,
         { delta: PlainTrackConfig; merged: AnyConfigurationModel }
       >()
+      function withDelta(base: PlainTrackConfig) {
+        const delta = self.trackConfigDeltas[base.trackId]
+        if (!delta) {
+          return base as unknown as AnyConfigurationModel
+        }
+        const cached = mergeCache.get(base)
+        if (cached?.delta === delta) {
+          return cached.merged
+        }
+        const merged = mergeTrackConfig(
+          toPlainConfig(base),
+          delta,
+        ) as unknown as AnyConfigurationModel
+        mergeCache.set(base, { delta, merged })
+        return merged
+      }
       return {
         /**
          * #getter
-         * User-added session tracks first, then each admin config track with its
-         * delta (trackConfigDeltas) merged over it. A base track without a delta
-         * is returned unchanged by identity to keep the hydration cache warm.
+         * Session tracks first, then the config tracks, each a plain config
+         * with its delta (trackConfigDeltas) merged over its base. A track
+         * without a delta is its base by identity, which keeps the hydration
+         * cache warm.
          */
         get tracks(): AnyConfigurationModel[] {
-          const deltas = self.trackConfigDeltas
           const sessionIds = new Set(self.sessionTracks.map(t => t.trackId))
-          const configTracks = baseTracks(self)
-          const merged = configTracks
-            .filter(t => !sessionIds.has(t.trackId))
-            .map(base => {
-              const delta = deltas[base.trackId]
-              if (!delta) {
-                return base as unknown as AnyConfigurationModel
-              }
-              const cached = mergeCache.get(base)
-              if (cached?.delta === delta) {
-                return cached.merged
-              }
-              const mergedTrack = mergeTrackConfig(
-                toPlainConfig(base),
-                delta,
-              ) as unknown as AnyConfigurationModel
-              mergeCache.set(base, { delta, merged: mergedTrack })
-              return mergedTrack
-            })
-          return [...self.sessionTracks, ...merged]
+          return [
+            ...self.sessionTracks.map(t => withDelta(getSnapshot(t))),
+            ...baseTracks(self)
+              .filter(t => !sessionIds.has(t.trackId))
+              .map(withDelta),
+          ]
         },
         /**
          * #method
-         * The config.json entry `trackId` edits over, hydrated, or undefined
-         * for a track the session owns. What a display's "is this arranged"
-         * and "reset" compare its live config against.
+         * The entry `trackId` edits over, hydrated: the one the session added
+         * it with, or its config.json entry. What a display's "is this
+         * arranged" and "reset" compare its live config against.
          */
         baseTrackConfig(trackId: string): PlainTrackConfig | undefined {
-          const base = baseTracks(self).find(t => t.trackId === trackId)
+          const entry = self.sessionTracks.find(t => t.trackId === trackId)
+          const base = entry
+            ? (getSnapshot(entry) as PlainTrackConfig)
+            : baseTracks(self).find(t => t.trackId === trackId)
           return base ? toPlainConfig(base) : undefined
         },
         /**
@@ -243,12 +249,8 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           // exists. Skipping it also keeps an unedited row from subscribing to
           // the whole jbrowse.tracks array.
           const delta = self.trackConfigDeltas[trackId]
-          const base = delta
-            ? baseTracks(self).find(t => t.trackId === trackId)
-            : undefined
-          return delta && base
-            ? flattenTrackConfigDelta(toPlainConfig(base), delta)
-            : []
+          const base = delta ? this.baseTrackConfig(trackId) : undefined
+          return delta && base ? flattenTrackConfigDelta(base, delta) : []
         },
         /**
          * #method
@@ -268,42 +270,27 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * never the shared frozen base node (see ADR-032). Called by
          * TrackConfigurationReference during lazy hydration.
          *
-         * Cached against the delta and the frozen config it was built from, not
-         * by trackId alone. A delta this mixin wrote re-stamps the entry, so the
-         * copy an edit is still being typed into is never swapped out
-         * mid-keystroke; a delta replaced from outside — an undo's
-         * `applySnapshot` on the session, a session restore — cannot, so the
-         * next read rebuilds the copy from the delta that now exists. Reading
-         * `trackConfigDeltas` here is also what makes an undo re-resolve the
-         * reference at all: the resolver's caller is already subscribed to it
-         * through `getTrackById`. The frozen config is what that per-id lookup
-         * answers, stable until the delta or the base entry in `jbrowse.tracks`
-         * changes; a promote, or `updateTrackConf` from the agent surface,
-         * replaces the base, and a copy built from the old one would otherwise
-         * outlive it with no delta to notice.
+         * Cached against the resolved config it was built from, not by trackId
+         * alone. A write this mixin makes re-stamps the entry, so the copy an
+         * edit is still being typed into is never swapped out mid-keystroke;
+         * a delta or base replaced from outside — an undo's `applySnapshot` on
+         * the session, a session restore, a session track deleted and added
+         * again under its id — cannot, so the next read rebuilds the copy from
+         * what now resolves.
          */
         getEditableTrackConfig(
           trackId: string,
           frozenConfig: unknown,
           schemaType: IAnyType,
         ): IAnyStateTreeNode {
-          const delta = self.trackConfigDeltas[trackId]
           const existing = self.editableTrackConfigs.get(trackId)
-          if (
-            existing &&
-            existing.delta === delta &&
-            existing.frozen === frozenConfig
-          ) {
+          if (existing?.source === frozenConfig) {
             return existing.node
           }
           const node = schemaType.create(frozenConfig, {
             pluginManager,
           }) as IAnyStateTreeNode
-          self.editableTrackConfigs.set(trackId, {
-            node,
-            delta,
-            frozen: frozenConfig,
-          })
+          self.editableTrackConfigs.set(trackId, { node, source: frozenConfig })
           return node
         },
       }
@@ -345,30 +332,22 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       } = self
       // A cleared delta reverts the track's live working copy to the base in
       // place, so an open view re-renders to the default. applySnapshot keeps
-      // the node identity (existing observers just update); no-op in admin mode
-      // or for a track that was never edited (no working copy).
-      //
-      // Through toPlainConfig like every other read of a base in this file. The
-      // raw entry would do the same, since applySnapshot re-runs the
-      // preProcessSnapshot toPlainConfig hydrates through; this makes that
-      // reliance explicit.
+      // the node identity (existing observers just update); no-op for a track
+      // that was never shown (no working copy).
       function revertEditableTrackConfig(trackId: string) {
         const entry = self.editableTrackConfigs.get(trackId)
-        const base = baseTracks(self).find(t => t.trackId === trackId)
+        const base = self.baseTrackConfig(trackId)
         if (entry && base) {
-          applySnapshot(entry.node, toPlainConfig(base))
+          applySnapshot(entry.node, base)
         }
       }
-      // Re-stamp a working copy with the delta now in trackConfigDeltas and the
-      // merged config it now resolves to, so the copy this mixin just persisted
-      // from stays the one the next read resolves. Read back off the prop and
-      // the lookup rather than reusing the written object, so the stamp is
-      // whatever `types.frozen` stored and whatever the merge cache answers.
+      // Re-stamp a working copy with what its track resolves to after a write,
+      // so the copy this mixin just persisted from stays the one the next read
+      // resolves.
       function stampEditableTrackConfig(trackId: string) {
         const entry = self.editableTrackConfigs.get(trackId)
         if (entry) {
-          entry.delta = self.trackConfigDeltas[trackId]
-          entry.frozen = self.getTrackById(trackId)
+          entry.source = self.getTrackById(trackId)
         }
       }
       // Single writer for trackConfigDeltas (pass undefined to clear). Clearing
@@ -422,8 +401,9 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         // and dropping its trackConfigDeltas override semantics.
         const existing = self.getTrackById(trackId)
         if (existing) {
-          if (self.sessionTracks.includes(existing)) {
-            assertNotReaddedDifferently(pluginManager, existing, {
+          const entry = self.sessionTracks.find(t => t.trackId === trackId)
+          if (entry) {
+            assertNotReaddedDifferently(pluginManager, entry, {
               ...trackConf,
               trackId,
               type,
@@ -528,22 +508,18 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         /**
          * #action
          * Persist an edited track config as a delta (trackConfigDeltas) against
-         * its base — only the changed slots — so the edits persist, are shared,
-         * undo and reset, while changes to untouched fields of the base still
-         * flow through. An admin's edit is a delta like anyone's: it reaches the
-         * config.json the server hands every visitor only through
-         * `promoteTrackConfigDeltas`. A user-added session track (no base) is
-         * edited in place, and an opened connection track defers to the base
-         * mixin, which routes it to connectionTrackConfigs.
+         * its base, the sessionTracks or config.json entry — only the changed
+         * slots — so the edits persist, are shared, undo and reset, while
+         * changes to untouched fields of the base still flow through. An
+         * admin's edit is a delta like anyone's: it reaches the config.json the
+         * server hands every visitor only through `promoteTrackConfigDeltas`.
+         * An opened connection track defers to the base mixin, which routes it
+         * to connectionTrackConfigs.
          */
         updateTrackConfiguration(trackConf: PlainTrackConfig) {
           const { trackId } = trackConf
-          const base = baseTracks(self).find(t => t.trackId === trackId)
-          const sessionIdx = self.sessionTracks.findIndex(
-            t => t.trackId === trackId,
-          )
-          if (base) {
-            const plainBase = toPlainConfig(base)
+          const plainBase = self.baseTrackConfig(trackId)
+          if (plainBase) {
             const delta = diffTrackConfig(
               plainBase,
               hydrate(trackConf),
@@ -565,21 +541,11 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
             } else if (trackId in self.trackConfigDeltas) {
               writeDelta(trackId, undefined)
             }
-          } else if (sessionIdx !== -1) {
-            // a user-added session track (no admin base): edit it in place. A
-            // typed MST array throws on an invalid config — snackbar it.
-            try {
-              self.sessionTracks[sessionIdx] = trackConf
-            } catch (e) {
-              self.notifyError(
-                `Track "${trackId}" has an invalid configuration: ${e}`,
-                e,
-              )
-            }
           } else {
-            // a track with no base and no sessionTracks entry: an opened
-            // connection track, or a homeless in-memory-only edit
+            // an opened connection track, or a homeless in-memory-only edit
             superUpdateTrackConfiguration(trackConf)
+            syncEditableTrackConfig(trackId, trackConf)
+            stampEditableTrackConfig(trackId)
           }
         },
 
@@ -613,8 +579,8 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
-         * Drop a non-admin's delta (trackConfigDeltas) so the track reverts to
-         * its admin config (jbrowse.tracks) default. Unlike deleteTrackConf this
+         * Drop a track's delta (trackConfigDeltas) so it reverts to its base,
+         * the sessionTracks or jbrowse.tracks entry. Unlike deleteTrackConf this
          * does not dereference the track from open views — the base config
          * re-resolves in place, so an open track stays open and simply reverts.
          */
@@ -631,8 +597,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           superDeleteTrackConf(trackConf)
           const { trackId } = trackConf
           // A delta only outlives its base if the base is gone, so drop it here
-          // rather than strand it. Reachable only programmatically (the UI offers
-          // a non-admin Reset, not Delete, for a delta-bearing base track).
+          // rather than strand it.
           if (trackId in self.trackConfigDeltas) {
             writeDelta(trackId, undefined)
           }

@@ -433,3 +433,146 @@ test('a desktop export diffs a hub track and assembly through their schemas', ()
   })
   expect(plan.revertedAssemblies).toEqual([])
 })
+
+// A track the session added edits the way a config.json track does: its
+// `sessionTracks` entry is the base and the edit is a delta over it, so the
+// changes table, "Reset track settings" and a row display's reset reach it.
+describe('a session track edits as a delta over its entry', () => {
+  const ID = 'sessiontrack'
+  const sessionTrack = {
+    ...track,
+    trackId: ID,
+    displays: [
+      { type: 'LinearBasicDisplay', displayId: `${ID}-LinearBasicDisplay` },
+    ],
+  }
+
+  interface SessionTrackSession extends DeltaSession {
+    sessionTracks: IStateTreeNode[]
+    addSessionTrackConf: (conf: Record<string, unknown>) => unknown
+    getTrackById: (trackId: string) => AnyConfigurationModel | undefined
+    getTrackConfigChanges: (trackId: string) => unknown[]
+    isTrackOverride: (trackId: string) => boolean
+    resetTrackConfiguration: (trackId: string) => void
+    deleteTrackConf: (conf: AnyConfigurationModel) => void
+  }
+
+  function added() {
+    const state = createViewState({ assembly, tracks: [] })
+    const session = state.session as unknown as SessionTrackSession
+    session.addSessionTrackConf(sessionTrack)
+    return { state, session }
+  }
+
+  const nameOf = (conf: AnyConfigurationModel | undefined) =>
+    readConfObject(conf!, 'name') as string
+
+  async function shown(state: ReturnType<typeof createViewState>) {
+    const { view } = state.session
+    await view.launchTrack(ID)
+    await waitFor(() => {
+      expect(view.getTrack(ID)).toBeTruthy()
+    })
+    return view.getTrack(ID)!.configuration as AnyConfigurationModel
+  }
+
+  test('an edit is a delta and the entry stands', () => {
+    const { session } = added()
+    const entry = getSnapshot(session.sessionTracks[0]!)
+
+    session.updateTrackConfiguration({ ...sessionTrack, name: 'Edited name' })
+
+    expect(session.trackConfigDeltas[ID]).toEqual({
+      trackId: ID,
+      name: 'Edited name',
+    })
+    expect(getSnapshot(session.sessionTracks[0]!)).toBe(entry)
+    expect(nameOf(session.getTrackById(ID))).toBe('Edited name')
+    expect(session.getTrackConfigChanges(ID)).toEqual([
+      { path: ['name'], from: 'Original name', to: 'Edited name' },
+    ])
+    expect(session.isTrackOverride(ID)).toBe(true)
+  })
+
+  test('a shown track edits a working copy, not the entry', async () => {
+    const { state, session } = added()
+    const conf = await shown(state)
+    expect(conf).not.toBe(session.sessionTracks[0])
+
+    setConf(conf, 'name', 'Edited name')
+
+    await waitFor(() => {
+      expect(session.trackConfigDeltas[ID]).toEqual({
+        trackId: ID,
+        name: 'Edited name',
+      })
+    })
+    expect(nameOf(session.sessionTracks[0] as AnyConfigurationModel)).toBe(
+      'Original name',
+    )
+  })
+
+  test('reset returns a shown track to the entry it was added with', async () => {
+    const { state, session } = added()
+    const conf = await shown(state)
+    session.updateTrackConfiguration({ ...sessionTrack, name: 'Edited name' })
+    expect(nameOf(conf)).toBe('Edited name')
+
+    session.resetTrackConfiguration(ID)
+
+    expect(session.trackConfigDeltas).toEqual({})
+    expect(session.isTrackOverride(ID)).toBe(false)
+    expect(nameOf(session.getTrackById(ID))).toBe('Original name')
+    expect(state.session.view.getTrack(ID)!.configuration).toBe(conf)
+    expect(nameOf(conf)).toBe('Original name')
+  })
+
+  // compared against the entry, so an edit since the add is no difference
+  test('a re-add is compared against the entry', () => {
+    const { session } = added()
+    session.updateTrackConfiguration({ ...sessionTrack, name: 'Edited name' })
+
+    session.addSessionTrackConf(sessionTrack)
+    expect(session.sessionTracks).toHaveLength(1)
+
+    expect(() =>
+      session.addSessionTrackConf({ ...sessionTrack, name: 'Recomputed' }),
+    ).toThrow(/already in this session with a different configuration/)
+  })
+
+  test('delete drops the delta, and a re-add under the id shows its own config', async () => {
+    const { state, session } = added()
+    await shown(state)
+    session.updateTrackConfiguration({ ...sessionTrack, name: 'Edited name' })
+
+    session.deleteTrackConf(session.getTrackById(ID)!)
+    expect(session.trackConfigDeltas).toEqual({})
+    expect(session.sessionTracks).toHaveLength(0)
+
+    session.addSessionTrackConf({ ...sessionTrack, name: 'Recomputed' })
+    expect(nameOf(await shown(state))).toBe('Recomputed')
+  })
+
+  test('a share link carries the entry and the delta', async () => {
+    const { state, session } = added()
+    session.updateTrackConfiguration({ ...sessionTrack, name: 'Edited name' })
+
+    const snapshot = JSON.parse(JSON.stringify(getSnapshot(state.session)))
+    expect(snapshot.sessionTracks).toEqual([
+      expect.objectContaining({ trackId: ID, name: 'Original name' }),
+    ])
+    expect(snapshot.trackConfigDeltas).toEqual({
+      [ID]: { trackId: ID, name: 'Edited name' },
+    })
+
+    const opened = await createViewStateAsync({
+      assembly,
+      tracks: [],
+      session: snapshot,
+    })
+    const reopened = opened.session as unknown as SessionTrackSession
+    expect(nameOf(reopened.getTrackById(ID))).toBe('Edited name')
+    reopened.resetTrackConfiguration(ID)
+    expect(nameOf(reopened.getTrackById(ID))).toBe('Original name')
+  })
+})
