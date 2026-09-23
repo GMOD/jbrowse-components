@@ -134,6 +134,25 @@ test("an admin's edit is a delta until promoted to the config", async () => {
   expect(readConfObject(promoted, 'name')).toBe('Edited name')
 })
 
+// A config.json that repeats a trackId resolves it to the last entry, which is
+// the one an edit diffs against
+test('a promote replaces the entry a repeated trackId resolves to', async () => {
+  const { rootModel } = await getPluginManager(undefined, true)
+  const session = rootModel.session as unknown as TestSession
+  const base = session.jbrowse.tracks.find(t => t.trackId === TRACK_ID)!
+  session.jbrowse.addTrackConf({ ...base, name: 'Repeated' })
+
+  session.updateTrackConfiguration(editedSnapshot(session))
+  session.promoteTrackConfigDeltas()
+
+  expect(
+    session.jbrowse.tracks.filter(t => t.trackId === TRACK_ID).map(t => t.name),
+  ).toEqual([base.name, 'Edited name'])
+  expect(readConfObject(session.getTrackById(TRACK_ID)!, 'name')).toBe(
+    'Edited name',
+  )
+})
+
 // Admin → Save track settings to config offers a promote only where one
 // writes: a session track's edits have no file to go to.
 test('only an edit over a config track is promotable', async () => {

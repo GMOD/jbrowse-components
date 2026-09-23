@@ -177,11 +177,12 @@ export function JBrowseModelF({
       /**
        * #action
        * Updates an existing track configuration. Used to sync editable configs
-       * back to the frozen tracks array.
+       * back to the frozen tracks array. A trackId the array repeats replaces
+       * its last entry, the one the session resolves it to.
        */
       updateTrackConf(trackConf: { trackId: string; [key: string]: unknown }) {
         const { trackId } = trackConf
-        const idx = self.tracks.findIndex(t => t.trackId === trackId)
+        const idx = self.tracks.findLastIndex(t => t.trackId === trackId)
         if (idx !== -1) {
           const newTracks = [...self.tracks]
           newTracks[idx] = trackConf

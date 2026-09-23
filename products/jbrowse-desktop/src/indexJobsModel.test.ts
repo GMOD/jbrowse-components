@@ -119,7 +119,7 @@ function setup({
   // the found entry, so this fake exercises the same identity change the real
   // hydration cache (ADR-031) needs to see the write
   const updateTrackConf = (trackConf: { trackId: string }) => {
-    const idx = tracks.findIndex(t => t.trackId === trackConf.trackId)
+    const idx = tracks.findLastIndex(t => t.trackId === trackConf.trackId)
     if (idx !== -1) {
       tracks[idx] = trackConf as Track
     }
