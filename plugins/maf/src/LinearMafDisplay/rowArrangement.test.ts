@@ -134,12 +134,15 @@ describe('the guide tree draws while a rotation of it lists `rows.domain`', () =
     expect(rowNames(display)).toEqual(['hg38', 'mm10', 'panTro4'])
   })
 
+  // A submit that moves no row writes no order, so the relabel is all it
+  // leaves behind.
   it('keeps drawing after a relabel-only dialog submit', () => {
     const display = treedDisplay()
     const [hg38, ...rest] = display.editableSources
     display.applyRowEdits([{ ...hg38!, label: 'Human' }, ...rest])
 
-    expect(display.rowDomain).toEqual(['hg38', 'panTro4', 'mm10'])
+    expect(display.rowDomain).toEqual([])
+    expect(display.rowLabels).toEqual({ hg38: 'Human' })
     expect(display.rowTree).toBe(TREE)
     expect(display.hierarchy).toBeDefined()
   })
@@ -390,6 +393,29 @@ describe('rowColor tints a row over the adapter colour', () => {
     setConf(display, ['rowColor', 'domain'], ['mm10'])
     setConf(display, ['rowColor', 'range'], ['#0000ff'])
     expect(display.rowArrangementIsCustom).toBe(true)
+  })
+
+  // A config.json entry repeating the adapter's value is the admin's, so a
+  // submit that changes nothing keeps it and offers no reset.
+  it('keeps a declared entry equal to the adapter value through an unchanged submit', () => {
+    const { display } = createMafTestEnvironment({
+      displayConfig: {
+        rows: { labels: { hg38: 'Human' } },
+        rowColor: { domain: ['hg38'], range: ['red'] },
+      },
+    }).createDisplay()
+    display.setSamples({
+      samples: SAMPLES,
+      treeNewick: undefined,
+      samplesCanonical: true,
+    })
+    expect(display.rowArrangementIsCustom).toBe(false)
+
+    display.applyRowEdits(display.editableSources)
+
+    expect(display.rowLabels).toEqual({ hg38: 'Human' })
+    expect(getConf(display, ['rowColor', 'domain'])).toEqual(['hg38'])
+    expect(display.rowArrangementIsCustom).toBe(false)
   })
 })
 

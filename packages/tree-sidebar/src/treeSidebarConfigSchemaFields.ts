@@ -1,5 +1,6 @@
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
+import type { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 
 /**
  * The config slots a display owes `TreeSidebarMixin` — one object, so a display
@@ -13,12 +14,6 @@ import type { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrange
  * drifted: three spelled the labels toggle `showRowLabels` and the fourth
  * spelled it `showSidebarLabels`, so `"showRowLabels": false` on a
  * multi-sample variant track was dropped in silence.
- *
- * The row axis's declared order is {@link rowDomainConfigSchemaFields}, spread
- * beside this rather than folded into it — the same shape, and the same reason,
- * as the row separators below: a display on the `rows` config object declares
- * its order as `rows.domain`, one word for one idea, and a `domain` slot it
- * ignores would read as one it honors.
  *
  * The **descriptions** are the parameter because they are the part that is
  * genuinely per display — a MAF row is a species, a multi-wiggle row a subtrack,
@@ -81,56 +76,6 @@ export function treeSidebarConfigSchemaFields({
 }
 
 /**
- * The row axis's declared order for a display still on
- * `LayoutTreeSidebarMixin`: the config seed under `layout`, which stays the
- * runtime arrangement every drag, dialog, clustering run and column sort
- * writes. A display on `TreeSidebarMixin` declares its order as `rows.domain`
- * instead, and spreads nothing here.
- *
- * Spread beside {@link treeSidebarConfigSchemaFields} rather than folded into
- * it, because `domain` on the quantitative display is already the score axis's
- * autoscaled pair — one word for one idea.
- *
- * **The description is the whole explanation**, for the reason
- * `rowSeparatorsConfigSchemaFields` states: a slot reached by spreading a table
- * renders on its config page from this string alone.
- */
-export function rowDomainConfigSchemaFields({
-  rows,
-}: {
-  /**
-   * The `domain` sentence, which has to name what a row is and what the rows
-   * it does not list fall back on — a tree's leaf order, an adapter's, a
-   * file's. e.g. "row order: the species listed come first, in this order, and
-   * the rest keep the tree's order"
-   */
-  rows: string
-}) {
-  return {
-    /**
-     * #slot
-     * The row axis's declared order, read through the mixin's `rowDomain`
-     * getter and applied under `layout`: a row the list names is placed, a row
-     * it does not keeps the order it arrived in. Empty — the default — is
-     * today's order untouched.
-     *
-     * **Where the rows are a tree's leaves it is a preference, not a
-     * placement.** A phylogeny fixes its leaf order only up to a rotation at
-     * each node, so the tree turns towards the list as far as its topology
-     * allows and keeps drawing (`rotateNewickByDomain`): `['B','C','D']` on
-     * `((A,B),(C,D))` gives `B,A,C,D`, because A rides with B. A supplied tree
-     * rotates where it is parsed and a clustering run rotates its own, so the
-     * tree and the row order always move together.
-     */
-    domain: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: rows,
-    },
-  } as const
-}
-
-/**
  * The row-separators slot, for the three row displays that draw them — spread
  * beside {@link treeSidebarConfigSchemaFields} rather than folded into it,
  * because MAF composes the sidebar and deliberately draws no separators (its
@@ -173,30 +118,14 @@ export function rowSeparatorsConfigSchemaFields({
 }
 
 /**
- * What the sidebar's own toggles ask a composing display's `configuration` to
- * be — the four slots above and nothing else. Narrow so `getConf`/`setConf`
- * still check the slot name; see `ConfigModelForFields`.
- */
-export type TreeSidebarToggleConfigModel = ConfigModelForFields<
-  ReturnType<typeof treeSidebarConfigSchemaFields>
->
-
-/**
- * What `TreeSidebarMixin` asks for: the toggles, and a `rows` object carrying
- * the arrangement — the intrinsic-key `RowArrangement`, or `Rows`, which
- * extends it with a field.
+ * What `TreeSidebarMixin` asks for: the toggles, a `rows` object carrying the
+ * arrangement — the intrinsic-key `RowArrangement`, or `Rows`, which extends
+ * it with a field — and the `rowColor` pairs, which variants' `VariantRowColor`
+ * extends with a field the same way.
  */
 export type TreeSidebarConfigModel = ConfigModelForFields<
   ReturnType<typeof treeSidebarConfigSchemaFields> & {
     rows: typeof rowArrangementConfigSchema
+    rowColor: typeof rowColorConfigSchema
   }
->
-
-/**
- * What `LayoutTreeSidebarMixin` asks for: the toggles, and the `domain` slot
- * its display-state arrangement seeds from.
- */
-export type LayoutTreeSidebarConfigModel = ConfigModelForFields<
-  ReturnType<typeof treeSidebarConfigSchemaFields> &
-    ReturnType<typeof rowDomainConfigSchemaFields>
 >

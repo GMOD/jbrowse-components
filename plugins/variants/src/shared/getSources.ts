@@ -122,15 +122,8 @@ export function buildCanonicalRows({
     : rows
 }
 
-/** What a reader arranged, by row name: the order, the labels, the tints. */
-export interface RowArrangement {
-  domain: readonly string[]
-  labels: Readonly<Record<string, string>>
-  rowColors: ReadonlyMap<string, string>
-}
-
 // The haplotypes a sample takes a row for: the ploidy `sampleInfo` reports,
-// plus any the arrangement names beyond it. Until `sampleInfo` lands the names
+// plus any the order names beyond it. Until `sampleInfo` lands the names
 // alone stand for it, so an arranged track keeps its haplotype rows across a
 // refetch rather than folding back to samples.
 function haplotypesOf(
@@ -159,121 +152,37 @@ function haplotypesNamed(domain: readonly string[], samples: Set<string>) {
   return named
 }
 
-// A row answers to its own name and then to its sample's, so an order, a label
-// or a tint written against a sample reaches each of its haplotypes. The rows
-// the domain lists lead, in its order; the rest keep the order they came in.
-function orderByDomain(rows: ProcessedSource[], domain: readonly string[]) {
-  if (!domain.length) {
-    return rows
-  }
-  const rank = new Map<string, number>()
-  domain.forEach((name, i) => {
-    if (!rank.has(name)) {
-      rank.set(name, i)
-    }
-  })
-  const ranked = rows.map(row => ({
-    row,
-    rank: rank.get(row.name) ?? rank.get(row.sampleName),
-  }))
-  const listed = ranked.filter(r => r.rank !== undefined)
-  return listed.length
-    ? [
-        ...listed.sort((a, b) => a.rank! - b.rank!).map(r => r.row),
-        ...ranked.filter(r => r.rank === undefined).map(r => r.row),
-      ]
-    : rows
-}
-
-// Own-property reads: row names come from the file, and a sample called
-// `constructor` would otherwise read a label off Object.prototype.
-function labelOf(labels: Readonly<Record<string, string>>, row: Source) {
-  const { name, sampleName } = row
-  return Object.hasOwn(labels, name)
-    ? labels[name]
-    : sampleName !== undefined && Object.hasOwn(labels, sampleName)
-      ? labels[sampleName]
-      : undefined
-}
-
 /**
- * The adapter's samples as the rows of the rendering mode — one per sample in
- * allele-count mode, one per haplotype in phased mode (`haplotypesOf`) — in
- * the reader's arrangement: the order `domain` gives, a label from `labels`
- * over the adapter's, and the tint `labelColor` from `rowColors`, then the
- * adapter's `labelColor`, then a samplesTsv `color` column. A sample the order
- * omits is appended, not dropped.
- *
- * No focus, and no `rowColor` palette: this is the list the arrangement
- * dialog edits, and it writes back only what it differs from the adapter in.
+ * The sample rows as phased mode draws them: one row per haplotype
+ * (`haplotypesOf`), each carrying its sample's fields. A sample with no
+ * haplotype known yet stays one row, standing for them. Hands back `rows`
+ * itself when no sample expands.
  */
-export function arrangeRows({
-  sources,
-  renderingMode,
+export function expandPhasedRows({
+  rows,
   sampleInfo,
-  arrangement: { domain, labels, rowColors },
+  domain,
 }: {
-  sources: Source[]
-  renderingMode: string
-  sampleInfo?: Record<string, SampleInfo>
-  arrangement: RowArrangement
+  rows: ProcessedSource[]
+  sampleInfo: Record<string, SampleInfo> | undefined
+  domain: readonly string[]
 }): ProcessedSource[] {
-  const phased = renderingMode === 'phased'
-  const samples = new Set(sources.map(resolveSampleName))
-  const named = phased ? haplotypesNamed(domain, samples) : new Map()
-  const rows = sources.flatMap((source): ProcessedSource[] => {
-    const sampleName = resolveSampleName(source)
-    const hps = phased ? haplotypesOf(sampleName, sampleInfo, named) : []
-    return hps.length
-      ? hps.map(HP => haplotypeRow(source, sampleName, HP))
-      : [{ ...source, sampleName }]
-  })
-  return orderByDomain(rows, domain).map(row => {
-    const label = labelOf(labels, row)
-    const labelColor =
-      rowColors.get(row.name) ??
-      rowColors.get(row.sampleName) ??
-      row.labelColor ??
-      row.color
-    return {
-      ...row,
-      ...(label === undefined ? {} : { label }),
-      ...(labelColor === undefined ? {} : { labelColor }),
+  const named = haplotypesNamed(
+    domain,
+    new Set(rows.map(row => row.sampleName)),
+  )
+  let expanded = false
+  const out: ProcessedSource[] = []
+  for (const row of rows) {
+    const hps = haplotypesOf(row.sampleName, sampleInfo, named)
+    if (hps.length) {
+      expanded = true
+      for (const HP of hps) {
+        out.push(haplotypeRow(row, row.sampleName, HP))
+      }
+    } else {
+      out.push(row)
     }
-  })
-}
-
-/**
- * The rows a focus keeps. A name in `kept` keeps that row, and a sample's name
- * keeps all of its haplotypes; a sample row not yet expanded stands for its
- * haplotypes, so it is kept when any of them is. That makes the same `kept`
- * narrow the adapter's samples to the set the fetch asks for and the arranged
- * rows to the ones drawn. A focus naming no current row keeps every row.
- */
-export function keptRowsOf<S extends Source>(
-  rows: S[],
-  kept: readonly string[] | undefined,
-): S[] {
-  if (!kept?.length) {
-    return rows
   }
-  const current = new Set(rows.map(resolveSampleName))
-  const samples = new Set(
-    kept.flatMap(name => {
-      const row = parseRowName(name, current)
-      return row ? [row.sampleName] : []
-    }),
-  )
-  const ofSamples = rows.filter(row => samples.has(resolveSampleName(row)))
-  if (!ofSamples.length) {
-    return rows
-  }
-  const names = new Set(kept)
-  const exact = ofSamples.filter(
-    row =>
-      row.HP === undefined ||
-      names.has(row.name) ||
-      names.has(resolveSampleName(row)),
-  )
-  return exact.length ? exact : ofSamples
+  return expanded ? out : rows
 }

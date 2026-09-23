@@ -79,7 +79,7 @@ function makePlotSelf(sourceCount: number, isRowLayout: boolean) {
     setRowLayout: (on: boolean) => {
       writes.push(on)
     },
-    sourcesWithoutLayout: Array.from({ length: sourceCount }, (_, i) => i),
+    discoveredRows: Array.from({ length: sourceCount }, (_, i) => i),
   }
 }
 

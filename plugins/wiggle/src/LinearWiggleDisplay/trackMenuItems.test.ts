@@ -6,7 +6,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 // Driven off a real display instance rather than a structural stand-in: the menu
 // is built inline in the model's `trackMenuItems`, and its gates read getters
-// (`isRowLayout`, `sourcesWithoutLayout`, `rowTree`) that a stub would have to
+// (`isRowLayout`, `discoveredRows`, `rowTree`) that a stub would have to
 // restate — and then wouldn't notice drifting from.
 function makeDisplay({
   sources = ['a', 'b'],

@@ -14,7 +14,6 @@ import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
@@ -33,9 +32,7 @@ import {
   buildSpatialIndex,
   computeClusterHierarchy,
   focusRowGroup,
-  keptRows,
   resetRowOrderMenuItems,
-  rowEdits,
   rowLabelsCarryText,
   setupTreeSidebarAutoruns,
   sortRowsAtColumn,
@@ -44,7 +41,6 @@ import {
   treeSidebarOffset,
 } from '@jbrowse/tree-sidebar'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import { compareStructural } from 'mobx'
 
 import DensityBandMixin from '../shared/DensityBandMixin.ts'
 import { copyItem } from '../shared/copyMenuItem.ts'
@@ -80,8 +76,6 @@ import { refuseRetiredState } from './retiredSettings.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
   applyRowGroups,
-  arrangeRows,
-  editedRow,
   orderPartitionValues,
   resolveRowColorStrings,
 } from './rowSources.ts'
@@ -264,32 +258,6 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * The colour set on each named row, off `rowColor`, painting that whole
-       * row over the per-feature `color`.
-       */
-      get rowColors(): ReadonlyMap<string, string> {
-        return pairedColorsOf({
-          domain: getConf(self, ['rowColor', 'domain']),
-          range: getConf(self, ['rowColor', 'range']),
-        })
-      },
-      /**
-       * #getter
-       * The `rowColor` the config.json declares for this display, which a
-       * reset returns to and a dialog submit keeps the pair order of.
-       */
-      get baseRowColor(): {
-        domain: readonly string[]
-        range: readonly string[]
-      } {
-        const base = (baseDisplayConfig(self).rowColor ?? {}) as {
-          domain?: string[]
-          range?: string[]
-        }
-        return { domain: base.domain ?? [], range: base.range ?? [] }
-      },
-      /**
-       * #getter
        * The row order the config.json declares, which the palette is dealt
        * over so that no arrangement recolours a row.
        */
@@ -319,7 +287,7 @@ export default function stateModelFactory(
       // A plain getter hands out a fresh array on every write to `rpcDataMap`,
       // and this list reaches `featurePaintInputs`, whose identity has to hold
       // steady.
-      const sourcesWithoutLayout = stableIdentityComputed(() => {
+      const discoveredRows = stableIdentityComputed(() => {
         const values = new Set<string>()
         for (const data of self.drawnRegionData.values()) {
           for (const v of data.partitionValues) {
@@ -334,11 +302,21 @@ export default function stateModelFactory(
       return {
         /**
          * #getter
-         * The distinct partition values across all loaded regions, in the
-         * order the config.json declares, the rest sorted.
+         * `TreeSidebarMixin`'s hook: the distinct partition values across all
+         * loaded regions, in the order the config.json declares, the rest
+         * sorted.
          */
-        get sourcesWithoutLayout(): MultiRowSource[] {
-          return sourcesWithoutLayout.get()
+        get discoveredRows(): MultiRowSource[] {
+          return discoveredRows.get()
+        },
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: the rows an order does not list sort,
+         * digits by magnitude and the unanswered row last, since discovered
+         * values arrive in no order of their own.
+         */
+        get unlistedRowsSort(): 'source' | 'sorted' {
+          return 'sorted'
         },
         /**
          * #getter
@@ -420,42 +398,6 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * `TreeSidebarMixin`'s hook: whether `rowColor` names a colour the
-       * config does not, so "Reset row order" is offered for a recolour too.
-       */
-      get rowStylingIsCustom(): boolean {
-        return !compareStructural(
-          Object.fromEntries(self.rowColors),
-          Object.fromEntries(pairedColorsOf(self.baseRowColor)),
-        )
-      },
-      /**
-       * #getter
-       * The discovered rows in the reader's arrangement — `rows.domain`
-       * leading, `rows.labels` over the derived labels, each `rowColor` entry
-       * as the row's `color` — with no focus, so the arrangement dialog seeds
-       * from what was chosen.
-       */
-      get editableSources(): MultiRowSource[] {
-        return arrangeRows(self.sourcesWithoutLayout, {
-          domain: self.rowDomain,
-          labels: self.rowLabels,
-          colors: self.rowColors,
-        })
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The rows a clustering run acts on, deliberately not the decorated
-       * `sources` below, whose `rowGroups` swatch colour a run has no
-       * business writing back.
-       */
-      get clusterableSources(): MultiRowSource[] {
-        return keptRows(self.editableSources, self.rowFocus)
-      },
-      /**
-       * #getter
        * The rows tagged with their `rowGroups` group and left in their current
        * order. A legend swatch focuses from these rows, because a second click
        * on another group has to reach the rows the first click hid, and the
@@ -497,7 +439,7 @@ export default function stateModelFactory(
         return resolveRowColorStrings(
           self.sources,
           self.colorConfig === undefined && !self.usedItemRgb
-            ? self.sourcesWithoutLayout
+            ? self.discoveredRows
             : undefined,
         )
       },
@@ -942,36 +884,6 @@ export default function stateModelFactory(
           }
           setConf(self, ['rows', 'field'], field)
           self.hiddenCategories.clear()
-        },
-        /**
-         * #action
-         * The arrangement dialog's submit: the order and labels to `rows`, and
-         * the colours to `rowColor`, over the rows the dialog showed; a row no
-         * loaded region holds keeps its entries.
-         */
-        applyRowEdits(rows: MultiRowSource[]) {
-          const { labels, rowColor } = rowEdits({
-            rows,
-            labels: self.rowLabels,
-            colors: self.rowColors,
-            baseOrder: self.baseRowColor.domain,
-            edited: editedRow(self.sourcesWithoutLayout),
-          })
-          self.configuration.setSubschema('rowColor', rowColor)
-          self.setRowLabels(labels)
-          self.setRowOrder(rows)
-        },
-        /**
-         * #action
-         * `TreeSidebarMixin`'s hook, so "Reset row order", a repartition and
-         * the dialog's "Clear custom settings" return the row colours with the
-         * arrangement.
-         */
-        resetRowStyling() {
-          self.configuration.setSubschema(
-            'rowColor',
-            baseDisplayConfig(self).rowColor ?? {},
-          )
         },
         /**
          * #action

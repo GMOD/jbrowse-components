@@ -22,7 +22,7 @@ export interface WiggleDisplayModel
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   notices: readonly string[]
   sources: { name: string; color?: string; labelColor?: string }[]
-  sourcesWithoutLayout: { name: string }[]
+  discoveredRows: { name: string }[]
   domain: [number, number] | undefined
   scaleType: string
   // where the plot canvas sits inside the display's height — the same value

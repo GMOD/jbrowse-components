@@ -19,7 +19,7 @@ async function loadedDisplay() {
   const { display, view } = createDisplay()
   jest.advanceTimersByTime(700)
   await waitFor(() => {
-    expect(display.sourcesWithoutLayout.length).toBe(2)
+    expect(display.discoveredRows.length).toBe(2)
   })
   const regions: Region[] = view.dynamicBlocks.contentBlocks
   return { display, regions, width: view.width }

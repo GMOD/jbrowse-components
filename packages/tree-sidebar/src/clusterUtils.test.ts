@@ -1,15 +1,12 @@
 import {
-  applyLayoutOverrides,
   applySubtreeFilter,
   buildClusteredLayout,
   clusteredCladeLayout,
   computeClusterHierarchy,
   filterRowsBySubtree,
   getLeafNames,
-  orderRowsByDomain,
   parseClusterTree,
   pruneNewickToLeaves,
-  reconcileLayout,
   subtreeCoversEveryRow,
   treeDescribesRows,
   validateClusterOrder,
@@ -119,62 +116,15 @@ test('parseClusterTree returns whole tree for filter matching root leaves', () =
   ).toEqual(['A', 'B', 'C', 'D'])
 })
 
-// The rule under every writer of `layout` that computes a NEW order: the order
-// is the caller's, the overrides are the layout's. `reconcileLayout` is the
-// other direction and keeps the layout's order.
-test('applyLayoutOverrides keeps the given order and the layout overrides', () => {
-  interface Source {
-    name: string
-    color?: string
-    label?: string
-  }
-  const ordered: Source[] = [
-    { name: 'C', color: 'blue' },
-    { name: 'A', color: 'red' },
-    { name: 'B', color: 'green' },
-  ]
-  const layout: Source[] = [{ name: 'B', color: 'yellow', label: 'kept' }]
-  const result = applyLayoutOverrides(ordered, layout)
-  expect(result.map(r => r.name)).toEqual(['C', 'A', 'B'])
-  expect(result[2]).toEqual({ name: 'B', color: 'yellow', label: 'kept' })
-  // a row the layout does not name keeps what the data gave it
-  expect(result[0]).toEqual({ name: 'C', color: 'blue' })
-})
-
-// The two directions, on one input, because the distinction is the whole reason
-// both exist and neither assertion says much alone: `applyLayoutOverrides` takes
-// the caller's order and drops what the caller did not name, `reconcileLayout`
-// takes the layout's order and appends what the layout did not name.
-test('the two merges disagree about order and about what is missing', () => {
-  const discovered = [{ name: 'A' }, { name: 'B' }]
-  const layout = [{ name: 'B' }, { name: 'gone' }]
-
-  expect(applyLayoutOverrides(discovered, layout).map(r => r.name)).toEqual([
-    'A',
-    'B',
-  ])
-  expect(reconcileLayout(discovered, layout).map(r => r.name)).toEqual([
-    'B',
-    'A',
-  ])
-})
-
-test('buildClusteredLayout reorders base sources and merges existing fields', () => {
-  interface Source {
-    name: string
-    color?: string
-    extra?: number
-  }
-  const base: Source[] = [
+test('buildClusteredLayout reorders the rows it indexes', () => {
+  const base = [
     { name: 'A', color: 'red' },
     { name: 'B', color: 'green' },
     { name: 'C', color: 'blue' },
   ]
-  const existing: Source[] = [{ name: 'B', color: 'yellow', extra: 1 }]
-  const result = buildClusteredLayout(base, existing, [2, 0, 1])
+  const result = buildClusteredLayout(base, [2, 0, 1])
   expect(result.map(r => r.name)).toEqual(['C', 'A', 'B'])
-  expect(result[2]).toMatchObject({ name: 'B', color: 'yellow', extra: 1 })
-  expect(result[0]).toEqual({ name: 'C', color: 'blue' })
+  expect(result[0]).toBe(base[2])
 })
 
 // The four displays' one commit path. A run under a focus clusters the clade, so
@@ -209,7 +159,7 @@ test('clusteredCladeLayout rejects an order that misses a clustered row', () => 
 })
 
 test('buildClusteredLayout throws on out-of-bounds index', () => {
-  expect(() => buildClusteredLayout([{ name: 'A' }], [], [5])).toThrow(
+  expect(() => buildClusteredLayout([{ name: 'A' }], [5])).toThrow(
     /out of bounds/,
   )
 })
@@ -301,67 +251,6 @@ test('filterRowsBySubtree keeps row order, not filter order', () => {
 test('filterRowsBySubtree ignores filter names no row has', () => {
   const rows = [{ name: 'mom' }, { name: 'dad' }]
   expect(filterRowsBySubtree(rows, ['dad', 'ghost'])).toEqual([{ name: 'dad' }])
-})
-
-describe('orderRowsByDomain', () => {
-  const rows = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
-
-  test('an empty domain returns the input array itself', () => {
-    expect(orderRowsByDomain(rows, [])).toBe(rows)
-  })
-
-  test('a domain naming none of the rows returns the input array itself', () => {
-    expect(orderRowsByDomain(rows, ['ghost'])).toBe(rows)
-  })
-
-  test('listed rows come first in the domain order', () => {
-    expect(orderRowsByDomain(rows, ['kid', 'dad'])).toEqual([
-      { name: 'kid' },
-      { name: 'dad' },
-      { name: 'mom' },
-    ])
-  })
-
-  // The rest keep the order they arrived in — the tree's leaf order, the
-  // adapter's, the file's — rather than being sorted the way a facet's
-  // unlisted sections are.
-  test('the rest keep the order they arrived in', () => {
-    const many = ['e', 'd', 'c', 'b', 'a'].map(name => ({ name }))
-    expect(orderRowsByDomain(many, ['c']).map(r => r.name)).toEqual([
-      'c',
-      'e',
-      'd',
-      'b',
-      'a',
-    ])
-  })
-
-  test('a listed name with no row places nothing', () => {
-    expect(orderRowsByDomain(rows, ['ghost', 'kid']).map(r => r.name)).toEqual([
-      'kid',
-      'mom',
-      'dad',
-    ])
-  })
-
-  test('a name listed twice places its row once', () => {
-    expect(orderRowsByDomain(rows, ['kid', 'kid']).map(r => r.name)).toEqual([
-      'kid',
-      'mom',
-      'dad',
-    ])
-  })
-
-  test('the rows themselves pass through, overrides and all', () => {
-    const decorated = [
-      { name: 'mom', label: 'Mother', color: 'red' },
-      { name: 'kid', label: 'Child' },
-    ]
-    expect(orderRowsByDomain(decorated, ['kid'])).toEqual([
-      { name: 'kid', label: 'Child' },
-      { name: 'mom', label: 'Mother', color: 'red' },
-    ])
-  })
 })
 
 // The tree is positioned by spacing its own leaves evenly across the row axis
@@ -481,49 +370,6 @@ describe('computeClusterHierarchy', () => {
     expect(
       computeClusterHierarchy(root, undefined, 90, 80, false),
     ).toBeUndefined()
-  })
-})
-
-// The membership rule every row display shares: a `layout` orders and overrides,
-// the data decides who is there. Both halves matter — a row the data no longer
-// has must go, and one the layout never saw must still get a row.
-describe('reconcileLayout', () => {
-  const discovered = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
-
-  test('empty layout returns the discovered array itself', () => {
-    expect(reconcileLayout(discovered, [])).toBe(discovered)
-  })
-
-  test('layout order wins', () => {
-    const layout = [{ name: 'kid' }, { name: 'mom' }, { name: 'dad' }]
-    expect(reconcileLayout(discovered, layout).map(s => s.name)).toEqual([
-      'kid',
-      'mom',
-      'dad',
-    ])
-  })
-
-  test('drops layout rows the data no longer has', () => {
-    expect(
-      reconcileLayout(discovered, [{ name: 'gone' }, { name: 'dad' }]).map(
-        s => s.name,
-      ),
-    ).toEqual(['dad', 'mom', 'kid'])
-  })
-
-  test('appends newly-discovered rows, in discovered order', () => {
-    expect(
-      reconcileLayout(discovered, [{ name: 'dad' }]).map(s => s.name),
-    ).toEqual(['dad', 'mom', 'kid'])
-  })
-
-  test('layout entries are partial overrides over the discovered row', () => {
-    const layout = [{ name: 'mom', label: 'Mother', color: 'red' }]
-    expect(reconcileLayout(discovered, layout)).toEqual([
-      { name: 'mom', label: 'Mother', color: 'red' },
-      { name: 'dad' },
-      { name: 'kid' },
-    ])
   })
 })
 

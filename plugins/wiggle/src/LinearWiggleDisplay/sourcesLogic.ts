@@ -2,7 +2,6 @@ import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
 import { keptRows, orderRowsByDomain } from '@jbrowse/tree-sidebar'
 
 import type { Source } from '../util.ts'
-import type { RowEdit } from '@jbrowse/tree-sidebar'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 /**
@@ -177,80 +176,4 @@ export function buildSources(
     })),
     kept,
   )
-}
-
-/**
- * The channel a reader's colour for a row lands on: the label tint where the
- * rows are labelled and a gradient has the plot, the plot colour otherwise —
- * in one shared box there is no label to tint, so the colour goes to the plot
- * whatever the gradient.
- */
-function identityChannel({
-  gradientPaints,
-  rowLayout,
-}: {
-  gradientPaints: boolean
-  rowLayout: boolean
-}) {
-  return gradientPaints && rowLayout ? 'labelColor' : 'color'
-}
-
-/**
- * The adapter's rows in the reader's arrangement: `domain` leading, a label
- * from `labels` over the adapter's, and a `rowColors` entry on the channel a
- * row's identity paints through — `labelColor` under a gradient, `color`
- * otherwise, the same rule `synthesizeColors` reads by. Hands back `discovered`
- * itself when nothing is arranged, so an identity-keyed consumer sees no
- * change.
- */
-export function arrangeSources(
-  discovered: Source[],
-  {
-    domain,
-    labels,
-    rowColors,
-    gradientPaints,
-    rowLayout,
-  }: {
-    domain: readonly string[]
-    labels: Readonly<Record<string, string>>
-    rowColors: ReadonlyMap<string, string>
-    gradientPaints: boolean
-    rowLayout: boolean
-  },
-): Source[] {
-  const ordered = orderRowsByDomain(discovered, domain)
-  if (rowColors.size === 0 && Object.keys(labels).length === 0) {
-    return ordered
-  }
-  const channel = identityChannel({ gradientPaints, rowLayout })
-  return ordered.map(s => {
-    const label = labels[s.name]
-    const color = rowColors.get(s.name)
-    return {
-      ...s,
-      ...(label === undefined ? {} : { label }),
-      ...(color === undefined ? {} : { [channel]: color }),
-    }
-  })
-}
-
-/**
- * What a dialog row says beyond what the adapter supplied: a label, or a
- * colour on the mode's identity channel, that differs from the discovered
- * row's.
- */
-export function editedSource(
-  discovered: readonly Source[],
-  mode: { gradientPaints: boolean; rowLayout: boolean },
-): (row: Source) => RowEdit {
-  const byName = new Map(discovered.map(s => [s.name, s]))
-  const channel = identityChannel(mode)
-  return row => {
-    const base = byName.get(row.name)
-    return {
-      label: row.label === base?.label ? undefined : row.label,
-      color: row[channel] === base?.[channel] ? undefined : row[channel],
-    }
-  }
 }

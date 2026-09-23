@@ -77,7 +77,10 @@ describe('featurePaintInputs', () => {
     [
       'a recolor',
       (d: ReturnType<typeof makeDisplay>) => {
-        d.setRowOrder([{ name: 'sampleA', color: 'red' }, { name: 'sampleB' }])
+        d.applyRowEdits([
+          { name: 'sampleA', color: 'red' },
+          { name: 'sampleB' },
+        ])
       },
     ],
     [
@@ -110,7 +113,7 @@ describe('featurePaintInputs', () => {
     expect(display.encodedChannels).not.toBe(first)
   })
 
-  // A plain `sourcesWithoutLayout` getter hands out a fresh array on every write
+  // A plain `discoveredRows` getter hands out a fresh array on every write
   // to `rpcDataMap`, and `installUpload` clears its whole encode cache when this
   // identity moves — so region k's arrival re-encodes the byte-identical
   // instance buffer of regions 1..k-1.

@@ -2516,7 +2516,7 @@ export default function stateModelFactory(
         // the structural comparer MobX sees a new array every frame and the
         // merge re-runs to reach the same answer — which is the shape the view's
         // own `contentRightEdgePx` documents, in its scalar form, and
-        // `MultiLinearWiggleDisplay`'s `sourcesWithoutLayout` in this one.
+        // `MultiLinearWiggleDisplay`'s `discoveredRows` in this one.
         const junctionRegions = stableIdentityComputed(() => {
           const view = self.view
           return view.initialized

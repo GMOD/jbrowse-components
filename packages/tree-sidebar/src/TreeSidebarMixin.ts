@@ -1,26 +1,29 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import { isSessionWithBaseTrackConfig } from '@jbrowse/core/util/types'
+import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { ROW_ARRANGEMENT_MEMBERS } from '@jbrowse/display-kit/rowArrangementConfigSchema'
-import { getSnapshot, hasParent } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, hasParent, types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
-import { buildTree } from './clusterUtils.ts'
-import {
-  orderDropsTree,
-  treeHeightViews,
-  treeSidebarBase,
-  treeViews,
-} from './treeSidebarBase.ts'
+import { arrangeRows } from './arrangeRows.ts'
+import { applySubtreeFilter, buildTree, keptRows } from './clusterUtils.ts'
+import { maxNodeHeight } from './hierarchy.ts'
+import { rowEdits } from './rowEdits.ts'
 
+import type {
+  IdentityChannel,
+  RowAlias,
+  UnlistedRowsSort,
+} from './arrangeRows.ts'
 import type { ClusterProvenance } from './clusterProvenance.ts'
-import type { ClusterRun } from './treeSidebarBase.ts'
+import type { RowSortSpec } from './rowSortAutorun.ts'
 import type { TreeSidebarConfigModel } from './treeSidebarConfigSchemaFields.ts'
-import type { RowSource } from './types.ts'
+import type { HoveredTreeNode, RowSource } from './types.ts'
 
 /**
  * The whole of what `TreeSidebarMixin` needs a composing display to be: the
- * sidebar's toggle slots and the `rows` object.
+ * sidebar's toggle slots, the `rows` object and the `rowColor` pairs.
  */
 export interface TreeSidebarHost {
   configuration: TreeSidebarConfigModel & { displayId: string }
@@ -99,23 +102,128 @@ export function orderOver(
 }
 
 /**
+ * True when ordering the rows as `next` would drop the cluster tree: the tree
+ * describes the current order, so any membership or order change makes it
+ * stale.
+ */
+function orderDropsTree(
+  tree: string | undefined,
+  current: readonly string[],
+  next: readonly string[],
+) {
+  return (
+    !!tree &&
+    (current.length !== next.length ||
+      current.some((name, idx) => name !== next[idx]))
+  )
+}
+
+function sameOrder(
+  a: readonly { name: string }[],
+  b: readonly { name: string }[],
+) {
+  return a.length === b.length && a.every((row, i) => row.name === b[i]!.name)
+}
+
+/** A clustering run's result, landed beside the order it produced. */
+export interface ClusterRun {
+  tree?: string
+  provenance?: ClusterProvenance
+}
+
+/**
  * #stateModel TreeSidebarMixin
  * #category display
- * #crossCuttingMixin Row set with a dendrogram sidebar, its arrangement the display's `rows` config object: the order, the labels, the tree with its provenance and the focus, each written as a session edit to the track's config so undo, reset and a share link reach it and it survives unticking the track. Brings the `showTree` / `showBranchLength` / `showRowLabels` / `treeAreaWidth` getters and setters, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through (`rowDomain`, `rowLabels`, `rowTree`, `rowTreeProvenance`, `rowFocus`, `rowArrangementIsCustom`, `rowOrderWillDropTree`, `setRowOrder`, `setRowLabels`, `setRowFocus`, `resetRowArrangement`), the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through. `applyRowEdits` stays the display's, since it writes colours the display keeps in its own object
+ * #crossCuttingMixin Row set with a dendrogram sidebar, its arrangement the display's `rows` config object and its row colours the `rowColor` pairs, each written as a session edit to the track's config so undo, reset and a share link reach it and it survives unticking the track. Brings the sidebar toggles, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through, the rows derived from it (`editableSources`, `clusterableSources`) with the arrangement dialog's `applyRowEdits`, the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through. A display supplies `discoveredRows` and overrides the hooks its rows need
+ *
+ * The rows are derived in stages, each a computed of its own: the display's
+ * `discoveredRows`, then `expandedRows` (`expandRows`: a variant display's
+ * haplotypes), then `editableSources`, ordered by `rowOrder`, relabelled by
+ * `rows.labels` and tinted by `rowColor` on the `identityChannel`, then
+ * `clusterableSources`, narrowed to the focus. Palette and bands stay the
+ * display's, over those.
  *
  * Every arrangement write reaches the session at once rather than after the
  * track's 400 ms save, so a clustering run is one undo step and undoable the
- * moment its tree appears. "Reset row order" returns each member to what the
- * config.json declares, or what a track the session owns was added with, and
- * never touches `rows.field`.
+ * moment its tree appears. "Reset row order" returns each member, and the
+ * `rowColor` pairs, to what the config.json declares, or what a track the
+ * session owns was added with, and never touches `rows.field`.
  */
 export function TreeSidebarMixin<S extends RowSource = RowSource>() {
-  return treeSidebarBase()
+  return types
+    .model({
+      /**
+       * #property
+       * Transient declarative launch spec, the same idea as
+       * `LinearGenomeView`'s `init`: a session or config sets this true and the
+       * real clustering RPC runs once automatically, with no dialog, as soon as
+       * the display reports itself ready. `setupRunClusteringAutorun` clears it
+       * afterwards, so a saved session never re-triggers.
+       */
+      runClustering: types.maybe(types.boolean),
+      /**
+       * #property
+       * Where that run reads from, as a locstring (whitespace-separated for
+       * several). Clustering is region-scoped, so naming the locus lets a
+       * session cluster on the signal and then show it against its context.
+       * Cleared with `runClustering`, since it is that flag's argument.
+       */
+      clusterRegion: types.maybe(types.string),
+      /**
+       * #property
+       * Transient declarative launch spec, the same idea as `runClustering`:
+       * set `{refName, pos}` to order the rows once by the value each carries
+       * at that genomic column — the session-expressible form of the
+       * right-click "Sort rows by ... here". `setupRowSortAutorun` applies it
+       * once the region containing it has loaded and then clears it, so the
+       * resulting order persists but a saved session never re-sorts.
+       */
+      // #region frozenProp
+      sortRowsBy: types.maybe(types.frozen<RowSortSpec>()),
+      // #endregion
+    })
+    .volatile(() => ({
+      hoveredTreeNode: undefined as HoveredTreeNode | undefined,
+      treeCanvas: null as HTMLCanvasElement | null,
+      mouseoverCanvas: null as HTMLCanvasElement | null,
+    }))
     .views(self => ({
       /**
        * #getter
+       * Whether the dendrogram sidebar is drawn.
+       */
+      get showTree(): boolean {
+        return getConf(confNode(self), 'showTree')
+      },
+      /**
+       * #getter
+       * Whether tree nodes are positioned by branch length (dendrogram) or
+       * evenly by topology (cladogram).
+       */
+      get showBranchLength(): boolean {
+        return getConf(confNode(self), 'showBranchLength')
+      },
+      /**
+       * #getter
+       * Whether each row's name is drawn over the left of the plot.
+       */
+      get showRowLabels(): boolean {
+        return getConf(confNode(self), 'showRowLabels')
+      },
+      /**
+       * #getter
+       * Width in px of the sidebar the dendrogram draws in. On the config
+       * rather than the display snapshot for the same reason `height` is: the
+       * config node outlives the display instance, so a dragged width survives
+       * unticking and reticking the track.
+       */
+      get treeAreaWidth(): number {
+        return getConf(confNode(self), 'treeAreaWidth')
+      },
+      /**
+       * #getter
        * The row order, `rows.domain`: the rows it names lead, in its order,
-       * and the rest keep the order they arrived in.
+       * and the rest follow as `unlistedRowsSort` says.
        */
       get rowDomain(): string[] {
         return getConf(confNode(self), ['rows', 'domain'])
@@ -154,12 +262,104 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * Overridable hook: whether the display keeps row styling of its own
-       * beyond the arrangement that differs from the config, so a reset is
-       * offered for it too. Nothing by default.
+       * The colour a reader set on each named row, off `rowColor`'s
+       * `domain`/`range` pairs.
+       */
+      get rowColors(): ReadonlyMap<string, string> {
+        return pairedColorsOf({
+          domain: getConf(confNode(self), ['rowColor', 'domain']),
+          range: getConf(confNode(self), ['rowColor', 'range']),
+        })
+      },
+      /**
+       * #getter
+       * The `rowColor` pairs this display's base declares, which a reset
+       * returns to and a dialog submit keeps the pair order of.
+       */
+      get baseRowColor(): {
+        domain: readonly string[]
+        range: readonly string[]
+      } {
+        const base = (baseDisplayConfig(self).rowColor ?? {}) as {
+          domain?: string[]
+          range?: string[]
+        }
+        return { domain: base.domain ?? [], range: base.range ?? [] }
+      },
+      /**
+       * #getter
+       * Overridable hook, which every display overrides: the rows as the data
+       * reports them, before any arrangement. A getter, and a stable-identity
+       * one wherever the rows come off region payloads, so a refetch of the
+       * same rows re-derives nothing.
+       */
+      get discoveredRows(): S[] {
+        return []
+      },
+      /**
+       * #getter
+       * Overridable hook: the name a row also answers to, for a display whose
+       * rows stand for something named by another name (a variant display's
+       * haplotype rows, each answering to its sample). An order, a label, a
+       * tint and a focus written against the alias reach every row answering
+       * to it. None by default.
+       */
+      get rowAlias(): RowAlias | undefined {
+        return undefined
+      },
+      /**
+       * #getter
+       * Overridable hook: the row channel a `rowColor` entry paints, `color`
+       * by default.
+       */
+      get identityChannel(): IdentityChannel {
+        return 'color'
+      },
+      /**
+       * #getter
+       * Overridable hook: where the rows `rowOrder` does not list go, in the
+       * order they arrived by default.
+       */
+      get unlistedRowsSort(): UnlistedRowsSort {
+        return 'source'
+      },
+      /**
+       * #method
+       * Overridable hook: the discovered rows as the rows drawn, the rows
+       * themselves by default; a variant display's phased mode expands each
+       * sample to its haplotypes.
+       */
+      expandRows(rows: S[]): S[] {
+        return rows
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Overridable hook: the names the rows are placed by, `rows.domain` by
+       * default; MAF leads with a drawn tree's leaves.
+       */
+      get rowOrder(): readonly string[] {
+        return self.rowDomain
+      },
+      /**
+       * #getter
+       * Whether `rowColor` names a colour the config does not, so "Reset row
+       * order" is offered for a recolour too.
        */
       get rowStylingIsCustom(): boolean {
-        return false
+        return !compareStructural(
+          Object.fromEntries(self.rowColors),
+          Object.fromEntries(pairedColorsOf(self.baseRowColor)),
+        )
+      },
+      /**
+       * #getter
+       * `discoveredRows` through `expandRows`: the rows at the granularity
+       * drawn, before any arrangement.
+       */
+      get expandedRows(): S[] {
+        return self.expandRows(self.discoveredRows)
       },
     }))
     .views(self => ({
@@ -179,8 +379,35 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           )
         )
       },
+      /**
+       * #getter
+       * The rows in the reader's arrangement, with no focus, palette or band:
+       * the list the arrangement dialog edits, so a submit writes back only
+       * what the reader chose. `expandedRows` itself while nothing is
+       * arranged.
+       */
+      get editableSources(): S[] {
+        return arrangeRows(
+          self.expandedRows,
+          {
+            domain: self.rowOrder,
+            labels: self.rowLabels,
+            rowColors: self.rowColors,
+          },
+          self,
+        )
+      },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * `editableSources` narrowed to the focus: the rows a clustering run
+       * clusters, and deliberately not the display's decorated `sources`,
+       * whose palette and band a run has no business writing back.
+       */
+      get clusterableSources(): S[] {
+        return keptRows(self.editableSources, self.rowFocus, self.rowAlias)
+      },
       // A tree that arrived as data rotates towards the declared order at
       // parse; a run's tree was rotated by the run, in the same write as the
       // order it produced.
@@ -192,28 +419,99 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
             )
           : undefined
       },
+      /**
+       * #method
+       * Whether the arrangement dialog's submit of `next` drops the tree: an
+       * order that moves no row is not written, so it drops nothing.
+       */
       rowOrderWillDropTree(next: readonly { name: string }[]) {
-        return orderDropsTree(
-          self.rowTree,
-          self.rowDomain,
-          orderOver(self.rowDomain, next),
+        return (
+          !sameOrder(next, self.editableSources) &&
+          orderDropsTree(
+            self.rowTree,
+            self.rowDomain,
+            orderOver(self.rowDomain, next),
+          )
         )
       },
     }))
-    .views(self => treeViews(self))
-    .views(self => treeHeightViews(self))
-    .actions(() => ({
+    .views(self => ({
+      /**
+       * #getter
+       * The parsed tree narrowed to the focus.
+       */
+      get root() {
+        return self.parsedTree
+          ? applySubtreeFilter(self.parsedTree, self.rowFocus)
+          : undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Whether the tree carries merge heights, so a dendrogram layout differs
+       * from the cladogram; gates the "Tree branch lengths" toggle.
+       */
+      get treeHasBranchLengths() {
+        return !!self.root && maxNodeHeight(self.root) > 0
+      },
+    }))
+    .actions(self => ({
       /**
        * #action
-       * Overridable hook: return the row styling the display keeps of its
-       * own to what the config declares, with the arrangement. Nothing by
-       * default.
        */
-      resetRowStyling() {},
+      setShowTree(arg: boolean) {
+        setConf(confNode(self), 'showTree', arg)
+      },
+      /**
+       * #action
+       */
+      setShowBranchLength(arg: boolean) {
+        setConf(confNode(self), 'showBranchLength', arg)
+      },
+      /**
+       * #action
+       */
+      setShowRowLabels(arg: boolean) {
+        setConf(confNode(self), 'showRowLabels', arg)
+      },
+      setTreeAreaWidth(width: number) {
+        setConf(confNode(self), 'treeAreaWidth', width)
+      },
+      setRunClustering(arg?: boolean) {
+        self.runClustering = arg
+      },
+      setClusterRegion(arg?: string) {
+        self.clusterRegion = arg
+      },
+      /**
+       * #action
+       * Trigger (or clear) a one-shot declarative row sort; consumed and
+       * reset by `setupRowSortAutorun`.
+       */
+      setSortRowsBy(arg?: RowSortSpec) {
+        self.sortRowsBy = arg
+      },
+      setHoveredTreeNode(node?: HoveredTreeNode) {
+        self.hoveredTreeNode = node
+      },
+      setTreeCanvasRef(ref: HTMLCanvasElement | null) {
+        self.treeCanvas = ref
+      },
+      setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
+        self.mouseoverCanvas = ref
+      },
     }))
     .actions(self => {
       function write(member: ArrangementMember, value: unknown) {
         setConf(confNode(self), ['rows', member], value)
+      }
+      function writeRowColor(
+        domain: readonly string[],
+        range: readonly string[],
+      ) {
+        setConf(confNode(self), ['rowColor', 'domain'], [...domain])
+        setConf(confNode(self), ['rowColor', 'range'], [...range])
       }
       function persist() {
         if (hasParent(self)) {
@@ -224,6 +522,21 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         write('tree', run?.tree)
         write('treeProvenance', run?.provenance)
       }
+      function writeOrder(rows: readonly { name: string }[], run?: ClusterRun) {
+        const domain = orderOver(self.rowDomain, rows)
+        const dropTree =
+          !run && orderDropsTree(self.rowTree, self.rowDomain, domain)
+        write('domain', domain)
+        if (run) {
+          writeTree(run)
+        } else if (dropTree) {
+          writeTree()
+        }
+      }
+      function resetRowStyling() {
+        const { domain, range } = self.baseRowColor
+        writeRowColor(domain, range)
+      }
       return {
         /**
          * #action
@@ -233,16 +546,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
          * other reorder that moves a row drops the tree, which no longer
          * describes it.
          */
-        setRowOrder(rows: readonly S[], run?: ClusterRun) {
-          const domain = orderOver(self.rowDomain, rows)
-          const dropTree =
-            !run && orderDropsTree(self.rowTree, self.rowDomain, domain)
-          write('domain', domain)
-          if (run) {
-            writeTree(run)
-          } else if (dropTree) {
-            writeTree()
-          }
+        setRowOrder(rows: readonly { name: string }[], run?: ClusterRun) {
+          writeOrder(rows, run)
           persist()
         },
         /**
@@ -264,15 +569,51 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         },
         /**
          * #action
+         * The arrangement dialog's submit: the rows in their new order, each
+         * carrying the label and colour the reader left on it. The labels go
+         * to `rows` and the colours to the `rowColor` pairs, by the rule
+         * `rowEdits` states, and the order to `rows.domain` unless it moves no
+         * row, so a submit that changes nothing writes nothing.
+         */
+        applyRowEdits(rows: readonly S[]) {
+          const { labels, rowColor } = rowEdits({
+            rows,
+            shown: self.editableSources,
+            adapter: self.expandedRows,
+            labels: self.rowLabels,
+            colors: self.rowColors,
+            baseOrder: self.baseRowColor.domain,
+            identityChannel: self.identityChannel,
+            rowAlias: self.rowAlias,
+          })
+          const moved = !sameOrder(rows, self.editableSources)
+          writeRowColor(rowColor.domain, rowColor.range)
+          write('labels', labels)
+          if (moved) {
+            writeOrder(rows)
+          }
+          persist()
+        },
+        /**
+         * #action
+         * Return the `rowColor` pairs to what the config declares, leaving
+         * any other `rowColor` member.
+         */
+        resetRowStyling() {
+          resetRowStyling()
+        },
+        /**
+         * #action
          * Return every arrangement member — order, labels, tree, provenance
-         * and focus — to what the config declares, leaving `rows.field`.
+         * and focus — and the `rowColor` pairs to what the config declares,
+         * leaving `rows.field`.
          */
         resetRowArrangement() {
           const base = baseArrangement(self)
           for (const member of ROW_ARRANGEMENT_MEMBERS) {
             write(member, base[member])
           }
-          self.resetRowStyling()
+          resetRowStyling()
           persist()
         },
       }

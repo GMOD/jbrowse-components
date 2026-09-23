@@ -25,7 +25,6 @@ import CoarseTierMixin from '@jbrowse/display-kit/CoarseTierMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
@@ -38,7 +37,6 @@ import {
   RowHeightMixin,
   TreeSidebarMixin,
   applySubtreeFilter,
-  baseDisplayConfig,
   buildSpatialIndex,
   buildTree,
   computeClusterHierarchy,
@@ -46,9 +44,7 @@ import {
   getLeafNames,
   keptRows,
   orderOver,
-  orderRowsByDomain,
   resetRowOrderMenuItems,
-  rowEdits,
   setupTreeSidebarAutoruns,
   sortRowsAtColumn,
   sortRowsHereMenuItem,
@@ -57,7 +53,6 @@ import { visibleStatsDomain } from '@jbrowse/wiggle-core'
 import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core/normalize'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import { compareStructural } from 'mobx'
 
 import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.ts'
 import {
@@ -160,7 +155,7 @@ import type {
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { RowEdit, RowSource } from '@jbrowse/tree-sidebar'
+import type { RowSource } from '@jbrowse/tree-sidebar'
 import type { YAxis } from '@jbrowse/wiggle-core'
 
 /**
@@ -210,23 +205,6 @@ function unionSources(
     byName.set(source.name, source)
   }
   return [...byName.values()]
-}
-
-/**
- * What a dialog row says beyond what the adapter supplied: a label or a tint
- * that differs from the adapter row's.
- */
-function editedSource(
-  discovered: readonly MafSource[],
-): (row: MafSource) => RowEdit {
-  const byName = new Map(discovered.map(s => [s.name, s]))
-  return row => {
-    const base = byName.get(row.name)
-    return {
-      label: row.label === base?.label ? undefined : row.label,
-      color: row.labelColor === base?.labelColor ? undefined : row.labelColor,
-    }
-  }
 }
 
 /**
@@ -758,33 +736,6 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The tint a reader set on each named row, off `rowColor`'s
-         * `domain`/`range` pairs.
-         */
-        get rowColors(): ReadonlyMap<string, string> {
-          return pairedColorsOf({
-            domain: getConf(self, ['rowColor', 'domain']),
-            range: getConf(self, ['rowColor', 'range']),
-          })
-        },
-        /**
-         * #getter
-         * The `rowColor` pairs the config.json declares for this display,
-         * which a reset returns to and a dialog submit keeps the pair order
-         * of.
-         */
-        get baseRowColor(): {
-          domain: readonly string[]
-          range: readonly string[]
-        } {
-          const base = (baseDisplayConfig(self).rowColor ?? {}) as {
-            domain?: string[]
-            range?: string[]
-          }
-          return { domain: base.domain ?? [], range: base.range ?? [] }
-        },
-        /**
-         * #getter
          * The adapter's guide tree, parsed and rotated towards `rows.domain`;
          * undefined when the adapter supplies none.
          */
@@ -823,17 +774,6 @@ export default function stateModelFactory(
           return (
             getConf(self, ['rows', 'tree']) ??
             (self.guideTreeHonoursDomain ? self.treeNewickVolatile : undefined)
-          )
-        },
-        /**
-         * #getter
-         * `TreeSidebarMixin`'s hook: whether `rowColor` names a tint the
-         * config does not, so "Reset row order" is offered for a recolour too.
-         */
-        get rowStylingIsCustom(): boolean {
-          return !compareStructural(
-            Object.fromEntries(self.rowColors),
-            Object.fromEntries(pairedColorsOf(self.baseRowColor)),
           )
         },
       }))
@@ -878,83 +818,59 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The full row set in the reader's arrangement, unfocused: the list the
-         * arrangement dialog edits. Empty until the first fetch populates the
-         * worker set; `sourcesKnown` is the readiness question.
-         *
-         * With a tree the rows follow its leaves, read off the `parsedTree`
-         * that `rows.domain` already rotated, so the row order and the leaf
-         * order cannot drift and `treeDescribesRows` holds by construction;
-         * the rows the tree does not name follow in `rows.domain`'s order.
-         * Without one the species `rows.domain` lists lead and the rest keep
-         * the order the adapter reported them in, so a species a later region
-         * reveals joins the end. A `rows.labels` entry replaces the adapter's
-         * label and a `rowColor` entry its tint.
+         * `TreeSidebarMixin`'s hook: the worker's species, in the order it
+         * reported them. Empty until the first fetch populates the set;
+         * `sourcesKnown` is the readiness question.
          */
-        get editableSources(): MafSource[] {
-          const { parsedTree, rowDomain, rowLabels, rowColors } = self
-          const ordered = orderRowsByDomain(
-            self.sourcesVolatile,
-            parsedTree
-              ? [...getLeafNames(parsedTree), ...rowDomain]
-              : rowDomain,
-          )
-          return rowColors.size === 0 && Object.keys(rowLabels).length === 0
-            ? ordered
-            : ordered.map(row => {
-                const label = Object.hasOwn(rowLabels, row.name)
-                  ? rowLabels[row.name]
-                  : undefined
-                const labelColor = rowColors.get(row.name)
-                return {
-                  ...row,
-                  ...(label === undefined ? {} : { label }),
-                  ...(labelColor === undefined ? {} : { labelColor }),
-                }
-              })
-        },
-      }))
-      .actions(self => ({
-        /**
-         * #action
-         * `TreeSidebarMixin`'s hook, so "Reset row order" and the dialog's
-         * "Clear custom settings" return the row tints with the arrangement.
-         */
-        resetRowStyling() {
-          const { domain, range } = self.baseRowColor
-          setConf(self, ['rowColor', 'domain'], [...domain])
-          setConf(self, ['rowColor', 'range'], [...range])
+        get discoveredRows(): MafSource[] {
+          return self.sourcesVolatile
         },
         /**
-         * #action
-         * The arrangement dialog's submit: the rows in their new order, each
-         * carrying the label and tint the reader set on it. The order and the
-         * labels go to `rows`, the tints to `rowColor`'s pairs, each only where
-         * it differs from what the adapter supplied.
+         * #getter
+         * `TreeSidebarMixin`'s hook: a `rowColor` entry tints the label, over
+         * the adapter's `samples[].color`.
          */
-        applyRowEdits(rows: MafSource[]) {
-          const { labels, rowColor } = rowEdits({
-            rows,
-            labels: self.rowLabels,
-            colors: self.rowColors,
-            baseOrder: self.baseRowColor.domain,
-            edited: editedSource(self.sourcesVolatile),
-          })
-          setConf(self, ['rowColor', 'domain'], rowColor.domain)
-          setConf(self, ['rowColor', 'range'], rowColor.range)
-          self.setRowLabels(labels)
-          self.setRowOrder(rows)
+        get identityChannel(): 'color' | 'labelColor' {
+          return 'labelColor'
+        },
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: with a tree the rows follow its leaves,
+         * read off the `parsedTree` that `rows.domain` already rotated, so the
+         * row order and the leaf order cannot drift and `treeDescribesRows`
+         * holds by construction; the rows the tree does not name follow in
+         * `rows.domain`'s order. Without one the species `rows.domain` lists
+         * lead and the rest keep the order the adapter reported them in, so a
+         * species a later region reveals joins the end.
+         */
+        get rowOrder(): readonly string[] {
+          const { parsedTree, rowDomain } = self
+          return parsedTree
+            ? [...getLeafNames(parsedTree), ...rowDomain]
+            : rowDomain
         },
       }))
       .views(self => ({
         /**
          * #getter
-         * The display rows: `editableSources` narrowed to the focus, and to
-         * the reference row when `showReferenceRow` is off. The focus narrows
-         * as the worker's `visibleSamples` does: on a track that lists its
-         * species, a focus naming none of them shows every row (`keptRows`);
-         * on one that discovers them it applies as given, so a focus naming no
-         * species the blocks hold draws no rows.
+         * `editableSources` narrowed to the focus as the worker's
+         * `visibleSamples` narrows: on a track that lists its species, a focus
+         * naming none of them shows every row (`keptRows`); on one that
+         * discovers them it applies as given, so a focus naming no species the
+         * blocks hold draws no rows.
+         */
+        get clusterableSources(): MafSource[] {
+          const { editableSources, rowFocus } = self
+          return self.speciesListed
+            ? keptRows(editableSources, rowFocus)
+            : filterRowsBySubtree(editableSources, rowFocus)
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The display rows: `clusterableSources`, less the reference row when
+         * `showReferenceRow` is off.
          *
          * The reference row hides here rather than at the fetch, since the
          * other rows' mismatches and the coverage and conservation bands are
@@ -965,10 +881,7 @@ export default function stateModelFactory(
          * apart.
          */
         get sources(): MafSource[] {
-          const { editableSources, rowFocus } = self
-          const rows = self.speciesListed
-            ? keptRows(editableSources, rowFocus)
-            : filterRowsBySubtree(editableSources, rowFocus)
+          const rows = self.clusterableSources
           const refSrc = self.referenceSampleId
           return self.showReferenceRow
             ? rows

@@ -26,7 +26,6 @@ import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
@@ -35,16 +34,14 @@ import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
   RowHeightMixin,
   TreeSidebarMixin,
-  baseDisplayConfig,
   buildSpatialIndex,
   computeClusterHierarchy,
   focusRowGroup,
+  keptRows,
   loadedRegionIndexAt,
   paletteColorsByRow,
-  rowEdits,
   treeDescribesRows,
 } from '@jbrowse/tree-sidebar'
-import { compareStructural } from 'mobx'
 
 import { sortSourcesAroundVariant } from './anchoredHaplotypeSort.ts'
 import {
@@ -55,8 +52,7 @@ import {
 } from './constants.ts'
 import { buildSampleIndex } from './genotypeCodec.ts'
 import {
-  arrangeRows,
-  keptRowsOf,
+  expandPhasedRows,
   parseRowName,
   resolveSampleName,
 } from './getSources.ts'
@@ -83,7 +79,6 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
-import type { RowEdit } from '@jbrowse/tree-sidebar'
 
 type VariantHoverFields = Record<string, unknown> & {
   genotype: string
@@ -125,24 +120,6 @@ export function applyColorByPalette<S extends Source>(
     ...s,
     labelColor: palette.get(String(s[colorBy] ?? '')) ?? s.labelColor,
   }))
-}
-
-/**
- * What a dialog row says beyond what the adapter supplied: a label or a tint
- * that differs from the adapter row's, a haplotype row's being its sample's.
- */
-function editedSource(discovered: readonly Source[]): (row: Source) => RowEdit {
-  const byName = new Map(discovered.map(s => [s.name, s]))
-  return row => {
-    const base = byName.get(row.name) ?? byName.get(resolveSampleName(row))
-    return {
-      label: row.label === base?.label ? undefined : row.label,
-      color:
-        row.labelColor === (base?.labelColor ?? base?.color)
-          ? undefined
-          : row.labelColor,
-    }
-  }
 }
 
 // One spelling of "the config names an attribute the metadata doesn't have", for
@@ -377,10 +354,12 @@ function fetchRegionsForMode(
  *
  * 1. the adapter's samples (`sourcesVolatile`) are focused by `rows.kept`,
  *    which is the set the fetch asks for (`sourcesBase`, `sampleFilter`),
- * 2. phased mode expands each sample to its haplotypes, `rows.domain` orders
- *    and `rows.labels` relabels them (`editableSources`, the dialog's list),
+ * 2. phased mode expands each sample to its haplotypes (`expandedRows`), and
+ *    `rows.domain` orders, `rows.labels` relabels and the `rowColor` pairs
+ *    tint them (`editableSources`, the dialog's list), each from
+ *    `TreeSidebarMixin` over this display's hooks,
  * 3. the focus narrows those (`clusterableSources`, what a run clusters),
- * 4. `rowColor` tints and `facet` bands the result (`sources`).
+ * 4. the `rowColor` palette tints and `facet` bands the result (`sources`).
  *
  * **The `rowColor` palette wins over a colour the row already carried** — a
  * `samplesTsv` `color` column, or a `rowColor.domain` entry the dialog wrote. A
@@ -416,7 +395,7 @@ export default function MultiSampleVariantBaseModelF(
         LegendMixin(),
         RowHeightMixin(),
         StoredHoverMixin<VariantHoverFields>(),
-        TreeSidebarMixin<Source>(),
+        TreeSidebarMixin<ProcessedSource>(),
         ContextMenuMixin<VariantContextMenuInfo>(),
         types.model({
           type: types.string,
@@ -767,33 +746,6 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
-         * The tint a reader set on each named row, off `rowColor`'s
-         * `domain`/`range` pairs.
-         */
-        get rowColors(): ReadonlyMap<string, string> {
-          return pairedColorsOf({
-            domain: getConf(self, ['rowColor', 'domain']),
-            range: getConf(self, ['rowColor', 'range']),
-          })
-        },
-        /**
-         * #getter
-         * The `rowColor` pairs the config.json declares for this display,
-         * which a reset returns to and a dialog submit keeps the pair order
-         * of.
-         */
-        get baseRowColor(): {
-          domain: readonly string[]
-          range: readonly string[]
-        } {
-          const base = (baseDisplayConfig(self).rowColor ?? {}) as {
-            domain?: string[]
-            range?: string[]
-          }
-          return { domain: base.domain ?? [], range: base.range ?? [] }
-        },
-        /**
-         * #getter
          * The `facet` object as written: the sample-metadata attribute whose
          * values band the rows, and the band order; undefined leaves the
          * existing order alone.
@@ -994,41 +946,8 @@ export default function MultiSampleVariantBaseModelF(
           setShadeByDosage(arg: boolean) {
             setConf(self, 'shadeByDosage', arg)
           },
-          /**
-           * #action
-           * `TreeSidebarMixin`'s hook, so "Reset row order" and the dialog's
-           * "Clear custom settings" return the row tints with the arrangement.
-           * `rowColor.field` stays: the attribute is a setting of its own.
-           */
-          resetRowStyling() {
-            const { domain, range } = self.baseRowColor
-            setConf(self, ['rowColor', 'domain'], [...domain])
-            setConf(self, ['rowColor', 'range'], [...range])
-          },
         }
       })
-      .actions(self => ({
-        /**
-         * #action
-         * The arrangement dialog's submit: the rows in their new order, each
-         * carrying the label and tint the reader set on it. The order and the
-         * labels go to `rows`, the tints to `rowColor`'s pairs, each only where
-         * it differs from what the adapter supplied.
-         */
-        applyRowEdits(rows: Source[]) {
-          const { labels, rowColor } = rowEdits({
-            rows,
-            labels: self.rowLabels,
-            colors: self.rowColors,
-            baseOrder: self.baseRowColor.domain,
-            edited: editedSource(self.sourcesVolatile ?? []),
-          })
-          setConf(self, ['rowColor', 'domain'], rowColor.domain)
-          setConf(self, ['rowColor', 'range'], rowColor.range)
-          self.setRowLabels(labels)
-          self.setRowOrder(rows)
-        },
-      }))
       .views(self => ({
         /**
          * #getter
@@ -1116,15 +1035,56 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
-         * `TreeSidebarMixin`'s hook: whether `rowColor` names a colour the
-         * config does not, so "Reset row order" is offered for a recolour too.
+         * `TreeSidebarMixin`'s hook: the adapter's samples as rows, each
+         * answering to its sample name, with a samplesTsv `color` column as the
+         * label tint where the sample names none of its own.
          */
-        get rowStylingIsCustom(): boolean {
-          return !compareStructural(
-            Object.fromEntries(self.rowColors),
-            Object.fromEntries(pairedColorsOf(self.baseRowColor)),
-          )
+        get discoveredRows(): ProcessedSource[] {
+          return (self.sourcesVolatile ?? []).map(source => {
+            const labelColor = source.labelColor ?? source.color
+            return {
+              ...source,
+              sampleName: resolveSampleName(source),
+              ...(labelColor === undefined ? {} : { labelColor }),
+            }
+          })
         },
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: a haplotype row answers to its sample's
+         * name, so an order, a label, a tint or a focus written against a
+         * sample reaches each of its haplotypes.
+         */
+        get rowAlias(): (name: string) => string | undefined {
+          const samples = new Set(
+            (self.sourcesVolatile ?? []).map(resolveSampleName),
+          )
+          return name => parseRowName(name, samples)?.sampleName
+        },
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: a `rowColor` entry tints the label, the
+         * one channel a row has, since the cells paint by genotype.
+         */
+        get identityChannel(): 'color' | 'labelColor' {
+          return 'labelColor'
+        },
+        /**
+         * #method
+         * `TreeSidebarMixin`'s hook: phased mode draws a row per haplotype,
+         * once `sampleInfo` gives the ploidy or the order names them.
+         */
+        expandRows(rows: ProcessedSource[]): ProcessedSource[] {
+          return self.renderingMode === 'phased'
+            ? expandPhasedRows({
+                rows,
+                sampleInfo: self.sampleInfo,
+                domain: self.rowDomain,
+              })
+            : rows
+        },
+      }))
+      .views(self => ({
         /**
          * #getter
          * The adapter's samples narrowed to the focus, `rows.kept` — a
@@ -1134,39 +1094,7 @@ export default function MultiSampleVariantBaseModelF(
          */
         get sourcesBase(): Source[] | undefined {
           const sources = self.sourcesVolatile
-          return sources && keptRowsOf(sources, self.rowFocus)
-        },
-        /**
-         * #getter
-         * The rows of the rendering mode in the reader's arrangement — phased
-         * mode's haplotypes once `sampleInfo` gives their ploidy, ordered by
-         * `rows.domain`, relabelled by `rows.labels` and tinted by the
-         * `rowColor` pairs — with no focus, no palette and no band. The list
-         * the arrangement dialog edits, so a submit writes back only what the
-         * reader chose.
-         */
-        get editableSources(): ProcessedSource[] {
-          return arrangeRows({
-            sources: self.sourcesVolatile ?? [],
-            renderingMode: self.renderingMode,
-            sampleInfo: self.sampleInfo,
-            arrangement: {
-              domain: self.rowDomain,
-              labels: self.rowLabels,
-              rowColors: self.rowColors,
-            },
-          })
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * `editableSources` narrowed to the focus: the rows a clustering run
-         * clusters, and deliberately not the decorated `sources`, whose palette
-         * tint and band a run has no business writing back.
-         */
-        get clusterableSources(): ProcessedSource[] {
-          return keptRowsOf(self.editableSources, self.rowFocus)
+          return sources && keptRows(sources, self.rowFocus, self.rowAlias)
         },
       }))
       .views(self => ({

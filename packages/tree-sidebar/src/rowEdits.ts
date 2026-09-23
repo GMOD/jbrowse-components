@@ -1,55 +1,79 @@
 import { isCssColor } from '@jbrowse/core/util/cssColorParse'
 
-/** What a dialog row says beyond what the adapter supplied. */
-export interface RowEdit {
-  label?: string
-  color?: string
-}
+import type { IdentityChannel, RowAlias } from './arrangeRows.ts'
+import type { RowSource } from './types.ts'
 
 /**
  * What the arrangement dialog's submit writes to `rows.labels` and the
- * display's colour pairs: the config's entries as they stand, with the rows the
- * dialog showed written over them. A row the dialog never showed keeps its
- * entry, so a submit over a window holding a fraction of the rows leaves the
- * rest of a declared map standing. A colour the painters cannot parse is left
- * out. The pairs keep the config.json's order first, so a submit that changes
- * no colour writes the declared pairs back unchanged.
+ * `rowColor` pairs: the config's entries, with each row the reader changed
+ * written over them. A row's value is its label, and its colour on the
+ * display's identity channel.
+ *
+ * An entry the config holds stands unless the reader changed that row's
+ * value, so a submit that changes nothing writes the config back as it was,
+ * even where an entry repeats the adapter's value. A changed value is stored,
+ * or, where it is what the row shows with no entry of its own (its alias's
+ * entry, else the adapter's), its entry is removed. A row the dialog never
+ * showed keeps its entry, and a colour the painters cannot parse is not
+ * stored. The pairs keep the config.json's order first.
  */
-export function rowEdits<S extends { name: string }>({
+export function rowEdits<S extends RowSource>({
   rows,
-  labels: liveLabels,
-  colors: liveColors,
+  shown,
+  adapter,
+  labels,
+  colors,
   baseOrder,
-  edited,
+  identityChannel,
+  rowAlias,
 }: {
   rows: readonly S[]
+  shown: readonly S[]
+  adapter: readonly S[]
   labels: Readonly<Record<string, string>>
   colors: ReadonlyMap<string, string>
   baseOrder: readonly string[]
-  edited: (row: S) => RowEdit
+  identityChannel: IdentityChannel
+  rowAlias: RowAlias | undefined
 }): {
   labels: Record<string, string>
   rowColor: { domain: string[]; range: string[] }
 } {
-  const shown = new Set(rows.map(row => row.name))
-  const labels = Object.fromEntries(
-    Object.entries(liveLabels).filter(([name]) => !shown.has(name)),
-  )
-  const colors = new Map([...liveColors].filter(([name]) => !shown.has(name)))
+  const before = new Map(shown.map(row => [row.name, row]))
+  const fromAdapter = new Map(adapter.map(row => [row.name, row]))
+  const nextLabels = new Map(Object.entries(labels))
+  const nextColors = new Map(colors)
   for (const row of rows) {
-    const { label, color } = edited(row)
-    if (label !== undefined) {
-      labels[row.name] = label
+    const seed = before.get(row.name)
+    const own = fromAdapter.get(row.name)
+    const alias = rowAlias?.(row.name)
+    const other = alias === row.name ? undefined : alias
+    if (row.label !== seed?.label) {
+      const fallback =
+        other !== undefined && Object.hasOwn(labels, other)
+          ? labels[other]
+          : own?.label
+      nextLabels.delete(row.name)
+      if (row.label !== undefined && row.label !== fallback) {
+        nextLabels.set(row.name, row.label)
+      }
     }
-    if (color !== undefined && isCssColor(color)) {
-      colors.set(row.name, color)
+    const color = row[identityChannel]
+    if (color !== seed?.[identityChannel]) {
+      const fallback =
+        (other === undefined ? undefined : colors.get(other)) ??
+        own?.[identityChannel]
+      nextColors.delete(row.name)
+      if (color !== undefined && color !== fallback && isCssColor(color)) {
+        nextColors.set(row.name, color)
+      }
     }
   }
   const domain = [
-    ...new Set([...baseOrder, ...liveColors.keys(), ...colors.keys()]),
-  ].filter(name => colors.has(name))
+    ...new Set([...baseOrder, ...colors.keys(), ...nextColors.keys()]),
+  ].filter(name => nextColors.has(name))
   return {
-    labels,
-    rowColor: { domain, range: domain.map(name => colors.get(name)!) },
+    labels: Object.fromEntries(nextLabels),
+    rowColor: { domain, range: domain.map(name => nextColors.get(name)!) },
   }
 }

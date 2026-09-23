@@ -53,7 +53,6 @@ export {
 } from './rowSortColumn.ts'
 export type { LoadedRegionSpan } from './rowSortColumn.ts'
 export {
-  applyLayoutOverrides,
   applySubtreeFilter,
   buildClusteredLayout,
   buildTree,
@@ -62,13 +61,12 @@ export {
   filterRowsBySubtree,
   getLeafNames,
   keptRows,
-  orderRowsByDomain,
   parseClusterOrder,
   parseClusterTree,
-  reconcileLayout,
   treeDescribesRows,
   validateClusterOrder,
 } from './clusterUtils.ts'
+export { orderRowsByDomain } from './arrangeRows.ts'
 export { applyClusterRun } from './applyClusterRun.ts'
 export { rotateClusterRun } from './rotateClusterRun.ts'
 export { rotateNewickByDomain } from './rotateNewickByDomain.ts'
@@ -88,10 +86,7 @@ export {
   baseDisplayConfig,
   orderOver,
 } from './TreeSidebarMixin.ts'
-export { rowEdits } from './rowEdits.ts'
-export type { RowEdit } from './rowEdits.ts'
-export { LayoutTreeSidebarMixin } from './LayoutTreeSidebarMixin.ts'
-export type { ClusterRun } from './treeSidebarBase.ts'
+export type { ClusterRun } from './TreeSidebarMixin.ts'
 // Moved to display-kit on 2026-08-27 — right-click state is a display concern
 // every plugin has, not a tree one. Re-exported so nothing importing the old
 // name breaks; new code names the display-kit subpath.

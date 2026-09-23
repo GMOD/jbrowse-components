@@ -57,7 +57,7 @@ test('a row reorder lands in the session at once and stays undone across the def
   await findDisplayPainted('wiggle-display', delay)
   const display: LinearWiggleDisplayModel = view.tracks[0]!.displays[0]
   await waitFor(() => {
-    expect(display.sourcesWithoutLayout).toHaveLength(2)
+    expect(display.discoveredRows).toHaveLength(2)
   }, delay)
   await sleep(700)
   const stepsBefore = history.undoIdx

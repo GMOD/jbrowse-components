@@ -1,8 +1,6 @@
 import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 
-import type { RowEdit } from '@jbrowse/tree-sidebar'
-
 // `labelColor` tints the sidebar swatch only, never the blocks.
 export interface MultiRowSource {
   name: string
@@ -96,50 +94,4 @@ export function orderPartitionValues(
   domain: readonly string[],
 ): string[] {
   return [...values].sort(groupKeyComparator(domain))
-}
-
-/**
- * The discovered rows in the reader's arrangement: ordered by `domain` the way
- * {@link orderPartitionValues} orders values, a `labels` entry over the
- * derived label, and a `colors` entry as the row's `color`.
- */
-export function arrangeRows(
-  discovered: readonly MultiRowSource[],
-  {
-    domain,
-    labels,
-    colors,
-  }: {
-    domain: readonly string[]
-    labels: Readonly<Record<string, string>>
-    colors: ReadonlyMap<string, string>
-  },
-): MultiRowSource[] {
-  const byName = new Map(discovered.map(s => [s.name, s]))
-  return orderPartitionValues(byName.keys(), domain).map(name => {
-    const row = byName.get(name)!
-    const label = labels[name]
-    const color = colors.get(name)
-    return label === undefined && color === undefined
-      ? row
-      : {
-          ...row,
-          ...(label === undefined ? {} : { label }),
-          ...(color === undefined ? {} : { color }),
-        }
-  })
-}
-
-/**
- * What a dialog row says beyond what was discovered: a label other than the
- * derived one, and its colour.
- */
-export function editedRow(
-  discovered: readonly MultiRowSource[],
-): (row: MultiRowSource) => RowEdit {
-  const byName = new Map(discovered.map(s => [s.name, s]))
-  return row => ({
-    label: row.label === byName.get(row.name)?.label ? undefined : row.label,
-    color: row.color,
-  })
 }

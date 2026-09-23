@@ -48,7 +48,7 @@ export function makeRenderingTypeSubMenu(
     setRenderingType: (t: string) => void
     isRowLayout: boolean
     setRowLayout: (on: boolean) => void
-    sourcesWithoutLayout: readonly unknown[]
+    discoveredRows: readonly unknown[]
   },
   renderings: readonly (readonly [string, string])[],
 ): MenuItem {
@@ -57,7 +57,7 @@ export function makeRenderingTypeSubMenu(
   // row-label items over a dendrogram that can never draw, since clustering
   // refuses a single row. Grouped while on rows, so a track whose sources
   // dropped to one can still get back to one box.
-  if (!self.isRowLayout && self.sourcesWithoutLayout.length <= 1) {
+  if (!self.isRowLayout && self.discoveredRows.length <= 1) {
     return makeRadioSubMenu({
       label: 'Plot type',
       icon: ShowChartIcon,

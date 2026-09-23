@@ -9,6 +9,7 @@ import {
 } from './hierarchy.ts'
 import { rotateNewickByDomain } from './rotateNewickByDomain.ts'
 
+import type { RowAlias } from './arrangeRows.ts'
 import type { HierarchyNode } from './hierarchy.ts'
 import type { ClusterHierarchyNode, ClusterNodeData } from './types.ts'
 
@@ -186,7 +187,7 @@ export function parseClusterTree(newick: string, subtreeFilter?: string[]) {
 //     focusing a clade silently recolors the rows it kept.
 //
 // Returns the input array by reference when no filter is set, so callers can
-// short-circuit on identity (same contract as reconcileLayout).
+// short-circuit on identity.
 export function filterRowsBySubtree<T extends { name: string }>(
   rows: T[],
   subtreeFilter: readonly string[] | undefined,
@@ -201,13 +202,47 @@ export function filterRowsBySubtree<T extends { name: string }>(
  * — one saved against rows that have since been renamed — never blanks the
  * display. Synthesis keyed to a row's place among every row runs before
  * this, for the reason {@link filterRowsBySubtree} states.
+ *
+ * With `rowAlias`, a name keeps every row answering to it, so a sample's name
+ * keeps its haplotypes; and a row that is its own alias (a sample not yet
+ * expanded) stands for the rows answering to it, so it is kept when any of
+ * them is named. One `kept` then narrows the samples a fetch asks for and the
+ * haplotype rows drawn alike.
  */
 export function keptRows<T extends { name: string }>(
   rows: T[],
   kept: readonly string[] | undefined,
+  rowAlias?: RowAlias,
 ): T[] {
-  const focused = filterRowsBySubtree(rows, kept)
-  return focused.length ? focused : rows
+  if (!rowAlias) {
+    const focused = filterRowsBySubtree(rows, kept)
+    return focused.length ? focused : rows
+  }
+  if (!kept?.length) {
+    return rows
+  }
+  const samples = new Set(
+    kept.flatMap(name => {
+      const sample = rowAlias(name)
+      return sample === undefined ? [] : [sample]
+    }),
+  )
+  const ofSamples = rows.filter(row =>
+    samples.has(rowAlias(row.name) ?? row.name),
+  )
+  if (!ofSamples.length) {
+    return rows
+  }
+  const names = new Set(kept)
+  const exact = ofSamples.filter(row => {
+    const sample = rowAlias(row.name)
+    return (
+      sample === row.name ||
+      names.has(row.name) ||
+      (sample !== undefined && names.has(sample))
+    )
+  })
+  return exact.length ? exact : ofSamples
 }
 
 // True when focusing this subtree would hide nothing: the node already contains
@@ -387,105 +422,6 @@ export function validateClusterOrder(
   }
 }
 
-// Reconcile a persisted `layout` (user reorder/relabel/override) against the
-// rows currently discovered in the data: keep layout order, drop layout rows no
-// longer present, append newly-discovered rows in discovered order. Layout
-// fields win on merge (they are the user's overrides). Empty layout returns the
-// discovered array by reference, so callers can short-circuit on identity.
-// The displays on `rows` order by `rows.domain` instead. Layout entries are
-// partial overrides keyed by `name`, so the discovered row supplies every
-// field a layout entry omits.
-export function reconcileLayout<D extends { name: string }>(
-  discovered: D[],
-  layout: (Partial<D> & { name: string })[],
-): D[] {
-  if (!layout.length) {
-    return discovered
-  }
-  const byName = new Map(discovered.map(s => [s.name, s]))
-  const laidOut = layout.flatMap(s => {
-    const info = byName.get(s.name)
-    return info ? [{ ...info, ...s }] : []
-  })
-  const inLayout = new Set(layout.map(s => s.name))
-  const appended = discovered.filter(s => !inLayout.has(s.name))
-  return [...laidOut, ...appended]
-}
-
-/**
- * Seed a row order from a config `domain`: the rows it names come first, in its
- * order, and every other row keeps the order it arrived in — the adapter's
- * order for multi-wiggle, the file's sample order for the variant displays. The
- * tail is not sorted, which is the one difference from a facet's domain
- * (`groupKeyComparator`): there the unlisted sections are partition values with
- * no order of their own, and here the order a row arrived in is itself an
- * answer.
- *
- * **This is the no-tree half.** Where a tree describes the rows, the domain is
- * a preference the topology honours rather than a placement: the tree is
- * rotated towards it (`rotateNewickByDomain`) and the rows follow its leaves,
- * so the dendrogram keeps drawing. MAF passes those leaf names here as the
- * domain, which is how one function states both halves.
- *
- * A name matching no row places nothing, and a name listed twice places its row
- * once. Applied under {@link reconcileLayout}, so a user's arrangement wins over
- * the seed.
- *
- * Returns `rows` by reference when the domain moves nothing — empty, or naming
- * none of these rows — so callers can short-circuit on identity, the same
- * contract {@link reconcileLayout} and {@link filterRowsBySubtree} keep.
- */
-export function orderRowsByDomain<T extends { name: string }>(
-  rows: T[],
-  domain: readonly string[],
-): T[] {
-  if (!domain.length) {
-    return rows
-  }
-  const byName = new Map(rows.map(r => [r.name, r]))
-  const listed = [...new Set(domain)].flatMap(name => {
-    const row = byName.get(name)
-    return row ? [row] : []
-  })
-  if (!listed.length) {
-    return rows
-  }
-  const placed = new Set(listed)
-  return [...listed, ...rows.filter(r => !placed.has(r))]
-}
-
-/**
- * Overlay a persisted `layout`'s per-row overrides onto rows already in the
- * order they are to be drawn in, matched by `name`. The overrides win; a row the
- * layout does not name keeps what the data gave it, and a layout row naming no
- * current row is dropped, which is {@link reconcileLayout}'s rule for a row that
- * no longer exists.
- *
- * **The order is the caller's and the colors are the layout's**, which is the
- * whole distinction from {@link reconcileLayout} — that one keeps the *layout's*
- * order, and is what a display's `sources` getter wants. Anything computing a
- * NEW row order wants this one, and every such path has to take it: `layout` is
- * the only home for a palette color, a label or a labelColor, so writing a fresh
- * order straight to `setLayout` silently discards all three.
- *
- * **Both sides must be at the same granularity.** The match is on `name` and
- * nothing else — never a per-plugin alias, for the reason `filterRowsBySubtree`
- * states — so rows naming the same thing two ways match nothing and every
- * override is dropped, silently, which reads exactly like a layout that covers
- * none of the rows. A caller holding rows at one granularity and a layout at
- * another wants the merge its own layer already does.
- */
-export function applyLayoutOverrides<S extends { name: string }>(
-  ordered: S[],
-  existingLayout: readonly S[],
-): S[] {
-  const existingByName = new Map(existingLayout.map(s => [s.name, s]))
-  return ordered.map(source => {
-    const existing = existingByName.get(source.name)
-    return existing ? { ...source, ...existing } : source
-  })
-}
-
 /**
  * A clustering run's `order` turned into the display's next row order — the
  * one write behind both the "Run clustering" RPC and a hand-pasted R order, on
@@ -528,7 +464,7 @@ export function clusteredCladeLayout<S extends { name: string }>({
   matrixRowNames?: string[]
 }): S[] {
   validateClusterOrder(order, rows, matrixRowNames)
-  const clustered = buildClusteredLayout(rows, [], order)
+  const clustered = buildClusteredLayout(rows, order)
   const clusteredNames = new Set(clustered.map(s => s.name))
   return [
     ...clustered,
@@ -538,17 +474,13 @@ export function clusteredCladeLayout<S extends { name: string }>({
 
 export function buildClusteredLayout<S extends { name: string }>(
   baseSources: S[],
-  existingLayout: readonly S[],
   order: number[],
 ): S[] {
-  return applyLayoutOverrides(
-    order.map(idx => {
-      const source = baseSources[idx]
-      if (!source) {
-        throw new Error(`cluster order index ${idx} out of bounds`)
-      }
-      return source
-    }),
-    existingLayout,
-  )
+  return order.map(idx => {
+    const source = baseSources[idx]
+    if (!source) {
+      throw new Error(`cluster order index ${idx} out of bounds`)
+    }
+    return source
+  })
 }

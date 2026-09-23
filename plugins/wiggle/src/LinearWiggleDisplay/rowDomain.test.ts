@@ -20,7 +20,7 @@ async function loadedDisplay(domain: string[]) {
   const { display } = env.createDisplay()
   jest.advanceTimersByTime(700)
   await waitFor(() => {
-    expect(display.sourcesWithoutLayout).toHaveLength(3)
+    expect(display.discoveredRows).toHaveLength(3)
   })
   return display
 }

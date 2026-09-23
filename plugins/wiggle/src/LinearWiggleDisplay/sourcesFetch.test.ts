@@ -84,7 +84,7 @@ describe('MultiLinearWiggleDisplay source accumulation across regions', () => {
   // #3 regression: a plain feature adapter (the bedMethyl use-case) discovers
   // sources per region rather than from a static getSources. A source with zero
   // features in the first fetched region must still appear once a later region
-  // reveals it — `sourcesWithoutLayout` unions every loaded region rather than
+  // reveals it — `discoveredRows` unions every loaded region rather than
   // reading the first one, otherwise the source stays invisible forever.
   it('merges sources first seen in a later region', () => {
     const { createDisplay } = createTestEnvironment()
@@ -95,14 +95,10 @@ describe('MultiLinearWiggleDisplay source accumulation across regions', () => {
       makeMultiWiggleData(['a', 'b']),
       view.displayedRegions[0],
     )
-    expect(display.sourcesWithoutLayout.map(s => s.name)).toEqual(['a', 'b'])
+    expect(display.discoveredRows.map(s => s.name)).toEqual(['a', 'b'])
 
     display.setRpcData(1, makeMultiWiggleData(['a', 'b', 'c']), ctgB)
-    expect(display.sourcesWithoutLayout.map(s => s.name)).toEqual([
-      'a',
-      'b',
-      'c',
-    ])
+    expect(display.discoveredRows.map(s => s.name)).toEqual(['a', 'b', 'c'])
     expect(display.numSources).toBe(3)
   })
 
@@ -117,7 +113,7 @@ describe('MultiLinearWiggleDisplay source accumulation across regions', () => {
 
     const seen: unknown[] = []
     const stop = autorun(() => {
-      seen.push(display.sourcesWithoutLayout)
+      seen.push(display.discoveredRows)
     })
     display.setRpcData(
       0,
@@ -140,11 +136,7 @@ describe('MultiLinearWiggleDisplay source accumulation across regions', () => {
       view.displayedRegions[0],
     )
     display.setRpcData(1, makeMultiWiggleData(['a', 'c', 'b']), ctgB)
-    expect(display.sourcesWithoutLayout.map(s => s.name)).toEqual([
-      'b',
-      'a',
-      'c',
-    ])
+    expect(display.discoveredRows.map(s => s.name)).toEqual(['b', 'a', 'c'])
   })
 })
 

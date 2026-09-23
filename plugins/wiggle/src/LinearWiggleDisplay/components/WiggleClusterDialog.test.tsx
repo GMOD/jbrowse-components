@@ -27,9 +27,9 @@ function setup() {
   return env
 }
 
-async function loadSources(display: { sourcesWithoutLayout: unknown[] }) {
+async function loadSources(display: { discoveredRows: unknown[] }) {
   await waitFor(() => {
-    expect(display.sourcesWithoutLayout.length).toBe(2)
+    expect(display.discoveredRows.length).toBe(2)
   })
 }
 

@@ -21,7 +21,6 @@ import { colorSpecOf } from '@jbrowse/display-kit/channelSpec'
 import {
   colorMembersOf,
   colorScaleChoicesOf,
-  pairedColorsOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { fetchAllRegions } from '@jbrowse/display-kit/fetchEachRegion'
 import { rowsSettingOf } from '@jbrowse/display-kit/rowsConfigSchema'
@@ -34,12 +33,9 @@ import {
   buildSpatialIndex,
   clusteringMenuItem,
   computeClusterHierarchy,
-  baseDisplayConfig,
   focusRowGroup,
-  keptRows,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
-  rowEdits,
   rowLabelsCarryText,
   setupTreeSidebarAutoruns,
   showRowLabelsMenuItem,
@@ -52,7 +48,6 @@ import {
 import { axisPlotBox, makeCrossHatchItem } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import { compareStructural } from 'mobx'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
@@ -80,12 +75,7 @@ import { WIGGLE_RENDERINGS } from '../util.ts'
 import { CHANNEL_SPEC_EXAMPLES } from './channelSpecExamples.ts'
 import { buildLegendItems } from './legendItems.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
-import {
-  arrangeSources,
-  buildSources,
-  editedSource,
-  sourcesFromRegionData,
-} from './sourcesLogic.ts'
+import { buildSources, sourcesFromRegionData } from './sourcesLogic.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { ResolvedWiggleColor } from '../shared/wiggleColor.ts'
@@ -278,46 +268,6 @@ export default function stateModelFactory(
           domain: self.rowDomain,
         })
       },
-
-      /**
-       * #getter
-       * The colour a reader set on each named subtrack, off `rowColor`.
-       */
-      get rowColors(): ReadonlyMap<string, string> {
-        return pairedColorsOf({
-          domain: getConf(self, ['rowColor', 'domain']),
-          range: getConf(self, ['rowColor', 'range']),
-        })
-      },
-
-      /**
-       * #getter
-       * The `rowColor` the config.json declares for this display, which a
-       * reset returns to and a dialog submit keeps the pair order of.
-       */
-      get baseRowColor(): {
-        domain: readonly string[]
-        range: readonly string[]
-      } {
-        const base = (baseDisplayConfig(self).rowColor ?? {}) as {
-          domain?: string[]
-          range?: string[]
-        }
-        return { domain: base.domain ?? [], range: base.range ?? [] }
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * `TreeSidebarMixin`'s hook: whether `rowColor` names a colour the
-       * config does not, so "Reset row order" is offered for a recolour too.
-       */
-      get rowStylingIsCustom(): boolean {
-        return !compareStructural(
-          Object.fromEntries(self.rowColors),
-          Object.fromEntries(pairedColorsOf(self.baseRowColor)),
-        )
-      },
     }))
     .views(self => ({
       /**
@@ -350,10 +300,12 @@ export default function stateModelFactory(
         sourcesFromRegionData(self.rpcDataMap),
       )
       return {
-        // Raw adapter sources, discovered from the loaded regions in adapter
-        // order. Used as input to clustering: cluster RPC reads `name` and
-        // `buildClusteredLayout` maps order indices into this list.
-        get sourcesWithoutLayout(): Source[] {
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: the adapter's sources, discovered from
+         * the loaded regions in adapter order.
+         */
+        get discoveredRows(): Source[] {
           return sources.get()
         },
       }
@@ -367,7 +319,7 @@ export default function stateModelFactory(
        * the pos/neg picture a quantitative track has always drawn.
        */
       get sharesOnePlot(): boolean {
-        return self.isOverlay && self.sourcesWithoutLayout.length > 1
+        return self.isOverlay && self.discoveredRows.length > 1
       },
     }))
     .views(self => ({
@@ -470,33 +422,18 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * The adapter's rows in the reader's arrangement — `rows.domain` leading,
-       * `rows.labels` over the adapter's labels, and each `rowColor` entry on
-       * the channel the row's identity paints through in this mode — with no
-       * focus and no palette synthesis, so the arrangement dialog seeds from
-       * what was chosen and nothing else.
+       * `TreeSidebarMixin`'s hook: a reader's colour for a subtrack lands on
+       * the label tint where the rows are labelled and a gradient has the
+       * plot, on the plot colour otherwise. In one shared box there is no
+       * label to tint, so the colour goes to the plot whatever the gradient.
        */
-      get editableSources(): Source[] {
-        return arrangeSources(self.sourcesWithoutLayout, {
-          domain: self.rowDomain,
-          labels: self.rowLabels,
-          rowColors: self.rowColors,
-          gradientPaints: self.scoreGradientPaints,
-          rowLayout: self.isRowLayout,
-        })
+      get identityChannel(): 'color' | 'labelColor' {
+        return self.scoreGradientPaints && self.isRowLayout
+          ? 'labelColor'
+          : 'color'
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * The rows a clustering run acts on: `editableSources` narrowed to the
-       * focus, and deliberately NOT the decorated `sources` below, whose
-       * synthesized palette colours a run has no business writing back.
-       */
-      get clusterableSources(): Source[] {
-        return keptRows(self.editableSources, self.rowFocus)
-      },
-
       get sources(): Source[] {
         return buildSources(
           self.editableSources,
@@ -878,42 +815,6 @@ export default function stateModelFactory(
 
       /**
        * #action
-       * The arrangement dialog's submit: the rows in their new order, each
-       * carrying the label and the colour the reader set on it. The order and
-       * the labels go to `rows`, and the colour on this mode's identity channel
-       * to `rowColor`, each only where it differs from what the adapter
-       * supplied.
-       */
-      applyRowEdits(rows: Source[]) {
-        const { labels, rowColor } = rowEdits({
-          rows,
-          labels: self.rowLabels,
-          colors: self.rowColors,
-          baseOrder: self.baseRowColor.domain,
-          edited: editedSource(self.sourcesWithoutLayout, {
-            gradientPaints: self.scoreGradientPaints,
-            rowLayout: self.isRowLayout,
-          }),
-        })
-        self.configuration.setSubschema('rowColor', rowColor)
-        self.setRowLabels(labels)
-        self.setRowOrder(rows)
-      },
-
-      /**
-       * #action
-       * `TreeSidebarMixin`'s hook, so "Reset row order" and the dialog's
-       * "Clear custom settings" return the row colours with the arrangement.
-       */
-      resetRowStyling() {
-        self.configuration.setSubschema(
-          'rowColor',
-          baseDisplayConfig(self).rowColor ?? {},
-        )
-      },
-
-      /**
-       * #action
        * `LegendMixin`'s hook: narrow the rows to the subtracks one key row
        * stands for — what clicking that swatch does. A key row is a group
        * where the subtrack has one and the subtrack itself otherwise
@@ -1002,7 +903,7 @@ export default function stateModelFactory(
         // fetched — so every region's payload stays complete and consistent.
         // Filtering here instead would leave regions fetched under a stale
         // filter missing sources when the filter is later widened.
-        const { sourcesWithoutLayout } = self
+        const { discoveredRows } = self
         const { bpPerPx } = view
         // Batched, not per-region: every subtrack adapter gets all the
         // visible regions in one call, so a whole-genome or
@@ -1014,7 +915,7 @@ export default function stateModelFactory(
             ctx.callRpc('RenderMultiWiggleData', {
               ...rpcArgs(self),
               regions,
-              sources: sourcesWithoutLayout,
+              sources: discoveredRows,
               bpPerPx,
             }),
           onResult: (_idx, result) => result,
@@ -1120,7 +1021,7 @@ export default function stateModelFactory(
             },
           },
           rowArrangementMenuItem({
-            ready: !!self.sourcesWithoutLayout.length,
+            ready: !!self.discoveredRows.length,
             onOpen: () => {
               getDialogHost(self).queueDialog(handleClose => [
                 SetColorDialog,

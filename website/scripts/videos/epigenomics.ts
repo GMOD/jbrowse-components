@@ -11,7 +11,7 @@ const { trackId: CHROMHMM_TRACK, unclusteredHoxa } = chromhmmVideoFixtures
 const CHROMHMM_MENU = trackMenu(CHROMHMM_TRACK)
 // The rows have to be carrying DATA before the camera starts, not merely have
 // painted once: the run item is disabled until the display has discovered two
-// rows to cluster (`sourcesWithoutLayout`), and a disabled MenuItem swallows a
+// rows to cluster (`discoveredRows`), and a disabled MenuItem swallows a
 // click and reports nothing.
 const MULTIROW_READY = displaySettled('multirow-display')
 // The run's own progress chip, which is the gate the `chromhmm` figure waits on
