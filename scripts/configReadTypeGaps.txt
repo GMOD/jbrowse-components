@@ -32,8 +32,8 @@
 #     taken from `pluginManager.getDisplayType(…).configSchema` poisons the
 #     whole schema through GetBase and has to be re-plumbed first.
 #
-# 119 unchecked in source, 170 in tests,
-# of 1149 total config accessor calls. The gate counts source only.
+# 119 unchecked in source, 169 in tests,
+# of 1153 total config accessor calls. The gate counts source only.
 
 packages/app-core/src/JbApi/jbApi.ts  (1)
   1134	readConfObject('adapter')
@@ -142,9 +142,9 @@ packages/embedded-core/src/EmbeddedSessionThemeMixin.ts  (2)
 packages/product-core/src/RootModel/createConfigModel.ts  (1)
   110	readConfObject('name')
 packages/product-core/src/Session/SessionTracks.ts  (3)
-  79	readConfObject('name')
-  80	readConfObject('aliases')
-  85	readConfObject('assemblyNames')
+  80	readConfObject('name')
+  81	readConfObject('aliases')
+  86	readConfObject('assemblyNames')
 packages/product-core/src/Session/Themes.ts  (5)
   48	getConf('extraThemes')
   66	getConf('theme')
@@ -166,12 +166,10 @@ packages/synteny-core/src/getSyntenyTracks.ts  (2)
   124	readConfObject('assemblyNames')
 packages/synteny-core/src/syntenyTrackRows.ts  (1)
   33	readConfObject('assemblyNames')
-packages/tree-sidebar/src/LayoutTreeSidebarMixin.test.ts  (1)  [test]
-  377	getConf('showTrea')
 packages/tree-sidebar/src/rowHeight/RowHeightMixin.test.ts  (1)  [test]
   163	getConf('rowHieght')
 packages/tree-sidebar/src/TreeSidebarMixin.test.ts  (1)  [test]
-  20	getConf('showTrea')
+  28	getConf('showTrea')
 packages/web-core/src/BaseWebSession/index.ts  (1)
   128	getConf('shareURL')
 packages/wiggle-core/src/WiggleScoreConfigMixin.test.ts  (3)  [test]
@@ -201,8 +199,8 @@ plugins/canvas/src/LinearBasicDisplay/model.ts  (1)
 plugins/canvas/src/LinearBasicDisplay/searchResultHighlight.ts  (1)
   51	readConfObject('trackId')
 plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts  (2)
-  314	readConfObject('rowGroups')
-  552	readConfObject('legend')
+  284	readConfObject('rowGroups')
+  496	readConfObject('legend')
 plugins/canvas/src/shared/CanvasFeatureGateMixin.test.ts  (1)  [test]
   20	getConf('maxFeatureScreenDensty')
 plugins/comparative-adapters/src/MCScanBlocksAdapter/configSchema.test.ts  (1)  [test]

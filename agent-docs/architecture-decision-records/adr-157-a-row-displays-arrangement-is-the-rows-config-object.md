@@ -277,11 +277,13 @@ one-shot trigger that clears itself.
   that lists its species; on one that discovers them from the blocks it applies
   as given, on the worker and in `sources` alike, since such a track lists no
   species before it reads, so a focus naming none the blocks hold draws no rows.
-- A clustered tree is session state now, where it was display state, so it
-  rides in every autosave and share link. hclust writes `name:length` at four
-  decimals, about 16 bytes a leaf and 10 an internal node, so a clustered
-  2,500-sample track carries about 65 KB of newick and 25 KB of `rows.domain`,
-  about 90 KB, and phased, with 5,000 quoted haplotype rows, about 210 KB. The
+- A clustered tree lives in the track's config now, where it was display
+  state. The session snapshot already carried display state into every
+  autosave and share link, so the size is not new, only now in config. hclust
+  writes `name:length` at four decimals, about 16 bytes a leaf and 10 an
+  internal node, so a clustered 2,500-sample track carries about 65 KB of
+  newick and 25 KB of `rows.domain`, about 90 KB, and phased, with 5,000 quoted
+  haplotype rows, about 230 KB. The
   session's `current` copy is rewritten 400 ms after each change under a 5 MB
   cap, which one such track takes 2–4 % of; a share link deflates it 2–3×.
 - A track the session owns has its `sessionTracks` entry as its base
