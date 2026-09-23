@@ -249,8 +249,8 @@ clade.
 The submenu names the locus a tree was computed over, since clustering reads the
 region in view. The run rotates its tree towards the current `rows.domain`, a
 declared order or an earlier reorder, so it composes with that order instead of
-replacing it. **Reset row order** restores the declared order and the guide tree
-with it.
+replacing it. **Reset row order** restores the declared order, and the guide
+tree with it where a rotation of the tree lists that order.
 
 The dialog's manual tab exports the same scores as a TSV with an R script, for
 clustering elsewhere and pasting the order back.
