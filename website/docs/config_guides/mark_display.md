@@ -473,7 +473,8 @@ one fetch per region:
 
 A mark outside its range is off entirely — it is not drawn, not hovered, and its
 values do not set the y-axis, the legend or the row count — so the axis at each
-zoom is the drawing mark's, captioned with that mark's `y` field.
+zoom is the drawing mark's. The caption is `scales.y.title` at every zoom, so a
+pair plotting two quantities takes a title that covers both, or none.
 
 ### A bin that follows the zoom
 
