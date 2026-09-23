@@ -5637,7 +5637,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rowColor",
-          "type": "MafRowColorConfigurationSchema",
+          "type": "RowColorConfigurationSchema",
           "subSlots": [
             {
               "name": "domain",

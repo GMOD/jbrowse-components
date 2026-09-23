@@ -6952,42 +6952,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
-    "MafRowColor": {
-      "title": "MafRowColor",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "domain": {
-          "description": "the species rows given a tint of their own, by row name.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "range": {
-          "description": "the CSS colour each row in domain takes, in the same order.",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/CssColor"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
     "LinearMafDisplaySlots": {
       "type": "object",
       "properties": {
@@ -7059,7 +7023,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/RowArrangement"
         },
         "rowColor": {
-          "$ref": "#/$defs/MafRowColor"
+          "$ref": "#/$defs/RowColor"
         },
         "showLegend": {
           "description": "show the color key for the active row rendering. Defaults to on.",
