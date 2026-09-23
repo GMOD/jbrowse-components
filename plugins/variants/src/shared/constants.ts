@@ -2,6 +2,16 @@ import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 
 export const GENOTYPE_SPLITTER = /[/|]/
 
+// The two displays over the multi-sample base model, by the `type` a snapshot
+// of either carries. A track's `displays` union probes every member's
+// preprocessor with every entry while it works out which display an entry is,
+// so a refusal that did not ask whose snapshot it had would fire on a MAF or
+// multi-row display's.
+export const VARIANT_DISPLAY_TYPES: ReadonlySet<string> = new Set([
+  'LinearMultiSampleVariantDisplay',
+  'LinearMultiSampleVariantMatrixDisplay',
+])
+
 export const f2 = 0.3
 
 // Feature-detail widget opened when a variant is clicked. Shared by the

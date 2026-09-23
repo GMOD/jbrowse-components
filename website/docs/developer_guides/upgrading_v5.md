@@ -386,8 +386,10 @@ one is named.
 | `subtreeFilter` display prop | `rows.kept` |
 | `domain` config slot | `rows.domain` |
 
-**None of it migrates**, and a session or config carrying the old spellings
-fails the load with a message naming `rows`.
+**None of it migrates.** A display snapshot carrying `layout`, `clusterTree`,
+`clusterProvenance` or `subtreeFilter`, or a display config carrying `domain`,
+fails the load with a message naming `rows`; a `domain` in a session spec's
+track entry is reported as a setting no display takes.
 
 ## The wiggle color is one `color` object
 

@@ -4,9 +4,12 @@ import { SubtreeFilterHint } from './SubtreeFilterHint.tsx'
 
 import type { TreeSidebarModel } from './types.ts'
 
+// The chip counts the rows the focus left on screen, not the names it holds:
+// in phased mode one sample name keeps two haplotype rows.
 function model(subtreeFilter?: string[]) {
   return {
     rowFocus: subtreeFilter,
+    sources: (subtreeFilter ?? []).map(name => ({ name })),
     setRowFocus: jest.fn(),
     setScrollTop: jest.fn(),
     treeAreaWidth: 80,

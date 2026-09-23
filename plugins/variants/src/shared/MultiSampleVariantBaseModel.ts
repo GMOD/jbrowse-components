@@ -50,6 +50,7 @@ import { sortSourcesAroundVariant } from './anchoredHaplotypeSort.ts'
 import {
   HIDDEN_ROW,
   INTERNAL_SOURCE_KEYS,
+  VARIANT_DISPLAY_TYPES,
   VARIANT_FEATURE_WIDGET,
 } from './constants.ts'
 import { buildSampleIndex } from './genotypeCodec.ts'
@@ -480,7 +481,9 @@ export default function MultiSampleVariantBaseModelF(
       // dropped is silent. Prefixed on the way in, since the property stores the
       // runtime form and the old one stored whatever the dialog was handed.
       .preProcessSnapshot((snap: Record<string, unknown>) => {
-        const retired = RETIRED_ARRANGEMENT_PROPS.filter(key => key in snap)
+        const retired = VARIANT_DISPLAY_TYPES.has(String(snap.type))
+          ? RETIRED_ARRANGEMENT_PROPS.filter(key => key in snap)
+          : []
         if (retired.length) {
           throw new Error(
             `${retired.join(', ')} on a ${String(snap.type)}: the row arrangement is the display config's \`rows\` object (domain, labels, tree, treeProvenance, kept) and its colours \`rowColor\`, written by the arrangement dialog, a clustering run or a session spec's \`rows\``,

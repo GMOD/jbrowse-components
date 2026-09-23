@@ -10,6 +10,7 @@ import {
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 
+import { VARIANT_DISPLAY_TYPES } from './constants.ts'
 import { variantRowColorSchema } from './variantRowColorConfigSchema.ts'
 
 /**
@@ -186,7 +187,10 @@ export default function sharedVariantConfigFactory() {
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
       preProcessSnapshot: snap => {
-        if (snap.domain !== undefined) {
+        if (
+          snap.domain !== undefined &&
+          VARIANT_DISPLAY_TYPES.has(String(snap.type))
+        ) {
           throw new Error(
             'domain on a multi-sample variant display is rows: { "domain": [...] }, the row order beside the labels, tree and focus',
           )

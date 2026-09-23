@@ -59,9 +59,9 @@ color the matrix rows on load (same metadata mechanism as the regular
 ```
 
 Taller matrix filtering rare variants (MAF < 5 %). Row order, per-row color
-and group labels come from the adapter's `samplesTsvLocation` above — the
-display's own `layout` holds the arrangement the user then drags into place,
-so it is session state rather than a config slot:
+and group labels come from the adapter's `samplesTsvLocation` above; the
+arrangement the user then drags into place is the display's `rows` and
+`rowColor`, config written as session edits:
 
 ```js
 {

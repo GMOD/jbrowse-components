@@ -40,8 +40,8 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs, GatedFetchArgs {
   // reorder, a regroup, or a clustering run leaves the cache key untouched and
   // re-uploads instead of re-downloading the VCF. `undefined` means "every
   // sample the data has", which is the common case; an explicit list is a
-  // subtree filter or a layout that drops rows, both of which genuinely change
-  // what has to be computed. Mirrors maf's `subtreeFilter`.
+  // row focus (`rows.kept`), which genuinely changes what has to be computed.
+  // Mirrors maf's `subtreeFilter`.
   sampleFilter?: string[]
   renderingMode: string
   referenceDrawingMode?: string
