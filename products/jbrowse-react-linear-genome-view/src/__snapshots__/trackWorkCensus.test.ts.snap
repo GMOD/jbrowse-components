@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`what a track edit and an add cost, 500 catalog and 50 session tracks 1`] = `
+"edit a shown catalog track     index 0  list 1  resolves 4  copies 0  woke c0  -
+edit a shown session track     index 0  list 1  resolves 4  copies 0  woke s0  -
+edit an unshown catalog track  index 0  list 1  resolves 4  copies 0  woke -   -
+edit an unshown session track  index 0  list 1  resolves 4  copies 0  woke -   -
+add a session track            index 1  list 1  resolves 4  copies 0  woke -   -
+show a track                   index 0  list 0  resolves 1  copies 1  woke -   CanvasFeatureGateClearOnNav 1, CanvasHitIndexes 1, CanvasResetScrollOnDisplayedRegions 1, CanvasYMorph 1, CanvasYMorphDeadline 1, ClearBlockingStateOnViewportChange 1, ClearByteEstimateOnNavOrTierSwap 1, ClearCoarseTierOnNav 1, DisplayedRegionsChange 1, FetchCoarseTier 1, FetchVisibleRegions 1, SettingsInvalidate 1
+reset a shown track            index 0  list 1  resolves 5  copies 0  woke c0  -"
+`;

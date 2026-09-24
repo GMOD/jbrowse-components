@@ -67,6 +67,39 @@ export function recomputeColumn(
   }
 }
 
+/** Calls to the method `key` of `target`, which stays callable as before. */
+export function callColumn(
+  target: object,
+  key: string,
+  label = key,
+): CensusColumn {
+  const host = target as Record<string, (...args: unknown[]) => unknown>
+  const original = host[key]!
+  const own = Object.hasOwn(target, key)
+  let calls = 0
+  host[key] = function (this: unknown, ...args: unknown[]) {
+    calls += 1
+    return original.apply(this, args)
+  }
+  return {
+    take: () => {
+      const cell = `${label} ${calls}`
+      calls = 0
+      return cell
+    },
+    reset: () => {
+      calls = 0
+    },
+    stop: () => {
+      if (own) {
+        host[key] = original
+      } else {
+        delete host[key]
+      }
+    },
+  }
+}
+
 /**
  * Arranger runs and the rows they were handed: `editableSources` is the
  * mixin's one `arrangeRows` call, so its recomputes are the arranger's runs.

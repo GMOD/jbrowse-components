@@ -11,6 +11,7 @@ export {
 } from './teardownNoise.ts'
 export { testAssembly, testAssemblyManager } from './testAssembly.ts'
 export {
+  callColumn,
   reactionColumn,
   recomputeColumn,
   runCensus,
