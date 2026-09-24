@@ -1,6 +1,7 @@
 import { getClip } from '@jbrowse/cigar-utils'
 import { getTag } from '@jbrowse/modifications-utils'
 
+import { PerBaseColumns } from '../features/alignedBaseWalk.ts'
 import {
   extractBisulfite,
   extractMethylation,
@@ -17,8 +18,6 @@ import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { isFillUnmarkedMode } from './types.ts'
 import { getStrand } from './util.ts'
 
-import type { PerBaseLetterEntry } from '../features/perBaseLetter/types.ts'
-import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
 import type { BaseLayer, ReadColorBy } from './types.ts'
 import type {
   FeatureData,
@@ -89,9 +88,9 @@ export function extractFeatureArrays<T extends FeatureData>(
   // Bisulfite only: informative C->T calls per position, the coverage bar's
   // denominator. Stays empty in every other color mode.
   const bisulfiteCallCounts = new Map<number, number>()
-  const perBaseQualities: PerBaseQualityEntry[] = []
+  const perBaseQualities = new PerBaseColumns()
   const isPerBaseQualityMode = baseLayer?.type === 'perBaseQuality'
-  const perBaseLetters: PerBaseLetterEntry[] = []
+  const perBaseLetters = new PerBaseColumns()
   const isPerBaseLetterMode = baseLayer?.type === 'perBaseLetter'
   const tagColorValues: string[] = []
   const nextPositions: number[] = []

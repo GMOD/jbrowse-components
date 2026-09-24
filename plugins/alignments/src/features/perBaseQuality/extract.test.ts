@@ -1,8 +1,8 @@
 import { parseCigar2 } from '@jbrowse/cigar-utils'
 
+import { PerBaseColumns } from '../alignedBaseWalk.ts'
 import { extractPerBaseQuality } from './extract.ts'
 
-import type { PerBaseQualityEntry } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 function makeFeature(opts: {
@@ -38,7 +38,7 @@ function run(opts: {
   regionEnd?: number
   binBp?: number
 }) {
-  const out: PerBaseQualityEntry[] = []
+  const out = new PerBaseColumns()
   extractPerBaseQuality(
     makeFeature(opts),
     0,
@@ -51,7 +51,8 @@ function run(opts: {
     opts.binBp ?? 1,
     out,
   )
-  return out.map(e => [e.position, e.score])
+  const { positions, values } = out.finish()
+  return [...positions].map((position, i) => [position, values[i]])
 }
 
 describe('extractPerBaseQuality', () => {
@@ -148,7 +149,7 @@ describe('extractPerBaseQuality', () => {
   })
 
   test('missing NUMERIC_QUAL: emits nothing', () => {
-    const out: PerBaseQualityEntry[] = []
+    const out = new PerBaseColumns()
     const feature = {
       id: () => 'f',
       get: () => undefined,
@@ -160,7 +161,7 @@ describe('extractPerBaseQuality', () => {
       1,
       out,
     )
-    expect(out).toEqual([])
+    expect(out.length).toBe(0)
   })
 })
 

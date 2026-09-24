@@ -3,7 +3,7 @@ import {
   packedCigarOps,
 } from '../alignedBaseWalk.ts'
 
-import type { PerBaseLetterEntry } from './types.ts'
+import type { PerBaseColumns } from '../alignedBaseWalk.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 // Walk CIGAR + read SEQ, emit one entry per sampled ref-aligned base inside the
@@ -15,7 +15,7 @@ export function extractPerBaseLetter(
   readIndex: number,
   region: Region,
   binBp: number,
-  out: PerBaseLetterEntry[],
+  out: PerBaseColumns,
 ) {
   const seq = feature.get('seq') as string | undefined
   const cigarOps = packedCigarOps(feature)
@@ -27,13 +27,9 @@ export function extractPerBaseLetter(
       region,
       binBp,
       (position, q) => {
-        out.push({
-          readIndex,
-          position,
-          // Uppercase ASCII so lowercase soft-masked bases hit the same color
-          // switch as the GPU/Canvas base palette (A/C/G/T, else N).
-          base: seq.charCodeAt(q) & ~0x20,
-        })
+        // Uppercase ASCII so lowercase soft-masked bases hit the same color
+        // switch as the GPU/Canvas base palette (A/C/G/T, else N).
+        out.push(readIndex, position, seq.charCodeAt(q) & ~0x20)
       },
     )
   }

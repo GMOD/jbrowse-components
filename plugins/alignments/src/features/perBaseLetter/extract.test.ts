@@ -1,8 +1,8 @@
 import { parseCigar2 } from '@jbrowse/cigar-utils'
 
+import { PerBaseColumns } from '../alignedBaseWalk.ts'
 import { extractPerBaseLetter } from './extract.ts'
 
-import type { PerBaseLetterEntry } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // `numericCigar: false` models an adapter that carries only the text CIGAR —
@@ -43,7 +43,7 @@ function run(opts: {
   numericCigar?: boolean
   binBp?: number
 }) {
-  const out: PerBaseLetterEntry[] = []
+  const out = new PerBaseColumns()
   extractPerBaseLetter(
     makeFeature(opts),
     0,
@@ -57,7 +57,11 @@ function run(opts: {
     out,
   )
   // decode base code back to a letter for readable assertions
-  return out.map(e => [e.position, String.fromCharCode(e.base)])
+  const { positions, values } = out.finish()
+  return [...positions].map((position, i) => [
+    position,
+    String.fromCharCode(values[i]!),
+  ])
 }
 
 describe('extractPerBaseLetter', () => {
@@ -155,7 +159,7 @@ describe('extractPerBaseLetter', () => {
   })
 
   test('missing seq: emits nothing', () => {
-    const out: PerBaseLetterEntry[] = []
+    const out = new PerBaseColumns()
     const feature = {
       id: () => 'f',
       get: () => undefined,
@@ -167,7 +171,7 @@ describe('extractPerBaseLetter', () => {
       1,
       out,
     )
-    expect(out).toEqual([])
+    expect(out.length).toBe(0)
   })
 
   test('binning samples the first base of each window', () => {

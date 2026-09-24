@@ -5,9 +5,3 @@ export interface PerBaseQualityUploadData {
   perBaseQualYs: Uint16Array
   perBaseQualScores: Uint8Array
 }
-
-export interface PerBaseQualityEntry {
-  readIndex: number
-  position: number
-  score: number
-}

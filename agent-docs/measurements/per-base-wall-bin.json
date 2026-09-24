@@ -1,11 +1,11 @@
 {
   "id": "per-base-wall-bin",
   "published": false,
-  "measured": "2026-08-24",
+  "measured": "2026-09-23",
   "source": {
     "kind": "bench",
-    "repro": "node --expose-gc plugins/alignments/benches/perBaseWall.probe.ts, on a 16-core machine at load 6.5. Drives the shipped extractPerBaseQuality over plugins/alignments/benches/pacbio_hg002.bam at 9:129,985,800-131,013,572 \u2014 2,296 real PacBio CCS reads, ~1.03 Mb, about 33x depth \u2014 once per zoom tier, at that tier's subPixelBinBp. The region is the fixture's own span, so a 1000px canvas showing it sits at ~1028 bp/px \u2014 the bottom row is the zoom this fixture is actually looked at.",
-    "notes": "Entry counts and heap are deterministic and repeat exactly; ms moves with machine load (the same run at load 14 read 7,332ms on the top row against 2,026ms here), so read the ratio, not the absolute. heapMB is what the entry array RETAINS once built, measured as a heapUsed delta across a forced GC \u2014 the peak is higher, since a growable array pays a doubling copy that holds both stores at once. --depth=8, which repeats the fixture to the ~260x a deep short-read pileup reaches, does not produce a top row at all: binBp=1 OOMs the process before it packs a byte."
+    "repro": "node --expose-gc plugins/alignments/benches/perBaseWall.probe.ts, on a 16-core machine at load 45. Drives the shipped extractPerBaseQuality, writing PerBaseColumns, over plugins/alignments/benches/pacbio_hg002.bam at 9:129,985,800-131,013,572 — 2,296 real PacBio CCS reads, ~1.03 Mb, about 33x depth — once per zoom tier, at that tier's subPixelBinBp. The region is the fixture's own span, so a 1000px canvas showing it sits at ~1028 bp/px — the bottom row is the zoom this fixture is actually looked at.",
+    "notes": "Entry counts and retained memory are deterministic and repeat exactly; ms moves with machine load, and this run was at load 45, so read the ratio, not the absolute. heapMB is what the columns RETAIN once built (heapUsed plus arrayBuffers across a forced GC); the peak is higher by the doubling copy that holds two stores at once. The object-per-entry extract this replaced retained 2033.5 MB on the top row and 6.7 MB on the bottom, from the same entry counts."
   },
   "columns": [
     {
@@ -44,8 +44,8 @@
         "bpPerPx": 2,
         "binBp": 1,
         "entries": 30565003,
-        "ms": 2026,
-        "heapMB": 2033.5
+        "ms": 1162,
+        "heapMB": 298.8
       }
     },
     {
@@ -53,8 +53,8 @@
         "bpPerPx": 4,
         "binBp": 2,
         "entries": 15282758,
-        "ms": 1658,
-        "heapMB": 1269.4
+        "ms": 688,
+        "heapMB": 151.3
       }
     },
     {
@@ -62,8 +62,8 @@
         "bpPerPx": 8,
         "binBp": 4,
         "entries": 7641315,
-        "ms": 489,
-        "heapMB": 680.4
+        "ms": 366,
+        "heapMB": 75.9
       }
     },
     {
@@ -71,8 +71,8 @@
         "bpPerPx": 32,
         "binBp": 16,
         "entries": 1910260,
-        "ms": 106,
-        "heapMB": 149.1
+        "ms": 167,
+        "heapMB": 19.2
       }
     },
     {
@@ -80,8 +80,8 @@
         "bpPerPx": 128,
         "binBp": 64,
         "entries": 477700,
-        "ms": 21,
-        "heapMB": 46.0
+        "ms": 61,
+        "heapMB": 11.8
       }
     },
     {
@@ -89,8 +89,8 @@
         "bpPerPx": 512,
         "binBp": 256,
         "entries": 119303,
-        "ms": 12,
-        "heapMB": 12.6
+        "ms": 49,
+        "heapMB": 4.1
       }
     },
     {
@@ -98,8 +98,8 @@
         "bpPerPx": 1024,
         "binBp": 512,
         "entries": 59624,
-        "ms": 8,
-        "heapMB": 6.7
+        "ms": 15,
+        "heapMB": 2.2
       },
       "emphasize": [
         "entries",

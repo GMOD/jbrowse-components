@@ -1,19 +1,10 @@
-import type { PerBaseLetterEntry } from './types.ts'
+import type { PerBaseColumns } from '../alignedBaseWalk.ts'
 
-export function buildPerBaseLetterArrays(entries: PerBaseLetterEntry[]) {
-  const n = entries.length
-  const perBaseLetterPositions = new Uint32Array(n)
-  const perBaseLetterBases = new Uint8Array(n)
-  const perBaseLetterReadIndices = new Uint32Array(n)
-  for (let i = 0; i < n; i++) {
-    const e = entries[i]!
-    perBaseLetterPositions[i] = e.position
-    perBaseLetterBases[i] = e.base
-    perBaseLetterReadIndices[i] = e.readIndex
-  }
+export function buildPerBaseLetterArrays(columns: PerBaseColumns) {
+  const { positions, values, readIndices } = columns.finish()
   return {
-    perBaseLetterPositions,
-    perBaseLetterBases,
-    perBaseLetterReadIndices,
+    perBaseLetterPositions: positions,
+    perBaseLetterBases: values,
+    perBaseLetterReadIndices: readIndices,
   }
 }

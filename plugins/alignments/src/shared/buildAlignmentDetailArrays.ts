@@ -9,8 +9,7 @@ import { buildSegmentArrays } from '../features/read/buildSegments.ts'
 import { buildSoftclipBaseArrays } from '../features/softclipBases/buildArrays.ts'
 import { buildInterbaseArrays } from './buildInterbaseArrays.ts'
 
-import type { PerBaseLetterEntry } from '../features/perBaseLetter/types.ts'
-import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
+import type { PerBaseColumns } from '../features/alignedBaseWalk.ts'
 import type {
   FeatureData,
   GapData,
@@ -52,8 +51,8 @@ export async function buildAlignmentDetailArrays({
   softclips: SoftclipData[]
   hardclips: HardclipData[]
   modifications: ModificationEntry[]
-  perBaseQualities: PerBaseQualityEntry[]
-  perBaseLetters: PerBaseLetterEntry[]
+  perBaseQualities: PerBaseColumns
+  perBaseLetters: PerBaseColumns
   showSoftClipping?: boolean
   statusCallback: StatusCallback | undefined
 }) {

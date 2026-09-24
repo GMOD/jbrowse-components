@@ -15,12 +15,13 @@
 // `BamSlightlyLazyFeature` — node's type stripping refuses that file's
 // parameter properties. The wall is the `out.push` inside the CIGAR walk and
 // nothing on either of those paths touches it, so the count is exact and the
-// heap is the wall's own.
+// retained memory is the wall's own.
 //
 // WHAT IT SAYS: agent-docs/measurements/per-base-wall-bin.json. At the ~1024
 // bp/px this fixture's own span is viewed at, the bin takes 30.5M entries and
-// 2.0 GB down to 59.6k and 6.7 MB. --depth=8, the ~260x a deep short-read
-// pileup reaches, does not finish at all: it OOMs before it packs a byte.
+// 299 MB of columns down to 59.6k and 2.2 MB. The object extract the columns
+// replaced retained 2.0 GB on the top row, and at --depth=8 it OOMed before it
+// packed a byte.
 
 import { join } from 'node:path'
 
@@ -33,6 +34,9 @@ const REFNAME = '9'
 
 const { extractPerBaseQuality } = await import(
   join(REPO, 'plugins/alignments/src/features/perBaseQuality/extract.ts')
+)
+const { PerBaseColumns } = await import(
+  join(REPO, 'plugins/alignments/src/features/alignedBaseWalk.ts')
 )
 const { subPixelBinBp } = await import(
   join(REPO, 'packages/display-kit/src/subPixelBinBp.ts')
@@ -80,8 +84,12 @@ const region = { refName: REFNAME, start: lo, end: hi, assemblyName: 'hg002' }
 function run(binBp: number) {
   globalThis.gc?.()
   globalThis.gc?.()
-  const before = process.memoryUsage().heapUsed
-  const out: unknown[] = []
+  const retained = () => {
+    const m = process.memoryUsage()
+    return m.heapUsed + m.arrayBuffers
+  }
+  const before = retained()
+  const out = new PerBaseColumns()
   const t = performance.now()
   try {
     for (const [i, f] of features.entries()) {
@@ -91,7 +99,7 @@ function run(binBp: number) {
     return { n: out.length, ms: performance.now() - t, peak: 0, err: e }
   }
   const ms = performance.now() - t
-  const peak = process.memoryUsage().heapUsed - before
+  const peak = retained() - before
   return { n: out.length, ms, peak, err: undefined }
 }
 

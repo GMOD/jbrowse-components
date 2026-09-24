@@ -3,7 +3,7 @@ import {
   packedCigarOps,
 } from '../alignedBaseWalk.ts'
 
-import type { PerBaseQualityEntry } from './types.ts'
+import type { PerBaseColumns } from '../alignedBaseWalk.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 // Walk CIGAR + NUMERIC_QUAL, emit one entry per sampled ref-aligned base inside
@@ -14,7 +14,7 @@ export function extractPerBaseQuality(
   readIndex: number,
   region: Region,
   binBp: number,
-  out: PerBaseQualityEntry[],
+  out: PerBaseColumns,
 ) {
   // Both adapters store scores as a genomic-forward Uint8Array (BAM: qual
   // subarray, CRAM: record.qualityScores), null when quality is absent.
@@ -28,7 +28,7 @@ export function extractPerBaseQuality(
       region,
       binBp,
       (position, q) => {
-        out.push({ readIndex, position, score: scores[q]! })
+        out.push(readIndex, position, scores[q]!)
       },
     )
   }

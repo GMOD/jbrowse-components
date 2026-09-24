@@ -82,3 +82,52 @@ export function forEachAlignedBaseInRegion(
     }
   }
 }
+
+const MIN_CAPACITY = 1024
+
+/**
+ * The per-base wall as columns: a position, one byte (a quality score or a
+ * base) and a read index per sampled base, written straight into typed arrays
+ * that grow by doubling. An object per entry cost ~66 bytes of heap against
+ * these 9 (agent-docs/reference/PER_BASE_SUBPIXEL_BIN.md), and the wall is the
+ * largest thing the worker builds.
+ */
+export class PerBaseColumns {
+  length = 0
+  private positions = new Uint32Array(0)
+  private values = new Uint8Array(0)
+  private readIndices = new Uint32Array(0)
+
+  push(readIndex: number, position: number, value: number) {
+    if (this.length === this.positions.length) {
+      this.grow()
+    }
+    this.positions[this.length] = position
+    this.values[this.length] = value
+    this.readIndices[this.length] = readIndex
+    this.length++
+  }
+
+  private grow() {
+    const capacity = Math.max(MIN_CAPACITY, this.positions.length * 2)
+    const positions = new Uint32Array(capacity)
+    const values = new Uint8Array(capacity)
+    const readIndices = new Uint32Array(capacity)
+    positions.set(this.positions)
+    values.set(this.values)
+    readIndices.set(this.readIndices)
+    this.positions = positions
+    this.values = values
+    this.readIndices = readIndices
+  }
+
+  // Exact-length copies, since each ships as a transferable whose whole buffer
+  // crosses to the main thread.
+  finish() {
+    return {
+      positions: this.positions.slice(0, this.length),
+      values: this.values.slice(0, this.length),
+      readIndices: this.readIndices.slice(0, this.length),
+    }
+  }
+}

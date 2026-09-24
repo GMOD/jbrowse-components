@@ -6,9 +6,3 @@ export interface PerBaseLetterUploadData {
   perBaseLetterYs: Uint16Array
   perBaseLetterBases: Uint8Array
 }
-
-export interface PerBaseLetterEntry {
-  readIndex: number
-  position: number
-  base: number
-}

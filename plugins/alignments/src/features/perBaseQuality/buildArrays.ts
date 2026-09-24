@@ -1,19 +1,10 @@
-import type { PerBaseQualityEntry } from './types.ts'
+import type { PerBaseColumns } from '../alignedBaseWalk.ts'
 
-export function buildPerBaseQualityArrays(entries: PerBaseQualityEntry[]) {
-  const n = entries.length
-  const perBaseQualPositions = new Uint32Array(n)
-  const perBaseQualScores = new Uint8Array(n)
-  const perBaseQualReadIndices = new Uint32Array(n)
-  for (let i = 0; i < n; i++) {
-    const e = entries[i]!
-    perBaseQualPositions[i] = e.position
-    perBaseQualScores[i] = e.score
-    perBaseQualReadIndices[i] = e.readIndex
-  }
+export function buildPerBaseQualityArrays(columns: PerBaseColumns) {
+  const { positions, values, readIndices } = columns.finish()
   return {
-    perBaseQualPositions,
-    perBaseQualScores,
-    perBaseQualReadIndices,
+    perBaseQualPositions: positions,
+    perBaseQualScores: values,
+    perBaseQualReadIndices: readIndices,
   }
 }
