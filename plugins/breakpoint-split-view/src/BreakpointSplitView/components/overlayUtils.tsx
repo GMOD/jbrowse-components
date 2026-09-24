@@ -1,3 +1,5 @@
+import { Fragment } from 'react'
+
 import {
   assembleLocString,
   getSession,
@@ -257,6 +259,8 @@ interface OverlayPathsProps extends OverlayProps {
   render: (ctx: OverlayContext) => PathSpec[]
 }
 
+const HIT_STROKE_WIDTH = 10
+
 // Every overlay kind draws the same thing: a set of hoverable curves, the boxes
 // the hovered one asks for, and its tooltip. Only what goes into a PathSpec
 // differs, which is what `render` supplies — the alignments and the variant
@@ -290,6 +294,8 @@ export const OverlayPaths = observer(function OverlayPaths({
   const specs = render({ session, match, assemblies, views, ...overlayData })
   const hovered = specs.find(spec => spec.id === hoveredId)
   const emphasis = hovered && (hovered.emphasisGroup ?? hovered.id)
+  const isEmphasized = (spec: PathSpec) =>
+    (spec.emphasisGroup ?? spec.id) === emphasis
   return (
     <g
       stroke={stroke}
@@ -305,28 +311,34 @@ export const OverlayPaths = observer(function OverlayPaths({
           fill={theme.palette.featureHoverStrong}
         />
       ))}
-      {specs.map(spec => (
-        <path
-          key={spec.id}
-          d={spec.path}
-          data-testid={pathTestId}
-          pointerEvents={interactiveOverlay ? 'auto' : undefined}
-          strokeWidth={
-            (spec.emphasisGroup ?? spec.id) === emphasis
-              ? hoverStrokeWidth
-              : strokeWidth
-          }
-          strokeDasharray={spec.strokeDasharray}
-          {...(spec.stroke ? getStrokeProps(spec.stroke) : undefined)}
-          onClick={spec.openWidget}
-          onMouseOver={() => {
-            model.setHoveredOverlay({ trackId, id: spec.id })
-          }}
-          onMouseOut={() => {
-            model.setHoveredOverlay(undefined)
-          }}
-        />
-      ))}
+      {specs
+        .toSorted((a, b) => Number(isEmphasized(a)) - Number(isEmphasized(b)))
+        .map(spec => (
+          <Fragment key={spec.id}>
+            <path
+              d={spec.path}
+              data-testid={pathTestId}
+              strokeWidth={isEmphasized(spec) ? hoverStrokeWidth : strokeWidth}
+              strokeDasharray={spec.strokeDasharray}
+              {...(spec.stroke ? getStrokeProps(spec.stroke) : undefined)}
+            />
+            {yOffsetsOverride === undefined ? (
+              <path
+                d={spec.path}
+                stroke="transparent"
+                strokeWidth={Math.max(hoverStrokeWidth, HIT_STROKE_WIDTH)}
+                pointerEvents={interactiveOverlay ? 'stroke' : undefined}
+                onClick={spec.openWidget}
+                onMouseOver={() => {
+                  model.setHoveredOverlay({ trackId, id: spec.id })
+                }}
+                onMouseOut={() => {
+                  model.setHoveredOverlay(undefined)
+                }}
+              />
+            ) : null}
+          </Fragment>
+        ))}
       {hovered?.tooltip ? (
         <BreakpointTooltip contents={hovered.tooltip()} />
       ) : null}
