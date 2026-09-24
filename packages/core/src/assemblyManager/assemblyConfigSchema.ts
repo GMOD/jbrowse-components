@@ -181,8 +181,7 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
        * ```
        */
       geneticCodesLocation: {
-        type: 'fileLocation',
-        defaultValue: { uri: '', locationType: 'UriLocation' },
+        type: 'maybeFileLocation',
         description:
           'Optional TSV file of refName<TAB>geneticCodeId, an alternative to inlining the geneticCodes map',
       },

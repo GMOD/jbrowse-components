@@ -383,6 +383,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     boolean: ['BooleanOrJexl', { type: 'boolean' }],
     maybeBoolean: ['BooleanOrJexl', { type: 'boolean' }],
     fileLocation: ['FileLocationOrJexl', ref('FileLocation')],
+    maybeFileLocation: ['FileLocationOrJexl', ref('FileLocation')],
     stringArray: [
       'StringArrayOrJexl',
       { type: 'array', items: { type: 'string' } },
@@ -429,6 +430,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       case 'maybeNumber':
         return { type: 'number' }
       case 'fileLocation':
+      case 'maybeFileLocation':
         return ref('FileLocation')
       default:
         throw new Error(`no JSON Schema mapping for slot type "${type}"`)

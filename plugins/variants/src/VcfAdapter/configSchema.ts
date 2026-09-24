@@ -50,11 +50,7 @@ const VcfAdapter = ConfigurationSchema(
      * color their sample rows by.
      */
     samplesTsvLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/samples.tsv',
-        locationType: 'UriLocation',
-      },
+      type: 'maybeFileLocation',
     },
   },
   {

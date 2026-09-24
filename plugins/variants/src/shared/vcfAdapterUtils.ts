@@ -17,26 +17,19 @@ import type { Feature } from '@jbrowse/core/util'
 import type { FileLocation } from '@jbrowse/core/util/types'
 import type { Observer } from 'rxjs'
 
-// The samplesTsvLocation schema default; an unset slot still carries it. Only
-// the empty and default uri mean "no metadata file"; a localPath/blob location
-// has no uri and is treated as configured (matches openLocation).
-const SAMPLES_TSV_DEFAULT_URI = '/path/to/samples.tsv'
-
 // Sample list for a VCF: the metadata TSV when one is configured, otherwise the
-// bare sample names from the VCF header. Shared by all three VCF adapters so the
-// unset-slot detection can't drift between them.
+// bare sample names from the VCF header.
 //
 // Returns the warnings alongside the sources rather than logging them, because
 // the only console this runs at is the worker's. `MultiSampleVariantGetSources`
 // carries them to the display, which reports them; a metadata file matching no
 // VCF sample at all throws from `parseSamplesTsv` instead.
 export async function getVcfSources(
-  samplesTsvLocation: FileLocation,
+  samplesTsvLocation: FileLocation | undefined,
   parser: VcfParser,
   pluginManager: PluginManager | undefined,
 ): Promise<SamplesTsvResult> {
-  const uri = 'uri' in samplesTsvLocation ? samplesTsvLocation.uri : undefined
-  if (uri === '' || uri === SAMPLES_TSV_DEFAULT_URI) {
+  if (!samplesTsvLocation) {
     return { sources: parser.samples.map(name => ({ name })), warnings: [] }
   }
   const txt = await fetchAndMaybeUnzipText(
@@ -45,7 +38,9 @@ export async function getVcfSources(
   return parseSamplesTsv(
     txt,
     parser.samples,
-    uri === undefined ? getFileName(samplesTsvLocation) : uri,
+    'uri' in samplesTsvLocation
+      ? samplesTsvLocation.uri
+      : getFileName(samplesTsvLocation),
   )
 }
 

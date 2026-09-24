@@ -6,7 +6,7 @@ import { FileLocation } from '../util/types/mst.ts'
 import { isCallbackValue } from './slotValueUtils.ts'
 
 import type { JexlInstance } from '../util/jexlStrings.ts'
-import type { IAnyType } from '@jbrowse/mobx-state-tree'
+import type { IAnyType, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 interface SlotTypeSpec {
   /** MST type of the slot's value */
@@ -42,6 +42,11 @@ const CssColorEntryType = types.refinement(
   isCssColor,
   notAColor,
 )
+
+const MaybeFileLocation = types.snapshotProcessor(types.maybe(FileLocation), {
+  preProcessor: (snap: SnapshotIn<typeof FileLocation> | undefined) =>
+    snap && 'uri' in snap && snap.uri === '' ? undefined : snap,
+})
 
 // Single source of truth for the builtin slot type names, pairing each with its
 // MST value type and its editor fallback default. Keeping model + fallback in
@@ -90,6 +95,10 @@ const slotTypes = {
       locationType: 'UriLocation',
     },
   },
+  // for a sidecar the adapter works without: unset means no file is
+  // configured, and so does the `{ uri: '' }` a cleared URL field in the
+  // config editor writes
+  maybeFileLocation: { model: MaybeFileLocation },
   frozen: { model: types.frozen(), fallbackDefault: {} },
 } satisfies Record<string, SlotTypeSpec>
 

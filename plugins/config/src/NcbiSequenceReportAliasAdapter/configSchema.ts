@@ -71,11 +71,7 @@ const NcbiSequenceReportAliasAdapterConfigSchema = ConfigurationSchema(
      * file aliases them all without hand-writing a chromAlias table.
      */
     location: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my/sequence_report.tsv',
-        locationType: 'UriLocation',
-      },
+      type: 'maybeFileLocation',
     },
 
     /**

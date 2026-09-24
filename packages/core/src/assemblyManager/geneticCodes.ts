@@ -1,4 +1,3 @@
-import { isBlank } from '../util/assemblyConfigUtils.ts'
 import { fetchAndMaybeUnzipText } from '../util/fetchAndMaybeUnzip.ts'
 import { parseTranslTable } from '../util/geneticCodes.ts'
 import { openLocation } from '../util/io/index.ts'
@@ -41,7 +40,7 @@ export function lookupGeneticCodeId(
 }
 
 // Loads an optional `refName<TAB>geneticCodeId` TSV (# comments allowed) into a
-// map; an empty location yields {} so the inline geneticCodes slot is the only
+// map; no location yields {} so the inline geneticCodes slot is the only
 // source. Kept as a plain file read rather than a pluggable adapter because the
 // mapping is trivial and format-fixed.
 export async function getGeneticCodesFromFile({
@@ -54,9 +53,7 @@ export async function getGeneticCodesFromFile({
   opts?: BaseOptions
 }): Promise<Record<string, number>> {
   const map: Record<string, number> = {}
-  // skip the config slot's default blank location ({ uri: '' }); a real file
-  // yields the refName -> geneticCodeId map
-  if (location && !isBlank(location)) {
+  if (location) {
     const text = await fetchAndMaybeUnzipText(
       openLocation(location, pluginManager),
       opts,

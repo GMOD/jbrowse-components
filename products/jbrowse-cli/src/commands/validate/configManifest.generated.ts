@@ -12,7 +12,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "cytobandLocation",
-          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -409,7 +409,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "location",
-          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         },
         {
           "name": "refNameColumn",
@@ -433,7 +433,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "location",
-          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         },
         {
           "name": "useNameOverride",
@@ -621,7 +621,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "chromSizesLocation",
-          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -646,7 +646,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "metadataLocation",
-          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         },
         {
           "name": "gziLocation",
@@ -690,7 +690,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "metadataLocation",
-          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -714,7 +714,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "metadataLocation",
-          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -841,7 +841,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "samplesTsvLocation",
-          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -875,7 +875,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "samplesTsvLocation",
-          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         },
         {
           "name": "fetchSizeLimit",
@@ -912,7 +912,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "samplesTsvLocation",
-          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         },
         {
           "name": "fetchSizeLimit",
@@ -1062,7 +1062,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "nhLocation",
-          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         },
         {
           "name": "summaryAdapter",
@@ -1099,7 +1099,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "nhLocation",
-          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         },
         {
           "name": "summaryAdapter",
@@ -1132,7 +1132,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "nhLocation",
-          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         },
         {
           "name": "summaryAdapter",
@@ -1179,7 +1179,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "nhLocation",
-          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         },
         {
           "name": "summaryAdapter",

@@ -41,19 +41,19 @@ exports[`every registered schema slot default 1`] = `
     "faiLocation": "fileLocation = {"uri":"/path/to/seq.fa.gz.fai","locationType":"UriLocation"}",
     "fastaLocation": "fileLocation = {"uri":"/path/to/seq.fa.gz","locationType":"UriLocation"}",
     "gziLocation": "fileLocation = {"uri":"/path/to/seq.fa.gz.gzi","locationType":"UriLocation"}",
-    "metadataLocation": "fileLocation = {"uri":"/path/to/fa.metadata.yaml","locationType":"UriLocation"}",
+    "metadataLocation": "maybeFileLocation = undefined",
   },
   "adapter: BgzipMafAdapter": {
     "annotationAdapter": "maybeFrozen = undefined",
     "mafGzLocation": "fileLocation = {"uri":"/path/to/my.maf.gz","locationType":"UriLocation"}",
-    "nhLocation": "fileLocation = {"uri":"/path/to/my.nh","locationType":"UriLocation"}",
+    "nhLocation": "maybeFileLocation = undefined",
     "samples": "frozen = []",
     "summaryAdapter": "maybeFrozen = undefined",
     "taiLocation": "fileLocation = {"uri":"/path/to/my.maf.gz.tai","locationType":"UriLocation"}",
   },
   "adapter: BgzipTaffyAdapter": {
     "annotationAdapter": "maybeFrozen = undefined",
-    "nhLocation": "fileLocation = {"uri":"/path/to/my.nh","locationType":"UriLocation"}",
+    "nhLocation": "maybeFileLocation = undefined",
     "samples": "frozen = []",
     "summaryAdapter": "maybeFrozen = undefined",
     "tafGzLocation": "fileLocation = {"uri":"/path/to/my.taf.gz","locationType":"UriLocation"}",
@@ -69,7 +69,7 @@ exports[`every registered schema slot default 1`] = `
   "adapter: BigMafAdapter": {
     "annotationAdapter": "maybeFrozen = undefined",
     "bigBedLocation": "fileLocation = {"uri":"/path/to/my.bb","locationType":"UriLocation"}",
-    "nhLocation": "fileLocation = {"uri":"/path/to/my.nh","locationType":"UriLocation"}",
+    "nhLocation": "maybeFileLocation = undefined",
     "samples": "frozen = []",
     "summaryAdapter": "maybeFrozen = undefined",
   },
@@ -115,7 +115,7 @@ exports[`every registered schema slot default 1`] = `
     "sequenceAdapter": "maybeFrozen = undefined",
   },
   "adapter: CytobandAdapter": {
-    "cytobandLocation": "fileLocation = {"uri":"/path/to/cytoband.txt.gz"}",
+    "cytobandLocation": "maybeFileLocation = undefined",
   },
   "adapter: DeltaAdapter": {
     "assemblyNames": "stringArray = []",
@@ -180,7 +180,7 @@ exports[`every registered schema slot default 1`] = `
   "adapter: IndexedFastaAdapter": {
     "faiLocation": "fileLocation = {"uri":"/path/to/seq.fa.fai","locationType":"UriLocation"}",
     "fastaLocation": "fileLocation = {"uri":"/path/to/seq.fa","locationType":"UriLocation"}",
-    "metadataLocation": "fileLocation = {"uri":"/path/to/fa.metadata.yaml","locationType":"UriLocation"}",
+    "metadataLocation": "maybeFileLocation = undefined",
   },
   "adapter: MCScanAnchorsAdapter": {
     "assemblyNames": "stringArray = []",
@@ -204,7 +204,7 @@ exports[`every registered schema slot default 1`] = `
   "adapter: MafTabixAdapter": {
     "annotationAdapter": "maybeFrozen = undefined",
     "bedGzLocation": "fileLocation = {"uri":"/path/to/my.bed.gz","locationType":"UriLocation"}",
-    "nhLocation": "fileLocation = {"uri":"/path/to/my.nh","locationType":"UriLocation"}",
+    "nhLocation": "maybeFileLocation = undefined",
     "refAssemblyName": "string = """,
     "samples": "frozen = []",
     "summaryAdapter": "maybeFrozen = undefined",
@@ -246,7 +246,7 @@ exports[`every registered schema slot default 1`] = `
     "rootUrlTemplate": "fileLocation = {"uri":"/path/to/my/{refseq}/trackData.json","locationType":"UriLocation"}",
   },
   "adapter: NcbiSequenceReportAliasAdapter": {
-    "location": "fileLocation = {"uri":"/path/to/my/sequence_report.tsv","locationType":"UriLocation"}",
+    "location": "maybeFileLocation = undefined",
     "useNameOverride": "boolean = true",
   },
   "adapter: PAFAdapter": {
@@ -269,7 +269,7 @@ exports[`every registered schema slot default 1`] = `
     "ldLocation": "fileLocation = {"uri":"/path/to/plink.ld.gz","locationType":"UriLocation"}",
   },
   "adapter: RefNameAliasAdapter": {
-    "location": "fileLocation = {"uri":"/path/to/my/aliases.txt","locationType":"UriLocation"}",
+    "location": "maybeFileLocation = undefined",
     "refNameColumn": "number = 0",
     "refNameColumnHeaderName": "string = """,
   },
@@ -296,29 +296,29 @@ exports[`every registered schema slot default 1`] = `
     "fetchSizeLimit": "number = 5000000",
     "indexLocationMap": "frozen = {}",
     "indexType": "stringEnum = "TBI" of ["TBI","CSI"]",
-    "samplesTsvLocation": "fileLocation = {"uri":"/path/to/samples.tsv","locationType":"UriLocation"}",
+    "samplesTsvLocation": "maybeFileLocation = undefined",
     "vcfGzLocationMap": "frozen = {}",
   },
   "adapter: StarFusionAdapter": {
     "starFusionLocation": "fileLocation = {"uri":"/path/to/star-fusion.fusion_predictions.tsv","locationType":"UriLocation"}",
   },
   "adapter: TwoBitAdapter": {
-    "chromSizesLocation": "fileLocation = {"uri":"/path/to/default.chrom.sizes","locationType":"UriLocation"}",
+    "chromSizesLocation": "maybeFileLocation = undefined",
     "twoBitLocation": "fileLocation = {"uri":"/path/to/my.2bit","locationType":"UriLocation"}",
   },
   "adapter: UnindexedFastaAdapter": {
     "fastaLocation": "fileLocation = {"uri":"/path/to/seq.fa","locationType":"UriLocation"}",
-    "metadataLocation": "fileLocation = {"uri":"/path/to/fa.metadata.yaml","locationType":"UriLocation"}",
+    "metadataLocation": "maybeFileLocation = undefined",
     "rewriteRefNames": "string = """,
   },
   "adapter: VcfAdapter": {
-    "samplesTsvLocation": "fileLocation = {"uri":"/path/to/samples.tsv","locationType":"UriLocation"}",
+    "samplesTsvLocation": "maybeFileLocation = undefined",
     "vcfLocation": "fileLocation = {"uri":"/path/to/my.vcf","locationType":"UriLocation"}",
   },
   "adapter: VcfTabixAdapter": {
     "densityAdapter": "maybeFrozen = undefined",
     "fetchSizeLimit": "number = 5000000",
-    "samplesTsvLocation": "fileLocation = {"uri":"/path/to/samples.tsv","locationType":"UriLocation"}",
+    "samplesTsvLocation": "maybeFileLocation = undefined",
     "vcfGzLocation": "fileLocation = {"uri":"/path/to/my.vcf.gz","locationType":"UriLocation"}",
   },
   "connection: JB2TrackHubConnection": {

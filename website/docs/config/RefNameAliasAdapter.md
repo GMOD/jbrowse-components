@@ -70,6 +70,6 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "RefNameAlias
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-location">**location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my/aliases.txt', locationType: 'UriLocation' }</code> | location of the alias table: a UCSC `chromAlias.txt`, or any tab-separated file whose rows each list the alternate names of one reference sequence (`chr1<TAB>1<TAB>NC_000001.11`). The table lets a `1`-named file load against a `chr1`-named assembly. |
+| <span id="slot-location">**location**</span><br>[`maybeFileLocation`](/docs/config_guides/slot_types#the-maybe-types) | location of the alias table: a UCSC `chromAlias.txt`, or any tab-separated file whose rows each list the alternate names of one reference sequence (`chr1<TAB>1<TAB>NC_000001.11`). The table lets a `1`-named file load against a `chr1`-named assembly. |
 | <span id="slot-refnamecolumn">**refNameColumn**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | by default, the "ref names that match the fasta" are assumed to be in the first column (0), change this variable if needed<br>_advanced_ |
 | <span id="slot-refnamecolumnheadername">**refNameColumnHeaderName**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | refNameColumnHeaderName<br>_advanced_ |

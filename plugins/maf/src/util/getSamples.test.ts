@@ -10,10 +10,7 @@ import {
 import type { NewickNode } from '@jbrowse/tree-sidebar'
 
 describe('getSamplesFromConfig sample-set resolution', () => {
-  const noTree = {
-    uri: '/path/to/my.nh',
-    locationType: 'UriLocation' as const,
-  }
+  const noTree = undefined
 
   test('no tree → samples config is the set, in listed order', async () => {
     const { samples } = await getSamplesFromConfig(noTree, ['b', 'a'])

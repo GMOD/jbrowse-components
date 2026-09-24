@@ -121,6 +121,7 @@ describe('getConf slot-value type narrowing', () => {
         type: 'fileLocation',
         defaultValue: { uri: 'x.txt', locationType: 'UriLocation' },
       },
+      maybeFileLocation: { type: 'maybeFileLocation' },
       maybeNumber: { type: 'maybeNumber', defaultValue: undefined },
       maybeBoolean: { type: 'maybeBoolean', defaultValue: undefined },
       maybeColor: { type: 'maybeColor', defaultValue: undefined },
@@ -147,6 +148,7 @@ describe('getConf slot-value type narrowing', () => {
     const stringArrayMap = readConfObject(node, 'stringArrayMap')
     const numberMap = readConfObject(node, 'numberMap')
     const fileLocation = readConfObject(node, 'fileLocation')
+    const maybeFileLocation = readConfObject(node, 'maybeFileLocation')
     const maybeNumber = readConfObject(node, 'maybeNumber')
     const maybeBoolean = readConfObject(node, 'maybeBoolean')
     const maybeColor = readConfObject(node, 'maybeColor')
@@ -167,6 +169,7 @@ describe('getConf slot-value type narrowing', () => {
     assertType<Equal<typeof stringArrayMap, Record<string, string[]>>>()
     assertType<Equal<typeof numberMap, Record<string, number>>>()
     assertType<Equal<typeof fileLocation, FileLocation>>()
+    assertType<Equal<typeof maybeFileLocation, FileLocation | undefined>>()
     assertType<Equal<typeof maybeNumber, number | undefined>>()
     assertType<Equal<typeof maybeBoolean, boolean | undefined>>()
     assertType<Equal<typeof maybeColor, string | undefined>>()

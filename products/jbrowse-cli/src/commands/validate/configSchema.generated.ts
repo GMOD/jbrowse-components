@@ -289,10 +289,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "cytobandLocation": {
-          "$ref": "#/$defs/FileLocation",
-          "default": {
-            "uri": "/path/to/cytoband.txt.gz"
-          }
+          "$ref": "#/$defs/FileLocation"
         },
         "uri": {
           "type": "string",
@@ -1111,11 +1108,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "location": {
-          "$ref": "#/$defs/FileLocation",
-          "default": {
-            "uri": "/path/to/my/aliases.txt",
-            "locationType": "UriLocation"
-          }
+          "$ref": "#/$defs/FileLocation"
         },
         "refNameColumn": {
           "type": "number",
@@ -1161,11 +1154,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "location": {
-          "$ref": "#/$defs/FileLocation",
-          "default": {
-            "uri": "/path/to/my/sequence_report.tsv",
-            "locationType": "UriLocation"
-          }
+          "$ref": "#/$defs/FileLocation"
         },
         "useNameOverride": {
           "description": "forces usage of the UCSC names over the NCBI style names from a FASTA.",
@@ -1540,11 +1529,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "chromSizesLocation": {
           "description": "An optional chrom.sizes file can be supplied to speed up loading since parsing the twobit file can take time.",
-          "$ref": "#/$defs/FileLocation",
-          "default": {
-            "uri": "/path/to/default.chrom.sizes",
-            "locationType": "UriLocation"
-          }
+          "$ref": "#/$defs/FileLocation"
         },
         "uri": {
           "type": "string",
@@ -1599,11 +1584,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "metadataLocation": {
           "description": "Optional metadata file.",
-          "$ref": "#/$defs/FileLocation",
-          "default": {
-            "uri": "/path/to/fa.metadata.yaml",
-            "locationType": "UriLocation"
-          }
+          "$ref": "#/$defs/FileLocation"
         },
         "gziLocation": {
           "$ref": "#/$defs/FileLocation",
@@ -1703,11 +1684,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "metadataLocation": {
           "description": "Optional metadata file.",
-          "$ref": "#/$defs/FileLocation",
-          "default": {
-            "uri": "/path/to/fa.metadata.yaml",
-            "locationType": "UriLocation"
-          }
+          "$ref": "#/$defs/FileLocation"
         },
         "uri": {
           "type": "string",
@@ -1756,11 +1733,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "metadataLocation": {
           "description": "Optional metadata file.",
-          "$ref": "#/$defs/FileLocation",
-          "default": {
-            "uri": "/path/to/fa.metadata.yaml",
-            "locationType": "UriLocation"
-          }
+          "$ref": "#/$defs/FileLocation"
         },
         "uri": {
           "type": "string",
@@ -1973,11 +1946,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samplesTsvLocation": {
-          "$ref": "#/$defs/FileLocation",
-          "default": {
-            "uri": "/path/to/samples.tsv",
-            "locationType": "UriLocation"
-          }
+          "$ref": "#/$defs/FileLocation"
         },
         "uri": {
           "type": "string",
@@ -2024,11 +1993,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/TabixIndex"
         },
         "samplesTsvLocation": {
-          "$ref": "#/$defs/FileLocation",
-          "default": {
-            "uri": "/path/to/samples.tsv",
-            "locationType": "UriLocation"
-          }
+          "$ref": "#/$defs/FileLocation"
         },
         "fetchSizeLimit": {
           "description": "size in bytes over which to display a warning to the user that too much data will be fetched.",
@@ -2099,11 +2064,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "TBI"
         },
         "samplesTsvLocation": {
-          "$ref": "#/$defs/FileLocation",
-          "default": {
-            "uri": "/path/to/samples.tsv",
-            "locationType": "UriLocation"
-          }
+          "$ref": "#/$defs/FileLocation"
         },
         "fetchSizeLimit": {
           "description": "size in bytes over which to display a warning to the user that too much data will be fetched.",
@@ -2397,11 +2358,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "nhLocation": {
           "description": "newick tree naming and ordering the species rows; its leaf names are the sample ids, and any \`samples\` entries supply label/color overrides matched by id.",
-          "$ref": "#/$defs/FileLocation",
-          "default": {
-            "uri": "/path/to/my.nh",
-            "locationType": "UriLocation"
-          }
+          "$ref": "#/$defs/FileLocation"
         },
         "summaryAdapter": {
           "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. The \`.tai\` makes a read cost the span on screen rather than the blocks it lands in, which is why this slot was left off at first — but span is only half of it. Cost is span × depth, and measured against HPRC's own v2.1 index the constant is about **19 compressed bytes per bp** at 464 haplotypes, flat from 100 kb up: 1 Mb is a 19 MB read and chr1 whole is 4.4 GB. So a deep alignment still runs out, just linearly instead of by block. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
@@ -2476,11 +2433,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "nhLocation": {
           "description": "newick tree naming and ordering the species rows; its leaf names are the sample ids, and any \`samples\` entries supply label/color overrides matched by id.",
-          "$ref": "#/$defs/FileLocation",
-          "default": {
-            "uri": "/path/to/my.nh",
-            "locationType": "UriLocation"
-          }
+          "$ref": "#/$defs/FileLocation"
         },
         "summaryAdapter": {
           "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. The zoom-out tier on the same terms as \`BgzipMafAdapter\`'s: the \`.tai\` makes a read cost the span on screen rather than the blocks it lands in, but cost is span × depth and a deep alignment runs out of the second factor. Measured against HPRC's published v2.0 TAF index, 464 haplotypes cost about **2 compressed bytes per bp**, flat from 100 kb up — a ninth of the same alignment's MAF, and still 354 MB for chr6 whole. TAF moves the ceiling out by about 10x; it does not remove it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
@@ -2546,11 +2499,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "nhLocation": {
           "description": "newick tree naming and ordering the species rows; its leaf names are the sample ids, and any \`samples\` entries supply label/color overrides matched by id.",
-          "$ref": "#/$defs/FileLocation",
-          "default": {
-            "uri": "/path/to/my.nh",
-            "locationType": "UriLocation"
-          }
+          "$ref": "#/$defs/FileLocation"
         },
         "summaryAdapter": {
           "description": "optional swappable sub-adapter (typically a BigBedAdapter over UCSC bigMafSummary.bb, which is published alongside the bigMaf) used for cheap zoom-out rendering; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
@@ -2612,11 +2561,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "nhLocation": {
           "description": "newick tree naming and ordering the species rows; its leaf names are the sample ids, and any \`samples\` entries supply label/color overrides matched by id.",
-          "$ref": "#/$defs/FileLocation",
-          "default": {
-            "uri": "/path/to/my.nh",
-            "locationType": "UriLocation"
-          }
+          "$ref": "#/$defs/FileLocation"
         },
         "summaryAdapter": {
           "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. A tabix MAF carries every species' bases on one line, so a wide read downloads the whole alignment and the byte gate blocks it; without this slot the track simply has no zoom-out path. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
@@ -14637,11 +14582,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "geneticCodesLocation": {
           "description": "Optional TSV file of refName<TAB>geneticCodeId, an alternative to inlining the geneticCodes map.",
-          "$ref": "#/$defs/FileLocation",
-          "default": {
-            "uri": "",
-            "locationType": "UriLocation"
-          }
+          "$ref": "#/$defs/FileLocation"
         },
         "refNameAliases": {
           "$ref": "#/$defs/RefNameAliases"

@@ -39,13 +39,9 @@ export function mafAdapterConfigSchemaFields({
      * #slot
      */
     nhLocation: {
-      type: 'fileLocation',
+      type: 'maybeFileLocation',
       description:
         'newick tree naming and ordering the species rows; its leaf names are the sample ids, and any `samples` entries supply label/color overrides matched by id',
-      defaultValue: {
-        uri: '/path/to/my.nh',
-        locationType: 'UriLocation',
-      },
     },
     /**
      * #slot

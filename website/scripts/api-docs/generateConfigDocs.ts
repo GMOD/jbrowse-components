@@ -1180,12 +1180,13 @@ const DOCUMENTED_SLOT_TYPES = new Map([
   ['number', 'number'],
   ['integer', 'integer'],
   ['boolean', 'boolean'],
-  // the five the guide's `maybe*` section actually names
+  // the six the guide's `maybe*` section actually names
   ['maybeNumber', MAYBE_TYPES_ANCHOR],
   ['maybeBoolean', MAYBE_TYPES_ANCHOR],
   ['maybeString', MAYBE_TYPES_ANCHOR],
   ['maybeStringEnum', MAYBE_TYPES_ANCHOR],
   ['maybeFrozen', MAYBE_TYPES_ANCHOR],
+  ['maybeFileLocation', MAYBE_TYPES_ANCHOR],
   ['fileLocation', 'filelocation'],
   ['stringEnum', 'stringenum'],
   ['stringEnumArray', 'stringenumarray'],

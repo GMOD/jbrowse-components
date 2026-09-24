@@ -1,26 +1,18 @@
 import { fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { isUriLocation } from '@jbrowse/core/util/types'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
-// The alias adapters' `location` slots default to a "/path/to/my/..."
-// placeholder; that (and a blank uri) means "no file configured", so the
-// adapter yields no aliases rather than trying to fetch the placeholder path.
-function isUnconfiguredLocation(loc: FileLocation) {
-  return isUriLocation(loc) && (!loc.uri || loc.uri.startsWith('/path/to/my/'))
-}
-
 // Reads a tab-separated alias file into rows of columns, dropping blank lines.
 // Returns [] when no file is configured.
 export async function readAliasRows(
-  loc: FileLocation,
+  loc: FileLocation | undefined,
   pluginManager?: PluginManager,
   opts?: BaseOptions,
 ) {
-  if (isUnconfiguredLocation(loc)) {
+  if (!loc) {
     return []
   }
   // fetchAndMaybeUnzipText rather than readFile('utf8') so the read reports byte

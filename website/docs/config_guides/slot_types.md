@@ -92,9 +92,9 @@ A multi-line string, e.g. an HTML template for a feature-details panel.
 
 ## The `maybe*` types {#the-maybe-types}
 
-`maybeNumber`, `maybeBoolean`, `maybeString`, `maybeStringEnum`, and
-`maybeFrozen` each accept everything the type without the prefix accepts, plus
-one more state: **unset**.
+`maybeNumber`, `maybeBoolean`, `maybeString`, `maybeStringEnum`, `maybeFrozen`
+and `maybeFileLocation` each accept everything the type without the prefix
+accepts, plus one more state: **unset**.
 
 A slot left unset carries no value of its own, which lets the display decide
 what to do from the data in front of it — a state distinct from any value the

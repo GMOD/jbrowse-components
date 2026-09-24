@@ -40,4 +40,4 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "CytobandAdap
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-cytobandlocation">**cytobandLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/cytoband.txt.gz' }</code> | location of a UCSC-style `cytoBand.txt` (`chrom start end name gieStain`), which draws the ideogram banding in the view's overview bar. May be gzipped. Configured on an assembly, not on a track. |
+| <span id="slot-cytobandlocation">**cytobandLocation**</span><br>[`maybeFileLocation`](/docs/config_guides/slot_types#the-maybe-types) | location of a UCSC-style `cytoBand.txt` (`chrom start end name gieStain`), which draws the ideogram banding in the view's overview bar. May be gzipped. Configured on an assembly, not on a track. |

@@ -128,7 +128,7 @@ const FileSelectorWrapper = observer(function FileSelectorWrapper({
 }: {
   slot: {
     name: string
-    value: FileLocation
+    value: FileLocation | undefined
     set: (arg: FileLocation) => void
     description: string
     pluginManager: PluginManager
@@ -158,6 +158,7 @@ const valueComponents: Record<string, React.ComponentType<any>> = {
   featureField: StringEditor,
   text: TextEditor,
   fileLocation: FileSelectorWrapper,
+  maybeFileLocation: FileSelectorWrapper,
   stringArray: StringArrayEditor,
   colorArray: ColorArrayEditor,
   stringEnumArray: StringEnumArrayEditor,

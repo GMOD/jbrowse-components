@@ -227,6 +227,31 @@ describe('a color slot', () => {
   })
 })
 
+describe('a maybeFileLocation slot', () => {
+  const read = (value?: unknown) =>
+    readConfObject(makeConfig({ type: 'maybeFileLocation' }, value), 'slot')
+
+  test('is unset by default', () => {
+    expect(read()).toBeUndefined()
+  })
+
+  test('reads a cleared URL as unset', () => {
+    expect(read({ uri: '', locationType: 'UriLocation' })).toBeUndefined()
+    expect(read({ uri: '' })).toBeUndefined()
+  })
+
+  test('reads a configured location', () => {
+    expect(read({ uri: 'x.tsv', locationType: 'UriLocation' })).toEqual({
+      uri: 'x.tsv',
+      locationType: 'UriLocation',
+    })
+    expect(read({ localPath: '/data/x.tsv' })).toEqual({
+      localPath: '/data/x.tsv',
+      locationType: 'LocalPathLocation',
+    })
+  })
+})
+
 describe('a colorArray slot', () => {
   const colors = (value?: unknown) =>
     makeConfig({ type: 'colorArray', defaultValue: [] }, value)

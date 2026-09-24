@@ -2,7 +2,6 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { parseNewick } from '@jbrowse/tree-sidebar'
 
 import { navigationFields } from './navigationFields.ts'
-import { isUnconfiguredNhLocation } from './nhLocation.ts'
 
 import type { MafAdapterOptions, Sample } from '../types.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -131,12 +130,12 @@ export function resolveSamplesFromTree(
  * new adapter, so one read per adapter is all it can ever need.
  */
 export async function getSamplesFromConfig(
-  nhLocation: FileLocation,
+  nhLocation: FileLocation | undefined,
   samplesConfig: SampleConfig,
 ) {
-  const treeNewick = isUnconfiguredNhLocation(nhLocation)
-    ? undefined
-    : await openLocation(nhLocation).readFile('utf8')
+  const treeNewick = nhLocation
+    ? await openLocation(nhLocation).readFile('utf8')
+    : undefined
 
   const configSamples = normalizeSamples(samplesConfig)
   const samples = treeNewick

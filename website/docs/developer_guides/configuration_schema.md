@@ -127,6 +127,7 @@ typed, a slot can be edited graphically without an author writing any UI.
 | <code>colorArray</code> | <code>types.array(CssColorEntryType)</code> | <code>string[]</code> | a text field and color picker per entry, with add and delete |
 | <code>featureField</code> | <code>types.string</code> | <code>string</code> | single-line text field |
 | <code>fileLocation</code> | <code>FileLocation</code> | <code>FileLocation</code> | URL, local file path (desktop) or file blob (browser) |
+| <code>maybeFileLocation</code> | <code>MaybeFileLocation</code> | <code>FileLocation &#124; undefined</code> | URL, local file path (desktop) or file blob (browser) |
 | <code>frozen</code> | <code>types.frozen()</code> | <code>any</code> | monospace textarea holding arbitrary JSON |
 | <code>maybeFrozen</code> | <code>types.maybe(types.frozen())</code> | <code>any</code> | monospace textarea holding arbitrary JSON |
 | <code>integer</code> | <code>types.integer</code> | <code>number</code> | numeric text field that rounds to an integer |

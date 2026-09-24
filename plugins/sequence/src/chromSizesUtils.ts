@@ -1,5 +1,4 @@
 import { openLocation } from '@jbrowse/core/util/io'
-import { isUriLocation } from '@jbrowse/core/util/types'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FileLocation } from '@jbrowse/core/util/types'
@@ -33,15 +32,9 @@ export function deriveFastaLocations(snap: Record<string, unknown>) {
   }
 }
 
-export function isPlaceholderLocation(loc: FileLocation, defaultUri: string) {
-  return isUriLocation(loc) && (loc.uri === '' || loc.uri === defaultUri)
-}
-
 export function readOptionalMetadata(
-  loc: FileLocation,
+  loc: FileLocation | undefined,
   pm: PluginManager | undefined,
 ) {
-  return isPlaceholderLocation(loc, '/path/to/fa.metadata.yaml')
-    ? null
-    : openLocation(loc, pm).readFile('utf8')
+  return loc ? openLocation(loc, pm).readFile('utf8') : null
 }

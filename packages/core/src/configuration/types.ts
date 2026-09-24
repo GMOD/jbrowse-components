@@ -235,6 +235,7 @@ interface SlotValueByType {
   numberMap: Record<string, number>
   stringMap: Record<string, string>
   fileLocation: FileLocation
+  maybeFileLocation: FileLocation | undefined
   maybeNumber: number | undefined
   maybeBoolean: boolean | undefined
   maybeColor: string | undefined

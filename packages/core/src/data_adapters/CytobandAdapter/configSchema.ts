@@ -40,10 +40,7 @@ const configSchema = ConfigurationSchema(
      * May be gzipped. Configured on an assembly, not on a track.
      */
     cytobandLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/cytoband.txt.gz',
-      },
+      type: 'maybeFileLocation',
     },
   },
   {

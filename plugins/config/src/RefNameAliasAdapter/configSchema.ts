@@ -70,11 +70,7 @@ const RefNameAliasAdapter = ConfigurationSchema(
      * `1`-named file load against a `chr1`-named assembly.
      */
     location: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my/aliases.txt',
-        locationType: 'UriLocation',
-      },
+      type: 'maybeFileLocation',
     },
     /**
      * #slot

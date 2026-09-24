@@ -7,7 +7,7 @@ import type { BaseOptions } from '../BaseAdapter/types.ts'
 export default class CytobandAdapter extends BaseAdapter {
   async getData(opts?: BaseOptions) {
     const conf = this.getConf('cytobandLocation')
-    if (conf.uri === '' || conf.uri === '/path/to/cytoband.txt.gz') {
+    if (!conf) {
       return []
     }
 

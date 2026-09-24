@@ -50,11 +50,7 @@ const IndexedFastaAdapter = ConfigurationSchema(
      */
     metadataLocation: {
       description: 'Optional metadata file',
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/fa.metadata.yaml',
-        locationType: 'UriLocation',
-      },
+      type: 'maybeFileLocation',
     },
   },
   {

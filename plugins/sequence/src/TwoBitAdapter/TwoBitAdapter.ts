@@ -10,11 +10,7 @@ import {
 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
-import {
-  isPlaceholderLocation,
-  parseChromSizes,
-  refSizesToRegions,
-} from '../chromSizesUtils.ts'
+import { parseChromSizes, refSizesToRegions } from '../chromSizesUtils.ts'
 import { sequenceFeatures } from '../sequenceFeatures.ts'
 
 import type { TwoBitAdapterConfig } from './configSchema.ts'
@@ -36,7 +32,7 @@ export default class TwoBitAdapter extends BaseSequenceAdapter<TwoBitAdapterConf
 
   private async initChromSizes(opts?: BaseOptions) {
     const conf = this.getConf('chromSizesLocation')
-    if (!isPlaceholderLocation(conf, '/path/to/default.chrom.sizes')) {
+    if (conf) {
       // fetchAndMaybeUnzipText rather than readFile('utf8') so the read reports
       // byte progress (readFile's utf8 path takes res.text(), which can't)
       return parseChromSizes(
