@@ -2,26 +2,16 @@ import { execFileSync, spawnSync } from 'node:child_process'
 
 import { displayPainted, displaySettled } from './waits.ts'
 
-// The builders exist so that "this display, painted" is written once rather
-// than spelled out at each call site (ADR-065).
 test('the composite selectors name the type and the readiness separately', () => {
-  // `data-testid` names the display TYPE and never changes; readiness is a
-  // separate attribute. "Has the pileup painted" is therefore a conjunction,
-  // and these builders write it for you — pass one to `page.waitForSelector`.
   expect(displayPainted('pileup-display')).toBe(
     '[data-testid="pileup-display"][data-display-drawn="true"]',
   )
 
-  // The stronger one. `drawn` flips on FIRST paint, so a figure that must show
-  // data waits on the phase instead — that is the whole fetch, not first paint.
   expect(displaySettled('pileup-display')).toBe(
     '[data-testid="pileup-display"][data-display-phase="ready"]',
   )
 })
 
-// The suffix convention these replaced (`-done` on the chrome displays, `_done`
-// on the two chrome-less canvases) mutated data-testid on first paint, so a
-// selector written against the id stopped matching once the display painted.
 test('the testid a selector is built from does not carry readiness', () => {
   for (const testid of ['pileup-display', 'synteny_canvas']) {
     expect(displayPainted(testid)).toContain(`[data-testid="${testid}"]`)
@@ -29,35 +19,12 @@ test('the testid a selector is built from does not carry readiness', () => {
   }
 })
 
-// A retired suffix leaves no wreckage a normal run can trip over, which is what
-// makes this worth a repo scan rather than a code review. Nothing emits
-// `*-done` any more, so a selector still naming one matches NOTHING -- and the
-// places that kept one are exactly the places CI does not exercise on a PR:
-// figure specs (weekly), a standalone verification script, a component-test
-// workspace. Each one hangs its own wait and fails alone, long after the change,
-// reading as a flake in whatever it was pointed at. Two hg002 figures sat
-// broken this way, and the migration's own inventory undercounted by grepping
-// selector *lines*.
-//
-// The pattern matches an equals-sign testid whose value ends in the retired
-// suffix, and deliberately NOT the attribute-ends-with form (`data-testid$=`),
-// so prose quoting the old convention — ADR-065's own write-up — is not a hit.
-// It is spelled only in the regex below for the same reason: written out in a
-// comment, it matches itself, which is the first thing this test caught.
-//
-// A SECOND SCAN below, because the equals-sign form alone missed one. The
-// component_tests workspaces wait with testing-library, whose argument is a bare
-// quoted id with no `data-testid=` in the line at all — invisible here, and to
-// the inventory before it. lgv-vite stayed broken through the migration AND
-// through the sweep that fixed its sibling workspace three directories away.
-//
-// Scoped to component_tests/ rather than widened repo-wide, which was tried and
-// is worse than useless: repo-wide it hits ADR-065's own prose, the comment two
-// lines above this one, and — the reason not to — DisplayChrome.test.tsx's
-// `queryByTestId` asserting the retired id is GONE. That is the test proving the
-// migration worked, and a guard that fails on it teaches people to delete the
-// evidence. Inside component_tests/ there is no prose and no negative
-// assertion: every testid names something the smoke test is waiting for.
+// A selector still naming the retired readiness suffix matches nothing and
+// hangs its wait in a job CI runs rarely, such as a weekly figure spec. The
+// first scan takes only the equals-sign form, so prose quoting the old
+// convention is no hit; the second takes testing-library's bare id, only in
+// component_tests/, since repo-wide it hits DisplayChrome.test.tsx asserting
+// the old id is gone.
 test('no selector anywhere still spells readiness into a testid', () => {
   const root = execFileSync('git', ['rev-parse', '--show-toplevel'], {
     encoding: 'utf8',

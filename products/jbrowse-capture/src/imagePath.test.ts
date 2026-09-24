@@ -1,7 +1,6 @@
 import { assertImagePath } from './imagePath.ts'
 
-// puppeteer writes a PNG under any name it does not recognize, so `-o fig.svg`
-// used to produce a PNG called fig.svg.
+// puppeteer writes a PNG under any name it does not recognize
 test.each(['fig.svg', 'fig.pdf', 'fig'])('%s is refused', out => {
   expect(() => {
     assertImagePath(out)

@@ -157,10 +157,6 @@ test('a canceled display fails the chain at once rather than timing out', async 
   expect(Date.now() - start).toBeLessThan(10000)
 }, 15000)
 
-// `--settle` is what the CLI's own "had not finished drawing" warning tells you
-// to raise, and the census that decides whether the run fails used to be taken
-// BEFORE it: a display that painted during the settle was absent from `pending`
-// and still failed the run, so the report and the throw disagreed.
 test('a display that paints during settleMs is not reported as never painted', async () => {
   app(
     'ready',
@@ -196,8 +192,7 @@ test('a too-large display passes the chain and is reported', async () => {
   ])
 }, 20000)
 
-// A render error replaces the display with a Retry banner and publishes no
-// paint flag, so it used to pass as a display that was not there at all.
+// a render error replaces the display with a banner that publishes no paint flag
 test('a display whose renderer failed fails the chain', async () => {
   app(
     'ready',

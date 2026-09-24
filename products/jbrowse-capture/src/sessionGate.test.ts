@@ -25,10 +25,6 @@ test('no census on the page reports undefined', () => {
   expect(readSessionInPage().census).toBeUndefined()
 })
 
-// One element answers the whole summary. Each view declares what it holds and
-// the marker publishes the reduction (ADR-103), so nothing here knows that a
-// synteny view keeps its tracks on levels and its rows on sub-views — the walk
-// that did went with the builds that had no census.
 test('the census answers the summary', () => {
   census(2, ['hg38', 'mm39'], ['genes', 'synteny'])
   expect(readSessionInPage().census).toEqual({
@@ -82,8 +78,6 @@ test('an assembly that does not match fails the gate', async () => {
   ).rejects.toThrow(/assembly "hg38".*assemblies \[hg19\]/s)
 })
 
-// The app renders its error screen instead of a session, which used to read
-// as still loading until the whole timeout had gone.
 test('a load failure fails the gate at once, with the app message', async () => {
   document.body.innerHTML =
     '<span hidden data-app-error="Error: HTTP 404 fetching nope.json"></span>'

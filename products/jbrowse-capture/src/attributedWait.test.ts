@@ -6,17 +6,8 @@ afterEach(() => {
   document.body.replaceChildren()
 })
 
-// A SELECTOR WAIT RUNS BEFORE EVERY BEST-EFFORT ONE, so it is the wait a capture
-// with an unpainted display actually dies on — and puppeteer's `TimeoutError`
-// names the selector and nothing else. The census that answers "which display,
-// and what does it say about itself" ran after it, or not at all.
-//
-// The page here is a stand-in whose `evaluate` runs the serialized function
-// against jsdom, which is what it does against the real page: the census is
-// re-read from the DOM at report time rather than taken off a handle the wait
-// held. Holding one across a re-render throws `Node is detached from document`,
-// which is how the first attempt at this turned four diagnosable timeouts into
-// nine opaque puppeteer errors.
+// `evaluate` runs the serialized census against jsdom's document, as it runs
+// against the page's
 function fakePage({
   appears = false,
   queryable = true,

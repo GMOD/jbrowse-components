@@ -70,8 +70,7 @@ test('a spec carries the config and nothing the spec already says', () => {
   )
 })
 
-// The URL can carry only one of them, and the session gate used to wait for
-// the dropped --track, timing out on a track the config does define.
+// the URL carries one of them, so the gate would wait on the dropped one
 test.each([
   ['assembly', { assembly: 'hg38' }],
   ['loc', { loc: 'BRCA1' }],

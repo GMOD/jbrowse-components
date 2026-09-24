@@ -4,9 +4,6 @@ import {
   trackIdsFromSession,
 } from './session.ts'
 
-// The query string used to interpolate `config` raw, so a config URL carrying
-// its own `?` or `&` truncated at the first one and the link loaded a partial
-// config. URLSearchParams is the same encoder `jbrowseUrl` uses.
 test('a config URL with its own query survives the query string', () => {
   const query = sessionSpecQuery({
     config: 'https://example.org/c.json?v=2&x=1',
@@ -46,11 +43,7 @@ test('nested views are collected too', () => {
   ).toEqual(['synteny', 'top', 'bottom'])
 })
 
-// The two synteny spellings. A spec's `tracks` may be one string[] per level
-// (the shape normalizeTrackLevels accepts), and a session saved from a running
-// view carries `levels: [{tracks}]` instead — both used to be filtered out as
-// malformed entries, so a synteny --session contributed no expectations and
-// the gate passed on an empty browser.
+// a spec nests one string[] per level; a saved session carries `levels`
 test('per-level track lists in a synteny spec are collected', () => {
   expect(
     trackIdsFromSession({

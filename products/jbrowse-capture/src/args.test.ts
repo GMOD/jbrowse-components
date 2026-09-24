@@ -55,9 +55,6 @@ test('a non-numeric size is an error', () => {
   )
 })
 
-// `--fullPage=false` used to set the flag TRUE: the flags branch never looked
-// past the name, so the one spelling a user reaches for to turn a flag off was
-// the one that silently turned it on.
 test('a value handed to a flag is an error, not true', () => {
   expect(() => parseArgs(['--fullPage=false'])).toThrow(
     "Option '--fullPage' does not take an argument",
