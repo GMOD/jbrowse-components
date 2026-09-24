@@ -23,7 +23,7 @@ digraph grammar_pipeline {
     fontname=monospace fontsize=10 style=dashed color=gray50
     adapter [label="feature adapter\ngetFeaturesArray\n(any format)"]
     filters [label="runTransforms\nfilter, formula, flatten, bin,\naggregate, coverage, stack\nshared, then per layer", style=bold]
-    encode [label="encodeFeatures\nfield -> channel, one loop\ncolour + glyph scales resolved\nin the worker, per region", style=bold]
+    encode [label="encodeFeatures\nfield -> channel, one loop\ncolour + shape scales resolved\nin the worker, per region", style=bold]
     valueScale [label="valueScale\non ScoreScaleMixin\ndomain -> uniform, on the GPU", style=bold]
     marks [label="defineMark list\nshape x lenses\nGPU, Canvas2D, SVG, hit test", style=bold]
     legend [label="colorScales -> legend\nvalueScale -> axis, hatches, rules\nplaced by the chrome", style=bold]

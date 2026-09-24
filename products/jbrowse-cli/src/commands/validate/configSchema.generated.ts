@@ -7674,7 +7674,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             {
               "enum": [
                 "circle",
-                "triangle",
+                "triangle-down",
                 "diamond"
               ]
             },
@@ -7691,12 +7691,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "value": {
-              "description": "disc, triangle, diamond or jexl callback.",
+              "description": "circle, triangle-down, diamond or jexl callback.",
               "anyOf": [
                 {
                   "enum": [
                     "circle",
-                    "triangle",
+                    "triangle-down",
                     "diamond"
                   ]
                 },
@@ -7724,7 +7724,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "items": {
                 "enum": [
                   "circle",
-                  "triangle",
+                  "triangle-down",
                   "diamond"
                 ]
               }

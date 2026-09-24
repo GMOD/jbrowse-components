@@ -112,7 +112,7 @@ legend draws a shape table as rows whose swatch is the shape — recorded from
 render-core's own `appendGlyph` as SVG path data, so the key cannot draw a
 triangle the plot draws as a circle. The shape fills the `glyph` lane, the
 point painter's code per instance, and only `point` reads it; a scale on a
-bar's shape resolves and is never drawn.
+bar's shape is never resolved, and the rule list warns of it.
 
 **A lane is filled because a shape reads it.** `encodeFeatures` takes the
 lane set beside the encoding — `y`, `color`, `colorValue`, `glyph`, `row`, and

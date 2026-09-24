@@ -82,7 +82,7 @@ export type ColorEncoding =
   | ContinuousRef
   | ThresholdRef
 
-export type ShapeName = 'circle' | 'triangle' | 'diamond'
+export type ShapeName = 'circle' | 'triangle-down' | 'diamond'
 
 /**
  * #api

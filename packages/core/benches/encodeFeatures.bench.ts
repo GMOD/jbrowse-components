@@ -117,7 +117,7 @@ const ARMS: {
     encoding: {
       y: 'score',
       color: 'red',
-      shape: "jexl:get(feature,'strand')==1?'triangle':'circle'",
+      shape: "jexl:get(feature,'strand')==1?'triangle-down':'circle'",
     },
   },
   {

@@ -154,7 +154,7 @@ test('a shape swatch is the point shape drawn as a path, in the row colour', () 
         {
           key: 'tri',
           label: 'INS',
-          swatches: [{ color: 'currentColor', shape: 'triangle' }],
+          swatches: [{ color: 'currentColor', shape: 'triangle-down' }],
         },
         {
           key: 'dia',

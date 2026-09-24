@@ -143,7 +143,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
         x: "jexl:get(feature,'thickStart')",
         y: 'jexl:feature.score*2',
         color: "jexl:get(feature,'name')=='a'?'red':'blue'",
-        shape: 'triangle',
+        shape: 'triangle-down',
       },
     },
     {
@@ -187,7 +187,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
           y: 'jexl:feature.score*2',
           row: undefined,
           color: "jexl:get(feature,'name')=='a'?'red':'blue'",
-          shape: 'triangle',
+          shape: 'triangle-down',
         },
         lanes: ['y', 'row', 'color', 'colorValue', 'glyph', 'index'],
       },
@@ -651,7 +651,7 @@ test.each([
     undefined,
     '(ColorScheme | undefined)',
   ],
-  [undefined, { field: 'svtype', range: ['star', 'triangle'] }, '"star"'],
+  [undefined, { field: 'svtype', range: ['star', 'triangle-down'] }, '"star"'],
   [undefined, 'triangl', '"triangl"'],
 ])(
   'a colour %j or shape %j naming nothing the display paints fails the load',
@@ -709,13 +709,17 @@ test('a channel the mark does not read is named, and the rest still draws', () =
     'mark 0 encoding.y: a span does not read y',
   ])
   expect(
-    noticesOf([{ mark: 'bar', encoding: { y: 'score', shape: 'triangle' } }]),
+    noticesOf([
+      { mark: 'bar', encoding: { y: 'score', shape: 'triangle-down' } },
+    ]),
   ).toEqual(['mark 0 encoding.shape: a bar does not read shape'])
   expect(
     noticesOf([{ mark: 'span', source: 'density', encoding: {} }]),
   ).toEqual(['mark 0 source: a span does not draw the density sidecar'])
   expect(
-    noticesOf([{ mark: 'point', encoding: { y: 'score', shape: 'triangle' } }]),
+    noticesOf([
+      { mark: 'point', encoding: { y: 'score', shape: 'triangle-down' } },
+    ]),
   ).toEqual([])
 })
 
@@ -1353,7 +1357,7 @@ test('a shape scale over the field the colour classifies folds into one key', ()
           field: 'strand',
           domain: [],
           entries: [
-            { value: '1', shape: 'triangle' },
+            { value: '1', shape: 'triangle-down' },
             { value: '-1', shape: 'diamond' },
           ],
         },
@@ -1371,7 +1375,7 @@ test('a shape scale over the field the colour classifies folds into one key', ()
         {
           value: '1',
           label: 'Forward strand',
-          swatches: [{ color: 'rgba(255,0,0,1)', shape: 'triangle' }],
+          swatches: [{ color: 'rgba(255,0,0,1)', shape: 'triangle-down' }],
         },
         {
           value: '-1',
@@ -1394,7 +1398,7 @@ test('a shape scale reaches the worker beside the colour, and its key draws the 
           field: 'strand',
           scale: 'categorical',
           domain: [1, -1],
-          range: ['triangle', 'diamond'],
+          range: ['triangle-down', 'diamond'],
         },
       },
     },
@@ -1404,7 +1408,7 @@ test('a shape scale reaches the worker beside the colour, and its key draws the 
     field: 'strand',
     scale: 'categorical',
     domain: ['1', '-1'],
-    range: ['triangle', 'diamond'],
+    range: ['triangle-down', 'diamond'],
   })
   display.setRpcData(
     0,
@@ -1416,7 +1420,7 @@ test('a shape scale reaches the worker beside the colour, and its key draws the 
           field: 'strand',
           domain: [],
           entries: [
-            { value: '1', shape: 'triangle' },
+            { value: '1', shape: 'triangle-down' },
             { value: '-1', shape: 'diamond' },
           ],
         },
@@ -1433,7 +1437,7 @@ test('a shape scale reaches the worker beside the colour, and its key draws the 
         field: 'strand',
         domain: [],
         entries: [
-          { value: '1', shape: 'triangle' },
+          { value: '1', shape: 'triangle-down' },
           { value: '-1', shape: 'diamond' },
         ],
       },
@@ -1449,7 +1453,7 @@ test('a shape scale reaches the worker beside the colour, and its key draws the 
         {
           value: '1',
           label: 'Forward strand',
-          swatches: [{ color: 'currentColor', shape: 'triangle' }],
+          swatches: [{ color: 'currentColor', shape: 'triangle-down' }],
         },
         {
           value: '-1',

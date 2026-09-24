@@ -58,7 +58,7 @@ const EVERY_SPELLING: Record<string, unknown> = {
   marks: [
     {
       mark: 'point',
-      encoding: { y: 'score', color: 'red', shape: 'triangle' },
+      encoding: { y: 'score', color: 'red', shape: 'triangle-down' },
       transform: [{ type: 'coverage', as: 'depth' }],
     },
     {

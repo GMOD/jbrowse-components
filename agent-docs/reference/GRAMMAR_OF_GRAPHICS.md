@@ -183,9 +183,9 @@ The seams, named honestly:
   ([ADR-097](../architecture-decision-records/adr-097-the-y-channel-shares-its-scale-and-not-its-anchor.md)).
   The four score-axis displays that are not the mark display keep their axis
   in those slots, which is what the hook's default answers.
-- **Two channel vocabularies remain.** The encoder and the three shared
-  shapes say `x`, `x2`, `y`, `row`, `color`, `shape`, and the point painter
-  reads `shape` as its `glyph` lane. Variants' cell
+- **Two channel vocabularies remain.** The encoding says `x`, `x2`,
+  `y`, `row`, `color`, `shape`, and the encoder's lanes and the three shared
+  shapes say `glyph` for the last, the point painter's code. Variants' cell
   (`plugins/variants/src/LinearMultiSampleVariantDisplay/components/cellMark.ts`)
   says `startEnd` and `row`; canvas's rect
   (`plugins/canvas/src/LinearBasicDisplay/marks/featureGlyphShapes.ts`) says

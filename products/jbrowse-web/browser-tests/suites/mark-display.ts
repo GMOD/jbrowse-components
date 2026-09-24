@@ -26,7 +26,7 @@ const suite: TestSuite = {
       snapshotSelector: withChrome,
     }),
     lgvSnapshotTest({
-      name: 'points with a glyph scale over a field',
+      name: 'points with a shape scale over a field',
       snapshot: 'mark-points-glyph',
       loc: 'ctgA:1-20000',
       tracks: ['marks_points'],

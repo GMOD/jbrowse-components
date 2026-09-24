@@ -7200,7 +7200,7 @@
           "description": "Shorthand for `{ \"value\": ... }`.",
           "anyOf": [
             {
-              "enum": ["circle", "triangle", "diamond"]
+              "enum": ["circle", "triangle-down", "diamond"]
             },
             {
               "$ref": "#/$defs/JexlString"
@@ -7215,10 +7215,10 @@
           "x-closed": true,
           "properties": {
             "value": {
-              "description": "disc, triangle, diamond or jexl callback.",
+              "description": "circle, triangle-down, diamond or jexl callback.",
               "anyOf": [
                 {
-                  "enum": ["circle", "triangle", "diamond"]
+                  "enum": ["circle", "triangle-down", "diamond"]
                 },
                 {
                   "$ref": "#/$defs/JexlString"
@@ -7239,7 +7239,7 @@
               "description": "shape names, in order.",
               "type": "array",
               "items": {
-                "enum": ["circle", "triangle", "diamond"]
+                "enum": ["circle", "triangle-down", "diamond"]
               }
             },
             "domain": {

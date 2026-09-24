@@ -125,7 +125,7 @@
                   "field": "name",
                   "scale": "categorical",
                   "domain": ["EDEN.1", "EDEN.2"],
-                  "range": ["triangle", "diamond"]
+                  "range": ["triangle-down", "diamond"]
                 }
               }
             }

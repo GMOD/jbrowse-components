@@ -17,7 +17,7 @@ import type { RpcExecuteArgs } from '../RpcRegistry.ts'
  * split them by the facet where the request names one, run each layer's own
  * steps (per section, under a facet), and evaluate the layer's encoding over
  * what is left in the worker, where the `Feature` objects are, filling the
- * lanes its shape reads. The colours come back packed, the scale tables
+ * lanes its mark reads. The colours come back packed, the scale tables
  * resolved, and the main thread reads the same table for its legend that the
  * colours were drawn from.
  */

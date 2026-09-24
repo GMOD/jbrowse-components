@@ -81,7 +81,7 @@
 <polygon fill="none" stroke="black" stroke-width="2" points="673,-179.5 477,-179.5 477,-120.5 673,-120.5 673,-179.5"/>
 <text xml:space="preserve" text-anchor="middle" x="575" y="-166" font-family="monospace" font-size="10.00">encodeFeatures</text>
 <text xml:space="preserve" text-anchor="middle" x="575" y="-153.25" font-family="monospace" font-size="10.00">field &#45;&gt; channel, one loop</text>
-<text xml:space="preserve" text-anchor="middle" x="575" y="-140.5" font-family="monospace" font-size="10.00">colour + glyph scales resolved</text>
+<text xml:space="preserve" text-anchor="middle" x="575" y="-140.5" font-family="monospace" font-size="10.00">colour + shape scales resolved</text>
 <text xml:space="preserve" text-anchor="middle" x="575" y="-127.75" font-family="monospace" font-size="10.00">in the worker, per region</text>
 </g>
 <!-- scale&#45;&gt;encode -->
@@ -231,5 +231,5 @@
 <polygon fill="black" stroke="black" points="1709.64,-146.5 1719.64,-143 1709.64,-139.5 1709.64,-146.5"/>
 </g>
 </g>
-<!-- diagram-source-sha256 ba47ceef5549f479d756180e040035e6d5026adb37ce7303a614ef7d9b19bf8d -->
+<!-- diagram-source-sha256 87f60718d8cc23da5de2bae95ab1b8988d1d10213bebdf07f4d77e5d7d80c2f5 -->
 </svg>

@@ -74,7 +74,7 @@ Each mark's `encoding` maps feature fields to the channels its type reads:
 | `y`     | `bar`, `point` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped                                          |
 | `row`   | every mark     | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, this mark's own, the facet's or the display's |
 | `color` | every mark     | a CSS colour, a jexl callback returning one, or a scale (below)                                                                                                                      |
-| `shape` | `point`        | `circle`, `triangle` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                                     |
+| `shape` | `point`        | `circle`, `triangle-down` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                                |
 
 A field name is read straight off the feature (`score`, `strand`, or any column
 a BED `columnNames` or a GFF attribute names). A `jexl:` expression over
@@ -243,9 +243,9 @@ follows each mark's own loaded values.
 A scale belongs to a channel, not only to colour. `shape` takes the same
 categorical form — `{ "field": "svtype", "scale": "categorical" }` — with
 `range` listing the shapes to hand out as a colour scale's lists colours
-(`circle`, `triangle`, `diamond` in that order when left off) and `domain` the
-values in legend order. The legend then carries a second key whose swatches are
-the shapes themselves:
+(`circle`, `triangle-down`, `diamond` in that order when left off) and `domain`
+the values in legend order. The legend then carries a second key whose swatches
+are the shapes themselves:
 
 ```json
 {
@@ -257,7 +257,7 @@ the shapes themselves:
       "field": "svtype",
       "scale": "categorical",
       "domain": ["INS", "DEL"],
-      "range": ["triangle", "diamond"]
+      "range": ["triangle-down", "diamond"]
     }
   }
 }

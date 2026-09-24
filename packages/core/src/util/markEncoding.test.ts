@@ -602,11 +602,13 @@ test('y is a field name, read the same way a reader in its place is', () => {
 })
 
 test('shape is a name or a jexl expression returning one', () => {
-  const named = encodeFeatures(features, { shape: 'triangle' }, ALL, { jexl })
+  const named = encodeFeatures(features, { shape: 'triangle-down' }, ALL, {
+    jexl,
+  })
   expect(new Set(named.glyph)).toEqual(new Set([GLYPH_TRIANGLE]))
   const derived = encodeFeatures(
     features,
-    { shape: "jexl:get(feature,'type')=='exon'?'triangle':'circle'" },
+    { shape: "jexl:get(feature,'type')=='exon'?'triangle-down':'circle'" },
     ALL,
     { jexl },
   )
@@ -619,10 +621,10 @@ test('shape is a name or a jexl expression returning one', () => {
   ])
 })
 
-const GLYPHS: ShapeName[] = ['circle', 'triangle', 'diamond']
+const GLYPHS: ShapeName[] = ['circle', 'triangle-down', 'diamond']
 const CODE = {
   circle: GLYPH_DISC,
-  triangle: GLYPH_TRIANGLE,
+  'triangle-down': GLYPH_TRIANGLE,
   diamond: GLYPH_DIAMOND,
 }
 
@@ -670,7 +672,7 @@ test('a pinned shape domain walks the range in order', () => {
         field: 'strand',
         scale: 'categorical',
         domain: [1, -1],
-        range: ['triangle', 'diamond'],
+        range: ['triangle-down', 'diamond'],
       },
     },
     ALL,
@@ -680,9 +682,9 @@ test('a pinned shape domain walks the range in order', () => {
     kind: 'shape',
     field: 'strand',
     domain: ['1', '-1'],
-    range: ['triangle', 'diamond'],
+    range: ['triangle-down', 'diamond'],
     entries: [
-      { value: '1', shape: 'triangle' },
+      { value: '1', shape: 'triangle-down' },
       { value: '-1', shape: 'diamond' },
     ],
   })

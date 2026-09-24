@@ -167,7 +167,7 @@ test('points with the shape a scale over a field, and the key drawing each shape
             field: 'name',
             scale: 'categorical',
             domain: ['EDEN.1', 'EDEN.2'],
-            range: ['triangle', 'diamond'],
+            range: ['triangle-down', 'diamond'],
           },
         },
       },

@@ -290,11 +290,11 @@ return {
 ## Plot a field of a track you already have
 
 A `LinearMarkDisplay` is a grammar of graphics over any feature, alignments or
-variant track: each mark names a shape, the fields feeding its channels and the
-transforms run before it. Reuse a catalog track's adapter under a new session
-track whose display declares the plot, and the axis, legend and hover follow.
-The display has one y axis, so each pair's insert size is its own track beside
-the coverage rather than a second axis on this one:
+variant track: each mark names its `mark` type, the fields feeding its channels
+and the transforms run before it. Reuse a catalog track's adapter under a new
+session track whose display declares the plot, and the axis, legend and hover
+follow. The display has one y axis, so each pair's insert size is its own track
+beside the coverage rather than a second axis on this one:
 
 ```js
 const source = session.getTrackById('volvox_alignments')
@@ -336,7 +336,7 @@ return { trackId, ...(await jb.waitReady(30000)) }
 
 A BED column plots the same way over a `FeatureTrack`, with `y` naming the
 column, and `bin` plus `aggregate` steps count features per bin zoomed out. The
-[mark display guide](/docs/config_guides/mark_display) lists every shape,
+[mark display guide](/docs/config_guides/mark_display) lists every mark type,
 channel and step.
 
 ## Restyle, and read back what landed

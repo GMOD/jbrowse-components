@@ -134,7 +134,7 @@ test('a channel the mark does not read waits unread', () => {
     'warning unread-channel mark 0 encoding.y',
   ])
   expect(
-    found([{ mark: 'bar', encoding: { y: 'score', shape: 'triangle' } }]),
+    found([{ mark: 'bar', encoding: { y: 'score', shape: 'triangle-down' } }]),
   ).toEqual(['warning unread-channel mark 0 encoding.shape'])
 })
 

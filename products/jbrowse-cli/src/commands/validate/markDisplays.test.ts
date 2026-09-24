@@ -124,7 +124,9 @@ describe('a marks list in a config file', () => {
       `warning unread-channel ${DISPLAY}.marks[0].encoding.y`,
     ])
     expect(
-      found([{ mark: 'bar', encoding: { y: 'score', shape: 'triangle' } }]),
+      found([
+        { mark: 'bar', encoding: { y: 'score', shape: 'triangle-down' } },
+      ]),
     ).toEqual([`warning unread-channel ${DISPLAY}.marks[0].encoding.shape`])
     expect(found([{ mark: 'span', size: 8 }])).toEqual([
       `warning unread-size ${DISPLAY}.marks[0].size`,
@@ -324,7 +326,7 @@ describe('a marks list in a config file', () => {
     ])
   })
 
-  it('takes a Vega-Lite layer as written, and refuses a key the schema does not declare', () => {
+  it("takes Vega-Lite's mark and shape keys, and refuses a key the schema does not declare", () => {
     const messages = (marks: unknown[]) =>
       problemsOf(configOf(marks)).map(p => `${p.where}: ${p.message}`)
     const point = (encoding: Record<string, unknown>) => [
@@ -594,7 +596,7 @@ describe('the lift a file takes before the rules read it', () => {
             {
               encoding: {
                 color: 'red',
-                shape: 'triangle',
+                shape: 'triangle-down',
               },
               transform: [{ type: 'coverage', as: 'depth' }],
             },
@@ -613,7 +615,7 @@ describe('the lift a file takes before the rules read it', () => {
         {
           encoding: {
             color: { value: 'red' },
-            shape: { value: 'triangle' },
+            shape: { value: 'triangle-down' },
           },
           transform: [{ type: 'coverage', as: 'depth' }],
         },

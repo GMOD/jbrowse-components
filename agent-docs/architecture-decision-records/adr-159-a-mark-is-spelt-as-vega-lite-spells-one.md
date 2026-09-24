@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display spells a mark's kind `mark` and the point symbol `encoding.shape`, as Vega-Lite and GenomeSpy do, where it said `shape` and `encoding.glyph`; the symbol `disc` is `circle`. A Vega-Lite or GenomeSpy layer object goes into `marks` as written, and `jbrowse validate`'s table translating the two keys is gone. The grammar's side says `shape` throughout — `ShapeEncoding`, `ShapeName`, `SHAPE_CODES`, the `MarkShape` config object and the legend's `shapeScale` — while the worker lane the point painter reads keeps render-core's word, `glyph`, beside `GLYPH_DISC` and `appendGlyph`. render-core's `MarkShape` interface, the painter/shader/hit triple, keeps its name. No migration"
+summary: "The mark display spells a mark's kind `mark` and the point symbol `encoding.shape`, as Vega-Lite and GenomeSpy do, where it said `shape` and `encoding.glyph`; the symbols are `circle`, `triangle-down` and `diamond`, Vega-Lite's names for what the painter draws. The keys a Vega-Lite or GenomeSpy author reaches for are the ones this schema declares, and `jbrowse validate`'s table translating the two is gone. The grammar's side says `shape` throughout — `ShapeEncoding`, `ShapeName`, `SHAPE_CODES`, the `MarkShape` config object and the legend's `shapeScale` — while the worker lane the point painter reads keeps render-core's word, `glyph`, beside `GLYPH_DISC` and `appendGlyph`. render-core's `MarkShape` interface, the painter/shader/hit triple, keeps its name. No migration"
 ---
 
 # ADR-159: A mark is spelt as Vega-Lite spells one
@@ -25,10 +25,14 @@ because `MarkShape` already names render-core's painter/shader/hit triple.
 
 ## Decision
 
-- **The config speaks Vega-Lite.** `marks[i].mark` is `bar`, `point` or
-  `span`; `encoding.shape` is `circle`, `triangle` or `diamond`, a `jexl:`
-  expression returning one, or a categorical scale over them. `disc` became
-  `circle`, Vega-Lite's name for it.
+- **The config uses Vega-Lite's keys and shape names.** `marks[i].mark` is
+  `bar`, `point` or `span`; `encoding.shape` is `circle`, `triangle-down` or
+  `diamond`, a `jexl:` expression returning one, or a categorical scale over
+  them. `disc` became `circle`, and `triangle` became `triangle-down`, since
+  the painter draws it pointing down and Vega-Lite's `triangle` points up. A
+  channel is still a bare field name or this schema's own object, not
+  Vega-Lite's `{ field, type }`, so a layer copied from Vega-Lite needs its
+  channels rewritten; its keys do not.
 - **The grammar's code follows the config.** The encoding's channel and its
   types are `shape` (`ShapeEncoding`, `ShapeName`, `SHAPE_CODES`,
   `SHAPE_NAMES` in `@jbrowse/core/util/shapeNames`), the legend's scale
@@ -39,9 +43,9 @@ because `MarkShape` already names render-core's painter/shader/hit triple.
   point mark reads stays `glyph`, beside `GLYPH_DISC`, `appendGlyph` and
   `PointChannels.glyph`: it is the painter's code per instance, not the
   grammar's channel, and `markLanes` maps the one to the other.
-- **The translation table is gone.** A layer written in either grammar
-  validates as written, and a key the schema does not declare, `glyph`
-  included, is refused like any other.
+- **The translation table is gone.** `mark` and `shape` are declared keys, and
+  a key the schema does not declare, `glyph` included, is refused like any
+  other.
 
 ## Consequences
 
@@ -51,8 +55,12 @@ because `MarkShape` already names render-core's painter/shader/hit triple.
   which passed the old `glyph` key through without an excess-property check;
   it names `shape: glyph` now, so a rename of the channel is a compile error
   there.
-- `LegendSwatchGlyph` keeps its name, being a plugin ABI module; its swatch
-  reads `shape`.
+- `@jbrowse/core/util/glyphNames` is `shapeNames`, and `LegendSwatch.glyph`
+  is `shape`; both were served only by v5 betas. `LegendSwatchGlyph` keeps its
+  name: it draws a swatch that may be a glyph.
+- The config object is `MarkShape`, as the colour one is `MarkColor`; the
+  render-core interface of the same name is internal and never reaches a
+  config or an error message.
 - The measurement rows `jexl-glyph` and `scale-glyph` keep their ids, which
   the generated tables key on.
 

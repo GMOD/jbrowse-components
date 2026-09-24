@@ -12,7 +12,7 @@ import type { ShapeName } from './markEncodingTypes.ts'
  */
 export const SHAPE_CODES: Record<ShapeName, number> = {
   circle: GLYPH_DISC,
-  triangle: GLYPH_TRIANGLE,
+  'triangle-down': GLYPH_TRIANGLE,
   diamond: GLYPH_DIAMOND,
 }
 
