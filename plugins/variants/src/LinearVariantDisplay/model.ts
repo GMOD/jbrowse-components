@@ -1,5 +1,6 @@
 import { getDialogHost } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
+import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 // the subpath, not the barrel: the barrel is eager, and a value edge from it
 // into the canvas base display model would undo that display's lazy loading.
@@ -10,6 +11,7 @@ import { VARIANT_FEATURE_WIDGET } from '../shared/constants.ts'
 import { JexlFilterDialog } from '../shared/lazyDialogs.ts'
 import {
   CONSEQUENCE_IMPACT_JEXL,
+  IMPACT_FIELD,
   IMPACT_TIERS,
   UNANNOTATED_IMPACT,
   getImpactColor,
@@ -18,10 +20,12 @@ import { VARIANT_FILTER_EXAMPLES } from '../shared/variantFilterExamples.ts'
 import { variantFilterFields } from '../shared/variantFilterFields.ts'
 import {
   SV_TYPE_COLOR_JEXL,
+  SV_TYPE_FIELD,
   svTypeLegendEntries,
 } from '../shared/variantSvType.ts'
 import { breakendMenuItems } from './breakendMenu.ts'
 import { VARIANT_CHANNEL_SPEC_EXAMPLES } from './channelSpecExamples.ts'
+import { presetColorOf } from './presetColor.ts'
 
 import type { LinearVariantDisplayConfigModel } from './configSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -64,9 +68,52 @@ export default function stateModelFactory(
        */
       type: types.literal('LinearVariantDisplay'),
     })
+    .views(self => ({
+      /**
+       * #getter
+       * The canvas resolver, with the `impact` and `svType` preset fields
+       * resolved to the jexl colours that compute them.
+       */
+      get colorEncoding() {
+        return (
+          presetColorOf(self.colorSettings) ??
+          colorEncodingOf(self.colorSettings, 'categorical')
+        )
+      },
+      /**
+       * #getter
+       * The attribute the Attribute dialog opens on, '' under a preset.
+       */
+      get colorByAttribute(): string {
+        return presetColorOf(self.colorSettings) ? '' : self.colorSettings.field
+      },
+    }))
     .views(self => {
       const superContextMenuItems = self.contextMenuItems
+      const superRpcProps = self.rpcProps
       return {
+        /**
+         * #method
+         * The canvas payload with a preset field sent as the jexl colour it
+         * resolves to, since the worker reads the raw `color` object.
+         */
+        rpcProps() {
+          const props = superRpcProps()
+          const preset = presetColorOf(self.colorSettings)
+          return preset
+            ? {
+                ...props,
+                displayConfig: {
+                  ...props.displayConfig,
+                  color: {
+                    ...props.displayConfig.color,
+                    value: preset,
+                    field: '',
+                  },
+                },
+              }
+            : props
+        },
         /**
          * #method
          * The shared feature menu plus, on a breakend record, the row that
@@ -199,7 +246,7 @@ export default function stateModelFactory(
             checked: self.colorsByConsequenceImpact,
             onClick: () => {
               self.setShowLegend(true)
-              self.setFeatureColor(CONSEQUENCE_IMPACT_JEXL)
+              self.colorByField(IMPACT_FIELD)
             },
           },
           {
@@ -208,7 +255,7 @@ export default function stateModelFactory(
             checked: self.colorsBySvType,
             onClick: () => {
               self.setShowLegend(true)
-              self.setFeatureColor(SV_TYPE_COLOR_JEXL)
+              self.colorByField(SV_TYPE_FIELD)
             },
           },
           {

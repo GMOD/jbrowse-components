@@ -1,4 +1,7 @@
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
+
 import { ALT_HUE, shadeByDosage } from './cellFill.ts'
+import { cellHueField, recordHueField, recordKeyColor } from './cellHue.ts'
 import {
   NO_CALL_COLOR,
   PRIMARY_ALT_COLOR,
@@ -7,14 +10,14 @@ import {
   UNPHASED_COLOR,
   capitalizeFirst,
 } from './constants.ts'
-import { PHASE_SET_COLOR } from './getPhasedColor.ts'
+import { PHASE_SET_FIELD } from './getPhasedColor.ts'
 import {
-  CONSEQUENCE_IMPACT_JEXL,
+  IMPACT_FIELD,
   IMPACT_TIERS,
   UNANNOTATED_IMPACT,
   getImpactColor,
 } from './variantConsequence.ts'
-import { SV_TYPE_COLOR, svTypeDisplayLabel } from './variantSvType.ts'
+import { SV_TYPE_FIELD, svTypeDisplayLabel } from './variantSvType.ts'
 
 import type { Source } from './types.ts'
 import type {
@@ -22,6 +25,8 @@ import type {
   CategoricalScale,
   ColorScale,
 } from '@jbrowse/core/ui/colorScale'
+import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
+import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
 
 // Pure scale builders, split out of MultiSampleVariantBaseModel so they can be
 // unit-tested without instantiating the display model. The model's
@@ -89,7 +94,7 @@ function altEntries(hue: string, inputs: VariantLegendInputs) {
 }
 
 // The genotype scale: the constant alt hue, a plain CSS color from
-// `featureColor`, or — in phased mode — the two allele identities.
+// `color`, or — in phased mode — the two allele identities.
 export function getGenotypeEntries(
   inputs: VariantLegendInputs,
   altColorOverride?: string,
@@ -166,7 +171,15 @@ function domainEntries(
   const seen = new Set(painted)
   const ranked = order.filter(value => seen.has(value))
   const rest = painted.filter(value => !order.includes(value)).sort()
-  const values = [...ranked, ...rest]
+  return swatchEntries([...ranked, ...rest], inputs, color, label)
+}
+
+function swatchEntries(
+  values: readonly string[],
+  inputs: VariantLegendInputs,
+  color: (value: string) => string,
+  label: (value: string) => string,
+): CategoricalEntry[] {
   if (inputs.renderingMode === 'phased' || !inputs.shadeByDosage) {
     return values.map(value => ({
       value,
@@ -187,18 +200,47 @@ function domainEntries(
   ]
 }
 
-// The cell-coloring scale for a resolved `featureColor` key: the impact tiers
-// painted for the consequence preset, the SV classes painted for the SV-type
-// preset, the phasing rule for the phase-set preset, or the genotype key —
-// which is also where a plain CSS color lands, since "every alt cell is that
-// color" is a genotype key with one alt hue. Undefined only for a real jexl
-// expression, whose output can't be enumerated into swatches.
+// A record field's rows: the values painted, and every bin of a threshold
+// whether painted or not, since the bins are the whole scale.
+function recordFieldScale(
+  field: CategoricalField,
+  inputs: VariantLegendInputs,
+): CategoricalScale {
+  const values = [
+    ...new Set([
+      ...(field.closed ? field.domain : []),
+      ...inputs.paintedDomain,
+    ]),
+  ].sort(field.compare)
+  return {
+    kind: 'categorical',
+    id: 'recordField',
+    title: field.field,
+    entries: [
+      ...swatchEntries(
+        values,
+        inputs,
+        key => recordKeyColor(field, key),
+        field.label,
+      ),
+      ...absentDataEntries(inputs),
+    ],
+  }
+}
+
+// The cell-coloring scale for the resolved `color`: the impact tiers painted
+// for the consequence preset, the SV classes painted for the SV-type preset,
+// the phasing rule for the phase-set preset, a record field's values, or the
+// genotype key — which is also where a plain CSS color lands, since "every alt
+// cell is that color" is a genotype key with one alt hue. Undefined only for a
+// jexl callback, whose output can't be enumerated into swatches.
 function getCellColorScale(
-  cellColorKey: string,
+  encoding: ColorEncoding | undefined,
   inputs: VariantLegendInputs,
   svTypeColors?: Record<string, string>,
 ): CategoricalScale | undefined {
-  if (cellColorKey === CONSEQUENCE_IMPACT_JEXL) {
+  const cellField = cellHueField(encoding)
+  if (cellField === IMPACT_FIELD) {
     return {
       kind: 'categorical',
       id: 'consequenceImpact',
@@ -214,7 +256,7 @@ function getCellColorScale(
       ],
     }
   }
-  if (cellColorKey === SV_TYPE_COLOR) {
+  if (cellField === SV_TYPE_FIELD) {
     const colors = svTypeColors ?? {}
     return {
       kind: 'categorical',
@@ -231,7 +273,7 @@ function getCellColorScale(
       ],
     }
   }
-  if (cellColorKey === PHASE_SET_COLOR) {
+  if (cellField === PHASE_SET_FIELD) {
     return {
       kind: 'categorical',
       id: 'phaseSet',
@@ -249,16 +291,21 @@ function getCellColorScale(
       ],
     }
   }
-  if (cellColorKey.startsWith('jexl:')) {
+  const recordField = recordHueField(encoding)
+  if (recordField) {
+    return recordFieldScale(recordField, inputs)
+  }
+  if (typeof encoding === 'string' && isJexl(encoding)) {
     return undefined
   }
   return {
     kind: 'categorical',
     id: 'genotypes',
     title: 'Genotypes',
-    // '' (the default genotype coloring) is falsy, so it reads as "no
-    // override" — the same meaning it has in the `featureColor` slot.
-    entries: getGenotypeEntries(inputs, cellColorKey),
+    entries: getGenotypeEntries(
+      inputs,
+      typeof encoding === 'string' ? encoding : undefined,
+    ),
   }
 }
 
@@ -270,15 +317,16 @@ function getCellColorScale(
  * single value.
  */
 export function getVariantColorScales({
-  featureColor,
+  color,
   svTypeColors,
   colorBy,
   sources,
   insertionMarkers = false,
   ...inputs
 }: VariantLegendInputs & {
-  // Per-variant cell hue; '' = the default genotype coloring.
-  featureColor: string
+  // The alt cells' hue as the display resolved its `color`; undefined for the
+  // genotype colours.
+  color: ColorEncoding | undefined
   // The worker-assigned color per present SV type, so the swatches match the
   // painted cells. Only read when the SV-type preset is selected.
   svTypeColors?: Record<string, string>
@@ -295,11 +343,13 @@ export function getVariantColorScales({
   // and the legend has to say that instead of describing a scheme that isn't on
   // screen. Resolved here rather than by forbidding the combination, since
   // renderingMode can change after the color is chosen.
-  const cellColorKey =
-    featureColor === PHASE_SET_COLOR && inputs.renderingMode !== 'phased'
-      ? ''
-      : featureColor
-  const cellScale = getCellColorScale(cellColorKey, inputs, svTypeColors)
+  const cellScale = getCellColorScale(
+    cellHueField(color) === PHASE_SET_FIELD && inputs.renderingMode !== 'phased'
+      ? undefined
+      : color,
+    inputs,
+    svTypeColors,
+  )
   return [
     ...(cellScale ? [cellScale] : []),
     // A section of its own rather than one more entry on the genotype scale:

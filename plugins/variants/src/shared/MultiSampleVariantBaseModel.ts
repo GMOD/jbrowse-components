@@ -27,7 +27,10 @@ import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  colorEncodingOf,
+  colorForField,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
@@ -47,6 +50,7 @@ import {
 } from '@jbrowse/tree-sidebar'
 
 import { sortSourcesAroundVariant } from './anchoredHaplotypeSort.ts'
+import { cellHueField } from './cellHue.ts'
 import {
   HIDDEN_ROW,
   INTERNAL_SOURCE_KEYS,
@@ -78,6 +82,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
+import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
@@ -165,7 +170,6 @@ export interface VariantContextMenuInfo extends ContextMenuAnchor {
 
 // Config slots ported onto the *other* variant display's config when the
 // user switches display type via the track menu (see getPortableSettings).
-// `featureColor` is deliberately absent — it is ported separately, raw.
 //
 // `height` and `rowHeight` are config slots too (TrackHeightMixin,
 // RowHeightMixin), so they are ported here and not through the instance
@@ -193,8 +197,9 @@ const PORTABLE_CONFIG_KEYS = [
 ] as const
 
 // The config objects that travel whole: the arrangement with them, since
-// `rows` holds the order, labels, tree and focus.
-const PORTABLE_CONFIG_OBJECTS = ['facet', 'rows', 'rowColor'] as const
+// `rows` holds the order, labels, tree and focus. An object reads back as its
+// snapshot, so a `jexl:` colour travels unevaluated.
+const PORTABLE_CONFIG_OBJECTS = ['facet', 'rows', 'rowColor', 'color'] as const
 
 // The display-state arrangement these displays kept before `rows`. Named on
 // the way in because MST drops an undeclared key in silence, and a session
@@ -771,15 +776,35 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
-         * Optional per-variant cell color (jexl string or CSS color) applied to
-         * alt-carrying cells; '' means default genotype coloring. Reads the raw
-         * config value directly (not `getConf`, which evaluates a `jexl:...`
-         * string immediately with no `feature` bound) — this crosses the RPC
-         * boundary as-is and is evaluated once per feature in the worker (see
-         * `makeFeatureColor` in `executeVariantCellData.ts`).
+         * The `color` object as written, `value` raw: a `jexl:` callback is the
+         * worker's to evaluate per variant.
          */
-        get featureColor(): string {
-          return self.configuration.featureColor
+        get colorSetting(): ColorSetting {
+          const { color } = self.configuration
+          return {
+            value: color.value,
+            field: color.field,
+            scale: getConf(self, ['color', 'scale']),
+            domain: getConf(self, ['color', 'domain']),
+            range: getConf(self, ['color', 'range']),
+          }
+        },
+        /**
+         * #getter
+         * What the alt cells' hue paints: undefined for the genotype colours,
+         * a CSS colour or `jexl:` callback, or a field through its categorical
+         * or threshold scale (`shared/cellHue.ts`).
+         */
+        get colorEncoding() {
+          return colorEncodingOf(this.colorSetting, 'categorical')
+        },
+        /**
+         * #getter
+         * The field the alt cells paint by, '' while they paint the genotype
+         * colours or a constant.
+         */
+        get colorField(): string {
+          return cellHueField(this.colorEncoding) ?? ''
         },
         /**
          * #getter
@@ -952,12 +977,20 @@ export default function MultiSampleVariantBaseModelF(
           },
           /**
            * #action
-           * Set the per-variant cell color override (jexl string or CSS color), or
-           * '' to restore default genotype coloring. A fetch input — recomputes
-           * cells in the worker.
+           * Paint the alt cells by a field, or by the genotype colours with
+           * `''`, which keeps the field under `scale: 'none'` for the way
+           * back. A fetch input.
            */
-          setFeatureColor(arg: string) {
-            setConf(self, 'featureColor', arg)
+          setColorField(field: string) {
+            setConf(self, 'color', colorForField(self.colorSetting, field))
+          },
+          /**
+           * #action
+           * Replace the whole `color` object, as the field dialog does when it
+           * writes cut points with the field.
+           */
+          setColor(color: Record<string, unknown>) {
+            setConf(self, 'color', color)
           },
           /**
            * #action
@@ -1241,7 +1274,7 @@ export default function MultiSampleVariantBaseModelF(
             maxMissingnessFilter: self.maxMissingnessFilter,
             filters: self.filters,
             renderingMode: self.renderingMode,
-            featureColor: self.featureColor,
+            color: self.colorEncoding,
             shadeByDosage: self.shadeByDosage,
           }
         },
@@ -1629,9 +1662,6 @@ export default function MultiSampleVariantBaseModelF(
           for (const key of PORTABLE_CONFIG_OBJECTS) {
             target.setSubschema(key, getConf(self, key))
           }
-          // Raw, never through getConf: featureColor can hold a `jexl:...`
-          // string, and getConf evaluates one on read with no `feature` bound
-          target.setSlot('featureColor', self.featureColor)
           return {
             jexlFiltersSetting: self.jexlFiltersSetting,
           }
@@ -1688,7 +1718,7 @@ export default function MultiSampleVariantBaseModelF(
             hasNoCall: self.hasNoCall,
             paintedDomain: self.paintedDomain,
             shadeByDosage: self.shadeByDosage,
-            featureColor: self.featureColor,
+            color: self.colorEncoding,
             svTypeColors: self.svTypeColors,
             colorBy: self.rowColorField,
             sources: self.sources,

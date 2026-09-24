@@ -1,10 +1,7 @@
 import { ALT_HUE, shadeByDosage } from './cellFill.ts'
 import { NO_CALL_COLOR, REFERENCE_COLOR } from './constants.ts'
-import { PHASE_SET_COLOR } from './getPhasedColor.ts'
-import {
-  CONSEQUENCE_IMPACT_JEXL,
-  UNANNOTATED_IMPACT,
-} from './variantConsequence.ts'
+import { PHASE_SET_FIELD } from './getPhasedColor.ts'
+import { IMPACT_FIELD, UNANNOTATED_IMPACT } from './variantConsequence.ts'
 import {
   DOSAGE_NOTE,
   getGenotypeEntries,
@@ -13,13 +10,17 @@ import {
 } from './variantLegend.ts'
 import {
   NON_SV_TYPE,
-  SV_TYPE_COLOR,
+  SV_TYPE_FIELD,
   assignSvTypeColors,
 } from './variantSvType.ts'
 
 import type { Source } from './types.ts'
 import type { VariantLegendInputs } from './variantLegend.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+
+const IMPACT = { field: IMPACT_FIELD, scale: 'categorical' as const }
+const SV_TYPE = { field: SV_TYPE_FIELD, scale: 'categorical' as const }
+const PHASE_SET = { field: PHASE_SET_FIELD, scale: 'categorical' as const }
 
 // Every scale these build is categorical; the narrowing is what the type asks.
 function entriesOf(scale: ColorScale | undefined) {
@@ -157,7 +158,7 @@ describe('getVariantColorScales', () => {
   it('only the genotype section when colorBy is unset', () => {
     const sections = getVariantColorScales({
       ...inputs(),
-      featureColor: '',
+      color: undefined,
       colorBy: '',
       sources,
     })
@@ -167,7 +168,7 @@ describe('getVariantColorScales', () => {
   it('adds a title-cased group section when colorBy is set', () => {
     const sections = getVariantColorScales({
       ...inputs(),
-      featureColor: '',
+      color: undefined,
       colorBy: 'population',
       sources,
     })
@@ -179,7 +180,7 @@ describe('getVariantColorScales', () => {
   it('lists only the impact tiers a cell was painted for', () => {
     const sections = getVariantColorScales({
       ...inputs({ paintedDomain: ['MODIFIER', 'HIGH'], shadeByDosage: false }),
-      featureColor: CONSEQUENCE_IMPACT_JEXL,
+      color: IMPACT,
       colorBy: '',
       sources,
     })
@@ -194,13 +195,54 @@ describe('getVariantColorScales', () => {
     ])
   })
 
+  it('keys a record field by the values painted, the no-value row on the alt hue', () => {
+    const [section] = getVariantColorScales({
+      ...inputs({
+        paintedDomain: ['Pathogenic', '', 'Benign'],
+        shadeByDosage: false,
+      }),
+      color: { field: 'INFO.CLNSIG', scale: 'categorical' },
+      colorBy: '',
+      sources,
+    })
+    expect(section!.title).toBe('INFO.CLNSIG')
+    const entries = entriesOf(section)!
+    expect(entries.map(i => i.label)).toEqual([
+      'Benign',
+      'Pathogenic',
+      '(no value)',
+      'Homozygous reference',
+    ])
+    expect(entries.find(i => i.label === '(no value)')!.color).toBe(ALT_HUE)
+  })
+
+  it('lists every bin of a threshold, painted or not', () => {
+    const [section] = getVariantColorScales({
+      ...inputs({ paintedDomain: ['< 0.01'], shadeByDosage: false }),
+      color: {
+        field: 'INFO.AF',
+        scale: 'threshold',
+        domain: ['0.01', '0.05'],
+        range: ['#a00', '#0a0', '#00a'],
+      },
+      colorBy: '',
+      sources,
+    })
+    expect(entriesOf(section)!.map(i => [i.label, i.color])).toEqual([
+      ['< 0.01', '#a00'],
+      ['0.01 – 0.05', '#0a0'],
+      ['≥ 0.05', '#00a'],
+      ['Homozygous reference', REFERENCE_COLOR],
+    ])
+  })
+
   it('names unannotated records as their own tier, in its own color', () => {
     const [section] = getVariantColorScales({
       ...inputs({
         paintedDomain: ['MODIFIER', UNANNOTATED_IMPACT],
         shadeByDosage: false,
       }),
-      featureColor: CONSEQUENCE_IMPACT_JEXL,
+      color: IMPACT,
       colorBy: '',
       sources,
     })
@@ -214,7 +256,7 @@ describe('getVariantColorScales', () => {
   it('builds an SV-type section from the painted classes', () => {
     const sections = getVariantColorScales({
       ...inputs({ paintedDomain: ['INVDUP', 'DEL'], shadeByDosage: false }),
-      featureColor: SV_TYPE_COLOR,
+      color: SV_TYPE,
       svTypeColors: { DEL: '#e41a1c', DUP: '#377eb8', INVDUP: '#1f77b4' },
       colorBy: '',
       sources,
@@ -234,7 +276,7 @@ describe('getVariantColorScales', () => {
   it('lists the non-structural class as a member of the SV scale', () => {
     const [section] = getVariantColorScales({
       ...inputs({ paintedDomain: ['DEL', NON_SV_TYPE], shadeByDosage: false }),
-      featureColor: SV_TYPE_COLOR,
+      color: SV_TYPE,
       svTypeColors: assignSvTypeColors(['DEL', NON_SV_TYPE]),
       colorBy: '',
       sources,
@@ -253,7 +295,7 @@ describe('getVariantColorScales', () => {
         paintedDomain: ['DEL'],
         shadeByDosage: false,
       }),
-      featureColor: SV_TYPE_COLOR,
+      color: SV_TYPE,
       svTypeColors: { DEL: '#e41a1c' },
       colorBy: '',
       sources,
@@ -274,7 +316,7 @@ describe('getVariantColorScales', () => {
   it('draws each SV class at het and hom dosage when shading is on', () => {
     const [section] = getVariantColorScales({
       ...inputs({ paintedDomain: ['DEL'] }),
-      featureColor: SV_TYPE_COLOR,
+      color: SV_TYPE,
       svTypeColors: { DEL: '#e41a1c' },
       colorBy: '',
       sources,
@@ -295,7 +337,7 @@ describe('getVariantColorScales', () => {
   it('keeps one swatch per SV class in phased mode', () => {
     const [section] = getVariantColorScales({
       ...inputs({ renderingMode: 'phased', paintedDomain: ['DEL'] }),
-      featureColor: SV_TYPE_COLOR,
+      color: SV_TYPE,
       svTypeColors: { DEL: '#e41a1c' },
       colorBy: '',
       sources,
@@ -313,7 +355,7 @@ describe('getVariantColorScales', () => {
         hasSecondaryAlt: true,
         hasNoCall: true,
       }),
-      featureColor: '#E69F00',
+      color: '#E69F00',
       colorBy: '',
       sources,
     })
@@ -330,7 +372,7 @@ describe('getVariantColorScales', () => {
   it('shades a plain CSS feature color in allele-count mode', () => {
     const [section] = getVariantColorScales({
       ...inputs(),
-      featureColor: '#E69F00',
+      color: '#E69F00',
       colorBy: '',
       sources,
     })
@@ -344,7 +386,7 @@ describe('getVariantColorScales', () => {
   it('drops the cell legend for an arbitrary custom feature color', () => {
     const sections = getVariantColorScales({
       ...inputs(),
-      featureColor: 'jexl:get(feature,"foo")',
+      color: 'jexl:get(feature,"foo")',
       colorBy: 'population',
       sources,
     })
@@ -364,7 +406,7 @@ describe('phase-set legend section', () => {
     const [section] = getVariantColorScales({
       ...base,
       renderingMode: 'phased',
-      featureColor: PHASE_SET_COLOR,
+      color: PHASE_SET,
     })
     expect(section!.id).toBe('phaseSet')
     const labels = entriesOf(section)!.map(i => i.label)
@@ -386,7 +428,7 @@ describe('phase-set legend section', () => {
     const [section] = getVariantColorScales({
       ...base,
       renderingMode: 'alleleCount',
-      featureColor: PHASE_SET_COLOR,
+      color: PHASE_SET,
     })
     expect(section!.id).toBe('genotypes')
     expect(entriesOf(section)!.map(i => i.label)).toContain(
@@ -398,7 +440,7 @@ describe('phase-set legend section', () => {
 describe('getVariantColorScales insertion marker', () => {
   const base = {
     ...inputs(),
-    featureColor: '',
+    color: undefined,
     svTypeColors: {},
     colorBy: '',
     sources: undefined,
@@ -433,12 +475,12 @@ describe('getVariantColorScales insertion marker', () => {
   // looked at. Same for consequence impact, and for a raw jexl expression,
   // which drops the cell section entirely.
   test.each([
-    ['svType', SV_TYPE_COLOR],
-    ['consequenceImpact', CONSEQUENCE_IMPACT_JEXL],
+    ['svType', SV_TYPE],
+    ['consequenceImpact', IMPACT],
   ])('survives the %s coloring replacing the genotype items', (id, color) => {
     const sections = getVariantColorScales({
       ...base,
-      featureColor: color,
+      color,
       svTypeColors: { DEL: '#123456' },
       insertionMarkers: true,
     })
@@ -448,7 +490,7 @@ describe('getVariantColorScales insertion marker', () => {
   test('survives a jexl coloring that drops the cell section outright', () => {
     const sections = getVariantColorScales({
       ...base,
-      featureColor: 'jexl:someUserExpression(feature)',
+      color: 'jexl:someUserExpression(feature)',
       insertionMarkers: true,
     })
     expect(sections.map(s => s.id)).toEqual(['insertions'])

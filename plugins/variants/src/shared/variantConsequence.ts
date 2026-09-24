@@ -27,10 +27,11 @@ const IMPACT_COLOR: Record<string, string> = Object.fromEntries(
   IMPACT_TIERS.map(t => [t.tier, t.color]),
 )
 
-// The `featureColor` / `color` jexl preset that paints by consequence impact,
-// backed by the `impactColor` jexl function registered in the plugin's
-// configure(). Shared so the single-variant and multi-sample displays offer the
-// same one-click choice and detect it identically.
+// The colour preset field for the most severe consequence tier.
+export const IMPACT_FIELD = 'impact'
+
+// What `{ field: 'impact' }` paints on the single-variant display, through the
+// `impactColor` jexl function registered in the plugin's configure().
 export const CONSEQUENCE_IMPACT_JEXL = 'jexl:impactColor(feature)'
 
 /**

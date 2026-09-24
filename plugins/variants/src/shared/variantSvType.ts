@@ -6,18 +6,14 @@ import { ALT_HUE } from './cellFill.ts'
 import type { CategoricalEntry } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
 
-// The `featureColor` slot sentinel that selects SV-type cell coloring. Unlike
-// the consequence preset (a fixed `jexl:impactColor(feature)` pure function),
-// SV-type colors are assigned in the worker from the set of types actually
-// present (so unrecognized types still get a distinct color), so this is a
-// plain marker string handled in makeFeatureColor rather than a jexl function.
-export const SV_TYPE_COLOR = 'svType'
+// The colour preset field for the structural-variant class. The multi-sample
+// displays paint it from a palette the worker deals over the types present, so
+// an unrecognized type still gets a distinct colour; the single-variant display
+// paints it through SV_TYPE_COLOR_JEXL.
+export const SV_TYPE_FIELD = 'svType'
 
-// The `color` slot jexl preset that paints single-variant features by SV class,
-// backed by the `svTypeColor` jexl function. The multi-sample displays use the
-// SV_TYPE_COLOR sentinel + a worker-computed present-only palette instead; this
-// pure-function form suits the single-variant display, whose `color` slot takes
-// a jexl string (same shape as the consequence CONSEQUENCE_IMPACT_JEXL preset).
+// What `{ field: 'svType' }` paints on the single-variant display: fixed class
+// colours, a copy-number rainbow, and grey for a record with no class.
 export const SV_TYPE_COLOR_JEXL = 'jexl:svTypeColor(feature)'
 
 // Fallback for a variant that isn't a recognized SV class (a plain SNV/indel, or

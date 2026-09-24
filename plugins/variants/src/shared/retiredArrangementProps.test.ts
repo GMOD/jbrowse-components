@@ -52,3 +52,15 @@ describe('the retired domain slot on a variant display config', () => {
     ).toBe(false)
   })
 })
+
+describe('the retired featureColor slot on a variant display config', () => {
+  it('fails the load naming color', () => {
+    expect(() =>
+      configSchema.create({
+        type: 'LinearMultiSampleVariantDisplay',
+        displayId: 't',
+        featureColor: 'jexl:impactColor(feature)',
+      }),
+    ).toThrow(/featureColor on a multi-sample variant display is color/)
+  })
+})

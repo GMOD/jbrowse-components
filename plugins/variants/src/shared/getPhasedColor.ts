@@ -5,15 +5,12 @@ import {
   SECONDARY_ALT_COLOR,
 } from './constants.ts'
 
-// `featureColor` sentinel selecting phase-set coloring, alongside
-// CONSEQUENCE_IMPACT_JEXL and SV_TYPE_COLOR. Not a jexl expression and not a
-// per-feature color like those two: phase set is a per-(feature, sample) FORMAT
-// field, so `makeFeatureColor` returns no resolver for it and the worker passes
-// the mode down to the cell loops instead. It shares the `featureColor` slot
-// because these are all answers to "what do the alt cells mean", and only one
-// can be on the screen at a time — a separate toggle would let a user select two
-// and need a precedence rule to settle it.
-export const PHASE_SET_COLOR = 'phaseSet'
+// The colour preset field for the phase set. Unlike the other fields it is
+// per-(feature, sample), a FORMAT value, so the worker hands the cell loops a
+// flag rather than a per-variant resolver. It is a field of the one `color`
+// object because only one answer to "what do the alt cells mean" can be on the
+// screen at a time.
+export const PHASE_SET_FIELD = 'phaseSet'
 
 // The band the phase-set wheel spins in. Off the band the absent-data colors
 // sit on: no-call is `hsl(50,50%,50%)`, which one turn of a 50%/50% wheel lands

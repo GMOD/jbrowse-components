@@ -1,4 +1,3 @@
-import { readConfigValue } from '@jbrowse/core/configuration'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { updateStatus, withProgress } from '@jbrowse/core/util'
@@ -6,7 +5,7 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 
 import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import { computeVariantMatrixCells } from '../LinearMultiSampleVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
-import { PHASE_SET_COLOR } from '../shared/getPhasedColor.ts'
+import { cellHueOf } from '../shared/cellHue.ts'
 import { buildCanonicalRows } from '../shared/getSources.ts'
 import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
 import {
@@ -14,16 +13,6 @@ import {
   CELL_NO_CALL,
   CELL_UNPHASED,
 } from '../shared/variantCellStyles.ts'
-import {
-  CONSEQUENCE_IMPACT_JEXL,
-  getVariantImpactColor,
-  getVariantImpactDomain,
-} from '../shared/variantConsequence.ts'
-import {
-  NON_SV_TYPE,
-  SV_TYPE_COLOR,
-  getVariantSvType,
-} from '../shared/variantSvType.ts'
 import { computeSampleInfo } from './computeSampleInfo.ts'
 import { groupFeaturesByRegion } from './groupFeaturesByRegion.ts'
 import { orderByScreenPosition } from './orderByScreenPosition.ts'
@@ -35,60 +24,8 @@ import type { SampleInfo } from '../shared/types.ts'
 import type { SimplifiedVariantFeature } from './computeSampleInfo.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-import type { Feature } from '@jbrowse/core/util'
-import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 export type { SimplifiedVariantFeature }
-
-// Resolve the `featureColor` setting to a per-feature color function, or
-// undefined for the default genotype coloring. This runs once per *feature* (not
-// per cell), so the jexl path costs O(variants), not O(cells). The built-in
-// consequence preset skips jexl entirely via the native impact-color function.
-function makeFeatureColor(
-  featureColor: string | undefined,
-  jexl: JexlInstance,
-  svTypeColors: Record<string, string>,
-): ((feature: Feature) => string | undefined) | undefined {
-  if (!featureColor) {
-    return undefined
-  }
-  if (featureColor === CONSEQUENCE_IMPACT_JEXL) {
-    return getVariantImpactColor
-  }
-  if (featureColor === SV_TYPE_COLOR) {
-    return feature => svTypeColors[svTypeDomain(feature)]
-  }
-  if (featureColor === PHASE_SET_COLOR) {
-    // Per-(feature, sample), not per-feature — the cell loops read PS out of
-    // FORMAT themselves, driven by the `colorByPhaseSet` flag.
-    return undefined
-  }
-  const cfg = { color: featureColor }
-  return feature => {
-    try {
-      const css = readConfigValue(cfg, 'color', feature, jexl)
-      return typeof css === 'string' ? css : undefined
-    } catch {
-      return undefined
-    }
-  }
-}
-
-// The SV-type scale's domain value: the record's class, or the scale's explicit
-// "no structural class" member.
-function svTypeDomain(feature: Feature) {
-  return getVariantSvType(feature) || NON_SV_TYPE
-}
-
-// The cell scale's domain value per variant, for the modes whose scale has more
-// than one alt member. The cell loops record it for the features that painted an
-// alt cell, and the legend lists exactly those.
-function makeFeatureDomain(featureColor: string | undefined) {
-  if (featureColor === CONSEQUENCE_IMPACT_JEXL) {
-    return getVariantImpactDomain
-  }
-  return featureColor === SV_TYPE_COLOR ? svTypeDomain : undefined
-}
 
 // What the paint loops reported, as the three legend booleans and the domain
 // list. One place for both modes, so the regular display's per-region merge and
@@ -187,7 +124,7 @@ export async function executeVariantCellData({
     sampleFilter,
     renderingMode,
     referenceDrawingMode,
-    featureColor,
+    color,
     shadeByDosage,
     minorAlleleFrequencyFilter,
     maxMissingnessFilter,
@@ -336,28 +273,19 @@ export async function executeVariantCellData({
     },
     report => computeSampleInfo(filteredVariants, genotypesCache, report),
   )
-  // Resolved after computeSampleInfo because the SV-type preset's color map is
-  // built from the types actually present (see makeFeatureColor / svTypeColors).
-  const featureColorFn = makeFeatureColor(
-    featureColor,
-    pluginManager.jexl,
-    svTypeColors,
-  )
-  const featureDomainFn = makeFeatureDomain(featureColor)
-  // Explicit, not inferred from the data: PS coloring used to switch itself on
-  // whenever a FORMAT carried PS, which silently replaced the alt-allele colors
-  // the legend was still describing and gave no way back.
+  // Resolved after computeSampleInfo because the SV-type preset's palette is
+  // dealt over the types actually present.
   //
-  // Gated on phased mode here rather than in each cell loop, because a phase set
-  // is a per-haplotype fact and only the phased loop paints one: the allele-count
-  // loop never reads PS, so outside phased mode this only bought the heavy
-  // per-sample `samples` read (the flat `genotypes` map doesn't carry PS) for
-  // cells that then paint by genotype anyway. `getVariantColorScales` resolves
-  // the same combination the same way, so the key and the cells agree. Reachable
-  // because the two settings are independent: a config can declare both, and
-  // switching rendering mode leaves `featureColor` alone.
-  const colorByPhaseSet =
-    featureColor === PHASE_SET_COLOR && renderingMode === 'phased'
+  // Phase-set hues are gated on phased mode here rather than in each cell loop:
+  // a phase set is a per-haplotype fact and only the phased loop paints one.
+  // `getVariantColorScales` resolves the same combination the same way, so the
+  // key and the cells agree.
+  const hue = cellHueOf(color, {
+    jexl: pluginManager.jexl,
+    svTypeColors,
+    renderingMode,
+  })
+  const colorByPhaseSet = hue.byPhaseSet ?? false
 
   // The worker's own row list, in its own arbitrary order — see
   // buildCanonicalRows. Phased mode expands to per-haplotype rows here, using
@@ -390,8 +318,8 @@ export async function executeVariantCellData({
               sources: effectiveSources,
               renderingMode,
               referenceDrawingMode: referenceDrawingMode ?? 'skip',
-              featureColor: featureColorFn,
-              featureDomain: featureDomainFn,
+              featureColor: hue.color,
+              featureDomain: hue.domain,
               shadeDosage: shadeByDosage ?? true,
               colorByPhaseSet,
               featureGenotypeCodes,
@@ -408,8 +336,8 @@ export async function executeVariantCellData({
             sources: effectiveSources,
             renderingMode,
             referenceDrawingMode: referenceDrawingMode ?? 'skip',
-            featureColor: featureColorFn,
-            featureDomain: featureDomainFn,
+            featureColor: hue.color,
+            featureDomain: hue.domain,
             shadeDosage: shadeByDosage ?? true,
             colorByPhaseSet,
             featureGenotypeCodes,
@@ -478,8 +406,8 @@ export async function executeVariantCellData({
           filteredVariants,
           sources: effectiveSources,
           renderingMode,
-          featureColor: featureColorFn,
-          featureDomain: featureDomainFn,
+          featureColor: hue.color,
+          featureDomain: hue.domain,
           shadeDosage: shadeByDosage ?? true,
           colorByPhaseSet,
           featureGenotypeCodes,

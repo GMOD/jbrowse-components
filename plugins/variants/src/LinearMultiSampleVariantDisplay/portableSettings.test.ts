@@ -66,18 +66,17 @@ const { createDisplay } = createDisplayTestEnvironment<
 })
 
 // Porting settings across a display-type switch writes each slot onto the target
-// display's config. `featureColor` cannot be read for that with `getConf`: it
-// holds a raw expression the worker evaluates per feature, so a read on the main
-// thread evaluates `jexl:impactColor(feature)` with no feature bound and throws
-// out of the track-menu click.
+// display's config. A `jexl:` colour is the worker's to evaluate per feature, so
+// the port copies it unevaluated: a main-thread read has no feature to bind and
+// threw out of the track-menu click.
 describe('getPortableSettings', () => {
-  function setup(featureColor: string) {
+  function setup(color: Record<string, unknown>) {
     const { display } = createDisplay()
-    display.setFeatureColor(featureColor)
+    display.setColor(color)
     const displays = getContainingTrack(display).configuration
       .displays as (AnyConfigurationModel & {
       displayId: string
-      featureColor: string
+      color: { value: string | undefined }
     })[]
     const target = displays.find(
       d => d.type === 'LinearMultiSampleVariantMatrixDisplay',
@@ -85,21 +84,26 @@ describe('getPortableSettings', () => {
     return { display, target, targetId: target.displayId }
   }
 
-  it('ports a jexl featureColor across without evaluating it', () => {
-    const { display, target, targetId } = setup(CONSEQUENCE_IMPACT_JEXL)
+  it('ports a jexl colour across without evaluating it', () => {
+    const { display, target, targetId } = setup({
+      value: CONSEQUENCE_IMPACT_JEXL,
+    })
     expect(() => {
       display.getPortableSettings(targetId)
     }).not.toThrow()
-    // raw, not readConfObject: resolving it here is the very evaluation the
-    // port avoids, and `impactColor` has no feature to bind
-    expect(target.featureColor).toBe(CONSEQUENCE_IMPACT_JEXL)
+    expect(target.color.value).toBe(CONSEQUENCE_IMPACT_JEXL)
   })
 
-  it('ports a plain color and the non-jexl slots', () => {
-    const { display, target, targetId } = setup('#ff0000')
+  it('ports a field colour and the rows tint', () => {
+    const { display, target, targetId } = setup({
+      field: 'INFO.AF',
+      scale: 'threshold',
+      domain: ['0.01'],
+    })
     display.setRowColorField('population')
     display.getPortableSettings(targetId)
-    expect(target.featureColor).toBe('#ff0000')
+    expect(readConfObject(target, ['color', 'field'])).toBe('INFO.AF')
+    expect(readConfObject(target, ['color', 'domain'])).toEqual(['0.01'])
     expect(readConfObject(target, ['rowColor', 'field'])).toBe('population')
   })
 
@@ -107,7 +111,7 @@ describe('getPortableSettings', () => {
   // used to be returned in the instance snapshot, where MST drops a key no prop
   // declares, and a drag-resized track came back at the other display's default.
   it('ports the track height and a fixed row height as slots', () => {
-    const { display, target, targetId } = setup('')
+    const { display, target, targetId } = setup({})
     display.resizeHeight(123)
     display.setRowHeight(7)
     const { height, rowHeight } = display
@@ -120,7 +124,7 @@ describe('getPortableSettings', () => {
   // A hidden legend is a deliberate sizing choice on a short track, so it has
   // to survive the switch.
   it('ports the legend visibility', () => {
-    const { display, target, targetId } = setup('')
+    const { display, target, targetId } = setup({})
     display.getPortableSettings(targetId)
     expect(readConfObject(target, 'showLegend')).toBe(true)
 
@@ -130,7 +134,7 @@ describe('getPortableSettings', () => {
   })
 
   it('ports the rows and their tints', () => {
-    const { display, target, targetId } = setup('')
+    const { display, target, targetId } = setup({})
     display.applyDisplaySettings({
       rows: { domain: ['HG002', 'HG001'], labels: { HG002: 'Two' } },
       rowColor: { field: 'population', domain: ['HG001'], range: ['#123456'] },
@@ -151,7 +155,7 @@ describe('getPortableSettings', () => {
   // above: returned in the instance snapshot instead, MST drops it and the
   // gutter silently resets on a switch.
   it('ports the tree sidebar width', () => {
-    const { display, target, targetId } = setup('')
+    const { display, target, targetId } = setup({})
     display.setTreeAreaWidth(140)
     const snapshot = display.getPortableSettings(targetId)
     expect(snapshot).not.toHaveProperty('treeAreaWidth')
@@ -159,7 +163,7 @@ describe('getPortableSettings', () => {
   })
 
   it('ports the facet field and its band order', () => {
-    const { display, target, targetId } = setup('')
+    const { display, target, targetId } = setup({})
     display.applyDisplaySettings({
       facet: { field: 'population', domain: ['EUR', 'AFR'] },
     })
@@ -173,7 +177,7 @@ describe('getPortableSettings', () => {
   // The tree only means something beside the order it came with, and the
   // provenance and the focus beside the tree, so all four travel in `rows`.
   it('carries the tree, its provenance and the focus with the order', () => {
-    const { display, target, targetId } = setup('')
+    const { display, target, targetId } = setup({})
     const provenance = {
       regions: [{ refName: 'chr1', start: 0, end: 100 }],
       settings: [],

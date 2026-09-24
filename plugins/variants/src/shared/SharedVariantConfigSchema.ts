@@ -11,6 +11,7 @@ import {
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 
+import { cellColorConfigSchema } from './cellColorConfigSchema.ts'
 import { VARIANT_DISPLAY_TYPES } from './constants.ts'
 
 /**
@@ -78,21 +79,13 @@ export default function sharedVariantConfigFactory() {
           "'alleleCount' draws one row per sample colored by allele dosage; 'phased' draws one row per haplotype",
       },
       /**
-       * #slot
-       * Optional per-feature color for the genotype cells: a jexl expression (or
-       * plain CSS color) evaluated once per variant in the worker, painting every
-       * alt-carrying cell with that color while ref/no-call cells keep their
-       * normal coloring so "who carries it" still reads. Empty means the default
-       * genotype-based coloring (allele dosage / phasing). The "Color by..."
-       * menu offers presets like consequence impact
-       * (`jexl:impactColor(feature)`), but any feature jexl works, same as the
-       * standard `color` slot.
+       * #slot color
+       * The hue of every alt-carrying genotype cell: unset, the genotype
+       * colours; a CSS colour or `jexl:` callback; or a field, one of the
+       * `impact`, `svType` and `phaseSet` presets or any record field, whose
+       * values each take a colour with a key.
        */
-      featureColor: {
-        type: 'string',
-        defaultValue: '',
-        contextVariable: ['feature'],
-      },
+      color: cellColorConfigSchema,
       /**
        * #slot
        * Compose the cell hue with the genotype's alt dosage — the fraction of
@@ -188,13 +181,17 @@ export default function sharedVariantConfigFactory() {
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
       preProcessSnapshot: snap => {
-        if (
-          snap.domain !== undefined &&
-          VARIANT_DISPLAY_TYPES.has(String(snap.type))
-        ) {
-          throw new Error(
-            'domain on a multi-sample variant display is rows: { "domain": [...] }, the row order beside the labels, tree and focus',
-          )
+        if (VARIANT_DISPLAY_TYPES.has(String(snap.type))) {
+          if (snap.domain !== undefined) {
+            throw new Error(
+              'domain on a multi-sample variant display is rows: { "domain": [...] }, the row order beside the labels, tree and focus',
+            )
+          }
+          if (snap.featureColor !== undefined) {
+            throw new Error(
+              'featureColor on a multi-sample variant display is color: a CSS colour or jexl callback, or { "field": "impact" | "svType" | "phaseSet" | <any record field> }',
+            )
+          }
         }
         return snap
       },

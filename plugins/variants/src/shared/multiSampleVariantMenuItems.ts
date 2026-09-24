@@ -5,6 +5,7 @@ import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { jexlFilterNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
+import { colorForValue } from '@jbrowse/display-kit/colorConfigSchema'
 import {
   clusteringMenuItem,
   resetRowOrderMenuItems,
@@ -22,19 +23,21 @@ import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import { breakendSplitViewMenuItem } from './breakendSplitViewMenuItem.ts'
+import { recordHueField } from './cellHue.ts'
 import { capitalizeFirst } from './constants.ts'
-import { PHASE_SET_COLOR } from './getPhasedColor.ts'
+import { PHASE_SET_FIELD } from './getPhasedColor.ts'
 // lazy: this file is reached from a state model, so a dialog named here is in
 // every host's first paint — see ./lazyDialogs.ts
 import {
+  CellColorFieldDialog,
   MultiSampleVariantClusterDialog as ClusterDialog,
   JexlFilterDialog,
   SetColorDialog,
 } from './lazyDialogs.ts'
-import { CONSEQUENCE_IMPACT_JEXL } from './variantConsequence.ts'
+import { IMPACT_FIELD } from './variantConsequence.ts'
 import { VARIANT_FILTER_EXAMPLES } from './variantFilterExamples.ts'
 import { variantFilterFields } from './variantFilterFields.ts'
-import { SV_TYPE_COLOR } from './variantSvType.ts'
+import { SV_TYPE_FIELD } from './variantSvType.ts'
 
 import type { MultiSampleVariantBaseModel } from './MultiSampleVariantBaseModel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -119,6 +122,7 @@ export function variantTrackMenuItems(
   // SimpleFeature per loaded variant — thousands of objects built to open a
   // menu, on a getter nothing else in this display reads.
   const loaded = !!self.cellData
+  const recordField = recordHueField(self.colorEncoding)?.field
   return [
     ...makeShowSubMenu(self.showSubmenuItems()),
     // No presets: a cohort's useful row heights depend on how many samples it
@@ -188,9 +192,9 @@ export function variantTrackMenuItems(
           helpText:
             'Default coloring: allele dosage in allele-count mode, haplotype/allele color in phased mode',
           type: 'radio',
-          checked: !self.featureColor,
+          checked: self.colorEncoding === undefined,
           onClick: () => {
-            self.setFeatureColor('')
+            self.setColor(colorForValue(self.colorSetting, undefined))
           },
         },
         {
@@ -204,7 +208,7 @@ export function variantTrackMenuItems(
           helpText:
             'Color every alt-carrying cell by the phase set (FORMAT PS) its call belongs to, so one phasing block reads as a single hue along a haplotype row; ref and no-call cells keep their normal coloring',
           type: 'radio',
-          checked: self.featureColor === PHASE_SET_COLOR,
+          checked: self.colorField === PHASE_SET_FIELD,
           disabled: !self.hasPhaseSet || self.renderingMode !== 'phased',
           disabledHelpText: !self.hasPhaseSet
             ? !loaded
@@ -212,7 +216,7 @@ export function variantTrackMenuItems(
               : 'No phase sets (FORMAT PS) found in this dataset'
             : 'Only applies in phased mode — switch Rendering mode to phased',
           onClick: () => {
-            self.setFeatureColor(PHASE_SET_COLOR)
+            self.setColorField(PHASE_SET_FIELD)
           },
         },
         {
@@ -226,13 +230,13 @@ export function variantTrackMenuItems(
           helpText:
             'Color every alt-carrying cell by the variant’s most severe SnpEff (ANN) / VEP (CSQ) consequence impact tier; ref and no-call cells keep their normal coloring',
           type: 'radio',
-          checked: self.featureColor === CONSEQUENCE_IMPACT_JEXL,
+          checked: self.colorField === IMPACT_FIELD,
           disabled: !self.hasConsequence,
           disabledHelpText: !loaded
             ? 'Checking for annotations...'
             : 'No SnpEff/VEP annotations (ANN/CSQ) found in this dataset',
           onClick: () => {
-            self.setFeatureColor(CONSEQUENCE_IMPACT_JEXL)
+            self.setColorField(IMPACT_FIELD)
           },
         },
         {
@@ -246,13 +250,27 @@ export function variantTrackMenuItems(
           helpText:
             'Color every alt-carrying cell by the variant’s structural-variant class (deletion, duplication, insertion, inversion, ...); ref and no-call cells keep their normal coloring',
           type: 'radio',
-          checked: self.featureColor === SV_TYPE_COLOR,
+          checked: self.colorField === SV_TYPE_FIELD,
           disabled: !self.hasSvType,
           disabledHelpText: !loaded
             ? 'Checking for structural variants...'
             : 'No structural variants (SVTYPE) found in this dataset',
           onClick: () => {
-            self.setFeatureColor(SV_TYPE_COLOR)
+            self.setColorField(SV_TYPE_FIELD)
+          },
+        },
+        {
+          label: recordField ? `Field (${recordField})...` : 'Field...',
+          helpText:
+            'Color every alt-carrying cell by a field of its record — an INFO field such as CLNSIG, QUAL, FILTER, or a computed value such as maf — one color per value, or per range between cut points for a number',
+          type: 'radio',
+          checked: !!recordField,
+          keepMenuOpen: false,
+          onClick: () => {
+            getDialogHost(self).queueDialog(handleClose => [
+              CellColorFieldDialog,
+              { model: self, handleClose },
+            ])
           },
         },
         // Only in allele-count mode: a phased row is one haplotype, which either
