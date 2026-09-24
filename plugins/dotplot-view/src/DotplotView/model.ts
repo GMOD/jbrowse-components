@@ -33,6 +33,7 @@ import {
   pendingLaunch,
   withLaunchInput,
 } from '@jbrowse/core/util/withLaunchInput'
+import { svgLegendGutterWidth } from '@jbrowse/display-kit/LegendMixin'
 import { cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { installUpload } from '@jbrowse/render-core/installUpload'
@@ -650,6 +651,16 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         colorSurface() {
           return 'points' as const
+        },
+
+        /**
+         * #method
+         * The export parks the key beside the plot rather than over it: a
+         * diagonalized plot's alignments run into the top-right corner the key
+         * would otherwise cover.
+         */
+        svgLegendWidth(): number {
+          return svgLegendGutterWidth(self)
         },
 
         /**

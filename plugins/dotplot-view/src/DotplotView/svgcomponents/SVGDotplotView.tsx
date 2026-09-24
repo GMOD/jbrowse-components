@@ -46,13 +46,14 @@ export async function renderToSvg(
   // the axes on the pre-wait geometry while the dots were drawn against the new
   // one. (Same ordering rule as the LGV export's track heights.)
   const { width, borderX, viewWidth, viewHeight, height } = model
+  const legendWidth = model.svgLegendWidth()
 
   const { pluginManager } = getEnv(model)
 
   // the xlink namespace is used for rendering <image> tag
   return wrapSvgExport({
     theme,
-    width,
+    width: width + legendWidth,
     height,
     fontFamily,
     Wrapper,
@@ -81,7 +82,7 @@ export async function renderToSvg(
             model={model}
             width={viewWidth}
             height={viewHeight}
-            opts={undefined}
+            opts={{ legendWidth }}
           />
         </g>
         <g transform={`translate(${borderX} ${viewHeight})`}>

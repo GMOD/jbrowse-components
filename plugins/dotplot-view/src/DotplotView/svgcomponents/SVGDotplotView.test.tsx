@@ -154,20 +154,25 @@ function legendContents(svg: string) {
   throw new Error('legend group never closed')
 }
 
-test('the color legend is exported outside the clip, at the top right', async () => {
+// A diagonalized plot's alignments run into the top-right corner, so a key
+// floated there covered them; the export widens to park it beside the plot.
+test('the color legend is exported beside the plot, which the canvas widens for', async () => {
   const { view } = await setup()
-  expect(await renderToSvg(view, {})).not.toContain('Identity')
+  const plain = await renderToSvg(view, {})
+  expect(plain).not.toContain('Identity')
 
   view.setColorBy('identity')
   const svg = await renderToSvg(view, {})
   expect(svg).toContain('Identity')
   expect(clipGroupContents(svg)).not.toContain('Identity')
-  // laid out from the right edge of the plot, so past its midpoint
   const x =
     /<g transform="translate\(([\d.]+) 0\)" data-testid="color-legend"/.exec(
       svg,
     )
-  expect(Number(x![1])).toBeGreaterThan(view.viewWidth / 2)
+  expect(Number(x![1])).toBeGreaterThan(view.viewWidth)
+  const svgWidth = (s: string) =>
+    Number(/<svg[^>]* width="([\d.]+)"/.exec(s)![1])
+  expect(svgWidth(svg)).toBeGreaterThan(svgWidth(plain))
 }, 20000)
 
 // A strand-coloured figure used to export with nothing saying which of the two
