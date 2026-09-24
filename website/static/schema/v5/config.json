@@ -17856,6 +17856,15 @@
         "hideUnlabelled": {
           "type": "boolean"
         },
+        "alpha": {
+          "type": "number"
+        },
+        "minAlignmentLength": {
+          "type": "number"
+        },
+        "lodMode": {
+          "enum": ["auto", "fine", "coarse"]
+        },
         "height": {
           "type": "number"
         },
@@ -17874,19 +17883,10 @@
         "showGridlines": {
           "type": "boolean"
         },
-        "lodMode": {
-          "enum": ["auto", "fine", "coarse"]
-        },
         "lockAspectRatio": {
           "type": "boolean"
         },
         "lineWidth": {
-          "type": "number"
-        },
-        "alpha": {
-          "type": "number"
-        },
-        "minAlignmentLength": {
           "type": "number"
         },
         "minIdentity": {
@@ -18085,6 +18085,15 @@
         "hideUnlabelled": {
           "type": "boolean"
         },
+        "alpha": {
+          "type": "number"
+        },
+        "minAlignmentLength": {
+          "type": "number"
+        },
+        "lodMode": {
+          "enum": ["auto", "fine", "coarse"]
+        },
         "cigarMode": {
           "enum": ["off", "matches", "full"]
         },
@@ -18099,15 +18108,6 @@
         },
         "overdrawPx": {
           "type": "number"
-        },
-        "alpha": {
-          "type": "number"
-        },
-        "minAlignmentLength": {
-          "type": "number"
-        },
-        "lodMode": {
-          "enum": ["auto", "fine", "coarse"]
         },
         "opacityByIdentity": {
           "type": "boolean"

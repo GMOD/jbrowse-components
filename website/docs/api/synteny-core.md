@@ -95,13 +95,12 @@ is painting, and the per-track swatches once more than one track overlays.
 ## colorByMenuTargetFor
 
 Project a view carrying `TrackColorsMixin` onto the menu builder's input.
-`track` is offered once two tracks overlay, and `reference` only across a
-stack of two or more levels, since below that it degenerates to query or
-target.
+`track` is offered once two tracks overlay, and `reference` where the view
+says it has a reference to anchor on.
 
 ```js
 // type signature
-(model: TrackColorsModel, { pointBased, showReference, }: { pointBased: boolean; showReference: boolean; }) => ColorByMenuTarget
+(model: TrackColorsModel) => ColorByMenuTarget
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorByMenuTarget.ts)
@@ -126,23 +125,13 @@ note row saying so.
 
 ## ColorBySelector
 
-The palette button both comparative headers render. The menu it opens was
-already shared (`colorByMenuItems` over the structural `TrackColorsModel`), and
-what was left in each plugin was the same button around it — which had already
-drifted: only the synteny one said what mode it was currently in.
-
-The two flags are the whole of the difference, and each is a fact about the
-view rather than a preference, so the caller states it:
-
-- `pointBased` picks the point-based wording for the modes whose help text
-  describes a ribbon (a dotplot's Default is black, synteny's is red).
-- `showReference` is whether there is a shared reference to anchor on: 'reference'
-  coloring only carries meaning across a stack of two or more levels, and
-  degenerates to query/target below that — a two-genome dotplot never has one.
+The palette button both comparative headers render, over the view's
+`TrackColorsMixin`: what the view draws and whether it has a reference to
+anchor on are the view's own hooks, so the button takes nothing else.
 
 ```js
 // type signature
-({ model, pointBased, showReference, }: { model: TrackColorsModel; pointBased: boolean; showReference: boolean; }) => Element
+({ model, }: { model: TrackColorsModel; }) => Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/ColorBySelector.tsx)
@@ -204,6 +193,17 @@ LEGEND_CHIP_ALPHA_FLOOR.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
 
+## minLengthMenuItem
+
+The Min length row of a view carrying `SyntenyViewMixin`.
+
+```js
+// type signature
+(model: { minAlignmentLength: number; setMinAlignmentLength: (value: number) => void; }) => MenuItem
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/settingsMenuItems.ts)
+
 ## nameColorCss
 
 One name's chromosome-painting color, resolved against an assembly's refName
@@ -223,6 +223,18 @@ drift this module exists to prevent — see the header.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorFunctions.ts)
+
+## opacityMenuItem
+
+The Opacity row of a view carrying `SyntenyViewMixin`, reset to that view's
+own default.
+
+```js
+// type signature
+(model: { alpha: number; defaultAlpha: number; setAlpha: (value: number) => void; colorSurface: () => SyntenyColorSurface; }) => MenuItem
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/settingsMenuItems.ts)
 
 ## paintedField
 
@@ -248,6 +260,19 @@ field spelled `toString` is a column nobody declared, not `Object`'s method.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
+
+## refNamePositionFor
+
+The `RefNamePosition` a chromosome-painting field hands its palette out by:
+`query` reads the first of the alignment's two assemblies, `target` the
+second. Undefined for any other field, and while that assembly loads.
+
+```js
+// type signature
+(field: string, [queryAssembly, targetAssembly]: readonly (string | undefined)[], assemblyManager: { get: (name: string) => {…} | undefined; }) => RefNamePosition | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorFunctions.ts)
 
 ## syntenyColorFor
 

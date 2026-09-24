@@ -18972,6 +18972,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "hideUnlabelled": {
           "type": "boolean"
         },
+        "alpha": {
+          "type": "number"
+        },
+        "minAlignmentLength": {
+          "type": "number"
+        },
+        "lodMode": {
+          "enum": [
+            "auto",
+            "fine",
+            "coarse"
+          ]
+        },
         "height": {
           "type": "number"
         },
@@ -18990,23 +19003,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "showGridlines": {
           "type": "boolean"
         },
-        "lodMode": {
-          "enum": [
-            "auto",
-            "fine",
-            "coarse"
-          ]
-        },
         "lockAspectRatio": {
           "type": "boolean"
         },
         "lineWidth": {
-          "type": "number"
-        },
-        "alpha": {
-          "type": "number"
-        },
-        "minAlignmentLength": {
           "type": "number"
         },
         "minIdentity": {
@@ -19209,6 +19209,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "hideUnlabelled": {
           "type": "boolean"
         },
+        "alpha": {
+          "type": "number"
+        },
+        "minAlignmentLength": {
+          "type": "number"
+        },
+        "lodMode": {
+          "enum": [
+            "auto",
+            "fine",
+            "coarse"
+          ]
+        },
         "cigarMode": {
           "enum": [
             "off",
@@ -19227,19 +19240,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "overdrawPx": {
           "type": "number"
-        },
-        "alpha": {
-          "type": "number"
-        },
-        "minAlignmentLength": {
-          "type": "number"
-        },
-        "lodMode": {
-          "enum": [
-            "auto",
-            "fine",
-            "coarse"
-          ]
         },
         "opacityByIdentity": {
           "type": "boolean"
