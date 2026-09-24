@@ -48,7 +48,7 @@ const Rows = types
   }))
 
 const cells = (table: string) =>
-  table.split('\n').map(line => line.replace(/\s+/g, ' '))
+  table.split('\n').map(line => line.replaceAll(/\s+/g, ' '))
 
 test('counts recomputes, alias calls and named reaction runs, never reads', async () => {
   const rows = Rows.create()
