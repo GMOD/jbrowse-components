@@ -15,6 +15,8 @@ import { ConfigurationSchema } from './configurationSchema.ts'
 import { getConf } from './getConf.ts'
 import { readConfObject } from './readConfObject.ts'
 
+import type { AnyConfigurationModel } from './types.ts'
+
 const schema = ConfigurationSchema(
   'GetConfTest',
   { height: { type: 'number', defaultValue: 100 } },
@@ -33,12 +35,16 @@ test('getConf makes the .configuration hop', () => {
 })
 
 test('readConfObject handed the model reads nothing, and says nothing', () => {
-  expect(readConfObject(model() as never, 'height')).toBeUndefined()
+  expect(
+    readConfObject(model() as unknown as AnyConfigurationModel, 'height'),
+  ).toBeUndefined()
 })
 
 test('readConfObject handed the model answers with a property that is no slot', () => {
   // the trap worth a helper: 1 is the model's own `resolution`, and there is no
   // `resolution` slot for it to have come from
-  expect(readConfObject(model() as never, 'resolution')).toBe(1)
+  expect(
+    readConfObject(model() as unknown as AnyConfigurationModel, 'resolution'),
+  ).toBe(1)
   expect(getConf(model() as never, 'resolution')).toBeUndefined()
 })
