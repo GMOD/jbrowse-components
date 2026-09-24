@@ -20,3 +20,7 @@ export const WorkspaceContainer = lazyWithPreload(
     })),
   ),
 )
+
+export const ViewLauncher = lazyWithPreload(
+  lazyChunk('ViewLauncher', () => import('./ViewLauncher.tsx')),
+)

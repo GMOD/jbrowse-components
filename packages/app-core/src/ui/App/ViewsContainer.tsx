@@ -1,17 +1,16 @@
-import { Suspense, lazy } from 'react'
+import { Suspense } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { isSessionWithWorkspaceLayout } from '../../WorkspaceLayout/model.ts'
-import { lazyChunk } from './lazyChunk.ts'
-import { ClassicViewsContainer, WorkspaceContainer } from './lazyParts.ts'
+import {
+  ClassicViewsContainer,
+  ViewLauncher,
+  WorkspaceContainer,
+} from './lazyParts.ts'
 
 import type { AppSession } from './types.ts'
-
-const ViewLauncher = lazy(
-  lazyChunk('ViewLauncher', () => import('./ViewLauncher.tsx')),
-)
 
 const useStyles = makeStyles()({
   viewsContainer: {
