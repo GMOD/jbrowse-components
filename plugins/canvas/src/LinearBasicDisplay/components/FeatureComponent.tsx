@@ -120,8 +120,7 @@ const OverlayScrollLayer = observer(function OverlayScrollLayer({
 })
 
 // Chrome belonging to one subclass arrives through a model hook rather than a
-// prop: the variant display shares this body and has no `geneGlyphMode` slot to
-// answer with.
+// prop: the variant display shares this body and draws no gene glyphs.
 const FeatureComponent = observer(function FeatureComponent({
   model,
 }: LinearBasicDisplayComponentProps) {
