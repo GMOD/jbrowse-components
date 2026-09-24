@@ -5,6 +5,10 @@ import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
 import type { StatusPhase } from './progress.ts'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
+function loadInflater() {
+  return import('@gmod/bgzf-filehandle')
+}
+
 export function isGzip(buf: Uint8Array) {
   return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
 }
@@ -46,6 +50,15 @@ export async function fetchAndMaybeUnzip(
       ? label
       : { message: phaseOf(label), source: redactSource(loc.source) }
   const { statusCallback, signal } = opts
+  // the inflater is imported dynamically because this module is reachable from
+  // the core/util barrel, so a static import put bgzf-filehandle + pako
+  // (~180KB) on the startup path of every page load. A name ending .gz starts
+  // that import beside the download instead of after it; the bytes still decide
+  // whether to inflate.
+  const inflater = /\.gz($|[?#])/.test(loc.source ?? '')
+    ? loadInflater()
+    : undefined
+  inflater?.catch(() => {})
   // the signal reaches the read, so a cancelled whole-file load drops at the
   // socket rather than downloading a multi-GB body to completion
   const buf = await downloadStatus(
@@ -54,16 +67,12 @@ export async function fetchAndMaybeUnzip(
     onProgress =>
       loc.readFile({ ...opts, onProgress, signal }) as Promise<Uint8Array>,
   )
-  // the inflater is imported dynamically because this module is reachable from
-  // the core/util barrel, so a static import put bgzf-filehandle + pako
-  // (~180KB) on the startup path of every page load; only an actually-gzipped
-  // file needs them
   return isGzip(buf)
     ? await updateStatus(
         'Unzipping',
         statusCallback,
         async () => {
-          const { unzip } = await import('@gmod/bgzf-filehandle')
+          const { unzip } = await (inflater ?? loadInflater())
           return unzip(buf)
         },
         // a cancel landing here is otherwise discovered only by whatever parses
