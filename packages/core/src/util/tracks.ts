@@ -1416,6 +1416,32 @@ export function toggleTrackGeneric(self: GenericView, trackId: string) {
     : !!showTrackGeneric(self, trackId)
 }
 
+/**
+ * Start loading the state model and component of the display a track would
+ * open with, without opening it, for a caller that knows the track is coming.
+ * Anything that fails here is the launch's to report.
+ */
+export function warmTrackDisplayGeneric(
+  self: GenericView,
+  trackId: string,
+  displayInitialSnapshot: DisplayInitialSnapshot = {},
+) {
+  const { pluginManager } = getEnv(self)
+  try {
+    const { picked } = resolveTrackDisplayChoice(
+      self,
+      trackId,
+      displayInitialSnapshot,
+    )
+    pluginManager
+      .resolveDisplayTypeRecord(picked.type)
+      ?.loadStateModel()
+      .catch(() => {})
+  } catch {
+    // the launch reports an unresolvable track
+  }
+}
+
 export async function launchTrackGeneric(
   self: GenericView,
   trackId: string,

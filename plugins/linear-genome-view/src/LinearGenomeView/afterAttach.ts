@@ -6,9 +6,12 @@ import {
 } from '@jbrowse/core/util'
 import { coerceHighlight } from '@jbrowse/core/util/highlights'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
-import { normalizeTrackInit } from '@jbrowse/core/util/tracks'
+import {
+  normalizeTrackInit,
+  warmTrackDisplayGeneric,
+} from '@jbrowse/core/util/tracks'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
-import { autorun, when } from 'mobx'
+import { autorun, untracked, when } from 'mobx'
 
 import { SearchResultsNotFoundError } from '../searchUtils.ts'
 import { installCloseUps } from './closeUps.ts'
@@ -252,6 +255,30 @@ async function applyInit(
 }
 
 /**
+ * The init autorun below waits for the view's width, which exists only once its
+ * component has rendered, and then launches the tracks one at a time. The
+ * display code each pending track needs can start loading now, all at once.
+ */
+function setupInitTrackWarmup(self: LinearGenomeViewModel) {
+  addDisposer(
+    self,
+    autorun(
+      function initTrackWarmupAutorun() {
+        const tracks = asArray(self.pendingLaunch?.tracks)
+        // eslint-disable-next-line no-restricted-syntax -- EFFECT INPUT: the track configs only feed the loads started here; the pending track list is the key
+        untracked(() => {
+          for (const t of tracks) {
+            const { trackId, displaySnapshot } = normalizeTrackInit(t)
+            warmTrackDisplayGeneric(self, trackId, displaySnapshot)
+          }
+        })
+      },
+      { name: 'LGVInitTrackWarmup' },
+    ),
+  )
+}
+
+/**
  * Autorun that handles the init state - navigating to initial location,
  * showing tracks, etc.
  */
@@ -332,6 +359,7 @@ function setupLocalStorageAutorun(self: LinearGenomeViewModel) {
  * Sets up all afterAttach autoruns for the LinearGenomeView
  */
 export function doAfterAttach(self: LinearGenomeViewModel) {
+  setupInitTrackWarmup(self)
   setupInitAutorun(self)
   setupCoarseDynamicBlocksAutorun(self)
   setupLocalStorageAutorun(self)
