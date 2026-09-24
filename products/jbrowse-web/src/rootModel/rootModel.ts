@@ -385,6 +385,18 @@ export default function RootModel({
       },
       /**
        * #action
+       * Opens a session snapshot under a fresh id, so it autosaves beside the
+       * session it came from rather than over it.
+       */
+      async openSessionCopy(snap: Record<string, unknown>) {
+        const { id: _id, ...rest } = snap
+        await withErrorNotify(self, async () => {
+          await self.pluginManager.preloadSessionTypes(rest)
+          self.setSession(rest)
+        })
+      },
+      /**
+       * #action
        */
       async setSavedSessionFavorite(id: string, favorite: boolean) {
         await withSessionDB(self, async sessionDB => {
@@ -470,15 +482,8 @@ export default function RootModel({
                 icon: FileCopyIcon,
                 onClick: () => {
                   if (self.session) {
-                    const { id, ...rest } = getSnapshot<Session>(self.session)
-                    self.pluginManager.preloadSessionTypes(rest).then(
-                      () => {
-                        self.setSession(rest)
-                      },
-                      (e: unknown) => {
-                        console.error(e)
-                        self.session?.notifyError(`${e}`, e)
-                      },
+                    void self.openSessionCopy(
+                      getSnapshot<Session>(self.session),
                     )
                   }
                 },
@@ -490,15 +495,7 @@ export default function RootModel({
                       subMenu: preConfiguredSessions.map(r => ({
                         label: r.name,
                         onClick: () => {
-                          self.pluginManager.preloadSessionTypes(r).then(
-                            () => {
-                              self.setSession(r)
-                            },
-                            (e: unknown) => {
-                              console.error(e)
-                              self.session?.notifyError(`${e}`, e)
-                            },
-                          )
+                          void self.openSessionCopy(r)
                         },
                       })),
                     },

@@ -3,6 +3,7 @@ import { resolveMenus } from '@jbrowse/app-core'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { waitFor } from '@testing-library/react'
 
 import corePlugins from '../corePlugins.ts'
 import sessionModelFactory from '../sessionModel/index.ts'
@@ -362,6 +363,41 @@ test('adds menus', () => {
     -1,
   )
   expect(resolveMenus(root.menus())).toMatchSnapshot()
+})
+
+// the autosave database is keyed by session id, so a session opened from a
+// template that kept the template's id would autosave over the last one opened
+describe('sessions opened from a config template get their own id', () => {
+  const templateConfig = {
+    jbrowse: {
+      ...mainThreadConfig.jbrowse,
+      defaultSession: { name: 'Template', id: 'templateId' },
+      preConfiguredSessions: [{ name: 'Preset', id: 'presetId' }],
+    },
+  }
+
+  test('defaultSession', () => {
+    const root = getRootModel().create(templateConfig)
+    root.setDefaultSession()
+    const first = root.session!.id
+    root.setDefaultSession()
+    expect(first).not.toBe('templateId')
+    expect(root.session!.id).not.toBe(first)
+  })
+
+  test('preConfiguredSessions', async () => {
+    const root = getRootModel().create(templateConfig)
+    root.setDefaultSession()
+    const file = resolveMenus(root.menus()).find(m => m.label === 'File')!
+    const preset = file.menuItems.find(
+      i => 'label' in i && i.label === 'Pre-configured sessions...',
+    ) as { subMenu: { onClick: () => void }[] }
+    preset.subMenu[0]!.onClick()
+    await waitFor(() => {
+      expect(root.session!.name).toBe('Preset')
+    })
+    expect(root.session!.id).not.toBe('presetId')
+  })
 })
 
 describe('upsertSessionMetadata', () => {
