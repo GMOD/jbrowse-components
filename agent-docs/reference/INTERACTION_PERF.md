@@ -570,3 +570,44 @@ frame beside it. Neither exists any more: cancellation is an `AbortSignal` and a
 loop that never awaits yields a task instead (ADR-122). The mint count that
 was chased here — 8 tokens across a 20-frame zoom — was never the frame, and
 the frame itself was never attributed.
+
+## A stalled main thread scrolls the page in Firefox, never in Chrome
+
+**Measured 2026-09-24**, headed Chrome 154 and Firefox Nightly 156, on a bare
+page whose non-passive wheel listener always calls `preventDefault`, with the
+main thread busy-looped for 300ms, 600ms and 1.5s while wheels arrive.
+
+- **Chrome waits for the handler however long the stall lasts.** The page never
+  scrolled; the queued wheels arrived merged (10 sent, 6 delivered) and all
+  cancelable. In the app at 4x CPU throttle over eight tracks, every wheel over
+  the tracks was prevented, no scroller moved, and the tracks area saw no
+  `mouseleave`.
+- **Firefox gives up after `apz.content_response_timeout`, 400ms by default**,
+  and scrolls the page for the rest of that wheel transaction. So a task over
+  400ms during a scroll-zoom is a page scroll for a Firefox user, whatever the
+  controller does. No automated run here can show it: puppeteer's Firefox
+  profile raises the pref to 60000, and its wheel actions bypass APZ anyway. The
+  default is what `about:config` reads after a reset.
+- **Chrome re-targets wheels without scroll phases on every event.** A page
+  scroll that carries the tracks under a still pointer hands them the next
+  wheel, cancelable. Phase-carrying input (macOS trackpads) latches its target
+  for the whole phase, which CDP cannot synthesize.
+
+## How far a wheel zooms is the wheel's, not the frame's
+
+Until 2026-09-24 the wheel controller applied each frame's input capped at
+`MAX_ZOOM_RATE_PER_MS` times the frame's elapsed, and dropped the rest. Measured
+in the app with 120px ctrl+wheel notches: the first notch of a burst zoomed
+1.20x and every later one 1.80x, because only the first frame's elapsed defaults
+to 16.67ms; eight notches zoomed 71x spun 83ms apart and 8.3x spun 25ms apart,
+against 110x asked for. Each notch landed as one frame's jump, then nothing until
+the next. A steady trackpad stream on even frames moved by uneven steps too
+(coefficient of variation 0.30), as its events fell two, three or four to a
+frame.
+
+The controller now keeps what a gesture owes as a backlog in log(bpPerPx), and
+each frame lands a 24ms time constant's share of it under the same rate limit.
+A notch becomes ~80ms of eased motion that totals what it asked for at any spin
+speed or refresh rate, and in simulation the trackpad's variation falls from
+0.38 to 0.15 for about one frame of lag. A 16x cap on the backlog keeps a
+free-spinning wheel from banking a zoom that runs on after the hand stops.
