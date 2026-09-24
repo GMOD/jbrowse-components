@@ -290,15 +290,15 @@ export default function stateModelFactory(pm: PluginManager) {
           lockAspectRatio: types.stripDefault(types.boolean, false),
           /**
            * #property
-           * Screen-space line width (CSS pixels) of every dotplot display in
-           * this view
+           * Line width in CSS pixels of every alignment in the plot
            */
           lineWidth: types.stripDefault(types.number, DEFAULT_LINE_WIDTH),
           /**
            * #property
-           * Plot-wide alpha applied to every point. View-level because its
-           * only control is: stored per display, a track shown after the slider
-           * moved rendered at the default while the slider said otherwise.
+           * Plot-wide opacity of every alignment. Held on the view because its
+           * one control is the view's: stored per display, a track shown after
+           * the slider moved drew at the default while the slider said
+           * otherwise.
            */
           alpha: types.stripDefault(types.number, DEFAULT_ALPHA),
           /**

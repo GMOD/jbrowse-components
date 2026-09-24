@@ -706,7 +706,7 @@ restores natively:
 <!-- prettier-ignore -->
 | Property | What it does |
 | --- | --- |
-| [`alpha`](/docs/models/dotplotview#property-alpha) | Plot-wide alpha applied to every point. View-level for the same reason lineWidth is: the only control is view-level, so storing it per display meant a track shown after the slider moved rendered at the default while the slider said otherwise. |
+| [`alpha`](/docs/models/dotplotview#property-alpha) | Plot-wide opacity of every alignment. Held on the view because its one control is the view's: stored per display, a track shown after the slider moved drew at the default while the slider said otherwise. |
 | [`assemblyNames`](/docs/models/dotplotview#property-assemblynames) | the two assemblies being compared, horizontal axis first. A spec normally names these per axis instead, as `views[0].assembly` and `views[1].assembly`. |
 | [`colorBy`](/docs/models/trackcolorsmixin#property-colorby) | The colour every track in the view paints with, a [](/docs/config/syntenycolor) object: `{ field: "strand" }`, `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`, a measurement (`identity`, `mappingQual`, `dnds`) or a column the tracks declare, with `domain` ordering a text column's labels; a colour string paints every alignment. Unset, the default scheme paints. |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
@@ -714,7 +714,7 @@ restores natively:
 | [`height`](/docs/models/dotplotview#property-height) | the height of the plot in pixels |
 | [`hideUnlabelled`](/docs/models/trackcolorsmixin#property-hideunlabelled) | Under a text-column mode, draw only the rows that carry a label. |
 | [`hview`](/docs/models/dotplotview#property-hview) | the horizontal axis, as a full 1D view state. A spec writes `views[0]` instead, which the launcher resolves into this. |
-| [`lineWidth`](/docs/models/dotplotview#property-linewidth) | Screen-space line width (CSS pixels) applied to every dotplot display in this view. View-level because the GPU pass renders all displays with one uniform. |
+| [`lineWidth`](/docs/models/dotplotview#property-linewidth) | Line width in CSS pixels of every alignment in the plot |
 | [`lockAspectRatio`](/docs/models/dotplotview#property-lockaspectratio) | When true, hview and vview are kept at the same bpPerPx so the dotplot stays square. Wheel zoom already preserves the ratio; box-zoom and other independent ops trigger an autorun resync. |
 | [`lodMode`](/docs/models/dotplotview#property-lodmode) | Level-of-detail tier override for PIF adapters. 'auto' uses the adapter's bpPerPx threshold; 'fine'/'coarse' force a tier. Stored view-level so all displays render at the same tier and the menu doesn't need to fan out per display. |
 | [`minAlignmentLength`](/docs/models/dotplotview#property-minalignmentlength) | Hide alignments shorter than this many bp. Enforced per feature in buildLineSegments. Cuts whole-genome hairball noise. View-level, see alpha. |
