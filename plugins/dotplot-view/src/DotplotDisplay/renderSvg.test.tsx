@@ -124,3 +124,23 @@ test('a segment straddling an edge is kept whole', async () => {
   )
   expect(drawnSegments(html)).toEqual([[90, 10, 140, 60]])
 })
+
+test('a segment the plot does not show is not exported', async () => {
+  const data = geometry([
+    [10, 90, 20, 80],
+    [30, 70, 40, 60],
+  ])
+  data.colors[0] = 0x00_00_00_ff
+  const html = renderToStaticMarkup(await renderSvg(model({ geometry: data })))
+  expect(drawnSegments(html)).toEqual([[30, 30, 40, 40]])
+
+  view.dotplotRenderState.alpha = 0
+  try {
+    const faded = renderToStaticMarkup(
+      await renderSvg(model({ geometry: data })),
+    )
+    expect(drawnSegments(faded)).toEqual([])
+  } finally {
+    view.dotplotRenderState.alpha = 1
+  }
+})

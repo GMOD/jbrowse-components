@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/util/colorBits'
 import { CappedPath } from '@jbrowse/render-core/canvas2dUtils'
 
+import { isSegmentInvisible } from './dotplotColors.ts'
 import { cumBpToPxH, cumBpToPxV } from './dotplotProject.ts'
 
 import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
@@ -84,8 +85,8 @@ export function drawDotplotInstances(
       Math.min(sx1, sx2) > viewWidth + lineWidth ||
       Math.max(sy1, sy2) < -lineWidth ||
       Math.min(sy1, sy2) > viewHeight + lineWidth
-    if (!offscreen) {
-      const abgr = colors[i]!
+    const abgr = colors[i]!
+    if (!offscreen && !isSegmentInvisible(abgr, alpha)) {
       if (abgr !== currentAbgr) {
         path.flush()
         currentAbgr = abgr

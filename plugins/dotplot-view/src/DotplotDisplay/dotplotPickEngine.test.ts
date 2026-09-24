@@ -88,6 +88,12 @@ describe('a hidden segment', () => {
     expect(pick(hidden, 15, 100 - 15)?.featureIdx).toBe(1)
     expect(pick(makeData(segments), 15, 100 - 15)?.featureIdx).toBe(0)
   })
+
+  test('a plot faded out by the opacity slider has nothing to hover', () => {
+    const data = makeData([[10, 10, 20, 20, 0]])
+    expect(pick(data, 15, 100 - 15, { ...UNIT, alpha: 0 })).toBeUndefined()
+    expect(pick(data, 15, 100 - 15, { ...UNIT, alpha: 0.5 })).toBeDefined()
+  })
 })
 
 describe('buildDotplotPickIndex', () => {

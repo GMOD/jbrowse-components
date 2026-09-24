@@ -1,7 +1,7 @@
-import { abgrAlpha } from '@jbrowse/core/util/colorBits'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 
+import { isSegmentInvisible } from './dotplotColors.ts'
 import { DOTPLOT_MARKS } from './dotplotMarks.ts'
 
 import type {
@@ -171,6 +171,7 @@ function* visibleSegments(
   index: DotplotPickIndex,
   data: DotplotGeometryData,
   boxIds: ArrayLike<number>,
+  alpha: number,
 ) {
   const { instanceFeatureIdx, instanceCount, colors } = data
   const runs = Array.from(boxIds, boxId =>
@@ -182,7 +183,7 @@ function* visibleSegments(
   ).sort((a, b) => b[0] - a[0])
   for (const [start, end] of runs) {
     for (let s = end - 1; s >= start; s--) {
-      if (abgrAlpha(colors[s]!) !== 0) {
+      if (!isSegmentInvisible(colors[s]!, alpha)) {
         yield s
       }
     }
@@ -248,7 +249,7 @@ export function pickDotplotFeature({
     state,
     x,
     y,
-    visibleSegments(index, data, boxIds),
+    visibleSegments(index, data, boxIds, state.alpha),
     Number.POSITIVE_INFINITY,
   )
   if (hit === undefined) {
