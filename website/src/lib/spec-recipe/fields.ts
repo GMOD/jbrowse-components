@@ -1911,7 +1911,7 @@ export const viewFields: Record<string, FieldRecipe> = {
   colorByCDS: value =>
     typeof value === 'boolean'
       ? {
-          path: `View menu → Color CDS by reading frame (${value ? 'checked' : 'unchecked'})`,
+          path: `View menu → Show... → Show CDS reading frame colors (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   showAminoAcids: value =>

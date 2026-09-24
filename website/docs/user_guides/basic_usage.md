@@ -329,7 +329,7 @@ close-up under a bar labelled with the span it covers.
 ### Track label positioning
 
 Track labels sit on their own row, overlap the data, or hide entirely, from the
-**Track labels** heading under **Show...** in the view's hamburger menu.
+**Track labels** submenu in the view's hamburger menu.
 
 <Figure caption="The overlap and offset track label positioning options." src="/img/tracklabels.png" />
 

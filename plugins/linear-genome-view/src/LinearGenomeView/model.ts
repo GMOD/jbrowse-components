@@ -2100,8 +2100,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #method
-       * the view menu's Show... → Highlights submenu; extend this to add a row
-       * there
+       * the view menu's Highlights submenu; extend this to add a row there
        */
       highlightsSubMenuItems(): MenuItem[] {
         return buildHighlightsSubMenuItems(self as LinearGenomeViewModel)

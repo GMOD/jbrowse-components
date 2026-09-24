@@ -170,13 +170,13 @@ setting its menu writes, so the Sections menu reorders a facet written this way.
 
 ## Color by CDS
 
-**Color CDS by reading frame**, in the linear genome view's hamburger menu,
-tints each CDS segment by the frame it is read in, so one colour is one frame
-across the view. Frame is constant within a segment, so a colour change across a
-junction is a frame shift. The setting applies to every gene track in the view,
-and JBrowse remembers it across sessions.
+**Show... → Show CDS reading frame colors**, in the linear genome view's
+hamburger menu, tints each CDS segment by the frame it is read in, so one colour
+is one frame across the view. Frame is constant within a segment, so a colour
+change across a junction is a frame shift. The setting applies to every gene
+track in the view, and JBrowse remembers it across sessions.
 
-<Figure caption="Turning on Color by CDS for BRCA1 (hg19). Top: the hamburger menu with the 'Color CDS by reading frame' toggle. Bottom: the result at base-pair resolution, each codon tinted by its reading frame with its amino acid and protein position drawn over it." src="/img/gene_track_color_by_cds.png" />
+<Figure caption="Turning on Color by CDS for BRCA1 (hg19). Top: the hamburger menu with the 'Show CDS reading frame colors' toggle. Bottom: the result at base-pair resolution, each codon tinted by its reading frame with its amino acid and protein position drawn over it." src="/img/gene_track_color_by_cds.png" />
 
 ## Color transcripts by a value in the file
 

@@ -15,6 +15,7 @@ import { copyText } from '@jbrowse/core/util/copyText'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import LabelIcon from '@mui/icons-material/Label'
 import LaunchIcon from '@mui/icons-material/Launch'
 import LayersIcon from '@mui/icons-material/Layers'
 import LayersClearIcon from '@mui/icons-material/LayersClear'
@@ -193,15 +194,10 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       icon: VisibilityIcon,
       subMenu: [
         showAllRegionsMenuItem(self),
-        // Collapsing a row is about height and what it hides is the tracks, so
-        // it is the widest of the visibility answers and heads them. A checkbox
-        // rather than the pair of labels it was: "Collapse to ruler" turning
-        // into "Expand tracks" names the current state nowhere, and among
-        // checkboxes there is no room for the trick anyway.
         {
-          label: 'Collapse to ruler',
+          label: 'Show tracks',
           type: 'checkbox',
-          checked: self.scalebarOnly,
+          checked: !self.scalebarOnly,
           onClick: () => {
             self.setScalebarOnly(!self.scalebarOnly)
           },
@@ -271,16 +267,9 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
             self.setHideNoTracksActive(!self.hideNoTracksActive)
           },
         },
-        {
-          label: 'Highlights',
-          subMenu: self.highlightsSubMenuItems(),
-        },
-        // The two answers to what the sequence draws as: one colours the
-        // codons, the other spells them out. Both lost the palette icon they
-        // used to carry — nothing else in this list has one.
         { type: 'subHeader', label: 'Sequence' },
         {
-          label: 'Color CDS by reading frame',
+          label: 'Show CDS reading frame colors',
           type: 'checkbox',
           checked: self.colorByCDS,
           onClick: () => {
@@ -295,22 +284,23 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
             self.setShowAminoAcids(!self.showAminoAcids)
           },
         },
-        // Where a track's name is drawn, and "Hidden" is one of the three
-        // answers, so this is a visibility setting like everything above it.
-        // Inline under a subheader rather than in a submenu of its own: it was a
-        // top-level row for three radios, and nesting it here instead would have
-        // put those radios a popup further from the hamburger than they were.
-        // The icons went with it — all three rows carried the same one, which
-        // told a reader nothing about which to pick.
-        { type: 'subHeader', label: 'Track labels' },
-        ...radioItems(
-          TRACK_LABEL_OPTIONS,
-          self.effectiveTrackLabels,
-          setting => {
-            self.setTrackLabels(setting)
-          },
-        ),
       ],
+    },
+    {
+      label: 'Highlights',
+      icon: Highlighter,
+      subMenu: self.highlightsSubMenuItems(),
+    },
+    {
+      label: 'Track labels',
+      icon: LabelIcon,
+      subMenu: radioItems(
+        TRACK_LABEL_OPTIONS,
+        self.effectiveTrackLabels,
+        setting => {
+          self.setTrackLabels(setting)
+        },
+      ),
     },
   ]
 

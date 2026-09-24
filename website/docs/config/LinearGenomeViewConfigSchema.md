@@ -13,4 +13,4 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-configurationlineargenomeviewplugintracklabels">**configuration.LinearGenomeViewPlugin.trackLabels**</span><br>[`string`](/docs/config_guides/slot_types#string) (offset, overlapping, hidden) = <code>'offset'</code> | where a track's name is drawn: `offset` gives it its own line above the data, `overlapping` floats it over the top of the data to save vertical space, `hidden` omits it. The view menu's "Show..." submenu sets the same thing per session, under its "Track labels" heading |
+| <span id="slot-configurationlineargenomeviewplugintracklabels">**configuration.LinearGenomeViewPlugin.trackLabels**</span><br>[`string`](/docs/config_guides/slot_types#string) (offset, overlapping, hidden) = <code>'offset'</code> | where a track's name is drawn: `offset` gives it its own line above the data, `overlapping` floats it over the top of the data to save vertical space, `hidden` omits it. The view menu's "Track labels" submenu sets the same thing per session |

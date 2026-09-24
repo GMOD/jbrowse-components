@@ -1701,10 +1701,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'tracklabels',
-    // sized to the content: the rest of the viewport was page background. The
-    // "Show..." submenu is a dozen rows tall, so it needs more room than the
-    // three-row submenu the track labels used to live in.
-    viewportHeight: 680,
+    viewportHeight: 520,
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
       loc: 'ctgA:1-20000',
@@ -1713,17 +1710,14 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     actions: [
       { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      ...menuCascade(['Show...', 'Overlapping']),
+      ...menuCascade(['Track labels', 'Overlapping']),
     ],
     annotations: [
       {
         type: 'circle',
         anchor: { selector: '[data-testid="view_menu_icon"]' },
       },
-      // box the "Show..." parent and the radio it reveals: the "Track labels"
-      // subHeader between them is not a hoverable row, so the path a reader
-      // follows runs parent → radio
-      ...cascadeBoxes(['Show...', 'Overlapping']),
+      ...cascadeBoxes(['Track labels', 'Overlapping']),
     ],
   },
 
@@ -1910,7 +1904,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'click', text: 'Highlight region' },
       { type: 'delay', ms: 500 },
       { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      { type: 'click', text: 'Show...' },
       { type: 'click', text: 'Highlights' },
       { type: 'click', text: 'Open highlight list' },
       { type: 'waitForText', text: 'Add label...' },
