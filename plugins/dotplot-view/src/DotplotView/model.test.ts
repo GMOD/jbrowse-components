@@ -508,3 +508,22 @@ test('each axis bounds its scroll by its own plot dimension', async () => {
   expect(model.hview.minOffset).toBe(30 - model.viewWidth)
   expect(model.vview.minOffset).toBe(30 - model.viewHeight)
 })
+
+test('a dragged rect opens a synteny view whose rows span it at full width', async () => {
+  const model = await setup()
+  model.setWidth(800)
+  const launchView = jest
+    .spyOn(getSession(model), 'launchView')
+    .mockResolvedValue(undefined as never)
+  const y = (bp: number) => model.viewHeight - bp
+  model.launchLinearSyntenyView([100, y(600)], [300, y(200)])
+  const [type, snap] = launchView.mock.calls[0]!
+  expect(type).toBe('LinearSyntenyView')
+  const [top, bottom] = (
+    snap as { views: { bpPerPx: number; offsetPx: number }[] }
+  ).views
+  expect(top!.bpPerPx * 800).toBeCloseTo(200)
+  expect(top!.offsetPx * top!.bpPerPx).toBeCloseTo(100, 0)
+  expect(bottom!.bpPerPx * 800).toBeCloseTo(400)
+  expect(bottom!.offsetPx * bottom!.bpPerPx).toBeCloseTo(200, 0)
+})

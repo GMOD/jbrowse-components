@@ -49,7 +49,7 @@ export default function SelectionContextMenu({
           // here — this menu is three items and has nothing else to group with.
           label: 'Linear synteny view',
           onClick: act((down, up) => {
-            model.onDotplotView(down, up)
+            model.launchLinearSyntenyView(down, up)
           }),
         },
         {

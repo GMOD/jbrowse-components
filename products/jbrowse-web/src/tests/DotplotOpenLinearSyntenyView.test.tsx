@@ -42,7 +42,7 @@ test('Linear synteny view of selection from dotplot view', async () => {
   expect(session.views.length).toBe(1)
 
   // Simulate coordinates for a selection (mousedown and mouseup positions)
-  // The onDotplotView action takes pixel coordinates as [x, y] tuples
+  // The launchLinearSyntenyView action takes pixel coordinates as [x, y] tuples
   // The selection needs to be > 3 pixels in both dimensions
   const mousedown: [number, number] = [100, 100]
   const mouseup: [number, number] = [300, 300]
@@ -50,7 +50,7 @@ test('Linear synteny view of selection from dotplot view', async () => {
   // Call the action that "Linear synteny view of selection" triggers
   // This is the fix we're testing - it should not throw
   // "Cannot add an object to a state tree if it is already part of the same or another state tree"
-  dotplotView.onDotplotView(mousedown, mouseup)
+  dotplotView.launchLinearSyntenyView(mousedown, mouseup)
 
   // Verify that a LinearSyntenyView was created
   await waitFor(
@@ -92,7 +92,7 @@ test('Linear synteny view of selection from dotplot preserves track configuratio
 
   // This should not throw the MST error about nodes already in tree
   expect(() => {
-    dotplotView.onDotplotView(mousedown, mouseup)
+    dotplotView.launchLinearSyntenyView(mousedown, mouseup)
   }).not.toThrow()
 
   await waitFor(

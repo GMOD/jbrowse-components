@@ -12,7 +12,10 @@ import {
   localStorageGetItem,
   minmax,
 } from '@jbrowse/core/util'
-import { getLayoutHighlightCoords } from '@jbrowse/core/util/Base1DUtils'
+import {
+  computeMoveToLayout,
+  getLayoutHighlightCoords,
+} from '@jbrowse/core/util/Base1DUtils'
 import {
   hideTrackGeneric,
   launchToggleTrackGeneric,
@@ -52,7 +55,7 @@ import HighlightIcon from '@mui/icons-material/Highlight'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 
 import { pickDotplotFeature } from '../DotplotDisplay/dotplotPickEngine.ts'
-import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview.ts'
+import { DotplotHView, DotplotVView } from './1dview.ts'
 import { doAfterAttach } from './afterAttach.ts'
 import {
   axisBorderPx,
@@ -1507,32 +1510,33 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #action
-         * creates a linear synteny view from the clicked and dragged region
+         * opens a linear synteny view on the clicked and dragged region: the
+         * horizontal axis' span on the top row, the vertical axis' below, each
+         * fitted to this view's width, with every track that has a linear
+         * synteny display
          */
-        onDotplotView(mousedown: Coord, mouseup: Coord) {
+        launchLinearSyntenyView(mousedown: Coord, mouseup: Coord) {
           const result = self.getCoords(mousedown, mouseup)
           if (result) {
             const { x1, x2, y1, y2 } = result
-            const session = getSession(self)
-
-            const d1 = Dotplot1DView.create({
-              ...getSnapshot(self.hview),
-              minimumBlockWidth: 0,
-            })
-            const d2 = Dotplot1DView.create({
-              ...getSnapshot(self.vview),
-              minimumBlockWidth: 0,
-            })
-            d1.setVolatileWidth(self.hview.width)
-            d2.setVolatileWidth(self.vview.width)
-            d1.moveTo(x1, x2)
-            d2.moveTo(y2, y1)
-            d1.zoomTo(d1.bpPerPx / (self.width / self.hview.width), 0)
-            d2.zoomTo(d2.bpPerPx / (self.width / self.vview.width), 0)
-
-            // add the specific evidence tracks to the LGVs in the split view
-            // note: scales the bpPerPx by scaling proportional of the dotplot
-            // width to the eventual lgv width
+            const row = (
+              axis: Dotplot1DViewModel,
+              start: PxToBpResult,
+              end: PxToBpResult,
+            ) => {
+              const { displayedRegions } = getSnapshot(axis)
+              return {
+                type: 'LinearGenomeView',
+                tracks: [],
+                hideHeader: true,
+                displayedRegions,
+                ...computeMoveToLayout(
+                  { displayedRegions, width: self.width },
+                  start,
+                  end,
+                ),
+              }
+            }
             const tracks = self.tracks.flatMap(track => {
               const trackConf = track.configuration
               const displayConf = trackConf.displays.find(
@@ -1554,32 +1558,14 @@ export default function stateModelFactory(pm: PluginManager) {
                   ]
                 : []
             })
-
-            const { id: _unused1, ...rest1 } = getSnapshot(d1)
-            const { id: _unused2, ...rest2 } = getSnapshot(d2)
-            const viewSnapshot = {
-              views: [
-                {
-                  type: 'LinearGenomeView',
-                  tracks: [],
-                  hideHeader: true,
-                  ...rest1,
-                },
-                {
-                  type: 'LinearGenomeView',
-                  tracks: [],
-                  hideHeader: true,
-                  ...rest2,
-                },
-              ],
+            void getSession(self).launchView('LinearSyntenyView', {
+              views: [row(self.hview, x1, x2), row(self.vview, y2, y1)],
               // the level between the two rows, which is where a synteny track
               // lives. `tracks` on the view means trackIds to open, so a built
               // track snapshot written there is a launch recipe and never
               // becomes a band.
               levels: [{ tracks }],
-            }
-
-            void session.launchView('LinearSyntenyView', viewSnapshot)
+            })
           }
         },
       }))
