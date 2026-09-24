@@ -30,6 +30,10 @@ test('the letter decides, not the key position', () => {
   expect(press('z', 'KeyW', { ctrl: true })).toBe('undo')
 })
 
+test('a bare keydown Event with no key is not a shortcut', () => {
+  expect(historyShortcut(new Event('keydown') as KeyboardEvent)).toBeUndefined()
+})
+
 test('a non-Latin layout falls back to the key position', () => {
   expect(press('я', 'KeyZ', { ctrl: true })).toBe('undo')
   expect(press('н', 'KeyY', { ctrl: true })).toBe('redo')

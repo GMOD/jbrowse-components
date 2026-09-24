@@ -205,6 +205,8 @@ one either.
   - `removeReferring` — deleted, along with the reference-clearing pass it drove; `undefined is not a function` at the call
   - `prepareToBreakConnection` — deleted with the "N tracks will close" pre-flight it computed; `breakConnection` now closes them without the confirmation step
   - `hasWidget` — deleted; the same question is `session.widgets.has(id)`, which is what it wrapped
+  - `editTrackConfiguration` (web session) — deleted; it was `editConfiguration` under a second name, which every session still has
+  - `setDefaultSession` (web session) — deleted; the action is the root's, `session.root.setDefaultSession()` or the File menu's New session
   - `getReferring` — **still there, with a signature a v4 caller does not satisfy.** It takes a `trackId` string now, not the config object it used to take. A v4 caller passing the object reaches `getReferringMultiple`, which tests its `Set` of objects against `node[key]?.trackId` — a string — so every comparison misses and the answer is `[]`. Nothing throws: the caller concludes no view refers to the track and closes it out from under whatever was showing it
 - **`@jbrowse/product-core`'s `Session` barrel**, which is a named allowlist now rather than `export *` over nine modules — so a name the allowlist omits is gone from the package even where its own module still declares it:
   - `DialogQueueSessionMixin` — `Session/DialogQueue.ts` was folded into `BaseSessionModel`, which declares `queueDialog`, `removeActiveDialog`, `DialogComponent` and `DialogProps` itself. The members survive on every session; the composable mixin does not, so a product assembling its own session from mixins has to compose `BaseSessionModel` for them

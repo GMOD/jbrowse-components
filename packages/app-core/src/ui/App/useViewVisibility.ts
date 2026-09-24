@@ -24,10 +24,12 @@ interface Visibility {
  * `root: null` (viewport) is container-agnostic: it reports on-screen-ness the
  * same way whether the views scroll inside the classic container or a workspace
  * panel, so neither container needs to know about windowing. It also means
- * **a `rootMargin` would have no effect** — an observer clips the target
- * against each scrolling ancestor before intersecting with the root box that
- * the margin expands, and both containers are `overflow-y: auto`. So this is a
- * hard window with no hysteresis: a view is torn down the moment it leaves its
+ * **a `rootMargin` would have no effect** wherever a container scrolls — an
+ * observer clips the target against each scrolling ancestor before
+ * intersecting with the root box that the margin expands, and both containers
+ * are `overflow-y: auto`. Only an embed whose page scrolls instead would feel
+ * one, and it gets the same window. So this is a hard window with no
+ * hysteresis: a view is torn down the moment it leaves its
  * container and rebuilt when it returns, which on a GPU backend costs a fresh
  * WebGL2 context and a full shader recompile per display.
  *

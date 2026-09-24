@@ -17,9 +17,14 @@ function shortcutLetter(e: ShortcutKeys) {
   return /^[a-z]$/.test(key) ? key : e.code.replace(/^Key/, '').toLowerCase()
 }
 
+// modifiers first: a synthetic keydown (autofill, an extension) is a bare Event
+// with no `key` to read
 export function historyShortcut(e: ShortcutKeys) {
+  if (!e.ctrlKey && !e.metaKey) {
+    return undefined
+  }
   const letter = shortcutLetter(e)
-  if ((e.ctrlKey || e.metaKey) && letter === 'z') {
+  if (letter === 'z') {
     return e.shiftKey ? 'redo' : 'undo'
   }
   if (e.ctrlKey && !e.shiftKey && letter === 'y') {

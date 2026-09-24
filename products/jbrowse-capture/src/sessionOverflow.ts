@@ -5,7 +5,9 @@
  * document is always exactly the window's height. The overflow is that column's,
  * found as `overflow` in jbApi finds it, less the trailing room `ViewStack`
  * leaves for scrolling the last view up, which is space rather than content. A
- * workspace scrolls each panel on its own, so the answer is the tallest one's.
+ * workspace scrolls each panel on its own, so the answer is the most any panel
+ * overflows: enough for panels side by side, while a panel stacked under
+ * another gets only its share of the growth.
  *
  * Serialized into the page, so it declares everything it uses.
  */

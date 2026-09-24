@@ -750,13 +750,14 @@ async function fitToWindow(
   const cuts = groups.map(({ scroller, views }) => {
     const portExcess = excessOf(overflowOf(root, scroller))
     if (portExcess <= 0) {
-      return { atFloor: false, shrunk: [] }
+      return { scroller, atFloor: false, shrunk: [] }
     }
     const items = shrinkables(views)
     const headroom = items.map(i => Math.max(0, i.height - MIN_HEIGHT_PX))
     const available = headroom.reduce((a, b) => a + b, 0)
     const cut = Math.min(portExcess, available)
     return {
+      scroller,
       atFloor: available < portExcess,
       shrunk: items.flatMap((item, i) => {
         const share = available
@@ -771,18 +772,25 @@ async function fitToWindow(
       }),
     }
   })
-  const shrunk = cuts.flatMap(c => c.shrunk)
-  const atFloor = cuts.some(c => c.atFloor)
   const settle = await waitReady(settleMs, session, root)
-  const left = excessOf(overflow(root))
+  // each panel measured again on its own box, since one that now fits is no
+  // longer a scroller for `overflow` to find
+  const remaining = cuts.map(c => ({
+    atFloor: c.atFloor,
+    left: excessOf(overflowOf(root, c.scroller)),
+  }))
+  const left = Math.max(
+    excessOf(overflowOf(root, undefined)),
+    ...remaining.map(r => r.left),
+  )
   return {
     fits: left <= 0,
     overflowBefore: excess,
     overflowAfter: Math.max(0, left),
-    shrunk,
+    shrunk: cuts.flatMap(c => c.shrunk),
     ...(left > 0
       ? {
-          note: atFloor
+          note: remaining.some(r => r.left > 0 && r.atFloor)
             ? `everything shrinkable is at its ${MIN_HEIGHT_PX} px floor — hide a track or a view, or screenshot with fullPage: true`
             : 'still taller than the window after the settle — call jb.fitToWindow() again',
         }
