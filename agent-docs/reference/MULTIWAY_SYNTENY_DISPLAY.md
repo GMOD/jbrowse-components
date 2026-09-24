@@ -147,7 +147,9 @@ by `keepNearMedian` (`OUTLIER_REACH = 1.5` window spans), rung off
 (`pickRung`), orientation by a 0.9 deadband over ≥5 shared groups against the
 lane *above* (`orientationVote`, `decideOrientation`), offset by the
 weighted-median displacement to the lane above clamped to the rung's slack
-(`alignFrameTo`), and a placement hold while the frame still shows 90% of the
+(`alignFrameTo`) — both read against the anchor instead where the lane above
+shares fewer than three groups, which on a pairwise star is every lane below
+the first — and a placement hold while the frame still shows 90% of the
 placed weight (`HOLD_COVERAGE`). Two reader pins from the lane header menu
 outrank the vote: a contig pin (`pinnedLaneContigs`) while the window places
 anything on that contig, and a flip pin (`pinnedLaneFlips`, against the anchor's

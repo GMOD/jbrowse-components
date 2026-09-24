@@ -756,3 +756,59 @@ describe('a stack of two mate lanes', () => {
     }
   })
 })
+
+// A pairwise star's records each name one mate, so a lane shares no group
+// with the lane above and votes against the anchor, which places every group.
+describe('a star of pairwise records', () => {
+  const record = (
+    id: string,
+    mateAssembly: string,
+    [start, end]: [number, number],
+    [mateStart, mateEnd]: [number, number],
+  ) =>
+    new SimpleFeature({
+      uniqueId: id,
+      refName: 'chr1',
+      start,
+      end,
+      strand: 1,
+      assemblyName: 'anchor',
+      mate: {
+        assemblyName: mateAssembly,
+        refName: 'Pp1',
+        start: mateStart,
+        end: mateEnd,
+      },
+    })
+  // two heavy blocks in reversed order with four short hits between them in
+  // forward order: the anchor-order sign sum reads +1, forward, while nearly
+  // all the paired anchor bp reads backwards
+  const peach = [
+    record('heavy1', 'peach', [50, 400], [10_000, 10_350]),
+    ...[0, 1, 2, 3].map(i =>
+      record(
+        `hit${i}`,
+        'peach',
+        [410 + 10 * i, 418 + 10 * i],
+        [9500 + 10 * i, 9508 + 10 * i],
+      ),
+    ),
+    record('heavy2', 'peach', [450, 800], [9000, 9350]),
+  ]
+  const cacao = [100, 300, 500, 700].map(start =>
+    record(
+      `c${start}`,
+      'cacao',
+      [start, start + 60],
+      [900_000 + start, 900_060 + start],
+    ),
+  )
+
+  test('a lane sharing nothing with the lane above votes against the anchor', () => {
+    const groups = groupFeatures([...cacao, ...peach])
+    expect(computeRowFrame(groups, 'peach', SPAN_BP)!.flipped).toBe(false)
+    const decisions = decide(groups, { assemblyNames: ['cacao', 'peach'] })
+    expect(decisions.get('peach')!.flipped).toBe(true)
+    expect(decide(groups).get('peach')!.flipped).toBe(true)
+  })
+})

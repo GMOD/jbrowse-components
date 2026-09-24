@@ -317,6 +317,10 @@ function lanePlacements(
   return out
 }
 
+function sharedGroupCount(upperX: Map<string, number>, lane: LanePlacement[]) {
+  return new Set(lane.filter(p => upperX.has(p.key)).map(p => p.key)).size
+}
+
 // where a lane draws each group, as the px the lane below aligns to: the
 // heaviest run where the lane places a group more than once
 function lanePlacementXs(
@@ -592,9 +596,18 @@ export function decideLaneFrames({
     }
     const { rung, pinned: onPin, frame: fitted } = fit
     const placements = lanePlacements(groups, assemblyName, fitted)
+    // A lane sharing too few groups with the lane above votes and aligns
+    // against the anchor, which places every group: on a star of pairwise
+    // files each record names one mate, so below the top lane the lane above
+    // shares nothing and the lane fell back on the unweighted anchor-order
+    // sign sum and was never aligned at all
+    const reference =
+      sharedGroupCount(upperX, placements) >= MIN_SHARED_FOR_ORIENTATION
+        ? upperX
+        : anchorX
     // the vote reads screen px, so it comes back in screen terms; the
     // decision is stated against the anchor's order
-    const vote = orientationVote(upperX, placements)
+    const vote = orientationVote(reference, placements)
     const voted = decideOrientation(
       fitted.flipped,
       vote && {
@@ -611,7 +624,7 @@ export function decideLaneFrames({
     const orientationPinned = flipPin?.refName === fitted.refName
     const relativeFlipped = orientationPinned ? flipPin.flipped : voted
     const oriented = { ...fitted, flipped: relativeFlipped !== anchorReversed }
-    const aligned = alignFrameTo(upperX, placements, oriented, width)
+    const aligned = alignFrameTo(reference, placements, oriented, width)
 
     let decision: LaneDecision | undefined
     // the pivot carries across a rung change too: a zoom scales the lane

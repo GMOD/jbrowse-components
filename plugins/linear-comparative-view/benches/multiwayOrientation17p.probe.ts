@@ -11,8 +11,9 @@
 // THE QUESTION. `multiway_synteny/hg38_vertebrates_17p_break` draws eight
 // liftOver lanes under hg38 chr17:15,200,014-16,400,014 and marks five of
 // them [rev]. The mark comes out of `decideLaneFrames` — the orientation vote
-// against the lane above, or the anchor-order fallback where the vote
-// abstains — and this reads the same window through the same adapter with the
+// against the lane above, against the anchor where the lane above shares too
+// few groups, or the anchor-order fallback where both abstain — and this reads
+// the same window through the same adapter with the
 // display's own fetch options, runs the same decision with no incumbent (a
 // fresh load, which is what the figure is), and puts beside each lane's answer
 // what the raw rows say: the aligned bp on each strand of the contig the lane
@@ -214,8 +215,12 @@ function strandBp(assemblyName: string, refName: string) {
 const share = (n: number | undefined) =>
   n === undefined ? 'abstains' : n.toFixed(3)
 
+// the lane above until it shares fewer groups than `decideLaneFrames` votes
+// on, then the anchor
+const MIN_SHARED = 3
+
 console.log(
-  '\nlane        contig   drawn  fallback  shared  all-pairs bwd  neighbour bwd     + bp       - bp   majority',
+  '\nlane        contig   drawn  fallback  against     shared  all-pairs bwd  neighbour bwd     + bp       - bp   majority',
 )
 const rows: Record<string, string | number>[] = []
 let upperX = anchorX
@@ -232,7 +237,10 @@ for (const [i, assemblyName] of lanes.entries()) {
     WIDTH,
   )
   const placements = placementsIn(assemblyName, frame)
-  const votes = voteShares(upperX, placements)
+  const above = voteShares(upperX, placements)
+  const against = above.shared >= MIN_SHARED ? 'lane above' : 'anchor'
+  const votes =
+    against === 'lane above' ? above : voteShares(anchorX, placements)
   const fallback = computeRowFrame(groups, assemblyName, WINDOW_BP)?.flipped
   const bp = strandBp(assemblyName, decision.refName)
   const total = bp.forward + bp.reverse
@@ -243,6 +251,7 @@ for (const [i, assemblyName] of lanes.entries()) {
     contig: decision.refName,
     drawn: decision.flipped ? '[rev]' : 'forward',
     fallback: fallback ? '[rev]' : 'forward',
+    against,
     shared: votes.shared,
     allPairsBackwards: share(votes.allPairs),
     neighbourBackwards: share(votes.neighbour),
@@ -257,6 +266,7 @@ for (const [i, assemblyName] of lanes.entries()) {
       decision.refName.padEnd(8),
       String(values.drawn).padEnd(8),
       String(values.fallback).padEnd(9),
+      against.padEnd(11),
       String(votes.shared).padStart(5),
       String(values.allPairsBackwards).padStart(14),
       String(values.neighbourBackwards).padStart(14),
@@ -294,8 +304,9 @@ console.log(`\nwrote ${path.relative(process.cwd(), record)}`)
 console.log(
   '\ndrawn: the [rev] the figure shows, from `decideLaneFrames` with no incumbent.\n' +
     "fallback: `computeRowFrame`'s anchor-order sign sum, which decides only where\n" +
-    'the vote abstains. shared: groups the lane shares with the lane above, which\n' +
-    'on a pairwise source is every group for the top lane and none below it. The\n' +
-    "bp columns are anchor bp of the lane's placements on the drawn contig by the\n" +
-    'record strand, after the clip and the 10 kb gap split.',
+    'the vote abstains. against: what the vote reads, the lane above until it\n' +
+    'shares too few groups and then the anchor, which on a pairwise source is\n' +
+    'every lane. shared and the two bwd shares are against that. The bp columns\n' +
+    "are anchor bp of the lane's placements on the drawn contig by the record\n" +
+    'strand, after the clip and the 10 kb gap split.',
 )
