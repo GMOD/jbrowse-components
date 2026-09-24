@@ -10,7 +10,7 @@
 #
 #   Leonard AS, Crysnanto D, Mapel XM, Bhati M, Pausch H. "Graph construction
 #   method impacts variation representation and analyses in a bovine
-#   super-pangenome." Genome Biology 24, 128 (2023).
+#   super-pangenome." Genome Biology 24, 124 (2023).
 #   https://doi.org/10.1186/s13059-023-02969-y
 #   Data: Zenodo 7737904, https://doi.org/10.5281/zenodo.7737904, CC-BY 4.0
 #
@@ -35,7 +35,7 @@
 # "first of the twelve in the order below that carries this segment", and never
 # carriage.
 #
-# Requires: curl, tar, md5sum, python3, gfatools, gawk (as `awk`), sort,
+# Requires: curl, tar, md5sum, python3, gfatools, vg, gawk (as `awk`), sort,
 #           bgzip/tabix (htslib)
 # Usage:    bash scripts/build_bovine_pangenome.sh [outdir]
 #
@@ -261,19 +261,21 @@ AlignmentsTrack. Stable names are PanSN, so a track on an ordinary bosTau9
 assembly needs assemblyNameToPanSN: { "bosTau9": "bosTau9" } — the alleles file
 is the exception, its rows sitting on bosTau9's own refNames.
 
-Windows worth opening (firstSeenIn in parentheses, which is the convention
-above and not carriage):
-  chr8:70,277,073-70,365,819    RHOBTB2          726 kb insertion (BSW)
-  chr9:87,066,686-87,166,962    RAET1L           251 kb insertion (BRA)
-  chr23:25,844,769-25,968,809   BTNL2 (BoLA)     157 kb insertion (BIS)
-  chr17:14,003,965-14,060,481   GYPA             108 kb insertion (BSW)
-  chr3:8,543,335-8,644,701      ITLN2             54 kb deletion  (HIG)
+Published variants the callset reproduces, carriers read off its GT columns:
+  chr1:2,429,329     Celtic POLLED 202 bp duplication-insertion  ANG
+                     (Medugorac et al. 2012, OMIA 000483-9913)
+  chr6:70,099,508    14.3 kb repeat upstream of KIT, white head  SIM expanded,
+                     (Milia et al. 2025)                         HER reference
+  chr5:98,587,383    17 kb deletion of TAS2R46                   GAU
+                     (Leonard et al. 2022, Fig 7)
+  chr23:27,520,698   11 kb HSPA1B segment ARS-UCD1.2 lacks       all but YAK
+                     (Leonard et al. 2022)
 
-GOING BASE-LEVEL, which is also the only route to carriage. The tarball's
-`pggb` and `cactus` sets state per-assembly walks, so build_pggb_tabix.sh emits
-the same five files WITH the SM:Z: carriage tag that rGFA cannot express, and
-`vg deconstruct` over one of them yields the reference-projected VCF this demo
-has none of. That is what would make the bovine set a peer of demos/hprc rather
-than a structural-resolution sibling, and it needs no new download:
+GOING BASE-LEVEL. The tarball's `pggb` and `cactus` sets state per-assembly
+walks, so build_pggb_tabix.sh over one of them emits the same five files WITH the
+SM:Z: carriage tag that rGFA cannot express, and `vg deconstruct` a base-level
+VCF where this one stops at structure. That would make the bovine set a peer of
+demos/hprc rather than a structural-resolution sibling, and it needs no new
+download:
   tar xzf Zenodo_pangenomes.tar.gz Zenodo/cactus
 NOTES

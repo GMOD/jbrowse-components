@@ -388,7 +388,7 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
     another job is about to reclaim gets OOM-killed after hours.
 - **`demos/bovine_pangenome` is a projection of someone else's graph, whose tags
   had to be recovered** (`build_bovine_pangenome.sh`): the minigraph set from
-  Leonard et al. 2023 (Genome Biology 24:128, Zenodo 7737904, CC-BY 4.0), 12
+  Leonard et al. 2023 (Genome Biology 24:124, Zenodo 7737904, CC-BY 4.0), 12
   assemblies over the 29 autosomes on ARS-UCD1.2 = bosTau9, including yak,
   bison and gaur. 425,796 segments, 604,543 links, 171,334 alleles, 153,719
   bubbles.

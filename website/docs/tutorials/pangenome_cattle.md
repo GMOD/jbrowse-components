@@ -145,7 +145,7 @@ samples cross each node.
 
 - Leonard AS, Crysnanto D, Mapel XM, Bhati M, Pausch H. Graph construction
   method impacts variation representation and analyses in a bovine
-  super-pangenome. Genome Biology. 2023;24:128.
+  super-pangenome. Genome Biology. 2023;24:124.
   https://doi.org/10.1186/s13059-023-02969-y
 - Li H, Feng X, Chu C. The design and construction of reference pangenome graphs
   with minigraph. Genome Biology. 2020;21:265.

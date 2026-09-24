@@ -11,7 +11,7 @@ Source
   Leonard AS, Crysnanto D, Mapel XM, Bhati M, Pausch H.
   "Graph construction method impacts variation representation and analyses in a
   bovine super-pangenome."
-  Genome Biology 24, 128 (2023).
+  Genome Biology 24, 124 (2023).
   https://doi.org/10.1186/s13059-023-02969-y
 
   Data: Zenodo record 7737904, https://doi.org/10.5281/zenodo.7737904
