@@ -119,3 +119,14 @@ test('the row palette keeps its identity across a reorder, a focus and a relabel
   expect(display.rowLabels).toMatchObject({ a: 'a!' })
   expect(display.rowColorScale).toBe(palette)
 })
+
+test("scale: 'none' paints no palette and no pair", () => {
+  const display = loaded({ rowColor: { ...DECLARED.rowColor, scale: 'none' } })
+  expect(display.rowColorScale.size).toBe(0)
+  expect(display.rowColorStringsByIndex).toEqual([
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+  ])
+})

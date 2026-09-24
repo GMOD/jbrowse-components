@@ -318,9 +318,12 @@ export default function stateModelFactory(
          * #getter
          * `TreeSidebarMixin`'s hook: a palette colour per row, dealt over the
          * rows in the base arrangement, a row with a `rowColor` entry still
-         * taking its turn.
+         * taking its turn; none under `rowColor.scale: 'none'`.
          */
-        get rowColorDeal(): RowColorDeal<RowSource> {
+        get rowColorDeal(): RowColorDeal<RowSource> | undefined {
+          if (getConf(self, ['rowColor', 'scale']) === 'none') {
+            return undefined
+          }
           return {
             order: orderRowsByDomain(self.expandedRows, self.baseRowDomain).map(
               s => s.name,
