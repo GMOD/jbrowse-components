@@ -9,14 +9,6 @@ import PlatformSpecificErrorDialog from './components/PlatformSpecificErrorDialo
 
 setStackTraceLimit()
 
-if (window.name.startsWith('JBrowseAuthWindow')) {
-  window.opener?.postMessage({
-    name: window.name,
-    redirectUri: window.location.href,
-  })
-  window.close()
-}
-
 const root = createRoot(document.getElementById('root')!)
 
 root.render(

@@ -13,12 +13,7 @@ import {
   mcpClientConfigJson,
   mcpCommand,
 } from './mcp/clientConfig.ts'
-import {
-  isAppUrl,
-  isOAuthRedirect,
-  isSafeExternalUrl,
-  isWebUrl,
-} from './navigationGuard.ts'
+import { isAppUrl, isOAuthRedirect, isWebUrl } from './navigationGuard.ts'
 import { logError } from './util.ts'
 import windowStateKeeper from './windowStateKeeper.ts'
 
@@ -56,7 +51,7 @@ export function buildAppUrl(
 // Hands a url the page supplied to the OS, but only a web one: openExternal on
 // e.g. file:// would launch a local path in whatever app claims it.
 function openExternal(url: string) {
-  if (isSafeExternalUrl(url)) {
+  if (isWebUrl(url)) {
     shell.openExternal(url).catch(logError)
   } else {
     console.error(`Refusing to open non-web url externally: ${url}`)
@@ -320,8 +315,6 @@ export function createAuthWindow(
       contextIsolation: true,
     },
   })
-
-  win.title = `JBrowseAuthWindow-${params.internetAccountId}`
 
   win.loadURL(params.url).catch(logError)
 

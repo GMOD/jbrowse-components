@@ -54,18 +54,12 @@ const WEB_PROTOCOLS = new Set(['http:', 'https:'])
 
 // A url that names a server rather than the machine. Everything else — file://,
 // a custom scheme some other installed app registered — is a way to reach past
-// the web from a page, so the two guards below both start here.
+// the web from a page: shell.openExternal hands the url to the OS, which will
+// launch a file:// path in whatever application claims it.
 export function isWebUrl(target: string) {
   try {
     return WEB_PROTOCOLS.has(new URL(target).protocol)
   } catch {
     return false
   }
-}
-
-// shell.openExternal hands the url to the OS, which will happily launch a
-// file:// path in whatever application claims it — so a page must not be able
-// to open one.
-export function isSafeExternalUrl(target: string) {
-  return isWebUrl(target)
 }

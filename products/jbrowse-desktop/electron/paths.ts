@@ -4,7 +4,7 @@ import path from 'node:path'
 import { app } from 'electron'
 
 import { NAME_INDICES_DIR } from './ipc/channelTypes.ts'
-import { SESSION_EXTENSION, hasSessionExtension } from './launchTarget.ts'
+import { hasSessionExtension } from './launchTarget.ts'
 
 /**
  * Path management utilities
@@ -53,16 +53,11 @@ export function initializePaths(): AppPaths {
   }
 }
 
-// Defined in launchTarget.ts, which the packaging scripts can import and this
-// module (which needs `electron`) cannot. Re-exported so their existing callers
-// keep one import site.
-export { SESSION_EXTENSION, hasSessionExtension }
-
 /**
  * Whether a path is one of the session files JBrowse manages for itself. Those
  * are exactly the two it produces: an autosave under `autosaveDir`, or a file
- * the user chose through "Save session as...", which appends
- * {@link SESSION_EXTENSION}. Everything else the open dialog accepts is a
+ * the user chose through "Save session as...", which appends `.jbrowse`.
+ * Everything else the open dialog accepts is a
  * *config* — hand-written, or built by `@jbrowse/cli` — which JBrowse reads but
  * must never write back over. See the `loadSession` handler.
  */

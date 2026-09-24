@@ -1,8 +1,4 @@
-import {
-  isAppUrl,
-  isOAuthRedirect,
-  isSafeExternalUrl,
-} from './navigationGuard.ts'
+import { isAppUrl, isOAuthRedirect, isWebUrl } from './navigationGuard.ts'
 
 const packaged = 'file:///opt/JBrowse/resources/app/index.html'
 const dev = 'http://localhost:3000/'
@@ -51,18 +47,18 @@ describe('isAppUrl', () => {
   })
 })
 
-describe('isSafeExternalUrl', () => {
+describe('isWebUrl', () => {
   test('web urls can go to the browser', () => {
-    expect(isSafeExternalUrl('https://jbrowse.org')).toBe(true)
-    expect(isSafeExternalUrl('http://jbrowse.org')).toBe(true)
+    expect(isWebUrl('https://jbrowse.org')).toBe(true)
+    expect(isWebUrl('http://jbrowse.org')).toBe(true)
   })
 
   // openExternal would hand these to the OS to launch
   test('anything the OS would launch locally is refused', () => {
-    expect(isSafeExternalUrl('file:///home/u/evil.desktop')).toBe(false)
-    expect(isSafeExternalUrl('javascript:alert(1)')).toBe(false)
-    expect(isSafeExternalUrl('smb://share/evil.exe')).toBe(false)
-    expect(isSafeExternalUrl('garbage')).toBe(false)
+    expect(isWebUrl('file:///home/u/evil.desktop')).toBe(false)
+    expect(isWebUrl('javascript:alert(1)')).toBe(false)
+    expect(isWebUrl('smb://share/evil.exe')).toBe(false)
+    expect(isWebUrl('garbage')).toBe(false)
   })
 })
 

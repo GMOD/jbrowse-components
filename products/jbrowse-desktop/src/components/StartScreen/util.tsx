@@ -6,7 +6,6 @@ import type { StartScreenPluginManager } from './pluginManagers.tsx'
 import type { JBrowseConfigInput } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-export { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 // re-exported so callers (e.g. LeftSidePanel) keep one import site
 export { fetchConfig } from './fetchConfig.ts'
 export type { StartScreenPluginManager } from './pluginManagers.tsx'
