@@ -93,18 +93,15 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     ...closeUpTracks.flatMap(r => r.skippedTracks),
   ])
 
-  // The view geometry is read *after* the displays' waits, never before —
-  // SVGHeader re-reads both of these when it renders (later still, inside
-  // wrapSvgExport) and lays itself out with the same getHeaderLayout call, so a
-  // value that moved during the awaits would leave the reserved `tracksTop` and
-  // the drawn header describing different rows. Same rule the dotplot, circular
-  // and synteny exports each shipped a violation of.
+  // read after the displays' waits, and handed to SVGHeader rather than read
+  // again, so the reserved `tracksTop` and the drawn header are one layout
   const { width, effectiveShowCytobands } = model
-  const { tracksTop } = getHeaderLayout({
+  const headerLayout = getHeaderLayout({
     fontSize,
     showCytobands: effectiveShowCytobands,
     rulerHeight,
   })
+  const { tracksTop } = headerLayout
   // one gutter for the whole export, wide enough for the widest label in any
   // close-up, so the close-ups stay aligned with the view
   const trackLabelOffset = trackLabelLeftOffset({
@@ -131,11 +128,10 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     showScalebar: true,
     reserveAssemblyName: false,
   })
-  const rendered = new Map(
-    closeUps.map((closeUp, i) => [closeUp.id, closeUpTracks[i]!]),
-  )
-  const closeUpRow = (closeUp: LGV) => {
-    const { tracksHeight, displayResults } = rendered.get(closeUp.id)!
+  const closeUpRow = (
+    closeUp: LGV,
+    { tracksHeight, displayResults }: (typeof closeUpTracks)[number],
+  ) => {
     const rowTop = rowTopGap + bandHeight
     const height = rowTop + rulerHeight + tracksHeight
     return {
@@ -209,6 +205,8 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
               model={model}
               fontSize={fontSize}
               rulerHeight={rulerHeight}
+              layout={headerLayout}
+              showCytobands={effectiveShowCytobands}
             />
           }
           fontSize={fontSize}
@@ -226,9 +224,9 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   }
   const rows = [
     hostRow,
-    ...stack.flatMap(({ closeUp, context }) => [
+    ...stack.flatMap(({ closeUp, context }, i) => [
       connectorRow(closeUp, context),
-      closeUpRow(closeUp),
+      closeUpRow(closeUp, closeUpTracks[i]!),
     ]),
   ]
 

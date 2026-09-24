@@ -197,8 +197,10 @@ export function getRowHeaderLayout({
 // cytoband overview, "you are here" polygon, total-bp scalebar, ruler) are
 // stacked with a small fixed gap rather than reserving loose fixed-height
 // bands, so nothing is separated by dead space. `tracksTop` is where the track
-// bodies begin (renderToSvg's `offset`). Shared by SVGHeader and renderToSvg so
-// the header height and the track origin can't drift.
+// bodies begin. renderToSvg computes it once and hands it to SVGHeader, so the
+// header height and the track origin are one answer.
+export type HeaderLayout = ReturnType<typeof getHeaderLayout>
+
 export function getHeaderLayout({
   fontSize,
   showCytobands,

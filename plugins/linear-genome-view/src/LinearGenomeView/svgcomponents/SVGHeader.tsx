@@ -12,20 +12,17 @@ import { getCytobands } from '../components/util.ts'
 import { HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
 import SVGRuler from './SVGRuler.tsx'
 import SVGScalebar from './SVGScalebar.tsx'
-import { getHeaderLayout } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type { HeaderLayout } from './util.ts'
 
 // "you are here" cytoband overview rendered above the ruler. Self-contained so
 // the overview-layout work only runs when cytobands are actually shown.
 function CytobandOverview({
   model,
-  assembly,
   y,
 }: {
   model: LinearGenomeViewModel
-  assembly: Assembly | undefined
   y: number
 }) {
   const { width, displayedRegions, minimumBlockWidth, bpPerPx } = model
@@ -46,7 +43,10 @@ function CytobandOverview({
     <g transform={`translate(0 ${y})`}>
       <Cytobands
         overview={overview}
-        cytobands={getCytobands(assembly, block.refName)}
+        cytobands={getCytobands(
+          getSession(model).assemblyManager.get(block.assemblyName),
+          block.refName,
+        )}
         block={block}
       />
       <rect
@@ -69,41 +69,31 @@ export default function SVGHeader({
   model,
   fontSize,
   rulerHeight,
+  layout,
+  showCytobands,
 }: {
   model: LinearGenomeViewModel
   rulerHeight: number
   fontSize: number
+  layout: HeaderLayout
+  showCytobands: boolean
 }) {
-  const { assemblyNames, effectiveShowCytobands } = model
-  const { assemblyManager } = getSession(model)
-  // cytobands need a single unambiguous assembly, but the header label names
-  // every assembly in the view
-  const cytobandAssemblyName =
-    assemblyNames.length === 1 ? assemblyNames[0] : undefined
-  const assembly = cytobandAssemblyName
-    ? assemblyManager.get(cytobandAssemblyName)
-    : undefined
   const theme = useTheme()
   const fill = stripAlpha(theme.palette.text.primary)
   // nothing on screen to label: no assembly name, scalebar or ruler
   if (!model.hasVisibleContent) {
     return null
   }
-
   const { assemblyLabelBaselineY, cytobandTop, scalebarLineY, rulerTop } =
-    getHeaderLayout({
-      fontSize,
-      showCytobands: effectiveShowCytobands,
-      rulerHeight,
-    })
+    layout
   return (
     <g id="header">
       <text x={0} y={assemblyLabelBaselineY} fontSize={fontSize} fill={fill}>
-        {assemblyNames.join(', ')}
+        {model.assemblyNames.join(', ')}
       </text>
 
-      {effectiveShowCytobands ? (
-        <CytobandOverview model={model} assembly={assembly} y={cytobandTop} />
+      {showCytobands ? (
+        <CytobandOverview model={model} y={cytobandTop} />
       ) : null}
 
       <g transform={`translate(0 ${scalebarLineY})`}>

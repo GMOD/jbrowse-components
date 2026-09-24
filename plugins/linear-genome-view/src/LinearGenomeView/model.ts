@@ -2033,10 +2033,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * the `showCytobands` setting gated by whether cytobands can be shown at
-       * all (whole chromosome + data present) — i.e. actually on screen
+       * all (whole chromosome + data present) and by the header overview they
+       * draw in being on, which the SVG export follows too
        */
       get effectiveShowCytobands() {
-        return this.canShowCytobands && self.showCytobands
+        return (
+          this.canShowCytobands &&
+          self.showCytobands &&
+          !self.hideHeaderOverview
+        )
       },
       /**
        * #getter
