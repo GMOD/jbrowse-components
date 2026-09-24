@@ -1345,22 +1345,14 @@ test('an adapter declaring its lanes has its header read once, and the universe 
   await when(() => display.declaredLanes !== undefined, { timeout: 5000 })
   expect(calls.filter(c => c.name === 'CoreGetInfo')).toHaveLength(1)
   expect(display.starAnchor).toBe('volvox')
-  expect(display.laneUniverse).toEqual([
-    {
-      name: 'HG1#1',
-      label: 'HG1#1',
-      group: 'HG1',
-      placed: false,
-      drawn: false,
-    },
-    {
-      name: 'HG1#2',
-      label: undefined,
-      group: 'HG1',
-      placed: false,
-      drawn: false,
-    },
-    { name: 'volvox_random', placed: false, drawn: true },
+  expect(display.laneUniverse.map(({ placed: _, ...lane }) => lane)).toEqual([
+    { name: 'HG1#1', label: 'HG1#1', group: 'HG1', drawn: false },
+    { name: 'HG1#2', label: undefined, group: 'HG1', drawn: false },
+    { name: 'volvox_random', drawn: true },
+  ])
+  expect(display.laneUniverse.slice(0, 2).map(lane => lane.placed)).toEqual([
+    undefined,
+    undefined,
   ])
   expect(display.rowAssemblies).toEqual([])
 
@@ -1369,8 +1361,10 @@ test('an adapter declaring its lanes has its header read once, and the universe 
     mateRecord('r1', 'HG1#2'),
     mateRecord('r2', 'sample#1#undeclared'),
   ])
+  // the fetch asked only for the track's lane, so the window says nothing of
+  // HG1#1, which a picker would otherwise grey as placing nothing
   expect(display.laneUniverse.map(l => [l.name, l.placed])).toEqual([
-    ['HG1#1', false],
+    ['HG1#1', undefined],
     ['HG1#2', true],
     ['volvox_random', false],
     ['sample#1#undeclared', true],

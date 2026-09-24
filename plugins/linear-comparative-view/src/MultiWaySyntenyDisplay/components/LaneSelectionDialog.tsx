@@ -76,7 +76,7 @@ const LaneSelectionDialog = observer(function LaneSelectionDialog({
     }
     setChosen(next)
   }
-  const unplaced = laneUniverse.some(lane => !lane.placed)
+  const unplaced = laneUniverse.some(lane => lane.placed === false)
   return (
     <SubmitDialog
       open
@@ -151,7 +151,7 @@ const LaneSelectionDialog = observer(function LaneSelectionDialog({
                 key={lane.name}
                 style={{
                   paddingLeft: run.group === undefined ? 0 : 16,
-                  opacity: lane.placed ? 1 : 0.6,
+                  opacity: lane.placed === false ? 0.6 : 1,
                 }}
               >
                 <LabeledCheckbox

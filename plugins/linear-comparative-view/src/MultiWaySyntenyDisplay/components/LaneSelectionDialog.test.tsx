@@ -94,6 +94,27 @@ test('the filter narrows what the bulk buttons touch', () => {
   expect(chosen).toEqual([['HG2#1', 'extra']])
 })
 
+test('a lane the fetch never asked for is not greyed as placing nothing', () => {
+  render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <LaneSelectionDialog
+        model={{
+          laneUniverse: [
+            { name: 'asked', placed: true, drawn: true },
+            { name: 'unasked', placed: undefined, drawn: false },
+          ],
+          laneFilter: { only: ['asked'] },
+          configuredLanes: [],
+          chooseLanes: () => {},
+          setSelectedLanes: () => {},
+        }}
+        handleClose={() => {}}
+      />
+    </ThemeProvider>,
+  )
+  expect(screen.queryByText(/in grey/)).toBeNull()
+})
+
 test('a caption names the lane once when its label already does', () => {
   const lane = { placed: true, drawn: true }
   expect(laneCaption({ ...lane, name: 'panTro6' })).toBe('panTro6')

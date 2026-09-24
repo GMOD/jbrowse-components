@@ -16,14 +16,15 @@ export interface LaneFilter {
  * fetched window, or both. `label` is the source's own name for it where that
  * differs from the assembly name (a haplotype's PanSN prefix against the
  * assembly it is loaded as) and `group` gathers lanes that belong together
- * (a diploid sample's two haplotypes). `drawn` is whether the stack draws the
- * lane wherever a window places it
+ * (a diploid sample's two haplotypes). `placed` is whether the window places
+ * the lane, undefined where the fetch did not ask for it. `drawn` is whether
+ * the stack draws the lane wherever a window places it
  */
 export interface LaneChoice {
   name: string
   label?: string
   group?: string
-  placed: boolean
+  placed: boolean | undefined
   drawn: boolean
 }
 

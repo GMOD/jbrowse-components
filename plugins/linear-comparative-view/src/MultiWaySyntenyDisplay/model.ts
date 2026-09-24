@@ -1103,6 +1103,11 @@ export function stateModelFactory(
         const selection = self.laneSelection
         const chosen = selection && new Set(selection.map(self.laneKey))
         const hidden = new Set(self.hiddenLanes.map(self.laneKey))
+        const asked =
+          self.fetchLaneSelection &&
+          new Set(self.fetchLaneSelection.map(self.laneKey))
+        const known = (key: string) =>
+          self.features !== undefined && (asked === undefined || asked.has(key))
         const out = new Map<string, LaneChoice>()
         const offer = (lane: DeclaredLane) => {
           const key = self.laneKey(lane.name)
@@ -1111,7 +1116,7 @@ export function stateModelFactory(
             out.set(key, {
               ...lane,
               ...(label === lane.name ? {} : { label }),
-              placed: placed.has(key),
+              placed: placed.has(key) || (known(key) ? false : undefined),
               drawn:
                 (chosen === undefined || chosen.has(key)) && !hidden.has(key),
             })
