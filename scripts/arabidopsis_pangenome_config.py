@@ -320,12 +320,16 @@ def main():
                 {
                     'type': 'LinearGenomeView',
                     'assembly': 'TAIR10',
-                    'loc': 'Chr4:1,200,000-3,200,000',
+                    'loc': 'Chr4:1,400,000-3,000,000',
                     'tracks': [
                         'TAIR10_genes',
                         {'trackId': 'fst_1135', 'type': 'LinearWiggleDisplay', 'height': 60},
                         {'trackId': 'syri_regions_on_TAIR10', 'type': 'LinearMultiRowFeatureDisplay', 'height': 24 * len(names) + 20},
-                        {'trackId': 'syri_1001g', 'type': 'MultiWaySyntenyDisplay', 'height': 40 * len(names) + 80},
+                        *(
+                            [{'trackId': 'arabidopsis_minigraph_paths', 'type': 'LinearMultiRowFeatureDisplay', 'height': 16 * (len(names) + 1) + 20}]
+                            if os.path.exists(f'{GRAPH}.paths.bed.gz')
+                            else []
+                        ),
                     ],
                 }
             ],
