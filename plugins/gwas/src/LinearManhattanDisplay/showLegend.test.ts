@@ -41,18 +41,16 @@ describe('Manhattan showLegend', () => {
     expect(getConf(display, 'showLegend')).toBe(false)
   })
 
-  it('still offers the row under the plain color scheme, disabled', () => {
+  it('leaves the row out under the plain color scheme, which has no key', () => {
     const { display } = createTestEnvironment().createDisplay()
-    const row = legendRow(display.trackMenuItems())
-    expect(row && 'disabled' in row ? row.disabled : undefined).toBe(true)
+    expect(legendRow(display.trackMenuItems())).toBeUndefined()
   })
 
-  it('enables the row under a threshold scale over any field, which draws a key', () => {
+  it('offers the row under a threshold scale over any field, which draws a key', () => {
     const { display } = createTestEnvironment({
       color: { field: 'p', scale: 'threshold', domain: ['0.1'] },
     }).createDisplay()
-    const row = legendRow(display.trackMenuItems())
     expect(display.colorScales).toHaveLength(1)
-    expect(row && 'disabled' in row ? row.disabled : undefined).toBe(false)
+    expect(legendRow(display.trackMenuItems())).toBeDefined()
   })
 })

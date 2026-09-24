@@ -7,7 +7,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
-import type { SettingRowOptions } from '@jbrowse/core/ui/menuItems'
 
 /**
  * The slot this mixin reads, restated rather than moved into a shared field
@@ -161,22 +160,14 @@ export function svgLegendGutterWidth(self: { showLegend: boolean }) {
 
 /**
  * The "Show legend" checkbox for a display composing `LegendMixin`: the slot
- * and the toggle, so a track menu lists it in one call. `opts` is for a display
- * that greys the row out under a scheme with no key, which keeps the row in the
- * menu whatever the scheme.
+ * and the toggle, so a track menu lists it in one call. A display with no key
+ * to show (`hasLegendKey`) leaves the row out.
  */
-export function legendCheckboxItem(
-  self: {
-    showLegend: boolean
-    setShowLegend: (arg: boolean) => void
-  },
-  opts?: SettingRowOptions,
-) {
-  return showLegendCheckboxItem(
-    self.showLegend,
-    () => {
-      self.setShowLegend(!self.showLegend)
-    },
-    opts,
-  )
+export function legendCheckboxItem(self: {
+  showLegend: boolean
+  setShowLegend: (arg: boolean) => void
+}) {
+  return showLegendCheckboxItem(self.showLegend, () => {
+    self.setShowLegend(!self.showLegend)
+  })
 }

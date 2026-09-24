@@ -678,10 +678,7 @@ export function stateModelFactory(
             }),
             ...makeShowSubMenu([
               makeCrossHatchItem(self),
-              legendCheckboxItem(self, {
-                disabled: self.color.scale === 'none',
-                disabledHelpText: 'A single color has no key',
-              }),
+              ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
             ]),
             {
               label: 'Color by',

@@ -967,14 +967,7 @@ export default function stateModelFactory(
                 showRowSeparatorsMenuItem(self),
                 showRowLabelsMenuItem(self),
               ]),
-          // The key stays in the menu whatever the rendering, so its
-          // display-type pin is reachable; it greys out where nothing on the
-          // frame is identified by colour.
-          legendCheckboxItem(self, {
-            disabled: !self.hasLegendKey,
-            disabledHelpText:
-              'Nothing here is keyed by colour: height carries the score, and a source on its own row is named beside it',
-          }),
+          ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
           // density maps score to color, so score-axis cross hatches are
           // meaningless there (`showCrossHatches` enforces the same on the
           // drawing side)

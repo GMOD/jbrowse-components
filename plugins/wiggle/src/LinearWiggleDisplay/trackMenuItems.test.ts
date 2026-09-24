@@ -82,7 +82,6 @@ describe('the wiggle display Clustering submenu', () => {
       'Tree branch lengths',
       'Show row separators',
       'Show row labels',
-      'Show legend',
       'Show cross hatches',
     ])
   })
@@ -193,24 +192,19 @@ describe('the wiggle display track menu', () => {
     ).toEqual(['Average'])
   })
 
-  // The row stays in the menu whatever the rendering — that is what keeps its
-  // display-type pin reachable — and greys out where nothing is keyed by
-  // colour: one source needs no key, and a faceted track names its sources
-  // beside their rows.
-  it('enables the legend toggle only where a color key means anything', () => {
-    const enabled = (display: { trackMenuItems: () => MenuItem[] }) =>
-      !(
-        itemIn(
-          subMenuOf(display.trackMenuItems(), 'Show...'),
-          'Show legend',
-        ) as { disabled?: boolean }
-      ).disabled
+  // One source needs no key, and a faceted track names its sources beside
+  // their rows
+  it('offers the legend toggle only where a color key means anything', () => {
+    const offered = (display: { trackMenuItems: () => MenuItem[] }) =>
+      labels(subMenuOf(display.trackMenuItems(), 'Show...')).includes(
+        'Show legend',
+      )
 
-    expect(enabled(makeDisplay({ faceted: false }).display)).toBe(true)
+    expect(offered(makeDisplay({ faceted: false }).display)).toBe(true)
     expect(
-      enabled(makeDisplay({ sources: ['a'], faceted: false }).display),
+      offered(makeDisplay({ sources: ['a'], faceted: false }).display),
     ).toBe(false)
-    expect(enabled(makeDisplay().display)).toBe(false)
+    expect(offered(makeDisplay().display)).toBe(false)
   })
 })
 
