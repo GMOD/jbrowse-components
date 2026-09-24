@@ -23,7 +23,7 @@ export function useMcpRequests(
   watchPageErrors()
 
   useIpc('mcpRequest', request => {
-    handleMcpRequest(request, getPluginManager())
+    handleMcpRequest(request, getPluginManager(), phase === 'loading')
       .then(result => invokeIpc('mcpResponse', { id: request.id, result }))
       .catch((e: unknown) => {
         console.error(e)

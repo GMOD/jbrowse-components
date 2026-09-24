@@ -257,3 +257,36 @@ describe('cancel', () => {
     })
   })
 })
+
+// A load `open` gave up waiting on is still running; reading that as the start
+// screen told the agent to call open again, which restarted it.
+describe('while a session is loading', () => {
+  it('wait_ready says not settled, rather than start screen', async () => {
+    const settle = (await handleMcpRequest(
+      { id: 1, tool: 'wait_ready', args: {} },
+      undefined,
+      true,
+    )) as { settled: boolean; note: string }
+    expect(settle.settled).toBe(false)
+    expect(settle.note).toMatch(/still loading/)
+  })
+
+  it('run_javascript says a load is in progress, not to call open', async () => {
+    await expect(
+      handleMcpRequest(
+        { id: 1, tool: 'run_javascript', args: { code: 'return 1' } },
+        undefined,
+        true,
+      ),
+    ).rejects.toThrow(/still loading.*rather than calling open/)
+  })
+
+  it('the start screen still answers as the start screen', async () => {
+    expect(
+      await handleMcpRequest(
+        { id: 1, tool: 'wait_ready', args: {} },
+        undefined,
+      ),
+    ).toEqual({ settled: true, note: 'no session is open (start screen)' })
+  })
+})

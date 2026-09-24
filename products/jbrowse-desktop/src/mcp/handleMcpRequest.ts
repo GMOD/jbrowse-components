@@ -380,6 +380,11 @@ function cancelRunning(args: Record<string, unknown>) {
   return { cancelled: abort !== undefined }
 }
 
+// A load that `open` gave up waiting on is still running, and calling `open`
+// again would start it over.
+const LOADING_NOTE =
+  'a session is still loading; call again shortly rather than calling open, which would restart the load'
+
 // What the page answers without a model: the bridge asks for these while taking
 // a picture or calling a run off, and the first three have to work on the start
 // screen, where no plugin manager is installed at all.
@@ -388,17 +393,20 @@ const pageTools: Record<
   (
     args: Record<string, unknown>,
     session: AbstractSessionModel | undefined,
+    loading: boolean,
   ) => unknown
 > = {
   // the page's own errors ride the settle, so a screenshot carries them too:
   // the bridge relays wait_ready before every capture
-  wait_ready: async (args, session) => {
+  wait_ready: async (args, session, loading) => {
     const settle = session
       ? await waitReady(
           typeof args.timeoutMs === 'number' ? args.timeoutMs : 30_000,
           session,
         )
-      : { settled: true, note: 'no session is open (start screen)' }
+      : loading
+        ? { settled: false, note: LOADING_NOTE }
+        : { settled: true, note: 'no session is open (start screen)' }
     const pageErrors = drainPageErrors()
     return pageErrors.length > 0 ? { ...settle, pageErrors } : settle
   },
@@ -407,15 +415,20 @@ const pageTools: Record<
   cancel: cancelRunning,
 }
 
+/**
+ * `loading` is the Loader's phase: a session is on its way and no plugin
+ * manager is installed yet, which otherwise reads as the start screen.
+ */
 export async function handleMcpRequest(
   request: McpBridgeRequest,
   pluginManager: PluginManager | undefined,
+  loading = false,
 ): Promise<unknown> {
   const { tool, args } = request
   const session = sessionOf(pluginManager)
   const page = pageTools[tool]
   if (page) {
-    return page(args, session)
+    return page(args, session, loading)
   }
   // The start screen installs no plugin manager at all (Loader's
   // replacePluginManager: "undefined installs nothing"), so there is nothing
@@ -426,7 +439,9 @@ export async function handleMcpRequest(
   // unreachable.
   if (!pluginManager) {
     throw new Error(
-      'No session is open, and the start screen has nothing to run code against. Use the open tool with a config/session file or URL, or bare to list recent sessions.',
+      loading
+        ? `Nothing to run code against yet: ${LOADING_NOTE}.`
+        : 'No session is open, and the start screen has nothing to run code against. Use the open tool with a config/session file or URL, or bare to list recent sessions.',
     )
   }
   if (tool !== 'run_javascript') {
