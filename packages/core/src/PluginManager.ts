@@ -295,8 +295,10 @@ type WidgetModel = FeatureWidgetModel & {
 export interface FeaturePanelProps {
   /** has `trackId` and `trackType` */
   model: FeatureWidgetModel
-  /** snapshot of the feature being shown */
+  /** snapshot of the feature being shown, as `formatDetails` reshaped it */
   feature: SimpleFeatureSerialized
+  /** the same feature before `formatDetails` ran */
+  unformatted?: SimpleFeatureSerialized
   /**
    * how far down the subfeature tree this card is: 0 is the feature the user
    * clicked, 1 its subfeatures, and so on. The point fires for every card, so a

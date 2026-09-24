@@ -46,12 +46,14 @@ the panel:
 - **`undefined` or `null`** hides the row.
 - **A non-object return is an error.** `"jexl:feature.name"` where
   `"jexl:{name:feature.name}"` was meant replaces the panel with a message
-  naming the track.
+  naming the track, or the session configuration, whose callback failed.
 
-Every part of the panel reads the merged feature, the sequence panel and a
-plugin's extra panels included. A saved session keeps the raw feature and
-re-runs the callbacks on load, so editing a track's `formatDetails` reshapes an
-open panel in place.
+The panel's rows and a plugin's extra panels read the merged feature; an extra
+panel also gets the original as `unformatted`. The sequence panel reads only the
+original, so a rewritten name or type never reaches its FASTA header, transcript
+picker or sequence. A saved session keeps the raw feature and re-runs the
+callbacks on load, so editing a track's `formatDetails` reshapes an open panel
+in place.
 
 ### What a callback can see
 

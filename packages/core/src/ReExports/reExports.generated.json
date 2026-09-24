@@ -749,6 +749,7 @@
         "BaseCard",
         "BaseCoreDetails",
         "FeatureDetails",
+        "FeatureDetailsFrame",
         "FeatureWash",
         "default",
         "filterByValueItems",

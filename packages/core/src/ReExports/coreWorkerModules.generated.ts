@@ -217,7 +217,7 @@ const libs: Record<string, unknown> = {
   '@jbrowse/core/assemblyManager/assembly': { ...m1, __esModule: true },
   '@jbrowse/core/assemblyManager/assemblyConfigSchema': { ...m2, __esModule: true },
   '@jbrowse/core/BaseFeatureWidget': m3,
-  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': uiNamespace(['BaseAttributes', 'BaseCard', 'BaseCoreDetails', 'FeatureDetails', 'FeatureWash', 'default', 'filterByValueItems', 'jexlFilterDisplay'], true),
+  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': uiNamespace(['BaseAttributes', 'BaseCard', 'BaseCoreDetails', 'FeatureDetails', 'FeatureDetailsFrame', 'FeatureWash', 'default', 'filterByValueItems', 'jexlFilterDisplay'], true),
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes': uiStub,
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard': uiStub,
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails': uiStub,

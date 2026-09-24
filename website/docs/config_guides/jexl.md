@@ -33,8 +33,8 @@ The [cookbook](/docs/cookbook#colors) has the common expressions (a lookup table
 by type, a threshold, a gradient, a label with a fallback), and the
 ["Jexl callback examples" track](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&assembly=hg19&tracks=jexl_callbacks_demo_hg19)
 on the hosted demo combines a lookup-table color with a template-string
-mouseover. `formatDetails` is the one slot family whose callback returns an
-object, one key per row
+mouseover. `formatDetails` and `formatAbout` callbacks return an object, one key
+per row
 ([customizing feature details](/docs/config_guides/customizing_feature_details)).
 
 ### Property access vs `get()` {#property-access-vs-get}
