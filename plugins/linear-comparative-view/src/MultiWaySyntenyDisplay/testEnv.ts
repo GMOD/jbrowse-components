@@ -1,5 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
@@ -18,7 +19,12 @@ import { configSchemaFactory } from './configSchema.ts'
 import { stateModelFactory } from './model.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
+import type { AssemblyDescription } from '@jbrowse/core/PluginManager'
 import type { ConfigurationSchemaDefinition } from '@jbrowse/core/configuration'
+import type {
+  Alias,
+  BaseRefNameAliasAdapter,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { AnimationMode } from '@jbrowse/core/util'
 import type { TestAssembly } from '@jbrowse/display-test-utils'
 
@@ -68,6 +74,7 @@ export function createDisplayWithSession({
   assemblyAliases = {},
   assemblyOf = () => testAssembly(),
   animationMode = 'enabled',
+  describeAssemblies,
 }: {
   syntenyAdapter?: Record<string, unknown>
   trackAssemblyNames?: string[]
@@ -77,8 +84,20 @@ export function createDisplayWithSession({
   assemblyAliases?: Record<string, string>
   assemblyOf?: (assemblyName: string) => TestAssembly
   animationMode?: AnimationMode
+  describeAssemblies?: (
+    assemblyNames: string[],
+  ) => Record<string, AssemblyDescription>
 } = {}) {
   const pluginManager = new PluginManager()
+  if (describeAssemblies) {
+    pluginManager.addToExtensionPoint(
+      'Core-describeAssemblies',
+      (described, { assemblyNames }) => ({
+        ...described,
+        ...describeAssemblies(assemblyNames),
+      }),
+    )
+  }
   const configSchema = configSchemaFactory()
 
   // Config-only: `laneGeneAdapters` matches on the adapter's TYPE NAME, and an
@@ -120,6 +139,24 @@ export function createDisplayWithSession({
         }),
     )
   }
+
+  pluginManager.addAdapterType(
+    () =>
+      new AdapterType({
+        name: 'TestRefNameAliasAdapter',
+        configSchema: ConfigurationSchema(
+          'TestRefNameAliasAdapter',
+          { rows: { type: 'frozen', defaultValue: [] } },
+          { explicitlyTyped: true },
+        ),
+        getAdapterClass: async () =>
+          class extends BaseAdapter implements BaseRefNameAliasAdapter {
+            async getRefNameAliases() {
+              return this.getConf('rows') as Alias[]
+            }
+          },
+      }),
+  )
 
   // FeatureTrack as well as the synteny one: `laneGeneAdapters` picks a lane's
   // annotation out of the session's tracks, so the gene track has to be a real

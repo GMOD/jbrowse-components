@@ -148,6 +148,7 @@ import type {
   MultiWayRenderingBackend,
   RibbonRef,
 } from './multiwayRenderTypes.ts'
+import type { AssemblyDescription } from '@jbrowse/core/PluginManager'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem, MouseState } from '@jbrowse/core/ui'
@@ -272,6 +273,18 @@ export function stateModelFactory(
       laneGenes: undefined as Map<string, HeldLaneGenes> | undefined,
       /**
        * #volatile
+       * what `Core-describeAssemblies` answered for lanes whose genome the
+       * session does not hold, by lane name
+       */
+      laneDescriptions: new Map<string, AssemblyDescription>(),
+      /**
+       * #volatile
+       * the lanes already put to `Core-describeAssemblies`, answered or not,
+       * so each is asked once
+       */
+      describedLanes: new Set<string>(),
+      /**
+       * #volatile
        * the anchor assembly under which a lane-gene commit has covered a MATE
        * lane. The anchor's spec exists as soon as the view does, so the first
        * commit can be the anchor alone, before the ortholog fetch has given
@@ -391,6 +404,21 @@ export function stateModelFactory(
         ) {
           self.fetchedFeatures = { anchor, features, lanes }
           observeRibbonFeatures(features)
+        },
+        /**
+         * #action
+         */
+        markLanesDescribed(names: string[]) {
+          self.describedLanes = new Set([...self.describedLanes, ...names])
+        },
+        /**
+         * #action
+         */
+        addLaneDescriptions(descriptions: Record<string, AssemblyDescription>) {
+          self.laneDescriptions = new Map([
+            ...self.laneDescriptions,
+            ...Object.entries(descriptions),
+          ])
         },
         /**
          * #action
@@ -1091,7 +1119,8 @@ export function stateModelFactory(
       laneLabel(assemblyName: string) {
         return this.holdsAssembly(assemblyName)
           ? getSession(self).assemblyManager.getDisplayName(assemblyName)
-          : (this.declaredLaneLabels.get(self.laneKey(assemblyName)) ??
+          : (self.laneDescriptions.get(assemblyName)?.displayName ??
+              this.declaredLaneLabels.get(self.laneKey(assemblyName)) ??
               assemblyName)
       },
       /**
@@ -1159,6 +1188,16 @@ export function stateModelFactory(
         )
         return rowAssembliesOf(self.groups, self.domain, self.laneKey).filter(
           assemblyName => drawn.has(self.laneKey(assemblyName)),
+        )
+      },
+      /**
+       * #getter
+       * the drawn lanes whose genome the session does not hold and that
+       * `Core-describeAssemblies` has not been asked about
+       */
+      get lanesToDescribe(): string[] {
+        return this.rowAssemblies.filter(
+          name => !this.holdsAssembly(name) && !self.describedLanes.has(name),
         )
       },
       /**
@@ -1389,6 +1428,11 @@ export function stateModelFactory(
         for (const [lane, track] of self.laneGeneTracks) {
           out.set(lane, readConfObject(track, 'adapter'))
         }
+        for (const [lane, { geneAdapter }] of self.laneDescriptions) {
+          if (geneAdapter && !out.has(lane)) {
+            out.set(lane, geneAdapter)
+          }
+        }
         return out
       },
     }))
@@ -1600,8 +1644,13 @@ export function stateModelFactory(
         const tracks = self.laneGeneTracks
         const adapters = self.laneGeneAdapters
         const specs: LaneGenesFetchSpec[] = []
-        const keyOf = (lane: string, regions: LaneRegion[]) =>
-          `${readConfObject(tracks.get(lane)!, 'trackId')}@${regions.map(regionKey).join(',')}`
+        const keyOf = (lane: string, regions: LaneRegion[]) => {
+          const track = tracks.get(lane)
+          const source = track
+            ? (readConfObject(track, 'trackId') as string)
+            : `described:${lane}`
+          return `${source}@${regions.map(regionKey).join(',')}`
+        }
         if (view.initialized) {
           const anchorAdapter = adapters.get(self.anchorAssemblyName)
           const regions = mergeContiguousRegions(
@@ -1613,17 +1662,22 @@ export function stateModelFactory(
               key: keyOf(self.anchorAssemblyName, regions),
               adapterConfig: anchorAdapter,
               regions,
+              held: true,
             })
           }
           for (const [assemblyName, frame] of self.rowFrames) {
             const adapter = adapters.get(assemblyName)
-            if (adapter && frame && self.holdsAssembly(assemblyName)) {
+            const held = self.holdsAssembly(assemblyName)
+            const description = self.laneDescriptions.get(assemblyName)
+            if (adapter && frame && (held || description)) {
               const regions = [{ assemblyName, ...laneFetchRegion(frame) }]
               specs.push({
                 lane: assemblyName,
                 key: keyOf(assemblyName, regions),
                 adapterConfig: adapter,
                 regions,
+                held,
+                refNameAliases: held ? undefined : description?.refNameAliases,
               })
             }
           }

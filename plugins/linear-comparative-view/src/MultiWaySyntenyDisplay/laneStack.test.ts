@@ -309,6 +309,88 @@ describe('the baseline', () => {
       expect(asked).not.toContain('hg002')
     })
 
+    test('a plugin describes the lanes whose genome the session lacks, in one batch, without adding them', async () => {
+      const asked: string[] = []
+      const batches: string[][] = []
+      const rpcCalls: Record<string, unknown>[] = []
+      const { display } = await framedDisplay('hg002', {
+        assemblyOf: name => {
+          asked.push(name)
+          return testAssembly()
+        },
+        describeAssemblies: names => {
+          batches.push(names)
+          return {
+            hg002: {
+              displayName: 'HG002',
+              geneAdapter: { type: 'DescribedGenesAdapter' },
+            },
+          }
+        },
+        rpc: async (name, args) => {
+          if (name === 'CoreGetFeatures') {
+            rpcCalls.push(args)
+          }
+          return []
+        },
+      })
+      await when(() => display.laneLabel('hg002') === 'HG002', {
+        timeout: 5000,
+      })
+      const described = () =>
+        rpcCalls.find(
+          args =>
+            (args.adapterConfig as { type?: string }).type ===
+            'DescribedGenesAdapter',
+        )
+      for (let i = 0; i < 400 && !described(); i++) {
+        await new Promise(resolve => setTimeout(resolve, 10))
+      }
+      expect(described()?.regions).toEqual([
+        expect.objectContaining({ assemblyName: '', refName: 'ctgA' }),
+      ])
+      expect(batches).toEqual([['hg002']])
+      expect(asked).not.toContain('hg002')
+    })
+
+    test("a described lane's gene fetch names each sequence as its gene file does, through the description's aliases", async () => {
+      const rpcCalls: Record<string, unknown>[] = []
+      await framedDisplay('hg002', {
+        describeAssemblies: () => ({
+          hg002: {
+            geneAdapter: { type: 'DescribedGenesAdapter' },
+            refNameAliases: {
+              adapter: {
+                type: 'TestRefNameAliasAdapter',
+                rows: [{ refName: 'ctgA', aliases: ['contigA', 'A'] }],
+              },
+            },
+          },
+        }),
+        rpc: async (name, args) => {
+          if (name === 'CoreGetRefNames') {
+            return ['contigA', 'contigB']
+          }
+          if (name === 'CoreGetFeatures') {
+            rpcCalls.push(args)
+          }
+          return []
+        },
+      })
+      const described = () =>
+        rpcCalls.find(
+          args =>
+            (args.adapterConfig as { type?: string }).type ===
+            'DescribedGenesAdapter',
+        )
+      for (let i = 0; i < 400 && !described(); i++) {
+        await new Promise(resolve => setTimeout(resolve, 10))
+      }
+      expect(described()?.regions).toEqual([
+        expect.objectContaining({ assemblyName: '', refName: 'contigA' }),
+      ])
+    })
+
     test('a genome still loading keeps the divider until its load redraws the lane', async () => {
       const loaded = observable.box(false)
       const assembly = testAssembly()

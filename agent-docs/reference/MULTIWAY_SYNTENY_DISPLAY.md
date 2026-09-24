@@ -78,7 +78,8 @@ Re-checked against the code and every tutorial the display appears in.
 - **The 2026-09-24 review.** A star's tied lanes no longer reorder with
   network arrival order; a star declares its lanes and reads only the chosen
   children; lanes, their menus and the picker name a genome by the session's
-  display name, else the source's declared label; `laneGeneTracks` names each
+  display name, else a plugin's description, else the source's declared label;
+  `laneGeneTracks` names each
   lane's gene track; a lane sharing fewer than three groups with the lane above
   votes and aligns against the anchor, which on a star is every lane below the
   first (the 17p and stability records under the ideas file); and the picker
@@ -202,8 +203,30 @@ on rank, which is what the slot is for. One `CoreGetFeatures` per lane over
 `laneFetchRegion(frame)` — the window the frame can slide in plus its reach,
 snapped to a power-of-two grid off the rung span — issued concurrently with
 per-lane staleness so a pan re-asks only the lanes whose grid cell moved
-(`installLaneFetch` in `MW/afterAttach.ts`). Only lanes the session holds an
-assembly for get one (`laneGenesFetchSpecs`).
+(`installLaneFetch` in `MW/afterAttach.ts`). A lane gets one when the session
+holds its assembly, or when a plugin has described it (`laneGenesFetchSpecs`).
+
+**Lanes the session lacks.** A hub star's mates live in other hubs' configs.
+The display puts its drawn, unheld lanes to `Core-describeAssemblies` in one
+batch, each lane once (`lanesToDescribe`), and never calls
+`assemblyManager.get` for them: that fires `Core-handleUnrecognizedAssembly`
+per lane, and the Hubs plugin answers it by connecting each genome's whole
+config. A description's `displayName` labels the lane ahead of the source's
+declared label, and its `geneAdapter` stands in for a session track. The
+region goes to the RPC bound to no assembly, named as the gene file names it
+through the description's `refNameAliases` (`describedLaneRegions`); without
+them the source's spelling goes as is. Per-lane gene adapters written into the
+star config were declined for this point, which also serves stars no builder
+wrote.
+
+Every demo star holds all its lanes, so nothing there reaches the point; hub
+stars and a lane picked past a GBZ's held haplotypes do. The Hubs plugin
+(external) does not answer it yet. It can, from each mate's `minimal.json`
+(12-300 KB, one request per newly drawn lane, no connection): the assembly's
+`displayName` and `refNameAliases`, and the default session's gene track,
+`<db>-ncbiRefSeq`, which spells chromosomes as the liftOver chains do (`chr1`;
+the hub's NCBI GFF says `NC_…`). Its adapter URIs are relative to that
+config.
 
 **Lane links.** For a source whose features carry no `name` and whose header
 names no `anchorAssemblyName`, one `CoreGetFeatures` per *adjacent* lane pair
@@ -557,7 +580,8 @@ scrolled stack is still fully laid out and fully drawn.
 
 The display persists four small properties. The real state cost of a cohort is
 upstream: a lane draws genes only if the session holds an assembly for it
-(`holdsAssembly`), so a 464-lane HPRC config needs 464 assemblies (GenArk
+(`holdsAssembly`) or a plugin describes it, so a 464-lane HPRC config with no
+describing plugin needs 464 assemblies (GenArk
 2bit + chromAlias each, [PANGENOME_GRAPHS.md](PANGENOME_GRAPHS.md) "Any donor
 can be loaded as an assembly") and 464 annotation tracks (the eight CAT GFF3s in
 `demos/hprc_multiway` are 114-127 MB bgzipped each,

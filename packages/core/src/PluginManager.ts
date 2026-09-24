@@ -377,6 +377,18 @@ export type ViewSnapshotInput<N extends string> = N extends ViewTypeName
   ? Omit<SnapshotIn<ViewTypeRegistry[N]>, 'type'> & { type?: N }
   : Record<string, unknown>
 
+/**
+ * what a plugin knows of an assembly the session does not hold, answered
+ * without adding it. `displayName` and `refNameAliases` read as an assembly
+ * config's do; `refNameAliases` is what reconciles the gene file's sequence
+ * names with the names a synteny source places the lane on
+ */
+export interface AssemblyDescription {
+  displayName?: string
+  geneAdapter?: Record<string, unknown>
+  refNameAliases?: { adapter: Record<string, unknown> }
+}
+
 export interface ExtensionPointRegistry {
   // the session model type, extended and handed back. Callbacks compose, each
   // building on the model the one before it returned
@@ -402,6 +414,14 @@ export interface ExtensionPointRegistry {
        * session model, and nothing in tree reads it — narrow it yourself if you
        * do
        */
+      session?: unknown
+    }
+  }
+  'Core-describeAssemblies': {
+    args: Record<string, AssemblyDescription>
+    result: Record<string, AssemblyDescription>
+    props: {
+      assemblyNames: string[]
       session?: unknown
     }
   }

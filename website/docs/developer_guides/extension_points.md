@@ -493,6 +493,7 @@ plugin before you put there.
 | --- | --- | --- | --- |
 | `Core-addTrackComponent` | sync |  | Inject a custom React component into the add-track widget |
 | `Core-addTrackComponentAdapterTypes` | sync | list | Adapter types whose add-track picker supplies the assembly |
+| `Core-describeAssemblies` | async | single | Describe, in one batch, assemblies the session does not hold, without adding them. Each callback adds to the descriptions the one before it returned |
 | `Core-extendPluggableElement` | sync | single | Mutate any pluggable element after it is created |
 | `Core-extendSession` | sync | single | Extend the session model with extra state or actions |
 | `Core-extendWorker` | sync | single | Take a booted RPC web worker: subscribe to the events it emits, post to it, or wrap its `call`. Fired once per booted worker, not per call |
