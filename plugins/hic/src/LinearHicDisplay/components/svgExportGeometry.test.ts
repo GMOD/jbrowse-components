@@ -1,5 +1,7 @@
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
+import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 import { triangleDataToScreen } from '@jbrowse/display-kit/triangleTransform'
+import { SCALE_TYPE_LINEAR } from '@jbrowse/render-core/scoreScale'
 
 import { packTestInstances } from '../../testInstances.ts'
 import { drawHicBlocks } from './drawHicBlocks.ts'
@@ -28,13 +30,16 @@ function exportBin(yScalar: number) {
       numContacts: 1,
       binWidth: 10,
     },
-    () => 'rgb(1,2,3)',
     {
       yScalar,
-      colorMaxScore: 1,
-      useLogScale: false,
+      domainMin: 0,
+      domainMax: 1,
+      scaleType: SCALE_TYPE_LINEAR,
+      colorRamp: rampLutOf({ scheme: 'fall' }),
       viewScale: 1,
       viewOffsetX: 0,
+      canvasWidth: 10_000,
+      canvasHeight: 10_000,
     },
     // wide enough that the cull can't be what makes the assertions pass
     10_000,

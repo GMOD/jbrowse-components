@@ -4622,20 +4622,16 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         },
         {
-          "name": "fetchSizeLimit",
-          "type": "number"
-        },
-        {
-          "name": "forceLoad",
-          "type": "boolean"
-        },
-        {
           "name": "height",
           "type": "number"
         },
         {
-          "name": "mouseover",
-          "type": "(JexlString | string)"
+          "name": "showLegend",
+          "type": "boolean"
+        },
+        {
+          "name": "squashToHeight",
+          "type": "boolean"
         },
         {
           "name": "lineZoneHeight",
@@ -4646,15 +4642,7 @@ export const configManifest: ConfigManifest = {
           "type": "LDMetric"
         },
         {
-          "name": "showLegend",
-          "type": "boolean"
-        },
-        {
           "name": "showLDTriangle",
-          "type": "boolean"
-        },
-        {
-          "name": "squashToHeight",
           "type": "boolean"
         },
         {
@@ -5659,6 +5647,14 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
+          "name": "showLegend",
+          "type": "boolean"
+        },
+        {
+          "name": "squashToHeight",
+          "type": "boolean"
+        },
+        {
           "name": "color",
           "type": "HicColorConfigurationSchema",
           "subSlots": [
@@ -5673,12 +5669,16 @@ export const configManifest: ConfigManifest = {
             {
               "name": "reverse",
               "type": "boolean"
+            },
+            {
+              "name": "domainMin",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "domainMax",
+              "type": "(number | undefined)"
             }
           ]
-        },
-        {
-          "name": "showLegend",
-          "type": "boolean"
         },
         {
           "name": "resolutionBias",
@@ -5695,10 +5695,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "selectedNormalization",
           "type": "string"
-        },
-        {
-          "name": "squashToHeight",
-          "type": "boolean"
         }
       ],
       "stateModelProps": [

@@ -12,7 +12,7 @@ import { buildResultRegions } from '../regionOffsets.ts'
 import { computeCountStats } from './countStats.ts'
 
 import type HicAdapter from '../HicAdapter/HicAdapter.ts'
-import type { HicDataResult } from './types.ts'
+import type { HicDataResult, RegionPairRun } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { RpcResult } from '@jbrowse/core/util/librpc'
@@ -41,47 +41,21 @@ export async function executeRenderHicData({
     sessionId,
     adapterConfig,
   )
-  const adapter = dataAdapter as HicAdapter
-
-  const {
-    bin1: contactBin1,
-    bin2: contactBin2,
-    counts,
-    pairs,
-    numContacts,
-    resolution: res,
-    appliedNormalization,
-  } = await adapter.getMultiRegionContactRecords(regions, {
+  const { pairs, numContacts, appliedNormalization } = await (
+    dataAdapter as HicAdapter
+  ).getMultiRegionContactRecords(regions, {
     resolution,
     normalization,
     signal,
     statusCallback,
   })
-
-  // the fetch may have completed after the user navigated away; bail before
-  // the O(numContacts) buffer build + sort rather than doing throwaway work
   checkAbortSignal(signal)
 
-  const w = res / Math.SQRT2
-  // The regions arrive split in two — the framework's renamed `regions` and the
-  // view-side `axisBlocks` it can't carry — and are one thing again from here
-  // on. Everything downstream, on both sides of the worker boundary, reads this.
-  const resultRegions = buildResultRegions(regions, axisBlocks, res)
-
-  // The adapter's `contactBin1`/`contactBin2`/`counts` are worker-local scratch
-  // now: this loop is the only reader, and what leaves the worker is the packed
-  // instance buffer it writes. Only the `pairs` run table is forwarded
-  // untouched.
-  //
-  // Written through the shader's own generated setters rather than a literal
-  // stride, so a field added to or retyped in `HicInstance` is a compile error
-  // here instead of a silently mis-strided buffer. See
-  // `HicDataResult.instances`.
+  const w = resolution / Math.SQRT2
+  const resultRegions = buildResultRegions(regions, axisBlocks, resolution)
   const instances = new Float32Array(numContacts * INSTANCE_STRIDE_WORDS)
+  const pairRuns: RegionPairRun[] = []
 
-  // Its own phase, so the pack does not run under a blank status field. No
-  // breakpoint: auto-resolution holds a view to ~0.5 bins per pixel, and a
-  // linear pass over 4.5M contacts measured ~30ms (see countStats.ts).
   await withProgress(
     {
       label: 'Building contact matrix',
@@ -90,63 +64,54 @@ export async function executeRenderHicData({
       signal,
     },
     report => {
-      for (const { region1Idx, region2Idx, start, end } of pairs) {
-        // Every layout term below is pair-invariant, so it resolves once per run
-        // instead of once per contact — four indexed loads and two unpredictable
-        // branches that used to sit in the inner loop purely because region
-        // membership was stored per contact.
+      let at = 0
+      for (const { region1Idx, region2Idx, bin1, bin2, counts } of pairs) {
         const r1 = resultRegions[region1Idx]!
         const r2 = resultRegions[region2Idx]!
         const off1 = r1.combinedOffset
         const off2 = r2.combinedOffset
-        const rev1 = r1.reversed
-        const rev2 = r2.reversed
-        // A cell spans `[u, u+w]`, so its reflection's *min* corner is
-        // `mirrorU(u) - w`, which folds to `mirrorBase - u`.
-        const mirrorBase1 = r1.dataXStart + r1.dataXEnd - w
-        const mirrorBase2 = r2.dataXStart + r2.dataXEnd - w
-
-        for (let i = start; i < end; i++) {
-          const u1 = (contactBin1[i]! + off1) * w
-          const u2 = (contactBin2[i]! + off2) * w
-          // Reflect each endpoint inside its own reversed region.
-          const m1 = rev1 ? mirrorBase1 - u1 : u1
-          const m2 = rev2 ? mirrorBase2 - u2 : u2
-          // Renderers draw the triangle above the axis only for `u1 ≤ u2` (a lower
-          // pair rotates to a negative y). Reflecting a region flips the order of
-          // contacts *within* it, so re-canonicalize — legal because the matrix is
-          // symmetric, `contact(a,b) === contact(b,a)`. Cross-region pairs can't
-          // invert (each stays in its own region), so this only fires when both
-          // endpoints share one reversed region.
-          setInstancePosition(instances, i, Math.min(m1, m2), Math.max(m1, m2))
-          setInstanceCount(instances, i, counts[i]!)
+        // a cell spans `[u, u+w]`, so its reflection's min corner is
+        // `start + end - w - u`
+        const mirror1 = r1.reversed ? r1.dataXStart + r1.dataXEnd - w : 0
+        const mirror2 = r2.reversed ? r2.dataXStart + r2.dataXEnd - w : 0
+        const n = bin1.length
+        for (let k = 0; k < n; k++) {
+          const u1 = (bin1[k]! + off1) * w
+          const u2 = (bin2[k]! + off2) * w
+          const m1 = r1.reversed ? mirror1 - u1 : u1
+          const m2 = r2.reversed ? mirror2 - u2 : u2
+          // Only a pair inside one reversed region can come out of order, and
+          // the matrix is symmetric, so re-canonicalize to stay above the axis.
+          setInstancePosition(
+            instances,
+            at + k,
+            Math.min(m1, m2),
+            Math.max(m1, m2),
+          )
+          setInstanceCount(instances, at + k, counts[k]!)
         }
-        // Once per run rather than once per contact: the runs tile
-        // `[0, numContacts)` in order, so `end` is exactly how many contacts are
-        // packed — the bar is contact-weighted, which unequal runs (a dense
-        // diagonal block against a sparse inter-chromosomal one) need it to be,
-        // and the tick still stays out of the inner loop. Run count is
-        // O(regions²), so the builds big enough to want a bar are the ones with
-        // runs to tick on.
-        report(end)
+        pairRuns.push({ region1Idx, region2Idx, start: at, end: at + n })
+        at += n
+        report(at)
       }
     },
   )
 
   const { maxScore, percentile95 } = computeCountStats(instances, numContacts)
 
-  const result: HicDataResult = {
-    instances,
-    numContacts,
-    maxScore,
-    percentile95,
-    binWidth: w,
-    originBp,
-    resolution: res,
-    appliedNormalization,
-    regions: resultRegions,
-    pairRuns: pairs,
-  }
-  // Move the one per-contact buffer zero-copy instead of structured-cloning it.
-  return rpcResult(result, [instances.buffer])
+  return rpcResult(
+    {
+      instances,
+      numContacts,
+      maxScore,
+      percentile95,
+      binWidth: w,
+      originBp,
+      resolution,
+      appliedNormalization,
+      regions: resultRegions,
+      pairRuns,
+    },
+    [instances.buffer],
+  )
 }

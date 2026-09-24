@@ -6,8 +6,7 @@ import {
 } from './components/shaders/hic.iface.generated.ts'
 import { findContactAt } from './contactLookup.ts'
 
-import type { RegionPairRun } from '../HicAdapter/HicAdapter.ts'
-import type { HicDataResult } from '../RenderHicDataRPC/types.ts'
+import type { HicDataResult, RegionPairRun } from '../RenderHicDataRPC/types.ts'
 
 const W = 4 // binWidth in pre-rotation px
 

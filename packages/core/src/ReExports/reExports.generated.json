@@ -4389,13 +4389,6 @@
         "react-dom"
       ]
     },
-    "@jbrowse/display-kit/squashToHeightMenuItem": {
-      "package": "@jbrowse/display-kit",
-      "names": [
-        "squashToHeightCheckboxItem"
-      ],
-      "worker": "real"
-    },
     "@jbrowse/display-kit/stableIdentityComputed": {
       "package": "@jbrowse/display-kit",
       "names": [
@@ -4469,19 +4462,31 @@
       ],
       "worker": "real"
     },
-    "@jbrowse/display-kit/triangleTransform": {
+    "@jbrowse/display-kit/TriangleMatrixMixin": {
       "package": "@jbrowse/display-kit",
       "names": [
-        "triangleDataToScreen",
-        "triangleScreenToData",
-        "triangleViewTransform"
+        "default",
+        "squashToHeightCheckboxItem",
+        "triangleMatrixConfigSchemaFields"
       ],
       "worker": "real"
     },
-    "@jbrowse/display-kit/triangleYScalar": {
+    "@jbrowse/display-kit/TriangleMatrixSvgLayer": {
       "package": "@jbrowse/display-kit",
       "names": [
-        "computeTriangleYScalar"
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/triangleTransform": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "computeTriangleYScalar",
+        "enterTriangleCellSpace",
+        "triangleAxis",
+        "triangleDataToScreen",
+        "triangleScreenToData",
+        "triangleViewTransform"
       ],
       "worker": "real"
     },

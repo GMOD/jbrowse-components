@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { triangleMatrixConfigSchemaFields } from '@jbrowse/display-kit/TriangleMatrixMixin'
+import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -37,13 +38,20 @@ export default function ldTrackDisplayConfigSchema() {
   return ConfigurationSchema(
     'LDTrackDisplay',
     {
+      ...trackHeightConfigSchemaFields({
+        defaultHeight: 400,
+        height:
+          'default height of the display, the band above the triangle included',
+      }),
+      ...triangleMatrixConfigSchemaFields,
       /**
        * #slot
-       * Height of the zone for connecting lines at the top
        */
       lineZoneHeight: {
         type: 'number',
         defaultValue: 100,
+        description:
+          'height of the band above the triangle holding the connector lines and labels',
         advanced: true,
       },
       /**
@@ -60,28 +68,11 @@ export default function ldTrackDisplayConfigSchema() {
       },
       /**
        * #slot
-       * Whether to show the legend. Defaults to off.
-       */
-      showLegend: {
-        type: 'boolean',
-        defaultValue: false,
-      },
-      /**
-       * #slot
-       * Whether to show the LD triangle heatmap
        */
       showLDTriangle: {
         type: 'boolean',
         defaultValue: true,
-      },
-      /**
-       * #slot
-       * When true, squash the LD triangle to fit the display height
-       */
-      squashToHeight: {
-        type: 'boolean',
-        defaultValue: false,
-        advanced: true,
+        description: 'whether to show the LD triangle heatmap',
       },
       /**
        * #slot
@@ -98,29 +89,30 @@ export default function ldTrackDisplayConfigSchema() {
       },
       /**
        * #slot
-       * Whether to show vertical guides at the connected genome positions on hover
        */
       showVerticalGuides: {
         type: 'boolean',
         defaultValue: true,
+        description:
+          "on hover, draw guides across the view at the pair's genomic positions",
         advanced: true,
       },
       /**
        * #slot
-       * Whether to show variant labels above the tick marks
        */
       showLabels: {
         type: 'boolean',
         defaultValue: false,
+        description: 'show variant labels above the tick marks',
         advanced: true,
       },
       /**
        * #slot
-       * Height of the vertical tick marks at the genomic position
        */
       tickHeight: {
         type: 'number',
         defaultValue: 6,
+        description: 'height of the tick marks at the genomic positions',
         advanced: true,
       },
       /**
@@ -135,25 +127,13 @@ export default function ldTrackDisplayConfigSchema() {
         defaultValue: 'columns',
         advanced: true,
       },
-      /**
-       * #slot
-       * Starting height in pixels for the LD triangle, excluding the
-       * lineZoneHeight band; drag-resizable
-       */
-      // An override of BaseLinearDisplay's `height` (100), which per the
-      // slot-merge rule states only what differs — but `type` and
-      // `defaultValue` stay, since they are what mark the entry as a slot.
-      height: {
-        type: 'number',
-        defaultValue: 400,
-      },
     },
     {
-      /**
-       * #baseConfiguration
-       */
-      baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
+      /**
+       * #identifier
+       */
+      explicitIdentifier: 'displayId',
     },
   )
 }

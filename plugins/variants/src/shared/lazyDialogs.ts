@@ -3,7 +3,7 @@ import { lazy } from 'react'
 /**
  * Every dialog this plugin's state models name, behind its own chunk.
  *
- * `LDDisplay/shared.ts` and `multiSampleVariantMenuItems.ts` are both reached
+ * `LDDisplay/model.ts` and `multiSampleVariantMenuItems.ts` are both reached
  * from state models: they are evaluated when the plugin installs, before any
  * session is read, so importing a dialog there put the dialog — and MUI's
  * `TextField` → `Select` → `Modal` → `Popover` cluster behind it — into every

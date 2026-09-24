@@ -53,7 +53,8 @@ function getInstanceCountB(f32: Float32Array, i: number) {
   return f32[i * STRIDE_WORDS + 2]!
 }
 
-// `mapHicCount`, from the generated JS twin. Declared once and called by all
+// The count→t normalization, as the retired `mapHicCount` spelled it (the
+// painter now uses `makeScoreNormalizer`, the same arithmetic hoisted). Declared once and called by all
 // three arms deliberately: it is common to every arm, so whatever it costs
 // cancels in the ratio, and duplicating it would be duplicating the thing under
 // comparison rather than the thing being compared.

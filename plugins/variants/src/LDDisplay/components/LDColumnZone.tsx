@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import LDLabelZone from './LDLabelZone.tsx'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 
-import type { SharedLDModel } from '../shared.ts'
+import type { LDDisplayModel } from '../model.ts'
 import type { PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
 
 // The band above the triangle, in whichever form the loaded matrix calls for:
@@ -18,7 +18,7 @@ const LDColumnZone = observer(function LDColumnZone({
   exportSVG,
   opts,
 }: {
-  model: SharedLDModel
+  model: LDDisplayModel
   exportSVG?: boolean
   opts?: PaintLayerOpts
 }) {

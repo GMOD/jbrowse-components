@@ -49,19 +49,19 @@ test('LD reserves the genomic-positions zone for whatever is switched on', () =>
   const { display } = createTestEnvironment().createDisplay()
   display.setVariantLayout('genomic')
 
-  expect(display.effectiveLineZoneHeight).toBe(0)
+  expect(display.matrixTop).toBe(0)
 
   display.setShowLabels(true)
-  expect(display.effectiveLineZoneHeight).toBe(display.lineZoneHeight)
+  expect(display.matrixTop).toBe(display.lineZoneHeight)
   // and that band is the draggable one, so the room for the rotated labels is
   // the user's to set rather than something we measure text extents for
   display.setLineZoneHeight(140)
-  expect(display.effectiveLineZoneHeight).toBe(140)
+  expect(display.matrixTop).toBe(140)
 
   // off again spends 0 px, so switching labels on and back off leaves the
   // triangle exactly the size it was
   display.setShowLabels(false)
-  expect(display.effectiveLineZoneHeight).toBe(0)
+  expect(display.matrixTop).toBe(0)
 })
 
 test('a resize lands on the config, so it outlives the display instance', () => {

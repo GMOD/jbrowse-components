@@ -61,6 +61,7 @@ export interface RegionHost extends AbstractViewModel, IStateTreeNode {
   readonly initialized: boolean
   readonly width: number
   readonly totalWidthPx: number
+  readonly totalWidthPxWithoutBorders: number
   readonly trackWidthPx: number
   readonly bpPerPx: number
   readonly coarseBpPerPx: number

@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import { ConnectorLineOverlay } from '../../shared/ConnectorLines.tsx'
 import VariantLabels from './VariantLabels.tsx'
 
-import type { SharedLDModel } from '../shared.ts'
+import type { LDDisplayModel } from '../model.ts'
 import type { PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
 
 const LinesConnectingMatrixToGenomicPosition = observer(
@@ -12,7 +12,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(
     exportSVG,
     opts,
   }: {
-    model: SharedLDModel
+    model: LDDisplayModel
     exportSVG?: boolean
     opts?: PaintLayerOpts
   }) {

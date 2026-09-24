@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react'
 
-import type { SharedLDModel } from '../shared.ts'
+import type { LDDisplayModel } from '../model.ts'
 
 // Emphasizes the focal SNP's LD row+column: every pairwise cell involving the
 // focal SNP lies on the two diagonal lines meeting at its diagonal apex, so a
@@ -8,12 +8,10 @@ import type { SharedLDModel } from '../shared.ts'
 // the focal SNP's LD with all others (LocusZoom-style lead-variant view).
 const FocalSnpHighlight = observer(function FocalSnpHighlight({
   model,
-  height,
 }: {
-  model: SharedLDModel
-  height: number
+  model: LDDisplayModel
 }) {
-  const { rpcData, viewTransform, focalSnpIndex: f } = model
+  const { rpcData, viewTransform, focalSnpIndex: f, height } = model
   const boundaries = rpcData?.boundaries
   if (!boundaries || f < 0 || f + 1 >= boundaries.length) {
     return null

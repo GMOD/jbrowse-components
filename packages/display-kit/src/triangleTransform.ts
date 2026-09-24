@@ -1,52 +1,21 @@
+import type { MarkContext2D } from '@jbrowse/render-core/marks'
+
 /**
- * The contact-triangle view transform, forward and inverse, in one place — the
- * rotate-45°-and-squash map both triangle displays (HiC's contact matrix, LD's
- * matrix) draw and hit-test through. It was the same math twice, once per
- * plugin, with LD's copy documenting that a dropped `yScalar` term had already
- * passed its coarse round-trip test once. One implementation leaves no second
- * copy to diverge from the first.
- *
- * The forward map is `hic.slang`'s `vs_main`, which the Canvas2D paths
- * implement as coordinates pre-multiplied by the uniform `viewScale` (which
- * commutes with rotation, and must stay out of the ctx matrix — SvgCanvas
- * rounds serialized transforms to 2 decimals, and 1/bpPerPx is under 0.005
- * past ~200 bp/px, so the export rounds the whole triangle to zero) under a
- * `ctx.translate/scale(1, yScalar)/rotate` stack the SVG export inherits
- * through `SvgCanvas`'s CTM: rotate the bin into the triangle **first**, then
- * apply the fit-to-height squash. The order matters — a squashed
- * triangle's bins are parallelograms, not rectangles, because the y-only scale
- * lands after the rotation.
- *
- * The inverse turns a mouse position into a contact cell. A dropped
- * `yScalar` or a flipped sign here reports the wrong bin in every tooltip, on
- * displays where "the wrong bin" is a plausible-looking locus rather than a
- * visible break — and a cell-granular round trip is too coarse to catch it
- * (the error is a fraction of a cell at realistic squashes, verified), so the
- * tests assert coordinates.
- *
- * HiC's per-contact cull (`drawHicBlocks`) deliberately spells the forward
- * arithmetic inline: that loop runs over 300k–4.5M contacts a frame and cannot
- * afford the call.
+ * The contact-triangle map both triangle displays (Hi-C, LD) draw and hit-test
+ * through: a cell's pre-rotation data coordinates (origin-relative bp / √2) are
+ * rotated 45° into the triangle, then squashed by `yScalar`. The squash lands
+ * after the rotation, so a squashed cell is a parallelogram.
  */
 export interface TriangleTransform {
   /** viewport px per pre-rotation data unit */
   viewScale: number
   /** left edge of the drawn matrix, in canvas px */
   viewOffsetX: number
-  /** fit-to-height squash, applied after the rotation */
   yScalar: number
-  /**
-   * Canvas-px y where the triangle's base sits — LD reserves its connector
-   * zone above the matrix, HiC states 0. Required rather than defaulted, so
-   * the term a consumer has no use for is a stated 0. An omitted term would
-   * make the inverse map a pointer to the wrong cell.
-   */
+  /** canvas-px y where the triangle's base sits */
   yOffsetPx: number
 }
 
-/**
- * Pre-rotation data space (the space instance positions live in) → canvas px.
- */
 export function triangleDataToScreen(
   ux: number,
   uy: number,
@@ -60,11 +29,7 @@ export function triangleDataToScreen(
   }
 }
 
-/**
- * Canvas px → pre-rotation data space. The exact inverse of
- * `triangleDataToScreen`: `yScalar` squashes Y, so it divides out before the
- * un-rotation.
- */
+/** The exact inverse of `triangleDataToScreen`. */
 export function triangleScreenToData(
   x: number,
   y: number,
@@ -73,23 +38,15 @@ export function triangleScreenToData(
   const rx = (x - viewOffsetX) / viewScale
   const ry = (y - yOffsetPx) / viewScale / yScalar
   return {
-    ux: (rx - ry) * Math.SQRT1_2,
-    uy: (rx + ry) * Math.SQRT1_2,
+    x: (rx - ry) * Math.SQRT1_2,
+    y: (rx + ry) * Math.SQRT1_2,
   }
 }
 
 /**
- * The live half of the map from a triangle payload's pre-rotation data space
- * (origin-relative bp / √2) to canvas px: pure view arithmetic, so pan and zoom
- * move it every frame with no refetch, and the payload's own axis origin folds
- * back in here in double precision, so float32 instance positions stay small.
- * Stale data under a refetch draws at its genomic position
- * under the live map. HiC and LD both read it into their render state, hit
- * test and SVG export, so the three cannot disagree.
- *
- * Takes the payload rather than its `originBp` so the no-payload-yet origin is
- * decided here too — there is nothing drawn to anchor, and both consumers were
- * spelling the same 0 at their own call site.
+ * The live half of the map: pure view arithmetic, so pan and zoom move a
+ * loaded payload with no refetch. The payload's axis origin folds back in here
+ * in double precision, which keeps its float32 positions small.
  */
 export function triangleViewTransform(
   host: { bpPerPx: number; offsetPx: number },
@@ -100,5 +57,109 @@ export function triangleViewTransform(
   return {
     viewScale: 1 / bpPerPx,
     viewOffsetX: originBp / bpPerPx - offsetPx,
+  }
+}
+
+/**
+ * The fit-to-height squash: the natural apex height is half the base, and a
+ * squashed triangle stretches that into `displayHeight`. 1 for a zero-width
+ * base.
+ */
+export function computeTriangleYScalar({
+  squashToHeight,
+  displayHeight,
+  triangleWidth,
+}: {
+  squashToHeight: boolean
+  displayHeight: number
+  triangleWidth: number
+}) {
+  const triangleHeight = triangleWidth / 2
+  return squashToHeight && triangleHeight > 0
+    ? displayHeight / triangleHeight
+    : 1
+}
+
+/** Where one fetched block sits on the view's concatenated genomic axis. */
+export interface TriangleAxisBlock {
+  /** the refName the view displays, before adapter renaming */
+  refName: string
+  /** bp of the block's leftmost-on-screen edge, relative to `originBp` */
+  offsetBp: number
+}
+
+/**
+ * Each block's position on the view's axis, which is the concatenation of
+ * `displayedRegions` in display order. Elided regions keep their width, and
+ * the boundary padding sits only outside the region run, so the axis is pure
+ * cumulative bp and invariant under pan and zoom. A block in a reversed region
+ * leads with its `end`.
+ *
+ * Offsets are relative to `originBp`, the first block's position: a whole
+ * genome's axis overflows float32, one fetched window does not. `spanBp` runs
+ * from the origin to the far edge of the last block.
+ */
+export function triangleAxis(
+  blocks: {
+    refName: string
+    start: number
+    end: number
+    displayedRegionIndex?: number
+  }[],
+  displayedRegions: { start: number; end: number; reversed?: boolean }[],
+) {
+  const regionAxisStart: number[] = []
+  let acc = 0
+  for (const r of displayedRegions) {
+    regionAxisStart.push(acc)
+    acc += r.end - r.start
+  }
+  const absolute = blocks.map(b => {
+    const idx = b.displayedRegionIndex!
+    const d = displayedRegions[idx]!
+    const lead = d.reversed ? d.end - b.end : b.start - d.start
+    return regionAxisStart[idx]! + lead
+  })
+  const originBp = absolute[0] ?? 0
+  const last = blocks.length - 1
+  return {
+    originBp,
+    spanBp:
+      last < 0
+        ? 0
+        : absolute[last]! + blocks[last]!.end - blocks[last]!.start - originBp,
+    axisBlocks: blocks.map((b, i): TriangleAxisBlock => ({
+      refName: b.refName,
+      offsetBp: absolute[i]! - originBp,
+    })),
+  }
+}
+
+/**
+ * Sets `ctx` up to paint cells as axis-aligned rects in pre-rotation space,
+ * `ctx.fillRect(px * viewScale, py * viewScale, w * viewScale, h * viewScale)`,
+ * and returns the visible range of `px + py`, which alone decides a point's
+ * screen x. Adjacent rects share grid-aligned edges, so they tile without the
+ * seams a per-cell diamond path leaves. The caller restores `ctx`.
+ *
+ * `viewScale` stays out of the ctx matrix: SvgCanvas rounds a serialized
+ * transform to two decimals, and 1/bpPerPx rounds to zero past ~200 bp/px.
+ */
+export function enterTriangleCellSpace(
+  ctx: MarkContext2D,
+  {
+    yScalar,
+    viewScale,
+    viewOffsetX,
+  }: { yScalar: number; viewScale: number; viewOffsetX: number },
+  width: number,
+) {
+  ctx.save()
+  ctx.translate(viewOffsetX, 0)
+  ctx.scale(1, yScalar)
+  ctx.rotate(-Math.PI / 4)
+  return {
+    minSum: (-viewOffsetX / viewScale) * Math.SQRT2,
+    maxSum: ((width - viewOffsetX) / viewScale) * Math.SQRT2,
   }
 }

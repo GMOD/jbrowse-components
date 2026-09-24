@@ -22,8 +22,7 @@ const useStyles = makeStyles()(theme => ({
     display: 'flex',
     flexDirection: 'column',
     gap: 3,
-    // portaled into the pointer-events:none overlay node; re-enable events so
-    // the resolution dropdown / close / reset controls stay interactive
+    // the overlay node it is portalled into takes no pointer events
     pointerEvents: 'auto',
   },
   row: {
@@ -43,17 +42,14 @@ const useStyles = makeStyles()(theme => ({
     background: 'transparent',
     border: `1px solid ${theme.palette.divider}`,
   },
-  // reserve the reset button's slot so the row doesn't reflow when it appears
   resetSlot: {
     width: 18,
     display: 'flex',
   },
 }))
 
-// A juicebox-style binsize dropdown. The list is pure binsizes (no "Auto"
-// entry, which read as just another size); auto is simply the default, and a
-// reset-to-auto button surfaces only once the user has locked to a size — so
-// the common case is a plain "Resolution: 25 kbp" with nothing extra to parse.
+// A juicebox-style binsize dropdown. Auto is the default rather than an entry,
+// and the reset button appears once a size is locked.
 const ResolutionRow = observer(function ResolutionRow({
   model,
 }: {
@@ -96,8 +92,6 @@ const ResolutionRow = observer(function ResolutionRow({
   )
 })
 
-// The juicebox-style resolution box, in its own portal above the plot. The
-// color key beside it is the chrome's, off `colorScales`.
 const HicOverlayPanel = observer(function HicOverlayPanel({
   model,
 }: {
@@ -105,13 +99,10 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
 }) {
   const { classes } = useStyles()
   return model.showResolutionBox ? (
-    // portal above the inter-region padding masks so the box isn't buried at
-    // whole-genome / multi-region scale (see TrackOverlayPortal)
     <TrackOverlayPortal>
       <div
         className={classes.panel}
-        // same reason as FloatingLegend: a panel that takes pointer events
-        // must claim the press, or dragging its text pans the view underneath
+        // claims the press, or dragging its text pans the view
         data-gesture-owner="true"
       >
         <ResolutionRow model={model} />

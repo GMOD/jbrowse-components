@@ -1,30 +1,16 @@
+import type { TriangleFrame } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
-// What painting a bin actually depends on. Kept separate from the canvas dims
-// so `drawHicBlocks` can't be handed a mismatched pair — the SVG export draws
-// into a layer of its own size and has no canvas to size.
-export interface HicDrawState {
-  yScalar: number
-  colorMaxScore: number
-  useLogScale: boolean
-  viewScale: number
-  viewOffsetX: number
-}
-
-export interface HicRenderState extends HicDrawState {
-  canvasWidth: number
-  canvasHeight: number
+export interface HicRenderState extends TriangleFrame {
+  domainMin: number
+  domainMax: number
+  scaleType: ScaleTypeCode
   colorRamp: Uint8Array
 }
 
-// `binWidth` rides with the data, not the frame state: it's the px size the
-// worker packed `instances` at, so a frame can't scale bins from one payload
-// against another's geometry — and it's what keeps `renderState` resolvable
-// (a bare getter must never hand back undefined) with no data loaded.
-//
-// `instances` is already the shader's vertex-buffer layout — see
-// `HicDataResult.instances` — so the mark's pack hands it to the HAL untouched
-// and the Canvas2D/SVG paths read it at stride.
+// `binWidth` is the payload's, so a frame never scales one fetch's bins by
+// another's geometry. `instances` is the shader's own vertex layout.
 export interface HicUploadData {
   instances: Float32Array
   numContacts: number

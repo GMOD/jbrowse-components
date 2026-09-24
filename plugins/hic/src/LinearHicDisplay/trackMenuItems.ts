@@ -7,7 +7,7 @@ import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { capitalizeFirst, getBpDisplayStr } from '@jbrowse/core/util'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
-import { squashToHeightCheckboxItem } from '@jbrowse/display-kit/squashToHeightMenuItem'
+import { squashToHeightCheckboxItem } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import { makeResolutionSubMenuItem } from '@jbrowse/wiggle-core/chrome'
 import GridOnIcon from '@mui/icons-material/GridOn'
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -22,7 +22,7 @@ const COLOR_SCHEME_OPTIONS = COLOR_SCHEMES.map(
 )
 
 interface HicMenuSelf {
-  colorScale: HicColorScale
+  colorScaleType: HicColorScale
   useColorPercentile: boolean
   showLegend: boolean
   showResolutionControls: boolean
@@ -47,9 +47,6 @@ interface HicMenuSelf {
   resetResolutionBias: () => void
 }
 
-// One-line explanation per matrix-balancing scheme, so the Normalization radios
-// aren't bare jargon (KR/SCALE/VC/…). Falls back to a generic note for schemes
-// a file might expose that we don't have specific copy for.
 const NORM_HELP: Record<string, string> = {
   KR: 'Knight-Ruiz matrix balancing — the recommended normalization for most files.',
   SCALE: 'Fast matrix-balancing normalization that approximates KR.',
@@ -58,10 +55,6 @@ const NORM_HELP: Record<string, string> = {
   NONE: 'Raw observed contact counts, with no normalization applied.',
 }
 
-// Resolution sits at the top level (not buried behind the on-figure overlay
-// toggle) for discoverability — binsize is the primary Hi-C control. The
-// "Show resolution controls" checkbox in the Show menu is a separate, opt-in
-// on-figure dropdown for baking a chosen binsize into a screenshot/figure.
 function resolutionMenuItems(self: HicMenuSelf): MenuItem[] {
   return self.hasResolutions
     ? [
@@ -113,7 +106,7 @@ function showMenuItems(self: HicMenuSelf): MenuItem[] {
 
 function colorScaleMenuItems(self: HicMenuSelf): MenuItem[] {
   return [
-    toggleItem('Log scale', self.colorScale === 'log', log => {
+    toggleItem('Log scale', self.colorScaleType === 'log', log => {
       self.setColorScale(log ? 'log' : 'linear')
     }),
     toggleItem(
@@ -122,21 +115,14 @@ function colorScaleMenuItems(self: HicMenuSelf): MenuItem[] {
       self.setUseColorPercentile,
       {
         helpText:
-          'Saturate the color scale at the 95th percentile of counts instead of the max, so faint off-diagonal contacts read more strongly.',
+          'Saturate the color scale at the 95th percentile of the loaded counts instead of their maximum, so faint off-diagonal contacts read more strongly. A color.domainMax in the config overrides both.',
       },
     ),
   ]
 }
 
-// Only the schemes the file actually offers, so the radios can't check a
-// normalization the file would silently answer with NONE. `appliedNormalization`
-// — not the raw config slot, and not the requested scheme either — drives the
-// tick, so the radios always describe the matrix on screen. Two things can make
-// them diverge from the user's pick: a file that lacks the scheme entirely
-// (handled by `activeNormalization`), and a file that has it but not at the
-// current binsize — vectors are stored per (type, chr, unit, binsize). The
-// second only becomes visible once data has loaded, so the requested-but-
-// unapplied entry says so rather than leaving an unexplained tick elsewhere.
+// The schemes the file offers, ticked by what the loaded matrix carries: a
+// file can hold a scheme at one binsize and not another.
 function normalizationMenuItems(self: HicMenuSelf): MenuItem[] {
   const avail = self.availableNormalizations
   const { activeNormalization, appliedNormalization } = self

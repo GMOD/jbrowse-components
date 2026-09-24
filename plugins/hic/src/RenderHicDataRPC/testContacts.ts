@@ -1,6 +1,6 @@
 import type {
   MultiRegionContacts,
-  RegionPairRun,
+  RegionPairContacts,
 } from '../HicAdapter/HicAdapter.ts'
 
 /** A contact written the readable way, for fixtures. */
@@ -13,51 +13,43 @@ export interface TestContact {
 }
 
 /**
- * Build the adapter's struct-of-arrays result from a per-contact fixture.
- *
- * Region membership becomes contiguous runs, cut wherever the pair changes —
- * so a fixture listed in the adapter's own `(i, j)` nested-loop order produces
- * exactly the run table the adapter would, and every contact keeps the index
- * the test refers to it by.
+ * The adapter's result from a per-contact fixture: consecutive contacts of one
+ * region pair become that pair's arrays, so a fixture listed in the adapter's
+ * `(i, j)` order keeps every contact at the index the test names it by.
  */
 export function toContacts(
   contacts: TestContact[],
   resolution: number,
   appliedNormalization = 'KR',
 ): MultiRegionContacts {
-  const numContacts = contacts.length
-  const bin1 = new Uint32Array(numContacts)
-  const bin2 = new Uint32Array(numContacts)
-  const counts = new Float32Array(numContacts)
-  const pairs: RegionPairRun[] = []
-
-  for (const [i, c] of contacts.entries()) {
-    bin1[i] = c.bin1
-    bin2[i] = c.bin2
-    counts[i] = c.counts
-    const open = pairs.at(-1)
+  const groups: { region1Idx: number; region2Idx: number; c: TestContact[] }[] =
+    []
+  for (const c of contacts) {
+    const open = groups.at(-1)
     if (
       open &&
       open.region1Idx === c.region1Idx &&
       open.region2Idx === c.region2Idx
     ) {
-      open.end = i + 1
+      open.c.push(c)
     } else {
-      pairs.push({
+      groups.push({
         region1Idx: c.region1Idx,
         region2Idx: c.region2Idx,
-        start: i,
-        end: i + 1,
+        c: [c],
       })
     }
   }
-
+  const pairs: RegionPairContacts[] = groups.map(g => ({
+    region1Idx: g.region1Idx,
+    region2Idx: g.region2Idx,
+    bin1: Int32Array.from(g.c, c => c.bin1),
+    bin2: Int32Array.from(g.c, c => c.bin2),
+    counts: Float32Array.from(g.c, c => c.counts),
+  }))
   return {
-    bin1,
-    bin2,
-    counts,
     pairs,
-    numContacts,
+    numContacts: contacts.length,
     resolution,
     appliedNormalization,
   }

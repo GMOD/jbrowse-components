@@ -600,11 +600,10 @@ triangle.
 
 It is a **semantic** change, not a free optimization, and the slot therefore
 defaults to 0 (the full triangle) rather than to some window: both display modes
-draw every cell they are given. `canvasHeight` is
-`squashToHeight ? ldCanvasHeight : canvasWidth / 2` and `computeTriangleYScalar`
-squashes the natural apex height into the display rather than clipping it, so
-nothing is off-canvas at any zoom and there is no window that is invisible to
-pick. Choosing one says pairs past `k` are not shown.
+draw every cell they are given. Squashed, `computeTriangleYScalar` fits the
+natural apex height into the display, so nothing is off-canvas at any zoom and
+there is no window that is invisible to pick; unsquashed, the display's height
+clips the deep half, which the reader can see and resize. Choosing one says pairs past `k` are not shown.
 
 `ldBand.ts` owns the layout, and the property that made it affordable is that
 **it generalizes the triangular one rather than replacing it**: rows are ragged,

@@ -1,7 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 import { getInstancePosition } from '../LinearHicDisplay/components/shaders/hic.iface.generated.ts'
-import { calcAxisBlocks } from '../regionOffsets.ts'
 import { executeRenderHicData } from './executeRenderHicData.ts'
 import { toContacts } from './testContacts.ts'
 
@@ -108,86 +107,5 @@ describe('region layout follows the axis offsets, not a running sum of spans', (
     const d = await run(regions, [0, 500], [diagonal(0, 1), diagonal(1, 1)])
     expect(cellLeftAxisBp(d, 0)).toBeCloseTo(100, 3)
     expect(cellLeftAxisBp(d, 1)).toBeCloseTo(600, 3)
-  })
-})
-
-// The axis is the concatenation of displayedRegions in display order — every
-// region counts toward the cumulative offset (elided ones included, since the
-// ruler still gives them their width), a block in a reversed region leads with
-// its `end`, and offsets come back relative to the leftmost fetched block.
-describe('calcAxisBlocks', () => {
-  const displayed = [
-    { start: 0, end: 1000 },
-    { start: 0, end: 2 },
-    { start: 100, end: 600 },
-    { start: 0, end: 400, reversed: true },
-  ]
-
-  test('a block at its region start sits at the cumulative bp offset', () => {
-    const { originBp, axisBlocks } = calcAxisBlocks(
-      [
-        {
-          refName: 'a',
-          start: 0,
-          end: 1000,
-          displayedRegionIndex: 0,
-        },
-        {
-          refName: 'c',
-          start: 100,
-          end: 600,
-          displayedRegionIndex: 2,
-        },
-      ],
-      displayed,
-    )
-    expect(originBp).toBe(0)
-    // region 2's axis start = 1000 + 2 (the elided middle region still counts)
-    expect(axisBlocks.map(b => b.offsetBp)).toEqual([0, 1002])
-  })
-
-  test('offsets are relative to the leftmost fetched block', () => {
-    const { originBp, axisBlocks } = calcAxisBlocks(
-      [
-        {
-          refName: 'c',
-          start: 300,
-          end: 600,
-          displayedRegionIndex: 2,
-        },
-      ],
-      displayed,
-    )
-    // axis start of region 2 (1002) + block lead within it (300 - 100)
-    expect(originBp).toBe(1202)
-    expect(axisBlocks[0]!.offsetBp).toBe(0)
-  })
-
-  test('a block in a reversed region leads with its end', () => {
-    const { originBp, axisBlocks } = calcAxisBlocks(
-      [
-        {
-          refName: 'd',
-          start: 0,
-          end: 300,
-          displayedRegionIndex: 3,
-        },
-      ],
-      displayed,
-    )
-    // region 3's axis start = 1000 + 2 + 500 = 1502; reversed lead = 400 - 300
-    expect(originBp).toBe(1602)
-    expect(axisBlocks[0]!.offsetBp).toBe(0)
-  })
-
-  // the view's names, not the adapter's: the RPC framework renames
-  // `regions[].refName` on the way out, so hover labels would otherwise read
-  // the .hic file's chromosome names under a ruler showing the assembly's
-  test('carries the refName the view displays', () => {
-    const { axisBlocks } = calcAxisBlocks(
-      [{ refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 }],
-      [{ start: 0, end: 1000 }],
-    )
-    expect(axisBlocks[0]!.refName).toBe('chr1')
   })
 })

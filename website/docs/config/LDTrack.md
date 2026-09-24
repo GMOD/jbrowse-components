@@ -42,7 +42,7 @@ Track type for displaying pre-computed linkage disequilibrium data
 
 ## Related links
 
-- **Display:** [LDTrackDisplay](../ldtrackdisplay)
+- **Display:** [LDTrackDisplay](../ldtrackdisplay) ([state model](../../models/ldtrackdisplay))
 - **Adapter:** [PlinkLDAdapter](../plinkldadapter)
 - **Adapter:** [PlinkLDTabixAdapter](../plinkldtabixadapter)
 - **Base config:** [BaseTrack](../basetrack)

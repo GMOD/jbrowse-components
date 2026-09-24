@@ -31,23 +31,6 @@ A minimal `HicTrack` config. See the
 }
 ```
 
-With a log colour scale and a coarser resolution (`resolutionBias` nudges the
-auto-picked binsize; negative = finer, positive = coarser). The
-`displayDefaults` object shorthand applies settings to whichever display uses
-them — equivalent to a full `displays: [{ type, displayId, ... }]` array. See
-[configuring displays](/docs/config_guides/tracks#configuring-displays):
-
-```js
-{
-  type: 'HicTrack',
-  trackId: 'hic',
-  name: 'Hi-C',
-  assemblyNames: ['hg38'],
-  adapter: { type: 'HicAdapter', uri: 'https://example.com/contacts.hic' },
-  displayDefaults: { color: { scale: 'log' }, resolutionBias: 1 },
-}
-```
-
 _See the **Config slots** section below for all available configuration fields._
 
 ## Related links

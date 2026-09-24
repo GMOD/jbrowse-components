@@ -44,6 +44,7 @@ async function run(regions: Region[], useGenomicPositions: boolean) {
         adapterConfig: { type: 'PlinkLDTabixAdapter' },
         regions,
         originBp: 0,
+        spanBp: regions.reduce((sum, r) => sum + r.end - r.start, 0),
         ldMetric: 'r2',
         maxVariantSeparation: 0,
         useGenomicPositions,
@@ -54,7 +55,7 @@ async function run(regions: Region[], useGenomicPositions: boolean) {
 
 // `genomicMode` is what the display branches its *chrome* on, not only its
 // matrix: `effectiveUseGenomicPositions` picks the label zone over the connector
-// zone and sets `effectiveLineZoneHeight`. Reporting `false` on an empty result
+// zone and sets `matrixTop`. Reporting `false` on an empty result
 // moved the triangle down by `lineZoneHeight` (100px by default) and shrank it
 // the moment a region held no pairs — then put it back on the next pan.
 test('an empty result keeps reporting the layout mode the display is in', async () => {

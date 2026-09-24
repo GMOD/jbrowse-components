@@ -71,17 +71,17 @@ import * as m65 from '@jbrowse/display-kit/rowColorConfigSchema'
 import * as m66 from '@jbrowse/display-kit/rowsConfigSchema'
 import * as m67 from '@jbrowse/display-kit/rpcArgs'
 import * as m68 from '@jbrowse/display-kit/SkippedFeaturesIndicator'
-import * as m69 from '@jbrowse/display-kit/squashToHeightMenuItem'
-import * as m70 from '@jbrowse/display-kit/stableIdentityComputed'
-import * as m71 from '@jbrowse/display-kit/StoredHoverMixin'
-import * as m72 from '@jbrowse/display-kit/subPixelBinBp'
-import * as m73 from '@jbrowse/display-kit/TooLargeMessage'
-import * as m74 from '@jbrowse/display-kit/TrackControl'
-import * as m75 from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
-import * as m76 from '@jbrowse/display-kit/TrackHeightIndicator'
-import * as m77 from '@jbrowse/display-kit/TrackHeightMixin'
-import * as m78 from '@jbrowse/display-kit/triangleTransform'
-import * as m79 from '@jbrowse/display-kit/triangleYScalar'
+import * as m69 from '@jbrowse/display-kit/stableIdentityComputed'
+import * as m70 from '@jbrowse/display-kit/StoredHoverMixin'
+import * as m71 from '@jbrowse/display-kit/subPixelBinBp'
+import * as m72 from '@jbrowse/display-kit/TooLargeMessage'
+import * as m73 from '@jbrowse/display-kit/TrackControl'
+import * as m74 from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
+import * as m75 from '@jbrowse/display-kit/TrackHeightIndicator'
+import * as m76 from '@jbrowse/display-kit/TrackHeightMixin'
+import * as m77 from '@jbrowse/display-kit/TriangleMatrixMixin'
+import * as m78 from '@jbrowse/display-kit/TriangleMatrixSvgLayer'
+import * as m79 from '@jbrowse/display-kit/triangleTransform'
 import * as m80 from '@jbrowse/display-kit/types'
 import * as m81 from '@jbrowse/display-kit/viewportEmpty'
 import * as m82 from '@jbrowse/display-ui'
@@ -218,17 +218,17 @@ const libs: Record<string, unknown> = {
   '@jbrowse/display-kit/rowsConfigSchema': m66,
   '@jbrowse/display-kit/rpcArgs': m67,
   '@jbrowse/display-kit/SkippedFeaturesIndicator': { ...m68, __esModule: true },
-  '@jbrowse/display-kit/squashToHeightMenuItem': m69,
-  '@jbrowse/display-kit/stableIdentityComputed': m70,
-  '@jbrowse/display-kit/StoredHoverMixin': m71.default,
-  '@jbrowse/display-kit/subPixelBinBp': m72,
-  '@jbrowse/display-kit/TooLargeMessage': m73.default,
-  '@jbrowse/display-kit/TrackControl': m74.default,
-  '@jbrowse/display-kit/trackHeightConfigSchemaFields': m75,
-  '@jbrowse/display-kit/TrackHeightIndicator': m76.default,
-  '@jbrowse/display-kit/TrackHeightMixin': m77.default,
-  '@jbrowse/display-kit/triangleTransform': m78,
-  '@jbrowse/display-kit/triangleYScalar': m79,
+  '@jbrowse/display-kit/stableIdentityComputed': m69,
+  '@jbrowse/display-kit/StoredHoverMixin': m70.default,
+  '@jbrowse/display-kit/subPixelBinBp': m71,
+  '@jbrowse/display-kit/TooLargeMessage': m72.default,
+  '@jbrowse/display-kit/TrackControl': m73.default,
+  '@jbrowse/display-kit/trackHeightConfigSchemaFields': m74,
+  '@jbrowse/display-kit/TrackHeightIndicator': m75.default,
+  '@jbrowse/display-kit/TrackHeightMixin': m76.default,
+  '@jbrowse/display-kit/TriangleMatrixMixin': { ...m77, __esModule: true },
+  '@jbrowse/display-kit/TriangleMatrixSvgLayer': m78.default,
+  '@jbrowse/display-kit/triangleTransform': m79,
   '@jbrowse/display-kit/types': m80,
   '@jbrowse/display-kit/viewportEmpty': m81,
   '@jbrowse/display-ui': m82,

@@ -158,7 +158,7 @@ The triangular contact-matrix displays — `hic/LinearHicDisplay` and
 "squash the triangle vertically to fill the display height". There are no rows
 involved, so it shares nothing with the row-height machinery above but the
 user-facing idea. Both go through one menu helper,
-`linear-genome-view/…/squashToHeightMenuItem.ts`, labelled `'Fit to display
+`squashToHeightCheckboxItem` in display-kit's `TriangleMatrixMixin.ts`, labelled `'Fit to display
 height'`.
 
 It is named for the squash rather than the fit so that `setSquashToHeight(bool)`

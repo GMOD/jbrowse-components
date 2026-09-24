@@ -6,20 +6,20 @@ import {
 } from '../../shared/ConnectorLines.tsx'
 import VariantLabels from './VariantLabels.tsx'
 
-import type { SharedLDModel } from '../shared.ts'
+import type { LDDisplayModel } from '../model.ts'
 
 // Genomic-positions mode: the triangle already sits at each SNP's genomic x, so
 // there is nothing to connect and the zone holds only the labels. The handle
-// comes along so the room they need is draggable — `effectiveLineZoneHeight`
+// comes along so the room they need is draggable — `matrixTop`
 // reserves `lineZoneHeight` for them rather than measuring the rotated text.
 const LDLabelZone = observer(function LDLabelZone({
   model,
   exportSVG,
 }: {
-  model: SharedLDModel
+  model: LDDisplayModel
   exportSVG?: boolean
 }) {
-  const { height, showLabels, effectiveLineZoneHeight } = model
+  const { height, showLabels, matrixTop } = model
   const { width } = model.host
 
   return (
@@ -28,10 +28,7 @@ const LDLabelZone = observer(function LDLabelZone({
         <VariantLabels model={model} />
       </ConnectorZone>
       {exportSVG || !showLabels ? null : (
-        <ConnectorZoneResizeHandle
-          model={model}
-          top={effectiveLineZoneHeight}
-        />
+        <ConnectorZoneResizeHandle model={model} top={matrixTop} />
       )}
     </>
   )

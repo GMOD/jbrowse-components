@@ -1,7 +1,7 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { observer } from 'mobx-react'
 
-import type { SharedLDModel } from '../shared.ts'
+import type { LDDisplayModel } from '../model.ts'
 
 // Reads the same `connectorLineCoords` the lines do, so a label and its line
 // always sit at one x. A SNP with no VCF ID (no `label`) is left unlabeled — its
@@ -9,7 +9,7 @@ import type { SharedLDModel } from '../shared.ts'
 const VariantLabels = observer(function VariantLabels({
   model,
 }: {
-  model: SharedLDModel
+  model: LDDisplayModel
 }) {
   // `usePalette`, not MUI's `useTheme`: this is display *content*, which an
   // embedding app supplies colors for through PaletteProvider without mounting

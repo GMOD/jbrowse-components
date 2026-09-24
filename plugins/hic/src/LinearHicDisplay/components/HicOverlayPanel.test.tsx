@@ -12,7 +12,7 @@ const DATA: HicDataResult = {
   instances: new Float32Array(INSTANCE_STRIDE_WORDS),
   numContacts: 1,
   maxScore: 20,
-  percentile95: 20,
+  percentile95: 15,
   binWidth: 4,
   originBp: 0,
   resolution: 1000,
@@ -48,8 +48,8 @@ test('no scale until the data lands with a positive saturation point', () => {
   expect(display.colorScales[0]).toMatchObject({
     kind: 'ramp',
     id: 'contacts',
-    title: 'Contacts',
-    domain: [0, 20],
+    title: 'Contacts (KR)',
+    domain: [0, 15],
   })
 })
 
@@ -76,7 +76,7 @@ test('the gradient bar is a row of the box, captioned and labelled', () => {
     '[style*="linear-gradient"]',
   )
   expect(bar).toBeTruthy()
-  getByText('Contacts')
+  getByText('Contacts (KR)')
   getByText('0')
-  getByText('≥20')
+  getByText('≥15')
 })

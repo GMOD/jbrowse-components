@@ -15,6 +15,13 @@ closed; this file is its record. The library itself is documented in
 stays the operational doc (what each shape draws, who imports it, how to add
 one). This ADR holds the decision, the measured gates, and the grammar position.
 
+Amended (2026-09-24): Hi-C's scale is `scoreScale`'s. `hic.slang` calls
+`normalizeScore` over the `HicColor` domain, and its Canvas2D painter the
+`makeScoreNormalizer` twin, so the three backends still land on one LUT entry,
+now through `normalizeScoreParity.test.ts`. `mapHicCount` differed only on a
+degenerate domain (a log-scale top below 2), and a pinnable `domainMax`, the
+ADR-151 spelling, needed the one rule. LD's stays its own.
+
 ## Context
 
 `packages/render-core/src/shaders/` held a shape module (`rowRect.slang`, two

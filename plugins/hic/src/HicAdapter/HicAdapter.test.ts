@@ -112,9 +112,9 @@ test('a missing inter-chromosomal pair does not fail the whole multi-region fetc
   // both intra-chromosomal pairs (0,0) and (1,1) survive; the throwing inter
   // pair (0,1) contributes nothing instead of aborting the fetch
   expect(numContacts).toBe(2)
-  expect(pairs).toEqual([
-    { region1Idx: 0, region2Idx: 0, start: 0, end: 1 },
-    { region1Idx: 1, region2Idx: 1, start: 1, end: 2 },
+  expect(pairs.map(p => [p.region1Idx, p.region2Idx, p.bin1.length])).toEqual([
+    [0, 0, 1],
+    [1, 1, 1],
   ])
 })
 
@@ -272,18 +272,16 @@ test('un-swaps bin1/bin2 when the parser transposed the query', async () => {
     { assemblyName: 'test', refName: '1', start: 0, end: 1000000 },
   ]
 
-  const { bin1, bin2, counts, pairs } =
-    await adapter.getMultiRegionContactRecords(regions, {
-      resolution: 100000,
-      normalization: 'NONE',
-    })
+  const { pairs } = await adapter.getMultiRegionContactRecords(regions, {
+    resolution: 100000,
+    normalization: 'NONE',
+  })
 
   const interPair = pairs.find(p => p.region1Idx === 0 && p.region2Idx === 1)
   expect(interPair).toBeDefined()
-  const at = interPair!.start
-  expect(interPair!.end - at).toBe(1)
+  const { bin1, bin2, counts } = interPair!
   // bin1 maps back to region1 ('2', the higher-index chr) despite the transpose
-  expect([bin1[at], bin2[at], counts[at]]).toEqual([3, 7, 9])
+  expect([bin1[0], bin2[0], counts[0]]).toEqual([3, 7, 9])
 })
 
 // Normalization vectors are stored per (type, chr, unit, binsize), so a pair

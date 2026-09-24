@@ -343,12 +343,12 @@ used to be. That reads like the Gbp-scale Float32 hazard synteny and dotplot
 both had to solve, and it is answered the same way: the worker subtracts an
 origin first.
 
-`calcAxisBlocks` picks `originBp` — the leading edge of the fetched block set —
+`triangleAxis` (display-kit) picks `originBp` — the leading edge of the fetched block set —
 and every position ships relative to it, so a Float32 instance attribute carries
 a span, not a genomic coordinate. The origin is folded back per frame on the CPU
 in double precision, inside `viewOffsetX = originBp / bpPerPx - offsetPx` (the
-`viewTransform` getter on `LinearHicDisplay`, and its twin on `SharedLDModel`;
-the forward and inverse maps it feeds are `hicTransform.ts`), the same
+`viewTransform` getter `TriangleMatrixMixin` gives both triangle displays; the
+forward and inverse maps it feeds are display-kit's `triangleTransform.ts`), the same
 base-plus-window shape as the cumulative-bp family — one base subtracted in the
 worker, added back in float64, never a large absolute value in a float32
 attribute. LD lays its columns out the same way, in bp/√2 off the first region's

@@ -6070,27 +6070,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LDTrackDisplaySlots": {
       "type": "object",
       "properties": {
-        "fetchSizeLimit": {
-          "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "type": "number",
-          "default": 1000000
-        },
-        "forceLoad": {
-          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "type": "boolean",
-          "default": false
-        },
         "height": {
-          "description": "default height for the track.",
+          "description": "default height of the display, the band above the triangle included.",
           "type": "number",
           "default": 400
         },
-        "mouseover": {
-          "description": "text to display when the cursor hovers over a feature.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
+        "showLegend": {
+          "description": "show the color scale legend.",
+          "type": "boolean",
+          "default": false
+        },
+        "squashToHeight": {
+          "description": "squash the triangle vertically to fill the display height instead of drawing square cells.",
+          "type": "boolean",
+          "default": false
         },
         "lineZoneHeight": {
+          "description": "height of the band above the triangle holding the connector lines and labels.",
           "type": "number",
           "default": 100
         },
@@ -6101,31 +6097,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ],
           "default": "r2"
         },
-        "showLegend": {
-          "type": "boolean",
-          "default": false
-        },
         "showLDTriangle": {
+          "description": "whether to show the LD triangle heatmap.",
           "type": "boolean",
           "default": true
-        },
-        "squashToHeight": {
-          "type": "boolean",
-          "default": false
         },
         "maxVariantSeparation": {
           "type": "number",
           "default": 0
         },
         "showVerticalGuides": {
+          "description": "on hover, draw guides across the view at the pair's genomic positions.",
           "type": "boolean",
           "default": true
         },
         "showLabels": {
+          "description": "show variant labels above the tick marks.",
           "type": "boolean",
           "default": false
         },
         "tickHeight": {
+          "description": "height of the tick marks at the genomic positions.",
           "type": "number",
           "default": 6
         },
@@ -6987,7 +6979,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "scale": {
-          "description": "linear, or log2 of the count.",
+          "description": "linear, or log2 of the count, which lifts sparse long-range bins off the floor.",
           "enum": [
             "linear",
             "log"
@@ -6995,7 +6987,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "linear"
         },
         "scheme": {
-          "description": "the named ramp counts run across.",
+          "description": "the named ramp counts run across; juicebox fades from transparent to red.",
           "enum": [
             "viridis",
             "magma",
@@ -7014,6 +7006,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
           "type": "boolean",
           "default": false
+        },
+        "domainMin": {
+          "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
+          "type": "number"
+        },
+        "domainMax": {
+          "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
+          "type": "number"
         }
       },
       "patternProperties": {
@@ -7029,21 +7029,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 300
         },
-        "color": {
-          "$ref": "#/$defs/HicColor"
-        },
         "showLegend": {
-          "description": "show the color scale legend. Defaults to off.",
+          "description": "show the color scale legend.",
           "type": "boolean",
           "default": false
         },
+        "squashToHeight": {
+          "description": "squash the triangle vertically to fill the display height instead of drawing square cells.",
+          "type": "boolean",
+          "default": false
+        },
+        "color": {
+          "$ref": "#/$defs/HicColor"
+        },
         "resolutionBias": {
-          "description": "offset from the auto-picked resolution binsize.",
+          "description": "steps from the zoom-picked binsize: -1 one finer, +1 one coarser, 0 follows the zoom.",
           "type": "number",
           "default": 0
         },
         "useColorPercentile": {
-          "description": "saturate color at the 95th percentile of counts.",
+          "description": "with no color.domainMax, saturate at the 95th percentile of the loaded counts rather than their maximum.",
           "type": "boolean",
           "default": true
         },
@@ -7053,14 +7058,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": false
         },
         "selectedNormalization": {
-          "description": "preferred matrix normalization scheme.",
+          "description": "preferred matrix normalization (KR, SCALE, VC, VC_SQRT, NONE); a scheme the file lacks falls back to one it has.",
           "$ref": "#/$defs/PlainString",
           "default": "KR"
-        },
-        "squashToHeight": {
-          "description": "squash the triangle vertically to fit the display height instead of drawing square bins.",
-          "type": "boolean",
-          "default": false
         }
       }
     },
@@ -10323,17 +10323,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
           "type": "object",
           "properties": {
-            "fetchSizeLimit": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/fetchSizeLimit"
-            },
-            "forceLoad": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/forceLoad"
-            },
             "height": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/height"
             },
-            "mouseover": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/mouseover"
+            "showLegend": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLegend"
+            },
+            "squashToHeight": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/squashToHeight"
             },
             "lineZoneHeight": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/lineZoneHeight"
@@ -10341,14 +10338,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "ldMetric": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/ldMetric"
             },
-            "showLegend": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLegend"
-            },
             "showLDTriangle": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLDTriangle"
-            },
-            "squashToHeight": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/squashToHeight"
             },
             "maxVariantSeparation": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/maxVariantSeparation"
@@ -11430,11 +11421,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "height": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/height"
             },
-            "color": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/color"
-            },
             "showLegend": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/showLegend"
+            },
+            "squashToHeight": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/squashToHeight"
+            },
+            "color": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/color"
             },
             "resolutionBias": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/resolutionBias"
@@ -11447,9 +11441,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "selectedNormalization": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/selectedNormalization"
-            },
-            "squashToHeight": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/squashToHeight"
             }
           },
           "patternProperties": {

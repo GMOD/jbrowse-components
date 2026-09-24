@@ -1,3 +1,4 @@
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { LD_NOT_COMPUTED } from '@jbrowse/ld-core'
 import { MockHal } from '@jbrowse/render-core/hal'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
@@ -14,7 +15,8 @@ import {
 } from './shaders/ldGenomic.iface.generated.ts'
 import { INSTANCE_STRIDE_BYTES as UNIFORM_STRIDE } from './shaders/ldUniform.iface.generated.ts'
 
-import type { LDRenderState, LDUploadData } from './ldRenderingBackendTypes.ts'
+import type { LDUploadData } from './ldRenderingBackendTypes.ts'
+import type { TriangleFrame } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
 
 Object.defineProperty(window, 'devicePixelRatio', { value: 1, writable: true })
@@ -33,7 +35,7 @@ function makeColorRamp() {
   return ramp
 }
 
-function makeRenderState(overrides?: Partial<LDRenderState>): LDRenderState {
+function makeRenderState(overrides?: Partial<TriangleFrame>): TriangleFrame {
   return {
     canvasWidth: 800,
     canvasHeight: 600,
@@ -225,33 +227,27 @@ describe('the LD mark list, paint reporting', () => {
 })
 
 function recordingCtx() {
-  const pathOps: string[] = []
+  const rects: number[][] = []
   const ctx = {
     fillStyle: '',
     strokeStyle: '',
     lineWidth: 1,
-    fillRect: jest.fn(),
+    fillRect: jest.fn((...args: number[]) => rects.push(args)),
     strokeRect: jest.fn(),
     save: jest.fn(),
     restore: jest.fn(),
     rect: jest.fn(),
-    clip: jest.fn(() => pathOps.push('clip')),
+    clip: jest.fn(),
     translate: jest.fn(),
     scale: jest.fn(),
     rotate: jest.fn(),
-    arc: jest.fn(),
-    stroke: jest.fn(),
-    beginPath: jest.fn(() => pathOps.push('beginPath')),
-    moveTo: jest.fn((...args: number[]) => pathOps.push(`moveTo(${args})`)),
-    lineTo: jest.fn((...args: number[]) => pathOps.push(`lineTo(${args})`)),
-    closePath: jest.fn(() => pathOps.push('closePath')),
-    fill: jest.fn(() => pathOps.push('fill')),
+    beginPath: jest.fn(),
   }
-  return { ctx: ctx as unknown as MarkContext2D, raw: ctx, pathOps }
+  return { ctx: ctx as unknown as MarkContext2D, raw: ctx, rects }
 }
 
 function paint(data: LDUploadData | undefined, state = makeRenderState()) {
-  const { ctx, raw, pathOps } = recordingCtx()
+  const { ctx, raw, rects } = recordingCtx()
   paintMarkBlocks(
     ctx,
     LD_MARKS,
@@ -259,9 +255,7 @@ function paint(data: LDUploadData | undefined, state = makeRenderState()) {
     canvasWideBlocks([0], state.canvasWidth),
     state,
   )
-  // `forEachClippedBlock` opens the block's clip with a beginPath/rect/clip of
-  // its own, so the cell's path is what follows that clip.
-  return { ctx: raw, pathOps: pathOps.slice(pathOps.indexOf('clip') + 1) }
+  return { ctx: raw, rects }
 }
 
 // The shader's own transform (render-core `diagonalCellToClip`), so the
@@ -270,7 +264,7 @@ function paint(data: LDUploadData | undefined, state = makeRenderState()) {
 function shaderCorner(
   x: number,
   y: number,
-  state: LDRenderState = makeRenderState(),
+  state: TriangleFrame = makeRenderState(),
 ) {
   const rx = (x + y) * COS45
   const ry = (-x + y) * COS45
@@ -286,26 +280,47 @@ function rampFill(ramp: Uint8Array, t: number) {
   return `rgba(${ramp[o]!},${ramp[o + 1]!},${ramp[o + 2]!},${a.toFixed(3)})`
 }
 
-describe('the LD painter', () => {
-  it('draws one diamond per cell', () => {
-    const { pathOps } = paint(makeOneCell())
+// The corners the SVG export puts a cell's rect at: SvgCanvas emits a rotated
+// rect as its local size under the whole affine.
+function exportedCorners(data: LDUploadData, state = makeRenderState()) {
+  const ctx = new SvgCanvas()
+  drawLDBlocks(ctx, data, makeColorRamp(), state, 10_000)
+  const svg = ctx.getSerializedSvg()
+  const [w, h] = /<rect width="(\S+)" height="(\S+)"/
+    .exec(svg)!
+    .slice(1, 3)
+    .map(Number)
+  const [a, b, c, d, e, f] = /matrix\(([^)]*)\)/
+    .exec(svg)![1]!
+    .split(' ')
+    .map(Number)
+  return [
+    [e!, f!],
+    [e! + a! * w!, f! + b! * w!],
+    [e! + a! * w! + c! * h!, f! + b! * w! + d! * h!],
+    [e! + c! * h!, f! + d! * h!],
+  ]
+}
 
-    expect(pathOps).toContain('beginPath')
-    expect(pathOps).toContain('closePath')
-    expect(pathOps).toContain('fill')
+function expectCorners(actual: number[][], expected: number[][]) {
+  expect(actual).toEqual(
+    expected.map(([x, y]) => [expect.closeTo(x!, 6), expect.closeTo(y!, 6)]),
+  )
+}
+
+describe('the LD painter', () => {
+  it('draws one rect per cell', () => {
+    expect(paint(makeOneCell()).rects).toHaveLength(1)
   })
 
   it('paints nothing with no payload', () => {
-    expect(paint(undefined).pathOps.length).toBe(0)
+    expect(paint(undefined).rects).toHaveLength(0)
   })
 
-  // One painter serves both layouts — it walks `boundaries`, which describe
-  // either — so which mark takes the block decides nothing but that the cell is
-  // painted exactly once.
+  // One painter serves both layouts, walking `boundaries`, so which mark takes
+  // the block decides only that the cell is painted exactly once.
   it('paints a genomic-layout matrix exactly once', () => {
-    expect(paint(makeGenomicCell()).pathOps.filter(o => o === 'fill')).toEqual([
-      'fill',
-    ])
+    expect(paint(makeGenomicCell()).rects).toHaveLength(1)
   })
 
   it('reads ldValue as the ramp position directly, and clamps at both ends', () => {
@@ -317,11 +332,8 @@ describe('the LD painter', () => {
     ).toBe(rampFill(ramp, 1))
   })
 
-  // Every ramp a display can reach is opaque, which is why the painter has no
-  // alpha gate: `generateLDColorRamp` returns the `reds` or `blues` LUT, both
-  // opaque at every stop. A translucent one would need a matching `discard` in
-  // ldUniforms.slang, which gates on `ldValueComputed` alone — so a gate here
-  // would be a Canvas2D-only skip.
+  // No alpha gate in the painter: both reachable ramps are opaque, and the
+  // shaders gate on `ldValueComputed` alone.
   it.each(['r2', 'dprime'])('every %s ramp entry is opaque', metric => {
     const ramp = generateLDColorRamp(metric)
     for (let i = 0; i < 256; i++) {
@@ -329,42 +341,37 @@ describe('the LD painter', () => {
     }
   })
 
-  // Genomic-positions mode gives every SNP its own Voronoi width, so the cell at
-  // (i=1, j=0) spans a 10-wide column against a 30-tall row. The half-diagonal
-  // form this replaced took the horizontal extent from `cw` and the vertical
-  // from `ch`, which describes the rotated rect only when they are equal — so a
-  // genomic matrix drew cells off-center, mis-shaped, and not tiling. Uniform
-  // mode never exposed it (every boundary is `i * uniformW`).
-  it('draws a cell whose two spans differ as the rotated rect', () => {
-    const { pathOps } = paint(
-      makeOneCell({ boundaries: new Float32Array([0, 10, 40]) }),
+  // At genomic positions every SNP has its own width, so cell (1, 0) spans a
+  // 10-wide column against a 30-tall row and must still land on the shader's
+  // corners.
+  it('puts a cell whose two spans differ on the shader corners', () => {
+    expectCorners(
+      exportedCorners(
+        makeOneCell({ boundaries: new Float32Array([0, 10, 40]) }),
+      ),
+      [
+        shaderCorner(0, 10),
+        shaderCorner(10, 10),
+        shaderCorner(10, 40),
+        shaderCorner(0, 40),
+      ],
     )
+  })
 
-    expect(pathOps).toEqual([
-      'beginPath',
-      `moveTo(${shaderCorner(0, 10)})`,
-      `lineTo(${shaderCorner(10, 10)})`,
-      `lineTo(${shaderCorner(10, 40)})`,
-      `lineTo(${shaderCorner(0, 40)})`,
-      'closePath',
-      'fill',
+  it.each([0.5, 2])('carries the fit-to-height squash, yScalar %p', yScalar => {
+    const state = makeRenderState({ yScalar, viewScale: 2, viewOffsetX: 30 })
+    expectCorners(exportedCorners(makeOneCell(), state), [
+      shaderCorner(0, 10, state),
+      shaderCorner(10, 10, state),
+      shaderCorner(10, 20, state),
+      shaderCorner(0, 20, state),
     ])
   })
 
-  // The equal-span case is what every uniform-mode matrix is, so the fix had to
-  // leave it byte-identical: there the rotated rect IS the half-diagonal rhombus.
-  it('draws equal spans as the uniform-mode rhombus', () => {
-    const { pathOps } = paint(makeOneCell())
-
-    expect(pathOps).toEqual([
-      'beginPath',
-      `moveTo(${shaderCorner(0, 10)})`,
-      `lineTo(${shaderCorner(10, 10)})`,
-      `lineTo(${shaderCorner(10, 20)})`,
-      `lineTo(${shaderCorner(0, 20)})`,
-      'closePath',
-      'fill',
-    ])
+  it('skips a cell wholly off the painted surface', () => {
+    expect(
+      paint(makeOneCell(), makeRenderState({ viewOffsetX: 5000 })).rects,
+    ).toHaveLength(0)
   })
 })
 
@@ -388,15 +395,7 @@ describe('drawLDBlocks over a real band', () => {
       boundaries[i] = i * CELL
     }
     const numCells = bandCellCount(N, band)
-    const moveTos: [number, number][] = []
-    const ctx = {
-      beginPath: jest.fn(),
-      moveTo: jest.fn((x: number, y: number) => moveTos.push([x, y])),
-      lineTo: jest.fn(),
-      closePath: jest.fn(),
-      fill: jest.fn(),
-      fillStyle: '',
-    } as unknown as MarkContext2D
+    const { ctx, rects } = recordingCtx()
 
     drawLDBlocks(
       ctx,
@@ -410,13 +409,13 @@ describe('drawLDBlocks over a real band', () => {
       },
       makeColorRamp(),
       makeRenderState({ viewScale: 1, yScalar: 1, viewOffsetX: 0 }),
+      10_000,
     )
 
-    // Invert the rotation the draw applies: x0 = (px+py)*s, y0 = (py-px)*s.
-    const s = COS45
-    return moveTos.map(([x0, y0]) => ({
-      i: Math.round((x0 / s + y0 / s) / 2 / CELL),
-      j: Math.round((x0 / s - y0 / s) / 2 / CELL),
+    // the rect sits at (column, row) in cell space
+    return rects.map(([x, y]) => ({
+      i: Math.round(y! / CELL),
+      j: Math.round(x! / CELL),
     }))
   }
 
@@ -463,15 +462,7 @@ describe('drawLDBlocks over a cell nothing computed', () => {
     for (let i = 0; i <= N; i++) {
       boundaries[i] = i * CELL
     }
-    const moveTos: [number, number][] = []
-    const ctx = {
-      beginPath: jest.fn(),
-      moveTo: jest.fn((x: number, y: number) => moveTos.push([x, y])),
-      lineTo: jest.fn(),
-      closePath: jest.fn(),
-      fill: jest.fn(),
-      fillStyle: '',
-    } as unknown as MarkContext2D
+    const { ctx, rects } = recordingCtx()
 
     drawLDBlocks(
       ctx,
@@ -485,12 +476,13 @@ describe('drawLDBlocks over a cell nothing computed', () => {
       },
       makeColorRamp(),
       makeRenderState({ viewScale: 1, yScalar: 1, viewOffsetX: 0 }),
+      10_000,
     )
 
-    const s = COS45
-    return moveTos.map(([x0, y0]) => ({
-      i: Math.round((x0 / s + y0 / s) / 2 / CELL),
-      j: Math.round((x0 / s - y0 / s) / 2 / CELL),
+    // the rect sits at (column, row) in cell space
+    return rects.map(([x, y]) => ({
+      i: Math.round(y! / CELL),
+      j: Math.round(x! / CELL),
     }))
   }
 

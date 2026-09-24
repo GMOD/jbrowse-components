@@ -70,11 +70,11 @@ describe('effectiveUseGenomicPositions follows the loaded matrix', () => {
     display.setVariantLayout('genomic')
 
     // the request stands — it is what the next fetch sends
-    expect(display.useGenomicPositions).toBe(true)
+    expect(display.variantLayout).toBe('genomic')
     expect(display.rpcProps().useGenomicPositions).toBe(true)
     // but the matrix in hand is uniform, so the zone still holds connectors
     expect(display.effectiveUseGenomicPositions).toBe(false)
-    expect(display.effectiveLineZoneHeight).toBe(display.lineZoneHeight)
+    expect(display.matrixTop).toBe(display.lineZoneHeight)
   })
 })
 
@@ -126,7 +126,16 @@ test('the box reaches the triangle’s right corner when scrolled left of the st
 
   expect(viewOffsetX).toBe(100)
   expect(display.canvasWidth).toBeGreaterThanOrEqual(viewOffsetX + width)
-  expect(display.canvasHeight).toBe(width / 2)
+})
+
+// The track clips at its height, so a canvas as tall as the unsquashed
+// triangle's apex held a backing store nobody could see.
+test('the canvas is the display below the band, not the natural apex', () => {
+  const { display, width } = loadedDisplay()
+
+  expect(width / 2).toBeGreaterThan(display.height - display.matrixTop)
+  expect(display.matrixHeight).toBe(display.height - display.matrixTop)
+  expect(display.triangleFrame.canvasHeight).toBe(display.matrixHeight)
 })
 
 // The hit test walks `boundaries` for both layouts — uniform mode's are just
@@ -222,7 +231,7 @@ test('a cell nothing computed has no tooltip', () => {
 // `columnX` is the x half of `cellToScreen` written a second time — the point on
 // the diagonal at a fractional column index. It stays a separate expression on
 // purpose: routing it through `cellToScreen` would make every connector line
-// track `yScalar` and `effectiveLineZoneHeight`, which they genuinely do not
+// track `yScalar` and `matrixTop`, which they genuinely do not
 // depend on. What that costs is a way for the two to drift, and
 // `columnX`'s own comment names the symptom — everything anchored through it
 // slides off the triangle. So the agreement is asserted instead.

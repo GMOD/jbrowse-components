@@ -1,8 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
-import { PaintLayer } from '@jbrowse/core/util/paintLayer'
+import TriangleMatrixSvgLayer from '@jbrowse/display-kit/TriangleMatrixSvgLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { paintMarkBlocks } from '@jbrowse/render-core/marks'
-import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
 import { HIC_MARKS } from './components/hicMarks.ts'
 
@@ -18,34 +16,20 @@ export async function renderSvg(
 }
 
 function HicSvgBody({
-  model: self,
+  model,
   height,
-  canvasWidth: visibleWidth,
+  canvasWidth,
   opts,
 }: LgvSvgBodyProps<LinearHicDisplayModel>) {
-  const { hicRegions, renderState } = self
-
-  // Reuse the model's renderState so the export shares one source of truth for
-  // the transform, color params, and fit-to-height yScalar with the on-screen
-  // render (handles scrolled-left-of-genome and stale zoom). Its canvas width
-  // is the scrolled content's; the export paints a layer of the visible width
-  // and the painter culls against whatever box it is given, so that one field
-  // is the layer's.
-  const exportState = { ...renderState, canvasWidth: visibleWidth }
   return (
-    <PaintLayer
-      width={visibleWidth}
+    <TriangleMatrixSvgLayer
+      marks={HIC_MARKS}
+      regions={model.matrixRegions}
+      state={model.renderState}
+      width={canvasWidth}
       height={height}
+      top={0}
       opts={opts}
-      paint={ctx => {
-        paintMarkBlocks(
-          ctx,
-          HIC_MARKS,
-          hicRegions,
-          canvasWideBlocks([0], visibleWidth),
-          exportState,
-        )
-      }}
     />
   )
 }

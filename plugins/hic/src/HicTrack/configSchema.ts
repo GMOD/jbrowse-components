@@ -19,23 +19,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *   adapter: { type: 'HicAdapter', uri: 'https://example.com/contacts.hic' },
  * }
  * ```
- *
- * #example
- * With a log colour scale and a coarser resolution (`resolutionBias` nudges the
- * auto-picked binsize; negative = finer, positive = coarser). The
- * `displayDefaults` object shorthand applies settings to whichever display uses
- * them — equivalent to a full `displays: [{ type, displayId, ... }]` array. See
- * [configuring displays](/docs/config_guides/tracks#configuring-displays):
- * ```js
- * {
- *   type: 'HicTrack',
- *   trackId: 'hic',
- *   name: 'Hi-C',
- *   assemblyNames: ['hg38'],
- *   adapter: { type: 'HicAdapter', uri: 'https://example.com/contacts.hic' },
- *   displayDefaults: { color: { scale: 'log' }, resolutionBias: 1 },
- * }
- * ```
  */
 
 const configSchema = (pluginManager: PluginManager) =>

@@ -3,13 +3,17 @@ import { MockHal } from '@jbrowse/render-core/hal'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
+import {
+  SCALE_TYPE_LINEAR,
+  SCALE_TYPE_LOG,
+} from '@jbrowse/render-core/scoreScale'
 
 import { packTestInstances } from '../../testInstances.ts'
 import { HIC_MARKS } from './hicMarks.ts'
 import {
   INSTANCE_STRIDE_BYTES,
   UNIFORM_OFFSET_F32 as U,
-  UNIFORM_OFFSET_U32 as UU,
+  UNIFORM_OFFSET_I32 as UI,
 } from './shaders/hic.iface.generated.ts'
 
 import type {
@@ -43,8 +47,9 @@ function makeRenderState(overrides?: Partial<HicRenderState>): HicRenderState {
     canvasWidth: 800,
     canvasHeight: 600,
     yScalar: 1,
-    colorMaxScore: 100,
-    useLogScale: false,
+    domainMin: 0,
+    domainMax: 100,
+    scaleType: SCALE_TYPE_LINEAR,
     colorRamp: rampLutOf({ scheme: 'juicebox' }),
     viewScale: 1,
     viewOffsetX: 0,
@@ -100,19 +105,20 @@ describe('the hic mark list', () => {
   it('writes the uniform block for one frame', () => {
     const { hal } = render(
       makeData(),
-      makeRenderState({ viewOffsetX: 400, useLogScale: true }),
+      makeRenderState({ viewOffsetX: 400, scaleType: SCALE_TYPE_LOG }),
     )
 
     const f32 = hal.getLastUniformsF32()!
-    const u32 = hal.getLastUniformsU32()!
+    const i32 = new Int32Array(f32.buffer, f32.byteOffset, f32.length)
     expect(f32[U.canvasSize]).toBe(800)
     expect(f32[U.canvasSize + 1]).toBe(600)
     expect(f32[U.binWidth]).toBe(10)
     expect(f32[U.yScalar]).toBe(1)
-    expect(f32[U.colorMaxScore]).toBe(100)
+    expect(f32[U.domainMin]).toBe(0)
+    expect(f32[U.domainMax]).toBe(100)
     expect(f32[U.viewScale]).toBe(1)
     expect(f32[U.viewOffsetX]).toBe(400)
-    expect(u32[UU.useLogScale]).toBe(1)
+    expect(i32[UI.scaleType]).toBe(SCALE_TYPE_LOG)
   })
 
   it('renders the frame lifecycle in order', () => {
@@ -282,7 +288,7 @@ describe('the hic painter', () => {
     const linear = paint(makeData({ positions: [0, 0], counts: [50] }))
     const log = paint(
       makeData({ positions: [0, 0], counts: [50] }),
-      makeRenderState({ useLogScale: true }),
+      makeRenderState({ scaleType: SCALE_TYPE_LOG }),
     )
 
     expect(linear.fillStyle).not.toBe(log.fillStyle)

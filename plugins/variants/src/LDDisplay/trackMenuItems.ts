@@ -1,17 +1,12 @@
 import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
-import { squashToHeightCheckboxItem } from '@jbrowse/display-kit/squashToHeightMenuItem'
+import { squashToHeightCheckboxItem } from '@jbrowse/display-kit/TriangleMatrixMixin'
 
 import type { LDMetric, LDSnp } from '../VariantRPC/ldTypes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-// Structural, so the menu's shape is testable without an MST instance (same
-// arrangement as the Hi-C contact map's `buildHicTrackMenuItems`).
-//
-// `IStateTreeNode`, never `IAnyStateTreeNode` — the latter resolves to `any` and
-// silently turns off checking for every member below.
 export interface LDMenuSelf extends IStateTreeNode {
   effectiveLdMetric: LDMetric
   r2Available: boolean
@@ -22,7 +17,7 @@ export interface LDMenuSelf extends IStateTreeNode {
   showLabels: boolean
   showVerticalGuides: boolean
   squashToHeight: boolean
-  useGenomicPositions: boolean
+  variantLayout: 'genomic' | 'columns'
   setFocalSnp: (snp: LDSnp | undefined) => void
   setLDMetric: (metric: LDMetric) => void
   setShowLDTriangle: (arg: boolean) => void
@@ -74,14 +69,10 @@ function showMenuItems(self: LDMenuSelf): MenuItem[] {
       self.showVerticalGuides,
       self.setShowVerticalGuides,
     ),
-    // Layout toggles live alongside the visibility toggles in this submenu,
-    // matching the Hi-C triangular display's "Show..." grouping (plugins/hic
-    // trackMenuItems.ts) so the two contact-map displays stay consistent — the
-    // fit-to-height row is literally the same builder they share.
     squashToHeightCheckboxItem(self),
     toggleItem(
       'Show cells with genome proportions',
-      self.useGenomicPositions,
+      self.variantLayout === 'genomic',
       on => {
         self.setVariantLayout(on ? 'genomic' : 'columns')
       },
@@ -93,15 +84,6 @@ function showMenuItems(self: LDMenuSelf): MenuItem[] {
   ]
 }
 
-/**
- * The LD display's own track-menu rows, appended to the base display's. Lives
- * beside the model rather than inside its `.views()` chain, as the Hi-C contact
- * map's does, so the menu's shape is one readable function and can be asserted
- * without building a display.
- *
- * No filter rows: the values come out of a file already thinned by whatever
- * wrote it, and there are no genotypes here to filter.
- */
 export function buildLDTrackMenuItems(self: LDMenuSelf): MenuItem[] {
   return [
     ...(self.focalSnpIndex >= 0

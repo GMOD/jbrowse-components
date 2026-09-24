@@ -32,8 +32,8 @@ describe('the forward and inverse view transforms agree', () => {
     ]) {
       const { x, y } = triangleDataToScreen(ux!, uy!, t)
       const back = triangleScreenToData(x, y, t)
-      expect(back.ux).toBeCloseTo(ux!, 6)
-      expect(back.uy).toBeCloseTo(uy!, 6)
+      expect(back.x).toBeCloseTo(ux!, 6)
+      expect(back.y).toBeCloseTo(uy!, 6)
     }
   })
 })

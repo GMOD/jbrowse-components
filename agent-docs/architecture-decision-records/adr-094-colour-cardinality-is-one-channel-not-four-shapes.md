@@ -11,7 +11,8 @@ Accepted (2026-08-28). This ADR describes what five live shaders already do; it
 proposes nothing and carries no gate — a description of the tree cannot fail.
 [ADR-095](adr-095-a-shape-composes-a-scale-at-compile-time.md) records the work
 that acted on the rule and its measured gates; nothing beyond the description is
-committed here.
+committed here. Hi-C's scale moved onto `scoreScale` on 2026-09-24 (ADR-095's
+amendment), so the "three normalizers" below are two.
 
 On the colour axis this ADR replaces
 [ADR-090](adr-090-a-mark-is-a-shape-plus-its-channels.md)'s ruling that "a

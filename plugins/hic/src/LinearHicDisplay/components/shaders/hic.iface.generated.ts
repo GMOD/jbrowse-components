@@ -13,21 +13,22 @@ export const VERTS_PER_INSTANCE = 6
 
 export const BLEND_STATE: BlendState = { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' }
 
-export const UNIFORMS_SIZE_BYTES = 32
+export const UNIFORMS_SIZE_BYTES = 48
 
 // Word indices into a Float32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
   canvasSize: 0,
   binWidth: 2,
   yScalar: 3,
-  colorMaxScore: 4,
-  viewScale: 5,
-  viewOffsetX: 6,
+  domainMin: 4,
+  domainMax: 5,
+  viewScale: 6,
+  viewOffsetX: 7,
 } as const
 
-// Word indices into a Uint32Array view over the uniform buffer.
-export const UNIFORM_OFFSET_U32 = {
-  useLogScale: 7,
+// Word indices into a Int32Array view over the uniform buffer.
+export const UNIFORM_OFFSET_I32 = {
+  scaleType: 8,
 } as const
 
 
@@ -35,23 +36,25 @@ export interface Uniforms {
   canvasSize: [number, number]
   binWidth: number
   yScalar: number
-  colorMaxScore: number
+  domainMin: number
+  domainMax: number
   viewScale: number
   viewOffsetX: number
-  useLogScale: number
+  scaleType: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   const f32 = new Float32Array(buf)
-  const u32 = new Uint32Array(buf)
+  const i32 = new Int32Array(buf)
   f32[0] = uniforms.canvasSize[0]
   f32[1] = uniforms.canvasSize[1]
   f32[2] = uniforms.binWidth
   f32[3] = uniforms.yScalar
-  f32[4] = uniforms.colorMaxScore
-  f32[5] = uniforms.viewScale
-  f32[6] = uniforms.viewOffsetX
-  u32[7] = uniforms.useLogScale
+  f32[4] = uniforms.domainMin
+  f32[5] = uniforms.domainMax
+  f32[6] = uniforms.viewScale
+  f32[7] = uniforms.viewOffsetX
+  i32[8] = uniforms.scaleType
 }
 
 export const INSTANCE_STRIDE_BYTES = 12

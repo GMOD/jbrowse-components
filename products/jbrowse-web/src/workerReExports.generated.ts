@@ -55,14 +55,14 @@ import * as m64 from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import * as m65 from '@jbrowse/display-kit/rowColorConfigSchema'
 import * as m66 from '@jbrowse/display-kit/rowsConfigSchema'
 import * as m67 from '@jbrowse/display-kit/rpcArgs'
-import * as m69 from '@jbrowse/display-kit/squashToHeightMenuItem'
-import * as m70 from '@jbrowse/display-kit/stableIdentityComputed'
-import * as m71 from '@jbrowse/display-kit/StoredHoverMixin'
-import * as m72 from '@jbrowse/display-kit/subPixelBinBp'
-import * as m75 from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
-import * as m77 from '@jbrowse/display-kit/TrackHeightMixin'
-import * as m78 from '@jbrowse/display-kit/triangleTransform'
-import * as m79 from '@jbrowse/display-kit/triangleYScalar'
+import * as m69 from '@jbrowse/display-kit/stableIdentityComputed'
+import * as m70 from '@jbrowse/display-kit/StoredHoverMixin'
+import * as m71 from '@jbrowse/display-kit/subPixelBinBp'
+import * as m74 from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
+import * as m76 from '@jbrowse/display-kit/TrackHeightMixin'
+import * as m77 from '@jbrowse/display-kit/TriangleMatrixMixin'
+import * as m78 from '@jbrowse/display-kit/TriangleMatrixSvgLayer'
+import * as m79 from '@jbrowse/display-kit/triangleTransform'
 import * as m80 from '@jbrowse/display-kit/types'
 import * as m81 from '@jbrowse/display-kit/viewportEmpty'
 import * as m83 from '@jbrowse/display-ui/axisPlacement'
@@ -197,17 +197,17 @@ const libs: Record<string, unknown> = {
   '@jbrowse/display-kit/rowsConfigSchema': m66,
   '@jbrowse/display-kit/rpcArgs': m67,
   '@jbrowse/display-kit/SkippedFeaturesIndicator': uiNamespace(['default', 'skippedFeatures'], true),
-  '@jbrowse/display-kit/squashToHeightMenuItem': m69,
-  '@jbrowse/display-kit/stableIdentityComputed': m70,
-  '@jbrowse/display-kit/StoredHoverMixin': m71.default,
-  '@jbrowse/display-kit/subPixelBinBp': m72,
+  '@jbrowse/display-kit/stableIdentityComputed': m69,
+  '@jbrowse/display-kit/StoredHoverMixin': m70.default,
+  '@jbrowse/display-kit/subPixelBinBp': m71,
   '@jbrowse/display-kit/TooLargeMessage': uiStub,
   '@jbrowse/display-kit/TrackControl': uiStub,
-  '@jbrowse/display-kit/trackHeightConfigSchemaFields': m75,
+  '@jbrowse/display-kit/trackHeightConfigSchemaFields': m74,
   '@jbrowse/display-kit/TrackHeightIndicator': uiStub,
-  '@jbrowse/display-kit/TrackHeightMixin': m77.default,
-  '@jbrowse/display-kit/triangleTransform': m78,
-  '@jbrowse/display-kit/triangleYScalar': m79,
+  '@jbrowse/display-kit/TrackHeightMixin': m76.default,
+  '@jbrowse/display-kit/TriangleMatrixMixin': { ...m77, __esModule: true },
+  '@jbrowse/display-kit/TriangleMatrixSvgLayer': m78.default,
+  '@jbrowse/display-kit/triangleTransform': m79,
   '@jbrowse/display-kit/types': m80,
   '@jbrowse/display-kit/viewportEmpty': m81,
   '@jbrowse/display-ui': uiNamespace(['AXIS_GUTTER_WIDTH_PX', 'AXIS_RIGHT_INSET_PX', 'AxisCaption', 'AxisCaptionOverlay', 'AxisGutter', 'BOTTOM_RIGHT_CONTROLS_ORDER', 'BottomRightCornerContext', 'COMPACT_AXIS_HEIGHT', 'CrossHatchLines', 'CrossHatches', 'DEFAULT_RULE_COLOR', 'DisplayChromeOverlayProvider', 'DisplayUIProvider', 'FLOATING_LEGEND_TOP_PX', 'FloatingLegend', 'FloatingSvgOverlay', 'FloatingText', 'PointerLayer', 'SCORE_CAPTION_HEIGHT', 'ScoreDomainCaption', 'ScoreRuleLines', 'ScoreRules', 'SvgHaloText', 'TEXT_BASELINE_RATIO', 'Tooltip', 'TrackControlProvider', 'TrackOverlayContext', 'TrackOverlayPortal', 'TrackOverlaySlot', 'YSCALEBAR_LABEL_OFFSET', 'YScaleBar', 'YScaleBarOverlay', 'axisDrawn', 'axisGutterLeft', 'axisGutterWidth', 'axisPlotBox', 'clampStrokeInsideAxis', 'formatScore', 'isLiveModel', 'plainChromeOverlays', 'plainTrackControl', 'resolveOverlays', 'scoreToAxisY', 'textHalo', 'tooLargeBannerText', 'useChromeOverlayOverride', 'useTooltip', 'useTrackControlMenu', 'useTrackControlOverride']),

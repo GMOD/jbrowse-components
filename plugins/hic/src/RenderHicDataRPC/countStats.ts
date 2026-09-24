@@ -1,9 +1,5 @@
 import { getInstanceCount } from '../LinearHicDisplay/components/shaders/hic.iface.generated.ts'
 
-/**
- * Swap two slots. Pulled out so the partition below reads as the algorithm
- * rather than as six index expressions.
- */
 function swap(a: Float32Array, i: number, j: number) {
   const t = a[i]!
   a[i] = a[j]!
@@ -11,33 +7,16 @@ function swap(a: Float32Array, i: number, j: number) {
 }
 
 /**
- * The `k`th smallest of `a[0, n)`, permuting `a` in place — quickselect.
- *
- * This exists because the color scale needs exactly two order statistics, and a
- * full sort to get them is wildly disproportionate: sorting 4.5M counts
- * measured ~1.0s against ~30ms for a linear scan. Selection is O(n) expected,
- * so it lands within a small multiple of that scan while returning the *exact*
- * value a sort would have.
- *
- * Exact matters more than it looks. A histogram estimate is the obvious cheaper
- * answer and it is wrong for this data: contact counts are heavily skewed (a
- * handful of very hot bins, a long tail near zero), so linear buckets over
- * `[min, max]` drop nearly every value into bucket 0 and collapse the 95th
- * percentile toward zero — which is the one number the color ramp saturates
- * against.
- *
- * Median-of-three pivoting is not decoration either. Contacts arrive in bin
- * order and counts correlate with distance from the diagonal, so the input is
- * substantially pre-sorted — precisely the shape that degrades a
- * first-element pivot to O(n²).
+ * The `k`th smallest of `a[0, n)`, permuting `a` in place. Exact, where a
+ * histogram collapses skewed contact counts into its bottom bucket, and O(n)
+ * where a sort of 4.5M counts measured ~1s. Median-of-three because contacts
+ * arrive nearly sorted.
  */
 function selectNth(a: Float32Array, n: number, k: number) {
   let lo = 0
   let hi = n - 1
   while (lo < hi) {
     const mid = (lo + hi) >>> 1
-    // order lo <= mid <= hi, which both picks the pivot and places two of the
-    // three values on the side they already belong
     if (a[mid]! < a[lo]!) {
       swap(a, mid, lo)
     }
@@ -49,8 +28,6 @@ function selectNth(a: Float32Array, n: number, k: number) {
     }
     const pivot = a[mid]!
 
-    // Hoare partition: on exit everything in [lo, j] is <= pivot, everything in
-    // [i, hi] is >= pivot, and anything strictly between them equals it
     let i = lo
     let j = hi
     while (i <= j) {
@@ -72,7 +49,6 @@ function selectNth(a: Float32Array, n: number, k: number) {
     } else if (k >= i) {
       lo = i
     } else {
-      // k fell in the all-equal middle, so a[k] is already the answer
       return a[k]!
     }
   }
@@ -80,32 +56,14 @@ function selectNth(a: Float32Array, n: number, k: number) {
 }
 
 /**
- * Color-scale saturation candidates: the maximum and the 95th percentile of the
- * contact counts, both scored off their **finite** subset.
+ * The maximum and 95th percentile of the finite counts. A NaN (the `.hic`
+ * no-value marker) or an Infinity (a tiny normalization divisor) would
+ * otherwise become the colour domain and paint every bin wrong. Both are 0
+ * when nothing is finite.
  *
- * Reads the counts out of the packed instance buffer at stride rather than
- * taking a contiguous array, because after packing there is no contiguous copy
- * to take — and this needs its own copy regardless (selection permutes its
- * input), so the compaction pass below doubles as the gather.
- *
- * NaN is the `.hic` dense-block "no value" marker and a tiny normalization
- * divisor yields Infinity, and both propagate: `Math.max(colorMaxScore, …)` in
- * the shader and in `mapHicCount` turns a single NaN into a NaN color for
- * *every* bin, and the legend disappears (`colorScales` reads `NaN > 0` as
- * false). Scoring off the finite subset
- * keeps the damage to the offending bin. Both returned values are 0 when
- * nothing is finite.
- *
- * The compaction is written as an explicit loop rather than
- * `counts.filter(Number.isFinite)`, which accounts for most of the speedup:
- * `TypedArray.prototype.filter` with a callback measured ~1.6s on 4.5M values
- * against ~60ms for this loop. It also doubles as the copy selection needs (it
- * permutes its input) and as the max scan, so the whole statistic is one linear
- * pass plus the selection — 1809ms to 127ms at 4.5M contacts.
- *
- * Measure changes here outside Jest. Under its Babel transform `Number.isFinite`
- * does not get inlined and reads ~14x slower than it does in a plain V8 run,
- * which is enough to point at the wrong bottleneck entirely.
+ * An explicit loop, not `filter(Number.isFinite)`, which measured ~25x
+ * slower at 4.5M; measure outside Jest, whose transform does not inline
+ * `Number.isFinite`.
  */
 export function computeCountStats(
   instances: Float32Array,

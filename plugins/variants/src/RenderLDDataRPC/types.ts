@@ -1,6 +1,6 @@
 import type { LDMetric, LDSnp } from '../VariantRPC/ldTypes.ts'
 
-export interface LDFlatbushItem {
+export interface LDCellHit {
   i: number
   j: number
   ldValue: number

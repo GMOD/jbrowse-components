@@ -211,9 +211,8 @@ const agLdTrack = (
       showLegend: true,
       // THE HEIGHT ARITHMETIC, because two rounds of review have now been about
       // it. An unsquashed LD panel draws its triangle at natural aspect -- apex
-      // depth is half the drawn width (`canvasHeight` = `canvasWidth / 2` in
-      // LDDisplay/shared.ts) -- and the lane's own height clips whatever does
-      // not fit. Clipping the whole-arm triangle is right and unavoidable: at
+      // depth is half the drawn width -- and the display's own height clips
+      // whatever does not fit. Clipping the whole-arm triangle is right and unavoidable: at
       // 49.4 Mb across ~1490 css px it would be 745 px deep, and the deep half
       // is pairs 20 Mb apart. But 2La is 20,524,058-42,165,532, which draws 653
       // px wide, so ITS apex is 327 px down: at 300 the block this figure

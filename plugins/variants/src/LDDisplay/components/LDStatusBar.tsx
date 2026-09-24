@@ -2,7 +2,7 @@ import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { colord } from '@jbrowse/core/util/colord'
 import { observer } from 'mobx-react'
 
-import type { SharedLDModel } from '../shared.ts'
+import type { LDDisplayModel } from '../model.ts'
 
 // Structural, so the text is assertable without building a display — the same
 // arrangement `buildLDTrackMenuItems` uses for the track menu's shape.
@@ -28,7 +28,7 @@ export function ldStatusParts({ loadedLDWindow }: LDStatusSelf) {
 const LDStatusBar = observer(function LDStatusBar({
   model,
 }: {
-  model: SharedLDModel
+  model: LDDisplayModel
 }) {
   // Themed, not hardcoded: this badge sits over the triangle, so a fixed white
   // pill with grey text is a bright block in a dark session.

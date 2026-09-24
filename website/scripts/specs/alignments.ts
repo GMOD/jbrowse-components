@@ -1083,7 +1083,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
 
   // The two halves of the faint-contacts comparison. Same region, same ramp;
   // the only difference is where the color scale saturates. With
-  // useColorPercentile off the diagonal owns the scale (maxScore/20) and the
+  // useColorPercentile off the diagonal owns the scale (maxScore) and the
   // TAD interiors wash out; on (the default) it saturates at the 95th
   // percentile and off-diagonal structure separates from background. Kept as
   // two declarative specs composed below, so each state stays an openable live

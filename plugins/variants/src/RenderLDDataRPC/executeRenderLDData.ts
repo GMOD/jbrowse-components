@@ -22,7 +22,7 @@ type ExecuteArgs = RpcExecuteArgs<'RenderLDData'>
 // `genomicMode` is the requested mode rather than a flat `false`, because the
 // display branches its *chrome* on it and not only its matrix:
 // `effectiveUseGenomicPositions` picks the label zone over the connector zone
-// and, through `effectiveLineZoneHeight`, decides how much room sits above the
+// and, through `matrixTop`, decides how much room sits above the
 // canvas. Reporting `false` here moved the whole triangle down by
 // `lineZoneHeight` (100px by default) on the one frame with no content in it.
 // There is no matrix either way; the honest answer for the chrome is the mode
@@ -54,7 +54,8 @@ export async function executeRenderLDData({
   pluginManager: PluginManager
   args: ExecuteArgs
 }) {
-  const { regions, originBp, useGenomicPositions, statusCallback } = args
+  const { regions, originBp, spanBp, useGenomicPositions, statusCallback } =
+    args
 
   // `args` whole, never a re-listed subset: the matrix builder takes a
   // structural superset of the payload, and re-spelling the fields is how
@@ -87,8 +88,7 @@ export async function executeRenderLDData({
     : ldData
   const n = snps.length
 
-  const totalWidthBp = regions.reduce((sum, r) => sum + r.end - r.start, 0)
-  const uniformW = totalWidthBp / (n * Math.SQRT2)
+  const uniformW = spanBp / (n * Math.SQRT2)
   const band = ldData.band
   const numCells = bandCellCount(n, band)
 

@@ -1,31 +1,24 @@
 import { defineMark } from '@jbrowse/render-core/marks'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import { makeHicFillStyleLut } from './colorRamp.ts'
 import { drawHicBlocks } from './drawHicBlocks.ts'
 import * as hicShader from './shaders/hic.generated.ts'
 
 import type {
-  HicDrawState,
   HicRenderState,
   HicUploadData,
 } from './hicRenderingBackendTypes.ts'
 import type { MarkShape } from '@jbrowse/render-core/marks'
 
-interface HicContactParams extends HicDrawState {
+interface HicContactParams extends HicRenderState {
   binWidth: number
-  colorRamp: Uint8Array
 }
 
 const contactMark: MarkShape<HicUploadData, HicContactParams> = {
   id: 'main',
   pass: {
     ...slangPass({ id: 'main', mod: hicShader }),
-    // Zero-copy: the worker already packed this in the shader's own instance
-    // layout (`HicDataResult.instances`), so the pack is the identity and the
-    // count `uploadPass` derives off the bytes is `numContacts`. The
-    // O(numContacts) main-thread interleave this replaced cost a full rebuild
-    // and 12 bytes per contact on every fetch.
+    // the worker packed the shader's own layout, so the pack is the identity
     pack: data => data.instances,
   },
 
@@ -34,21 +27,16 @@ const contactMark: MarkShape<HicUploadData, HicContactParams> = {
       canvasSize: [frame.canvasWidth, frame.canvasHeight],
       binWidth: p.binWidth,
       yScalar: p.yScalar,
-      colorMaxScore: p.colorMaxScore,
+      domainMin: p.domainMin,
+      domainMax: p.domainMax,
       viewScale: p.viewScale,
       viewOffsetX: p.viewOffsetX,
-      useLogScale: p.useLogScale ? 1 : 0,
+      scaleType: p.scaleType,
     })
   },
 
   paintBlock(ctx, data, _block, frame, p) {
-    drawHicBlocks(
-      ctx,
-      data,
-      makeHicFillStyleLut(p.colorRamp),
-      p,
-      frame.canvasWidth,
-    )
+    drawHicBlocks(ctx, data, p, frame.canvasWidth)
   },
 }
 
@@ -57,13 +45,8 @@ export const HIC_MARKS = [
     shape: contactMark,
     channels: (data: HicUploadData) => data,
     params: (state: HicRenderState, data: HicUploadData) => ({
+      ...state,
       binWidth: data.binWidth,
-      yScalar: state.yScalar,
-      colorMaxScore: state.colorMaxScore,
-      useLogScale: state.useLogScale,
-      viewScale: state.viewScale,
-      viewOffsetX: state.viewOffsetX,
-      colorRamp: state.colorRamp,
     }),
     texture: (state: HicRenderState) => state.colorRamp,
   }),

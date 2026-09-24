@@ -122,7 +122,8 @@ one-paragraph verdicts were recorded and later dropped.
   value while the wiggle anchor answers 5. That is the case
   `covEffectiveHeightPx`'s floor-at-0 was added for, so unifying changes drawn
   output in the one window the two spellings were written apart to handle.
-- **The arc band's `arcYFraction` with hic's `mapHicCount`** share a log branch
+- **The arc band's `arcYFraction` with hic's `mapHicCount`** (retired onto
+  `normalizeScore` on 2026-09-24) share a log branch
   exactly — `log2(max(v, 1)) / log2(max(dmax, 2))` in both — and part company on
   the linear one and on where the clamp sits. Factoring the shared line leaves
   both wrapper functions, both `//! js-export`s and both parity suites standing,
