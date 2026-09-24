@@ -100,7 +100,10 @@ export function createDisplayWithSession({
         coarseBpPerPxThreshold: { type: 'number', defaultValue: 10000 },
       },
     },
-    GbzBaseSyntenyAdapter: { slots: {}, capabilities: ['headerLanes'] },
+    GbzBaseSyntenyAdapter: {
+      slots: {},
+      capabilities: ['headerLanes', 'lanePairsOnAnchor'],
+    },
   }
   for (const [name, { slots, capabilities }] of Object.entries(adapterSlots)) {
     pluginManager.addAdapterType(

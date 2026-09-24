@@ -1215,6 +1215,77 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
     display.setLaneLinks(new Map([[pair, { key: 'k', links: [direct] }]]))
     expect(display.pairLinks.get(pair)!.links).toEqual([direct])
   })
+
+  // A pangenome graph is cut on its reference alone, and every haplotype's
+  // walk runs through a window of it, so it answers two lanes aligned to each
+  // other there: sequence both carry and the anchor lacks, which a band
+  // composed through the anchor draws as nothing
+  test('an adapter reading lane pairs on its anchor is asked for each pair in the anchor window', async () => {
+    const calls: { name: string; args: Record<string, unknown> }[] = []
+    const direct = new SimpleFeature({
+      uniqueId: 'direct',
+      refName: 'ctgB',
+      start: 150,
+      end: 250,
+      strand: 1,
+      mate: {
+        assemblyName: 'volvox_ins',
+        refName: 'ctgC',
+        start: 1150,
+        end: 1250,
+      },
+    })
+    const opts = (call: { args: Record<string, unknown> }) =>
+      (call.args.opts ?? {}) as Record<string, unknown>
+    const { display } = createDisplayWithSession({
+      syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
+      trackAssemblyNames: ['volvox', 'volvox_random', 'volvox_ins'],
+      geneTracks: [],
+      rpc: async (name, args) => {
+        calls.push({ name, args })
+        return name === 'CoreGetInfo'
+          ? { hasCoarseTier: false, anchorAssemblyName: 'volvox', lanes: [] }
+          : opts({ args }).queryAssemblyName === undefined
+            ? []
+            : [direct]
+      },
+    })
+    await when(
+      () => display.starAnchor !== undefined && display.features !== undefined,
+      { timeout: 5000 },
+    )
+    display.setFeatures(starRecords())
+    display.setLaneFrames(0, frames)
+    const [spec] = display.laneLinksFetchSpecs
+    expect(spec).toMatchObject({
+      lane: pair,
+      onAnchor: true,
+      upperAssembly: 'volvox_random',
+      lowerAssembly: 'volvox_ins',
+      regions: [
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+      ],
+    })
+    // the composed band draws until the pair lands
+    expect(display.pairLinks.get(pair)!.links).toHaveLength(1)
+    expect(display.pairLinks.get(pair)!.links[0]!.id()).not.toBe('direct')
+
+    const pairCall = () =>
+      calls.find(
+        c =>
+          c.name === 'CoreGetFeatures' &&
+          opts(c).queryAssemblyName !== undefined,
+      )
+    await until(() => pairCall() !== undefined)
+    expect(pairCall()!.args.regions).toEqual(spec!.regions)
+    expect(opts(pairCall()!)).toMatchObject({
+      queryAssemblyName: 'volvox_random',
+      targetAssemblyName: 'volvox_ins',
+      clipToRegion: true,
+    })
+    await until(() => display.pairLinks.get(pair)?.links[0]?.id() === 'direct')
+    expect(display.pairLinks.get(pair)!.links).toEqual([direct])
+  })
 })
 
 // A pangenome graph holds hundreds of haplotypes, and the display learnt its

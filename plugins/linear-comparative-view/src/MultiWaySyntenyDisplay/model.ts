@@ -877,18 +877,34 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * what the track's adapter type declares it can answer
+       */
+      get adapterCapabilities(): readonly string[] {
+        const type = self.adapterConfig.type
+        return typeof type === 'string'
+          ? getEnv(self).pluginManager.getAdapterType(type).adapterCapabilities
+          : []
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * whether the adapter type says its header declares the lane universe
        * (`adapterCapabilities: ['headerLanes']`); an untiered adapter gets a
        * header read only when this is true
        */
       get adapterDeclaresLanes(): boolean {
-        const type = self.adapterConfig.type
-        return (
-          typeof type === 'string' &&
-          getEnv(self)
-            .pluginManager.getAdapterType(type)
-            .adapterCapabilities.includes('headerLanes')
-        )
+        return self.adapterCapabilities.includes('headerLanes')
+      },
+      /**
+       * #getter
+       * whether a window of the anchor answers any two lanes aligned to each
+       * other (`adapterCapabilities: ['lanePairsOnAnchor']`), the way a
+       * pangenome graph holds every haplotype's walk inside a window cut on
+       * its reference
+       */
+      get adapterPairsOnAnchor(): boolean {
+        return self.adapterCapabilities.includes('lanePairsOnAnchor')
       },
       /**
        * #method
@@ -1560,43 +1576,62 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * one spec per ADJACENT mate-lane pair when the source is an alignment
-       * file naming no star anchor: the upper lane's window queried against
-       * the lower lane's assembly at the settled tier, which a multi-genome
-       * adapter answers with the direct records it holds for that pair — none,
-       * for a star that did not name its anchor. None for a source that
-       * announced itself a star, which holds no such rows. Only
-       * pairs the session holds both assemblies of: the fetch renames its
-       * region through the assembly manager, which refuses a PanSN sample the
-       * config never declared, and a multi-genome file routinely carries more
-       * of those than the config names
+       * one spec per ADJACENT mate-lane pair of an alignment-level source, at
+       * the settled tier. A source whose adapter reads lane pairs on its anchor
+       * (`adapterPairsOnAnchor`) is asked for each pair inside the anchor's
+       * window, the one window it can cut. Any other source naming no star
+       * anchor is asked on the upper lane's window against the lower lane's
+       * assembly, which a multi-genome adapter answers with the direct records
+       * it holds for that pair — none, for a star that did not name its
+       * anchor; one that announced itself a star holds no such rows and is not
+       * asked. That route needs the session to hold both assemblies: the fetch
+       * renames its region through the assembly manager, which refuses a PanSN
+       * sample the config never declared, and a multi-genome file routinely
+       * carries more of those than the config names
        */
       get laneLinksFetchSpecs(): LaneLinksFetchSpec[] {
         const specs: LaneLinksFetchSpec[] = []
-        if (self.featuresAreNameless && self.starAnchor === undefined) {
+        const onAnchor = self.adapterPairsOnAnchor
+        if (
+          self.featuresAreNameless &&
+          (onAnchor || self.starAnchor === undefined)
+        ) {
           const { lodTier } = self
           const rows = self.rowAssemblies
-          for (let i = 0; i + 1 < rows.length; i++) {
-            const upperAssembly = rows[i]!
-            const lowerAssembly = rows[i + 1]!
+          const view = self.lgv
+          const anchorRegions =
+            onAnchor && view.initialized
+              ? mergeContiguousRegions(view.staticBlocks.contentBlocks)
+              : []
+          const pairWindow = (upperAssembly: string, lowerAssembly: string) => {
             const upper = self.rowFrames.get(upperAssembly)
-            const lower = self.rowFrames.get(lowerAssembly)
-            if (
-              upper &&
-              lower &&
+            if (!upper || !self.rowFrames.get(lowerAssembly)) {
+              return []
+            } else if (onAnchor) {
+              return anchorRegions
+            } else if (
               self.holdsAssembly(upperAssembly) &&
               self.holdsAssembly(lowerAssembly)
             ) {
-              const region = {
-                assemblyName: upperAssembly,
-                ...laneFetchRegion(upper),
-              }
+              return [
+                { assemblyName: upperAssembly, ...laneFetchRegion(upper) },
+              ]
+            } else {
+              return []
+            }
+          }
+          for (let i = 0; i + 1 < rows.length; i++) {
+            const upperAssembly = rows[i]!
+            const lowerAssembly = rows[i + 1]!
+            const regions = pairWindow(upperAssembly, lowerAssembly)
+            if (regions.length > 0) {
               specs.push({
                 lane: `${upperAssembly}|${lowerAssembly}`,
-                key: `${regionKey(region)}|${lodTier}`,
+                key: `${regions.map(regionKey).join(',')}|${lodTier}`,
                 upperAssembly,
                 lowerAssembly,
-                region,
+                regions,
+                onAnchor,
                 lodTier,
               })
             }

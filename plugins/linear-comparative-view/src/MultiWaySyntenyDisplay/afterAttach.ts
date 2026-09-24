@@ -355,7 +355,8 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   // ADJACENT mate-lane pair, out of the same track. The specs exist
   // only when the source names no genes, so a gene table never issues these,
   // and not for a star that announced its anchor, whose pairs `pairLinks`
-  // composes instead.
+  // composes instead, unless its adapter reads pairs inside the anchor's
+  // window.
   installLaneFetch(self, {
     name: 'MultiWayLaneLinks',
     fetchSpecs: () => self.laneLinksFetchSpecs,
@@ -363,10 +364,15 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     fetchOne: async (spec, ctx) => {
       const links = await ctx.callRpc('CoreGetFeatures', {
         adapterConfig: self.adapterConfig,
-        regions: await laneRegions(getSession(self), spec.region.assemblyName, [
-          spec.region,
-        ]),
+        regions: spec.onAnchor
+          ? spec.regions
+          : await laneRegions(
+              getSession(self),
+              spec.upperAssembly,
+              spec.regions,
+            ),
         opts: {
+          ...(spec.onAnchor ? { queryAssemblyName: spec.upperAssembly } : {}),
           targetAssemblyName: spec.lowerAssembly,
           lodMode: spec.lodTier,
           clipToRegion: true,
