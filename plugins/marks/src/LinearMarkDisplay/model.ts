@@ -77,7 +77,12 @@ import { facetLayout, facetRegion } from './facet.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
 import { sameMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend, colorSection, markColorScales } from './legend.ts'
-import { buildMarkList, markDrawsAt, markRowHeightPx } from './markList.ts'
+import {
+  buildMarkList,
+  markDrawsAt,
+  markRowHeightPx,
+  zoomInRange,
+} from './markList.ts'
 import { markProblems, problemText } from './markProblems.ts'
 import {
   encodingOf,
@@ -429,17 +434,6 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The worker request, one layer per mark: its encoding and the lanes
-       * its type reads. Every mark is sent, the one outside its zoom range
-       * included, so the worker encodes a layer the view will not draw:
-       * measured at 280 ns a feature, 28 ms per 100,000, for the excluded
-       * half of the default multiscale pair (`encodeFeatures.bench.ts`, the
-       * pair table), against a parse in the hundreds of milliseconds. An
-       * empty slot for it would make the zoom a fetch input and refetch the
-       * pair on every crossing, so there is none (ADR-112).
-       */
-      /**
-       * #getter
        * The facet's own steps as the worker takes them, run over each section
        * before any mark's; with no field to split on they run over the one
        * section there is, after the display's own steps.
@@ -460,7 +454,9 @@ export function stateModelFactory(
        * half of the default multiscale pair (`encodeFeatures.bench.ts`, the
        * pair table), against a parse in the hundreds of milliseconds. An
        * empty slot for it would make the zoom a fetch input and refetch the
-       * pair on every crossing, so there is none (ADR-112).
+       * pair on every crossing, so there is none (ADR-112). Its `auto` bin
+       * resolves at the bound it next draws at, so a zoom outside its range
+       * refetches nothing.
        */
       get layerRequests(): LayerRequest[] {
         const { bpPerPx } = self.host
@@ -469,7 +465,11 @@ export function stateModelFactory(
           lastBinEdges(self.conf.transform)
         const { encodings } = this
         return self.conf.marks.map((m, i): LayerRequest => {
-          const transform = stepsOf(m.transform, bpPerPx, binEdges)
+          const transform = stepsOf(
+            m.transform,
+            zoomInRange(m, bpPerPx),
+            binEdges,
+          )
           return {
             encoding: encodings[i]!,
             lanes: markLanes(m.mark),

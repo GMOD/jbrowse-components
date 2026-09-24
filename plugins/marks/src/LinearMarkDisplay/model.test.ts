@@ -29,7 +29,12 @@ import MarkFacetChips from './components/MarkFacetChips.tsx'
 import { configSchemaFactory } from './configSchema.ts'
 import { markTransformStep } from './markTransformConfigSchema.ts'
 import { stateModelFactory } from './model.ts'
-import { BINNED_BP_PER_PX, defaultPlotMarks } from './plotFields.ts'
+import {
+  BINNED_BP_PER_PX,
+  EMPTY_PLOT_SPEC,
+  defaultPlotMarks,
+  plotMarks,
+} from './plotFields.ts'
 
 import type { LinearMarkDisplayModel } from './model.ts'
 import type { EncodedFeaturesResult } from '@jbrowse/core/util/markEncoding'
@@ -1617,6 +1622,27 @@ test('an auto bin resolves to the 1/2/5 rung above four pixels of bp', () => {
   expect(stepAt(4)).toBe(20)
   expect(stepAt(10)).toBe(50)
   expect(stepAt(1000)).toBe(5000)
+})
+
+test('an auto bin on a mark outside its zoom range refetches nothing as the view zooms', () => {
+  const { createDisplay } = createTestEnvironment(
+    plotMarks(
+      { ...EMPTY_PLOT_SPEC, field: 'score', binned: true },
+      { numeric: ['score'], categorical: [] },
+    ),
+    WIDE_REGION,
+  )
+  const { display, view } = createDisplay()
+  let fetches = 0
+  for (let bpPerPx = 0.3; bpPerPx < BINNED_BP_PER_PX; bpPerPx *= 1.125) {
+    view.zoomTo(bpPerPx)
+    expect(display.markView.visible).toEqual([true, false])
+    if (!display.isCacheValid(0)) {
+      fetches++
+      display.setRpcData(0, result([{ y: [1] }, { y: [1] }]), WIDE_REGION)
+    }
+  }
+  expect(fetches).toBe(1)
 })
 
 test('a zoom sweep over a BigWig refetches once per tier, not once per step', () => {

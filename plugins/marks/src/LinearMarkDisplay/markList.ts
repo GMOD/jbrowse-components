@@ -120,6 +120,19 @@ export function markDrawsAt(
   )
 }
 
+/**
+ * The zoom nearest `bpPerPx` inside a mark's range: the view's own where the
+ * mark draws, and the bound it will next draw at where it does not, which
+ * holds still while the view zooms outside the range.
+ */
+export function zoomInRange(
+  { minBpPerPx, maxBpPerPx }: Pick<MarkEntry, 'minBpPerPx' | 'maxBpPerPx'>,
+  bpPerPx: number,
+) {
+  const floored = minBpPerPx > 0 ? Math.max(bpPerPx, minBpPerPx) : bpPerPx
+  return maxBpPerPx > 0 ? Math.min(floored, maxBpPerPx) : floored
+}
+
 // A pass id keys the instance buffer and texture, so two marks of one type
 // need two ids; pipelines are keyed by content, so the clone compiles nothing.
 function withPassId<C, P>(shape: MarkShape<C, P>, id: string): MarkShape<C, P> {
