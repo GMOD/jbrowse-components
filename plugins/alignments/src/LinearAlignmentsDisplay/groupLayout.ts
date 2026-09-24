@@ -462,10 +462,15 @@ export function fitRowCount(
   maxHeight: number,
   collapsedKeys: ReadonlySet<string>,
 ): number {
-  const counts = layoutGroupRowCounts(ctx, maxRowsFor(maxHeight, 1))
-  return ctx.order
-    .filter(g => !collapsedKeys.has(g.key))
-    .reduce((sum, { key }) => sum + (counts.get(key) ?? 0), 0)
+  const counts = layoutGroupRowCounts(
+    { ...ctx, order: ctx.order.filter(g => !collapsedKeys.has(g.key)) },
+    maxRowsFor(maxHeight, 1),
+  )
+  let rows = 0
+  for (const count of counts.values()) {
+    rows += count
+  }
+  return rows
 }
 
 export interface FittedReadPitchInput {

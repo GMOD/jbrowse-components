@@ -56,8 +56,8 @@ export function groupReadsByName(
   rpcDataMap: ReadonlyMap<number, WorkerPileupData>,
   regions: RegionInfo[],
   groupKey: string,
+  readsByName = new Map<string, ReadEntry[]>(),
 ) {
-  const readsByName = new Map<string, ReadEntry[]>()
   for (const region of regions) {
     const data = rpcDataMap.get(region.displayedRegionIndex)
     if (data) {
@@ -87,13 +87,7 @@ export function groupLaneReadsByName(
 ) {
   const readsByName = new Map<string, ReadEntry[]>()
   for (const [groupKey, rpcDataMap] of lanes) {
-    for (const [name, entries] of groupReadsByName(
-      rpcDataMap,
-      regions,
-      groupKey,
-    )) {
-      getOrCreate(readsByName, name, () => []).push(...entries)
-    }
+    groupReadsByName(rpcDataMap, regions, groupKey, readsByName)
   }
   return readsByName
 }
@@ -184,8 +178,12 @@ function saSegments(
   canonicalRefName: CanonicalRefName,
 ): SegAln[] {
   const { data, readIdx } = entry
+  const sa = data.readSuppAlignments?.[readIdx]
+  if (!sa) {
+    return []
+  }
   return featurizeSA(
-    data.readSuppAlignments?.[readIdx],
+    sa,
     readIdAt(data, readIdx)!,
     data.readStrands[readIdx],
     readNameAt(data, readIdx),
