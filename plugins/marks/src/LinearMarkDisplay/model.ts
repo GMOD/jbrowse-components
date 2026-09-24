@@ -871,27 +871,6 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * Rows the plot has no pixel for: a row is never drawn shorter than
-       * one, and the plot does not scroll.
-       */
-      get rowsBelowPlot(): number {
-        const { plotHeight } = axisPlotBox(self.height)
-        const rows = this.rowCount
-        const rowHeight = markRowHeightPx(plotHeight, rows)
-        return Math.max(0, rows - Math.floor(plotHeight / rowHeight))
-      },
-      /**
-       * #getter
-       */
-      get rowsCutNotice(): string | undefined {
-        const cut = this.rowsBelowPlot
-        const rows = this.rowCount
-        return cut > 0
-          ? `${cut.toLocaleString()} of ${rows.toLocaleString()} rows fall below the plot and are not drawn; a taller track shows them`
-          : undefined
-      },
-      /**
-       * #getter
        * The config problems as lines an agent's settle report carries: a
        * display with one still draws, so nothing else reaches a caller that
        * cannot see the corner notice.

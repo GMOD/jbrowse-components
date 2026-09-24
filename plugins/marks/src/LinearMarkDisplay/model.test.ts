@@ -842,26 +842,32 @@ test('a span stacked by a row field asks the worker for the row lane and bands t
   expect(display.renderState.rowCount).toBe(3)
 })
 
-test('rows past the plot at one pixel each are counted and named', () => {
-  const { createDisplay } = createTestEnvironment([
-    { mark: 'span', encoding: { row: 'sampleIndex' } },
-  ])
+test('rows deeper than the plot squash into it, and rows that fit keep whole px', () => {
+  const { createDisplay } = createTestEnvironment(
+    [{ mark: 'span', encoding: { row: 'sampleIndex' } }],
+    WIDE_REGION,
+  )
   const { display } = createDisplay()
-  const { plotHeight } = axisPlotBox(display.height)
   const rows = (n: number) => Array.from({ length: n }, (_, i) => i)
-  display.setRpcData(
-    0,
-    result([{ y: rows(plotHeight), row: rows(plotHeight) }]),
-    REGION,
-  )
-  expect(display.rowsBelowPlot).toBe(0)
-  expect(display.rowsCutNotice).toBeUndefined()
-  display.setRpcData(0, result([{ y: rows(400), row: rows(400) }]), REGION)
-  expect(display.rowsBelowPlot).toBe(400 - plotHeight)
-  expect(display.rowsCutNotice).toBe(
-    `${400 - plotHeight} of 400 rows fall below the plot and are not drawn; a taller track shows them`,
-  )
-  expect(display.notices).toEqual([])
+  const lastRowInk = (n: number) => {
+    display.setRpcData(0, result([{ y: rows(n), row: rows(n) }]), WIDE_REGION)
+    display.setHoveredFeature({
+      ...hitOn(0, n - 1),
+      start: (n - 1) * 100,
+      end: (n - 1) * 100 + 50,
+    })
+    return display.hoverInk[0]!
+  }
+  const { yTop, plotHeight } = axisPlotBox(display.height)
+
+  const fits = lastRowInk(40)
+  expect(fits.height).toBe(Math.floor(plotHeight / 40))
+  expect(fits.top + fits.height).toBeLessThanOrEqual(yTop + plotHeight)
+
+  const deep = lastRowInk(400)
+  expect(deep.height).toBe(1)
+  expect(deep.top + deep.height).toBeLessThanOrEqual(yTop + plotHeight + 0.5)
+  expect(deep.top).toBeGreaterThan(yTop + plotHeight - 2)
 })
 
 test('a span outside its zoom range adds no bands', () => {

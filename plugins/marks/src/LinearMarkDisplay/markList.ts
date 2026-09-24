@@ -104,9 +104,15 @@ export interface MarkEntry {
   placed: boolean
 }
 
-/** The px each row band gets: the plot split by the row count. */
+/**
+ * The px each row band gets: the plot split by the row count, in whole px
+ * while every row has one, and a fraction of one past that, so the rows
+ * squash to fit the plot rather than run off its foot.
+ */
 export function markRowHeightPx(canvasHeight: number, rowCount: number) {
-  return Math.max(1, Math.floor(canvasHeight / rowCount))
+  return rowCount > canvasHeight
+    ? canvasHeight / rowCount
+    : Math.max(1, Math.floor(canvasHeight / rowCount))
 }
 
 export function markDrawsAt(

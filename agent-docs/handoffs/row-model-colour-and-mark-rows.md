@@ -66,10 +66,10 @@ Thirteen commits on `5fb2af80ad`, HEAD `c896d69cc0`, tree clean, **reviewed,
 findings unfixed** (the fix agent was stopped before it changed anything). Main's
 five commits past that base touch no mark-display file. The base already holds
 main's three mark-display commits (`e3c92c9ed4`, `4f9ab04ae6`, `bc2175a8d5`:
-zoom-range bins, a per-window field scan, a "rows cut" corner chip). The chip
-stays out of `notices`, so a cut pileup never reaches `waitReady`'s `notReady`,
-and under `rows` it counts the rows that `rowCount` returns. The findings, in
-order:
+zoom-range bins, a per-window field scan, a "rows cut" corner chip). Main has
+since dropped the chip: `markRowHeightPx` squashes rows below a pixel once they
+outnumber the plot's pixels, so no row is cut. On rebase, drop the branch's
+`rowsBelowPlot` and `rowsCutNotice` with it. The findings, in order:
 
 1. **The multi-BigWig default is a new picture, not a fix.** Main never routes
    the `MultiQuantitativeTrack` seed `rows: 'source'` to the mark display (its

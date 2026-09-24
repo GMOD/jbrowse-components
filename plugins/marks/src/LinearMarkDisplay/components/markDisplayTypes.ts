@@ -34,8 +34,6 @@ export interface MarkDisplayModel extends WiggleGpuDisplayModel<
   skippedFeatures: SkippedFeatures
   densityStandInNotice: string | undefined
   notices: string[]
-  rowsBelowPlot: number
-  rowsCutNotice: string | undefined
   facetLayout: FacetLayout
   hiddenGroups: { size: number }
   hideGroup: (key: string) => void
