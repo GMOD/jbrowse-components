@@ -47,7 +47,15 @@ const FETCH_GLOBALS = [
   'DecompressionStream',
 ]
 
+// jsdom has no MessageChannel, and React's scheduler posts through one. Node's
+// ports live outside the sandbox, so a port left open keeps its `onmessage`
+// closure and with it the suite's whole module graph: every suite that loaded
+// React stayed resident in the worker for the rest of the run. Hence teardown
+// closes every port. `onmessage` refs a port, so it is unref'd again after, or
+// an idle one holds the worker's event loop open.
 module.exports = class JSDOMWithFetchEnvironment extends JSDOMEnvironment {
+  ports = []
+
   constructor(config, context) {
     super(config, context)
     for (const name of FETCH_GLOBALS) {
@@ -55,5 +63,30 @@ module.exports = class JSDOMWithFetchEnvironment extends JSDOMEnvironment {
         this.global[name] = globalThis[name]
       }
     }
+    const ports = this.ports
+    this.global.MessageChannel = class {
+      constructor() {
+        const channel = new MessageChannel()
+        ports.push(channel.port1, channel.port2)
+        this.port1 = new Proxy(channel.port1, {
+          set(port1, prop, value) {
+            const result = Reflect.set(port1, prop, value)
+            if (prop === 'onmessage') {
+              port1.unref()
+            }
+            return result
+          },
+        })
+        this.port2 = channel.port2
+      }
+    }
+  }
+
+  async teardown() {
+    for (const port of this.ports) {
+      port.close()
+    }
+    this.ports = []
+    await super.teardown()
   }
 }

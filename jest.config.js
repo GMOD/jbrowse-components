@@ -186,7 +186,6 @@ const baseConfig = {
     '<rootDir>/config/jest/structuredClone.js',
     '<rootDir>/config/jest/blob.js',
     '<rootDir>/config/jest/console.js',
-    '<rootDir>/config/jest/messagechannel.js',
     '<rootDir>/config/jest/setHTML.js',
     '<rootDir>/config/jest/resizeObserver.js',
     '<rootDir>/config/jest/pointerEvents.js',
