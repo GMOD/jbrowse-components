@@ -501,3 +501,10 @@ test('the plot draws the session highlights on its axes, and keeps them past a r
   expect(model.highlights).toEqual([])
   expect(session.highlights).toHaveLength(2)
 })
+
+test('each axis bounds its scroll by its own plot dimension', async () => {
+  const model = await setup()
+  model.setWidth(800)
+  expect(model.hview.minOffset).toBe(30 - model.viewWidth)
+  expect(model.vview.minOffset).toBe(30 - model.viewHeight)
+})
