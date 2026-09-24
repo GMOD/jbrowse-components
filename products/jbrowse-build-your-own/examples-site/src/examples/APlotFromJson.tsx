@@ -8,8 +8,6 @@ import {
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
-
 const lineage = {
   type: 'formula',
   expr: 'jexl:substring(feature.name, 0, 4)',
@@ -79,9 +77,6 @@ const APlotFromJson = observer(function APlotFromJson() {
     return null
   }
   const { view } = state.session
-  const display = view.getTrack('alu_age')?.activeDisplay as
-    | { legendSpec: LegendSpec }
-    | undefined
   return (
     <EmbedProvider session={state.session}>
       <div
@@ -100,7 +95,7 @@ const APlotFromJson = observer(function APlotFromJson() {
         <TrackToggle view={view} trackId="alu_young">
           AluY only
         </TrackToggle>
-        {display ? <Legend display={display} /> : null}
+        <Legend view={view} trackId="alu_age" />
       </div>
       <TrackStack view={view}>
         <Scalebar view={view} />

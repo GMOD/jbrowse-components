@@ -67,6 +67,33 @@ export function useFocusOnInteraction(
   }, [ref, stableOnInteract])
 }
 
+// Long enough that a load which is merely slow never says it, short enough to
+// beat the point where someone decides the app is broken
+const STALL_MS = 5000
+
+/**
+ * Has `key` stayed the same for five seconds? A loading screen passes
+ * everything it is showing, so any status at all — a new phase, another chunk
+ * of bytes — restarts the wait, and only a load that has stopped saying
+ * anything gets there. `ViewLoadingScreen` and the embed `ViewStatus` use it to
+ * name the file a stalled load is waiting on.
+ *
+ * The timeout stores the key it fired for rather than a boolean, so a key that
+ * has moved on is not stalled and the notice goes away with no write to undo.
+ */
+export function useStalled(key: string) {
+  const [stalledKey, setStalledKey] = useState<string>()
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setStalledKey(key)
+    }, STALL_MS)
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [key])
+  return stalledKey === key
+}
+
 export function useDebounce<T>(value: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value)
 

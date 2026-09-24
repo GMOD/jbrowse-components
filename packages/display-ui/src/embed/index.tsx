@@ -1,6 +1,6 @@
 import { Fragment, Suspense } from 'react'
 
-import { useWidthSetter } from '@jbrowse/core/util/hooks'
+import { useStalled, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { useResizeDrag } from '@jbrowse/core/util/useResizeDrag'
 import { observer } from 'mobx-react'
@@ -8,7 +8,10 @@ import { observer } from 'mobx-react'
 import { TrackOverlaySlot } from '../trackOverlay/TrackOverlaySlot.tsx'
 
 import type { PanZoomView } from '@jbrowse/core/util/usePanZoom'
-import type { ViewStatus as ViewStatusValue } from '@jbrowse/core/util/viewStatus'
+import type {
+  ViewLoading as ViewLoadingValue,
+  ViewStatus as ViewStatusValue,
+} from '@jbrowse/core/util/viewStatus'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
 
@@ -88,7 +91,7 @@ export const ResizeHandle = observer(function ResizeHandle({
       display?.setResizing(false)
     },
   })
-  return (
+  return display ? (
     <div
       {...props}
       data-gesture-owner="true"
@@ -101,7 +104,7 @@ export const ResizeHandle = observer(function ResizeHandle({
         ...style,
       }}
     />
-  )
+  ) : null
 })
 
 export const TrackToggle = observer(function TrackToggle({
@@ -132,6 +135,27 @@ export const TrackToggle = observer(function TrackToggle({
   )
 })
 
+function ViewLoading({ message, progress, source }: ViewLoadingValue) {
+  const stalled = useStalled(`${message}|${progress}|${source}`)
+  return (
+    <>
+      {message}
+      {progress === undefined ? null : (
+        <progress
+          value={progress}
+          max={1}
+          style={{ display: 'block', width: 300, maxWidth: '100%' }}
+        />
+      )}
+      {stalled && source ? (
+        <div style={{ overflowWrap: 'anywhere' }}>
+          still waiting on {source}
+        </div>
+      ) : null}
+    </>
+  )
+}
+
 export const ViewStatus = observer(function ViewStatus({
   view,
   style,
@@ -150,11 +174,13 @@ export const ViewStatus = observer(function ViewStatus({
         ...style,
       }}
     >
-      {status.type === 'error'
-        ? `Could not load: ${status.error instanceof Error ? status.error.message : String(status.error)}`
-        : status.type === 'loading'
-          ? status.message
-          : 'Nothing to show yet'}
+      {status.type === 'error' ? (
+        `Could not load: ${status.error instanceof Error ? status.error.message : String(status.error)}`
+      ) : status.type === 'loading' ? (
+        <ViewLoading {...status} />
+      ) : (
+        'Nothing to show yet'
+      )}
     </div>
   )
 })

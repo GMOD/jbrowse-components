@@ -8,7 +8,6 @@ import {
 import { useCreateViewState } from '@jbrowse/react-app2'
 import { observer } from 'mobx-react'
 
-import type { MultiWaySyntenyDisplayModel } from '@jbrowse/plugin-linear-comparative-view'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const base = 'https://jbrowse.org/demos/ecoli_orthologs'
@@ -128,15 +127,10 @@ const GeneLanes = observer(function GeneLanes() {
   }
   const { session } = state
   const view = session.views[0] as LinearGenomeViewModel
-  const display = view.getTrack('orthologs')?.activeDisplay as
-    | MultiWaySyntenyDisplayModel
-    | undefined
   return (
     <EmbedProvider session={session}>
       <Loci view={view} />
-      {display ? (
-        <Legend display={display} style={{ paddingBottom: 6 }} />
-      ) : null}
+      <Legend view={view} trackId="orthologs" style={{ paddingBottom: 6 }} />
       <TrackStack view={view}>
         <Scalebar view={view} />
       </TrackStack>

@@ -1,14 +1,8 @@
-import { useEffect, useState } from 'react'
-
 import { Typography } from '@mui/material'
 
+import { useStalled } from '../util/hooks.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
 import LoadingProgress from './LoadingProgress.tsx'
-
-// Long enough that a load which is merely slow never says it, short enough to
-// beat the point where someone decides the app is broken. Every status write
-// resets it, so a download that is still moving its bar never reaches it
-const STALL_MS = 5000
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -31,29 +25,6 @@ const useStyles = makeStyles()(theme => ({
     color: theme.palette.text.secondary,
   },
 }))
-
-/**
- * Has this load said the same thing for {@link STALL_MS}? `key` is everything
- * the screen is showing, so any status at all — a new phase, another chunk of
- * bytes — restarts the wait, and only a load that has genuinely stopped saying
- * anything gets there.
- *
- * The timeout stores the key it fired for rather than a boolean, which is what
- * makes the reset free: a key that has moved on is not the key that was stalled,
- * so the notice goes away on the next status without a write to undo it.
- */
-function useStalled(key: string) {
-  const [stalledKey, setStalledKey] = useState<string>()
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setStalledKey(key)
-    }, STALL_MS)
-    return () => {
-      clearTimeout(timer)
-    }
-  }, [key])
-  return stalledKey === key
-}
 
 /**
  * The "view exists but isn't ready yet" screen a view renders instead of its

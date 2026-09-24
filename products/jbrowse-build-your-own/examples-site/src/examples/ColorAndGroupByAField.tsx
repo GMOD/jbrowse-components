@@ -3,6 +3,7 @@ import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
 import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const fields = ['gene_biotype', 'strand', 'source']
 
@@ -40,10 +41,16 @@ function FieldSelect({
 }
 
 const Channels = observer(function Channels({
-  display,
+  view,
 }: {
-  display: LinearBasicDisplayModel
+  view: LinearGenomeViewModel
 }) {
+  const display = view.getTrack('genes')?.activeDisplay as
+    | LinearBasicDisplayModel
+    | undefined
+  if (!display) {
+    return null
+  }
   return (
     <div
       style={{
@@ -73,7 +80,7 @@ const Channels = observer(function Channels({
           )
         }}
       />
-      <Legend display={display} />
+      <Legend view={view} trackId="genes" />
     </div>
   )
 })
@@ -110,12 +117,9 @@ const ColorAndGroupByAField = observer(function ColorAndGroupByAField() {
     return null
   }
   const { session } = state
-  const display = session.view.getTrack('genes')?.activeDisplay as
-    | LinearBasicDisplayModel
-    | undefined
   return (
     <EmbedProvider session={session}>
-      {display ? <Channels display={display} /> : null}
+      <Channels view={session.view} />
       <TrackStack view={session.view} />
     </EmbedProvider>
   )

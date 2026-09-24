@@ -54,16 +54,26 @@ function Row({ item }: { item: LegendItem }) {
   )
 }
 
+function legendSpecIn(display: unknown) {
+  return display && typeof display === 'object' && 'legendSpec' in display
+    ? (display.legendSpec as LegendSpec)
+    : undefined
+}
+
 export const Legend = observer(function Legend({
-  display,
+  view,
+  trackId,
   style,
 }: {
-  display: { legendSpec: LegendSpec }
+  view: {
+    getTrack: (trackId: string) => { activeDisplay: unknown } | undefined
+  }
+  trackId: string
   style?: React.CSSProperties
 }) {
-  const { legendSpec } = display
-  const sections = nonEmptyLegendSections(legendSpec.sections)
-  return sections.length ? (
+  const legendSpec = legendSpecIn(view.getTrack(trackId)?.activeDisplay)
+  const sections = nonEmptyLegendSections(legendSpec?.sections ?? [])
+  return legendSpec && sections.length ? (
     <div
       data-testid="embed-legend"
       style={{

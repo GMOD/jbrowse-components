@@ -1,7 +1,13 @@
 import { types } from '@jbrowse/mobx-state-tree'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 
-import { Legend, Track, TrackStack, TrackToggle } from './index.tsx'
+import {
+  Legend,
+  ResizeHandle,
+  Track,
+  TrackStack,
+  TrackToggle,
+} from './index.tsx'
 
 import type { EmbedDisplay } from './index.tsx'
 import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
@@ -70,6 +76,41 @@ test('a stack shows the view status until the view is ready, then every track in
   expect(screen.getByTestId('drawn-reads')).toBeTruthy()
   const slots = container.querySelectorAll('[data-track-overlay-slot]')
   expect(slots).toHaveLength(2)
+})
+
+test('a load shows its fraction, and names the file it waits on once it stalls', () => {
+  jest.useFakeTimers()
+  try {
+    const view = fakeView({
+      type: 'loading',
+      message: 'Downloading hg38.fa.gz.fai',
+      progress: 0.4,
+      source: 'https://example.com/hg38.fa.gz.fai',
+    })
+    render(<TrackStack view={view} />)
+    const status = screen.getByRole('status')
+    expect(status.querySelector('progress')?.value).toBe(0.4)
+    expect(status.textContent).not.toContain('still waiting')
+
+    act(() => {
+      jest.advanceTimersByTime(5000)
+    })
+    expect(status.textContent).toContain(
+      'still waiting on https://example.com/hg38.fa.gz.fai',
+    )
+
+    act(() => {
+      view.setStatus({
+        type: 'loading',
+        message: 'Downloading hg38.fa.gz.fai',
+        progress: 0.5,
+        source: 'https://example.com/hg38.fa.gz.fai',
+      })
+    })
+    expect(status.textContent).not.toContain('still waiting')
+  } finally {
+    jest.useRealTimers()
+  }
 })
 
 test('trackIds picks and orders the tracks a stack shows', () => {
@@ -154,10 +195,10 @@ test('a track toggle is checked while its track is shown, and asks the view to f
   expect(asked).toEqual(['reads'])
 })
 
-test('a legend lists the rows of the key a display derived, and nothing for an empty key', () => {
-  const { rerender } = render(
-    <Legend
-      display={{
+test('a legend lists the rows of the key its track derived, and nothing for an empty key or a display with none', () => {
+  const tracks: Record<string, { activeDisplay: unknown }> = {
+    strand: {
+      activeDisplay: {
         legendSpec: {
           title: 'strand',
           sections: [
@@ -171,14 +212,42 @@ test('a legend lists the rows of the key a display derived, and nothing for an e
             { id: 'empty', items: [] },
           ],
         },
-      }}
-    />,
-  )
+      },
+    },
+    empty: { activeDisplay: { legendSpec: { sections: [] } } },
+    keyless: { activeDisplay: { height: 40 } },
+  }
+  const view = { getTrack: (trackId: string) => tracks[trackId] }
+  const { rerender } = render(<Legend view={view} trackId="strand" />)
   const legend = screen.getByTestId('embed-legend')
   expect(legend.textContent).toBe('strandforwardreverse')
   expect(legend.querySelectorAll('rect')).toHaveLength(2)
   expect(screen.getByText('reverse').style.textDecoration).toBe('line-through')
 
-  rerender(<Legend display={{ legendSpec: { sections: [] } }} />)
-  expect(screen.queryByTestId('embed-legend')).toBeNull()
+  for (const trackId of ['empty', 'keyless', 'absent']) {
+    rerender(<Legend view={view} trackId={trackId} />)
+    expect(screen.queryByTestId('embed-legend')).toBeNull()
+  }
+})
+
+test('a resize bar draws only under a track that has a display', () => {
+  const view = {
+    getTrack: (trackId: string) =>
+      trackId === 'genes'
+        ? {
+            activeDisplay: {
+              setResizing: () => {},
+              resizeHeight: () => 0,
+            },
+          }
+        : undefined,
+  }
+  render(
+    <>
+      <ResizeHandle view={view} trackId="genes" />
+      <ResizeHandle view={view} trackId="reads" />
+    </>,
+  )
+  expect(screen.getByLabelText('Resize genes')).toBeTruthy()
+  expect(screen.queryByLabelText('Resize reads')).toBeNull()
 })
