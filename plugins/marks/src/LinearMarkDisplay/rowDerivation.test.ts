@@ -1,3 +1,5 @@
+import { waitFor } from '@testing-library/react'
+
 import { runMarkClustering } from './runMarkClustering.ts'
 import {
   REGION,
@@ -174,8 +176,115 @@ test('sort at a column orders the rows by the value each stands at there', () =>
   const display = loaded({ rows: 'source' })
   expect(display.sortRowsByValueAt('ctgA', 250)).toBe(true)
   expect(display.rowDomain).toEqual(['dad', 'mom', 's2', 's10'])
+  expect(drawn(display)).toEqual(
+    drawn(loaded({ facet: { field: 'source', domain: display.rowDomain } })),
+  )
   expect(display.sortRowsByValueAt('ctgA', 650)).toBe(true)
   expect(display.rowDomain).toEqual(['dad', 's10', 'mom', 's2'])
+  expect(drawn(display)).toEqual(
+    drawn(loaded({ facet: { field: 'source', domain: display.rowDomain } })),
+  )
+})
+
+test('a region arriving with a new value adds its row, and the arranged rows keep their places', () => {
+  const display = loaded({ rows: 'source' })
+  const [dad, mom, s2, s10] = display.editableSources
+  display.applyRowEdits([s10!, { ...mom!, label: 'Mother' }, dad!, s2!])
+  const before = display.discoveredRows
+  display.setRpcData(0, workerResult(display, FAMILY), REGION)
+  expect(display.discoveredRows).toBe(before)
+
+  const nextRegion = { ...REGION, refName: 'ctgB' }
+  display.setRpcData(
+    1,
+    workerResult(
+      display,
+      features([
+        { source: 'mom', start: 0, end: 100, score: 1 },
+        { source: 'aunt', start: 0, end: 100, score: 6 },
+      ]),
+    ),
+    nextRegion,
+  )
+  expect(
+    display.editableSources.map(({ name, label }) => label ?? name),
+  ).toEqual(['s10', 'Mother', 'dad', 's2', 'aunt'])
+  const layer = display.rpcDataMap.get(1)!.layers[0]!
+  expect([...layer.row!].map((row, i) => `${layer.y![i]}@${row}`)).toEqual([
+    '6@4',
+    '1@1',
+  ])
+})
+
+const LISTED = [
+  { name: 'dad' },
+  { name: 'mom', label: 'Mother', color: '#aa0000' },
+  { name: 's2' },
+  { name: 's10' },
+  { name: 's99', label: 'Unsequenced' },
+]
+
+async function listingSources(display: Record<string, unknown>) {
+  const env = createTestEnvironment({ marks: BARS, ...display })
+  env.mockRpcCall.mockImplementation((_sessionId: string, method: string) =>
+    method === 'MarkGetRowSources'
+      ? Promise.resolve(LISTED)
+      : new Promise(() => {}),
+  )
+  const { display: model } = env.createDisplay()
+  model.setRpcData(0, workerResult(model, FAMILY), REGION)
+  await waitFor(() => {
+    expect(model.adapterSources).toBe(LISTED)
+  })
+  return model
+}
+
+test("under rows: 'source' every source the adapter lists has a row, with its label and colour", async () => {
+  const display = await listingSources({ rows: 'source' })
+  expect(
+    display.editableSources.map(({ name, label, labelColor }) => ({
+      name,
+      label,
+      labelColor,
+    })),
+  ).toEqual([
+    { name: 'dad', label: undefined, labelColor: undefined },
+    { name: 'mom', label: 'Mother', labelColor: '#aa0000' },
+    { name: 's2', label: undefined, labelColor: undefined },
+    { name: 's10', label: undefined, labelColor: undefined },
+    { name: 's99', label: 'Unsequenced', labelColor: undefined },
+  ])
+  expect(display.rowCount).toBe(5)
+})
+
+test('a window where one source is empty keeps its row and the tree', async () => {
+  const display = await listingSources({ rows: 'source' })
+  await clusterRun(display, '(((dad,s2),(mom,s10)),s99);')
+  const rows = display.discoveredRows
+  const order = display.sources.map(row => row.name)
+  expect(display.hierarchy).toBeDefined()
+
+  display.setRpcData(
+    0,
+    workerResult(
+      display,
+      FAMILY.filter(f => f.get('source') !== 's2'),
+    ),
+    REGION,
+  )
+  expect(display.discoveredRows).toBe(rows)
+  expect(display.sources.map(row => row.name)).toEqual(order)
+  expect(display.hierarchy).toBeDefined()
+})
+
+test('a list is asked for only under rows on source', () => {
+  const env = createTestEnvironment({ marks: BARS, rows: 'strand' })
+  env.createDisplay()
+  expect(
+    env.mockRpcCall.mock.calls.filter(
+      ([, method]) => method === 'MarkGetRowSources',
+    ),
+  ).toEqual([])
 })
 
 test('a reset returns the order, labels, tree and focus to the config', async () => {

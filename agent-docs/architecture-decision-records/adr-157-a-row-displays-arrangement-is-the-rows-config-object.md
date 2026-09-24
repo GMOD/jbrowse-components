@@ -219,7 +219,10 @@ answer out one row per value in the arrangement narrowed to the focus
 (`rowsLayout`); the row lane, `markRowHeightPx` and `bandTops` draw it
 unchanged, so `rows: 'source'` draws what `facet: 'source'` drew
 (`rowDerivation.test.ts`). `discoveredRows` are the keys the loaded regions'
-section tables name, sorted as sections are; `identityChannel` is
+section tables name, sorted as sections are, and under `rows: 'source'` every
+source an adapter lists without reading a region (a multi-BigWig's files, one
+`MarkGetRowSources` call per adapter config) with its label and colour, so a
+file with nothing in the window keeps its row as on the quantitative display; `identityChannel` is
 `labelColor`, since each mark paints the plot in its own colour; and a
 clustering run compares the values the first drawing bar or point stands at,
 binned in the worker by the quantitative display's rule, a column per pixel

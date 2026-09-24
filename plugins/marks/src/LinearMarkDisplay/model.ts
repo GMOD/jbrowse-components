@@ -22,6 +22,7 @@ import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { compareGroupKeys, groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
+import { installPrerequisiteFetch } from '@jbrowse/core/util/installPrerequisiteFetch'
 import {
   activeJexlFilters,
   configuredJexlFilters,
@@ -118,6 +119,7 @@ import {
   specOfMarks,
 } from './plotFields.ts'
 
+import type { ListedSource } from '../MarkRowsRPC/MarkGetRowSources.ts'
 import type { MarkDisplayContextMenuInfo } from './components/markDisplayTypes.ts'
 import type {
   LinearMarkDisplayConfig,
@@ -634,6 +636,22 @@ export function stateModelFactory(
           : (self.regionPayloads as ReadonlyMap<number, MarkRegionData>)
       },
     }))
+    .volatile(() => ({
+      /**
+       * #volatile
+       * The sources the adapter lists whatever a region holds, a multi-BigWig's
+       * files; empty for an adapter that lists none.
+       */
+      adapterSources: [] as ListedSource[],
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      setAdapterSources(sources: ListedSource[]) {
+        self.adapterSources = sources
+      },
+    }))
     .views(self => {
       // Identity-stable, since the layout below keys the upload on it and a
       // region arriving with the same values discovers nothing new.
@@ -642,22 +660,34 @@ export function stateModelFactory(
           return []
         }
         const field = categoricalField(self.rowsField)
-        const keys = new Set<string>()
+        const listed = new Map(
+          self.rowsField === 'source'
+            ? self.adapterSources.map(source => [source.name, source])
+            : [],
+        )
+        const keys = new Set(listed.keys())
         for (const { facet } of self.featurePayloads.values()) {
           for (const { key } of facet ?? []) {
             keys.add(key)
           }
         }
         return [...keys].sort(compareGroupKeys).map((name): RowSource => {
-          const label = field.label(name)
-          return label === name ? { name } : { name, label }
+          const own = listed.get(name)
+          const label = own?.label ?? field.label(name)
+          return {
+            name,
+            ...(label === name ? {} : { label }),
+            ...(own?.color ? { labelColor: own.color } : {}),
+          }
         })
       })
       return {
         /**
          * #getter
          * `TreeSidebarMixin`'s hook: the values the worker split the loaded
-         * regions on, sorted.
+         * regions on and, under `rows: 'source'`, every source the adapter
+         * lists with its label and colour, sorted; a source with nothing in
+         * the loaded regions keeps its row.
          */
         get discoveredRows(): RowSource[] {
           return discoveredRows.get()
@@ -1568,6 +1598,24 @@ export function stateModelFactory(
     }))
     .actions(self => ({
       afterAttach() {
+        installPrerequisiteFetch(self, {
+          name: 'MarkRowSources',
+          delay: 0,
+          report: { setStatusMessage: () => {} },
+          gate: () => self.drawsRows && self.rowsField === 'source',
+          run: (adapterConfig, ctx) =>
+            ctx.callRpc('MarkGetRowSources', { adapterConfig }),
+          commit: sources => {
+            self.setAdapterSources(sources)
+          },
+          setError: error => {
+            if (error !== undefined) {
+              console.warn(
+                `Could not list the adapter's sources; rows come from the features alone: ${error}`,
+              )
+            }
+          },
+        })
         setupTreeSidebarAutoruns(self, {
           name: 'Mark',
           sortRows: (refName, pos) => self.sortRowsByValueAt(refName, pos),
