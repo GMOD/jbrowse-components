@@ -1,4 +1,5 @@
 import { DELETION_TYPE, INSERTION_TYPE } from '@jbrowse/cigar-utils'
+import { SimpleFeature } from '@jbrowse/core/util'
 
 import SyntenyFeature from './index.ts'
 
@@ -69,4 +70,19 @@ test('mismatches come from the coarse fold when there is no CIGAR', () => {
     expect.objectContaining({ type: 'deletion', start: 100, length: 5000 }),
     expect.objectContaining({ type: 'insertion', start: 5200 }),
   ])
+})
+
+// `get('name')` falls back to the mate's contig, and the multiway display reads
+// any name as a gene-table row, folding every record on that contig into one
+// group. What crosses the RPC is `toJSON`, which carries no such name.
+test("a nameless record's mate-contig name stays on this side of the RPC", () => {
+  const feature = new SyntenyFeature({
+    uniqueId: 'r1',
+    refName: 'chr17',
+    start: 0,
+    end: 100,
+    mate: { refName: 'chr11', start: 0, end: 100 },
+  })
+  expect(feature.get('name')).toBe('chr11')
+  expect(new SimpleFeature(feature.toJSON()).get('name')).toBeUndefined()
 })

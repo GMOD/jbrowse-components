@@ -77,9 +77,7 @@ Re-checked against the code and every tutorial the display appears in.
 
 Still open, and carried in
 [../ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md):
-**4.7** (the serialisation boundary
-no test names), **4.9** (what the tests do not pin), and the remainder of
-**4.8**.
+**4.9** (what the tests do not pin) and the remainder of **4.8**.
 
 ## The verdict in one paragraph
 

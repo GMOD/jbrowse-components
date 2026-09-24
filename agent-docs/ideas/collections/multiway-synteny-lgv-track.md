@@ -531,18 +531,6 @@ nameless source; `laneGeneAdapters` cost or correctness with hundreds of
 tracks; a window on a lane whose record carries an interior gap; the picker
 above ~10 lanes; anything at 44 or 464 lanes beyond the height assertion.
 
-One of those gaps is a near-miss worth its own sentence.
-`SyntenyFeature.get('name')` answers the mate's refName when the record has no
-name (`plugins/comparative-adapters/src/SyntenyFeature/index.ts:34-35`), and
-the clipped copy is a `SyntenyFeature` (`clipFeatureToRegion.ts:107`). Had that
-object reached the display, every star record would be "named" by its mate's
-contig, `featuresAreNameless` would be false, and `groupFeatures` would fold
-every gorilla-chr17 and chimp-chr17 record into one group drawn as a chain. It
-does not reach the display: `CoreGetFeatures` returns `f.toJSON()` and rebuilds
-plain `SimpleFeature`s (`packages/core/src/rpc/methods/CoreGetFeatures.ts:16,46`),
-and the getter is not data. So the display's "is this source an alignment" test
-rests on a serialisation boundary that no test names.
-
 **What not to touch.** The 2026-09-06 reading ends with a list of what it found
 sound and would not have anyone reopen: the lane decision and its hysteresis;
 the cell/layer renderer and its parity tests; the gene glyph parity with the
