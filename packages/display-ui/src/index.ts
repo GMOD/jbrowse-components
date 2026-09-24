@@ -60,6 +60,17 @@ export type { LegendItem, LegendSection } from './FloatingLegend.tsx'
 // its published name is unchanged.
 export { FloatingSvgOverlay } from './FloatingSvgOverlay.tsx'
 
+// One line of text floated over a display, and its `<text>` twin for an
+// export: the canvas feature labels, the mark display's text marks and the
+// arc labels' export emit through these, so a floated label's typography is
+// one declaration and each display keeps only where it puts them.
+export {
+  FloatingText,
+  SvgHaloText,
+  TEXT_BASELINE_RATIO,
+  textHalo,
+} from './FloatingText.tsx'
+
 // The hover label every control in here used to delegate to the browser's
 // `title` attribute. The box it draws is `@jbrowse/core`'s `BaseTooltip`, the
 // same one the display tooltips draw, anchored to the control instead of to the

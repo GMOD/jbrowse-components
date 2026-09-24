@@ -2,6 +2,7 @@ import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { pluralize } from '@jbrowse/core/util'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { FloatingText } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
 import {
@@ -109,21 +110,20 @@ function MoreIsoformsBadge({
 }) {
   const { label, labelX, labelY, color } = resolved
   return (
-    <div
+    <FloatingText
       title={moreIsoformsTitle(label)}
       data-testid={`feature-more-isoforms-${featureId}`}
       data-feature-id={featureId}
       data-more-isoforms=""
       data-region-index={displayedRegionIndex}
       className={className}
-      style={{
-        color,
-        fontSize: renderedLabelFontSize * MORE_ISOFORMS_FONT_SCALE,
-        transform: `translate(${labelX}px, ${moreBadgeTop(labelY, renderedLabelFontSize)}px)`,
-      }}
+      x={labelX}
+      y={moreBadgeTop(labelY, renderedLabelFontSize)}
+      color={color}
+      fontSize={renderedLabelFontSize * MORE_ISOFORMS_FONT_SCALE}
     >
       {label.text}
-    </div>
+    </FloatingText>
   )
 }
 
@@ -146,7 +146,7 @@ function FloatingLabel({
 }) {
   const { label, labelX, labelY, color, kind } = resolved
   return (
-    <div
+    <FloatingText
       data-testid={clickable ? `feature-${kind}-${label.text}` : undefined}
       data-feature-id={clickable ? featureId : undefined}
       data-region-index={clickable ? displayedRegionIndex : undefined}
@@ -155,14 +155,13 @@ function FloatingLabel({
           label.isOverlay ? 'overlay' : 'plain'
         ]
       }
-      style={{
-        color,
-        fontSize: renderedLabelFontSize,
-        transform: `translate(${labelX}px, ${labelY}px)`,
-      }}
+      x={labelX}
+      y={labelY}
+      color={color}
+      fontSize={renderedLabelFontSize}
     >
       {label.text}
-    </div>
+    </FloatingText>
   )
 }
 
@@ -187,11 +186,6 @@ const useStyles = makeStyles()(() => {
       width: '100%',
       height: '100%',
       pointerEvents: 'none',
-    },
-    floatingLabel: {
-      position: 'absolute',
-      lineHeight: 1,
-      whiteSpace: 'nowrap',
     },
     floatingLabelClickable: {
       pointerEvents: 'auto',
@@ -278,7 +272,6 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
   // than once per label on a path that rebuilds every label each frame.
   const labelClass = (clickable: boolean, isOverlay: boolean) =>
     cx(
-      classes.floatingLabel,
       clickable ? classes.floatingLabelClickable : classes.floatingLabelStatic,
       isOverlay ? classes.floatingLabelOverlay : undefined,
     )
@@ -292,7 +285,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
       plain: labelClass(false, false),
     },
   }
-  const moreBadgeClass = cx(classes.floatingLabel, classes.floatingLabelMore)
+  const moreBadgeClass = classes.floatingLabelMore
 
   forEachDisplayLabel(
     visibleRegions,

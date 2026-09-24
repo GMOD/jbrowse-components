@@ -3,6 +3,7 @@ import { Suspense, lazy, useCallback } from 'react'
 import { useMouseTracking } from '@jbrowse/core/ui'
 import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
 import { getStrokeProps } from '@jbrowse/core/util'
+import { SvgHaloText } from '@jbrowse/display-ui'
 import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
 import { observer } from 'mobx-react'
 
@@ -149,37 +150,23 @@ export function ArcsSvg({ arcs }: { arcs: readonly LaidOutArc[] }) {
   })
 }
 
-// Two stacked `<text>`s, the halo first: SVG paints stroke over fill, so a
-// thick background-colored stroke under the real glyphs is the halo. `drawArcs` spells it
-// strokeText-then-fillText.
-//
-// Both carry an explicit size and family. A `<text>` with neither takes SVG's
-// 16px default in a serialized file, or the host page's font inline, while the
-// canvas pins the theme's — and `arcLabelBaselineY` places a baseline for
-// glyphs of one size, so the two paths have to agree on which.
+// The halo-then-glyphs pair `drawArcs` spells as strokeText-then-fillText, at
+// the theme's size: `arcLabelBaselineY` places a baseline for glyphs of one
+// size, so the two paths have to agree on which.
 function ArcLabel({ arc }: { arc: LaidOutArc }) {
   const { palette, typography } = useStyleTheme()
-  const x = arcMidX(arc.shape)
-  const y = arcLabelBaselineY(arc)
-  const font = {
-    fontSize: typography.fontSize,
-    fontFamily: typography.fontFamily,
-  }
   return (
-    <>
-      <text
-        {...font}
-        x={x}
-        y={y}
-        stroke={palette.background.paper}
-        strokeWidth={`${LABEL_HALO_EM}em`}
-      >
-        {arc.label}
-      </text>
-      <text {...font} x={x} y={y} fill={palette.text.primary}>
-        {arc.label}
-      </text>
-    </>
+    <SvgHaloText
+      x={arcMidX(arc.shape)}
+      y={arcLabelBaselineY(arc)}
+      fontSize={typography.fontSize}
+      fontFamily={typography.fontFamily}
+      halo={palette.background.paper}
+      haloWidth={`${LABEL_HALO_EM}em`}
+      fill={palette.text.primary}
+    >
+      {arc.label}
+    </SvgHaloText>
   )
 }
 
