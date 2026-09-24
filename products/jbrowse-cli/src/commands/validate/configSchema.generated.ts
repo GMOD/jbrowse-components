@@ -8151,10 +8151,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "type": {
-          "description": "linear or log.",
+          "description": "linear or log or symlog.",
           "enum": [
             "linear",
-            "log"
+            "log",
+            "symlog"
           ],
           "default": "linear"
         },
@@ -8169,6 +8170,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "autoscaleGroup": {
           "description": "tracks naming one group autoscale together.",
           "$ref": "#/$defs/PlainString"
+        },
+        "symlogConstant": {
+          "description": "width of symlog's linear region around zero.",
+          "type": "number",
+          "default": 0
         },
         "autoscale": {
           "description": "local or localsd or localpercentile.",

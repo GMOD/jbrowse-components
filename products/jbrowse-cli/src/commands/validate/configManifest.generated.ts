@@ -6217,6 +6217,10 @@ export const configManifest: ConfigManifest = {
                   "type": "(string | undefined)"
                 },
                 {
+                  "name": "symlogConstant",
+                  "type": "number"
+                },
+                {
                   "name": "autoscale",
                   "type": "ValueScaleAutoscale"
                 },

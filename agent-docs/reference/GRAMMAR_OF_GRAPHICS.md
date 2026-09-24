@@ -600,8 +600,8 @@ vocabulary; its lead is the browser around it and scaling past the fetch budget.
 | --- | --- | --- | --- |
 | Marks | bar, point, span | rect, point, rule, tick, text, link, arrow | point, line, area, bar, rect, text, links, rule, triangles |
 | Channels | x, x2, y, row, color, shape | adds y2, size, opacity, stroke, angle, text, tooltip | adds ye, size, opacity, stroke, text |
-| y scales | linear, log | 13 kinds, incl. symlog and sqrt | none on y |
-| Named colour ramps | viridis only | the d3 set | — |
+| y scales | linear, log, symlog | 13 kinds, incl. symlog and sqrt | none on y |
+| Named colour ramps | 10 (`COLOR_SCHEMES`), incl. viridis and two diverging | the d3 set | — |
 | Transforms | 7 | ~27, incl. window, lookup, stack, regexExtract | ~10 |
 | y shared across tracks | yes, `scales.y.autoscaleGroup` | yes, `resolve.scale.y: "shared"` | same `domain` pinned by hand |
 | Selections, conditional colour | no | yes, compiled to shaders | hover/select styles only |
@@ -622,13 +622,7 @@ The gaps a user meets first, in order:
    marks over the mean, and than wiggle's whisker band
    ([the handoff's call](../handoffs/grammar-of-graphics-convergence.md)).
 2. **No text mark**, for labelling a peak, an SV or a gene on a plot.
-3. **No symlog mark scale.** The shared scale object and wiggle have symlog,
-   and the mark display's `valueToYPxScaled` does not place it. The named
-   ramps are one table (`COLOR_SCHEMES` in
-   `packages/core/src/util/colorSchemes.ts`): the perceptual viridis, magma,
-   inferno and cividis, the Hi-C ramps juicebox and fall, ColorBrewer's reds
-   and blues, and the diverging redblue and purpleorange.
-4. **In-app authoring stops at one mark.** **Plot field...** writes one mark and
+3. **In-app authoring stops at one mark.** **Plot field...** writes one mark and
    an optional count per bin, the config editor edits transform steps but not
    marks (`db4ef2f82a`), and the track menu has no facet or colour picker.
 

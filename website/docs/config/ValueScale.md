@@ -66,7 +66,8 @@ left unset autoscales over the loaded regions.
 Two defaults come from the display rather than from the scale. `autoscale`
 starts at `localpercentile` on the wiggle and multi-wiggle plots and at
 `local` on the coverage band and the mark display. `symlogConstant` starts
-at `0` on the wiggle family and at `1` on the coverage band.
+at `0` on the wiggle family and the mark display and at `1` on the coverage
+band.
 
 The wiggle family, the Manhattan plot and the mark display also carry
 `rules`, reference lines at chosen values; the mark display adds `title`,

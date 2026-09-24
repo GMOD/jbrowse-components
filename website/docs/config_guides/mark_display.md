@@ -86,6 +86,7 @@ one.
 | a colour per interval of a number | `scale_fill_stepsn(breaks, colours)` | `"scale": {"type": "threshold", "domain", "range"}` | `"scale": "threshold"`, `domain` holding the cuts |
 | a shape per category | `aes(shape = svtype)` | `"shape": {"field": "svtype"}` | `"shape": {"field": "svtype", "scale": "categorical"}` |
 | a log axis | `scale_y_log10()` | `"y": {"scale": {"type": "log"}}` | `"scales": {"y": {"type": "log"}}` |
+| a log-like axis through zero | `scale_y_continuous(transform = "pseudo_log")` | `"y": {"scale": {"type": "symlog", "constant"}}` | `"scales": {"y": {"type": "symlog", "symlogConstant"}}` |
 | fixed axis ends | `coord_cartesian(ylim)` | `"scale": {"domain": [lo, hi]}` | `domainMin` and `domainMax` on `scales.y` |
 | one axis over several plots | `facet_*(scales = "fixed")` | `"resolve": {"scale": {"y": "shared"}}` | `scales.y.autoscaleGroup`, across tracks |
 | an axis caption | `labs(y = "…")` | `"axis": {"title"}` | `scales.y.title` |
@@ -150,14 +151,17 @@ which declares it once as `scales.y`:
 ]
 ```
 
-`type` is `linear` (the default) or `log`, the two the display places, and the
-track menu's scale-type radio offers exactly those two. `domainMin` and
-`domainMax` pin the ends the axis spans; an end left unset autoscales to the
-loaded regions, so `{ "domainMin": 0 }` pins the floor alone, and `autoscale`
-chooses how an unpinned end is taken. The axis, its ticks, its cross-hatches and
-the bars themselves read this one declaration, and so does the track menu: **Set
-min/max score...** writes back into it, so what the user pins and what the
-config author wrote are the same slot.
+`type` is `linear` (the default), `log` or `symlog`, and the track menu's
+scale-type radio offers the same three. `symlog` reads like `log` away from zero
+and stays linear through it, so values that reach or cross 0 keep their place
+where `log` floors the domain above them; `symlogConstant` sets how wide that
+linear region is, and its default of `0` takes a thousandth of the domain's
+largest magnitude. `domainMin` and `domainMax` pin the ends the axis spans; an
+end left unset autoscales to the loaded regions, so `{ "domainMin": 0 }` pins
+the floor alone, and `autoscale` chooses how an unpinned end is taken. The axis,
+its ticks, its cross-hatches and the bars themselves read this one declaration,
+and so does the track menu: **Set min/max score...** writes back into it, so
+what the user pins and what the config author wrote are the same slot.
 
 Every mark drawing at the current zoom folds into that one domain, the way a
 grammar of graphics gives one scale per aesthetic. With a multiscale pair

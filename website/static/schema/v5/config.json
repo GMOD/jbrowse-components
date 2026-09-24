@@ -7657,8 +7657,8 @@
       "x-closed": true,
       "properties": {
         "type": {
-          "description": "linear or log.",
-          "enum": ["linear", "log"],
+          "description": "linear or log or symlog.",
+          "enum": ["linear", "log", "symlog"],
           "default": "linear"
         },
         "domainMin": {
@@ -7672,6 +7672,11 @@
         "autoscaleGroup": {
           "description": "tracks naming one group autoscale together.",
           "$ref": "#/$defs/PlainString"
+        },
+        "symlogConstant": {
+          "description": "width of symlog's linear region around zero.",
+          "type": "number",
+          "default": 0
         },
         "autoscale": {
           "description": "local or localsd or localpercentile.",
