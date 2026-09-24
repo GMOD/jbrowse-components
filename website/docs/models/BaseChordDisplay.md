@@ -50,7 +50,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-svgready">**svgReady**</span><br><code>boolean</code> | the off-screen export gate, on the shared `computeSvgReady` policy. A radial display has no box to draw an error in, so the export fails rather than exporting a message | BaseChordDisplay |
 | <span id="getter-displayphase">**displayPhase**</span><br><code>DisplayStatusPhase</code> |  | BaseChordDisplay |
 | <span id="getter-radiuspx">**radiusPx**</span><br><code>number</code> |  | BaseChordDisplay |
-| <span id="getter-bezierradiusratio">**bezierRadiusRatio**</span><br><code>number</code> | how deep a chord bows toward the center, as a fraction of the radius; one straight across the circle reaches it, a shorter one bows in proportion to its span | BaseChordDisplay |
+| <span id="getter-bezierradiusratio">**bezierRadiusRatio**</span><br><code>number</code> | how far from the center a chord across the circle passes, as a fraction of the radius; a shorter chord bows less, in proportion to its span | BaseChordDisplay |
 | <span id="getter-bezierradius">**bezierRadius**</span><br><code>number</code> |  | BaseChordDisplay |
 | <span id="getter-sliceindex">**sliceIndex**</span><br><code>Record&lt;string, Slice&gt;</code> | every slice of the circle, keyed by the assembly AND refName a feature off this display's adapter carries. Both halves are needed: two genomes on one circle can each carry a `chr1`. An elided slice answers to each refName it swallowed. | BaseChordDisplay |
 | <span id="getter-drawnfeatures">**drawnFeatures**</span><br><code>Feature[] &#124; undefined</code> | what the chord components draw: `features`, narrowed to `visibleFeatureIds` | BaseChordDisplay |

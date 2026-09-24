@@ -198,9 +198,9 @@ export function BaseChordDisplay() {
       },
       /**
        * #getter
-       * how deep a chord bows toward the center, as a fraction of the radius;
-       * one straight across the circle reaches it, a shorter one bows in
-       * proportion to its span
+       * how far from the center a chord across the circle passes, as a
+       * fraction of the radius; a shorter chord bows less, in proportion to its
+       * span
        */
       get bezierRadiusRatio(): number {
         return getConf(confNode(self), 'bezierRadiusRatio')
