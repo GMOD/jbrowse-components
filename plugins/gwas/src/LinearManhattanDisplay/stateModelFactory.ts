@@ -611,9 +611,9 @@ export function stateModelFactory(
            * #action
            * right-click "Color by LD to this SNP": switch into LD mode and pin the
            * index on the clicked point, so the auto-pick stops tracking the top hit.
-           * Keyed by chr:bp (1-based) to match the worker's posKey. All mutations
-           * happen in one action so rpcProps settles once and only a single recolor
-           * fetch fires.
+           * Keyed by chr:bp (1-based), which each fetch places on its region's
+           * contig. All mutations happen in one action so rpcProps settles once
+           * and only a single recolor fetch fires.
            */
           colorByLdToHit(hit: ManhattanHit) {
             colorBy(LD_FIELD)
