@@ -59,6 +59,11 @@ and OMIA supplies the curated causal variants:
 [Preparing your own graph](/docs/tutorials/pangenome_prepare_graph) describes
 what each of the graph files holds and how a graph produces them.
 
+[staging.genomes.jbrowse.org/pangenomes/bovine](https://staging.genomes.jbrowse.org/pangenomes/bovine)
+opens the same files without any setup (staging, until the graph plugin's
+JBrowse 5 host ships). It launches any chromosome and lists the graph's most
+variable loci.
+
 ## Where the graph and the callset show different things
 
 ARS-UCD1.2 lacks an 11 kb segment beside the heat shock gene _HSPA1A_ that
