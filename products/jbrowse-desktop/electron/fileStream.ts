@@ -1,5 +1,7 @@
 import { openAsBlob } from 'node:fs'
 
+import { net } from 'electron'
+
 // Web streams, not node ones: @gmod/faidx 2.0.5 changed generateFastaIndex to
 // take `ReadableStream`/`WritableStream` (it pipeThroughs them), so handing it
 // a node Readable fails at runtime with "fileDataStream.pipeThrough is not a
@@ -16,7 +18,10 @@ export async function getFileStream(
   if ('localPath' in location) {
     return (await openAsBlob(location.localPath)).stream()
   }
-  const response = await fetch(location.uri, { signal })
+  // Chromium's network stack, as the renderer's own requests use: Node's fetch
+  // ignores the system proxy and the OS certificate store, so behind a proxy
+  // or a TLS-inspecting network this was the one request in the app to fail
+  const response = await net.fetch(location.uri, { signal })
   if (!response.ok) {
     throw new Error(
       `Failed to fetch ${location.uri} status ${response.status} ${response.statusText}`,

@@ -8,7 +8,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { dialog } from 'electron'
+import { dialog, net } from 'electron'
 
 import { ANALYTICS_OPT_OUT_FILE } from '../analyticsOptOut.ts'
 import { getFileStream } from '../fileStream.ts'
@@ -26,6 +26,7 @@ jest.mock('electron', () => ({
     showSaveDialog: jest.fn(),
     showMessageBox: jest.fn(),
   },
+  net: { fetch: jest.fn() },
 }))
 jest.mock('../fileStream.ts', () => {
   const actual = jest.requireActual<{
@@ -219,6 +220,25 @@ test('a FASTA whose name needs escaping still indexes', async () => {
 // reads it. The file is beside the app rather than under userData, so nothing
 // the app itself writes can answer this — and a handler that looked in the
 // wrong directory would report "opted in" for everyone who opted out.
+// Node's fetch ignores the system proxy and the OS certificate store, so behind
+// a TLS-inspecting network a remote FASTA was the one download to fail.
+test('a remote FASTA downloads through Chromium and indexes', async () => {
+  jest
+    .mocked(net.fetch)
+    .mockResolvedValue(new Response('>chr1\nACGTACGT\nACG\n'))
+
+  const faiPath = await invoke(
+    'indexFasta',
+    { uri: 'https://example.com/genome.fa' },
+    'job1',
+  )
+
+  expect(net.fetch).toHaveBeenCalledWith('https://example.com/genome.fa', {
+    signal: expect.any(AbortSignal),
+  })
+  expect(fs.readFileSync(faiPath, 'utf8')).toBe('chr1\t11\t6\t8\t9\n')
+})
+
 // GTK never appends an extension, and neither does Windows under "All Files", so
 // the dialog's overwrite check ran on the name as typed; appending one after it
 // replaced an existing session with no question asked.
