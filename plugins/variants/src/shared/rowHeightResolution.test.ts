@@ -3,19 +3,13 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import configFactory from '../LinearMultiSampleVariantDisplay/configSchema.ts'
 import stateModelFactory from '../LinearMultiSampleVariantDisplay/model.ts'
+import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEnv.ts'
 
 // The raw `rowHeight` setting holds px, or 0 for fit-to-display-height; the
 // resolved value is the `effectiveRowHeight` getter (0 -> availableHeight/nrow).
 // These lock in that contract and the drag-resize behavior.
 function createDisplay() {
-  const configSchema = configFactory()
-  return stateModelFactory(configSchema).create({
-    type: 'LinearMultiSampleVariantDisplay',
-    configuration: configSchema.create({
-      type: 'LinearMultiSampleVariantDisplay',
-      displayId: 'test',
-    }),
-  })
+  return createTestEnvironment().createDisplay().display
 }
 
 describe('row height resolution', () => {
@@ -44,7 +38,7 @@ describe('row height resolution', () => {
 
   // `effectiveRowHeight * nrow` lands a few ULPs past `availableHeight` for 28
   // of the first 400 row counts at the default height, 11 the first of them.
-  it('fit mode scrolls at no row count', () => {
+  it('fit mode scrolls at no row count', async () => {
     const m = createDisplay()
     const scrolling = []
     for (let n = 1; n < 400; n++) {
@@ -52,6 +46,7 @@ describe('row height resolution', () => {
       if (m.scrollableHeight !== 0) {
         scrolling.push(n)
       }
+      await Promise.resolve()
     }
     expect(scrolling).toEqual([])
   })

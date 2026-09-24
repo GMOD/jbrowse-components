@@ -1,7 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import configSchemaFactory from './configSchema.ts'
-import stateModelFactory from './model.ts'
+import { createTestEnvironment } from './testEnv.ts'
 
 // Runtime "Color by...→Samples" wiring: setColorBy writes colorBy onto the
 // display's config and nothing else — the tint resolves on every read of
@@ -14,14 +13,7 @@ describe('multi-sample variant colorBy', () => {
     { name: 'HG003', population: 'EUR', sex: 'M' },
   ]
   function makeModel() {
-    const configSchema = configSchemaFactory()
-    return stateModelFactory(configSchema).create({
-      type: 'LinearMultiSampleVariantDisplay',
-      configuration: configSchema.create({
-        type: 'LinearMultiSampleVariantDisplay',
-        displayId: 'colorby-test',
-      }),
-    })
+    return createTestEnvironment().createDisplay().display
   }
 
   it('lists metadata attributes excluding internal plumbing', () => {

@@ -1,11 +1,24 @@
-import { installPrerequisiteFetch } from '@jbrowse/core/util/installPrerequisiteFetch'
+import {
+  installPrerequisiteFetch,
+  readFor,
+} from '@jbrowse/core/util/installPrerequisiteFetch'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { readLodTierInfo, trackHasLodTiers } from './lodTier.ts'
 
 import type { LodTierInfo } from './lodTier.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { PrerequisiteFetchHost } from '@jbrowse/core/util/installPrerequisiteFetch'
+import type {
+  AdapterRead,
+  PrerequisiteFetchHost,
+} from '@jbrowse/core/util/installPrerequisiteFetch'
+
+export interface LodTierInfoHost extends PrerequisiteFetchHost {
+  parentTrack: { configuration: AnyConfigurationModel }
+  setAdapterHeader: (read: AdapterRead<unknown>) => void
+}
+
+const host = (self: object) => self as LodTierInfoHost
 
 /**
  * #stateModel LodTierInfoMixin
@@ -13,9 +26,8 @@ import type { PrerequisiteFetchHost } from '@jbrowse/core/util/installPrerequisi
  *
  * What the tiered adapter said about its file, held by every display that
  * resolves a level-of-detail tier (LinearSyntenyDisplay, DotplotDisplay,
- * LGVSyntenyDisplay) and read by their `lodTier` getters through
- * `resolveLodTier`. Filled by `installLodTierInfoFetch`; undefined until it
- * lands, which the resolver treats as "trust the config slot".
+ * LGVSyntenyDisplay, MultiWaySyntenyDisplay) and read by their `lodTier`
+ * getters through `resolveLodTier`. Filled by `installLodTierInfoFetch`.
  */
 export function LodTierInfoMixin() {
   return types
@@ -23,22 +35,39 @@ export function LodTierInfoMixin() {
     .volatile(() => ({
       /**
        * #volatile
+       * The adapter's `CoreGetInfo` header, stamped with the adapter config
+       * it answers.
        */
-      lodTierInfo: undefined as LodTierInfo | undefined,
+      adapterHeaderRead: undefined as AdapterRead<unknown> | undefined,
     }))
     .actions(self => ({
       /**
        * #action
        */
-      setLodTierInfo(info: LodTierInfo | undefined) {
-        self.lodTierInfo = info
+      setAdapterHeader(read: AdapterRead<unknown>) {
+        self.adapterHeaderRead = read
       },
     }))
-}
-
-export interface LodTierInfoHost extends PrerequisiteFetchHost {
-  parentTrack: { configuration: AnyConfigurationModel }
-  setLodTierInfo: (info: LodTierInfo | undefined) => void
+    .views(self => ({
+      /**
+       * #getter
+       * The header of the adapter config the display holds, undefined until
+       * its read lands.
+       */
+      get adapterHeader(): unknown {
+        return readFor(host(self), self.adapterHeaderRead)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The file's tiers, undefined until the header lands, which the
+       * resolver treats as "trust the config slot".
+       */
+      get lodTierInfo(): LodTierInfo | undefined {
+        return readLodTierInfo(self.adapterHeader)
+      },
+    }))
 }
 
 /**
@@ -51,19 +80,15 @@ export interface LodTierInfoHost extends PrerequisiteFetchHost {
  * and the primary fetch on the same file raises the real error — so it
  * is only logged.
  *
- * `onHeader` hands the display the whole header the tier info was narrowed
- * from, in the same commit: a header can carry more than tiers (a star
- * adapter's names its anchor), and a second `CoreGetInfo` for the rest would be
- * the same round trip twice. `alsoWhen` widens the gate for a display that
- * wants the header of an untiered adapter for what else it carries; the
+ * The mixin holds the whole header, since a header can carry more than tiers
+ * (a star adapter's names its anchor) and a second `CoreGetInfo` for the rest
+ * would be the same round trip twice. `alsoWhen` widens the gate for a display
+ * that wants the header of an untiered adapter for what else it carries; the
  * threshold slot stays the default so a PAFAdapter still never asks.
  */
 export function installLodTierInfoFetch(
   self: LodTierInfoHost,
-  {
-    onHeader,
-    alsoWhen = () => false,
-  }: { onHeader?: (header: unknown) => void; alsoWhen?: () => boolean } = {},
+  { alsoWhen = () => false }: { alsoWhen?: () => boolean } = {},
 ) {
   installPrerequisiteFetch(self, {
     name: 'LodTierInfo',
@@ -72,9 +97,8 @@ export function installLodTierInfoFetch(
     gate: () => trackHasLodTiers(self.parentTrack) || alsoWhen(),
     run: (adapterConfig, ctx): Promise<unknown> =>
       ctx.callRpc('CoreGetInfo', { adapterConfig }),
-    commit: header => {
-      self.setLodTierInfo(readLodTierInfo(header))
-      onHeader?.(header)
+    commit: read => {
+      self.setAdapterHeader(read)
     },
     setError: error => {
       if (error !== undefined) {

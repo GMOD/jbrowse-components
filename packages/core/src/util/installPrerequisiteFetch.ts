@@ -23,6 +23,29 @@ export interface PrerequisiteFetchHost extends FetchSkeletonHost {
 }
 
 /**
+ * A prerequisite read's answer, stamped with the adapter config it answers.
+ * A display holds the latest one and reads it through `readFor`, so an answer
+ * never outlives its adapter config and no failure path has to clear it.
+ */
+export interface AdapterRead<T> {
+  adapterConfig: Record<string, unknown>
+  value: T
+}
+
+/**
+ * `read`'s value while it answers the adapter config `host` holds; undefined
+ * until a read of that config commits, which a failed read never does.
+ */
+export function readFor<T>(
+  host: { adapterConfig: Record<string, unknown> },
+  read: AdapterRead<T> | undefined,
+): T | undefined {
+  return read !== undefined && read.adapterConfig === host.adapterConfig
+    ? read.value
+    : undefined
+}
+
+/**
  * A **prerequisite read**: one RPC about the adapter itself, beside the
  * display's primary fetch. Three in the tree — HiC's `CoreGetInfo` header read,
  * whose `resolutions` every contacts fetch waits on; the multi-sample sample
@@ -39,6 +62,9 @@ export interface PrerequisiteFetchHost extends FetchSkeletonHost {
  *   un-minimize over the same file re-reads nothing. Getting one without the
  *   other gives either a stale header or a walk of a `.hic` norm-vector index on
  *   every expand.
+ * - **the answer carries the same key** (`AdapterRead`), and a display reads
+ *   it through `readFor`, so an answer to a previous adapter config is never
+ *   read as the current one, and a failed read leaves nothing to clear.
  * - **minimized is the gate**, and a display with a second condition of its own
  *   passes `gate` — the sample-list read waits for the LGV to be measured as
  *   well, so a full-file scan does not start ahead of the display's own first
@@ -100,7 +126,7 @@ export function installPrerequisiteFetch<TResult>(
       adapterConfig: Record<string, unknown>,
       ctx: FetchContext,
     ) => Promise<TResult | undefined>
-    commit: (result: TResult) => void
+    commit: (read: AdapterRead<TResult>) => void
     setError: (error?: unknown) => void
   },
 ) {
@@ -112,7 +138,9 @@ export function installPrerequisiteFetch<TResult>(
     prepare: () => ({ adapterConfig: self.adapterConfig }),
     fetchKey: ({ adapterConfig }) => adapterConfig,
     run: ({ adapterConfig }, ctx) => run(adapterConfig, ctx),
-    commit,
+    commit: (value, { adapterConfig }) => {
+      commit({ adapterConfig, value })
+    },
     setError,
   })
 }

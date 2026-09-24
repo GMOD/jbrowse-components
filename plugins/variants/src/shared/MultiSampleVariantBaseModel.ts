@@ -15,6 +15,7 @@ import {
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
+import { readFor } from '@jbrowse/core/util/installPrerequisiteFetch'
 import {
   activeJexlFilters,
   configuredJexlFilters,
@@ -78,6 +79,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
+import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
@@ -331,7 +333,7 @@ function fetchRegionsForMode(
  * haplotypes. A drag, the arrangement dialog, "Sort rows by genotype here" and
  * a clustering run write it; the rows are derived from it on every read:
  *
- * 1. the adapter's samples (`sourcesVolatile`) are focused by `rows.kept`,
+ * 1. the adapter's samples (`adapterSamples`) are focused by `rows.kept`,
  *    which is the set the fetch asks for (`sourcesBase`, `sampleFilter`),
  * 2. phased mode expands each sample to its haplotypes (`expandedRows`), and
  *    `rows.domain` orders, `rows.labels` relabels and the `rowColor` pairs
@@ -430,8 +432,10 @@ export default function MultiSampleVariantBaseModelF(
       .volatile(() => ({
         /**
          * #volatile
+         * The adapter's sample list, stamped with the adapter config it
+         * answers.
          */
-        sourcesVolatile: undefined as Source[] | undefined,
+        sampleListing: undefined as AdapterRead<Source[]> | undefined,
         /**
          * #volatile
          *
@@ -456,6 +460,16 @@ export default function MultiSampleVariantBaseModelF(
          * at every zoom, as regular mode's position-drawn payload does.
          */
         cellDataBpPerPx: undefined as number | undefined,
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The samples the adapter lists, undefined until the current adapter
+         * config's list lands.
+         */
+        get adapterSamples(): Source[] | undefined {
+          return readFor(self, self.sampleListing)
+        },
       }))
       .actions(self => ({
         /**
@@ -821,26 +835,29 @@ export default function MultiSampleVariantBaseModelF(
           /**
            * #action
            */
-          setSources(sources: Source[]) {
-            if (!deepEqual(sources, self.sourcesVolatile)) {
-              // An order none of whose names is a current row is a previous
-              // dataset's: an adapter edit swapped the cohort out from under it,
-              // and the tree beside it names rows that are gone. The same reset
-              // `setPhasedMode` takes when it renames the rows. Keyed on total
-              // mismatch — a partial overlap is the same cohort with samples
-              // added or removed, and the reader's order survives that.
-              const names = new Set(sources.map(resolveSampleName))
-              const domain = self.rowDomain
-              const arrangementIsStale =
-                self.rowArrangementIsCustom &&
-                domain.length > 0 &&
-                !domain.some(name => parseRowName(name, names))
-              self.sourcesVolatile = sources
-              if (arrangementIsStale) {
-                self.resetRowArrangement()
-              }
-              warnUnknownArrangementAttributes(self, sources)
+          setSources(sources: Source[], adapterConfig = self.adapterConfig) {
+            const held = self.sampleListing?.value
+            if (held !== undefined && deepEqual(sources, held)) {
+              self.sampleListing = { adapterConfig, value: held }
+              return
             }
+            // An order none of whose names is a current row is a previous
+            // dataset's: an adapter edit swapped the cohort out from under it,
+            // and the tree beside it names rows that are gone. The same reset
+            // `setPhasedMode` takes when it renames the rows. Keyed on total
+            // mismatch — a partial overlap is the same cohort with samples
+            // added or removed, and the reader's order survives that.
+            const names = new Set(sources.map(resolveSampleName))
+            const domain = self.rowDomain
+            const arrangementIsStale =
+              self.rowArrangementIsCustom &&
+              domain.length > 0 &&
+              !domain.some(name => parseRowName(name, names))
+            self.sampleListing = { adapterConfig, value: sources }
+            if (arrangementIsStale) {
+              self.resetRowArrangement()
+            }
+            warnUnknownArrangementAttributes(self, sources)
           },
           /**
            * #action
@@ -860,7 +877,7 @@ export default function MultiSampleVariantBaseModelF(
                 colorForField(self.rowColorSetting, field),
               )
             }
-            warnUnknownArrangementAttributes(self, self.sourcesVolatile ?? [])
+            warnUnknownArrangementAttributes(self, self.adapterSamples ?? [])
           },
           /**
            * #action
@@ -883,7 +900,7 @@ export default function MultiSampleVariantBaseModelF(
                   }
                 : {},
             )
-            warnUnknownArrangementAttributes(self, self.sourcesVolatile ?? [])
+            warnUnknownArrangementAttributes(self, self.adapterSamples ?? [])
           },
           /**
            * #action
@@ -1023,7 +1040,7 @@ export default function MultiSampleVariantBaseModelF(
          * color rows by — every key the sources carry except internal plumbing.
          */
         get colorByAttributes(): string[] {
-          const sources = self.sourcesVolatile
+          const sources = self.adapterSamples
           if (!sources?.length) {
             return []
           }
@@ -1047,7 +1064,7 @@ export default function MultiSampleVariantBaseModelF(
           return attributeColorDeal(
             self.rowColorField,
             self.rowColorSetting,
-            self.sourcesVolatile ?? [],
+            self.adapterSamples ?? [],
           )
         },
         /**
@@ -1057,7 +1074,7 @@ export default function MultiSampleVariantBaseModelF(
          * label tint where the sample names none of its own.
          */
         get discoveredRows(): ProcessedSource[] {
-          return (self.sourcesVolatile ?? []).map(source => {
+          return (self.adapterSamples ?? []).map(source => {
             const labelColor = source.labelColor ?? source.color
             return {
               ...source,
@@ -1073,7 +1090,7 @@ export default function MultiSampleVariantBaseModelF(
          * sample reaches each of its haplotypes.
          */
         get rowAlias(): RowAlias {
-          return rowAliasOf(self.sourcesVolatile ?? [])
+          return rowAliasOf(self.adapterSamples ?? [])
         },
         /**
          * #getter
@@ -1107,7 +1124,7 @@ export default function MultiSampleVariantBaseModelF(
          * `undefined` until the samples land.
          */
         get sourcesBase(): Source[] | undefined {
-          const sources = self.sourcesVolatile
+          const sources = self.adapterSamples
           return sources && keptRows(sources, self.rowFocus, self.rowAlias)
         },
       }))
@@ -1125,7 +1142,7 @@ export default function MultiSampleVariantBaseModelF(
          * needs no facet write of its own.
          *
          * **Resolved — an array, never `undefined`**, which is the shared
-         * spelling across the row displays. `sourcesVolatile` and `sourcesBase`
+         * spelling across the row displays. `adapterSamples` and `sourcesBase`
          * keep their `undefined`, because there it is genuinely load-bearing:
          * `sampleFilter` and `fetchNeeded` both read `sourcesBase`, and its
          * `undefined` → list transition is what wakes the fetch autorun
@@ -1147,14 +1164,14 @@ export default function MultiSampleVariantBaseModelF(
          * Whether the fetched inputs clustering needs are present yet. Phased
          * clustering clusters haplotypes, which needs per-sample ploidy from
          * `sampleInfo`; that arrives with `cellData`, later than the header-only
-         * `sourcesVolatile`. Gating the auto-cluster run on this (not just
-         * `sourcesVolatile`) stops it racing ahead and building a sample-level
+         * `adapterSamples`. Gating the auto-cluster run on this (not just
+         * `adapterSamples`) stops it racing ahead and building a sample-level
          * tree whose leaves ("HG001") never match the expanded haplotype rows
          * ("HG001 HP0").
          */
         get clusteringReady() {
           return (
-            !!self.sourcesVolatile &&
+            !!self.adapterSamples &&
             (self.renderingMode !== 'phased' || !!self.sampleInfo)
           )
         },
@@ -1164,7 +1181,7 @@ export default function MultiSampleVariantBaseModelF(
          * needs at least two rows to put in an order. An empty list is "none"
          * and "the sample list hasn't landed yet" alike — both mean "not now",
          * which is why one boolean answers for both and the menu's help text
-         * asks `sourcesVolatile` itself which of the two it is.
+         * asks `adapterSamples` itself which of the two it is.
          *
          * **The rows on screen**, which is the list the run clusters
          * (`clusterableSources`) and so the row set the tree comes back
@@ -1526,7 +1543,7 @@ export default function MultiSampleVariantBaseModelF(
         focusGroup(value: string) {
           // Before the samples land there is no group to focus, and an empty
           // pick would read as clearing the focus.
-          if (self.sourcesVolatile) {
+          if (self.adapterSamples) {
             focusRowGroup(
               self,
               self.editableSources,

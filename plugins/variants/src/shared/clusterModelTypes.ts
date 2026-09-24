@@ -28,7 +28,7 @@ export interface ReducedModel extends IStateTreeNode {
   rowDomain: string[]
   // Whether the fetched inputs clustering needs have arrived. Phased mode
   // clusters haplotypes, which needs per-sample ploidy from `sampleInfo` — and
-  // that rides with `cellData`, later than the header-only `sourcesVolatile`.
+  // that rides with `cellData`, later than the header-only `adapterSamples`.
   // On this interface rather than only on the autorun's own type because BOTH
   // entry points have to gate on it: run before it, and `buildGenotypeMatrix`
   // silently builds the sample-level matrix instead, so the tree's leaves

@@ -21,13 +21,19 @@ test('the menu is offered on a tiered adapter until its header says otherwise', 
   expect(display.hasLodCapableAdapter).toBe(true)
   expect(menuLabels(display)).toContain('Level of detail')
 
-  display.setLodTierInfo({ hasCoarseTier: true, coarseGap: 10000 })
+  display.setAdapterHeader({
+    adapterConfig: display.adapterConfig,
+    value: { hasCoarseTier: true, coarseGap: 10000 },
+  })
   expect(menuLabels(display)).toContain('Level of detail')
 })
 
 test('a header with no coarse tier withdraws the menu and keeps the slot as the threshold', () => {
   const display = tieredDisplay()
-  display.setLodTierInfo({ hasCoarseTier: false })
+  display.setAdapterHeader({
+    adapterConfig: display.adapterConfig,
+    value: { hasCoarseTier: false },
+  })
   expect(menuLabels(display)).not.toContain('Level of detail')
   expect(display.hasLodCapableAdapter).toBe(true)
 
@@ -37,6 +43,9 @@ test('a header with no coarse tier withdraws the menu and keeps the slot as the 
 
 test('the untiered default mode is untouched by the gate', () => {
   const display = tieredDisplay()
-  display.setLodTierInfo({ hasCoarseTier: false })
+  display.setAdapterHeader({
+    adapterConfig: display.adapterConfig,
+    value: { hasCoarseTier: false },
+  })
   expect(display.lodMode).toBe('auto')
 })

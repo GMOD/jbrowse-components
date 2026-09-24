@@ -10,7 +10,10 @@ export function getMultiSampleVariantSourcesAutorun(
   self: PrerequisiteFetchHost & {
     statusWindow: StatusWindow
     setError: (error?: unknown) => void
-    setSources: (sources: Source[]) => void
+    setSources: (
+      sources: Source[],
+      adapterConfig: Record<string, unknown>,
+    ) => void
   },
 ) {
   // The shared prerequisite-read declaration, which owns the adapter-config
@@ -29,8 +32,8 @@ export function getMultiSampleVariantSourcesAutorun(
     gate: () => containingLgv(self).initialized,
     run: (adapterConfig, ctx) =>
       ctx.callRpc('MultiSampleVariantGetSources', { adapterConfig }),
-    commit: ({ sources, warnings }) => {
-      self.setSources(sources)
+    commit: ({ adapterConfig, value: { sources, warnings } }) => {
+      self.setSources(sources, adapterConfig)
       // A `samplesTsv` that matches only some of the VCF's samples still
       // draws, but silently dropping the rest is a config mistake worth
       // surfacing — and this fetch runs in the worker, whose console nobody is

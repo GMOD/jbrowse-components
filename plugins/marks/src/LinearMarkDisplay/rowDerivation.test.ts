@@ -365,3 +365,19 @@ test("rows on a field with a vocabulary stack in the order the facet's sections 
     facet.facetLayout.sections.map(section => section.key),
   )
 })
+
+test('a listing that answers another adapter config lists no rows', async () => {
+  const display = await listingSources({ rows: 'source' })
+  expect(display.sources.map(row => row.name)).toContain('s99')
+  display.setSourceListing({
+    adapterConfig: { type: 'BedAdapter' },
+    value: LISTED,
+  })
+  expect(display.adapterSources).toBeUndefined()
+  expect(display.sources.map(row => row.name)).toEqual([
+    'dad',
+    'mom',
+    's2',
+    's10',
+  ])
+})

@@ -16,7 +16,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 //
 // Driven off a real display through the regular display's harness, because the
 // row is built by the shared `variantTrackMenuItems` both multi-sample variant
-// displays take, and the gates read `sources`, a getter over `sourcesVolatile`,
+// displays take, and the gates read `sources`, a getter over `adapterSamples`,
 // `layout` and `subtreeFilter` that a stub would have to restate.
 function display(sources?: { name: string }[]) {
   const { display } = createTestEnvironment().createDisplay()
@@ -110,7 +110,7 @@ test('refuses to cluster a single sample, and says which is missing', () => {
 })
 
 // Before the adapter reports its samples the count is not "one", it is unknown
-// — `sourcesVolatile` is undefined — and a row that blamed the cohort would be
+// — `adapterSamples` is undefined — and a row that blamed the cohort would be
 // wrong about why it is off.
 test('says it is still loading before the samples arrive', () => {
   const row = clusterRow()

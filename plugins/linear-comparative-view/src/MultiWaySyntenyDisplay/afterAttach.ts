@@ -5,7 +5,6 @@ import { installAnimationDeadline } from '@jbrowse/display-kit/displayAutoruns'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import {
-  declaredLanesOf,
   installClearHoverOnSurfaceMove,
   installLodTierInfoFetch,
 } from '@jbrowse/synteny-core'
@@ -13,7 +12,7 @@ import { autorun, untracked } from 'mobx'
 
 import { laneGeneFeatures } from './geneGlyph.ts'
 import { decideLaneFrames, sameDecisions } from './laneDecision.ts'
-import { specsCoverMate, staleLaneSpecs, starAnchorOf } from './laneFetch.ts'
+import { specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
 import { laneMotionEnd } from './laneMotion.ts'
 import { mergeContiguousRegions } from './layoutMultiWay.ts'
 
@@ -310,10 +309,6 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   // so the picker can offer the whole universe before any lane is placed
   installLodTierInfoFetch(self, {
     alsoWhen: () => self.adapterDeclaresLanes,
-    onHeader: header => {
-      self.setStarAnchor(starAnchorOf(header))
-      self.setDeclaredLanes(declaredLanesOf(header))
-    },
   })
   installGlobalFetchAutorun(self, {
     ...fetchPhases(self),

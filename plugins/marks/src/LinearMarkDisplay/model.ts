@@ -21,7 +21,10 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
-import { installPrerequisiteFetch } from '@jbrowse/core/util/installPrerequisiteFetch'
+import {
+  installPrerequisiteFetch,
+  readFor,
+} from '@jbrowse/core/util/installPrerequisiteFetch'
 import {
   activeJexlFilters,
   configuredJexlFilters,
@@ -147,6 +150,7 @@ import type { PlotSpec } from './plotFields.ts'
 import type { PlotFields } from './scanPlotFields.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
 import type {
   EncodedFeaturesResult,
   FacetSpec,
@@ -635,17 +639,28 @@ export function stateModelFactory(
     .volatile(() => ({
       /**
        * #volatile
-       * The sources the adapter lists whatever a region holds, a multi-BigWig's
-       * files; empty for an adapter that lists none.
+       * The latest `MarkGetRowSources` answer, stamped with the adapter
+       * config it answers.
        */
-      adapterSources: [] as ListedSource[],
+      sourceListing: undefined as AdapterRead<ListedSource[]> | undefined,
     }))
     .actions(self => ({
       /**
        * #action
        */
-      setAdapterSources(sources: ListedSource[]) {
-        self.adapterSources = sources
+      setSourceListing(read: AdapterRead<ListedSource[]>) {
+        self.sourceListing = read
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The sources the adapter lists whatever a region holds, a
+       * multi-BigWig's files; empty for an adapter that lists none, and
+       * undefined until the current adapter config's listing lands.
+       */
+      get adapterSources(): ListedSource[] | undefined {
+        return readFor(self, self.sourceListing)
       },
     }))
     .views(self => {
@@ -658,8 +673,8 @@ export function stateModelFactory(
         const field = categoricalField(self.rowsField)
         const listed = new Map(
           self.rowsField === 'source'
-            ? self.adapterSources.map(source => [source.name, source])
-            : [],
+            ? self.adapterSources?.map(source => [source.name, source])
+            : undefined,
         )
         const found = new Set<string>()
         for (const { facet } of self.featurePayloads.values()) {
@@ -1622,8 +1637,8 @@ export function stateModelFactory(
           gate: () => self.drawsRows && self.rowsField === 'source',
           run: (adapterConfig, ctx) =>
             ctx.callRpc('MarkGetRowSources', { adapterConfig }),
-          commit: sources => {
-            self.setAdapterSources(sources)
+          commit: read => {
+            self.setSourceListing(read)
           },
           setError: error => {
             if (error !== undefined) {

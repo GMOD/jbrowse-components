@@ -847,7 +847,10 @@ describe('the level-of-detail tier', () => {
       syntenyAdapter: { type: 'PairwiseIndexedPAFAdapter' },
     })
     display.setLodMode('coarse')
-    display.setLodTierInfo({ hasCoarseTier: false })
+    display.setAdapterHeader({
+      adapterConfig: display.adapterConfig,
+      value: { hasCoarseTier: false },
+    })
     expect(display.lodTier).toBe('fine')
   })
 
@@ -1246,7 +1249,10 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
     const display = createDisplay()
     display.setFeatures(starRecords())
     display.setLaneFrames(0, frames)
-    display.setStarAnchor('volvox')
+    display.setAdapterHeader({
+      adapterConfig: display.adapterConfig,
+      value: { anchorAssemblyName: 'volvox' },
+    })
     expect(display.laneLinksFetchSpecs).toEqual([])
     expect(display.pairLinks.get(pair)!.links).toHaveLength(1)
     expect(ribbonsBetweenMates(display).instanceCount).toBe(1)
@@ -1469,7 +1475,10 @@ test('hiding a lane under a picker choice keeps the choice and refetches nothing
     syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
     trackAssemblyNames: ['volvox', 'HG00097.1'],
   })
-  display.setDeclaredLanes([{ name: 'HG00097.1' }, { name: 'HG00099.1' }])
+  display.setAdapterHeader({
+    adapterConfig: display.adapterConfig,
+    value: { lanes: [{ name: 'HG00097.1' }, { name: 'HG00099.1' }] },
+  })
   display.setFeatures([
     mateRecord('r1', 'HG00097.1'),
     mateRecord('r2', 'HG00099.1'),
@@ -1511,7 +1520,10 @@ describe('the picker submit', () => {
       syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
       trackAssemblyNames: ['volvox', 'HG00097.1'],
     })
-    display.setDeclaredLanes([{ name: 'HG00097.1' }, { name: 'HG00099.1' }])
+    display.setAdapterHeader({
+      adapterConfig: display.adapterConfig,
+      value: { lanes: [{ name: 'HG00097.1' }, { name: 'HG00099.1' }] },
+    })
     display.chooseLanes(['HG00097.1', 'HG00099.1'])
     expect(display.laneFilter).toEqual({ only: ['HG00097.1', 'HG00099.1'] })
     display.chooseLanes(['HG00097.1'])
@@ -1533,13 +1545,22 @@ describe('the picker submit', () => {
 test('a mate lane can become the anchor only on a source that aligns lanes to each other', () => {
   const plain = createDisplay()
   expect(plain.canReanchor).toBe(true)
-  plain.setStarAnchor('volvox')
+  plain.setAdapterHeader({
+    adapterConfig: plain.adapterConfig,
+    value: { anchorAssemblyName: 'volvox' },
+  })
   expect(plain.canReanchor).toBe(false)
 
   const graph = createDisplay()
-  graph.setDeclaredLanes([{ name: 'HG1#1' }, { name: 'HG1#2' }])
+  graph.setAdapterHeader({
+    adapterConfig: graph.adapterConfig,
+    value: { lanes: [{ name: 'HG1#1' }, { name: 'HG1#2' }] },
+  })
   expect(graph.canReanchor).toBe(false)
-  graph.setDeclaredLanes([{ name: 'HG1#1' }, { name: 'volvox' }])
+  graph.setAdapterHeader({
+    adapterConfig: graph.adapterConfig,
+    value: { lanes: [{ name: 'HG1#1' }, { name: 'volvox' }] },
+  })
   expect(graph.canReanchor).toBe(true)
 })
 

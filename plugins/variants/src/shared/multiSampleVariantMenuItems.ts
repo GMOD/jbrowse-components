@@ -412,7 +412,7 @@ export function variantTrackMenuItems(
         // cohort for a sample list that had not landed yet, and called a genuinely
         // single-sample track still-loading forever. Below that, the row count
         // is `clusteringMenuItem`'s gate.
-        disabled: !self.sourcesVolatile,
+        disabled: !self.adapterSamples,
         disabledHelpText: 'Loading samples...',
         onClick: () => {
           getDialogHost(self).queueDialog(handleClose => [
@@ -427,7 +427,7 @@ export function variantTrackMenuItems(
       self.sources.length,
     ),
     rowArrangementMenuItem({
-      ready: !!self.sourcesVolatile?.length,
+      ready: !!self.adapterSamples?.length,
       onOpen: () => {
         getDialogHost(self).queueDialog(handleClose => [
           SetColorDialog,

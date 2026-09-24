@@ -280,7 +280,10 @@ describe('the baseline', () => {
         assemblyOf: () => testAssembly({ displayName: 'someone else' }),
       })
       expect(display.laneStack.lanes[1]!.label).toBe('hg002')
-      display.setDeclaredLanes([{ name: 'hg002', label: 'HG002 (son)' }])
+      display.setAdapterHeader({
+        adapterConfig: display.adapterConfig,
+        value: { lanes: [{ name: 'hg002', label: 'HG002 (son)' }] },
+      })
       expect(display.laneStack.lanes[1]!.label).toBe('HG002 (son)')
     })
 

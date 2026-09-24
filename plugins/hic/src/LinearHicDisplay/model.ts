@@ -5,7 +5,10 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { darkAtLowEnd, rampLutOf } from '@jbrowse/core/util/colorRamp'
-import { installPrerequisiteFetch } from '@jbrowse/core/util/installPrerequisiteFetch'
+import {
+  installPrerequisiteFetch,
+  readFor,
+} from '@jbrowse/core/util/installPrerequisiteFetch'
 import { formatScore } from '@jbrowse/core/util/numericUtils'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin, {
@@ -43,6 +46,7 @@ import type { HicTrackConfigModel } from './configSchema.ts'
 import type { HicColorScale } from './hicColorConfigSchema.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
+import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
@@ -57,6 +61,11 @@ import type React from 'react'
 // bottom 32, legend 36). A key at 38 clears both with room, and erring high
 // costs a few px of gap while erring low overlaps the box.
 export const RESOLUTION_ROW_CLEARANCE = 28
+
+interface HicFileInfo {
+  norms: string[] | undefined
+  resolutions: number[]
+}
 
 /**
  * #stateModel LinearHicDisplay
@@ -112,12 +121,30 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       rpcData: null as HicDataResult | null,
       /**
        * #volatile
+       * The file's `CoreGetInfo` answer, stamped with the adapter config it
+       * answers.
        */
-      availableNormalizations: undefined as string[] | undefined,
+      fileInfo: undefined as AdapterRead<HicFileInfo> | undefined,
+    }))
+    .views(self => ({
       /**
-       * #volatile
+       * #getter
+       * The normalization schemes the `.hic` file offers. The
+       * `activeNormalization` getter falls back off this list when the
+       * user's `selectedNormalization` isn't in it, so opening a file that
+       * lacks the selected scheme never marks the track edited.
        */
-      availableResolutions: undefined as number[] | undefined,
+      get availableNormalizations(): string[] | undefined {
+        return readFor(self, self.fileInfo)?.norms
+      },
+      /**
+       * #getter
+       * The file's binsizes, smallest first whatever order `@gmod/hic`
+       * returns, so a negative `resolutionBias` is always finer.
+       */
+      get availableResolutions(): number[] | undefined {
+        return readFor(self, self.fileInfo)?.resolutions
+      },
     }))
     .views(self => ({
       get view() {
@@ -342,7 +369,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           return -1
         }
         const bpPerPx = Math.max(1, self.host.bpPerPx)
-        // sorted ascending by setAvailableResolutions, so the last match is the
+        // sorted ascending at commit, so the last match is the
         // largest qualifying binsize
         const idx = avail.findLastIndex(binSize => binSize <= 2 * bpPerPx)
         return idx === -1 ? 0 : idx
@@ -616,29 +643,15 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #action
-       * Record what the `.hic` file offers. Resolution lives in the
-       * `activeNormalization` getter (which falls back off this list when the
-       * user's `selectedNormalization` isn't available), so this doesn't write
-       * the selection — opening a file that lacks the selected scheme never
-       * marks the track edited.
        */
-      setAvailableNormalizations(f: string[]) {
-        self.availableNormalizations = f
+      setFileInfo(read: AdapterRead<HicFileInfo>) {
+        self.fileInfo = read
       },
       /**
        * #action
        */
       setSquashToHeight(arg: boolean) {
         setConf(self, 'squashToHeight', arg)
-      },
-      /**
-       * #action
-       */
-      setAvailableResolutions(f: number[]) {
-        // Sort ascending (smallest binsize first) regardless of the order
-        // `@gmod/hic` returns, so `resolutionBias` arithmetic is consistent: a
-        // negative bias is always finer, a positive one always coarser.
-        self.availableResolutions = [...f].sort((a, b) => a - b)
       },
       /**
        * #action
@@ -734,10 +747,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
               norms?: string[]
               resolutions?: number[]
             },
-          commit: ({ norms, resolutions }) => {
-            if (norms) {
-              self.setAvailableNormalizations(norms)
-            }
+          commit: ({ adapterConfig, value: { norms, resolutions } }) => {
             // An empty (or absent) binsize list is terminal for the same
             // reason a thrown CoreGetInfo is, and needs saying just as loudly:
             // it leaves `effectiveResolution` undefined, so `prepare` declines
@@ -747,7 +757,13 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
             // state that never fetches has to be terminal (ARCHITECTURE.md
             // §"SVG export").
             if (resolutions?.length) {
-              self.setAvailableResolutions(resolutions)
+              self.setFileInfo({
+                adapterConfig,
+                value: {
+                  norms,
+                  resolutions: [...resolutions].sort((a, b) => a - b),
+                },
+              })
             } else {
               self.setError(
                 new Error(

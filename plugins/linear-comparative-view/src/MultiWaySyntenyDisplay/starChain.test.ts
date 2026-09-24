@@ -41,7 +41,10 @@ async function starDisplay() {
     geneTracks: [],
     rpc: () => new Promise(() => {}),
   })
-  display.setStarAnchor(A)
+  display.setAdapterHeader({
+    adapterConfig: display.adapterConfig,
+    value: { anchorAssemblyName: A },
+  })
   display.setDomain([B, C, D])
   display.setFeatures(
     STARTS.flatMap(s => [

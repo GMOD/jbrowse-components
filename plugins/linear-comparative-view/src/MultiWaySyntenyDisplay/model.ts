@@ -42,6 +42,7 @@ import {
   bandInk,
   colorableColumns,
   declaredAttributes,
+  declaredLanesOf,
   featureAttributeRanges,
   lodMenuItems,
   lodTierAt,
@@ -67,7 +68,7 @@ import { composeLaneLinks } from './composeLaneLinks.ts'
 import { geneColors } from './geneColor.ts'
 import { annotationRank } from './laneAnnotation.ts'
 import { frameFromDecision } from './laneDecision.ts'
-import { specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
+import { specsCoverMate, starAnchorOf, staleLaneSpecs } from './laneFetch.ts'
 import { laneHeaderRows } from './laneHeader.ts'
 import {
   laneMapAt,
@@ -297,20 +298,6 @@ export function stateModelFactory(
       laneLinksLandedFor: undefined as string | undefined,
       /**
        * #volatile
-       * the lanes the source's header declares, read once with the tier info;
-       * undefined until the header lands or when the adapter is one whose
-       * header is never asked for
-       */
-      declaredLanes: undefined as DeclaredLane[] | undefined,
-      /**
-       * #volatile
-       * the anchor a star source announces in its header. A star of pairwise
-       * alignments holds no mate-vs-mate rows, so its adjacent pairs' links
-       * are composed through the anchor rather than asked for
-       */
-      starAnchor: undefined as string | undefined,
-      /**
-       * #volatile
        * the glyph, box or ribbon under the pointer — what a click opens and
        * the tooltip names
        */
@@ -440,12 +427,6 @@ export function stateModelFactory(
         },
         /**
          * #action
-         */
-        setStarAnchor(assemblyName: string | undefined) {
-          self.starAnchor = assemblyName
-        },
-        /**
-         * #action
          * pin a lane onto one of its contigs, or `undefined` to let it choose
          * again. A fresh map, so the decision autorun sees the write
          */
@@ -465,12 +446,6 @@ export function stateModelFactory(
          */
         setDomain(domain: string[]) {
           setConf(self, 'domain', domain)
-        },
-        /**
-         * #action
-         */
-        setDeclaredLanes(lanes: DeclaredLane[]) {
-          self.declaredLanes = lanes
         },
         /**
          * #action
@@ -542,6 +517,25 @@ export function stateModelFactory(
       }
     })
     .views(self => ({
+      /**
+       * #getter
+       * the lanes the source's header declares, read once with the tier info;
+       * undefined until the header lands or when the adapter is one whose
+       * header is never asked for
+       */
+      get declaredLanes(): DeclaredLane[] | undefined {
+        const header = self.adapterHeader
+        return header === undefined ? undefined : declaredLanesOf(header)
+      },
+      /**
+       * #getter
+       * the anchor a star source announces in its header. A star of pairwise
+       * alignments holds no mate-vs-mate rows, so its adjacent pairs' links
+       * are composed through the anchor rather than asked for
+       */
+      get starAnchor(): string | undefined {
+        return starAnchorOf(self.adapterHeader)
+      },
       /**
        * #getter
        * the hosting linear genome view. `GlobalFetchMixin` hands down the

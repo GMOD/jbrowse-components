@@ -47,7 +47,7 @@ describe('recoloring does not disturb the arrangement', () => {
     expect(display.sources.some(s => s.labelColor)).toBe(false)
   })
 
-  // Rows are haplotypes after a phased clustering run, while `sourcesVolatile`
+  // Rows are haplotypes after a phased clustering run, while `adapterSamples`
   // is still sample-level — re-deriving from it halved the row count.
   it('keeps the haplotype rows in phased mode', () => {
     const { display } = createTestEnvironment().createDisplay()
