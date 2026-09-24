@@ -1,5 +1,6 @@
 import { launchSyntenyView } from '@jbrowse/synteny-core'
 
+import type { DotplotViewCommands } from './DotplotView/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractViewContainer } from '@jbrowse/core/util'
 import type { SyntenyViewSharedInit } from '@jbrowse/synteny-core'
@@ -11,12 +12,7 @@ export interface LaunchDotplotViewArgs extends SyntenyViewSharedInit {
   id?: string
   // optional: the extension point receives untrusted runtime spec data, so a
   // malformed spec can omit it — the handler guards and reports a clear error
-  views?: {
-    assembly: string
-    loc?: string
-    // per-axis region subset, globs allowed — see DotplotViewInit
-    displayedRegionNames?: string[]
-  }[]
+  views?: DotplotViewCommands['views']
   tracks?: string[]
   // loc-strings or URL-encoded HighlightType JSON, forwarded to the view's
   // declarative init (see DotplotView init autorun)

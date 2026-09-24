@@ -13,7 +13,6 @@ import LaunchDotplotViewF from './LaunchDotplotView.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractViewContainer } from '@jbrowse/core/util'
 
-export { default as DotplotHighlightBands } from './DotplotView/components/DotplotHighlightBands.tsx'
 export { renderToSvg } from './DotplotView/svgcomponents/SVGDotplotView.tsx'
 export type { DotplotViewModel } from './DotplotView/model.ts'
 // The view's `init` snapshot contract, so a programmatic caller (jbrowse-img, an

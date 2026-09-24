@@ -222,10 +222,9 @@ function applyInitDisplayedRegions(
   init: DotplotLaunch,
 ) {
   const session = getSession(self)
-  const axes = [self.hview, self.vview]
   let changed = false
   for (const [i, v] of init.views.entries()) {
-    const axis = axes[i]
+    const axis = self.views[i]
     const names = v.displayedRegionNames
     const assemblyName = self.assemblyNames[i]!
     const all = session.assemblyManager.get(assemblyName)
@@ -274,9 +273,8 @@ function namedRegionSummary(regions: { refName: string }[]) {
 // view is already initialized (caller waits) so displayed regions exist.
 function navigateInitLocs(self: DotplotViewModel, init: DotplotLaunch) {
   const session = getSession(self)
-  const axes = [self.hview, self.vview]
   for (const [i, v] of init.views.entries()) {
-    const axis = axes[i]
+    const axis = self.views[i]
     if (v.loc && axis) {
       // per axis: navAxisToLoc parses the locstring, which throws on an unknown
       // refName. One bad axis is a half-placed plot, not a broken view — it must
@@ -387,7 +385,7 @@ async function applyInit(
 function setupInitAutorun(self: DotplotViewModel) {
   installInitAutorun(self, {
     name: 'DotplotInit',
-    ready: () => !!self.volatileWidth,
+    ready: () => self.volatileWidth !== undefined,
     // setAssemblyNames is the first materializing step: before it lands there
     // are no axes, and postProcessSnapshot keys off the same thing to decide
     // whether `init` is still worth persisting
