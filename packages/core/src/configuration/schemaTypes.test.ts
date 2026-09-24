@@ -33,6 +33,27 @@ describe('getTypeNamesFromExplicitlyTypedUnion', () => {
     const names = getTypeNamesFromExplicitlyTypedUnion(u)
     expect(names).toEqual(['One', 'Two'])
   })
+  test('through the wrappers a pluggable union and an optional slot add', () => {
+    const one = ConfigurationSchema('One', {}, { explicitlyTyped: true })
+    const two = ConfigurationSchema('Two', {}, { explicitlyTyped: true })
+    const pluggable = types.snapshotProcessor(types.union(one, two), {
+      preProcessor: (snap: unknown) => snap,
+    })
+    expect(getTypeNamesFromExplicitlyTypedUnion(pluggable)).toEqual([
+      'One',
+      'Two',
+    ])
+    expect(
+      getTypeNamesFromExplicitlyTypedUnion(types.maybe(pluggable)),
+    ).toEqual(['One', 'Two'])
+  })
+  test('a member with no type of its own is refused', () => {
+    const one = ConfigurationSchema('One', {}, { explicitlyTyped: true })
+    const untyped = ConfigurationSchema('Untyped', {})
+    expect(() =>
+      getTypeNamesFromExplicitlyTypedUnion(types.union(one, untyped)),
+    ).toThrow('invalid config schema type')
+  })
 })
 
 // These four predicates are the single source of truth for classifying a
@@ -75,10 +96,18 @@ describe('schema definition entry classification', () => {
       expect(isConfigurationSchemaType(schema)).toBe(true)
     })
 
-    test('a late-wrapped schema type is recognized', () => {
+    test('a wrapped schema type is recognized, and an unresolvable late is not', () => {
       const late = types.late(() => schema)
       expect(isBareConfigurationSchemaType(late)).toBe(true)
       expect(isConfigurationSchemaType(late)).toBe(true)
+      expect(isBareConfigurationSchemaType(types.optional(schema, {}))).toBe(
+        true,
+      )
+      expect(
+        isBareConfigurationSchemaType(
+          types.late(() => undefined as unknown as typeof schema),
+        ),
+      ).toBe(false)
     })
 
     test('arrays/maps/optionals of schemas are schema types', () => {

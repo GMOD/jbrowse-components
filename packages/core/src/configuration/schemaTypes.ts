@@ -6,24 +6,19 @@
  * config schema?" and "what kind of entry is this?" have one answer everywhere.
  */
 import {
+  asArrayType,
+  asMapType,
   getType,
-  isArrayType,
-  isLateType,
-  isMapType,
-  isModelType,
-  isOptionalType,
+  getUnionSubtypes,
   isStateTreeNode,
   isType,
   isUnionType,
 } from '@jbrowse/mobx-state-tree'
 
 import {
-  getDefaultValue,
-  getSubType,
-  getUnionSubTypes,
-  resolveLateType,
-} from '../util/mst-reflection.ts'
-import { isRegisteredConfigurationSchema } from './schemaRegistry.ts'
+  getConfigurationSchemaMetadata,
+  isRegisteredConfigurationSchema,
+} from './schemaRegistry.ts'
 
 import type { MergedConfigurationSchemaOptions } from './configurationSchema.ts'
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
@@ -33,83 +28,57 @@ import type {
 } from './types.ts'
 
 /**
- * given a union of explicitly typed configuration schema types,
- * extract an array of the type names contained in the union
- *
- * @param unionType -
- * @returns Array of type names contained in the union
+ * The names an explicitly typed union's members answer to, each the name its
+ * schema was given, read through whatever wraps the union — a pluggable
+ * union's `snapshotProcessor`, a `maybe`, a `types.late`. A member that is
+ * itself a union contributes its own; a member with no type of its own throws.
  */
-export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: unknown) {
-  if (isType(maybeUnionType)) {
-    const resolved = resolveLateType(maybeUnionType)
-    if (isUnionType(resolved)) {
-      const typeNames: string[] = []
-      for (const subType of getUnionSubTypes(resolved)) {
-        // the branch a `maybe`-like union adds so the slot can be absent, not
-        // a schema — `isConfigurationSchemaType` already skips it the same way
-        if (subType.name === 'undefined') {
-          continue
-        }
-        const resolvedSub = resolveLateType(subType)
-        // a nested union contributes its own names; otherwise the subtype is a
-        // single explicitly-typed schema whose name is its default's `type`
-        const nested = getTypeNamesFromExplicitlyTypedUnion(resolvedSub)
-        if (nested.length) {
-          typeNames.push(...nested)
-        } else {
-          const typeName = getDefaultValue(resolvedSub).type
-          if (!typeName) {
-            throw new Error(`invalid config schema type ${resolvedSub}`)
-          }
-          typeNames.push(typeName)
-        }
-      }
-      return typeNames
-    }
+export function getTypeNamesFromExplicitlyTypedUnion(
+  maybeUnionType: unknown,
+): string[] {
+  if (!isType(maybeUnionType) || !isUnionType(maybeUnionType)) {
+    return []
   }
-  return []
+  return getUnionSubtypes(maybeUnionType).flatMap(member => {
+    const meta = getConfigurationSchemaMetadata(member)
+    if (meta?.options.explicitlyTyped) {
+      return [meta.name]
+    }
+    if (isUnionType(member)) {
+      return getTypeNamesFromExplicitlyTypedUnion(member)
+    }
+    // the branch a `maybe`-like union adds so the slot can be absent
+    if (member.name === 'undefined') {
+      return []
+    }
+    throw new Error(`invalid config schema type ${member.name}`)
+  })
 }
 
+/** The type `ConfigurationSchema()` built, by any handle on it (`schemaRegistry.ts`). */
 export function isBareConfigurationSchemaType(
   thing: unknown,
 ): thing is AnyConfigurationSchemaType {
-  if (isType(thing)) {
-    if (isModelType(thing) && isRegisteredConfigurationSchema(thing)) {
-      return true
-    }
-    // if it's a late type, assume its a config schema
-    if (isLateType(thing)) {
-      return true
-    }
-  }
-  return false
+  return isType(thing) && isRegisteredConfigurationSchema(thing)
 }
 
+/** A schema, or a union, array or map of them. */
 export function isConfigurationSchemaType(
   thing: unknown,
 ): thing is AnyConfigurationSchemaType {
-  // written as a series of if-statements instead of a big logical because this
-  // construction gives much better debugging backtraces.
-
-  // also, note that the order of these statements matters, because for example
-  // some union types are also optional types
-
   if (!isType(thing)) {
     return false
-  } else if (isBareConfigurationSchemaType(thing)) {
+  }
+  if (isBareConfigurationSchemaType(thing)) {
     return true
-  } else if (isUnionType(thing)) {
-    return getUnionSubTypes(thing).every(
+  }
+  if (isUnionType(thing)) {
+    return getUnionSubtypes(thing).every(
       t => isConfigurationSchemaType(t) || t.name === 'undefined',
     )
-  } else if (
-    (isOptionalType(thing) || isArrayType(thing) || isMapType(thing)) &&
-    isConfigurationSchemaType(getSubType(thing))
-  ) {
-    return true
-  } else {
-    return false
   }
+  const collection = asArrayType(thing) ?? asMapType(thing)
+  return !!collection && isConfigurationSchemaType(collection.getChildType())
 }
 
 /**

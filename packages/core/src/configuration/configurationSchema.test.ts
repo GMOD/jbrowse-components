@@ -296,16 +296,14 @@ describe('configuration schemas', () => {
 
   // Only the type ConfigurationSchema() itself returns carries a slot table, and
   // a base without one used to be skipped in silence — leaving a schema missing
-  // every inherited slot, with nothing thrown at any layer. Both wrappers below
-  // pass `isBareConfigurationSchemaType`, so neither looks wrong at the call
-  // site; `pluggableConfigSchemaType` returns the union form.
+  // every inherited slot, with nothing thrown at any layer;
+  // `pluggableConfigSchemaType` returns the union form.
   describe('baseConfiguration that carries no slot table', () => {
     const base = ConfigurationSchema('RealBase', {
       inherited: { type: 'number', defaultValue: 7 },
     })
 
     test.each([
-      ['a types.late wrapper', () => types.late(() => base)],
       ['a union of schemas', () => types.union(base, base)],
       ['a plain MST model', () => types.model('NotASchema', {})],
     ])('throws for %s', (_label, makeBase) => {
@@ -319,11 +317,14 @@ describe('configuration schemas', () => {
       ).toThrow(/NoTable's baseConfiguration is not a configuration schema/)
     })
 
-    test('the real schema still merges its slots in', () => {
+    test.each([
+      ['the real schema', () => base],
+      ['a types.late wrapper of it', () => types.late(() => base)],
+    ])('%s merges its slots in', (_label, makeBase) => {
       const child = ConfigurationSchema(
         'HasTable',
         { own: { type: 'number', defaultValue: 1 } },
-        { baseConfiguration: base },
+        { baseConfiguration: makeBase() as AnyConfigurationSchemaType },
       )
       const node = child.create(undefined, { pluginManager })
       expect(readConfObject(node, 'inherited')).toBe(7)

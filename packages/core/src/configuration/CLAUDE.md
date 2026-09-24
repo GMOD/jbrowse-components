@@ -73,9 +73,12 @@ node not the snapshot, forwarding a callback slot raw, reference resolution.
   and named by its key, and the helper throws at construction when one is not.
   `getConfigurationSchemaUnion` is what the editor and the JSON schema read; a
   pluggable element union is not one.
-- **The base must be the type `ConfigurationSchema()` returned.** A `types.late`
-  wrapper or a union passes `isBareConfigurationSchemaType` and used to drop
-  every inherited slot silently; it now throws at construction.
+- **The base must carry a slot table.** A union
+  (`pluginManager.pluggableConfigSchemaType`) or a plain model has none and
+  throws at construction, where it used to drop every inherited slot silently. A
+  `types.late` or `optional` wrapper resolves to its schema: the registry looks
+  a type up through the fork's `unwrapType`, from whatever handle a caller
+  holds.
 
 ## Read type narrowing
 

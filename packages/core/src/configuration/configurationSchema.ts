@@ -209,14 +209,12 @@ function preprocessConfigurationSchemaArguments(
     : undefined
   // A base with no registry entry used to be skipped in silence, producing a
   // schema missing every inherited slot with nothing thrown anywhere, and
-  // reachable without doing anything obviously wrong: `isBareConfigurationSchemaType`
-  // answers true for a `types.late` wrapper, and
-  // `pluginManager.pluggableConfigSchemaType(…)` hands back a `types.union`.
-  // Neither is registered, because only the type `ConfigurationSchema` itself
-  // returns carries the slot table.
+  // reachable without doing anything obviously wrong:
+  // `pluginManager.pluggableConfigSchemaType(…)` hands back a `types.union`,
+  // which carries no slot table of its own.
   if (inputOptions.baseConfiguration && !baseMeta) {
     throw new Error(
-      `${modelName}'s baseConfiguration is not a configuration schema: it has no registered slot table, so every slot it was meant to inherit would be dropped silently. Pass the type ConfigurationSchema() returned, not a types.late wrapper, a union (pluginManager.pluggableConfigSchemaType), or a plain MST model.`,
+      `${modelName}'s baseConfiguration is not a configuration schema: it has no registered slot table, so every slot it was meant to inherit would be dropped silently. Pass the type ConfigurationSchema() returned, not a union (pluginManager.pluggableConfigSchemaType) or a plain MST model.`,
     )
   }
   if (baseMeta) {
@@ -455,16 +453,8 @@ function makeConfigurationSchemaModel<
   // stripDefault (not optional) so a nested all-default sub-schema is omitted
   // from its parent's snapshot: the slot props strip themselves, the sub-schema
   // collapses to its default, and the parent's stripDefault drops the key.
-  const wrappedModel = types.stripDefault(completeModel, modelDefault)
-
-  // Register metadata against BOTH handles: the inner model (what getType(node)
-  // returns for a live config — the config editor's slot facade looks it up
-  // from there) and the stripDefault wrapper (what ConfigurationSchema returns
-  // and what sub-schema properties hold), so a lookup succeeds from either.
   registerConfigurationSchema(completeModel, metadata)
-  registerConfigurationSchema(wrappedModel, metadata)
-
-  return wrappedModel
+  return types.stripDefault(completeModel, modelDefault)
 }
 
 /**
