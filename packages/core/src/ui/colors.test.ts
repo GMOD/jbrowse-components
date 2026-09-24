@@ -4,6 +4,8 @@ import {
   categoricalPalette,
   categoricalScale,
   categoricalValueColor,
+  paletteFromSpec,
+  set1,
   similarColors,
 } from './colors.ts'
 
@@ -168,5 +170,28 @@ describe('categoricalColor', () => {
     expect(categoricalColor(undefined)).toBe(categoricalColor(''))
     expect(categoricalPalette).not.toContain(categoricalColor(undefined))
     expect(categoricalColor(['a', 'b'], ['a,b'], ['red'])).toBe('red')
+  })
+})
+
+describe('paletteFromSpec', () => {
+  it('names a palette', () => {
+    expect(paletteFromSpec('set1')).toBe(set1)
+    expect(paletteFromSpec('relit')).toHaveLength(27)
+  })
+
+  it('reads a comma-separated colour list, functions included', () => {
+    expect(paletteFromSpec('#f00, rgb(0, 128, 0),steelblue')).toEqual([
+      '#f00',
+      'rgb(0, 128, 0)',
+      'steelblue',
+    ])
+  })
+
+  it('reads nothing else, and says so', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(paletteFromSpec(undefined)).toBeUndefined()
+    expect(paletteFromSpec('tableau11')).toBeUndefined()
+    expect(warn).toHaveBeenCalledTimes(1)
+    warn.mockRestore()
   })
 })

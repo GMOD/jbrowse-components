@@ -1,6 +1,7 @@
 import * as convert from '../util/color-bits/convert.ts'
 import { NO_CATEGORY_COLOR, relight } from '../util/color/index.ts'
 import { cssColorToNormalizedRgb } from '../util/colorBits.ts'
+import { isCssColor } from '../util/cssColorParse.ts'
 import { valueText } from '../util/groupKeys.ts'
 
 const category10 = [
@@ -417,6 +418,102 @@ export function refNameColor(name: string, position: number | undefined) {
   return position === undefined
     ? refNameColorHexes[hashString(name) % refNameColorHexes.length]!
     : refNamePaletteColorAt(position)
+}
+
+// The four below are as their sources publish them less the black or grey,
+// which reads as "no value" on a fill (see NEUTRALS).
+
+// Okabe & Ito, "Color Universal Design" (2008), jfly.uni-koeln.de/color
+const okabeIto = [
+  '#e69f00',
+  '#56b4e9',
+  '#009e73',
+  '#f0e442',
+  '#0072b2',
+  '#d55e00',
+  '#cc79a7',
+]
+// Paul Tol, "Colour Schemes", SRON/EPS/TN/09-002 (2021), the bright scheme
+const tolBright = [
+  '#4477aa',
+  '#ee6677',
+  '#228833',
+  '#ccbb44',
+  '#66ccee',
+  '#aa3377',
+]
+// Paul Tol, "Colour Schemes", SRON/EPS/TN/09-002 (2021), the muted scheme
+const tolMuted = [
+  '#cc6677',
+  '#332288',
+  '#ddcc77',
+  '#117733',
+  '#88ccee',
+  '#882255',
+  '#44aa99',
+  '#999933',
+  '#aa4499',
+]
+// Tableau 20, Tableau 10.0's paired palette (Maureen Stone, 2016)
+const tableau20 = [
+  '#4e79a7',
+  '#a0cbe8',
+  '#f28e2b',
+  '#ffbe7d',
+  '#59a14f',
+  '#8cd17d',
+  '#b6992d',
+  '#f1ce63',
+  '#499894',
+  '#86bcb6',
+  '#e15759',
+  '#ff9d9a',
+  '#d37295',
+  '#fabfd2',
+  '#b07aa1',
+  '#d4a6c8',
+  '#9d7660',
+  '#d7b5a6',
+]
+
+/** The palettes a capture run can deal the rows from by name (`paletteFromSpec`). */
+const namedPalettes: Readonly<Record<string, () => readonly string[]>> = {
+  set1: () => set1,
+  categoricalPalette: () => categoricalPalette,
+  tableau10: () => tableau10,
+  // ColorBrewer Set2, which d3-scale-chromatic publishes as schemeSet2
+  schemeSet2: () => set2,
+  okabeIto: () => okabeIto,
+  tolBright: () => tolBright,
+  tolMuted: () => tolMuted,
+  tableau20: () => tableau20,
+  // every lap `refNamePaletteColorAt` re-lights category10 through
+  relit: () =>
+    Array.from(
+      { length: refNameColorHexes.length * PALETTE_LAP_TONES.length },
+      (_, i) => refNamePaletteColorAt(i),
+    ),
+}
+
+/**
+ * A palette named in `namedPalettes`, or a comma-separated list of CSS
+ * colours; undefined, with a warning, for anything else.
+ */
+export function paletteFromSpec(spec: unknown): readonly string[] | undefined {
+  if (typeof spec !== 'string' || spec === '') {
+    return undefined
+  }
+  if (Object.hasOwn(namedPalettes, spec)) {
+    return namedPalettes[spec]!()
+  }
+  const colors = spec.split(/,(?![^(]*\))/).map(c => c.trim())
+  if (colors.every(isCssColor)) {
+    return colors
+  }
+  console.warn(
+    `palette "${spec}" is neither one of ${Object.keys(namedPalettes).join(', ')} nor a comma-separated list of CSS colours`,
+  )
+  return undefined
 }
 
 export { category10, set1 }
