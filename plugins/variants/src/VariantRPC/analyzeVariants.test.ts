@@ -1,16 +1,16 @@
 import { buildSampleIndex, decodeGenotype } from '../shared/genotypeCodec.ts'
 import {
+  analyzeVariants,
   buildHeaderRemap,
-  computeSampleInfo,
   packGenotypeKey,
-} from './computeSampleInfo.ts'
+} from './analyzeVariants.ts'
 
 import type { FilteredVariant } from '../shared/minorAlleleFrequencyUtils.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // A feature that reports genotypes the way VcfFeature does: `sampleIdx` is the
 // position in ITS OWN header sample list, which is the contract
-// `processGenotypes` documents and the thing `computeSampleInfo` has to line its
+// `processGenotypes` documents and the thing `analyzeVariants` has to line its
 // canonical order up against. `sampleNames` is passed by reference so features
 // sharing a header share the array identity, as one parser's features do.
 function makeFeature(
@@ -46,8 +46,12 @@ function makeFeature(
 
 // Read a feature's codes back the way the client does: by sample NAME, through
 // the canonical order the payload shipped.
+function analyzeFiltered(variants: FilteredVariant[], _cache?: unknown) {
+  return analyzeVariants({ features: variants.map(v => v.feature) })
+}
+
 function decodedFor(
-  result: ReturnType<typeof computeSampleInfo>,
+  result: ReturnType<typeof analyzeVariants>,
   featureId: string,
 ) {
   const sampleIndex = buildSampleIndex(result.sampleNames)
@@ -62,10 +66,10 @@ function decodedFor(
   return out
 }
 
-describe('computeSampleInfo genotype codes', () => {
+describe('analyzeVariants genotype codes', () => {
   it('lines codes up with sample names for one shared header', () => {
     const header = ['S1', 'S2', 'S3']
-    const result = computeSampleInfo(
+    const result = analyzeFiltered(
       [
         makeFeature('f1', header, ['0|0', '0|1', '1|1']),
         makeFeature('f2', header, ['1|1', '0|0', '0|1']),
@@ -95,7 +99,7 @@ describe('computeSampleInfo genotype codes', () => {
   it('attributes genotypes correctly when a later header adds a sample', () => {
     const headerA = ['S1', 'S3']
     const headerB = ['S1', 'S2', 'S3']
-    const result = computeSampleInfo(
+    const result = analyzeFiltered(
       [
         makeFeature('fa', headerA, ['0|0', '1|1']),
         makeFeature('fb', headerB, ['0|0', '0|1', '1|1']),
@@ -111,7 +115,7 @@ describe('computeSampleInfo genotype codes', () => {
   })
 
   it('attributes genotypes correctly when two headers order samples differently', () => {
-    const result = computeSampleInfo(
+    const result = analyzeFiltered(
       [
         makeFeature('fa', ['S1', 'S2'], ['0|0', '1|1']),
         makeFeature('fb', ['S2', 'S1'], ['0|1', '1|1']),
@@ -125,7 +129,7 @@ describe('computeSampleInfo genotype codes', () => {
   // Ploidy is per sample, so a header mismatch that swapped the columns would
   // also file the wrong ploidy against the wrong sample.
   it('records ploidy against the sample that actually carries it', () => {
-    const result = computeSampleInfo(
+    const result = analyzeFiltered(
       [
         makeFeature('fa', ['S1', 'S3'], ['0|0', '1']),
         makeFeature('fb', ['S1', 'S2', 'S3'], ['0|0', '0|1|1', '1']),
@@ -142,7 +146,7 @@ describe('computeSampleInfo genotype codes', () => {
   // up — the two kinds must not answer for each other, and a triploid site is
   // routine (1000G chrX non-PAR).
   it('interns correctly at a site mixing packable and unpackable genotypes', () => {
-    const result = computeSampleInfo(
+    const result = analyzeFiltered(
       [
         makeFeature(
           'f1',
@@ -167,7 +171,7 @@ describe('computeSampleInfo genotype codes', () => {
   // Two-digit allele indices are what a decomposed multiallelic site spells,
   // and they push a diploid genotype past four characters.
   it('interns two-digit allele indices, which do not pack', () => {
-    const result = computeSampleInfo(
+    const result = analyzeFiltered(
       [
         makeFeature(
           'f1',
@@ -304,9 +308,9 @@ function makeRecordFeature(
 // `hasPhased` cannot: a pangenome callset is haploid per assembly path and `vg
 // deconstruct` writes bare `0`/`1`/`23`, so a whole file that phased mode
 // renders correctly contains no `|` at all.
-describe('computeSampleInfo phasing flags', () => {
+describe('analyzeVariants phasing flags', () => {
   const flags = (header: string[], genotypes: string[]) =>
-    computeSampleInfo([makeFeature('f1', header, genotypes)], new Map())
+    analyzeFiltered([makeFeature('f1', header, genotypes)], new Map())
 
   it('reports a callset with no `|` anywhere as phased-or-haploid', () => {
     const result = flags(['S1', 'S2'], ['1', '23'])
@@ -337,11 +341,11 @@ describe('computeSampleInfo phasing flags', () => {
 
   it('agrees on the genotypes-Record path', () => {
     expect(
-      computeSampleInfo([makeRecordFeature('f1', { S1: '1' })], new Map())
+      analyzeFiltered([makeRecordFeature('f1', { S1: '1' })], new Map())
         .hasPhasedOrHaploid,
     ).toBe(true)
     expect(
-      computeSampleInfo([makeRecordFeature('f1', { S1: '0/1' })], new Map())
+      analyzeFiltered([makeRecordFeature('f1', { S1: '0/1' })], new Map())
         .hasPhasedOrHaploid,
     ).toBe(false)
   })

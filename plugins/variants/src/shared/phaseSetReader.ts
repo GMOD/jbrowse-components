@@ -1,4 +1,4 @@
-import { buildHeaderRemap } from '../VariantRPC/computeSampleInfo.ts'
+import { buildHeaderRemap } from '../VariantRPC/analyzeVariants.ts'
 import { hasProcessFormatFields } from './hasProcessGenotypes.ts'
 
 import type { Feature } from '@jbrowse/core/util'

@@ -1,6 +1,6 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { buildSourceSampleIndices } from '../../VariantRPC/computeSampleInfo.ts'
+import { buildSourceSampleIndices } from '../../VariantRPC/analyzeVariants.ts'
 import { getInsertedBp } from '../../shared/alleleLength.ts'
 import { ALT_HUE } from '../../shared/cellFill.ts'
 import { PRIMARY_ALT_COLOR } from '../../shared/constants.ts'
@@ -127,7 +127,7 @@ export function computeVariantCells({
   // way to switch back.
   colorByPhaseSet?: boolean
   // featureId -> interned genotype codes, aligned to the canonical sample order
-  // and resolved once for every filtered variant by `computeSampleInfo` (which
+  // and resolved once for every filtered variant by `analyzeVariants` (which
   // returns this map for exactly that reason) so the per-cell loops never
   // re-parse a feature's genotype block. Prepopulated for every entry of
   // `filteredVariants` — a sites-only VCF gets an all-zero row, not undefined.
@@ -282,7 +282,7 @@ export function computeVariantCells({
     const description = feature.get('description') as string
     // This variant's genotypes, resolved once: the codes shipped in
     // `featureGenotypeMap` below, and the genotypes both non-phase-set loops
-    // read. Prepopulated by `computeSampleInfo` for every filtered variant.
+    // read. Prepopulated by `analyzeVariants` for every filtered variant.
     const codes = featureGenotypeCodes.get(featureId)!
     // Per-variant override color, resolved once per feature (not per cell);
     // undefined when no override is set, so normal genotype coloring runs.

@@ -12,7 +12,7 @@ const SAMPLE_NAMES = Array.from({ length: NUM_SAMPLES }, (_, i) => `S${i}`)
 // dict[0] is the empty genotype string. Reachable at this boundary by
 // construction: the payload is what the display hit-tests against, and the
 // invariant that keeps '' out of the dictionary lives two modules away in the
-// worker, restated by hand on each of `computeSampleInfo`'s two genotype paths.
+// worker, restated by hand on each of `analyzeVariants`'s two genotype paths.
 const GENOTYPE_DICT = ['', '0|1']
 
 function matrixCellData(codesBySample: Record<number, number>): CellDataResult {

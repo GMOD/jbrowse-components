@@ -33,7 +33,7 @@ function makeFeature(props: Record<string, unknown>, id = 'f1'): Feature {
 }
 
 // See computeVariantCells.test.ts — the worker hands the compute pass the codes
-// computeSampleInfo already interned, so the test builds the same shape.
+// analyzeVariants already interned, so the test builds the same shape.
 function genotypeArgs(features: Feature[]) {
   const genotypeDict: string[] = []
   const dictIndex = new Map<string, number>()

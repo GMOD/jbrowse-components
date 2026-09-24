@@ -14,13 +14,14 @@ what each step bought. The rules that follow from it are in
 
 ## Genotypes reach the cell loops as codes, never as strings
 
-`computeSampleInfo` makes one `processGenotypes` pass per feature — the
+`analyzeVariants` makes one `processGenotypes` pass per feature — the
 `@gmod/vcf` callback that reports a genotype as a *range into the line* rather
 than as a string — and from that single pass it:
 
 - interns `genotypeCodes`,
 - accumulates `sampleInfo` (ploidy, phasing),
-- folds the legend flags.
+- folds the legend flags,
+- counts each site's alleles for the MAF and missingness filters.
 
 The cell loops then index those codes by a source's column
 (`buildSourceSampleIndices`, resolved once per pass) and key their style memos by
@@ -33,6 +34,26 @@ reproduce a payload the worker only ever ships as codes.
 
 **Measured:** the analyze+cells stage went **613ms → 168ms** on 2504 samples ×
 400 variants, and the 168ms *covers the cell painting the 613ms doesn't*.
+
+## The filter's allele counts ride the analysis memo
+
+The per-site memo already groups a site's samples by distinct genotype, so it
+counts how many carry each, and the site's allele counts come from each
+distinct genotype once, weighted (`countGenotypeAlleles`). That retired a
+second full scan of every line, `getFilteredVariants`' own
+`processGenotypes` pass, on the default path.
+
+**Measured** on the 1000G chr1 slice (2504 samples × 1342 sites), the analysis
+stage alone, old two passes against the fused one, interleaved in one process:
+**1.54x** with GT alone and **1.81x** on the same calls carrying
+`GT:AD:DP:GQ:PL`, where the line scan is most of the cost.
+
+**With a MAF or missingness threshold set, the counting pass still runs
+first.** The analysis costs more per cell than the count, and a threshold
+typically keeps a few percent of a window, so the fused pass measured **0.66x**
+there (334 → 492ms end to end). Counting first and analyzing the survivors is
+parity (0.88–1.09x, inside the noise). Ploidy folds in from the sites the
+analysis walks, which with a threshold set are the ones it kept, as before.
 
 ## Nothing on the per-cell path may be keyed by sample NAME
 

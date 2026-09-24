@@ -303,8 +303,11 @@ composites a stroked path once, so lines batched into a single path union
 instead of accumulating and the field loses the density it exists to show
 (`drawConnectorField`, and the test beside it).
 
-The two counters in `shared/alleleCounts.ts` are context-tuned, not duplication:
-the VCF hot path accumulates into an object because mutating captured primitives
-inside the `processGenotypes` closure forces a V8 deopt. MAF is over **called**
+The two per-cell counters in `shared/alleleCounts.ts` are context-tuned, not
+duplication: the VCF hot path accumulates into an object because mutating
+captured primitives inside the `processGenotypes` closure forces a V8 deopt. The
+third, `countGenotypeAlleles`, is weighted and runs per distinct genotype off
+`analyzeVariants`' memo, which is how the default fetch counts alleles without a
+second scan (`reference/MULTI_SAMPLE_VARIANTS.md`). MAF is over **called**
 alleles, not genotype classes, so a mixed-ploidy site weights a haploid call
 once. A monomorphic site is not dropped.

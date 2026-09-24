@@ -228,7 +228,7 @@ A row of a multi-sample VCF carries one genotype per sample, and drawing that
 row used to mean cutting one substring out of the line per sample.
 [`@gmod/vcf`](https://github.com/GMOD/vcf-js/blob/main/docs/optimizations.md#one-pass-per-sample-however-many-keys-you-ask-for)
 reports each genotype as a pair of offsets into the line it already holds, and
-`computeSampleInfo` walks those in a single pass per row: each distinct genotype
+`analyzeVariants` walks those in a single pass per row: each distinct genotype
 becomes a small integer code, and ploidy and phasing go into typed arrays as it
 goes. The drawing loop then works in codes and keys its style memo by code, so
 `0|1` is built as a string once per row rather than once per sample.

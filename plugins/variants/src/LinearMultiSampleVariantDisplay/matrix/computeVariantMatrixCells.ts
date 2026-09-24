@@ -1,4 +1,4 @@
-import { buildSourceSampleIndices } from '../../VariantRPC/computeSampleInfo.ts'
+import { buildSourceSampleIndices } from '../../VariantRPC/analyzeVariants.ts'
 import { getInsertedBp } from '../../shared/alleleLength.ts'
 import { ALT_HUE } from '../../shared/cellFill.ts'
 import { featureHasPhaseSet } from '../../shared/getPhasedColor.ts'

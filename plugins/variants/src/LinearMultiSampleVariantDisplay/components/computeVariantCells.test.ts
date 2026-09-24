@@ -37,7 +37,7 @@ function makeFeature(props: Record<string, unknown>, id = 'f1'): Feature {
 }
 
 // The worker interns every filtered variant's genotypes once
-// (computeSampleInfo) and hands the compute pass the codes plus the dict they
+// (analyzeVariants) and hands the compute pass the codes plus the dict they
 // resolve against, so the tests build the same thing rather than a lookup the
 // compute pass would have to fill.
 function genotypeArgs(features: Feature[]) {

@@ -5,7 +5,7 @@ import { createAbortBreakpoint } from '@jbrowse/core/util/aborting'
 import { resolveSampleName } from '../shared/getSources.ts'
 import { hasProcessGenotypes } from '../shared/hasProcessGenotypes.ts'
 import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
-import { buildHeaderRemap, collectSampleNames } from './computeSampleInfo.ts'
+import { buildHeaderRemap, collectSampleNames } from './analyzeVariants.ts'
 import { fetchVariantFeatures } from './fetchVariantFeatures.ts'
 import { MISSING, readAltDosages } from './genotypeMatrixEncoding.ts'
 
@@ -124,7 +124,7 @@ export async function getGenotypeMatrix({
   // 0's header then names the wrong samples for every feature out of the other
   // file, and `buildHeaderRemap` below is what lines each feature's own header
   // up against this union.
-  const sampleNames = collectSampleNames(filteredVariants)
+  const sampleNames = collectSampleNames(filteredVariants.map(v => v.feature))
   const samplesLen = sampleNames.length
   const sampleIdxByKey = new Map<string, number>()
   for (let i = 0; i < samplesLen; i++) {

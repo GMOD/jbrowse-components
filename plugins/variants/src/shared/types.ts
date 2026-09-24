@@ -44,7 +44,7 @@ interface VariantFeatureBase {
 // `genotypeCodes` is aligned to `CellDataResult.sampleNames` (0 = none, else
 // `dict[code - 1]`). Decode via shared/genotypeCodec.ts. This keeps F×S
 // sample-name keys off the RPC wire — and, since the codes are what
-// `computeSampleInfo` builds in its one pass over the genotypes, off the
+// `analyzeVariants` builds in its one pass over the genotypes, off the
 // worker's heap as well: the cell loops read this same array rather than a
 // per-feature `Record<sampleName, genotype>` that had to be built, walked
 // three times, and then interned into exactly this.

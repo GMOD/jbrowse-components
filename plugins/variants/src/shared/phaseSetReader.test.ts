@@ -128,7 +128,7 @@ test('a sample without PS at this site does not inherit the previous site', () =
 
 // `processFormatFields` numbers samples against the header of the file THIS
 // feature came from, exactly as `processGenotypes` does — so this reader needs
-// the same translation `computeSampleInfo` does, and for the same reason.
+// the same translation `analyzeVariants` does, and for the same reason.
 // SplitVcfTabixAdapter opens one file per refName, so a view spanning two
 // contigs whose headers disagree hands both to one reader. Without the remap
 // every phase set after the first difference lands on a neighbouring sample:

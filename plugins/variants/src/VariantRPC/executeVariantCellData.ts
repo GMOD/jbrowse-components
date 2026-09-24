@@ -7,13 +7,12 @@ import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/componen
 import { computeVariantMatrixCells } from '../LinearMultiSampleVariantDisplay/matrix/computeVariantMatrixCells.ts'
 import { cellHueOf } from '../shared/cellHue.ts'
 import { buildCanonicalRows } from '../shared/getSources.ts'
-import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
 import {
   CELL_ALT_SECONDARY,
   CELL_NO_CALL,
   CELL_UNPHASED,
 } from '../shared/variantCellStyles.ts'
-import { computeSampleInfo } from './computeSampleInfo.ts'
+import { analyzeVariants, simplifyFeatures } from './analyzeVariants.ts'
 import { fetchVariantFeatures } from './fetchVariantFeatures.ts'
 import { groupFeaturesByRegion } from './groupFeaturesByRegion.ts'
 import { orderByScreenPosition } from './orderByScreenPosition.ts'
@@ -21,7 +20,7 @@ import { orderByScreenPosition } from './orderByScreenPosition.ts'
 import type { VariantCellData } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import type { MatrixCellData } from '../LinearMultiSampleVariantDisplay/matrix/computeVariantMatrixCells.ts'
 import type { SampleInfo } from '../shared/types.ts'
-import type { SimplifiedVariantFeature } from './computeSampleInfo.ts'
+import type { SimplifiedVariantFeature } from './analyzeVariants.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
@@ -60,7 +59,7 @@ interface CellDataBase {
   hasPhased: boolean
   // Whether any called genotype is phased OR haploid, which is the predicate the
   // phased painter uses (`isPhasedOrHaploid`) and so the one that gates the
-  // "Phased" rendering-mode entry — see computeSampleInfo.
+  // "Phased" rendering-mode entry — see analyzeVariants.
   hasPhasedOrHaploid: boolean
   // What the cell loops actually painted: a secondary-alt fill, a black
   // unphased fill, a no-call fill. Each drives its legend entry, so the entry
@@ -100,7 +99,7 @@ interface CellDataBase {
 }
 
 // The cell computations already emit the shipped shape — their genotypes are
-// the interned codes `computeSampleInfo` built, not a map to be converted at
+// the interned codes `analyzeVariants` built, not a map to be converted at
 // the boundary.
 export type ShippedRegionData = VariantCellData
 type ShippedMatrixData = MatrixCellData
@@ -159,24 +158,34 @@ export async function executeVariantCellData({
   }
 
   const features = await fetchVariantFeatures(adapter, regions, args)
-  const genotypesCache = new Map<string, Record<string, string>>()
   const progressOpts = {
     statusCallback,
     signal,
   }
-  const passing = await withProgress(
+  const {
+    filteredVariants: passing,
+    sampleInfo,
+    hasPhased,
+    hasPhasedOrHaploid,
+    hasConsequence,
+    hasPhaseSet,
+    hasSvType,
+    svTypeColors,
+    featureGenotypeCodes,
+    genotypeDict,
+    sampleNames,
+  } = await withProgress(
     {
       ...progressOpts,
-      label: 'Filtering variants',
+      label: 'Analyzing variants',
       total: features.length,
     },
     report =>
-      getFilteredVariants({
+      analyzeVariants({
         features,
         minorAlleleFrequencyFilter,
         maxMissingnessFilter,
         filterChain: filters,
-        genotypesCache,
         report,
       }),
   )
@@ -187,28 +196,8 @@ export async function executeVariantCellData({
     regions,
     v => v.feature,
   )
-
-  const {
-    sampleInfo,
-    hasPhased,
-    hasPhasedOrHaploid,
-    hasConsequence,
-    hasPhaseSet,
-    hasSvType,
-    svTypeColors,
-    simplifiedFeatures,
-    featureGenotypeCodes,
-    genotypeDict,
-    sampleNames,
-  } = await withProgress(
-    {
-      ...progressOpts,
-      label: 'Analyzing variants',
-      total: filteredVariants.length,
-    },
-    report => computeSampleInfo(filteredVariants, genotypesCache, report),
-  )
-  // Resolved after computeSampleInfo because the SV-type preset's palette is
+  const simplifiedFeatures = simplifyFeatures(filteredVariants)
+  // Resolved after the analysis because the SV-type preset's palette is
   // dealt over the types actually present.
   //
   // Phase-set hues are gated on phased mode here rather than in each cell loop:

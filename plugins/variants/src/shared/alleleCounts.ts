@@ -17,7 +17,7 @@ import type { VCFFeatureLike } from './hasProcessGenotypes.ts'
 const SLASH = 47
 const PIPE = 124
 
-interface AlleleBuckets {
+export interface AlleleBuckets {
   count0: number
   count1: number
   count2: number
@@ -48,6 +48,84 @@ function countStringAllele(allele: string, b: AlleleBuckets) {
   } else {
     b.otherCounts[allele] = (b.otherCounts[allele] ?? 0) + 1
   }
+}
+
+export function newAlleleBuckets(): AlleleBuckets {
+  return {
+    count0: 0,
+    count1: 0,
+    count2: 0,
+    count3: 0,
+    countDot: 0,
+    otherCounts: {},
+  }
+}
+
+function addAlleleAt(str: string, i: number, n: number, b: AlleleBuckets) {
+  const c = str.charCodeAt(i)
+  if (c === 48) {
+    b.count0 += n
+  } else if (c === 49) {
+    b.count1 += n
+  } else if (c === 50) {
+    b.count2 += n
+  } else if (c === 51) {
+    b.count3 += n
+  } else if (c === 46) {
+    b.countDot += n
+  } else {
+    const a = str[i]!
+    b.otherCounts[a] = (b.otherCounts[a] ?? 0) + n
+  }
+}
+
+/**
+ * `n` samples' worth of one genotype range, the same tokens
+ * `calculateAlleleCountsFast` counts one sample at a time. For a caller that
+ * already groups a site's samples by distinct genotype, so it runs per
+ * distinct genotype rather than per cell, which is why it may take the
+ * per-allele indirection that loop cannot.
+ */
+export function countGenotypeAlleles(
+  str: string,
+  start: number,
+  end: number,
+  n: number,
+  b: AlleleBuckets,
+) {
+  const len = end - start
+  if (len === 3) {
+    const sep = str.charCodeAt(start + 1)
+    if (sep === SLASH || sep === PIPE) {
+      addAlleleAt(str, start, n, b)
+      addAlleleAt(str, start + 2, n, b)
+      return
+    }
+  }
+  if (len === 1) {
+    addAlleleAt(str, start, n, b)
+    return
+  }
+  for (const allele of str.slice(start, end).split(GENOTYPE_SPLITTER)) {
+    if (allele === '.' || allele === '') {
+      b.countDot += n
+    } else if (allele.length === 1) {
+      addAlleleAt(allele, 0, n, b)
+    } else {
+      b.otherCounts[allele] = (b.otherCounts[allele] ?? 0) + n
+    }
+  }
+}
+
+export function alleleBucketCounts(b: AlleleBuckets) {
+  return buildAlleleCounts(
+    b.count0,
+    b.count1,
+    b.count2,
+    b.count3,
+    b.countDot,
+    b.otherCounts,
+  )
 }
 
 function buildAlleleCounts(
