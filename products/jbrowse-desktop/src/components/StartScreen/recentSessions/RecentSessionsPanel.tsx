@@ -32,6 +32,8 @@ import {
 import { invokeIpc } from '../../../ipc.ts'
 import { useNotifyError } from '../../NotifyContext.ts'
 import OpenLinkDialog from '../../OpenLinkDialog.tsx'
+import SessionLoadingScreen from '../../SessionLoadingScreen.tsx'
+import { useUpdateStatus } from '../../useUpdateStatus.ts'
 import DeleteSessionDialog from '../dialogs/DeleteSessionDialog.tsx'
 import RenameSessionDialog from '../dialogs/RenameSessionDialog.tsx'
 import { NARROW_QUERY } from '../narrow.ts'
@@ -148,9 +150,14 @@ export default function RecentSessionPanel({
     { onSuccess: pruneTo },
   )
 
+  // the panel gives way to a loading screen for the whole load, which is also
+  // what keeps a second click from starting a second one
+  const { status, updateStatus } = useUpdateStatus()
   const launch = async (path: string) => {
     try {
-      setPluginManager(await loadPluginManager(path))
+      await updateStatus('Loading session', async () => {
+        setPluginManager(await loadPluginManager(path))
+      })
     } catch (e) {
       console.error(e)
       notifyError(e, {
@@ -205,6 +212,10 @@ export default function RecentSessionPanel({
   const visibleSelection = selectedSessions.filter(s =>
     visiblePaths.has(s.path),
   )
+
+  if (status) {
+    return <SessionLoadingScreen message={status} />
+  }
 
   return (
     <div>
