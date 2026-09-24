@@ -509,15 +509,16 @@ type RequirementOf<D, BASE> =
       >
     : ConfigurationSchemaRequirement<RequirementWhen<D>, RequirementPath<D>>
 
-// Assigning an array makes MST reconcile it element by element, scanning ahead
-// for a node to reuse at each mismatch: quadratic in a reorder, seconds for
-// 5,000 row names. A slot array holds scalars, so no reused node keeps anything
-// of its own, and emptying and refilling it is linear. An unchanged array is
-// left alone, as the reconcile left it, so it fires no observer.
+// Assigning an array makes MST reconcile it, scanning ahead for a node to reuse
+// at each mismatch: seconds for a reorder of 5,000 row names. A slot array
+// holds scalars, so no reused node keeps anything of its own, and emptying and
+// refilling it takes 50 ms for the 5,000. spliceWithArray, since spreading into
+// `push` overflows the stack past about 120,000 names. An unchanged array is
+// left alone, so it fires no observer.
 function refillArray(held: IObservableArray<unknown>, value: unknown[]) {
   if (held.length !== value.length || held.some((v, i) => v !== value[i])) {
     held.clear()
-    held.push(...value)
+    held.spliceWithArray(0, 0, value)
   }
 }
 
