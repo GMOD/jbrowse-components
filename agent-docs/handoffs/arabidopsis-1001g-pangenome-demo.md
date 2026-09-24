@@ -16,6 +16,8 @@ Three things block redeploying:
   models have not loaded (`isStateModelLoaded === false`). It reproduces
   same-origin on ada and without the GraphGenomeView plugin; the same session
   passed as `session=spec-…` in the URL renders. Core bug, not this config.
+  Fixed by 250d44b8b5 (the prune leaves a track recipe for the launcher);
+  the demo needs it pushed and `code/jb2/main` redeployed.
 - **The hosted graph was built in `graph_order.txt` order** (TAIR10, Col-0.6909,
   KBS-Mac-74, Fly2-2, Nyl-7, T690, TRA-01, Sq-1, HSm, …), not the ROWS lane
   order the committed script uses, so the script does not reproduce it.
