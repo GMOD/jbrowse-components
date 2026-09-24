@@ -239,6 +239,7 @@ exports[`every registered schema slot default 1`] = `
   "adapter: MultiPairwiseSyntenyAdapter": {
     "adapters": "frozen = []",
     "coarseBpPerPxThreshold": "number = 10000",
+    "lanes": "frozen = []",
   },
   "adapter: MultiWiggleAdapter": {
     "baseUri": "string = """,
@@ -754,6 +755,7 @@ exports[`every registered schema slot default 1`] = `
     "forceLoad": "boolean = false",
     "height": "number = 240",
     "hideUnlabelled": "boolean = false",
+    "laneGeneTracks": "stringArray = []",
     "lodMode": "stringEnum = "auto" of ["auto","fine","coarse"]",
     "mouseover": "string = "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"",
     "showLaneTicks": "boolean = true",
