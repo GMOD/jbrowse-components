@@ -517,6 +517,7 @@ export function encodeFeatures<L extends LaneName>(
     const shapeOf = categoricalScale(
       shapeField.domain,
       shapeScaled.range ?? SHAPE_NAMES,
+      { fallback: SHAPE_NAMES },
     )
     const { ofIndex, entries } = shapeCategories.resolve((key): ShapeName =>
       key === '' ? 'circle' : shapeOf(key),

@@ -697,6 +697,26 @@ test('a pinned shape domain walks the range in order', () => {
   ])
 })
 
+test('a value the shape domain leaves out takes a shape no listed value holds', () => {
+  const r = encodeFeatures(
+    features,
+    {
+      shape: {
+        field: 'type',
+        scale: 'categorical',
+        domain: ['gene'],
+        range: ['diamond'],
+      },
+    },
+    ALL,
+    { jexl },
+  )
+  const shapeOf = new Map(r.shapeScale?.entries.map(e => [e.value, e.shape]))
+  expect(shapeOf.get('gene')).toBe('diamond')
+  expect(shapeOf.get('exon')).not.toBe('diamond')
+  expect(shapeOf.get('cds')).not.toBe('diamond')
+})
+
 test('colour and shape scales over different fields resolve side by side', () => {
   const r = encodeFeatures(
     features,
