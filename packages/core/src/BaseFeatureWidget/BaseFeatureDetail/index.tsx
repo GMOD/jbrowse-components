@@ -12,7 +12,7 @@ import type { BaseInputProps } from './types.ts'
 const BaseFeatureDetail = observer(function BaseFeatureDetail({
   model,
 }: BaseInputProps) {
-  const { error, featureData, parentFeature } = model
+  const { error, featureData, unformattedFeatureData, parentFeature } = model
   // annotated to shed the MST node brand types.frozen() carries on the instance
   const descriptions: Descriptors | undefined = model.descriptions
 
@@ -29,6 +29,7 @@ const BaseFeatureDetail = observer(function BaseFeatureDetail({
         <FeatureDetails
           model={model}
           feature={featureData}
+          unformatted={unformattedFeatureData}
           descriptions={descriptions}
         />
       </FeatureWash>

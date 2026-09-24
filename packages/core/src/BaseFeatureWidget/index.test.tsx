@@ -1,6 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
-import { act, render } from '@testing-library/react'
+import { act, fireEvent, render } from '@testing-library/react'
 
 import PluginManager from '../PluginManager.ts'
 import {
@@ -210,4 +210,55 @@ test('the panel says nothing about a parent it was not given', async () => {
   )
   expect(await findByText('ctgA:3..102')).toBeTruthy()
   expect(queryByTestId('parent-feature-line')).toBeNull()
+})
+
+test('the sequence panel reads the feature before formatDetails rewrote it', async () => {
+  const pluginManager = new PluginManager([])
+  const Session = types.model({
+    rpcManager: types.optional(types.frozen(), {}),
+    configuration: ConfigurationSchema('test', {
+      formatDetails: FormatDetailsConfigSchemaFactory(),
+    }),
+    widget: stateModelFactory(pluginManager),
+  })
+  const transcript = (name: string, cdsEnd: number) => ({
+    name,
+    refName: 'ctgA',
+    start: 0,
+    end: 100,
+    type: 'mRNA',
+    subfeatures: [
+      { refName: 'ctgA', start: 0, end: 100, type: 'exon' },
+      { refName: 'ctgA', start: 10, end: cdsEnd, type: 'CDS' },
+    ],
+  })
+  const model = Session.create(
+    {
+      configuration: {
+        formatDetails: {
+          subfeatures: "jexl:{name:'Subfeature: '+feature.name}",
+        },
+      },
+      widget: {
+        type: 'BaseFeatureWidget',
+        unformattedFeatureData: {
+          uniqueId: 'g',
+          name: 'EDEN',
+          refName: 'ctgA',
+          start: 0,
+          end: 100,
+          type: 'gene',
+          subfeatures: [transcript('EDEN.1', 90), transcript('EDEN.2', 50)],
+        },
+      },
+    },
+    { pluginManager },
+  )
+  const { findAllByRole, findAllByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <BaseFeatureDetails model={model.widget} />
+    </ThemeProvider>,
+  )
+  fireEvent.click((await findAllByText('Show feature sequence'))[0]!)
+  expect((await findAllByRole('combobox'))[0]!.textContent).toBe('EDEN.1')
 })

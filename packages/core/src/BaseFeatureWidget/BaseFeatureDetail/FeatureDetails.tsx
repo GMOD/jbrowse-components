@@ -50,6 +50,7 @@ const coreDetails = [
 interface FeatureDetailsProps {
   model: FeatureDetailsModel
   feature: SimpleFeatureSerialized
+  unformatted?: SimpleFeatureSerialized
   depth?: number
   omit?: string[]
   descriptions?: Descriptors
@@ -64,6 +65,7 @@ const FeatureDetails = observer(function FeatureDetails(
     omit = [],
     model,
     feature,
+    unformatted = feature,
     depth = 0,
     descriptions,
     formatter,
@@ -115,7 +117,7 @@ const FeatureDetails = observer(function FeatureDetails(
       )}
 
       <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
-        <SequenceFeatureDetails {...props} />
+        <SequenceFeatureDetails {...props} feature={unformatted} />
       </ErrorBoundary>
 
       <PluggableComponents
@@ -138,6 +140,14 @@ const FeatureDetails = observer(function FeatureDetails(
                 ...sub,
                 uniqueId: `${uniqueId}_${idx}`,
               }}
+              unformatted={
+                unformatted.subfeatures?.[idx]
+                  ? {
+                      ...unformatted.subfeatures[idx],
+                      uniqueId: `${uniqueId}_${idx}`,
+                    }
+                  : undefined
+              }
               model={model}
               depth={depth + 1}
               // a subfeature's fields are the same fields, so the caller's
