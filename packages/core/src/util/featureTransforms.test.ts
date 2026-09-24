@@ -118,6 +118,18 @@ test('coverage over nothing is nothing, and a named field carries the depth', ()
   expect(rows(out, 'depth')).toEqual([[1]])
 })
 
+test('coverage counts the features whose span it can read as though the rest were absent', () => {
+  const out = runTransforms(
+    [feature(0, 20), feature(10, 30, { svEnd: 40 }), feature(5, 15)],
+    [
+      { type: 'formula', expr: "jexl:get(feature,'svEnd')", as: 'end' },
+      { type: 'coverage' },
+    ],
+    jexl,
+  )
+  expect(rows(out, 'start', 'end', 'coverage')).toEqual([[10, 40, 1]])
+})
+
 test('a jexl step without an instance says so', () => {
   expect(() =>
     runTransforms([feature(0, 1)], [{ type: 'filter', expr: 'jexl:true' }]),
