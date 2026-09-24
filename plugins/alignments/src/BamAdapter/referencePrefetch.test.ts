@@ -178,3 +178,41 @@ test('the emitted reads still resolve mismatches against the prefetched region',
   )
   expect(anySub).toBe(true)
 })
+
+test('an unmapped read placed beside its mate never starts the prefetch', async () => {
+  let reads = 0
+  const bam = require.resolve('../../../../test_data/volvox/paired_rnaseq.bam')
+  const adapter = new Adapter(
+    configSchema.create({
+      bamLocation: { localPath: bam, locationType: 'LocalPathLocation' },
+      index: {
+        location: {
+          localPath: `${bam}.bai`,
+          locationType: 'LocalPathLocation',
+        },
+      },
+    }),
+  )
+  adapter.getSequenceAdapter = () =>
+    Promise.resolve({
+      getSequence: async () => {
+        reads++
+        return 'a'.repeat(50000)
+      },
+    } as unknown as BaseSequenceAdapter)
+  const query = {
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 20000,
+  }
+  const run = () => firstValueFrom(adapter.getFeatures(query).pipe(toArray()))
+
+  const features = await run()
+  await run()
+
+  // BWA writes MD on every aligned read of this file and none on the unmapped
+  // mates it places at their partner's position
+  expect(features.some(f => (f.get('flags') as number) & 4)).toBe(true)
+  expect(reads).toBe(0)
+})
