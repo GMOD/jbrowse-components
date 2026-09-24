@@ -117,6 +117,20 @@ describe('auto resolution is pinned once a region has answered', () => {
     expect(display.rpcProps().partitionField).toBe('sample')
   })
 
+  // A settings change keeps the held regions on screen under the scrim, and
+  // they still answer the field they were fetched under.
+  it('is not taken from a region fetched before the rows field moved', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setRowsField('sample')
+    display.setRpcData(0, regionData('sample'), ctgA)
+    expect(display.pinnedPartitionField).toBe('sample')
+
+    display.setRowsField('')
+
+    expect(display.pinnedPartitionField).toBe('')
+  })
+
   // An empty region resolves nothing and falls through to the `name` fallback.
   // Pinned off that, every later region partitions by feature name — tens of
   // thousands of one-feature hairline rows, and nothing refetches them, since

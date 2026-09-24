@@ -1,4 +1,5 @@
 import { isCallbackValue } from '@jbrowse/core/configuration'
+import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 
 import {
   AUTO_PARTITION_FIELD,
@@ -7,6 +8,7 @@ import {
 } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
+import type { LoadedRegion } from '@jbrowse/display-kit/regionCommit'
 
 /**
  * The payloads the display holds, never the ones it draws: the density band
@@ -28,14 +30,31 @@ export function answeredPartitionField(self: PartitionFieldSlice) {
   )?.resolvedPartitionField
 }
 
+export interface PinSlice extends PartitionFieldSlice {
+  loadedRegions: ReadonlyMap<number, Pick<LoadedRegion, 'fetchInputs'>>
+  settingsFetchInputs: unknown
+}
+
 /**
  * What a fetch issued now should partition on under auto. Unlike
  * `effectivePartitionField` this does not guess at what auto would pick — it is
  * an instruction to the worker, where "no instruction" is a real answer and the
- * worker is the side that knows which columns the data carries.
+ * worker is the side that knows which columns the data carries. Only a region
+ * fetched under the current settings answers: one held from before a
+ * "Partition by..." pick would hand its old field to every refetch.
  */
-export function pinnedPartitionField(self: PartitionFieldSlice) {
-  return answeredPartitionField(self) ?? AUTO_PARTITION_FIELD
+export function pinnedPartitionField(self: PinSlice) {
+  const settings = self.settingsFetchInputs
+  const current = new Map(
+    [...self.rpcDataMap].filter(([idx]) => {
+      const loaded = self.loadedRegions.get(idx)
+      return (
+        loaded !== undefined &&
+        isDataCurrent(loaded.fetchInputs.settings, settings)
+      )
+    }),
+  )
+  return answeredPartitionField({ rpcDataMap: current }) ?? AUTO_PARTITION_FIELD
 }
 
 /**
@@ -76,7 +95,7 @@ export function effectivePartitionField(
  * region's answer. An empty region is exempt — it has nothing to misplace.
  */
 export function regionHasPinnedData(
-  self: PartitionFieldSlice,
+  self: PinSlice,
   displayedRegionIndex: number,
 ) {
   const data = self.rpcDataMap.get(displayedRegionIndex)
