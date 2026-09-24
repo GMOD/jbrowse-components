@@ -1,7 +1,14 @@
+import { execFileSync } from 'node:child_process'
+import { createHash, createPublicKey } from 'node:crypto'
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { createTestServer } from '@jbrowse/browser-test-utils'
+import {
+  createSecureTestServer,
+  createTestServer,
+} from '@jbrowse/browser-test-utils'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -11,6 +18,43 @@ export const buildPath = path.join(jbrowseWebRoot, 'build')
 
 export function startServer(port: number) {
   return createTestServer(port, { jbrowseWebRoot, repoRoot })
+}
+
+/**
+ * A throwaway localhost certificate, and the SPKI hash that makes Chrome trust
+ * it. `--ignore-certificate-errors` would load the page too, but Chrome turns
+ * its HTTP cache off for a page with a certificate error, so a load measured
+ * that way re-fetches every file it should have kept.
+ */
+export function localhostCert() {
+  const dir = mkdtempSync(path.join(tmpdir(), 'jbrowse-cert-'))
+  try {
+    execFileSync(
+      'openssl',
+      [
+        ...['req', '-x509', '-newkey', 'ec'],
+        ...['-pkeyopt', 'ec_paramgen_curve:prime256v1', '-nodes'],
+        ...['-keyout', `${dir}/key.pem`, '-out', `${dir}/cert.pem`],
+        ...['-days', '1', '-subj', '/CN=localhost'],
+        ...['-addext', 'subjectAltName=DNS:localhost'],
+      ],
+      { stdio: 'ignore' },
+    )
+    const cert = readFileSync(`${dir}/cert.pem`, 'utf8')
+    const spki = createHash('sha256')
+      .update(createPublicKey(cert).export({ type: 'spki', format: 'der' }))
+      .digest('base64')
+    return { key: readFileSync(`${dir}/key.pem`, 'utf8'), cert, spki }
+  } finally {
+    rmSync(dir, { recursive: true })
+  }
+}
+
+export function startSecureServer(
+  port: number,
+  { key, cert }: { key: string; cert: string },
+) {
+  return createSecureTestServer(port, { jbrowseWebRoot, repoRoot, key, cert })
 }
 
 /**
@@ -25,10 +69,25 @@ export function startServer(port: number) {
  * The caller must publish the port it gets back (see setPort in helpers), since
  * every url the suites build is relative to it.
  */
-export async function startServerOnFreePort(preferred: number, attempts = 20) {
+export function startServerOnFreePort(preferred: number, attempts = 20) {
+  return onFreePort(preferred, startServer, attempts)
+}
+
+export function startSecureServerOnFreePort(
+  preferred: number,
+  tls: { key: string; cert: string },
+) {
+  return onFreePort(preferred, port => startSecureServer(port, tls))
+}
+
+async function onFreePort<S>(
+  preferred: number,
+  start: (port: number) => Promise<S>,
+  attempts = 20,
+) {
   for (let port = preferred; port < preferred + attempts; port++) {
     try {
-      return { server: await startServer(port), port }
+      return { server: await start(port), port }
     } catch (e) {
       // compare the code, never instanceof: this rejects with whatever node's
       // net module threw, which may come from another realm

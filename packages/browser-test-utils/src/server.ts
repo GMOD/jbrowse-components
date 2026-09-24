@@ -1,4 +1,5 @@
 import http from 'node:http'
+import http2 from 'node:http2'
 import path from 'node:path'
 
 import handler from 'serve-handler'
@@ -59,6 +60,14 @@ function proxyToPort(
   req.pipe(proxyReq, { end: true })
 }
 
+function staticRoot(url: string, jbrowseWebRoot: string, repoRoot: string) {
+  return url.startsWith('/test_data/')
+    ? { public: jbrowseWebRoot, headers: corsHeaders }
+    : url.startsWith('/extra_test_data/')
+      ? { public: repoRoot, headers: corsHeaders }
+      : undefined
+}
+
 // Static server shared by the browser-test runner and the screenshot generator.
 // `/test_data/*` comes from jbrowse-web, `/extra_test_data/*` from the repo root,
 // and everything else from the compiled `build/` (or a proxied dev server).
@@ -69,17 +78,52 @@ export function createTestServer(
   const buildPath = path.join(jbrowseWebRoot, 'build')
   return new Promise((resolve, reject) => {
     const server = http.createServer((req, res) => {
-      const url = req.url ?? '/'
-      if (url.startsWith('/test_data/')) {
-        void handler(req, res, { public: jbrowseWebRoot, headers: corsHeaders })
-      } else if (url.startsWith('/extra_test_data/')) {
-        void handler(req, res, { public: repoRoot, headers: corsHeaders })
+      const root = staticRoot(req.url ?? '/', jbrowseWebRoot, repoRoot)
+      if (root) {
+        void handler(req, res, root)
       } else if (proxyPort !== undefined) {
         proxyToPort(req, res, proxyPort)
       } else {
         void handler(req, res, { public: buildPath, headers: buildHeaders })
       }
     })
+    server.on('error', reject)
+    server.listen(port, () => {
+      resolve(server)
+    })
+  })
+}
+
+/**
+ * The same routes over HTTP/2 and TLS, which is how the deploy serves them.
+ * Over HTTP/1.1 Chrome opens six connections to a host, so a round of forty
+ * chunks the deploy fetches at once queues here instead.
+ */
+export function createSecureTestServer(
+  port: number,
+  {
+    jbrowseWebRoot,
+    repoRoot,
+    key,
+    cert,
+  }: Omit<TestServerOptions, 'proxyPort'> & { key: string; cert: string },
+): Promise<http2.Http2SecureServer> {
+  const buildPath = path.join(jbrowseWebRoot, 'build')
+  return new Promise((resolve, reject) => {
+    const server = http2.createSecureServer(
+      { key, cert, allowHTTP1: true },
+      (req, res) => {
+        void handler(
+          // serve-handler reads only what the compatibility API keeps
+          req as unknown as http.IncomingMessage,
+          res as unknown as http.ServerResponse,
+          staticRoot(req.url, jbrowseWebRoot, repoRoot) ?? {
+            public: buildPath,
+            headers: buildHeaders,
+          },
+        )
+      },
+    )
     server.on('error', reject)
     server.listen(port, () => {
       resolve(server)

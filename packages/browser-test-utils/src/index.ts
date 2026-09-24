@@ -31,7 +31,7 @@ export {
   waitForViewPhases,
 } from '@jbrowse/capture'
 
-export { createTestServer } from './server.ts'
+export { createSecureTestServer, createTestServer } from './server.ts'
 export { DESKTOP_VIEWPORT, smokeExamplesSite } from './examplesSmoke.ts'
 export { measureDemoHeights } from './examplesDemoHeights.ts'
 export {
