@@ -60,6 +60,28 @@ and `color` sets the subtrack's line/fill on load:
 }
 ```
 
+Per-subtrack metadata from a table: the first column of `samplesTsvLocation`
+names each subtrack as the adapter does (for `bigWigs`, the filename without
+its extension), and the other columns ride along as source metadata. The
+track shows only the subtracks the table lists:
+
+```js
+{
+  type: 'MultiQuantitativeTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'MultiWiggleAdapter',
+    bigWigs: [
+      'https://example.com/sample1.bw',
+      'https://example.com/sample2.bw',
+    ],
+    samplesTsvLocation: { uri: 'https://example.com/samples.tsv' },
+  },
+}
+```
+
 _See the **Config slots** section below for all available configuration fields._
 
 combines multiple BigWig files into a single multi-row quantitative track
@@ -80,3 +102,4 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "MultiWiggleA
 | <span id="slot-subadapters">**subadapters**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | array of subadapter JSON objects |
 | <span id="slot-bigwigs">**bigWigs**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | array of BigWig URLs/paths, alternative to the subadapters slot |
 | <span id="slot-baseuri">**baseUri**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | what relative bigWigs URLs resolve against, stamped from the location the config was loaded from<br>_advanced_ |
+| <span id="slot-samplestsvlocation">**samplesTsvLocation**</span><br>[`maybeFileLocation`](/docs/config_guides/slot_types#the-maybe-types) | optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (`population`, `tissue`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the `label`, `color` and `assemblyName` columns onto its species rows, over its `samples` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples |

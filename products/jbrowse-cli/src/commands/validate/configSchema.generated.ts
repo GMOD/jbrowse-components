@@ -1946,6 +1946,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "samplesTsvLocation": {
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
           "$ref": "#/$defs/FileLocation"
         },
         "uri": {
@@ -1993,6 +1994,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/TabixIndex"
         },
         "samplesTsvLocation": {
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
           "$ref": "#/$defs/FileLocation"
         },
         "fetchSizeLimit": {
@@ -2064,6 +2066,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "TBI"
         },
         "samplesTsvLocation": {
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
           "$ref": "#/$defs/FileLocation"
         },
         "fetchSizeLimit": {
@@ -2208,6 +2211,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "what relative bigWigs URLs resolve against, stamped from the location the config was loaded from.",
           "$ref": "#/$defs/PlainString",
           "default": ""
+        },
+        "samplesTsvLocation": {
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "$ref": "#/$defs/FileLocation"
         }
       }
     },
@@ -2366,6 +2373,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/JexlString"
           }
         },
+        "samplesTsvLocation": {
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "$ref": "#/$defs/FileLocation"
+        },
         "annotationAdapter": {
           "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "not": {
@@ -2441,6 +2452,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/JexlString"
           }
         },
+        "samplesTsvLocation": {
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "$ref": "#/$defs/FileLocation"
+        },
         "annotationAdapter": {
           "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "not": {
@@ -2507,6 +2522,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/JexlString"
           }
         },
+        "samplesTsvLocation": {
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "$ref": "#/$defs/FileLocation"
+        },
         "annotationAdapter": {
           "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "not": {
@@ -2568,6 +2587,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "not": {
             "$ref": "#/$defs/JexlString"
           }
+        },
+        "samplesTsvLocation": {
+          "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
+          "$ref": "#/$defs/FileLocation"
         },
         "annotationAdapter": {
           "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",

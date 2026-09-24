@@ -989,6 +989,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "baseUri",
           "type": "string"
+        },
+        {
+          "name": "samplesTsvLocation",
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         }
       ],
       "shorthandKeys": []
@@ -1069,6 +1073,10 @@ export const configManifest: ConfigManifest = {
           "type": "(frozen | undefined)"
         },
         {
+          "name": "samplesTsvLocation",
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
+        },
+        {
           "name": "annotationAdapter",
           "type": "(frozen | undefined)"
         }
@@ -1106,6 +1114,10 @@ export const configManifest: ConfigManifest = {
           "type": "(frozen | undefined)"
         },
         {
+          "name": "samplesTsvLocation",
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
+        },
+        {
           "name": "annotationAdapter",
           "type": "(frozen | undefined)"
         }
@@ -1137,6 +1149,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "summaryAdapter",
           "type": "(frozen | undefined)"
+        },
+        {
+          "name": "samplesTsvLocation",
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         },
         {
           "name": "annotationAdapter",
@@ -1184,6 +1200,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "summaryAdapter",
           "type": "(frozen | undefined)"
+        },
+        {
+          "name": "samplesTsvLocation",
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         },
         {
           "name": "annotationAdapter",

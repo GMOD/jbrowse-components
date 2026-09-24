@@ -3311,6 +3311,15 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/samplesTsv": {
+      "package": "@jbrowse/core",
+      "names": [
+        "getSamplesTsvSources",
+        "parseSamplesTsv",
+        "samplesTsvAdapterConfigSchemaFields"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/setStackTraceLimit": {
       "package": "@jbrowse/core",
       "names": [

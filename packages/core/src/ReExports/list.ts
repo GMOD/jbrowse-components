@@ -342,6 +342,7 @@ export default [
   '@jbrowse/core/util/rowStackGeometry',
   '@jbrowse/core/util/rxjs',
   '@jbrowse/core/util/sameStrings',
+  '@jbrowse/core/util/samplesTsv',
   '@jbrowse/core/util/setStackTraceLimit',
   '@jbrowse/core/util/shapeNames',
   '@jbrowse/core/util/simpleFeature',
