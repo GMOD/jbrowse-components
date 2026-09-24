@@ -35,6 +35,7 @@ export async function collectWireRequests(page: Page) {
 
 export interface TimedRequest {
   url: string
+  range?: string
   // ms after the page's first request
   start: number
   end?: number
@@ -61,6 +62,7 @@ export async function collectTimedRequests(page: Page, latencyMs: number) {
       t0 ??= e.timestamp
       requests.set(`${scope}:${e.requestId}`, {
         url: e.request.url,
+        range: e.request.headers.Range ?? e.request.headers.range,
         start: (e.timestamp - t0) * 1000,
         inWorker: scope !== 'page',
       })

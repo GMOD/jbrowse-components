@@ -98,7 +98,7 @@ function printWaterfall(requests: TimedRequest[], readyMs: number) {
     const end = r.end === undefined ? '    -' : r.end.toFixed(0).padStart(5)
     const url = r.url.startsWith('data:') ? 'data:' : r.url.split('?')[0]
     console.log(
-      `    ${r.start.toFixed(0).padStart(5)} ${end} ${r.inWorker ? 'W' : ' '} ${url}`,
+      `    ${r.start.toFixed(0).padStart(5)} ${end} ${r.inWorker ? 'W' : ' '} ${url}${r.range ? ` ${r.range}` : ''}`,
     )
   }
 }
