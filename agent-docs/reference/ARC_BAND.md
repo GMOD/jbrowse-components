@@ -163,7 +163,10 @@ is 1 for essentially every interchromosomal PAIR and a floor over it would delet
 a real translocation as thoroughly as the mismapping. The window comes from
 `stats.upper`, so it tracks the library instead of a constant — and a SPLIT
 junction takes window 0 whatever the chromosomes, for the reason below. The same
-clusters are what BOTH interchromosomal marks are DRAWN with — see below. The
+clusters are what BOTH interchromosomal marks are DRAWN with — see below. They
+are counted over every lane at once (`interchromClusters`): grouping by strand
+scatters a breakpoint's pairs across lanes, and counted per lane a two-pair
+event drew in neither. The
 same floor on same-chromosome arcs was measured and declined — at depth it is a
 density filter, not an evidence filter. Both results are in
 [DEEP_COVERAGE.md](DEEP_COVERAGE.md).

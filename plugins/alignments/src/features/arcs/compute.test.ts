@@ -334,6 +334,36 @@ describe('computeArcsFromPileupData', () => {
       expect(run(data, 2).interchromFromMatePair).toBe(true)
     })
 
+    // Grouping by strand or mapq puts a breakpoint's pairs in whichever lane
+    // each read falls in. Counted per lane, a two-pair event split one and one
+    // cleared the floor of 2 in neither and vanished from the grouped display.
+    test('a breakpoint split across lanes counts every lane’s reads', () => {
+      const lane = (start: number, mateBp: number, name: string) => ({
+        ...scattered([start], [mateBp], { upper: 600, lower: 100 }),
+        ...namesToBlock([name]),
+      })
+      const fwd = lane(2000, 5000, 'fwdRead')
+      const rev = lane(2130, 5140, 'revRead')
+      const { byGroup } = computeArcsByGroup(
+        new Map([
+          ['fwd', new Map([[0, fwd]])],
+          ['rev', new Map([[0, rev]])],
+        ]),
+        { loaded: regions, displayed: regions },
+        {
+          colorField: 'insertSizeAndOrientation',
+          drawInter: true,
+          drawLongRange: true,
+          minInterchromSupport: 2,
+        },
+      )
+      for (const lane of ['fwd', 'rev']) {
+        const ticks = byGroup.get(lane)!.get(0)!
+        expect(ticks.numArcLines).toBe(1)
+        expect([...ticks.arcLineSupport]).toEqual([2])
+      }
+    })
+
     // Half a junction can be reached by more than one, which is the case a
     // cluster's own size cannot report: two events sharing a chr1 base, one
     // pair each. The larger cluster is 1 and two reads are sitting there.

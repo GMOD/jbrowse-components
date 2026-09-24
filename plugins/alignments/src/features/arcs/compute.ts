@@ -39,6 +39,7 @@ import { hasArcBandInk } from './types.ts'
 
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
+import type { InterchromClusters } from './arcClustering.ts'
 import type {
   ArcChainContext,
   ArcRegions,
@@ -242,6 +243,7 @@ function resolveArcs(
   { hasPaired, stats }: ArcScale,
   settings: ArcSettings,
   regions: ArcRegions,
+  { clusterOf, sizeOf }: InterchromClusters,
 ) {
   const { displayed: displayedRegions, loaded: loadedRegions } = regions
   // How far past the fetched data a bar may still point — see `cloudReachBp`.
@@ -275,32 +277,6 @@ function resolveArcs(
     }
   >()
   let interchromFromMatePair = false
-
-  // The window is the LIBRARY's, not a constant: how far a supporting read can
-  // sit from the breakpoint is one fragment length, and `stats.upper` is the
-  // number this pipeline already computes for it. A hardcoded window would be
-  // wrong at both ends — too wide to discriminate on a 150 bp amplicon library,
-  // too narrow to hold one cluster together on a 3 kb mate-pair library, where
-  // it would split a real translocation into the singletons the floor then eats.
-  //
-  // RUN AT EVERY SUPPORT SETTING, including the menu's `all` position where
-  // nothing can be filtered out, because the floor is no longer the only
-  // consumer: this is also what an interchromosomal mark's `support` IS. See
-  // `ComputedArc.support`.
-  //
-  // Skipped entirely when `drawInter` is off, which is the one setting that
-  // makes it dead rather than merely unfiltered: every reader below sits inside
-  // the interchromosomal branch, and that branch now returns before the first of
-  // them. `collectPendingArcs` still emits interchromosomal connections while
-  // `drawLongRange` is on (`emitsOffScreenPartner` is an OR), so without this
-  // the whole pass — a walk, a Map of contig pairs and a union-find over ~10% of
-  // the feed on deep short-read data — ran to build two arrays nothing read.
-  const { clusterOf, sizeOf } = drawInter
-    ? clusteredInterchromSupport(
-        pendingArcs,
-        stats?.upper ?? DEFAULT_INTERCHROM_WINDOW_BP,
-      )
-    : { clusterOf: [], sizeOf: [] }
 
   // One tick per breakpoint, COUNTING the reads that agree on it — the same
   // move `arcKey` makes for arcs, and for the same two reasons.
@@ -790,6 +766,36 @@ function resolveArcs(
 }
 
 /**
+ * Which interchromosomal cluster each pending arc belongs to, and each
+ * cluster's size: what an interchromosomal mark's `support` is, and so what
+ * `minInterchromSupport` gates.
+ *
+ * Taken over every lane of a fetch at once. Grouping partitions reads for
+ * drawing and says nothing about how many reads stand behind a breakpoint, so
+ * clustering one lane at a time split a translocation's pairs across the lanes
+ * they happened to fall in — at the default floor of 2, a two-pair event
+ * grouped by strand drew in neither lane.
+ *
+ * The window is the library's fragment length (`stats.upper`), pooled across
+ * lanes like the rest of `ArcScale`: too wide a window merges events on a 150
+ * bp amplicon library, too narrow a one splits a 3 kb mate-pair library's
+ * translocation into singletons. Skipped when `drawInter` is off, since every
+ * reader sits in the branch that setting closes.
+ */
+function interchromClusters(
+  pendingArcs: PendingArc[],
+  { stats }: ArcScale,
+  { drawInter }: ArcSettings,
+): InterchromClusters {
+  return drawInter
+    ? clusteredInterchromSupport(
+        pendingArcs,
+        stats?.upper ?? DEFAULT_INTERCHROM_WINDOW_BP,
+      )
+    : { clusterOf: [], sizeOf: [] }
+}
+
+/**
  * Arcs + cross-region arcs + connector ticks for one group's raw pileup data,
  * scaled to that group alone. The single-group entry point; grouped rendering
  * goes through `computeArcsByGroup` instead, which pools the color scale across
@@ -806,10 +812,14 @@ export function computeArcsFromPileupData(
   displayedRegions: RegionInfo[] = regions,
 ) {
   const inputs = collectArcInputs(rpcDataMap, regions, settings)
-  return resolveArcs(inputs.pendingArcs, poolArcScale([inputs]), settings, {
-    loaded: regions,
-    displayed: displayedRegions,
-  })
+  const scale = poolArcScale([inputs])
+  return resolveArcs(
+    inputs.pendingArcs,
+    scale,
+    settings,
+    { loaded: regions, displayed: displayedRegions },
+    interchromClusters(inputs.pendingArcs, scale, settings),
+  )
 }
 
 /**
@@ -894,14 +904,29 @@ export function computeArcsByGroup(
   const colorSlots = new Set<number>()
   let interchromFromMatePair = false
   let maxFlatArcSpanBp = 0
-  for (const key of rawDataByGroup.keys()) {
+  const lanes = [...rawDataByGroup.keys()].map(key => ({
+    key,
+    pending: arcsByLane.get(key) ?? [],
+  }))
+  const clusters = interchromClusters(
+    lanes.flatMap(lane => lane.pending),
+    scale,
+    settings,
+  )
+  let offset = 0
+  for (const { key, pending } of lanes) {
     const { arcs, crossRegion, lines, ...resolved } = resolveArcs(
-      arcsByLane.get(key) ?? [],
+      pending,
       scale,
       settings,
       regions,
+      {
+        clusterOf: clusters.clusterOf.slice(offset, offset + pending.length),
+        sizeOf: clusters.sizeOf,
+      },
     )
     interchromFromMatePair ||= resolved.interchromFromMatePair
+    offset += pending.length
     // The per-region feed is keyed on the LOADED list, unchanged: it is what a
     // block draws from, and a displayed region whose fetch has not landed has
     // no block to draw.
