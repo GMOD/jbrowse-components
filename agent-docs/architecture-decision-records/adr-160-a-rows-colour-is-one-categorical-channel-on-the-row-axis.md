@@ -47,10 +47,10 @@ axis.
 Color by → an attribute writes the object through `colorForField` and starts
 with no entries, and Color by → none is `scale: 'none'` keeping the field for
 the way back (ADR-135, ADR-154). Where `rowColor` paints by an attribute, a
-dialog recolour writes `field: 'name'` and every row's current colour as pairs
-(`materializedRowColors`), so the rows the reader left alone keep theirs:
-about 60 KB for 2,500 rows, twice that for phased haplotypes, and 0.3-0.9 s to
-write the 5,000 phased pairs on a loaded machine.
+dialog recolour writes `field: 'name'` and every row's current colour as pairs,
+so the rows the reader left alone keep theirs: about 60 KB for 2,500 rows,
+twice that for phased haplotypes, and 75-160 ms to write the 5,000 phased
+pairs into a session.
 
 **One dealer.** `dealRowColors(order, { domain, range }, palette)`, beside
 `pairedColorsOf`: a value `domain` lists takes its `range` entry, and every
@@ -61,10 +61,11 @@ and no `randomColor`: a hash over discovered rows collides.
 **It runs once per change to the deal.** `TreeSidebarMixin.dealtRowColors`, a
 colour per value, reads the `rowColorDeal` hook alone, and `rowColorScale` looks
 each of `expandedRows` up in it by its value, by row name. A phased variant
-display re-expands its haplotypes on every region arrival and reorder, so a
-deal and a per-row map computed together, then compared structurally, cost
-34-78 ms an arrival at 2,500 samples under a Color by; the split leaves the
-lookup, and the census counts both. The default deal is the
+display re-expanded its haplotypes on every region arrival, so a deal and a
+per-row map computed together, then compared structurally, cost 34-78 ms an
+arrival at 2,500 samples under a Color by; the split leaves the lookup, and
+the census counts both. The expansion now reads `samplePloidy`, which keeps
+its identity across arrivals, so an arrival re-derives no row at all. The default deal is the
 design's: the values of `rowColor.field` over the base arrangement
 (`orderRowsByDomain(expandedRows, baseRowDomain)`), so no reorder, focus or
 relabel recolours a row. Nothing in a display's render state, GPU props,
