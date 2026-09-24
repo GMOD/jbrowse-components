@@ -297,6 +297,19 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     return (this.workerPool ??= this.createWorkerPool())
   }
 
+  /**
+   * Boot the first worker now rather than on the first call, so its bundle and
+   * runtime plugins load while the page builds the session. The first session
+   * is assigned to that worker.
+   */
+  override warmUp() {
+    if (!this.destroyed) {
+      this.getWorkerPool()[0]
+        ?.getWorker()
+        .catch(() => {})
+    }
+  }
+
   async getWorker(sessionId: string): Promise<WorkerHandle> {
     const workers = this.getWorkerPool()
     let workerNumber = this.workerAssignments.get(sessionId)
@@ -370,6 +383,24 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
         handle.destroy()
         reject(error)
       }
+      // The worker waits in receiveConfiguration(), which has no timeout, so an
+      // unclonable boot configuration has to fail the boot rather than leave
+      // both sides waiting.
+      const sendConfig = () => {
+        try {
+          const { plugins, windowHref, numberGrouping } = this.options
+          instance.postMessage({
+            message: 'config',
+            config: { plugins, windowHref, numberGrouping },
+          })
+        } catch (e) {
+          fail(
+            new Error(`could not send the worker its boot configuration`, {
+              cause: e,
+            }),
+          )
+        }
+      }
       const onMessage = (e: MessageEvent) => {
         switch (e.data.message) {
           case 'ready': {
@@ -378,23 +409,7 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
             break
           }
           case 'readyForConfig': {
-            // The worker is waiting in receiveConfiguration(), which has no
-            // timeout, and this listener's throw would escape before cleanup or
-            // fail could run — so an unclonable boot configuration left both
-            // sides waiting forever rather than reporting anything.
-            try {
-              const { plugins, windowHref, numberGrouping } = this.options
-              instance.postMessage({
-                message: 'config',
-                config: { plugins, windowHref, numberGrouping },
-              })
-            } catch (e) {
-              fail(
-                new Error(`could not send the worker its boot configuration`, {
-                  cause: e,
-                }),
-              )
-            }
+            sendConfig()
             break
           }
           case 'error': {
@@ -411,6 +426,12 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
       }
       instance.addEventListener('message', onMessage)
       instance.addEventListener('error', onError)
+      // A dedicated worker holds what it is sent until its script has run, and
+      // receiveConfiguration listens from that run, so the config can go now,
+      // and a worker created before this driver needs no readyForConfig. It is
+      // sent again on readyForConfig for a worker whose startup awaits chunks
+      // and so would drop this one; the worker keeps the first.
+      sendConfig()
     })
   }
 }

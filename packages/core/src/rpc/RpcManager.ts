@@ -230,4 +230,15 @@ export default class RpcManager {
     this.driver?.destroy()
     this.driver = undefined
   }
+
+  /**
+   * Build the driver and let it start what the first call would wait for — a
+   * web worker's bundle and runtime plugins — while the host is still building
+   * its session.
+   */
+  warmUp() {
+    if (!this.destroyed) {
+      this.getDriver().warmUp()
+    }
+  }
 }

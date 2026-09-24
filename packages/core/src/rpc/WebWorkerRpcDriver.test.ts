@@ -329,6 +329,23 @@ describe('WebWorkerRpcDriver pool Core-extendWorker', () => {
     expect(driver.workers[0]!.destroyed).toBe(true)
   })
 
+  test('warmUp boots the first worker, and the first session lands on it', async () => {
+    const driver = new TestDriver(makeConfig({ workerCount: 3 }))
+    driver.warmUp()
+    expect(driver.workers).toHaveLength(1)
+
+    await driver.call('s1', 'SomeMethod', { sessionId: 's1' })
+    expect(driver.workers).toHaveLength(1)
+    expect(driver.workers[0]!.calls).toHaveLength(1)
+  })
+
+  test('warmUp on a destroyed driver does nothing', () => {
+    const driver = new TestDriver()
+    driver.destroy()
+    driver.warmUp()
+    expect(driver.workers).toHaveLength(0)
+  })
+
   test('each worker in the pool is extended on its own', async () => {
     const { fired, pluginManager } = countingPluginManager()
     const driver = new TestDriver(makeConfig({ workerCount: 2 }), pluginManager)
@@ -379,19 +396,25 @@ function makeDriver() {
 }
 
 describe('WebWorkerRpcDriver boot handshake', () => {
-  test('answers readyForConfig then resolves on ready', async () => {
+  test('sends the config at once, again on readyForConfig, and resolves on ready', async () => {
     const { worker, driver } = makeDriver()
     const handleP = driver.makeWorker()
-
-    worker.send('readyForConfig')
-    expect(worker.posted[0]).toEqual({
+    const config = {
       message: 'config',
       config: {
         plugins: [],
         windowHref: 'http://localhost/',
         numberGrouping: true,
       },
-    })
+    }
+
+    // a worker created before the driver has already posted its readyForConfig
+    // to nobody, so the config cannot wait for it
+    expect(worker.posted).toEqual([config])
+
+    // a worker whose startup awaited chunks missed the first one
+    worker.send('readyForConfig')
+    expect(worker.posted).toEqual([config, config])
 
     worker.send('ready')
     await expect(handleP).resolves.toBeDefined()

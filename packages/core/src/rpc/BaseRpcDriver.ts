@@ -44,6 +44,9 @@ export default abstract class BaseRpcDriver {
 
   destroy() {}
 
+  // start whatever a first call would otherwise wait for; nothing, here
+  warmUp() {}
+
   async call(
     sessionId: string,
     functionName: string,
