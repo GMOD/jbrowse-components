@@ -1,4 +1,4 @@
-import { loadSessionSpec } from '@jbrowse/app-core'
+import { loadSessionSpec, preloadAppShell } from '@jbrowse/app-core'
 import PluginManager, { corePluginRecords } from '@jbrowse/core/PluginManager'
 import {
   pluginDefinitionMetadata,
@@ -107,6 +107,9 @@ export async function createPluginManager(
   }
   await pluginManager.preloadSessionTypes(model.configSnapshot?.defaultSession)
   initSession(rootModel, pluginManager, model)
+  if (rootModel.session) {
+    preloadAppShell(rootModel.session)
+  }
   notifyPluginLoadFailures(rootModel, model)
   notifyPermanentPluginSafeMode(rootModel)
   // Here rather than beside the PluginManager above, so the window the crash

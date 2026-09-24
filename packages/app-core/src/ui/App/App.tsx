@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react'
+import { Suspense } from 'react'
 
 import Snackbar from '@jbrowse/core/ui/Snackbar'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -14,14 +14,9 @@ import AppFab from './AppFab.tsx'
 import AppToolbar from './AppToolbar.tsx'
 import DialogQueue from './DialogQueue.tsx'
 import ViewsContainer from './ViewsContainer.tsx'
-import { lazyChunk } from './lazyChunk.ts'
+import { DrawerWidget } from './lazyParts.ts'
 
 import type { AppSession } from './types.ts'
-
-// lazies
-const DrawerWidget = lazy(
-  lazyChunk('DrawerWidget', () => import('./DrawerWidget.tsx')),
-)
 
 const useStyles = makeStyles()(theme => ({
   root: {

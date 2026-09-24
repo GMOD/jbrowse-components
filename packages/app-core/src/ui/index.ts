@@ -1,1 +1,6 @@
-export { App, AppReadyMarker, DialogQueue } from './App/index.ts'
+export {
+  App,
+  AppReadyMarker,
+  DialogQueue,
+  preloadAppShell,
+} from './App/index.ts'
