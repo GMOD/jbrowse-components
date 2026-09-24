@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { samplesTsvAdapterConfigSchemaFields } from '@jbrowse/core/util/samplesTsv'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -60,17 +61,7 @@ const SplitVcfTabixAdapter = ConfigurationSchema(
       defaultValue: 'TBI',
     },
 
-    /**
-     * #slot
-     * location of a tab-separated table of per-sample metadata, shared by every
-     * file in `vcfGzLocationMap`. It needs a header row, and its first column
-     * must be the sample name exactly as the VCFs spell it; every other column
-     * (`population`, `superpopulation`, ...) becomes a value the multi-sample
-     * variant displays can group, sort and color their sample rows by.
-     */
-    samplesTsvLocation: {
-      type: 'maybeFileLocation',
-    },
+    ...samplesTsvAdapterConfigSchemaFields,
 
     /**
      * #slot

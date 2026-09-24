@@ -116,7 +116,7 @@ function adapterWithSamplesTsv(tsv: string) {
 test('a samplesTsv naming no VCF sample fails the sources fetch', async () => {
   await expect(
     adapterWithSamplesTsv('./test_data/samples_prefixed.tsv').getSources(),
-  ).rejects.toThrow(/matches the VCF header/)
+  ).rejects.toThrow(/matches the VCF,/)
 })
 
 test('the error names the metadata file and shows the mismatch', async () => {

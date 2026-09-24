@@ -9,8 +9,9 @@ import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 
-import { getVcfSources, streamVcfFeatures } from '../shared/vcfAdapterUtils.ts'
+import { streamVcfFeatures } from '../shared/vcfAdapterUtils.ts'
 
 import type { VcfTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -114,11 +115,12 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
   // report them.
   async getSourcesAndWarnings() {
     const { parser } = await this.configure()
-    return getVcfSources(
-      this.getConf('samplesTsvLocation'),
-      parser,
-      this.pluginManager,
-    )
+    return getSamplesTsvSources({
+      location: this.getConf('samplesTsvLocation'),
+      names: parser.samples,
+      namesLabel: 'the VCF',
+      pluginManager: this.pluginManager,
+    })
   }
 
   async getSources() {

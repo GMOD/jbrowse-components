@@ -6,8 +6,9 @@ import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 
-import { getVcfSources, streamVcfFeatures } from '../shared/vcfAdapterUtils.ts'
+import { streamVcfFeatures } from '../shared/vcfAdapterUtils.ts'
 
 import type { SplitVcfTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -189,11 +190,12 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
       throw new Error('SplitVcfTabixAdapter has an empty vcfGzLocationMap')
     }
     const { parser } = await this.configure(refName)
-    return getVcfSources(
-      this.getConf('samplesTsvLocation'),
-      parser,
-      this.pluginManager,
-    )
+    return getSamplesTsvSources({
+      location: this.getConf('samplesTsvLocation'),
+      names: parser.samples,
+      namesLabel: 'the VCF',
+      pluginManager: this.pluginManager,
+    })
   }
 
   async getSources() {

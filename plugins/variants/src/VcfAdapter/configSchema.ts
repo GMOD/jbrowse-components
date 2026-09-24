@@ -1,4 +1,5 @@
 import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
+import { samplesTsvAdapterConfigSchemaFields } from '@jbrowse/core/util/samplesTsv'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -41,17 +42,7 @@ const VcfAdapter = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
-    /**
-     * #slot
-     * location of a tab-separated table of per-sample metadata. It needs a
-     * header row, and its first column must be the sample name exactly as the
-     * VCF spells it; every other column (`population`, `superpopulation`, ...)
-     * becomes a value the multi-sample variant displays can group, sort and
-     * color their sample rows by.
-     */
-    samplesTsvLocation: {
-      type: 'maybeFileLocation',
-    },
+    ...samplesTsvAdapterConfigSchemaFields,
   },
   {
     explicitlyTyped: true,

@@ -1,4 +1,4 @@
-import { parseSamplesTsv } from './parseSamplesTsv.ts'
+import { getSamplesTsvSources, parseSamplesTsv } from './samplesTsv.ts'
 
 const tsv = [
   'name\tpop\tsuper_pop',
@@ -7,21 +7,20 @@ const tsv = [
   'UNKNOWN\tXXX\tXXX',
 ].join('\n')
 
-const parse = (txt: string, vcfSamples: string[]) =>
-  parseSamplesTsv(txt, vcfSamples, 'samples.tsv')
+const parse = (txt: string, names: string[] | undefined) =>
+  parseSamplesTsv(txt, names, 'samples.tsv', 'the VCF')
 
-test('returns rows matching VCF samples', () => {
+test('returns rows matching the adapter samples', () => {
   const { sources, warnings } = parse(tsv, ['NA12878', 'NA19240'])
   expect(sources).toEqual([
     { name: 'NA12878', pop: 'CEU', super_pop: 'EUR' },
     { name: 'NA19240', pop: 'YRI', super_pop: 'AFR' },
   ])
-  // UNKNOWN was dropped, so the partial match is still reported
   expect(warnings).toHaveLength(1)
   expect(warnings[0]).toContain('UNKNOWN')
 })
 
-test('excludes metadata rows not in VCF', () => {
+test('excludes metadata rows the adapter does not name', () => {
   expect(parse(tsv, ['NA12878']).sources.map(r => r.name)).toEqual(['NA12878'])
 })
 
@@ -43,9 +42,6 @@ test('a sample listed twice keeps its first row and is reported', () => {
   expect(warnings[0]).toContain('NA12878')
 })
 
-// A partial match keeps filtering, but both halves of the disagreement are
-// reported rather than logged to the worker's console: the display notifies off
-// these strings.
 test('warns in both directions on a partial match', () => {
   const { warnings } = parse(tsv, ['NA12878', 'EXTRA'])
 
@@ -55,23 +51,17 @@ test('warns in both directions on a partial match', () => {
   expect(warnings.every(w => w.includes('samples.tsv'))).toBe(true)
 })
 
-// The failure this exists for: point `samplesTsvLocation` at a file whose first
-// column reads `1000GP_HG00096` against a VCF header naming `HG00096` and the
-// filter empties. `getVcfSources` then returned [], so `sourcesBase` was [] —
-// truthy, so no loading state — and the display drew an empty band with no
-// banner, both warnings having gone to the worker's console. It is a config
-// error, and falling back to the VCF header instead would be the worse failure:
-// a track quietly showing every sample when the config asked for a subset.
-test('a metadata file matching no VCF sample is an error, not an empty track', () => {
+// Falling back to the adapter's own samples would show every one of them when
+// the config asked for a subset; an empty result draws a blank track with no
+// banner.
+test('a metadata file matching no adapter sample is an error, not an empty track', () => {
   const prefixed = ['name\tpop', '1000GP_HG00096\tGBR'].join('\n')
 
   expect(() => parse(prefixed, ['HG00096', 'HG00097'])).toThrow(
-    /No sample in the metadata file samples\.tsv matches the VCF header/,
+    /No sample in the metadata file samples\.tsv matches the VCF,/,
   )
 })
 
-// The counts alone don't say what is wrong — the prefix does, and it is only
-// visible side by side.
 test('the error names the file and an example of the mismatch', () => {
   const prefixed = ['name\tpop', '1000GP_HG00096\tGBR'].join('\n')
 
@@ -86,8 +76,25 @@ test('a metadata file with a header and no rows says exactly that', () => {
   )
 })
 
-// Nothing to match against, so nothing is misconfigured — a sites-only VCF has
-// no samples and the empty result is the right answer.
-test('does not throw when the VCF header names no samples', () => {
+// A sites-only VCF names no samples, and the empty result is the right answer.
+test('an adapter naming no samples gets none', () => {
   expect(parse(tsv, []).sources).toEqual([])
+})
+
+test('an adapter listing no samples of its own takes every row', () => {
+  const twice = `${tsv}\nNA12878\tGBR\tEUR`
+  const { sources, warnings } = parse(twice, undefined)
+  expect(sources.map(r => r.name)).toEqual(['NA12878', 'NA19240', 'UNKNOWN'])
+  expect(warnings).toHaveLength(1)
+  expect(warnings[0]).toContain('more than once')
+})
+
+test('an unset location returns the bare names', async () => {
+  expect(
+    await getSamplesTsvSources({
+      location: undefined,
+      names: ['a', 'b'],
+      namesLabel: 'the VCF',
+    }),
+  ).toEqual({ sources: [{ name: 'a' }, { name: 'b' }], warnings: [] })
 })
