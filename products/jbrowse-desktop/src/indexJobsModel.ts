@@ -259,6 +259,12 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
       /**
        * #action
        */
+      dequeue() {
+        self.jobsQueue.shift()
+      },
+      /**
+       * #action
+       */
       clear() {
         this.setRunning(false)
         self.controller = undefined
@@ -355,7 +361,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           // clear the text search adapter cache so stale adapters pointing
           // at old index files are discarded
           self.root.textSearchManager.clearCache()
-          self.jobsQueue.shift()
+          this.dequeue()
           const jobStatusWidget = self.getJobStatusWidget()
           session.showWidget(jobStatusWidget)
           jobStatusWidget.addJob({
@@ -383,7 +389,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
               },
             )
           }
-          self.jobsQueue.shift()
+          this.dequeue()
           self.getJobStatusWidget().addJob({
             name: entry.name,
             state: 'aborted',
