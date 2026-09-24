@@ -280,6 +280,10 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   (`build_primate_orthologs.sh`, `symbols_to_blocks.py`): GRCh38.p14, the six
   NHGRI T2T apes and T2T macaque, RefSeq GFF3 only, ~290 MB downloaded, and
   every lane 93-97% full because one annotation pipeline named the orthologs.
+  Each lane's assembly and gene track are its genomes.jbrowse.org hub's,
+  verbatim but for the label, with the short name (`chimp`) as an alias. Human
+  is `hg38`: the portal's GenArk hub for GCF_000001405.40 names files UCSC
+  never published, every one a 404.
   The same join over PR #5627's 100 E. coli accessions filled a quarter of the
   lanes under 30% (older PGAP annotations carry locus tags, not symbols) and 18
   of the accessions no longer download, so check symbol presence before

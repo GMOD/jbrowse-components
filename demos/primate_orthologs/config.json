@@ -1,196 +1,372 @@
 {
   "assemblies": [
     {
-      "name": "human",
+      "name": "hg38",
       "displayName": "Human (GRCh38.p14)",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "human-ReferenceSequenceTrack",
+        "trackId": "hg38-refseq",
+        "metadata": {
+          "description": "Dec. 2013 (GRCh38/hg38)",
+          "nibPath": "/gbdb/hg38",
+          "organism": "Human",
+          "defaultPos": "chr7:155799529-155812871",
+          "active": 1,
+          "orderKey": 50,
+          "genome": "Human",
+          "scientificName": "Homo sapiens",
+          "htmlPath": "/gbdb/hg38/html/description.html",
+          "hgNearOk": 1,
+          "hgPbOk": 0,
+          "sourceName": "GRCh38 Genome Reference Consortium Human Reference 38 (GCA_000001405.15)",
+          "taxId": 9606,
+          "id": "hg38",
+          "name": "hg38",
+          "accession": "hg38",
+          "commonName": "Human",
+          "jbrowseConfig": "https://jbrowse.org/ucsc/hg38/config.json",
+          "jbrowseMinimalConfig": "https://jbrowse.org/ucsc/hg38/minimal.json",
+          "blatDb": "hg38"
+        },
         "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "human.chrom.sizes",
-            "locationType": "UriLocation"
-          }
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/hg38/hg38.chrom.sizes"
         }
       },
       "refNameAliases": {
         "adapter": {
-          "type": "NcbiSequenceReportAliasAdapter",
-          "location": {
-            "uri": "human.sequence_report.tsv",
-            "locationType": "UriLocation"
-          }
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/ucsc/hg38/hg38.chromAlias.txt"
         }
-      }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://jbrowse.org/ucsc/hg38/hg38.cytoBand.txt.gz"
+        }
+      },
+      "geneticCodes": {
+        "chrM": 2
+      },
+      "aliases": ["human"]
     },
     {
-      "name": "chimp",
+      "name": "GCF_028858775.2",
       "displayName": "Chimpanzee (NHGRI_mPanTro3-v2.1)",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "chimp-ReferenceSequenceTrack",
-        "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "chimp.chrom.sizes",
-            "locationType": "UriLocation"
+        "metadata": {
+          "blatDb": "GCF_028858775.2",
+          "ucsc": {
+            "genome": "GCF_028858775.2",
+            "taxId": "9598",
+            "groups": "groups.txt",
+            "description": "chimpanzee (v2 AG18354 primary hap 2024 refseq)",
+            "twoBitPath": "GCF_028858775.2.2bit",
+            "twoBitBptUrl": "GCF_028858775.2.2bit.bpt",
+            "chromSizes": "https://jbrowse.org/hubs/genark/GCF/028/858/775/GCF_028858775.2/GCF_028858775.2.chrom.sizes.txt",
+            "chromAliasBb": "GCF_028858775.2.chromAlias.bb",
+            "chromAuthority": "ucsc",
+            "organism": "NHGRI_mPanTro3-v2.0_pri Jan. 2024",
+            "defaultPos": "NC_072398.2:77099816-77109816",
+            "scientificName": "Pan troglodytes",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/html/GCF_028858775.2_NHGRI_mPanTro3-v2.0_pri.description.html\">html/GCF_028858775.2_NHGRI_mPanTro3-v2.0_pri.description.html</a>",
+            "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/858/775/GCF_028858775.2",
+            "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/858/775/GCF_028858775.2",
+            "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/858/775/GCF_028858775.2",
+            "liftOver.hg18": "liftOver/GCF_028858775.2ToHg18.over.chain.gz",
+            "liftOver.hg38": "liftOver/GCF_028858775.2ToHg38.over.chain.gz",
+            "liftOver.panTro6": "liftOver/GCF_028858775.2ToPanTro6.over.chain.gz"
           }
+        },
+        "trackId": "GCF_028858775.2-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/GCF_028858775.2.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/GCF_028858775.2.chrom.sizes.txt"
         }
       },
       "refNameAliases": {
         "adapter": {
-          "type": "NcbiSequenceReportAliasAdapter",
-          "location": {
-            "uri": "chimp.sequence_report.tsv",
-            "locationType": "UriLocation"
-          }
+          "type": "RefNameAliasAdapter",
+          "refNameColumnHeaderName": "ucsc",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/GCF_028858775.2.chromAlias.txt"
         }
-      }
+      },
+      "geneticCodes": {
+        "NC_001643.1": 2
+      },
+      "aliases": ["chimp"]
     },
     {
-      "name": "bonobo",
+      "name": "GCF_029289425.2",
       "displayName": "Bonobo (NHGRI_mPanPan1-v2.1)",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "bonobo-ReferenceSequenceTrack",
-        "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "bonobo.chrom.sizes",
-            "locationType": "UriLocation"
+        "metadata": {
+          "blatDb": "GCF_029289425.2",
+          "ucsc": {
+            "genome": "GCF_029289425.2",
+            "taxId": "9597",
+            "groups": "groups.txt",
+            "description": "bonobo (v2 primary hap 2024 refseq)",
+            "twoBitPath": "GCF_029289425.2.2bit",
+            "twoBitBptUrl": "GCF_029289425.2.2bit.bpt",
+            "chromSizes": "https://jbrowse.org/hubs/genark/GCF/029/289/425/GCF_029289425.2/GCF_029289425.2.chrom.sizes.txt",
+            "chromAliasBb": "GCF_029289425.2.chromAlias.bb",
+            "chromAuthority": "ucsc",
+            "organism": "NHGRI_mPanPan1-v2.0_pri Jan. 2024",
+            "defaultPos": "NC_073249.2:75901684-75911684",
+            "scientificName": "Pan paniscus",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/029/289/425/GCF_029289425.2/html/GCF_029289425.2_NHGRI_mPanPan1-v2.0_pri.description.html\">html/GCF_029289425.2_NHGRI_mPanPan1-v2.0_pri.description.html</a>",
+            "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/029/289/425/GCF_029289425.2",
+            "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/029/289/425/GCF_029289425.2",
+            "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/029/289/425/GCF_029289425.2"
           }
+        },
+        "trackId": "GCF_029289425.2-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/029/289/425/GCF_029289425.2/GCF_029289425.2.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/029/289/425/GCF_029289425.2/GCF_029289425.2.chrom.sizes.txt"
         }
       },
       "refNameAliases": {
         "adapter": {
-          "type": "NcbiSequenceReportAliasAdapter",
-          "location": {
-            "uri": "bonobo.sequence_report.tsv",
-            "locationType": "UriLocation"
-          }
+          "type": "RefNameAliasAdapter",
+          "refNameColumnHeaderName": "ucsc",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/029/289/425/GCF_029289425.2/GCF_029289425.2.chromAlias.txt"
         }
-      }
+      },
+      "geneticCodes": {
+        "NC_001644.1": 2
+      },
+      "aliases": ["bonobo"]
     },
     {
-      "name": "gorilla",
+      "name": "GCF_029281585.2",
       "displayName": "Gorilla (NHGRI_mGorGor1-v2.1)",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "gorilla-ReferenceSequenceTrack",
-        "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "gorilla.chrom.sizes",
-            "locationType": "UriLocation"
+        "metadata": {
+          "blatDb": "GCF_029281585.2",
+          "ucsc": {
+            "genome": "GCF_029281585.2",
+            "taxId": "9595",
+            "groups": "groups.txt",
+            "description": "gorilla (v2.1 KB3781 2024 refseq)",
+            "twoBitPath": "GCF_029281585.2.2bit",
+            "twoBitBptUrl": "GCF_029281585.2.2bit.bpt",
+            "chromSizes": "https://jbrowse.org/hubs/genark/GCF/029/281/585/GCF_029281585.2/GCF_029281585.2.chrom.sizes.txt",
+            "chromAliasBb": "GCF_029281585.2.chromAlias.bb",
+            "chromAuthority": "ucsc",
+            "organism": "NHGRI_mGorGor1-v2.1_pri Jan. 2024",
+            "defaultPos": "NC_073224.2:81282448-81292448",
+            "scientificName": "Gorilla gorilla gorilla",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/029/281/585/GCF_029281585.2/html/GCF_029281585.2_NHGRI_mGorGor1-v2.1_pri.description.html\">html/GCF_029281585.2_NHGRI_mGorGor1-v2.1_pri.description.html</a>",
+            "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/029/281/585/GCF_029281585.2",
+            "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/029/281/585/GCF_029281585.2",
+            "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/029/281/585/GCF_029281585.2",
+            "liftOver.hg38": "liftOver/GCF_029281585.2ToHg38.over.chain.gz"
           }
+        },
+        "trackId": "GCF_029281585.2-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/029/281/585/GCF_029281585.2/GCF_029281585.2.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/029/281/585/GCF_029281585.2/GCF_029281585.2.chrom.sizes.txt"
         }
       },
       "refNameAliases": {
         "adapter": {
-          "type": "NcbiSequenceReportAliasAdapter",
-          "location": {
-            "uri": "gorilla.sequence_report.tsv",
-            "locationType": "UriLocation"
-          }
+          "type": "RefNameAliasAdapter",
+          "refNameColumnHeaderName": "ucsc",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/029/281/585/GCF_029281585.2/GCF_029281585.2.chromAlias.txt"
         }
-      }
+      },
+      "geneticCodes": {
+        "NC_011120.1": 2
+      },
+      "aliases": ["gorilla"]
     },
     {
-      "name": "sumatran",
+      "name": "GCF_028885655.2",
       "displayName": "Sumatran orangutan (NHGRI_mPonAbe1-v2.1)",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "sumatran-ReferenceSequenceTrack",
-        "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "sumatran.chrom.sizes",
-            "locationType": "UriLocation"
+        "metadata": {
+          "blatDb": "GCF_028885655.2",
+          "ucsc": {
+            "genome": "GCF_028885655.2",
+            "taxId": "9601",
+            "groups": "groups.txt",
+            "description": "Sumatran orangutan (v2 AG06213 primary hap 2024 refseq)",
+            "twoBitPath": "GCF_028885655.2.2bit",
+            "twoBitBptUrl": "GCF_028885655.2.2bit.bpt",
+            "chromSizes": "https://jbrowse.org/hubs/genark/GCF/028/885/655/GCF_028885655.2/GCF_028885655.2.chrom.sizes.txt",
+            "chromAliasBb": "GCF_028885655.2.chromAlias.bb",
+            "chromAuthority": "ucsc",
+            "organism": "NHGRI_mPonAbe1-v2.0_pri Jan. 2024",
+            "defaultPos": "NC_071985.2:77931839-77941839",
+            "scientificName": "Pongo abelii",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/028/885/655/GCF_028885655.2/html/GCF_028885655.2_NHGRI_mPonAbe1-v2.0_pri.description.html\">html/GCF_028885655.2_NHGRI_mPonAbe1-v2.0_pri.description.html</a>",
+            "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/885/655/GCF_028885655.2",
+            "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/885/655/GCF_028885655.2",
+            "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/885/655/GCF_028885655.2"
           }
+        },
+        "trackId": "GCF_028885655.2-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/885/655/GCF_028885655.2/GCF_028885655.2.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/885/655/GCF_028885655.2/GCF_028885655.2.chrom.sizes.txt"
         }
       },
       "refNameAliases": {
         "adapter": {
-          "type": "NcbiSequenceReportAliasAdapter",
-          "location": {
-            "uri": "sumatran.sequence_report.tsv",
-            "locationType": "UriLocation"
-          }
+          "type": "RefNameAliasAdapter",
+          "refNameColumnHeaderName": "ucsc",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/885/655/GCF_028885655.2/GCF_028885655.2.chromAlias.txt"
         }
-      }
+      },
+      "geneticCodes": {
+        "NC_002083.1": 2
+      },
+      "aliases": ["sumatran"]
     },
     {
-      "name": "bornean",
+      "name": "GCF_028885625.2",
       "displayName": "Bornean orangutan (NHGRI_mPonPyg2-v2.1)",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "bornean-ReferenceSequenceTrack",
-        "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "bornean.chrom.sizes",
-            "locationType": "UriLocation"
+        "metadata": {
+          "blatDb": "GCF_028885625.2",
+          "ucsc": {
+            "genome": "GCF_028885625.2",
+            "taxId": "9600",
+            "groups": "groups.txt",
+            "description": "Bornean orangutan (v2 AG05252 primary hap 2024 refseq)",
+            "twoBitPath": "GCF_028885625.2.2bit",
+            "twoBitBptUrl": "GCF_028885625.2.2bit.bpt",
+            "chromSizes": "https://jbrowse.org/hubs/genark/GCF/028/885/625/GCF_028885625.2/GCF_028885625.2.chrom.sizes.txt",
+            "chromAliasBb": "GCF_028885625.2.chromAlias.bb",
+            "chromAuthority": "ucsc",
+            "organism": "NHGRI_mPonPyg2-v2.0_pri Jan. 2024",
+            "defaultPos": "NC_072373.2:76935800-76945800",
+            "scientificName": "Pongo pygmaeus",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/028/885/625/GCF_028885625.2/html/GCF_028885625.2_NHGRI_mPonPyg2-v2.0_pri.description.html\">html/GCF_028885625.2_NHGRI_mPonPyg2-v2.0_pri.description.html</a>",
+            "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/885/625/GCF_028885625.2",
+            "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/885/625/GCF_028885625.2",
+            "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/885/625/GCF_028885625.2"
           }
+        },
+        "trackId": "GCF_028885625.2-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/885/625/GCF_028885625.2/GCF_028885625.2.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/885/625/GCF_028885625.2/GCF_028885625.2.chrom.sizes.txt"
         }
       },
       "refNameAliases": {
         "adapter": {
-          "type": "NcbiSequenceReportAliasAdapter",
-          "location": {
-            "uri": "bornean.sequence_report.tsv",
-            "locationType": "UriLocation"
-          }
+          "type": "RefNameAliasAdapter",
+          "refNameColumnHeaderName": "ucsc",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/885/625/GCF_028885625.2/GCF_028885625.2.chromAlias.txt"
         }
-      }
+      },
+      "geneticCodes": {
+        "NC_001646.1": 2
+      },
+      "aliases": ["bornean"]
     },
     {
-      "name": "siamang",
+      "name": "GCF_028878055.3",
       "displayName": "Siamang (NHGRI_mSymSyn1-v2.1)",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "siamang-ReferenceSequenceTrack",
-        "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "siamang.chrom.sizes",
-            "locationType": "UriLocation"
+        "metadata": {
+          "blatDb": "GCF_028878055.3",
+          "ucsc": {
+            "genome": "GCF_028878055.3",
+            "taxId": "9590",
+            "groups": "groups.txt",
+            "description": "siamang gibbon (v2.1 Jambi primary hap 2024 refseq)",
+            "twoBitPath": "GCF_028878055.3.2bit",
+            "twoBitBptUrl": "GCF_028878055.3.2bit.bpt",
+            "chromSizes": "https://jbrowse.org/hubs/genark/GCF/028/878/055/GCF_028878055.3/GCF_028878055.3.chrom.sizes.txt",
+            "chromAliasBb": "GCF_028878055.3.chromAlias.bb",
+            "chromAuthority": "ucsc",
+            "organism": "NHGRI_mSymSyn1-v2.1_pri Jan. 2024",
+            "defaultPos": "NC_072423.2:55884911-55894911",
+            "scientificName": "Symphalangus syndactylus",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/028/878/055/GCF_028878055.3/html/GCF_028878055.3_NHGRI_mSymSyn1-v2.1_pri.description.html\">html/GCF_028878055.3_NHGRI_mSymSyn1-v2.1_pri.description.html</a>",
+            "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/878/055/GCF_028878055.3",
+            "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/878/055/GCF_028878055.3",
+            "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/028/878/055/GCF_028878055.3"
           }
+        },
+        "trackId": "GCF_028878055.3-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/878/055/GCF_028878055.3/GCF_028878055.3.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/878/055/GCF_028878055.3/GCF_028878055.3.chrom.sizes.txt"
         }
       },
       "refNameAliases": {
         "adapter": {
-          "type": "NcbiSequenceReportAliasAdapter",
-          "location": {
-            "uri": "siamang.sequence_report.tsv",
-            "locationType": "UriLocation"
-          }
+          "type": "RefNameAliasAdapter",
+          "refNameColumnHeaderName": "ucsc",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/878/055/GCF_028878055.3/GCF_028878055.3.chromAlias.txt"
         }
-      }
+      },
+      "geneticCodes": {
+        "NC_014047.1": 2
+      },
+      "aliases": ["siamang"]
     },
     {
-      "name": "macaque",
+      "name": "GCF_049350105.2",
       "displayName": "Rhesus macaque (T2T-MMU8v2.0)",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "macaque-ReferenceSequenceTrack",
-        "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "macaque.chrom.sizes",
-            "locationType": "UriLocation"
+        "metadata": {
+          "blatDb": "GCF_049350105.2",
+          "ucsc": {
+            "genome": "GCF_049350105.2",
+            "taxId": "9544",
+            "groups": "groups.txt",
+            "description": "Rhesus monkey (v2 MMU2019108-1 T2T 2025 refseq)",
+            "twoBitPath": "GCF_049350105.2.2bit",
+            "twoBitBptUrl": "GCF_049350105.2.2bit.bpt",
+            "chromSizes": "https://jbrowse.org/hubs/genark/GCF/049/350/105/GCF_049350105.2/GCF_049350105.2.chrom.sizes.txt",
+            "chromAliasBb": "GCF_049350105.2.chromAlias.bb",
+            "chromAuthority": "ucsc",
+            "organism": "T2T-MMU8v2.0 Jul. 2025",
+            "defaultPos": "NC_133406.1:80066330-80076330",
+            "scientificName": "Macaca mulatta",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/049/350/105/GCF_049350105.2/html/GCF_049350105.2_T2T-MMU8v2.0.description.html\">html/GCF_049350105.2_T2T-MMU8v2.0.description.html</a>",
+            "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/049/350/105/GCF_049350105.2",
+            "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/049/350/105/GCF_049350105.2",
+            "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/049/350/105/GCF_049350105.2",
+            "liftOver.hg18": "liftOver/GCF_049350105.2ToHg18.over.chain.gz"
           }
+        },
+        "trackId": "GCF_049350105.2-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/049/350/105/GCF_049350105.2/GCF_049350105.2.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/049/350/105/GCF_049350105.2/GCF_049350105.2.chrom.sizes.txt"
         }
       },
       "refNameAliases": {
         "adapter": {
-          "type": "NcbiSequenceReportAliasAdapter",
-          "location": {
-            "uri": "macaque.sequence_report.tsv",
-            "locationType": "UriLocation"
-          }
+          "type": "RefNameAliasAdapter",
+          "refNameColumnHeaderName": "ucsc",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/049/350/105/GCF_049350105.2/GCF_049350105.2.chromAlias.txt"
         }
-      }
+      },
+      "aliases": ["macaque"]
     }
   ],
   "configuration": {},
@@ -198,177 +374,345 @@
   "tracks": [
     {
       "type": "FeatureTrack",
-      "trackId": "human_genes",
-      "name": "Human (GRCh38.p14) genes (RefSeq)",
-      "assemblyNames": ["human"],
+      "trackId": "hg38-ncbiRefSeq",
+      "name": "NCBI RefSeq - RefSeq All",
+      "assemblyNames": ["hg38"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "human.gff.gz",
-          "locationType": "UriLocation"
+          "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz"
         },
         "index": {
+          "indexType": "CSI",
           "location": {
-            "uri": "human.gff.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
+            "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi"
+          }
         }
-      }
+      },
+      "metadata": {
+        "ucsc": {
+          "baseColorDefault": "genomicCodons",
+          "baseColorUseCds": "given",
+          "color": "12,12,120",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "longLabel": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+          "parent": "refSeqComposite off",
+          "priority": "1",
+          "shortLabel": "RefSeq All",
+          "track": "ncbiRefSeq",
+          "html": ""
+        }
+      },
+      "description": "NCBI RefSeq genes, curated and predicted (NM_*, XM_*, NR_*, XR_*, NP_*, YP_*)",
+      "category": ["Genes and Gene Predictions"]
     },
     {
-      "type": "FeatureTrack",
-      "trackId": "chimp_genes",
-      "name": "Chimpanzee (NHGRI_mPanTro3-v2.1) genes (RefSeq)",
-      "assemblyNames": ["chimp"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "chimp.gff.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "chimp.gff.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
+      "metadata": {
+        "ucsc": {
+          "track": "ncbiRefSeq",
+          "parent": "refSeqComposite on",
+          "color": "12,12,120",
+          "shortLabel": "RefSeq All",
+          "type": "bigGenePred",
+          "urls": "name2=\"https://www.ncbi.nlm.nih.gov/gene/?term=$$\" geneName=\"https://www.ncbi.nlm.nih.gov/gene/$$\" geneName2=\"https://www.ncbi.nlm.nih.gov/nuccore/$$\"",
+          "labelFields": "name2,geneName,geneName2",
+          "defaultLabelFields": "name2",
+          "searchIndex": "name",
+          "searchTrix": "ixIxx/GCF_028858775.2_NHGRI_mPanTro3-v2.0_pri.ncbiRefSeq.ix",
+          "bigDataUrl": "bbi/GCF_028858775.2_NHGRI_mPanTro3-v2.0_pri.ncbiRefSeq.bb",
+          "longLabel": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "baseColorUseCds": "given",
+          "baseColorDefault": "genomicCodons",
+          "priority": "1"
         }
-      }
+      },
+      "category": ["Genes and Gene Predictions"],
+      "trackId": "GCF_028858775.2-ncbiRefSeq",
+      "description": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+      "assemblyNames": ["GCF_028858775.2"],
+      "name": "NCBI RefSeq - RefSeq All",
+      "type": "FeatureTrack",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/bbi/GCF_028858775.2_NHGRI_mPanTro3-v2.0_pri.ncbiRefSeq.bb",
+        "aggregateField": "name2"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "GCF_028858775.2-ncbiRefSeq-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:get(feature,'name')"
+          }
+        }
+      ]
     },
     {
-      "type": "FeatureTrack",
-      "trackId": "bonobo_genes",
-      "name": "Bonobo (NHGRI_mPanPan1-v2.1) genes (RefSeq)",
-      "assemblyNames": ["bonobo"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "bonobo.gff.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "bonobo.gff.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
+      "metadata": {
+        "ucsc": {
+          "track": "ncbiRefSeq",
+          "parent": "refSeqComposite on",
+          "color": "12,12,120",
+          "shortLabel": "RefSeq All",
+          "type": "bigGenePred",
+          "urls": "name2=\"https://www.ncbi.nlm.nih.gov/gene/?term=$$\" geneName=\"https://www.ncbi.nlm.nih.gov/gene/$$\" geneName2=\"https://www.ncbi.nlm.nih.gov/nuccore/$$\"",
+          "labelFields": "name2,geneName,geneName2",
+          "defaultLabelFields": "name2",
+          "searchIndex": "name",
+          "searchTrix": "ixIxx/GCF_029289425.2_NHGRI_mPanPan1-v2.0_pri.ncbiRefSeq.ix",
+          "bigDataUrl": "bbi/GCF_029289425.2_NHGRI_mPanPan1-v2.0_pri.ncbiRefSeq.bb",
+          "longLabel": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "baseColorUseCds": "given",
+          "baseColorDefault": "genomicCodons",
+          "priority": "1"
         }
-      }
+      },
+      "category": ["Genes and Gene Predictions"],
+      "trackId": "GCF_029289425.2-ncbiRefSeq",
+      "description": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+      "assemblyNames": ["GCF_029289425.2"],
+      "name": "NCBI RefSeq - RefSeq All",
+      "type": "FeatureTrack",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/029/289/425/GCF_029289425.2/bbi/GCF_029289425.2_NHGRI_mPanPan1-v2.0_pri.ncbiRefSeq.bb",
+        "aggregateField": "name2"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "GCF_029289425.2-ncbiRefSeq-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:get(feature,'name')"
+          }
+        }
+      ]
     },
     {
-      "type": "FeatureTrack",
-      "trackId": "gorilla_genes",
-      "name": "Gorilla (NHGRI_mGorGor1-v2.1) genes (RefSeq)",
-      "assemblyNames": ["gorilla"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "gorilla.gff.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "gorilla.gff.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
+      "metadata": {
+        "ucsc": {
+          "track": "ncbiRefSeq",
+          "parent": "refSeqComposite on",
+          "color": "12,12,120",
+          "shortLabel": "RefSeq All",
+          "type": "bigGenePred",
+          "urls": "name2=\"https://www.ncbi.nlm.nih.gov/gene/?term=$$\" geneName=\"https://www.ncbi.nlm.nih.gov/gene/$$\" geneName2=\"https://www.ncbi.nlm.nih.gov/nuccore/$$\"",
+          "labelFields": "name2,geneName,geneName2",
+          "defaultLabelFields": "name2",
+          "searchIndex": "name",
+          "searchTrix": "ixIxx/GCF_029281585.2_NHGRI_mGorGor1-v2.1_pri.ncbiRefSeq.ix",
+          "bigDataUrl": "bbi/GCF_029281585.2_NHGRI_mGorGor1-v2.1_pri.ncbiRefSeq.bb",
+          "longLabel": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "baseColorUseCds": "given",
+          "baseColorDefault": "genomicCodons",
+          "priority": "1"
         }
-      }
+      },
+      "category": ["Genes and Gene Predictions"],
+      "trackId": "GCF_029281585.2-ncbiRefSeq",
+      "description": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+      "assemblyNames": ["GCF_029281585.2"],
+      "name": "NCBI RefSeq - RefSeq All",
+      "type": "FeatureTrack",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/029/281/585/GCF_029281585.2/bbi/GCF_029281585.2_NHGRI_mGorGor1-v2.1_pri.ncbiRefSeq.bb",
+        "aggregateField": "name2"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "GCF_029281585.2-ncbiRefSeq-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:get(feature,'name')"
+          }
+        }
+      ]
     },
     {
-      "type": "FeatureTrack",
-      "trackId": "sumatran_genes",
-      "name": "Sumatran orangutan (NHGRI_mPonAbe1-v2.1) genes (RefSeq)",
-      "assemblyNames": ["sumatran"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "sumatran.gff.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "sumatran.gff.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
+      "metadata": {
+        "ucsc": {
+          "track": "ncbiRefSeq",
+          "parent": "refSeqComposite on",
+          "color": "12,12,120",
+          "shortLabel": "RefSeq All",
+          "type": "bigGenePred",
+          "urls": "name2=\"https://www.ncbi.nlm.nih.gov/gene/?term=$$\" geneName=\"https://www.ncbi.nlm.nih.gov/gene/$$\" geneName2=\"https://www.ncbi.nlm.nih.gov/nuccore/$$\"",
+          "labelFields": "name2,geneName,geneName2",
+          "defaultLabelFields": "name2",
+          "searchIndex": "name",
+          "searchTrix": "ixIxx/GCF_028885655.2_NHGRI_mPonAbe1-v2.0_pri.ncbiRefSeq.ix",
+          "bigDataUrl": "bbi/GCF_028885655.2_NHGRI_mPonAbe1-v2.0_pri.ncbiRefSeq.bb",
+          "longLabel": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "baseColorUseCds": "given",
+          "baseColorDefault": "genomicCodons",
+          "priority": "1"
         }
-      }
+      },
+      "category": ["Genes and Gene Predictions"],
+      "trackId": "GCF_028885655.2-ncbiRefSeq",
+      "description": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+      "assemblyNames": ["GCF_028885655.2"],
+      "name": "NCBI RefSeq - RefSeq All",
+      "type": "FeatureTrack",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/885/655/GCF_028885655.2/bbi/GCF_028885655.2_NHGRI_mPonAbe1-v2.0_pri.ncbiRefSeq.bb",
+        "aggregateField": "name2"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "GCF_028885655.2-ncbiRefSeq-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:get(feature,'name')"
+          }
+        }
+      ]
     },
     {
-      "type": "FeatureTrack",
-      "trackId": "bornean_genes",
-      "name": "Bornean orangutan (NHGRI_mPonPyg2-v2.1) genes (RefSeq)",
-      "assemblyNames": ["bornean"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "bornean.gff.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "bornean.gff.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
+      "metadata": {
+        "ucsc": {
+          "track": "ncbiRefSeq",
+          "parent": "refSeqComposite on",
+          "color": "12,12,120",
+          "shortLabel": "RefSeq All",
+          "type": "bigGenePred",
+          "urls": "name2=\"https://www.ncbi.nlm.nih.gov/gene/?term=$$\" geneName=\"https://www.ncbi.nlm.nih.gov/gene/$$\" geneName2=\"https://www.ncbi.nlm.nih.gov/nuccore/$$\"",
+          "labelFields": "name2,geneName,geneName2",
+          "defaultLabelFields": "name2",
+          "searchIndex": "name",
+          "searchTrix": "ixIxx/GCF_028885625.2_NHGRI_mPonPyg2-v2.0_pri.ncbiRefSeq.ix",
+          "bigDataUrl": "bbi/GCF_028885625.2_NHGRI_mPonPyg2-v2.0_pri.ncbiRefSeq.bb",
+          "longLabel": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "baseColorUseCds": "given",
+          "baseColorDefault": "genomicCodons",
+          "priority": "1"
         }
-      }
+      },
+      "category": ["Genes and Gene Predictions"],
+      "trackId": "GCF_028885625.2-ncbiRefSeq",
+      "description": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+      "assemblyNames": ["GCF_028885625.2"],
+      "name": "NCBI RefSeq - RefSeq All",
+      "type": "FeatureTrack",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/885/625/GCF_028885625.2/bbi/GCF_028885625.2_NHGRI_mPonPyg2-v2.0_pri.ncbiRefSeq.bb",
+        "aggregateField": "name2"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "GCF_028885625.2-ncbiRefSeq-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:get(feature,'name')"
+          }
+        }
+      ]
     },
     {
-      "type": "FeatureTrack",
-      "trackId": "siamang_genes",
-      "name": "Siamang (NHGRI_mSymSyn1-v2.1) genes (RefSeq)",
-      "assemblyNames": ["siamang"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "siamang.gff.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "siamang.gff.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
+      "metadata": {
+        "ucsc": {
+          "track": "ncbiRefSeq",
+          "parent": "refSeqComposite on",
+          "color": "12,12,120",
+          "shortLabel": "RefSeq All",
+          "type": "bigGenePred",
+          "urls": "name2=\"https://www.ncbi.nlm.nih.gov/gene/?term=$$\" geneName=\"https://www.ncbi.nlm.nih.gov/gene/$$\" geneName2=\"https://www.ncbi.nlm.nih.gov/nuccore/$$\"",
+          "labelFields": "name2,geneName,geneName2",
+          "defaultLabelFields": "name2",
+          "searchIndex": "name",
+          "searchTrix": "ixIxx/GCF_028878055.3_NHGRI_mSymSyn1-v2.1_pri.ncbiRefSeq.ix",
+          "bigDataUrl": "bbi/GCF_028878055.3_NHGRI_mSymSyn1-v2.1_pri.ncbiRefSeq.bb",
+          "longLabel": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "baseColorUseCds": "given",
+          "baseColorDefault": "genomicCodons",
+          "priority": "1"
         }
-      }
+      },
+      "category": ["Genes and Gene Predictions"],
+      "trackId": "GCF_028878055.3-ncbiRefSeq",
+      "description": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+      "assemblyNames": ["GCF_028878055.3"],
+      "name": "NCBI RefSeq - RefSeq All",
+      "type": "FeatureTrack",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/878/055/GCF_028878055.3/bbi/GCF_028878055.3_NHGRI_mSymSyn1-v2.1_pri.ncbiRefSeq.bb",
+        "aggregateField": "name2"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "GCF_028878055.3-ncbiRefSeq-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:get(feature,'name')"
+          }
+        }
+      ]
     },
     {
-      "type": "FeatureTrack",
-      "trackId": "macaque_genes",
-      "name": "Rhesus macaque (T2T-MMU8v2.0) genes (RefSeq)",
-      "assemblyNames": ["macaque"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "macaque.gff.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "macaque.gff.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
+      "metadata": {
+        "ucsc": {
+          "track": "ncbiRefSeq",
+          "parent": "refSeqComposite on",
+          "color": "12,12,120",
+          "shortLabel": "RefSeq All",
+          "type": "bigGenePred",
+          "urls": "name2=\"https://www.ncbi.nlm.nih.gov/gene/?term=$$\" geneName=\"https://www.ncbi.nlm.nih.gov/gene/$$\" geneName2=\"https://www.ncbi.nlm.nih.gov/nuccore/$$\"",
+          "labelFields": "name2,geneName,geneName2",
+          "defaultLabelFields": "name2",
+          "searchIndex": "name",
+          "searchTrix": "ixIxx/GCF_049350105.2_T2T-MMU8v2.0.ncbiRefSeq.ix",
+          "bigDataUrl": "bbi/GCF_049350105.2_T2T-MMU8v2.0.ncbiRefSeq.bb",
+          "longLabel": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "baseColorUseCds": "given",
+          "baseColorDefault": "genomicCodons",
+          "priority": "1"
         }
-      }
+      },
+      "category": ["Genes and Gene Predictions"],
+      "trackId": "GCF_049350105.2-ncbiRefSeq",
+      "description": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+      "assemblyNames": ["GCF_049350105.2"],
+      "name": "NCBI RefSeq - RefSeq All",
+      "type": "FeatureTrack",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/049/350/105/GCF_049350105.2/bbi/GCF_049350105.2_T2T-MMU8v2.0.ncbiRefSeq.bb",
+        "aggregateField": "name2"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "GCF_049350105.2-ncbiRefSeq-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:get(feature,'name')"
+          }
+        }
+      ]
     },
     {
       "type": "SyntenyTrack",
       "trackId": "primate_orthologs",
       "name": "Primate orthologs by gene symbol (8 genomes, RefSeq)",
       "assemblyNames": [
-        "human",
-        "chimp",
-        "bonobo",
-        "gorilla",
-        "sumatran",
-        "bornean",
-        "siamang",
-        "macaque"
+        "hg38",
+        "GCF_028858775.2",
+        "GCF_029289425.2",
+        "GCF_029281585.2",
+        "GCF_028885655.2",
+        "GCF_028885625.2",
+        "GCF_028878055.3",
+        "GCF_049350105.2"
       ],
       "adapter": {
         "type": "MCScanBlocksAdapter",
@@ -377,14 +721,14 @@
           "locationType": "UriLocation"
         },
         "blockAssemblies": [
-          "human",
-          "chimp",
-          "bonobo",
-          "gorilla",
-          "sumatran",
-          "bornean",
-          "siamang",
-          "macaque"
+          "hg38",
+          "GCF_028858775.2",
+          "GCF_029289425.2",
+          "GCF_029281585.2",
+          "GCF_028885655.2",
+          "GCF_028885625.2",
+          "GCF_028878055.3",
+          "GCF_049350105.2"
         ],
         "bedLocations": [
           {
@@ -421,21 +765,23 @@
           }
         ],
         "assemblyNames": [
-          "human",
-          "chimp",
-          "bonobo",
-          "gorilla",
-          "sumatran",
-          "bornean",
-          "siamang",
-          "macaque"
+          "hg38",
+          "GCF_028858775.2",
+          "GCF_029289425.2",
+          "GCF_029281585.2",
+          "GCF_028885655.2",
+          "GCF_028885625.2",
+          "GCF_028878055.3",
+          "GCF_049350105.2"
         ]
       },
       "displays": [
         {
           "type": "MultiWaySyntenyDisplay",
           "displayId": "primate_orthologs-MultiWaySyntenyDisplay",
-          "color": { "field": "cluster" }
+          "color": {
+            "field": "cluster"
+          }
         }
       ]
     }
@@ -445,7 +791,7 @@
     "views": [
       {
         "type": "LinearGenomeView",
-        "assembly": "human",
+        "assembly": "hg38",
         "loc": "chr17:7,400,000-7,700,000",
         "tracks": ["primate_orthologs"]
       }

@@ -21,8 +21,6 @@ placeholder names.
 
 - The
   [NCBI datasets CLI](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/command-line-tools/)
-  (`datasets` and `dataformat`)
-- htslib (`bgzip`, `tabix`)
 - `python3`
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
@@ -52,6 +50,11 @@ the rest of the ecosystem quotes.
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/878/055/GCF_028878055.3_NHGRI_mSymSyn1-v2.1_pri/
 - rhesus macaque, T2T-MMU8v2.0:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/049/350/105/GCF_049350105.2_T2T-MMU8v2.0/
+- each genome's hub config on genomes.jbrowse.org, whose assembly entry and NCBI
+  RefSeq gene track each lane takes verbatim:
+  https://jbrowse.org/ucsc/hg38/config.json for human, and for chimpanzee
+  https://jbrowse.org/hubs/genark/GCF/028/858/775/GCF_028858775.2/config.json,
+  the other ape and macaque hubs at the same path under their own accessions
 - the finished table, BEDs and config, rehosted so the lanes load without
   rerunning the pipeline:
   https://jbrowse.org/demos/primate_orthologs/config.json
@@ -108,45 +111,52 @@ one naming pipeline.
 
 ## Setting up the assemblies
 
-The lanes never read sequence, so each assembly is the chromosome lengths from
-the sequence report, with the same report as its alias table so `chr17` resolves
-to `NC_000017.11`:
-
-<!-- from: scripts/build_primate_orthologs.sh -->
+Each of these genomes is also a genome hub on
+[genomes.jbrowse.org](https://genomes.jbrowse.org), the apes and the macaque
+under their accessions, and a hub's `config.json` holds a whole JBrowse
+assembly: the 2bit sequence, an alias table that resolves the `NC_` names in the
+BEDs, and the NCBI RefSeq genes. Each lane takes its assembly entry and gene
+track from there, so the ortholog table is the only thing built here:
 
 ```bash
-# the four columns NcbiSequenceReportAliasAdapter reads
-dataformat tsv genome-seq --package genomes.zip \
-  --inputfile GCF_000001405.40/sequence_report.jsonl \
-  --fields genbank-seq-acc,refseq-seq-acc,sequence-name,ucsc-style-name \
-  > human.sequence_report.tsv
+# a GenArk hub's path is its accession cut into threes
+curl -fO https://jbrowse.org/hubs/genark/GCF/028/858/775/GCF_028858775.2/config.json
 ```
+
+The build keeps each entry as the hub wrote it, relabels the lane and adds the
+short name as an alias, so a session can still say `chimp`:
 
 ```json
 {
-  "name": "human",
-  "displayName": "Human (GRCh38.p14)",
+  "name": "GCF_028858775.2",
+  "displayName": "Chimpanzee (NHGRI_mPanTro3-v2.1)",
+  "aliases": ["chimp"],
   "sequence": {
     "type": "ReferenceSequenceTrack",
-    "trackId": "human-ReferenceSequenceTrack",
+    "trackId": "GCF_028858775.2-ReferenceSequenceTrack",
     "adapter": {
-      "type": "ChromSizesAdapter",
-      "chromSizesLocation": { "uri": "human.chrom.sizes" }
+      "type": "TwoBitAdapter",
+      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/GCF_028858775.2.2bit",
+      "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/GCF_028858775.2.chrom.sizes.txt"
     }
   },
   "refNameAliases": {
     "adapter": {
-      "type": "NcbiSequenceReportAliasAdapter",
-      "location": { "uri": "human.sequence_report.tsv" }
+      "type": "RefNameAliasAdapter",
+      "refNameColumnHeaderName": "ucsc",
+      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/GCF_028858775.2.chromAlias.txt"
     }
   }
 }
 ```
 
-Each GFF3, filtered to the assembled chromosomes, sorted, bgzipped and
-tabix-indexed as in the [web quickstart](/docs/quickstart_web), is that genome's
-gene track, one `FeatureTrack` per genome. A lane finds its gene models through
-the session, so the track only has to exist under the lane's assembly name.
+`refNameColumnHeaderName` makes the UCSC names canonical, so the lane headers
+read `chr19` where the assembly's own name is `chr19_hap1_hsa17`. Human is the
+one exception to the accession rule: UCSC serves GRCh38 as `hg38` rather than as
+a GenArk hub, so the human lane is
+[hg38](https://genomes.jbrowse.org/ucsc/hg38/). A lane finds its gene models
+through the session, so the hub's gene track only has to exist under the lane's
+assembly name.
 
 ## The ortholog track
 
@@ -165,27 +175,27 @@ below:
   "trackId": "primate_orthologs",
   "name": "Primate orthologs by gene symbol (8 genomes, RefSeq)",
   "assemblyNames": [
-    "human",
-    "chimp",
-    "bonobo",
-    "gorilla",
-    "sumatran",
-    "bornean",
-    "siamang",
-    "macaque"
+    "hg38",
+    "GCF_028858775.2",
+    "GCF_029289425.2",
+    "GCF_029281585.2",
+    "GCF_028885655.2",
+    "GCF_028885625.2",
+    "GCF_028878055.3",
+    "GCF_049350105.2"
   ],
   "adapter": {
     "type": "MCScanBlocksAdapter",
     "mcscanBlocksLocation": { "uri": "primates.blocks.gz" },
     "blockAssemblies": [
-      "human",
-      "chimp",
-      "bonobo",
-      "gorilla",
-      "sumatran",
-      "bornean",
-      "siamang",
-      "macaque"
+      "hg38",
+      "GCF_028858775.2",
+      "GCF_029289425.2",
+      "GCF_029281585.2",
+      "GCF_028885655.2",
+      "GCF_028885625.2",
+      "GCF_028878055.3",
+      "GCF_049350105.2"
     ],
     "bedLocations": [
       "human.bed.gz",
@@ -236,7 +246,7 @@ and a session or a config authors the same thing as `domain`.
     "views": [
       {
         "type": "LinearGenomeView",
-        "assembly": "human",
+        "assembly": "hg38",
         "loc": "chr17:7,400,000-7,700,000",
         "tracks": [
           {
@@ -272,7 +282,7 @@ linear synteny view shows it, with human chr2 on one row and the two chimpanzee
 chromosomes that carry its halves on the other. The palette button's **Target**
 paints each ribbon by the chimpanzee chromosome it lands on.
 
-<Figure caption="Human chr2 over chimpanzee hsa2a and hsa2b from the gene-symbol ortholog track, ribbons colored by the chimpanzee chromosome. The orthologs of one chimpanzee chromosome fill human chr2 up to 2q13 and those of the other fill it past there." src="/img/multiway_synteny/primate_chr2_fusion.png" />
+<Figure caption="Human chr2 over chimpanzee chr12 and chr13, the hsa2a and hsa2b chromosomes, from the gene-symbol ortholog track, ribbons colored by the chimpanzee chromosome. The orthologs of one chimpanzee chromosome fill human chr2 up to 2q13 and those of the other fill it past there." src="/img/multiway_synteny/primate_chr2_fusion.png" />
 
 In the lanes, a window across the fusion point has orthologs on both chimpanzee
 chromosomes, and a lane follows one contig at a time. Each ape lane picks the

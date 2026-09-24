@@ -222,14 +222,15 @@ URL it names *and* every URL in its spec, then check the data matches the prose.
 own**, because `check-live-configs --network` compares the repo copy against the
 hosted one and fails on the difference. `HOSTED_MIRRORS` there is the list of
 files under that comparison, and adding a hosted file to it is what puts the
-file under review at all. Two are sitting there now, in
-`demos/primate_orthologs` and `demos/ecoli_orthologs`. The adapter-level
-`assemblyNames` duplicates `blockAssemblies`, which
-`MCScanBlocksAdapter.mateAssemblies` defaults, and draws the same picture
-either way. The gene colour is `{ field: 'cluster' }` in the build scripts and
-the repo copies, and still the `jexl:` hash of the name in the hosted ones,
-which the released app needs until the hosted app is on v5. Both leave with one
-`scripts/deploy-demo.sh` of each config once it is.
+file under review at all. One is sitting there now, in
+`demos/ecoli_orthologs`. The adapter-level `assemblyNames` duplicates
+`blockAssemblies`, which `MCScanBlocksAdapter.mateAssemblies` defaults, and
+draws the same picture either way. The gene colour is `{ field: 'cluster' }` in
+the build script and the repo copy, and still the `jexl:` hash of the name in
+the hosted one. The released app (4.3.0) predates `MultiWaySyntenyDisplay`, so
+it draws neither spelling, and one `scripts/deploy-demo.sh` of the config
+retires the difference. `demos/primate_orthologs` went out that way on
+2026-09-24.
 
 The worse version of this is a demo with **no** build script in the tree at all.
 `demos/mouse_pangenome/` and `demos/bovine_pangenome/` were published

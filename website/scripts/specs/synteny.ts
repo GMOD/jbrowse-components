@@ -1610,7 +1610,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         views: [
           {
             type: 'LinearGenomeView',
-            assembly: 'human',
+            assembly: 'hg38',
             loc: 'chr17:7,400,000-7,700,000',
             tracks: [
               {
@@ -1654,7 +1654,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         views: [
           {
             type: 'LinearGenomeView',
-            assembly: 'human',
+            assembly: 'hg38',
             loc: 'chr17:34,000,000-38,000,000',
             tracks: [
               {
@@ -1690,10 +1690,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
           {
             type: 'LinearSyntenyView',
             views: [
-              { assembly: 'human', loc: 'chr2', hideNoTracksActive: true },
+              { assembly: 'hg38', loc: 'chr2', hideNoTracksActive: true },
               {
-                assembly: 'chimp',
-                displayedRegionNames: ['chr12_hap1_hsa2a', 'chr13_hap1_hsa2b'],
+                assembly: 'GCF_028858775.2',
+                displayedRegionNames: ['chr12', 'chr13'],
                 hideNoTracksActive: true,
               },
             ],
