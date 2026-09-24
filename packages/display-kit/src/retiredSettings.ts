@@ -56,33 +56,7 @@ export function retiredSettings({
    * above, which names the replacement.
    */
   function routeRetiredShorthand(snap: Snapshot) {
-    const written = snap.displayDefaults as Snapshot | undefined
-    const retired = shorthand.filter(key => written?.[key] !== undefined)
-    if (!written || !retired.length) {
-      return snap
-    }
-    const moved = Object.fromEntries(retired.map(key => [key, written[key]]))
-    const rest = Object.fromEntries(
-      Object.entries(written).filter(([key]) => !retired.includes(key)),
-    )
-    const displays = Array.isArray(snap.displays)
-      ? (snap.displays as Snapshot[])
-      : []
-    const own = displays.find(d => d.type === displayType)
-    return {
-      ...snap,
-      displayDefaults: rest,
-      displays: own
-        ? displays.map(d => (d === own ? { ...d, ...moved } : d))
-        : [
-            ...displays,
-            {
-              type: displayType,
-              displayId: `${snap.trackId}-${displayType}`,
-              ...moved,
-            },
-          ],
-    }
+    return moveDisplayDefaults(snap, displayType, shorthand)
   }
 
   return {
@@ -91,5 +65,43 @@ export function retiredSettings({
     routeRetiredShorthand,
     routeTrackShorthand: (snap: Snapshot) =>
       snap.type === trackType ? routeRetiredShorthand(snap) : snap,
+  }
+}
+
+/**
+ * `snap` with the `keys` its `displayDefaults` spells moved onto its
+ * `displayType` entry, added where the track lists none, so the shorthand
+ * router sends them to that display alone. A value the entry spells wins.
+ */
+export function moveDisplayDefaults(
+  snap: Snapshot,
+  displayType: string,
+  keys: readonly string[],
+): Snapshot {
+  const written = snap.displayDefaults as Snapshot | undefined
+  const moving = keys.filter(key => written?.[key] !== undefined)
+  if (!written || !moving.length) {
+    return snap
+  }
+  const moved = Object.fromEntries(moving.map(key => [key, written[key]]))
+  const displays = Array.isArray(snap.displays)
+    ? (snap.displays as Snapshot[])
+    : []
+  const own = displays.find(d => d.type === displayType)
+  return {
+    ...snap,
+    displayDefaults: Object.fromEntries(
+      Object.entries(written).filter(([key]) => !moving.includes(key)),
+    ),
+    displays: own
+      ? displays.map(d => (d === own ? { ...moved, ...d } : d))
+      : [
+          ...displays,
+          {
+            type: displayType,
+            displayId: `${snap.trackId}-${displayType}`,
+            ...moved,
+          },
+        ],
   }
 }

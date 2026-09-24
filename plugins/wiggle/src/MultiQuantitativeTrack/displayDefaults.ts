@@ -1,3 +1,5 @@
+import { moveDisplayDefaults } from '@jbrowse/display-kit/retiredSettings'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 // What a MultiQuantitativeTrack asks of the one quantitative display, which a
@@ -13,8 +15,6 @@ const DEFAULTS: Record<string, unknown> = {
   summaryScoreMode: 'avg',
   height: 200,
 }
-
-const WIGGLE_ENTRY_KEYS = ['facet', 'rows']
 
 const QUANTITATIVE_TRACK_TYPES = new Set([
   'QuantitativeTrack',
@@ -58,33 +58,7 @@ export function seedDisplayDefaults(snap: Record<string, unknown>) {
  * config wrote for it.
  */
 export function wiggleEntryShorthand(snap: Record<string, unknown>) {
-  const written = snap.displayDefaults as Record<string, unknown> | undefined
-  const moved = Object.fromEntries(
-    WIGGLE_ENTRY_KEYS.flatMap(key =>
-      written?.[key] === undefined ? [] : [[key, written[key]]],
-    ),
-  )
-  if (!written || Object.keys(moved).length === 0) {
-    return snap
-  }
-  const displays = wiggleDisplays(snap)
-  const wiggle = displays.find(d => d.type === 'LinearWiggleDisplay')
-  return {
-    ...snap,
-    displayDefaults: Object.fromEntries(
-      Object.entries(written).filter(([key]) => !(key in moved)),
-    ),
-    displays: wiggle
-      ? displays.map(d => (d === wiggle ? { ...moved, ...d } : d))
-      : [
-          ...displays,
-          {
-            type: 'LinearWiggleDisplay',
-            displayId: `${snap.trackId}-LinearWiggleDisplay`,
-            ...moved,
-          },
-        ],
-  }
+  return moveDisplayDefaults(snap, 'LinearWiggleDisplay', ['facet', 'rows'])
 }
 
 export default function MultiQuantitativeTrackDefaultsF(
