@@ -182,8 +182,8 @@ function scaleOf(
  * paired-end arc / read-cloud colors, and the linked-read connection curves.
  * `LegendMixin`'s `colorScales` lists them, so the on-screen key and the SVG
  * export derive from this one list and a heading can't appear in one and not
- * the other. Empty scales drop out of the key and titles only appear once more
- * than one survives, so a plain track still shows a single untitled list.
+ * the other. Empty scales drop out of the key, and a lone survivor's title
+ * heads the box.
  *
  * Reads and arcs are **one** section whenever they share a color, which is the
  * usual case: both classify pairs, and a shared bucket is the same swatch on
@@ -653,7 +653,7 @@ function getOverlapLegendItem(
 // `connectionLabel` derives its wording from THIS table rather
 // than restating it, which is what makes "the two overlays agree word for word"
 // true by construction — it has to be, because one legend box can show both and
-// `getAlignmentsLegendSections` de-dupes them on `${color} ${label}`.
+// `getAlignmentsColorScales` de-dupes them on `${color} ${label}`.
 export const SPLIT_JUNCTION_LABELS: Partial<Record<SwatchCategory, string>> = {
   splitInversion: 'Split alignment (inverted)',
   splitDeletion: 'Split alignment (same strand)',
@@ -727,7 +727,7 @@ export function arcKeyFoldsIntoReadKey({
  * never produces a strand bucket.
  *
  * Always the complete arc key. A partial overlap with the read key is resolved
- * in `getAlignmentsLegendSections`, by merging the two into one deduped list
+ * in `getAlignmentsColorScales`, by merging the two into one deduped list
  * rather than by subtracting here — a section that lists three of the seven
  * colors its own heading names is worse than the repetition it avoids.
  */

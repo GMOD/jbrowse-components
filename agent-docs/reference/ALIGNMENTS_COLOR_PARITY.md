@@ -39,7 +39,7 @@ The same shape covers the words. `connectionLabel` derives its wording from the
 slot's category through the read key, with `SPLIT_JUNCTION_LABELS` (legendUtils)
 as the documented override for the two junction rows — which the arc overlay
 reads too. This matters mechanically, not just aesthetically:
-`getAlignmentsLegendSections` de-dupes the connections section against the
+`getAlignmentsColorScales` de-dupes the connections section against the
 already-keyed rows on `` `${color} ${label}` ``, so a drifted string silently
 keys one connection twice in one box under two wordings.
 

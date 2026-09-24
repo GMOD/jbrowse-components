@@ -337,13 +337,6 @@ export function TrackColorsMixin() {
       },
       /**
        * #getter
-       * Whether the floating legend is up: the mode has a key worth drawing — a
-       * ramp, a label per track, a chip per category — and the reader has not
-       * closed it for this mode. Default and strand are read without one, and
-       * the by-chromosome modes have no fixed key to show.
-       */
-      /**
-       * #getter
        * Whether the mode has a key worth a box: a track palette, a ramp, or
        * a reader-named column. The two structural presets key nothing on
        * screen — their colors are the menu preview's.

@@ -1276,7 +1276,7 @@ export default function stateModelFactory(
            * is drawn, or when it shares the reads' scheme and merged into their
            * key — either way its legend section drops out of the box. A *partial*
            * overlap is not resolved here: this stays the complete arc key, and
-           * `getAlignmentsLegendSections` folds it into one deduped list.
+           * `getAlignmentsColorScales` folds it into one deduped list.
            */
           arcLegendItems() {
             return this.arcColorsMatchReads
