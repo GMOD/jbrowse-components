@@ -3135,6 +3135,7 @@
       "names": [
         "COLOR_SCHEMES",
         "DEFAULT_MARK_COLOR",
+        "DEFAULT_SIZE_RANGE_PX",
         "MISCONFIGURED_ABGR",
         "NO_VALUE_ABGR",
         "NO_VALUE_LABEL",
@@ -3382,6 +3383,18 @@
         "calcStdFromSums",
         "rectifyStats",
         "scoresToStats"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/svAlt": {
+      "package": "@jbrowse/core",
+      "names": [
+        "SV_SYMBOLIC_ALLELES",
+        "breakendKeepsDirections",
+        "getBreakendMateLocString",
+        "parseSvAlt",
+        "safeParseBreakend",
+        "svTypeOfAlt"
       ],
       "worker": "real"
     },
@@ -4810,12 +4823,16 @@
     "@jbrowse/render-core/marks": {
       "package": "@jbrowse/render-core",
       "names": [
+        "LINK_NO_REGION",
         "abgrToCssRgba",
         "appendGlyph",
         "backToFront",
         "barMark",
         "defineMark",
+        "ellipseDistance",
+        "ellipseNearest",
         "inkOfInstances",
+        "linkMark",
         "makeAbgrFill",
         "nearestMarkHit",
         "paintMarkBlocks",
@@ -4853,6 +4870,14 @@
         "inkViolations",
         "recordingContext",
         "sweepMarkAgainstHit"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/marks/ellipseDistance": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "ellipseDistance",
+        "ellipseNearest"
       ],
       "worker": "real"
     },
@@ -5147,6 +5172,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/render-core/shaders/curveDistance": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "distToWideCirclePx"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/render-core/shaders/hpmath": {
       "package": "@jbrowse/render-core",
       "names": [
@@ -5154,6 +5186,32 @@
         "snapBoxCenterYPx",
         "snapBoxHeightPx",
         "snapBoxTopPx"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/linkMark": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "linkApexPx",
+        "linkRadiiPx",
+        "linkStrokeWidthPx",
+        "linkValuePx"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/linkMarkConsts": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "LINK_CURVE_SEGMENTS",
+        "LINK_FAR_SCREEN_WIDTHS",
+        "LINK_MAX_REGIONS",
+        "LINK_NO_REGION",
+        "LINK_NO_SIZE",
+        "LINK_SHAPE_ARC",
+        "LINK_SHAPE_DOME",
+        "LINK_SIZE_CONSTANT",
+        "LINK_SIZE_SCALED",
+        "LINK_STEM_PX"
       ],
       "worker": "real"
     },

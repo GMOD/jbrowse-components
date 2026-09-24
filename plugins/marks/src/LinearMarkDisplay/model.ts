@@ -8,7 +8,13 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { assembleLocString, getDialogHost, pluralize } from '@jbrowse/core/util'
+import {
+  assembleLocString,
+  getDialogHost,
+  getSession,
+  pluralize,
+} from '@jbrowse/core/util'
+import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
@@ -51,7 +57,11 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/display-ui'
 import { addDisposer, cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
-import { inkOfInstances, pointInsetPx } from '@jbrowse/render-core/marks'
+import {
+  LINK_NO_REGION,
+  inkOfInstances,
+  pointInsetPx,
+} from '@jbrowse/render-core/marks'
 import {
   TreeSidebarMixin,
   buildSpatialIndex,
@@ -108,6 +118,7 @@ import {
   widestBinStep,
 } from './markRequest.ts'
 import { markLanes, plotsValue, readsValue } from './markSpecs.ts'
+import { DEFAULT_LINK_STROKE_PX } from './markVocabulary.ts'
 import {
   EMPTY_PLOT_SPEC,
   defaultPlotMarks,
@@ -159,7 +170,11 @@ import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { MarkRamp } from '@jbrowse/render-core/marks'
+import type {
+  LinkRegion,
+  LinkSizeScale,
+  MarkRamp,
+} from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type {
   IdentityChannel,
@@ -183,6 +198,7 @@ const MarkClusterDialog = lazy(
 )
 
 const NO_REGIONS: ReadonlyMap<number, MarkRegionData> = new Map()
+const NO_LINK_REGIONS: readonly LinkRegion[] = []
 
 function storedRegionData(result: EncodedFeaturesResult): MarkRegionData {
   return {
@@ -224,11 +240,74 @@ function marksValue(mark: MarkConfig) {
 }
 
 function markEntryOf(mark: MarkConfig): MarkEntry {
+  const valued = marksValue(mark)
   return {
     type: mark.mark,
     minBpPerPx: mark.minBpPerPx,
     maxBpPerPx: mark.maxBpPerPx,
-    placed: !readsValue(mark.mark) || marksValue(mark),
+    placed: !readsValue(mark.mark) || valued,
+    valued,
+    linkShape: mark.linkShape,
+  }
+}
+
+/** A displayed region as a link's far foot is looked up in it. */
+interface MateRegion {
+  index: number
+  refName: string
+  start: number
+  end: number
+  assemblyName: string
+}
+
+/**
+ * Each link layer's `x2Region`: the displayed region holding the far foot,
+ * its refName read through the assembly's aliases, or none. Once per fetch
+ * or region change, so a pan places through the shader's table alone.
+ */
+function withMateRegions(
+  data: MarkRegionData,
+  regions: readonly MateRegion[],
+  canonical: (assemblyName: string, refName: string) => string,
+): MarkRegionData {
+  const byRef = new Map<string, MateRegion[]>()
+  for (const region of regions) {
+    const list = byRef.get(region.refName)
+    if (list) {
+      list.push(region)
+    } else {
+      byRef.set(region.refName, [region])
+    }
+  }
+  const assemblies = [...new Set(regions.map(r => r.assemblyName))]
+  return {
+    ...data,
+    layers: data.layers.map(layer => {
+      const { x2Ref, x2RefNames } = layer
+      if (!x2Ref || !x2RefNames) {
+        return layer
+      }
+      const candidates = x2RefNames.map(name => {
+        const found: MateRegion[] = []
+        for (const assemblyName of assemblies) {
+          for (const region of byRef.get(canonical(assemblyName, name)) ?? []) {
+            if (region.assemblyName === assemblyName) {
+              found.push(region)
+            }
+          }
+        }
+        return found
+      })
+      const x2Region = new Uint32Array(layer.count)
+      for (let i = 0; i < layer.count; i++) {
+        const pos = layer.x2[i]!
+        const region = candidates[x2Ref[i]!]?.find(
+          r => pos >= r.start && pos < r.end,
+        )
+        x2Region[i] = region ? region.index : LINK_NO_REGION
+      }
+      return { ...layer, x2Region }
+    }),
   }
 }
 
@@ -412,7 +491,6 @@ export function stateModelFactory(
         const written: MarkSnapshot[] = getSnapshot(self.conf.marks)
         return this.markEntries.map((entry, i) => ({
           ...entry,
-          valued: marksValue(self.conf.marks[i]!),
           ownColor: written[i]?.encoding?.color !== undefined,
         }))
       },
@@ -464,7 +542,20 @@ export function stateModelFactory(
        * span leaves unread.
        */
       get markSizes(): number[] {
-        return self.conf.marks.map(m => m.size)
+        const written: MarkSnapshot[] = getSnapshot(self.conf.marks)
+        return self.conf.marks.map((m, i) =>
+          m.mark === 'link' && written[i]?.size === undefined
+            ? DEFAULT_LINK_STROKE_PX
+            : m.size,
+        )
+      },
+      /**
+       * #getter
+       * Whether any mark is a link, whose feet place through the view's
+       * regions rather than the block's own range.
+       */
+      get hasLinkMark(): boolean {
+        return self.conf.marks.some(m => m.mark === 'link')
       },
       /**
        * #getter
@@ -521,10 +612,13 @@ export function stateModelFactory(
             binEdges,
           )
           // A mark that may plot a value but names none asks for no `y` lane,
-          // so the worker fills no zeros for it to stand at.
-          const lanes = marksValue(m)
-            ? markLanes(m.mark)
-            : markLanes(m.mark).filter(lane => lane !== 'y')
+          // so the worker fills no zeros for it to stand at; the same for a
+          // size no field feeds.
+          const lanes = markLanes(m.mark).filter(
+            lane =>
+              (lane !== 'y' || marksValue(m)) &&
+              (lane !== 'size' || m.encoding.size.field !== ''),
+          )
           return {
             encoding: encodings[i]!,
             lanes,
@@ -755,6 +849,26 @@ export function stateModelFactory(
         () => layout.get(),
         facetRegion,
       )
+      const drawn = () =>
+        self.splitField === undefined ? self.featurePayloads : faceted()
+      const mateRegions = stableIdentityComputed((): MateRegion[] =>
+        self.host.displayedRegions.map((r, index) => ({
+          index,
+          refName: r.refName,
+          start: r.start,
+          end: r.end,
+          assemblyName: r.assemblyName,
+        })),
+      )
+      const canonical = (assemblyName: string, refName: string) =>
+        getSession(self)
+          .assemblyManager.get(assemblyName)
+          ?.getCanonicalRefName2(refName) ?? refName
+      const mated = createEncodeMemo(
+        () => (self.hasLinkMark ? drawn() : NO_REGIONS),
+        () => mateRegions.get(),
+        (data, regions) => withMateRegions(data, regions, canonical),
+      )
       return {
         /**
          * #getter
@@ -773,8 +887,7 @@ export function stateModelFactory(
          * only when it or the layout moves, which is what the upload re-packs.
          */
         get rpcDataMap(): ReadonlyMap<number, MarkRegionData> {
-          const drawn = faceted()
-          return self.splitField === undefined ? self.featurePayloads : drawn
+          return self.hasLinkMark ? mated() : drawn()
         },
       }
     })
@@ -1008,6 +1121,74 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * Each link mark's size scale: its declared ends, the open ones the
+       * least and greatest the loaded regions met, so a value strokes at one
+       * width in every region; undefined for a mark whose size names no
+       * field.
+       */
+      get sizeScales(): (LinkSizeScale | undefined)[] {
+        const payloads = [...self.featurePayloads.values()]
+        return self.conf.marks.map((_, i) => {
+          let scale: LinkSizeScale | undefined
+          let lo = Infinity
+          let hi = -Infinity
+          for (const { layers } of payloads) {
+            const table = layers[i]?.sizeScale
+            if (!table) {
+              continue
+            }
+            scale ??= {
+              domain: [table.domain[0], table.domain[1]],
+              scale: table.scale,
+              range: table.range,
+            }
+            lo = Math.min(lo, table.extent[0])
+            hi = Math.max(hi, table.extent[1])
+            if (!table.pinned[0] && Number.isFinite(lo)) {
+              scale.domain[0] = lo
+            }
+            if (!table.pinned[1] && Number.isFinite(hi)) {
+              scale.domain[1] = hi
+            }
+          }
+          return scale
+        })
+      },
+      /**
+       * #getter
+       * The view's displayed regions as a link's feet place through them:
+       * each anchored at its bp under the view's left edge, or its near end
+       * off screen, so a foot's offset from the anchor stays inside float32
+       * on the GPU. Empty where no mark is a link, reading nothing per frame.
+       */
+      get linkRegions(): readonly LinkRegion[] {
+        if (!self.hasLinkMark) {
+          return NO_LINK_REGIONS
+        }
+        const { displayedRegions, bpPerPx, offsetPx } = self.host
+        let bpSoFar = 0
+        return displayedRegions.map((region): LinkRegion => {
+          const leftPx = bpSoFar / bpPerPx - offsetPx
+          const spanBp = region.end - region.start
+          bpSoFar += spanBp
+          const nearPx = Math.min(
+            Math.max(leftPx, 0),
+            leftPx + spanBp / bpPerPx,
+          )
+          const anchorBp = Math.floor(
+            region.reversed
+              ? region.end - (nearPx - leftPx) * bpPerPx
+              : region.start + (nearPx - leftPx) * bpPerPx,
+          )
+          return {
+            anchorPx: leftPx + bpOffsetInRegion(region, anchorBp) / bpPerPx,
+            anchorBp,
+            signedPxPerBp: (region.reversed ? -1 : 1) / bpPerPx,
+          }
+        })
+      },
+      /**
+       * #getter
        * geometry and scale for the plot canvas, the same box the hit test
        * measures in
        */
@@ -1033,6 +1214,8 @@ export function stateModelFactory(
           origin: self.origin,
           minWidthPx: self.minWidthPx,
           markSizes: self.markSizes,
+          sizeScales: this.sizeScales,
+          linkRegions: this.linkRegions,
           valueInsetPx: this.valueInsetPx,
           rowCount: this.rowCount,
         }))

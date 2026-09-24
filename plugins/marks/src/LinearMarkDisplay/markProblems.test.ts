@@ -184,6 +184,14 @@ test('a size on a mark that draws no shape waits unread', () => {
   expect(found([{ mark: 'point', size: 8, encoding: { y: 'score' } }])).toEqual(
     [],
   )
+  expect(found([{ mark: 'link', size: 3 }])).toEqual([])
+})
+
+test('a linkShape on a mark that draws no link waits unread', () => {
+  expect(found([{ mark: 'span', linkShape: 'arc' }])).toEqual([
+    'warning unread-link-shape mark 0 linkShape',
+  ])
+  expect(found([{ mark: 'link', linkShape: 'arc' }])).toEqual([])
 })
 
 test('a valued mark beside a packed span is told it stands in the first row, unless they never draw together or a facet bands them', () => {

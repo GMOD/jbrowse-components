@@ -8,33 +8,6 @@ VCF breakend / structural-variant parsing and the shared SV launch helpers
 
 Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
-### breakendKeepsDirections
-
-Which way the sequence each end of a breakend KEEPS runs from its breakpoint, as
-`+1 = right` / `-1 = left` — the convention `StarFusionAdapter`'s
-`tickDirection` states and the one every producer in the tree emits.
-
-The two halves read their strings with OPPOSITE polarity, which is the whole
-reason to state them together. `Join: 'right'` says the mate piece is joined to
-the RIGHT of the ref base, so this end keeps the sequence to its left: negated.
-`MateDirection: 'right'` says the mate's own piece extends to the right of the
-mate position, which is already the direction it keeps: taken as read. So
-`N[chr2:2000[` is `{ joinDirection: -1, mateDirection: 1 }`, and that is the
-same pair `StarFusionAdapter` emits for the fusion it describes — the donor
-keeps the sequence below its breakpoint (-1) and the acceptor the sequence above
-its own (+1).
-
-Split out of `parseSvAlt` because a consumer holding an already-parsed
-`Breakend` was re-deriving it by hand, in two adjacent ternaries of opposite
-polarity — the shape that produced 78bb7b84f9.
-
-```js
-// type signature
-(bnd: Breakend) => { mateDirection: number; joinDirection: number; }
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
-
 ### breakendLocKey
 
 A breakend locstring reduced to the form two spellings of one locus compare
@@ -131,22 +104,6 @@ through `junctionEnds`; a record naming no other end spans its own extent.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
 
-### getBreakendMateLocString
-
-The mate locString ("chr2:100") of a parsed breakend, or undefined when it names
-no navigable position. Two ALT forms reach here without one: a single breakend
-(`.A` / `G.`) has no mate at all, and the symbolic-mate forms (`G<DEL>`,
-`<DEL>G`) get a placeholder `<DEL>:1` from parseBreakend, which puts a symbolic
-allele id where a contig name belongs. Callers that navigate or split-view a
-mate must drop both rather than treat `<DEL>` as a refName.
-
-```js
-// type signature
-(breakend?: Breakend | undefined) => string | undefined
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
-
 ### junctionEnds
 
 Where a paired record's junction is at each of its two ends, and which side of
@@ -212,30 +169,6 @@ the left panel, one keeping its LEFT is reversed on the right.
 ```js
 // type signature
 (keeps: number, side: "left" | "right") => boolean
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
-
-### parseSvAlt
-
-Parse raw (non-assembly-resolved) mate coordinates from a VCF SV feature+alt.
-Returns undefined when no mate coordinate info is found.
-
-```js
-// type signature
-(feature: Feature, alt?: string | undefined) => { mateRefName: string; matePos: number; mateDirection?: number | undefined; joinDirection?: number | undefined; } | undefined
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
-
-### safeParseBreakend
-
-parseBreakend, honoring its `Breakend | undefined` signature. ALT strings are
-user data and malformed breakends do occur;
-
-```js
-// type signature
-(alt: string) => Breakend | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)

@@ -1,16 +1,17 @@
 import type { MarkType } from './markVocabulary.ts'
 
 /** An encoding channel a mark reads, besides `x` and `x2`. */
-export type MarkChannel = 'y' | 'row' | 'color' | 'shape' | 'text'
+export type MarkChannel = 'y' | 'row' | 'color' | 'shape' | 'text' | 'size'
 
 /**
  * A lane the worker fills: a channel, a ramp's raw values, the point painter's
- * code for a `shape`, or the hit index.
+ * code for a `shape`, the sequence a far `x2` lies on, or the hit index.
  */
 export type MarkLane =
   | Exclude<MarkChannel, 'shape'>
   | 'colorValue'
   | 'glyph'
+  | 'x2Ref'
   | 'index'
 
 export interface MarkSpec {
@@ -30,6 +31,11 @@ export interface MarkSpec {
   readonly ramp: 'display' | 'worker'
   /** Whether the mark answers a hover, and so asks the worker for the hit index. */
   readonly hit: boolean
+  /**
+   * Whether the mark's `x2` may lie on another sequence, and so asks for the
+   * lane naming which.
+   */
+  readonly farFoot?: boolean
 }
 
 /**
@@ -66,6 +72,13 @@ export const MARK_SPECS = {
     value: 'optional',
     ramp: 'worker',
     hit: false,
+  },
+  link: {
+    channels: ['y', 'row', 'color', 'size'],
+    value: 'optional',
+    ramp: 'display',
+    hit: true,
+    farFoot: true,
   },
 } as const satisfies Record<MarkType, MarkSpec>
 
@@ -104,6 +117,7 @@ export function markLanes(type: MarkType): MarkLane[] {
           ? [channel, 'colorValue']
           : [channel],
     ),
+    ...(spec.farFoot ? (['x2Ref'] as const) : []),
     ...(spec.hit ? (['index'] as const) : []),
   ]
 }

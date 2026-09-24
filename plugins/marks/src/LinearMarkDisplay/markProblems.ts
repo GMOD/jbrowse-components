@@ -20,8 +20,9 @@ import {
 import type { ColorScaleName } from './markRuleFacts.ts'
 import type {
   AggregateOpName,
-  MarkType,
+  LinkShape,
   MarkSourceName,
+  MarkType,
 } from './markVocabulary.ts'
 
 /**
@@ -40,8 +41,10 @@ export type MarkProblemLevel = 'error' | 'warning'
 export const MARK_RULES = {
   /** A channel the mark's type does not read, such as `y` on a `span`. */
   'unread-channel': 'warning',
-  /** A `size` on a mark that draws no point. */
+  /** A `size` on a mark that draws no point and strokes no link. */
   'unread-size': 'warning',
+  /** A `linkShape` on a mark that draws no link. */
+  'unread-link-shape': 'warning',
   /** `source: "density"` on a `span` or a `text`, which cannot draw the sidecar's bins. */
   'span-density-source': 'warning',
   /** Threshold cuts that repeat, leaving an interval no value falls in. */
@@ -150,17 +153,19 @@ export interface RowsSnapshot {
 export type MarkSnapshot = {
   mark?: MarkType
   size?: number
+  linkShape?: LinkShape
   source?: MarkSourceName
   minBpPerPx?: number
   maxBpPerPx?: number
   encoding?: {
     x?: string
-    x2?: string
+    x2?: string | { pos?: string; chrom?: string }
     y?: string
     row?: string
     color?: ColorSnapshot
     shape?: unknown
     text?: string
+    size?: string | { field?: string }
   }
   transform?: StepSnapshot[]
 }
@@ -436,12 +441,21 @@ function ownProblems(
       )
     }
   }
-  if (mark.size !== undefined && type !== 'point') {
+  if (mark.size !== undefined && type !== 'point' && type !== 'link') {
     problems.push(
       found(
         'unread-size',
         'size',
-        `a ${type} draws no point, so it reads no size`,
+        `a ${type} draws no point and strokes no link, so it reads no size`,
+      ),
+    )
+  }
+  if (mark.linkShape !== undefined && type !== 'link') {
+    problems.push(
+      found(
+        'unread-link-shape',
+        'linkShape',
+        `a ${type} draws no link, so it reads no linkShape`,
       ),
     )
   }

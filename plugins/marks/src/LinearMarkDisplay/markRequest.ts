@@ -23,11 +23,11 @@ import type { Region } from '@jbrowse/core/util/types/data'
 // The config's raw slot values as the worker's encoding: a `jexl:` string
 // crosses untouched, which is why nothing here reads through `getConf`.
 export function encodingOf(mark: MarkConfig): MarkEncoding {
-  const { x, x2, y, row, shape, color, text } = mark.encoding
+  const { x, x2, y, row, shape, color, text, size } = mark.encoding
   const scaled = colorEncodingOf(color, 'categorical')
-  const readsText = (
-    MARK_SPECS[mark.mark].channels as readonly string[]
-  ).includes('text')
+  const channels = MARK_SPECS[mark.mark].channels as readonly string[]
+  const readsText = channels.includes('text')
+  const readsSize = channels.includes('size') && size.field !== ''
   const shapeEncoding: ShapeEncoding =
     markShapeScale(shape) === 'none'
       ? shape.value
@@ -39,7 +39,9 @@ export function encodingOf(mark: MarkConfig): MarkEncoding {
         }
   return {
     x,
-    x2,
+    // A far end on another sequence names the field holding which; a plain
+    // position crosses as the field alone.
+    x2: x2.chrom ? { chrom: x2.chrom, pos: x2.pos } : x2.pos,
     // The field alone: the worker reads a value, and the scale it is read
     // through is the display's `scales.y`. Shipping that scale would put the
     // axis type and its bounds in the fetch's inputs, so a menu toggle
@@ -51,6 +53,28 @@ export function encodingOf(mark: MarkConfig): MarkEncoding {
     // Only a mark that prints it sends it, so every other mark's request is
     // the one it was.
     ...(readsText && text ? { text } : {}),
+    ...(readsSize
+      ? {
+          size: {
+            field: size.field,
+            scale: size.scale,
+            ...(size.domainMin === undefined
+              ? {}
+              : { domainMin: size.domainMin }),
+            ...(size.domainMax === undefined
+              ? {}
+              : { domainMax: size.domainMax }),
+            ...(size.range.length === 2
+              ? {
+                  range: [Number(size.range[0]), Number(size.range[1])] as [
+                    number,
+                    number,
+                  ],
+                }
+              : {}),
+          },
+        }
+      : {}),
   }
 }
 

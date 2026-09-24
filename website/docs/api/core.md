@@ -32,6 +32,33 @@ those counts per bin and the bar spans the bin.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+## breakendKeepsDirections
+
+Which way the sequence each end of a breakend KEEPS runs from its breakpoint,
+as `+1 = right` / `-1 = left` — the convention `StarFusionAdapter`'s
+`tickDirection` states and the one every producer in the tree emits.
+
+The two halves read their strings with OPPOSITE polarity, which is the whole
+reason to state them together. `Join: 'right'` says the mate piece is joined
+to the RIGHT of the ref base, so this end keeps the sequence to its left:
+negated. `MateDirection: 'right'` says the mate's own piece extends to the
+right of the mate position, which is already the direction it keeps: taken as
+read. So `N[chr2:2000[` is `{ joinDirection: -1, mateDirection: 1 }`, and that
+is the same pair `StarFusionAdapter` emits for the fusion it describes — the
+donor keeps the sequence below its breakpoint (-1) and the acceptor the
+sequence above its own (+1).
+
+Split out of `parseSvAlt` because a consumer holding an already-parsed
+`Breakend` was re-deriving it by hand, in two adjacent ternaries of opposite
+polarity — the shape that produced 78bb7b84f9.
+
+```js
+// type signature
+(bnd: Breakend) => { mateDirection: number; joinDirection: number; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
+
 ## buildColorRampLut
 
 An RGBA lookup table over sampleColorRamp, laid out as the Nx1
@@ -206,7 +233,10 @@ alike.
 
 What surrounds an encode: the jexl instance a `jexl:` channel compiles
 against — a caller whose channels are all readers or field names passes
-none — and a progress reporter.
+none — a progress reporter, and the region the features were fetched for,
+in the adapter's naming, with which an `x2` on another sequence indexes
+over the whole region, since the curve to it reaches the region's edge
+from its near foot.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
@@ -352,6 +382,22 @@ every feature.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+## getBreakendMateLocString
+
+The mate locString ("chr2:100") of a parsed breakend, or undefined when it
+names no navigable position. Two ALT forms reach here without one: a single
+breakend (`.A` / `G.`) has no mate at all, and the symbolic-mate forms
+(`G<DEL>`, `<DEL>G`) get a placeholder `<DEL>:1` from parseBreakend, which
+puts a symbolic allele id where a contig name belongs. Callers that navigate
+or split-view a mate must drop both rather than treat `<DEL>` as a refName.
+
+```js
+// type signature
+(breakend?: Breakend | undefined) => string | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
+
 ## HitIndexed
 
 An encoded payload as a display stores it: the hit index the worker built
@@ -413,6 +459,15 @@ the lanes the display's mark reads.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+## LocusRef
+
+A position that may lie on another sequence: the field holding its refName
+and the field holding its 0-based coordinate, as a paired record states
+its mate (`{ chrom: 'mate.refName', pos: 'mate.start' }`). Spelt the way
+GenomeSpy spells a genomic position over two columns.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
 ## MarkEncoding
 
 The declared mapping from a feature's fields to a mark's channels. Every
@@ -433,6 +488,19 @@ a facet's stacked rows. The declared form is what crosses the wire; a
 reader or a value list is built in the worker.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
+## MateStep
+
+One feature per other end a record states: the `mate` a paired adapter
+fills in (BEDPE, STAR-Fusion), or each VCF `ALT` naming a locus, a
+breakend's mate or a symbolic allele's `END` on `CHR2` or its own
+sequence. Each answer carries `mate` (`refName`, `start`, `end`, 0-based
+and half-open, and the far end's `mateDirection`), its own end's
+`mateDirection`, the `alt` it came from and `svtype`, the record's
+`INFO.SVTYPE` or the allele's kind. A record naming no other end drops
+out, and two records or alleles stating one pair of ends answer once.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ## MISCONFIGURED_ABGR
 
@@ -496,6 +564,18 @@ which every comparison against it declines.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
+
+## parseSvAlt
+
+Parse raw (non-assembly-resolved) mate coordinates from a VCF SV feature+alt.
+Returns undefined when no mate coordinate info is found.
+
+```js
+// type signature
+(feature: Feature, alt?: string | undefined) => { mateRefName: string; matePos: number; mateDirection?: number | undefined; joinDirection?: number | undefined; } | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
 
 ## PileupStep
 
@@ -602,6 +682,18 @@ the encoder walks.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
 
+## safeParseBreakend
+
+parseBreakend, honoring its `Breakend | undefined` signature. ALT strings are
+user data and malformed breakends do occur;
+
+```js
+// type signature
+(alt: string) => Breakend | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
+
 ## sampleColorRamp
 
 The color at `t` in `[0, 1]` across a list of EVENLY SPACED stops, linearly
@@ -698,6 +790,33 @@ the field took.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+## SizeEncoding
+
+How a mark's `size` channel resolves: a number is a constant width in CSS
+px for every instance, a field name is `{ field }` with the defaults, and
+the object binds the field to a scale.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+## SizeRef
+
+A numeric field read through a linear or log scale into a width in CSS px:
+`range` is the px at each end of the domain (1 to 6 unset), and each end of
+the domain is pinned by `domainMin` or `domainMax` or follows the loaded
+regions' extremes where unset, as a colour ramp's does. A feature holding
+no number takes the range's first px.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+## SizeScaleTable
+
+The scale a size channel is read through: the `size` lane holds the raw
+values and the shape maps them to px through this, so a display unions
+`extent` over its loaded regions into the open ends of `domain` and every
+region strokes the same value at the same width.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
 ## stopsFromRampLut
 
 `n` evenly spaced legend stops read straight out of a
@@ -723,6 +842,19 @@ the color string.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
+
+## svTypeOfAlt
+
+The structural variant type an ALT allele spells: a symbolic allele's name
+(`<DEL>` and `<DUP:TANDEM>` give `DEL` and `DUP`), `BND` for a breakend,
+else undefined.
+
+```js
+// type signature
+(alt: string | undefined) => string | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
 
 ## thresholdCuts
 

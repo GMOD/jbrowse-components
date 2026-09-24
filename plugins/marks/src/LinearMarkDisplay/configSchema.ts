@@ -23,12 +23,16 @@ import {
 
 import { markColorSchema } from './markColorConfigSchema.ts'
 import { markFacetSchema } from './markFacetConfigSchema.ts'
+import { markLocusSchema } from './markLocusConfigSchema.ts'
+import { markSizeSchema } from './markSizeConfigSchema.ts'
 import { readsValue } from './markSpecs.ts'
 import { markTransformStep } from './markTransformConfigSchema.ts'
 import {
+  DEFAULT_LINK_SHAPE,
   DEFAULT_MARK_TYPE,
   DEFAULT_MARK_SOURCE,
   DEFAULT_TEXT_FIELD,
+  LINK_SHAPES,
   MARK_TYPES,
   MARK_SOURCES,
 } from './markVocabulary.ts'
@@ -132,13 +136,12 @@ const markEncodingSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.encoding.x2
-     * The feature field, or jexl expression, giving the mark's right edge in bp.
+     * The feature field, or jexl expression, giving the mark's right edge in
+     * bp, or for a link its far foot: an object naming the field holding
+     * the foot's sequence beside the one holding its position, where a mate
+     * may lie on another sequence.
      */
-    x2: {
-      type: 'featureField',
-      defaultValue: 'end',
-      description: 'right edge field',
-    },
+    x2: markLocusSchema,
     /**
      * #slot marks.encoding.y
      * The feature field, or jexl expression over `feature`, plotted on the score
@@ -190,6 +193,13 @@ const markEncodingSchema = ConfigurationSchema(
       defaultValue: DEFAULT_TEXT_FIELD,
       description: 'text field, or jexl expression',
     },
+    /**
+     * #slot marks.encoding.size
+     * For a link mark: a feature field read through a linear or log scale
+     * into a stroke width in px, `range` the px at each end of the domain.
+     * Empty strokes every link at the mark's own `size`.
+     */
+    size: markSizeSchema,
   },
   { closed: true },
 )
@@ -229,24 +239,41 @@ const markSchema = ConfigurationSchema(
      * is a band across the whole plot from `x` to `x2`; `text` prints a field
      * over the middle of `x` to `x2`, just above `y` where it names one and in
      * the middle of its band otherwise, and a label that would overlap one
-     * already placed to its left is left out.
+     * already placed to its left is left out; `link` is a curve from `x` up
+     * and over to `x2`, which may lie on another sequence, its apex at `y`
+     * where it names one.
      */
     mark: {
       type: 'stringEnum',
       model: types.enumeration('MarkType', [...MARK_TYPES]),
       defaultValue: DEFAULT_MARK_TYPE,
-      description: 'bar, point, span or text',
+      description: 'bar, point, span, text or link',
     },
     /**
      * #slot marks.size
-     * A point mark's diameter in px, the mark's own as a grammar's
-     * `size` is, so two point marks may differ; a bar, span or text reads
-     * none. The track menu's Point size writes it on every point mark.
+     * A point mark's diameter or a link's stroke width in px, the mark's own
+     * as a grammar's `size` is, so two marks may differ; a bar, span or text
+     * reads none, and a link whose `encoding.size` names a field reads that
+     * instead. Unwritten, a link strokes at 2 px. The track menu's Point
+     * size writes it on every point mark.
      */
     size: {
       type: 'number',
       defaultValue: DEFAULT_POINT_DIAMETER_PX,
-      description: 'point diameter in px',
+      description: 'point diameter or link stroke in px',
+    },
+    /**
+     * #slot marks.linkShape
+     * How a link mark naming no `y` rises: `dome`, a half-ellipse whose apex
+     * is the pair's half-width clamped to the band, or `arc`, a true
+     * semicircle that may leave it. Past three block widths either becomes
+     * a circle whose legs rise from each foot.
+     */
+    linkShape: {
+      type: 'stringEnum',
+      model: types.enumeration('LinkShape', [...LINK_SHAPES]),
+      defaultValue: DEFAULT_LINK_SHAPE,
+      description: 'dome or arc',
     },
     /**
      * #slot marks.encoding

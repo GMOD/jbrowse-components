@@ -24,7 +24,7 @@ import LinearGenomeViewPlugin, {
   linearGenomeViewStateModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
 import WigglePlugin from '@jbrowse/plugin-wiggle'
-import { pointInsetPx } from '@jbrowse/render-core/marks'
+import { LINK_NO_REGION, pointInsetPx } from '@jbrowse/render-core/marks'
 import { makePinCurrentRangeItem } from '@jbrowse/wiggle-core'
 import { render, screen, waitFor } from '@testing-library/react'
 import { autorun } from 'mobx'
@@ -61,11 +61,12 @@ const WIDE_REGION = {
 
 function createTestEnvironment(
   marks: unknown[],
-  region = REGION,
+  region: typeof REGION | (typeof REGION)[] = REGION,
   adapterType = 'BedAdapter',
   display: Record<string, unknown> = {},
   rpcCall?: (sessionId: string, method: string, args: unknown) => unknown,
 ) {
+  const regions = Array.isArray(region) ? region : [region]
   return createDisplayTestEnvironment<LinearMarkDisplayModel>({
     plugins: [new LinearGenomeViewPlugin(), new WigglePlugin()],
     trackType: 'FeatureTrack',
@@ -75,8 +76,8 @@ function createTestEnvironment(
     stateModel: (pm, schema) => stateModelFactory(pm, schema),
     viewModel: linearGenomeViewStateModelFactory,
     displayConfig: { marks, ...display },
-    regions: [region],
-    assemblyRegions: [region],
+    regions,
+    assemblyRegions: regions,
     onViewReady: view => {
       view.showAllRegions()
     },
@@ -987,7 +988,7 @@ test('a mistyped key on a mark, a step or an op is refused where the config is r
       { mark: 'bar', encoding: { y: 'score' }, transform: [{ step: 1000 }] },
     ]).createDisplay(),
   ).toThrow(
-    'a MarkTransform names its type, one of filter, formula, bin, aggregate, coverage, flatten and pileup, and names none',
+    'a MarkTransform names its type, one of filter, formula, bin, aggregate, coverage, flatten, pileup and mate, and names none',
   )
   expect(() =>
     createTestEnvironment([
@@ -2676,4 +2677,155 @@ test('a failed scan is tried again on the next ask', async () => {
   expect((await display.ensurePlotFields()).numeric).toEqual(['score'])
   expect(display.plotFieldsError).toBeUndefined()
   expect(scanned).toHaveLength(2)
+})
+
+const LINK = {
+  mark: 'link',
+  encoding: {
+    x2: { chrom: 'mate.refName', pos: 'mate.start' },
+    size: { field: 'score', scale: 'log', range: [1, 8] },
+    color: 'red',
+  },
+  transform: [{ type: 'mate' }],
+}
+
+function linkLayer(
+  x: number[],
+  x2: number[],
+  x2Ref: number[],
+  x2RefNames: string[],
+  size?: number[],
+): Layer {
+  const count = x.length
+  return {
+    count,
+    skipped: 0,
+    x: Uint32Array.from(x),
+    x2: Uint32Array.from(x2),
+    x2Ref: Uint32Array.from(x2Ref),
+    x2RefNames,
+    color: new Uint32Array(count),
+    featureIndex: Uint32Array.from(x.map((_, i) => i)),
+    yMin: Infinity,
+    yMax: -Infinity,
+    ...(size
+      ? {
+          size: Float32Array.from(size),
+          sizeScale: {
+            field: 'score',
+            scale: 'log' as const,
+            domain: [Math.min(...size), 100] as [number, number],
+            pinned: [false, true] as [boolean, boolean],
+            range: [1, 8] as [number, number],
+            extent: [Math.min(...size), Math.max(...size)] as [number, number],
+          },
+        }
+      : {}),
+  }
+}
+
+test('a link mark sends its far foot as a locus, its size as a scale, and asks for the lanes both need', () => {
+  const { display } = createTestEnvironment([LINK]).createDisplay()
+  expect(display.hasLinkMark).toBe(true)
+  expect(display.rpcProps().layers[0]).toMatchObject({
+    encoding: {
+      x2: { chrom: 'mate.refName', pos: 'mate.start' },
+      size: { field: 'score', scale: 'log', range: [1, 8] },
+    },
+    lanes: ['row', 'color', 'colorValue', 'size', 'x2Ref', 'index'],
+    transform: [{ type: 'mate' }],
+  })
+  expect(display.markList.map(m => m.pass.id)).toEqual(['link#0'])
+  // unwritten, a link strokes at its own 2 px rather than a point's diameter
+  expect(display.markSizes).toEqual([2])
+  const plain = createTestEnvironment([
+    { mark: 'link', encoding: { x2: 'mate.start' }, size: 3 },
+  ]).createDisplay().display
+  expect(plain.rpcProps().layers[0]).toMatchObject({
+    encoding: { x2: 'mate.start' },
+    lanes: ['row', 'color', 'colorValue', 'x2Ref', 'index'],
+  })
+  expect(plain.markSizes).toEqual([3])
+  expect(plain.markEntries[0]).toMatchObject({
+    linkShape: 'dome',
+    valued: false,
+  })
+})
+
+test('each far foot resolves to the displayed region holding it, or to none', () => {
+  const ctgB = { refName: 'ctgB', start: 0, end: 5000, assemblyName: 'volvox' }
+  const { display } = createTestEnvironment(
+    [LINK],
+    [REGION, ctgB],
+  ).createDisplay()
+  display.setRpcData(
+    0,
+    {
+      layers: [
+        linkLayer(
+          [100, 200, 300, 400],
+          [5000, 4000, 9000, 42],
+          [0, 1, 1, 2],
+          ['ctgA', 'ctgB', 'ctgC'],
+        ),
+      ],
+    },
+    REGION,
+  )
+  const [layer] = display.rpcDataMap.get(0)!.layers
+  expect([...layer!.x2Region!]).toEqual([0, 1, LINK_NO_REGION, LINK_NO_REGION])
+  // a display with no link mark hands its payloads through untouched
+  const bars = createTestEnvironment([
+    { mark: 'bar', encoding: { y: 'score' } },
+  ]).createDisplay().display
+  bars.setRpcData(0, result([{ y: [1] }]), REGION)
+  expect(bars.rpcDataMap.get(0)!.layers[0]!.x2Region).toBeUndefined()
+})
+
+test('the link regions place a bp where the view does, and are empty without a link mark', () => {
+  const ctgB = { refName: 'ctgB', start: 0, end: 5000, assemblyName: 'volvox' }
+  const { display, view } = createTestEnvironment(
+    [LINK],
+    [REGION, ctgB],
+  ).createDisplay()
+  view.scrollTo(300)
+  const regions = display.linkRegions
+  expect(regions).toHaveLength(2)
+  for (const [i, { refName, coord }] of [
+    [0, { refName: 'ctgA', coord: 4000 }],
+    [1, { refName: 'ctgB', coord: 1234 }],
+  ] as const) {
+    const { anchorPx, anchorBp, signedPxPerBp } = regions[i]!
+    const px = anchorPx + (coord - anchorBp) * signedPxPerBp
+    const own = view.bpToPx({ refName, coord })!.offsetPx - view.offsetPx
+    expect(Math.abs(px - own)).toBeLessThan(1)
+    // the anchor is a bp of the region, near the view's left edge
+    expect(anchorBp).toBeGreaterThanOrEqual(i === 0 ? REGION.start : ctgB.start)
+  }
+  const bars = createTestEnvironment([
+    { mark: 'bar', encoding: { y: 'score' } },
+  ]).createDisplay().display
+  expect(bars.linkRegions).toEqual([])
+})
+
+test('a size scale unions its open end over the regions and keeps the pinned one', () => {
+  const ctgB = { refName: 'ctgB', start: 0, end: 5000, assemblyName: 'volvox' }
+  const { display } = createTestEnvironment(
+    [LINK],
+    [REGION, ctgB],
+  ).createDisplay()
+  display.setRpcData(
+    0,
+    { layers: [linkLayer([100], [200], [0], ['ctgA'], [10])] },
+    REGION,
+  )
+  display.setRpcData(
+    1,
+    { layers: [linkLayer([100], [200], [0], ['ctgB'], [3])] },
+    ctgB,
+  )
+  expect(display.sizeScales).toEqual([
+    { domain: [3, 100], scale: 'log', range: [1, 8] },
+  ])
+  expect(display.renderState.sizeScales).toEqual(display.sizeScales)
 })

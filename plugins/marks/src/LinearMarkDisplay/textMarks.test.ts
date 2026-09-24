@@ -47,6 +47,7 @@ function entry(
     maxBpPerPx: 0,
     placed: true,
     valued: true,
+    linkShape: 'dome',
     ownColor: true,
     ...extra,
   }
@@ -73,6 +74,8 @@ const STATE: MarkRenderState = {
   origin: 0,
   minWidthPx: 1,
   markSizes: [4, 4],
+  sizeScales: [],
+  linkRegions: [],
   valueInsetPx: 0,
   rowCount: 1,
 }

@@ -7547,6 +7547,38 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "MarkLocus": {
+      "title": "MarkLocus",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"pos\\": ... }\`.",
+          "$ref": "#/$defs/FeatureField",
+          "default": "end",
+          "type": "string"
+        },
+        {
+          "title": "MarkLocus",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "pos": {
+              "description": "position field.",
+              "$ref": "#/$defs/FeatureField",
+              "default": "end"
+            },
+            "chrom": {
+              "description": "sequence field; empty is the feature’s own.",
+              "$ref": "#/$defs/FeatureField",
+              "default": ""
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "MarkColor": {
       "title": "MarkColor",
       "anyOf": [
@@ -7740,6 +7772,67 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "MarkSize": {
+      "title": "MarkSize",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "$ref": "#/$defs/FeatureField",
+          "default": "",
+          "type": "string"
+        },
+        {
+          "title": "MarkSize",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "feature field, or jexl expression.",
+              "$ref": "#/$defs/FeatureField",
+              "default": ""
+            },
+            "scale": {
+              "description": "linear or log.",
+              "enum": [
+                "linear",
+                "log"
+              ],
+              "default": "linear"
+            },
+            "domainMin": {
+              "description": "value at the thinnest width; unset follows the regions.",
+              "type": "number"
+            },
+            "domainMax": {
+              "description": "value at the widest width; unset follows the regions.",
+              "type": "number"
+            },
+            "range": {
+              "description": "px at each end of the domain.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "MarkEncoding": {
       "title": "MarkEncoding",
       "type": "object",
@@ -7751,9 +7844,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "start"
         },
         "x2": {
-          "description": "right edge field.",
-          "$ref": "#/$defs/FeatureField",
-          "default": "end"
+          "$ref": "#/$defs/MarkLocus"
         },
         "y": {
           "description": "value field, or jexl expression.",
@@ -7775,6 +7866,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "text field, or jexl expression.",
           "$ref": "#/$defs/FeatureField",
           "default": "name"
+        },
+        "size": {
+          "$ref": "#/$defs/MarkSize"
         }
       },
       "patternProperties": {
@@ -8009,6 +8103,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "MarkTransform.mate": {
+      "title": "MarkTransform.mate",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "type": {
+          "const": "mate"
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "MarkTransform": {
       "title": "MarkTransform",
       "type": "object",
@@ -8021,7 +8129,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "aggregate",
             "coverage",
             "flatten",
-            "pileup"
+            "pileup",
+            "mate"
           ]
         }
       },
@@ -8140,6 +8249,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "then": {
             "$ref": "#/$defs/MarkTransform.pileup"
           }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "mate"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.mate"
+          }
         }
       ]
     },
@@ -8189,19 +8314,28 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "mark": {
-          "description": "bar, point, span or text.",
+          "description": "bar, point, span, text or link.",
           "enum": [
             "bar",
             "point",
             "span",
-            "text"
+            "text",
+            "link"
           ],
           "default": "bar"
         },
         "size": {
-          "description": "point diameter in px.",
+          "description": "point diameter or link stroke in px.",
           "type": "number",
           "default": 4
+        },
+        "linkShape": {
+          "description": "dome or arc.",
+          "enum": [
+            "dome",
+            "arc"
+          ],
+          "default": "dome"
         },
         "encoding": {
           "$ref": "#/$defs/MarkEncoding"

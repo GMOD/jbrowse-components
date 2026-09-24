@@ -68,6 +68,7 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
         request.lanes,
         {
           jexl,
+          region: args.region,
           report: createProgressReporter({
             label: 'Processing features',
             total: features.length,

@@ -29,7 +29,12 @@ expression's value into a field; `bin` snaps each feature to a
 genome-aligned bin; `aggregate` folds each group into one feature carrying
 its summaries; `coverage` replaces the features with runs of how many
 overlap each stretch; `flatten` fans out an array field; `pileup` writes
-each feature's row in a greedy first-fit packing.
+each feature's row in a greedy first-fit packing; `mate` answers one
+feature per other end a record states, the `mate` a paired adapter fills
+in (BEDPE, STAR-Fusion) or each VCF `ALT` naming a locus, with
+`mate.refName`, `mate.start`, `mate.end` and `mate.mateDirection`, the
+record's own `mateDirection`, the `alt` it came from and `svtype` written,
+a record naming no other end dropped and a pair of ends answered once.
 
 ## Config slots
 

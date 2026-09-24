@@ -718,7 +718,8 @@ reported under its id:
 | `step-field-expression` | error | A step's field written as a `jexl:` expression, where a step reads a name or a dotted path. |
 | `unwritten-y` | error | A `y` naming a field that no `aggregate` or `coverage` step before it writes. |
 | `unread-channel` | warning | A channel the mark's type does not read, such as `y` on a `span`. |
-| `unread-size` | warning | A `size` on a mark that draws no point. |
+| `unread-size` | warning | A `size` on a mark that draws no point and strokes no link. |
+| `unread-link-shape` | warning | A `linkShape` on a mark that draws no link. |
 | `span-density-source` | warning | `source: "density"` on a `span` or a `text`, which cannot draw the sidecar's bins. |
 | `threshold-cuts` | warning | Threshold cuts that repeat, leaving an interval no value falls in. |
 | `threshold-range` | warning | A threshold `range` not one colour longer than its cuts. |

@@ -5,9 +5,18 @@
  * and `jbrowse validate` carries a copy of both.
  */
 
-export const MARK_TYPES = ['bar', 'point', 'span', 'text'] as const
+export const MARK_TYPES = ['bar', 'point', 'span', 'text', 'link'] as const
 export type MarkType = (typeof MARK_TYPES)[number]
 export const DEFAULT_MARK_TYPE: MarkType = 'bar'
+
+export const LINK_SHAPES = ['dome', 'arc'] as const
+export type LinkShape = (typeof LINK_SHAPES)[number]
+export const DEFAULT_LINK_SHAPE: LinkShape = 'dome'
+/** The stroke a link draws at where its `size` is left unwritten. */
+export const DEFAULT_LINK_STROKE_PX = 2
+
+export const SIZE_SCALES = ['linear', 'log'] as const
+export type SizeScaleName = (typeof SIZE_SCALES)[number]
 
 export const MARK_SOURCES = ['features', 'density'] as const
 export type MarkSourceName = (typeof MARK_SOURCES)[number]

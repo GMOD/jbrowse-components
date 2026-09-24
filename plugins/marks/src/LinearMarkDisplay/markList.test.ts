@@ -65,6 +65,8 @@ function entries(...types: MarkEntry['type'][]): MarkEntry[] {
     minBpPerPx: 0,
     maxBpPerPx: 0,
     placed: true,
+    valued: type === 'bar' || type === 'point',
+    linkShape: 'dome',
   }))
 }
 
@@ -79,6 +81,8 @@ const state: MarkRenderState = {
   origin: 0,
   minWidthPx: 1,
   markSizes: [4, 4, 4, 4],
+  sizeScales: [],
+  linkRegions: [],
   valueInsetPx: pointInsetPx(4),
   rowCount: 1,
 }
@@ -375,7 +379,14 @@ test('every mark places its value through the display s one domain', () => {
 
 test('a mark outside its zoom range neither draws nor answers a hover', () => {
   const [mark] = buildMarkList([
-    { type: 'bar', minBpPerPx: 10, maxBpPerPx: 0, placed: true },
+    {
+      type: 'bar',
+      minBpPerPx: 10,
+      maxBpPerPx: 0,
+      placed: true,
+      valued: true,
+      linkShape: 'dome',
+    },
   ])
   const hal = new MockHal([mark!.pass])
   const scratch = new ArrayBuffer(mark!.pass.uniformByteSize)

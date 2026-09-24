@@ -6031,6 +6031,10 @@ export const configManifest: ConfigManifest = {
               "type": "number"
             },
             {
+              "name": "linkShape",
+              "type": "LinkShape"
+            },
+            {
               "name": "encoding",
               "type": "MarkEncodingConfigurationSchema",
               "subSlots": [
@@ -6040,7 +6044,18 @@ export const configManifest: ConfigManifest = {
                 },
                 {
                   "name": "x2",
-                  "type": "string"
+                  "type": "MarkLocusConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "pos",
+                      "type": "string"
+                    },
+                    {
+                      "name": "chrom",
+                      "type": "string"
+                    }
+                  ],
+                  "shorthand": "pos"
                 },
                 {
                   "name": "y",
@@ -6136,12 +6151,40 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "text",
                   "type": "string"
+                },
+                {
+                  "name": "size",
+                  "type": "MarkSizeConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "field",
+                      "type": "string"
+                    },
+                    {
+                      "name": "scale",
+                      "type": "SizeScale"
+                    },
+                    {
+                      "name": "domainMin",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "domainMax",
+                      "type": "(number | undefined)"
+                    },
+                    {
+                      "name": "range",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    }
+                  ],
+                  "shorthand": "field"
                 }
               ]
             },
             {
               "name": "transform",
-              "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | pileupConfigurationSchema)[]"
+              "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
             },
             {
               "name": "source",
@@ -6159,7 +6202,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "transform",
-          "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | pileupConfigurationSchema)[]"
+          "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
         },
         {
           "name": "facet",
@@ -6176,7 +6219,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "transform",
-              "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | pileupConfigurationSchema)[]"
+              "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
             }
           ],
           "shorthand": "field"

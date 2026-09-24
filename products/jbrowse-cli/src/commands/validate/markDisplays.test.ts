@@ -131,6 +131,19 @@ describe('a marks list in a config file', () => {
     expect(found([{ mark: 'span', size: 8 }])).toEqual([
       `warning unread-size ${DISPLAY}.marks[0].size`,
     ])
+    expect(found([{ mark: 'span', linkShape: 'arc' }])).toEqual([
+      `warning unread-link-shape ${DISPLAY}.marks[0].linkShape`,
+    ])
+    expect(
+      found([
+        {
+          mark: 'link',
+          linkShape: 'arc',
+          size: 3,
+          encoding: { x2: { chrom: 'mate.refName', pos: 'mate.start' } },
+        },
+      ]),
+    ).toEqual([])
   })
 
   it('tells a valued mark beside a packed span it stands in the first row, unless they never draw together or a facet bands them', () => {
@@ -574,7 +587,7 @@ describe('a transform step in a config file', () => {
 
   it('names a type the list has', () => {
     expect(stepProblems({ type: 'fliter', expr: 'jexl:true' })).toEqual([
-      `${STEP}.type: expected one of "filter", "formula", "bin", "aggregate", "coverage", "flatten", "pileup", got "fliter"`,
+      `${STEP}.type: expected one of "filter", "formula", "bin", "aggregate", "coverage", "flatten", "pileup", "mate", got "fliter"`,
     ])
   })
 

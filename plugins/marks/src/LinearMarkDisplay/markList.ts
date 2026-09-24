@@ -2,21 +2,24 @@ import { CANVAS_SEAM_PX } from '@jbrowse/render-core/canvas2dUtils'
 import {
   barMark,
   defineMark,
+  linkMark,
   pointMark,
   spanMark,
 } from '@jbrowse/render-core/marks'
 
 import type { MarkType } from './configSchema.ts'
+import type { LinkShape } from './markVocabulary.ts'
 import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter/zoomRange'
 import type {
   CoreEncodeFeaturesArgs,
-  Encoded,
   EncodedChannels,
   FacetSection,
   HitIndexed,
   LaneName,
 } from '@jbrowse/core/util/markEncoding'
 import type {
+  LinkRegion,
+  LinkSizeScale,
   Mark,
   MarkFrame,
   MarkRamp,
@@ -24,15 +27,23 @@ import type {
   MarkValueScaleType,
 } from '@jbrowse/render-core/marks'
 
-export type StoredLayer = HitIndexed<EncodedChannels>
+export type StoredLayer = HitIndexed<EncodedChannels> & {
+  /**
+   * The displayed region each `x2` lies on, resolved on the main thread from
+   * the worker's `x2Ref` against the view's regions; `LINK_NO_REGION` for
+   * none. Present on a link's layer alone.
+   */
+  x2Region?: Uint32Array
+}
 
-type ChannelLane = Exclude<LaneName, 'index'>
+type ChannelLane = Exclude<LaneName, 'index'> | 'x2Region'
 
 // Colour is checked apart from these, since either of two lanes carries it.
 const MARK_VALUE_LANES = {
   bar: ['y'],
   point: ['y', 'glyph'],
   span: ['row', 'color'],
+  link: ['x2Region'],
 } as const satisfies Record<Exclude<MarkType, 'text'>, readonly ChannelLane[]>
 
 // A payload fetched before a mark type change packs nothing rather than a lane of
@@ -40,7 +51,7 @@ const MARK_VALUE_LANES = {
 function hasLanes<L extends ChannelLane>(
   layer: StoredLayer,
   lanes: readonly L[],
-): layer is StoredLayer & Encoded<L> {
+): layer is StoredLayer & Required<Pick<StoredLayer, L>> {
   if (layer.color === undefined && layer.colorValue === undefined) {
     return false
   }
@@ -84,8 +95,15 @@ export interface MarkRenderState extends MarkFrame {
   bpPerPx: number
   origin: number
   minWidthPx: number
-  /** Mark `i`'s `size`: a point's diameter in px. */
+  /** Mark `i`'s `size`: a point's diameter or a link's stroke in px. */
   markSizes: number[]
+  /** Mark `i`'s size scale, where its `encoding.size` names a field. */
+  sizeScales: (LinkSizeScale | undefined)[]
+  /**
+   * The view's displayed regions as a link's feet place through them, empty
+   * where no mark is a link.
+   */
+  linkRegions: readonly LinkRegion[]
   /** The px the y scale stands in from both ends of its band, the axis's own. */
   valueInsetPx: number
   /** The bands the plot is split into: the facet's, or the highest `row` any loaded layer carries plus one. */
@@ -108,6 +126,10 @@ export interface MarkEntry {
   maxBpPerPx: number
   /** Whether the mark has somewhere to stand: a bar or point naming no `y` draws nowhere. */
   placed: boolean
+  /** Whether the mark names a `y` to stand at; a text or link without one stands by its band. */
+  valued: boolean
+  /** How a link naming no `y` rises. */
+  linkShape: LinkShape
 }
 
 /**
@@ -117,8 +139,6 @@ export interface MarkEntry {
  * label reads.
  */
 export interface TextMarkEntry extends MarkEntry {
-  /** Whether the mark names a `y` to stand at; without one it stands in the middle of its band. */
-  valued: boolean
   /**
    * Whether the config writes the mark's colour, or leaves it at the mark
    * default. Left at the default, a label prints in the surface's text colour.
@@ -267,6 +287,28 @@ function shapeMark(entry: MarkEntry, i: number) {
           seamPx: 0,
           scrollTop: 0,
         }),
+        enabled,
+      })
+    }
+    case 'link': {
+      return defineMark({
+        shape: withPassId(linkMark, id),
+        channels: (d: MarkRegionData) =>
+          withLanes(d.layers[i], MARK_VALUE_LANES.link),
+        params: (s: MarkRenderState) => ({
+          domain: s.domainY,
+          scaleType: s.scaleTypeY,
+          symlogConstant: s.symlogConstantY,
+          ramp: s.colorRamps[i],
+          regions: s.linkRegions,
+          linkShape: entry.linkShape,
+          valued: entry.valued,
+          sizePx: s.markSizes[i]!,
+          sizeScale: s.sizeScales[i],
+          insetPx: s.valueInsetPx,
+          rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
+        }),
+        texture: (s: MarkRenderState) => s.colorRamps[i]?.lut,
         enabled,
       })
     }

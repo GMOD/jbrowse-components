@@ -76,6 +76,22 @@ const EVERY_SPELLING: Record<string, unknown> = {
       },
       transform: [{ type: 'bin', step: 1000, as: ['from', 'to'] }],
     },
+    {
+      mark: 'link',
+      linkShape: 'arc',
+      size: 3,
+      encoding: {
+        x2: { chrom: 'mate.refName', pos: 'mate.start' },
+        size: {
+          field: 'score',
+          scale: 'log',
+          domainMin: 1,
+          domainMax: 100,
+          range: [1, 8],
+        },
+      },
+      transform: [{ type: 'mate' }],
+    },
   ],
 }
 
