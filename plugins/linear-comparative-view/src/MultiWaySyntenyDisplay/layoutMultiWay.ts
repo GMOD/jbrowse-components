@@ -247,13 +247,13 @@ export function groupSpansLanes(group: MultiWayGroup) {
 // count of placements had put the broken one on top. Weighed over the whole
 // fetched block set rather than the viewport, so the order holds still across
 // the pans that keep one fetch. `preferred` (the display's domain) pins the
-// lanes it names to the top, in its order — through `isSameName`, because a
-// session spec spells an assembly the way the session does while a placement
-// spells it the way the table's BED did.
+// lanes it names to the top, in its order — joined on `keyOf`, the canonical
+// name, because a session spec spells an assembly the way the session does
+// while a placement spells it the way the table's BED did.
 export function rowAssembliesOf(
   groups: MultiWayGroup[],
   preferred: string[],
-  isSameName: (a: string, b: string) => boolean,
+  keyOf: (assemblyName: string) => string = name => name,
 ) {
   const appearance = new Map<string, number>()
   const placedWeight = new Map<string, number>()
@@ -274,15 +274,18 @@ export function rowAssembliesOf(
       placedWeight.get(b)! - placedWeight.get(a)! ||
       appearance.get(a)! - appearance.get(b)!,
   )
-  const pinned: string[] = []
+  const byKey = new Map<string, string[]>()
+  for (const assemblyName of present) {
+    const key = keyOf(assemblyName)
+    byKey.set(key, [...(byKey.get(key) ?? []), assemblyName])
+  }
+  const pinned = new Set<string>()
   for (const name of preferred) {
-    for (const assemblyName of present) {
-      if (isSameName(assemblyName, name) && !pinned.includes(assemblyName)) {
-        pinned.push(assemblyName)
-      }
+    for (const assemblyName of byKey.get(keyOf(name)) ?? []) {
+      pinned.add(assemblyName)
     }
   }
-  return [...pinned, ...present.filter(name => !pinned.includes(name))]
+  return [...pinned, ...present.filter(name => !pinned.has(name))]
 }
 
 // The one tick interval the whole track draws at, picked off the anchor's

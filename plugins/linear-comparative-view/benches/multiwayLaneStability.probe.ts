@@ -271,9 +271,7 @@ function changes<T>(series: T[]) {
 
 const features = await anchorFeatures()
 const groups = groupFeatures(features)
-const lanes = rowAssembliesOf(groups, [], (a, b) => a === b).filter(
-  a => a !== ANCHOR_ASSEMBLY,
-)
+const lanes = rowAssembliesOf(groups, []).filter(a => a !== ANCHOR_ASSEMBLY)
 console.log(
   `${features.length} pairwise features, ${groups.length} groups, ${lanes.length} lanes`,
 )

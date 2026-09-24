@@ -230,18 +230,15 @@ test('groups by anchor gene, dedupes repeated mates, sorts by anchor position', 
   expect(groups[1]!.mates.has('cacao')).toBe(false)
 })
 
-// the display binds this to `isSameAssemblyName` over the session's assembly
-// manager; a fixture spelling every name canonically needs only equality
-const exactName = (a: string, b: string) => a === b
-
 test('row assemblies come out densest lane first, domain pinning over that', () => {
-  expect(rowAssembliesOf(groupFeatures(features), [], exactName)).toEqual([
+  expect(rowAssembliesOf(groupFeatures(features), [])).toEqual([
     'peach',
     'cacao',
   ])
-  expect(
-    rowAssembliesOf(groupFeatures(features), ['cacao'], exactName),
-  ).toEqual(['cacao', 'peach'])
+  expect(rowAssembliesOf(groupFeatures(features), ['cacao'])).toEqual([
+    'cacao',
+    'peach',
+  ])
 })
 
 // `domain` is authored in a track's config or a session spec, so it spells an
@@ -253,11 +250,7 @@ test('domain pins a lane it names through an alias', () => {
   const canonical = (name: string) =>
     name === 'Theobroma_cacao' ? 'cacao' : name
   expect(
-    rowAssembliesOf(
-      groupFeatures(features),
-      ['Theobroma_cacao'],
-      (a, b) => canonical(a) === canonical(b),
-    ),
+    rowAssembliesOf(groupFeatures(features), ['Theobroma_cacao'], canonical),
   ).toEqual(['cacao', 'peach'])
 })
 
@@ -294,7 +287,7 @@ test('a sparse lane sorts below a denser one that appears after it', () => {
       }),
     ),
   ]
-  expect(rowAssembliesOf(groupFeatures(sparseFirst), [], exactName)).toEqual([
+  expect(rowAssembliesOf(groupFeatures(sparseFirst), [])).toEqual([
     'dense',
     'sparse',
   ])
@@ -328,7 +321,7 @@ test('a lane placing two short alignment records sorts below one placing a singl
   ]
   const groups = groupFeatures(brokenAboveWhole)
   expect(groups.map(g => g.mates.get('broken')?.length ?? 0)).toEqual([1, 0, 1])
-  expect(rowAssembliesOf(groups, [], exactName)).toEqual(['whole', 'broken'])
+  expect(rowAssembliesOf(groups, [])).toEqual(['whole', 'broken'])
 })
 
 // The clip cuts a record at every large indel into runs numbered after the

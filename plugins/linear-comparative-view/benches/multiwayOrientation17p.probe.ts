@@ -113,9 +113,7 @@ const features = (
   )
 ).map(f => new SimpleFeature(f.toJSON()))
 const groups = groupFeatures(features)
-const lanes = rowAssembliesOf(groups, [], (a, b) => a === b).filter(
-  a => a !== ANCHOR,
-)
+const lanes = rowAssembliesOf(groups, []).filter(a => a !== ANCHOR)
 console.log(
   `${features.length} records, ${groups.length} groups, ${lanes.length} lanes`,
 )

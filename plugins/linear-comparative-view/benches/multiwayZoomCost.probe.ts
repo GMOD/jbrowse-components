@@ -160,11 +160,14 @@ const all = await features(blocksConfig, {
   assemblyName: ANCHOR,
 })
 const groups = groupFeatures(all)
-const rows = rowAssembliesOf(
-  groups,
-  ['peach', 'cacao', 'poplar', 'citrus', 'arabidopsis', 'tomato'],
-  (a, b) => a === b,
-).filter(a => a !== ANCHOR)
+const rows = rowAssembliesOf(groups, [
+  'peach',
+  'cacao',
+  'poplar',
+  'citrus',
+  'arabidopsis',
+  'tomato',
+]).filter(a => a !== ANCHOR)
 console.log(`${all.length} features, ${groups.length} groups, lanes ${rows}`)
 
 const config = configSchemaFactory().create({

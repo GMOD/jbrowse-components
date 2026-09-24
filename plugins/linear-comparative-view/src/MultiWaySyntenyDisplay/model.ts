@@ -1047,15 +1047,14 @@ export function stateModelFactory(
        * itself; those draw on the anchor's own axis rather than as a lane
        */
       get rowAssemblies() {
-        const { assemblyManager } = getSession(self)
         const drawn = new Set(
           this.laneUniverse
             .filter(lane => lane.drawn)
             .map(lane => self.laneKey(lane.name)),
         )
-        return rowAssembliesOf(self.groups, self.domain, (a, b) =>
-          isSameAssemblyName(a, b, assemblyManager),
-        ).filter(assemblyName => drawn.has(self.laneKey(assemblyName)))
+        return rowAssembliesOf(self.groups, self.domain, self.laneKey).filter(
+          assemblyName => drawn.has(self.laneKey(assemblyName)),
+        )
       },
       /**
        * #getter
