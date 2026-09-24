@@ -67,6 +67,16 @@ it('applies in overlay mode regardless of row height', () => {
   expect(display.overlayLegendApplies).toBe(true)
 })
 
+// Under a declared gradient every overlaid source paints the score ramp and no
+// row label draws, so a source key would name colors nothing on screen has.
+it('does not apply in overlay mode while a score gradient paints', () => {
+  const display = makeDisplay(cells(9, 9), 600)
+  display.setRowLayout(false)
+  display.setColor({ field: 'score', scale: 'linear', scheme: 'viridis' })
+  expect(display.scoreGradientPaints).toBe(true)
+  expect(display.overlayLegendApplies).toBe(false)
+})
+
 // Overlay is not exempt from the readability bar. Its row palette is `set1`,
 // which wraps every nine sources, so 40 ungrouped overlay rows are a 40-row key
 // in nine repeating colours — longer than anyone can scan and ambiguous where

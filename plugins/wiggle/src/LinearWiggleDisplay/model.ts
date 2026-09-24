@@ -669,7 +669,8 @@ export default function stateModelFactory(
        * Four questions in order, each with its own guard below:
        *
        * 1. **Is there anything to key?** One source names itself by the track
-       *    name.
+       *    name, and an overlay painting a score gradient draws every source
+       *    in the ramp with no row labels, so no source color is on screen.
        * 2. **Does anything ELSE on the frame name the colors?** Overlay
        *    collapses every source onto one plot, so nothing does and the key is
        *    the only identification there has ever been — but it still has to
@@ -702,6 +703,7 @@ export default function stateModelFactory(
           rowLabelsCarryText(self.effectiveRowHeight)
         return (
           self.numSources >= 2 &&
+          !(self.isOverlay && self.scoreGradientPaints) &&
           !namedBesideTheRows &&
           legendIsReadable(self.legendItems)
         )
