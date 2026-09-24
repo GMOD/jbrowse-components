@@ -4332,6 +4332,7 @@
     "@jbrowse/display-kit/retiredSettings": {
       "package": "@jbrowse/display-kit",
       "names": [
+        "moveDisplayDefaults",
         "retiredSettings"
       ],
       "worker": "real"
