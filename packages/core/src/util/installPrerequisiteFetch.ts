@@ -1,3 +1,5 @@
+import { isAlive } from '@jbrowse/mobx-state-tree'
+
 import { installFetch } from './installFetch.ts'
 import { isDataCurrent } from './isDataCurrent.ts'
 
@@ -68,6 +70,12 @@ export function readFor<T>(
  * - **the answer carries the same key** (`AdapterRead`), and a display reads
  *   it through `readFor`, so an answer to a previous adapter config is never
  *   read as the current one, and a failed read leaves nothing to clear.
+ * - **an answer to a config the display no longer holds is dropped**, and so is
+ *   its error. An undo that brings back the config already answered makes the
+ *   skeleton decline a re-read, while the read of the abandoned config runs
+ *   on, still current; landing, it would stamp its key, force a second read of
+ *   the held one and hand the display a list for another file, on which the
+ *   variant display resets its arrangement.
  * - **minimized is the gate**, and a display with a second condition of its own
  *   passes `gate` — the sample-list read waits for the LGV to be measured as
  *   well, so a full-file scan does not start ahead of the display's own first
@@ -140,7 +148,19 @@ export function installPrerequisiteFetch<TResult>(
     gate: () => !self.isMinimized && gate(),
     prepare: () => ({ adapterConfig: self.adapterConfig }),
     fetchKey: ({ adapterConfig }) => adapterConfig,
-    run: ({ adapterConfig }, ctx) => run(adapterConfig, ctx),
+    run: async ({ adapterConfig }, ctx) => {
+      const held = () =>
+        isAlive(self) && isDataCurrent(adapterConfig, self.adapterConfig)
+      try {
+        const value = await run(adapterConfig, ctx)
+        return held() ? value : undefined
+      } catch (e) {
+        if (held()) {
+          throw e
+        }
+        return undefined
+      }
+    },
     commit: (value, { adapterConfig }) => {
       commit({ adapterConfig, value })
     },

@@ -88,6 +88,31 @@ test('an answer is read only while the host holds the adapter config it answers'
   expect(readFor(host, host.read)).toBe('first listing')
 })
 
+test.each(['answers', 'fails'] as const)(
+  'a read of a config the display left, which then %s, lands nothing',
+  async outcome => {
+    const host = makeHost()
+    await flush()
+    host.runs[0]!.resolve('first listing')
+    await flush()
+
+    host.setAdapterConfig(SECOND)
+    await flush()
+    host.setAdapterConfig({ ...FIRST })
+    await flush()
+    if (outcome === 'answers') {
+      host.runs[1]!.resolve('second listing')
+    } else {
+      host.runs[1]!.reject(new Error('unreadable'))
+    }
+    await flush()
+
+    expect(readFor(host, host.read)).toBe('first listing')
+    expect(host.error).toBeUndefined()
+    expect(host.runs).toHaveLength(2)
+  },
+)
+
 test('an equal adapter config, as an undo rebuilds one, keeps the answer and reads nothing', async () => {
   const host = makeHost()
   await flush()
