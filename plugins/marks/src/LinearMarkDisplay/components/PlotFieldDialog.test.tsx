@@ -24,6 +24,7 @@ function setup(model: Partial<PlotFieldDialogModel>) {
           plotFieldsError: undefined,
           plotSpec: EMPTY,
           plotSpecReplaces: 0,
+          plotScanLocus: 'ctgA:1..20,000',
           setPlotMarks,
           ...model,
         }}
@@ -76,6 +77,13 @@ test('an existing plot reopens prefilled', () => {
 test('the scan says so while it runs', () => {
   const { getByText } = setup({ plotFields: undefined })
   expect(getByText(/Scanning features for fields/)).toBeTruthy()
+})
+
+test('a scan with no numeric field names the window it read', () => {
+  const { getByText } = setup({
+    plotFields: { numeric: [], categorical: ['repClass'] },
+  })
+  expect(getByText(/No feature in ctgA:1\.\.20,000/)).toBeTruthy()
 })
 
 test('a scan error is reported in the dialog', () => {

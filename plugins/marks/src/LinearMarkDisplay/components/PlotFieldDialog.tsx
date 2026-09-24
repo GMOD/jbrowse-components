@@ -20,6 +20,8 @@ export interface PlotFieldDialogModel {
   plotSpec: PlotSpec
   /** How many declared marks a save would replace rather than edit. */
   plotSpecReplaces: number
+  /** The window the field scan read. */
+  plotScanLocus: string | undefined
   setPlotMarks: (spec: PlotSpec) => void
 }
 
@@ -83,7 +85,9 @@ const PlotFieldDialog = observer(function PlotFieldDialog({
         value={spec.field}
         helperText={
           plotFields && fieldChoices.length === 0
-            ? 'The features here carry no numeric field'
+            ? model.plotScanLocus
+              ? `No feature in ${model.plotScanLocus} carries a numeric field; reopen over others to scan them`
+              : 'Nothing on screen to scan for fields'
             : undefined
         }
         onChange={event => {

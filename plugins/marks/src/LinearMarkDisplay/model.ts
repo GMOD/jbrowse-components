@@ -9,6 +9,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import {
+  assembleLocString,
   getDialogHost,
   getSession,
   openFeatureWidget,
@@ -18,6 +19,7 @@ import {
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
+import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import {
@@ -869,12 +871,43 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The config problems as lines an agent's settle report carries: a
-       * display with one still draws, so nothing else reaches a caller that
-       * cannot see the corner notice.
+       * The config problems as lines, for the corner notice.
+       */
+      get configNotices(): string[] {
+        return this.configProblems.map(problemText)
+      },
+      /**
+       * #getter
+       * Rows the plot has no pixel for: a row is never drawn shorter than
+       * one, and the plot does not scroll.
+       */
+      get rowsBelowPlot(): number {
+        const { plotHeight } = axisPlotBox(self.height)
+        const rows = this.rowCount
+        const rowHeight = markRowHeightPx(plotHeight, rows)
+        return Math.max(0, rows - Math.floor(plotHeight / rowHeight))
+      },
+      /**
+       * #getter
+       */
+      get rowsCutNotice(): string | undefined {
+        const cut = this.rowsBelowPlot
+        const rows = this.rowCount
+        return cut > 0
+          ? `${cut.toLocaleString()} of ${rows.toLocaleString()} rows fall below the plot and are not drawn; a taller track shows them`
+          : undefined
+      },
+      /**
+       * #getter
+       * What the display drew around, as lines an agent's settle report
+       * carries: its config problems, and the rows it had no room for.
        */
       get notices(): string[] {
-        return this.configProblems.map(problemText)
+        const { rowsCutNotice } = this
+        return [
+          ...this.configNotices,
+          ...(rowsCutNotice ? [rowsCutNotice] : []),
+        ]
       },
       /**
        * #getter
@@ -967,6 +1000,7 @@ export function stateModelFactory(
       plotFieldsError: undefined as unknown,
       plotDefaultChecked: false,
       plotFieldsPromise: undefined as Promise<PlotFields> | undefined,
+      plotScanned: [] as Region[],
       // The click-driven details fetch, lent the display's status window so
       // it reports through the same chip as the viewport fetch and a second
       // click supersedes the first.
@@ -976,6 +1010,22 @@ export function stateModelFactory(
       plotScanRotation: createAbortRotation(self, {
         statusWindow: self.statusWindow,
       }),
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The window the held field scan read, for the dialog to name.
+       */
+      get plotScanLocus(): string | undefined {
+        const [region] = self.plotScanned
+        return region
+          ? assembleLocString({
+              refName: region.refName,
+              start: region.start,
+              end: region.end,
+            })
+          : undefined
+      },
     }))
     .actions(self => ({
       /**
@@ -1064,38 +1114,59 @@ export function stateModelFactory(
       setPlotDefaultChecked() {
         self.plotDefaultChecked = true
       },
-      setPlotFieldsPromise(promise?: Promise<PlotFields>) {
+      setPlotFieldsPromise(
+        promise?: Promise<PlotFields>,
+        scanned: Region[] = [],
+      ) {
         self.plotFieldsPromise = promise
+        self.plotScanned = scanned
       },
     }))
     .actions(self => ({
       /**
        * #action
-       * Scan the features for the fields a plot can read, once per display.
+       * Scan the features for the fields a plot can read. A scan that found a
+       * numeric field answers for the display's life; one that found none
+       * answers only for the window it read, and a failed one for nothing.
        */
       ensurePlotFields() {
-        const pending = self.plotFieldsPromise ?? scanOnce()
-        self.setPlotFieldsPromise(pending)
+        const regions = plotScanRegions(self.host)
+        const held = self.plotFieldsPromise
+        if (
+          held &&
+          ((self.plotFields?.numeric.length ?? 0) > 0 ||
+            deepEqual(regions, self.plotScanned))
+        ) {
+          return held
+        }
+        const pending = scan()
+        self.setPlotFieldsPromise(pending, regions)
         return pending
 
-        async function scanOnce() {
-          const scan = self.plotScanRotation.begin()
+        async function scan() {
+          const active = self.plotScanRotation.begin()
+          self.setPlotFields(undefined)
           try {
             const fields = await fetchPlotFields({
               self,
-              regions: plotScanRegions(self.host),
+              regions,
               opts: {
-                signal: scan.signal,
-                statusCallback: scan.statusCallback,
+                signal: active.signal,
+                statusCallback: active.statusCallback,
               },
             })
-            self.setPlotFields(fields)
+            if (active.isCurrent()) {
+              self.setPlotFields(fields)
+            }
             return fields
           } catch (error) {
-            self.setPlotFields(undefined, error)
+            if (active.isCurrent()) {
+              self.setPlotFields(undefined, error)
+              self.setPlotFieldsPromise(undefined)
+            }
             throw error
           } finally {
-            scan.end()
+            active.end()
           }
         }
       },

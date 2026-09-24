@@ -49,7 +49,15 @@ const LinearMarkDisplayComponent = observer(
                 tooltip={model.densityStandInNotice}
               />
             ) : null}
-            <ConfigProblemsIndicator notices={model.notices} />
+            {model.rowsCutNotice ? (
+              <TrackControl
+                icon="height"
+                warning
+                label={`${model.rowsBelowPlot.toLocaleString()} rows cut`}
+                tooltip={model.rowsCutNotice}
+              />
+            ) : null}
+            <ConfigProblemsIndicator notices={model.configNotices} />
             <SkippedFeaturesIndicator {...model.skippedFeatures} />
           </>
         )}

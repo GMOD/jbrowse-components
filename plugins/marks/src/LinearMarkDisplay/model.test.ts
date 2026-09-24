@@ -59,6 +59,7 @@ function createTestEnvironment(
   region = REGION,
   adapterType = 'BedAdapter',
   display: Record<string, unknown> = {},
+  rpcCall?: (sessionId: string, method: string, args: unknown) => unknown,
 ) {
   return createDisplayTestEnvironment<LinearMarkDisplayModel>({
     plugins: [new LinearGenomeViewPlugin(), new WigglePlugin()],
@@ -74,6 +75,7 @@ function createTestEnvironment(
     onViewReady: view => {
       view.showAllRegions()
     },
+    rpcCall,
   })
 }
 
@@ -838,6 +840,28 @@ test('a span stacked by a row field asks the worker for the row lane and bands t
   display.setRpcData(0, result([{ y: [0, 0, 0], row: [0, 2, 1] }]), REGION)
   expect(display.rowCount).toBe(3)
   expect(display.renderState.rowCount).toBe(3)
+})
+
+test('rows past the plot at one pixel each are counted and named', () => {
+  const { createDisplay } = createTestEnvironment([
+    { mark: 'span', encoding: { row: 'sampleIndex' } },
+  ])
+  const { display } = createDisplay()
+  const { plotHeight } = axisPlotBox(display.height)
+  const rows = (n: number) => Array.from({ length: n }, (_, i) => i)
+  display.setRpcData(
+    0,
+    result([{ y: rows(plotHeight), row: rows(plotHeight) }]),
+    REGION,
+  )
+  expect(display.rowsBelowPlot).toBe(0)
+  expect(display.notices).toEqual([])
+  display.setRpcData(0, result([{ y: rows(400), row: rows(400) }]), REGION)
+  expect(display.rowsBelowPlot).toBe(400 - plotHeight)
+  expect(display.notices).toEqual([
+    `${400 - plotHeight} of 400 rows fall below the plot and are not drawn; a taller track shows them`,
+  ])
+  expect(display.configNotices).toEqual([])
 })
 
 test('a span outside its zoom range adds no bands', () => {
@@ -2253,4 +2277,63 @@ test('a feature skipped for its position names the field the bin could not read'
     total: 3,
     fields: ['INFO.AF'],
   })
+})
+
+function scanEnvironment(answers: (() => Promise<unknown>)[]) {
+  const scanned: unknown[] = []
+  const { createDisplay } = createTestEnvironment(
+    [{ mark: 'bar', encoding: { y: 'score' } }],
+    WIDE_REGION,
+    'BedAdapter',
+    {},
+    (_sessionId, method, args) => {
+      if (method === 'CoreGetFeatures') {
+        scanned.push((args as { regions: unknown }).regions)
+        return answers[scanned.length - 1]!()
+      }
+      return new Promise(() => {})
+    },
+  )
+  return { ...createDisplay(), scanned }
+}
+
+const SCORED = () =>
+  Promise.resolve([
+    new SimpleFeature({
+      uniqueId: 'a',
+      refName: 'ctgA',
+      start: 0,
+      end: 1,
+      score: 3,
+    }),
+  ])
+const NOTHING = () => Promise.resolve([])
+
+test('a scan finding no numeric field answers only for the window it read', async () => {
+  const { display, view, scanned } = scanEnvironment([NOTHING, SCORED])
+  expect(await display.ensurePlotFields()).toEqual({
+    numeric: [],
+    categorical: [],
+  })
+  expect(display.plotScanLocus).toBe('ctgA:1..20,000')
+  await display.ensurePlotFields()
+  expect(scanned).toHaveLength(1)
+  view.setNewView(1, 1_000_000)
+  expect((await display.ensurePlotFields()).numeric).toEqual(['score'])
+  expect(scanned).toHaveLength(2)
+  view.setNewView(1, 3_000_000)
+  await display.ensurePlotFields()
+  expect(scanned).toHaveLength(2)
+})
+
+test('a failed scan is tried again on the next ask', async () => {
+  const { display, scanned } = scanEnvironment([
+    () => Promise.reject(new Error('network')),
+    SCORED,
+  ])
+  await expect(display.ensurePlotFields()).rejects.toThrow('network')
+  expect(String(display.plotFieldsError)).toMatch('network')
+  expect((await display.ensurePlotFields()).numeric).toEqual(['score'])
+  expect(display.plotFieldsError).toBeUndefined()
+  expect(scanned).toHaveLength(2)
 })
