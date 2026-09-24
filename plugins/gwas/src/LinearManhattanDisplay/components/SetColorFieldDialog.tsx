@@ -4,7 +4,7 @@ import { SubmitDialog } from '@jbrowse/core/ui'
 import TextField from '@mui/material/TextField'
 import { observer } from 'mobx-react'
 
-import { LD_FIELD } from '../colorConfigSchema.ts'
+import { LD_FIELD } from '../../GWASAdapter/ldFields.ts'
 
 // Free text rather than a pick list: the fields a file carries are only known
 // once its features are, and a BED extra column or GFF attribute is named by

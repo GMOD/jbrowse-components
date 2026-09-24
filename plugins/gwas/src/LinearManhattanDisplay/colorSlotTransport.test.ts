@@ -20,7 +20,7 @@ describe('the color slot reaches the worker unevaluated', () => {
     display.configuration.setSubschema('color', BY_ATTRIBUTE)
 
     expect(display.color.value).toBe(BY_ATTRIBUTE)
-    expect(display.rpcProps().color).toBe(BY_ATTRIBUTE)
+    expect(display.rpcProps().layers[0]!.encoding.color).toBe(BY_ATTRIBUTE)
   })
 
   it('forwards a jexl field as its raw expression string', () => {
@@ -29,7 +29,9 @@ describe('the color slot reaches the worker unevaluated', () => {
     const { display } = createDisplay()
 
     expect(display.color.field).toBe(field)
-    expect(display.rpcProps().color).toMatchObject({ field })
+    expect(display.rpcProps().layers[0]!.encoding.color).toMatchObject({
+      field,
+    })
   })
 
   it('leaves a plain CSS color alone', () => {
@@ -37,6 +39,6 @@ describe('the color slot reaches the worker unevaluated', () => {
     const { display } = createDisplay()
     display.configuration.setSubschema('color', 'rebeccapurple')
 
-    expect(display.rpcProps().color).toBe('rebeccapurple')
+    expect(display.rpcProps().layers[0]!.encoding.color).toBe('rebeccapurple')
   })
 })

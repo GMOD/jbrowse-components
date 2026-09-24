@@ -314,18 +314,11 @@ The declared form is what crosses the wire; the reader form is how a display's
 own worker method reaches the one loop for a channel no field name can say.
 Three packers moved onto it on 2026-09-09:
 
-- **Manhattan** (`plugins/gwas/src/ManhattanRPC/executeGetManhattanData.ts`)
-  is `encodeFeatures(features, { y: scoreField, color, shape: glyph })` where
-  `color` and `glyph` are the colouring mode's readers — a constant or `jexl:` colour
-  through `colorEvaluator`, the field mode's value-hashed colour, or LD's
-  join against the PLINK adapter — and `ManhattanRpcResult` is
-  `EncodedChannels` plus `r2s` and `indexFound`. The r² channel is read after
-  the encode over `featureIndex`, which is what that array is for. Field
-  colouring is the declared `{ field, scale: 'categorical' }` and nothing
-  else, once the encoder's unpinned scale derived colour from the value the
-  way Manhattan's own evaluator had. Measured over a million
-  features, min of 7: 208 → 221 ns/feature in normal mode, 223 → 251 in LD
-  mode, the second the r² pass's re-derivation.
+- **Manhattan** read LD colouring through a reader joining each feature
+  against the PLINK adapter, until 2026-09-24. `GWASAdapter` makes that join
+  now, writing `ld` and `ld_role` onto the features when a fetch's `opts.ld`
+  names the index SNP, so the display declares its one layer to
+  `CoreEncodeFeatures` and keeps no worker method.
 - **score-example** is `encodeFeatures(features, { y: scoreColumn })` and
   nothing else; its `[0, 1]` normalisation per region went, and the display
   folds the shipped `yMax` of every loaded region into one `[0, max]` domain

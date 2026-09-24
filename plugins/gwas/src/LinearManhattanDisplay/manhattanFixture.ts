@@ -1,6 +1,7 @@
 import { hitIndexOf } from '@jbrowse/core/util/markEncoding'
 
-import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { ManhattanChannels } from './manhattanLayer.ts'
+import type { EncodedChannels } from '@jbrowse/core/util/markEncoding'
 
 /**
  * A worker payload for tests, from parallel lists: the encoder's dense
@@ -22,9 +23,7 @@ export function manhattanFixture({
   color?: number[]
   glyph?: number[]
   flatbush?: boolean
-} & Partial<
-  Pick<ManhattanRpcResult, 'r2s' | 'indexFound' | 'scale'>
->): ManhattanRpcResult {
+} & Partial<Pick<EncodedChannels, 'scale' | 'shapeScale'>>): ManhattanChannels {
   const count = x.length
   let yMin = Infinity
   let yMax = -Infinity

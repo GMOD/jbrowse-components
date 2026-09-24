@@ -3,7 +3,7 @@ import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { manhattanFixture } from './manhattanFixture.ts'
 import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 
-import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { ManhattanChannels } from './manhattanLayer.ts'
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -86,7 +86,7 @@ function data(
   color: number[],
   x2: number[] = x.map(p => p + 1),
   glyph: number[] = x.map(() => 0),
-): ManhattanRpcResult {
+): ManhattanChannels {
   return manhattanFixture({ x, y, color, x2, glyph, flatbush: false })
 }
 

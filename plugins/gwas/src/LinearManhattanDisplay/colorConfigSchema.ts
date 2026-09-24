@@ -7,15 +7,19 @@ import {
   colorRangeSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
+import { LD_FIELD } from '../GWASAdapter/ldFields.ts'
+
 import type { FieldScales } from '@jbrowse/display-kit/colorScale'
 
 const MANHATTAN_COLOR_SCALES = ['none', 'categorical', 'threshold'] as const
 
 /**
- * The field that is each point's r² to the index SNP, joined from the
- * `GWASAdapter`'s `ldAdapter` rather than read off the feature.
+ * How the worker paints Manhattan points: `none` is `value`, `categorical` a
+ * palette colour per value of `field`, and `threshold` a palette colour per
+ * interval of a numeric one, which over `field: 'ld'` is the r² to the index
+ * SNP.
  */
-export const LD_FIELD = 'ld'
+export type ManhattanColorScale = (typeof MANHATTAN_COLOR_SCALES)[number]
 
 /** r² bins are a threshold and any other field categorical while `scale` is unset. */
 export const MANHATTAN_FIELD_SCALES = {

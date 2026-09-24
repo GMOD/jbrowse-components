@@ -34,9 +34,10 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // file being read and the ordinary pass is simply right — MAF's annotation
 // overlay is called that way. Thread a second name only when the two results
 // cannot be joined by the caller: GWAS LD coloring can't, because the r²-to-
-// feature join is per feature and features never cross the boundary, so it
-// resolves a second pass in `serializeArguments` and ships `ldRefName`
-// (`plugins/gwas/src/ManhattanRPC/GetManhattanData.ts`). That and
+// feature join is per feature and features never cross the boundary, so the
+// display resolves the LD file's name before the RPC and hands it to the
+// adapter in `opts.ld.refName`
+// (`plugins/gwas/src/LinearManhattanDisplay/ldJoinResolver.ts`). That and
 // `originalRefName` are the only two, and there is no reason to expect a third:
 // a sub-adapter is normally the same data in another form, named the same way.
 export function renameRegionIfNeeded(

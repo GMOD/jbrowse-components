@@ -14,7 +14,6 @@ const hit: ManhattanHit = {
   start: 100,
   end: 101,
   score: 9,
-  r2: undefined,
   regionIndex: 0,
   instance: 0,
 }
@@ -54,11 +53,12 @@ describe('LinearManhattanDisplay clears its hover when the content moves', () =>
 describe('the hovered point lights as a ring', () => {
   it('is the glyph box grown to the ring radius, inset by the plot top', () => {
     const { display } = createTestEnvironment().createDisplay()
-    display.setRpcData(
-      0,
-      manhattanFixture({ x: [100, 200], y: [5, 8], indexFound: true }),
-      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 },
-    )
+    display.setRpcData(0, manhattanFixture({ x: [100, 200], y: [5, 8] }), {
+      assemblyName: 'volvox',
+      refName: 'ctgA',
+      start: 0,
+      end: 10_000,
+    })
     expect(display.hoverInk).toEqual([])
     display.setHoveredFeature({ ...hit, instance: 1 })
     const [ring] = display.hoverInk

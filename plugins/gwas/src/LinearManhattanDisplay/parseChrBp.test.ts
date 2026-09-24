@@ -16,6 +16,7 @@ test('a non-integer position is rejected', () => {
   expect(parseChrBp('chr2:1e3')).toBeUndefined()
   expect(parseChrBp('chr2:')).toBeUndefined()
   expect(parseChrBp('chr2: 100')).toBeUndefined()
+  expect(parseChrBp('chr2:0')).toBeUndefined()
 })
 
 test('an empty refName (leading colon) is rejected', () => {

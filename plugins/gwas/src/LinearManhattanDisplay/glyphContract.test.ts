@@ -1,38 +1,50 @@
+import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import {
   GLYPH_DIAMOND,
   GLYPH_DISC,
   GLYPH_TRIANGLE,
 } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
-import { defaultGlyph } from '../ManhattanRPC/rpcTypes.ts'
+import { manhattanLayer } from './manhattanLayer.ts'
 
-import type { Feature } from '@jbrowse/core/util'
-
-// The glyph ids are a numeric contract between the RPC executor, the LD
-// evaluator, the Canvas2D/SVG draw and the shader's vertex branches. Drift
-// makes the GPU draw different glyphs from the fallback and the export, with
-// nothing throwing.
-//
-// This file used to enforce that by reading the shader source and
-// string-matching its branches (`inst.glyph == 1u ? SHAPE_TRI`). That pinned the
-// *source text*, not the values: it broke on reformatting, and it could not have
-// caught the worker and the shader agreeing on a spelling but disagreeing on a
-// number. The ids are `//! export-consts`ed now (adr-051) and there is only one
-// definition left, so there is no longer a pair to compare. What remains worth
-// asserting is the shape of that one definition, and the classifier over it.
+function glyphs(ldColoring: boolean, fields: Record<string, string>[]) {
+  const { encoding, lanes } = manhattanLayer({
+    scoreField: 'score',
+    color: 'red',
+    ldColoring,
+  })
+  const features = fields.map(
+    (f, i) =>
+      new SimpleFeature({
+        uniqueId: String(i),
+        refName: '1',
+        start: i,
+        end: i + 1,
+        score: 1,
+        ...f,
+      }),
+  )
+  return [...encodeFeatures(features, encoding, lanes).glyph]
+}
 
 test('the three glyph classes stay distinct', () => {
-  // A renumbering that collapsed two would merge glyph classes rather than
-  // fail — every insertion SV would quietly draw as a plain SNP, say.
   expect(new Set([GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DIAMOND]).size).toBe(3)
 })
 
-test('defaultGlyph sends insertion SVs to the triangle and the rest to a disc', () => {
-  // Both coloring modes route through this, so an SV cannot flatten into a
-  // plain disc just because LD mode is off.
-  const feat = (svtype?: string) =>
-    ({ get: (k: string) => (k === 'svtype' ? svtype : undefined) }) as Feature
-  expect(defaultGlyph(feat('INS'))).toBe(GLYPH_TRIANGLE)
-  expect(defaultGlyph(feat('DEL'))).toBe(GLYPH_DISC)
-  expect(defaultGlyph(feat())).toBe(GLYPH_DISC)
+test('an insertion SV is the triangle, and every other feature a disc', () => {
+  expect(
+    glyphs(false, [
+      { svtype: 'INS' },
+      { svtype: 'DEL' },
+      { svtype: 'DUP' },
+      {},
+    ]),
+  ).toEqual([GLYPH_TRIANGLE, GLYPH_DISC, GLYPH_DISC, GLYPH_DISC])
+})
+
+test('under LD coloring the index SNP is the diamond, and its partners discs', () => {
+  expect(
+    glyphs(true, [{ ld_role: 'index' }, { ld_role: 'partner' }, {}]),
+  ).toEqual([GLYPH_DIAMOND, GLYPH_DISC, GLYPH_DISC])
 })

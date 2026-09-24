@@ -62,7 +62,7 @@ describe('parsePlinkLDLine', () => {
   // ONE of R2/DP — read back as every pair in perfect linkage equilibrium,
   // which is a plausible-looking matrix and a plausible-looking Manhattan plot
   // with nothing anywhere saying the column was missing. `resolveMetric` and
-  // `buildLdToIndex` both branch on the absence.
+  // GWAS's `ldToIndex` both branch on the absence.
   it('reports a missing or unparsable r2 as absent, never as zero', () => {
     expect(
       parsePlinkLDLine('1 100 rs1 1 200 rs2 nan', header)?.r2,

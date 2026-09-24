@@ -80,5 +80,10 @@ export function testAssemblyManager(
     get,
     waitForAssembly: () => Promise.resolve(assembly),
     isValidRefName: () => true,
+    getRefNameMapForAdapter: (
+      _adapterConfig: Record<string, unknown>,
+      _assemblyName: string | undefined,
+      _opts: object,
+    ): Promise<Record<string, string>> => Promise.resolve({}),
   }
 }

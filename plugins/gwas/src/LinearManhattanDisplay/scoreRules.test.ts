@@ -3,7 +3,7 @@ import { axisPlotBox } from '@jbrowse/wiggle-core'
 import { manhattanFixture } from './manhattanFixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
-import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { ManhattanChannels } from './manhattanLayer.ts'
 import type { YAxis } from '@jbrowse/wiggle-core'
 
 function ruleMarksOf(display: { axes: YAxis[] }) {
@@ -16,11 +16,10 @@ const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50_000 }
 // display shares. What is GWAS's own is that a threshold is a rule like any
 // other: the same slot, the same widening, and a scan read against two of them
 // names two.
-function makeResult(score: number): ManhattanRpcResult {
+function makeResult(score: number): ManhattanChannels {
   return {
     ...manhattanFixture({ x: [100], y: [score], flatbush: false }),
     yMin: 0,
-    indexFound: true,
   }
 }
 

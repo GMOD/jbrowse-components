@@ -5,7 +5,6 @@ import GWASAddTrackComponentF from './GWASAddTrackComponent/index.tsx'
 import GWASAddTrackWorkflowF from './GWASAddTrackWorkflow/index.ts'
 import GWASTrackF from './GWASTrack/index.ts'
 import LinearManhattanDisplayF from './LinearManhattanDisplay/index.ts'
-import ManhattanRPCF from './ManhattanRPC/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -18,6 +17,5 @@ export default class GWASPlugin extends Plugin {
     GWASAddTrackWorkflowF(pluginManager)
     GWASTrackF(pluginManager)
     LinearManhattanDisplayF(pluginManager)
-    ManhattanRPCF(pluginManager)
   }
 }

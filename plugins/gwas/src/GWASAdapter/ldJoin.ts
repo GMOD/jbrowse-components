@@ -1,14 +1,10 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import { LD_FIELD, LD_ROLE_FIELD } from './ldFields.ts'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { LDRecordSource } from '@jbrowse/ld-core'
-
-/** The field the join writes: a SNP's r² to the index, 1 on the index. */
-export const LD_FIELD = 'ld'
-
-/** The field naming a joined SNP's part: `index`, or `partner` of it. */
-export const LD_ROLE_FIELD = 'ld_role'
 
 /**
  * The LD join a fetch asks `GWASAdapter` for. The caller resolves both names:
@@ -34,7 +30,7 @@ export interface GWASFetchOptions extends BaseOptions {
 export const LD_WINDOW_BP = 1_000_000
 
 /** PLINK writes `.` for a variant with no id, which names nothing. */
-export function isNamedSnp(name: unknown): name is string {
+function isNamedSnp(name: unknown): name is string {
   return typeof name === 'string' && name !== '' && name !== '.'
 }
 

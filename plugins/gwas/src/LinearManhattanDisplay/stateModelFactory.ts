@@ -6,14 +6,17 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { getDialogHost, openFeatureWidget, toLocale } from '@jbrowse/core/util'
+import { getDialogHost, toLocale } from '@jbrowse/core/util'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
+import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import {
   MAX_LEGEND_ENTRIES,
   derivedColorScale,
 } from '@jbrowse/core/util/legendCandidates'
 import { withHitIndex } from '@jbrowse/core/util/markEncoding'
+import { selectEncodedFeature } from '@jbrowse/core/util/selectEncodedFeature'
 import {
   thresholdCuts,
   thresholdKeyEntries,
@@ -55,19 +58,23 @@ import {
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 
-import { LD_FIELD, MANHATTAN_FIELD_SCALES } from './colorConfigSchema.ts'
+import { LD_FIELD } from '../GWASAdapter/ldFields.ts'
+import { MANHATTAN_FIELD_SCALES } from './colorConfigSchema.ts'
 import {
   LD_LEGEND_TITLE,
   isLdColoring,
   ldColorDefaults,
   ldLegend,
 } from './ldBins.ts'
+import { ldJoinResolver } from './ldJoinResolver.ts'
+import {
+  hasLdPartner,
+  manhattanChannels,
+  manhattanLayer,
+} from './manhattanLayer.ts'
 import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 
-import type {
-  ManhattanColorScale,
-  ManhattanRpcResult,
-} from '../ManhattanRPC/rpcTypes.ts'
+import type { ManhattanColorScale } from './colorConfigSchema.ts'
 import type {
   ManhattanContextMenuInfo,
   ManhattanDisplayModel,
@@ -77,6 +84,7 @@ import type {
   LinearManhattanDisplayConfigModel,
 } from './configSchemaFactory.ts'
 import type { ManhattanHit } from './findManhattanHit.ts'
+import type { ManhattanChannels, ManhattanRequest } from './manhattanLayer.ts'
 import type {
   ManhattanRenderState,
   ManhattanRenderingBackend,
@@ -85,7 +93,7 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
-import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
+import type { LayerRequest } from '@jbrowse/core/util/markEncoding'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
@@ -184,6 +192,11 @@ export function stateModelFactory(
         get conf(): LinearManhattanDisplayConfig {
           return self.configuration
         },
+      }))
+      .volatile(self => ({
+        detailsRotation: createAbortRotation(self, {
+          statusWindow: self.statusWindow,
+        }),
       }))
       .views(self => ({
         /**
@@ -327,21 +340,19 @@ export function stateModelFactory(
         },
         /**
          * #method
-         * fetch inputs watched by SettingsInvalidate — any change (score field,
-         * color, index SNP, LD adapter) triggers a refetch, since the worker
-         * reads the field and bakes per-feature color into the result
+         * The `CoreEncodeFeatures` layer, and the index SNP each region's LD
+         * join is resolved from: a change to either refetches.
          */
-        rpcProps(): {
-          scoreField: string
-          color: ColorEncoding
-          indexSnp: string | undefined
-          ldAdapterConfig: Record<string, unknown> | undefined
-        } {
+        rpcProps(): { layers: LayerRequest[]; indexSnp: string | undefined } {
           return {
-            scoreField: self.scoreField,
-            color: colorEncodingOf(self.color, 'categorical'),
+            layers: [
+              manhattanLayer({
+                scoreField: self.scoreField,
+                color: colorEncodingOf(self.color, 'categorical'),
+                ldColoring: self.ldColoringActive,
+              }),
+            ],
             indexSnp: self.indexSnp,
-            ldAdapterConfig: self.ldAdapterConfig,
           }
         },
         /**
@@ -466,18 +477,17 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * true when LD coloring is active with data loaded, but no region's LD
-         * data referenced the index SNP — so every point is grey. LD is a
-         * single-region analysis, so "found in no loaded region" means missing:
-         * absent from the file, named differently there than in the GWAS
-         * file, or on a contig none of the loaded regions are.
+         * True when LD coloring is active with data loaded but no loaded point
+         * is a partner of the index SNP, so every other point is grey: the
+         * index is absent from the LD file, named differently there, or on a
+         * contig no loaded region is.
          */
         get indexSnpMissing(): boolean {
           return (
             self.ldColoringActive &&
             self.indexSnp !== undefined &&
             self.rpcDataMap.size > 0 &&
-            ![...self.rpcDataMap.values()].some(d => d.indexFound)
+            ![...self.rpcDataMap.values()].some(hasLdPartner)
           )
         },
         /**
@@ -557,17 +567,20 @@ export function stateModelFactory(
         return {
           /**
            * #action
-           * open the feature details widget for a clicked point
+           * Open the feature widget on the whole record behind a clicked point,
+           * its r² to the index SNP included under LD coloring, through
+           * `selectEncodedFeature`.
            */
           selectFeature(hit: ManhattanHit) {
-            openFeatureWidget(self, {
-              uniqueId: `manhattan-${hit.refName}-${hit.start}`,
-              refName: hit.refName,
-              start: hit.start,
-              end: hit.end,
-              score: hit.score,
-              r2: hit.r2,
-            })
+            const data = self.rpcDataMap.get(hit.regionIndex)
+            const featureIndex = data?.featureIndex[hit.instance]
+            if (data?.request && featureIndex !== undefined) {
+              selectEncodedFeature(self, self.detailsRotation, {
+                ...data.request,
+                layer: 0,
+                featureIndex,
+              })
+            }
           },
           /**
            * #action
@@ -575,7 +588,7 @@ export function stateModelFactory(
            * display's payload shape, so a test stands up a loaded display in one
            * call. Production goes through `ctx.commitRegion`.
            */
-          setRpcData(idx: number, data: ManhattanRpcResult, region: Region) {
+          setRpcData(idx: number, data: ManhattanChannels, region: Region) {
             self.setLoadedRegion(idx, region, withHitIndex(data))
           },
           /**
@@ -741,10 +754,28 @@ export function stateModelFactory(
          * #action
          */
         fetchNeeded(needed: IndexedRegion[]) {
+          const { byteLimit, indexSnp, ...request } = rpcArgs(self)
+          const ldJoinFor = ldJoinResolver(self, indexSnp)
           return fetchEachRegion(self, needed, {
-            call: (region, ctx) =>
-              ctx.callRpc('GetManhattanData', { ...rpcArgs(self), region }),
-            onResult: (_idx, result) => withHitIndex(result),
+            call: async (region, ctx) => {
+              const ld = await ldJoinFor?.(region, ctx.signal)
+              const asked: ManhattanRequest = {
+                ...request,
+                region,
+                ...(ld ? { opts: { ld } } : {}),
+              }
+              const result = await ctx.callRpc('CoreEncodeFeatures', {
+                ...asked,
+                byteLimit,
+              })
+              return isRegionRefused(result)
+                ? result
+                : { channels: manhattanChannels(result.layers[0]), asked }
+            },
+            onResult: (_idx, { channels, asked }) => ({
+              ...withHitIndex(channels),
+              request: asked,
+            }),
           })
         },
         /**

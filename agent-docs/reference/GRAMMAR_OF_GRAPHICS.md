@@ -217,15 +217,14 @@ The seams, named honestly:
   one is. ADR-118 measured the layout half of it and the position held: the
   rule those displays pack by is the step's rule, and everything they pack
   *with* is the display's own.
-- **A reader channel is where "declared" ends.** Manhattan's LD colouring
-  joins each feature against a second adapter through a function
-  (`plugins/gwas/src/ManhattanRPC/makeLdEvaluator.ts`) the encoder takes in a
-  channel's place. The config spells it as a field, `color: { field: 'ld' }`
+- **A join is a field the adapter writes.** Manhattan's LD colouring is
+  `color: { field: 'ld' }`
   ([ADR-135](../architecture-decision-records/adr-135-the-colour-objects-share-one-shape-and-a-preset-is-a-field.md)),
-  which is what it is in the grammar — a variable prepared before the plot —
-  but the reader behind the name is a join, not a declaration, and the
-  grammar has no equivalent. Every display with a meaning the encoding cannot
-  say will look like this.
+  a variable prepared before the plot: `GWASAdapter` joins each SNP against its
+  `ldAdapter` when the fetch's `opts` name the index SNP, and writes the r² as
+  `ld` and the index as `ld_role`. The display declares a threshold over the
+  first and a shape over the second, so hue carries r² alone and the index is
+  the diamond in the colour of r² 1.
 - **The colour objects are one shape, and a preset is a field.** FeatureColor,
   ManhattanColor, RibbonColor, MarkColor, AlignmentsColor and VariantCellColor
   are each

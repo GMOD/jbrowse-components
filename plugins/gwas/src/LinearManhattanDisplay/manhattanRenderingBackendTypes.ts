@@ -1,8 +1,14 @@
-import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { ManhattanChannels, ManhattanRequest } from './manhattanLayer.ts'
 import type { HitIndexed } from '@jbrowse/core/util/markEncoding'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
-export type StoredManhattanData = HitIndexed<ManhattanRpcResult>
+/**
+ * One region's points as the display holds them, with the request they came
+ * back under. A payload no worker fetch produced holds no request.
+ */
+export type StoredManhattanData = HitIndexed<ManhattanChannels> & {
+  request?: ManhattanRequest
+}
 
 export interface ManhattanRenderState {
   domainY: [number, number]
@@ -15,10 +21,7 @@ export interface ManhattanRenderState {
   pointDiameterPx: number
 }
 
-// GWAS data is 1:1 points (raw RPC result), not binned via wiggle's
-// SourceRenderData encoder, so Manhattan specializes the shared per-region
-// backend contract directly on `ManhattanRpcResult`.
 export type ManhattanRenderingBackend = PerRegionRenderingBackend<
-  ManhattanRpcResult,
+  ManhattanChannels,
   ManhattanRenderState
 >

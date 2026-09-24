@@ -28,11 +28,6 @@ const TooltipComponent = observer(function TooltipComponent({
           {assembleLocString(hoveredFeature)}
           <br />
           score: {toP(hoveredFeature.score, 4)}
-          {hoveredFeature.r2 === undefined ? null : (
-            <>
-              <br />r{'\u00B2'}: {toP(hoveredFeature.r2, 3)}
-            </>
-          )}
         </div>
       ) : null}
     </HoverTooltip>

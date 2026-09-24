@@ -1,78 +1,79 @@
+import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
-import {
-  LD_INDEX_SWATCH,
-  LD_MISSING_SWATCH,
-  ldBinColor,
-  ldIndexColor,
-  ldLegend,
-} from './ldBins.ts'
+import { LD_PALETTE, ldColorDefaults, ldLegend } from './ldBins.ts'
 
-const defaults = {}
-const binOf = ldBinColor(defaults)
+function painted(
+  color: { domain?: string[]; range?: string[] },
+  r2s: number[],
+) {
+  const features = r2s.map(
+    (ld, i) =>
+      new SimpleFeature({
+        uniqueId: String(i),
+        refName: '1',
+        start: i,
+        end: i + 1,
+        ...(Number.isNaN(ld) ? {} : { ld }),
+      }),
+  )
+  const { color: packed } = encodeFeatures(
+    features,
+    {
+      color: {
+        field: 'ld',
+        scale: 'threshold',
+        domain: ldColorDefaults(color).domain,
+        range: [...ldColorDefaults(color).range],
+      },
+    },
+    ['color'],
+  )
+  return [...packed]
+}
 
-test('missing or NaN r² renders grey, distinct from every bin', () => {
-  const grey = binOf(undefined)
-  expect(binOf(Number.NaN)).toBe(grey)
-  for (const r2 of [0, 0.2, 0.4, 0.6, 0.8, 1]) {
-    expect(binOf(r2)).not.toBe(grey)
-  }
+// The key reads its colours from the same cuts and palette the encoder's
+// threshold paints the points from, so a swatch is a colour that was drawn.
+test('each key row is the colour its r² paints', () => {
+  const rows = ldLegend({})
+  const byLabel = new Map(rows.map(r => [r.label, cssColorToABGR(r.color)]))
+  expect(painted({}, [1, 0.9, 0.7, 0.5, 0.3, 0.1, Number.NaN])).toEqual(
+    [
+      'Index SNP',
+      '≥ 0.8',
+      '0.6 – 0.8',
+      '0.4 – 0.6',
+      '0.2 – 0.4',
+      '< 0.2',
+      'No LD data',
+    ].map(label => byLabel.get(label)),
+  )
 })
 
-test('the five r² bins are distinct colors', () => {
-  const colors = [0.1, 0.3, 0.5, 0.7, 0.9].map(binOf)
-  expect(new Set(colors).size).toBe(5)
-})
-
-test('bin edges use >= lower bounds', () => {
-  // a value on the boundary lands in the higher bin
-  expect(binOf(0.8)).toBe(binOf(0.95))
-  expect(binOf(0.6)).toBe(binOf(0.75))
-  expect(binOf(0.2)).toBe(binOf(0.35))
-  // just below the boundary is the next bin down
-  expect(binOf(0.79)).toBe(binOf(0.6))
-  expect(binOf(0.19)).toBe(binOf(0))
-})
-
-test('index color is distinct from bin and grey colors', () => {
-  const others = [undefined, 0.1, 0.3, 0.5, 0.7, 0.9].map(binOf)
-  expect(others).not.toContain(ldIndexColor)
-})
-
-test('legend swatches and the color lookup share one palette', () => {
-  expect(ldIndexColor).toBe(cssColorToABGR(LD_INDEX_SWATCH.color))
-  expect(binOf(undefined)).toBe(cssColorToABGR(LD_MISSING_SWATCH.color))
-  const sampleR2: Record<string, number> = {
-    '≥ 0.8': 0.9,
-    '0.6 – 0.8': 0.7,
-    '0.4 – 0.6': 0.5,
-    '0.2 – 0.4': 0.3,
-    '< 0.2': 0.1,
-  }
-  for (const { label, color } of ldLegend(defaults)) {
-    if (label in sampleR2) {
-      expect(binOf(sampleR2[label])).toBe(cssColorToABGR(color))
-    }
-  }
+test('the index diamond is the top bin at the default cuts, and the no-data grey is the no-value grey', () => {
+  const [index, ...rest] = ldLegend({})
+  expect(index).toMatchObject({ shape: 'diamond', color: LD_PALETTE.at(-1) })
+  expect(rest.at(-1)).toMatchObject({ color: NO_CATEGORY_COLOR })
 })
 
 // The grey means "absent from the LD data", so a bin past the palette's end
 // cannot borrow it — the points in that bin are in the data.
 test('a cut past the palette takes a colour, not the no-data grey', () => {
   const custom = { domain: ['0.2', '0.4', '0.6', '0.8', '0.9'] }
-  const paint = ldBinColor(custom)
-  expect(paint(0.95)).not.toBe(cssColorToABGR(LD_MISSING_SWATCH.color))
-  expect(paint(0.95)).not.toBe(paint(0.85))
   const bins = ldLegend(custom).slice(1, -1)
   expect(bins).toHaveLength(6)
-  expect(bins.map(s => s.color)).not.toContain(LD_MISSING_SWATCH.color)
+  expect(bins.map(s => s.color)).not.toContain(NO_CATEGORY_COLOR)
+  const [top, next] = painted(custom, [0.95, 0.85])
+  expect(top).not.toBe(next)
 })
 
 test('a config moves the cuts and recolours the bins', () => {
   const custom = { domain: ['0.5'], range: ['#000080', '#800000'] }
-  const paint = ldBinColor(custom)
-  expect(paint(0.49)).toBe(cssColorToABGR('#000080'))
-  expect(paint(0.5)).toBe(cssColorToABGR('#800000'))
+  expect(painted(custom, [0.49, 0.5])).toEqual(
+    ['#000080', '#800000'].map(c => cssColorToABGR(c)),
+  )
   expect(ldLegend(custom).map(s => s.label)).toEqual([
     'Index SNP',
     '≥ 0.5',
@@ -86,7 +87,7 @@ test('cuts written high to low are read ascending, on the points and in the key'
     domain: ['0.8', '0.2'],
     range: ['#000080', '#008000', '#800000'],
   }
-  expect(ldBinColor(custom)(0.5)).toBe(cssColorToABGR('#008000'))
+  expect(painted(custom, [0.5])).toEqual([cssColorToABGR('#008000')])
   expect(ldLegend(custom).map(s => s.label)).toEqual([
     'Index SNP',
     '≥ 0.8',

@@ -766,9 +766,10 @@ so it takes no dependency on the wiggle plugin's MST factories or RPC methods:
 GWAS's Manhattan does **not** compose `linearWiggleDisplayModelFactory`. It builds
 its own model — `BaseDisplay` + `TrackHeightMixin()` + `MultiRegionDisplayMixin()`
 + `ScoreFieldConfigMixin()` — and declares its own config schema over
-`scoreAxisConfigSchemaFields`, all from `@jbrowse/wiggle-core`. It ships its own
-`GetManhattanData` RPC (per-feature points, not pre-binned density), implements
-its own `ManhattanRenderingBackend` with its own pass, and is zoom-independent:
+`scoreAxisConfigSchemaFields`, all from `@jbrowse/wiggle-core`. It fetches
+through `CoreEncodeFeatures` as the mark display does, one `point` layer of
+per-feature points, implements its own `ManhattanRenderingBackend` with its own
+pass, and is zoom-independent:
 it declares no `zoomFetchArgs` and its payload carries no `zoomRange`, so no
 zoom invalidates a region it has loaded.
 

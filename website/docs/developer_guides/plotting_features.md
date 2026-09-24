@@ -108,9 +108,8 @@ src/
 The payload is the encoder's own channels, `EncodedChannels` from
 `@jbrowse/core/util/markEncoding`: the same arrays a config-declared mark draws
 from, so a shape reads them under the same names. A payload of your own is for
-what those channels cannot say — Manhattan ships an LD r² array beside them —
-and it stays compact, structured-clone-friendly and in absolute genomic
-positions.
+what those channels cannot say, and it stays compact, structured-clone-friendly
+and in absolute genomic positions.
 
 <!-- include: example-plugins/score-example/src/ScoreRPC/rpcTypes.ts#region-data -->
 

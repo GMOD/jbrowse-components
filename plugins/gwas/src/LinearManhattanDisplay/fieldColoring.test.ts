@@ -2,13 +2,12 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import { ldColoringRequested } from '../ManhattanRPC/rpcTypes.ts'
-import { LD_FIELD } from './colorConfigSchema.ts'
+import { LD_FIELD } from '../GWASAdapter/ldFields.ts'
 import { LD_DOMAIN, LD_LEGEND_TITLE, LD_PALETTE, ldLegend } from './ldBins.ts'
 import { manhattanFixture } from './manhattanFixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
-import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { ManhattanChannels } from './manhattanLayer.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const REGION = {
@@ -20,7 +19,7 @@ const REGION = {
 
 function payload(
   categories?: { value: string; color: string }[],
-): ManhattanRpcResult {
+): ManhattanChannels {
   return manhattanFixture({
     x: [100],
     y: [3],
@@ -35,6 +34,12 @@ function payload(
       })),
     },
   })
+}
+
+function encodingSent(display: {
+  rpcProps: () => { layers: { encoding: object }[] }
+}) {
+  return display.rpcProps().layers[0]!.encoding
 }
 
 function labels(items: MenuItem[]): string[] {
@@ -115,8 +120,8 @@ describe('LinearManhattanDisplay field coloring', () => {
     expect(
       scale?.kind === 'categorical' ? scale.entries.map(e => e.value) : [],
     ).toEqual(['chr10', 'chr2', 'chr1'])
-    expect(display.rpcProps().color).toMatchObject({
-      domain: ['chr10', 'chr2'],
+    expect(encodingSent(display)).toMatchObject({
+      color: { domain: ['chr10', 'chr2'] },
     })
   })
 
@@ -136,12 +141,25 @@ describe('LinearManhattanDisplay field coloring', () => {
 
   // Without it an export where nothing matched the index SNP is an all-grey
   // plot under a full r² key that implies the colors mean something. The index
-  // itself stays the purple diamond, so the note says every OTHER point.
+  // itself keeps its diamond, so the note says every OTHER point.
   it('a missing index SNP notes why every other point is grey', () => {
     const ld = createTestEnvironment({ color: { field: 'ld' } }).createDisplay()
       .display
     ld.setIndexSnp('ctgA:500')
-    ld.setRpcData(0, { ...payload(), indexFound: false }, REGION)
+    const roles = (values: string[]): ManhattanChannels => ({
+      ...payload(),
+      shapeScale: {
+        kind: 'shape',
+        field: 'ld_role',
+        domain: ['index', 'partner'],
+        entries: values.map(value => ({ value, shape: 'circle' as const })),
+      },
+    })
+    const ctgB = { ...REGION, refName: 'ctgB' }
+    ld.setRpcData(1, roles(['partner', '']), ctgB)
+    expect(ld.indexSnpMissing).toBe(false)
+    ld.setRpcData(1, roles(['']), ctgB)
+    ld.setRpcData(0, roles(['index', '']), REGION)
     expect(ld.indexSnpMissing).toBe(true)
     const [scale] = ld.colorScales
     expect(scale?.kind === 'categorical' && scale.note).toBe(
@@ -170,11 +188,13 @@ describe('LinearManhattanDisplay field coloring', () => {
     }).createDisplay()
     display.colorByField('population')
     expect(display.color.value).toBe('rebeccapurple')
-    expect(display.rpcProps().color).toEqual({
-      field: 'population',
-      scale: 'categorical',
-      domain: undefined,
-      range: undefined,
+    expect(encodingSent(display)).toMatchObject({
+      color: {
+        field: 'population',
+        scale: 'categorical',
+        domain: undefined,
+        range: undefined,
+      },
     })
   })
 
@@ -333,21 +353,19 @@ describe('LinearManhattanDisplay field coloring', () => {
     })
   })
 
-  it("a config's bare { field: 'ld' } still asks the worker for the five bins", () => {
+  it("a config's bare { field: 'ld' } asks the worker for the five bins and the index diamond", () => {
     const { display } = createTestEnvironment({
       color: { field: 'ld' },
     }).createDisplay()
-    const { color, indexSnp, ldAdapterConfig } = {
-      ...display.rpcProps(),
-      indexSnp: 'rsIndex',
-    }
-    expect(color).toMatchObject({
-      field: 'ld',
-      scale: 'threshold',
-      domain: LD_DOMAIN,
-      range: LD_PALETTE,
+    expect(encodingSent(display)).toMatchObject({
+      color: {
+        field: 'ld',
+        scale: 'threshold',
+        domain: LD_DOMAIN,
+        range: LD_PALETTE,
+      },
+      shape: { field: 'ld_role', domain: ['index', 'partner'] },
     })
-    expect(ldColoringRequested({ color, indexSnp, ldAdapterConfig })).toBe(true)
   })
 
   it('refuses a scale the display cannot paint, and an undeclared key', () => {

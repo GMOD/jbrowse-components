@@ -25,6 +25,7 @@ import LinearGenomeViewPlugin, {
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { configSchemaFactory } from './configSchemaFactory.ts'
+import { manhattanFixture } from './manhattanFixture.ts'
 import { stateModelFactory } from './stateModelFactory.ts'
 
 import type { LinearManhattanDisplayModel } from './stateModelFactory.ts'
@@ -105,7 +106,9 @@ function setup() {
       view.showAllRegions()
     },
   })
-  env.mockRpcCall.mockResolvedValue([])
+  env.mockRpcCall.mockResolvedValue({
+    layers: [manhattanFixture({ x: [], y: [] })],
+  })
   return env
 }
 

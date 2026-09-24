@@ -1,11 +1,11 @@
 import { waitFor } from '@testing-library/react'
 import { when } from 'mobx'
 
-import { LD_FIELD } from './colorConfigSchema.ts'
+import { LD_FIELD } from '../GWASAdapter/ldFields.ts'
 import { manhattanFixture } from './manhattanFixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
-import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { ManhattanChannels } from './manhattanLayer.ts'
 import type { Region } from '@jbrowse/core/util'
 
 // Two regions, with the top hit deliberately in the SECOND one — the region
@@ -17,14 +17,13 @@ const HITS: Record<string, { pos: number; score: number }> = {
 }
 const TOP_SNP = 'ctgB:501'
 
-function makeResult(region: Region): ManhattanRpcResult {
+function makeResult(region: Region) {
   const hit = HITS[region.refName]!
-  return manhattanFixture({
-    x: [hit.pos],
-    y: [hit.score],
-    flatbush: false,
-    indexFound: true,
-  })
+  return {
+    layers: [
+      manhattanFixture({ x: [hit.pos], y: [hit.score], flatbush: false }),
+    ],
+  }
 }
 
 beforeEach(() => {
@@ -124,8 +123,8 @@ describe('LinearManhattanDisplay LD auto-index', () => {
       end: 1000,
       assemblyName: 'volvox',
     }
-    const tied = (pos: number): ManhattanRpcResult =>
-      manhattanFixture({ x: [pos], y: [9], flatbush: false, indexFound: true })
+    const tied = (pos: number): ManhattanChannels =>
+      manhattanFixture({ x: [pos], y: [9], flatbush: false })
 
     const first = createDisplay().display
     first.setRpcData(0, tied(100), tiedRegion)
