@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/mobx-state-tree'
 
 import { getContainingTrack, getSession } from '../util/mstUtils.ts'
+import { isSessionWithEditableTrackConfig } from '../util/types/index.ts'
 import ConfigSlot, { slotWriteRefusal } from './configurationSlot.ts'
 import { checkRequirements } from './requirements.ts'
 import {
@@ -75,14 +76,17 @@ export interface ConfigurationSchemaOptions<
   EXPLICITLY_TYPED extends boolean | undefined = boolean | undefined,
   REQUIREMENT extends ConfigurationSchemaRequirement =
     ConfigurationSchemaRequirement,
+  // the node a hook is handed: the schema's own props, `ConfigurationSchema`
+  // fills it in from the definition
+  SELF = any,
 > {
   explicitlyTyped?: EXPLICITLY_TYPED
   explicitIdentifier?: EXPLICIT_IDENTIFIER
   baseConfiguration?: BASE_SCHEMA
 
-  actions?: (self: unknown) => any
-  views?: (self: unknown) => any
-  extend?: (self: unknown) => any
+  actions?: (self: SELF) => any
+  views?: (self: SELF) => any
+  extend?: (self: SELF) => any
   /**
    * The slot a bare string snapshot lifts into, so `color: "red"` and
    * `color: { value: "red" }` are one config. Applied before
@@ -110,7 +114,7 @@ export interface ConfigurationSchemaOptions<
   requires?: REQUIREMENT[]
 }
 
-type SchemaHook = (self: unknown) => any
+type SchemaHook = (self: any) => any
 
 /**
  * Options as **stored**: what a caller passes, except that the three
@@ -128,8 +132,8 @@ type SchemaHook = (self: unknown) => any
  *
  * `preProcessSnapshot` is the exception and composes into a single function,
  * `child(base(snapshot))`: the base normalizes and migrates first, the subclass
- * refines. It has to stay one function because `preProcessSlotValues` calls it
- * straight off the registry (slotFacade.ts).
+ * refines. It has to stay one function because `preProcessSnapshotWith` runs it
+ * straight off the registry, over a partial settings bag as well as a snapshot.
  */
 export interface MergedConfigurationSchemaOptions<
   BASE_SCHEMA extends AnyConfigurationSchemaType | undefined,
@@ -367,8 +371,8 @@ function makeConfigurationSchemaModel<
       // caller cannot spell `undefined`: a session spec, share link or agent
       // call can set a slot and then has no way to put it back. Omitting the
       // key is not that — this action is the merge path, where an absent key
-      // means "leave it alone". A sub-schema already reads `null` this way
-      // (`mergedSubschemaValue`), and no slot stores `null` as a value.
+      // means "leave it alone". A sub-schema reads `null` the same way, and
+      // no slot stores `null` as a value.
       setSlot(slotName: string, rawValue: unknown) {
         const value = rawValue ?? undefined
         if (!slotKeys.has(slotName)) {
@@ -514,7 +518,9 @@ export function ConfigurationSchema<
     BASE_SCHEMA,
     EXPLICIT_IDENTIFIER,
     EXPLICITLY_TYPED,
-    RequirementOf<NoInfer<DEFINITION>, NoInfer<BASE_SCHEMA>>
+    RequirementOf<NoInfer<DEFINITION>, NoInfer<BASE_SCHEMA>>,
+    ConfigNodeProps<MergeConfigDef<NoInfer<DEFINITION>, NoInfer<BASE_SCHEMA>>> &
+      ConfigNodeActions
   >,
 ): ConfigurationSchemaType<
   MergeConfigDef<
@@ -646,20 +652,15 @@ function idOrSnapshotUnion(ref: IAnyType, schemaType: IAnyType) {
 function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
     get(id, parent) {
-      const session = getSession(parent) as ReturnType<typeof getSession> & {
-        getEditableTrackConfig?: (
-          trackId: string,
-          schemaType: IAnyType,
-        ) => AnyConfigurationModel | undefined
-      }
+      const session = getSession(parent)
       const trackId = String(id)
       // Per-id lookup: subscribes only to this trackId's derivation, so
       // resolving one track's config doesn't re-render the others. A session
       // with track deltas hands back a private, per-track working copy so a
-      // shown track's in-place quick-edits (setSlot) mutate that copy and never
-      // the shared frozen base (ADR-032); any other session falls through to
-      // the frozen hydration cache (ADR-031).
-      const ret = session.getEditableTrackConfig
+      // shown track's in-place quick-edits mutate that copy and never the
+      // shared frozen base (ADR-032); any other session falls through to the
+      // frozen hydration cache (ADR-031).
+      const ret = isSessionWithEditableTrackConfig(session)
         ? session.getEditableTrackConfig(trackId, schemaType)
         : session.getTrackById(trackId)
       if (!ret) {
@@ -718,10 +719,7 @@ function DisplayConfigurationReference(schemaType: IAnyType) {
       // track.configuration is a hydrated MST node (hydrated lazily via
       // TrackConfigurationReference), so its displays array contains MST nodes.
       const track = getContainingTrack(parent)
-      const displays = track.configuration.displays as {
-        displayId: string
-        type?: string
-      }[]
+      const displays: AnyConfigurationModel[] = track.configuration.displays
       const displayType = (parent as { type?: string }).type
       let ret = displays.find(d => d.displayId === id)
 

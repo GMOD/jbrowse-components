@@ -20,6 +20,7 @@ import type { RenderingServices } from './renderingServices.ts'
 import type { DialogHost, NotificationSink } from './services.ts'
 import type {
   IAnyStateTreeNode,
+  IAnyType,
   IStateTreeNode,
   SnapshotIn,
 } from '@jbrowse/mobx-state-tree'
@@ -290,6 +291,24 @@ export function isSessionWithBaseTrackConfig(
   t: unknown,
 ): t is SessionWithBaseTrackConfig {
   return isSessionModel(t) && 'baseTrackConfig' in t
+}
+
+/**
+ * A session that hands a shown track a private working copy of its config, so
+ * a non-admin's quick edits land as deltas and never on the shared base
+ * (ADR-032). `TrackConfigurationReference` resolves through it where it is
+ * one, and through `getTrackById` otherwise.
+ */
+export interface SessionWithEditableTrackConfig extends AbstractSessionModel {
+  getEditableTrackConfig(
+    trackId: string,
+    schemaType: IAnyType,
+  ): AnyConfigurationModel | undefined
+}
+export function isSessionWithEditableTrackConfig(
+  t: unknown,
+): t is SessionWithEditableTrackConfig {
+  return isSessionModel(t) && 'getEditableTrackConfig' in t
 }
 
 /**

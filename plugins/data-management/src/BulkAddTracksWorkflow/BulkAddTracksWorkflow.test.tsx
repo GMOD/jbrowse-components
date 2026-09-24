@@ -140,7 +140,7 @@ test('submitting adds the tracks to the session', () => {
   // assembly defaults to the open view's assembly, so submit is enabled
   fireEvent.click(getByRole('button', { name: 'Add 1 track' }))
   expect(session.sessionTracks.length).toBe(before + 1)
-  const added = session.sessionTracks.at(-1)
+  const added = session.sessionTracks.at(-1)!
   expect(readConfObject(added, 'type')).toBe('AlignmentsTrack')
   expect(readConfObject(added, 'assemblyNames')).toEqual(['volMyt1'])
   // the .bam.bai was paired into the adapter, not added as its own track
@@ -197,7 +197,7 @@ test('stripped names are what actually get added', () => {
   fireEvent.click(getByRole('checkbox', { name: /Strip file extensions/ }))
   fireEvent.click(getByRole('button', { name: 'Add 1 track' }))
 
-  expect(readConfObject(session.sessionTracks.at(-1), 'name')).toBe('a')
+  expect(readConfObject(session.sessionTracks.at(-1)!, 'name')).toBe('a')
 })
 
 test('stripping backs off for rows whose names would collide', () => {
@@ -327,5 +327,5 @@ test('a collision against an unaddable row still un-strips what gets added', () 
   fireEvent.click(getByRole('checkbox', { name: /Strip file extensions/ }))
   fireEvent.click(getByRole('button', { name: 'Add 1 track' }))
 
-  expect(readConfObject(session.sessionTracks.at(-1), 'name')).toBe('a.bam')
+  expect(readConfObject(session.sessionTracks.at(-1)!, 'name')).toBe('a.bam')
 })

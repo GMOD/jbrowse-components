@@ -13,6 +13,7 @@ import { expandLooseTrackConfig } from './util/tracks.ts'
 
 import type Plugin from './Plugin.ts'
 import type { PluginConstructor } from './Plugin.ts'
+import type { AnyConfigurationModel } from './configuration/index.ts'
 import type AdapterType from './pluggableElementTypes/AdapterType.ts'
 import type AddTrackWorkflowType from './pluggableElementTypes/AddTrackWorkflowType.ts'
 import type ConnectionType from './pluggableElementTypes/ConnectionType.ts'
@@ -56,11 +57,23 @@ import type {
 /* eslint-enable unicorn/require-module-specifiers */
 import type {
   IAnyModelType,
-  IStateTreeNode,
   IAnyType,
+  IStateTreeNode,
+  IType,
   SnapshotIn,
 } from '@jbrowse/mobx-state-tree'
 import type { ComponentType, ReactNode } from 'react'
+
+/**
+ * What `pluggableConfigSchemaType` builds: a union whose members are checked
+ * at runtime, read as a config node carrying the `type` every member names
+ * itself by; a member's other slots read through `getConf`.
+ */
+export type PluggableConfigSchemaType = IType<
+  any,
+  any,
+  AnyConfigurationModel & { type: string }
+>
 
 /**
  * Every pluggable element group, in the order `elementCreationSchedule` builds
@@ -962,11 +975,14 @@ export default class PluginManager {
     })
   }
 
-  /** get a MST type for the union of all specified pluggable config schemas */
+  /**
+   * The union of every registered config schema of a pluggable element group,
+   * whose instance reads as a config node naming its `type`.
+   */
   pluggableConfigSchemaType(
     typeGroup: PluggableElementTypeGroup,
     fieldName = 'configSchema',
-  ) {
+  ): PluggableConfigSchemaType {
     const pluggableTypes = this.getElementTypeRecord(typeGroup)
       .all()
       .map(t => (t as unknown as Record<string, unknown>)[fieldName])
@@ -975,26 +991,26 @@ export default class PluginManager {
     if (pluggableTypes.length === 0) {
       pluggableTypes.push(ConfigurationSchema('Null', {}))
     }
-    // deliberately unannotated: this really is a union, not a model type, and
-    // the `as IAnyModelType` it used to carry was checked against the whole
-    // repo and needed by nothing. Claiming model-ness here is also what makes a
+    // a union, not a model type: claiming model-ness here is what made a
     // schema taking its base from this look concrete while its own slot reads
-    // have already degraded to `any` — see configuration/CLAUDE.md.
+    // had already degraded to `any` — see configuration/CLAUDE.md.
     const union = types.union(...pluggableTypes)
     // A track union dispatches on `type`, so the loose `{ trackId, uri }` form
     // has to become a full config before the union sees it. Here rather than
     // at each array that holds tracks, so a session track, a connection track
     // and a direct `create` all take it.
-    return typeGroup === 'track'
-      ? types.snapshotProcessor(union, {
-          preProcessor: (snap: unknown) => expandLooseTrackConfig(snap, this),
-        })
-      : typeGroup === 'adapter'
+    return (
+      typeGroup === 'track'
         ? types.snapshotProcessor(union, {
-            preProcessor: (snap: unknown) =>
-              this.canonicalizeAdapterSnapshot(snap),
+            preProcessor: (snap: unknown) => expandLooseTrackConfig(snap, this),
           })
-        : union
+        : typeGroup === 'adapter'
+          ? types.snapshotProcessor(union, {
+              preProcessor: (snap: unknown) =>
+                this.canonicalizeAdapterSnapshot(snap),
+            })
+          : union
+    ) as PluggableConfigSchemaType
   }
 
   /**

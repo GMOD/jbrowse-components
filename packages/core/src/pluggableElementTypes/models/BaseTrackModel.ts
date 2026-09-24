@@ -51,11 +51,6 @@ const SaveTrackDataDlg = lazy(() => import('./components/SaveTrackData.tsx'))
 
 const DEFAULT_EXPORT_BYTE_LIMIT = 5_000_000
 
-interface DisplayConf {
-  displayId: string
-  type: string
-}
-
 function getCompatibleDisplays(self: IAnyStateTreeNode) {
   const { pluginManager } = getEnv(self)
   const view = getContainingView(self)
@@ -63,11 +58,11 @@ function getCompatibleDisplays(self: IAnyStateTreeNode) {
   // question from viewCanDisplayTrack's "can it open the track at all", over
   // the same set of names
   const compatTypes = viewDisplayNames(pluginManager, view.type)
-  const displays = self.configuration.displays as AnyConfigurationModel[]
+  const displays: AnyConfigurationModel[] = self.configuration.displays
   return displays.filter(d => compatTypes.has(d.type))
 }
 
-function getDisplayConf(displays: DisplayConf[], displayId: string) {
+function getDisplayConf(displays: AnyConfigurationModel[], displayId: string) {
   const displayConf = displays.find(d => d.displayId === displayId)
   if (!displayConf) {
     throw new Error(`could not find display config ${displayId}`)
@@ -388,8 +383,10 @@ export function createBaseTrackModel(
               `could not find display id ${oldDisplayId} to replace`,
             )
           }
-          const displays = self.configuration.displays as DisplayConf[]
-          const displayConf = getDisplayConf(displays, newDisplayId)
+          const displayConf = getDisplayConf(
+            self.configuration.displays,
+            newDisplayId,
+          )
           // same interception showTrackGeneric makes: a registered-but-unloaded
           // display would otherwise fail as an opaque union mismatch below
           pm.resolveDisplayTypeRecord(
@@ -491,8 +488,7 @@ export function createBaseTrackModel(
        * one level up.
        */
       async launchDisplay(displayId: string) {
-        const displays = self.configuration.displays as DisplayConf[]
-        const { type } = getDisplayConf(displays, displayId)
+        const { type } = getDisplayConf(self.configuration.displays, displayId)
         await pm.resolveDisplayTypeRecord(type)?.loadStateModel()
         if (isAlive(self)) {
           self.replaceDisplay(

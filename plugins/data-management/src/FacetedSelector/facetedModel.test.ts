@@ -123,7 +123,7 @@ describe('html-valued metadata', () => {
       ['alpha', '<b>aardvark</b>'],
     ]) {
       session.sessionTracks
-        .find((t: { trackId: string }) => t.trackId === trackId)!
+        .find(t => t.trackId === trackId)!
         .setSlot('metadata', { note })
     }
     faceted.setShowSparse(true)
@@ -156,9 +156,7 @@ describe('live track source', () => {
     expect(faceted.rows.map(r => r.name)).toContain('alpha')
 
     session.deleteTrackConf(
-      session.sessionTracks.find(
-        (t: { trackId: string }) => t.trackId === 'alpha',
-      ),
+      session.sessionTracks.find(t => t.trackId === 'alpha')!,
     )
 
     expect(faceted.rows.map(r => r.name)).not.toContain('alpha')

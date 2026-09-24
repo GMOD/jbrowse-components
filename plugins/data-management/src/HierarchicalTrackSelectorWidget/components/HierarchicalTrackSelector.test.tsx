@@ -82,8 +82,8 @@ test('sm categorized tracks', async () => {
       },
     ],
   })
-  await firstView.launchTrack(session.sessionTracks[0].trackId)
-  await firstView.launchTrack(session.sessionTracks[1].trackId)
+  await firstView.launchTrack(session.sessionTracks[0]!.trackId)
+  await firstView.launchTrack(session.sessionTracks[1]!.trackId)
   firstView.tracks[0].configuration.setSlot('category', ['Foo Category'])
   firstView.tracks[1].configuration.setSlot('category', [
     'Foo Category',

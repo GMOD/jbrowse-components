@@ -237,7 +237,9 @@ interface ConfigSlotDefinitionCommon {
  * this mistake actually happens.
  *
  * Stating the sentinel stays meaningful in a subclass override, where the merge
- * is a spread and an omitted key inherits the base's value.
+ * is a spread and an omitted key inherits the base's value. The same spread is
+ * why an enum slot's `model` stays optional here though `ConfigSlot` requires
+ * one: a subclass restating only the default inherits the vocabulary.
  */
 export type ConfigSlotDefinition =
   | (ConfigSlotDefinitionCommon & {
