@@ -7,19 +7,11 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { BaseSamAdapter } from '../shared/BaseSamAdapter.ts'
-import {
-  filterReadFlag,
-  filterSpliced,
-  filterTagValue,
-} from '../shared/util.ts'
-import CramSlightlyLazyFeature, {
-  cramReadGroup,
-} from './CramSlightlyLazyFeature.ts'
+import { dropsRead } from '../shared/util.ts'
+import CramSlightlyLazyFeature from './CramSlightlyLazyFeature.ts'
 
 import type { FilterBy } from '../shared/types.ts'
-import type { ParsedSamHeader } from '../shared/util.ts'
 import type { CramAdapterConfig } from './configSchema.ts'
-import type { CramRecord } from '@gmod/cram'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -68,47 +60,6 @@ function sliceWorkerCount() {
   const cores =
     typeof navigator === 'undefined' ? 1 : navigator.hardwareConcurrency || 1
   return Math.max(2, Math.min(4, Math.floor(cores / 2)))
-}
-
-function shouldFilterRecord(
-  record: CramRecord,
-  filterBy: FilterBy | undefined,
-  samHeader: ParsedSamHeader,
-) {
-  const {
-    flagInclude = 0,
-    flagExclude = 0,
-    tagFilters,
-    readName,
-    spliced,
-  } = filterBy ?? {}
-  if (filterReadFlag(record.flags, flagInclude, flagExclude)) {
-    return true
-  }
-  // CRAM has no CIGAR; a skip is an 'N' read feature. `readFeatures` is
-  // rebuilt per access, which the thunk keeps off every read while the filter
-  // is off.
-  if (
-    filterSpliced(
-      spliced,
-      () => record.readFeatures?.some(f => f.code === 'N') ?? false,
-    )
-  ) {
-    return true
-  }
-  // Multiple tag filters are AND-ed: reject the read if any one rejects it.
-  const failsTag = tagFilters?.some(tf => {
-    // getTag rather than record.tags[...]: this runs per record of the query, and
-    // the object form decodes every tag on the read to answer for the one being
-    // filtered on.
-    const tagValue =
-      tf.tag === 'RG' ? cramReadGroup(samHeader, record) : record.getTag(tf.tag)
-    return filterTagValue(tagValue, tf.value)
-  })
-  if (failsTag) {
-    return true
-  }
-  return readName !== undefined && record.readName !== readName
 }
 
 export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
@@ -222,7 +173,7 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
     const { refName, start, end, originalRefName } = region
 
     return ObservableCreate<Feature>(async observer => {
-      const samHeader = await this.setup(opts)
+      await this.setup(opts)
       checkAbortSignal(signal)
       const { cram } = this.configure()
 
@@ -254,6 +205,13 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
           }),
       )
       checkAbortSignal(signal)
+      // CRAM has no CIGAR; a skip is an 'N' read feature. `readFeatures` is
+      // rebuilt per access, which the thunk keeps off every read while the
+      // filter is off.
+      const drops = dropsRead<CramSlightlyLazyFeature>(
+        filterBy,
+        record => record.readFeatures?.some(f => f.code === 'N') ?? false,
+      )
       await withProgress(
         {
           label: 'Processing alignments',
@@ -264,11 +222,11 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
         report => {
           for (const record of records) {
             report()
-            if (shouldFilterRecord(record, filterBy, samHeader)) {
-              continue
-            }
+            // before the filter, which reads RG through the header it holds
             record.adapter = this
-            observer.next(record)
+            if (!drops(record)) {
+              observer.next(record)
+            }
           }
           observer.complete()
         },

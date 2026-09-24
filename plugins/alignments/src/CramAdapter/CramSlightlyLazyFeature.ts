@@ -31,8 +31,8 @@ const MISMATCH_OPTS: { start?: number; end?: number; origin: number } = {
 // The one spelling of where a read's RG lives. The RG data series resolved
 // through the header wins; a conforming encoder writes nothing else, but a
 // nonconforming one can leave RG in the tag block with no @RG line, and
-// htslib-family tools still show it. Shared by getTag and the adapter's tag
-// filter so the details panel and the filter cannot disagree about a read's RG.
+// htslib-family tools still show it. The adapter's tag filter reads RG through
+// getTag, so the details panel and the filter cannot disagree about it.
 export function cramReadGroup(
   samHeader: ParsedSamHeader | undefined,
   record: CramRecord,

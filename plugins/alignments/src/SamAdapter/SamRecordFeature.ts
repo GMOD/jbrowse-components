@@ -127,6 +127,10 @@ export default class SamRecordFeature implements MismatchFeature {
     return this.record.tags
   }
 
+  getTag(tag: string) {
+    return this.record.tags[tag]
+  }
+
   get template_length() {
     return this.record.template_length
   }

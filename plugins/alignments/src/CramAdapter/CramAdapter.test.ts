@@ -210,3 +210,27 @@ test('getFeatures threads its signal into the cram read as a signal', async () =
   releaseRead()
   await expect(done).rejects.toMatchObject({ name: 'AbortError' })
 })
+
+// CRAM keeps RG in its own data series, resolved through the header, so the
+// tag filter has to read it the way the details panel does
+test('a read-group tag filter keeps only that group', async () => {
+  const adapter = makeAdapter('../../../../test_data/volvox/volvox-rg.cram')
+  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
+  const reads = (tagFilters?: { tag: string; value: string }[]) =>
+    firstValueFrom(
+      adapter
+        .getFeatures(
+          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50000 },
+          { filterBy: { flagInclude: 0, flagExclude: 0, tagFilters } },
+        )
+        .pipe(toArray()),
+    )
+
+  const all = await reads()
+  const group4 = await reads([{ tag: 'RG', value: '4' }])
+  expect(group4.length).toBeGreaterThan(0)
+  expect(group4.length).toBeLessThan(all.length)
+  expect(
+    group4.every(f => (f.get('tags') as Record<string, unknown>).RG === '4'),
+  ).toBe(true)
+})

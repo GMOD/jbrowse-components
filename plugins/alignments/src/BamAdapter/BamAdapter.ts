@@ -9,11 +9,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { BaseSamAdapter } from '../shared/BaseSamAdapter.ts'
 import { seqFetchSpan } from '../shared/seqFetchSpan.ts'
-import {
-  filterReadFlag,
-  filterSpliced,
-  filterTagValue,
-} from '../shared/util.ts'
+import { dropsRead } from '../shared/util.ts'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature.ts'
 
 import type { FilterBy } from '../shared/types.ts'
@@ -139,13 +135,9 @@ export abstract class BamAdapterBase<
       )
       checkAbortSignal(signal)
 
-      const {
-        readName,
-        tagFilters,
-        spliced,
-        flagInclude = 0,
-        flagExclude = 0,
-      } = filterBy ?? {}
+      const drops = dropsRead<BamSlightlyLazyFeature>(filterBy, record =>
+        numericCigarHasSkip(record.NUMERIC_CIGAR),
+      )
       // Only reads lacking an MD tag need the reference, and whether ANY does is
       // only knowable once the records are in — hence `span` below. But the
       // SPAN itself needs no records: seqFetchSpan clamps to [start, end), so
@@ -188,36 +180,7 @@ export abstract class BamAdapterBase<
         report => {
           for (const record of records) {
             report()
-            // Every filter is applied here rather than split with @gmod/bam,
-            // which used to take flags + a single tagFilter. That seam was also
-            // dead: normalizeFilterBy folds the legacy singular `tagFilter`
-            // into `tagFilters`, so @gmod/bam never saw one. Mirrors
-            // CramAdapter's shouldFilterRecord. Filtering here is free — this
-            // loop already visits every record to set `adapter` and resolve the
-            // reference.
-            if (filterReadFlag(record.flags, flagInclude, flagExclude)) {
-              continue
-            }
-            // `!== undefined`, not truthy: matches CramAdapter/SamAdapter, where
-            // an explicitly-set empty readName filters rather than being ignored.
-            if (readName !== undefined && record.name !== readName) {
-              continue
-            }
-            // Multiple tag filters are AND-ed (excluded if any one rejects the
-            // read). getTag decodes just the one tag; record.tags would decode
-            // every unrelated tag on the read (NM/AS/ms/de/…) to test one.
-            if (
-              tagFilters?.some(tf =>
-                filterTagValue(record.getTag(tf.tag), tf.value),
-              )
-            ) {
-              continue
-            }
-            if (
-              filterSpliced(spliced, () =>
-                numericCigarHasSkip(record.NUMERIC_CIGAR),
-              )
-            ) {
+            if (drops(record)) {
               continue
             }
 

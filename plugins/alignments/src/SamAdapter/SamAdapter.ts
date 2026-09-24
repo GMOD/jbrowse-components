@@ -12,12 +12,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { BaseAlignmentsAdapter } from '../shared/BaseAlignmentsAdapter.ts'
 import { seqFetchSpan } from '../shared/seqFetchSpan.ts'
-import {
-  filterReadFlag,
-  filterSpliced,
-  filterTagValue,
-  parseSamHeader,
-} from '../shared/util.ts'
+import { dropsRead, parseSamHeader } from '../shared/util.ts'
 import SamRecordFeature from './SamRecordFeature.ts'
 import { parseSamHeaderLine, parseSamLine } from './parseSam.ts'
 
@@ -128,10 +123,13 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
       const { intervalTreeMap } = await this.loadData(opts)
       checkAbortSignal(signal)
       const tree = intervalTreeMap[refName]
+      const drops = dropsRead<SamRecordFeature>(filterBy, record =>
+        numericCigarHasSkip(record.NUMERIC_CIGAR),
+      )
       const records = tree
         ? tree(statusCallback)
             .search([start, end])
-            .filter(record => !this.shouldFilterRecord(record, filterBy))
+            .filter(record => !drops(record))
         : []
 
       // only records lacking an MD tag need the reference, so defer loading the
@@ -175,26 +173,5 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
       }
       observer.complete()
     }, signal)
-  }
-
-  // Mirrors BamAdapter/CramAdapter: flags, read name and AND-ed tag filters are
-  // applied in the adapter so every alignments source honors the same filterBy.
-  private shouldFilterRecord(
-    record: SamRecordFeature,
-    filterBy: FilterBy | undefined,
-  ) {
-    const {
-      flagInclude = 0,
-      flagExclude = 0,
-      tagFilters,
-      readName,
-      spliced,
-    } = filterBy ?? {}
-    return (
-      filterReadFlag(record.flags, flagInclude, flagExclude) ||
-      (readName !== undefined && record.name !== readName) ||
-      !!tagFilters?.some(tf => filterTagValue(record.tags[tf.tag], tf.value)) ||
-      filterSpliced(spliced, () => numericCigarHasSkip(record.NUMERIC_CIGAR))
-    )
   }
 }

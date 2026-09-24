@@ -158,6 +158,33 @@ export function filterTagValue(readVal: unknown, filterVal = '*') {
   return filterVal === '*' ? readVal === undefined : `${readVal}` !== filterVal
 }
 
+interface FilterableRead {
+  flags: number
+  name: string | undefined
+  getTag(tag: string): unknown
+}
+
+// Whether `filterBy` drops a read, for every adapter: flags, read name, the
+// AND-ed tag filters and the spliced filter. `hasSkip` is the format's own
+// test, since CRAM has no CIGAR to walk.
+export function dropsRead<R extends FilterableRead>(
+  filterBy: FilterBy | undefined,
+  hasSkip: (read: R) => boolean,
+) {
+  const {
+    flagInclude = 0,
+    flagExclude = 0,
+    tagFilters,
+    readName,
+    spliced,
+  } = filterBy ?? {}
+  return (read: R) =>
+    filterReadFlag(read.flags, flagInclude, flagExclude) ||
+    (readName !== undefined && read.name !== readName) ||
+    !!tagFilters?.some(tf => filterTagValue(read.getTag(tf.tag), tf.value)) ||
+    filterSpliced(spliced, () => hasSkip(read))
+}
+
 export interface SamHeaderLine {
   tag: string
   data: { tag: string; value: string }[]
