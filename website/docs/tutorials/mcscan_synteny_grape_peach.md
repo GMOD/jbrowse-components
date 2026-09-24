@@ -6,6 +6,7 @@ description:
   and convert an MCScanX run into the same files
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
+tutorial_subcategory: Ortholog tables
 ---
 
 A pairwise [jcvi](https://github.com/tanghaibao/jcvi) MCScan run writes two

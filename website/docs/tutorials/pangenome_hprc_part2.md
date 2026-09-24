@@ -6,6 +6,7 @@ description:
   and which of the 464 haplotypes carry it
 guide_category: Tutorials
 tutorial_category: Pangenomes
+tutorial_subcategory: HPRC release 2
 ---
 
 [Part 1](/docs/tutorials/pangenome_hprc) ends with one allele and the single

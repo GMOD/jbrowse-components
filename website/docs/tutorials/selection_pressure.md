@@ -6,6 +6,7 @@ description:
   substitution, and read selection pressure off a gene neighbourhood
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
+tutorial_subcategory: Ortholog tables
 ---
 
 dN/dS is a per-ortholog-pair measurement, so it is a colour on a synteny track.

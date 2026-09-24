@@ -5,6 +5,7 @@ description:
   breeds and eight held-out wolves, from the Dog10K phased panel
 guide_category: Tutorials
 tutorial_category: Population genomics
+tutorial_subcategory: Dog10K
 ---
 
 Two of the Dog10K breeds are wolf hybrids, so parts of their genome trace back

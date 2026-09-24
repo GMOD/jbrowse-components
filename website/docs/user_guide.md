@@ -63,59 +63,65 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/genomes_basics)
 - [](/docs/tutorials/genomes_synteny)
 - [](/docs/tutorials/genomes_proteins)
-- [](/docs/tutorials/repeatmasker_classes)
 - [](/docs/tutorials/genomes_pangenome)
+- [](/docs/tutorials/repeatmasker_classes)
 
 ### Synteny & comparative genomics
 
+#### Whole-genome alignments
+
 - [](/docs/tutorials/synteny_visualization)
-- [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/tutorials/allvsall_synteny)
 - [](/docs/tutorials/syri_synteny)
+- [](/docs/tutorials/circular_synteny)
 - [](/docs/tutorials/hg002_haplotypes)
 - [](/docs/tutorials/amylase_haplotypes)
-- [](/docs/tutorials/agent_synteny)
-- [](/docs/tutorials/selection_pressure)
-- [](/docs/tutorials/odp_linkage_groups_synteny)
 - [](/docs/tutorials/hprc_multiway_synteny)
-- [](/docs/tutorials/ecoli_orthologs_synteny)
-- [](/docs/tutorials/primate_orthologs_synteny)
 - [](/docs/tutorials/hg38_vertebrates_synteny)
+
+#### Ortholog tables
+
 - [](/docs/tutorials/mcscan_synteny_grape_peach)
-- [](/docs/tutorials/circular_synteny)
-- [](/docs/tutorials/homoeolog_synteny)
+- [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/tutorials/orthofinder_synteny)
+- [](/docs/tutorials/primate_orthologs_synteny)
+- [](/docs/tutorials/ecoli_orthologs_synteny)
+- [](/docs/tutorials/odp_linkage_groups_synteny)
+- [](/docs/tutorials/homoeolog_synteny)
+- [](/docs/tutorials/selection_pressure)
 
 ### Pangenomes
 
 - [](/docs/tutorials/pangenome_ecoli)
 - [](/docs/tutorials/pangenome_cactus)
+- [](/docs/tutorials/pangenome_mouse)
+- [](/docs/tutorials/pangenome_cattle)
+- [](/docs/tutorials/pangenome_prepare_graph)
+
+#### HPRC release 2
+
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/pangenome_hprc_part2)
 - [](/docs/tutorials/pangenome_hprc_part3)
 - [](/docs/tutorials/pangenome_graph_reading)
-- [](/docs/tutorials/pangenome_chrm)
-- [](/docs/tutorials/pangenome_mouse)
-- [](/docs/tutorials/pangenome_cattle)
-- [](/docs/tutorials/pangenome_prepare_graph)
 - [](/docs/tutorials/pangenome_hprc_part5)
+- [](/docs/tutorials/pangenome_chrm)
 
 ### Structural variation
 
 - [](/docs/tutorials/sv_multisamples)
 - [](/docs/tutorials/population_cnv)
-- [](/docs/tutorials/mappability_qc)
-- [](/docs/tutorials/dog10k_svs)
 - [](/docs/tutorials/hic_structural_variants)
+- [](/docs/tutorials/mappability_qc)
 
 ### Cancer genomics
 
 - [](/docs/tutorials/sv_visualization_cgiab)
-- [](/docs/tutorials/tcga_cohort_cnv)
+- [](/docs/tutorials/sv_callset_review)
 - [](/docs/tutorials/cancer_sv)
 - [](/docs/tutorials/k562_fusions)
 - [](/docs/tutorials/tcga_cohort_mutations)
-- [](/docs/tutorials/sv_callset_review)
+- [](/docs/tutorials/tcga_cohort_cnv)
 
 ### Population genomics
 
@@ -124,8 +130,12 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/ld_human)
 - [](/docs/tutorials/ld_mosquitoes)
 - [](/docs/tutorials/bxd_qtl)
-- [](/docs/tutorials/dog10k_lof)
+
+#### Dog10K
+
 - [](/docs/tutorials/dog10k_selection)
+- [](/docs/tutorials/dog10k_lof)
+- [](/docs/tutorials/dog10k_svs)
 - [](/docs/tutorials/local_ancestry)
 
 ### Epigenomics & single cell
@@ -134,8 +144,8 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/bisulfite)
 - [](/docs/tutorials/chromhmm)
 - [](/docs/tutorials/scatac_pseudobulk)
-- [](/docs/tutorials/alphagenome)
 - [](/docs/tutorials/scrna_pseudobulk)
+- [](/docs/tutorials/alphagenome)
 
 ### Transcriptomics & proteins
 
@@ -146,6 +156,7 @@ How to drive JBrowse once it is running. New here? Start with the
 ### Genes & annotation
 
 - [](/docs/tutorials/gene_prediction_review)
+- [](/docs/tutorials/gene_density)
 
 ### Grammar of graphics
 
@@ -157,4 +168,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/display_settings)
 - [](/docs/tutorials/embed_linear_genome_view)
 - [](/docs/tutorials/cli_desktop)
-- [](/docs/tutorials/gene_density)
+
+### Automation
+
+- [](/docs/tutorials/agent_synteny)

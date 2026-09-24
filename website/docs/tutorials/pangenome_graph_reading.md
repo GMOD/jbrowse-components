@@ -7,6 +7,7 @@ description:
   copies it carries
 guide_category: Tutorials
 tutorial_category: Pangenomes
+tutorial_subcategory: HPRC release 2
 ---
 
 A pangenome graph holds shapes a linear track cannot draw: a repeat array is a

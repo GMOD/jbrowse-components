@@ -6,6 +6,7 @@ description:
   synteny table
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
+tutorial_subcategory: Ortholog tables
 ---
 
 An [OrthoFinder](https://github.com/davidemms/OrthoFinder) run groups genes by

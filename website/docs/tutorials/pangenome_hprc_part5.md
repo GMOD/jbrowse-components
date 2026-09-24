@@ -7,7 +7,7 @@ description:
   where reads lost an allele the assemblies kept
 guide_category: Tutorials
 tutorial_category: Pangenomes
-data: hosted
+tutorial_subcategory: HPRC release 2
 ---
 
 A tandem repeat can be many times longer in one person than in the reference,

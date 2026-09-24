@@ -6,6 +6,7 @@ description:
   the same haplotypes off GRCh38's axis and on their own contigs
 guide_category: Tutorials
 tutorial_category: Pangenomes
+tutorial_subcategory: HPRC release 2
 ---
 
 Parts [1](/docs/tutorials/pangenome_hprc) and

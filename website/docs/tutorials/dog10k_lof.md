@@ -6,6 +6,7 @@ description:
   across dog breeds and wolves
 guide_category: Tutorials
 tutorial_category: Population genomics
+tutorial_subcategory: Dog10K
 ---
 
 Derive a stop-gained variant's coordinate by translating the reference CDS,

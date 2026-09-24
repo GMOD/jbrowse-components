@@ -167,10 +167,11 @@ that long is usually a page with a second dataset it cannot connect to its
 first: `cancer_sv` listed two cell lines out of two releases until the second
 became `k562_fusions`, and the wall went with it.
 
-Frontmatter sets `data: hosted | download | pipeline`, what it takes to end up
-with what the page shows, **not** whether the figures can be read with nothing
-installed. A page whose cost is not about data leaves the field off. An unknown
-value fails the build; an absent one is silently no chip.
+Frontmatter sets `tutorial_category`, and `tutorial_subcategory` where the
+category has subsections (`TUTORIAL_SUBCATEGORIES` in
+`src/lib/guide-categories.ts`). A new page also goes in `TUTORIAL_ORDER` there,
+at the place in its section a reader should meet it. An unknown value in either
+field fails the build.
 
 **A `sidebar_label` leads with the word its kin lead with.** The sidebar is one
 flat alphabetical list, so the first word is the only thing grouping it:

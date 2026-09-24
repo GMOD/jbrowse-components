@@ -7,6 +7,7 @@ description:
   by its type, in a stack of four Arabidopsis accessions
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
+tutorial_subcategory: Whole-genome alignments
 ---
 
 The Columbia and Landsberg accessions of _Arabidopsis thaliana_ differ by an

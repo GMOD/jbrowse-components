@@ -5,7 +5,8 @@ description:
   Genotype four classes of structural variant across dog breeds and read each
   against the gene it sits in
 guide_category: Tutorials
-tutorial_category: Structural variation
+tutorial_category: Population genomics
+tutorial_subcategory: Dog10K
 ---
 
 Slice a locus out of the Dog10K structural-variant callsets over HTTP, load it

@@ -7,6 +7,7 @@ description:
   animal genomes
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
+tutorial_subcategory: Ortholog tables
 ---
 
 Certain sets of genes have stayed on the same chromosome together since before

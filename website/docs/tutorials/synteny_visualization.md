@@ -6,6 +6,7 @@ description:
   synteny views
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
+tutorial_subcategory: Whole-genome alignments
 ---
 
 Align two assemblies with `minimap2 -c --eqx`, load the PAF as a synteny track,

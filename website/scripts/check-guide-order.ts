@@ -83,10 +83,14 @@ for (const slug of TUTORIAL_ORDER) {
 
 for (const slug of TUTORIAL_NO_THUMB) {
   checked++
-  if (!tutorialSlugs.has(slug) && !externalCards.has(slug)) {
+  if (
+    !tutorialSlugs.has(slug) &&
+    !externalCards.has(slug) &&
+    !rootSlugs.has(slug)
+  ) {
     errors.push(
       `TUTORIAL_NO_THUMB lists '${slug}', which is no page under ` +
-        `docs/tutorials/. The landing page renders a thumbnail for any card ` +
+        `docs/tutorials/ or the docs root. The landing page renders a thumbnail for any card ` +
         `not in this set, so a stale entry means a card links a webp nobody ` +
         `generated.`,
     )

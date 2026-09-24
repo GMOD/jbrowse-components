@@ -6,7 +6,7 @@ description:
   features-per-kilobase sidecar the track draws where its features are too many
   to fetch
 guide_category: Tutorials
-tutorial_category: Configuration & embedding
+tutorial_category: Genes & annotation
 ---
 
 We look at where the genes sit along human chromosome 1 and which transposons

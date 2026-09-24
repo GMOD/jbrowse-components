@@ -6,7 +6,7 @@ description:
   alignment, build the views, and find where the two genomes run in opposite
   directions
 guide_category: Tutorials
-tutorial_category: Synteny & comparative genomics
+tutorial_category: Automation
 ---
 
 Four sentences typed at an AI agent are enough to align two fruit fly species

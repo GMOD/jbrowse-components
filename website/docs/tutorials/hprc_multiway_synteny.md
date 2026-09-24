@@ -7,6 +7,7 @@ description:
   lane drawing that haplotype's CAT gene models
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
+tutorial_subcategory: Whole-genome alignments
 ---
 
 At the complement factor H cluster on chr1, four of eight assembled human

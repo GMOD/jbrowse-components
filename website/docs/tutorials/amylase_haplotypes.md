@@ -7,6 +7,7 @@ description:
   the stack draws the insertions and deletions of a real pairwise alignment
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
+tutorial_subcategory: Whole-genome alignments
 ---
 
 People carry different numbers of copies of _AMY1_, the salivary amylase gene,

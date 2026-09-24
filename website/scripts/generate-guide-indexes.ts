@@ -11,6 +11,7 @@ import {
   TUTORIAL_CATEGORIES,
   TUTORIAL_FALLBACK,
   TUTORIAL_ORDER,
+  TUTORIAL_SUBCATEGORIES,
   USER_CATEGORIES,
   guideRank,
 } from '../src/lib/guide-categories.ts'
@@ -95,12 +96,10 @@ function buildTocSection(
   return lines
 }
 
-// Tutorials carry one more level of grouping than the guide dirs: they all
-// declare `guide_category: Tutorials`, so a flat list of them buries 20+ pages
-// under one heading. Split them by `tutorial_category` instead, reusing the
-// order the tutorials landing page uses so the two groupings of the same pages
-// match. (The landing page is what fails the build on an unknown category; here
-// an unrecognized one just falls into the trailing bucket.)
+// Tutorials all declare `guide_category: Tutorials`, so they split by
+// `tutorial_category` and `tutorial_subcategory` in the landing page's order.
+// The landing page fails the build on an unknown value; here one falls into the
+// trailing bucket.
 function buildTutorialSection(): string[] {
   const dir = join(docsDir, 'tutorials')
   const rank = (slug: string) => {
@@ -115,6 +114,7 @@ function buildTutorialSection(): string[] {
       category: TUTORIAL_CATEGORIES.includes(fm.tutorial_category ?? '')
         ? fm.tutorial_category!
         : TUTORIAL_FALLBACK,
+      subcategory: fm.tutorial_subcategory,
     }))
     .sort(
       (a, b) => rank(a.slug) - rank(b.slug) || a.title.localeCompare(b.title),
@@ -125,10 +125,21 @@ function buildTutorialSection(): string[] {
     const inCategory = entries.filter(e => e.category === category)
     if (inCategory.length) {
       lines.push(`### ${category}`, '')
-      for (const e of inCategory) {
-        lines.push(`- [](/docs/tutorials/${e.slug})`)
+      for (const sub of [
+        undefined,
+        ...(TUTORIAL_SUBCATEGORIES[category] ?? []),
+      ]) {
+        const inSub = inCategory.filter(e => e.subcategory === sub)
+        if (inSub.length) {
+          if (sub) {
+            lines.push(`#### ${sub}`, '')
+          }
+          for (const e of inSub) {
+            lines.push(`- [](/docs/tutorials/${e.slug})`)
+          }
+          lines.push('')
+        }
       }
-      lines.push('')
     }
   }
   return lines.length ? ['## Tutorials', '', ...lines] : []

@@ -48,49 +48,16 @@ export const DEVELOPER_CATEGORIES = [
   'Advanced topics',
 ]
 
-// Ordered `tutorial_category` values, shared by the tutorials landing page
-// (pages/docs/tutorials/index.astro) and the user guide index, so the two
-// groupings of the same pages can't drift. A tutorial with no category, or one
-// not listed here, falls into TUTORIAL_FALLBACK rather than vanishing.
-// 'Cancer genomics' is split out from 'Structural variation' rather than
-// widened into it: the tumor pages are not all SV work (a somatic point-mutation
-// matrix is not structural variation, which is what filed it under 'Population
-// genomics' before), and the SV pages are not all cancer (the 1000 Genomes
-// inversion and copy-number panels are germline). One axis each keeps both
-// headings true of everything under them.
+// Ordered `tutorial_category` values, shared by the tutorials landing page and
+// the user guide index. An unlisted or missing category lands in
+// TUTORIAL_FALLBACK.
 //
-// One category per page, deliberately, and not a tag system. Tutorials do sit
-// on several axes at once — biology domain, variant type, the display doing the
-// work — and every few months that reads like an argument for tags. It isn't,
-// at this size: these are section headings on one landing page, a page can only
-// appear once in a linear list, and after the split above all 35 pages have a
-// category that is true of them. What a reader actually wants from tags is to
-// find the sibling page in another section, and `## See also` already does that
-// with prose that says WHY the two are related, which a tag cannot. When a page
-// straddles, fix the cross-links, not the schema. Revisit only if the corpus
-// roughly doubles or a section stops describing its contents.
-//
-// 'Pangenomes' is its own heading rather than part of 'Synteny & comparative
-// genomics'. Nine of that section's pages were pangenome pages, a third of it,
-// and they are the ones that need a graph — pggb, Minigraph-Cactus, odgi — where
-// the rest need a pairwise aligner and a dotplot. Under one heading the reader
-// after a whole-genome alignment scrolled past the graph series and the reader
-// after a graph had no run to follow.
-//
-// 'genomes.jbrowse.org' leads, and is the second heading here that names
-// something other than a biology domain. It holds the pages that are about the
-// hosted site rather than about a dataset: each opens on a genome that is
-// already configured, so the whole page is a click path and its Prerequisites
-// list is "nothing to install". Filed by domain they were scattered across
-// four sections, each sitting among pages that want minimap2, pggb or a
-// tabix'd file first, so the one group a reader can follow without downloading
-// anything was the one group that could not be seen. They already read as a
-// series: all four cross-link each other, and all four lead their sidebar_label
-// with the site's name so the flat sidebar sorts them as one run. This is not
-// the same axis as "costs the reader nothing", which is wider (the
-// demo-instance pages are zero-setup too, and `mappability_qc` is a hosted
-// click path whose subject is SMN, not the site) and wants a per-card badge
-// rather than a heading.
+// One category per page, not tags: these are section headings on one page, and
+// `## See also` already links the sibling in another section with the reason.
+// 'Cancer genomics' and 'Structural variation' stay apart because neither is a
+// subset of the other. 'genomes.jbrowse.org' leads because its pages need
+// nothing installed. A section too big to scan splits into
+// TUTORIAL_SUBCATEGORIES rather than into more top-level headings.
 export const TUTORIAL_CATEGORIES = [
   'genomes.jbrowse.org',
   'Getting started',
@@ -104,58 +71,90 @@ export const TUTORIAL_CATEGORIES = [
   'Genes & annotation',
   'Grammar of graphics',
   'Configuration & embedding',
+  'Automation',
 ]
 
 export const TUTORIAL_FALLBACK = 'More tutorials'
 
-// Curated order within each tutorial category, by page slug. Sorting
-// alphabetically floated niche pages to the top (the CLI config walkthrough
-// once led Getting started); instead each section leads with its most
-// representative page. Anything unlisted falls after, alphabetically. Includes
-// a few slugs that only the landing page shows (the quickstarts, the cookbook,
-// the external examples card); they are inert for the user guide index.
+// Ordered `tutorial_subcategory` values per category. A page in one of these
+// categories without a subcategory draws above the subsections.
+export const TUTORIAL_SUBCATEGORIES: Record<string, string[]> = {
+  'Synteny & comparative genomics': [
+    'Whole-genome alignments',
+    'Ortholog tables',
+  ],
+  Pangenomes: ['HPRC release 2'],
+  'Population genomics': ['Dog10K'],
+}
+
+// Curated order within each section, by slug; unlisted slugs follow
+// alphabetically. Includes the root-level and external cards only the landing
+// page shows.
 export const TUTORIAL_ORDER = [
-  // The hosted-site series, in the order it is meant to be read: open a genome
-  // and turn on a track, then the two right-click launchers that build a second
-  // view out of the gene under the cursor, then the display swap that needs no
-  // second view at all. It leads the page ahead of Getting started because both
-  // quickstarts are "install JBrowse and load data into it", and these are the
-  // pages that need neither — the shortest path from the tutorials index to a
-  // reader looking at real data in a real browser.
   'genomes_basics',
   'genomes_synteny',
   'genomes_proteins',
+  'genomes_pangenome',
   'repeatmasker_classes',
   'quickstart_web',
   'quickstart_desktop',
   'synteny_visualization',
-  'multiway_synteny_grape_peach_cacao',
   'allvsall_synteny',
   'syri_synteny',
+  'circular_synteny',
   'hg002_haplotypes',
   'amylase_haplotypes',
+  'hprc_multiway_synteny',
+  'hg38_vertebrates_synteny',
+  'mcscan_synteny_grape_peach',
+  'multiway_synteny_grape_peach_cacao',
+  'orthofinder_synteny',
+  'primate_orthologs_synteny',
+  'ecoli_orthologs_synteny',
+  'odp_linkage_groups_synteny',
+  'homoeolog_synteny',
+  'selection_pressure',
   'pangenome_ecoli',
   'pangenome_cactus',
+  'pangenome_mouse',
+  'pangenome_cattle',
+  'pangenome_prepare_graph',
   'pangenome_hprc',
   'pangenome_hprc_part2',
   'pangenome_hprc_part3',
   'pangenome_graph_reading',
+  'pangenome_hprc_part5',
   'pangenome_chrm',
-  'pangenome_mouse',
-  'pangenome_cattle',
-  'pangenome_prepare_graph',
-  'sv_visualization_cgiab',
   'sv_multisamples',
+  'population_cnv',
+  'hic_structural_variants',
+  'mappability_qc',
+  'sv_visualization_cgiab',
+  'sv_callset_review',
+  'cancer_sv',
+  'k562_fusions',
+  'tcga_cohort_mutations',
+  'tcga_cohort_cnv',
   'population_genomics',
   'analyze_trio',
   'ld_human',
   'ld_mosquitoes',
   'bxd_qtl',
+  'dog10k_selection',
+  'dog10k_lof',
+  'dog10k_svs',
+  'local_ancestry',
   'methylation',
   'bisulfite',
   'chromhmm',
   'scatac_pseudobulk',
+  'scrna_pseudobulk',
+  'alphagenome',
   'rnaseq',
+  'dtu',
+  'tp53_structures',
+  'gene_prediction_review',
+  'gene_density',
   'alu_age',
   'read_marks',
   'cookbook',
@@ -163,36 +162,8 @@ export const TUTORIAL_ORDER = [
   'embed_linear_genome_view',
   'embedding_examples',
   'cli_desktop',
-]
-
-// Tutorials that are one walkthrough split across pages. The landing page draws
-// the whole run as a single card — part 1's thumbnail and the series title, with
-// a numbered link per part — instead of four near-identical cards that push the
-// rest of the section off the screen. The parts stay separate pages, keep their
-// own sidebar entries, and are listed individually in the user guide index; only
-// the card grid collapses them.
-//
-// The first part fixes where the card sorts (TUTORIAL_ORDER) and which thumbnail
-// it shows, so list the parts in reading order. A part slug that names no page
-// fails the landing-page build.
-export interface TutorialSeries {
-  title: string
-  description: string
-  parts: { slug: string; label: string }[]
-}
-
-export const TUTORIAL_SERIES: TutorialSeries[] = [
-  {
-    title: 'Pangenome (HPRC)',
-    description:
-      'Read the HPRC release 2 graph at a locus, find every haplotype carrying an allele, put each haplotype back in its own coordinates, and draw the graph itself.',
-    parts: [
-      { slug: 'pangenome_hprc', label: 'Reading the graph' },
-      { slug: 'pangenome_hprc_part2', label: 'Who carries what' },
-      { slug: 'pangenome_hprc_part3', label: 'Haplotype coordinates' },
-      { slug: 'pangenome_graph_reading', label: 'The graph as the picture' },
-    ],
-  },
+  'agent_synteny',
+  'agents',
 ]
 
 // Tutorial cards that deliberately render the compact chromeless card instead
@@ -220,6 +191,7 @@ export const TUTORIAL_NO_THUMB = new Set([
   'cli_desktop',
   'embedding_examples',
   'pangenome_prepare_graph',
+  'agents',
 ])
 
 // Curated lead pages within a `guide_category`, by slug — the same idea as

@@ -4,6 +4,7 @@ sidebar_label: Synteny (ortholog tables)
 description: Stack N genomes from a jcvi MCScan .blocks file
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
+tutorial_subcategory: Ortholog tables
 ---
 
 jcvi's MCScan lines up orthologous genes across more than two genomes at once,

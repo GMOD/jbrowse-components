@@ -22,6 +22,7 @@ const docsSchema = z.object({
   // guide_category (which keeps every tutorial under the user guide's
   // "Tutorials" section). Pages without it fall into a trailing "More" bucket.
   tutorial_category: z.string().optional(),
+  tutorial_subcategory: z.string().optional(),
   // introduction.md uses `slug: /` so the glob loader keys it at the docs root
   slug: z.string().optional(),
 })

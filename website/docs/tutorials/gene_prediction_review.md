@@ -7,7 +7,6 @@ description:
   JBrowse
 guide_category: Tutorials
 tutorial_category: Genes & annotation
-data: hosted
 ---
 
 A gene finder hands back tens of thousands of models and no way to tell which

@@ -6,6 +6,7 @@ description:
   selection pressure between each pair of copies
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
+tutorial_subcategory: Ortholog tables
 ---
 
 An allopolyploid carries several near-complete copies of its own genome, so one
