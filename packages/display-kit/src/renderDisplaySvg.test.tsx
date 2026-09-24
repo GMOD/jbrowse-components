@@ -309,7 +309,9 @@ describe('the y axis', () => {
     const model = Object.create(host, {
       showLegend: { value: true },
       legendSpec: {
-        value: { items: [{ id: 'a', label: 'a', color: 'red' }] },
+        value: {
+          sections: [{ id: 'a', items: [{ label: 'a', color: 'red' }] }],
+        },
       },
       setShowLegend: { value: () => {} },
     }) as TestDisplayModel
@@ -332,7 +334,9 @@ describe('the y axis', () => {
 describe('SvgLegend', () => {
   const host = {
     showLegend: true,
-    legendSpec: { items: [{ id: 'a', label: 'a', color: 'red' }] },
+    legendSpec: {
+      sections: [{ id: 'a', items: [{ label: 'a', color: 'red' }] }],
+    },
     setShowLegend() {},
     dismissLegendSection() {},
     legendTop: 28,
