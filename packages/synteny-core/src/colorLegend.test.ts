@@ -114,12 +114,16 @@ test('the fallback note names what the mode is actually doing', () => {
 })
 
 // A text column keys one chip per label, the file color where the file gave
-// one, the grey its unlabelled rows paint last, and past the readable cap it
-// says how many labels it left out.
+// one, the grey its unlabelled rows paint last where some row carried no
+// label, and past the readable cap it says how many labels it left out.
 test('a categorical attribute lists a chip per label', () => {
   const swatch = getColorBySwatch('group', {
     attributeRanges: {
-      group: { labels: ['B1', 'A1a'], colors: { A1a: '#4DB5E3' } },
+      group: {
+        labels: ['B1', 'A1a'],
+        colors: { A1a: '#4DB5E3' },
+        unlabelled: true,
+      },
     },
   })
   expect(swatch?.kind).toBe('chips')
@@ -137,11 +141,18 @@ test('a categorical attribute lists a chip per label', () => {
     expect(swatch.chips[1]!.color).toBe('#4DB5E3')
     expect(swatch.chips[0]!.color).toBeDefined()
   }
+  const labels = Array.from({ length: 35 }, (_, i) => `L${i}`)
   const many = getColorBySwatch('group', {
     attributeRanges: {
       group: {
-        labels: Array.from({ length: 35 }, (_, i) => `L${i}`),
-        colors: {},
+        labels,
+        colors: Object.fromEntries(
+          labels.map((l, i) => [
+            l,
+            `#${(i + 1).toString(16).padStart(6, '0')}`,
+          ]),
+        ),
+        unlabelled: true,
       },
     },
   })
@@ -150,6 +161,50 @@ test('a categorical attribute lists a chip per label', () => {
     expect(many.chips[30]).toEqual({ label: '+5 more' })
     expect(many.chips[31]!.label).toBe(NO_VALUE_LABEL)
   }
+})
+
+// Every SyRI row carries a type, so nothing paints the unlabelled grey, and a
+// grey row in the key would name a color beside SYN's that is not on screen.
+test('a column every row labelled keys no unlabelled grey', () => {
+  const swatch = getColorBySwatch('type', {
+    attributeRanges: { type: { labels: ['SYN', 'INV'], colors: {} } },
+  })
+  expect(swatch?.kind === 'chips' && swatch.chips.map(c => c.label)).toEqual([
+    'SYN',
+    'INV',
+  ])
+})
+
+// SyRI's palette, as plotsr draws it, paints an inverted duplication in the
+// duplication color and an inverted translocation in the translocation one,
+// so the key is one row per color naming both, as plotsr's is.
+test('labels sharing a color are one chip naming each', () => {
+  const colors = {
+    SYN: '#c8c8c8',
+    TRANS: '#9acd32',
+    INVTR: '#9ACD32',
+    DUP: '#00bbff',
+    INVDP: '#00bbff',
+  }
+  const scale = colorByScale('type', {
+    attributeRanges: {
+      type: { labels: ['SYN', 'INVDP', 'TRANS', 'DUP', 'INVTR'], colors },
+    },
+    hideUnlabelled: true,
+  })
+  expect(scale.kind === 'categorical' && scale.entries).toEqual([
+    expect.objectContaining({ value: 'SYN', label: 'SYN' }),
+    expect.objectContaining({
+      value: 'DUP',
+      values: ['DUP', 'INVDP'],
+      label: 'DUP, INVDP',
+    }),
+    expect.objectContaining({
+      value: 'INVTR',
+      values: ['INVTR', 'TRANS'],
+      label: 'INVTR, TRANS',
+    }),
+  ])
 })
 
 // The scale is the swatch spec in the vocabulary the shared key draws: a ramp

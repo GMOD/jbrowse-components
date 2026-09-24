@@ -188,9 +188,14 @@ export function createAttributeChannels(
       const attributes: Record<string, Float32Array> = {}
       const attributeRanges: Record<string, AttributeRange> = {}
       for (const { name, array, min, max, labels, labelColors } of list) {
-        attributes[name] = array.subarray(0, validCount)
+        const kept = array.subarray(0, validCount)
+        attributes[name] = kept
         if (labels.length > 0) {
-          attributeRanges[name] = { labels, colors: labelColors }
+          attributeRanges[name] = {
+            labels,
+            colors: labelColors,
+            ...(kept.some(v => v < 0) ? { unlabelled: true } : {}),
+          }
         } else if (Number.isFinite(min)) {
           // an attribute nothing carried has no range to report, and reporting
           // [Infinity, -Infinity] would make a legend label nonsense

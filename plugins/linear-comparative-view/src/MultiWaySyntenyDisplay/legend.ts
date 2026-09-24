@@ -121,8 +121,9 @@ export function ribbonColorKey(
   }
   const swatch = getColorBySwatch(field, { attributeRanges, hideUnlabelled })
   return swatch?.kind === 'chips'
-    ? swatch.chips.map(({ color, label, missing }) => ({
-        value: color === undefined ? '' : label,
+    ? swatch.chips.map(({ color, label, values, missing }) => ({
+        value: color === undefined ? '' : (values?.[0] ?? label),
+        ...(values ? { values } : {}),
         label,
         color,
         ...(missing ? { missing } : {}),

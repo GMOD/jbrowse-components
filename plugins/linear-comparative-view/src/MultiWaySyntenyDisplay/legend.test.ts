@@ -144,11 +144,15 @@ test('a measurement keys the ramp it paints, and nothing where no ribbon carries
 })
 
 // A text column keys one row per label, with the file color where the file
-// gave one, the grey its unlabelled rows paint last, and past the readable cap
-// a row saying how many labels it left out.
+// gave one, the grey its unlabelled rows paint last where some pair carried no
+// label, and past the readable cap a row saying how many labels it left out.
 test('an attribute ribbon mode keys a row per label', () => {
   const rows = ribbonColorKey('group', {
-    group: { labels: ['B1', 'A1a'], colors: { A1a: '#4DB5E3' } },
+    group: {
+      labels: ['B1', 'A1a'],
+      colors: { A1a: '#4DB5E3' },
+      unlabelled: true,
+    },
   })
   expect(rows.map(r => r.label)).toEqual(['B1', 'A1a', NO_VALUE_LABEL])
   expect(rows[1]!.color).toBe('#4DB5E3')
@@ -159,10 +163,14 @@ test('an attribute ribbon mode keys a row per label', () => {
     missing: true,
   })
   expect(ribbonColorKey('group')).toEqual([])
+  const labels = Array.from({ length: 33 }, (_, i) => `L${i}`)
   const many = ribbonColorKey('group', {
     group: {
-      labels: Array.from({ length: 33 }, (_, i) => `L${i}`),
-      colors: {},
+      labels,
+      colors: Object.fromEntries(
+        labels.map((l, i) => [l, `#${(i + 1).toString(16).padStart(6, '0')}`]),
+      ),
+      unlabelled: true,
     },
   })
   expect(many.length).toBe(32)
@@ -172,7 +180,7 @@ test('an attribute ribbon mode keys a row per label', () => {
 // The mode that draws the unlabelled rows at zero alpha names no grey: there
 // is none on screen for the row to point at.
 test('hiding the unlabelled rows drops the no-value row', () => {
-  const ranges = { group: { labels: ['B1'], colors: {} } }
+  const ranges = { group: { labels: ['B1'], colors: {}, unlabelled: true } }
   expect(ribbonColorKey('group', ranges, true).map(r => r.label)).toEqual([
     'B1',
   ])

@@ -1695,7 +1695,7 @@ test('a ribbonColorDomain moves the label table, and the key with it', () => {
   const ribbons = display.colorScales.find(scale => scale.id === 'ribbons')
   expect(
     ribbons?.kind === 'categorical' ? ribbons.entries.map(e => e.label) : [],
-  ).toEqual(['C1', 'A1a', 'B1', NO_VALUE_LABEL])
+  ).toEqual(['C1', 'A1a', 'B1'])
 })
 
 // The Color by menu picks a synteny mode; the config holds the object. A

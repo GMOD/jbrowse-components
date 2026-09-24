@@ -48,7 +48,14 @@ test('a text column interns labels in first-seen order and keeps the file color'
   expect(attributeRanges.group).toEqual({
     labels: ['B1', 'A1a'],
     colors: { B1: '#2F54E3', A1a: '#4DB5E3' },
+    unlabelled: true,
   })
+})
+
+// The key names the unlabelled grey only where a row painted it.
+test('a text column every row labelled reports no unlabelled rows', () => {
+  const { attributeRanges } = fill('type', [{ type: 'SYN' }, { type: 'INV' }])
+  expect(attributeRanges.type).toEqual({ labels: ['SYN', 'INV'], colors: {} })
 })
 
 // A column is numeric until text turns up in it. The numbers already written
@@ -65,5 +72,6 @@ test('numbers seen before the first label become labels of their own', () => {
   expect(attributeRanges.group).toEqual({
     labels: ['7', 'x', '3'],
     colors: {},
+    unlabelled: true,
   })
 })

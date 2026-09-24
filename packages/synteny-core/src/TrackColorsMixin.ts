@@ -31,8 +31,9 @@ function isColumnField(field: string) {
 }
 
 // A label list only ever gains labels, in the order they were first seen, and
-// a label's file color is whichever was seen first. A text column meeting a
-// span from an earlier fetch takes over: the column is categorical.
+// a label's file color is whichever was seen first; an unlabelled row, once
+// seen, stays in the key the same way. A text column meeting a span from an
+// earlier fetch takes over: the column is categorical.
 function widenOne(prev: AttributeRange, range: AttributeRange) {
   if (isAttributeLabels(range)) {
     const prevLabels = isAttributeLabels(prev) ? prev : undefined
@@ -41,7 +42,11 @@ function widenOne(prev: AttributeRange, range: AttributeRange) {
     const newColors = Object.entries(range.colors).filter(
       ([l]) => prevLabels?.colors[l] === undefined,
     )
-    return prevLabels && added.length === 0 && newColors.length === 0
+    const unlabelled = !!(prevLabels?.unlabelled || range.unlabelled)
+    return prevLabels &&
+      added.length === 0 &&
+      newColors.length === 0 &&
+      unlabelled === !!prevLabels.unlabelled
       ? undefined
       : {
           labels: [...(prevLabels?.labels ?? []), ...added],
@@ -49,6 +54,7 @@ function widenOne(prev: AttributeRange, range: AttributeRange) {
             ...prevLabels?.colors,
             ...Object.fromEntries(newColors),
           },
+          ...(unlabelled ? { unlabelled } : {}),
         }
   }
   return isAttributeLabels(prev)

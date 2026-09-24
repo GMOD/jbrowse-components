@@ -1,5 +1,7 @@
 import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
 
 import { bandGroundColor } from './bandGround.ts'
@@ -7,7 +9,7 @@ import { categoricalColor } from './colorFunctions.ts'
 import { resolveCategoricalMode, resolveContinuousMode } from './colorRamps.ts'
 import { colorSchemes, legendChipColor } from './colorUtils.ts'
 
-import type { AttributeRange, Rgb } from './colorRamps.ts'
+import type { AttributeRange, CategoricalMode, Rgb } from './colorRamps.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 
 const rgbCss = ([r, g, b]: Rgb) => `rgb(${r},${g},${b})`
@@ -54,9 +56,33 @@ export interface ColorChip {
   // painting an identity ramp while a sibling paints flat, say
   color?: string
   label: string
+  // every label painted in `color`, which `label` names joined
+  values?: string[]
   // the row naming the rows the column left unlabelled, which a key places
   // after the labels whatever orders them
   missing?: boolean
+}
+
+// One chip per color, naming every label painted in it: SyRI's palette gives
+// INVDP the color of DUP, as plotsr does, and two rows with one swatch would
+// ask the reader to tell apart what the plot cannot.
+function labelChips(categorical: CategoricalMode): ColorChip[] {
+  const rows = new Map<number, { color: string; values: string[] }>()
+  for (const label of categorical.labels) {
+    const color = categoricalColor(categorical, label)
+    const key = cssColorToABGR(color)
+    const row = rows.get(key)
+    if (row) {
+      row.values.push(label)
+    } else {
+      rows.set(key, { color, values: [label] })
+    }
+  }
+  const compare = groupKeyComparator(categorical.domain)
+  return [...rows.values()].map(({ color, values }) => {
+    const sorted = values.toSorted(compare)
+    return { color, label: sorted.join(', '), values: sorted }
+  })
 }
 
 // Bitmask over the CIGAR indel ops actually painted in the current geometry —
@@ -226,21 +252,18 @@ export function getColorBySwatch(
   if (!categorical) {
     return undefined
   }
-  const shown = categorical.labels.slice(0, MAX_LEGEND_ENTRIES)
-  const rest = categorical.labels.length - shown.length
+  const chips = labelChips(categorical)
+  const shown = chips.slice(0, MAX_LEGEND_ENTRIES)
+  const rest = chips.length - shown.length
   return {
     kind: 'chips',
     chips: [
-      ...shown.map(label => ({
-        color: categoricalColor(categorical, label),
-        label,
-      })),
+      ...shown,
       ...(rest > 0 ? [{ label: `+${rest} more` }] : []),
-      // The grey the column's unlabelled rows paint. Named unconditionally,
-      // like every other label here: this key describes the declared
-      // vocabulary rather than the rows in view, and the mode that draws no
-      // grey is the one that hides those rows.
-      ...(hideUnlabelled
+      // The grey the column's unlabelled rows paint, once any fetch has met
+      // one, as a label is listed once any fetch has met it. The mode that
+      // hides those rows draws no grey.
+      ...(hideUnlabelled || !categorical.unlabelled
         ? []
         : [
             {
@@ -289,8 +312,9 @@ export function colorByScale(
     id: field || 'default',
     title,
     entries: swatch
-      ? swatch.chips.map(({ color, label, missing }) => ({
-          value: label,
+      ? swatch.chips.map(({ color, label, values, missing }) => ({
+          value: values?.[0] ?? label,
+          ...(values ? { values } : {}),
           label,
           color:
             color === undefined

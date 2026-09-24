@@ -200,6 +200,8 @@ export interface AttributeSpan {
 export interface AttributeLabels {
   labels: string[]
   colors: Record<string, string>
+  /** some row carried no label, so the unlabelled grey was painted */
+  unlabelled?: boolean
   /** the view's declared `colorBy.domain`, which orders the labels and colors them */
   domain?: readonly string[]
 }
@@ -216,6 +218,7 @@ export interface CategoricalMode {
   attribute: string
   labels: string[]
   colors: Record<string, string>
+  unlabelled: boolean
   domain: readonly string[]
 }
 
@@ -235,6 +238,7 @@ export function resolveCategoricalMode(
         attribute: field,
         labels: range.labels,
         colors: range.colors,
+        unlabelled: range.unlabelled ?? false,
         domain: range.domain ?? [],
       }
     : undefined
