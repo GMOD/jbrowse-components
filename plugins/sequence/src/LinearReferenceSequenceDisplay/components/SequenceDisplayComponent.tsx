@@ -1,7 +1,7 @@
 import HoverTooltip from '@jbrowse/core/ui/HoverTooltip'
 import { toLocale } from '@jbrowse/core/util'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
-import { PointerLayer } from '@jbrowse/display-ui'
+import { PointerLayer, TrackOverlayPortal } from '@jbrowse/display-ui'
 import { Alert } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -19,7 +19,9 @@ const SequenceBody = observer(function SequenceBody({
 }) {
   const { placeholderMessage } = model
   return placeholderMessage ? (
-    <Alert severity="info">{placeholderMessage}</Alert>
+    <TrackOverlayPortal>
+      <Alert severity="info">{placeholderMessage}</Alert>
+    </TrackOverlayPortal>
   ) : (
     <canvas
       ref={canvasRef}

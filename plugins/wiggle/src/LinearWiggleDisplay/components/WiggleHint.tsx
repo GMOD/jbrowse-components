@@ -1,4 +1,5 @@
 import BlockMsg from '@jbrowse/display-kit/BlockMsg'
+import { TrackOverlayPortal } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
 // What the hint reads, spelled out like its sibling overlays (see
@@ -37,17 +38,19 @@ const WiggleHint = observer(function WiggleHint({
 }) {
   const message = hint(model)
   return message ? (
-    <div
-      style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        zIndex: 1,
-      }}
-    >
-      <BlockMsg severity="warning" message={message} />
-    </div>
+    <TrackOverlayPortal>
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          pointerEvents: 'auto',
+        }}
+      >
+        <BlockMsg severity="warning" message={message} />
+      </div>
+    </TrackOverlayPortal>
   ) : null
 })
 

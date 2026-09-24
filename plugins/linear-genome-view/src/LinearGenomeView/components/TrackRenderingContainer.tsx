@@ -4,6 +4,7 @@ import { LoadingOverlay } from '@jbrowse/core/ui'
 import { coarseStripHTML, getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { TrackOverlayPortal } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
 import { TRACK_OUTLINE_BORDER } from '../consts.ts'
@@ -138,7 +139,13 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
             className={classes.renderingComponentContainer}
             style={{ left: showTrackOutlines ? -TRACK_OUTLINE_BORDER : 0 }}
           >
-            <Suspense fallback={<LoadingOverlay isVisible immediate />}>
+            <Suspense
+              fallback={
+                <TrackOverlayPortal>
+                  <LoadingOverlay isVisible immediate />
+                </TrackOverlayPortal>
+              }
+            >
               <RenderingComponent
                 model={display}
                 onHorizontalScroll={model.horizontalScroll}

@@ -73,6 +73,12 @@ const useStyles = makeStyles()({
   trackLabelOverlap: {
     position: 'absolute',
   },
+  // in flow, so the track keeps the banner's height, and raised over the
+  // `PaddingBlocks` painted after it
+  crashBanner: {
+    position: 'relative',
+    zIndex: 1,
+  },
 })
 
 type LGV = LinearGenomeViewModel
@@ -197,7 +203,9 @@ const TrackContainer = observer(function TrackContainer({
         <ErrorBoundary
           key={display.id}
           FallbackComponent={e => (
-            <ErrorBanner error={e.error} onReset={e.resetErrorBoundary} />
+            <div className={classes.crashBanner}>
+              <ErrorBanner error={e.error} onReset={e.resetErrorBoundary} />
+            </div>
           )}
         >
           <TrackRenderingContainer
