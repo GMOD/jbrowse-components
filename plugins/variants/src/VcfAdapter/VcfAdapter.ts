@@ -85,8 +85,12 @@ export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig>
       const { intervalTreeMap } = await this.setup(opts)
       const tree = intervalTreeMap[refName]
       if (tree) {
+        // the tree's search is closed at both ends; a record ending exactly at
+        // `start` touches the region without overlapping it
         for (const f of tree(opts.statusCallback).search([start, end])) {
-          observer.next(f)
+          if (f.get('end') > start && f.get('start') < end) {
+            observer.next(f)
+          }
         }
       }
       observer.complete()
@@ -111,13 +115,12 @@ export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig>
       if (lines) {
         for (const line of lines) {
           // match getFeatures: a variant belongs to the region when its full
-          // [start, end] span overlaps it, not just its POS — so spanning
-          // deletions/SVs that start before the region are still exported. Same
-          // closed-interval overlap the IntervalTree search uses.
+          // span overlaps it, not just its POS, so a deletion that starts
+          // before the region is still exported
           const variant = parser.parseLine(line)
           const featureStart = variant.POS - 1
           const featureEnd = getEnd(variant, featureStart)
-          if (featureStart <= end && featureEnd >= start) {
+          if (featureStart < end && featureEnd > start) {
             exportLines.push(line)
           }
         }

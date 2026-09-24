@@ -61,6 +61,30 @@ test('getExportData filters by [start,end] overlap, matching getFeatures', async
   expect(feats.map(f => f.get('name'))).toEqual(['del1'])
 })
 
+test('a record touching either edge of the region is not in it', async () => {
+  const adapter = new Adapter(
+    configSchema.create({
+      vcfLocation: {
+        localPath: require.resolve('./test_data/overlap.vcf'),
+        locationType: 'LocalPathLocation',
+      },
+    }),
+  )
+  // snp1 is [99, 100) and del1 starts at 999
+  const region = {
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 100,
+    end: 999,
+  }
+  const feats = await firstValueFrom(
+    adapter.getFeatures(region).pipe(toArray()),
+  )
+  expect(feats).toEqual([])
+  const exported = await adapter.getExportData([region], 'vcf')
+  expect(exported!.split('\n').filter(l => l && !l.startsWith('#'))).toEqual([])
+})
+
 test('reads an in-memory VCF from a data: URI (consensus "open as track" path)', async () => {
   const vcf = [
     '##fileformat=VCFv4.3',
