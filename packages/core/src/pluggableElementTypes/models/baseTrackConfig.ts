@@ -128,9 +128,17 @@ export function preprocessTrackConfigSnapshot(
  * fields in addition to its own.
  */
 export function createBaseTrackConfig(pluginManager: PluginManager) {
-  const noTextSearchAdapter = types.optional(types.undefined, undefined)
-  const textSearchAdapter = pluginManager.pluggableConfigSchemaType(
-    'text search adapter',
+  const none = types.optional(types.undefined, undefined)
+  const adapter = pluginManager.pluggableConfigSchemaType('text search adapter')
+  // A dispatcher rather than `types.maybe` or member order. Every adapter here
+  // is all-default, so an omitted key has to resolve to nothing rather than the
+  // first registered adapter (textSearchAdapterSlotOmission.test.ts). And
+  // clearing a set slot, as undo does, must not hand `undefined` to the current
+  // adapter's preProcessSnapshot, which MST's own matching does to test it.
+  const optionalTextSearchAdapter = types.union(
+    { dispatcher: snapshot => (snapshot === undefined ? none : adapter) },
+    none,
+    adapter,
   )
   return ConfigurationSchema(
     'BaseTrack',
@@ -236,20 +244,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
          * track's features are only findable through an assembly-wide search
          * adapter.
          */
-        // A dispatcher rather than `types.maybe` or member order. Every
-        // adapter here is all-default, so an omitted key has to resolve to
-        // nothing rather than the first registered adapter
-        // (textSearchAdapterSlotOmission.test.ts). And clearing a set slot, as
-        // undo does, must not hand `undefined` to the current adapter's
-        // preProcessSnapshot, which MST's own matching does to test it.
-        textSearchAdapter: types.union(
-          {
-            dispatcher: snapshot =>
-              snapshot === undefined ? noTextSearchAdapter : textSearchAdapter,
-          },
-          noTextSearchAdapter,
-          textSearchAdapter,
-        ),
+        textSearchAdapter: optionalTextSearchAdapter,
       }),
 
       /**
