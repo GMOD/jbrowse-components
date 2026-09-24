@@ -584,7 +584,7 @@ function facetStep(
   }
   if (displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)) {
     return {
-      path: `${TRACK_MENU} → Group rows by... → ${capitalizeFirst(field)}`,
+      path: `${TRACK_MENU} → Group by... → ${capitalizeFirst(field)}`,
       note: `The submenu lists whichever metadata columns your samples carry, so "${field}" appears only if yours have it.${
         ordered
           ? ' The band order has no menu row of its own; the figure declares it in the track config.'

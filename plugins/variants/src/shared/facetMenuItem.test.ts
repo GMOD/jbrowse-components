@@ -5,7 +5,7 @@ import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEn
 import type { Source } from './types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// "Group rows by..." is the banding twin of "Color by... → Samples": same
+// "Group by..." is the banding twin of "Color by... → Samples": same
 // candidate attributes off the samplesTsv columns, writing the `facet.field`
 // slot instead of `rowColor`. The user guide has always described the banding as
 // interactive; only the config slot was.
@@ -20,7 +20,7 @@ function display(sources?: Source[]) {
 function facetSubMenu(d: ReturnType<typeof display>): MenuItem[] {
   const item = d
     .trackMenuItems()
-    .find(i => 'label' in i && i.label === 'Group rows by...')
+    .find(i => 'label' in i && i.label === 'Group by...')
   return item && 'subMenu' in item ? resolveSubMenu(item) : []
 }
 

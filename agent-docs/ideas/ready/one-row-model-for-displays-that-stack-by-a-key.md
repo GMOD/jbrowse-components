@@ -195,7 +195,7 @@ ADR-151 palette→range; no categorical scheme. ADR-153: categoricalScale hashes
 
 
 ### Premises corrected
-- Variant displays have NO band chips, cap or hide-set: `facet` there is a stable sort by a samplesTsv attribute (`maybeApplyFacet`, MultiSampleVariantBaseModel.ts:232-266, read once in `sources` :1120-1129; set from "Group rows by…" multiSampleVariantMenuItems.ts:294). Chips/cap/HiddenGroupsMixin live on the section displays (feature, alignments, mark). `facet.hidden` exists nowhere as config.
+- Variant displays have NO band chips, cap or hide-set: `facet` there is a stable sort by a samplesTsv attribute (`maybeApplyFacet`, MultiSampleVariantBaseModel.ts:232-266, read once in `sources` :1120-1129; set from "Group by…" multiSampleVariantMenuItems.ts:299). Chips/cap/HiddenGroupsMixin live on the section displays (feature, alignments, mark). `facet.hidden` exists nowhere as config.
 - `StaleTreeHint` has no band branch (one message); it gains a count.
 
 ### Step 5 — decisions

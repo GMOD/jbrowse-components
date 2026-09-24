@@ -152,7 +152,7 @@ export function variantTrackMenuItems(
               ? ''
               : !loaded
                 ? ' (checking for phased variants...)'
-                : ' (disabled, every genotype is unphased)'
+                : ' (every genotype is unphased)'
           }`,
           helpText:
             'Phased mode splits each sample into multiple rows representing each haplotype, and the phasing of the variants is used to color the variant in the individual haplotype rows. For example, a diploid sample SAMPLE1 will generate two rows SAMPLE1-HP0 and SAMPLE1 HP1 and a variant 1|0 will draw a box in the top row but not the bottom row',
@@ -255,6 +255,24 @@ export function variantTrackMenuItems(
             self.setFeatureColor(SV_TYPE_COLOR)
           },
         },
+        // Only in allele-count mode: a phased row is one haplotype, which either
+        // carries the allele or does not, so the ramp has nothing to express
+        // there — and the setting is a fetch input, so the checkbox would have
+        // refetched the same cells.
+        ...(self.renderingMode === 'phased'
+          ? []
+          : [
+              {
+                label: 'Shade by dosage',
+                helpText:
+                  "Compose the cell color with the genotype's alt dosage — the fraction of its called alleles that are non-reference — so a homozygote paints the hue itself and a heterozygote a lighter version of it. Off paints every alt-carrying cell the flat hue its color mode chose",
+                type: 'checkbox' as const,
+                checked: self.shadeByDosage,
+                onClick: () => {
+                  self.setShadeByDosage(!self.shadeByDosage)
+                },
+              },
+            ]),
         ...(self.colorByAttributes.length
           ? [
               {
@@ -272,32 +290,13 @@ export function variantTrackMenuItems(
           : []),
       ],
     },
-    // Only in allele-count mode: a phased row is one haplotype, which either
-    // carries the allele or does not, so the ramp has nothing to express there
-    // — and the setting is a fetch input, so the checkbox would have refetched
-    // the same cells. Hidden rather than disabled, the way the variant lane's
-    // slider is.
-    ...(self.renderingMode === 'phased'
-      ? []
-      : [
-          {
-            label: 'Shade by dosage',
-            helpText:
-              "Compose the cell color with the genotype's alt dosage — the fraction of its called alleles that are non-reference — so a homozygote paints the hue itself and a heterozygote a lighter version of it. Off paints every alt-carrying cell the flat hue its color mode chose",
-            type: 'checkbox' as const,
-            checked: self.shadeByDosage,
-            onClick: () => {
-              self.setShadeByDosage(!self.shadeByDosage)
-            },
-          },
-        ]),
     // The banding half of the same metadata, beside the coloring half: both
     // are config slots a session can set, and only the coloring one had a way
     // in from the menu.
     ...(self.colorByAttributes.length
       ? [
           {
-            label: 'Group rows by...',
+            label: 'Group by...',
             icon: WorkspacesIcon,
             subMenu: sampleAttributeItems(
               self.colorByAttributes,

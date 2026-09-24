@@ -1,7 +1,7 @@
 import { createTestEnvironment } from './testEnv.ts'
 
 // Sample metadata as samplesTsv supplies it: `population` is what "Color by…"
-// and "Group rows by…" key on.
+// and "Group by…" key on.
 const SOURCES = [
   { name: 'S0', population: 'AFR' },
   { name: 'S1', population: 'EUR' },

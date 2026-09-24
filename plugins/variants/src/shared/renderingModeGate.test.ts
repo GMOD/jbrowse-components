@@ -91,7 +91,7 @@ test('refuses phased mode when every genotype is unphased, and says so', () => {
   const row = phasedRow(diploidUnphased)
 
   expect(row.disabled).toBe(true)
-  expect(row.label).toBe('Phased (disabled, every genotype is unphased)')
+  expect(row.label).toBe('Phased (every genotype is unphased)')
   expect(row.disabledHelpText).toBe(
     'Every genotype in view is unphased (a / separator), so there is no haplotype to split a sample into',
   )

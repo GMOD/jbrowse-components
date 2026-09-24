@@ -148,7 +148,7 @@ a column of the samples TSV and makes each of its values a contiguous band of
 rows, sorted; its `domain` pins the bands you want first.
 [`rowColor`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-rowcolor)
 puts the matching color strip in the gutter. Both have a track-menu row too:
-**Group rows by...** and **Color by... → Samples**.
+**Group by...** and **Color by... → Samples**.
 
 ```json addtrack
 {
