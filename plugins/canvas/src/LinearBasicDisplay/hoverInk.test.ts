@@ -29,7 +29,7 @@ function rect(
 
 /**
  * One gene of two transcripts at bp 1000-2000, and a tall spacer whose rows
- * give the display something to scroll. `GENE1` is baked 200px wide against a
+ * give the fixed-height display something to scroll. `GENE1` is baked 200px wide against a
  * 100px-wide gene, so the name overhangs its glyph the way the packer reserved.
  */
 function geneData() {
@@ -99,6 +99,7 @@ function geneData() {
 function setUp() {
   const { createDisplay } = createTestEnvironment()
   const { display, view, session } = createDisplay()
+  display.setHeightMode('fixed')
   view.zoomTo(10)
   view.scrollTo(0)
   display.setRpcData(0, geneData(), ctgA)

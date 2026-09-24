@@ -235,16 +235,18 @@ function displaySignature(display: TestDisplay) {
 }
 
 describe('canvas display fit-to-display-height', () => {
-  it('fitScale is 1 and fit is off by default', () => {
+  it('fit is on by default, at scale 1 with nothing loaded', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    expect(display.fitHeightToDisplay).toBe(false)
+    expect(display.heightMode).toBe('fit')
+    expect(display.fitHeightToDisplay).toBe(true)
     expect(display.fitScale).toBe(1)
   })
 
   it('entering fit mode resets scroll; leaving it re-enables scrolling', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
+    display.setHeightMode('fixed')
     display.setRpcData(0, stackedRegionData(12, 20), {
       assemblyName: 'volvox',
       refName: 'ctgA',
@@ -282,7 +284,7 @@ describe('canvas display fit-to-display-height', () => {
   it('heightMode reflects the active track-height strategy', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    expect(display.heightMode).toBe('fixed')
+    expect(display.heightMode).toBe('fit')
     display.setHeightMode('grow')
     expect(display.heightMode).toBe('grow')
     expect(display.autoHeight).toBe(true)
@@ -317,6 +319,7 @@ describe('canvas display fit-to-display-height', () => {
   it('fitted content fits the track exactly (no float-epsilon overflow)', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
+    display.setHeightMode('fixed')
     display.setRpcData(0, stackedRegionData(12, 20), {
       assemblyName: 'volvox',
       refName: 'ctgA',
@@ -441,6 +444,7 @@ describe('canvas display fit-to-display-height', () => {
   it('entering grow mode resets scroll to the top', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
+    display.setHeightMode('fixed')
     display.setRpcData(0, stackedRegionData(12, 20), ctgA)
     display.setHeight(97)
     display.setScrollTop(120)
@@ -1326,7 +1330,7 @@ describe('canvas display fit measures the visible window', () => {
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
     display.setHeight(100)
 
-    expect(display.heightMode).toBe('fixed')
+    display.setHeightMode('fixed')
     expect(display.truncatedFeatureCount).toBe(0)
     display.setHeightMode('fit')
     expect(display.truncatedFeatureCount).toBe(0)
@@ -1368,6 +1372,7 @@ describe('canvas display scrolls over the visible window', () => {
   function bufferedStack(offscreen: number) {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()
+    display.setHeightMode('fixed')
     view.setDisplayedRegions([
       { assemblyName: 'volvox', start: 0, end: 400_000, refName: 'ctgA' },
     ])
@@ -1442,6 +1447,7 @@ describe('canvas display scrolls over the visible window', () => {
   it('falls back to the whole pack with no coarse blocks', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay(undefined, { unplacedView: true })
+    display.setHeightMode('fixed')
     expect(view.coarseDynamicBlocks).toHaveLength(0)
     display.setRpcData(0, stackedRegionData(12, 20), ctgA)
     display.setHeight(97)
@@ -1480,8 +1486,8 @@ describe('the isoform rung across the three height modes', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setRpcData(0, ISOFORM_GENES, ctgA)
+    display.setHeightMode('fixed')
 
-    expect(display.heightMode).toBe('fixed')
     expect(display.fitStage.level).toBe('isoforms')
     expect(display.fitStage.maxIsoforms).toBeLessThan(10)
     expect(display.fitStage.scale).toBe(1)
@@ -1493,8 +1499,8 @@ describe('the isoform rung across the three height modes', () => {
     const { display } = createDisplay()
     display.setRpcData(0, ISOFORM_GENES, ctgA)
     display.setHeight(20)
+    display.setHeightMode('fixed')
 
-    expect(display.heightMode).toBe('fixed')
     expect(display.fitStage.maxIsoforms).toBeUndefined()
     expect(drawnOrdinals(display, 'gene2').size).toBe(10)
     expect(display.hasOverflow).toBe(true)

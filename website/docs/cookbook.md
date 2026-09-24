@@ -230,21 +230,21 @@ session-wide form, and the About dialog.
 
 ## Feature tracks
 
-[`heightMode`](/docs/config/linearcanvasbasedisplay/#slot-heightmode) `fit`
-shrinks the features so the whole stack fits the height, putting a dense track
-into a screenshot with no scrollbar. `jexlFilters` draws only the features that
-pass every expression, on variant tracks too:
+A feature track fits its height by default: a crowded window drops labels and
+then squeezes the rows rather than scrolling.
+[`heightMode`](/docs/config/linearcanvasbasedisplay/#slot-heightmode) `fixed`
+keeps every label and scrolls instead. `jexlFilters` draws only the features
+that pass every expression, on variant tracks too:
 
 ```json addtrack
 {
   "type": "FeatureTrack",
-  "trackId": "genes_fit",
+  "trackId": "long_genes",
   "name": "Long genes only",
   "assemblyNames": ["volvox"],
   "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
   "displayDefaults": {
     "height": 200,
-    "heightMode": "fit",
     "jexlFilters": [
       "feature.end - feature.start > 1000",
       "feature.type == 'gene'"

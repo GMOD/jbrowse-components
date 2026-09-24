@@ -44,7 +44,8 @@ function topOf(display: TestDisplay, featureId: string) {
 
 function scrolledStack() {
   const { createDisplay } = createTestEnvironment()
-  const { display } = createDisplay({ heightMode: 'scroll', height: 100 })
+  const { display } = createDisplay()
+  display.setHeightMode('fixed')
   const data = stackedData(40)
   display.setRpcData(0, data, ctgA)
   const deepest = data.flatbushItems.at(-1)!

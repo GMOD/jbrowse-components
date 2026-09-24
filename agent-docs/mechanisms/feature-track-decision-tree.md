@@ -40,7 +40,8 @@ those name a meaning rather than a shape.
   pack is visible. The worker ships every isoform with the ordinal of the direct
   child it belongs to and an `IsoformStack` per gene: children in drawn order
   with their rank, their gene-local geometry, and how many isoforms the gene has.
-- Where the display fits to height, the **fit ladder** runs: `full` → `labels`
+- Where the display fits to height, which is the default, the **fit ladder**
+  runs: `full` → `labels`
   (descriptions dropped) → `isoforms` (each gene trimmed to the count that fits
   WITH its names) → `decimated` (a name only where it is isolated) → `bodies` (no
   labels). The first rung that fits wins, each rung is laid out lazily, and the
@@ -51,8 +52,9 @@ those name a meaning rather than a shape.
   going back to the full stack to save a name. A fixed-height track runs the
   short ladder `full` → `isoforms` and scrolls; `grow` never trims, because its
   height IS its content's.
-- One uniform scale then grows or squeezes the kept rung, floored so the
-  shortest **drawn** box stays visible. Past that, the track scrolls.
+- One uniform scale then squeezes a kept rung that still overflows, floored so
+  the shortest **drawn** box stays visible. Past that, the track scrolls. A
+  stack with room to spare keeps its display mode's size.
 
 `showLabels` is a single flat enum — `auto` plus four pinned choices — that the
 model resolves into concrete booleans. Layout, the RPC, the SVG export and

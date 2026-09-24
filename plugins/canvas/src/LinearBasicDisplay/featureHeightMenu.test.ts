@@ -90,18 +90,18 @@ describe('Feature height submenu', () => {
     const sizing = featureHeightSubMenu(display)
 
     expect(sizing.some(i => i.type === 'checkbox')).toBe(false)
-    expect(
-      radio(sizing, 'Fixed feature height + fixed track height').checked,
-    ).toBe(true)
+    expect(radio(sizing, 'Fit feature height to track height').checked).toBe(
+      true,
+    )
 
     display.setHeightMode('grow')
     const sizing2 = featureHeightSubMenu(display)
     expect(
       radio(sizing2, 'Fixed feature height + autogrow track height').checked,
     ).toBe(true)
-    expect(
-      radio(sizing2, 'Fixed feature height + fixed track height').checked,
-    ).toBe(false)
+    expect(radio(sizing2, 'Fit feature height to track height').checked).toBe(
+      false,
+    )
     expect(display.displayMode).toBe('compact')
     expect(radio(sizing2, 'Compact').checked).toBe(true)
   })

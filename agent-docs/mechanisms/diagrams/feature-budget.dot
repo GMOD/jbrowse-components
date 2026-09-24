@@ -24,7 +24,7 @@ digraph feature_budget {
   pack [label="pack rows,\nreserving label rows"]
   ship -> pack -> fits
 
-  fits [label="fit to display height"]
+  fits [label="fit to display height\n(the default)"]
   fits -> plain  [label=" no"]
   fits -> ladder [label=" yes"]
   plain [label="fixed: full then isoforms, then scroll.\ngrow: full, and never a trim"]
@@ -38,7 +38,7 @@ digraph feature_budget {
   bodies    [label="bodies: no labels"]
   isoforms -> decimated [label=" the two below\n inherit the count\n it failed at"]
 
-  scale [label="one uniform scale over the kept rung:\ngrow to fill, or squeeze until the\nshortest drawn box hits its floor"]
+  scale [label="one uniform scale over the kept rung:\nnever above 1; squeezes until the\nshortest drawn box hits its floor"]
   full -> scale  labels -> scale  isoforms -> scale  decimated -> scale  bodies -> scale
   scale -> over
   over [label="still taller than the track"]

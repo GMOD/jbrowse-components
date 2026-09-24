@@ -3,6 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { GROW_MAX_HEIGHT, HEIGHT_MODE_VALUES } from './heightMode.ts'
 
 import type baseLinearDisplayConfigSchema from './configSchema.ts'
+import type { HeightMode } from './heightMode.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 
 /**
@@ -34,7 +35,9 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 export function heightModeConfigSchemaFields({
   heightMode,
   growMaxHeight,
+  defaultHeightMode = 'fixed',
 }: {
+  defaultHeightMode?: HeightMode
   /** e.g. "Track-sizing strategy — how the track responds when there are more reads than fit…" */
   heightMode: string
   /** e.g. "Ceiling in pixels for the autogrow track height sizing mode; a pileup deeper than this…" */
@@ -48,7 +51,7 @@ export function heightModeConfigSchemaFields({
       type: 'stringEnum',
       model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
       description: heightMode,
-      defaultValue: 'fixed',
+      defaultValue: defaultHeightMode,
     },
     /**
      * #slot

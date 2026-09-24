@@ -49,7 +49,11 @@ const overflowingPlainVariantSpec = {
       tracks: [
         {
           trackId: 'volvox_filtered_vcf',
-          displaySnapshot: { type: 'LinearVariantDisplay', height: 40 },
+          displaySnapshot: {
+            type: 'LinearVariantDisplay',
+            height: 40,
+            heightMode: 'fixed',
+          },
         },
       ],
     },
