@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
 import { createFrameCoalescer } from '@jbrowse/core/util/frameCoalescer'
+import { normalizeWheelDelta } from '@jbrowse/core/util/wheelZoom'
 
 import { DRAG_THRESHOLD_PX } from '../types.ts'
 
@@ -166,8 +167,8 @@ export function useDotplotInteraction(
       // Every gesture below is handled (zoom or pan), so this never swallows a
       // scroll the view then ignores.
       event.preventDefault()
-      dx += event.deltaX
-      dy -= event.deltaY
+      dx += normalizeWheelDelta(event.deltaX, event.deltaMode)
+      dy -= normalizeWheelDelta(event.deltaY, event.deltaMode)
       if (!frame.pending) {
         // Anchor on the wheel event's own position, so zoom doesn't depend on a
         // pointermove having landed first. Measured once per frame, behind the

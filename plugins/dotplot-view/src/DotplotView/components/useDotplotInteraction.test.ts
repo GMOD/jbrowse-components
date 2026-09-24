@@ -178,6 +178,17 @@ test.each([
   expect(setHoveredFeature).not.toHaveBeenCalledWith(undefined)
 })
 
+// Firefox reports a mouse wheel in lines (`deltaMode: 1`), where Chrome
+// reports pixels; read raw, a shift+wheel notch panned 3px there.
+test('a line-mode wheel pans as far as the pixel-mode one', () => {
+  const lines = setup('move')
+  wheel(lines.result, { deltaX: 3, deltaY: 0, deltaMode: 1 })
+  const pixels = setup('move')
+  wheel(pixels.result, { deltaX: 120, deltaY: 0, deltaMode: 0 })
+
+  expect(lines.scrollXY.mock.calls).toEqual(pixels.scrollXY.mock.calls)
+})
+
 // Both halves of it: the alignment the pointer was over, and the sample itself
 // — which is what tells the coordinate tooltip there is no pointer, so there is
 // no separate `hovering` flag that something else can lower and leave lowered.
