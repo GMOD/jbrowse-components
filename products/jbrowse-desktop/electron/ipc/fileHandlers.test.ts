@@ -8,6 +8,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { dialog } from 'electron'
+
 import { ANALYTICS_OPT_OUT_FILE } from '../analyticsOptOut.ts'
 import { getFileStream } from '../fileStream.ts'
 import { getFaiPath } from '../paths.ts'
@@ -19,7 +21,11 @@ import type { AppPaths } from '../paths.ts'
 jest.mock('electron', () => ({
   ipcMain: { handle: jest.fn() },
   app: { getPath: jest.fn(), quit: jest.fn() },
-  dialog: { showOpenDialog: jest.fn(), showSaveDialog: jest.fn() },
+  dialog: {
+    showOpenDialog: jest.fn(),
+    showSaveDialog: jest.fn(),
+    showMessageBox: jest.fn(),
+  },
 }))
 jest.mock('../fileStream.ts', () => {
   const actual = jest.requireActual<{
@@ -213,6 +219,46 @@ test('a FASTA whose name needs escaping still indexes', async () => {
 // reads it. The file is beside the app rather than under userData, so nothing
 // the app itself writes can answer this — and a handler that looked in the
 // wrong directory would report "opted in" for everyone who opted out.
+// GTK never appends an extension, and neither does Windows under "All Files", so
+// the dialog's overwrite check ran on the name as typed; appending one after it
+// replaced an existing session with no question asked.
+describe('save as', () => {
+  function typed(name: string) {
+    const filePath = path.join(dir, name)
+    jest.mocked(dialog.showSaveDialog).mockResolvedValue({
+      canceled: false,
+      filePath,
+    })
+    return filePath
+  }
+
+  test('asks before the appended extension replaces a session', async () => {
+    const existing = `${typed('analysis')}.jbrowse`
+    fs.writeFileSync(existing, '{}')
+    jest
+      .mocked(dialog.showMessageBox)
+      .mockResolvedValue({ response: 1, checkboxChecked: false })
+
+    expect(await invoke('promptSessionSaveAs')).toBeUndefined()
+    expect(dialog.showMessageBox).toHaveBeenCalledTimes(1)
+
+    jest
+      .mocked(dialog.showMessageBox)
+      .mockResolvedValue({ response: 0, checkboxChecked: false })
+    expect(await invoke('promptSessionSaveAs')).toBe(existing)
+  })
+
+  test('asks nothing for a new name or one typed with its extension', async () => {
+    jest.mocked(dialog.showMessageBox).mockClear()
+    const fresh = typed('fresh')
+    expect(await invoke('promptSessionSaveAs')).toBe(`${fresh}.jbrowse`)
+    const full = typed('Mine.JBROWSE')
+    fs.writeFileSync(full, '{}')
+    expect(await invoke('promptSessionSaveAs')).toBe(full)
+    expect(dialog.showMessageBox).not.toHaveBeenCalled()
+  })
+})
+
 test('the usage-reporting opt-out is read from the resources directory', () => {
   expect(invoke('analyticsOptedOut')).toBe(false)
   fs.mkdirSync(paths.resources, { recursive: true })

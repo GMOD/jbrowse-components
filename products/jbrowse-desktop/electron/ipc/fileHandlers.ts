@@ -108,11 +108,27 @@ export function registerFileHandlers(paths: AppPaths) {
       filters: FILE_FILTERS,
     })
 
+    const typed = choice.filePath
     // asked case-insensitively, so a user who typed "MySession.JBROWSE" gets
     // that file rather than "MySession.JBROWSE.jbrowse"
-    if (choice.filePath && !hasSessionExtension(choice.filePath)) {
-      choice.filePath = `${choice.filePath}${SESSION_EXTENSION}`
+    if (!typed || hasSessionExtension(typed)) {
+      return typed
     }
-    return choice.filePath
+    const filePath = `${typed}${SESSION_EXTENSION}`
+    // the dialog asked about overwriting the name as typed, so a file at the
+    // name with the extension appended was never asked about
+    if (fs.existsSync(filePath)) {
+      const { response } = await dialog.showMessageBox({
+        type: 'warning',
+        buttons: ['Replace', 'Cancel'],
+        defaultId: 1,
+        cancelId: 1,
+        message: `${path.basename(filePath)} already exists. Replace it?`,
+      })
+      if (response !== 0) {
+        return undefined
+      }
+    }
+    return filePath
   })
 }
