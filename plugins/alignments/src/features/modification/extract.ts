@@ -79,6 +79,7 @@ export function extractModifications(
   // Already normalized by `getStrand`, which is why nothing here has to
   // re-narrow it for `getModPositions`.
   strand: -1 | 0 | 1,
+  region: Pick<Region, 'start' | 'end'>,
   colorBy: ColorBy | undefined,
   detectedModifications: Set<string>,
   seenModTypes: Map<string, ModificationType>,
@@ -164,14 +165,17 @@ export function extractModifications(
         // unmethylated color (with prob = 1-prob = the unmodified confidence);
         // default mode hides calls below the threshold and always paints the mod
         // color at full prob. `isMeth` unifies both without an intermediate alloc.
+        const position = featureStart + refPos
         if (
+          position >= region.start &&
+          position < region.end &&
           isModificationTypeVisible(colorBy.modifications, type) &&
           (twoColor || prob >= modThreshold)
         ) {
           const isMeth = !twoColor || prob > 0.5
           modificationsData.push({
             readIndex,
-            position: featureStart + refPos,
+            position,
             base,
             modType: type,
             strand: modStrand,

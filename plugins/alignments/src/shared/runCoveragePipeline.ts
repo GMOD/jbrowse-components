@@ -86,7 +86,6 @@ export async function runCoveragePipeline({
   statusCallback: StatusCallback | undefined
   signal?: AbortSignal
 }) {
-  const { start: regionStart, end: regionEnd } = region
   // The per-strand depth sweep (fwd/revDepths) backs the coverage tooltip's
   // strand breakdown, which only exists when the band is drawn — so it runs
   // only when showCoverage is on (each sweep is a full pass over every read).
@@ -94,7 +93,7 @@ export async function runCoveragePipeline({
     'Computing coverage',
     statusCallback,
     async () =>
-      computeCoverage(features, gaps, regionStart, regionEnd, showCoverage),
+      computeCoverage(features, gaps, region.start, region.end, showCoverage),
   )
 
   checkAbortSignal(signal)
@@ -131,7 +130,6 @@ export async function runCoveragePipeline({
         modBaseCounts,
         bisulfiteCallCounts,
         simplexModifications,
-        regionStart,
         trackStrands,
         bisulfite,
         junctionReference,
@@ -171,7 +169,6 @@ function computeCoverageBand({
   modBaseCounts,
   bisulfiteCallCounts,
   simplexModifications,
-  regionStart,
   trackStrands,
   bisulfite,
   junctionReference,
@@ -186,7 +183,6 @@ function computeCoverageBand({
   modBaseCounts: ReadonlyMap<number, StrandBaseCounts>
   bisulfiteCallCounts: ReadonlyMap<number, number>
   simplexModifications: ReadonlySet<string>
-  regionStart: number
   trackStrands?: boolean
   bisulfite: boolean
   junctionReference?: JunctionReference
@@ -200,30 +196,22 @@ function computeCoverageBand({
     insertions,
     softclips,
     hardclips,
-    regionStart,
     coverage,
   )
 
   const modCoverage = trackStrands
     ? bisulfite
-      ? computeBisulfiteCoverage(
-          modifications,
-          bisulfiteCallCounts,
-          regionStart,
-          coverage,
-        )
+      ? computeBisulfiteCoverage(modifications, bisulfiteCallCounts, coverage)
       : computeModificationCoverage(
           modifications,
           modBaseCounts,
-          regionStart,
           coverage,
           simplexModifications,
         )
     : undefined
 
   const modTooltip =
-    buildModTooltipIndex({ modifications, regionStart }) ??
-    emptyModTooltipIndex()
+    buildModTooltipIndex(modifications) ?? emptyModTooltipIndex()
   const sashimi = computeSashimiJunctions(gaps, junctionReference)
 
   const coverageAreaPacked = packCoverageAreaForGpu(

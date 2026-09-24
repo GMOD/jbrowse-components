@@ -95,10 +95,7 @@ const ABGR_UNMOD = 0xff888888
 
 // BASELINE. The Record shape, with the `${position}_${modType}_${noMod}_${color}`
 // template string per call. Transcribed from the deleted shared/buildTooltipData.ts.
-const buildRecord = (
-  modifications: ModificationEntry[],
-  regionStart: number,
-) => {
+const buildRecord = (modifications: ModificationEntry[]) => {
   const result: Record<number, unknown[]> = {}
   const seen = new Map<
     string,
@@ -112,9 +109,6 @@ const buildRecord = (
     }
   >()
   for (const mod of modifications) {
-    if (mod.position < regionStart) {
-      continue
-    }
     const modKey = `${mod.position}_${mod.modType}_${mod.noMod ? 'n' : 'm'}_${mod.color}`
     let entry = seen.get(modKey)
     if (!entry) {
@@ -143,10 +137,7 @@ const buildRecord = (
 }
 
 // CONTROL. Byte-identical to buildRecord, separate literal on purpose.
-const buildControl = (
-  modifications: ModificationEntry[],
-  regionStart: number,
-) => {
+const buildControl = (modifications: ModificationEntry[]) => {
   const result: Record<number, unknown[]> = {}
   const seen = new Map<
     string,
@@ -160,9 +151,6 @@ const buildControl = (
     }
   >()
   for (const mod of modifications) {
-    if (mod.position < regionStart) {
-      continue
-    }
     const modKey = `${mod.position}_${mod.modType}_${mod.noMod ? 'n' : 'm'}_${mod.color}`
     let entry = seen.get(modKey)
     if (!entry) {
@@ -284,9 +272,9 @@ for (const fx of FIXTURES) {
 
   // Warm every arm the same way before any timing, and check the two shapes
   // agree entry for entry.
-  const record = buildRecord(modifications, regionStart)
-  const index = buildModTooltipIndex({ modifications, regionStart })
-  buildControl(modifications, regionStart)
+  const record = buildRecord(modifications)
+  const index = buildModTooltipIndex(modifications)
+  buildControl(modifications)
   checkIdentity(fx.name, record, index)
   const positions = [...index!.modTooltipPositions]
 
@@ -304,11 +292,11 @@ for (const fx of FIXTURES) {
       const which = (r + k) % 3
       const t = performance.now()
       if (which === 0) {
-        buildRecord(modifications, regionStart)
+        buildRecord(modifications)
       } else if (which === 1) {
-        buildModTooltipIndex({ modifications, regionStart })
+        buildModTooltipIndex(modifications)
       } else {
-        buildControl(modifications, regionStart)
+        buildControl(modifications)
       }
       const ms = performance.now() - t
       const label =

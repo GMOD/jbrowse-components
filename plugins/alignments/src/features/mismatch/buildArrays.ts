@@ -15,8 +15,8 @@ import type { MismatchData } from '../../shared/webglRpcTypes.ts'
  * then rows) satisfies the same contract by construction.
  *
  * `positionOrder` is the sort, shared with `positionIndex.ts` rather than
- * restated — including its sparse fallback, which matters here: `filtered` is
- * bounded by the REGION, and at whole-chromosome scale a bp-indexed histogram
+ * restated — including its sparse fallback, which matters here: the mismatches
+ * are bounded by the REGION, and at whole-chromosome scale a bp-indexed histogram
  * over that span would allocate hundreds of megabytes to sort a handful of
  * entries.
  *
@@ -24,15 +24,11 @@ import type { MismatchData } from '../../shared/webglRpcTypes.ts'
  * `remapYs` from `mismatchReadIndices`. It therefore inherits this permutation
  * through the array it derives from, and must never be permuted separately.
  */
-export function buildMismatchArrays(
-  mismatches: MismatchData[],
-  regionStart: number,
-) {
-  const filtered = mismatches.filter(mm => mm.position >= regionStart)
-  const n = filtered.length
+export function buildMismatchArrays(mismatches: MismatchData[]) {
+  const n = mismatches.length
   const raw = new Uint32Array(n)
   for (let i = 0; i < n; i++) {
-    raw[i] = filtered[i]!.position
+    raw[i] = mismatches[i]!.position
   }
   // `sorted` IS the shipped positions array — the sort already produced it, so
   // permuting positions a second time would be redundant work.
@@ -45,7 +41,7 @@ export function buildMismatchArrays(
   // renderers read as fully opaque; every other value including 0 is a score.
   const mismatchQuals = new Uint8Array(n)
   for (let i = 0; i < n; i++) {
-    const mm = filtered[order[i]!]!
+    const mm = mismatches[order[i]!]!
     mismatchBases[i] = mm.base
     mismatchStrands[i] = mm.strand
     mismatchReadIndices[i] = mm.readIndex

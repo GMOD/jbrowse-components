@@ -78,10 +78,7 @@ function compareModEntries(
 // Group calls by genomic position, then by (modType, noMod) within a position,
 // summing each bin's probability count/total. Both coverage models build from
 // this and differ only in how a bin's bar height is derived.
-function groupByPosition(
-  modifications: ModificationEntry[],
-  regionStart: number,
-) {
+function groupByPosition(modifications: ModificationEntry[]) {
   const byPosition = new Map<number, Map<number, ModificationColorEntry>>()
 
   // Stable small integer id per modType, so each stacked segment can be keyed by
@@ -98,23 +95,21 @@ function groupByPosition(
   }
 
   for (const mod of modifications) {
-    if (mod.position >= regionStart) {
-      const colorMap = getOrCreate(
-        byPosition,
-        mod.position,
-        () => new Map<number, ModificationColorEntry>(),
-      )
-      const entry = getOrCreate(colorMap, modKey(mod), () => ({
-        color: mod.color,
-        probabilityTotal: 0,
-        probabilityCount: 0,
-        base: mod.base,
-        modType: mod.modType,
-        noMod: mod.noMod ?? false,
-      }))
-      entry.probabilityTotal += mod.prob
-      entry.probabilityCount++
-    }
+    const colorMap = getOrCreate(
+      byPosition,
+      mod.position,
+      () => new Map<number, ModificationColorEntry>(),
+    )
+    const entry = getOrCreate(colorMap, modKey(mod), () => ({
+      color: mod.color,
+      probabilityTotal: 0,
+      probabilityCount: 0,
+      base: mod.base,
+      modType: mod.modType,
+      noMod: mod.noMod ?? false,
+    }))
+    entry.probabilityTotal += mod.prob
+    entry.probabilityCount++
   }
   return byPosition
 }
@@ -189,7 +184,6 @@ function packSegments(segments: CoverageSegment[]) {
 // drift.
 function stackCoverageBars(
   modifications: ModificationEntry[],
-  regionStart: number,
   coverage: Coverage,
   heightForPosition: (ctx: {
     position: number
@@ -199,10 +193,7 @@ function stackCoverageBars(
 ) {
   const { depths, maxDepth, startPos } = coverage
   const segments: CoverageSegment[] = []
-  for (const [position, colorMap] of groupByPosition(
-    modifications,
-    regionStart,
-  )) {
+  for (const [position, colorMap] of groupByPosition(modifications)) {
     const depthAtPosition = depths[position - startPos] ?? 0
     if (depthAtPosition > 0) {
       stackBar(
@@ -232,13 +223,11 @@ function stackCoverageBars(
 export function computeModificationCoverage(
   modifications: ModificationEntry[],
   baseCounts: ReadonlyMap<number, StrandBaseCounts>,
-  regionStart: number,
   coverage: Coverage,
   simplexModifications: ReadonlySet<string>,
 ) {
   return stackCoverageBars(
     modifications,
-    regionStart,
     coverage,
     ({ position, depthAtPosition }) => {
       const strandBaseCounts = baseCounts.get(position) ?? {}
@@ -282,16 +271,10 @@ export function computeModificationCoverage(
 export function computeBisulfiteCoverage(
   modifications: ModificationEntry[],
   callCounts: ReadonlyMap<number, number>,
-  regionStart: number,
   coverage: Coverage,
 ) {
-  return stackCoverageBars(
-    modifications,
-    regionStart,
-    coverage,
-    ({ position }) => {
-      const totalCalls = callCounts.get(position) ?? 0
-      return entry => (totalCalls > 0 ? entry.probabilityCount / totalCalls : 0)
-    },
-  )
+  return stackCoverageBars(modifications, coverage, ({ position }) => {
+    const totalCalls = callCounts.get(position) ?? 0
+    return entry => (totalCalls > 0 ? entry.probabilityCount / totalCalls : 0)
+  })
 }

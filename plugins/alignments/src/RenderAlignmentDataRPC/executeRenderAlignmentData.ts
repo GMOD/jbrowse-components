@@ -243,7 +243,6 @@ async function buildGroupResult(
     modifications,
     perBaseQualities,
     perBaseLetters,
-    region,
     showSoftClipping: effShowSoftClipping,
     statusCallback,
   })

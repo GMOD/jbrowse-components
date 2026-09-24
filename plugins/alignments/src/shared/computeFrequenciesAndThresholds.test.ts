@@ -51,6 +51,27 @@ describe('computePositionFrequencies (interbase depth)', () => {
     expect(freqs[0]).toBe(Math.round((1 / 15) * 255))
   })
 
+  it('measures a deletion starting left of the window at its first base', () => {
+    const coverageDepths = new Float32Array(20).fill(100)
+    const { gapFrequencies } = computeFrequenciesAndThresholds(
+      {
+        mismatchPositions: new Uint32Array(0),
+        mismatchBases: new Uint8Array(0),
+      },
+      {
+        interbasePositions: new Uint32Array(0),
+        interbaseTypes: new Uint8Array(0),
+      },
+      {
+        gapPositions: new Uint32Array([995, 1003, 1005, 1008]),
+        gapTypes: new Uint8Array([GAP_DELETION, GAP_DELETION]),
+      },
+      coverageDepths,
+      1000,
+    )
+    expect([...gapFrequencies]).toEqual([0, 0])
+  })
+
   it('at a coverage cliff, uses the higher side', () => {
     const coverageDepths = new Float32Array([50, 50, 50, 0, 0])
     const positions = new Uint32Array([3])

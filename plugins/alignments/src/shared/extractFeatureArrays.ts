@@ -213,6 +213,7 @@ export function extractFeatureArrays<T extends FeatureData>(
       readIndex,
       featureStart,
       strand,
+      region,
       baseLayer,
       detectedModifications,
       seenModTypes,

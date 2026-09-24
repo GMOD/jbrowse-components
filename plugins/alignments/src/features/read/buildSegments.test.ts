@@ -30,18 +30,8 @@ function del(readIndex: number, start: number, end: number): GapData {
   }
 }
 
-function segments(
-  features: FeatureData[],
-  gaps: GapData[],
-  regionStart: number,
-  regionEnd: number,
-) {
-  const result = buildSegmentArrays(features, gaps, {
-    refName: 'ctgA',
-    assemblyName: 'volvox',
-    start: regionStart,
-    end: regionEnd,
-  })
+function segments(features: FeatureData[], gaps: GapData[]) {
+  const result = buildSegmentArrays(features, gaps)
   const segs = []
   for (let i = 0; i < result.numSegments; i++) {
     segs.push({
@@ -54,44 +44,26 @@ function segments(
   return segs
 }
 
-// Segment positions are absolute genomic coordinates.
 describe('buildSegmentArrays', () => {
-  test('read without skips produces one segment', () => {
-    const result = segments([feat('r1', 1000, 1200)], [], 1000, 1200)
-    expect(result).toEqual([{ start: 1000, end: 1200, readIdx: 0, edge: 0b11 }])
-  })
-
-  test('deletions are ignored (only skips split reads)', () => {
-    const result = segments(
-      [feat('r1', 1000, 1200)],
-      [del(0, 1050, 1060)],
-      1000,
-      1200,
-    )
-    expect(result).toEqual([{ start: 1000, end: 1200, readIdx: 0, edge: 0b11 }])
-  })
-
-  test('single skip splits read into two exon segments', () => {
-    const result = segments(
-      [feat('r1', 1000, 2000)],
-      [skip(0, 1200, 1800)],
-      1000,
-      2000,
-    )
-    expect(result).toEqual([
-      { start: 1000, end: 1200, readIdx: 0, edge: 0b01 },
-      { start: 1800, end: 2000, readIdx: 0, edge: 0b10 },
+  test('read without skips is its own first and last segment', () => {
+    expect(segments([feat('r1', 1000, 1200)], [])).toEqual([
+      { start: 1000, end: 1200, readIdx: 0, edge: 0b11 },
     ])
   })
 
-  test('multiple skips produce multiple exon segments', () => {
-    const result = segments(
-      [feat('r1', 1000, 5000)],
-      [skip(0, 1200, 1800), skip(0, 2100, 4800)],
-      1000,
-      5000,
-    )
-    expect(result).toEqual([
+  test('deletions are ignored (only skips split reads)', () => {
+    expect(segments([feat('r1', 1000, 1200)], [del(0, 1050, 1060)])).toEqual([
+      { start: 1000, end: 1200, readIdx: 0, edge: 0b11 },
+    ])
+  })
+
+  test('skips split a read into exons, flagged first and last', () => {
+    expect(
+      segments(
+        [feat('r1', 1000, 5000)],
+        [skip(0, 1200, 1800), skip(0, 2100, 4800)],
+      ),
+    ).toEqual([
       { start: 1000, end: 1200, readIdx: 0, edge: 0b01 },
       { start: 1800, end: 2100, readIdx: 0, edge: 0 },
       { start: 4800, end: 5000, readIdx: 0, edge: 0b10 },
@@ -99,129 +71,34 @@ describe('buildSegmentArrays', () => {
   })
 
   test('multiple reads each get their own segments', () => {
-    const result = segments(
-      [feat('r1', 1000, 2000), feat('r2', 1000, 1500)],
-      [skip(0, 1200, 1800)],
-      1000,
-      2000,
-    )
-    expect(result).toEqual([
+    expect(
+      segments(
+        [feat('r1', 1000, 2000), feat('r2', 1000, 1500)],
+        [skip(0, 1200, 1800)],
+      ),
+    ).toEqual([
       { start: 1000, end: 1200, readIdx: 0, edge: 0b01 },
       { start: 1800, end: 2000, readIdx: 0, edge: 0b10 },
       { start: 1000, end: 1500, readIdx: 1, edge: 0b11 },
     ])
   })
 
-  describe('collapsed intron mode (read extends beyond region)', () => {
-    test('segments extend to full feature end (GPU handles clipping)', () => {
-      const result = segments(
-        [feat('r1', 1000, 50000)],
-        [skip(0, 1200, 49800)],
-        1000,
-        1300,
-      )
-      expect(result).toEqual([
+  test('a long spliced read keeps its exons at their true positions', () => {
+    expect(segments([feat('r1', 1000, 50000)], [skip(0, 1200, 49800)])).toEqual(
+      [
         { start: 1000, end: 1200, readIdx: 0, edge: 0b01 },
-        { start: 49800, end: 50000, readIdx: 0, edge: 0 },
-      ])
-    })
-
-    test('read starting before region has no first-edge flag', () => {
-      const result = segments(
-        [feat('r1', 1000, 50000)],
-        [skip(0, 1200, 49800)],
-        49700,
-        50100,
-      )
-      expect(result).toEqual([
         { start: 49800, end: 50000, readIdx: 0, edge: 0b10 },
-      ])
-    })
-
-    test('read entirely intronic produces off-screen exon segments', () => {
-      const result = segments(
-        [feat('r1', 1000, 50000)],
-        [skip(0, 1200, 49800)],
-        5000,
-        5300,
-      )
-      expect(result).toEqual([
-        { start: 49800, end: 50000, readIdx: 0, edge: 0 },
-      ])
-    })
-
-    test('skip gap entirely before region — segment extends to full read end', () => {
-      const result = segments(
-        [feat('r1', 1000, 50000)],
-        [skip(0, 1200, 1800)],
-        2000,
-        2300,
-      )
-      expect(result).toEqual([{ start: 2000, end: 50000, readIdx: 0, edge: 0 }])
-    })
-
-    test('skip gap entirely after region — full segments emitted', () => {
-      const result = segments(
-        [feat('r1', 1000, 50000)],
-        [skip(0, 49000, 49800)],
-        1000,
-        1300,
-      )
-      expect(result).toEqual([
-        { start: 1000, end: 49000, readIdx: 0, edge: 0b01 },
-        { start: 49800, end: 50000, readIdx: 0, edge: 0 },
-      ])
-    })
-  })
-
-  describe('edge flags for chevrons', () => {
-    test('read fully within region gets both edge flags', () => {
-      const result = segments([feat('r1', 1050, 1150)], [], 1000, 1200)
-      expect(result[0]!.edge).toBe(0b11)
-    })
-
-    test('read extending left gets no first flag', () => {
-      const result = segments([feat('r1', 900, 1150)], [], 1000, 1200)
-      expect(result[0]!.edge).toBe(0b10)
-    })
-
-    test('read extending right gets no last flag', () => {
-      const result = segments([feat('r1', 1050, 1300)], [], 1000, 1200)
-      expect(result[0]!.edge).toBe(0b01)
-    })
-
-    test('read extending both sides gets no flags', () => {
-      const result = segments([feat('r1', 900, 1300)], [], 1000, 1200)
-      expect(result[0]!.edge).toBe(0b00)
-    })
-
-    test('with skips, first flag on first segment, last flag on last segment', () => {
-      const result = segments(
-        [feat('r1', 1000, 2000)],
-        [skip(0, 1200, 1800)],
-        1000,
-        2000,
-      )
-      expect(result[0]!.edge).toBe(0b01)
-      expect(result[1]!.edge).toBe(0b10)
-    })
-  })
-
-  // The clamp puts readStart at or past readEnd, so there is no segment to
-  // emit. A fast path for the no-skip case used to write [regionStart, f.end]
-  // here — a backwards span.
-  test('read ending before the region emits nothing', () => {
-    expect(segments([feat('r1', 100, 900)], [], 1000, 1200)).toEqual([])
+      ],
+    )
   })
 
   test('unsorted skip gaps are handled correctly', () => {
-    const result = segments(
-      [feat('r1', 1000, 5000)],
-      [skip(0, 2100, 4800), skip(0, 1200, 1800)],
-      1000,
-      5000,
-    )
-    expect(result).toEqual([
+    expect(
+      segments(
+        [feat('r1', 1000, 5000)],
+        [skip(0, 2100, 4800), skip(0, 1200, 1800)],
+      ),
+    ).toEqual([
       { start: 1000, end: 1200, readIdx: 0, edge: 0b01 },
       { start: 1800, end: 2100, readIdx: 0, edge: 0 },
       { start: 4800, end: 5000, readIdx: 0, edge: 0b10 },

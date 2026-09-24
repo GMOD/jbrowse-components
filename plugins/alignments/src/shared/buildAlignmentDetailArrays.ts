@@ -20,7 +20,7 @@ import type {
   ModificationEntry,
   SoftclipData,
 } from './webglRpcTypes.ts'
-import type { Region, StatusCallback } from '@jbrowse/core/util'
+import type { StatusCallback } from '@jbrowse/core/util'
 
 /**
  * Build the gap / mismatch / interbase / modification / segment /
@@ -42,7 +42,6 @@ export async function buildAlignmentDetailArrays({
   modifications,
   perBaseQualities,
   perBaseLetters,
-  region,
   showSoftClipping = false,
   statusCallback,
 }: {
@@ -55,30 +54,23 @@ export async function buildAlignmentDetailArrays({
   modifications: ModificationEntry[]
   perBaseQualities: PerBaseQualityEntry[]
   perBaseLetters: PerBaseLetterEntry[]
-  region: Region
   showSoftClipping?: boolean
   statusCallback: StatusCallback | undefined
 }) {
-  const { start: regionStart } = region
   return updateStatus(
     'Building alignment arrays',
     statusCallback,
     async () => ({
-      gapArrays: buildGapArrays(gaps, regionStart),
-      mismatchArrays: buildMismatchArrays(mismatches, regionStart),
+      gapArrays: buildGapArrays(gaps),
+      mismatchArrays: buildMismatchArrays(mismatches),
       softclipBaseArrays: buildSoftclipBaseArrays(
         showSoftClipping ? softclips : [],
       ),
-      interbaseArrays: buildInterbaseArrays(
-        insertions,
-        softclips,
-        hardclips,
-        regionStart,
-      ),
-      modificationArrays: buildModificationArrays(modifications, regionStart),
+      interbaseArrays: buildInterbaseArrays(insertions, softclips, hardclips),
+      modificationArrays: buildModificationArrays(modifications),
       perBaseQualityArrays: buildPerBaseQualityArrays(perBaseQualities),
       perBaseLetterArrays: buildPerBaseLetterArrays(perBaseLetters),
-      segmentArrays: buildSegmentArrays(features, gaps, region),
+      segmentArrays: buildSegmentArrays(features, gaps),
     }),
   )
 }

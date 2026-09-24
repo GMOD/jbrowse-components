@@ -51,7 +51,6 @@ export function buildMafCoverageRegion(
     mafCov.insertions,
     [],
     [],
-    regionStart,
     coverageForSnp,
   )
 

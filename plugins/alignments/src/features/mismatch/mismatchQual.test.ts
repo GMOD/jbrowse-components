@@ -15,23 +15,15 @@ function mm(position: number, qual: number): MismatchData {
 
 describe('mismatch quality plumbing', () => {
   test('buildMismatchArrays carries per-base quality (already byte-valued)', () => {
-    const { mismatchQuals } = buildMismatchArrays(
-      [mm(10, 0), mm(11, 37), mm(12, 255)],
-      0,
-    )
+    const { mismatchQuals } = buildMismatchArrays([
+      mm(10, 0),
+      mm(11, 37),
+      mm(12, 255),
+    ])
     // qual comes straight from the BAM/CRAM QUAL byte array: 0 and 37 are real
     // Phred values, 255 is QUAL_UNAVAILABLE. This builder passes all three
     // through — `emitMismatch` is where the sentinel is chosen.
     expect(Array.from(mismatchQuals)).toEqual([0, 37, 255])
-  })
-
-  test('quals stay aligned with positions after the regionStart filter', () => {
-    const { mismatchPositions, mismatchQuals } = buildMismatchArrays(
-      [mm(5, 40), mm(20, 12)],
-      10,
-    )
-    expect(Array.from(mismatchPositions)).toEqual([20])
-    expect(Array.from(mismatchQuals)).toEqual([12])
   })
 
   test('the mismatch mark packs the raw quality into the qual instance slot', () => {

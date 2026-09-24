@@ -45,7 +45,7 @@ const blue = modEntry({
 })
 
 function run(mods: ModificationEntry[]) {
-  return computeModificationCoverage(mods, baseCounts, 0, coverage, new Set())
+  return computeModificationCoverage(mods, baseCounts, coverage, new Set())
 }
 
 test('5mC (red) always stacks below unmodified (blue) regardless of input order', () => {
@@ -100,14 +100,12 @@ test('simplex modification uses a reduced (examined-strand) denominator', () => 
   const simplex = computeModificationCoverage(
     mods,
     strandSplitCounts,
-    0,
     depthCoverage,
     new Set(['m']),
   )
   const duplex = computeModificationCoverage(
     mods,
     strandSplitCounts,
-    0,
     depthCoverage,
     new Set(),
   )
@@ -131,7 +129,6 @@ test('bisulfite splits the whole bar by methylation level, ignoring base counts'
   const out = computeBisulfiteCoverage(
     [...meth, unmeth],
     new Map([[POS, 10]]),
-    0,
     coverage,
   )
 
@@ -185,7 +182,7 @@ describe('bisulfite methylation level does not depend on twoColor', () => {
     }
     const depths = new Float32Array(REF.length)
     depths[CPG] = READS
-    const out = computeBisulfiteCoverage(mods, callCounts, 0, {
+    const out = computeBisulfiteCoverage(mods, callCounts, {
       depths,
       maxDepth: READS,
       startPos: 0,

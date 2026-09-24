@@ -304,7 +304,7 @@ describe('no-mod bucket survives the packed arrays', () => {
   })
 
   function hitFor(noMod: boolean) {
-    const arrays = buildModificationArrays([entry(noMod)], 0)
+    const arrays = buildModificationArrays([entry(noMod)])
     const rpcData = makeRpcData({
       ...arrays,
       modFlatbush: makeModFlatbush([1000], [0]),
@@ -344,10 +344,9 @@ describe('a mark whose type no MM tag announced', () => {
   })
 
   function hitFor(noMod: boolean) {
-    const arrays = buildModificationArrays(
-      [bisulfiteEntry(packAbgr(255, 0, 0, 255), noMod)],
-      0,
-    )
+    const arrays = buildModificationArrays([
+      bisulfiteEntry(packAbgr(255, 0, 0, 255), noMod),
+    ])
     return hitTestModification(
       makeResolved(
         makeRpcData({ ...arrays, modFlatbush: makeModFlatbush([1000], [0]) }),

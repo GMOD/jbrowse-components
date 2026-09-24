@@ -115,6 +115,20 @@ function spanOf(
   return { min, length: max < min ? 0 : max - min + 1 }
 }
 
+// A deletion that starts left of the window has no depth where it starts, so it
+// is measured at the window's first base.
+function depthNear(
+  coverageDepths: Float32Array,
+  coverageStartPos: number,
+  pos: number,
+) {
+  return interbaseDepthAt(
+    coverageDepths,
+    coverageStartPos,
+    Math.max(pos, coverageStartPos),
+  )
+}
+
 // Lanes are sized off the array rather than a shared constant: a lane count that
 // lags the caller's vocabulary pools two of its codes into one, silently.
 function laneCount(types: Uint8Array) {
@@ -176,7 +190,7 @@ export function computePositionFrequencies(
     const pos = positions[i]!
     const offset = pos - coverageStartPos
     const lane = types ? types[i]! : 0
-    const localDepth = interbaseDepthAt(coverageDepths, coverageStartPos, pos)
+    const localDepth = depthNear(coverageDepths, coverageStartPos, pos)
     const depth = localDepth > 0 ? localDepth : 1
     const count =
       offset >= 0 && offset < windowLength
@@ -199,7 +213,7 @@ export function applyDepthDependentThreshold(
   for (let i = 0; i < frequencies.length; i++) {
     const pos = positions[i]!
     const depth = interbase
-      ? interbaseDepthAt(coverageDepths, coverageStartPos, pos)
+      ? depthNear(coverageDepths, coverageStartPos, pos)
       : getDepthAt(coverageDepths, pos - coverageStartPos, 0)
     const freq = frequencies[i]! / 255
     const threshold = thresholdFn(depth)

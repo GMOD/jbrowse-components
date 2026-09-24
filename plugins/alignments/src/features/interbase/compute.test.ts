@@ -33,7 +33,6 @@ describe('computeInterbaseCoverage (indicator triangles)', () => {
       [],
       [],
       [],
-      100,
       cov(new Float32Array(0), 10),
     )
     expect(result.indicatorCount).toBe(0)
@@ -49,7 +48,6 @@ describe('computeInterbaseCoverage (indicator triangles)', () => {
       insertions,
       [],
       [],
-      100,
       cov(new Float32Array(20).fill(20), 20),
     )
     expect(result.indicatorCount).toBe(1)
@@ -65,7 +63,6 @@ describe('computeInterbaseCoverage (indicator triangles)', () => {
       insertions,
       [],
       [],
-      100,
       cov(new Float32Array(20).fill(20), 20),
     )
     expect(result.indicatorCount).toBe(0)
@@ -80,7 +77,6 @@ describe('computeInterbaseCoverage (indicator triangles)', () => {
       insertions,
       [],
       [],
-      100,
       cov(new Float32Array(20).fill(5), 5),
     )
     expect(result.indicatorCount).toBe(0)
@@ -95,7 +91,6 @@ describe('computeInterbaseCoverage (indicator triangles)', () => {
       insertions,
       [],
       [],
-      100,
       cov(new Float32Array(20).fill(50), 50),
     )
     expect(result.indicatorCount).toBe(1)
@@ -114,7 +109,6 @@ describe('computeInterbaseCoverage (indicator triangles)', () => {
       insertions,
       softclips,
       [],
-      100,
       cov(new Float32Array(20).fill(20), 20),
     )
     expect(result.indicatorCount).toBe(1)
@@ -130,7 +124,6 @@ describe('computeInterbaseCoverage (indicator triangles)', () => {
       insertions,
       [],
       [],
-      100,
       cov(new Float32Array(20).fill(7), 7),
     )
     expect(result.indicatorCount).toBe(0)
@@ -145,7 +138,6 @@ describe('computeInterbaseCoverage (indicator triangles)', () => {
       insertions,
       [],
       [],
-      100,
       cov(new Float32Array(20).fill(8), 8),
     )
     expect(result.indicatorCount).toBe(1)
@@ -159,7 +151,6 @@ describe('computeInterbaseCoverage (indicator triangles)', () => {
         { position: 105, length: 10 },
       ],
       [{ position: 105, length: 3 }],
-      100,
       cov(new Float32Array(20).fill(10), 10),
     )
     // 1 insertion + 2 softclips + 1 hardclip at one position => 3 segments
@@ -192,25 +183,8 @@ describe('computeInterbaseCoverage (indicator triangles)', () => {
       ],
       [{ position: 105, length: 9 }],
       [{ position: 120, length: 4 }],
-      100,
       cov(new Float32Array(40).fill(10), 10),
     )
     expect(segments(result).map(s => s.position)).toEqual([105, 110, 120, 130])
-  })
-
-  it('drops events left of regionStart from segments and indicators', () => {
-    const insertions = Array.from({ length: 10 }, () => ({
-      position: 99,
-      length: 5,
-    }))
-    const result = computeInterbaseCoverage(
-      insertions,
-      [],
-      [],
-      100,
-      cov(new Float32Array(20).fill(20), 20),
-    )
-    expect(result.segmentCount).toBe(0)
-    expect(result.indicatorCount).toBe(0)
   })
 })

@@ -62,13 +62,9 @@ export interface ModTooltipIndex {
   modTooltipLabels: string[]
 }
 
-export function buildModTooltipIndex({
-  modifications,
-  regionStart,
-}: {
-  modifications: ModificationEntry[]
-  regionStart: number
-}): ModTooltipIndex | undefined {
+export function buildModTooltipIndex(
+  modifications: ModificationEntry[],
+): ModTooltipIndex | undefined {
   if (modifications.length === 0) {
     return undefined
   }
@@ -91,9 +87,6 @@ export function buildModTooltipIndex({
   const groupLabels: number[] = []
 
   for (const mod of modifications) {
-    if (mod.position < regionStart) {
-      continue
-    }
     let groups = byPosition.get(mod.position)
     if (!groups) {
       groups = new Map()

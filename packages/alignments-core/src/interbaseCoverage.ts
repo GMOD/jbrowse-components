@@ -50,24 +50,18 @@ interface InterbaseBucket {
 
 type InterbaseField = 'insertion' | 'softclip' | 'hardclip'
 
-// Buckets in-region entries by position. Out-of-region entries (position <
-// regionStart) are dropped here rather than filtered out of the output arrays
-// later, so no bucket or segment is ever built for them.
 function bumpInterbase(
   map: Map<number, InterbaseBucket>,
   entries: { position: number }[],
   field: InterbaseField,
-  regionStart: number,
 ) {
   for (const { position } of entries) {
-    if (position >= regionStart) {
-      let bucket = map.get(position)
-      if (!bucket) {
-        bucket = { insertion: 0, softclip: 0, hardclip: 0, indicatorType: 0 }
-        map.set(position, bucket)
-      }
-      bucket[field]++
+    let bucket = map.get(position)
+    if (!bucket) {
+      bucket = { insertion: 0, softclip: 0, hardclip: 0, indicatorType: 0 }
+      map.set(position, bucket)
     }
+    bucket[field]++
   }
 }
 
@@ -118,7 +112,6 @@ export function computeInterbaseCoverage(
   insertions: InsertionEntry[],
   softclips: ClipEntry[],
   hardclips: ClipEntry[],
-  regionStart: number,
   coverage: { depths: Float32Array; maxDepth: number; startPos: number },
 ) {
   const {
@@ -127,9 +120,9 @@ export function computeInterbaseCoverage(
     startPos: coverageStartPos,
   } = coverage
   const interbaseByPosition = new Map<number, InterbaseBucket>()
-  bumpInterbase(interbaseByPosition, insertions, 'insertion', regionStart)
-  bumpInterbase(interbaseByPosition, softclips, 'softclip', regionStart)
-  bumpInterbase(interbaseByPosition, hardclips, 'hardclip', regionStart)
+  bumpInterbase(interbaseByPosition, insertions, 'insertion')
+  bumpInterbase(interbaseByPosition, softclips, 'softclip')
+  bumpInterbase(interbaseByPosition, hardclips, 'hardclip')
 
   if (interbaseByPosition.size === 0) {
     return emptyResult()

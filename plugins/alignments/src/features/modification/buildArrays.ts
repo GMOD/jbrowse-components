@@ -5,12 +5,8 @@ import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
 // `modificationTypes` is derived from the marks, not from the MM/ML parse's
 // `detectedModifications` (which the modifications menu owns). The two diverge
 // on bisulfite: no tags, so that set is empty while every mark carries 'm'.
-export function buildModificationArrays(
-  modifications: ModificationEntry[],
-  regionStart: number,
-) {
-  const filtered = modifications.filter(m => m.position >= regionStart)
-  const kept = filtered.length
+export function buildModificationArrays(modifications: ModificationEntry[]) {
+  const kept = modifications.length
   const modificationPositions = new Uint32Array(kept)
   // Pre-pack each modification's RGB + probability-as-alpha into ABGR u32 so
   // both the GPU vertex buffer and the Canvas2D shader path can read one
@@ -27,7 +23,7 @@ export function buildModificationArrays(
   const modificationTypes: string[] = []
   const modTypeToIdx = new Map<string, number>()
   for (let i = 0; i < kept; i++) {
-    const m = filtered[i]!
+    const m = modifications[i]!
     modificationPositions[i] = m.position
     // Quadratic curve with 0.1 floor: low-prob mods stay faintly visible,
     // high-prob mods are strongly opaque (matches main branch alphaColor).

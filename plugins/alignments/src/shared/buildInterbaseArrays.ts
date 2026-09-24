@@ -39,18 +39,9 @@ export function buildInterbaseArrays(
   insertions: InsertionData[],
   softclips: SoftclipData[],
   hardclips: HardclipData[],
-  regionStart: number,
 ) {
-  const filteredInsertions = insertions.filter(
-    ins => ins.position >= regionStart,
-  )
-  const filteredSoftclips = softclips.filter(sc => sc.position >= regionStart)
-  const filteredHardclips = hardclips.filter(hc => hc.position >= regionStart)
-
   const totalInterbases =
-    filteredInsertions.length +
-    filteredSoftclips.length +
-    filteredHardclips.length
+    insertions.length + softclips.length + hardclips.length
 
   const interbasePositions = new Uint32Array(totalInterbases)
   // 32 bits because an insertion is not bounded by the read's reference span:
@@ -86,9 +77,9 @@ export function buildInterbaseArrays(
     }
   }
 
-  addItems(filteredInsertions, INTERBASE_INSERTION)
-  addItems(filteredSoftclips, INTERBASE_SOFTCLIP)
-  addItems(filteredHardclips, INTERBASE_HARDCLIP)
+  addItems(insertions, INTERBASE_INSERTION)
+  addItems(softclips, INTERBASE_SOFTCLIP)
+  addItems(hardclips, INTERBASE_HARDCLIP)
 
   return {
     interbasePositions,
@@ -98,8 +89,8 @@ export function buildInterbaseArrays(
     interbaseSequences,
     // Counts per type in the canonical layout (ins, then soft, then hard).
     // Lets consumers slice subranges directly without re-scanning types.
-    numInsertions: filteredInsertions.length,
-    numSoftclips: filteredSoftclips.length,
-    numHardclips: filteredHardclips.length,
+    numInsertions: insertions.length,
+    numSoftclips: softclips.length,
+    numHardclips: hardclips.length,
   }
 }

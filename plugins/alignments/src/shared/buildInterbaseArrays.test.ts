@@ -11,7 +11,6 @@ test('an insertion past 65,535 bp keeps its length', () => {
     [{ readIndex: 0, position: 1094197, length: 113174 }],
     [],
     [],
-    0,
   )
   expect(interbaseLengths[0]).toBe(113174)
 })
@@ -19,18 +18,15 @@ test('an insertion past 65,535 bp keeps its length', () => {
 // A gap's length is its two u32 endpoints subtracted; there is no length array
 // to clamp it.
 test('a deletion past 65,535 bp keeps its length', () => {
-  const { gapPositions } = buildGapArrays(
-    [
-      {
-        readIndex: 0,
-        start: 1000,
-        end: 1000 + 113174,
-        type: 'deletion',
-        strand: 1,
-        featureStrand: 1,
-      },
-    ],
-    0,
-  )
+  const { gapPositions } = buildGapArrays([
+    {
+      readIndex: 0,
+      start: 1000,
+      end: 1000 + 113174,
+      type: 'deletion',
+      strand: 1,
+      featureStrand: 1,
+    },
+  ])
   expect(gapPositions[1]! - gapPositions[0]!).toBe(113174)
 })

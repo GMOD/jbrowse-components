@@ -38,6 +38,7 @@ function run(colorBy: ColorBy) {
     0,
     100,
     1,
+    { start: 0, end: Number.MAX_SAFE_INTEGER },
     colorBy,
     detected,
     seenModTypes,
@@ -54,6 +55,22 @@ describe('extractModifications', () => {
     })
     expect([...detected].sort()).toEqual(['a', 'm'])
     expect(out.map(m => m.modType).sort()).toEqual(['a', 'm'])
+  })
+
+  test('emits only the calls inside the region', () => {
+    const out: ModificationEntry[] = []
+    extractModifications(
+      makeFeature(),
+      0,
+      100,
+      1,
+      { start: 101, end: 103 },
+      { type: 'modifications', modifications: { threshold: 10 } },
+      new Set<string>(),
+      new Map<string, ModificationType>(),
+      out,
+    )
+    expect(out.map(m => [m.position, m.modType])).toEqual([[102, 'a']])
   })
 
   test('threshold hides low-probability calls', () => {
@@ -140,6 +157,7 @@ describe('extractModifications', () => {
       0,
       100,
       1,
+      region,
       colorBy,
       new Set<string>(),
       new Map<string, ModificationType>(),
@@ -185,6 +203,7 @@ function runFill(feature: SimpleFeature, colorBy: ColorBy) {
     0,
     100,
     1,
+    region,
     colorBy,
     new Set<string>(),
     new Map<string, ModificationType>(),
