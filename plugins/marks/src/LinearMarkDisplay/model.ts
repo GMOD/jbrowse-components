@@ -73,11 +73,11 @@ import {
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
 import {
+  DEFAULT_POINT_DIAMETER_PX,
   ScoreScaleMixin,
   autoscaleDomainFromSpans,
   axisPlotBox,
   computeSpanStats,
-  DEFAULT_POINT_DIAMETER_PX,
   makeCrossHatchItem,
   makeScoreSubMenu,
   resolveRenderState,
