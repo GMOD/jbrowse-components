@@ -247,12 +247,16 @@ function dynamicImportTarget(node: ts.Node): string | undefined {
   return found
 }
 
-/** `lazy(() => import('X'))` → `'X'`, at any nesting. */
+/**
+ * `lazy(() => import('X'))` or `lazyWithPreload(...)` of the same → `'X'`, at
+ * any nesting.
+ */
 function lazyImportTarget(node: ts.Node): string | undefined {
   if (
     !ts.isCallExpression(node) ||
     !ts.isIdentifier(node.expression) ||
-    node.expression.text !== 'lazy'
+    (node.expression.text !== 'lazy' &&
+      node.expression.text !== 'lazyWithPreload')
   ) {
     return undefined
   }

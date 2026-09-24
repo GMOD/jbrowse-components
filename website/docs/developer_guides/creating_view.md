@@ -30,9 +30,8 @@ view is registered the same way — this is the dotplot's, in full:
 <!-- include: plugins/dotplot-view/src/DotplotView/index.ts -->
 
 ```ts
-import { lazy } from 'react'
-
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import { dotplotLaunchKeys } from './launchKeys.ts'
 
@@ -51,7 +50,9 @@ export default function DotplotViewF(pluginManager: PluginManager) {
       displayName: 'Dotplot view',
       stateModel,
       launchKeys: dotplotLaunchKeys,
-      ReactComponent: lazy(() => import('./components/DotplotView.tsx')),
+      ReactComponent: lazyWithPreload(
+        () => import('./components/DotplotView.tsx'),
+      ),
     })
   })
 }

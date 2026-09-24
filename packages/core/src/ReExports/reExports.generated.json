@@ -3045,6 +3045,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/lazyWithPreload": {
+      "package": "@jbrowse/core",
+      "names": [
+        "lazyWithPreload"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/leadingEdgeAutorun": {
       "package": "@jbrowse/core",
       "names": [
@@ -3219,6 +3226,13 @@
         "groupLinesByRef",
         "makeFeatureIntervalTreeMap",
         "parseLineByLine"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/preloadComponent": {
+      "package": "@jbrowse/core",
+      "names": [
+        "preloadComponent"
       ],
       "worker": "real"
     },
@@ -3454,7 +3468,8 @@
         "stripTrackIds",
         "toggleTrackGeneric",
         "viewCanDisplayTrack",
-        "viewDisplayNames"
+        "viewDisplayNames",
+        "warmTrackDisplayGeneric"
       ],
       "worker": "real"
     },

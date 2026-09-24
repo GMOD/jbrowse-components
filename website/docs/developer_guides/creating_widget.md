@@ -16,10 +16,9 @@ plugin-install function:
 <!-- include: plugins/menus/src/HelpWidget/index.ts -->
 
 ```ts
-import { lazy } from 'react'
-
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -39,7 +38,9 @@ export default function HelpWidgetF(pluginManager: PluginManager) {
       heading: 'Help',
       configSchema,
       stateModel,
-      ReactComponent: lazy(() => import('./components/HelpWidget.tsx')),
+      ReactComponent: lazyWithPreload(
+        () => import('./components/HelpWidget.tsx'),
+      ),
     })
   })
 }
