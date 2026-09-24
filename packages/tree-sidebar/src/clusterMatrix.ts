@@ -1,8 +1,10 @@
 import { clusterData, toNewick } from '@gmod/hclust'
+import { parseNewick } from '@gmod/newick'
 import { isAbortException } from '@jbrowse/core/util'
 
 import { clusterProgressStatus } from './clusterProgressStatus.ts'
 import { gpuDistanceMatrix } from './gpuDistanceMatrix.ts'
+import { writeNewick } from './writeNewick.ts'
 
 import type { ClusterProgress } from '@gmod/hclust'
 import type { StatusCallback } from '@jbrowse/core/util'
@@ -102,5 +104,25 @@ export async function clusterMatrix({
   const result = await (distances
     ? clusterData({ distances, ...common })
     : clusterData({ data: rows, ...common }))
-  return { order: result.order, tree: toNewick(result.tree) }
+  const newick = toNewick(result.tree)
+  return {
+    order: result.order,
+    tree: data.has('') ? nameTheUnnamedLeaf(newick) : newick,
+  }
+}
+
+// hclust writes a row named `''` bare, which parses back as a leaf with no
+// name; the multi-row display's no-value row is that row.
+function nameTheUnnamedLeaf(newick: string) {
+  const root = parseNewick(newick)
+  const stack = [root]
+  while (stack.length > 0) {
+    const n = stack.pop()!
+    if (n.children?.length) {
+      stack.push(...n.children)
+    } else if (n.name === undefined) {
+      n.name = ''
+    }
+  }
+  return writeNewick(root)
 }

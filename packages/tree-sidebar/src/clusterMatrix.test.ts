@@ -55,6 +55,14 @@ test('keeps numeric-looking row names in the caller order', async () => {
   expect(leafNames(parseNewick(tree))).toEqual(order.map(i => names[i]))
 })
 
+test('keeps the empty-named row a feature with no value files under', async () => {
+  const names = ['exon', '', 'intron']
+  const { order, tree } = await clusterMatrix({
+    data: new Map(names.map((n, i) => [n, [i, i * 2]])),
+  })
+  expect(leafNames(parseNewick(tree))).toEqual(order.map(i => names[i]))
+})
+
 test('leaves a plain row name unquoted', async () => {
   const { tree } = await clusterMatrix({
     data: new Map([

@@ -41,7 +41,7 @@ export function writeNewick(node: NewickNode): string {
   const rendered = new Map<NewickNode, string>()
   for (let i = preorder.length - 1; i >= 0; i--) {
     const n = preorder[i]!
-    const name = n.name === undefined ? '' : quoteName(n.name)
+    const name = n.name === undefined ? '' : quoteName(n.name) || "''"
     const length =
       n.length === undefined ? '' : incremental ? `:${n.length}` : `${n.length}`
     if (n.children?.length) {
