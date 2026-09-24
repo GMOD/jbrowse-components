@@ -1,8 +1,8 @@
 import { categoricalColor } from '@jbrowse/core/ui/colors'
+import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { SimpleFeature } from '@jbrowse/core/util'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
-import { FEATURE_DEFAULT_COLOR, UTR_DEFAULT_COLOR } from '../featureColors.ts'
 import { mockDisplayConfig } from '../testUtils.ts'
 import { createColorKey } from './colorKey.ts'
 import { boxColor } from './glyphColors.ts'
@@ -68,13 +68,13 @@ describe('boxColor (BED itemRgb)', () => {
   it('a placeholder itemRgb leaves the defaults alone', () => {
     // Every itemRgb in the volvox-bed12 fixture is this placeholder, and
     // honoring it would paint an ordinary BED12 gene track black.
-    expect(fill(bed12Child('exon', '0,0,0'))).toBe(FEATURE_DEFAULT_COLOR)
-    expect(fill(bed12Child('five_prime_UTR', '0'))).toBe(UTR_DEFAULT_COLOR)
+    expect(fill(bed12Child('exon', '0,0,0'))).toBe(featureDefaultColor)
+    expect(fill(bed12Child('five_prime_UTR', '0'))).toBe(utrDefaultColor)
   })
 
   it('no itemRgb anywhere on the chain keeps the slot defaults', () => {
-    expect(fill(bed12Child('exon'))).toBe(FEATURE_DEFAULT_COLOR)
-    expect(fill(bed12Child('five_prime_UTR'))).toBe(UTR_DEFAULT_COLOR)
+    expect(fill(bed12Child('exon'))).toBe(featureDefaultColor)
+    expect(fill(bed12Child('five_prime_UTR'))).toBe(utrDefaultColor)
   })
 
   it('a parentless feature with its own itemRgb still works (flat BED9)', () => {
@@ -263,8 +263,8 @@ describe('boxColor (an explicit color always beats the file)', () => {
 
   it('honors an explicit color even when it equals the fallback', () => {
     expect(
-      fill(itemRgbFeature, mockDisplayConfig({ color: FEATURE_DEFAULT_COLOR })),
-    ).toBe(FEATURE_DEFAULT_COLOR)
+      fill(itemRgbFeature, mockDisplayConfig({ color: featureDefaultColor })),
+    ).toBe(featureDefaultColor)
   })
 
   it('honors an explicit utrColor even when it equals the fallback', () => {
@@ -272,8 +272,8 @@ describe('boxColor (an explicit color always beats the file)', () => {
       type: 'five_prime_UTR',
       attrs: { itemRgb: '227,26,28' },
     })
-    expect(fill(utr, mockDisplayConfig({ utrColor: UTR_DEFAULT_COLOR }))).toBe(
-      UTR_DEFAULT_COLOR,
+    expect(fill(utr, mockDisplayConfig({ utrColor: utrDefaultColor }))).toBe(
+      utrDefaultColor,
     )
   })
 

@@ -1,8 +1,7 @@
 import { isCallbackValue, readConfigValue } from '@jbrowse/core/configuration'
+import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { cssColorToABGR, featureBedColor } from '@jbrowse/core/util/colorBits'
 import { createLegendCandidateCollector } from '@jbrowse/core/util/legendCandidates'
-
-import { FEATURE_DEFAULT_COLOR } from '../RenderFeatureDataRPC/featureColors.ts'
 
 import type {
   MultiRowGetFeaturesResult,
@@ -19,9 +18,9 @@ function evalColorSlot(
 ) {
   try {
     const css = readConfigValue(colorCfg, 'color', feature, jexl)
-    return typeof css === 'string' ? css : FEATURE_DEFAULT_COLOR
+    return typeof css === 'string' ? css : featureDefaultColor
   } catch {
-    return FEATURE_DEFAULT_COLOR
+    return featureDefaultColor
   }
 }
 
@@ -30,7 +29,7 @@ export function makeFeatureColorResolver(
   jexl: JexlInstance,
 ) {
   if (colorConfig === undefined) {
-    const fallback = { css: FEATURE_DEFAULT_COLOR, fromBed: false }
+    const fallback = { css: featureDefaultColor, fromBed: false }
     return (feature: Feature) => {
       const bedColor = featureBedColor(feature)
       return bedColor === undefined
@@ -229,7 +228,6 @@ export function packMultiRowFeatures({
     resolvedPartitionField,
     jexl,
   )
-  const abgrByCss = new Map<string, number>()
   let usedItemRgb = false
 
   for (let i = 0; i < n; i++) {
@@ -259,12 +257,7 @@ export function packMultiRowFeatures({
     }
     const { css, fromBed } = featureColor(feature)
     usedItemRgb ||= fromBed
-    let abgr = abgrByCss.get(css)
-    if (abgr === undefined) {
-      abgr = cssColorToABGR(css)
-      abgrByCss.set(css, abgr)
-    }
-    featureColors[i] = abgr
+    featureColors[i] = cssColorToABGR(css)
   }
 
   return {

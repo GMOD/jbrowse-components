@@ -1,8 +1,8 @@
+import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
-import { FEATURE_DEFAULT_COLOR } from '../RenderFeatureDataRPC/featureColors.ts'
 import {
   MAX_COUNTED_PARTITION_VALUES,
   MAX_PARTITION_VALUE_LENGTH,
@@ -100,7 +100,7 @@ test('no itemRgb on the features leaves the per-row palette in charge', () => {
     jexl: createJexlInstance(),
   })
   expect(r.usedItemRgb).toBe(false)
-  expect([...r.featureColors]).toEqual([cssColorToABGR(FEATURE_DEFAULT_COLOR)])
+  expect([...r.featureColors]).toEqual([cssColorToABGR(featureDefaultColor)])
 })
 
 test('a placeholder itemRgb does not hijack the per-row palette', () => {
@@ -230,9 +230,9 @@ describe('makeFeatureColorResolver', () => {
   test('a jexl slot that yields no color degrades to the default', () => {
     const colors = resolve('jexl:feature.missing.deeper')
     expect(colors.map(c => c.css)).toEqual([
-      FEATURE_DEFAULT_COLOR,
-      FEATURE_DEFAULT_COLOR,
-      FEATURE_DEFAULT_COLOR,
+      featureDefaultColor,
+      featureDefaultColor,
+      featureDefaultColor,
     ])
   })
 

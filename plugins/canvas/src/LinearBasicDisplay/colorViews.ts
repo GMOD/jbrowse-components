@@ -1,4 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import {
@@ -9,11 +10,6 @@ import {
   colorScaleChoicesOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { colorNotices } from '@jbrowse/display-kit/colorScale'
-
-import {
-  FEATURE_DEFAULT_COLOR,
-  UTR_DEFAULT_COLOR,
-} from '../RenderFeatureDataRPC/featureColors.ts'
 
 import type { LinearCanvasBaseDisplayConfigModel } from './baseConfigSchema.ts'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
@@ -49,7 +45,7 @@ export function colorViews(self: ColorHost) {
     // throws, and a jexl string is no CSS color anyway.
     get featureColor() {
       const raw = self.conf.color.value
-      return raw !== undefined && !isJexl(raw) ? raw : FEATURE_DEFAULT_COLOR
+      return raw !== undefined && !isJexl(raw) ? raw : featureDefaultColor
     },
 
     /**
@@ -59,7 +55,7 @@ export function colorViews(self: ColorHost) {
     // undefined; raw read for the same reason as `featureColor`.
     get utrColor(): string {
       const raw = self.conf.utrColor
-      return raw !== undefined && !isJexl(raw) ? raw : UTR_DEFAULT_COLOR
+      return raw !== undefined && !isJexl(raw) ? raw : utrDefaultColor
     },
 
     /**

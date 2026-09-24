@@ -1,3 +1,4 @@
+import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { getFrame } from '@jbrowse/core/util'
 import {
   cssColorToABGR as colorToUint32,
@@ -5,7 +6,6 @@ import {
 } from '@jbrowse/core/util/colorBits'
 
 import { LITERAL, STROKE, cdsFrameClass } from '../colorClasses.ts'
-import { FEATURE_DEFAULT_COLOR, UTR_DEFAULT_COLOR } from '../featureColors.ts'
 import { getFeatureName } from '../labelUtils.ts'
 import { readConfigValueSafe } from '../renderConfig.ts'
 import { isCDS, isUTR } from '../util.ts'
@@ -102,8 +102,8 @@ function inheritedBedColor(feature: Feature) {
 }
 
 const BOX_COLOR_SLOTS = {
-  color: FEATURE_DEFAULT_COLOR,
-  utrColor: UTR_DEFAULT_COLOR,
+  color: featureDefaultColor,
+  utrColor: utrDefaultColor,
 } as const
 
 /**

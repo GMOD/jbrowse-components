@@ -1,4 +1,5 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import { mergeIntervals } from '@jbrowse/core/util'
 import { translExceptProteinPositions } from '@jbrowse/core/util/convertCodingSequenceToPeptides'
 import {
   transcriptCDS,
@@ -35,15 +36,7 @@ interface BpRange {
 }
 
 function mergeSequenceRanges(ranges: BpRange[]) {
-  const merged: BpRange[] = []
-  for (const range of [...ranges].sort((a, b) => a.start - b.start)) {
-    const last = merged.at(-1)
-    if (last && range.start - last.end < MERGE_GAP_BP) {
-      last.end = Math.max(last.end, range.end)
-    } else {
-      merged.push({ start: range.start, end: range.end })
-    }
-  }
+  const merged = mergeIntervals(ranges, MERGE_GAP_BP / 2)
   const gapBefore = (i: number) => merged[i]!.start - merged[i - 1]!.end
   while (merged.length > MAX_SEQUENCE_RANGES) {
     let smallest = 1
