@@ -243,21 +243,21 @@ close it.
 ### One straddle whose symptom is a wrong palette, not a missed match
 
 Worth calling out separately because it does not look like the others. Chromosome
-painting takes `nameOrder` — `paintedChromosomeOrder`, which is
-`assemblyManager.get(name)?.refNames`, so **canonical** — and looks each feature's
-refName up in it (`orderOf.get(name)` in `syntenyColors.nameColorFunction`).
-Adapter-space against canonical, one operand from each side.
+painting looked each feature's refName up in the assembly's **canonical** refName
+list. Adapter-space against canonical, one operand from each side.
 
 On an aliased file every lookup misses and the function falls through to its hash
-fallback, which is the collision-prone palette `nameOrder` was added to replace:
+fallback, which is the collision-prone palette the order was added to replace:
 nine slots for twelve chromosomes, "some unexpected color re-use" as a figure
 review put it. So the failure is not nothing-happens, it is a figure that is
 quietly painted with the palette that was rejected — and the fallback is a
 legitimate state for other reasons (an assembly still loading), so nothing about
 it reads as wrong.
 
-Fixed, for free, by the dictionary rename — the lookup's operand is now
-canonical like `nameOrder`. Kept here because it is the shape to recognize
+Fixed for synteny, for free, by the dictionary rename. The lookup is now
+`Assembly.getRefNamePosition`, which canonicalizes its argument itself, so the
+dotplot — whose dictionary stays adapter-space — lands too. Kept here because it
+is the shape to recognize
 rather than the bug: a straddle whose failure mode is a *legitimate state*
 reached wrongly survives an audit, and this one survived several.
 
@@ -291,7 +291,7 @@ Channel 1, `refNameDict` / `mateRefNameDict` reached through `getFeatureAtIndex`
 | `followWindowMapping.ts` | `window.refName`, and the mate assembly | **straddle** | as above |
 | `planFollowStep.ts` `windowInsideFeat` | `window.refName` | **straddle** | as above |
 | `interpolateFollowSpan.ts` | — it EMITS one | **straddle producer** | hands an adapter name to the channel-2 consumers with no RPC in between |
-| `syntenyColors.nameColorFunction` | `nameOrder`, canonical | **straddle** | the chromosome palette degrades to the hash — see above |
+| `makeNameColorFunction` | the assembly's order, canonical | **straddle** | the chromosome palette degrades to the hash — see above |
 
 Channel 2, `ResolvedSpan.refName`:
 
@@ -422,10 +422,10 @@ it is for, and it means it will never report this.
 
 Audited by enumerating the readers, since it is the same payload shape and was
 listed as unexamined. It has **one** main-thread reader of its adapter-space
-`refNameDict` / `mateRefNameDict`: `dotplotColors.nameColorFn`, which hashes the
-name to a color and takes no `nameOrder`, so there is nothing canonical for it to
-disagree with. Cosmetically the color a contig gets depends on the file's spelling
-of its name; nothing is compared, nothing is missed.
+`refNameDict` / `mateRefNameDict`: `computeDotplotColors`, which paints by
+`paintedRefNamePosition`. That is `Assembly.getRefNamePosition`, which
+canonicalizes the file's spelling before its lookup, so nothing is missed. The
+tooltip reads its names off the axis regions, not the dictionary.
 
 Everything else on that path is adapter-space on both sides on purpose:
 
