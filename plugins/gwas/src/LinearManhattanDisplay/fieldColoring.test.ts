@@ -348,19 +348,19 @@ describe('LinearManhattanDisplay field coloring', () => {
     ).toThrow('ManhattanColor takes value, field, scale, domain and range')
   })
 
-  it('offers the three schemes as one radio submenu, LD greyed without an adapter', () => {
+  it('offers the three schemes as one radio submenu, LD absent without an adapter', () => {
     const { display } = createTestEnvironment({
       ldAdapter: false,
     }).createDisplay()
     const items = display.trackMenuItems()
     expect(labels(items)).toEqual(
-      expect.arrayContaining(['Color by', 'Single color', 'Field...']),
+      expect.arrayContaining(['Color by...', 'Single color', 'Field...']),
     )
-    const colorBy = items.find(i => 'label' in i && i.label === 'Color by')!
+    const colorBy = items.find(i => 'label' in i && i.label === 'Color by...')!
     const ld = ('subMenu' in colorBy ? resolveSubMenu(colorBy) : []).find(
       i => 'label' in i && i.label === 'LD to index SNP',
     )
-    expect(ld && 'disabled' in ld ? ld.disabled : undefined).toBe(true)
+    expect(ld).toBeUndefined()
 
     display.colorByField('population')
     expect(labels(display.trackMenuItems())).toContain('Field (population)...')

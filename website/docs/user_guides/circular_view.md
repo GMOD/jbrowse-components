@@ -93,7 +93,7 @@ come out as a band of parallel arcs. It is the same pass the linear synteny view
 and the dotplot run, over the same alignment file, and it is offered on a
 two-genome circle carrying a synteny track and nowhere else.
 
-The ribbons are one flat translucent fill by default. **Color by** in the
+The ribbons are one flat translucent fill by default. **Color by...** in the
 track's menu paints each ribbon the color of the first genome's chromosome it
 joins, matching that arc of the ideogram, or by strand. `color` on the display
 is a `jexl:` expression over the feature, so a score or an identity can drive

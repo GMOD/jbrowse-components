@@ -261,7 +261,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       trackMenuItems(): MenuItem[] {
         return [
           {
-            label: 'Color by',
+            label: 'Color by...',
             type: 'subMenu',
             subMenu: CHORD_COLOR_BY.map(({ value, label }) => ({
               label,

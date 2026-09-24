@@ -681,7 +681,7 @@ export function stateModelFactory(
               ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
             ]),
             {
-              label: 'Color by',
+              label: 'Color by...',
               icon: PaletteIcon,
               subMenu: [
                 {
@@ -706,17 +706,18 @@ export function stateModelFactory(
                     ])
                   },
                 },
-                {
-                  label: 'LD to index SNP',
-                  type: 'radio' as const,
-                  checked: isLdColoring(self.color),
-                  disabled: !self.hasLdData,
-                  disabledHelpText:
-                    'Requires a configured LD (PLINK .ld) adapter',
-                  onClick: () => {
-                    self.colorByLd()
-                  },
-                },
+                ...(self.hasLdData
+                  ? [
+                      {
+                        label: 'LD to index SNP',
+                        type: 'radio' as const,
+                        checked: isLdColoring(self.color),
+                        onClick: () => {
+                          self.colorByLd()
+                        },
+                      },
+                    ]
+                  : []),
               ],
             },
             {

@@ -409,13 +409,13 @@ function hasChannelMenus(displayType: string | undefined) {
   return displayType !== undefined && CHANNEL_MENU_DISPLAYS.has(displayType)
 }
 
-// The Manhattan display's `color` object: its Color by submenu picks the
+// The Manhattan display's `color` object: its Color by... submenu picks the
 // scale, and a field is typed into the Field... dialog. The order and colors
 // the values take have no menu row, and a field under `none` waits unread.
 function manhattanColorStep(
   scale: Record<string, unknown>,
 ): FieldStep | undefined {
-  const colorBy = `${TRACK_MENU} → Color by`
+  const colorBy = `${TRACK_MENU} → Color by...`
   const field = scale.scale === 'none' ? undefined : asString(scale.field)
   if (field === 'ld') {
     return {
