@@ -543,7 +543,7 @@ test('a density source on a span, or on a second mark, waits unread', () => {
 })
 
 test('rows beside a facet is named as not drawn yet, and the facet draws', () => {
-  const BAR = { shape: 'bar', encoding: { y: 'score' } }
+  const BAR = { mark: 'bar', encoding: { y: 'score' } }
   expect(found([BAR], undefined, undefined, 'source')).toEqual([])
   expect(
     problemsOf([BAR], 'tissue', undefined, 'source').map(problemText),
@@ -553,10 +553,10 @@ test('rows beside a facet is named as not drawn yet, and the facet draws', () =>
 })
 
 test("a pileup under rows is told its packed rows share their value's row", () => {
-  const BAR = { shape: 'bar', encoding: { y: 'score' } }
+  const BAR = { mark: 'bar', encoding: { y: 'score' } }
   expect(
     found(
-      [BAR, PILEUP, { shape: 'span', encoding: { row: 'lane' } }],
+      [BAR, PILEUP, { mark: 'span', encoding: { row: 'lane' } }],
       { transform: [{ type: 'pileup' }] },
       [{ type: 'pileup' }],
       'source',
