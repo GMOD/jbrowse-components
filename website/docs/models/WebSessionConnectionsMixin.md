@@ -20,9 +20,9 @@ Members a composed model contributes are listed here too, so these tables are th
 ## Getters
 
 <!-- prettier-ignore -->
-| Member | Description | Defined by |
-| --- | --- | --- |
-| <span id="getter-connections">**connections**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;...&gt;)…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;...&gt;)[]</code></pre></dialog></span> |  | [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin#getter-connections) |
+| Member | Description |
+| --- | --- |
+| <span id="getter-connections">**connections**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;...&gt;)…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;...&gt;)[]</code></pre></dialog></span> | list of config connections and session connections |
 
 ## Actions
 
