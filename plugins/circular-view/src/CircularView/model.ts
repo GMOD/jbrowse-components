@@ -6,6 +6,7 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import {
   clamp,
+  coarseStripHTML,
   getDialogHost,
   getSession,
   isSessionModelWithWidgets,
@@ -1353,7 +1354,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           label: 'Tracks',
           type: 'subMenu',
           subMenu: self.tracks.map(track => ({
-            label: getTrackName(track.configuration, session),
+            label: coarseStripHTML(getTrackName(track.configuration, session)),
             type: 'subMenu' as const,
             subMenu: [
               ...(session.getTrackActionMenuItems?.({

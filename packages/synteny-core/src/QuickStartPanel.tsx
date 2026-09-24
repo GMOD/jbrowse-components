@@ -1,6 +1,6 @@
 import { useId } from 'react'
 
-import { getSession } from '@jbrowse/core/util'
+import { coarseStripHTML, getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
@@ -91,7 +91,7 @@ const QuickStartPanel = observer(function QuickStartPanel({
         >
           {tracks.map(track => (
             <MenuItem key={track.trackId} value={track.trackId}>
-              {getTrackName(track, session)}
+              {coarseStripHTML(getTrackName(track, session))}
             </MenuItem>
           ))}
         </Select>

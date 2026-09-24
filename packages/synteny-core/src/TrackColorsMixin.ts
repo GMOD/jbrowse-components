@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
+import { coarseStripHTML } from '@jbrowse/core/util'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
@@ -301,7 +302,7 @@ export function TrackColorsMixin() {
       get colorableTracks(): ColorableTrack[] {
         return self.colorableTrackConfigs().map(({ trackId, name }) => ({
           trackId,
-          name,
+          name: coarseStripHTML(name),
           color: self.trackColors.get(trackId),
         }))
       },

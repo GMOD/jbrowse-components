@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { SanitizedHTML } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import {
   Button,
@@ -76,7 +77,9 @@ const SearchResultsTable = observer(function SearchResultsTable({
                 {formatLocation(result.getLocation())}
               </TableCell>
               <TableCell align="right">
-                {getTrackName(result.getTrackId()) || 'N/A'}
+                <SanitizedHTML
+                  html={getTrackName(result.getTrackId()) || 'N/A'}
+                />
               </TableCell>
               <TableCell align="right">
                 <Button

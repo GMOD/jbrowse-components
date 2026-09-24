@@ -1,4 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { coarseStripHTML } from '@jbrowse/core/util'
 
 import type { ComparativeWarning } from './ComparativeFetchMixin.ts'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
@@ -66,7 +67,7 @@ export function collectTrackWarnings(
     display.warnings.length > 0
       ? [
           {
-            name: getConf(display.parentTrack, 'name'),
+            name: coarseStripHTML(getConf(display.parentTrack, 'name')),
             warnings: display.warnings,
           },
         ]

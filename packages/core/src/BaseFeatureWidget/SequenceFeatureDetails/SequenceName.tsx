@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react'
 
-import { toLocale } from '../../util/index.ts'
+import { coarseStripHTML, toLocale } from '../../util/index.ts'
 import { getStrandStr } from '../util.tsx'
 import { modeHasUpDownstream, modeSupportsRevcomp } from './featureTypeUtil.ts'
 
@@ -25,7 +25,7 @@ const SequenceName = observer(function SequenceName({
     <div>
       {`>${[
         [
-          feature.name || feature.id,
+          coarseStripHTML(`${feature.name || feature.id || ''}`),
           mode,
           revcomp && modeSupportsRevcomp(mode) ? 'revcomp' : '',
         ]

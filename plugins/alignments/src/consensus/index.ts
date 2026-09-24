@@ -6,7 +6,11 @@ import {
   addViewMenuItems,
 } from '@jbrowse/core/pluggableElementTypes'
 import { LAUNCH_LABEL, launchTargetsMenuItem } from '@jbrowse/core/ui'
-import { getContainingTrack, getDialogHost } from '@jbrowse/core/util'
+import {
+  coarseStripHTML,
+  getContainingTrack,
+  getDialogHost,
+} from '@jbrowse/core/util'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import NotesIcon from '@mui/icons-material/Notes'
 
@@ -49,7 +53,10 @@ function alignmentsDisplays(tracks: TrackLike[]) {
   for (const track of tracks) {
     for (const display of track.displays) {
       if (display.type === 'LinearAlignmentsDisplay') {
-        out.push({ name: `${getConf(track, 'name')}`, display })
+        out.push({
+          name: coarseStripHTML(`${getConf(track, 'name')}`),
+          display,
+        })
       }
     }
   }

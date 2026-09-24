@@ -1,5 +1,6 @@
 import { FormControl, MenuItem, Select } from '@mui/material'
 
+import { coarseStripHTML } from '../../../util/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 
 import type { SimpleFeatureSerialized } from '../../../util/index.ts'
@@ -44,7 +45,8 @@ export default function TranscriptSelector({
             {/* a subfeature carries no guaranteed name or id, and neither a
                 blank row nor a literal "undefined" names a transcript the user
                 is being asked to choose between */}
-            {transcript.name || transcript.id || `Transcript ${idx + 1}`}
+            {coarseStripHTML(`${transcript.name || transcript.id || ''}`) ||
+              `Transcript ${idx + 1}`}
           </MenuItem>
         ))}
       </Select>

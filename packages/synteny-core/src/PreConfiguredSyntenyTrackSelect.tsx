@@ -1,6 +1,6 @@
 import { useId } from 'react'
 
-import { getSession } from '@jbrowse/core/util'
+import { coarseStripHTML, getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { FormControl, InputLabel, MenuItem, Paper, Select } from '@mui/material'
@@ -74,7 +74,7 @@ const PreConfiguredSyntenyTrackSelect = observer(
               >
                 {tracks.map(track => (
                   <MenuItem key={track.trackId} value={track.trackId}>
-                    {getTrackName(track, session)}
+                    {coarseStripHTML(getTrackName(track, session))}
                   </MenuItem>
                 ))}
               </Select>

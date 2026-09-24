@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
+import { coarseStripHTML } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { getSyntenyTracks } from '@jbrowse/synteny-core'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
@@ -76,7 +77,7 @@ function launchableTracks(
     session.assemblyManager,
   ).map(conf => ({
     trackId: readConfObject(conf, 'trackId') as string,
-    name: getTrackName(conf, session),
+    name: coarseStripHTML(getTrackName(conf, session)),
     conf,
   }))
 }

@@ -1,4 +1,4 @@
-import { getSession } from '@jbrowse/core/util'
+import { coarseStripHTML, getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -44,7 +44,10 @@ export function circularLegendSpec(view: CircularLegendHost): LegendSpec {
   const items = view.tracks.flatMap(track => {
     const display = track.displays[0]
     return display
-      ? itemsFor(display, getTrackName(track.configuration, session))
+      ? itemsFor(
+          display,
+          coarseStripHTML(getTrackName(track.configuration, session)),
+        )
       : []
   })
   return { sections: items.length ? [{ id: 'tracks', items }] : [] }

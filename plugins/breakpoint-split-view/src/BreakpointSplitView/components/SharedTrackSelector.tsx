@@ -1,3 +1,4 @@
+import { coarseStripHTML } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -30,7 +31,7 @@ const SharedTrackSelector = observer(function SharedTrackSelector({
       <MenuItem value="">(none)</MenuItem>
       {tracks.map(track => (
         <MenuItem key={track.trackId} value={track.trackId}>
-          {getTrackName(track, session)}
+          {coarseStripHTML(getTrackName(track, session))}
         </MenuItem>
       ))}
     </TextField>

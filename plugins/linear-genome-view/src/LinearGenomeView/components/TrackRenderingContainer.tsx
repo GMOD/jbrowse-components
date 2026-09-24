@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 
 import { LoadingOverlay } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { coarseStripHTML, getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -87,7 +87,9 @@ const TrackDisplayRegion = observer(function TrackDisplayRegion({
   track: BaseTrackModel
   children: React.ReactNode
 } & React.ComponentPropsWithRef<'div'>) {
-  const trackName = getTrackName(track.configuration, getSession(track))
+  const trackName = coarseStripHTML(
+    getTrackName(track.configuration, getSession(track)),
+  )
   const loc = model.coarseVisibleLocStrings
   return (
     <div
