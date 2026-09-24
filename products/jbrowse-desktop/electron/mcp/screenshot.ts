@@ -343,24 +343,16 @@ export function createScreenshotTool({
     }
     // An occluded window composites nothing new, and capturePage then answers
     // with whatever frame it last had: three captures across two navigations
-    // came back byte-identical, each under a settled: true. Throttling off for
-    // the capture lets the hidden page paint the settled DOM, and the renderer
-    // says when a frame has actually been produced.
+    // came back byte-identical, each under a settled: true. The bridge keeps
+    // throttling off while a client is connected, which lets the hidden page
+    // paint the settled DOM, and the renderer says when a frame was produced.
     const contents = win.webContents
-    const throttled = contents.getBackgroundThrottling()
-    contents.setBackgroundThrottling(false)
-    let painted
-    let captured: CapturedImage | { error: string }
-    try {
-      painted = await relay('paint', {}, PAINT_WAIT_MS)
-      captured = fullPage
-        ? await takeTurn(() =>
-            captureFullPage(contents, args, scale, relay, overflowOf(settled)),
-          )
-        : await captureViewport(contents, crop.rect, width, scale)
-    } finally {
-      contents.setBackgroundThrottling(throttled)
-    }
+    const painted = await relay('paint', {}, PAINT_WAIT_MS)
+    const captured = fullPage
+      ? await takeTurn(() =>
+          captureFullPage(contents, args, scale, relay, overflowOf(settled)),
+        )
+      : await captureViewport(contents, crop.rect, width, scale)
     if ('error' in captured) {
       return captured
     }

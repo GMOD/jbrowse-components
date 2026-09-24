@@ -147,9 +147,9 @@ export function startMcpBridge({
   // window is in front, so throttling is off for as long as a client is
   // connected. This is the timer half only: a window another window fully
   // covers stops rendering altogether, and that is the
-  // disable-backgrounding-occluded-windows switch in electron.ts. The
-  // screenshot path below still toggles throttling around a capture for a
-  // client that connected before a window existed.
+  // disable-backgrounding-occluded-windows switch in electron.ts. A window
+  // created after the client connected gets it from watchWindow, on the relay
+  // every tool call starts with.
   let connectedClients = 0
   function applyThrottling() {
     getWindow()?.webContents.setBackgroundThrottling(connectedClients === 0)
