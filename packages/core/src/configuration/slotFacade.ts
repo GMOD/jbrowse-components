@@ -1,4 +1,5 @@
 import {
+  asModelType,
   getSnapshot,
   getType,
   isArrayType,
@@ -8,7 +9,7 @@ import {
 
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 import { getEnv } from '../util/mstUtils.ts'
-import ConfigSlot, { slotWriteRefusal } from './configurationSlot.ts'
+import { slotWriteRefusal } from './configurationSlot.ts'
 import {
   getConfigurationSchemaDefinition,
   getConfigurationSchemaMetadata,
@@ -157,11 +158,14 @@ export function slotValueRefusal(
   const subSchema: IAnyType | undefined = isConfigurationSchemaType(entry)
     ? entry
     : undefined
+  // the slot's own property type, built once with the schema: what `setSlot`
+  // checks a write against
+  const slotType = asModelType(schema)?.properties[key]
   try {
     const lifted = preProcessSnapshotWith(meta, { [key]: value })[key]
     if (subSchema) {
       subSchema.create(lifted)
-    } else if (isSlotDefinitionEntry(entry) && !ConfigSlot(entry).is(lifted)) {
+    } else if (isSlotDefinitionEntry(entry) && !slotType?.is(lifted)) {
       return slotWriteRefusal(`${meta.name}.${key}`, entry.type, value)
     }
     return undefined

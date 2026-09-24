@@ -13,9 +13,11 @@ import {
 } from './configurationSchema.ts'
 import {
   getConf,
+  getConfigurationSchemaMetadata,
   getConfigurationSchemaOptions,
   preProcessConfigSnapshot,
   readConfObject,
+  requirementProblems,
 } from './index.ts'
 import { isConfigurationModel } from './schemaTypes.ts'
 import { getSlotDefinition } from './slotFacade.ts'
@@ -1808,6 +1810,40 @@ describe('a declared requirement', () => {
         },
       ),
     ).not.toThrow()
+  })
+
+  test("composes with the base's, base first", () => {
+    const Base = ConfigurationSchema('RequiresBase', definition, {
+      requires: [
+        {
+          when: { shape: ['bar'] },
+          slots: ['encoding.y'],
+          message: 'm',
+          id: 'base',
+        },
+      ],
+    })
+    const Child = ConfigurationSchema(
+      'RequiresChild',
+      { origin: { type: 'number', defaultValue: 0 } },
+      {
+        baseConfiguration: Base,
+        requires: [
+          {
+            when: { shape: ['bar'] },
+            slots: ['encoding.color'],
+            message: 'm',
+            id: 'child',
+          },
+        ],
+      },
+    )
+    expect(
+      getConfigurationSchemaMetadata(Child)?.options.requires?.map(r => r.id),
+    ).toEqual(['base', 'child'])
+    expect(requirementProblems(Child, { shape: 'bar' }).map(p => p.id)).toEqual(
+      ['base', 'child'],
+    )
   })
 
   test('throws for a when key that names no slot', () => {

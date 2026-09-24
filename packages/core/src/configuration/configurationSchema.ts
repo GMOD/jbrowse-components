@@ -225,13 +225,19 @@ function preprocessConfigurationSchemaArguments(
       schemaDefinition,
     )
     // Everything else merges as a shallow `{...base, ...child}` spread, where
-    // the child's value replaces the base's. The four hooks below must not:
-    // `createBaseTrackConfig` alone declares two of them, so replace-semantics
-    // meant no track config schema could ever declare its own without silently
-    // dropping display-stub injection and the legacy-key migration. They
-    // compose instead, base first. See MergedConfigurationSchemaOptions.
+    // the child's value replaces the base's. The four hooks and `requires`
+    // must not: `createBaseTrackConfig` alone declares two of the hooks, so
+    // replace-semantics meant no track config schema could ever declare its
+    // own without silently dropping display-stub injection and the legacy-key
+    // migration, and a subclass stating one requirement would have dropped
+    // every one its base stated. They compose instead, base first. See
+    // MergedConfigurationSchemaOptions.
     const basePreProcess = baseMeta.options.preProcessSnapshot
     const childPreProcess = inputOptions.preProcessSnapshot
+    const requires = [
+      ...(baseMeta.options.requires ?? []),
+      ...(inputOptions.requires ?? []),
+    ]
     options = {
       ...baseMeta.options,
       ...inputOptions,
@@ -243,6 +249,7 @@ function preprocessConfigurationSchemaArguments(
         basePreProcess && childPreProcess
           ? snapshot => childPreProcess(basePreProcess(snapshot))
           : (childPreProcess ?? basePreProcess),
+      requires: requires.length ? requires : undefined,
     }
   }
   return { schemaDefinition, options }
