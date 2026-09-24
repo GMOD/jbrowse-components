@@ -2,7 +2,7 @@ import fs from 'node:fs'
 
 import { ENCODING } from './paths.ts'
 
-const { open, unlink, rename } = fs.promises
+const { open, unlink } = fs.promises
 
 // Every JSON file the app owns is rewritten whole — session files and
 // recent_sessions.json once a second for as long as a session is open,
@@ -17,6 +17,32 @@ const { open, unlink, rename } = fs.promises
 // has to cross a filesystem, and its name carries the pid and a counter so two
 // writers (two saves of the same session racing) can't share one.
 let tmpFileCounter = 0
+
+// Windows refuses to rename over a file another process holds open — antivirus
+// or the search indexer reading what was just written — for as long as it holds
+// it, which is well under a second. Elsewhere these codes mean a permission
+// problem that no retry fixes.
+const RENAME_RETRY_CODES = new Set(['EPERM', 'EACCES', 'EBUSY'])
+const RENAME_RETRIES = 8
+
+async function renameRetrying(from: string, to: string) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await fs.promises.rename(from, to)
+      return
+    } catch (e) {
+      const code = (e as NodeJS.ErrnoException).code
+      if (
+        process.platform !== 'win32' ||
+        attempt >= RENAME_RETRIES ||
+        !RENAME_RETRY_CODES.has(code ?? '')
+      ) {
+        throw e
+      }
+      await new Promise(resolve => setTimeout(resolve, 25 * 2 ** attempt))
+    }
+  }
+}
 
 // The rename makes the swap atomic against a *reader*, which is a different
 // guarantee from surviving a crash: the temp file's bytes may still be in the
@@ -34,7 +60,7 @@ export async function writeFileAtomic(filePath: string, data: string) {
     } finally {
       await handle.close()
     }
-    await rename(tmpPath, filePath)
+    await renameRetrying(tmpPath, filePath)
   } catch (e) {
     // the write failed or never landed; don't leave the fragment next to the
     // file it was going to replace
