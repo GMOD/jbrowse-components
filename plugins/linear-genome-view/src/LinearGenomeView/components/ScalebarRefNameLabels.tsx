@@ -15,6 +15,7 @@ import {
   withRegionRemoved,
   withRegionReversed,
 } from '../util.ts'
+import { scalebarRefLabelProps } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { ScalebarRefNameLabel } from '../util.ts'
@@ -109,10 +110,8 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   )
 })
 
-// One refName label. Not an observer: `label` is already plain data computed by
-// the parent, and `model` is only used to fire actions. mouseDown flags the
-// click as starting on a label so the scalebar's rubberband hands the click to
-// this label's own onClick instead of opening the range menu.
+// Not an observer: `label` is plain data from the parent. The attribute tells
+// the scalebar's rubberband to leave a click here to this label's onClick.
 function RefLabel({
   model,
   label,
@@ -133,11 +132,8 @@ function RefLabel({
         maxWidth,
       }}
       data-testid={`refLabel-${refName}`}
-      onMouseDown={() => {
-        model.setScalebarRefNameClickPending(true)
-      }}
+      {...scalebarRefLabelProps}
       onClick={e => {
-        model.setScalebarRefNameClickPending(false)
         model.setIsScalebarRefNameMenuOpen(true)
         onOpenMenu({ anchorEl: e.currentTarget, label })
       }}

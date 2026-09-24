@@ -739,17 +739,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           },
           name: 'BreakpointSplitViewClearHoverOnOverlayMove',
         })
-        installLinkedViewSync(self, [
-          'horizontalScroll',
-          'zoomTo',
-          'showTrack',
-          'toggleTrack',
-          'launchTrack',
-          'launchToggleTrack',
-          'hideTrack',
-          'setTrackLabels',
-          'setShowCenterLine',
-        ])
+        installLinkedViewSync(self)
         addDisposer(
           self,
           autorun(

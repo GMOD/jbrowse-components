@@ -626,10 +626,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         isScalebarRefNameMenuOpen: false,
         /**
          * #volatile
-         */
-        scalebarRefNameClickPending: false,
-        /**
-         * #volatile
          * temporary vertical guides that can be set by displays (e.g., LD display hover)
          */
         volatileGuides: [] as VolatileGuide[],
@@ -1428,12 +1424,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setIsScalebarRefNameMenuOpen(isOpen: boolean) {
         self.isScalebarRefNameMenuOpen = isOpen
-      },
-      /**
-       * #action
-       */
-      setScalebarRefNameClickPending(pending: boolean) {
-        self.scalebarRefNameClickPending = pending
       },
       /**
        * #action
@@ -2937,16 +2927,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * this "clears the view" and makes the view return to the import form
        */
       clearView() {
+        for (const closeUp of [...self.closeUpViews]) {
+          self.removeCloseUp(closeUp)
+        }
         self.setDisplayedRegions([])
         self.tracks.clear()
-        // it is necessary to run these after setting displayed regions empty
-        // or else model.offsetPx gets set to Infinity and breaks
-        // @jbrowse/mobx-state-tree snapshot
-        self.scrollTo(0)
-        self.zoomTo(10)
-        // after them, not through setDisplayedRegions, whose own settle ran at
-        // the intermediate viewport these two lines exist to leave
-        self.settleCoarseBlocks()
       },
 
       /**

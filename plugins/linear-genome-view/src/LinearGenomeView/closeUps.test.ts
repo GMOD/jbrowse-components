@@ -164,6 +164,14 @@ test('removing a close-up leaves the rest in place', () => {
   expect(closeUps(view)).toEqual([closer])
 })
 
+test('returning to the import form takes the close-ups with the tracks', () => {
+  const { view } = setup()
+  view.addCloseUp()
+  view.clearView()
+  expect(closeUps(view)).toEqual([])
+  expect(view.showImportForm).toBe(true)
+})
+
 test('an arrow-key slide on a close-up moves the host by a fraction of the close-up', () => {
   const { view } = setup()
   view.addCloseUp()

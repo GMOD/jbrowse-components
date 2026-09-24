@@ -1,62 +1,24 @@
-import { addDisposer, addMiddleware, getPath } from '@jbrowse/mobx-state-tree'
+import { addDisposer, addMiddleware } from '@jbrowse/mobx-state-tree'
 
 import type { LinearGenomeViewModel } from './model.ts'
-import type { IStateTreeNode, IMiddlewareEvent } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-/**
- * The single source of truth for which LinearGenomeView actions can be
- * replayed across linked views. Keeping it here (rather than as loose string
- * arrays in each parent view) means the dispatch below stays exhaustive and a
- * typo can't silently produce a no-op sync.
- */
-export type SyncableViewAction =
-  | 'horizontalScroll'
-  | 'zoomTo'
-  | 'showTrack'
-  | 'toggleTrack'
-  // the loading twins of the two above: every runtime path a user can drive
-  // now calls these, so a list that named only the sync pair silently stopped
-  // syncing track toggles across linked views
-  | 'launchTrack'
-  | 'launchToggleTrack'
-  | 'hideTrack'
-  | 'setTrackLabels'
-  | 'setShowCenterLine'
+const LINKED_ACTIONS = [
+  'horizontalScroll',
+  'zoomTo',
+  'showTrack',
+  'toggleTrack',
+  'launchTrack',
+  'launchToggleTrack',
+  'hideTrack',
+  'setTrackLabels',
+  'setShowCenterLine',
+] as const satisfies readonly (keyof LinearGenomeViewModel)[]
 
-function applyViewAction(
-  view: LinearGenomeViewModel,
-  name: SyncableViewAction,
-  args: IMiddlewareEvent['args'],
-) {
-  switch (name) {
-    case 'horizontalScroll':
-      view.horizontalScroll(args[0])
-      break
-    case 'zoomTo':
-      view.zoomTo(args[0])
-      break
-    case 'showTrack':
-      view.showTrack(args[0])
-      break
-    case 'toggleTrack':
-      view.toggleTrack(args[0])
-      break
-    case 'launchTrack':
-      void view.launchTrack(args[0])
-      break
-    case 'launchToggleTrack':
-      void view.launchToggleTrack(args[0])
-      break
-    case 'hideTrack':
-      view.hideTrack(args[0])
-      break
-    case 'setTrackLabels':
-      view.setTrackLabels(args[0])
-      break
-    case 'setShowCenterLine':
-      view.setShowCenterLine(args[0])
-      break
-  }
+type LinkedAction = (typeof LINKED_ACTIONS)[number]
+
+function isLinkedAction(name: string): name is LinkedAction {
+  return (LINKED_ACTIONS as readonly string[]).includes(name)
 }
 
 interface LinkableViews {
@@ -65,33 +27,27 @@ interface LinkableViews {
 }
 
 /**
- * Install a middleware that, while `linkViews` is on, replays each listed
- * action onto every other sub-view so panning/zooming/track-toggling stays in
- * sync. Used by linear-comparative-view and breakpoint-split-view.
+ * While `linkViews` is on, replay each pan, zoom and track toggle made on one
+ * sub-view onto every other, with the same arguments.
  */
-export function installLinkedViewSync(
-  self: IStateTreeNode & LinkableViews,
-  syncActions: readonly SyncableViewAction[],
-) {
+export function installLinkedViewSync(self: IStateTreeNode & LinkableViews) {
   addDisposer(
     self,
-    addMiddleware(self, (rawCall, next) => {
-      const handler =
-        rawCall.type === 'action' &&
-        rawCall.id === rawCall.rootId &&
-        self.linkViews
-          ? syncActions.find(action => action === rawCall.name)
-          : undefined
-      if (handler) {
-        const sourcePath = getPath(rawCall.context)
-        next(rawCall)
+    addMiddleware(self, (call, next) => {
+      next(call)
+      const { name, args, context } = call
+      if (
+        call.type === 'action' &&
+        call.id === call.rootId &&
+        self.linkViews &&
+        isLinkedAction(name)
+      ) {
         for (const view of self.views) {
-          if (getPath(view) !== sourcePath) {
-            applyViewAction(view, handler, rawCall.args)
+          if (view !== context) {
+            const action = view[name] as (...a: unknown[]) => unknown
+            void action(...args)
           }
         }
-      } else {
-        next(rawCall)
       }
     }),
   )

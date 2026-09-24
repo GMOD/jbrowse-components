@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
 
+import { isOnScalebarRefLabel } from './util.ts'
+
 import type { LinearGenomeViewModel } from '../index.ts'
 import type React from 'react'
 
@@ -21,6 +23,7 @@ export function useRangeSelect(
 ) {
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
+  const [startedOnRefLabel, setStartedOnRefLabel] = useState(false)
 
   // clientX and clientY used for anchorPosition for menu
   // offsetX used for calculations about width of selection
@@ -55,15 +58,6 @@ export function useRangeSelect(
       const { clientX, clientY } = event
       const offsetX = clientX - left
       const isClick = Math.abs(offsetX - startX) <= 3
-
-      // Clear the flag unconditionally once consumed: the label's own onClick
-      // also clears it, but that only fires if mouseup lands on the label, so
-      // relying on it alone can leave the flag stuck (swallowing the next
-      // scalebar click) when mouseup drifts a few px off the label edge.
-      const startedOnRefLabel = model.scalebarRefNameClickPending
-      if (startedOnRefLabel) {
-        model.setScalebarRefNameClickPending(false)
-      }
 
       // A click that began on a scalebar refname label is handled by that
       // label's onClick (opens its menu), not by the rubberband menu here.
@@ -104,7 +98,7 @@ export function useRangeSelect(
       window.removeEventListener('mouseup', globalMouseUp)
       window.removeEventListener('keydown', globalKeyDown)
     }
-  }, [startX, mouseDragging, model, ref])
+  }, [startX, startedOnRefLabel, mouseDragging, model, ref])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     if (shiftOnly && !event.shiftKey) {
@@ -122,6 +116,7 @@ export function useRangeSelect(
     // clear any leftover menu/selection so a fresh drag isn't blocked by a
     // stale anchorPosition keeping mouseDragging false
     setAnchorPosition(undefined)
+    setStartedOnRefLabel(isOnScalebarRefLabel(event.target))
     const relativeX = getRelativeX(event, ref.current)
     setStartX(relativeX)
     setCurrentX(relativeX)

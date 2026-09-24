@@ -75,10 +75,7 @@ export type {
   ViewTrackLabelMode,
   VolatileGuide,
 } from './types.ts'
-export {
-  type SyncableViewAction,
-  installLinkedViewSync,
-} from './linkedViewSync.ts'
+export { installLinkedViewSync } from './linkedViewSync.ts'
 export { default as HighlightBand } from './components/HighlightBand.tsx'
 export { default as HighlightChip } from './components/HighlightChip.tsx'
 export { default as OverviewHighlightBand } from './components/OverviewHighlightBand.tsx'

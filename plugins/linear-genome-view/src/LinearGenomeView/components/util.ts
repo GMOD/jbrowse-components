@@ -8,8 +8,14 @@ import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 // share the exact same color and React-key semantics
 export { getHighlightColor, highlightKey } from '@jbrowse/core/util/highlights'
 
-// Shared style for elided (collapsed) blocks — striped grey pattern used
-// consistently across OverviewScalebar, ScalebarCoordinateLabels, and Gridlines
+export const scalebarRefLabelProps = { 'data-scalebar-ref-label': '' }
+
+export function isOnScalebarRefLabel(target: EventTarget | null) {
+  return (
+    target instanceof Element && !!target.closest('[data-scalebar-ref-label]')
+  )
+}
+
 export const elidedBlockStyles = {
   backgroundColor: '#999',
   backgroundImage:

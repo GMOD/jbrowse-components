@@ -3,6 +3,7 @@ import { useRef } from 'react'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 
 import { useRangeSelect } from './useRangeSelect.ts'
+import { scalebarRefLabelProps } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 
@@ -23,25 +24,20 @@ function TestRubberband({ model }: { model: LinearGenomeViewModel }) {
       {/* expose internal hook state so assertions can observe it */}
       <span data-testid="guideX">{guideX ?? 'none'}</span>
       <span data-testid="menuOpen">{String(open)}</span>
+      <span data-testid="refLabel" {...scalebarRefLabelProps} />
     </div>
   )
 }
 
 function makeModel({
   setOffsets = jest.fn(),
-  scalebarRefNameClickPending = false,
-  setScalebarRefNameClickPending = jest.fn(),
   isScalebarRefNameMenuOpen = false,
 }: {
   setOffsets?: jest.Mock
-  scalebarRefNameClickPending?: boolean
-  setScalebarRefNameClickPending?: jest.Mock
   isScalebarRefNameMenuOpen?: boolean
 } = {}) {
   return {
     isScalebarRefNameMenuOpen,
-    scalebarRefNameClickPending,
-    setScalebarRefNameClickPending,
     setOffsets,
     pxToBp: (px: number) => ({ index: 0, offset: px, refName: 'ctgA' }),
     bpPerPx: 1,
@@ -148,55 +144,52 @@ describe('useRangeSelect (LGV)', () => {
     expect(setOffsets).not.toHaveBeenCalled()
   })
 
-  it('a click begun on a refName label suppresses the rubberband menu and clears the pending flag', () => {
+  it('a click begun on a refName label leaves the click to the label', () => {
     const setOffsets = jest.fn()
-    const setScalebarRefNameClickPending = jest.fn()
-    render(
-      <TestRubberband
-        model={makeModel({
-          setOffsets,
-          scalebarRefNameClickPending: true,
-          setScalebarRefNameClickPending,
-        })}
-      />,
-    )
-    const el = screen.getByTestId('rubberband')
+    render(<TestRubberband model={makeModel({ setOffsets })} />)
 
-    fireEvent.mouseDown(el, { clientX: 100, clientY: 0 })
+    fireEvent.mouseDown(screen.getByTestId('refLabel'), { clientX: 100 })
     act(() => {
       window.dispatchEvent(
         new MouseEvent('mouseup', { bubbles: true, clientX: 101, clientY: 0 }),
       )
     })
 
-    // rubberband menu must not open — the label's own onClick handles it
     expect(screen.getByTestId('menuOpen').textContent).toBe('false')
-    // flag cleared here (not left for the label's onClick), so it can't get
-    // stuck and swallow the next scalebar click if mouseup drifts off the label
-    expect(setScalebarRefNameClickPending).toHaveBeenCalledWith(false)
   })
 
   it('a click begun on a refName label clears the hover guide', () => {
-    render(
-      <TestRubberband
-        model={makeModel({ scalebarRefNameClickPending: true })}
-      />,
-    )
+    render(<TestRubberband model={makeModel()} />)
     const el = screen.getByTestId('rubberband')
 
     fireEvent.mouseMove(el, { clientX: 50, clientY: 0 })
     expect(screen.getByTestId('guideX').textContent).toBe('50')
 
-    fireEvent.mouseDown(el, { clientX: 50, clientY: 0 })
+    fireEvent.mouseDown(screen.getByTestId('refLabel'), { clientX: 50 })
     act(() => {
       window.dispatchEvent(
         new MouseEvent('mouseup', { bubbles: true, clientX: 51, clientY: 0 }),
       )
     })
 
-    // the label's menu hides the guide while it is open; leaving it set here
-    // stranded the line on the scalebar once the menu closed
     expect(screen.getByTestId('guideX').textContent).toBe('none')
+  })
+
+  it('a refName-label drag cancelled with Escape does not swallow the next click', () => {
+    render(<TestRubberband model={makeModel()} />)
+
+    fireEvent.mouseDown(screen.getByTestId('refLabel'), { clientX: 100 })
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+    })
+    fireEvent.mouseDown(screen.getByTestId('rubberband'), { clientX: 100 })
+    act(() => {
+      window.dispatchEvent(
+        new MouseEvent('mouseup', { bubbles: true, clientX: 101, clientY: 0 }),
+      )
+    })
+
+    expect(screen.getByTestId('menuOpen').textContent).toBe('true')
   })
 
   it('a press with the refName menu open clears the hover guide', () => {
@@ -212,28 +205,17 @@ describe('useRangeSelect (LGV)', () => {
     expect(screen.getByTestId('guideX').textContent).toBe('none')
   })
 
-  it('a drag begun on a refName label still commits and clears the pending flag', () => {
+  it('a drag begun on a refName label still commits', () => {
     const setOffsets = jest.fn()
-    const setScalebarRefNameClickPending = jest.fn()
-    render(
-      <TestRubberband
-        model={makeModel({
-          setOffsets,
-          scalebarRefNameClickPending: true,
-          setScalebarRefNameClickPending,
-        })}
-      />,
-    )
-    const el = screen.getByTestId('rubberband')
+    render(<TestRubberband model={makeModel({ setOffsets })} />)
 
-    fireEvent.mouseDown(el, { clientX: 100, clientY: 0 })
+    fireEvent.mouseDown(screen.getByTestId('refLabel'), { clientX: 100 })
     act(() => {
       window.dispatchEvent(
         new MouseEvent('mouseup', { bubbles: true, clientX: 250, clientY: 0 }),
       )
     })
 
-    expect(setScalebarRefNameClickPending).toHaveBeenCalledWith(false)
     expect(setOffsets).toHaveBeenCalledWith(
       expect.objectContaining({ offset: 100 }),
       expect.objectContaining({ offset: 250 }),

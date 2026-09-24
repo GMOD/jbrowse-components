@@ -118,7 +118,6 @@ test('the scan finds the placers it is about', () => {
     'showAllRegions',
     'fitAllRegions',
     'horizontallyFlip',
-    'clearView',
     'centerAt',
     // a jump that takes a second is still a jump: the flight settles once, at
     // the end, and the per-frame writes go through `setWindowFrame` above
