@@ -1,10 +1,7 @@
+import { isPlainObject } from '../util/objectUtils.ts'
 import { UNKNOWN } from '../util/tracks.ts'
 
 import type PluginManager from '../PluginManager.ts'
-
-function isPlainObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v)
-}
 
 /**
  * Expand an assembly snapshot's own shorthands into the `sequence` an assembly

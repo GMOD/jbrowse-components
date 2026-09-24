@@ -1,5 +1,6 @@
 import { getConfigurationSchemaMetadata } from '../../configuration/schemaRegistry.ts'
 import { slotValueRefusal } from '../../configuration/slotFacade.ts'
+import { isPlainObject } from '../../util/objectUtils.ts'
 
 import type PluginManager from '../../PluginManager.ts'
 import type { AnyConfigurationSchemaType } from '../../configuration/index.ts'
@@ -12,10 +13,6 @@ export interface DisplaySnapshot {
 
 function declares(schema: AnyConfigurationSchemaType, key: string) {
   return !!getConfigurationSchemaMetadata(schema)?.definition[key]
-}
-
-function isPlainObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v)
 }
 
 /**
