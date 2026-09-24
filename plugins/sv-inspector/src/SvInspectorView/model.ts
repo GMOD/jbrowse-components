@@ -20,8 +20,6 @@ import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-// a track from the session's config carries its trackId as a string; the chord
-// track is given an inline config, so it carries the whole object
 function trackConfId(configuration: unknown) {
   return typeof configuration === 'string'
     ? configuration
@@ -44,10 +42,6 @@ function rowFeatures(rows?: { feature?: SimpleFeatureSerialized }[]) {
  * - [CircularView](../circularview)
  *
  * #example
- * Hand-authored under `defaultSession.views`, with every setting written
- * directly on the view object. `uri` loads a structural-variant file into the
- * spreadsheet and mirrors the rows as arcs in the paired circular view;
- * `assembly` resolves coordinates for both:
  * ```js
  * {
  *   type: 'SvInspectorView',
@@ -67,10 +61,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
   const minHeight = 400
   const defaultHeight = 550
   const headerHeight = 52
-  // the ResizeHandle `bar` that sits between the two subviews
   const dividerWidth = 4
-  // the divider stops short of either edge, so neither subview can be dragged
-  // down to nothing
   const minWidthFraction = 0.2
   const maxWidthFraction = 0.8
   const model = types
@@ -89,14 +80,12 @@ function SvInspectorViewF(pluginManager: PluginManager) {
 
         /**
          * #property
-         * the height of the whole view in pixels, sheet and circle together
+         * height of the whole view in pixels
          */
         height: types.stripDefault(types.number, defaultHeight),
         /**
          * #property
-         * restrict the circular half to the chromosomes the loaded rows
-         * actually touch, instead of drawing an arc for every one in the
-         * assembly
+         * draw only the chromosomes the visible rows touch
          */
         onlyDisplayRelevantRegionsInCircularView: types.stripDefault(
           types.boolean,
@@ -104,9 +93,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         ),
         /**
          * #property
-         * share of the view's width given to the spreadsheet, the rest goes to
-         * the circular view. Persisted so dragging the divider survives both a
-         * window resize and a session reload
+         * share of the view's width given to the spreadsheet
          */
         spreadsheetWidthFraction: types.stripDefault(types.number, 0.66),
         /**
@@ -121,12 +108,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         /**
          * #property
          */
-        // The track selector stays available: the circle's own chord track is
-        // built from the sheet, but a reader comparing a tumour callset against
-        // its normal, or one caller against another, needs a second one beside
-        // it, and hiding the selector made that unreachable. The import form is
-        // still off — the regions come from the sheet's assembly, so there is
-        // nothing for a reader to import here.
         circularView: types.optional(CircularModel, () =>
           CircularModel.create({
             type: 'CircularView',
@@ -136,13 +117,8 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         ),
         /**
          * #property
-         * transient launch state: the settings written on the view object that
-         * need resolving before they can be view state — the file both halves
-         * are built from and the assembly it is read against.
-         * `preProcessSnapshot` moves them here off the snapshot, the
-         * afterAttach autorun forwards them to the sheet and clears this, so a
-         * saved session never retains it. Not written by hand: author every
-         * setting directly on the view.
+         * transient launch keys, forwarded to the sheet on attach and cleared;
+         * author them directly on the view
          */
         launch: types.frozen<
           LaunchInput<SvInspectorViewCommands> | undefined
@@ -162,8 +138,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
-       * the launch state that still has something to apply — what the
-       * afterAttach autorun forwards to the sheet.
        */
       get pendingLaunch() {
         return pendingLaunch(self.launch)
@@ -183,27 +157,14 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * gated on the same condition the spreadsheet renders its grid on, so the
-       * circle never appears alongside the import form
+       * false while the sheet shows its import form
        */
       get showCircularView() {
         return !!self.spreadsheetView.spreadsheet?.initialized
       },
-
       /**
        * #getter
-       * Named to match the other views, since `ViewContainer` reads this name
-       * to publish `data-view-phase`. Folds in both halves because neither
-       * publishes its own: the child views are rendered directly by this
-       * component rather than through a ViewContainer, so a spreadsheet still
-       * parsing or a circle still waiting on its assembly was invisible to
-       * every readiness wait, and `website/scripts/specs/sv.ts` captures five
-       * figures of this view.
-       *
-       * The circular term is gated on `showCircularView` so a circle that isn't
-       * rendered can never hold the phase open — `waitForViewPhases` is
-       * deliberately not best-effort, so a phase that never clears is a hang
-       * rather than a degraded capture.
+       * both halves' loading state; the circle counts only while shown
        */
       get showLoading() {
         return (
@@ -211,21 +172,10 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           (this.showCircularView && self.circularView.showLoading)
         )
       },
-
       /**
        * #getter
-       * The census entry for this view: both halves are views in their own
-       * right, and it holds no tracks outside them. They hang off named
-       * properties rather than a `views` array, so no spelling of the walk this
-       * declaration replaced ever reached them — a still-loading circle inside
-       * an SV inspector read as idle to the readiness marker.
-       *
-       * The circle is gated on `showCircularView` for a stronger reason than
-       * `showLoading` above. A circle that is not rendered is never given a
-       * width, so its `initialized` stays false, and `AppReadyMarker` counts an
-       * uninitialised view as loading: declared ungated, an SV inspector still
-       * sitting on its import form would park `data-app-phase` at `loading` for
-       * the whole session.
+       * an unshown circle never initializes, so it would read as loading
+       * forever
        */
       get ownViews() {
         return [
@@ -233,7 +183,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           ...(this.showCircularView ? [self.circularView] : []),
         ]
       },
-
       /**
        * #getter
        * the records of the rows the sheet's filters leave
@@ -243,18 +192,15 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * every record of the sheet, which the chord track is built from once per
-       * file. A track config is copied whole several times on its way to a
-       * track, so one holding the rows a filter left was the whole callset
-       * copied again on every filter change
+       * every record of the sheet, which the chord track holds; filters narrow
+       * it through visibleChordIds rather than rebuilding the track
        */
       get allFeatures() {
         return rowFeatures(self.spreadsheetView.spreadsheet?.rows)
       },
       /**
        * #getter
-       * the records the circle draws, as ids on the chord display; undefined
-       * while no filter is narrowing the sheet
+       * undefined while no filter narrows the sheet
        */
       get visibleChordIds() {
         return this.features.length === this.allFeatures.length
@@ -279,11 +225,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * the regions the paired circular view should show, never narrowed to
-       * nothing: the relevant-set is empty until the features are parsed, and
-       * can also miss every region outright, since getCanonicalRefName2 hands
-       * back a refName the assembly doesn't know rather than dropping it. Both
-       * show everything rather than an empty circle
+       * never narrowed to nothing, which would draw an empty circle
        */
       get circularDisplayedRegions() {
         const regions = this.currentAssembly?.regions
@@ -296,8 +238,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * spreadsheetWidthFraction clamped, so a hand-authored out-of-range one
-       * can't drive the circle under its width floor
        */
       get effectiveSpreadsheetWidthFraction() {
         return clamp(
@@ -308,7 +248,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * the two subview widths, which with the divider add up to our own width
        */
       get subviewWidths() {
         const available = self.width - dividerWidth
@@ -319,9 +258,8 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * the records of the event the selected record belongs to, which the
-       * circle keeps at full strength while it dims the rest; undefined when
-       * the selection is in no event
+       * the records of the selected record's event, which the circle keeps at
+       * full strength while it dims the rest
        */
       get highlightedChordIds() {
         const { selection } = getSession(self)
@@ -339,9 +277,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * undefined until the sheet has an assembly to resolve coordinates
-       * against, which is also when the paired circular view has nothing to
-       * draw the chords on
        */
       get featuresCircularTrackConfiguration() {
         const { assemblyName, variantTrackId: trackId } = this
@@ -361,9 +296,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
                   displayId: `${trackId}-chord-display`,
                   onChordClick:
                     'jexl:defaultOnChordClick(feature, track, pluginManager)',
-                  // one orange for every class said nothing about a callset
-                  // whose whole question is which kind of event is where. The
-                  // legend beside the circle is built from the same colors
                   strokeColor: 'jexl:svChordColor(feature)',
                 },
               ],
@@ -393,20 +325,16 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         self.height = Math.max(newHeight, minHeight)
         return self.height
       },
-
       /**
        * #action
        */
       setOnlyDisplayRelevantRegionsInCircularView(val: boolean) {
         self.onlyDisplayRelevantRegionsInCircularView = val
       },
-
       /**
        * #action
-       * move the divider between the two subviews. The delta accumulates onto
-       * the fraction rather than being read back off spreadsheetView.width,
-       * which the width binding rounds, so the divider doesn't creep a pixel
-       * per drag frame
+       * accumulates onto the fraction, not the rounded spreadsheetView.width,
+       * so the divider doesn't creep a pixel per drag frame
        */
       resizeSpreadsheetWidth(distance: number) {
         self.spreadsheetWidthFraction = clamp(
@@ -416,7 +344,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           maxWidthFraction,
         )
       },
-
       /**
        * #action
        */
@@ -430,8 +357,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        */
       resizeHeight(distance: number) {
         const oldHeight = self.height
-        const newHeight = self.setHeight(self.height + distance)
-        return newHeight - oldHeight
+        return self.setHeight(oldHeight + distance) - oldHeight
       },
       afterAttach() {
         addDisposer(
@@ -451,8 +377,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             { name: 'SvInspectorViewInit' },
           ),
         )
-
-        // synchronize subview widths
         addDisposer(
           self,
           autorun(
@@ -468,7 +392,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             { name: 'SvInspectorView width binding' },
           ),
         )
-        // synchronize subview heights
         addDisposer(
           self,
           autorun(
@@ -478,33 +401,17 @@ function SvInspectorViewF(pluginManager: PluginManager) {
                 self.height - headerHeight - circularViewOptionsBarHeight,
               )
             },
-            {
-              name: 'SvInspectorView height binding',
-            },
+            { name: 'SvInspectorView height binding' },
           ),
         )
-
-        // bind circularview displayedRegions to spreadsheet assembly, mediated
-        // by the onlyRelevantRegions toggle
         addDisposer(
           self,
           autorun(
             () => {
               const { circularView, circularDisplayedRegions } = self
-              // setDisplayedRegions re-fits the circle, so only write when the
-              // region list really changed. With the toggle on, the relevant-set
-              // recomputes on every grid filter change and would otherwise
-              // throw away the user's pan and zoom on each keystroke.
-              //
-              // The comparison is the whole guard. Gating on
-              // circularView.initialized as well reads as caution but inverts
-              // on the one case that needs the write most: that getter asks
-              // whether the assembly named by the regions the circle *already*
-              // holds has loaded, so a circle sitting on regions from an
-              // assembly the config no longer has can never be corrected, and
-              // its `showLoading` stays true forever with no error to show.
-              // Writing early costs nothing either way, since fitToWindow
-              // defers until the view has a measured width
+              // setDisplayedRegions re-fits the circle, losing pan and zoom.
+              // Don't also gate on circularView.initialized: a circle holding
+              // regions from a removed assembly never initializes
               if (
                 circularDisplayedRegions &&
                 !sameCircularRegions(
@@ -512,9 +419,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
                   circularDisplayedRegions,
                 )
               ) {
-                // displayedRegions is a frozen prop, and MST deep-freezes what
-                // it is handed: writing the assembly's own array would freeze
-                // the assembly's regions along with it
+                // MST would deep-freeze the assembly's own array
                 circularView.setDisplayedRegions(
                   structuredClone(circularDisplayedRegions),
                 )
@@ -523,24 +428,14 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             { name: 'SvInspectorView displayed regions bind' },
           ),
         )
-
-        // bind circularview tracks to our track snapshot view
         addDisposer(
           self,
           autorun(
             () => {
               const { circularView, variantTrackId } = self
               const conf = self.featuresCircularTrackConfiguration
-              // the conf carries the sheet's records inline, so a new file
-              // means a whole new track: drop the old one first. Both calls
-              // are MST actions, which run untracked, so neither one's read of
-              // circularView.tracks makes this autorun depend on its own writes
               circularView.hideTrack(variantTrackId)
               if (conf) {
-                // the loading twin: the chord display's state model is a
-                // dynamic import until something asks for it, and the plain
-                // `addTrackConf` would report that as a failed show. Both reads
-                // above are synchronous, so the autorun still tracks them
                 void circularView.launchTrackConf(conf)
               }
             },
@@ -552,14 +447,14 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           self,
           autorun(
             () => {
-              const { highlightedChordIds, visibleChordIds } = self
-              for (const track of self.circularView.tracks) {
-                if (trackConfId(track.configuration) === self.variantTrackId) {
-                  for (const display of track.displays) {
-                    display.setHighlightedFeatureIds?.(highlightedChordIds)
-                    display.setVisibleFeatureIds?.(visibleChordIds)
-                  }
-                }
+              const { highlightedChordIds, visibleChordIds, variantTrackId } =
+                self
+              const track = self.circularView.tracks.find(
+                t => trackConfId(t.configuration) === variantTrackId,
+              )
+              for (const display of track?.displays ?? []) {
+                display.setHighlightedFeatureIds?.(highlightedChordIds)
+                display.setVisibleFeatureIds?.(visibleChordIds)
               }
             },
             { name: 'SvInspectorView chord display state binding' },
@@ -568,15 +463,12 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      // the chord track's inline config holds every row, and the autorun
-      // rebuilds it on attach, so drop just that track. A second callset's
-      // track and the user's pan and zoom persist
+      // the chord track holds every row inline and the autorun rebuilds it
       const { circularView, ...rest } = snap
       const { tracks, ...circular } = circularView
       const generatedId = variantTrackIdFor(snap.id)
       const kept = tracks.filter(
-        (t: { configuration?: unknown }) =>
-          trackConfId(t.configuration) !== generatedId,
+        t => trackConfId(t.configuration) !== generatedId,
       )
       return {
         ...rest,

@@ -1000,10 +1000,10 @@ restores natively:
 | Property | What it does |
 | --- | --- |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
-| [`height`](/docs/models/svinspectorview#property-height) | the height of the whole view in pixels, sheet and circle together |
+| [`height`](/docs/models/svinspectorview#property-height) | height of the whole view in pixels |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
-| [`onlyDisplayRelevantRegionsInCircularView`](/docs/models/svinspectorview#property-onlydisplayrelevantregionsincircularview) | restrict the circular half to the chromosomes the loaded rows actually touch, instead of drawing an arc for every one in the assembly |
-| [`spreadsheetWidthFraction`](/docs/models/svinspectorview#property-spreadsheetwidthfraction) | share of the view's width given to the spreadsheet, the rest goes to the circular view. Persisted so dragging the divider survives both a window resize and a session reload |
+| [`onlyDisplayRelevantRegionsInCircularView`](/docs/models/svinspectorview#property-onlydisplayrelevantregionsincircularview) | draw only the chromosomes the visible rows touch |
+| [`spreadsheetWidthFraction`](/docs/models/svinspectorview#property-spreadsheetwidthfraction) | share of the view's width given to the spreadsheet |
 
 <!-- SPEC_KEYS SvInspectorView END -->
 

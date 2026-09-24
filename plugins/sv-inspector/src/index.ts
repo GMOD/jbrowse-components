@@ -31,7 +31,5 @@ export default class SvInspectorViewPlugin extends Plugin {
   }
 }
 
-// Carries this module's extension-point declaration into the emitted `.d.ts`;
-// `scripts/check-extension-point-reachability.ts` is the gate, and its header
-// is the why.
+// keeps the extension-point declaration in the emitted .d.ts
 export type { LaunchSvInspectorViewArgs } from './LaunchSvInspectorView/index.ts'

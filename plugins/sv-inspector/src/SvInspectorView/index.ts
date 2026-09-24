@@ -16,24 +16,22 @@ import { svChordColor } from './svChordColor.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ViewTypeRegistry } from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { FindJunctionsNear, SvEvent } from '@jbrowse/sv-core'
 
-// `chordTrack` is the ChordVariantDisplay: the display is what the
-// onChordClick config slot is read from, and it passes itself as `track`
+// the chord display passes itself as `track`
 function defaultOnChordClick(
   feature: Feature,
-  chordTrack: { adapterConfig?: Record<string, unknown> },
+  chordDisplay: IStateTreeNode & { adapterConfig: Record<string, unknown> },
 ) {
-  const session = getSession(chordTrack)
+  const session = getSession(chordDisplay)
   try {
-    const view = getContainingView(chordTrack)
+    const view = getContainingView(chordDisplay)
     const assemblyName = view.assemblyNames?.[0]
     if (!assemblyName) {
       return
     }
     session.setSelection(feature)
-    // the containing view's parent is the SvInspectorView when the circle is
-    // the inspector's, and session.views otherwise
     const parentView = getParent<{
       type?: string
       spreadsheetView?: {
@@ -50,26 +48,18 @@ function defaultOnChordClick(
         ? parentView.spreadsheetView
         : undefined
     const sheet = inspector?.spreadsheet
-    // the inspector's sheet holds the callset parsed already, which beats the
-    // adapter re-reading it over RPC one 2 kb window per hop
-    const findJunctionsNear = sheet
-      ? sheet.findJunctionsNear()
-      : chordTrack.adapterConfig
-        ? makeFindJunctionsNear(
-            chordTrack as Parameters<typeof makeFindJunctionsNear>[0],
-            assemblyName,
-          )
-        : undefined
     launchBreakpointSplitView({
       session,
       feature,
       assemblyName,
-      findJunctionsNear,
+      // the sheet has the callset parsed already; the adapter re-reads it
+      // over RPC per hop
+      findJunctionsNear: sheet
+        ? sheet.findJunctionsNear()
+        : makeFindJunctionsNear(chordDisplay, assemblyName),
       event: sheet?.svEventFor({ uniqueId: unwrapFeature(feature).id() }),
       defaultTrackIds: inspector?.drilldownTrackIds,
-      // in the SV inspector, reuse the same view the sheet's own row menu opens
-      // so a chord click and a row click don't stack two of them. Other
-      // circular views get a fresh view per click
+      // shared with the sheet's row menu, so the two don't stack views
       stableViewId: inspector
         ? breakpointSplitViewId(inspector.id, assemblyName)
         : undefined,
@@ -87,8 +77,7 @@ export default function SvInspectorViewF(pluginManager: PluginManager) {
   pluginManager.jexl.addFunction('svChordColor', svChordColor)
 
   pluginManager.addViewType(() => {
-    // the factory embeds the SpreadsheetView and CircularView state models as
-    // sub-model props, so their loaders resolve first
+    // the model embeds both of these state models
     const stateModel = async (): Promise<
       ViewTypeRegistry['SvInspectorView']
     > => {

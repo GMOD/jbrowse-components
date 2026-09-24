@@ -7,10 +7,7 @@ import { circularViewOptionsBarHeight } from '../consts.ts'
 import type { SvInspectorViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
-  // the bar's height is a contract: the model subtracts exactly this much from
-  // the circular view's height. So the control is centered inside it rather
-  // than padded vertically, which stacked a medium checkbox's own 42px onto
-  // 16px of padding and bled 6px over the top of the circle
+  // the model subtracts exactly this height, so center rather than pad
   circularViewOptions: {
     height: circularViewOptionsBarHeight,
     display: 'flex',

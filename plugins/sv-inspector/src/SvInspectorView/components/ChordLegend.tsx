@@ -5,11 +5,7 @@ import { chordColorForType } from '../svChordColor.ts'
 
 import type { SvInspectorViewModel } from '../model.ts'
 
-// Over the circle rather than in the options bar above it, which is a fixed 52px
-// the model subtracts from the circular view's height: a legend there would have
-// come out of a radius that is already the scarce dimension in this view. The
-// plot is a disc inscribed in a square box, so its bottom-left corner is empty
-// at every size the inspector gives it.
+// the disc leaves the square's bottom-left corner empty at every size
 const useStyles = makeStyles()(theme => ({
   container: {
     position: 'relative',
@@ -23,8 +19,6 @@ const useStyles = makeStyles()(theme => ({
     gap: 1,
     padding: theme.spacing(0.5),
     borderRadius: theme.shape.borderRadius,
-    // the chords run under the corner at some zooms, so the legend carries its
-    // own ground rather than reading against whatever is behind it
     background: theme.palette.background.paper,
     opacity: 0.9,
     fontSize: 11,
@@ -90,8 +84,6 @@ const ChordLegend = observer(function ChordLegend({
                 <div
                   className={classes.swatch}
                   style={{ background: chordColorForType(type) }}
-                  // the swatch is the color itself, so it has no text to read;
-                  // the label beside it is the accessible name
                   aria-hidden
                 />
                 <span>{label}</span>
