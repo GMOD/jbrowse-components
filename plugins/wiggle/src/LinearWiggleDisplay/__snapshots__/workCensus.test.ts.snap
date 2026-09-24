@@ -9,5 +9,6 @@ focus                     arrange 0           alias 0  clusterable 1  sources 1 
 relabel                   arrange 1 (4 rows)  alias 0  clusterable 1  sources 1  -
 recolour                  arrange 1 (4 rows)  alias 0  clusterable 1  sources 1  -
 cluster run lands a tree  arrange 1 (4 rows)  alias 0  clusterable 1  sources 1  -
+region arrival, arranged  arrange 0           alias 0  clusterable 0  sources 0  FetchVisibleRegions 1
 reset                     arrange 1 (4 rows)  alias 0  clusterable 1  sources 1  -"
 `;

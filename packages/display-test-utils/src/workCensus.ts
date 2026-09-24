@@ -9,6 +9,7 @@ export interface CensusStep {
 /** One cell per step: `take` answers what was counted since the last take. */
 export interface CensusColumn {
   take: () => string
+  reset: () => void
   stop: () => void
 }
 
@@ -59,6 +60,9 @@ export function recomputeColumn(
       runs = 0
       return cell
     },
+    reset: () => {
+      runs = 0
+    },
     stop,
   }
 }
@@ -87,6 +91,10 @@ function arrangeColumn(display: object): CensusColumn {
       runs = 0
       rows = 0
       return cell
+    },
+    reset: () => {
+      runs = 0
+      rows = 0
     },
     stop,
   }
@@ -125,18 +133,20 @@ function aliasColumn(display: { rowAlias?: unknown }): CensusColumn {
         return wrapped
       },
   )
-  const current = display.rowAlias
-  if (typeof current === 'function' && !counted.has(current as RowAlias)) {
-    stop()
-    throw new Error(
-      'rowAlias was already computed and observed; start the census before the rows land',
-    )
-  }
   return {
     take: () => {
+      const current = display.rowAlias
+      if (typeof current === 'function' && !counted.has(current as RowAlias)) {
+        throw new Error(
+          'rowAlias still hands out the alias it held before the census, so its calls went uncounted; start the census before the rows land',
+        )
+      }
       const cell = `alias ${calls}`
       calls = 0
       return cell
+    },
+    reset: () => {
+      calls = 0
     },
     stop,
   }
@@ -180,6 +190,9 @@ export function reactionColumn(owners: readonly object[]): CensusColumn {
       runs.clear()
       return cell
     },
+    reset: () => {
+      runs.clear()
+    },
     stop,
   }
 }
@@ -215,7 +228,7 @@ export async function runCensus(
 ) {
   try {
     for (const column of columns) {
-      column.take()
+      column.reset()
     }
     const lines: string[][] = []
     for (const step of steps) {
@@ -240,8 +253,9 @@ const ROW_GETTERS = ['clusterableSources', 'sources', 'rowColorScale'] as const
  *
  * The getters are held observed through the census, as the mounted sidebar
  * and labels hold them, so a count is a recompute rather than a read. Start it
- * before the rows land: an alias already computed and held would go uncounted,
- * and the census throws rather than miss it.
+ * before the rows land: an alias computed and held before the census is not
+ * wrapped, and a step ending with one in force throws rather than miss its
+ * calls.
  */
 export async function workCensus(
   display: object,

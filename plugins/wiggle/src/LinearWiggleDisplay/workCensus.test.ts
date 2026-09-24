@@ -95,6 +95,16 @@ test('what each row step recomputes', async () => {
         }),
     },
     {
+      name: 'region arrival, arranged',
+      run: () => {
+        display.setRpcData(
+          0,
+          makeMultiWiggleData(...NAMES)[0]!,
+          view.displayedRegions[0],
+        )
+      },
+    },
+    {
       name: 'reset',
       run: () => {
         display.resetRowArrangement()
