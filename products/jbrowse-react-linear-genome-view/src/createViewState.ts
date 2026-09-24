@@ -2,6 +2,7 @@ import { expandAssemblyShorthand } from '@jbrowse/core/assemblyManager/assemblyC
 import { assembleLocString } from '@jbrowse/core/util'
 import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
 import {
+  destroyViewState,
   normalizeAdapterSnapshots,
   registerLocalFiles,
   resolveAssembly,
@@ -296,10 +297,14 @@ function finishCreateViewState(
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   if (session) {
-    // applied after create rather than passed in: a restored session's shape is
-    // only known at runtime, and restoreSession is the door for that (MST
-    // validates it here and throws on a mismatch)
-    stateTree.restoreSession(withPageBaseUri(session))
+    // applied after create: a restored session's shape is only known at
+    // runtime, and restoreSession validates it, throwing on a mismatch
+    try {
+      stateTree.restoreSession(withPageBaseUri(session))
+    } catch (e) {
+      destroyViewState(stateTree)
+      throw e
+    }
   }
   if ((defaultSession || session) && (loc || highlight)) {
     // the caller's own session is in place, so the two shorthands go through

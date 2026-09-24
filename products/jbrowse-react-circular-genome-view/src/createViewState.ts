@@ -1,5 +1,6 @@
 import { expandAssemblyShorthand } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import {
+  destroyViewState,
   normalizeAdapterSnapshots,
   registerLocalFiles,
   resolveAssemblies,
@@ -242,10 +243,14 @@ export default async function createViewState(
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   if (opts.session) {
-    // applied after create rather than passed in: a restored session's shape is
-    // only known at runtime, and restoreSession is the door for that (MST
-    // validates it here and throws on a mismatch)
-    stateTree.restoreSession(opts.session)
+    // applied after create: a restored session's shape is only known at
+    // runtime, and restoreSession validates it, throwing on a mismatch
+    try {
+      stateTree.restoreSession(opts.session)
+    } catch (e) {
+      destroyViewState(stateTree)
+      throw e
+    }
   }
   const { view } = stateTree.session
   // Route every declarative launch through the view's own launch blob — the

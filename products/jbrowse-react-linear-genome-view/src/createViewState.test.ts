@@ -1,4 +1,5 @@
 import { hydrateTrackConfig, readConfObject } from '@jbrowse/core/configuration'
+import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { getEnv, getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import createViewState from './createViewState.ts'
@@ -407,5 +408,20 @@ test("a search index written as just a uri is found for the embed's assembly", (
   ])
   for (const index of indexes) {
     expect(readConfObject(index, 'textSearchAdapterId')).toBeTruthy()
+  }
+})
+
+test('a restored session that will not load takes its engine down with it', () => {
+  const destroyDrivers = jest.spyOn(RpcManager.prototype, 'destroy')
+  try {
+    expect(() =>
+      createViewState({
+        assembly,
+        session: { name: 'bad', view: { type: 'LinearGenomeView', id: 5 } },
+      }),
+    ).toThrow()
+    expect(destroyDrivers).toHaveBeenCalledTimes(1)
+  } finally {
+    destroyDrivers.mockRestore()
   }
 })

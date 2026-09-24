@@ -11,27 +11,25 @@ import type { AsyncViewStateOptions } from './createViewState.ts'
  * — driving the view imperatively off the model, or composing it with their own
  * chrome — where `<LinearGenomeView>`'s prop-shaped API doesn't fit.
  *
+ * Pass a function returning the engine instead of options when building takes
+ * more than one call: plugins fetched with `loadPlugins` first, or a fallback
+ * for a restored session that will not load. It runs once per mount.
+ *
  * Options are read on the first render only. To swap the assembly or plugins,
  * remount via a React `key`.
  *
  * **React owns this engine.** It is built once per mount and destroyed when the
- * component unmounts, so a host that mounts and discards repeatedly — an SPA
- * route, a notebook cell re-run — no longer orphans a worker pool and an
- * autorun set per discarded view, and no longer has anything to remember to
- * call. The corollary is that the model must not be used after unmount; a host
- * that wants to outlive React should call `createViewState` itself and pair it
- * with `destroyViewState`.
+ * component unmounts, including one that finishes building after the unmount.
+ * The model must not be used after unmount; a host that wants to outlive React
+ * should call `createViewState` itself and pair it with `destroyViewState`.
  *
- * Do NOT reach for `useState(() => createViewState(opts))` plus a
- * `destroyViewState` cleanup by hand: both halves are StrictMode traps, and
- * `useCreateOnce` / `useDestroyOnUnmount` in product-core spell out why.
- *
- * The lazily loaded view and display types the session names are resolved
- * first, so this returns undefined for the first frame, and the component
- * renders nothing until then.
+ * Undefined until the engine is built, so the first frame renders nothing. A
+ * build that throws rethrows from render, for an error boundary to catch.
  */
 export function useCreateViewState(
-  opts: AsyncViewStateOptions,
+  opts: AsyncViewStateOptions | (() => Promise<ViewModel>),
 ): ViewModel | undefined {
-  return useAsyncEngineLifecycle(() => createViewStateAsync(opts))
+  return useAsyncEngineLifecycle(() =>
+    typeof opts === 'function' ? opts() : createViewStateAsync(opts),
+  )
 }
