@@ -218,6 +218,15 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object'
 }
 
+/**
+ * A track recipe rather than a built track snapshot: a built one cannot carry
+ * `trackId`, which BaseTrackModel does not declare. `type` does not
+ * discriminate, because a spec writes display types inline.
+ */
+export function isTrackRecipe(entry: unknown) {
+  return typeof entry === 'string' || (isObject(entry) && 'trackId' in entry)
+}
+
 // Each per-entry kind says only which entries are an authored recipe. A recipe
 // goes to the blob for the launcher to resolve; everything else is a built
 // snapshot and stays on the property, so a mixed array splits rather than
@@ -225,12 +234,7 @@ function isObject(value: unknown): value is Record<string, unknown> {
 function isRecipeEntry(kind: LaunchKeyKind, entry: unknown) {
   switch (kind) {
     case 'trackEntries':
-      // a built track snapshot cannot carry `trackId` — BaseTrackModel does not
-      // declare it. `type` does not discriminate: a spec writes display types
-      // inline
-      return (
-        typeof entry === 'string' || (isObject(entry) && 'trackId' in entry)
-      )
+      return isTrackRecipe(entry)
     case 'rows':
       // a built row is a view snapshot, and every view's `type` is a required
       // literal

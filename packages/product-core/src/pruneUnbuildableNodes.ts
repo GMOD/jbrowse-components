@@ -1,4 +1,5 @@
 import { pluggableElementTypeGroups } from '@jbrowse/core/PluginManager'
+import { isTrackRecipe } from '@jbrowse/core/util/withLaunchInput'
 import {
   asArrayType,
   asMapType,
@@ -385,6 +386,11 @@ function pruneNode(
   if (!isRecord(node)) {
     // MST reports a node with no readable type precisely; guessing at a repair
     // here would hide it
+    return node
+  }
+  // the view's launcher resolves a recipe, and its preProcessSnapshot has not
+  // yet moved it out of `tracks`
+  if (group === 'track' && isTrackRecipe(node)) {
     return node
   }
   const type = node.type

@@ -188,6 +188,27 @@ test('drops an unbuildable view and an unbuildable track inside a kept one', () 
   ])
 })
 
+// A spec-form defaultSession writes the display type inline on a track recipe,
+// and the view's own preProcessSnapshot moves recipes out of `tracks` only
+// after the prune has run.
+test('leaves a track recipe naming a display type for the view to launch', () => {
+  const snapshot = {
+    views: [
+      {
+        id: 'v',
+        type: 'LinearGenomeView',
+        tracks: [
+          'genes',
+          { trackId: 'fst', type: 'LinearBasicDisplay', height: 60 },
+        ],
+      },
+    ],
+  }
+  const pruned = prune(snapshot, build)
+  expect(pruned.snapshot).toBe(snapshot)
+  expect(pruned.dropped).toEqual([])
+})
+
 // `pruneView` read exactly `view.tracks` and `view.views`, and the union
 // short-circuits on the registered view name, so a synteny session's whole
 // track list — `levels[].tracks`, two containers down — was never inspected.
