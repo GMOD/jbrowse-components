@@ -543,6 +543,24 @@ only if something else is not eating the trace. `profile-zoom.ts` reads
 `HEADLESS` and is headed by default, so the fix is to leave that variable unset;
 `--headed` is `probe-zoom-churn.ts`'s flag and does nothing here.
 
+## The model's work per step is a gate, not a probe
+
+`workCensus` (`packages/display-test-utils/src/workCensus.ts`) counts what the
+models do rather than what React renders. Each row display's
+`workCensus.test.ts` and the session's `trackWorkCensus.test.ts` snapshot, per
+step, the arranger's runs and the rows handed to them, the calls into
+`rowAlias`, each row stage's recomputes and the named reactions' runs, and for
+the session the index rebuilds, track-list copies, per-id resolutions, working
+copies built and the shown tracks whose config woke a reader. A recompute is
+counted by wrapping the computed's `derivation`, so a cached read counts
+nothing, and every count is an integer on a fake clock. The census cannot see
+cost inside one run beyond the alias calls: the phased variant display's 1.7×
+arrangement regression moved an arranged arrival's `alias` from 20 to 32 while
+`arrange` stayed 1, and a memoized alias counts the same as one that re-parses.
+It sees no React render, no GPU upload or draw (jsdom installs no render
+autoruns) and no millisecond, and it tells reactions apart by name alone. The
+render census and `probe-zoom-churn.ts` above remain the instruments for those.
+
 ## The stop-token probe, for whoever finds it in a trace next
 
 A trace taken before 2026-09-15 shows the blob-URL probe (a synchronous XHR per

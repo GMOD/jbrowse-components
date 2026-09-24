@@ -10,6 +10,10 @@ track's stay in the session.
 - A base entry with no delta is returned **unchanged by identity**, and merged
   objects are memoized per (base, delta), so the config hydration cache stays
   warm.
+- **An edit wakes only its own track's readers and rebuilds no index**; the
+  index is rebuilt when a list of bases changes. `trackWorkCensus.test.ts` in
+  `products/jbrowse-react-linear-genome-view` snapshots what an edit, an add, a
+  show and a reset cost at 500 catalog and 50 session tracks.
 - **A promote merges the delta into the base and drops it**, so an admin who
   opens a non-admin's shared session and edits a track it overrides extends that
   delta rather than fighting it. Canary: `UpdateTrackConfiguration.test.ts`.

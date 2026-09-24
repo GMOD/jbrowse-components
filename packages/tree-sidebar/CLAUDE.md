@@ -172,6 +172,11 @@ What else the mixin owns:
   so a submit that moves no shown row keeps the tree.
 - **A focus naming no current row shows every row** (`keptRows`).
 
+**A change reaches only the stages downstream of it, and a census gates that**:
+each display's `workCensus.test.ts`, beside its `rowDerivation.test.ts`,
+snapshots per step the arranger's runs and rows, the `rowAlias` calls, each
+stage's recomputes and the display's named reaction runs.
+
 ## "Sort rows by … here" is three shared pieces and one per-display read
 
 Only _which value a row carries at the column_ is the display's (multi-wiggle
