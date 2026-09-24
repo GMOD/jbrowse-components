@@ -226,3 +226,62 @@ test('a MAF reorder lands in the session at once and undoes', async () => {
   expect(undone.sources.map(s => s.name)).toEqual(before)
   expect(undone.rowTree).toBeDefined()
 }, 60000)
+
+// The same on the mark display, whose rows are a field's values split by the
+// worker: the volvox MultiWiggle's four BigWigs as bars, one row per source.
+test('a mark display row reorder lands in the session at once and undoes', async () => {
+  const MARKS = 'multiwig_mark_rows'
+  const base = volvoxConfigWithTracks(['volvox_microarray_multi'])
+  const { view, session, rootModel, findByTestId } = await createView({
+    ...base,
+    tracks: [
+      {
+        ...base.tracks[0],
+        trackId: MARKS,
+        name: MARKS,
+        category: [],
+        displays: [
+          {
+            type: 'LinearMarkDisplay',
+            displayId: `${MARKS}-marks`,
+            rows: 'source',
+            marks: [{ mark: 'bar', encoding: { y: 'score' } }],
+          },
+        ],
+      },
+    ],
+  })
+  const { history } = rootModel as WebRootModel
+  view.setNewView(5, 0)
+  fireEvent.click(await findByTestId(hts(MARKS), {}, delay))
+  await findDisplayPainted('mark-display', delay)
+  const display: MultiRowDisplay = view.tracks[0]!.displays[0]
+  await waitFor(() => {
+    expect(display.sources.length).toBeGreaterThan(2)
+  }, delay)
+  await sleep(700)
+  const { displayId } = display.configuration
+  const stepsBefore = history.undoIdx
+  const before = display.sources.map(s => s.name)
+  const reversed = [...before].reverse()
+
+  display.setRowOrder(reversed.map(name => ({ name })))
+
+  expect(
+    rowsDomainInDelta(session.trackConfigDeltas[MARKS], displayId),
+  ).toEqual(reversed)
+  expect(display.sources.map(s => s.name)).toEqual(reversed)
+
+  await sleep(350)
+  expect(history.undoIdx).toBe(stepsBefore + 1)
+  history.undo()
+  expect(history.undoIdx).toBe(stepsBefore)
+
+  await sleep(500)
+  expect(
+    rowsDomainInDelta(session.trackConfigDeltas[MARKS], displayId),
+  ).toBeUndefined()
+  const undone: MultiRowDisplay = view.tracks[0]!.displays[0]
+  expect(undone.rowDomain).toEqual([])
+  expect(undone.sources.map(s => s.name)).toEqual(before)
+}, 60000)

@@ -1,5 +1,83 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
+exports[`a cluster run lands its tree turned towards the seed, and orders the rows 1`] = `
+{
+  "bands": [
+    {
+      "firstRow": 0,
+      "label": "source: s10",
+    },
+    {
+      "firstRow": 1,
+      "label": "source: mom",
+    },
+    {
+      "firstRow": 2,
+      "label": "source: dad",
+    },
+    {
+      "firstRow": 3,
+      "label": "source: s2",
+    },
+  ],
+  "chips": false,
+  "editableSources": [
+    {
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s10",
+    },
+    {
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s2",
+    },
+  ],
+  "rowArrangementIsCustom": true,
+  "rowTree": "((s10,mom),(dad,s2));",
+  "sources": [
+    "s10",
+    "mom",
+    "dad",
+    "s2",
+  ],
+  "treeDrawn": true,
+}
+`;
+
+exports[`a cluster run lands its tree turned towards the seed, and orders the rows 2`] = `
+{
+  "regions": [
+    {
+      "assemblyName": "volvox",
+      "end": 10000,
+      "refName": "ctgA",
+      "start": 0,
+    },
+  ],
+  "settings": [
+    {
+      "name": "rows",
+      "value": "source",
+    },
+    {
+      "name": "y",
+      "value": "score",
+    },
+  ],
+}
+`;
+
 exports[`a facet domain leads the bands and the key 1`] = `
 {
   "domain": [
@@ -93,6 +171,51 @@ exports[`a facet domain leads the bands and the key 1`] = `
       "offset": 0,
     },
   ],
+}
+`;
+
+exports[`a focus draws the rows it keeps and leaves the rest out of the plot 1`] = `
+{
+  "bands": [
+    {
+      "firstRow": 0,
+      "label": "source: mom",
+    },
+    {
+      "firstRow": 1,
+      "label": "source: s10",
+    },
+  ],
+  "chips": false,
+  "editableSources": [
+    {
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s2",
+    },
+    {
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowTree": undefined,
+  "sources": [
+    "mom",
+    "s10",
+  ],
+  "treeDrawn": false,
 }
 `;
 
@@ -227,5 +350,60 @@ exports[`bars faceted by source draw a band per source under its chip 2`] = `
       "rowCount": 1,
     },
   ],
+}
+`;
+
+exports[`rows draw what the facet drew, one labelled row per source and no chips 1`] = `
+{
+  "bands": [
+    {
+      "firstRow": 0,
+      "label": "source: dad",
+    },
+    {
+      "firstRow": 1,
+      "label": "source: mom",
+    },
+    {
+      "firstRow": 2,
+      "label": "source: s2",
+    },
+    {
+      "firstRow": 3,
+      "label": "source: s10",
+    },
+  ],
+  "chips": false,
+  "editableSources": [
+    {
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "dad",
+    },
+    {
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "mom",
+    },
+    {
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s2",
+    },
+    {
+      "label": undefined,
+      "labelColor": undefined,
+      "name": "s10",
+    },
+  ],
+  "rowArrangementIsCustom": false,
+  "rowTree": undefined,
+  "sources": [
+    "dad",
+    "mom",
+    "s2",
+    "s10",
+  ],
+  "treeDrawn": false,
 }
 `;
