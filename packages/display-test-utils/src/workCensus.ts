@@ -232,9 +232,18 @@ export function reactionColumn(owners: readonly object[]): CensusColumn {
 }
 
 const SETTLE_MS = 1000
+const MAX_SETTLES = 10
 
+// Until no timer is pending, a second at a time: a refetch's debounced run
+// after its fetch ends lands past the first second, and counted there it
+// reads as the next step's work.
 async function settleTimers() {
-  await jest.advanceTimersByTimeAsync(SETTLE_MS)
+  for (let i = 0; i < MAX_SETTLES; i++) {
+    await jest.advanceTimersByTimeAsync(SETTLE_MS)
+    if (jest.getTimerCount() === 0) {
+      return
+    }
+  }
 }
 
 // Only the step names are aligned: a count that widens its cell then moves

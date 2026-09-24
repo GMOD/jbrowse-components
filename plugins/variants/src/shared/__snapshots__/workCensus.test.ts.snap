@@ -5,10 +5,10 @@ exports[`what each row step recomputes, phased 1`] = `
 second region arrival     arrange 1 (7 rows)  alias 0  clusterable 1  sources 1  rowColorScale 0  -
 pan, no arrival           arrange 0  alias 0  clusterable 0  sources 0  rowColorScale 0  ClearBlockingStateOnViewportChange 1
 drag reorder              arrange 1 (7 rows)  alias 0  clusterable 1  sources 1  rowColorScale 0  -
-focus                     arrange 1 (7 rows)  alias 34  clusterable 2  sources 2  rowColorScale 0  FetchVisibleRegions 1, SettingsInvalidate 1
-relabel                   arrange 1 (7 rows)  alias 27  clusterable 1  sources 1  rowColorScale 0  FetchVisibleRegions 1
+focus                     arrange 1 (7 rows)  alias 34  clusterable 2  sources 2  rowColorScale 0  FetchVisibleRegions 2, SettingsInvalidate 1
+relabel                   arrange 1 (7 rows)  alias 27  clusterable 1  sources 1  rowColorScale 0  -
 recolour                  arrange 1 (7 rows)  alias 27  clusterable 1  sources 1  rowColorScale 0  -
 cluster run lands a tree  arrange 1 (7 rows)  alias 20  clusterable 1  sources 1  rowColorScale 0  -
 region arrival, arranged  arrange 1 (7 rows)  alias 20  clusterable 1  sources 1  rowColorScale 0  -
-reset                     arrange 2 (11 rows)  alias 0  clusterable 2  sources 2  rowColorScale 0  FetchVisibleRegions 1, SettingsInvalidate 1"
+reset                     arrange 2 (11 rows)  alias 0  clusterable 2  sources 2  rowColorScale 0  FetchVisibleRegions 2, SettingsInvalidate 1"
 `;
