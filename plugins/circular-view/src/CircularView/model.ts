@@ -545,7 +545,6 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get minBpPerPx() {
-        // min depends on window dimensions, clamp between old min(0.01) and max
         const maxCircumferencePx = twoPi * maximumRadiusPx
         return clamp(
           this.totalBp / maxCircumferencePx,
@@ -946,14 +945,14 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       rotateClockwiseButton() {
-        self.offsetRadians += Math.PI / 6
+        this.rotate(Math.PI / 6)
       },
 
       /**
        * #action
        */
       rotateCounterClockwiseButton() {
-        self.offsetRadians -= Math.PI / 6
+        this.rotate(-Math.PI / 6)
       },
 
       /**
