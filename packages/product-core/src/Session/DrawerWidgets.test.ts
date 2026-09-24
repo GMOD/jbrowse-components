@@ -214,3 +214,35 @@ test('closing the last widget clears the popped-out state', () => {
   session.hideWidget(widget)
   expect(session.poppedOut).toBe(false)
 })
+
+// A phone has no room for the drawer column, so the host moves every widget
+// into a modal: the drawer never takes width, and the modal is what shows.
+test('modalWidgets shows the widget in a modal and never the drawer', () => {
+  const session = createSession()
+  session.setModalWidgets(true)
+  expect(session.modalWidgetVisible).toBe(false)
+
+  session.showWidget(addTestWidget(session, 'first'))
+  expect(session.drawerVisible).toBe(false)
+  expect(session.modalWidgetVisible).toBe(true)
+
+  session.setModalWidgets(false)
+  expect(session.drawerVisible).toBe(true)
+  expect(session.modalWidgetVisible).toBe(false)
+})
+
+// Closing a popped-out modal hands the widget back to the drawer, but with no
+// drawer to go back to, the same close would reopen the modal it just closed.
+test('closing the modal returns a popped-out widget, and closes one with no drawer', () => {
+  const session = createSession()
+  session.showWidget(addTestWidget(session, 'first'))
+  session.popoutWidget()
+  session.closeModalWidget()
+  expect(session.visibleWidget?.id).toBe('first')
+  expect(session.drawerVisible).toBe(true)
+
+  session.setModalWidgets(true)
+  session.closeModalWidget()
+  expect(session.visibleWidget).toBeUndefined()
+  expect(session.modalWidgetVisible).toBe(false)
+})

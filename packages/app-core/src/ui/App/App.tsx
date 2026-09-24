@@ -1,4 +1,4 @@
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 
 import Snackbar from '@jbrowse/core/ui/Snackbar'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -7,7 +7,7 @@ import {
   ModalWidget,
   drawerGridTemplateColumns,
 } from '@jbrowse/product-core'
-import { AppBar } from '@mui/material'
+import { AppBar, useMediaQuery, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import AppFab from './AppFab.tsx'
@@ -54,7 +54,15 @@ interface Props {
 const App = observer(function App(props: Props) {
   const { session } = props
   const { classes } = useStyles()
-  const { drawerVisible, drawerWidth, drawerPosition, poppedOut } = session
+  const { drawerVisible, drawerWidth, drawerPosition, modalWidgetVisible } =
+    session
+  // a phone has no room for a drawer column beside the views
+  const narrow = useMediaQuery(useTheme().breakpoints.down('sm'), {
+    noSsr: true,
+  })
+  useEffect(() => {
+    session.setModalWidgets(narrow)
+  }, [session, narrow])
   const gridTemplateColumns = drawerGridTemplateColumns({
     drawerVisible,
     drawerPosition,
@@ -63,11 +71,12 @@ const App = observer(function App(props: Props) {
 
   return (
     <div className={classes.root} style={{ gridTemplateColumns }}>
-      {poppedOut ? (
+      {modalWidgetVisible ? (
         <ModalWidget
           session={session}
+          fullScreen={narrow}
           onClose={() => {
-            session.returnWidgetToDrawer()
+            session.closeModalWidget()
           }}
         />
       ) : null}

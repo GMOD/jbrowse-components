@@ -120,6 +120,12 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
        * modal, with no drawer behind it, is disorienting
        */
       poppedOut: false,
+      /**
+       * #volatile
+       * set by a host with no room for a drawer column beside its views (a
+       * phone), so every widget shows in a modal instead
+       */
+      modalWidgets: false,
     }))
     .views(self => ({
       /**
@@ -133,7 +139,24 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
        * the modal and the drawer at once.
        */
       get drawerVisible() {
-        return Boolean(self.visibleWidget) && !self.minimized && !self.poppedOut
+        return (
+          Boolean(self.visibleWidget) &&
+          !self.minimized &&
+          !self.poppedOut &&
+          !self.modalWidgets
+        )
+      },
+      /**
+       * #getter
+       * whether the visible widget shows in a modal: popped out of the drawer,
+       * or on a host with no room for one
+       */
+      get modalWidgetVisible() {
+        return (
+          Boolean(self.visibleWidget) &&
+          !self.minimized &&
+          (self.poppedOut || self.modalWidgets)
+        )
       },
     }))
     .actions(self => ({
@@ -238,6 +261,12 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       /**
        * #action
        */
+      setModalWidgets(flag: boolean) {
+        self.modalWidgets = flag
+      },
+      /**
+       * #action
+       */
       hideAllWidgets() {
         self.activeWidgets.clear()
         self.poppedOut = false
@@ -256,6 +285,19 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * the modal's close button: a popped-out widget goes back to the drawer,
+       * and with no drawer to go back to the widget closes
+       */
+      closeModalWidget() {
+        const widget = self.visibleWidget
+        if (self.modalWidgets && widget) {
+          self.hideWidget(widget)
+        } else {
+          self.returnWidgetToDrawer()
+        }
+      },
       /**
        * #action
        * adds the widget, replacing one with the same id, and shows it

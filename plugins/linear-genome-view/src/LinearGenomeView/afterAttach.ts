@@ -47,25 +47,18 @@ async function openTracklist(
   // activateTrackSelector throws without widget support, which would abort the
   // rest of init (navigation included) over an optional extra
   if (isSessionModelWithWidgets(session)) {
-    // `poppedOut` — the visible widget rendered in a modal, leaving the drawer
-    // column free — lives on SessionWithDrawerWidgets, whose type guard is
-    // product-core's, so duck-type it here rather than take an upward
-    // dependency. A session without the key has no modal to pop out into, so
-    // false is the right answer for it.
-    const poppedOut = 'poppedOut' in session && session.poppedOut === true
-    // the same line App.tsx draws to decide whether to render the drawer column
-    // at all. A *minimized* drawer still holds a visibleWidget while taking no
-    // width, and showWidget un-minimizes it (product-core's DrawerWidgets), so
-    // `!!visibleWidget` alone reads "already open", skips the wait below, and
-    // hands navigation the pre-drawer width — the exact thing this is here to
-    // prevent.
-    const drawerWasOpen =
-      !!session.visibleWidget && !session.minimized && !poppedOut
+    // `drawerVisible` is the line App.tsx draws to render the drawer column at
+    // all: a minimized, popped-out or modal-only widget takes no width. It
+    // lives on SessionWithDrawerWidgets, whose type guard is product-core's, so
+    // it is duck-typed rather than taken as an upward dependency; a session
+    // without it has no drawer column.
+    const drawerVisible = () =>
+      'drawerVisible' in session && session.drawerVisible === true
+    const drawerWasVisible = drawerVisible()
     const widthBefore = self.volatileWidth
     self.activateTrackSelector()
-    // a width change is only coming if the drawer is about to start taking
-    // space; popped out it never does, so don't sit out the timeout for it
-    if (!drawerWasOpen && !poppedOut) {
+    // a width change is only coming if the drawer just started taking space
+    if (!drawerWasVisible && drawerVisible()) {
       // Bounded so init can't wedge here if the drawer doesn't shrink the view
       // (e.g. embedded or modal-drawer layouts, where no width change is
       // coming), and superseded so a re-launch landing mid-wait isn't held

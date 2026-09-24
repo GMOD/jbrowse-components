@@ -209,8 +209,8 @@ function initialize() {
       widgets: types.map(types.frozen<{ type: string; id: string }>()),
       // mirrors the real drawer: a minimized drawer still reports a
       // visibleWidget while taking no width from the view, and showWidget
-      // un-minimizes it. init.tracklist keys its width-settle wait off exactly
-      // that pair.
+      // un-minimizes it. init.tracklist keys its width-settle wait off
+      // drawerVisible, which reads that pair.
       minimized: types.optional(types.boolean, false),
       // mirrors BaseSession's highlight list and band toggle
       highlights: types.array(types.frozen<HighlightType>()),
@@ -233,6 +233,9 @@ function initialize() {
       // most recently added widget, like the real session's
       get visibleWidget() {
         return [...self.widgets.values()].at(-1)
+      },
+      get drawerVisible(): boolean {
+        return !!this.visibleWidget && !self.minimized
       },
       getTrackById(_id: string) {
         return undefined

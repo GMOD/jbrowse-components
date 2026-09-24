@@ -20,6 +20,21 @@ const useStyles = makeStyles()({
     // window.innerHeight read it keeps up with a window resize
     height: '62.5vh',
   },
+  fullScreenDialog: {
+    '& > .MuiScopedCssBaseline-root': {
+      display: 'flex',
+      flexDirection: 'column',
+      flex: 1,
+      minHeight: 0,
+    },
+  },
+  // the widget takes whatever the dialog's app bar leaves
+  fullScreenPaper: {
+    flex: 1,
+    minHeight: 0,
+    width: '100%',
+    height: 'auto',
+  },
 })
 
 /**
@@ -31,11 +46,13 @@ const useStyles = makeStyles()({
 const ModalWidget = observer(function ModalWidget({
   session,
   onClose,
+  fullScreen = false,
 }: {
   session: SessionWithWidgets
   onClose: () => void
+  fullScreen?: boolean
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const { visibleWidget } = session
   const { pluginManager } = getEnv(session)
 
@@ -44,6 +61,8 @@ const ModalWidget = observer(function ModalWidget({
       open
       onClose={onClose}
       maxWidth="xl"
+      fullScreen={fullScreen}
+      classes={fullScreen ? { paper: classes.fullScreenDialog } : undefined}
       header={
         <ModalWidgetAppBar
           widget={visibleWidget}
@@ -52,7 +71,9 @@ const ModalWidget = observer(function ModalWidget({
         />
       }
     >
-      <Paper className={classes.paper}>
+      <Paper
+        className={cx(classes.paper, fullScreen && classes.fullScreenPaper)}
+      >
         <WidgetBody session={session} widget={visibleWidget} />
       </Paper>
     </Dialog>

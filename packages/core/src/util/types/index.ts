@@ -570,6 +570,12 @@ export interface SessionWithDrawerWidgets extends SessionWithWidgets {
   poppedOut: boolean
   popoutWidget(): void
   returnWidgetToDrawer(): void
+  /** true on a host with no room for a drawer, where every widget is a modal */
+  modalWidgets: boolean
+  setModalWidgets(flag: boolean): void
+  /** whether the visible widget is on screen in a modal */
+  modalWidgetVisible: boolean
+  closeModalWidget(): void
 }
 
 export function isSessionModelWithWidgets(
