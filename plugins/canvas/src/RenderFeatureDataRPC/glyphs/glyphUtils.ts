@@ -111,16 +111,8 @@ export function isCodingFeature(feature: Feature): boolean {
 
 export const STRAND_ARROW_WIDTH = 8
 
-export function layoutChild(child: Feature, args: LayoutArgs): FeatureLayout {
-  // Resolved against the CHILD, not `args.feature`: this is the child's own box.
-  const height = featureHeightPx(child, args)
-  return {
-    feature: child,
-    glyphType: 'Box',
-    y: 0,
-    height,
-    children: [],
-  }
+export function boxLayout(feature: Feature, height: number): FeatureLayout {
+  return { feature, glyphType: 'Box', y: 0, height, children: [] }
 }
 
 export function layoutContainerGlyph(
@@ -132,13 +124,7 @@ export function layoutContainerGlyph(
   // outgrows the row its introns are drawn on.
   const heightPx = featureHeightPx(args.feature, args)
   const children = sortByPosition(
-    subfeatures.map(child => ({
-      feature: child,
-      glyphType: 'Box' as const,
-      y: 0,
-      height: heightPx,
-      children: [],
-    })),
+    subfeatures.map(child => boxLayout(child, heightPx)),
   )
   return {
     feature: args.feature,

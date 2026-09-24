@@ -44,7 +44,6 @@ export interface FeatureLayout {
 export interface LayoutArgs {
   feature: Feature
   config: DisplayConfig
-  parentFeature?: Feature
   // Worker jexl, needed only where `featureHeight` holds an expression, which
   // is why a test can call the layout functions without one.
   jexl?: JexlInstance

@@ -1,6 +1,6 @@
 import { sharedChildLabelRows } from '../labelUtils.ts'
 import { featureType, getSubfeatures } from '../util.ts'
-import { layoutChild } from './glyphUtils.ts'
+import { layoutBox } from './box.ts'
 
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -18,7 +18,7 @@ export function findPamSubfeature(feature: Feature) {
 export function layoutCrisprGuide(args: LayoutArgs): FeatureLayout {
   const { feature, config } = args
   return {
-    ...layoutChild(feature, args),
+    ...layoutBox(args),
     glyphType: 'CrisprGuide',
     labelRows: sharedChildLabelRows(config, [
       findPamSubfeature(feature) ? PAM_LABEL : undefined,

@@ -170,19 +170,9 @@ function collapseIsoforms({
     : undefined
 }
 
-// Not `glyphUtils`' exported `layoutChild`, which is the opposite thing: a flat
-// `Box` with no children, for the glyphs whose children are leaves.
 function layoutStackedChild(child: Feature, args: LayoutArgs) {
-  const { feature, config } = args
-  const layout = findGlyph(
-    child,
-    config,
-    false,
-  )({
-    ...args,
-    feature: child,
-    parentFeature: feature,
-  })
+  const { config } = args
+  const layout = findGlyph(child, config, false)({ ...args, feature: child })
   layout.ownsLabelRow = reservesBelowLabelRow({
     feature: child,
     config,

@@ -1,6 +1,6 @@
 import { reservesBelowLabelRow } from '../labelUtils.ts'
 import { featureType, getSubfeatures, isCDS } from '../util.ts'
-import { featureHeightPx, sortByPosition } from './glyphUtils.ts'
+import { boxLayout, featureHeightPx, sortByPosition } from './glyphUtils.ts'
 
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -56,13 +56,9 @@ export function layoutMatureProteinRegion(args: LayoutArgs): FeatureLayout {
   const padding = 1
 
   const sortedChildren = sortByPosition(
-    getMatureProteinChildren(feature).map(child => ({
-      feature: child,
-      glyphType: 'Box' as const,
-      y: 0,
-      height: rowHeight - padding * 2,
-      children: [],
-    })),
+    getMatureProteinChildren(feature).map(child =>
+      boxLayout(child, rowHeight - padding * 2),
+    ),
   )
 
   let labelRows = 0
