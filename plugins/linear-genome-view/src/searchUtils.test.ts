@@ -324,6 +324,58 @@ describe('distinctDestinations', () => {
     expect(places(results, ['other_genes'])).toEqual([results[2], results[1]])
   })
 
+  it('collapses one gene drawn with slightly different ends by two tracks', () => {
+    const results = [
+      hit('ctgA:1049..9000', 'genes'),
+      hit('ctgA:1100..9050', 'other_genes'),
+    ]
+    expect(pick(results, ['other_genes'])).toBe(results[1])
+  })
+
+  it('collapses a chain of overlapping spans into one place', () => {
+    expect(
+      places([
+        hit('ctgA:1..100', 'genes'),
+        hit('ctgA:300..400', 'genes'),
+        hit('ctgA:90..310', 'other_genes'),
+      ]),
+    ).toHaveLength(1)
+  })
+
+  it('keeps the picker for adjacent spans that do not overlap', () => {
+    expect(
+      pick([hit('ctgA:1..100', 'genes'), hit('ctgA:101..200', 'other_genes')]),
+    ).toBeUndefined()
+  })
+
+  it('keeps the picker for overlapping spans on different sequences', () => {
+    expect(
+      pick([hit('ctgA:1..100', 'genes'), hit('ctgB:50..150', 'other_genes')]),
+    ).toBeUndefined()
+  })
+
+  it('keeps the picker for different features with overlapping spans', () => {
+    expect(
+      pick([
+        new BaseResult({ label: 'EDEN.1', locString: 'ctgA:1..100' }),
+        new BaseResult({ label: 'EDEN.2', locString: 'ctgA:50..150' }),
+      ]),
+    ).toBeUndefined()
+  })
+
+  it('merges no overlap the assembly cannot resolve', () => {
+    expect(
+      distinctDestinations({
+        results: [
+          hit('ctgA:1049..9000', 'genes'),
+          hit('ctgA:1100..9050', 'other_genes'),
+        ],
+        assembly: undefined,
+        ...viewWith([]),
+      }),
+    ).toHaveLength(2)
+  })
+
   it('keeps the picker for hits carrying no location', () => {
     expect(
       pick([

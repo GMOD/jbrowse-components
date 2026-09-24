@@ -1,13 +1,12 @@
 import { RefSequenceResult } from '@jbrowse/core/TextSearch/BaseResults'
+import { groupByPlace } from '@jbrowse/core/TextSearch/places'
 import {
-  assembleLocString,
   dedupe,
   getEnv,
   getNotificationSink,
   getSession,
   matchRefNames,
   MAX_GLOB_REGIONS,
-  parseLocString,
   UnknownRefNameError,
 } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
@@ -87,40 +86,6 @@ export function isOpenInView(result: BaseResult, model: LinearGenomeViewModel) {
   return trackId !== undefined && !!model.getTrack(trackId)
 }
 
-// One spelling of a locstring, so two indexes that answer `chr1:1-100` and
-// `1:1..100` are recognised as one place. An unparseable string is compared
-// raw, which can only ever split a group that would otherwise have merged —
-// the safe direction, since the picker is what an unprovable match falls back
-// to.
-export function canonicalLocString(locString: string, assembly: Assembly) {
-  try {
-    const loc = parseLocString(locString, refName =>
-      assembly.isValidRefName(refName),
-    )
-    return assembleLocString({
-      ...loc,
-      refName: assembly.getCanonicalRefName2(loc.refName),
-    })
-  } catch (e) {
-    console.warn('failed to parse location string', locString, e)
-    return locString
-  }
-}
-
-// What a hit means as a destination: the name it shows and the place it goes.
-// A hit with no location has no destination and can never join a group.
-function destination(result: BaseResult, assembly?: Assembly) {
-  const locString = result.getLocation()
-  return locString
-    ? [
-        result.getDisplayString(),
-        assembly?.initialized
-          ? canonicalLocString(locString, assembly)
-          : locString,
-      ].join('\u0000')
-    : undefined
-}
-
 // Which hit of an agreeing group to travel through, best rung first: a track
 // the view already has on screen, then one the session could open if asked,
 // then whatever the ranking put first. The middle rung is not hypothetical —
@@ -167,7 +132,8 @@ function bestRanked(
 // One hit per place, in the order the ranking first reached each. Hits that
 // name one feature at one place are several indexes having found it, not a
 // choice to put to the user: a handful of gene tracks turned every gene search
-// into a picker whose only varying column was Track (issues #4302 and #5068).
+// into a picker whose only varying column was Track (issues #4302 and #5068),
+// and two whose gene models end a few bases apart still did.
 export function distinctDestinations({
   results,
   model,
@@ -179,17 +145,9 @@ export function distinctDestinations({
   session: TrackCatalog
   assembly?: Assembly
 }) {
-  const groups = new Map<string | number, BaseResult[]>()
-  for (const [i, result] of results.entries()) {
-    const key = destination(result, assembly) ?? i
-    const group = groups.get(key)
-    if (group) {
-      group.push(result)
-    } else {
-      groups.set(key, [result])
-    }
-  }
-  return [...groups.values()].map(group => bestRanked(group, model, session))
+  return groupByPlace(results, assembly).map(group =>
+    bestRanked(group, model, session),
+  )
 }
 
 // Every multi-hit result set reaches the picker through here, so the two

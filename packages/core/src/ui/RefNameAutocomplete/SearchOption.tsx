@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react'
 
+import { groupByPlace } from '../../TextSearch/places.ts'
 import { getTrackName } from '../../util/tracks.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
 import { optionDetail } from './util.ts'
@@ -55,6 +56,7 @@ const SearchOption = observer(function SearchOption({
         index === undefined ? undefined : assembly?.regions?.[index]
       return region ? region.end - region.start : undefined
     },
+    placesOf: results => groupByPlace(results, assembly),
   })
   return (
     <li key={key} className={cx(className, classes.row)} {...rest}>

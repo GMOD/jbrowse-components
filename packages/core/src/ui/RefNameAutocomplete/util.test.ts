@@ -1,4 +1,5 @@
 import BaseResult, { RefSequenceResult } from '../../TextSearch/BaseResults.ts'
+import { groupByPlace } from '../../TextSearch/places.ts'
 import { MAX_GLOB_REGIONS } from '../../util/selectNamedRegions.ts'
 import {
   adornmentReservePx,
@@ -382,6 +383,7 @@ describe('optionDetail', () => {
     trackNameOf: (id: string) => (id === 'genes' ? 'RefSeq All' : undefined),
     lengthOf: (refName: string) =>
       refName === 'chr1' ? 248_956_422 : undefined,
+    placesOf: (results: BaseResult[]) => groupByPlace(results),
   }
 
   it('says where a hit goes and which track it came from', () => {
@@ -404,6 +406,32 @@ describe('optionDetail', () => {
     const result = new BaseResult({
       label: 'EDEN',
       results: [opt('EDEN').result, opt('EDEN').result],
+    })
+    expect(optionDetail(result, lookups)).toBe('2 matches')
+  })
+
+  it('says where a row goes when its hits are one place', () => {
+    const hit = (trackId: string) =>
+      new BaseResult({
+        label: 'BRCA1',
+        locString: 'chr17:43044295..43125483',
+        trackId,
+      })
+    const result = new BaseResult({
+      label: 'BRCA1',
+      results: [hit('genes'), hit('other_genes')],
+    })
+    expect(optionDetail(result, lookups)).toBe('chr17:43,044,295-43,125,483')
+  })
+
+  it('counts the places a row stands for', () => {
+    const result = new BaseResult({
+      label: 'SHOX',
+      results: [
+        new BaseResult({ label: 'SHOX', locString: 'chrX:1..100' }),
+        new BaseResult({ label: 'SHOX', locString: 'chrX:1..100' }),
+        new BaseResult({ label: 'SHOX', locString: 'chrY:1..100' }),
+      ],
     })
     expect(optionDetail(result, lookups)).toBe('2 matches')
   })

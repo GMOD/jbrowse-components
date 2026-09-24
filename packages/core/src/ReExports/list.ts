@@ -189,6 +189,7 @@ export default [
   '@jbrowse/core/svg/trackNames',
   '@jbrowse/core/svg/wrapSvgExport',
   '@jbrowse/core/TextSearch/BaseResults',
+  '@jbrowse/core/TextSearch/places',
   '@jbrowse/core/TextSearch/TextSearchManager',
   '@jbrowse/core/ui',
   '@jbrowse/core/ui/AddCustomPluginDialog',

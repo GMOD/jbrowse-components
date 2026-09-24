@@ -1318,6 +1318,14 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/TextSearch/places": {
+      "package": "@jbrowse/core",
+      "names": [
+        "canonicalLocString",
+        "groupByPlace"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/TextSearch/TextSearchManager": {
       "package": "@jbrowse/core",
       "names": [

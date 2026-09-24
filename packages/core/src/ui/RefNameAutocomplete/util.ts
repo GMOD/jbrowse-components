@@ -173,27 +173,32 @@ function formatLocString(locString: string) {
 
 /**
  * The muted line under a row: a sequence's length, where a hit goes and the
- * track it came from, or how many hits share the row. A row sharing its name
+ * track it came from, or how many places share the row. A row sharing its name
  * with a sequence is about the sequence, since an annotation's region feature
- * names it too. A row standing for many regions needs none.
+ * names it too. A row whose hits all go to one place says where, without a
+ * track, since the pick lands through whichever of them the view has open. A
+ * row standing for many regions needs none.
  */
 export function optionDetail(
   result: BaseResult,
-  {
-    trackNameOf,
-    lengthOf,
-  }: {
+  lookups: {
     trackNameOf: (trackId: string) => string | undefined
     lengthOf: (refName: string) => number | undefined
+    placesOf: (results: BaseResult[]) => BaseResult[][]
   },
-) {
+): string | undefined {
+  const { trackNameOf, lengthOf, placesOf } = lookups
   const locString = result.getLocation()
   const trackId = result.getTrackId()
   const sequence = result.results?.find(r => r instanceof RefSequenceResult)
   if (sequence) {
-    return optionDetail(sequence, { trackNameOf, lengthOf })
+    return optionDetail(sequence, lookups)
   } else if (result.results?.length) {
-    return `${result.results.length} matches`
+    const places = placesOf(result.results)
+    const only = places.length === 1 ? places[0]![0]!.getLocation() : undefined
+    return only === undefined
+      ? `${places.length} matches`
+      : formatLocString(only)
   } else if (!locString || /\s/.test(locString)) {
     return undefined
   } else if (result instanceof RefSequenceResult) {

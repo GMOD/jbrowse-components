@@ -1,3 +1,4 @@
+import { canonicalLocString } from '@jbrowse/core/TextSearch/places'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -13,7 +14,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { canonicalLocString, isOpenInView } from '../../searchUtils.ts'
+import { isOpenInView } from '../../searchUtils.ts'
 
 import type { LinearGenomeViewModel } from '../../index.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
