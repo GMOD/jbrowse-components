@@ -3,12 +3,34 @@
 Branch `1001g-syri-demo` (worktree `.claude/worktrees/1001g-syri-demo`), rebased
 onto main after the attributeColumns commit landed there as 98f939e486.
 
-ada went down on 2026-09-24 while minigraph was about 10 of 27 genomes in: ping
-answered and the port-8790 static server still served, but sshd refused
-connections. Once ada is back, check whether `graph/1001g.rgfa` exists. If it
-does not, rerun `build_graph.sh`; it keeps the PanSN FASTAs it has already
-written. Then run `project_graph.sh`. The SyRI outputs are already staged on the
-laptop, so step 2 below can ship the SyRI half without the graph.
+The graph finished before ada went down (minigraph 10:16, projections 12:36 ada
+time); the projections are staged in `~/tutorial_spikes/1001g/host/`. The
+SyRI-only config and README are on jbrowse.org; the graph files are not.
+
+Three things block redeploying:
+
+- **The default session drops three of its four tracks on `code/jb2/main`.**
+  A spec-form `defaultSession` naming LinearWiggleDisplay,
+  LinearMultiRowFeatureDisplay or MultiWaySyntenyDisplay gets them pruned by
+  `pruneUnbuildableNodes.ts` as "pending plugins", because their lazy state
+  models have not loaded (`isStateModelLoaded === false`). It reproduces
+  same-origin on ada and without the GraphGenomeView plugin; the same session
+  passed as `session=spec-…` in the URL renders. Core bug, not this config.
+- **The hosted graph was built in `graph_order.txt` order** (TAIR10, Col-0.6909,
+  KBS-Mac-74, Fly2-2, Nyl-7, T690, TRA-01, Sq-1, HSm, …), not the ROWS lane
+  order the committed script uses, so the script does not reproduce it.
+- **minigraph holds no knob-sized bubble.** The largest bubble in
+  Chr4:1.5-2.9 Mb spans 77 kb; the largest inversion bubble genome-wide is
+  Chr4:4,205,393-4,794,539 (589 kb). Only the SyRI track shows the knob.
+
+gfatools stat: 190894 segments, 268283 links, max rank 26, total segment
+length 210,754,337, rank-0 length 119,146,348. Versions: minigraph 0.21-r606
+(`-t 12`), gfatools 0.5-r296.
+
+Capturing: ada's `~/1001g/www/app-main` is `s3://jbrowse.org/code/jb2/main`
+copied as-is, and `products/jbrowse-capture/esm-1001g` on ada's checkout is the
+laptop's current jb2capture (ada's own has no `--spec`). Chrome blocks
+jbrowse.org from fetching a localhost config, so capture same-origin on ada.
 
 ## What exists
 
