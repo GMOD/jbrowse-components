@@ -14,10 +14,18 @@ const ASK = 194
 
 const shed = (
   width: number | undefined,
-  { searchBoxPx = ASK, clearHighlight = false, viewMenu = false } = {},
+  {
+    searchBoxPx = ASK,
+    clearHighlight = false,
+    viewMenu = false,
+    touchOnly = false,
+  } = {},
 ) =>
   ORDER.filter(
-    k => !headerFit({ width, searchBoxPx, clearHighlight, viewMenu })[k],
+    k =>
+      !headerFit({ width, searchBoxPx, clearHighlight, viewMenu, touchOnly })[
+        k
+      ],
   )
 
 test('an unmeasured header keeps everything', () => {
@@ -112,4 +120,17 @@ test("an embedded view's menu button sheds the row 44px earlier", () => {
   expect(shed(785)).toEqual([])
   expect(shed(813, { viewMenu: true })).toEqual(['trackSelectorIndent'])
   expect(shed(829, { viewMenu: true })).toEqual([])
+})
+
+// A phone's header has no pan buttons or scroll-zoom toggle, so the room they
+// took goes to the search box: the 376px row of a 390px phone keeps the box at
+// its full ask for `ctgA:1,006..6,006` and sheds only what a phone would.
+test('a touch-only header sheds only the pieces it still has', () => {
+  expect(shed(503, { touchOnly: true })).toEqual([])
+  expect(shed(502, { touchOnly: true })).toEqual(['trackSelectorIndent'])
+  expect(shed(376, { touchOnly: true, searchBoxPx: 224 })).toEqual([
+    'trackSelectorIndent',
+    'zoomSlider',
+    'regionWidth',
+  ])
 })

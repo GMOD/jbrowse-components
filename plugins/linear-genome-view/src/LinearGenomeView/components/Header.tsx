@@ -4,6 +4,7 @@ import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import MenuIcon from '@mui/icons-material/Menu'
+import { useMediaQuery } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { HEADER_BAR_HEIGHT } from '../consts.ts'
@@ -49,11 +50,15 @@ const Controls = observer(function Controls({
   const [ref, { width }] = useMeasure('width')
   const highlighted = highlightedDisplays(model)
   const viewMenu = getSession(model).viewTitleBars === false
+  const touchOnly = useMediaQuery('not all and (any-pointer: fine)', {
+    noSsr: true,
+  })
   const fit = headerFit({
     width,
     searchBoxPx: searchBoxWidth(model.coarseVisibleLocStrings),
     clearHighlight: highlighted.length > 0,
     viewMenu,
+    touchOnly,
   })
   return (
     <div className={classes.headerBar} ref={ref}>
@@ -69,9 +74,13 @@ const Controls = observer(function Controls({
         model={model}
         indent={fit.trackSelectorIndent}
       />
-      <ScrollZoomToggle model={model} iconOnly={!fit.scrollZoomLabel} />
+      {touchOnly ? null : (
+        <ScrollZoomToggle model={model} iconOnly={!fit.scrollZoomLabel} />
+      )}
       <div className={classes.spacer} />
-      <HeaderPanControls model={model} compact={!fit.panButtonSpacing} />
+      {touchOnly ? null : (
+        <HeaderPanControls model={model} compact={!fit.panButtonSpacing} />
+      )}
       <SearchBox model={model} />
       <HeaderClearHighlightButton highlighted={highlighted} />
       {fit.regionWidth ? <HeaderRegionWidth model={model} /> : null}
