@@ -1,4 +1,4 @@
-import { ellipseDistance } from './ellipseDistance.ts'
+import { ellipseDistance, ellipseNearest } from './ellipseDistance.ts'
 
 // The reference is a brute-force minimum over the parametric angle: coarse scan,
 // then ternary refinement. Slow and obviously correct, which is the point — the
@@ -108,5 +108,24 @@ test('the answer is symmetric in both axes, as the arc band relies on', () => {
     expect(ellipseDistance(-px!, py!, 400, 20)).toBeCloseTo(base, 12)
     expect(ellipseDistance(px!, -py!, 400, 20)).toBeCloseTo(base, 12)
     expect(ellipseDistance(-px!, -py!, 400, 20)).toBeCloseTo(base, 12)
+  }
+})
+
+test('the nearest point lies on the ellipse, in the cursor’s quadrant, at the distance', () => {
+  const cases: [number, number, number, number][] = [
+    [30, -4, 20, 10],
+    [-3, 7, 20, 10],
+    [0.5, -0.25, 150, 2],
+    [-120, -60, 150, 2],
+    [3, 4, 1, 1],
+    [0, -30, 20, 10],
+  ]
+  for (const [px, py, rx, ry] of cases) {
+    const near = ellipseNearest(px, py, rx, ry)
+    expect(near.dist).toBeCloseTo(ellipseDistance(px, py, rx, ry), 9)
+    expect(Math.hypot(near.x - px, near.y - py)).toBeCloseTo(near.dist, 9)
+    expect((near.x / rx) ** 2 + (near.y / ry) ** 2).toBeCloseTo(1, 6)
+    expect(Math.sign(near.x) * Math.sign(px)).toBeGreaterThanOrEqual(0)
+    expect(Math.sign(near.y) * Math.sign(py)).toBeGreaterThanOrEqual(0)
   }
 })

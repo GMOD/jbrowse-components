@@ -5,12 +5,14 @@ import {
 } from '../shaders/pointMark.consts.generated.ts'
 import { barMark } from './barMark.ts'
 import { sweepMarkAgainstHit } from './drawAgainstHit.ts'
+import { LINK_NO_REGION, linkMark } from './linkMark.ts'
 import { inkHitNearest } from './markHit.ts'
 import { pointMark } from './pointMark.ts'
 import { spanMark } from './spanMark.ts'
 import { defineMark } from './types.ts'
 
 import type { BarChannels, BarParams } from './barMark.ts'
+import type { LinkChannels, LinkParams } from './linkMark.ts'
 import type { PointChannels, PointParams } from './pointMark.ts'
 import type { SpanChannels, SpanParams } from './spanMark.ts'
 import type { MarkShape } from './types.ts'
@@ -412,4 +414,71 @@ test('point: overlapping glyphs answer the nearest centre, not the first box', (
     pointMark.hitNearest!(cluster, block, f, p, cursorX, 50, [0, 1], 100)
       ?.index,
   ).toBe(1)
+})
+
+// Links on the sweep's 50 px block: a dome, an upstream mate (x2 < x), a
+// stem for a mate on no region, and a far pair whose mate sits on a region
+// 8000 px away, so its ellipse degenerates to legs. `sliceOne` because a
+// stroked curve records one box per flattened edge.
+const links: LinkChannels = {
+  x: Uint32Array.from([10, 30, 50, 70]),
+  x2: Uint32Array.from([40, 20, 95, 5]),
+  x2Region: Uint32Array.from([0, 0, LINK_NO_REGION, 1]),
+  y: Float32Array.from([0.2, 0.9, 0.5, 0.7]),
+  size: Float32Array.from([1, 4, NaN, 2]),
+  color: Uint32Array.from([RED, BLUE, RED, BLUE]),
+  count: 4,
+}
+
+const sliceLink = (c: LinkChannels, i: number): LinkChannels => ({
+  x: c.x.subarray(i, i + 1),
+  x2: c.x2.subarray(i, i + 1),
+  x2Region: c.x2Region.subarray(i, i + 1),
+  y: c.y?.subarray(i, i + 1),
+  size: c.size?.subarray(i, i + 1),
+  color: c.color?.subarray(i, i + 1),
+  count: 1,
+})
+
+describe('link: every stroked curve answers its own hit, in both orientations', () => {
+  test.each<[string, Partial<LinkParams>]>([
+    ['dome', {}],
+    ['arc', { linkShape: 'arc' }],
+    ['valued', { valued: true }],
+    ['inset', { valued: true, insetPx: 6 }],
+    [
+      'sized',
+      { sizeScale: { domain: [0, 4], scale: 'linear', range: [1, 5] } },
+    ],
+    ['rows', { rowHeight: 20 }],
+  ])('%s', (_label, overrides) => {
+    for (const reversed of [false, true]) {
+      const params: LinkParams = {
+        domain: [0, 1],
+        linkShape: 'dome',
+        valued: false,
+        sizePx: 2,
+        regions: [
+          reversed
+            ? { anchorPx: 60, anchorBp: 0, signedPxPerBp: -0.5 }
+            : { anchorPx: 10, anchorBp: 0, signedPxPerBp: 0.5 },
+          { anchorPx: 8000, anchorBp: 0, signedPxPerBp: 0.5 },
+        ],
+        ...overrides,
+      }
+      expect(
+        sweepMarkAgainstHit(
+          defineMark({
+            shape: linkMark,
+            channels: (c: LinkChannels) => c,
+            params: () => params,
+          }),
+          links,
+          { ...block, reversed },
+          frame,
+          { maxDistSq: 400, sliceOne: sliceLink },
+        ),
+      ).toEqual([])
+    }
+  })
 })

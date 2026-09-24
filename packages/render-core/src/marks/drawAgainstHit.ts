@@ -46,6 +46,8 @@ const IDENTITY: Ctm = [1, 0, 0, 1, 0, 0]
  * one, and a rotated CTM records the ink's axis-aligned box rather than its
  * silhouette.
  */
+const CURVE_SEGMENTS = 64
+
 export function recordingContext() {
   const calls: RecordedRect[] = []
   const points: [number, number][] = []
@@ -158,13 +160,25 @@ export function recordingContext() {
       pushPoint(cp2x, cp2y)
       pushPoint(x, y)
     },
-    arc(x: number, y: number, radius: number) {
-      pushPoint(x - radius, y - radius)
-      pushPoint(x + radius, y + radius)
+    arc(x: number, y: number, radius: number, start = 0, end = 2 * Math.PI) {
+      this.ellipse(x, y, radius, radius, 0, start, end)
     },
-    ellipse(x: number, y: number, radiusX: number, radiusY: number) {
-      pushPoint(x - radiusX, y - radiusY)
-      pushPoint(x + radiusX, y + radiusY)
+    // Flattened into edges, so a stroked curve records the boxes its
+    // segments cover the way a polyline does; a filled one still records its
+    // point hull.
+    ellipse(
+      x: number,
+      y: number,
+      radiusX: number,
+      radiusY: number,
+      _rotation = 0,
+      start = 0,
+      end = 2 * Math.PI,
+    ) {
+      for (let k = 0; k <= CURVE_SEGMENTS; k++) {
+        const a = start + ((end - start) * k) / CURVE_SEGMENTS
+        this.lineTo(x + radiusX * Math.cos(a), y + radiusY * Math.sin(a))
+      }
     },
     closePath() {},
     fill() {

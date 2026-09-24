@@ -1,0 +1,281 @@
+// The `link` mark shape: one instance is a stroked curve between two genomic
+// positions — `x` on the block's own displayed region and `x2` on whichever
+// displayed region the instance names, the same one, another, or none. Both
+// feet place through a uniform table of the view's displayed regions, so a
+// curve between two regions is drawn by every block holding a foot, each
+// clipped to its own column, and a pan or zoom writes the table and no
+// buffer.
+//
+// The curve is the alignments arc band's (arc.slang): a half-ellipse whose
+// hull is a triangle strip inflated by the half stroke plus one antialiasing
+// ramp, and a fragment that measures the true distance to the analytic
+// curve, so the hull's facets never reach the picture. A pair wider than
+// LINK_FAR_SCREEN_WIDTHS block widths degenerates to a circle whose legs
+// rise from each real foot, built endpoint-relative so a radius in the
+// millions of px cancels nothing. A foot the table cannot place draws a stem
+// at the placed one, so an off-view mate still says it exists.
+//
+// The apex is a value on the display's y scale where the mark names one, else
+// the pair's own half-width, clamped to the band under `dome` and left to
+// leave it under `arc`.
+//! targets: wgsl, glsl
+//! topology: triangle-strip
+//! coverage: analytic
+//! export-consts: LINK_SHAPE_DOME, LINK_SHAPE_ARC, LINK_NO_REGION, LINK_MAX_REGIONS, LINK_STEM_PX, LINK_FAR_SCREEN_WIDTHS, LINK_SIZE_CONSTANT, LINK_SIZE_SCALED, LINK_NO_SIZE, LINK_CURVE_SEGMENTS
+//! js-export: linkApexPx, linkRadiiPx, linkStrokeWidthPx, linkValuePx
+//! js-skip: linkIsFar — reached as a private helper inside the generated linkRadiiPx, the way arc.slang's arcIsFar is, so the far decision is shared without a second way to ask it
+
+import antialias;
+import colorPack;
+import curveDistance;
+import hpmath;
+import markColor;
+import scoreScale;
+import valueScale;
+
+public static const uint LINK_CURVE_SEGMENTS = 64u;
+public static const uint VERTS_PER_INSTANCE = (LINK_CURVE_SEGMENTS + 1u) * 2u;
+static const float PI = 3.14159265359;
+
+public static const int LINK_SHAPE_DOME = 0;
+public static const int LINK_SHAPE_ARC = 1;
+// An `x2Region` the table has no entry for: the mate lies on no displayed
+// region, so the instance draws its stem.
+public static const uint LINK_NO_REGION = 0xFFFFFFFFu;
+public static const uint LINK_MAX_REGIONS = 256u;
+public static const float LINK_STEM_PX = 12.0;
+// How many block widths a pair may span before its ellipse becomes a true
+// circle, which the band clips down to near-vertical legs at each real foot.
+// arc.slang's ARC_FAR_SCREEN_WIDTHS, with its reasoning: not 1, because a
+// circle throws the pair's direction away, and the limit is tessellation.
+public static const float LINK_FAR_SCREEN_WIDTHS = 3.0;
+public static const int LINK_SIZE_CONSTANT = 0;
+public static const int LINK_SIZE_SCALED = 1;
+// The `size` lane's value for an instance holding no number, which takes the
+// range's first px. A sentinel rather than NaN, which a vertex attribute may
+// not carry through every driver's fast math.
+public static const float LINK_NO_SIZE = -1.0e30;
+
+static const float KIND_ELLIPSE = 0.0;
+static const float KIND_CIRCLE = 1.0;
+static const float KIND_STEM = 2.0;
+
+struct LinkInstance {
+  uint  x        : ATTR0;
+  uint  x2       : ATTR1;
+  uint  x2Region : ATTR2;
+  float y        : ATTR3;
+  float size     : ATTR4;
+  uint  color    : ATTR5;
+  uint  row      : ATTR6;
+};
+
+struct Uniforms {
+  float  canvasHeight;
+  // The block's clip column in canvas px: the viewport the pass draws into,
+  // which a foot placed in canvas px converts to clip space against.
+  float  blockPxX;
+  float  blockPxW;
+  float  devicePixelRatio;
+  float  rowHeight;
+  float  insetPx;
+  float  domainMin;
+  float  domainMax;
+  int    valueScaleType;
+  float  valueSymlogConstant;
+  int    rampMode;
+  float  rampMin;
+  float  rampMax;
+  // Whether the mark names a `y`: the apex is then the value's height.
+  int    valued;
+  int    linkShape;
+  int    sizeMode;
+  float  sizeConstantPx;
+  float  sizeDomainMin;
+  float  sizeDomainMax;
+  int    sizeScaleType;
+  float  sizeRangeMin;
+  float  sizeRangeMax;
+  // The block's own displayed region, which every instance's `x` is on.
+  uint   ownRegion;
+  uint   regionCount;
+  float  zero;
+  // One entry per displayed region: (anchorPx, anchorBpHi, anchorBpLo,
+  // signedPxPerBp), the anchor a bp of the region near the view so a foot's
+  // offset from it stays inside float32.
+  float4 regionTable[LINK_MAX_REGIONS];
+};
+[[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
+[[vk::binding(2, 0)]] Sampler2D<float4> colorRamp;
+
+struct VsOut {
+  float4 position : SV_Position;
+  float4 color    : COLOR0;
+  // Fragment position in the frame its curve is measured in: the ellipse's
+  // centre, a far circle's leg foot, or the stem's foot.
+  float2 local    : COLOR1;
+  nointerpolation float2 radii : COLOR2;
+  nointerpolation float  kind  : COLOR3;
+  // The resolved half stroke width, carried so the hull the vertex stage
+  // inflated and the ink the fragment measures are one width.
+  nointerpolation float halfWidthPx : COLOR4;
+  // Which leg of a far circle a vertex belongs to, ±1, and +1 throughout for
+  // one connected curve. The strip has no break in it, so the quad between
+  // the two legs' tips rasterizes; both tips carry the same `local`, so its
+  // distance comes out ~0 and it inks a bar. The fragment discards where this
+  // ramps between the legs.
+  float  legSide : COLOR5;
+};
+
+float regionPx(uint bp, uint region, Uniforms u) {
+  float4 r = u.regionTable[region];
+  float2 split = hpSplitUint(bp);
+  return r.x + ((split.x - r.y) + (split.y - r.z)) * r.w;
+}
+
+bool linkIsFar(float halfWidthPx, float screenWidthPx) {
+  return 2.0 * halfWidthPx > LINK_FAR_SCREEN_WIDTHS * screenWidthPx;
+}
+
+// The height above the baseline a mark's `y` value stands at, on the band's
+// value scale inset the way a point's is.
+public float linkValuePx(float value, float domainMin, float domainMax, float h, int scaleType, float insetPx, float symlogConstant) {
+  float inset = min(insetPx, h * 0.5);
+  return h - inset - valueToYPxScaled(value, domainMin, domainMax, h - 2.0 * inset, scaleType, symlogConstant);
+}
+
+// The apex height of a pair, in CSS px above the baseline.
+public float linkApexPx(float halfWidthPx, float reachPx, int linkShape, int valued, float valuePx) {
+  if (valued != 0) { return valuePx; }
+  if (linkShape == LINK_SHAPE_ARC) { return halfWidthPx; }
+  return min(halfWidthPx, reachPx);
+}
+
+// The two radii of the half-ellipse a pair draws, or a true circle's once the
+// pair is far. `//! js-export`ed as a pair, arc.slang's `arcRadiiPx` case: the
+// decision IS the pair, and it is what the painter, the ink and the hit test
+// read.
+public float2 linkRadiiPx(float halfWidthPx, float apexPx, float screenWidthPx) {
+  if (linkIsFar(halfWidthPx, screenWidthPx)) {
+    return float2(halfWidthPx, halfWidthPx);
+  }
+  return float2(halfWidthPx, apexPx);
+}
+
+// An instance's stroke width: the constant, or its raw `size` value through
+// the size scale into the px range, floored at 1.5 device px so the single
+// antialiasing ramp always has room (arc-antialiasing-without-msaa.md).
+public float linkStrokeWidthPx(float raw, int sizeMode, float constantPx, float domainMin, float domainMax, int scaleType, float rangeMin, float rangeMax, float dpr) {
+  float w = constantPx;
+  if (sizeMode == LINK_SIZE_SCALED) {
+    w = raw > -1.0e29
+      ? rangeMin + normalizeScore(raw, domainMin, domainMax, scaleType, 1.0) * (rangeMax - rangeMin)
+      : rangeMin;
+  }
+  return max(w, 1.5 / dpr);
+}
+
+// How far around a far circle each leg's hull sweeps, in radians from the
+// foot: to the band's edge and no further, so all 64 segments land where the
+// scissor keeps them. arc.slang's `legSweepAngle` and its reasoning.
+float legSweepAngle(float radiusPx, float yReachPx) {
+  return asin(clamp(yReachPx / max(radiusPx, 1e-6), 0.0, 1.0));
+}
+
+[shader("vertex")]
+VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
+  uint seg = vid / 2u;
+  float side = (vid % 2u == 0u) ? -1.0 : 1.0;
+  float t = float(seg) / float(LINK_CURVE_SEGMENTS);
+
+  float strokeHalf = 0.5 * linkStrokeWidthPx(
+    inst.size, u.sizeMode, u.sizeConstantPx, u.sizeDomainMin, u.sizeDomainMax,
+    u.sizeScaleType, u.sizeRangeMin, u.sizeRangeMax, u.devicePixelRatio);
+  float aaHalf = aaHalfPx(u.devicePixelRatio);
+  float hw = strokeHalf + aaHalf;
+
+  float baseY = u.rowHeight * float(inst.row) + u.rowHeight;
+  float reach = max(u.rowHeight - u.insetPx, 0.0);
+  float xPx = regionPx(inst.x, u.ownRegion, u);
+  bool placed = inst.x2Region < u.regionCount;
+  float x2Px = placed ? regionPx(inst.x2, inst.x2Region, u) : xPx;
+
+  float2 p;
+  float2 tang;
+  float2 origin;
+  float legDir = 1.0;
+  float legSide = 1.0;
+  float kind;
+  float2 radii;
+  if (!placed) {
+    kind = KIND_STEM;
+    radii = float2(0.0, LINK_STEM_PX);
+    p = float2(0.0, -t * LINK_STEM_PX);
+    tang = float2(0.0, -1.0);
+    origin = float2(xPx, baseY);
+  } else {
+    float pairHalf = abs(x2Px - xPx) * 0.5;
+    float valuePx = linkValuePx(inst.y, u.domainMin, u.domainMax, u.rowHeight,
+                                u.valueScaleType, u.insetPx, u.valueSymlogConstant);
+    float apex = linkApexPx(pairHalf, reach, u.linkShape, u.valued, valuePx);
+    radii = linkRadiiPx(pairHalf, apex, u.blockPxW);
+    float2 ends = float2(min(xPx, x2Px), max(xPx, x2Px));
+    if (linkIsFar(pairHalf, u.blockPxW)) {
+      kind = KIND_CIRCLE;
+      float legSweep = legSweepAngle(radii.x, reach + strokeHalf + aaHalf);
+      // Two legs, each built from ITS OWN foot outward with the half-angle
+      // identity, so a radius past 1e6 px cancels nothing; the frame's y is
+      // negative upward, canvas px.
+      bool rightLeg = t <= 0.5;
+      float b = (rightLeg ? t : 1.0 - t) * 2.0 * legSweep;
+      float sh = sin(b * 0.5);
+      p = float2(-2.0 * radii.x * sh * sh, -sin(b) * radii.x);
+      tang = float2(-sin(b), -cos(b));
+      origin = float2(rightLeg ? ends.y : ends.x, baseY);
+      legDir = rightLeg ? 1.0 : -1.0;
+      legSide = legDir;
+    } else {
+      kind = KIND_ELLIPSE;
+      float a = t * PI;
+      p = float2(cos(a) * radii.x, -sin(a) * radii.y);
+      tang = float2(-sin(a) * radii.x, -cos(a) * radii.y);
+      origin = float2((xPx + x2Px) * 0.5, baseY);
+    }
+  }
+
+  float tlen = length(tang);
+  float2 tn = (tlen > 0.001) ? tang / tlen : float2(1.0, 0.0);
+  float2 local = p + float2(-tn.y, tn.x) * hw * side;
+  float2 screen = origin + float2(legDir * local.x, local.y);
+
+  VsOut o;
+  o.position = float4(
+    (screen.x - u.blockPxX) / u.blockPxW * 2.0 - 1.0,
+    yPxToClipY(screen.y, u.canvasHeight),
+    0.0, 1.0);
+  o.color = markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax);
+  o.local = local;
+  o.radii = radii;
+  o.kind = kind;
+  o.halfWidthPx = strokeHalf;
+  o.legSide = legSide;
+  return o;
+}
+
+// Perpendicular distance in CSS px from this fragment to its analytic curve.
+float linkDistance(VsOut i) {
+  if (i.kind >= 1.5) {
+    float y = clamp(i.local.y, -i.radii.y, 0.0);
+    return length(float2(i.local.x, i.local.y - y));
+  }
+  if (i.kind >= 0.5) { return distToWideCircle(i.local, i.radii.x); }
+  return sdEllipse(i.local, i.radii);
+}
+
+[shader("fragment")]
+float4 fs_main(VsOut fragIn) : SV_Target {
+  if (abs(fragIn.legSide) < 0.999) { discard; }
+  // |∇d| is 1 per CSS px, so the ramp is a constant number of device pixels.
+  float alpha = edgeCoverage(fragIn.halfWidthPx - linkDistance(fragIn), u.devicePixelRatio);
+  return float4(fragIn.color.rgb, fragIn.color.a * alpha);
+}

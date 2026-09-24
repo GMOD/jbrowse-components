@@ -76,11 +76,6 @@ export function linkedReadColorSlot(idx: number): number {
   return _min(idx, 7)
 }
 
-export function distToWideCirclePx(x: number, y: number, r: number): number {
-  let rk = ((2.0 * x) + (((x * x) + (y * y)) / r))
-  return Math.abs((rk / (Math.sqrt(_max((1.0 + (rk / r)), 0.0)) + 1.0)))
-}
-
 export function hueRampLane(hueDeg: number, lane: number): number {
   let hp = ((hueDeg / 360.0) * 6.0)
   let x = (0.5 * (1.0 - Math.abs(((hp % 2.0) - 1.0))))

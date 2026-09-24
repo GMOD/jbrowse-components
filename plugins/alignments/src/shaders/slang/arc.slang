@@ -63,6 +63,7 @@
 import alignmentsUniforms;
 import arcBandUniforms;
 import antialias;
+import curveDistance;
 
 
 // The hull needs enough segments that its ±(lineWidth/2 + aaHalfPx) offsets

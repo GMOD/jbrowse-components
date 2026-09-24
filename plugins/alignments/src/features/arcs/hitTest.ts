@@ -10,13 +10,13 @@
 // this display's CLAUDE.md names: an interchromosomal tick is ink, drawn in the
 // same rect, and hovering it reported nothing at all — so the one mark whose
 // meaning is least guessable from its shape was the one you could not ask.
+import { ellipseDistance } from '@jbrowse/render-core/marks/ellipseDistance'
+import { distToWideCirclePx } from '@jbrowse/render-core/shaders/curveDistance'
 import { ARC_HIT_SLOP_PX, bestArcMark } from '@jbrowse/sv-core'
 
-import { distToWideCirclePx } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { ARC_FLAT_MIN_PX } from '../../shaders/slang/arcFlat.consts.generated.ts'
 import { ARC_WIDTH_MAX_SCALE, arcLineWidth } from './arcLineWidth.ts'
 import { arcAnchorY } from './arcYScale.ts'
-import { ellipseDistance } from './ellipseDistance.ts'
 import { arcMarkFrom } from './mark.ts'
 
 import type { PartnerLocus } from './arcTypes.ts'
