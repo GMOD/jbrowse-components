@@ -12,6 +12,7 @@ export default function LGVSyntenyDisplayF(pluginManager: PluginManager) {
     )
     return new DisplayType({
       name: 'LGVSyntenyDisplay',
+      displayName: 'Synteny alignments display',
       configSchema,
       // lazily loaded: this model builds on the alignments display model, so a
       // static edge here would pull that whole subgraph into the eager bundle

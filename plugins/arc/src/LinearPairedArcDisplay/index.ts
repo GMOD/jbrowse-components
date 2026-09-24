@@ -10,7 +10,7 @@ export default function LinearPairedArcDisplayF(pluginManager: PluginManager) {
     const configSchema = configSchemaFactory()
     return new DisplayType({
       name: 'LinearPairedArcDisplay',
-      displayName: 'Variant display arcs',
+      displayName: 'Structural variant arc display',
       helpText:
         'Can display arcs connecting SVs and breakends in VCF format or BEDPE pairs',
       configSchema,

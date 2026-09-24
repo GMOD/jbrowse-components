@@ -176,7 +176,7 @@ test('arc display SVG export renders bezier arcs for BND variants', async () => 
   // switch to the paired-arc display type
   fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Display types', ...opts))
-  fireEvent.click(await findByText('Variant display arcs', ...opts))
+  fireEvent.click(await findByText('Structural variant arc display', ...opts))
 
   await findDisplayPainted('arc-display', delay)
 

@@ -14,6 +14,7 @@ export default function LinearManhattanDisplayF(pluginManager: PluginManager) {
     const configSchema = configSchemaFactory()
     return new DisplayType({
       name: 'LinearManhattanDisplay',
+      displayName: 'Manhattan plot display',
       configSchema,
       // lazily loaded: the model composes the wiggle score mixins, and is
       // fetched when a GWAS track is shown or a session names this display

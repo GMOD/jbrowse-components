@@ -302,8 +302,8 @@ paired-end counts:
 ```
 
 Each record holds both ends, so the whole callset reads as arcs at chromosome
-scale: **Display types → Variant display arcs** on the track menu draws one arc
-per record between its two breakends.
+scale: **Display types → Structural variant arc display** on the track menu
+draws one arc per record between its two breakends.
 
 ## Copy number from the published callsets
 
