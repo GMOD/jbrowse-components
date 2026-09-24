@@ -159,7 +159,7 @@ export function variantTrackMenuItems(
                 : ' (every genotype is unphased)'
           }`,
           helpText:
-            'Phased mode splits each sample into multiple rows representing each haplotype, and the phasing of the variants is used to color the variant in the individual haplotype rows. For example, a diploid sample SAMPLE1 will generate two rows SAMPLE1-HP0 and SAMPLE1 HP1 and a variant 1|0 will draw a box in the top row but not the bottom row',
+            'Phased mode splits each sample into multiple rows representing each haplotype, and the phasing of the variants is used to color the variant in the individual haplotype rows. For example, a diploid sample SAMPLE1 will generate two rows SAMPLE1 HP0 and SAMPLE1 HP1 and a variant 1|0 will draw a box in the top row but not the bottom row',
           disabled: !self.hasPhasedOrHaploid,
           // What is left when the gate is off is exactly "every called genotype
           // carries a `/`", so the message says that rather than the narrower

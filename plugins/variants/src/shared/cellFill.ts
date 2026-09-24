@@ -41,9 +41,9 @@ export function shadeByDosage(hue: string, dosage: number) {
   const key = `${hue}|${dosage}`
   let fill = shadedByHue.get(key)
   if (fill === undefined) {
-    const { h, s, l } = colord(hue).toHsl()
+    const { h, s, l, a } = colord(hue).toHsl()
     const lifted = l + (1 - dosage) * Math.max(0, PALE_LIGHTNESS - l)
-    fill = colord({ h, s, l: lifted }).toHex()
+    fill = colord({ h, s, l: lifted }).alpha(a).toHex()
     shadedByHue.set(key, fill)
   }
   return fill

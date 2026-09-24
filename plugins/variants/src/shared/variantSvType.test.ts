@@ -136,6 +136,17 @@ describe('assignSvTypeColors', () => {
     expect(new Set(values).size).toBe(values.length)
   })
 
+  it('keeps an unrecognized token its colour whatever else is in view', () => {
+    const alone = assignSvTypeColors(['FOO'])
+    expect(assignSvTypeColors(['FOO', 'DEL', 'DUP', 'CN2']).FOO).toBe(alone.FOO)
+  })
+
+  it('names the gnomAD-SV complex and translocation classes', () => {
+    const colors = assignSvTypeColors(['CPX', 'BND'])
+    expect(colors.CPX).toBe('#4daf4a')
+    expect(getVariantSvType(feat({ ALT: ['<CTX>'] }))).toBe('BND')
+  })
+
   it('colors copy-number states with an absolute rainbow, ordered ascending', () => {
     const colors = assignSvTypeColors(['CN3', 'CN0', 'DEL'])
     // known bucket first, then copy numbers ascending
@@ -154,10 +165,10 @@ describe('assignSvTypeColors', () => {
   it('does not reuse a predefined class color for an unknown token', () => {
     // regression: DUP (set1 blue) and an unrecognized CPX token must not share
     // a color — the unknown skips every color a known class already took
-    const colors = assignSvTypeColors(['DUP', 'CPX', 'DEL'])
+    const colors = assignSvTypeColors(['DUP', 'FOO', 'DEL'])
     expect(colors.DUP).toBe('#377eb8')
-    expect(colors.CPX).not.toBe(colors.DUP)
-    expect(colors.CPX).not.toBe(colors.DEL)
+    expect(colors.FOO).not.toBe(colors.DUP)
+    expect(colors.FOO).not.toBe(colors.DEL)
   })
 
   it('is deterministic', () => {
@@ -171,12 +182,12 @@ describe('assignSvTypeColors', () => {
   })
 
   it('paints the non-structural member the default alt hue, last', () => {
-    const colors = assignSvTypeColors(['CPX', NON_SV_TYPE, 'DEL'])
+    const colors = assignSvTypeColors(['FOO', NON_SV_TYPE, 'DEL'])
     expect(colors[NON_SV_TYPE]).toBe(ALT_HUE)
     expect(Object.keys(colors).at(-1)).toBe(NON_SV_TYPE)
     // excluded from the set1 auto-assignment, so a real token still gets set1
-    expect(colors.CPX).not.toBe(ALT_HUE)
-    expect(set1).toContain(colors.CPX)
+    expect(colors.FOO).not.toBe(ALT_HUE)
+    expect(set1).toContain(colors.FOO)
   })
 })
 

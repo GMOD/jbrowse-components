@@ -54,6 +54,7 @@ export const PREDEFINED_SV_TYPES = [
   { type: 'INV', label: 'Inversion', color: '#ff7f00' },
   { type: 'CNV', label: 'Copy number', color: '#5c3a1e' },
   { type: 'BND', label: 'Breakend', color: '#a65628' },
+  { type: 'CPX', label: 'Complex', color: '#4daf4a' },
   { type: MIXED_SV_TYPE, label: 'Mixed', color: '#999999' },
 ] as const
 
@@ -78,6 +79,8 @@ const RAW_TOKEN_TO_BUCKET: Record<string, string> = {
   CNV: 'CNV',
   BND: 'BND',
   TRA: 'BND',
+  CTX: 'BND',
+  CPX: 'CPX',
 }
 
 function normalizeRawToken(raw: string) {
@@ -238,13 +241,30 @@ export function svTypeDisplayLabel(type: string) {
   return PREDEFINED_LABEL[type] ?? type
 }
 
+// set1's colours no predefined class takes, for tokens no class names
+const UNNAMED_TOKEN_PALETTE = set1.filter(
+  c => !PREDEFINED_SV_TYPES.some(t => t.color === c),
+)
+
+function tokenHash(token: string) {
+  let h = 0
+  for (let i = 0; i < token.length; i++) {
+    h = (h * 31 + token.charCodeAt(i)) | 0
+  }
+  return h >>> 0
+}
+
 /**
  * Assign a color to each present SV type: the predefined color for a known
- * bucket, an absolute copy-number rainbow color for a CN state, otherwise the
- * next set1 color not already taken. Deterministic and ordered — known buckets
- * in canonical order, then copy-number states ascending, then other tokens
- * alphabetically — so the shipped map's legend reads in that order and its
- * swatches exactly match the painted cells.
+ * bucket, an absolute copy-number rainbow color for a CN state, otherwise a
+ * palette slot picked by the token's hash. Ordered — known buckets in canonical
+ * order, then copy-number states ascending, then other tokens alphabetically —
+ * so the shipped map's legend reads in that order and its swatches exactly
+ * match the painted cells.
+ *
+ * A token's colour depends on the token, not on what else the window holds, so
+ * panning does not recolour it. Only two unnamed tokens hashing to one slot in
+ * the same window move one of them, to the next free slot.
  */
 export function assignSvTypeColors(types: string[]): Record<string, string> {
   const known = types
@@ -260,23 +280,22 @@ export function assignSvTypeColors(types: string[]): Record<string, string> {
     .sort()
 
   const result: Record<string, string> = {}
-  const used = new Set<string>()
   for (const type of known) {
-    const color = PREDEFINED_COLOR[type]!
-    result[type] = color
-    used.add(color)
+    result[type] = PREDEFINED_COLOR[type]!
   }
   for (const type of copyNumbers) {
     result[type] = copyNumberColor(copyNumberValue(type))
   }
-  // Draw the remaining unrecognized tokens from the same set1 palette, skipping
-  // colors a predefined class already took — so e.g. a CPX token can't land on
-  // the same blue as Duplication. Falls back to cycling the full palette only if
-  // a VCF has more distinct SV types than set1 has colors (real callsets don't).
-  const free = set1.filter(c => !used.has(c))
-  other.forEach((type, i) => {
-    result[type] = free.length ? free[i % free.length]! : set1[i % set1.length]!
-  })
+  const n = UNNAMED_TOKEN_PALETTE.length
+  const taken = new Set<number>()
+  for (const type of other) {
+    let slot = tokenHash(type) % n
+    for (let probe = 0; probe < n && taken.has(slot); probe++) {
+      slot = (slot + 1) % n
+    }
+    taken.add(slot)
+    result[type] = UNNAMED_TOKEN_PALETTE[slot]!
+  }
   // Last, and the default scale's alt hue: it is the scale's "no structural
   // class" member, which is what an alt cell means with no further meaning on
   // it. A grey put its het and triploid shades on the reference grey's own

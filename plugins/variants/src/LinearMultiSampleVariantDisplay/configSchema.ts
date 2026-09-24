@@ -63,10 +63,8 @@ import { DEFAULT_VARIANT_LANE_HEIGHT } from '../shared/variantTopBands.ts'
  * ```
  *
  * #example
- * Phased haplotype rows, two per sample. Sample colors and group labels come
- * from the adapter's `samplesTsvLocation` above — the display's own `layout`
- * holds the row arrangement the user drags into place, so it is session state
- * rather than a config slot:
+ * Phased haplotype rows, one per haplotype of each sample. `rows` arranges
+ * them by sample name, so the order below puts both of HG002's rows first:
  * ```js
  * {
  *   type: 'VariantTrack',
@@ -82,6 +80,7 @@ import { DEFAULT_VARIANT_LANE_HEIGHT } from '../shared/variantTopBands.ts'
  *       type: 'LinearMultiSampleVariantDisplay',
  *       height: 400,
  *       renderingMode: 'phased',
+ *       rows: { domain: ['HG002'] },
  *     },
  *   ],
  * }

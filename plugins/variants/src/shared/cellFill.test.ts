@@ -45,6 +45,13 @@ describe('shadeByDosage', () => {
     }
   })
 
+  it("keeps a translucent hue's alpha on the het", () => {
+    expect(colord(shadeByDosage('rgba(255,0,0,0.3)', 0.5)).alpha()).toBeCloseTo(
+      0.3,
+      2,
+    )
+  })
+
   it('leaves a hue already lighter than the ceiling alone', () => {
     expect(hex(shadeByDosage('hsl(200,50%,90%)', 0))).toBe(
       hex('hsl(200,50%,90%)'),
