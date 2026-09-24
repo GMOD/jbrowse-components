@@ -33,7 +33,7 @@ export interface MarkDisplayModel extends WiggleGpuDisplayModel<
   legendSections: MarkLegendSection[]
   skippedFeatures: SkippedFeatures
   densityStandInNotice: string | undefined
-  configNotices: string[]
+  notices: string[]
   rowsBelowPlot: number
   rowsCutNotice: string | undefined
   facetLayout: FacetLayout

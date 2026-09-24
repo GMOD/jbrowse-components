@@ -871,13 +871,6 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The config problems as lines, for the corner notice.
-       */
-      get configNotices(): string[] {
-        return this.configProblems.map(problemText)
-      },
-      /**
-       * #getter
        * Rows the plot has no pixel for: a row is never drawn shorter than
        * one, and the plot does not scroll.
        */
@@ -899,15 +892,12 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * What the display drew around, as lines an agent's settle report
-       * carries: its config problems, and the rows it had no room for.
+       * The config problems as lines an agent's settle report carries: a
+       * display with one still draws, so nothing else reaches a caller that
+       * cannot see the corner notice.
        */
       get notices(): string[] {
-        const { rowsCutNotice } = this
-        return [
-          ...this.configNotices,
-          ...(rowsCutNotice ? [rowsCutNotice] : []),
-        ]
+        return this.configProblems.map(problemText)
       },
       /**
        * #getter
@@ -1127,7 +1117,8 @@ export function stateModelFactory(
        * #action
        * Scan the features for the fields a plot can read. A scan that found a
        * numeric field answers for the display's life; one that found none
-       * answers only for the window it read, and a failed one for nothing.
+       * answers only for the window it read, and a failed one for nothing. A
+       * scan a newer one aborted answers with the newer one's fields.
        */
       ensurePlotFields() {
         const regions = plotScanRegions(self.host)
@@ -1143,7 +1134,7 @@ export function stateModelFactory(
         self.setPlotFieldsPromise(pending, regions)
         return pending
 
-        async function scan() {
+        async function scan(): Promise<PlotFields> {
           const active = self.plotScanRotation.begin()
           self.setPlotFields(undefined)
           try {
@@ -1160,6 +1151,10 @@ export function stateModelFactory(
             }
             return fields
           } catch (error) {
+            const successor = self.plotFieldsPromise
+            if (!active.isCurrent() && successor && successor !== pending) {
+              return successor
+            }
             if (active.isCurrent()) {
               self.setPlotFields(undefined, error)
               self.setPlotFieldsPromise(undefined)
@@ -1294,7 +1289,7 @@ export function stateModelFactory(
         const step = widestBinStep([
           ...transform,
           ...(facet?.transform ?? []),
-          ...self.layerRequests.flatMap(l => l.transform ?? []),
+          ...self.conf.marks.flatMap(m => stepsOf(m.transform, bpPerPx)),
         ])
         const regions =
           step > 0

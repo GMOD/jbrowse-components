@@ -87,6 +87,28 @@ test('a bin step widens the fetch and the loaded span to the bin edges it stradd
   expect(fetchedRegion(mockRpcCall)).toMatchObject({ start: 3_000, end: 9_500 })
 })
 
+test("a mark outside its zoom range widens the fetch only by its bin at the view's zoom", async () => {
+  const { display, mockRpcCall } = await setup([
+    ...RAW_MARKS,
+    {
+      mark: 'bar',
+      transform: [{ type: 'bin', step: 'auto' }],
+      encoding: { y: 'count' },
+      minBpPerPx: 1000,
+    },
+  ])
+
+  display.fetchNeeded(NEEDED)
+
+  await waitFor(() => {
+    expect(display.loadedRegions.get(0)).toMatchObject({
+      start: 3_300,
+      end: 9_400,
+    })
+  })
+  expect(fetchedRegion(mockRpcCall)).toMatchObject({ start: 3_300, end: 9_400 })
+})
+
 test('a display with no bin step fetches the span it was handed', async () => {
   const { display, mockRpcCall } = await setup(RAW_MARKS)
 

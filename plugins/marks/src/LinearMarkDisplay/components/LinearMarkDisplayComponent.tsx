@@ -57,7 +57,7 @@ const LinearMarkDisplayComponent = observer(
                 tooltip={model.rowsCutNotice}
               />
             ) : null}
-            <ConfigProblemsIndicator notices={model.configNotices} />
+            <ConfigProblemsIndicator notices={model.notices} />
             <SkippedFeaturesIndicator {...model.skippedFeatures} />
           </>
         )}

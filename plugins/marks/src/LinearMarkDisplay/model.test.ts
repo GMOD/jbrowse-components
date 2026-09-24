@@ -855,13 +855,13 @@ test('rows past the plot at one pixel each are counted and named', () => {
     REGION,
   )
   expect(display.rowsBelowPlot).toBe(0)
-  expect(display.notices).toEqual([])
+  expect(display.rowsCutNotice).toBeUndefined()
   display.setRpcData(0, result([{ y: rows(400), row: rows(400) }]), REGION)
   expect(display.rowsBelowPlot).toBe(400 - plotHeight)
-  expect(display.notices).toEqual([
+  expect(display.rowsCutNotice).toBe(
     `${400 - plotHeight} of 400 rows fall below the plot and are not drawn; a taller track shows them`,
-  ])
-  expect(display.configNotices).toEqual([])
+  )
+  expect(display.notices).toEqual([])
 })
 
 test('a span outside its zoom range adds no bands', () => {
@@ -2324,6 +2324,26 @@ test('a scan finding no numeric field answers only for the window it read', asyn
   view.setNewView(1, 3_000_000)
   await display.ensurePlotFields()
   expect(scanned).toHaveLength(2)
+})
+
+test('a scan a newer one aborted answers with the newer one', async () => {
+  let rejectFirst: (e: Error) => void = () => {}
+  const { display, view, scanned } = scanEnvironment([
+    () =>
+      new Promise((_resolve, reject) => {
+        rejectFirst = reject
+      }),
+    SCORED,
+  ])
+  const first = display.ensurePlotFields()
+  view.setNewView(1, 1_000_000)
+  const second = display.ensurePlotFields()
+  expect(scanned).toHaveLength(2)
+  expect((await second).numeric).toEqual(['score'])
+  rejectFirst(new DOMException('aborted', 'AbortError'))
+  expect((await first).numeric).toEqual(['score'])
+  expect(display.plotFields?.numeric).toEqual(['score'])
+  expect(display.plotFieldsError).toBeUndefined()
 })
 
 test('a failed scan is tried again on the next ask', async () => {
