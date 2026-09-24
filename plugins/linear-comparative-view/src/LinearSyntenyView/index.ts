@@ -1,6 +1,5 @@
-import { lazy } from 'react'
-
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import { linearSyntenyLaunchKeys } from './launchKeys.ts'
 
@@ -16,7 +15,9 @@ export default function LinearSyntenyViewF(pluginManager: PluginManager) {
       displayName: 'Linear synteny view',
       stateModel,
       launchKeys: linearSyntenyLaunchKeys,
-      ReactComponent: lazy(() => import('./components/LinearSyntenyView.tsx')),
+      ReactComponent: lazyWithPreload(
+        () => import('./components/LinearSyntenyView.tsx'),
+      ),
     })
   })
 }

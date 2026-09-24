@@ -1,6 +1,5 @@
-import { lazy } from 'react'
-
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import { spreadsheetLaunchKeys } from './launchKeys.ts'
 
@@ -19,7 +18,9 @@ export default function SpreadsheetViewF(pluginManager: PluginManager) {
       displayName: 'Spreadsheet view',
       stateModel,
       launchKeys: spreadsheetLaunchKeys,
-      ReactComponent: lazy(() => import('./components/SpreadsheetView.tsx')),
+      ReactComponent: lazyWithPreload(
+        () => import('./components/SpreadsheetView.tsx'),
+      ),
     })
   })
 }

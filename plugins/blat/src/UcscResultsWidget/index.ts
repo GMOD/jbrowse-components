@@ -1,6 +1,5 @@
-import { lazy } from 'react'
-
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import { configSchema } from './configSchema.ts'
 import { stateModelFactory } from './stateModel.ts'
@@ -15,7 +14,9 @@ export default function UcscResultsWidgetF(pluginManager: PluginManager) {
         heading: 'Search results',
         configSchema,
         stateModel: stateModelFactory(),
-        ReactComponent: lazy(() => import('./UcscResultsWidget.tsx')),
+        ReactComponent: lazyWithPreload(
+          () => import('./UcscResultsWidget.tsx'),
+        ),
       }),
   )
 }

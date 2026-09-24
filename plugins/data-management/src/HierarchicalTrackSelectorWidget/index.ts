@@ -1,6 +1,5 @@
-import { lazy } from 'react'
-
 import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchema from './configSchema.ts'
 import stateModelFactory from './model.ts'
@@ -16,7 +15,7 @@ export default function HierarchicalTrackSelectorWidgetF(
       heading: 'Available tracks',
       configSchema,
       stateModel: stateModelFactory(pluginManager),
-      ReactComponent: lazy(
+      ReactComponent: lazyWithPreload(
         () => import('./components/HierarchicalTrackSelector.tsx'),
       ),
     })

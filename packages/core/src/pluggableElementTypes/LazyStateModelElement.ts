@@ -1,3 +1,4 @@
+import { preloadComponent } from '../util/preloadComponent.ts'
 import PluggableElementBase from './PluggableElementBase.ts'
 
 import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
@@ -9,6 +10,8 @@ import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
  */
 export default abstract class LazyStateModelElement extends PluggableElementBase {
   protected abstract readonly group: 'view' | 'display'
+
+  abstract ReactComponent: unknown
 
   private loadedStateModel?: IAnyModelType
 
@@ -64,7 +67,12 @@ export default abstract class LazyStateModelElement extends PluggableElementBase
     }
   }
 
+  /**
+   * Also starts the component's download, which rendering would otherwise
+   * request only after the model exists and the element mounts.
+   */
   loadStateModel() {
+    preloadComponent(this.ReactComponent)
     if (this.loadedStateModel !== undefined) {
       return Promise.resolve(this.loadedStateModel)
     }

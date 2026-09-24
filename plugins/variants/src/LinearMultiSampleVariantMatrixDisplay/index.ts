@@ -1,6 +1,5 @@
-import { lazy } from 'react'
-
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchemaF from './configSchema.ts'
 
@@ -22,7 +21,7 @@ export default function LinearMultiSampleVariantMatrixDisplayF(
       stateModel: () => import('./model.ts').then(f => f.default(configSchema)),
       trackType: 'VariantTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: lazy(
+      ReactComponent: lazyWithPreload(
         () => import('./components/VariantMatrixDisplayComponent.tsx'),
       ),
       // renamed from LinearVariantMatrixDisplay; alias remaps old track configs

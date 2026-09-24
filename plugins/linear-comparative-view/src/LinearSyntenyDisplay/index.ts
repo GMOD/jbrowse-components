@@ -1,6 +1,5 @@
-import { lazy } from 'react'
-
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchemaF from './configSchemaF.ts'
 
@@ -19,7 +18,7 @@ export default function LinearSyntenyDisplayF(pluginManager: PluginManager) {
       stateModel: () => import('./model.ts').then(f => f.default(configSchema)),
       trackType: 'SyntenyTrack',
       viewType: 'LinearSyntenyView',
-      ReactComponent: lazy(
+      ReactComponent: lazyWithPreload(
         () => import('./components/LinearSyntenyRendering.tsx'),
       ),
     })

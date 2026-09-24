@@ -1,6 +1,5 @@
-import { lazy } from 'react'
-
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import { circularLaunchKeys } from './launchKeys.ts'
 
@@ -15,7 +14,9 @@ export default function CircularViewF(pluginManager: PluginManager) {
     const stateModel = (): Promise<ViewTypeRegistry['CircularView']> =>
       import('./model.ts').then(f => f.default(pluginManager))
     return new ViewType({
-      ReactComponent: lazy(() => import('./components/CircularView.tsx')),
+      ReactComponent: lazyWithPreload(
+        () => import('./components/CircularView.tsx'),
+      ),
       stateModel,
       launchKeys: circularLaunchKeys,
       name: 'CircularView',

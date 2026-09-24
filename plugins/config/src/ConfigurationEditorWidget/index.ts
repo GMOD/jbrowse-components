@@ -1,7 +1,6 @@
-import { lazy } from 'react'
-
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import HeadingComponent from './components/HeadingComponent.tsx'
 import stateModelFactory from './model.ts'
@@ -10,7 +9,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 const configSchema = ConfigurationSchema('ConfigurationEditorWidget', {})
 
-const LazyConfigurationEditorComponent = lazy(
+const LazyConfigurationEditorComponent = lazyWithPreload(
   () => import('./components/ConfigurationEditor.tsx'),
 )
 

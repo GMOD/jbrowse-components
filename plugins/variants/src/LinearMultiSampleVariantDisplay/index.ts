@@ -1,12 +1,11 @@
-import { lazy } from 'react'
-
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchemaFactory from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const VariantDisplayComponent = lazy(
+const VariantDisplayComponent = lazyWithPreload(
   () => import('./components/VariantDisplayComponent.tsx'),
 )
 

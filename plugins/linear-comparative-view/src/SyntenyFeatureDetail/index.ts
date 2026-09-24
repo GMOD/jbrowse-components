@@ -1,8 +1,7 @@
-import { lazy } from 'react'
-
 import { stateModelFactory as BaseFeatureWidgetStateModelF } from '@jbrowse/core/BaseFeatureWidget'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import { isSyntenyLevel } from '../LinearSyntenyViewHelper/parentViewDuck.ts'
@@ -45,7 +44,9 @@ export default function SyntenyFeatureWidgetF(pluginManager: PluginManager) {
         heading: 'Synteny feature details',
         configSchema,
         stateModel: stateModelF(pluginManager),
-        ReactComponent: lazy(() => import('./SyntenyFeatureDetail.tsx')),
+        ReactComponent: lazyWithPreload(
+          () => import('./SyntenyFeatureDetail.tsx'),
+        ),
       }),
   )
 }

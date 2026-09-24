@@ -1,12 +1,11 @@
-import { lazy } from 'react'
-
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchema from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-// `lazy()`, not a static import: this module is reachable from the plugin entry,
+// `lazyWithPreload()`, not a static import: this module is reachable from the plugin entry,
 // which every product's corePlugins imports at boot, and WiggleComponent reaches
 // WIGGLE_MARKS → shaders/wiggle.generated.ts, i.e. ~20 KB of generated WGSL/GLSL
 // source. A static import puts that in the always-loaded chunk (and on Canvas2D
@@ -14,10 +13,10 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 //
 // One wrapper, exported: gccontent registers its own displays against this same
 // body (see plugins/gccontent/src/LinearGCContentDisplay/index.ts), and a second
-// `lazy()` over the same import would be a distinct component type for React —
+// `lazyWithPreload()` over the same import would be a distinct component type for React —
 // remounting the subtree rather than reusing it if a display ever swapped
 // between them.
-export const ReactComponent = lazy(
+export const ReactComponent = lazyWithPreload(
   () => import('./components/WiggleComponent.tsx'),
 )
 

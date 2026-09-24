@@ -1,12 +1,11 @@
-import { lazy } from 'react'
-
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import { configSchemaFactory } from './configSchemaFactory.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const ManhattanReactComponent = lazy(
+const ManhattanReactComponent = lazyWithPreload(
   () => import('./components/LinearManhattanDisplayComponent.tsx'),
 )
 

@@ -1,7 +1,6 @@
-import { lazy } from 'react'
-
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -21,7 +20,9 @@ export default function AboutWidgetF(pluginManager: PluginManager) {
       heading: 'About',
       configSchema,
       stateModel,
-      ReactComponent: lazy(() => import('./components/AboutWidget.tsx')),
+      ReactComponent: lazyWithPreload(
+        () => import('./components/AboutWidget.tsx'),
+      ),
     })
   })
 }

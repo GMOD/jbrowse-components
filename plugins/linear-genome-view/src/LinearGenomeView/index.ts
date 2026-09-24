@@ -1,6 +1,5 @@
-import { lazy } from 'react'
-
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import { lgvLaunchKeys } from './launchKeys.ts'
 import { stateModelFactory } from './model.ts'
@@ -52,7 +51,9 @@ export default function LinearGenomeViewF(pluginManager: PluginManager) {
       displayName: 'Linear genome view',
       stateModel,
       launchKeys: lgvLaunchKeys,
-      ReactComponent: lazy(() => import('./components/LinearGenomeView.tsx')),
+      ReactComponent: lazyWithPreload(
+        () => import('./components/LinearGenomeView.tsx'),
+      ),
     })
   })
 }

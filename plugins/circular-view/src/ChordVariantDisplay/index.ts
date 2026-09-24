@@ -1,6 +1,5 @@
-import { lazy } from 'react'
-
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchemaF from './models/configSchema.ts'
 
@@ -21,7 +20,7 @@ export default function ChordVariantDisplayF(pluginManager: PluginManager) {
         ),
       trackType: 'VariantTrack',
       viewType: 'CircularView',
-      ReactComponent: lazy(
+      ReactComponent: lazyWithPreload(
         () => import('./components/ChordVariantDisplay.tsx'),
       ),
     })

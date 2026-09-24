@@ -1,6 +1,5 @@
-import { lazy } from 'react'
-
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import { configSchemaFactory } from './configSchema.ts'
 
@@ -17,7 +16,9 @@ export default function MultiWaySyntenyDisplayF(pluginManager: PluginManager) {
         import('./model.ts').then(f => f.stateModelFactory(configSchema)),
       trackType: 'SyntenyTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: lazy(() => import('./components/ReactComponent.tsx')),
+      ReactComponent: lazyWithPreload(
+        () => import('./components/ReactComponent.tsx'),
+      ),
     })
   })
 }

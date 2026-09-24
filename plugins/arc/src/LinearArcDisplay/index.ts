@@ -1,6 +1,5 @@
-import { lazy } from 'react'
-
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import { configSchemaFactory } from './configSchema.ts'
 
@@ -19,7 +18,9 @@ export default function LinearArcDisplayF(pluginManager: PluginManager) {
         import('./model.ts').then(f => f.stateModelFactory(configSchema)),
       trackType: 'FeatureTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: lazy(() => import('./components/ReactComponent.tsx')),
+      ReactComponent: lazyWithPreload(
+        () => import('./components/ReactComponent.tsx'),
+      ),
     })
   })
 }

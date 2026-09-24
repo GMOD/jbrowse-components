@@ -1,14 +1,13 @@
-import { lazy } from 'react'
-
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { addDisplayConfigMigration } from '@jbrowse/core/pluggableElementTypes/models'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchemaFactory from './configSchema.ts'
 import { migrateBasicConfigSnapshot } from './migrateBasicSnapshot.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const LinearBasicDisplayComponent = lazy(
+const LinearBasicDisplayComponent = lazyWithPreload(
   () => import('./components/FeatureComponent.tsx'),
 )
 

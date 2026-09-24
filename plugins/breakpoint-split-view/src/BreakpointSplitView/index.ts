@@ -1,6 +1,5 @@
-import { lazy } from 'react'
-
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import { breakpointSplitLaunchKeys } from './launchKeys.ts'
 
@@ -16,7 +15,7 @@ export default function BreakpointSplitViewF(pluginManager: PluginManager) {
       displayName: 'Breakpoint split view',
       stateModel,
       launchKeys: breakpointSplitLaunchKeys,
-      ReactComponent: lazy(
+      ReactComponent: lazyWithPreload(
         () => import('./components/BreakpointSplitView.tsx'),
       ),
     })

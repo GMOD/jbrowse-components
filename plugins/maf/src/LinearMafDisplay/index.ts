@@ -1,13 +1,12 @@
-import { lazy } from 'react'
-
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchemaF from './configSchema.ts'
 import { routeRetiredShorthandF } from './retiredSettings.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const ReactComponent = lazy(
+const ReactComponent = lazyWithPreload(
   () => import('./components/LinearMafDisplayComponent.tsx'),
 )
 

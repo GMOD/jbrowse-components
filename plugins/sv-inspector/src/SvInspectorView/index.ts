@@ -1,7 +1,6 @@
-import { lazy } from 'react'
-
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { getContainingView, getSession } from '@jbrowse/core/util'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 import { unwrapFeature } from '@jbrowse/core/util/simpleFeature'
 import { getParent } from '@jbrowse/mobx-state-tree'
 import {
@@ -92,7 +91,9 @@ export default function SvInspectorViewF(pluginManager: PluginManager) {
       displayName: 'SV inspector',
       stateModel,
       launchKeys: svInspectorLaunchKeys,
-      ReactComponent: lazy(() => import('./components/SvInspectorView.tsx')),
+      ReactComponent: lazyWithPreload(
+        () => import('./components/SvInspectorView.tsx'),
+      ),
     })
   })
 }

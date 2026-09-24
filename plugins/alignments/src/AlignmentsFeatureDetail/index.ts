@@ -1,6 +1,5 @@
-import { lazy } from 'react'
-
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import { configSchema } from './configSchema.ts'
 import { stateModelFactory } from './stateModelFactory.ts'
@@ -15,7 +14,9 @@ export default function AlignmentFeatureDetailsF(pluginManager: PluginManager) {
         heading: 'Feature details',
         configSchema,
         stateModel: stateModelFactory(pluginManager),
-        ReactComponent: lazy(() => import('./AlignmentsFeatureDetail.tsx')),
+        ReactComponent: lazyWithPreload(
+          () => import('./AlignmentsFeatureDetail.tsx'),
+        ),
       }),
   )
 }

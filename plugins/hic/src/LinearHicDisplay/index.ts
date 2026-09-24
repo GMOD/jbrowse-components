@@ -1,6 +1,5 @@
-import { lazy } from 'react'
-
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchemaFactory from './configSchema.ts'
 
@@ -18,7 +17,9 @@ export default function LinearHicDisplayF(pluginManager: PluginManager) {
       stateModel: () => import('./model.ts').then(f => f.default(configSchema)),
       trackType: 'HicTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: lazy(() => import('./components/ReactComponent.tsx')),
+      ReactComponent: lazyWithPreload(
+        () => import('./components/ReactComponent.tsx'),
+      ),
     })
   })
 }

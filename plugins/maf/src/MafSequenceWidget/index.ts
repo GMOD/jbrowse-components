@@ -1,6 +1,5 @@
-import { lazy } from 'react'
-
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import MafSequenceHoverHighlightExtensionF from './MafSequenceHoverHighlightExtension.tsx'
 import { configSchema } from './configSchema.ts'
@@ -16,7 +15,9 @@ export default function MafSequenceWidgetF(pluginManager: PluginManager) {
         heading: 'MAF Sequence',
         configSchema,
         stateModel: stateModelFactory(),
-        ReactComponent: lazy(() => import('./MafSequenceWidget.tsx')),
+        ReactComponent: lazyWithPreload(
+          () => import('./MafSequenceWidget.tsx'),
+        ),
       }),
   )
 

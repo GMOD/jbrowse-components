@@ -1,12 +1,11 @@
-import { lazy } from 'react'
-
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import { configSchema } from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const SequenceDisplayComponent = lazy(
+const SequenceDisplayComponent = lazyWithPreload(
   () => import('./components/SequenceDisplayComponent.tsx'),
 )
 

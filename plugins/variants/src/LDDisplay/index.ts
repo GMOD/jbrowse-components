@@ -1,13 +1,12 @@
-import { lazy } from 'react'
-
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import ldTrackDisplayConfigSchema from './configSchemaLDTrack.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const LazyLDDisplayComponent = lazy(
+const LazyLDDisplayComponent = lazyWithPreload(
   () => import('./components/LDDisplayComponent.tsx'),
 )
 
