@@ -27,9 +27,9 @@ and the page ends there.
 ## Where the data comes from
 
 UCSC's pairwise liftOver chains from hg38 (Kent et al. 2003), each converted to
-an indexed PAF and rehosted beside the hub configs genomes.jbrowse.org serves,
-and eight UCSC genome hubs, whose assembly entry and NCBI RefSeq gene track each
-lane takes verbatim.
+an indexed PAF and rehosted beside the hub configs
+[genomes.jbrowse.org](https://genomes.jbrowse.org) serves, and eight UCSC genome
+hubs, whose assembly entry and NCBI RefSeq gene track each lane takes verbatim.
 
 **The chains**
 
@@ -38,19 +38,22 @@ lane takes verbatim.
 
 **The same chains as indexed alignments**
 
-- chimpanzee, panTro6:
+- chimpanzee, [panTro6](https://genomes.jbrowse.org/ucsc/panTro6/):
   https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz
-- gorilla, gorGor6:
+- gorilla, [gorGor6](https://genomes.jbrowse.org/ucsc/gorGor6/):
   https://jbrowse.org/ucsc/hg38/liftOver/hg38ToGorGor6.over.pif.gz
-- orangutan, ponAbe3:
+- orangutan, [ponAbe3](https://genomes.jbrowse.org/ucsc/ponAbe3/):
   https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPonAbe3.over.pif.gz
-- rhesus macaque, rheMac10:
+- rhesus macaque, [rheMac10](https://genomes.jbrowse.org/ucsc/rheMac10/):
   https://jbrowse.org/ucsc/hg38/liftOver/hg38ToRheMac10.over.pif.gz
-- marmoset, calJac4:
+- marmoset, [calJac4](https://genomes.jbrowse.org/ucsc/calJac4/):
   https://jbrowse.org/ucsc/hg38/liftOver/hg38ToCalJac4.over.pif.gz
-- mouse, mm39: https://jbrowse.org/ucsc/hg38/liftOver/hg38ToMm39.over.pif.gz
-- dog, canFam6: https://jbrowse.org/ucsc/hg38/liftOver/hg38ToCanFam6.over.pif.gz
-- cow, bosTau9: https://jbrowse.org/ucsc/hg38/liftOver/hg38ToBosTau9.over.pif.gz
+- mouse, [mm39](https://genomes.jbrowse.org/ucsc/mm39/):
+  https://jbrowse.org/ucsc/hg38/liftOver/hg38ToMm39.over.pif.gz
+- dog, [canFam6](https://genomes.jbrowse.org/ucsc/canFam6/):
+  https://jbrowse.org/ucsc/hg38/liftOver/hg38ToCanFam6.over.pif.gz
+- cow, [bosTau9](https://genomes.jbrowse.org/ucsc/bosTau9/):
+  https://jbrowse.org/ucsc/hg38/liftOver/hg38ToBosTau9.over.pif.gz
 
 **The hubs each lane's assembly and gene track come from**
 

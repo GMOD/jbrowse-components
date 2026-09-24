@@ -57,7 +57,9 @@ UCSC and the companion index we host.
 
 - the T2T-CHM13v2.0 reference (hs1), loaded as its own donor assembly:
   https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit
-- hs1's RefSeq genes, rehosted: https://jbrowse.org/ucsc/hs1/hs1.gff.gz
+- hs1's RefSeq genes, from
+  [genomes.jbrowse.org's hs1](https://genomes.jbrowse.org/ucsc/hs1/):
+  https://jbrowse.org/ucsc/hs1/hs1.gff.gz
 - hs1's RepeatMasker annotation, from UCSC:
   https://hgdownload.soe.ucsc.edu/gbdb/hs1/t2tRepeatMasker/chm13v2.0_rmsk.bb
 - UCSC's hg38-to-hs1 liftOver, rehosted as an indexed PAF:

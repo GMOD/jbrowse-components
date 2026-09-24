@@ -18,9 +18,11 @@ variant track with a sample-metadata TSV, and cluster the rows.
 ## Prerequisites
 
 - nothing to read along. Everything below is for building the track yourself
-- the `UU_Cfam_GSD_1.0` dog assembly set up in JBrowse (UCSC calls it canFam4;
-  its `chrom.sizes` is all this track needs, see the
-  [assemblies guide](/docs/config_guides/assemblies))
+- the `UU_Cfam_GSD_1.0` dog assembly (UCSC's canFam4) set up in JBrowse. The
+  [canFam4 hub on genomes.jbrowse.org](https://genomes.jbrowse.org/ucsc/canFam4/)
+  is a config that loads it with its gene and repeat tracks, and the
+  [assemblies guide](/docs/config_guides/assemblies) builds one by hand. Only
+  its `chrom.sizes` is read by this track.
 - `bcftools` built with libcurl
 - `curl`
 - `python3`

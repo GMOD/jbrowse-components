@@ -29,9 +29,11 @@ client without one can still do everything after that step.
 
 ## Where the data comes from
 
-Two GenArk assemblies and their hosted JBrowse configs. Each config carries the
-2bit sequence, a chromAlias file, an NCBI RefSeq gene track and a Trix text
-index, so neither assembly has to be described by hand.
+Two GenArk assemblies and their genome hubs on genomes.jbrowse.org
+([_D. simulans_](https://genomes.jbrowse.org/accession/GCF_016746395.2/),
+[_D. mauritiana_](https://genomes.jbrowse.org/accession/GCF_004382145.1/)). Each
+hub's config carries the 2bit sequence, a chromAlias file, an NCBI RefSeq gene
+track and a Trix text index, so neither assembly has to be described by hand.
 
 - _D. simulans_ GCF_016746395.2 sequence:
   https://hgdownload.soe.ucsc.edu/hubs/GCF/016/746/395/GCF_016746395.2/GCF_016746395.2.fa.gz

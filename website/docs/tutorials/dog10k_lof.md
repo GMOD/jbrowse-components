@@ -16,8 +16,10 @@ genotypes across breeds with the wild canids as the control.
 ## Prerequisites
 
 - nothing to read along. Everything below is for building the tracks yourself
-- the `UU_Cfam_GSD_1.0` dog assembly set up in JBrowse (UCSC calls it canFam4,
-  see the [assemblies guide](/docs/config_guides/assemblies))
+- the `UU_Cfam_GSD_1.0` dog assembly (UCSC's canFam4) set up in JBrowse. The
+  [canFam4 hub on genomes.jbrowse.org](https://genomes.jbrowse.org/ucsc/canFam4/)
+  is a config that loads it with its gene and repeat tracks, and the
+  [assemblies guide](/docs/config_guides/assemblies) builds one by hand.
 - `bcftools` built with libcurl
 - `curl`
 - `python3`

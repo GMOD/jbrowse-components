@@ -193,9 +193,12 @@ prose where it happens.
 
 **No convenience pitches.** "Nothing to install" and "reading needs only a
 browser" are padding, since every figure links its view live. Linking
-genomes.jbrowse.org is a different thing and is welcome: its genome pages, hubs
-and pangenome pages hold data a reader can keep going with. Say what the linked
-page holds, never how easy it is.
+genomes.jbrowse.org is a different thing and is welcome where the story uses it:
+a lane that takes its assembly and genes from a hub config, a file rehosted
+there, a prerequisite assembly a hub loads with its tracks (`agent_synteny` and
+`hg38_vertebrates_synteny` are the pages to copy). A bare pointer leaves the
+reader asking why it is there. A page that builds its assemblies from FASTA has
+no such use, and a link there waits until the build loads the hub instead.
 
 Moving a figure off a page means moving its card's crop source in
 `gen-tutorial-thumbs.ts` too; nothing warns you.
