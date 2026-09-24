@@ -44,6 +44,7 @@ import {
   makeCrossHatchItem,
   makeScoreSubMenu,
   resolveRenderState,
+  unionRanges,
   visibleStatsRange,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
@@ -95,29 +96,13 @@ import type {
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ValueScale, VisibleEntry } from '@jbrowse/wiggle-core'
+import type { ValueScale } from '@jbrowse/wiggle-core'
 
 function storedManhattanData(data: ManhattanRpcResult): StoredManhattanData {
   return {
     ...data,
     flatbush: data.flatbushData ? Flatbush.from(data.flatbushData) : undefined,
   }
-}
-
-// The worker ships each region's score extremes already reduced, so the
-// domain is their min/max rather than a scan of the scores.
-function shippedExtremes(entries: VisibleEntry<ManhattanRpcResult>[]) {
-  let scoreMin = Infinity
-  let scoreMax = -Infinity
-  for (const { data } of entries) {
-    if (data.yMin < scoreMin) {
-      scoreMin = data.yMin
-    }
-    if (data.yMax > scoreMax) {
-      scoreMax = data.yMax
-    }
-  }
-  return Number.isFinite(scoreMin) ? { scoreMin, scoreMax } : undefined
 }
 
 const SetColorFieldDialog = lazy(
@@ -293,10 +278,8 @@ export function stateModelFactory(
         /**
          * #getter
          * [min, max] -log10 p across the visible regions, or undefined before
-         * any data loads. The only walker of the four that
-         * reads shipped per-region extremes rather than scanning scores: the
-         * worker already reduced them, so a block contributes its whole
-         * region's extremes rather than the part it shows.
+         * any data loads: the union of the extremes the worker shipped, so a
+         * block contributes its whole region's rather than the part it shows.
          *
          * Widened to reach every `scales.y.rules` entry, as the wiggle displays
          * widen theirs. A threshold answers "does anything here clear it?", so
@@ -312,10 +295,11 @@ export function stateModelFactory(
             view: self.host,
             payloadFor: index => self.rpcDataMap.get(index),
             itemsFor: data => (data.count === 0 ? [] : [data]),
-            accumulate: shippedExtremes,
-            range: ({ scoreMin, scoreMax }) =>
+            accumulate: entries =>
+              unionRanges(entries.map(({ data }) => [data.yMin, data.yMax])),
+            range: extremes =>
               widenRangeToRules(
-                [scoreMin, scoreMax],
+                extremes,
                 rules.map(rule => rule.value),
               ),
           })
