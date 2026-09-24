@@ -42,31 +42,21 @@ import type {
 // `*FreeInputs` parameter types stop a stage reading a knob it must be
 // invariant to.
 
-// Only on the side the arrow points, and only where `arrowDraws` says the
-// arrow paints: reserving 8px for an arrow nothing paints packed 5000
-// sub-pixel stranded marks 46 rows deep instead of 2.
+// Only past the 3' end, and only where `arrowDraws` says the arrow paints:
+// reserving 8px for an arrow nothing paints packed 5000 sub-pixel stranded
+// marks 46 rows deep instead of 2. The pack is in ascending bp, and a flipped
+// region flips the arrow with the axis, so its bp side never changes.
 function strandArrowPadding(
-  ext: {
-    strand: number
-    hasReversed: boolean
-    hasNonReversed: boolean
-    startBp: number
-    endBp: number
-  },
+  ext: { strand: number; startBp: number; endBp: number },
   bpPerPx: number,
 ) {
-  const drawsArrow =
-    !!ext.strand && arrowDraws((ext.endBp - ext.startBp) / bpPerPx)
-  const arrow = drawsArrow ? STRAND_ARROW_WIDTH : 0
-  const pointsLeft =
-    (ext.hasNonReversed && ext.strand === -1) ||
-    (ext.hasReversed && ext.strand === 1)
-  const pointsRight =
-    (ext.hasNonReversed && ext.strand === 1) ||
-    (ext.hasReversed && ext.strand === -1)
+  const arrow =
+    ext.strand && arrowDraws((ext.endBp - ext.startBp) / bpPerPx)
+      ? STRAND_ARROW_WIDTH
+      : 0
   return {
-    left: pointsLeft ? arrow : 0,
-    right: pointsRight ? arrow : 0,
+    left: ext.strand === -1 ? arrow : 0,
+    right: ext.strand === 1 ? arrow : 0,
   }
 }
 

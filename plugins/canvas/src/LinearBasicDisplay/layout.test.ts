@@ -821,6 +821,50 @@ test('arrow padding is directional: forward features just past the arrow share a
   expect(out.get(0)!.flatbushItems[1]!.topPx).toBe(0)
 })
 
+test.each([
+  ['forward', new Set<number>()],
+  ['flipped', new Set([0])],
+])(
+  'a %s region reserves each arrow past its own 3′ end',
+  (_label, reversedRegions) => {
+    const tops = (a: 1 | -1, b: 1 | -1) =>
+      layout(
+        new Map([
+          [
+            0,
+            makeFeatureData({
+              features: [
+                {
+                  featureId: 'f1',
+                  startBp: 100,
+                  endBp: 200,
+                  height: 20,
+                  strand: a,
+                },
+                {
+                  featureId: 'f2',
+                  startBp: 204,
+                  endBp: 300,
+                  height: 20,
+                  strand: b,
+                },
+              ],
+            }),
+          ],
+        ]),
+        1,
+        true,
+        true,
+        reversedRegions,
+      )
+        .get(0)!
+        .flatbushItems.map(f => f.topPx)
+
+    expect(tops(1, -1)[1]).toBeGreaterThan(0)
+    expect(tops(-1, 1)).toEqual([0, 0])
+  },
+)
+
 test('a feature too narrow to draw its arrow reserves no room for one', () => {
   const tops = (widthBp: number) =>
     layout(
