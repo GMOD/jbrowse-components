@@ -59,6 +59,7 @@ export interface FeatureMenuSelf extends IStateTreeNode {
   contextMenuInfo: FeatureContextMenuInfo | undefined
   featureNoun: string
   loadedRegions: { get: (displayedRegionIndex: number) => Region | undefined }
+  rpcDataMap: ReadonlyMap<number, { flatbushItems: readonly FlatbushItem[] }>
   pinnedFeatureIdSet: ReadonlySet<string>
   highlightedFeatureIdSet: ReadonlySet<string>
   soloFeatureIdSet: ReadonlySet<string>
@@ -110,12 +111,23 @@ interface MenuContext {
   subfeatureNoun: string
 }
 
+// The hit is the laid-out item, which the isoform rung narrows to the
+// transcripts it kept; the menu acts on the feature, so it reads the span the
+// worker sent.
+function wholeFeatureItem(self: FeatureMenuSelf, info: FeatureContextMenuInfo) {
+  const { item } = info
+  const sent = self.rpcDataMap
+    .get(info.displayedRegionIndex)
+    ?.flatbushItems.find(f => f.featureId === item.featureId)
+  return sent ? { ...item, startBp: sent.startBp, endBp: sent.endBp } : item
+}
+
 export function featureContextMenuItems(self: FeatureMenuSelf): MenuItem[] {
   const info = self.contextMenuInfo
   if (info) {
     const ctx: MenuContext = {
       self,
-      info,
+      info: { ...info, item: wholeFeatureItem(self, info) },
       hitNoun: info.item.type ?? self.featureNoun,
       subfeatureNoun: info.subfeature?.type ?? 'subfeature',
     }
@@ -393,7 +405,7 @@ function copyItems(ctx: MenuContext): MenuItem[] {
             assembleLocString({
               refName: region.refName,
               start: startBp,
-              end: endBp,
+              end: featureSpanEndBp(startBp, endBp),
             }),
             'location',
           ),

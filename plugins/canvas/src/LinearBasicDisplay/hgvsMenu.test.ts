@@ -3,6 +3,7 @@ import { waitFor } from '@testing-library/react'
 import {
   makeFeatureData,
   makeFlatbushItem,
+  packStackedGenes,
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import {
   clickContextMenuItem,
@@ -86,19 +87,24 @@ describe('Copy tooltip context menu item', () => {
   })
 })
 
+function mockClipboard() {
+  const writeText = jest.fn().mockResolvedValue(undefined)
+  Object.defineProperty(navigator, 'clipboard', {
+    value: { writeText },
+    configurable: true,
+  })
+  // copyToClipboard gates the async API on `isSecureContext` and otherwise
+  // falls back to execCommand, which jsdom does not implement.
+  Object.defineProperty(window, 'isSecureContext', {
+    value: true,
+    configurable: true,
+  })
+  return writeText
+}
+
 describe('Copy location context menu item', () => {
   it('copies the feature span as a locString', async () => {
-    const writeText = jest.fn().mockResolvedValue(undefined)
-    Object.defineProperty(navigator, 'clipboard', {
-      value: { writeText },
-      configurable: true,
-    })
-    // copyToClipboard gates the async API on `isSecureContext` and otherwise
-    // falls back to execCommand, which jsdom does not implement.
-    Object.defineProperty(window, 'isSecureContext', {
-      value: true,
-      configurable: true,
-    })
+    const writeText = mockClipboard()
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     open(display)
@@ -108,6 +114,58 @@ describe('Copy location context menu item', () => {
 
     await waitFor(() => {
       expect(writeText).toHaveBeenCalledWith('ctgA:1,051..9,000')
+    })
+  })
+
+  it('copies the whole gene when the track trimmed its isoforms', async () => {
+    const writeText = mockClipboard()
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setRpcData(
+      0,
+      packStackedGenes([
+        {
+          featureId: 'g',
+          startBp: 100,
+          endBp: 2000,
+          isoforms: 10,
+          spans: [
+            [100, 1000],
+            ...Array.from({ length: 9 }, () => [100, 2000] as [number, number]),
+          ],
+        },
+      ]),
+      ctgA,
+    )
+    display.setHeight(20)
+    const drawn = display.featureIdIndex.get('g')!
+    expect(drawn.endBp).toBe(1000)
+
+    rightClick(display, drawn)
+    clickContextMenuItem(display, 'Copy location')
+
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledWith('ctgA:101..2,000')
+    })
+  })
+
+  it('copies the base a zero-length feature is painted at', async () => {
+    const writeText = mockClipboard()
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    const insertion = makeFlatbushItem({
+      featureId: 'ins',
+      type: 'insertion',
+      startBp: 4000,
+      endBp: 4000,
+    })
+    display.setRpcData(0, makeFeatureData({ flatbushItems: [insertion] }), ctgA)
+
+    rightClick(display, insertion)
+    clickContextMenuItem(display, 'Copy location')
+
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledWith('ctgA:4,001')
     })
   })
 
