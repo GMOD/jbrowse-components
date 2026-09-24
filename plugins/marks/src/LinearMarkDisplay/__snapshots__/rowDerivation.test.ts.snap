@@ -1,0 +1,231 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`a facet domain leads the bands and the key 1`] = `
+{
+  "domain": [
+    0,
+    9,
+  ],
+  "layers": [
+    [
+      {
+        "color": [
+          4289175039,
+          4289949813,
+          4289949813,
+          4280833702,
+          4284045281,
+        ],
+        "count": 5,
+        "row": [
+          2,
+          1,
+          1,
+          3,
+          0,
+        ],
+        "x": [
+          200,
+          0,
+          600,
+          100,
+          500,
+        ],
+        "x2": [
+          800,
+          400,
+          700,
+          300,
+          900,
+        ],
+        "y": [
+          9,
+          7,
+          3,
+          2,
+          4,
+        ],
+      },
+    ],
+  ],
+  "legend": [
+    [
+      {
+        "color": "rgba(225,87,89,1)",
+        "label": "s10",
+        "value": "s10",
+      },
+      {
+        "color": "rgba(117,112,179,1)",
+        "label": "mom",
+        "value": "mom",
+      },
+      {
+        "color": "rgba(255,157,167,1)",
+        "label": "dad",
+        "value": "dad",
+      },
+      {
+        "color": "rgba(166,86,40,1)",
+        "label": "s2",
+        "value": "s2",
+      },
+    ],
+  ],
+  "renderRowCount": 4,
+  "request": {
+    "field": "source",
+  },
+  "rowCount": 4,
+  "valueScales": [
+    {
+      "bandTops": [
+        5,
+        40,
+        75,
+        110,
+      ],
+      "domain": [
+        0,
+        9,
+      ],
+      "height": 35,
+      "offset": 0,
+    },
+  ],
+}
+`;
+
+exports[`bars faceted by source draw a band per source under its chip 1`] = `
+{
+  "domain": [
+    0,
+    9,
+  ],
+  "layers": [
+    [
+      {
+        "color": [
+          4289175039,
+          4289949813,
+          4289949813,
+          4280833702,
+          4284045281,
+        ],
+        "count": 5,
+        "row": [
+          0,
+          1,
+          1,
+          2,
+          3,
+        ],
+        "x": [
+          200,
+          0,
+          600,
+          100,
+          500,
+        ],
+        "x2": [
+          800,
+          400,
+          700,
+          300,
+          900,
+        ],
+        "y": [
+          9,
+          7,
+          3,
+          2,
+          4,
+        ],
+      },
+    ],
+  ],
+  "legend": [
+    [
+      {
+        "color": "rgba(255,157,167,1)",
+        "label": "dad",
+        "value": "dad",
+      },
+      {
+        "color": "rgba(117,112,179,1)",
+        "label": "mom",
+        "value": "mom",
+      },
+      {
+        "color": "rgba(166,86,40,1)",
+        "label": "s2",
+        "value": "s2",
+      },
+      {
+        "color": "rgba(225,87,89,1)",
+        "label": "s10",
+        "value": "s10",
+      },
+    ],
+  ],
+  "renderRowCount": 4,
+  "request": {
+    "field": "source",
+  },
+  "rowCount": 4,
+  "valueScales": [
+    {
+      "bandTops": [
+        5,
+        40,
+        75,
+        110,
+      ],
+      "domain": [
+        0,
+        9,
+      ],
+      "height": 35,
+      "offset": 0,
+    },
+  ],
+}
+`;
+
+exports[`bars faceted by source draw a band per source under its chip 2`] = `
+{
+  "firstRowOf": Map {
+    "dad" => 0,
+    "mom" => 1,
+    "s2" => 2,
+    "s10" => 3,
+  },
+  "rowCount": 4,
+  "sections": [
+    {
+      "firstRow": 0,
+      "key": "dad",
+      "label": "source: dad",
+      "rowCount": 1,
+    },
+    {
+      "firstRow": 1,
+      "key": "mom",
+      "label": "source: mom",
+      "rowCount": 1,
+    },
+    {
+      "firstRow": 2,
+      "key": "s2",
+      "label": "source: s2",
+      "rowCount": 1,
+    },
+    {
+      "firstRow": 3,
+      "key": "s10",
+      "label": "source: s10",
+      "rowCount": 1,
+    },
+  ],
+}
+`;
