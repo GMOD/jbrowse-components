@@ -706,7 +706,11 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.0(react@19.3.0)
 
-  packages/text-indexing-core: {}
+  packages/text-indexing-core:
+    dependencies:
+      ixixx:
+        specifier: ^3.0.13
+        version: 3.0.13
 
   packages/tree-sidebar:
     dependencies:

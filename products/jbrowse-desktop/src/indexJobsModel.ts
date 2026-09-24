@@ -310,8 +310,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           fs.mkdirSync(outLocation, { recursive: true })
           await rpcManager.call('indexTracksSessionId', 'TextIndexRpcMethod', {
             tracks: trackConfigs,
-            attributes,
-            exclude,
+            policy: { attributes, exclude },
             assemblies,
             indexType,
             outLocation,

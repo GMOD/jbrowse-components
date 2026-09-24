@@ -1,131 +1,70 @@
-import fs from 'node:fs'
-import path from 'node:path'
-import { Readable } from 'node:stream'
-
 import {
-  TRIX_DIR,
-  generateMeta,
   guessAdapterFromFileName,
-  indexFiles,
-  trixFilePaths,
+  writeTrixIndex,
 } from '@jbrowse/text-indexing-core'
 import { Presets, SingleBar } from 'cli-progress'
-import { ixIxxStream } from 'ixixx'
 
 import { supported } from '../../types/common.ts'
 
-import type { Track } from '@jbrowse/text-indexing-core'
+import type { IndexingPolicy, Track } from '@jbrowse/text-indexing-core'
 
-// every index artifact lands in <outLocation>/trix, so the directory is created
-// here rather than by each caller: --dryrun goes nowhere near indexDriver and so
-// no longer leaves an empty trix/ behind
-function ensureTrixDir(outLocation: string) {
-  fs.mkdirSync(path.join(outLocation, TRIX_DIR), { recursive: true })
-}
-
-async function runIxIxx({
-  readStream,
-  outLocation,
-  name,
-  prefixSize,
-  quiet,
-}: {
-  readStream: Readable
-  outLocation: string
-  name: string
-  prefixSize?: number
-  quiet?: boolean
-}): Promise<void> {
-  const progressBar = new SingleBar(
-    { format: '{bar} Sorting and writing index...', etaBuffer: 2000 },
-    Presets.shades_classic,
-  )
-
-  if (!quiet) {
-    progressBar.start(1, 0)
-  }
-
-  const { ix, ixx } = trixFilePaths(outLocation, name)
-  await ixIxxStream(readStream, ix, ixx, prefixSize)
-
-  if (!quiet) {
-    progressBar.update(1)
-    progressBar.stop()
-  }
+function bar(format: string) {
+  return new SingleBar({ format, etaBuffer: 2000 }, Presets.shades_classic)
 }
 
 export async function indexDriver({
   trackConfigs,
-  attributes,
+  policy,
   outLocation,
   name,
   quiet,
-  typesToExclude,
-  typesToInclude,
   assemblyNames,
   prefixSize,
 }: {
   trackConfigs: Track[]
-  attributes: string[]
+  policy: IndexingPolicy
   outLocation: string
   name: string
   quiet: boolean
-  typesToExclude: string[]
-  typesToInclude?: string[]
   assemblyNames: string[]
   prefixSize?: number
 }): Promise<void> {
-  ensureTrixDir(outLocation)
-  const readStream = Readable.from(
-    indexFiles({
-      tracks: trackConfigs,
-      attributesToIndex: attributes,
-      outDir: outLocation,
-      featureTypesToExclude: typesToExclude,
-      featureTypesToInclude: typesToInclude,
-      makeProgress: quiet
-        ? undefined
-        : trackId => {
-            const progressBar = new SingleBar(
-              {
-                // eslint-disable-next-line unicorn/no-incorrect-template-string-interpolation -- {bar}/{percentage}/{eta} are cli-progress format tokens, not JS interpolation
-                format: `{bar} ${trackId} {percentage}% | ETA: {eta}s`,
-                etaBuffer: 2000,
-              },
-              Presets.shades_classic,
-            )
-            return {
-              onStart: totalBytes => {
-                progressBar.start(totalBytes, 0)
-              },
-              onUpdate: receivedBytes => {
-                progressBar.update(receivedBytes)
-              },
-              onDone: () => {
-                progressBar.stop()
-              },
-            }
-          },
-    }),
-  )
-
-  await runIxIxx({
-    readStream,
-    outLocation,
-    name,
-    prefixSize,
-    quiet,
-  })
-
-  generateMeta({
-    configs: trackConfigs,
-    attributesToIndex: attributes,
+  let sortBar: SingleBar | undefined
+  await writeTrixIndex({
+    tracks: trackConfigs,
     outDir: outLocation,
     name,
-    featureTypesToExclude: typesToExclude,
-    featureTypesToInclude: typesToInclude,
+    policy,
     assemblyNames,
+    prefixSize,
+    onSort: quiet
+      ? undefined
+      : () => {
+          sortBar = bar('{bar} Sorting and writing index...')
+          sortBar.start(1, 0)
+        },
+    makeProgress: quiet
+      ? undefined
+      : trackId => {
+          // eslint-disable-next-line unicorn/no-incorrect-template-string-interpolation -- {bar}/{percentage}/{eta} are cli-progress format tokens, not JS interpolation
+          const progressBar = bar(
+            `{bar} ${trackId} {percentage}% | ETA: {eta}s`,
+          )
+          return {
+            onStart: totalBytes => {
+              progressBar.start(totalBytes, 0)
+            },
+            onUpdate: receivedBytes => {
+              progressBar.update(receivedBytes)
+            },
+            onDone: () => {
+              progressBar.stop()
+            },
+          }
+        },
   })
+  sortBar?.update(1)
+  sortBar?.stop()
 }
 
 export function prepareFileTrackConfigs(

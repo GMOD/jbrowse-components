@@ -30,13 +30,13 @@ export function prepareIndexDriverFlags(flags: {
   prefixSize?: string | number
 }) {
   return {
-    attributes: parseCommaSeparatedString(flags.attributes),
-    typesToExclude: parseCommaSeparatedString(flags.exclude),
-    // undefined rather than [] when the flag is absent, because an empty allow
-    // list has to mean "no allow list" and not "index nothing"
-    typesToInclude: flags.include
-      ? parseCommaSeparatedString(flags.include)
-      : undefined,
+    policy: {
+      attributes: parseCommaSeparatedString(flags.attributes),
+      exclude: parseCommaSeparatedString(flags.exclude),
+      include: flags.include
+        ? parseCommaSeparatedString(flags.include)
+        : undefined,
+    },
     quiet: flags.quiet ?? false,
     prefixSize: validatePrefixSize(flags.prefixSize),
   }

@@ -35,7 +35,9 @@
     "prebuild": "pnpm clean",
     "prepack": "pnpm build"
   },
-  "dependencies": {},
+  "dependencies": {
+    "ixixx": "^3.0.13"
+  },
   "publishConfig": {
     "access": "public",
     "main": "esm/index.js",

@@ -1,9 +1,14 @@
 import { indexGff3 } from './types/gff3Adapter.ts'
 import { indexGtf } from './types/gtfAdapter.ts'
 import { indexVcf } from './types/vcfAdapter.ts'
-import { indexableAdapters } from './util.ts'
+import { indexableAdapters, trackIndexingPolicy } from './util.ts'
 
-import type { LocalPathLocation, Track, UriLocation } from './util.ts'
+import type {
+  IndexingPolicy,
+  LocalPathLocation,
+  Track,
+  UriLocation,
+} from './util.ts'
 
 // per-track progress sink. Consumers render this however they like: the CLI
 // draws a cli-progress bar, the desktop forwards it over RPC as a determinate
@@ -28,40 +33,36 @@ function getIndexingLocation(track: Track, locationKey: string) {
 
 const noop = () => {}
 
-// shared generator that streams index records for a set of tracks. Dispatches
-// to the gff3/vcf indexers based on adapter type; per-track attribute and
-// exclude/include overrides from textSearching take precedence over the
-// defaults.
+// Streams index records for a set of tracks, each read under its own policy
 export async function* indexFiles({
   tracks,
-  attributesToIndex,
+  policy,
   outDir,
-  featureTypesToExclude,
-  featureTypesToInclude,
   makeProgress,
   checkAbort,
 }: {
   tracks: Track[]
-  attributesToIndex: string[]
+  policy: IndexingPolicy
   outDir: string
-  featureTypesToExclude: string[]
-  featureTypesToInclude?: string[]
   makeProgress?: (trackId: string) => TrackIndexProgress
   checkAbort?: () => void
 }) {
   for (const track of tracks) {
     checkAbort?.()
-    const { adapter, textSearching, trackId } = track
+    const { adapter, trackId } = track
     const indexable = indexableAdapters[adapter?.type ?? '']
     const inLocation = indexable
       ? getIndexingLocation(track, indexable.locationKey)
       : undefined
     if (indexable && inLocation) {
       const progress = makeProgress?.(trackId)
+      const { attributes, exclude, include } = trackIndexingPolicy(
+        track,
+        policy,
+      )
       const common = {
         config: track,
-        attributesToIndex:
-          textSearching?.indexingAttributes ?? attributesToIndex,
+        attributesToIndex: attributes,
         inLocation,
         outDir,
         onStart: progress?.onStart ?? noop,
@@ -71,12 +72,8 @@ export async function* indexFiles({
       if (indexable.format === 'gff3') {
         yield* indexGff3({
           ...common,
-          featureTypesToExclude:
-            textSearching?.indexingFeatureTypesToExclude ??
-            featureTypesToExclude,
-          featureTypesToInclude:
-            textSearching?.indexingFeatureTypesToInclude ??
-            featureTypesToInclude,
+          featureTypesToExclude: exclude,
+          featureTypesToInclude: include,
         })
       } else if (indexable.format === 'gtf') {
         yield* indexGtf(common)

@@ -168,7 +168,10 @@ export default class TextSearchManager {
     // results from that index" and rank the rest
     checkAbortSignal(args.signal)
     return {
-      results: await this.sortResults({ args, results: searched.values.flat() }),
+      results: await this.sortResults({
+        args,
+        results: searched.values.flat(),
+      }),
       indexCount: loaded.values.length + loaded.failures.length,
       failures: [...loaded.failures, ...searched.failures],
     }

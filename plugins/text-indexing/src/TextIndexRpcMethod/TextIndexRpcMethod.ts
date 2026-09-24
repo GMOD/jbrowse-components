@@ -4,7 +4,7 @@ import { indexTracks } from '@jbrowse/text-indexing'
 
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { indexType } from '@jbrowse/text-indexing'
-import type { Track } from '@jbrowse/text-indexing-core'
+import type { IndexingPolicy, Track } from '@jbrowse/text-indexing-core'
 
 // No `signal` and no `statusCallback`: both come from `RpcHandles`, which
 // every method's args carry. Declaring the status one here narrowed it to
@@ -13,8 +13,7 @@ import type { Track } from '@jbrowse/text-indexing-core'
 // far in it was, on the one operation in the app that runs for minutes.
 interface TextIndexRpcMethodArgs {
   outLocation: string
-  attributes?: string[]
-  exclude?: string[]
+  policy?: IndexingPolicy
   assemblies?: string[]
   indexType?: indexType
   tracks: Track[]
@@ -36,8 +35,7 @@ export class TextIndexRpcMethod extends RpcMethodType<'TextIndexRpcMethod'> {
     const {
       tracks,
       outLocation,
-      exclude,
-      attributes,
+      policy,
       assemblies,
       indexType,
       signal,
@@ -48,8 +46,7 @@ export class TextIndexRpcMethod extends RpcMethodType<'TextIndexRpcMethod'> {
     await indexTracks({
       outDir: outLocation,
       tracks,
-      featureTypesToExclude: exclude,
-      attributesToIndex: attributes,
+      policy,
       assemblyNames: assemblies,
       indexType,
       statusCallback,

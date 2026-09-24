@@ -6,7 +6,6 @@ import { Readable } from 'node:stream'
 import { fileURLToPath } from 'node:url'
 import { createGunzip } from 'node:zlib'
 
-import { trixFilePaths } from '../trixPaths.ts'
 import { indexableAdapters } from '../util.ts'
 
 import type { LocalPathLocation, Track, UriLocation } from '../util.ts'
@@ -212,49 +211,4 @@ export function guessAdapterFromFileName(filePath: string): Track {
   } else {
     throw new Error(`Unsupported file type ${filePath}`)
   }
-}
-
-export function generateMeta({
-  configs,
-  attributesToIndex,
-  outDir,
-  name,
-  featureTypesToExclude,
-  featureTypesToInclude,
-  assemblyNames,
-}: {
-  configs: Track[]
-  attributesToIndex: string[]
-  outDir: string
-  name: string
-  featureTypesToExclude: string[]
-  featureTypesToInclude?: string[]
-  assemblyNames: string[]
-}) {
-  fs.writeFileSync(
-    trixFilePaths(outDir, name).meta,
-    JSON.stringify(
-      {
-        dateCreated: new Date().toISOString(),
-        tracks: configs.map(config => {
-          const { trackId, textSearching, adapter } = config
-          return {
-            trackId,
-            attributesIndexed:
-              textSearching?.indexingAttributes ?? attributesToIndex,
-            excludedTypes:
-              textSearching?.indexingFeatureTypesToExclude ??
-              featureTypesToExclude,
-            includedTypes:
-              textSearching?.indexingFeatureTypesToInclude ??
-              featureTypesToInclude,
-            adapterConf: adapter,
-          }
-        }),
-        assemblyNames,
-      },
-      null,
-      2,
-    ),
-  )
 }

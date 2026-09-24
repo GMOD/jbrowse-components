@@ -67,8 +67,9 @@ async function pickFirst(showHitTrack?: boolean) {
   return model
 }
 
-const trackIds = (model: { tracks: { configuration: { trackId: string } }[] }) =>
-  model.tracks.map(t => t.configuration.trackId)
+const trackIds = (model: {
+  tracks: { configuration: { trackId: string } }[]
+}) => model.tracks.map(t => t.configuration.trackId)
 
 // a session spec that named its own tracks asks for no hit track, and the
 // picker it raised used to open one anyway

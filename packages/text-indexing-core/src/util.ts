@@ -60,6 +60,35 @@ export interface Track {
 export const defaultAttributesToIndex = ['Name', 'ID', 'symbol']
 export const defaultFeatureTypesToExclude = ['exon', 'CDS']
 
+/** What an index reads out of a track's features. */
+export interface IndexingPolicy {
+  attributes: string[]
+  /** feature types to skip (GFF3 only) */
+  exclude: string[]
+  /**
+   * the only feature types to index, narrowed by `exclude` (GFF3 only). Absent
+   * or empty means no allow list, never "index nothing". See indexGff3
+   */
+  include?: string[]
+}
+
+export const defaultIndexingPolicy: IndexingPolicy = {
+  attributes: defaultAttributesToIndex,
+  exclude: defaultFeatureTypesToExclude,
+}
+
+/** The policy `track` is indexed under: its own settings, else the run's. */
+export function trackIndexingPolicy(
+  { textSearching }: Track,
+  run: IndexingPolicy,
+): IndexingPolicy {
+  return {
+    attributes: textSearching?.indexingAttributes ?? run.attributes,
+    exclude: textSearching?.indexingFeatureTypesToExclude ?? run.exclude,
+    include: textSearching?.indexingFeatureTypesToInclude ?? run.include,
+  }
+}
+
 export type IndexableFormat = 'gff3' | 'gtf' | 'vcf'
 
 // single source of truth for what `jbrowse text-index` can index: which adapter

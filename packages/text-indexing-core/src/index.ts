@@ -2,8 +2,10 @@ export {
   decodeURIComponentNoThrow,
   defaultAttributesToIndex,
   defaultFeatureTypesToExclude,
+  defaultIndexingPolicy,
   indexableAdapters,
   isSupportedIndexingAdapter,
+  trackIndexingPolicy,
 } from './util.ts'
 export type {
   Gff3IndexerOptions,
@@ -12,6 +14,7 @@ export type {
   GtfAdapter,
   IndexableFormat,
   IndexerOptions,
+  IndexingPolicy,
   LocalPathLocation,
   Track,
   UriLocation,
@@ -20,7 +23,6 @@ export type {
 } from './util.ts'
 export {
   createReadlineInterface,
-  generateMeta,
   getLocalOrRemoteStream,
   guessAdapterFromFileName,
   isURL,
@@ -39,5 +41,5 @@ export {
 export { indexGff3 } from './types/gff3Adapter.ts'
 export { indexGtf } from './types/gtfAdapter.ts'
 export { indexVcf } from './types/vcfAdapter.ts'
-export { indexFiles } from './indexFiles.ts'
 export type { TrackIndexProgress } from './indexFiles.ts'
+export { writeTrixIndex } from './writeTrixIndex.ts'
