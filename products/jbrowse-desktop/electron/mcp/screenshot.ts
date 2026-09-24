@@ -250,6 +250,23 @@ async function captureFullPage(
   }
 }
 
+// A minimized window produces no frame, and capturePage then answers with an
+// empty image, whose missing PNG header the size read threw a RangeError on.
+async function captureViewport(
+  contents: BrowserWindow['webContents'],
+  rect: Rectangle | undefined,
+  width: number,
+  scale: number,
+): Promise<CapturedImage | { error: string }> {
+  const image = await contents.capturePage(rect)
+  return image.isEmpty()
+    ? {
+        error:
+          'the window produced no image to capture, which a minimized JBrowse Desktop does; restore it and try again',
+      }
+    : { rect, data: atScale(image.toPNG(), rect?.width ?? width, scale) }
+}
+
 /**
  * How far the session runs below the window, in CSS pixels, from the
  * `offscreen` report the settle carries. Zero when the settle reported none.
@@ -303,6 +320,14 @@ export function createScreenshotTool({
     if (!win) {
       return { error: 'JBrowse Desktop has no window open' }
     }
+    // a crashed page has no view to capture, and the settle already says why
+    if (win.webContents.isCrashed()) {
+      return {
+        error:
+          settled.error ??
+          "the app's page crashed; use the open tool to reload it",
+      }
+    }
     const scale = requestedScale(args.scale)
     const { width, height } = win.getContentBounds()
     const viewport = { x: 0, y: 0, width, height }
@@ -332,14 +357,7 @@ export function createScreenshotTool({
         ? await takeTurn(() =>
             captureFullPage(contents, args, scale, relay, overflowOf(settled)),
           )
-        : {
-            rect: crop.rect,
-            data: atScale(
-              (await contents.capturePage(crop.rect)).toPNG(),
-              crop.rect?.width ?? width,
-              scale,
-            ),
-          }
+        : await captureViewport(contents, crop.rect, width, scale)
     } finally {
       contents.setBackgroundThrottling(throttled)
     }

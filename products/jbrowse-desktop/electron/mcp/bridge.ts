@@ -96,15 +96,22 @@ export function startMcpBridge({
   // why the page is gone, while it is: a crashed renderer never announces
   // again, so without this every call waited out its whole budget
   let crashed: string | undefined
+  // how many crashes this run has seen, so `open` can tell one that happened
+  // while it waited from one its own reload is about to clear
+  let crashes = 0
 
-  ipcHandle('mcpReady', (_event, state) => {
-    listening = state
-    crashed = undefined
+  function wakeWaiters() {
     const pending = waiters
     waiters = []
     for (const wake of pending) {
       wake()
     }
+  }
+
+  ipcHandle('mcpReady', (_event, state) => {
+    listening = state
+    crashed = undefined
+    wakeWaiters()
   })
 
   // Nothing is coming for these, so waiting out RENDERER_TIMEOUT_MS is a 150s
@@ -121,6 +128,14 @@ export function startMcpBridge({
   function stopListening() {
     listening = undefined
     settleOrphans('the page reloaded before the app answered; try again')
+  }
+
+  function markCrashed(reason: string | undefined) {
+    crashes += 1
+    crashed = `the app's page crashed${reason ? ` (${reason})` : ''}; use the open tool to reload it`
+    listening = undefined
+    settleOrphans(crashed)
+    wakeWaiters()
   }
 
   // A page load tears the subscription down without telling anyone, so the
@@ -147,6 +162,8 @@ export function startMcpBridge({
       return
     }
     watchedContents = win.webContents.id
+    // a new window's page owes nothing to the last one's crash
+    crashed = undefined
     applyThrottling()
     // a committed main-frame page load: did-start-navigation also fires for a
     // link click that will-navigate cancels, which leaves the page listening
@@ -155,12 +172,25 @@ export function startMcpBridge({
       crashed = undefined
       stopListening()
     })
+    // A load that fails commits an error page in place of the app, which
+    // announces nothing and fires no did-navigate. -3 is a navigation aborted
+    // before it left, the cancelled link click above, and changes nothing.
+    win.webContents.on(
+      'did-fail-load',
+      (_event, errorCode, _description, _url, isMainFrame) => {
+        if (isMainFrame && errorCode !== -3) {
+          stopListening()
+        }
+      },
+    )
     win.webContents.on('render-process-gone', (_event, { reason }) => {
-      crashed = `the app's page crashed (${reason}); use the open tool to reload it`
-      listening = undefined
-      settleOrphans(crashed)
+      markCrashed(reason)
     })
     win.webContents.on('destroyed', stopListening)
+    // these listeners attach on the first call, which can come after a crash
+    if (win.webContents.isCrashed()) {
+      markCrashed(undefined)
+    }
   }
 
   async function awaitListening(timeoutMs: number) {
@@ -207,7 +237,12 @@ export function startMcpBridge({
     // Answering fast beats sending into the void: a push to a page that has not
     // subscribed is discarded silently, so proceeding anyway would buy nothing
     // and cost the whole relay timeout. The caller can retry cheaply.
-    if (!(await awaitListening(Math.min(timeoutMs, READY_WAIT_MS)))) {
+    const ready = await awaitListening(Math.min(timeoutMs, READY_WAIT_MS))
+    // a crash while waiting wakes the wait, and there is no page to send to
+    if (crashed) {
+      return { error: crashed }
+    }
+    if (!ready) {
       return { error: `the app was still loading when "${tool}" was sent` }
     }
     const win = getWindow()
@@ -292,10 +327,17 @@ export function startMcpBridge({
     watchWindow()
     const before = listening?.install
     const failedBefore = listening?.launchError?.attempt ?? 0
+    const crashesBefore = crashes
     await openTarget(target)
     const deadline = Date.now() + OPEN_WAIT_MS
     while (Date.now() < deadline) {
       watchWindow()
+      // a big session load running the renderer out of memory is the likeliest
+      if (crashes > crashesBefore) {
+        return {
+          error: `${opened} did not load: ${crashed ?? "the app's page crashed while loading it"}`,
+        }
+      }
       const failed = listening?.launchError
       if (failed && failed.attempt > failedBefore) {
         return {

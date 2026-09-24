@@ -75,6 +75,7 @@ function start(openTarget: () => Promise<unknown> = () => Promise.resolve()) {
   // one window, not one per getWindow call: watchWindow subscribes to its
   // webContents, and a fresh object each time would leave those on a throwaway
   const contentsEvents = new Map<string, (...a: never[]) => void>()
+  let crashed = false
   const webContents = {
     id: 1,
     send: (channel: string, payload: McpBridgeRequest) => {
@@ -85,6 +86,10 @@ function start(openTarget: () => Promise<unknown> = () => Promise.resolve()) {
     },
     getBackgroundThrottling: () => false,
     setBackgroundThrottling: () => {},
+    isCrashed: () => crashed,
+    isDevToolsOpened: () => false,
+    // what a minimized window's capture comes back as
+    capturePage: async () => ({ isEmpty: () => true }),
   }
   const win = {
     webContents,
@@ -140,9 +145,23 @@ function start(openTarget: () => Promise<unknown> = () => Promise.resolve()) {
       } as never)
     },
     crash: () => {
+      crashed = true
       contentsEvents.get('render-process-gone')?.(
         undefined as never,
         { reason: 'oom' } as never,
+      )
+    },
+    // a crash no listener heard, because none was attached yet
+    crashUnheard: () => {
+      crashed = true
+    },
+    failLoad: (errorCode: number) => {
+      contentsEvents.get('did-fail-load')?.(
+        undefined as never,
+        errorCode as never,
+        '' as never,
+        '' as never,
+        true as never,
       )
     },
     // the last thing the bridge pushed at the renderer, which is what a relayed
@@ -291,6 +310,77 @@ it('answers at once while the page is crashed, and relays again once reloaded', 
   expect(b.pushed).toHaveLength(pushes + 1)
 })
 
+it('sees a crash that happened before its first call', async () => {
+  const b = bridge()
+  const c = b.connect()
+  await settle()
+  b.ready({ install: 'first', phase: 'session' })
+  b.crashUnheard()
+
+  expect(await c.send(1, 'run_javascript', { code: 'return 1' })).toEqual({
+    id: 1,
+    error: "the app's page crashed; use the open tool to reload it",
+  })
+  expect(b.pushed).toHaveLength(0)
+})
+
+// A load that fails commits an error page, which announces nothing and fires
+// no did-navigate, so the bridge kept pushing into a page that answers nothing.
+it('stops trusting a page a failed load replaced, but not a cancelled one', async () => {
+  const b = bridge()
+  const c = b.connect()
+  await settle()
+  b.ready({ install: 'first', phase: 'session' })
+  const inFlight = c.send(1, 'run_javascript', { code: 'return 1' })
+  await settle()
+  const relayId = b.lastPush().id
+
+  b.failLoad(-3)
+  b.answer(relayId, { result: { value: 1 } })
+  expect(await inFlight).toEqual({ id: 1, result: { value: 1 } })
+
+  const orphaned = c.send(2, 'run_javascript', { code: 'return 2' })
+  await settle()
+  b.failLoad(-105)
+  expect(await orphaned).toEqual({
+    id: 2,
+    error: 'the page reloaded before the app answered; try again',
+  })
+})
+
+it('a screenshot of a crashed page says so rather than capturing', async () => {
+  const b = bridge()
+  const c = b.connect()
+  await settle()
+  b.ready({ install: 'first', phase: 'session' })
+  void c.send(1, 'run_javascript', { code: 'return 1' })
+  await settle()
+  b.crash()
+
+  expect(await c.send(2, 'screenshot')).toEqual({
+    id: 2,
+    error: "the app's page crashed (oom); use the open tool to reload it",
+  })
+})
+
+it('a screenshot of a window that yields no image says why', async () => {
+  const b = bridge()
+  const c = b.connect()
+  await settle()
+  b.ready({ install: 'first', phase: 'session' })
+  const shot = c.send(1, 'screenshot')
+  await settle()
+  b.answer(b.lastPush().id, { result: { settled: true } })
+  await settle()
+  b.answer(b.lastPush().id, { result: { painted: true } })
+
+  expect(await shot).toEqual({
+    id: 1,
+    error:
+      'the window produced no image to capture, which a minimized JBrowse Desktop does; restore it and try again',
+  })
+})
+
 it('cancels the code of a client that exits mid-call', async () => {
   const b = bridge()
   const gone = b.connect()
@@ -352,6 +442,22 @@ describe('open', () => {
       id: 1,
       result: { opened: url, settled: true },
     })
+  })
+
+  // a big session running the renderer out of memory mid-load is the likeliest
+  // crash, and open used to poll out its whole 90s deadline over it
+  it('answers at once when the page crashes while it loads', async () => {
+    const b = bridge()
+    const c = b.connect()
+    await settle()
+    b.ready({ install: 'first', phase: 'session' })
+    const answered = c.send(1, 'open', { target: url })
+    await settle()
+    b.ready({ install: 'second', phase: 'loading' })
+    b.crash()
+    expect((await answered).error).toBe(
+      `${url} did not load: the app's page crashed (oom); use the open tool to reload it`,
+    )
   })
 
   it('says so when the load fell back to the start screen', async () => {
