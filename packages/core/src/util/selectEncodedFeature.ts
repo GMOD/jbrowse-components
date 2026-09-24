@@ -1,6 +1,6 @@
-import { getSession } from './mstUtils.ts'
 import { openFeatureWidget } from './openFeatureWidget.ts'
 import { getRpcSessionId } from './parentWalk.ts'
+import { getRpcHost } from './sessionServices.ts'
 import SimpleFeature from './simpleFeature.ts'
 import { withFeatureDetails } from './withFeatureDetails.ts'
 
@@ -30,7 +30,7 @@ export function selectEncodedFeature(
     self,
     async () => {
       try {
-        const feature = await getSession(self).rpcManager.call(
+        const feature = await getRpcHost(self).rpcManager.call(
           getRpcSessionId(self),
           'CoreGetEncodedFeature',
           {
