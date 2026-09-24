@@ -328,12 +328,16 @@ gate, it needs a signal the gate never consults, read above the gate, and a test
 that fails when the read is deleted. The fourth row is the general one — the
 prerequisite reads (HiC's header, the multi-sample sample list), the circular
 view's chord fetch and the breakpoint split view's overlay fetch all run on it,
-and it reads the signal for them. The three prerequisite reads (HiC's header,
-the sample list, the tiered alignment file's LOD header) share one declaration
-over it, `installPrerequisiteFetch` (`@jbrowse/core/util`): one RPC about the
-adapter itself, tracked on the adapter config and keyed on it, gated on
-minimized, reporting where the caller says. They are on three different fetch
-foundations, which is why that declaration sits in core beside none of them.
+and it reads the signal for them. The four prerequisite reads (HiC's header,
+the sample list, the tiered alignment file's LOD header, the mark display's
+source list) share one declaration over it, `installPrerequisiteFetch`
+(`@jbrowse/core/util`): one RPC about the adapter itself, tracked on the adapter
+config and keyed on it, gated on minimized, reporting where the caller says.
+They are on three different fetch foundations, which is why that declaration
+sits in core beside none of them. Each answer carries the adapter config it
+answers, and a display reads it through `readFor`, which compares by value as
+the key does: an undo rebuilds a track's config and hands the display an equal
+adapter config that is a new object, which the fetch will not read again.
 
 **A cancel is durable, and one rule now says how durable.** No fetch trigger
 un-cancels it — the skeleton reads `fetchCanceled` tracked, under the counter
