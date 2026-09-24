@@ -74,6 +74,7 @@ export type {
 export { scoreRuleMarks, widenRangeToRules } from './scoreRuleMarks.ts'
 export type { ScoreRuleMark } from './scoreRuleMarks.ts'
 export {
+  DEFAULT_POINT_DIAMETER_PX,
   SMALL_POINT_MAX_DIAMETER_PX,
   appendPointMarker,
 } from './pointMarker.ts'

@@ -11,6 +11,12 @@ import type { MarkContext2D } from '@jbrowse/render-core/marks'
 // alias keeps this module's long-standing public name.
 export const SMALL_POINT_MAX_DIAMETER_PX = SMALL_POINT_MAX_DIAMETER
 
+/**
+ * The diameter the mark and Manhattan displays draw points at by default,
+ * where points are the plot rather than one of wiggle's renderings.
+ */
+export const DEFAULT_POINT_DIAMETER_PX = 4
+
 // Append one scatter point marker to the current path, centered on (cx, y): the
 // `point` shape's disc glyph, which is a crisp filled square at/below
 // SMALL_POINT_MAX_DIAMETER_PX and an antialiased disc above it. Wiggle's

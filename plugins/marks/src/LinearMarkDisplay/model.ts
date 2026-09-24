@@ -77,6 +77,7 @@ import {
   autoscaleDomainFromSpans,
   axisPlotBox,
   computeSpanStats,
+  DEFAULT_POINT_DIAMETER_PX,
   makeCrossHatchItem,
   makeScoreSubMenu,
   resolveRenderState,
@@ -88,10 +89,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import { autorun } from 'mobx'
 
-import {
-  DEFAULT_POINT_DIAMETER_PX,
-  markRequirementProblems,
-} from './configSchema.ts'
+import { markRequirementProblems } from './configSchema.ts'
 import { densityRegionData } from './densityLayer.ts'
 import { facetLayout, facetRegion, rowsLayout } from './facet.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'

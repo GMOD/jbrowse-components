@@ -15,7 +15,11 @@ import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
-import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
+import {
+  DEFAULT_POINT_DIAMETER_PX,
+  scalesSchema,
+  valueScaleSchema,
+} from '@jbrowse/wiggle-core'
 
 import { markColorSchema } from './markColorConfigSchema.ts'
 import { markFacetSchema } from './markFacetConfigSchema.ts'
@@ -33,8 +37,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export { MARK_TYPES, MARK_SOURCES } from './markVocabulary.ts'
 export type { MarkType, MarkSourceName } from './markVocabulary.ts'
-
-export const DEFAULT_POINT_DIAMETER_PX = 4
 
 const MARK_SHAPE_SCALES = ['none', 'categorical'] as const
 export type MarkShapeScale = (typeof MARK_SHAPE_SCALES)[number]

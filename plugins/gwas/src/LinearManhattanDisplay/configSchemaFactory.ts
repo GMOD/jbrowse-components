@@ -1,13 +1,13 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import {
+  DEFAULT_POINT_DIAMETER_PX,
   scalesSchema,
   scoreFieldConfigSchemaFields,
   valueScaleSchema,
 } from '@jbrowse/wiggle-core'
 
 import { manhattanColorConfigSchema } from './colorConfigSchema.ts'
-import { DEFAULT_POINT_DIAMETER_PX } from './manhattanRenderingBackendTypes.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
