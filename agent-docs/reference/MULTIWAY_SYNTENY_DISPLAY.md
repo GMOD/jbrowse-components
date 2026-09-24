@@ -75,6 +75,15 @@ Re-checked against the code and every tutorial the display appears in.
   (`pinnedLaneFlips`), and a same-contig re-decision moves the lane rather
   than snapping it (`MW/laneMotion.ts`).
 
+- **The 2026-09-24 review.** A star's tied lanes no longer reorder with
+  network arrival order; a star declares its lanes and reads only the chosen
+  children; lanes, their menus and the picker name a genome by the session's
+  display name, else the source's declared label; `laneGeneTracks` names each
+  lane's gene track; a lane sharing fewer than three groups with the lane above
+  votes and aligns against the anchor, which on a star is every lane below the
+  first (the 17p and stability records under the ideas file); and the picker
+  greys only a lane the window was asked for and placed nothing.
+
 Still open, and carried in
 [../ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md):
 **4.9** (what the tests do not pin) and the remainder of **4.8**.
@@ -185,9 +194,11 @@ frame the lane is drawn nearer to and turn over at the midpoint
 `MW/afterAttach.ts` ends every transition at its end time whatever the
 chrome's frame clock (`useAnimationFrames`) did.
 
-**Lane genes.** `laneGeneAdapters` walks every session track (connections
-included) and keeps, per lane, the best-ranked single-assembly annotation track
-by adapter type (`MW/laneAnnotation.ts`). One `CoreGetFeatures` per lane over
+**Lane genes.** `laneGeneTracks` walks every session track (connections
+included) and keeps, per lane, the track the `laneGeneTracks` slot names for
+its genome, else the best-ranked single-assembly annotation track by adapter
+type (`MW/laneAnnotation.ts`); a hub holding 17 GFF3 gene sets for hg38 ties
+on rank, which is what the slot is for. One `CoreGetFeatures` per lane over
 `laneFetchRegion(frame)` — the window the frame can slide in plus its reach,
 snapped to a power-of-two grid off the rung span — issued concurrently with
 per-lane staleness so a pan re-asks only the lanes whose grid cell moved
@@ -246,12 +257,15 @@ Today's providers:
 - `MCScanBlocksAdapter`: reads the whole table and every BED up front, answers
   any column pair, and is the only adapter implementing `mateShape: 'grouped'`
   (`JC/plugins/comparative-adapters/src/MCScanBlocksAdapter/MCScanBlocksAdapter.ts:405`).
-- `MultiPairwiseSyntenyAdapter`: N pairwise PIF children opened in parallel
-  and merged into one observable per request (`MultiPairwiseSyntenyAdapter.ts:150-185`,
-  `:220-237`, ids re-keyed `${childIndex}-…`), header folds the children's tiers
-  (`hasCoarseTier` only when every child has one,
-  [SYNTENY_LOD.md](SYNTENY_LOD.md)`:135-143`), names the anchor, declares no
-  `lanes`. `mateShape: 'grouped'` is ignored by every PIF adapter: each record
+- `MultiPairwiseSyntenyAdapter`: N pairwise PIF children, each subscribed at
+  once and emitted in child order (`getFeatures`, ids re-keyed
+  `${childIndex}-…`); header folds the children's tiers (`hasCoarseTier` only
+  when every child has one, [SYNTENY_LOD.md](SYNTENY_LOD.md)`:135-143`), names
+  the anchor, and declares every mate as a lane, labelled and grouped by its
+  `lanes` slot. It declares `headerLanes`, so a window reads only the children
+  for the lanes the display asks for (`childrenForLanes`), and a star over every
+  liftOver file a genome has costs the chosen lanes' reads. `mateShape:
+  'grouped'` is ignored by every PIF adapter: each record
   arrives as one feature with one `mate`, and the display groups on the clipped
   `syntenyId` (file offset plus window). A mate-vs-mate query returns the empty
   answer, not an error (`:78-98`). A PIF is a bgzipped PAF written twice, once
@@ -310,7 +324,7 @@ does not know lanes exist. Concretely:
 
 The escape hatches are two: **Open ⟨assembly⟩ at the matching region**
 (`openInNewView`), which opens an *unsynchronised* LGV with the multiway track
-and that genome's annotations, and **Launch → Linear synteny view (visible
+and the gene track the lane draws, and **Launch → Linear synteny view (visible
 region)** (the model's `trackMenuItems`), the stacked view §2.3 costs out.
 
 ## 2. The two named tutorials
