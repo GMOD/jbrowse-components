@@ -1,6 +1,6 @@
 ---
 name: grammar-of-graphics-convergence
-description: The grammar thread as of 2026-09-23. Four rules for how far to take it (the parser's output is the data, one object per concept, generality resolves before the loop, a track stays its format and the grammar supplies its parts), a census of the copies between each gmod parser and its GPU buffer, Colin's calls of 2026-09-23 (Vega-Lite's mark/shape naming, a DOM text layer, colour stays per mark), and the work left — a text layer, one row scale, the copies; shared y landed as scales.y.autoscaleGroup. y2 was declined on captures. Read before proposing a grammar feature, or converging a display's colour ramp, rows or labels.
+description: The grammar thread as of 2026-09-24. Four rules for how far to take it (the parser's output is the data, one object per concept, generality resolves before the loop, a track stays its format and the grammar supplies its parts), a census of the copies between each gmod parser and its GPU buffer, Colin's calls of 2026-09-23 (Vega-Lite's mark/shape naming, a DOM text layer, colour stays per mark), and the work left — the copies, and the arc displays' colour object; shared y landed as scales.y.autoscaleGroup, the text mark as ADR-162. y2 was declined on captures. Read before proposing a grammar feature, or converging a display's colour ramp, rows or labels.
 ---
 
 # Grammar of graphics: the convergence thread
@@ -147,25 +147,18 @@ swapping one is a capture comparison first.
 
 ### 3. A text layer
 
-Seven plugins draw text by hand through `fillText`, several with the same
-stroke-then-fill halo: canvas's feature labels (`labelPositioning.ts`, 409
-lines, the richest placement), alignments' inline labels, arc labels, synteny's
-off-screen mate names, MAF row labels and bases, variant insertion lengths and
-the sequence letters. The medium differs as well as the code: canvas's feature
-labels are DOM elements on screen (`overlayElements.tsx`) and a Canvas2D
-painter only in the export, while alignments and MAF paint an overlay canvas.
-No mark draws text, so the mark display cannot label a peak or a GWAS hit.
-
-A text mark cannot be a `MarkShape`, because that interface needs a `.slang`
-pass (`packages/render-core/src/marks/types.ts:125`) and GPU text would need a
-glyph atlas nobody has asked for. What fits is a declared overlay layer: an
-`encoding.text` field and one placement rule (anchor, cull overlaps, halo from
-`usePalette`, clip to the region) that the screen and `SvgCanvas` export both
-run. On screen it emits DOM text (decided above). The mark display is the first
-consumer; the second has to retire one of the
-hand-written paths, and the arc and off-screen-mate labels are the simplest.
-Canvas's feature labels move only on a bench at parity, since their isoform
-badges and scroll bucketing belong to that display.
+Landed as
+[ADR-162](../architecture-decision-records/adr-162-a-text-mark-is-a-dom-layer-placed-by-one-rule.md):
+`mark: 'text'` with `encoding.text`, placed by `placeTextMarks` and emitted as
+DOM on screen and `<text>` in the export through display-ui's `FloatingText`
+and `SvgHaloText`, which the canvas feature labels and the arc labels' export
+now emit through as well. What the emit shares is the typography; each
+display's placement stays its own, and canvas's `labelPositioning.ts` moves
+onto the mark display's rule only on a bench at parity, since its isoform
+badges and scroll bucketing belong to that display. Still hand-painted on a
+canvas: alignments' inline labels, synteny's off-screen mate names, MAF's row
+labels and bases, variant insertion lengths and the sequence letters, the dense
+per-base ones by the 2026-09-23 decision.
 
 ### 4. One row scale
 

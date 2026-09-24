@@ -523,6 +523,47 @@
           ]
         }
       ]
+    },
+    {
+      "type": "FeatureTrack",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "volvox-bed12.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox-bed12.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "trackId": "marks_text",
+      "name": "Mark bars with labels",
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "marks_text-LinearMarkDisplay",
+          "marks": [
+            {
+              "mark": "bar",
+              "encoding": {
+                "y": "score",
+                "color": "#c8d8ee"
+              }
+            },
+            {
+              "mark": "text",
+              "encoding": {
+                "y": "score",
+                "text": "name"
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

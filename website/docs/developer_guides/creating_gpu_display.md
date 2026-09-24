@@ -15,9 +15,9 @@ hit test, all reading one set of channel arrays. The sections below write one.
 
 :::note
 
-To plot a field of a feature file as a bar, point or span, add a `marks` entry
-on [`LinearMarkDisplay`](/docs/config_guides/mark_display), with no plugin. The
-shape below reads the same worker channels. Start from
+To plot a field of a feature file as a bar, point, span or label, add a `marks`
+entry on [`LinearMarkDisplay`](/docs/config_guides/mark_display), with no
+plugin. The shape below reads the same worker channels. Start from
 [](/docs/developer_guides/plotting_features), which builds the same plugin: the
 fetch chain, the model, the mark list and the component. The steps below replace
 only the shape that guide names. If `spanMark`, `pointMark` or `barMark` draws

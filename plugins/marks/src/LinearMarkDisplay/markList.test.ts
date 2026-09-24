@@ -113,6 +113,42 @@ test('mark i reads layers[i], and every mark gets its own pass id', () => {
   expect(marks[2]!.pass.pack(data).byteLength).toBeGreaterThan(0)
 })
 
+test('a text mark takes no place in the list, and the marks after it keep their own index', () => {
+  const marks = buildMarkList(entries('bar', 'text', 'span'))
+  expect(marks.map(m => [m.pass.id, m.markIndex])).toEqual([
+    ['bar#0', 0],
+    ['span#2', 2],
+  ])
+  const data: MarkRegionData = {
+    layers: [
+      layer([500], [5], [RED]),
+      { ...layer([500], [5], [RED]), text: ['label'] },
+      layer([800], [0], [BLUE], { row: new Uint32Array(1) }),
+    ],
+  }
+  expect(marks[1]!.pass.pack(data).byteLength).toBeGreaterThan(0)
+  const hit = findMarkHit(
+    402,
+    300,
+    [block],
+    new Map([[0, data]]),
+    marks,
+    state,
+    REGIONS,
+  )
+  expect(hit).toMatchObject({ markIndex: 0, start: 500 })
+  const spanHit = findMarkHit(
+    641,
+    200,
+    [block],
+    new Map([[0, data]]),
+    marks,
+    state,
+    REGIONS,
+  )
+  expect(spanHit).toMatchObject({ markIndex: 2, start: 800 })
+})
+
 test('a region with fewer layers than marks packs nothing for the missing one', () => {
   const marks = buildMarkList(entries('bar', 'point'))
   const data: MarkRegionData = { layers: [layer([1], [1], [RED])] }

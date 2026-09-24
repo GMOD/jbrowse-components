@@ -8,6 +8,7 @@ import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { binStepWidth } from './autoBin.ts'
 import { markShapeScale } from './configSchema.ts'
+import { MARK_SPECS } from './markSpecs.ts'
 import { DEFAULT_BIN_AS, DEFAULT_PILEUP_FIELDS } from './markVocabulary.ts'
 
 import type { MarkConfig, MarkTransformStepConfig } from './configSchema.ts'
@@ -22,8 +23,11 @@ import type { Region } from '@jbrowse/core/util/types/data'
 // The config's raw slot values as the worker's encoding: a `jexl:` string
 // crosses untouched, which is why nothing here reads through `getConf`.
 export function encodingOf(mark: MarkConfig): MarkEncoding {
-  const { x, x2, y, row, shape, color } = mark.encoding
+  const { x, x2, y, row, shape, color, text } = mark.encoding
   const scaled = colorEncodingOf(color, 'categorical')
+  const readsText = (
+    MARK_SPECS[mark.mark].channels as readonly string[]
+  ).includes('text')
   const shapeEncoding: ShapeEncoding =
     markShapeScale(shape) === 'none'
       ? shape.value
@@ -44,6 +48,9 @@ export function encodingOf(mark: MarkConfig): MarkEncoding {
     row: row || undefined,
     color: scaled,
     shape: shapeEncoding,
+    // Only a mark that prints it sends it, so every other mark's request is
+    // the one it was.
+    ...(readsText && text ? { text } : {}),
   }
 }
 

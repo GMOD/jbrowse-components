@@ -27,6 +27,7 @@ import WigglePlugin from '@jbrowse/plugin-wiggle'
 import { pointInsetPx } from '@jbrowse/render-core/marks'
 import { makePinCurrentRangeItem } from '@jbrowse/wiggle-core'
 import { render, screen, waitFor } from '@testing-library/react'
+import { autorun } from 'mobx'
 
 import MarkFacetChips from './components/MarkFacetChips.tsx'
 import { configSchemaFactory } from './configSchema.ts'
@@ -38,6 +39,7 @@ import {
   defaultPlotMarks,
   plotMarks,
 } from './plotFields.ts'
+import { placeTextMarks } from './textMarks.ts'
 
 import type { LinearMarkDisplayModel } from './model.ts'
 import type { EncodedFeaturesResult } from '@jbrowse/core/util/markEncoding'
@@ -226,6 +228,173 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
     'point#1',
     'span#2',
   ])
+})
+
+test('a text mark asks the worker for the text lane and no hit index, and takes no place in the mark list', () => {
+  const { createDisplay } = createTestEnvironment([
+    { mark: 'text', encoding: { y: 'score' } },
+    { mark: 'bar', encoding: { y: 'score' } },
+  ])
+  const { display } = createDisplay()
+  const [text, bar] = display.rpcProps().layers
+  expect(text).toMatchObject({
+    encoding: { y: 'score', text: 'name' },
+    lanes: ['y', 'row', 'color', 'text'],
+  })
+  expect(bar!.lanes).toContain('index')
+  expect(display.markList.map(m => [m.pass.id, m.markIndex])).toEqual([
+    ['bar#1', 1],
+  ])
+})
+
+test("a text mark's values fold into the axis, and one naming no y asks for no y lane and draws without one", () => {
+  const { createDisplay } = createTestEnvironment([
+    { mark: 'text', encoding: { y: 'score' } },
+  ])
+  const { display } = createDisplay()
+  expect(display.notices).toEqual([])
+  display.setRpcData(0, result([{ y: [3, 90] }]), REGION)
+  expect(display.domain![1]).toBeGreaterThanOrEqual(90)
+  const banded = createTestEnvironment([{ mark: 'text' }]).createDisplay()
+    .display
+  expect(banded.notices).toEqual([])
+  expect(banded.textMarkEntries[0]).toMatchObject({
+    placed: true,
+    valued: false,
+    ownColor: false,
+  })
+  expect(banded.rpcProps().layers[0]!.lanes).toEqual(['row', 'color', 'text'])
+  banded.setRpcData(0, result([{ y: [] }]), REGION)
+  expect(banded.domain).toBeUndefined()
+})
+
+test('a text mark beside points keeps the points where they were', () => {
+  const { createDisplay } = createTestEnvironment([
+    { mark: 'point', size: 6, encoding: { y: 'score' } },
+    { mark: 'text', encoding: { y: 'score', color: 'red' } },
+  ])
+  const { display } = createDisplay()
+  expect(display.valueInsetPx).toBe(pointInsetPx(6))
+  expect(display.textMarkEntries[1]!.ownColor).toBe(true)
+  const alone = createTestEnvironment([
+    { mark: 'text', encoding: { y: 'score' } },
+  ]).createDisplay().display
+  expect(alone.valueInsetPx).toBe(0)
+})
+
+test('a slot write only a label reads leaves the mark list as it was, so the backend stands', () => {
+  const { createDisplay } = createTestEnvironment([
+    { mark: 'point', encoding: { y: 'score' } },
+    { mark: 'text', encoding: { y: 'score' } },
+  ])
+  const { display } = createDisplay()
+  // Tracked, as the chrome tracks it: outside a reaction a computed answers
+  // afresh on every read, so identity is a question only an observer can ask.
+  const lists: unknown[] = []
+  const stop = autorun(() => {
+    lists.push(display.markList)
+  })
+  display.setPointSize(9)
+  expect(display.textMarkEntries[1]!.ownColor).toBe(false)
+  setConf(display.conf.marks[1]!, ['encoding', 'color', 'value'], 'red')
+  expect(display.textMarkEntries[1]!.ownColor).toBe(true)
+  stop()
+  expect(lists).toHaveLength(1)
+})
+
+test('the worker fills the text lane the request names, and the placement reads it back', () => {
+  const { createDisplay } = createTestEnvironment([
+    { mark: 'bar', encoding: { y: 'score' } },
+    { mark: 'text', encoding: { y: 'score' } },
+    { mark: 'text', encoding: { text: 'type' } },
+  ])
+  const { display } = createDisplay()
+  const feats = [
+    new SimpleFeature({
+      uniqueId: 'a',
+      refName: 'ctgA',
+      start: 1000,
+      end: 2000,
+      score: 5,
+      name: 'geneA',
+      type: 'gene',
+    }),
+    new SimpleFeature({
+      uniqueId: 'b',
+      refName: 'ctgA',
+      start: 6000,
+      end: 7000,
+      score: 9,
+      name: 'geneB',
+    }),
+  ]
+  const { layers } = display.rpcProps()
+  display.setRpcData(
+    0,
+    {
+      layers: layers.map(request =>
+        encodeFeatures(feats, request.encoding, request.lanes),
+      ),
+    },
+    REGION,
+  )
+  const [, named, typed] = display.rpcDataMap.get(0)!.layers
+  expect(named!.text).toEqual(['geneA', 'geneB'])
+  expect(named!.y).toBeDefined()
+  expect(typed!.text).toEqual(['gene', ''])
+  expect(typed!.y).toBeUndefined()
+  const labels = placeTextMarks(
+    display.textMarkEntries,
+    display.rpcDataMap,
+    display.renderBlocks,
+    display.renderState,
+    { size: 11, family: 'sans-serif' },
+    'black',
+  )
+  expect(labels.map(l => [l.markIndex, l.text])).toEqual([
+    [1, 'geneA'],
+    [2, 'gene'],
+    [1, 'geneB'],
+  ])
+  const { canvasHeight } = display.renderState
+  // the typed label names no y, so it sits in the middle of the one band
+  expect(labels[1]!.baseline).toBeCloseTo(canvasHeight / 2 + 11 * 0.34)
+  expect(labels[0]!.baseline).toBeLessThan(canvasHeight / 2)
+})
+
+test('a hover on a mark after a text mark lights its own ink', () => {
+  const { createDisplay } = createTestEnvironment([
+    { mark: 'text', encoding: { row: 'sampleIndex' } },
+    { mark: 'span', encoding: { row: 'sampleIndex' } },
+  ])
+  const { display } = createDisplay()
+  display.setRpcData(
+    0,
+    result([
+      { y: [0], row: [0] },
+      { y: [0, 0], row: [0, 1] },
+    ]),
+    REGION,
+  )
+  display.setHoveredFeature({
+    markIndex: 1,
+    regionIndex: 0,
+    instance: 1,
+    featureIndex: 1,
+    refName: 'ctgA',
+    start: 100,
+    end: 150,
+    y: undefined,
+    color: undefined,
+    colorValue: undefined,
+    glyph: undefined,
+    row: undefined,
+    screenX: 0,
+    screenY: 0,
+  })
+  const [box] = display.hoverInk
+  expect(box!.height).toBe(display.renderState.canvasHeight / 2)
+  expect(box!.top).toBeGreaterThan(display.renderState.canvasHeight / 2)
 })
 
 test('the domain spans every valued layer and widens to the origin for a bar', () => {

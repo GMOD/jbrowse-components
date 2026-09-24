@@ -28,6 +28,7 @@ import { markTransformStep } from './markTransformConfigSchema.ts'
 import {
   DEFAULT_MARK_TYPE,
   DEFAULT_MARK_SOURCE,
+  DEFAULT_TEXT_FIELD,
   MARK_TYPES,
   MARK_SOURCES,
 } from './markVocabulary.ts'
@@ -143,8 +144,9 @@ const markEncodingSchema = ConfigurationSchema(
      * The feature field, or jexl expression over `feature`, plotted on the score
      * axis. A feature whose value is not a finite number is skipped. Empty for
      * a mark with no value, such as a span; a bar or point naming none draws
-     * nothing, and the track's corner notice says so. The scale it is read
-     * through is the display's `scales.y`.
+     * nothing, and the track's corner notice says so, while a text naming none
+     * stands in the middle of its band. The scale it is read through is the
+     * display's `scales.y`.
      */
     y: {
       type: 'featureField',
@@ -178,6 +180,16 @@ const markEncodingSchema = ConfigurationSchema(
      * categorical scale over those names. A scale is what the legend describes.
      */
     shape: markShapeSchema,
+    /**
+     * #slot marks.encoding.text
+     * For a text mark: the feature field, or jexl expression over `feature`,
+     * it prints, `name` unset. A feature with nothing there prints nothing.
+     */
+    text: {
+      type: 'featureField',
+      defaultValue: DEFAULT_TEXT_FIELD,
+      description: 'text field, or jexl expression',
+    },
   },
   { closed: true },
 )
@@ -214,19 +226,22 @@ const markSchema = ConfigurationSchema(
     /**
      * #slot marks.mark
      * `bar` stands between `origin` and `y`; `point` is a shape at `y`; `span`
-     * is a band across the whole plot from `x` to `x2`.
+     * is a band across the whole plot from `x` to `x2`; `text` prints a field
+     * over the middle of `x` to `x2`, just above `y` where it names one and in
+     * the middle of its band otherwise, and a label that would overlap one
+     * already placed to its left is left out.
      */
     mark: {
       type: 'stringEnum',
       model: types.enumeration('MarkType', [...MARK_TYPES]),
       defaultValue: DEFAULT_MARK_TYPE,
-      description: 'bar, point or span',
+      description: 'bar, point, span or text',
     },
     /**
      * #slot marks.size
      * A point mark's diameter in px, the mark's own as a grammar's
-     * `size` is, so two point marks may differ; a bar or span reads none. The
-     * track menu's Point size writes it on every point mark.
+     * `size` is, so two point marks may differ; a bar, span or text reads
+     * none. The track menu's Point size writes it on every point mark.
      */
     size: {
       type: 'number',
@@ -323,8 +338,8 @@ export function markRequirementProblems(
  * #config LinearMarkDisplay
  * #category display
  * A grammar of graphics over a feature, alignments or variant track: a list of
- * marks — bars, points or spans — each with an encoding naming which feature
- * fields feed its channels and a transform list run before it. One fetch per
+ * marks — bars, points, spans or text — each with an encoding naming which
+ * feature fields feed its channels and a transform list run before it. One fetch per
  * region evaluates every encoding in the worker; the marks draw in order over
  * one score axis.
  *

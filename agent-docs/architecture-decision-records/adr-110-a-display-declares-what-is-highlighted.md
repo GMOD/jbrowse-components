@@ -163,7 +163,11 @@ grown to the ring's radius). The example plugin's `score` shape declares
   on purpose. The seam "a display names instances and nothing about where
   they are" does not hold for a label: labels are DOM text and not marks, so
   the display derives their rects itself and the chrome receives finished
-  boxes, and that stays so until a label is a mark. And `soloInk` is one
+  boxes, and that stays so until a label is a mark. The mark display's `text`
+  mark is one since 2026-09-24
+  ([ADR-162](adr-162-a-text-mark-is-a-dom-layer-placed-by-one-rule.md)) and
+  keeps the clause whole: it declares no ink, answers no hover and joins no
+  highlight list, so a pinned feature's label is not boxed. And `soloInk` is one
   display's gesture on the shared host, taken so the layer could go rather
   than survive for one box kind; a second display wanting a kind of its own
   is the signal to make the host take named lists with styles instead.

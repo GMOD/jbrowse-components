@@ -7,6 +7,7 @@ import { observer } from 'mobx-react'
 import { findMarkHit } from '../findMarkHit.ts'
 import MarkFacetChips from './MarkFacetChips.tsx'
 import MarkRows from './MarkRows.tsx'
+import MarkTextLayer from './MarkTextLayer.tsx'
 import MarkTooltip from './MarkTooltip.tsx'
 
 import type { MarkTooltipModel } from './MarkTooltip.tsx'
@@ -37,6 +38,7 @@ const LinearMarkDisplayComponent = observer(
         contextMenu={model}
         overlay={({ yTop, plotHeight }) => (
           <>
+            <MarkTextLayer model={model} yTop={yTop} plotHeight={plotHeight} />
             <MarkFacetChips model={model} plotHeight={plotHeight} />
             <MarkRows model={model} yTop={yTop} plotHeight={plotHeight} />
           </>

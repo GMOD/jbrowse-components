@@ -6,7 +6,7 @@
  * and `jbrowse validate` carries a copy of both.
  */
 
-export const MARK_TYPES = ['bar', 'point', 'span'] as const
+export const MARK_TYPES = ['bar', 'point', 'span', 'text'] as const
 export type MarkType = (typeof MARK_TYPES)[number]
 export const DEFAULT_MARK_TYPE: MarkType = 'bar'
 
@@ -21,6 +21,7 @@ export const DEFAULT_COVERAGE_AS = 'coverage'
 export const DEFAULT_FLATTEN_FIELD = 'subfeatures'
 export const DEFAULT_PILEUP_AS = 'row'
 export const DEFAULT_PILEUP_FIELDS = ['start', 'end'] as const
+export const DEFAULT_TEXT_FIELD = 'name'
 
 export const AGGREGATE_OPS = ['count', 'sum', 'mean', 'min', 'max'] as const
 export type AggregateOpName = (typeof AGGREGATE_OPS)[number]

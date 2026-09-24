@@ -33,7 +33,7 @@ const MARK_VALUE_LANES = {
   bar: ['y'],
   point: ['y', 'glyph'],
   span: ['row', 'color'],
-} as const satisfies Record<MarkType, readonly ChannelLane[]>
+} as const satisfies Record<Exclude<MarkType, 'text'>, readonly ChannelLane[]>
 
 // A payload fetched before a mark type change packs nothing rather than a lane of
 // zeros.
@@ -92,7 +92,14 @@ export interface MarkRenderState extends MarkFrame {
   rowCount: number
 }
 
-export type DisplayMark = Mark<MarkRegionData, MarkRenderState>
+/**
+ * A `marks` entry's shape bound to the display's payload, with the entry it
+ * draws: the list skips a text mark, which has no shape, so a mark's position
+ * in the list is not its index in `marks` or in a region's `layers`.
+ */
+export interface DisplayMark extends Mark<MarkRegionData, MarkRenderState> {
+  markIndex: number
+}
 
 /** A `marks` entry's type and zoom range in bp per px, 0 for no bound. */
 export interface MarkEntry {
@@ -101,6 +108,22 @@ export interface MarkEntry {
   maxBpPerPx: number
   /** Whether the mark has somewhere to stand: a bar or point naming no `y` draws nowhere. */
   placed: boolean
+}
+
+/**
+ * A `marks` entry as the text layer places it: the entry, and the two facts
+ * the layer reads off the config beyond it. Apart from `MarkEntry` so the mark
+ * list, which the GPU backend is keyed on, never depends on a slot only a
+ * label reads.
+ */
+export interface TextMarkEntry extends MarkEntry {
+  /** Whether the mark names a `y` to stand at; without one it stands in the middle of its band. */
+  valued: boolean
+  /**
+   * Whether the config writes the mark's colour, or leaves it at the mark
+   * default. Left at the default, a label prints in the surface's text colour.
+   */
+  ownColor: boolean
 }
 
 /**
@@ -169,65 +192,83 @@ function withPassId<C, P>(shape: MarkShape<C, P>, id: string): MarkShape<C, P> {
   return { ...shape, id, pass: { ...shape.pass, id } }
 }
 
-/** One mark per `marks` entry, reading `layers[i]` inside its zoom range. */
+function withMarkIndex(
+  mark: Mark<MarkRegionData, MarkRenderState>,
+  markIndex: number,
+): DisplayMark {
+  return Object.assign(mark, { markIndex })
+}
+
+/**
+ * One mark per `marks` entry with a shape, reading `layers[i]` inside its
+ * zoom range. A text mark is the text layer's and takes no place here.
+ */
 export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
-  return entries.map((entry, i) => {
-    const { type } = entry
-    const id = `${type}#${i}`
-    const enabled = (s: MarkRenderState) => markDrawsAt(entry, s.bpPerPx)
-    switch (type) {
-      case 'bar': {
-        return defineMark({
-          shape: withPassId(barMark, id),
-          channels: (d: MarkRegionData) =>
-            withLanes(d.layers[i], MARK_VALUE_LANES.bar),
-          params: (s: MarkRenderState) => ({
-            domain: s.domainY,
-            scaleType: s.scaleTypeY,
-            symlogConstant: s.symlogConstantY,
-            ramp: s.colorRamps[i],
-            origin: s.origin,
-            minWidthPx: s.minWidthPx,
-            seamPx: CANVAS_SEAM_PX,
-            rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
-          }),
-          texture: (s: MarkRenderState) => s.colorRamps[i]?.lut,
-          enabled,
-        })
-      }
-      case 'point': {
-        return defineMark({
-          shape: withPassId(pointMark, id),
-          channels: (d: MarkRegionData) =>
-            withLanes(d.layers[i], MARK_VALUE_LANES.point),
-          params: (s: MarkRenderState) => ({
-            domain: s.domainY,
-            scaleType: s.scaleTypeY,
-            symlogConstant: s.symlogConstantY,
-            ramp: s.colorRamps[i],
-            diameterPx: s.markSizes[i]!,
-            insetPx: s.valueInsetPx,
-            rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
-          }),
-          texture: (s: MarkRenderState) => s.colorRamps[i]?.lut,
-          enabled,
-        })
-      }
-      case 'span': {
-        return defineMark({
-          shape: withPassId(spanMark, id),
-          channels: (d: MarkRegionData) =>
-            withLanes(d.layers[i], MARK_VALUE_LANES.span),
-          params: (s: MarkRenderState) => ({
-            rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
-            rowProportion: 1,
-            minWidthPx: s.minWidthPx,
-            seamPx: 0,
-            scrollTop: 0,
-          }),
-          enabled,
-        })
-      }
-    }
+  return entries.flatMap((entry, i) => {
+    const mark = shapeMark(entry, i)
+    return mark ? [withMarkIndex(mark, i)] : []
   })
+}
+
+function shapeMark(entry: MarkEntry, i: number) {
+  const { type } = entry
+  const id = `${type}#${i}`
+  const enabled = (s: MarkRenderState) => markDrawsAt(entry, s.bpPerPx)
+  switch (type) {
+    case 'text': {
+      return undefined
+    }
+    case 'bar': {
+      return defineMark({
+        shape: withPassId(barMark, id),
+        channels: (d: MarkRegionData) =>
+          withLanes(d.layers[i], MARK_VALUE_LANES.bar),
+        params: (s: MarkRenderState) => ({
+          domain: s.domainY,
+          scaleType: s.scaleTypeY,
+          symlogConstant: s.symlogConstantY,
+          ramp: s.colorRamps[i],
+          origin: s.origin,
+          minWidthPx: s.minWidthPx,
+          seamPx: CANVAS_SEAM_PX,
+          rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
+        }),
+        texture: (s: MarkRenderState) => s.colorRamps[i]?.lut,
+        enabled,
+      })
+    }
+    case 'point': {
+      return defineMark({
+        shape: withPassId(pointMark, id),
+        channels: (d: MarkRegionData) =>
+          withLanes(d.layers[i], MARK_VALUE_LANES.point),
+        params: (s: MarkRenderState) => ({
+          domain: s.domainY,
+          scaleType: s.scaleTypeY,
+          symlogConstant: s.symlogConstantY,
+          ramp: s.colorRamps[i],
+          diameterPx: s.markSizes[i]!,
+          insetPx: s.valueInsetPx,
+          rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
+        }),
+        texture: (s: MarkRenderState) => s.colorRamps[i]?.lut,
+        enabled,
+      })
+    }
+    case 'span': {
+      return defineMark({
+        shape: withPassId(spanMark, id),
+        channels: (d: MarkRegionData) =>
+          withLanes(d.layers[i], MARK_VALUE_LANES.span),
+        params: (s: MarkRenderState) => ({
+          rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
+          rowProportion: 1,
+          minWidthPx: s.minWidthPx,
+          seamPx: 0,
+          scrollTop: 0,
+        }),
+        enabled,
+      })
+    }
+  }
 }

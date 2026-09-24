@@ -183,7 +183,7 @@ function facetLayer(layer: StoredLayer, remap: Uint32Array): StoredLayer {
   if (!moved.includes(HIDDEN)) {
     return { ...layer, row: moved }
   }
-  const shown = (_: number, i: number) => moved[i] !== HIDDEN
+  const shown = (_: unknown, i: number) => moved[i] !== HIDDEN
   const x = layer.x.filter(shown)
   const x2 = layer.x2.filter(shown)
   const y = layer.y?.filter(shown)
@@ -198,6 +198,7 @@ function facetLayer(layer: StoredLayer, remap: Uint32Array): StoredLayer {
     color: layer.color?.filter(shown),
     colorValue: layer.colorValue?.filter(shown),
     glyph: layer.glyph?.filter(shown),
+    text: layer.text?.filter(shown),
     flatbush: layer.flatbush && x.length > 0 ? hitIndexOf(x, x2, y) : undefined,
     flatbushData: undefined,
   })

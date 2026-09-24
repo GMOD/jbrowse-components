@@ -2,8 +2,8 @@
 title: Mark display
 description:
   A grammar of graphics over a feature, alignments, variant or quantitative
-  track, where LinearMarkDisplay draws the bars, points and spans its config
-  declares
+  track, where LinearMarkDisplay draws the bars, points, spans and labels its
+  config declares
 guide_category: Track types
 ---
 
@@ -11,12 +11,12 @@ guide_category: Track types
 Vega-Lite or ggplot: a picture is declared as marks, encodings and transforms
 rather than drawn by code. It goes on a `FeatureTrack`, an `AlignmentsTrack`, a
 `VariantTrack`, a `QuantitativeTrack` or a `MultiQuantitativeTrack` and draws
-whatever its `marks` list declares — a `bar`, `point` or `span` per entry, each
-with an `encoding` naming which feature fields feed it, a `transform` list that
-can bin, count, pack or measure coverage before it, and a zoom range it draws
-in. A BED score column becomes a bar chart with one display entry and no code,
-the same file's density at wide zoom is a second entry, and a `pileup` step over
-a BAM packs the reads into rows.
+whatever its `marks` list declares — a `bar`, `point`, `span` or `text` per
+entry, each with an `encoding` naming which feature fields feed it, a
+`transform` list that can bin, count, pack or measure coverage before it, and a
+zoom range it draws in. A BED score column becomes a bar chart with one display
+entry and no code, the same file's density at wide zoom is a second entry, and a
+`pileup` step over a BAM packs the reads into rows.
 
 ## When to reach for it
 
@@ -98,6 +98,7 @@ one.
 | one row per element of a list field | `tidyr::unnest()` | `{"flatten": [field]}` | `{"type": "flatten", "field"}` |
 | how many features overlap each position | | GenomeSpy `{"type": "coverage"}` | `{"type": "coverage"}` |
 | overlapping features stacked into rows | | GenomeSpy `{"type": "pileup", "as": "lane"}` | `{"type": "pileup"}`, read by the mark's `row` |
+| a label at each feature | `geom_text(aes(label = name), check_overlap = TRUE)` | `"mark": "text"`, `"text": {"field": "name"}` | `"mark": "text"`, `"encoding": {"text": "name"}` |
 | a band of the plot per category | `facet_grid(rows = vars(sample))` | `"row": {"field": "sample"}` | `"facet": "sample"`, or `"rows": "sample"` for one row each |
 | layers drawn in order | `+ geom_…()` | `"layer": […]` | `marks`, in list order |
 | a layer that draws at some zooms only | | GenomeSpy `multiscale` with `stops` | `minBpPerPx` and `maxBpPerPx` on the mark |
@@ -107,23 +108,23 @@ Two names mean something else here. Vega-Lite's `row` is a facet channel; on
 this display `encoding.row` is the band a feature stands in, the integer a
 `pileup` step writes, and the facet is the display's own `facet`. And a
 positional channel is a bare field where Vega-Lite's carries a scale, because
-the y scale is the display's `scales.y` and every mark reads one axis. Text,
-stacked bars and a `size` or `opacity` channel have no row: the display draws no
-text, a bar stands on its own from the baseline, and a point's diameter is its
-mark's `size`.
+the y scale is the display's `scales.y` and every mark reads one axis. Stacked
+bars and a `size` or `opacity` channel have no row: a bar stands on its own from
+the baseline, and a point's diameter is its mark's `size`.
 
 ## The encoding
 
 Each mark's `encoding` maps feature fields to the channels its type reads:
 
-| Channel | Read by        | Value                                                                                                                                                                                |
-| ------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `x`     | every mark     | a field holding the left edge in bp; `start` by default                                                                                                                              |
-| `x2`    | every mark     | the right edge; `end` by default                                                                                                                                                     |
-| `y`     | `bar`, `point` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped                                          |
-| `row`   | every mark     | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, this mark's own, the facet's or the display's |
-| `color` | every mark     | a CSS colour, a jexl callback returning one, or a scale (below)                                                                                                                      |
-| `shape` | `point`        | `circle`, `triangle-down` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                                |
+| Channel | Read by                | Value                                                                                                                                                                                                        |
+| ------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `x`     | every mark             | a field holding the left edge in bp; `start` by default                                                                                                                                                      |
+| `x2`    | every mark             | the right edge; `end` by default                                                                                                                                                                             |
+| `y`     | `bar`, `point`, `text` | the field plotted on the score axis, read through the display's `scales.y` (below); a feature whose value is not a finite number is skipped. A `text` may leave it empty and stand in the middle of its band |
+| `row`   | every mark             | an integer field naming the band the mark stands in, from 0; missing is 0, and left empty it follows the last `pileup` step before it, this mark's own, the facet's or the display's                         |
+| `color` | every mark             | a CSS colour, a jexl callback returning one, or a scale (below)                                                                                                                                              |
+| `shape` | `point`                | `circle`, `triangle-down` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                                                        |
+| `text`  | `text`                 | the field printed, `name` by default; a feature with nothing there prints nothing                                                                                                                            |
 
 A field name is read straight off the feature (`score`, `strand`, or any column
 a BED `columnNames` or a GFF attribute names). A `jexl:` expression over
@@ -358,6 +359,53 @@ whole plot; with one —
 `{ "mark": "span", "encoding": { "row": "sampleIndex" } }` — the plot divides
 into as many bands as the highest row on screen needs, and each span sits on the
 band its field names.
+
+## Labels
+
+A `text` mark prints a field at each feature: over the middle of its `x` to
+`x2`, just above its `y` where the mark names one, and in the middle of its row
+band where it does not. Bars with each feature's name over them:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "labelled_scores",
+  "name": "Scores with labels",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "https://example.com/scores.bed.gz"
+  },
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "labelled_scores-LinearMarkDisplay",
+      "marks": [
+        { "mark": "bar", "encoding": { "y": "score", "color": "#c8d8ee" } },
+        {
+          "mark": "text",
+          "encoding": { "y": "score", "text": "name" },
+          "maxBpPerPx": 50
+        }
+      ]
+    }
+  ]
+}
+```
+
+The labels are placed left to right, and one that would overlap a label already
+placed, or run off the plot's edges, is left out, the way ggplot2's
+`check_overlap` thins a crowded layer. A label whose value sits too near the top
+of its band goes under the value instead. The text is drawn in the mark's
+`color`, and in the theme's text colour where that is left at the mark default,
+with a halo in the background colour so it reads over the bars. A label answers
+no hover and no click; the mark it labels does.
+
+Every feature whose middle is in view is a candidate before the culling, so a
+text mark wants a `maxBpPerPx` that stops it once the features are denser than
+the labels could be read. On the circular view the ring is the display's canvas
+wrapped round the circle, and the labels stand over the canvas on the linear
+track only.
 
 ## Facets
 
@@ -671,14 +719,14 @@ reported under its id:
 | `unwritten-y` | error | A `y` naming a field that no `aggregate` or `coverage` step before it writes. |
 | `unread-channel` | warning | A channel the mark's type does not read, such as `y` on a `span`. |
 | `unread-size` | warning | A `size` on a mark that draws no point. |
-| `span-density-source` | warning | `source: "density"` on a `span`, which cannot draw the sidecar's bins. |
+| `span-density-source` | warning | `source: "density"` on a `span` or a `text`, which cannot draw the sidecar's bins. |
 | `threshold-cuts` | warning | Threshold cuts that repeat, leaving an interval no value falls in. |
 | `threshold-range` | warning | A threshold `range` not one colour longer than its cuts. |
 | `ramp-domain` | warning | A `domain` on a linear or log colour, whose ends are `domainMin` and `domainMax`. |
 | `ramp-ends` | warning | A colour ramp's `domainMax` below its `domainMin`. |
-| `unpinned-span-ramp` | warning | A span's colour ramp with an open end, whose colours then differ from one region to the next. |
+| `unpinned-span-ramp` | warning | A span's or a text's colour ramp with an open end, whose colours then differ from one region to the next. |
 | `step-pair` | warning | A `bin`'s `as` or a `pileup`'s `fields` naming other than two fields, so the step reads its defaults. |
-| `value-beside-rows` | warning | A bar or point drawn with a stacked `span`, standing in the first of its rows. |
+| `value-beside-rows` | warning | A bar, point or text drawn beside a mark that stacks rows, standing in the first of them. |
 | `two-packings` | warning | Two `pileup` steps packing one plot, whose rows share numbers. |
 | `cross-section-packing` | warning | A `pileup` in the display's `transform` under a `facet`, packing across every section. |
 | `second-density-mark` | warning | A second mark standing in for the density sidecar at a zoom where one already does. |
@@ -734,8 +782,9 @@ A track with a mark display draws on the
 [circular view](/docs/user_guides/circular_view) as a ring: the display renders
 its strip as it would in a linear track and the view wraps it around the circle,
 so a `coverage` step over a BAM or a binned count over a BED is a Circos-style
-density ring with the same `marks` entry. A variant track keeps its chords
-unless the session names the mark display for it.
+density ring with the same `marks` entry. The ring is the canvas, so a `text`
+mark's labels stay on the linear track. A variant track keeps its chords unless
+the session names the mark display for it.
 
 ## Tutorials
 
@@ -748,9 +797,9 @@ unless the session names the mark display for it.
 
 ## When a plugin is the next step
 
-A drawing that is not a bar, a point or a span needs a **mark type** of its own:
-one shader, one painter and one hit test, declared as a mark over the same
-worker channels this display reads:
+A drawing that is not a bar, a point, a span or a label needs a **mark type** of
+its own: one shader, one painter and one hit test, declared as a mark over the
+same worker channels this display reads:
 [](/docs/developer_guides/creating_gpu_display) writes one. A display that lays
 features out its own way, or gives a channel a meaning the encoding cannot say —
 Manhattan's colour by LD to an index SNP — is the rung after that, and

@@ -107,7 +107,7 @@ import {
   toBinEdges,
   widestBinStep,
 } from './markRequest.ts'
-import { markLanes, readsValue } from './markSpecs.ts'
+import { markLanes, plotsValue, readsValue } from './markSpecs.ts'
 import {
   EMPTY_PLOT_SPEC,
   defaultPlotMarks,
@@ -130,6 +130,7 @@ import type {
   MarkRegionData,
   MarkRenderState,
   StoredLayer,
+  TextMarkEntry,
 } from './markList.ts'
 import type {
   FacetSnapshot,
@@ -217,12 +218,17 @@ function markConstantColor(mark: MarkConfig): number {
   )
 }
 
+/** Whether a mark names a `y` to plot, and so folds into the axis and stands at its value. */
+function marksValue(mark: MarkConfig) {
+  return plotsValue(mark.mark) && mark.encoding.y !== ''
+}
+
 function markEntryOf(mark: MarkConfig): MarkEntry {
   return {
     type: mark.mark,
     minBpPerPx: mark.minBpPerPx,
     maxBpPerPx: mark.maxBpPerPx,
-    placed: !readsValue(mark.mark) || mark.encoding.y !== '',
+    placed: !readsValue(mark.mark) || marksValue(mark),
   }
 }
 
@@ -397,6 +403,21 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * Each mark as the text layer places it: the entry with whether it
+       * names a `y` and whether the config writes its colour, read off the
+       * marks' snapshot, which carries only the slots the config wrote. Its
+       * own getter so a slot only a label reads never remakes the mark list.
+       */
+      get textMarkEntries(): TextMarkEntry[] {
+        const written: MarkSnapshot[] = getSnapshot(self.conf.marks)
+        return this.markEntries.map((entry, i) => ({
+          ...entry,
+          valued: marksValue(self.conf.marks[i]!),
+          ownColor: written[i]?.encoding?.color !== undefined,
+        }))
+      },
+      /**
+       * #getter
        * The marks at the view's zoom: whether each draws, inside its
        * `minBpPerPx`..`maxBpPerPx` range where 0 is no bound, and the first
        * drawing mark the density sidecar stands in for, -1 where none does.
@@ -499,9 +520,14 @@ export function stateModelFactory(
             zoomInRange(m, bpPerPx),
             binEdges,
           )
+          // A mark that may plot a value but names none asks for no `y` lane,
+          // so the worker fills no zeros for it to stand at.
+          const lanes = marksValue(m)
+            ? markLanes(m.mark)
+            : markLanes(m.mark).filter(lane => lane !== 'y')
           return {
             encoding: encodings[i]!,
-            lanes: markLanes(m.mark),
+            lanes,
             ...(transform.length > 0 ? { transform } : {}),
           }
         })
@@ -755,10 +781,11 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * The mark list the marks declare — one `defineMark` per config entry,
-       * reading `layers[i]`, off outside its zoom range. Recomputed only when
-       * the entries move, so the component can key its backend factory on
-       * it.
+       * The mark list the marks declare — one `defineMark` per config entry
+       * with a shape, reading `layers[markIndex]`, off outside its zoom range.
+       * A text mark has no shape and is the text layer's, so the list is
+       * shorter than `marks` where one is declared. Recomputed only when the
+       * entries move, so the component can key its backend factory on it.
        */
       get markList() {
         return buildMarkList(self.markEntries)
@@ -812,7 +839,7 @@ export function stateModelFactory(
           ...(types.includes('bar') ? [origin] : []),
         ]
         return visibleStatsRange({
-          active: types.some(readsValue),
+          active: indices.some(i => marksValue(self.conf.marks[i]!)),
           view: self.host,
           payloadFor: index => self.rpcDataMap.get(index),
           itemsFor: data =>
@@ -848,13 +875,18 @@ export function stateModelFactory(
        * The px the y scale stands in from both ends of its band, one number
        * for the axis and every mark: point room where only points draw, and
        * none beside a bar, whose top edge is its datum and wants the plot box
-       * itself.
+       * itself. A text mark labels what is drawn and moves nothing.
        */
       get valueInsetPx(): number {
-        const indices = self.drawingMarkIndices
-        return indices.length > 0 &&
-          indices.every(i => self.markTypes[i] === 'point')
-          ? pointInsetPx(Math.max(...indices.map(i => self.markSizes[i]!)))
+        const points = self.drawingMarkIndices.filter(
+          i => self.markTypes[i] === 'point',
+        )
+        return points.length > 0 &&
+          self.drawingMarkIndices.every(i => {
+            const type = self.markTypes[i]
+            return type === 'point' || type === 'text'
+          })
+          ? pointInsetPx(Math.max(...points.map(i => self.markSizes[i]!)))
           : 0
       },
       /**
@@ -1017,6 +1049,10 @@ export function stateModelFactory(
           return []
         }
         const top = axisPlotBox(self.height).yTop
+        const mark = self.markList.findIndex(m => m.markIndex === hit.markIndex)
+        if (mark === -1) {
+          return []
+        }
         return inkOfInstances(
           self.markList,
           self.renderBlocks,
@@ -1024,7 +1060,7 @@ export function stateModelFactory(
           this.renderState,
           index =>
             index === hit.regionIndex
-              ? [{ mark: hit.markIndex, index: hit.instance }]
+              ? [{ mark, index: hit.instance }]
               : undefined,
         ).map(r => ({ ...r, top: r.top + top }))
       },

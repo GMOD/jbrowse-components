@@ -123,7 +123,11 @@ cannot is layout, tiering, fetch shape and per-display meaning.
 - **Text.** Every label is an overlay canvas painted by a per-display function
   that the export calls unchanged; `INTERACTION_PERF.md` measured that a
   `fillText` inside the frame loop flushes style recalc, and the positioned-label
-  overlay is `OverlayCanvas` plus `Ctx2D`, already built.
+  overlay is `OverlayCanvas` plus `Ctx2D`, already built. Amended 2026-09-24:
+  the mark display's `text` mark is the one label the layer holds, and it holds
+  it as a DOM layer placed by a rule the export shares, never as a shape
+  ([ADR-162](adr-162-a-text-mark-is-a-dom-layer-placed-by-one-rule.md)); the
+  `fillText` measurement is why the emit is DOM.
 - **Scales as a slot on `defineMark`.** ADR-097 measured the refusal; the y
   scale is shared at the shader level and the anchor is per consumer. The
   colour scale a display resolves is declared one level up, on the display, as

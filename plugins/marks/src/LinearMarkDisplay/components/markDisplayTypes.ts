@@ -6,6 +6,7 @@ import type {
   DisplayMark,
   MarkRegionData,
   MarkRenderState,
+  TextMarkEntry,
 } from '../markList.ts'
 import type { MarkRenderingBackend } from '../model.ts'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
@@ -32,6 +33,7 @@ export interface MarkDisplayModel
   configuration: { displayId: string }
   renderBlocks: RenderBlock[]
   markList: DisplayMark[]
+  textMarkEntries: TextMarkEntry[]
   markTypes: MarkType[]
   renderState: MarkRenderState
   hoveredFeature: MarkHitInfo | undefined

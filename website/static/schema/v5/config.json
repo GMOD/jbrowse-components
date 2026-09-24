@@ -7182,6 +7182,11 @@
         },
         "shape": {
           "$ref": "#/$defs/MarkShape"
+        },
+        "text": {
+          "description": "text field, or jexl expression.",
+          "$ref": "#/$defs/FeatureField",
+          "default": "name"
         }
       },
       "patternProperties": {
@@ -7561,8 +7566,8 @@
       "x-closed": true,
       "properties": {
         "mark": {
-          "description": "bar, point or span.",
-          "enum": ["bar", "point", "span"],
+          "description": "bar, point, span or text.",
+          "enum": ["bar", "point", "span", "text"],
           "default": "bar"
         },
         "size": {

@@ -7634,6 +7634,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "shape": {
           "$ref": "#/$defs/MarkShape"
+        },
+        "text": {
+          "description": "text field, or jexl expression.",
+          "$ref": "#/$defs/FeatureField",
+          "default": "name"
         }
       },
       "patternProperties": {
@@ -8048,11 +8053,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "mark": {
-          "description": "bar, point or span.",
+          "description": "bar, point, span or text.",
           "enum": [
             "bar",
             "point",
-            "span"
+            "span",
+            "text"
           ],
           "default": "bar"
         },

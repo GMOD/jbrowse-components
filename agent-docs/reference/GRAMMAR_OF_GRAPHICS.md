@@ -22,7 +22,8 @@ seams and the gaps. It is the map across the decisions that built the layer —
 [ADR-115](../architecture-decision-records/adr-115-one-mark-may-read-its-own-axis.md),
 [ADR-117](../architecture-decision-records/adr-117-the-density-tier-is-a-mark-layer.md),
 [ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)
-and [ADR-119](../architecture-decision-records/adr-119-the-circular-view-is-a-coordinate-stage-over-the-linear-displays.md)
+[ADR-119](../architecture-decision-records/adr-119-the-circular-view-is-a-coordinate-stage-over-the-linear-displays.md)
+and [ADR-162](../architecture-decision-records/adr-162-a-text-mark-is-a-dom-layer-placed-by-one-rule.md)
 — and each position below points at the record that holds its measurement.
 
 ## Two layers, two distances
@@ -88,7 +89,7 @@ in full and of the format-typed displays only where it says so.
 | data | rows in memory | a feature adapter's `getFeaturesArray`, any format, and past the byte gate the adapter's `densityAdapter` sidecar as a mark's layer (ADR-117) | whole; the adapter is the format's, and the grammar has no lazy source of its own. An adapter with zoom levels is sent the view's `bpPerPx` ([ADR-123](../architecture-decision-records/adr-123-a-mark-reads-a-bigwig-at-the-rungs-floor.md)), so a BigWig answers from the summary tier the wiggle display reads |
 | transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `pileup` — each step its own schema taking only its own slots ([ADR-150](../architecture-decision-records/adr-150-a-transform-step-is-one-schema-per-type.md)), run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreEncodeFeatures` request and then each layer's own | whole, layout included — `pileup` is a read pileup's packing as a step, and not the format-typed displays' ([ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)); a `bin`'s width may follow the zoom; `window` and `sample` are absent |
 | scale | domain → range, separate from the encoding | the colour and shape channels carry their own, `{ field, scale, domain, range }` and on a ramp `domainMin`, `domainMax` and `scheme`, read by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`) and resolved either in the worker (categorical) or on the main thread against a domain uniform (a quantitative ramp); the value scale is the display's one `scales.y`, which every mark's `encoding.y` field is read through and `ScoreAxisMixin` derives the axis from ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md), generalised to every quantitative display by [ADR-142](../architecture-decision-records/adr-142-one-value-scale-object.md)) | whole, declared in one place |
-| mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`) | whole, for the shapes the library has |
+| mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`); and `text`, a DOM layer over the canvas placed by one rule the SVG export shares ([ADR-162](../architecture-decision-records/adr-162-a-text-mark-is-a-dom-layer-placed-by-one-rule.md)) | whole, for the shapes the library has; a label answers no hover |
 | guide | axis and legend derived from a scale; a highlight derived from a selection | `colorScales` → legend (`packages/display-kit/src/LegendMixin.ts`), `valueScales` → axis, its title, hatches, and the reference lines `scales.y.rules` declares (`packages/wiggle-core/src/ScoreAxisMixin.ts`), `hoverInk` / `selectionInk` / `pinnedInk` / `soloInk` → the highlight (`packages/display-kit/src/highlightHost.ts`), each instance's box read off its shape's `ink`; `DisplayChrome` places all three guides, and `renderDisplaySvg` exports the legend, the axis and the pinned highlight — a hover, a selection and a solo are live-session UI, a pin is what the figure is about | whole, for the displays that declare |
 | layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; every drawing mark folds into the display's one y domain, ggplot2's one-scale-per-aesthetic rule ([ADR-141](../architecture-decision-records/adr-141-one-y-scale-the-displays.md)); a mark's `minBpPerPx`/`maxBpPerPx` is the zoom range it draws in, and the domain, legend and row count fold only the marks drawing | y is the plot's, colour and shape are each mark's; semantic zoom per layer; the display's `facet` splits the features before every mark's steps and stacks one section of rows per value, with a chip |
 | coordinates | a transform of the plane | genomic x along a strip, and the circular view's ring pass over it: the view is a `RegionHost` whose axis is the circumference, a display renders its strip as into a linear track, and one pass per ring resamples the strip's canvas in polar coordinates (`plugins/circular-view/src/rings/`, [ADR-119](../architecture-decision-records/adr-119-the-circular-view-is-a-coordinate-stage-over-the-linear-displays.md)) | polar, as a resampling of the finished picture rather than a twin per shape — measured at 4.3 ms a ring against 5.4–6.8 ms for the twin, exact at every bin width; the dotplot stays a display |
@@ -597,8 +598,8 @@ vocabulary; its lead is the browser around it and scaling past the fetch budget.
 
 | | JBrowse marks | GenomeSpy v0.88 | Gosling 1.0.5 |
 | --- | --- | --- | --- |
-| Marks | bar, point, span | rect, point, rule, tick, text, link, arrow | point, line, area, bar, rect, text, links, rule, triangles |
-| Channels | x, x2, y, row, color, shape | adds y2, size, opacity, stroke, angle, text, tooltip | adds ye, size, opacity, stroke, text |
+| Marks | bar, point, span, text | rect, point, rule, tick, text, link, arrow | point, line, area, bar, rect, text, links, rule, triangles |
+| Channels | x, x2, y, row, color, shape, text | adds y2, size, opacity, stroke, angle, tooltip | adds ye, size, opacity, stroke |
 | y scales | linear, log, symlog | 13 kinds, incl. symlog and sqrt | none on y |
 | Named colour ramps | 10 (`COLOR_SCHEMES`), incl. viridis and two diverging | the d3 set | — |
 | Transforms | 7 | ~27, incl. window, lookup, stack, regexExtract | ~10 |
@@ -620,8 +621,7 @@ The gaps a user meets first, in order:
    bar read worse than the same `minScore`/`maxScore` (ADR-123) as two point
    marks over the mean, and than wiggle's whisker band
    ([the handoff's call](../handoffs/grammar-of-graphics-convergence.md)).
-2. **No text mark**, for labelling a peak, an SV or a gene on a plot.
-3. **In-app authoring stops at one mark.** **Plot field...** writes one mark and
+2. **In-app authoring stops at one mark.** **Plot field...** writes one mark and
    an optional count per bin, the config editor edits transform steps but not
    marks (`db4ef2f82a`), and the track menu has no facet or colour picker.
 
@@ -666,7 +666,7 @@ and so do format-specific displays rebuilt on the grammar (ADR-114, ADR-118).
 ## Where a proposal lands
 
 A new channel or scale kind is the encoder's (`markEncodingTypes.ts`) and
-needs a shape that reads it. A new guide is a hook on the mixin that owns the
+needs a shape, or a layer as the text mark is, that reads it. A new guide is a hook on the mixin that owns the
 scale and a placement in the two shells; a guide over the painting reads the
 shapes' `ink`. A transform is a `type` on `StepSnapshot` and on
 `TransformStep`, an arm in `runTransforms`, a member of the `MarkTransform`

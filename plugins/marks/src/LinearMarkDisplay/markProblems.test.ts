@@ -146,6 +146,35 @@ test('a channel the mark does not read waits unread', () => {
   expect(
     found([{ mark: 'bar', encoding: { y: 'score', shape: 'triangle-down' } }]),
   ).toEqual(['warning unread-channel mark 0 encoding.shape'])
+  expect(
+    found([{ mark: 'bar', encoding: { y: 'score', text: 'id' } }]),
+  ).toEqual(['warning unread-channel mark 0 encoding.text'])
+  // a text mark reads y, row, colour and text, and stands with or without a y
+  expect(
+    found([{ mark: 'text', encoding: { y: 'score', text: 'name' } }]),
+  ).toEqual([])
+  expect(
+    found([{ mark: 'text', encoding: { row: 'row', text: 'name' } }]),
+  ).toEqual([])
+  expect(
+    found([{ mark: 'text', encoding: { text: 'name', shape: 'diamond' } }]),
+  ).toEqual(['warning unread-channel mark 0 encoding.shape'])
+})
+
+test('a text mark cannot draw the density sidecar, and an open ramp on it is named as a text s', () => {
+  expect(
+    found([{ mark: 'text', source: 'density', encoding: { y: 'score' } }]),
+  ).toEqual(['warning span-density-source mark 0 source'])
+  expect(
+    problemsOf([
+      {
+        mark: 'text',
+        encoding: {
+          color: { field: 'score', scale: 'linear', domainMin: 0 },
+        },
+      },
+    ]).map(p => p.message),
+  ).toEqual([expect.stringMatching(/^a text's ramp resolves an open end/)])
 })
 
 test('a size on a mark that draws no shape waits unread', () => {

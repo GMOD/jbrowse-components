@@ -57,16 +57,22 @@ export function findMarkHit(
     {
       radiusPx: HIT_RADIUS_PX,
       candidates: (data, m, { bpMin, bpMax, valueMin, valueMax }) =>
-        data.layers[m]?.flatbush?.search(bpMin, valueMin, bpMax, valueMax),
+        data.layers[marks[m]!.markIndex]?.flatbush?.search(
+          bpMin,
+          valueMin,
+          bpMax,
+          valueMax,
+        ),
     },
   )
   if (!hit) {
     return undefined
   }
-  const layer = hit.region.layers[hit.mark]!
+  const { markIndex } = marks[hit.mark]!
+  const layer = hit.region.layers[markIndex]!
   const regionIndex = hit.block.displayedRegionIndex
   return {
-    markIndex: hit.mark,
+    markIndex,
     regionIndex,
     instance: hit.index,
     featureIndex: layer.featureIndex[hit.index]!,

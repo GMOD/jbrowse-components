@@ -6074,6 +6074,10 @@ export const configManifest: ConfigManifest = {
                     }
                   ],
                   "shorthand": "value"
+                },
+                {
+                  "name": "text",
+                  "type": "string"
                 }
               ]
             },

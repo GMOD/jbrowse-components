@@ -42,7 +42,7 @@ export const MARK_RULES = {
   'unread-channel': 'warning',
   /** A `size` on a mark that draws no point. */
   'unread-size': 'warning',
-  /** `source: "density"` on a `span`, which cannot draw the sidecar's bins. */
+  /** `source: "density"` on a `span` or a `text`, which cannot draw the sidecar's bins. */
   'span-density-source': 'warning',
   /** Threshold cuts that repeat, leaving an interval no value falls in. */
   'threshold-cuts': 'warning',
@@ -52,7 +52,7 @@ export const MARK_RULES = {
   'ramp-domain': 'warning',
   /** A colour ramp's `domainMax` below its `domainMin`. */
   'ramp-ends': 'warning',
-  /** A span's colour ramp with an open end, whose colours then differ from one region to the next. */
+  /** A span's or a text's colour ramp with an open end, whose colours then differ from one region to the next. */
   'unpinned-span-ramp': 'warning',
   /** A `minBpPerPx` not below the mark's `maxBpPerPx`, so the mark never draws. */
   'empty-zoom-range': 'error',
@@ -68,7 +68,7 @@ export const MARK_RULES = {
   'step-field-expression': 'error',
   /** A `y` naming a field that no `aggregate` or `coverage` step before it writes. */
   'unwritten-y': 'error',
-  /** A bar or point drawn with a stacked `span`, standing in the first of its rows. */
+  /** A bar, point or text drawn beside a mark that stacks rows, standing in the first of them. */
   'value-beside-rows': 'warning',
   /** Two `pileup` steps packing one plot, whose rows share numbers. */
   'two-packings': 'warning',
@@ -159,6 +159,7 @@ export type MarkSnapshot = {
     row?: string
     color?: ColorSnapshot
     shape?: unknown
+    text?: string
   }
   transform?: StepSnapshot[]
 }
@@ -463,7 +464,7 @@ function ownProblems(
         found(
           'unpinned-span-ramp',
           `encoding.color.${domainMin === undefined ? 'domainMin' : 'domainMax'}`,
-          "a span's ramp resolves an open end against each region's own extremes, so its colours agree across regions only with domainMin and domainMax both pinned",
+          `a ${type}'s ramp resolves an open end against each region's own extremes, so its colours agree across regions only with domainMin and domainMax both pinned`,
         ),
       )
     }
