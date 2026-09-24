@@ -144,7 +144,7 @@ appear. Making them walkable is smaller than it looks and blocked on a UI call,
 not plumbing:
 
 - **The loci are already structured before they are strings.** `hiddenSegments`
-  in `shared/readGroupConnections.ts` gets `refName`/`start`/`end` back from
+  in `alignments-core/src/readGroupConnections.ts` gets `refName`/`start`/`end` back from
   `featurizeSAEntries` and keeps only `formatLocationRange` of them. Carrying
   `{refName, start, end}` beside `loc` through `ReadConnection` → `LinkedPair`
   → `PileupArc` is a field on each.
@@ -176,7 +176,7 @@ The chain walk is still written three times:
 | Where | Builder | Element | Input |
 | --- | --- | --- | --- |
 | `alignments/features/arcs/arcChains.ts` | `unpairedReadChain` → `unpairedChainArcs` | `SegAln` (`{refName, start, end, strand, clipAtStart, onScreen}`) | worker TypedArrays |
-| `alignments/shared/readGroupConnections.ts` | `splitJunctions` in `readGroupConnections` | `ReadConnection<ReadEntry>` | worker TypedArrays |
+| `alignments-core/src/readGroupConnections.ts` | `splitJunctions` in `readGroupConnections` | `ReadConnection<ReadEntry>` | worker TypedArrays |
 | `breakpoint-split-view/…/featureMatching.ts` | `readChainSegments` → `markHiddenSegments` | `ChainSegment` (`{clip, refName, start, end}`) | `Feature` objects |
 
 There is no `renderChainPaths` emitter over the shared `bezierConnectorPath`

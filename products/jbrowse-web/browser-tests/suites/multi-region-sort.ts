@@ -91,7 +91,7 @@ async function assertSpanningReadsShareRows(page: Page) {
     // renderers read it — the sole source of laid-out rows on the model.
     const byRegion = [...display.sourceSections[0]!.laidOutPileupMap.values()]
     // `readKeys`, not id strings: the worker ships the record id and the string
-    // is built only where one escapes (shared/readIdentity.ts). Identity across
+    // is built only where one escapes (alignments-core/src/readIdentity.ts). Identity across
     // regions is exactly what a key is, so this reads the same array the layout
     // deduped on.
     const keysOf = (d: { readKeys: ArrayLike<number> | string[] }) =>

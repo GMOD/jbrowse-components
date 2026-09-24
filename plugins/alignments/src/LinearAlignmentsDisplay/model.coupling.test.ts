@@ -1,3 +1,4 @@
+import { namesToBlock } from '@jbrowse/alignments-core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
@@ -5,7 +6,6 @@ import { heightModeLabel } from '@jbrowse/display-kit/heightMode'
 import { autorun } from 'mobx'
 
 import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
-import { namesToBlock } from '../shared/readNameBlock.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from '../shared/types.ts'
 import { READ_COLOR_CATEGORY_BY_INDEX } from './colorUtils.ts'
 import { applyReadColorsByGroup } from './groupLayout.ts'

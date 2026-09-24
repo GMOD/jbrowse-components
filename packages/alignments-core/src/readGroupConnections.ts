@@ -11,25 +11,38 @@ import {
 
 import { formatLocationRange } from './locStrings.ts'
 
-import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
-import type { CanonicalRefName } from '../features/arcs/arcTypes.ts'
-import type { ReadKey } from './readIdentity.ts'
+import type { ReadKey, ReadKeys } from './readIdentity.ts'
 
-// Minimal entry shape both the arc and bezier paths satisfy: a per-read array
-// bundle plus the read's index into it. Structural, and deliberately not
-// exported — each consumer's own entry type satisfies it by having those two
-// fields, so nothing has to import a shape to be accepted here.
+/**
+ * The per-read arrays a connection is resolved from: the alignments worker's
+ * `WorkerPileupData` fields, named here so a consumer outside that plugin (the
+ * breakpoint split view) can hand the same arrays in.
+ */
+export interface ConnectionReadArrays {
+  readKeys: ReadKeys
+  readPositions: Uint32Array
+  readFlags: Uint16Array
+  readStrands: Int8Array
+  readInterchrom: Uint8Array
+  readPairOrientations: Uint8Array
+  readSuppAlignments?: string[]
+  readClipAtStart?: Uint32Array
+}
+
+// Maps a raw BAM refName (SA tag, RNEXT) to the name the fetched reads carry.
+type CanonicalRefName = (refName: string) => string
+
+// A per-read array bundle plus the read's index into it. Each consumer's own
+// entry type satisfies it by having those two fields.
 interface MinEntry {
-  data: WorkerPileupData
+  data: ConnectionReadArrays
   readIdx: number
 }
 
 // The QNAME grouping that produces the lists every rule below consumes lives in
-// the two CONSUMERS, not here, and that is measured rather than accidental. Both loops are eight lines
-// keying on `readNames[i]`; what differs is the entry each builds, and every
-// mechanism for varying that (a spread, a factory callback) costs 1.4-1.9x on a
-// 200k-read path this sits on. The accessors below ARE shared, which is where
-// the duplication that actually mattered was.
+// the consumers, not here, and that is measured: every mechanism for varying
+// the entry a shared loop builds (a spread, a factory callback) costs 1.4-1.9x
+// on a 200k-read path. The accessors below are shared.
 
 export interface ReadConnection<E> {
   e1: E

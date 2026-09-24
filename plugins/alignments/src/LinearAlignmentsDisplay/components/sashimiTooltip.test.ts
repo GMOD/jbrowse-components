@@ -1,4 +1,4 @@
-import { formatLocationRange } from '../../shared/locStrings.ts'
+import { formatLocationRange } from '@jbrowse/alignments-core'
 
 describe('formatLocationRange', () => {
   // The junction start is stored 0-based half-open; the tooltip must render it

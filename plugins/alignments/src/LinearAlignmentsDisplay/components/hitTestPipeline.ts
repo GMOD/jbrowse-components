@@ -1,4 +1,8 @@
-import { coverageBinAt, hitCoverageBand } from '@jbrowse/alignments-core'
+import {
+  coverageBinAt,
+  hitCoverageBand,
+  readIdAt,
+} from '@jbrowse/alignments-core'
 import { bpAtPx, bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
 import { backToFront } from '@jbrowse/render-core/marks'
 
@@ -15,7 +19,6 @@ import { modificationsEnabled } from '../../features/modification/mark.ts'
 import { hitTestFeature } from '../../features/read/hitTest.ts'
 import { SOFTCLIP_BASES_MARK } from '../../features/softclipBases/mark.ts'
 import { isWithinReadBand } from '../../shared/hitTestTypes.ts'
-import { readIdAt } from '../../shared/readIdentity.ts'
 import { interbaseTypeName } from '../../shared/types.ts'
 import { canvasToGenomicCoords } from './alignmentComponentUtils.ts'
 

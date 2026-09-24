@@ -1,6 +1,6 @@
+import { namesToBlock } from '@jbrowse/alignments-core'
 import { SAM_FLAG_PAIRED } from '@jbrowse/cigar-utils'
 
-import { namesToBlock } from '../shared/readNameBlock.ts'
 import { nextRefsToTable } from '../shared/readNextRefs.ts'
 import {
   makeEmptyAlignmentsResult,

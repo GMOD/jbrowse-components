@@ -13,7 +13,7 @@ const pileup = 'pileup-display'
 // A read's id leaves the alignments arrays at exactly three places — the hover
 // tooltip, `featureIdUnderMouse`, and the feature-details fetch — and the worker
 // ships a numeric record id plus a prefix rather than the string itself
-// (plugins/alignments/src/shared/readIdentity.ts). So the string is rebuilt on
+// (packages/alignments-core/src/readIdentity.ts). So the string is rebuilt on
 // the main thread and then compared, in the WORKER, against a real
 // `feature.id()` (`GetFeatureDetails`). Nothing in the unit suites crosses that
 // boundary, and a prefix that was wrong would not throw: the details fetch would

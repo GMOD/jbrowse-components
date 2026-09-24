@@ -119,7 +119,7 @@ const { buildBaseReadArrays } = await import(
   join(REPO, 'plugins/alignments/src/shared/buildBaseReadArrays.ts')
 )
 const { buildReadNameBlock } = await import(
-  join(REPO, 'plugins/alignments/src/shared/readNameBlock.ts')
+  join(REPO, 'packages/alignments-core/src/readNameBlock.ts')
 )
 const { buildReadNextRefs } = await import(
   join(REPO, 'plugins/alignments/src/shared/readNextRefs.ts')

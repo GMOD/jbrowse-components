@@ -1,9 +1,9 @@
-import type { ReadKey } from './readIdentity.ts'
+import type { ReadKey } from '@jbrowse/alignments-core'
 
 export interface FeatureData {
   // The read's identity key, NOT its id string — `readKeyOf`, so the
   // `${adapter.id}-${recordId}` template literal is never built per read. See
-  // shared/readIdentity.ts.
+  // alignments-core/src/readIdentity.ts.
   id: ReadKey
   start: number
   end: number
@@ -17,7 +17,7 @@ export interface FeatureData {
 export interface ChainFeatureData extends FeatureData {
   // The QNAME, and ONLY on the chain shape. Pileup mode never reads a name —
   // the per-read names ship as one block built from the records' bytes
-  // (shared/readNameBlock.ts) — so decoding one per read here was the larger
+  // (alignments-core/src/readNameBlock.ts) — so decoding one per read here was the larger
   // half of what `readNames` cost. Chain mode does need it: `chainGroupingKey`
   // is what puts mates and split segments on one row.
   name: string

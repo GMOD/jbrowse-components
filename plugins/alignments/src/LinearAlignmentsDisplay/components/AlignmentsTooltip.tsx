@@ -1,4 +1,7 @@
-import { formatBandLocation } from '@jbrowse/alignments-core'
+import {
+  formatBandLocation,
+  formatLocationRange,
+} from '@jbrowse/alignments-core'
 import {
   CoverageTooltipTable,
   InterbaseTooltipTable,
@@ -11,7 +14,6 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { observer } from 'mobx-react'
 
 import { buildBaseCssMap } from '../../features/mismatch/baseColors.ts'
-import { formatLocationRange } from '../../shared/locStrings.ts'
 import { getModificationCallName } from '../../shared/modificationData.ts'
 import { getCigarTypeLabel } from '../../shared/types.ts'
 import { supportLabel } from './tooltipUtils.ts'

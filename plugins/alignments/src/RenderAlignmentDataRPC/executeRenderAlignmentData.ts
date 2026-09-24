@@ -1,3 +1,4 @@
+import { readIdPrefixOf, buildReadNameBlock } from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_SUPPLEMENTARY,
@@ -29,8 +30,6 @@ import {
   partitionChains,
   partitionFeatures,
 } from '../shared/groupFeatures.ts'
-import { readIdPrefixOf } from '../shared/readIdentity.ts'
-import { buildReadNameBlock } from '../shared/readNameBlock.ts'
 import {
   buildReadInterchrom,
   buildReadNextRefs,
@@ -125,7 +124,7 @@ interface GroupContext {
   // The fetch's verified `${adapter.id}-`, or undefined when its features carry
   // no numeric record id. Resolved once for the whole fetch rather than per
   // group so every section's `readKeys` are the same form. See
-  // shared/readIdentity.ts.
+  // alignments-core/src/readIdentity.ts.
   readIdPrefix: string | undefined
   region: Region
   effShowSoftClipping: boolean

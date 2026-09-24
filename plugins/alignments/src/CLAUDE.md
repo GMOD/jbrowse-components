@@ -116,10 +116,11 @@ and CRAM already hold, plus `readIdPrefix`.
   fine and faster.
 - **`readIdAt(data, i)` only where the id leaves these arrays** — hover, click,
   feature-details fetch.
-- **Never spell the string yourself.** `shared/readIdentity.ts` derives the
-  prefix by stripping a record id off a real `id()` and checking the strip, so
-  an adapter whose features carry no `recordId` falls back to whole strings
-  rather than shipping a wrong prefix. Hence `ReadKey` is `number | string`.
+- **Never spell the string yourself.** `alignments-core/src/readIdentity.ts`
+  derives the prefix by stripping a record id off a real `id()` and checking the
+  strip, so an adapter whose features carry no `recordId` falls back to whole
+  strings rather than shipping a wrong prefix. Hence `ReadKey` is
+  `number | string`.
 
 Getting this wrong is silent: the details RPC compares the rebuilt string
 against `feature.id()` **in the worker** and the click lands on "Could not load

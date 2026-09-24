@@ -15,8 +15,8 @@ import {
   CHAIN_SUPP_PRESENT,
 } from './types.ts'
 
-import type { ReadKey } from './readIdentity.ts'
 import type { ChainFeatureData } from './webglRpcTypes.ts'
+import type { ReadKey } from '@jbrowse/alignments-core'
 
 // This path's encoding of the shared junction classifier: unknown (the primary
 // is off-screen, strand 0) means nothing to draw. The result is already a

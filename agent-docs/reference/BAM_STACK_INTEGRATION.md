@@ -580,7 +580,7 @@ What it did not anticipate is a consumer that wants **every** name at once and
 then almost never reads one. That was `readNames: string[]`, and on the
 153,677-read window it measured 34.7ms to decode plus 7.5ms to clone, for an
 array a pileup render touches only on hover. The plugin now builds one block
-instead (`shared/readNameBlock.ts`): 42.2ms -> 24.7ms, 1.7x.
+instead (`alignments-core/src/readNameBlock.ts`): 42.2ms -> 24.7ms, 1.7x.
 
 The seam is that **the copy is the record's own layout knowledge and lives
 here**. `BamSlightlyLazyFeature` reads it back off three public getters

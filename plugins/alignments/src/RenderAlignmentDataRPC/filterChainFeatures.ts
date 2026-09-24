@@ -1,17 +1,17 @@
-import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
-import { groupBy } from '@jbrowse/core/util'
-
 import {
   isConcordantPairRead,
   pairOrientationToNum,
-} from '../shared/buildBaseFeatureData.ts'
+  readKeyOf,
+} from '@jbrowse/alignments-core'
+import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
+import { groupBy } from '@jbrowse/core/util'
+
 import { featureChainKey } from '../shared/chainGroupingKey.ts'
-import { readKeyOf } from '../shared/readIdentity.ts'
 import { chainIsSplit } from '../shared/splitAlignment.ts'
 import { getFlags } from '../shared/util.ts'
 
-import type { ReadKey } from '../shared/readIdentity.ts'
 import type { CategoryFilter, FilterBy } from '../shared/types.ts'
+import type { ReadKey } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
 // A chain counts as a proper pair only when EVERY read in it is the ordinary

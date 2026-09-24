@@ -1,3 +1,4 @@
+import { BamFile } from '@gmod/bam'
 // The per-read arrays against a REAL 300x WGS BAM, over HTTP range requests.
 //
 //   node --expose-gc plugins/alignments/benches/giab300x.bench.ts [ref] [start] [end]
@@ -27,15 +28,15 @@
 // `nextRefAt` against what the record itself says, which is the correctness
 // half and the reason to keep it runnable rather than just writing the numbers
 // down. `agent-docs/reference/BENCHMARKING.md` has the rest of the traps.
-import { BamFile } from '@gmod/bam'
-import { RemoteFile } from 'generic-filehandle2'
-
 import {
   readIdAt,
   readIdPrefixOf,
   readKeyOf,
-} from '../src/shared/readIdentity.ts'
-import { buildReadNameBlock, readNameAt } from '../src/shared/readNameBlock.ts'
+  buildReadNameBlock,
+  readNameAt,
+} from '@jbrowse/alignments-core'
+import { RemoteFile } from 'generic-filehandle2'
+
 import {
   buildReadInterchrom,
   buildReadNextRefs,

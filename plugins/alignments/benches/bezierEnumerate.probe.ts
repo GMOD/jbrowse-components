@@ -18,6 +18,7 @@
 //                  so the result is empty and the cost is all enumeration)
 //   crossRegion  — today's short-circuit
 //   control      — a second copy of `all`
+import { PAIR_DIRECTION_NUM, namesToBlock } from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_PAIRED,
@@ -26,8 +27,6 @@ import {
 
 import { makePileupDataResult } from '../src/RenderAlignmentDataRPC/testPileupData.ts'
 import { iterLinkedPairs } from '../src/features/linkedReads/compute.ts'
-import { PAIR_DIRECTION_NUM } from '../src/shared/buildBaseFeatureData.ts'
-import { namesToBlock } from '../src/shared/readNameBlock.ts'
 
 const arg = (name: string, dflt: string) =>
   process.argv

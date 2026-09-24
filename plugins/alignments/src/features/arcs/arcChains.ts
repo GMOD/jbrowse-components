@@ -1,4 +1,15 @@
 import {
+  clipAt,
+  flagsOf,
+  pairFieldEntry,
+  primaryOf,
+  resolveReadGroup,
+  spanOf,
+  strandOf,
+  readIdAt,
+  readNameAt,
+} from '@jbrowse/alignments-core'
+import {
   connectionEndpointBps,
   featurizeSA,
   readLeadingBp,
@@ -8,17 +19,6 @@ import {
   SAM_FLAG_PAIRED,
 } from '@jbrowse/cigar-utils'
 
-import {
-  clipAt,
-  flagsOf,
-  pairFieldEntry,
-  primaryOf,
-  resolveReadGroup,
-  spanOf,
-  strandOf,
-} from '../../shared/readGroupConnections.ts'
-import { readIdAt } from '../../shared/readIdentity.ts'
-import { readNameAt } from '../../shared/readNameBlock.ts'
 import { nextRefAt } from '../../shared/readNextRefs.ts'
 import { getOrCreate } from '../../shared/util.ts'
 

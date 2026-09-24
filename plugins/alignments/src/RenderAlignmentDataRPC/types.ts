@@ -8,8 +8,8 @@
  */
 
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
-import type { ReadKeys } from '../shared/readIdentity.ts'
 import type { BaseLayer, FilterBy, GroupBy, ReadColorBy } from '../shared/types'
+import type { ReadKeys } from '@jbrowse/alignments-core'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
@@ -117,11 +117,11 @@ export interface WorkerPileupData {
   readInterchrom: Uint8Array // 1 = mate on a different chromosome (else 0)
   // Per-read identity for hit testing, dedupe and layout tiebreaks — numeric
   // for BAM/CRAM, with `readIdPrefix` rebuilding the `feature.id()` string at
-  // the few places one escapes. shared/readIdentity.ts holds the invariant.
+  // the few places one escapes. alignments-core/src/readIdentity.ts holds the invariant.
   readKeys: ReadKeys
   readIdPrefix: string | undefined
   // Every read's QNAME as one string plus offsets into it — `readNameAt` slices
-  // one back out. See shared/readNameBlock.ts for why it is a block and not an
+  // one back out. See alignments-core/src/readNameBlock.ts for why it is a block and not an
   // array, and what that costs the two consumers that want all of them.
   readNameBlock: string
   readNameOffsets: Uint32Array

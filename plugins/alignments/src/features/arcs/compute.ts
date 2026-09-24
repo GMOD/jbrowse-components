@@ -1,5 +1,6 @@
+import { isConcordantPairRead } from '@jbrowse/alignments-core'
+
 import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.consts.generated.ts'
-import { isConcordantPairRead } from '../../shared/buildBaseFeatureData.ts'
 import {
   collectPendingArcs,
   collectPendingArcsByLane,

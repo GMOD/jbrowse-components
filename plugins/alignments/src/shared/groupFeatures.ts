@@ -1,4 +1,8 @@
-import { PAIR_DIRECTION_LABELS, pairDirection } from '@jbrowse/alignments-core'
+import {
+  PAIR_DIRECTION_LABELS,
+  pairDirection,
+  PAIR_DIRECTION_NUM,
+} from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SECONDARY,
@@ -15,7 +19,6 @@ import {
   overflowLabel,
 } from '@jbrowse/core/util/groupKeys'
 
-import { PAIR_DIRECTION_NUM } from './buildBaseFeatureData.ts'
 import { featureChainKey } from './chainGroupingKey.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { GROUP_BY_LABELS, facetTag } from './groupByLabels.ts'

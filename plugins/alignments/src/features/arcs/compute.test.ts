@@ -1,3 +1,4 @@
+import { namesToBlock } from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_MATE_UNMAPPED,
@@ -11,7 +12,6 @@ import {
 import { basePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { ARC_COLOR_SHORT_INSERT } from '../../shaders/slang/arc.consts.generated.ts'
 import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.consts.generated.ts'
-import { namesToBlock } from '../../shared/readNameBlock.ts'
 import { nextRefsToTable } from '../../shared/readNextRefs.ts'
 import { arcColorLegendCategory, arcPaintRank } from './arcColors.ts'
 import { arcsToRegionResult, groupArcsByRef } from './arcRegions.ts'

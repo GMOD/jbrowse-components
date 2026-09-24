@@ -1,3 +1,4 @@
+import { readIdAt, readNameAt } from '@jbrowse/alignments-core'
 import {
   BEZIER_CONNECTOR_MAX_REACH_PX,
   bezierConnectorPath,
@@ -11,8 +12,6 @@ import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
 // shader's clamp on every slot in use and resolves an out-of-range one to a
 // different real color instead of the last slot.
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
-import { readIdAt } from '../../shared/readIdentity.ts'
-import { readNameAt } from '../../shared/readNameBlock.ts'
 import {
   connectionLabel,
   isGpuLinkedReadLine,

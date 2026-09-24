@@ -1,8 +1,9 @@
+import { namesToBlock } from '@jbrowse/alignments-core'
+
 import {
   readCategoryLabelOverrides,
   readColorCategoryLabel,
 } from '../../shared/legendUtils.ts'
-import { namesToBlock } from '../../shared/readNameBlock.ts'
 import { nextRefsToTable } from '../../shared/readNextRefs.ts'
 import { READ_COLOR_CATEGORY } from '../colorUtils.ts'
 import { formatReadTooltip, formatFeatureLabel } from './tooltipUtils.ts'

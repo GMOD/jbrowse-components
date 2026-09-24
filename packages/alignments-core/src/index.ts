@@ -34,11 +34,45 @@ export type { SyntheticAssembly } from './buildSyntheticAssembly.ts'
 export { buildReadVsRefNames } from './readVsRefNaming.ts'
 export {
   PAIR_DIRECTION_LABELS,
+  PAIR_DIRECTION_NUM,
   isAbnormalPairDirection,
+  isConcordantPairRead,
   pairDirection,
+  pairOrientationToNum,
   splitInversion,
   splitJunctionKind,
 } from './orientation.ts'
+export { readIdAt, readIdPrefixOf, readKeyOf } from './readIdentity.ts'
+export type { ReadIdentity, ReadKey, ReadKeys } from './readIdentity.ts'
+export {
+  buildReadNameBlock,
+  namesToBlock,
+  readNameAt,
+} from './readNameBlock.ts'
+export type { ReadNames } from './readNameBlock.ts'
+export {
+  formatEndLocation,
+  formatLocationRange,
+  formatStartLocation,
+  toNavLocString,
+} from './locStrings.ts'
+export {
+  clipAt,
+  connectionEndpoints,
+  flagsOf,
+  interchromOf,
+  pairFieldEntry,
+  primaryOf,
+  readGroupConnections,
+  resolveReadGroup,
+  spanOf,
+  strandOf,
+} from './readGroupConnections.ts'
+export type {
+  ConnectionEndpoints,
+  ConnectionReadArrays,
+  ReadConnection,
+} from './readGroupConnections.ts'
 export type {
   PairDirection,
   SplitInversion,

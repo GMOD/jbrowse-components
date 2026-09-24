@@ -1,7 +1,7 @@
+import { namesToBlock } from '@jbrowse/alignments-core'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { GROW_MAX_HEIGHT } from '@jbrowse/display-kit/heightMode'
 
-import { namesToBlock } from '../shared/readNameBlock.ts'
 import {
   bootAlignmentsDisplay,
   makeEmptyAlignmentsResult,

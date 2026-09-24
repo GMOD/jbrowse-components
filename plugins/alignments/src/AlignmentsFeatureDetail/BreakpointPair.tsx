@@ -1,4 +1,7 @@
-import { formatEndLocation, formatStartLocation } from '../shared/locStrings.ts'
+import {
+  formatEndLocation,
+  formatStartLocation,
+} from '@jbrowse/alignments-core'
 
 /**
  * A segment's two junctions as displayed locations. Both are derived from the

@@ -1,7 +1,6 @@
+import { formatLocationRange, toNavLocString } from '@jbrowse/alignments-core'
 import { getLengthOnRef } from '@jbrowse/cigar-utils'
 import { toLocale } from '@jbrowse/core/util'
-
-import { formatLocationRange, toNavLocString } from '../shared/locStrings.ts'
 
 export interface ParsedSupplementaryAlignment {
   locString: string

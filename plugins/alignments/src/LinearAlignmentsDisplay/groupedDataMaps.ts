@@ -1,3 +1,4 @@
+import { readIdAt } from '@jbrowse/alignments-core'
 import { OVERFLOW_GROUP_KEY, overflowLabel } from '@jbrowse/core/util/groupKeys'
 import { NO_HIDDEN_GROUPS } from '@jbrowse/display-kit/HiddenGroupsMixin'
 
@@ -5,7 +6,6 @@ import {
   downJunctionKeys,
   mergeJunctions,
 } from '../features/sashimi/junctions.ts'
-import { readIdAt } from '../shared/readIdentity.ts'
 import { getOrCreate } from '../shared/util.ts'
 
 import type {

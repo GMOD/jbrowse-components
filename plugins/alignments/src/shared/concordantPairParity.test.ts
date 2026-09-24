@@ -1,3 +1,4 @@
+import { isConcordantPairRead } from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_PAIRED,
   SAM_FLAG_PROPER_PAIR,
@@ -6,7 +7,6 @@ import {
 } from '@jbrowse/cigar-utils'
 
 import { filterChainFeatures } from '../RenderAlignmentDataRPC/filterChainFeatures.ts'
-import { isConcordantPairRead } from './buildBaseFeatureData.ts'
 import { defaultFilterFlags } from './util.ts'
 
 import type { Feature } from '@jbrowse/core/util'

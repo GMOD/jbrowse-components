@@ -1,3 +1,5 @@
+import { readIdAt } from '@jbrowse/alignments-core'
+
 import {
   chevronCapsEdge,
   chevronContains,
@@ -6,7 +8,6 @@ import {
   findTopmostOnRow,
   isWithinReadBand,
 } from '../../shared/hitTestTypes.ts'
-import { readIdAt } from '../../shared/readIdentity.ts'
 import { showChevron } from './mark.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'

@@ -1,4 +1,5 @@
-import { namesToBlock } from '../shared/readNameBlock.ts'
+import { namesToBlock } from '@jbrowse/alignments-core'
+
 import { laneExpandable } from './lanes.ts'
 import {
   bootAlignmentsDisplay,

@@ -111,7 +111,7 @@ both copies in the chain to be joined as a spurious same-strand deletion.
 
 The mirror case is one physical read returned by two overlapping fetches, e.g.
 spanning collapsed-intron exons. `dedupeByReadId`
-(`plugins/alignments/src/shared/readGroupConnections.ts`) collapses those on the
+(`packages/alignments-core/src/readGroupConnections.ts`) collapses those on the
 record id, because two copies of one record look exactly like a two-segment
 split read and `splitJunctions` fabricates a junction from a read to itself.
 

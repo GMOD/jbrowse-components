@@ -1,4 +1,4 @@
-import { readNameAt } from '../shared/readNameBlock.ts'
+import { readNameAt } from '@jbrowse/alignments-core'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 import type { ColoredByGroup } from './groupLayout.ts'

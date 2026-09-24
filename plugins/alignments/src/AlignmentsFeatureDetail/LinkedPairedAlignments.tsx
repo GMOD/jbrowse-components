@@ -1,9 +1,9 @@
+import { formatStartLocation } from '@jbrowse/alignments-core'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { getAssemblyName, hasBreakpointSplitView } from '@jbrowse/sv-core'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { formatStartLocation } from '../shared/locStrings.ts'
 import {
   buildPairedEndMateFeature,
   computeMateFields,

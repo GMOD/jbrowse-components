@@ -1,4 +1,9 @@
 import {
+  connectionEndpoints,
+  readGroupConnections,
+  namesToBlock,
+} from '@jbrowse/alignments-core'
+import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
@@ -8,11 +13,6 @@ import {
 } from '@jbrowse/cigar-utils'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import {
-  connectionEndpoints,
-  readGroupConnections,
-} from '../../shared/readGroupConnections.ts'
-import { namesToBlock } from '../../shared/readNameBlock.ts'
 import {
   LINKED_READ_COLOR_INTERCHROM,
   LINKED_READ_COLOR_PAIR_LL,

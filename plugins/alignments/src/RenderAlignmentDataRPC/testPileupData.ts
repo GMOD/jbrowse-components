@@ -1,10 +1,10 @@
 import {
   packIndicatorInstances,
   packInterbaseInstances,
+  namesToBlock,
 } from '@jbrowse/alignments-core'
 
 import { emptyModTooltipIndex } from '../shared/modTooltipIndex.ts'
-import { namesToBlock } from '../shared/readNameBlock.ts'
 import { withoutLayout } from './sortLayout.ts'
 
 import type { PileupDataResult, WorkerPileupData } from './types.ts'
@@ -83,7 +83,7 @@ export function baseWorkerPileupData(numReads: number): WorkerPileupData {
     readPairOrientations: new Uint8Array(n),
     readStrands: new Int8Array(n),
     readInterchrom: new Uint8Array(n),
-    // The string branch of `readKeys` (shared/readIdentity.ts): a fixture read
+    // The string branch of `readKeys` (alignments-core/src/readIdentity.ts): a fixture read
     // is named by its whole id, as it is for a SAM or PAF-backed display. The
     // numeric branch is covered by readIdentity.test.ts and the numeric cases in
     // sortLayout.test.ts, since it changes the canonical tiebreak from a
@@ -91,7 +91,7 @@ export function baseWorkerPileupData(numReads: number): WorkerPileupData {
     readKeys: Array.from({ length: n }, (_, i) => `id${i}`),
     readIdPrefix: undefined,
     // `read0read1...` with the offsets that cut it back up, which is the shape
-    // the worker ships (shared/readNameBlock.ts).
+    // the worker ships (alignments-core/src/readNameBlock.ts).
     ...namesToBlock(Array.from({ length: n }, (_, i) => `read${i}`)),
     // No mate anywhere, which is the `-1` slot — a fixture that wants
     // interchromosomal reads sets `readNextRefIds` and `nextRefNames` together.

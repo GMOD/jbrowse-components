@@ -1,3 +1,7 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
+import { BamFile } from '@gmod/bam'
 // What does `readNames: string[]` cost, decoded and then posted?
 //
 //   node --expose-gc plugins/alignments/benches/readNames.bench.ts --only=1000x
@@ -6,7 +10,7 @@
 //
 // ONE FIXTURE PER PROCESS — agent-docs/reference/BENCHMARKING.md.
 //
-// THE QUESTION. `readIds` is gone (shared/readIdentity.ts): the result ships a
+// THE QUESTION. `readIds` is gone (alignments-core/src/readIdentity.ts): the result ships a
 // numeric key and builds the string where one escapes, which was 29ms a query
 // on the deepest fixture. `readNames` is the array beside it and looks like the
 // same shape — a string per read, structured-cloned to the main thread — but it
@@ -46,12 +50,7 @@
 //                  a bulk consumer (arcs, chain layout) would pay on demand
 //   decode-100   — 100 of them, which is nearer what a session of hovers costs
 //   control      — a second, separately-declared copy of build-str
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
-
-import { BamFile } from '@gmod/bam'
-
-import { buildReadNameBlock } from '../src/shared/readNameBlock.ts'
+import { buildReadNameBlock } from '@jbrowse/alignments-core'
 
 import type { BamRecord } from '@gmod/bam'
 

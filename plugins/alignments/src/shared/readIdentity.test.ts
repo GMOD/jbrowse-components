@@ -1,3 +1,4 @@
+import { readIdAt, readIdPrefixOf, readKeyOf } from '@jbrowse/alignments-core'
 import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -11,7 +12,6 @@ import SamAdapter from '../SamAdapter/SamAdapter.ts'
 import samConfigSchema from '../SamAdapter/configSchema.ts'
 import { buildBaseFeatureData } from './buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from './buildBaseReadArrays.ts'
-import { readIdAt, readIdPrefixOf, readKeyOf } from './readIdentity.ts'
 
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'

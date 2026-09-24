@@ -1,3 +1,4 @@
+import { namesToBlock } from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_PAIRED,
@@ -22,7 +23,6 @@ const PALETTE = makeTestPalette({
 })
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
-import { namesToBlock } from '../../shared/readNameBlock.ts'
 import {
   LINKED_READ_COLOR_INTERCHROM,
   LINKED_READ_COLOR_PAIR_LR,

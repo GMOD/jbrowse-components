@@ -1,3 +1,4 @@
+import { namesToBlock } from '@jbrowse/alignments-core'
 import { SAM_FLAG_MATE_REVERSE, SAM_FLAG_PAIRED } from '@jbrowse/cigar-utils'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
@@ -14,7 +15,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
 import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.ts'
-import { namesToBlock } from '../shared/readNameBlock.ts'
 import { nextRefsToTable } from '../shared/readNextRefs.ts'
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'

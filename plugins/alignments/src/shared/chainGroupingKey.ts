@@ -1,9 +1,9 @@
+import { readKeyOf } from '@jbrowse/alignments-core'
 import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
 
-import { readKeyOf } from './readIdentity.ts'
 import { getFlags } from './util.ts'
 
-import type { ReadKey } from './readIdentity.ts'
+import type { ReadKey } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
 /**

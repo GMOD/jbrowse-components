@@ -1,5 +1,6 @@
+import { namesToBlock } from '@jbrowse/alignments-core'
+
 import { GAP_SKIP } from '../shaders/slang/gap.consts.generated.ts'
-import { namesToBlock } from '../shared/readNameBlock.ts'
 import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
@@ -1470,7 +1471,7 @@ describe('the pileup sort is gated on refName in the single-region path too', ()
 
 // The rest of this file lays out the string branch of `readKeys` — the form a
 // SAM or PAF-backed display carries. BAM and CRAM ship a Float64Array of record
-// ids instead (shared/readIdentity.ts), which changes what the canonical
+// ids instead (alignments-core/src/readIdentity.ts), which changes what the canonical
 // tiebreak compares: a numeric compare where it used to be a lexicographic one.
 // Both are arbitrary total orders and either satisfies the invariant the
 // tiebreak exists for, but this is the branch every real deep pileup takes, so

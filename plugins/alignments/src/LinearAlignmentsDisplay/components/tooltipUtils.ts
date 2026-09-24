@@ -5,6 +5,8 @@ import {
   interbaseDepthAt,
   lowerBound,
   positionOrder,
+  formatLocationRange,
+  readNameAt,
 } from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_MATE_UNMAPPED,
@@ -19,9 +21,7 @@ import {
 import { spliceMotifLabel } from '../../features/sashimi/motif.ts'
 import { GAP_DELETION } from '../../shaders/slang/gap.consts.generated.ts'
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
-import { formatLocationRange } from '../../shared/locStrings.ts'
 import { modTooltipEntriesAt } from '../../shared/modTooltipIndex.ts'
-import { readNameAt } from '../../shared/readNameBlock.ts'
 import { nextRefAt } from '../../shared/readNextRefs.ts'
 import { getCigarTypeLabel, interbaseTypeName } from '../../shared/types.ts'
 import { interbaseRangeEnds } from '../../shared/uploadTypes.ts'

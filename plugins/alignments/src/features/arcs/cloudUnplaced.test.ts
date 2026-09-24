@@ -1,8 +1,8 @@
+import { namesToBlock } from '@jbrowse/alignments-core'
 import { SAM_FLAG_PAIRED, SAM_FLAG_SUPPLEMENTARY } from '@jbrowse/cigar-utils'
 
 import { basePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { ARC_FLAT_MIN_PX } from '../../shaders/slang/arcFlat.consts.generated.ts'
-import { namesToBlock } from '../../shared/readNameBlock.ts'
 import { nextRefsToTable } from '../../shared/readNextRefs.ts'
 import { computeArcsByGroup, computeArcsFromPileupData } from './compute.ts'
 import { arcMarkFrom } from './mark.ts'

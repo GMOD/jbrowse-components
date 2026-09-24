@@ -1,6 +1,9 @@
+import {
+  formatEndLocation,
+  formatStartLocation,
+} from '@jbrowse/alignments-core'
 import { buildReadVsRefFeatures } from '@jbrowse/cigar-utils'
 
-import { formatEndLocation, formatStartLocation } from '../shared/locStrings.ts'
 import { splitReadJunctions } from './splitReadJunctions.ts'
 
 // One 150 bp read: its first 100 bases map to chr1, the last 50 to chr5 on the

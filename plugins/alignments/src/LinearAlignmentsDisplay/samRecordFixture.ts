@@ -1,7 +1,7 @@
+import { namesToBlock } from '@jbrowse/alignments-core'
 import { getClip, getLengthOnRef } from '@jbrowse/cigar-utils'
 
 import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.ts'
-import { namesToBlock } from '../shared/readNameBlock.ts'
 
 import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
 

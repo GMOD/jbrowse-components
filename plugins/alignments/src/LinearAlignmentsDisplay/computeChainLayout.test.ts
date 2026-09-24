@@ -1,5 +1,6 @@
+import { namesToBlock } from '@jbrowse/alignments-core'
+
 import { emptyModTooltipIndex } from '../shared/modTooltipIndex.ts'
-import { namesToBlock } from '../shared/readNameBlock.ts'
 import { nextRefsToTable } from '../shared/readNextRefs.ts'
 import {
   buildChainConnectingData,

@@ -1,3 +1,8 @@
+import {
+  buildReadNameBlock,
+  namesToBlock,
+  readNameAt,
+} from '@jbrowse/alignments-core'
 import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -7,11 +12,6 @@ import bamConfigSchema from '../BamAdapter/configSchema.ts'
 import CramAdapter from '../CramAdapter/CramAdapter.ts'
 import { SequenceAdapter } from '../CramAdapter/CramTestAdapters.ts'
 import cramConfigSchema from '../CramAdapter/configSchema.ts'
-import {
-  buildReadNameBlock,
-  namesToBlock,
-  readNameAt,
-} from './readNameBlock.ts'
 
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'

@@ -9,7 +9,7 @@
 // into `LinearAlignmentsDisplay/components/`.
 
 import type { InsertSizeBand } from './insertSizeStats.ts'
-import type { ReadKeys } from './readIdentity.ts'
+import type { ReadKeys } from '@jbrowse/alignments-core'
 
 export interface ReadUploadData {
   readPositions: Uint32Array

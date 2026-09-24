@@ -1,8 +1,8 @@
+import { namesToBlock } from '@jbrowse/alignments-core'
 import { abgrAlpha, packAbgr } from '@jbrowse/core/util/colorBits'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { getModificationCallName } from '../../shared/modificationData.ts'
-import { namesToBlock } from '../../shared/readNameBlock.ts'
 import { buildModificationArrays } from './buildArrays.ts'
 import { hitTestModification } from './hitTest.ts'
 

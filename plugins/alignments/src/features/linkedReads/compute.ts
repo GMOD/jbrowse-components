@@ -1,18 +1,18 @@
-import { splitJunctionKind } from '@jbrowse/alignments-core'
-
-import { LINKED_READ_SLOT_CATEGORY } from '../../shaders/palettes.ts'
-import { PAIR_DIRECTION_NUM } from '../../shared/buildBaseFeatureData.ts'
 import {
-  SPLIT_JUNCTION_LABELS,
-  readColorCategoryLabel,
-} from '../../shared/legendUtils.ts'
-import {
+  splitJunctionKind,
+  PAIR_DIRECTION_NUM,
   connectionEndpoints,
   interchromOf,
   pairFieldEntry,
   readGroupConnections,
-} from '../../shared/readGroupConnections.ts'
-import { readNameAt } from '../../shared/readNameBlock.ts'
+  readNameAt,
+} from '@jbrowse/alignments-core'
+
+import { LINKED_READ_SLOT_CATEGORY } from '../../shaders/palettes.ts'
+import {
+  SPLIT_JUNCTION_LABELS,
+  readColorCategoryLabel,
+} from '../../shared/legendUtils.ts'
 import { getOrCreate } from '../../shared/util.ts'
 
 import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'

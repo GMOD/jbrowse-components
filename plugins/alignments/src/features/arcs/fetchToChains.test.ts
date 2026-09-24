@@ -1,3 +1,4 @@
+import { buildReadNameBlock } from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_PAIRED,
@@ -9,7 +10,6 @@ import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupDat
 import { buildBaseFeatureData } from '../../shared/buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from '../../shared/buildBaseReadArrays.ts'
 import { extractFeatureArrays } from '../../shared/extractFeatureArrays.ts'
-import { buildReadNameBlock } from '../../shared/readNameBlock.ts'
 import { collectPendingArcs, groupLaneReadsByName } from './arcChains.ts'
 
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'

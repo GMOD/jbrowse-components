@@ -1,3 +1,8 @@
+import {
+  SAM_FLAG_PROPER_PAIR,
+  SAM_FLAG_SUPPLEMENTARY,
+} from '@jbrowse/cigar-utils'
+
 // Canonical read-pair / split-read orientation classification, shared by every
 // consumer that colors or flags aberrant orientations (the alignments GPU/arc/
 // linked-read paths and BreakpointSplitView's overlay). Each consumer maps the
@@ -47,6 +52,45 @@ export function pairDirection(
 // unknown direction is treated as not-abnormal (the caller decides its color).
 export function isAbnormalPairDirection(dir: PairDirection | undefined) {
   return dir !== undefined && dir !== 'LR'
+}
+
+// The per-read array encoding of PairDirection (0 = unknown), which is also the
+// GPU uniform's and the linked-read connector's palette slot.
+export const PAIR_DIRECTION_NUM: Record<PairDirection, number> = {
+  LR: 1,
+  RL: 2,
+  RR: 3,
+  LL: 4,
+}
+
+export function pairOrientationToNum(pairOrientation: string | undefined) {
+  const dir = pairDirection(pairOrientation)
+  return dir ? PAIR_DIRECTION_NUM[dir] : 0
+}
+
+/**
+ * The ordinary pair: the aligner flagged it properly paired, it is not a
+ * chimeric segment, and its mates face each other. The one definition of
+ * "concordant" behind "Show proper pairs", "Show concordant-pair arcs" and the
+ * breakpoint split view's mate links, written over the per-read numbers since
+ * none of them hold features.
+ *
+ * Unknown orientation (0) counts as concordant: an aberrant orientation is
+ * positive evidence, and its absence is not. A supplementary segment is never
+ * concordant, since aligners like BWA-MEM copy 0x2 onto it from the pair.
+ *
+ * Not the read cloud's `isConcordantFRPair`, which asks whether |TLEN| sits in
+ * the modal insert-size band rather than what the aligner concluded.
+ */
+export function isConcordantPairRead(
+  flags: number,
+  pairOrientationNum: number,
+) {
+  return (
+    !!(flags & SAM_FLAG_PROPER_PAIR) &&
+    !(flags & SAM_FLAG_SUPPLEMENTARY) &&
+    (pairOrientationNum === 0 || pairOrientationNum === PAIR_DIRECTION_NUM.LR)
+  )
 }
 
 // Strand-flip flavor of a split-read junction (or a same-strand aberrant pair):

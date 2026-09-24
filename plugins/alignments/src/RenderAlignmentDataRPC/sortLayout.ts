@@ -15,7 +15,6 @@ import {
 } from '../shared/types.ts'
 import { UNCAPPED } from './types.ts'
 
-import type { ReadKey, ReadKeys } from '../shared/readIdentity.ts'
 import type { SortedBy } from '../shared/types.ts'
 import type {
   LaidOutPileupData,
@@ -23,6 +22,7 @@ import type {
   RowCapSource,
   WorkerPileupData,
 } from './types'
+import type { ReadKey, ReadKeys } from '@jbrowse/alignments-core'
 
 const DELETION_CHAR = 42 // '*'
 
@@ -50,7 +50,7 @@ const INTERBASE_SORT_TYPES: Partial<Record<SortedBy['type'], number>> = {
  *
  * Span is compared first, so the key compare only runs for reads sharing both
  * endpoints. The key is numeric for BAM/CRAM and the id string otherwise
- * (shared/readIdentity.ts), and `<`/`>` totally order either — a numeric file
+ * (alignments-core/src/readIdentity.ts), and `<`/`>` totally order either — a numeric file
  * offset and a lexicographic id are equally arbitrary, and all this has to be is
  * a function of the read set.
  */

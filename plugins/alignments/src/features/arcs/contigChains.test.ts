@@ -1,10 +1,10 @@
+import { buildReadNameBlock } from '@jbrowse/alignments-core'
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { buildBaseFeatureData } from '../../shared/buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from '../../shared/buildBaseReadArrays.ts'
 import { extractFeatureArrays } from '../../shared/extractFeatureArrays.ts'
-import { buildReadNameBlock } from '../../shared/readNameBlock.ts'
 import { collectPendingArcs, groupLaneReadsByName } from './arcChains.ts'
 
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'

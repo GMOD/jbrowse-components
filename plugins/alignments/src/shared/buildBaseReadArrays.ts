@@ -1,10 +1,10 @@
-import type { ReadKeys } from './readIdentity.ts'
 import type { FeatureData } from './webglRpcTypes.ts'
+import type { ReadKeys } from '@jbrowse/alignments-core'
 
 /**
  * Collect the per-read identity keys. Numeric — one transferable rather than
  * `n` cloned strings — whenever the features carry a record id, which is what
- * `readIdPrefix` being defined means. See shared/readIdentity.ts for the
+ * `readIdPrefix` being defined means. See alignments-core/src/readIdentity.ts for the
  * measurement and the invariant.
  *
  * The prefix decides the branch — `buildBaseFeatureData` reads `id()` whenever
