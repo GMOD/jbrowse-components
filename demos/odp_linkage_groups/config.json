@@ -44,20 +44,6 @@
       }
     },
     {
-      "name": "COW",
-      "displayName": "Capsaspora",
-      "sequence": {
-        "type": "ReferenceSequenceTrack",
-        "trackId": "COW-ReferenceSequenceTrack",
-        "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "COW.chrom.sizes"
-          }
-        }
-      }
-    },
-    {
       "name": "BIN",
       "displayName": "Bolinopsis (comb jelly)",
       "sequence": {
@@ -136,26 +122,6 @@
           },
           {
             "uri": "RES_HCA.HCA.bed.gz"
-          }
-        ],
-        "attributeColumns": ["gene_group", "color"]
-      }
-    },
-    {
-      "type": "SyntenyTrack",
-      "trackId": "RES_COW",
-      "name": "RES vs COW orthologs, colored by BCnS linkage group",
-      "assemblyNames": ["RES", "COW"],
-      "adapter": {
-        "type": "MCScanBlocksAdapter",
-        "uri": "RES_COW.blocks.gz",
-        "blockAssemblies": ["RES", "COW"],
-        "bedLocations": [
-          {
-            "uri": "RES_COW.RES.bed.gz"
-          },
-          {
-            "uri": "RES_COW.COW.bed.gz"
           }
         ],
         "attributeColumns": ["gene_group", "color"]

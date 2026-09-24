@@ -33,19 +33,13 @@ pipeline puts beside an ortholog can drive it.
 ## Where the data comes from
 
 The genomes and the ortholog tables are the Dryad deposit behind Schultz et al.
-2023, released CC0. Dryad serves its files only to a browser, so the two
-tarballs are downloaded by hand and the [build script](#reproduce-it-end-to-end)
-extracts what it needs from them.
+2023, released CC0.
 
 - Both tarballs, `genomes.tar.gz` and `supplementary_information.tar.gz`:
   https://datadryad.org/dataset/doi:10.5061/dryad.dncjsxm47
 - The _Ephydatia_ assembly, which the deposit does not redistribute and its own
   script fetches:
   https://bitbucket.org/EphydatiaGenome/ephydatiagenome/downloads/Emu_genome_v1.fa.gz
-
-The tables are the ones odp plotted for the paper's own dot plots, and a run of
-odp over any two genomes writes the same files, so everything from the
-conversion on works unchanged on your own species.
 
 ## The linkage-group label in the ortholog table
 
@@ -61,10 +55,11 @@ The dotplot uses a jellyfish (`RES`, _Rhopilema esculentum_) and a freshwater
 sponge (`EMU`, _Ephydatia muelleri_). The stack at the end adds two comb jellies
 (`HCA`, _Hormiphora californensis_, and `BIN`, _Bolinopsis microptera_),
 amphioxus (`BFL`, _Branchiostoma floridae_) and a second sponge (`CLAa`, a
-cladorhizid). odp compares genomes two at a time, so the deposit holds one table
-per pair. Each is every reciprocal best protein hit between the two, and a pair
-keeps several times the orthologs a table requiring a gene in all six genomes at
-once would, which keeps the plots dense enough to show a pattern.
+cladorhizid). odp's group database was built from five genomes, three of them on
+this page: the jellyfish, _Ephydatia_ and amphioxus. The comb jellies and the
+cladorhizid took no part in it. odp compares genomes two at a time, so the
+deposit holds one table per pair, each of them every reciprocal best protein hit
+between the two.
 
 A table's row is the gene pair, the group, where each gene sits, and the color:
 
@@ -81,6 +76,7 @@ one base long:
 <!-- from: scripts/build_odp_linkage_groups_synteny.sh -->
 
 ```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/rbh_to_blocks.py
 # --species sets the column order, anchor first, which the track then follows
 # --chrom gives each species' genes their real start and stop
 # gene_group and color pass through as the attribute columns
@@ -89,9 +85,9 @@ python3 rbh_to_blocks.py EMU_RES_xy_reciprocal_best_hits.coloredby_BCnS_LGs.plot
   --species RES EMU --chrom RES=RES.chrom EMU=EMU.chrom
 ```
 
-The helper prints what it resolved. Roughly half the orthologs carry a group:
-the BCnS table covers the gene families it covers, and an ortholog outside them
-gets `.`, which the browser draws in a recessive grey.
+The helper prints how many of each genome's gene ids its `.chrom` placed. About
+half the orthologs carry a group, and one from outside the BCnS families gets
+`.`, which the browser draws in grey.
 
 A `.blocks` row is the gene ids across the two genomes, then the attribute
 columns:
@@ -127,9 +123,8 @@ its own.
 }
 ```
 
-The build script adds one such track per pair: the jellyfish against each of the
-three genomes the dotplots compare it with, then the neighbouring pairs of the
-six-genome stack at the end.
+The build script adds one such track per pair: this one for the dotplot, then
+one for each neighbouring pair of the six-genome stack.
 
 ## One block per linkage group
 
@@ -137,11 +132,8 @@ Open the jellyfish-against-sponge table as a dotplot and pick **gene_group**
 under **Color by value** on the palette button in the view header; the legend
 comes up with it. Then **Re-order chromosomes** on the view menu sorts the
 vertical genome's chromosomes by where their orthologs land along the horizontal
-one, turning one block per group into a diagonal. In the six-genome stack below
-the same dialog asks which row to keep as it is, and the answer is the
-jellyfish: its chromosomes are the linkage groups, so every other row sorts
-against it. The same view as a session, with the sponge's unplaced scaffolds
-left off its axis:
+one, turning one block per group into a diagonal. The same view as a session,
+with the sponge's unplaced scaffolds left off its axis:
 
 ```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
 {
@@ -166,29 +158,30 @@ left off its axis:
 }
 ```
 
-<Figure caption="Rhopilema against Ephydatia, every ortholog colored by the BCnS linkage group odp assigned it and the sponge chromosomes sorted against the jellyfish. Each group is one block where a jellyfish chromosome meets a sponge chromosome, and the blocks run down the diagonal. The grey points are the orthologs in no group." src="/img/linkage_groups/alg_dotplot_res_emu.png" />
+<Figure caption="Rhopilema against Ephydatia, every ortholog colored by the BCnS linkage group odp assigned it and the sponge chromosomes sorted against the jellyfish. Each group is one block where a jellyfish chromosome meets a sponge chromosome, and the blocks run along the diagonal. The grey points are the orthologs in no group." src="/img/linkage_groups/alg_dotplot_res_emu.png" />
 
-The blocks are the whole claim. Inside a block the points fill the square,
-because gene order has been shuffled thoroughly while chromosome membership has
-not. A linkage group is that membership.
+Inside a block the points fill the square: the order of genes along each
+chromosome has been shuffled, and which chromosome each gene sits on has not.
 
-The column structure is true by construction, since the BCnS groups were defined
-so that each one is a jellyfish chromosome. The row structure is not: the sponge
-was one of the genomes the groups were built on, but its chromosomes were free
-to disagree, and they largely do not.
+_Rhopilema_ and _Ephydatia_ are two of the genomes odp's group database was
+built from, so the blocks are the groups' definition drawn out. The stack below
+adds three genomes that took no part.
 
 ## Six genomes stacked
 
 The paper's first figure is the same tables stacked: one row per genome, the
-ribbons between neighbours colored by group, each row's chromosomes sorted
-against the row above. The linear synteny view does that with one pair's track
-per band. The build script loads the pairs for the paper's own order, two comb
-jellies over the jellyfish, amphioxus and two sponges, and the session below
-sets what the figure needs: `autoDiagonalize` sorts every row against the one
-above it, **Hide unlabelled rows** on the palette menu (`hideUnlabelled`) draws
-only the orthologs in a group, `drawCurves` bundles the ribbons, and the fade a
-whole-genome view applies to sub-pixel ribbons is off, since the ribbons' color
-is the figure.
+ribbons between neighbours colored by group. The linear synteny view does that
+with one pair's track per band. The build script loads the pairs for the paper's
+own order, two comb jellies over the jellyfish, amphioxus and two sponges, and
+the session below sets what the figure needs.
+
+`autoDiagonalize` sorts each row against its neighbour, working outward from
+`diagonalizeAnchorRow`. Rows count from 0, so 2 is the jellyfish, where each
+group sits on one chromosome. **Rows → Re-order chromosomes** on the view menu
+runs the same sort and asks for that row. **Hide unlabelled rows** on the
+palette menu (`hideUnlabelled`) draws only the orthologs in a group,
+`drawCurves` bundles the ribbons, and the fade a whole-genome view applies to
+sub-pixel ribbons is off, since the ribbons' color is the figure.
 
 ```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
 {
@@ -216,6 +209,7 @@ is the figure.
         "colorBy": { "field": "gene_group" },
         "hideUnlabelled": true,
         "autoDiagonalize": true,
+        "diagonalizeAnchorRow": 2,
         "drawCurves": true,
         "fadeThinAlignmentsMode": "off",
         "alpha": 0.45,
@@ -227,51 +221,58 @@ is the figure.
 }
 ```
 
-<Figure caption="Six genomes stacked in the order of the paper's figure 1d, ribbons colored by linkage group and only the grouped orthologs drawn. Between the two comb jellies each chromosome pairs with one chromosome. Between the comb jelly and the jellyfish every comb jelly chromosome fans out over several jellyfish chromosomes. From the jellyfish down through amphioxus and the two sponges the groups travel as bundles, one chromosome to one chromosome." src="/img/linkage_groups/alg_stack.png" />
+<Figure caption="Six genomes stacked in the order of the paper's figure 1d, ribbons colored by linkage group and only the grouped orthologs drawn. Between the two comb jellies each chromosome pairs with one chromosome. Between the comb jelly and the jellyfish every comb jelly chromosome fans out over several jellyfish chromosomes. From the jellyfish down through amphioxus and the two sponges the groups travel as bundles." src="/img/linkage_groups/alg_stack.png" />
 
 The band to read is the second one. The comb jelly chromosomes are each a
 mixture of groups, and the mixture is different from the one any jellyfish
-chromosome carries, so the ribbons cross. Every band below it is bundles, and
-the two comb jellies agree with each other in the band above.
+chromosome carries, so the ribbons cross. The two comb jellies agree with each
+other in the band above.
+
+Amphioxus and _Ephydatia_ helped build the group database, so the bundles
+running through them are expected. The cladorhizid took no part, and in the
+bottom band the groups still reach it as bundles.
 
 ## Checking it against the table
 
 The pictures are the tables, so the counts behind them come out of the tables
 with no browser involved. For one group, tally the chromosomes its orthologs sit
-on in the other genome:
+on in the genome a table's file name leads with:
 
 ```bash
-# gene_group is column 4 and EMU_scaf column 5 of the EMU-RES table
+# gene_group is column 4; column 5 is the chromosome in the genome the
+# file name leads with, EMU here
 awk -F'\t' 'NR>1 && $4=="A1a" {print $5}' \
   EMU_RES_xy_reciprocal_best_hits.coloredby_BCnS_LGs.plotted.rbh \
   | sort | uniq -c | sort -rn
 ```
 
-Running that over the six largest groups, in the sponge and comb jelly tables
-against the jellyfish, gives how many of a group's orthologs there are and how
-many sit on the one chromosome that holds most of them:
+Running that over the six largest groups in three tables (`EMU_RES`, `CLAa_EMU`
+and `HCA_RES`) gives how many of a group's orthologs there are and how many sit
+on the one chromosome that holds most of them:
 
-| group | sponge    | comb jelly |
-| ----- | --------- | ---------- |
-| A1a   | 229 / 229 | 48 / 176   |
-| D     | 205 / 205 | 44 / 162   |
-| G     | 201 / 201 | 58 / 160   |
-| H     | 189 / 189 | 56 / 148   |
-| F     | 162 / 162 | 25 / 116   |
-| M     | 152 / 152 | 26 / 122   |
+| group | _Ephydatia_ | cladorhizid | _Hormiphora_ |
+| ----- | ----------- | ----------- | ------------ |
+| A1a   | 229 / 229   | 187 / 222   | 48 / 176     |
+| D     | 205 / 205   | 175 / 199   | 44 / 162     |
+| G     | 201 / 201   | 165 / 198   | 58 / 160     |
+| H     | 189 / 189   | 89 / 188    | 56 / 148     |
+| F     | 162 / 162   | 128 / 155   | 25 / 116     |
+| M     | 152 / 152   | 129 / 151   | 26 / 122     |
 
-The sponge column shows every ortholog on its group's chromosome because the
-group database was built with the sponge in it: an ortholog assigned to a group
-is on that group's sponge chromosome by definition. In the comb jelly the
-chromosome holding most of a group holds a minority of it, which is the fan in
-the stack's second band.
+The _Ephydatia_ column shows every ortholog on its group's chromosome because
+the group database was built with _Ephydatia_ in it: an ortholog assigned to a
+group is on that group's _Ephydatia_ chromosome by definition. The cladorhizid
+took no part, and most of each group still sits on one of its chromosomes; H is
+the exception, and its own tally (`$4=="H"`) names two chromosomes sharing it.
+In _Hormiphora_ the chromosome holding most of a group holds a minority of it,
+which is the fan in the stack's second band.
 
 ## Reproduce it end to end
 
 Download `genomes.tar.gz` and `supplementary_information.tar.gz` from
 [the Dryad page](https://datadryad.org/dataset/doi:10.5061/dryad.dncjsxm47) into
 `~/Downloads` first, since Dryad has no direct download URL. The script fetches
-everything else, converts the seven tables, and writes a config with the seven
+everything else, converts the six tables, and writes a config with the six
 assemblies and a default session; see [Prerequisites](#prerequisites).
 
 ```bash

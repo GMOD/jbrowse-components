@@ -42,26 +42,22 @@ for f in genomes.tar.gz supplementary_information.tar.gz; do
   }
 done
 
-# Species table: odp three-letter code and its directory in genomes.tar.gz.
-# The first row is the anchor every dotplot puts on its horizontal axis.
+# Species table: odp code and its directory in genomes.tar.gz
 SPECIES='
 RES rhopilema_li
 EMU ephydatia
 HCA hormiphora
-COW capsaspora/capsasporaA
 BIN bolinopsis
 BFL branchiostoma
 CLAa cladorhizid_v0.6_hapA
 '
-# The pairs to load: the jellyfish against each of the three genomes the
-# dotplots compare it with, then the neighbours of the six-genome stack, which
-# is the order of the paper's figure 1d (comb jellies, jellyfish, amphioxus,
-# sponges).
+# The pairs to load: the jellyfish against the sponge for the dotplot, then the
+# neighbours of the six-genome stack in the order of the paper's figure 1d
+# (comb jellies, jellyfish, amphioxus, sponges)
 PAIRS='
 RES EMU
-RES HCA
-RES COW
 BIN HCA
+RES HCA
 RES BFL
 BFL EMU
 EMU CLAa
@@ -162,7 +158,6 @@ display_name() {
     RES) echo 'Rhopilema (jellyfish)' ;;
     EMU) echo 'Ephydatia (sponge)' ;;
     HCA) echo 'Hormiphora (comb jelly)' ;;
-    COW) echo 'Capsaspora' ;;
     BIN) echo 'Bolinopsis (comb jelly)' ;;
     BFL) echo 'Branchiostoma (amphioxus)' ;;
     CLAa) echo 'Cladorhizid (sponge)' ;;
