@@ -1,7 +1,7 @@
 import { Suspense, lazy } from 'react'
 
 import {
-  FeatureWash,
+  FeatureDetailsFrame,
   filterByValueItems,
   jexlFilterDisplay,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
@@ -139,6 +139,7 @@ const FeatDefined = observer(function FeatDefined({
     <Paper data-testid="variant-side-drawer">
       <FeatureDetails
         feature={rest}
+        unformatted={model.unformattedFeatureData}
         model={model}
         descriptions={{
           ...variantFieldDescriptions,
@@ -200,21 +201,16 @@ const VariantFeatureWidget = observer(function VariantFeatureWidget({
   // (one widget id per track, and the drawer renders it without a key), so
   // without this the sample grid's filters and genotype selection carry over and
   // silently empty the next variant's grid
-  return featureData ? (
-    // the wash sits outside that key on purpose: inside it, it would remount
-    // on every swap and never play
-    <FeatureWash uniqueId={featureData.uniqueId}>
-      <FeatDefined
-        key={featureData.uniqueId}
-        feat={featureData}
-        model={model}
-      />
-    </FeatureWash>
-  ) : (
-    <div>
-      No feature loaded, may not be available after page refresh because it was
-      too large for localStorage
-    </div>
+  return (
+    <FeatureDetailsFrame model={model}>
+      {featureData ? (
+        <FeatDefined
+          key={featureData.uniqueId}
+          feat={featureData}
+          model={model}
+        />
+      ) : null}
+    </FeatureDetailsFrame>
   )
 })
 

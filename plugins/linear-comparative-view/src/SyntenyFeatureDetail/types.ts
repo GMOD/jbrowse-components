@@ -8,6 +8,8 @@ export interface SyntenyFeatureDetailModel extends FeatureDetailsModel {
   // it in once the widget's track reference resolves
   trackId?: string
   featureData?: SimpleFeatureSerialized
+  unformattedFeatureData?: SimpleFeatureSerialized
+  error?: unknown
   level?: number
   // A plain LGV when opened from an LGVSyntenyDisplay's own context menu, or
   // the outer LinearSyntenyView itself when opened from a ribbon click (in

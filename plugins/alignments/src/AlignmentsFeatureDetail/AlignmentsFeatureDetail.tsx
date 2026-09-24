@@ -1,10 +1,10 @@
 import { lazy } from 'react'
 
 import { SAM_FLAG_PAIRED } from '@jbrowse/cigar-utils'
-import { FeatureWash } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
+import { FeatureDetailsFrame } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
 import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
-import { Paper, Typography } from '@mui/material'
+import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Flags from './Flags.tsx'
@@ -39,6 +39,7 @@ const AlignmentsFeatureDetailsBody = observer(
           model={model}
           descriptions={{ ...fieldDescriptions, tags }}
           feature={feat}
+          unformatted={model.unformattedFeatureData}
           omit={['flags', 'next_ref', 'next_pos']}
           formatter={(value, key) =>
             key === 'next_segment_position' ? (
@@ -74,17 +75,12 @@ const AlignmentsFeatureDetails = observer(function AlignmentsFeatureDetails({
   model: AlignmentFeatureWidgetModel
 }) {
   const { featureData } = model
-  return featureData ? (
-    <FeatureWash uniqueId={featureData.uniqueId}>
-      <AlignmentsFeatureDetailsBody feat={featureData} model={model} />
-    </FeatureWash>
-  ) : (
-    <Paper sx={{ p: 2 }}>
-      <Typography>
-        No feature loaded. It may not be available after a page refresh because
-        it was too large to persist in localStorage.
-      </Typography>
-    </Paper>
+  return (
+    <FeatureDetailsFrame model={model}>
+      {featureData ? (
+        <AlignmentsFeatureDetailsBody feat={featureData} model={model} />
+      ) : null}
+    </FeatureDetailsFrame>
   )
 })
 
