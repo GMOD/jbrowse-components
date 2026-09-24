@@ -294,6 +294,10 @@ points' colour a callback:
 A point mark's `size` is its diameter in px, so a second point mark can draw its
 features larger:
 `{ "mark": "point", "size": 8, "encoding": { "y": "score", "color": "red" } }`.
+A point whose `x` to `x2` is wider than its glyph draws as a bar of the glyph's
+height across that span, so a shape scale shows on a SNP and not on a deletion
+wider than the point; to mark each feature at one position whatever its length,
+give the point `"x2": "start"`.
 
 A `span` has no `y`: it paints a band from `x` to `x2`, in its colour, for an
 interval whose extent is the point, such as a region of interest under the bars
@@ -566,20 +570,31 @@ that layer draws the sidecar's bins there instead of the banner:
     "displayId": "genes-LinearMarkDisplay",
     "marks": [
       { "mark": "bar", "encoding": { "y": "score" }, "maxBpPerPx": 100 },
-      { "mark": "bar", "source": "density", "encoding": { "y": "count" }, "minBpPerPx": 100 }
+      {
+        "mark": "bar",
+        "source": "density",
+        "transform": [
+          { "type": "bin", "step": "auto" },
+          { "type": "aggregate", "ops": [{ "op": "count" }] }
+        ],
+        "encoding": { "y": "count" },
+        "minBpPerPx": 100
+      }
     ]
   }
 ]
 ```
 
-The sidecar's bars are drawn as bars like any other — same y axis, same hover,
-same SVG export — and hovering one reads out the bin's count. Marks that are not
-the density draw nothing there, and a chip in the corner marks the sidecar as
-the source; the track menu's **Density band** submenu switches between
-Automatic, Features only and Density only, and carries the Force-load the banner
-would have. Clicking a bin opens nothing, because reading the features back is
-the download the budget refused. With no mark declaring `"source": "density"`,
-the banner still appears, unchanged.
+Under the budget the density mark counts the features it fetched, per
+zoom-following bin; the `source` takes over only past it. The sidecar's bars are
+drawn as bars like any other — same y axis, same hover, same SVG export — and
+hovering one reads out the bin's count. Marks that are not the density draw
+nothing there, and a chip in the corner marks the sidecar as the source; the
+track menu's **Density band** submenu switches between Automatic, Features only
+and Density only, and carries the Force-load the banner would have. Clicking a
+bin opens nothing, because reading the features back is the download the budget
+refused. With no mark declaring `"source": "density"`, the banner still appears,
+unchanged.
 
 <Figure src="/img/mark_display/density_sidecar.png" caption="Chromosome 1 end to end, past the budget: the Alu track's sidecar bins draw as the density mark, with the chip in the corner naming what is on screen."/>
 
