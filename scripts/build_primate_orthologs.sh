@@ -136,6 +136,7 @@ def absolutize(node, base):
     if isinstance(node, dict):
         return {
             k: f'{base}/{v}' if k in uri_keys and isinstance(v, str) and '://' not in v
+            else v if k == 'metadata'
             else absolutize(v, base)
             for k, v in node.items()
         }
