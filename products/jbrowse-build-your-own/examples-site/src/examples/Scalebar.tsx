@@ -70,35 +70,101 @@ function useDragToZoom(view: LinearGenomeViewModel) {
   return { range, props }
 }
 
+const PointerGuide = observer(function PointerGuide({
+  view,
+  x,
+}: {
+  view: LinearGenomeViewModel
+  x: number
+}) {
+  const palette = usePalette()
+  const { refName, coord, oob } = view.pxToBp(x)
+  return oob ? null : (
+    <div
+      data-testid="pointer-guide"
+      style={{
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        zIndex: 4,
+        pointerEvents: 'none',
+        transform: `translateX(${x}px)`,
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          width: 1,
+          background: palette.text.primary,
+        }}
+      />
+      <span
+        style={{
+          position: 'absolute',
+          top: 2,
+          left: Math.min(Math.max(-x, -60), view.width - x - 120),
+          width: 120,
+          textAlign: 'center',
+          fontSize: '0.7rem',
+          lineHeight: '16px',
+          whiteSpace: 'nowrap',
+          color: palette.text.primary,
+          background: palette.background.paper,
+          boxShadow: `0 0 0 1px ${palette.divider}`,
+        }}
+      >
+        {refName}:{coord.toLocaleString('en-US')}
+      </span>
+    </div>
+  )
+})
+
 const Demo = observer(function Demo({ view }: { view: LinearGenomeViewModel }) {
   const palette = usePalette()
   const { range, props } = useDragToZoom(view)
+  const [pointerX, setPointerX] = useState<number>()
   return (
-    <TrackStack view={view}>
-      <Gridlines view={view} />
-      <Scalebar
-        view={view}
-        data-testid="scalebar"
-        style={{ cursor: 'crosshair', touchAction: 'none' }}
-        {...props}
-      />
-      <RegionSeams view={view} />
-      {range ? (
-        <div
-          data-testid="rubberband"
-          style={{
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            left: range.left,
-            width: range.right - range.left,
-            zIndex: 4,
-            pointerEvents: 'none',
-            background: `color-mix(in srgb, ${palette.primary.main} 20%, transparent)`,
-          }}
+    <div
+      onPointerMove={event => {
+        setPointerX(
+          event.clientX - event.currentTarget.getBoundingClientRect().left,
+        )
+      }}
+      onPointerLeave={() => {
+        setPointerX(undefined)
+      }}
+    >
+      <TrackStack view={view}>
+        <Gridlines view={view} />
+        <Scalebar
+          view={view}
+          data-testid="scalebar"
+          style={{ cursor: 'crosshair', touchAction: 'none' }}
+          {...props}
         />
-      ) : null}
-    </TrackStack>
+        <RegionSeams view={view} />
+        {range ? (
+          <div
+            data-testid="rubberband"
+            style={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: range.left,
+              width: range.right - range.left,
+              zIndex: 4,
+              pointerEvents: 'none',
+              background: `color-mix(in srgb, ${palette.primary.main} 20%, transparent)`,
+            }}
+          />
+        ) : pointerX === undefined ? null : (
+          <PointerGuide view={view} x={pointerX} />
+        )}
+      </TrackStack>
+    </div>
   )
 })
 

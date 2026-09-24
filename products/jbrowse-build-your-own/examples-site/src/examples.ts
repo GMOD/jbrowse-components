@@ -71,7 +71,8 @@ export const pages: ExamplePage[] = [
       {
         slug: 'scalebar',
         title: 'Scalebar, gridlines and drag to zoom',
-        description: 'Drag across the scalebar to zoom.',
+        description:
+          'Drag across the scalebar to zoom, and hover to read the base under the pointer.',
       },
       {
         slug: 'track-labels',
