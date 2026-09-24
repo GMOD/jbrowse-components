@@ -50,14 +50,25 @@ main process — 23 of the 24 in JBrowse, and Apollo's one — is an
 `electron/requireShim.ts` + `electron/preload.ts` keep that shape, so
 contextIsolation costs third-party plugins no release.
 
-**One crossing is not an invoke**, and the shim does not carry it:
-`packages/core/src/util/index.ts` reaches `webUtils.getPathForFile(file)` in
-`fileToLocation`, which is how a *dropped* file becomes a `LocalPathLocation`.
-`webUtils` is a separate Electron API, so the shim returning only
-`{ipcRenderer: {invoke}}` breaks drag-and-drop — in `@jbrowse/core`, not in
-desktop, and only once the flag moves. Either expose `webUtils.getPathForFile`
-alongside `invoke`, or give it a channel; do not leave the sentence above read as
-"all of them".
+**Four crossings are not an invoke**, and the shim carries none of them:
+
+- `packages/core/src/util/index.ts` reaches `webUtils.getPathForFile(file)` in
+  `fileToLocation`, which is how a *dropped* file becomes a `LocalPathLocation`.
+  `webUtils` is a separate Electron API, so the shim returning only
+  `{ipcRenderer: {invoke}}` breaks drag-and-drop — in `@jbrowse/core`, not in
+  desktop. Either expose `webUtils.getPathForFile` alongside `invoke`, or give
+  it a channel.
+- Desktop's own renderer listens with `ipcRenderer.on`/`off` on the three
+  channels in `IpcPushChannels` (`electron/ipc/channelTypes.ts`), through
+  `onIpc` in `src/ipc.ts`: `flushSessionForClose` (the close guard's flush),
+  `openLaunchTarget` (a `jbrowse://` link or OS open-file swapped into an open
+  session) and `mcpRequest` (every MCP tool call on the session). With only
+  `invoke` exposed each listener fails to attach and nothing says so: closing
+  the window waits for a flush that never comes until a second click, a pushed
+  launch does nothing, and every MCP call times out. The shim needs `on`/`off`
+  for exactly those names.
+
+Do not leave the sentence above read as "all of them".
 
 ## Verified by probe, not by documentation
 
