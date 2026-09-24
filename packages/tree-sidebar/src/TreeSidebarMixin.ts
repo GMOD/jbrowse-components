@@ -110,7 +110,7 @@ function liftRowColor(value: unknown): RowColorSnapshot {
 }
 
 function paintsNamePairs({ field, scale }: RowColorSnapshot) {
-  return (field ?? 'name') === 'name' && scale !== 'none'
+  return (field || 'name') === 'name' && scale !== 'none'
 }
 
 // The colours a `rowColor` object sets row by row: its pairs while it paints
@@ -314,11 +314,12 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       /**
        * #getter
        * The `rowColor` object: the row attribute whose values take colours,
-       * the scale, and the values given a colour of their own.
+       * `name` where it names none, the scale, and the values given a colour
+       * of their own.
        */
       get rowColorSetting(): RowColorSetting {
         return {
-          field: getConf(confNode(self), ['rowColor', 'field']),
+          field: getConf(confNode(self), ['rowColor', 'field']) || 'name',
           scale: getConf(confNode(self), ['rowColor', 'scale']),
           domain: getConf(confNode(self), ['rowColor', 'domain']),
           range: getConf(confNode(self), ['rowColor', 'range']),
