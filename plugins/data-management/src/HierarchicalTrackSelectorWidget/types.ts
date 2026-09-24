@@ -47,6 +47,16 @@ export interface TreeRow {
   top: number
 }
 
+// a top-level group of the tree: the config's own tracks, or one connection's
+export interface TrackGroup {
+  group: string
+  id: string
+  connectionId?: string
+  tracks: TrackNodeSource[]
+  defaultCollapsed: boolean
+  loading: boolean
+}
+
 // a track config plus every slot the tree reads from it, resolved once in
 // model.allTracks so a filterText keystroke does no config reads
 export interface TrackNodeSource {

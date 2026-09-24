@@ -26,6 +26,7 @@ import {
 import type {
   CategoryMode,
   ResolvedCategoryMode,
+  TrackGroup,
   TreeNode,
   TreeRow,
   TreeTrackNode,
@@ -593,7 +594,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
          * it is loaded. A dormant connection has no tracks and defaults
          * collapsed; expanding it loads it (see toggleCategory)
          */
-        get allTracks() {
+        get allTracks(): TrackGroup[] {
           const { connectionInstances = [], connections } = getSession(self)
           const liveByConnectionId = new Map(
             connectionInstances.map(c => [c.connectionId, c]),
@@ -602,7 +603,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             {
               group: mainGroupId,
               id: mainGroupId,
-              connectionId: undefined,
               tracks: this.mainGroupTracks,
               defaultCollapsed: false,
               loading: false,
