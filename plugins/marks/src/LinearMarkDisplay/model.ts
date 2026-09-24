@@ -696,7 +696,7 @@ export function stateModelFactory(
          * #getter
          * The sections drawn over every loaded region, in the domain's order
          * and less the hidden ones, and where each key's rows start; under
-         * `rows`, one row per value in the rows' order and no sections.
+         * `rows`, one row per value in the rows' order, which no chip names.
          */
         get facetLayout(): FacetLayout {
           return layout.get()

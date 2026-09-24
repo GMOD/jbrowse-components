@@ -16,9 +16,10 @@ const AXIS_TO_LABEL_GAP_PX = 4
  * repeats where one draws, since a label grows rightward over the plot.
  */
 export function rowLabelOffset(
-  model: Pick<MarkDisplayModel, 'axes' | 'showTree' | 'hierarchy'> & {
-    treeAreaWidth: number
-  },
+  model: Pick<
+    MarkDisplayModel,
+    'axes' | 'showTree' | 'hierarchy' | 'treeAreaWidth'
+  >,
   exportContentLeft?: number,
 ) {
   const offset = treeSidebarOffset(model)
