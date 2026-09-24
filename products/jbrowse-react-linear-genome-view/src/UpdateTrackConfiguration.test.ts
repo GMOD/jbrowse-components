@@ -635,6 +635,7 @@ describe('a delta write re-resolves only its own track', () => {
     })
     const session = state.session as unknown as DeltaSession & {
       addSessionTrackConf: (conf: Record<string, unknown>) => unknown
+      withTrackEdits: (base: AnyConfigurationModel) => AnyConfigurationModel
     }
     session.addSessionTrackConf(conf('session'))
     session.addSessionTrackConf(conf('sessionEdited'))
@@ -671,6 +672,23 @@ describe('a delta write re-resolves only its own track', () => {
         expect(t).toBe(before.get(t.trackId))
       }
     }
+    disposers.forEach(d => {
+      d()
+    })
+  })
+
+  test.each(ids)('an edit to %s resolves no other track', async edited => {
+    const { session, disposers } = await fourShown()
+    const { withTrackEdits } = session
+    const resolved: string[] = []
+    session.withTrackEdits = base => {
+      resolved.push(base.trackId)
+      return withTrackEdits(base)
+    }
+
+    session.updateTrackConfiguration({ ...conf(edited), name: 'edited' })
+
+    expect(resolved).toEqual([edited])
     disposers.forEach(d => {
       d()
     })

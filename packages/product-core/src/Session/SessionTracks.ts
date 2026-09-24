@@ -107,6 +107,19 @@ function withoutDelta(
   return rest
 }
 
+// Not evicted: bounded by the distinct ids read this session.
+function perIdComputed<T>(derive: (trackId: string) => T) {
+  const computeds = new Map<string, IComputedValue<T>>()
+  return (trackId: string) => {
+    let c = computeds.get(trackId)
+    if (!c) {
+      c = computed(() => derive(trackId))
+      computeds.set(trackId, c)
+    }
+    return c.get()
+  }
+}
+
 /**
  * #stateModel SessionTracksManagerSessionMixin
  */
@@ -239,13 +252,19 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         },
         { name: 'trackBaseIndex' },
       )
-      const baseByIdComputeds = new Map<
-        string,
-        IComputedValue<PlainTrackConfig | undefined>
-      >()
-      const editableComputeds = new Map<
+      // A write replaces the whole delta map but keeps every other id's delta
+      // by identity, so reading one id's through its own computed wakes only
+      // the edited track's readers.
+      const deltaFor = perIdComputed(trackId => self.trackConfigDeltas[trackId])
+      const baseFor = perIdComputed(trackId => {
+        const base = self.trackBasesById.get(trackId)
+        return base
+          ? toPlainConfig(base as unknown as PlainTrackConfig)
+          : undefined
+      })
+      const editableBySchema = new Map<
         IAnyType,
-        Map<string, IComputedValue<AnyConfigurationModel | undefined>>
+        (trackId: string) => AnyConfigurationModel | undefined
       >()
       return {
         /**
@@ -268,7 +287,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          */
         withTrackEdits(base: AnyConfigurationModel): AnyConfigurationModel {
           const plain = base as unknown as PlainTrackConfig
-          return withDelta(plain, self.trackConfigDeltas[plain.trackId])
+          return withDelta(plain, deltaFor(plain.trackId))
         },
         /**
          * #getter
@@ -297,17 +316,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * reactive, like `getTrackById`.
          */
         baseTrackConfig(trackId: string): PlainTrackConfig | undefined {
-          let c = baseByIdComputeds.get(trackId)
-          if (!c) {
-            c = computed(() => {
-              const base = self.trackBasesById.get(trackId)
-              return base
-                ? toPlainConfig(base as unknown as PlainTrackConfig)
-                : undefined
-            })
-            baseByIdComputeds.set(trackId, c)
-          }
-          return c.get()
+          return baseFor(trackId)
         },
         /**
          * #method
@@ -333,47 +342,40 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           trackId: string,
           schemaType: IAnyType,
         ): AnyConfigurationModel | undefined {
-          let byId = editableComputeds.get(schemaType)
-          if (!byId) {
-            byId = new Map()
-            editableComputeds.set(schemaType, byId)
-          }
-          let c = byId.get(trackId)
-          if (!c) {
-            c = computed(() => {
-              const resolved = self.getTrackById(trackId)
+          let editable = editableBySchema.get(schemaType)
+          if (!editable) {
+            editable = perIdComputed(id => {
+              const resolved = self.getTrackById(id)
               if (!resolved || isStateTreeNode(resolved)) {
                 return resolved
               }
-              const existing = self.editableTrackConfigs.get(trackId)
+              const existing = self.editableTrackConfigs.get(id)
               if (existing?.source === resolved) {
                 return existing.node
               }
               const node = schemaType.create(resolved, { pluginManager })
-              self.editableTrackConfigs.set(trackId, { node, source: resolved })
+              self.editableTrackConfigs.set(id, { node, source: resolved })
               return node
             })
-            byId.set(trackId, c)
+            editableBySchema.set(schemaType, editable)
           }
-          return c.get()
+          return editable(trackId)
+        },
+        /**
+         * #method
+         * The overridden slots for `trackId` (empty when it has no delta): each
+         * changed setting's path, its base/default value and the edited value.
+         * Drives the "view changes" dialog opened from the edited badge.
+         */
+        getTrackConfigChanges(trackId: string) {
+          // Every rendered track row asks this (the edited badge); only an
+          // edited one has a delta, so an unedited row subscribes to no base.
+          const delta = deltaFor(trackId)
+          const base = delta ? baseFor(trackId) : undefined
+          return delta && base ? flattenTrackConfigDelta(base, delta) : []
         },
       }
     })
-    .views(self => ({
-      /**
-       * #method
-       * The overridden slots for `trackId` (empty when it has no delta): each
-       * changed setting's path, its base/default value and the edited value.
-       * Drives the "view changes" dialog opened from the edited badge.
-       */
-      getTrackConfigChanges(trackId: string) {
-        // Every rendered track row asks this (the edited badge); only an
-        // edited one has a delta, so an unedited row subscribes to no base.
-        const delta = self.trackConfigDeltas[trackId]
-        const base = delta ? self.baseTrackConfig(trackId) : undefined
-        return delta && base ? flattenTrackConfigDelta(base, delta) : []
-      },
-    }))
     .views(self => ({
       /**
        * #method

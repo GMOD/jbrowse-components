@@ -100,9 +100,8 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
             record: Record<string, AnyConfigurationModel>
           }
         | undefined
-      // Per-id computeds backing getTrackById. An edit re-resolves each
-      // observed id in constant time, and an unedited id resolves to the same
-      // object, so its observers never wake. Not evicted: bounded by the
+      // Per-id computeds backing getTrackById, so an id's readers wake only
+      // when it resolves to another config. Not evicted: bounded by the
       // distinct ids resolved this session.
       const trackByIdComputeds = new Map<
         string,
