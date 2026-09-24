@@ -34,6 +34,7 @@ import {
   clusteringMenuItem,
   computeClusterHierarchy,
   focusRowGroup,
+  orderRowsByDomain,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
   rowLabelsCarryText,
@@ -75,7 +76,11 @@ import { WIGGLE_RENDERINGS } from '../util.ts'
 import { CHANNEL_SPEC_EXAMPLES } from './channelSpecExamples.ts'
 import { buildLegendItems } from './legendItems.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
-import { buildSources, sourcesFromRegionData } from './sourcesLogic.ts'
+import {
+  buildSources,
+  sourceColorDeal,
+  sourcesFromRegionData,
+} from './sourcesLogic.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { ResolvedWiggleColor } from '../shared/wiggleColor.ts'
@@ -92,7 +97,7 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { RowsSetting } from '@jbrowse/display-kit/rowsConfigSchema'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { IdentityChannel } from '@jbrowse/tree-sidebar'
+import type { IdentityChannel, RowColorDeal } from '@jbrowse/tree-sidebar'
 import type { ValueScale, WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
@@ -433,13 +438,26 @@ export default function stateModelFactory(
           ? 'labelColor'
           : 'color'
       },
+      /**
+       * #getter
+       * `TreeSidebarMixin`'s hook: the group palette, and a colour per source
+       * where the colour is one, dealt over the rows as currently arranged
+       * (`sourceColorDeal`).
+       */
+      get rowColorDeal(): RowColorDeal<Source> {
+        return sourceColorDeal(
+          orderRowsByDomain(self.expandedRows, self.rowOrder),
+          sourcePalette(self.colorEncoding),
+          self.scoreGradientPaints,
+        )
+      },
     }))
     .views(self => ({
       get sources(): Source[] {
         return buildSources(
           self.editableSources,
           self.rowFocus,
-          sourcePalette(self.colorEncoding),
+          self.rowColorScale,
           self.scoreGradientPaints,
         )
       },

@@ -1,4 +1,3 @@
-import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 
 // `labelColor` tints the sidebar swatch only, never the blocks.
@@ -62,26 +61,15 @@ export function applyRowGroups(
 /**
  * The one place "color a whole row" is decided, in CSS rather than ABGR because
  * the sidebar label is tinted with the same color its row paints in: a row's
- * `rowColor` entry, else a palette entry. An `undefined` row falls through to
- * the worker-baked per-feature `color`, so per-row and per-feature coloring
- * compose. The palette is dealt over `paletteOrder`, the rows in the order the
- * config declares, and looked up by name, so a reorder or a clade focus moves a
- * row without recoloring it; undefined deals none.
+ * `rowColor` entry, else its `palette` colour, by name. An `undefined` row
+ * falls through to the worker-baked per-feature `color`, so per-row and
+ * per-feature coloring compose; an undefined palette deals none.
  */
 export function resolveRowColorStrings(
   rows: MultiRowSource[],
-  paletteOrder: readonly MultiRowSource[] | undefined,
+  palette: ReadonlyMap<string, string> | undefined,
 ): (string | undefined)[] {
-  const slot = new Map(paletteOrder?.map((s, i) => [s.name, i]))
-  return rows.map(s => {
-    const i = slot.get(s.name)
-    return (
-      s.color ??
-      (i === undefined
-        ? undefined
-        : categoricalPalette[i % categoricalPalette.length])
-    )
-  })
+  return rows.map(s => s.color ?? palette?.get(s.name))
 }
 
 /**

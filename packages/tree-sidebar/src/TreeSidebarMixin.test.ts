@@ -3,9 +3,11 @@ import {
   getConf,
   setConf,
 } from '@jbrowse/core/configuration'
+import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 import { treeSidebarConfigSchemaFields } from './treeSidebarConfigSchemaFields.ts'
@@ -210,5 +212,88 @@ describe('a dialog submit after a region adds a row', () => {
     expect(display.rowDomain).toEqual([])
     expect(display.rowTree).toBe('(b:1,c:1);')
     expect(display.editableSources.map(r => r.name)).toEqual(['a', 'b', 'c'])
+  })
+})
+
+// What the flip deals every display's palette by, before any display opts in:
+// the rowColor field's values over the base arrangement, the listed values
+// taking their range colour.
+describe('the default row palette', () => {
+  function makePalette(configuration: Record<string, unknown> = {}) {
+    return types
+      .compose(
+        'PaletteTreeDisplay',
+        TreeSidebarMixin(),
+        types.model({
+          type: types.literal('PaletteTreeDisplay'),
+          configuration: configSchema,
+        }),
+      )
+      .volatile(() => ({
+        rows: [
+          { name: 'a', group: 'x' },
+          { name: 'b', group: 'y' },
+          { name: 'c', group: 'x' },
+        ],
+      }))
+      .views(self => ({
+        get discoveredRows() {
+          return self.rows
+        },
+      }))
+      .create({ type: 'PaletteTreeDisplay', configuration })
+  }
+
+  it('deals the unlisted rows the palette in the base arrangement', () => {
+    const display = makePalette({
+      rowColor: { domain: ['b'], range: ['#00f'] },
+    })
+    expect(Object.fromEntries(display.rowColorScale)).toEqual({
+      a: categoricalPalette[0],
+      b: '#00f',
+      c: categoricalPalette[1],
+    })
+  })
+
+  it('deals by another row attribute', () => {
+    const display = makePalette({ rowColor: 'group' })
+    expect(Object.fromEntries(display.rowColorScale)).toEqual({
+      a: categoricalPalette[0],
+      b: categoricalPalette[1],
+      c: categoricalPalette[0],
+    })
+  })
+
+  it('deals none under scale none', () => {
+    const display = makePalette({ rowColor: { field: 'group', scale: 'none' } })
+    expect(display.rowColorScale.size).toBe(0)
+  })
+
+  // Observed, as a display's paint path observes it: an unobserved computed
+  // deals again on every read.
+  it('keeps its identity across a reorder, a focus and a relabel', () => {
+    const display = makePalette()
+    const stop = autorun(() => display.rowColorScale)
+    const palette = display.rowColorScale
+    display.setRowOrder([{ name: 'c' }, { name: 'b' }, { name: 'a' }])
+    display.setRowFocus(['a'])
+    display.applyRowEdits(
+      display.editableSources.map(r => ({ ...r, label: r.name.toUpperCase() })),
+    )
+    expect(display.rowLabels).toEqual({ a: 'A', b: 'B', c: 'C' })
+    expect(display.rowColorScale).toBe(palette)
+    stop()
+  })
+
+  it('turns a recolour under another field into name pairs', () => {
+    const display = makePalette({ rowColor: 'group' })
+    const before = Object.fromEntries(display.rowColorScale)
+    const [a, b, c] = display.editableSources
+    display.applyRowEdits([a!, { ...b!, color: '#123456' }, c!])
+    expect(display.rowColorSetting.field).toBe('name')
+    expect(Object.fromEntries(display.rowColors)).toEqual({
+      ...before,
+      b: '#123456',
+    })
   })
 })

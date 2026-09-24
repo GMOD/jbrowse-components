@@ -120,8 +120,7 @@ export function rowSeparatorsConfigSchemaFields({
 /**
  * What `TreeSidebarMixin` asks for: the toggles, a `rows` object carrying the
  * arrangement — the intrinsic-key `RowArrangement`, or `Rows`, which extends
- * it with a field — and the `rowColor` pairs, which variants' `VariantRowColor`
- * extends with a field the same way.
+ * it with a field — and the `rowColor` object.
  */
 export type TreeSidebarConfigModel = ConfigModelForFields<
   ReturnType<typeof treeSidebarConfigSchemaFields> & {

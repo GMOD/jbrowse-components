@@ -1,14 +1,21 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
+import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import { isSessionWithBaseTrackConfig } from '@jbrowse/core/util/types'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { ROW_ARRANGEMENT_MEMBERS } from '@jbrowse/display-kit/rowArrangementConfigSchema'
+import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { getSnapshot, hasParent, types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
-import { arrangeRows } from './arrangeRows.ts'
+import { arrangeRows, orderRowsByDomain } from './arrangeRows.ts'
 import { applySubtreeFilter, buildTree, keptRows } from './clusterUtils.ts'
 import { maxNodeHeight } from './hierarchy.ts'
+import {
+  materializedRowColors,
+  rowColorScale,
+  rowFieldValue,
+} from './rowColorScale.ts'
 import { rowEdits } from './rowEdits.ts'
 
 import type {
@@ -17,13 +24,14 @@ import type {
   UnlistedRowsSort,
 } from './arrangeRows.ts'
 import type { ClusterProvenance } from './clusterProvenance.ts'
+import type { RowColorDeal } from './rowColorScale.ts'
 import type { RowSortSpec } from './rowSortAutorun.ts'
 import type { TreeSidebarConfigModel } from './treeSidebarConfigSchemaFields.ts'
 import type { HoveredTreeNode, RowSource } from './types.ts'
 
 /**
  * The whole of what `TreeSidebarMixin` needs a composing display to be: the
- * sidebar's toggle slots, the `rows` object and the `rowColor` pairs.
+ * sidebar's toggle slots, the `rows` object and the `rowColor` object.
  */
 export interface TreeSidebarHost {
   configuration: TreeSidebarConfigModel & { displayId: string }
@@ -86,6 +94,38 @@ function liveArrangement(self: object): Arrangement {
   return getSnapshot(confNode(self).configuration.rows) as Arrangement
 }
 
+/** The `rowColor` object as read: its field, scale and entries. */
+export interface RowColorSetting {
+  field: string
+  scale: 'none' | 'categorical' | undefined
+  domain: readonly string[]
+  range: readonly string[]
+}
+
+/** The `rowColor` object as a config writes it, a string lifted to its field. */
+export type RowColorSnapshot = Partial<RowColorSetting>
+
+function liftRowColor(value: unknown): RowColorSnapshot {
+  return typeof value === 'string' ? { field: value } : (value ?? {})
+}
+
+function paintsNamePairs({ field, scale }: RowColorSnapshot) {
+  return (field ?? 'name') === 'name' && scale !== 'none'
+}
+
+// The colours a `rowColor` object sets row by row: its pairs while it paints
+// by `name`, none while it paints by an attribute.
+function namePairs(color: RowColorSnapshot): Record<string, string> {
+  return paintsNamePairs(color)
+    ? Object.fromEntries(
+        pairedColorsOf({
+          domain: color.domain ?? [],
+          range: color.range ?? [],
+        }),
+      )
+    : {}
+}
+
 /**
  * The order a reorder writes: the rows it named lead, and the names the
  * current order carries beyond them follow in their current order, so a
@@ -143,20 +183,22 @@ export interface ClusterRun {
 /**
  * #stateModel TreeSidebarMixin
  * #category display
- * #crossCuttingMixin Row set with a dendrogram sidebar, its arrangement the display's `rows` config object and its row colours the `rowColor` pairs, each written as a session edit to the track's config so undo, reset and a share link reach it and it survives unticking the track. Brings the sidebar toggles, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through, the rows derived from it (`editableSources`, `clusterableSources`) with the arrangement dialog's `applyRowEdits`, the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through. A display supplies `discoveredRows` and overrides the hooks its rows need
+ * #crossCuttingMixin Row set with a dendrogram sidebar, its arrangement the display's `rows` config object and its row colours the `rowColor` object, each written as a session edit to the track's config so undo, reset and a share link reach it and it survives unticking the track. Brings the sidebar toggles, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through, the rows derived from it (`editableSources`, `clusterableSources`) with the arrangement dialog's `applyRowEdits`, the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through. A display supplies `discoveredRows` and overrides the hooks its rows need
  *
  * The rows are derived in stages, each a computed of its own: the display's
  * `discoveredRows`, then `expandedRows` (`expandRows`: a variant display's
  * haplotypes), then `editableSources`, ordered by `rowOrder`, relabelled by
- * `rows.labels` and tinted by `rowColor` on the `identityChannel`, then
- * `clusterableSources`, narrowed to the focus. Palette and bands stay the
- * display's, over those.
+ * `rows.labels` and tinted by the `rowColor` pairs on the `identityChannel`,
+ * then `clusterableSources`, narrowed to the focus. The row palette is
+ * `rowColorScale`, dealt by `rowColorDeal` once per change to the rows, and
+ * each display paints it, with its bands, over those.
  *
  * Every arrangement write reaches the session at once rather than after the
  * track's 400 ms save, so a clustering run is one undo step and undoable the
- * moment its tree appears. "Reset row order" returns each member, and the
- * `rowColor` pairs, to what the config.json declares, or what a track the
- * session owns was added with, and never touches `rows.field`.
+ * moment its tree appears. "Reset row order" returns each member, and
+ * `rowColor` where it sets a row a colour, to what the config.json declares,
+ * or what a track the session owns was added with, and never touches
+ * `rows.field`.
  */
 export function TreeSidebarMixin<S extends RowSource = RowSource>() {
   return types
@@ -271,29 +313,35 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * The colour a reader set on each named row, off `rowColor`'s
-       * `domain`/`range` pairs.
+       * The `rowColor` object: the row attribute whose values take colours,
+       * the scale, and the values given a colour of their own.
        */
-      get rowColors(): ReadonlyMap<string, string> {
-        return pairedColorsOf({
+      get rowColorSetting(): RowColorSetting {
+        return {
+          field: getConf(confNode(self), ['rowColor', 'field']),
+          scale: getConf(confNode(self), ['rowColor', 'scale']),
           domain: getConf(confNode(self), ['rowColor', 'domain']),
           range: getConf(confNode(self), ['rowColor', 'range']),
-        })
+        }
       },
       /**
        * #getter
-       * The `rowColor` pairs this display's base declares, which a reset
-       * returns to and a dialog submit keeps the pair order of.
+       * The `rowColor` object this display's base declares, as written, which
+       * a reset returns to and "is this the reader's" compares against.
        */
-      get baseRowColor(): {
-        domain: readonly string[]
-        range: readonly string[]
-      } {
-        const base = (baseDisplayConfig(self).rowColor ?? {}) as {
+      get baseRowColor(): RowColorSnapshot {
+        return liftRowColor(baseDisplayConfig(self).rowColor)
+      },
+      /**
+       * #getter
+       * The `rows.domain` this display's base declares: the base arrangement
+       * a row palette deals over, so no reorder recolours a row.
+       */
+      get baseRowDomain(): readonly string[] {
+        const base = (baseDisplayConfig(self).rows ?? {}) as {
           domain?: string[]
-          range?: string[]
         }
-        return { domain: base.domain ?? [], range: base.range ?? [] }
+        return base.domain ?? []
       },
       /**
        * #getter
@@ -353,13 +401,23 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * Whether `rowColor` names a colour the config does not, so "Reset row
-       * order" is offered for a recolour too.
+       * The colour a reader set on each named row: the `rowColor` pairs while
+       * it paints by `name`, and none while it paints by another field.
+       */
+      get rowColors(): ReadonlyMap<string, string> {
+        const setting = self.rowColorSetting
+        return paintsNamePairs(setting) ? pairedColorsOf(setting) : new Map()
+      },
+      /**
+       * #getter
+       * Whether `rowColor` sets a row a colour the config does not, so "Reset
+       * row order" is offered for a recolour too. A colour by attribute sets
+       * none row by row, so picking one is not a custom arrangement.
        */
       get rowStylingIsCustom(): boolean {
         return !compareStructural(
-          Object.fromEntries(self.rowColors),
-          Object.fromEntries(pairedColorsOf(self.baseRowColor)),
+          namePairs(self.rowColorSetting),
+          namePairs(self.baseRowColor),
         )
       },
       /**
@@ -371,6 +429,54 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         return self.expandRows(self.discoveredRows)
       },
     }))
+    .views(self => ({
+      /**
+       * #getter
+       * Overridable hook: what the row palette deals, or undefined to deal
+       * none. By default the values of `rowColor.field` over the rows in the
+       * base arrangement, the values `rowColor.domain` lists taking its
+       * `range`, and every other value the next palette colour, so no
+       * reorder, focus or relabel recolours a row.
+       */
+      get rowColorDeal(): RowColorDeal<S> | undefined {
+        const { field, scale, domain, range } = self.rowColorSetting
+        if (scale === 'none') {
+          return undefined
+        }
+        const valueOf = (row: S) =>
+          field === 'name' ? row.name : rowFieldValue(row, field)
+        return {
+          order: [
+            ...domain,
+            ...orderRowsByDomain(
+              self.expandedRows,
+              self.baseRowDomain,
+              self.rowAlias,
+            ).map(valueOf),
+          ],
+          valueOf,
+          domain,
+          range,
+          palette: categoricalPalette,
+        }
+      },
+    }))
+    .views(self => {
+      const scale = stableIdentityComputed(() =>
+        rowColorScale(self.expandedRows, self.rowColorDeal),
+      )
+      return {
+        /**
+         * #getter
+         * The colour the row palette deals each row, by name, once per change
+         * to the rows or the deal. Each display paints it where its palette
+         * lands, with its own precedence over a row's own colour.
+         */
+        get rowColorScale(): ReadonlyMap<string, string> {
+          return scale.get()
+        },
+      }
+    })
     .views(self => ({
       /**
        * #getter
@@ -515,12 +621,13 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       function write(member: ArrangementMember, value: unknown) {
         setConf(confNode(self), ['rows', member], value)
       }
-      function writeRowColor(
-        domain: readonly string[],
-        range: readonly string[],
-      ) {
-        setConf(confNode(self), ['rowColor', 'domain'], [...domain])
-        setConf(confNode(self), ['rowColor', 'range'], [...range])
+      function writeRowColor(pairs: RowColorSnapshot) {
+        setConf(
+          confNode(self),
+          ['rowColor', 'domain'],
+          [...(pairs.domain ?? [])],
+        )
+        setConf(confNode(self), ['rowColor', 'range'], [...(pairs.range ?? [])])
       }
       function persist() {
         if (hasParent(self)) {
@@ -543,8 +650,9 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         }
       }
       function resetRowStyling() {
-        const { domain, range } = self.baseRowColor
-        writeRowColor(domain, range)
+        if (self.rowStylingIsCustom) {
+          setConf(confNode(self), 'rowColor', self.baseRowColor)
+        }
       }
       return {
         /**
@@ -582,21 +690,36 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
          * carrying the label and colour the reader left on it. The labels go
          * to `rows` and the colours to the `rowColor` pairs, by the rule
          * `rowEdits` states, and the order to `rows.domain` unless it moves no
-         * row, so a submit that changes nothing writes nothing.
+         * row, so a submit that changes nothing writes nothing. Where
+         * `rowColor` paints by another field, a recolour first makes every
+         * row's current colour a `name` pair and the field `name`.
          */
         applyRowEdits(rows: readonly S[]) {
+          const setting = self.rowColorSetting
+          const byName = paintsNamePairs(setting)
+          const colors = byName
+            ? self.rowColors
+            : materializedRowColors(self.rowColorScale)
           const { labels, rowColor } = rowEdits({
             rows,
             shown: self.editableSources,
             adapter: self.expandedRows,
             labels: self.rowLabels,
-            colors: self.rowColors,
-            baseOrder: self.baseRowColor.domain,
+            colors,
+            baseOrder: self.baseRowColor.domain ?? [],
             identityChannel: self.identityChannel,
             rowAlias: self.rowAlias,
           })
           const moved = !movesNoRow(rows, self.editableSources)
-          writeRowColor(rowColor.domain, rowColor.range)
+          const recoloured = !compareStructural(
+            Object.fromEntries(pairedColorsOf(rowColor)),
+            Object.fromEntries(colors),
+          )
+          if (recoloured && byName) {
+            writeRowColor(rowColor)
+          } else if (recoloured) {
+            setConf(confNode(self), 'rowColor', { field: 'name', ...rowColor })
+          }
           write('labels', labels)
           if (moved) {
             writeOrder(rows)
@@ -605,8 +728,9 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         },
         /**
          * #action
-         * Return the `rowColor` pairs to what the config declares, leaving
-         * any other `rowColor` member.
+         * Return the `rowColor` object, whole, to what the config declares
+         * where it sets a row a colour the config does not, so a colour by
+         * attribute stays and one a recolour turned into pairs comes back.
          */
         resetRowStyling() {
           resetRowStyling()
@@ -614,7 +738,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         /**
          * #action
          * Return every arrangement member — order, labels, tree, provenance
-         * and focus — and the `rowColor` pairs to what the config declares,
+         * and focus — and the `rowColor` object to what the config declares,
          * leaving `rows.field`.
          */
         resetRowArrangement() {

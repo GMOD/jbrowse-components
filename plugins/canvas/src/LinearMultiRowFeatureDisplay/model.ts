@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { legendIsReadable } from '@jbrowse/core/ui'
+import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
@@ -28,10 +29,10 @@ import {
   ContextMenuMixin,
   RowHeightMixin,
   TreeSidebarMixin,
-  baseDisplayConfig,
   buildSpatialIndex,
   computeClusterHierarchy,
   focusRowGroup,
+  orderRowsByDomain,
   resetRowOrderMenuItems,
   rowLabelsCarryText,
   setupTreeSidebarAutoruns,
@@ -104,7 +105,7 @@ import type {
 } from '@jbrowse/display-kit/highlightHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { UnlistedRowsSort } from '@jbrowse/tree-sidebar'
+import type { RowColorDeal, UnlistedRowsSort } from '@jbrowse/tree-sidebar'
 import type React from 'react'
 
 const EMPTY_REGION_DATA: ReadonlyMap<number, MultiRowRegionData> = new Map()
@@ -259,17 +260,6 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * The row order the config.json declares, which the palette is dealt
-       * over so that no arrangement recolours a row.
-       */
-      get baseRowDomain(): readonly string[] {
-        const base = (baseDisplayConfig(self).rows ?? {}) as {
-          domain?: string[]
-        }
-        return base.domain ?? []
-      },
-      /**
-       * #getter
        */
       get rowProportion(): number {
         return readConfObject(self.conf, 'rowProportion')
@@ -318,6 +308,23 @@ export default function stateModelFactory(
          */
         get unlistedRowsSort(): UnlistedRowsSort {
           return 'sorted'
+        },
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: a palette colour per row, dealt over the
+         * rows in the base arrangement, a row with a `rowColor` entry still
+         * taking its turn.
+         */
+        get rowColorDeal(): RowColorDeal<MultiRowSource> {
+          return {
+            order: orderRowsByDomain(self.expandedRows, self.baseRowDomain).map(
+              s => s.name,
+            ),
+            valueOf: s => s.name,
+            domain: [],
+            range: [],
+            palette: categoricalPalette,
+          }
         },
         /**
          * #getter
@@ -440,7 +447,7 @@ export default function stateModelFactory(
         return resolveRowColorStrings(
           self.sources,
           self.colorConfig === undefined && !self.usedItemRgb
-            ? self.discoveredRows
+            ? self.rowColorScale
             : undefined,
         )
       },

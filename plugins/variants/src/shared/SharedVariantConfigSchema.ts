@@ -3,6 +3,7 @@ import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
+import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import {
@@ -11,7 +12,6 @@ import {
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 
 import { VARIANT_DISPLAY_TYPES } from './constants.ts'
-import { variantRowColorSchema } from './variantRowColorConfigSchema.ts'
 
 /**
  * #config SharedVariantDisplay
@@ -145,9 +145,10 @@ export default function sharedVariantConfigFactory() {
       /**
        * #slot rowColor
        * The tint beside each row's label: a sample-metadata attribute whose
-       * palette tints every row, and the colours a reader set row by row.
+       * palette tints every row, or under `name` the colours a reader set row
+       * by row.
        */
-      rowColor: variantRowColorSchema,
+      rowColor: rowColorConfigSchema,
       /**
        * #slot facet
        * A sample-metadata attribute (a column in the adapter's

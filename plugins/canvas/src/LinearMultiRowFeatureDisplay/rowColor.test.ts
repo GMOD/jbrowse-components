@@ -103,3 +103,19 @@ test('a submit over a window holding a fraction of the rows leaves the rest stan
   expect(display.rowLabels).toEqual({ c: 'Sea' })
   expect(display.rowDomain).toEqual(['b', 'a'])
 })
+
+// The palette is dealt over the base arrangement, once per change to the rows,
+// so no reorder, focus or relabel deals it again.
+test('the row palette keeps its identity across a reorder, a focus and a relabel', () => {
+  const display = loaded(DECLARED)
+  const palette = display.rowColorScale
+  expect(palette.size).toBe(4)
+  const [a, b, c, none] = display.editableSources
+  display.setRowOrder([c!, b!, a!, none!])
+  display.setRowFocus(['a', 'b'])
+  display.applyRowEdits(
+    display.editableSources.map(s => ({ ...s, label: `${s.name}!` })),
+  )
+  expect(display.rowLabels).toMatchObject({ a: 'a!' })
+  expect(display.rowColorScale).toBe(palette)
+})

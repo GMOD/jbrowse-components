@@ -170,13 +170,22 @@ describe('allele count', () => {
     expect(derived(display)).toMatchSnapshot()
   })
 
-  test('the rowColor palette wins over a dialog colour until cleared', () => {
+  // `rowColor` holds one field's values, so a dialog colour under the
+  // population palette makes every row's colour a `name` pair: the rows left
+  // alone keep theirs and the one recoloured shows it.
+  test('a dialog colour under the rowColor palette pairs every row by name', () => {
     const display = loaded({ rowColor: 'population' })
+    const before = display.sources.map(s => s.labelColor)
     const [s0, s1, ...rest] = display.editableSources
     display.applyRowEdits([s0!, { ...s1!, labelColor: '#123456' }, ...rest])
-    expect(derived(display)).toMatchSnapshot()
-    display.setRowColorField('')
-    expect(derived(display)).toMatchSnapshot()
+    expect(display.rowColorSetting.field).toBe('name')
+    expect(display.sources.map(s => s.labelColor)).toEqual([
+      before[0],
+      '#123456',
+      before[2],
+      before[3],
+    ])
+    expect(derived(display).groupLegend).toBeUndefined()
   })
 
   test('a cluster run lands its order and tree, and a facet yields to it', async () => {

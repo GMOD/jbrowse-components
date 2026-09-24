@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import {
   canonicalizeViewRefName,
   getContainingTrack,
@@ -26,6 +27,7 @@ import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
@@ -39,8 +41,9 @@ import {
   focusRowGroup,
   keptRows,
   loadedRegionIndexAt,
-  paletteColorsByRow,
+  rowFieldValue,
   treeDescribesRows,
+  valuesByCount,
 } from '@jbrowse/tree-sidebar'
 
 import { sortSourcesAroundVariant } from './anchoredHaplotypeSort.ts'
@@ -80,47 +83,53 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
-import type { IdentityChannel, RowAlias } from '@jbrowse/tree-sidebar'
+import type {
+  IdentityChannel,
+  RowAlias,
+  RowColorDeal,
+} from '@jbrowse/tree-sidebar'
 
 type VariantHoverFields = Record<string, unknown> & {
   genotype: string
   name: string
 }
 
-// The `rowColor` scale itself: one color per value of the attribute, built over
-// every adapter row. Over the adapter rows rather than the drawn ones because
-// `paletteColorsByRow` ranks values by how many rows carry them — resolved over
-// a subtree-filtered or haplotype-expanded list, focusing a clade would re-rank
-// the values and recolor everything left on screen.
-//
-// `undefined` is "nothing to color by": no attribute named, or one no source
-// carries.
-export function colorByPalette(
-  colorBy: string,
-  sources: Source[],
-): Map<string, string> | undefined {
-  if (!colorBy || !sources.some(source => colorBy in source)) {
+// The `rowColor` attribute's palette, its values ranked by how many adapter
+// rows carry each. Ranked over the drawn rows instead, a subtree focus or the
+// haplotype expansion would re-rank the values and recolor everything left on
+// screen. `undefined` is "nothing to color by": no attribute painting, or one
+// no source carries.
+export function attributeColorDeal<S extends Source>(
+  field: string,
+  entries: { domain: readonly string[]; range: readonly string[] },
+  sources: readonly Source[],
+): RowColorDeal<S> | undefined {
+  if (!field || !sources.some(source => field in source)) {
     return undefined
   }
-  const colors = paletteColorsByRow(sources, colorBy)
-  return new Map(sources.map((s, i) => [String(s[colorBy] ?? ''), colors[i]!]))
+  const valueOf = (row: object) => rowFieldValue(row, field)
+  return {
+    order: valuesByCount(sources.map(valueOf)),
+    valueOf,
+    domain: entries.domain,
+    range: entries.range,
+    palette: categoricalPalette,
+  }
 }
 
-// Paint the scale onto the rows being drawn. The tint lands on `labelColor`,
+// Paint the palette onto the rows being drawn. The tint lands on `labelColor`,
 // the channel tree-sidebar draws a row's label in: these displays paint their
 // cells by genotype, so a row has no `color` of its own to spend.
 //
-// **The scale wins over whatever the row already carried** — a `samplesTsv`
-// `color` column, or a colour the arrangement dialog wrote into `rowColor`.
-// See the class docstring for why.
-export function applyColorByPalette<S extends Source>(
+// **The palette wins over whatever the row already carried**, a `samplesTsv`
+// `color` column. See the class docstring for why.
+export function applyAttributeColors<S extends Source>(
   rows: S[],
-  colorBy: string,
-  palette: ReadonlyMap<string, string>,
+  colors: ReadonlyMap<string, string>,
 ): S[] {
   return rows.map(s => ({
     ...s,
-    labelColor: palette.get(String(s[colorBy] ?? '')) ?? s.labelColor,
+    labelColor: colors.get(s.name) ?? s.labelColor,
   }))
 }
 
@@ -363,11 +372,11 @@ function fetchRegionsForMode(
  * 3. the focus narrows those (`clusterableSources`, what a run clusters),
  * 4. the `rowColor` palette tints and `facet` bands the result (`sources`).
  *
- * **The `rowColor` palette wins over a colour the row already carried** — a
- * `samplesTsv` `color` column, or a `rowColor.domain` entry the dialog wrote. A
- * channel bound to a variable beats a per-row constant, and the palette is a
- * pure function of the attribute, so "Color by… → (none)" is what hands the row
- * back its own colour.
+ * **The `rowColor` palette wins over a colour the row already carried**, a
+ * `samplesTsv` `color` column: a channel bound to a variable beats a per-row
+ * constant, so "Color by… → (none)" is what hands the row back its own colour.
+ * `rowColor` holds one field's values, so a dialog colour set under the palette
+ * turns every row's colour into a `name` pair.
  *
  * **The `facet` band yields while a cluster tree describes the rows**, the
  * mechanism `LinearMultiRowFeatureDisplay` uses for its row groups: the
@@ -739,12 +748,14 @@ export default function MultiSampleVariantBaseModelF(
 
         /**
          * #getter
-         * The sample-metadata attribute the rows are tinted by,
-         * `rowColor.field`. Drives the sidebar row coloring and the legend's
-         * group section; '' means no grouping.
+         * The sample-metadata attribute the rows are tinted by: `rowColor.field`
+         * while it paints and names one, '' while it names `name`, the rows
+         * themselves, or sits under `scale: 'none'`. Drives the sidebar row
+         * coloring and the legend's group section.
          */
         get rowColorField(): string {
-          return getConf(self, ['rowColor', 'field'])
+          const { field, scale } = self.rowColorSetting
+          return field === 'name' || scale === 'none' ? '' : field
         },
         /**
          * #getter
@@ -848,13 +859,21 @@ export default function MultiSampleVariantBaseModelF(
           /**
            * #action
            * Recolor sample rows by a metadata attribute (e.g. 'population'), or
-           * pass '' to clear the coloring. Writes `rowColor.field` alone, which
-           * is the whole of it: the tint is resolved on every read of
-           * `sources`, so a recolor moves no rows, drops no cluster tree and
-           * leaves the colours set row by row where they were.
+           * pass '' to clear the coloring, which keeps the attribute under
+           * `scale: 'none'` for the way back. Writes the `rowColor` object
+           * through `colorForField`, so a new attribute starts with no
+           * entries: those a reader set row by row belong to `name`. The tint
+           * is resolved on every read of `sources`, so a recolor moves no rows
+           * and drops no cluster tree.
            */
           setRowColorField(field: string) {
-            setConf(self, ['rowColor', 'field'], field)
+            if (field !== self.rowColorField) {
+              setConf(
+                self,
+                'rowColor',
+                colorForField(self.rowColorSetting, field),
+              )
+            }
             warnUnknownArrangementAttributes(self, self.sourcesVolatile ?? [])
           },
           /**
@@ -1028,12 +1047,15 @@ export default function MultiSampleVariantBaseModelF(
 
         /**
          * #getter
-         * The `rowColor` scale, attribute value -> color, held apart from the
-         * rows so a drag or a clade focus does not rebuild it over the whole
-         * cohort. `undefined` when there is nothing to color by.
+         * `TreeSidebarMixin`'s hook: the `rowColor` attribute's palette
+         * (`attributeColorDeal`), none while it names no attribute.
          */
-        get rowPalette(): ReadonlyMap<string, string> | undefined {
-          return colorByPalette(self.rowColorField, self.sourcesVolatile ?? [])
+        get rowColorDeal(): RowColorDeal<ProcessedSource> | undefined {
+          return attributeColorDeal(
+            self.rowColorField,
+            self.rowColorSetting,
+            self.sourcesVolatile ?? [],
+          )
         },
         /**
          * #getter
@@ -1119,10 +1141,8 @@ export default function MultiSampleVariantBaseModelF(
          */
         get sources(): ProcessedSource[] {
           const rows = self.clusterableSources
-          const palette = self.rowPalette
-          const tinted = palette
-            ? applyColorByPalette(rows, self.rowColorField, palette)
-            : rows
+          const colors = self.rowColorScale
+          const tinted = colors.size ? applyAttributeColors(rows, colors) : rows
           return self.root && treeDescribesRows(self.root, rows)
             ? tinted
             : (maybeApplyFacet(self.facet, tinted) ?? tinted)

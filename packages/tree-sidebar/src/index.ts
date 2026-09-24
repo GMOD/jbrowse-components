@@ -67,6 +67,8 @@ export {
   validateClusterOrder,
 } from './clusterUtils.ts'
 export { orderRowsByDomain } from './arrangeRows.ts'
+export { rowColorScale, rowFieldValue, valuesByCount } from './rowColorScale.ts'
+export type { RowColorDeal } from './rowColorScale.ts'
 export type {
   IdentityChannel,
   RowAlias,

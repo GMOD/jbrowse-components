@@ -1,7 +1,9 @@
 import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
+import { rowColorScale } from '@jbrowse/tree-sidebar'
 
-import { buildSources } from './sourcesLogic.ts'
+import { buildSources as build, sourceColorDeal } from './sourcesLogic.ts'
 
+import type { SourcePalette } from './sourcesLogic.ts'
 import type { SourceInfo } from '@jbrowse/wiggle-core'
 
 const PER_SOURCE = { domain: [], range: [] }
@@ -11,7 +13,16 @@ const adapter = (count: number): SourceInfo[] =>
 
 // Each list stands in for the display's `editableSources`, whose arrangement is
 // tree-sidebar's (`arrangeRows.test.ts`); what's left here is the colour
-// synthesis that is wiggle's.
+// synthesis that is wiggle's, dealt as `TreeSidebarMixin` deals it.
+function buildSources(
+  editable: SourceInfo[],
+  kept: string[] | undefined,
+  palette: SourcePalette | undefined,
+  gradientPaints: boolean,
+) {
+  const deal = sourceColorDeal(editable, palette, gradientPaints)
+  return build(editable, kept, rowColorScale(editable, deal), gradientPaints)
+}
 
 describe('buildSources', () => {
   it('synthesizes overlay palette only in overlay mode', () => {

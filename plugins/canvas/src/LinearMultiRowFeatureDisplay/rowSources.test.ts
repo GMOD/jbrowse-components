@@ -1,11 +1,17 @@
 import { categoricalPalette } from '@jbrowse/core/ui/colors'
+import { dealRowColors } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { orderPartitionValues, resolveRowColorStrings } from './rowSources.ts'
 
 const rows = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
+const dealt = dealRowColors(
+  rows.map(r => r.name),
+  { domain: [], range: [] },
+  categoricalPalette,
+)
 
 test('resolveRowColorStrings: default color slot → palette by discovery order', () => {
-  expect(resolveRowColorStrings(rows, rows)).toEqual([
+  expect(resolveRowColorStrings(rows, dealt)).toEqual([
     categoricalPalette[0],
     categoricalPalette[1],
     categoricalPalette[2],
@@ -14,7 +20,7 @@ test('resolveRowColorStrings: default color slot → palette by discovery order'
 
 test('resolveRowColorStrings: a reordered row keeps its color', () => {
   const reordered = [rows[2]!, rows[0]!, rows[1]!]
-  expect(resolveRowColorStrings(reordered, rows)).toEqual([
+  expect(resolveRowColorStrings(reordered, dealt)).toEqual([
     categoricalPalette[2],
     categoricalPalette[0],
     categoricalPalette[1],
@@ -31,7 +37,7 @@ test('resolveRowColorStrings: customized color slot → no palette (per-feature 
 
 test("resolveRowColorStrings: a row's own color beats the palette, per row", () => {
   const colored = [rows[0]!, { name: 'dad', color: 'blue' }, rows[2]!]
-  expect(resolveRowColorStrings(colored, rows)).toEqual([
+  expect(resolveRowColorStrings(colored, dealt)).toEqual([
     categoricalPalette[0],
     'blue',
     categoricalPalette[2],

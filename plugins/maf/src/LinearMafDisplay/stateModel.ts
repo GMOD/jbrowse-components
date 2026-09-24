@@ -155,7 +155,11 @@ import type {
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { IdentityChannel, RowSource } from '@jbrowse/tree-sidebar'
+import type {
+  IdentityChannel,
+  RowColorDeal,
+  RowSource,
+} from '@jbrowse/tree-sidebar'
 import type { YAxis } from '@jbrowse/wiggle-core'
 
 /**
@@ -832,6 +836,14 @@ export default function stateModelFactory(
          */
         get identityChannel(): IdentityChannel {
           return 'labelColor'
+        },
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: no row palette, since a species row
+         * takes its adapter's colour or none.
+         */
+        get rowColorDeal(): RowColorDeal<MafSource> | undefined {
+          return undefined
         },
         /**
          * #getter

@@ -1,7 +1,8 @@
-import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
+import { set1 } from '@jbrowse/core/ui/colors'
 import { keptRows, orderRowsByDomain } from '@jbrowse/tree-sidebar'
 
 import type { Source } from '../util.ts'
+import type { RowColorDeal } from '@jbrowse/tree-sidebar'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 /**
@@ -69,58 +70,45 @@ export interface SourcePalette {
   range: readonly string[]
 }
 
-const DEFAULT_PALETTE: SourcePalette = { domain: [], range: [] }
-
-interface PaletteColors {
-  // by group name — shared by every source in the group, in every mode
-  groupColors: Map<string, string>
-  // by source name — overlay only, where rows collapse onto one plot and a row
-  // with no color of its own is indistinguishable from its neighbours
-  rowColors: Map<string, string>
-}
-
 /**
- * The palette entries a track's rows and groups draw from, in first-appearance
- * order over the full (pre-filter) source list.
+ * What the row palette deals over `rows`, the full (pre-filter) sources in
+ * their current arrangement: one cursor over a colour per source's `range` and
+ * then `set1`, the groups first in the order they first appear, then, for a
+ * colour per source, the ungrouped rows its `domain` lists ahead of the rest.
+ * A grouped row takes its group's colour. Under a score gradient only the
+ * groups deal: a per-row palette on the label of a 4,390-row track is `set1`
+ * wrapping every nine rows, which reads as a grouping and is not one.
  *
- * **One cursor hands out every entry**, the `range` a colour per source lists
- * and then the default palette past its end, so the two maps are disjoint by
- * construction, with no offset for anyone to check. They
- * were built as two independent 0-based sequences — groups by group order, rows
- * by source index — and a track that mixes grouped and ungrouped subadapters
- * therefore gave `set1[0]` to both the first group and the first ungrouped row:
- * two different things one color, in the plot and in the legend naming it.
- *
- * Groups are assigned first so the pure cases are byte-identical to the two
- * sequences this replaced: an all-grouped track never reaches the row loop, and
- * an all-ungrouped one starts the cursor at 0, where index-among-ungrouped is
- * exactly the source index it always was.
+ * **One cursor** keeps a group and an ungrouped row off one colour: dealt as
+ * two sequences from 0, the first group and the first ungrouped row took
+ * `set1[0]` alike, in the plot and in the legend naming them.
  */
-function buildPaletteColors(
-  sources: Source[],
-  { domain, range }: SourcePalette,
-): PaletteColors {
-  const entry = (index: number) =>
-    range[index] ??
-    overlayColors[(index - range.length) % overlayColors.length]!
-  let assigned = 0
-  const groupColors = new Map<string, string>()
-  const rowColors = new Map<string, string>()
-  for (const s of sources) {
-    if (s.group !== undefined && !groupColors.has(s.group)) {
-      groupColors.set(s.group, entry(assigned++))
-    }
+export function sourceColorDeal(
+  rows: Source[],
+  palette: SourcePalette | undefined,
+  gradientPaints: boolean,
+): RowColorDeal<Source> {
+  const perSource = palette !== undefined && !gradientPaints
+  return {
+    order: [
+      ...rows.flatMap(s => (s.group === undefined ? [] : [s.group])),
+      ...(perSource
+        ? orderRowsByDomain(
+            rows.filter(s => s.group === undefined),
+            palette.domain,
+          ).map(s => s.name)
+        : []),
+    ],
+    valueOf: s => s.group ?? (perSource ? s.name : undefined),
+    domain: [],
+    range: palette?.range ?? [],
+    palette: set1,
   }
-  const ungrouped = sources.filter(s => s.group === undefined)
-  for (const s of orderRowsByDomain(ungrouped, domain)) {
-    rowColors.set(s.name, entry(assigned++))
-  }
-  return { groupColors, rowColors }
 }
 
-// A source's own colors always win — these only fill what it left unset — and
-// an unfilled channel stays undefined so the renderer falls back to its own
-// default.
+// A source's own colors always win — the palette only fills what it left
+// unset — and an unfilled channel stays undefined so the renderer falls back to
+// its own default.
 //
 // Under a gradient `labelColor` falls back to the source's OWN `color` before the
 // group palette because that color is what the ramp paints the row with: a
@@ -128,51 +116,34 @@ function buildPaletteColors(
 // as "Monocyte" drew a brown block beside a purple label, two palettes for one
 // grouping. The label is the key to the rows, so it names the color the rows
 // actually are; the group palette is for stores supplying no color at all.
-//
-// A gradient takes no `rowColors` entry, deliberately: a per-row palette on the
-// label of a 4,390-row track is `set1` wrapping every nine rows, which reads as
-// a grouping and is not one.
 function synthesizeColors(
   s: Source,
-  perSource: boolean,
   gradientPaints: boolean,
-  { groupColors, rowColors }: PaletteColors,
+  dealt: string | undefined,
 ) {
-  const groupColor =
-    s.group === undefined ? undefined : groupColors.get(s.group)
-  if (gradientPaints) {
-    return {
-      color: s.color,
-      labelColor: s.labelColor ?? s.color ?? groupColor,
-    }
-  }
-  return {
-    color:
-      s.color ?? groupColor ?? (perSource ? rowColors.get(s.name) : undefined),
-    labelColor: s.labelColor,
-  }
+  return gradientPaints
+    ? { color: s.color, labelColor: s.labelColor ?? s.color ?? dealt }
+    : { color: s.color ?? dealt, labelColor: s.labelColor }
 }
 
 // What the canvas/SVG renderers consume: the editable sources with their colors
-// resolved per the table above, then narrowed to the focus. `palette` is what
-// a colour per source hands out, undefined where the colour is not one.
+// resolved per the table above, then narrowed to the focus. `dealt` is the
+// row palette's colour for each source, by name (`sourceColorDeal`).
 //
-// **Synthesis runs over the full list and the focus applies after**, so a
-// source's color is keyed to its position among all sources rather than among
-// the survivors: focusing a clade hides rows without recoloring the ones it
-// keeps, and the legend a user just read stays valid. This is the ordering
+// **The palette is dealt over the full list and the focus applies after**, so
+// focusing a clade hides rows without recoloring the ones it keeps, and the
+// legend a user just read stays valid. This is the ordering
 // `filterRowsBySubtree` documents as hide-only.
 export function buildSources(
   editableSources: Source[],
   kept: readonly string[] | undefined,
-  palette: SourcePalette | undefined,
+  dealt: ReadonlyMap<string, string>,
   gradientPaints: boolean,
 ): Source[] {
-  const colors = buildPaletteColors(editableSources, palette ?? DEFAULT_PALETTE)
   return keptRows(
     editableSources.map(s => ({
       ...s,
-      ...synthesizeColors(s, palette !== undefined, gradientPaints, colors),
+      ...synthesizeColors(s, gradientPaints, dealt.get(s.name)),
     })),
     kept,
   )
