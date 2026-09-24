@@ -5,6 +5,12 @@ import { featureSpanEndBp } from './featureSpanBp.ts'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 
+// The locus alone: a loaded region also carries its render payload, which a
+// spread would post to the worker on every feature click.
+function locusOf({ assemblyName, refName, start, end }: Region): Region {
+  return { assemblyName, refName, start, end }
+}
+
 // A zero-length feature is straddled rather than grown from its start edge:
 // adapters keep a feature on `end > queryStart && start < queryEnd`, and a
 // query of [pos, pos + 1] fails the first half against a feature whose own end
@@ -15,7 +21,7 @@ export function featureSpanRegion(
   endBp: number,
 ): Region {
   return {
-    ...region,
+    ...locusOf(region),
     start: endBp > startBp ? startBp : Math.max(0, startBp - 1),
     end: featureSpanEndBp(startBp, endBp),
   }
@@ -35,7 +41,7 @@ export async function fetchCanvasFeatureDetails(
   const result = await session.rpcManager.call(
     sessionId,
     'GetCanvasFeatureDetails',
-    { adapterConfig, featureId, region, ...opts },
+    { adapterConfig, featureId, region: locusOf(region), ...opts },
   )
   return result.feature ? new SimpleFeature(result.feature) : undefined
 }

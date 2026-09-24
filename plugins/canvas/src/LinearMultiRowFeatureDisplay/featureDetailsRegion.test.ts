@@ -59,7 +59,8 @@ test('the details fetch asks for the clicked feature span, not the region', asyn
 
   display.selectFeatureById('feat1', 0)
 
-  expect((await detailsArgs(mockRpcCall)).region).toMatchObject({
+  expect((await detailsArgs(mockRpcCall)).region).toEqual({
+    assemblyName: 'volvox',
     refName: 'ctgA',
     start: 100,
     end: 200,
@@ -102,8 +103,5 @@ test('an id the arrays no longer hold falls back to the loaded region', async ()
 
   display.selectFeatureById('gone', 0)
 
-  expect((await detailsArgs(mockRpcCall)).region).toMatchObject({
-    start: 0,
-    end: 10_000,
-  })
+  expect((await detailsArgs(mockRpcCall)).region).toEqual(ctgA)
 })

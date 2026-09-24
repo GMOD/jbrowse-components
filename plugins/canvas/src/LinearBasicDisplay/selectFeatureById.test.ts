@@ -96,6 +96,24 @@ describe('selectFeatureById fetch target', () => {
   })
 })
 
+it('sends the worker the feature span and nothing of the loaded payload', async () => {
+  const { display, mockRpcCall } = setup()
+  display.selectFeatureById('EDEN', undefined, 0)
+
+  await waitFor(() => {
+    expect(fetchedIds(mockRpcCall)).toEqual(['EDEN'])
+  })
+  const [, , args] = mockRpcCall.mock.calls.find(
+    ([, method]) => method === 'GetCanvasFeatureDetails',
+  )!
+  expect((args as { region: unknown }).region).toEqual({
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 1050,
+    end: 9000,
+  })
+})
+
 describe('the containing feature the panel is told about', () => {
   function setupOpening() {
     const { createDisplay } = createTestEnvironment()
