@@ -536,11 +536,15 @@ function coverage(features: readonly Feature[], step: CoverageStep) {
   let runStart = starts[0]!
   let si = 0
   let ei = 0
+  let last: Record<string, unknown> | undefined
   const emit = (to: number) => {
     if (depth > 0 && to > runStart) {
-      out.push(
-        new MadeFeature({ refName, start: runStart, end: to, [as]: depth }, ''),
-      )
+      if (last?.end === runStart && last[as] === depth) {
+        last.end = to
+      } else {
+        last = { refName, start: runStart, end: to, [as]: depth }
+        out.push(new MadeFeature(last, ''))
+      }
     }
   }
   while (si < n || ei < n) {
