@@ -2,6 +2,7 @@ import {
   getSnapshot,
   getType,
   isStateTreeNode,
+  onPatch,
   setTypeChecking,
   types,
 } from '@jbrowse/mobx-state-tree'
@@ -660,6 +661,25 @@ describe('setSubschema', () => {
 })
 
 describe('setSlot', () => {
+  test('an array slot takes a new order in linear time, and an unchanged one emits nothing', () => {
+    const schema = ConfigurationSchema('WithOrder', {
+      domain: { type: 'stringArray', defaultValue: [] },
+    })
+    const node = schema.create(undefined, { pluginManager })
+    const names = Array.from({ length: 20_000 }, (_, i) => `sample${i}`)
+    node.setSlot('domain', names)
+    const reversed = [...names].reverse()
+    const start = performance.now()
+    node.setSlot('domain', reversed)
+    expect(performance.now() - start).toBeLessThan(2000)
+    expect(readConfObject(node, 'domain')).toEqual(reversed)
+
+    const patches: unknown[] = []
+    onPatch(node, patch => patches.push(patch))
+    node.setSlot('domain', [...reversed])
+    expect(patches).toEqual([])
+  })
+
   // A misspelled slot name used to be completely silent: the assignment landed
   // on an undeclared property, so nothing threw, nothing persisted, and the
   // matching read went on returning the default. The compile-time guard on

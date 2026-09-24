@@ -5,6 +5,7 @@ import {
   isStateTreeNode,
   types,
 } from '@jbrowse/mobx-state-tree'
+import { isObservableArray } from 'mobx'
 
 import { getContainingTrack, getSession } from '../util/mstUtils.ts'
 import { isSessionWithEditableTrackConfig } from '../util/types/index.ts'
@@ -43,6 +44,7 @@ import type {
   SnapshotIn,
   SnapshotOut,
 } from '@jbrowse/mobx-state-tree'
+import type { IObservableArray } from 'mobx'
 
 export type {
   AnyConfigurationModel,
@@ -359,7 +361,8 @@ function makeConfigurationSchemaModel<
         return newSchema
       },
       // generic slot setter the config editor's slot facade routes through. A
-      // slot is a bare value-union property, so this is a plain assignment.
+      // slot is a bare value-union property, so this is a plain assignment,
+      // save an array, which `refillArray` writes.
       //
       // **Don't weaken the membership check to a warning, and don't check
       // against `modelDefinition`** — that also holds the identifier and the
@@ -402,7 +405,12 @@ function makeConfigurationSchemaModel<
             slotWriteRefusal(`${modelName}.${slotName}`, slotType, value),
           )
         }
-        self[slotName] = value
+        const held: unknown = self[slotName]
+        if (isObservableArray(held) && Array.isArray(value)) {
+          refillArray(held, value)
+        } else {
+          self[slotName] = value
+        }
       },
     }))
 
@@ -500,6 +508,18 @@ type RequirementOf<D, BASE> =
         RequirementPath<D> | RequirementPath<BD>
       >
     : ConfigurationSchemaRequirement<RequirementWhen<D>, RequirementPath<D>>
+
+// Assigning an array makes MST reconcile it element by element, scanning ahead
+// for a node to reuse at each mismatch: quadratic in a reorder, seconds for
+// 5,000 row names. A slot array holds scalars, so no reused node keeps anything
+// of its own, and emptying and refilling it is linear. An unchanged array is
+// left alone, as the reconcile left it, so it fires no observer.
+function refillArray(held: IObservableArray<unknown>, value: unknown[]) {
+  if (held.length !== value.length || held.some((v, i) => v !== value[i])) {
+    held.clear()
+    held.push(...value)
+  }
+}
 
 export function ConfigurationSchema<
   // `const` preserves each slot's literal `type` ('stringArray', 'maybeNumber',
