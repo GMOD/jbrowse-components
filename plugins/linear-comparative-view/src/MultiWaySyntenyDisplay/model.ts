@@ -2060,7 +2060,7 @@ export function stateModelFactory(
        * the clicked group's outline in every gutter that draws it — its own
        * cell beside the gutter's, so a selection re-uploads the records the
        * outline traces rather than the gutter's whole buffer, and a pan
-       * re-uploads nothing. Ticks are left out: no tick carries a feature id
+       * re-uploads nothing
        */
       get outlineCells(): ReadonlyMap<string, MultiWayCell> {
         const featureId = self.clickedFeatureId
@@ -2103,11 +2103,10 @@ export function stateModelFactory(
        */
       get renderLayers(): ReadonlyMap<number, MultiWayLayer> {
         const out = new Map<number, MultiWayLayer>()
-        const clicked = self.clickedFeatureId > 0
         for (const layer of self.namedLayers) {
           out.set(sharedBackendKey(layer.key), layer)
-          if (clicked && layer.kind === 'ribbons') {
-            const key = outlineKey(layer.key)
+          const key = outlineKey(layer.key)
+          if (layer.kind === 'ribbons' && self.outlineCells.has(key)) {
             out.set(sharedBackendKey(key), {
               kind: 'outline',
               key,

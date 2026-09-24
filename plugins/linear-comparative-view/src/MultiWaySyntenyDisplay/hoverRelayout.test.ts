@@ -1,6 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
+import { outlineKey } from './multiwayGeometry.ts'
 import { createDisplay } from './testEnv.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
@@ -156,4 +157,17 @@ test('a lane-genes commit keeps a direct-link hover', async () => {
   display.setLaneGenes(new Map(), display.anchorAssemblyName)
   expect(display.hoverTarget).toBeDefined()
   expect(display.hoverTarget?.feature.id()).toBe('L1')
+})
+
+test('a click outlines the gutters and not the lane ticks', async () => {
+  const display = await stackedDisplay([link('L1', 110, 210)])
+  hoverDirectLink(display)
+  display.selectHovered()
+  expect(display.tickGeometry.layers.length).toBeGreaterThan(0)
+  const outlines = [...display.renderLayers.values()]
+    .filter(layer => layer.kind === 'outline')
+    .map(layer => layer.key)
+  expect(outlines).toEqual(
+    [...display.ribbonGeometry.cells.keys()].map(outlineKey),
+  )
 })
