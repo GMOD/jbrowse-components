@@ -400,6 +400,13 @@ describe('sessions opened from a config template get their own id', () => {
   })
 })
 
+test('clearing the default session works whatever the open session is named', () => {
+  const root = getRootModel().create(mainThreadConfig)
+  root.setSession({ name: 'New session' })
+  root.jbrowse.setDefaultSessionConf({ name: 'New session' })
+  expect(root.jbrowse.defaultSession).toEqual({ name: 'New session' })
+})
+
 describe('upsertSessionMetadata', () => {
   const meta = (id: string, updatedAt: Date, configPath = '') => ({
     id,

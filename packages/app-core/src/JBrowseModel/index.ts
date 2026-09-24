@@ -2,7 +2,13 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { isPluginUrl, maybePluginUrl } from '@jbrowse/core/pluginDefinitions'
 import { expandLooseSearchIndex } from '@jbrowse/core/util/expandLooseSearchIndex'
 import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
-import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import {
+  cast,
+  getParent,
+  getSnapshot,
+  isStateTreeNode,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { migrateConfigSnapshot } from '@jbrowse/product-core'
 import { toJS } from 'mobx'
 
@@ -26,7 +32,6 @@ import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 // reloads the page), so there is no state to pass.
 interface JBrowseModelParent {
   rpcManager: RpcManager
-  session?: { name: string }
   setPluginsUpdated: () => void
 }
 
@@ -219,12 +224,12 @@ export function JBrowseModelF({
 
       /**
        * #action
+       * takes the live session or a plain session snapshot
        */
       setDefaultSessionConf(sessionConf: AnyConfigurationModel) {
-        const newDefault =
-          getParent<JBrowseModelParent>(self).session?.name === sessionConf.name
-            ? getSnapshot(sessionConf)
-            : toJS(sessionConf)
+        const newDefault = isStateTreeNode(sessionConf)
+          ? getSnapshot(sessionConf)
+          : toJS(sessionConf)
 
         if (!newDefault.name) {
           throw new Error('default session must have a name')
