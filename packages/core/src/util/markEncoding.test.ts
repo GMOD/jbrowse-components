@@ -717,6 +717,26 @@ test('a value the shape domain leaves out takes a shape no listed value holds', 
   expect(shapeOf.get('cds')).not.toBe('diamond')
 })
 
+test('a range longer than its domain gives every unlisted value its spare shapes', () => {
+  const r = encodeFeatures(
+    features,
+    {
+      shape: {
+        field: 'type',
+        scale: 'categorical',
+        domain: ['cds'],
+        range: ['triangle-down', 'circle'],
+      },
+    },
+    ALL,
+    { jexl },
+  )
+  const shapeOf = new Map(r.shapeScale?.entries.map(e => [e.value, e.shape]))
+  expect(shapeOf.get('cds')).toBe('triangle-down')
+  expect(shapeOf.get('gene')).toBe('circle')
+  expect(shapeOf.get('exon')).toBe('circle')
+})
+
 test('colour and shape scales over different fields resolve side by side', () => {
   const r = encodeFeatures(
     features,

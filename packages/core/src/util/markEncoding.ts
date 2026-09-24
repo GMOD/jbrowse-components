@@ -514,11 +514,10 @@ export function encodeFeatures<L extends LaneName>(
 
   let shapeScale: ShapeScaleTable | undefined
   if (shapeScaled && shapeField && shapeCategories && glyph) {
-    const shapeOf = categoricalScale(
-      shapeField.domain,
-      shapeScaled.range ?? SHAPE_NAMES,
-      { fallback: SHAPE_NAMES },
-    )
+    const range = shapeScaled.range ?? SHAPE_NAMES
+    const shapeOf = categoricalScale(shapeField.domain, range, {
+      fallback: range.length > shapeField.domain.length ? [] : SHAPE_NAMES,
+    })
     const { ofIndex, entries } = shapeCategories.resolve((key): ShapeName =>
       key === '' ? 'circle' : shapeOf(key),
     )
