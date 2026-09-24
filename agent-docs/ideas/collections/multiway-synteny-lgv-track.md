@@ -526,12 +526,10 @@ rescaled frame no longer shows the content.
 
 **What the tests do not pin (2026-09-06).** Every fixture in the display's
 directory is two or three mate lanes and a handful of groups. Nothing
-exercises: a star of ≥3 mates with mixed orientations end to end (ribbon
-colour, composed links and headers together); composed links against a CIGAR
-oracle; ordering semantics for a nameless source; `laneGeneAdapters` cost or
-correctness with hundreds of tracks; a window on a lane whose record carries an
-interior gap; the picker above ~10 lanes; anything at 44 or 464 lanes beyond
-the height assertion.
+exercises: composed links against a CIGAR oracle; ordering semantics for a
+nameless source; `laneGeneAdapters` cost or correctness with hundreds of
+tracks; a window on a lane whose record carries an interior gap; the picker
+above ~10 lanes; anything at 44 or 464 lanes beyond the height assertion.
 
 One of those gaps is a near-miss worth its own sentence.
 `SyntenyFeature.get('name')` answers the mate's refName when the record has no
