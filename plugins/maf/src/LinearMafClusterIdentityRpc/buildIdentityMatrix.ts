@@ -1,3 +1,5 @@
+import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
+import { formatBytes } from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
 
@@ -6,6 +8,7 @@ import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
 import type { AlignmentRecord } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { StatusCallback } from '@jbrowse/core/util/progress'
 import type { ClusterMatrix } from '@jbrowse/tree-sidebar'
 
 const GAP = 45 // '-'
@@ -130,15 +133,40 @@ export async function buildIdentityMatrix({
     regions: Region[]
     sessionId: string
     sources: string[]
+    byteLimit?: number
     signal?: AbortSignal
+    statusCallback?: StatusCallback
   }
 }): Promise<ClusterMatrix> {
-  const { regions, adapterConfig, sessionId, sources, signal } = args
+  const {
+    regions,
+    adapterConfig,
+    sessionId,
+    sources,
+    byteLimit,
+    signal,
+    statusCallback,
+  } = args
   const { adapter, samples: configSamples } = await loadMafSamplesAdapter(
     pluginManager,
     sessionId,
     adapterConfig,
   )
+  // The same per-base read the detail tier gates, over the whole clustered
+  // span; a refusal is an error here because a clustering run has no banner to
+  // report into, only the dialog's error state or the notification sink.
+  const { bytes, tooLarge } = await measureRegionBytes({
+    dataAdapter: adapter,
+    regions,
+    byteLimit,
+    signal,
+    statusCallback,
+  })
+  if (tooLarge) {
+    throw new Error(
+      `Too much alignment data to cluster over this span (${formatBytes(bytes!)} against a ${formatBytes(byteLimit!)} limit). Zoom in, or force-load the track to cluster it anyway.`,
+    )
+  }
   const opts = configSamples.length ? { ...args, samples: configSamples } : args
 
   const { segments, columns } = buildSegments(regions)

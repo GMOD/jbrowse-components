@@ -34,18 +34,20 @@ function block({
   })
 }
 
-function fakePluginManager(features: Feature[]) {
-  return {
-    features,
-  } as never
+function fakePluginManager(features: Feature[], bytes = 0) {
+  return { features, bytes } as never
 }
 
 // getAdapter is reached through loadMafSamplesAdapter, so the module is mocked
 // rather than the adapter constructed: the builder's contract is with
 // `getFeatures` + `getSamples` and nothing else.
 jest.mock('../util/loadMafSamplesAdapter.ts', () => ({
-  loadMafSamplesAdapter: (pluginManager: { features: Feature[] }) => ({
+  loadMafSamplesAdapter: (pluginManager: {
+    features: Feature[]
+    bytes: number
+  }) => ({
     adapter: {
+      getRegionByteSize: () => Promise.resolve(pluginManager.bytes),
       // filtered by region, so a two-region case sees only its own blocks —
       // which is what the per-region column segments are about
       getFeatures: (region: { refName: string; start: number; end: number }) =>
@@ -86,6 +88,33 @@ async function matrixOf(features: Feature[], sources: string[]) {
 }
 
 describe('buildIdentityMatrix', () => {
+  // The same per-base read the detail tier gates, with no banner to report
+  // into: a run over a span the budget refuses fails as an error the dialog
+  // and the declarative autorun both surface, rather than pulling the whole
+  // alignment. No budget means no measurement, as on every other MAF read.
+  it('refuses a span over the byte budget', async () => {
+    const blocks = [
+      block({ start: 0, ref: 'ACGTACGT', rows: { ref: 'ACGTACGT' } }),
+    ]
+    const args = {
+      adapterConfig: {},
+      regions: [REGION],
+      sessionId: 'test',
+      sources: ['ref'],
+    }
+    await expect(
+      buildIdentityMatrix({
+        pluginManager: fakePluginManager(blocks, 5_000),
+        args: { ...args, byteLimit: 1_000 },
+      }),
+    ).rejects.toThrow(/Too much alignment data to cluster/)
+    const m = await buildIdentityMatrix({
+      pluginManager: fakePluginManager(blocks, 5_000),
+      args,
+    })
+    expect([...m.get('ref')!]).toEqual([1, 1, 1, 1, 1, 1, 1, 1])
+  })
+
   // The distinction the whole encoding exists for. `absent` aligns nothing;
   // `diverged` aligns everything and matches half. Both must be scored against
   // the BIN, so absence lands below divergence rather than beside it.

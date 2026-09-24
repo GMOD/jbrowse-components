@@ -29,6 +29,7 @@ function makeModel(overrides: Partial<MafClusterSelf> = {}) {
     ],
     rowDomain: [],
     adapterConfig: { type: 'BgzipTaffyAdapter' },
+    resolvedByteLimit: () => undefined,
     setRowOrder: jest.fn(),
     ...overrides,
   } as unknown as MafClusterSelf & {

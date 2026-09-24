@@ -21,6 +21,7 @@ export interface MafClusterSelf
   extends IStateTreeNode, ClusterRunModel<MafSource> {
   sources: MafSource[]
   adapterConfig: Record<string, unknown>
+  resolvedByteLimit: () => number | undefined
   setRowOrder: (rows: MafSource[]) => void
 }
 
@@ -46,6 +47,7 @@ export async function runMafClustering({
   statusCallback: (status: RpcStatus) => void
 }) {
   const { sources, adapterConfig } = model
+  const byteLimit = model.resolvedByteLimit()
   await applyClusterRun({
     model,
     rows: sources,
@@ -59,6 +61,7 @@ export async function runMafClustering({
         regions,
         sources: sources.map(s => s.name),
         adapterConfig,
+        byteLimit,
         signal,
         statusCallback,
       }),

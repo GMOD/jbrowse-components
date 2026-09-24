@@ -44,6 +44,7 @@ const MafClusterDialog = observer(function MafClusterDialog({
         rpcManager.call(sessionId, 'LinearMafGetIdentityMatrix', {
           sources,
           adapterConfig: model.adapterConfig,
+          byteLimit: model.resolvedByteLimit(),
           ...args,
         })
       }
