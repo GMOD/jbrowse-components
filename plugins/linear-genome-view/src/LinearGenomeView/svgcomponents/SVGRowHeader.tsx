@@ -15,9 +15,8 @@ import type { LinearGenomeViewModel } from '../index.ts'
 export default function SVGRowHeader({
   view,
   fontSize,
-  // Must be the height the caller also passes SVGView as `contentTop`: the
-  // ruler hangs its ticks off the bottom of this budget so they meet the
-  // tracks, and the tracks start at `contentTop`.
+  // SVGStackedRow passes the same value as SVGView's `contentTop`, so the
+  // ticks hanging off this budget meet the tracks
   rulerHeight,
   // Whether this row draws its assembly name. Default true, which is what a
   // stack of DIFFERENT assemblies wants — a synteny export names each row

@@ -8,10 +8,9 @@ import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession } from '@jbrowse/core/util'
 import { SvgLegend } from '@jbrowse/display-kit/renderDisplaySvg'
 import {
-  SVGRowHeader,
-  SVGView,
+  SVGStackedRow,
   defaultTextHeight,
-  labelBaselineFromTop,
+  getRowHeaderLayout,
   notifySkippedSvgTracks,
   renderViewTracks,
   trackLabelLeftOffset,
@@ -114,39 +113,25 @@ export async function renderToSvg(
   // directly beneath it the synteny ribbon level between it and the next view.
   // The last view has no level below it (N views -> N-1 levels), so `levels[i]`
   // is the single source of that invariant — no index bookkeeping in the layout.
+  const { bandHeight } = getRowHeaderLayout({ fontSize, showScalebar: false })
   const rows = views.flatMap((view, i) => {
-    // SVGView draws the assembly label on the alphabetic baseline at its own
-    // origin, so the group starts at that baseline and the label's ink box
-    // occupies the band above it
-    const labelBaselineY = labelBaselineFromTop(
-      i === 0 ? 0 : rowTopGap,
-      fontSize,
-    )
+    const rulerTop = (i === 0 ? 0 : rowTopGap) + bandHeight
     const viewRow = {
       key: view.id,
-      height: labelBaselineY + rulerHeight + rowTracks[i]!.tracksHeight,
+      height: rulerTop + rulerHeight + rowTracks[i]!.tracksHeight,
       node: (
-        <g transform={`translate(${exportMargin} ${labelBaselineY})`}>
-          <SVGView
-            view={view}
-            displayResults={rowTracks[i]!.displayResults}
-            header={
-              <SVGRowHeader
-                view={view}
-                fontSize={fontSize}
-                rulerHeight={rulerHeight}
-              />
-            }
-            fontSize={fontSize}
-            textHeight={textHeight}
-            trackLabels={trackLabels}
-            trackLabelOffset={trackLabelOffset}
-            contentTop={rulerHeight}
-            tracksHeight={rowTracks[i]!.tracksHeight}
-            showGridlines={showGridlines}
-            leftBuffer={exportMargin}
-          />
-        </g>
+        <SVGStackedRow
+          view={view}
+          rendered={rowTracks[i]!}
+          top={rulerTop}
+          margin={exportMargin}
+          fontSize={fontSize}
+          textHeight={textHeight}
+          rulerHeight={rulerHeight}
+          trackLabels={trackLabels}
+          trackLabelOffset={trackLabelOffset}
+          showGridlines={showGridlines}
+        />
       ),
     }
     const level: LinearSyntenyViewHelperModel | undefined = levels[i]

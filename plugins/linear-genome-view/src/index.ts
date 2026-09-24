@@ -163,8 +163,7 @@ export type {
   ViewSvgFigureOptions,
   ViewSvgFigureResult,
 } from './LinearGenomeView/svgcomponents/useViewSvgFigure.tsx'
-export { default as SVGView } from './LinearGenomeView/svgcomponents/SVGView.tsx'
-export { default as SVGRowHeader } from './LinearGenomeView/svgcomponents/SVGRowHeader.tsx'
+export { default as SVGStackedRow } from './LinearGenomeView/svgcomponents/SVGStackedRow.tsx'
 export { default as ExportSvgDialog } from './LinearGenomeView/components/ExportSvgDialog.tsx'
 export { GetSequenceDialog } from './LinearGenomeView/lazyDialogs.ts'
 export { default as ConnectedHoverHighlight } from './LinearGenomeView/components/ConnectedHoverHighlight.tsx'
@@ -194,7 +193,6 @@ export type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 export {
   defaultTextHeight,
   getRowHeaderLayout,
-  labelBaselineFromTop,
   labelOffset,
   totalHeight,
   trackBoxHeight,

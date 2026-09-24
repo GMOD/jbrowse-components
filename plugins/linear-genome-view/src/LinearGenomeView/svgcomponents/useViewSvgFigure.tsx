@@ -15,8 +15,7 @@ import { useFetch } from '@jbrowse/core/util/useFetch'
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
 
-import SVGRowHeader from './SVGRowHeader.tsx'
-import SVGView from './SVGView.tsx'
+import SVGStackedRow from './SVGStackedRow.tsx'
 import {
   useFrozenFigureContract,
   useOneFigurePerView,
@@ -256,33 +255,20 @@ const FrozenSvgFigure = memo(function FrozenSvgFigure({
         // host that wants other sizing wraps this in a box of its own.
         style={{ display: 'block', maxWidth: '100%' }}
       >
-        <g transform={`translate(${margin} ${snapshot.bandHeight})`}>
-          <SVGView
-            view={view}
-            displayResults={snapshot.displayResults}
-            header={
-              <SVGRowHeader
-                view={view}
-                fontSize={snapshot.fontSize}
-                rulerHeight={snapshot.rulerHeight}
-                showScalebar={snapshot.showScalebar}
-              />
-            }
-            fontSize={snapshot.fontSize}
-            textHeight={snapshot.textHeight}
-            trackLabels={snapshot.trackLabels}
-            trackLabelOffset={snapshot.trackLabelOffset}
-            // the row header is exactly the ruler, so the bodies start at its
-            // height
-            contentTop={snapshot.rulerHeight}
-            tracksHeight={snapshot.tracksHeight}
-            showGridlines={snapshot.showGridlines}
-            // the left gutter the per-track clip may bleed into, so content
-            // drawn left of zero — a wiggle's y-axis — survives
-            leftBuffer={snapshot.margin}
-            legendWidth={snapshot.legendWidth}
-          />
-        </g>
+        <SVGStackedRow
+          view={view}
+          rendered={snapshot}
+          top={snapshot.bandHeight}
+          margin={margin}
+          fontSize={snapshot.fontSize}
+          textHeight={snapshot.textHeight}
+          rulerHeight={snapshot.rulerHeight}
+          trackLabels={snapshot.trackLabels}
+          trackLabelOffset={snapshot.trackLabelOffset}
+          showGridlines={snapshot.showGridlines}
+          legendWidth={snapshot.legendWidth}
+          showScalebar={snapshot.showScalebar}
+        />
       </svg>
     </SvgThemeProviders>
   )

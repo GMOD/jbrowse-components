@@ -168,9 +168,11 @@ export function getRowHeaderLayout({
   // ink box rather than by baseline, because the gaps are fixed while a font's
   // descent is not: laying the label out from its baseline instead put its
   // descenders through that cap at the larger export fonts.
+  // without a scalebar the name sits on its baseline at the origin, its
+  // descenders into the ruler's top, so only the ink above the baseline counts
   const assemblyInkTop =
     scalebarLineY === undefined
-      ? -label
+      ? -labelBaselineFromTop(0, fontSize)
       : scalebarLineY - SVG_SCALEBAR_CAP - ROW_GAP - label
   // up from the ruler to the topmost ink the row draws above it: the assembly
   // label's box where there is one to reserve, else the scalebar's upper cap,

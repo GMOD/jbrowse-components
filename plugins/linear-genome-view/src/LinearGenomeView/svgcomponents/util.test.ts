@@ -115,12 +115,12 @@ test.each(fontSizes)(
 
 // Without one, the row keeps the layout every synteny export was built around:
 // the assembly label on the alphabetic baseline at the origin, nothing else
-// above the ruler.
-test('a row header without a scalebar is unmoved', () => {
+// above the ruler, and a band of exactly the ink above that baseline.
+test('a row header without a scalebar reserves the ink above its baseline', () => {
   expect(getRowHeaderLayout({ fontSize: 13, showScalebar: false })).toEqual({
     assemblyLabelBaselineY: 0,
     scalebarLineY: undefined,
-    bandHeight: labelInkHeight(13),
+    bandHeight: labelBaselineFromTop(0, 13),
   })
 })
 

@@ -8,8 +8,7 @@ import {
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession } from '@jbrowse/core/util'
 import {
-  SVGRowHeader,
-  SVGView,
+  SVGStackedRow,
   defaultTextHeight,
   getRowHeaderLayout,
   notifySkippedSvgTracks,
@@ -129,47 +128,28 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     children: (
       <>
         {rows.map(({ view, top }, idx) => (
-          <g
+          <SVGStackedRow
             key={view.id}
-            // the assembly label and the scalebar sit in the header band above
-            // the ruler (see SVGView), which is why the group starts that far
-            // down
-            transform={`translate(${exportMargin} ${top + headerBand})`}
-          >
-            <SVGView
-              view={view}
-              displayResults={rowTracks[idx]!.displayResults}
-              header={
-                <SVGRowHeader
-                  view={view}
-                  fontSize={fontSize}
-                  rulerHeight={rulerHeight}
-                  // A breakpoint split view is usually ONE assembly seen at
-                  // several loci, so naming it per panel prints the same
-                  // string once per row and says nothing. Named on the first
-                  // row, and again on any row whose assembly differs from the
-                  // one above it — so a cross-assembly stack still labels
-                  // every change and this rule needs no flag.
-                  showAssemblyName={
-                    idx === 0 ||
-                    rows[idx - 1]!.view.assemblyNames.join(', ') !==
-                      view.assemblyNames.join(', ')
-                  }
-                  // every row, unlike the assembly name: the span is what
-                  // differs between rows, so printing it once says nothing
-                  showScalebar
-                />
-              }
-              fontSize={fontSize}
-              textHeight={textHeight}
-              trackLabels={trackLabels}
-              trackLabelOffset={trackLabelOffset}
-              contentTop={rulerHeight}
-              tracksHeight={rowTracks[idx]!.tracksHeight}
-              showGridlines={showGridlines}
-              leftBuffer={exportMargin}
-            />
-          </g>
+            view={view}
+            rendered={rowTracks[idx]!}
+            top={top + headerBand}
+            margin={exportMargin}
+            fontSize={fontSize}
+            textHeight={textHeight}
+            rulerHeight={rulerHeight}
+            trackLabels={trackLabels}
+            trackLabelOffset={trackLabelOffset}
+            showGridlines={showGridlines}
+            // Usually ONE assembly seen at several loci, so the name goes on
+            // the first row and again wherever the assembly changes
+            showAssemblyName={
+              idx === 0 ||
+              rows[idx - 1]!.view.assemblyNames.join(', ') !==
+                view.assemblyNames.join(', ')
+            }
+            // every row: the span is what differs between rows
+            showScalebar
+          />
         ))}
 
         <g transform={`translate(${trackLabelOffset + exportMargin})`}>

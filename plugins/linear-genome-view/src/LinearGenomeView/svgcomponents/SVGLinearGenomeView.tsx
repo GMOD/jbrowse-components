@@ -11,7 +11,7 @@ import { closeUpStackRows } from '../closeUps.ts'
 import OverviewScalebarPolygon from '../components/OverviewScalebarPolygon.tsx'
 import SVGCloseUpFrame from './SVGCloseUpFrame.tsx'
 import SVGHeader from './SVGHeader.tsx'
-import SVGRowHeader from './SVGRowHeader.tsx'
+import SVGStackedRow from './SVGStackedRow.tsx'
 import SVGView from './SVGView.tsx'
 import { renderViewTracks } from './renderViewTracks.ts'
 import {
@@ -130,38 +130,29 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   })
   const closeUpRow = (
     closeUp: LGV,
-    { tracksHeight, displayResults }: (typeof closeUpTracks)[number],
+    rendered: (typeof closeUpTracks)[number],
   ) => {
     const rowTop = rowTopGap + bandHeight
-    const height = rowTop + rulerHeight + tracksHeight
+    const height = rowTop + rulerHeight + rendered.tracksHeight
     return {
       key: closeUp.id,
       height,
       node: (
         <>
-          <g transform={`translate(${exportMargin} ${rowTop})`}>
-            <SVGView
-              view={closeUp}
-              displayResults={displayResults}
-              header={
-                <SVGRowHeader
-                  view={closeUp}
-                  fontSize={fontSize}
-                  rulerHeight={rulerHeight}
-                  showAssemblyName={false}
-                  showScalebar
-                />
-              }
-              fontSize={fontSize}
-              textHeight={textHeight}
-              trackLabels={trackLabels}
-              trackLabelOffset={trackLabelOffset}
-              contentTop={rulerHeight}
-              tracksHeight={tracksHeight}
-              showGridlines={showGridlines}
-              leftBuffer={exportMargin}
-            />
-          </g>
+          <SVGStackedRow
+            view={closeUp}
+            rendered={rendered}
+            top={rowTop}
+            margin={exportMargin}
+            fontSize={fontSize}
+            textHeight={textHeight}
+            rulerHeight={rulerHeight}
+            trackLabels={trackLabels}
+            trackLabelOffset={trackLabelOffset}
+            showGridlines={showGridlines}
+            showAssemblyName={false}
+            showScalebar
+          />
           <SVGCloseUpFrame
             x={exportMargin + trackLabelOffset}
             width={closeUp.width}
