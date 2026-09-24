@@ -199,9 +199,12 @@ a refName.
 
 ### categoricalField
 
+`labels` names the `domain`'s values in a key, one each in order, where a config
+spells them for a reader rather than as the data does.
+
 ```js
 // type signature
-(field: string, { domain, range, }?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; }) => CategoricalField
+(field: string, {…}?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; labels?: readonly string[] | undefined; }) => CategoricalField
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
@@ -356,6 +359,21 @@ one that is not throws here.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/configurationSchemaUnion.ts)
+
+### continuousColorScale
+
+A continuous colour scale over `extent`, the values it met: the domain its
+declared ends and the extent make, the stops and the table they bake to, and the
+packed colour a value paints through them, the misconfiguration grey for one
+that is not finite. The encoder and every display painting a ramp itself read
+it, so a value takes one colour whoever paints it.
+
+```js
+// type signature
+(encoding: ContinuousRef, extent: readonly [number, number]) => {…}
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
 ### ContinuousRef
 

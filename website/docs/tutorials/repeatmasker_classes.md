@@ -68,7 +68,7 @@ menu, which lists the columns the loaded features carry. <!-- menu-path-ok -->
 The colored, packed form and the lane form are the same track and the same
 fetch:
 
-<Figure caption="Top: UCSC RepeatMasker over a 17q21 window, colored by repClass through a jexl lookup table, with the display's legend slot as the key. Every class shares one packed lane. Bottom: the same track and window partitioned on repClass instead. SINE fills the window and LINE comes in clusters, and the LTR? and Unknown lanes are values in the file that the lookup table does not name." src="/img/cookbook_color_by_type_two_ways.png"/>
+<Figure caption="Top: UCSC RepeatMasker over a 17q21 window, colored by repClass with the key the color derives. Every class shares one packed lane. Bottom: the same track and window partitioned on repClass instead. SINE fills the window and LINE comes in clusters, and the LTR? and Unknown lanes are values in the file the color's domain does not list, which take colors of their own." src="/img/cookbook_color_by_type_two_ways.png"/>
 
 ## Pinning the lanes in a track config
 

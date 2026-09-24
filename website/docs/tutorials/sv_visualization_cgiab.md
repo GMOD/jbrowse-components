@@ -369,12 +369,14 @@ takes the column names from the file.
   },
   "displays": [{ "type": "LinearBasicDisplay", "displayMode": "compact" }],
   "displayDefaults": {
-    "color": "jexl:feature.type=='DEL'?'#2166ac':'#b2182b'",
-    "labels": { "name": "jexl:feature.type+' '+feature.cytoband" },
-    "legend": [
-      { "label": "Loss (DEL)", "color": "#2166ac" },
-      { "label": "Gain (DUP)", "color": "#b2182b" }
-    ]
+    "color": {
+      "field": "type",
+      "domain": ["DEL", "DUP"],
+      "range": ["#2166ac", "#b2182b"],
+      "labels": ["Loss (DEL)", "Gain (DUP)"],
+      "title": "Call"
+    },
+    "labels": { "name": "jexl:feature.type+' '+feature.cytoband" }
   }
 }
 ```

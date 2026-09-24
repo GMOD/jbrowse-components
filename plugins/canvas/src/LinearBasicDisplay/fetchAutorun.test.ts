@@ -1552,7 +1552,6 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     ['growMaxHeight', 900],
     ['maxLabelFeatureDensity', 0.05],
     ['maxDescriptionFeatureDensity', 0.01],
-    ['legend', [{ label: 'SINE', color: '#e41a1c' }]],
   ])('a main-thread-only %s change does not refetch', async (slot, value) => {
     const { display, mockRpcCall } = await loadedDisplay()
     const callsBefore = mockRpcCall.mock.calls.length

@@ -72,29 +72,6 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
       },
       /**
        * #slot
-       * Explicit color key drawn over the track: an array of `{ label, color
-       * }`.
-       * #example
-       * ```js
-       * {
-       *   type: 'LinearBasicDisplay',
-       *   color:
-       *     "jexl:{SINE:'#e41a1c',LINE:'#377eb8'}[feature.repClass] || 'gray'",
-       *   legend: [
-       *     { label: 'SINE', color: '#e41a1c' },
-       *     { label: 'LINE', color: '#377eb8' },
-       *   ],
-       * }
-       * ```
-       */
-      legend: {
-        type: 'frozen',
-        defaultValue: [],
-        description:
-          'explicit {label,color} color key for a jexl-colored track; empty draws none',
-      },
-      /**
-       * #slot
        */
       // `maybeColor` for the same reason as `color`: the default is
       // derive-from-theme, not a color.

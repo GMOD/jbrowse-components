@@ -17,7 +17,6 @@ import {
   addTrimmedIsoformPicks,
   mergeIsoformPicks,
 } from '../RenderFeatureDataRPC/isoformPicks.ts'
-import { configuredLegendEntries } from '../shared/configuredLegend.ts'
 import baseStateModelFactory from './baseModel.ts'
 import { collapseIntronsMenuItem } from './collapseIntronsMenu.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
@@ -30,7 +29,6 @@ import type {
   LinearBasicDisplayConfig,
   LinearBasicDisplayConfigModel,
 } from './configSchema.ts'
-import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export type { Region } from '@jbrowse/core/util'
@@ -265,29 +263,6 @@ export default function stateModelFactory(
               dismiss: self.dismissGeneGlyphNotice,
             }
           : undefined
-      },
-
-      /**
-       * #getter
-       * The key while features draw: the `legend` config slot as one
-       * categorical scale, or, with no slot, the key the color channel's
-       * scale derives.
-       */
-      get featureColorScales(): ColorScale[] {
-        const legend = configuredLegendEntries(getConf(self, 'legend'))
-        return legend.length
-          ? [
-              {
-                kind: 'categorical',
-                id: 'legend',
-                entries: legend.map(({ label, color }) => ({
-                  value: label,
-                  label,
-                  color,
-                })),
-              },
-            ]
-          : self.derivedColorScales
       },
     }))
     .views(self => {

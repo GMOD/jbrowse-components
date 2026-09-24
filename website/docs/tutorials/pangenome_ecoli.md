@@ -875,7 +875,7 @@ panel is the field an rGFA has to use, and there `SR` is build order.
 #### Carriage as a linear lane
 
 The same tag reaches the segments track as feature attributes: `samples` is the
-haplotype list and `carriers` its length, which a color expression reads:
+haplotype list and `carriers` its length, which the color paints by:
 
 ```json addtrack
 {
@@ -893,20 +893,25 @@ haplotype list and `carriers` its length, which a color expression reads:
       "displayId": "ecoli_pggb_carriage-LinearBasicDisplay",
       "displayMode": "collapsed",
       "showLabels": false,
-      "color": "jexl:feature.carriers==1?'#e31a1c':feature.carriers==2?'#fd8d3c':feature.carriers==3?'#feb24c':feature.carriers==4?'#fed976':feature.carriers==5?'#bdbdbd':'#eeeeee'",
-      "legend": [
-        { "label": "All 5 strains (core)", "color": "#bdbdbd" },
-        { "label": "4 strains", "color": "#fed976" },
-        { "label": "3 strains", "color": "#feb24c" },
-        { "label": "2 strains", "color": "#fd8d3c" },
-        { "label": "1 strain (private)", "color": "#e31a1c" }
-      ]
+      "color": {
+        "field": "carriers",
+        "domain": ["5", "4", "3", "2", "1"],
+        "range": ["#bdbdbd", "#fed976", "#feb24c", "#fd8d3c", "#e31a1c"],
+        "labels": [
+          "All 5 strains (core)",
+          "4 strains",
+          "3 strains",
+          "2 strains",
+          "1 strain (private)"
+        ],
+        "title": "Strains carrying"
+      }
     }
   ]
 }
 ```
 
-<Figure caption="Who carries the IS5 element at K12 chr:1,299,499-1,300,693. The carriage lane is a feature track colored by a jexl expression over the GFA SM:Z: tag, so the red box is a segment K12 alone walks." src="/img/pangenome/pggb_carriage_lane.png" />
+<Figure caption="Who carries the IS5 element at K12 chr:1,299,499-1,300,693. The carriage lane is a feature track colored by the GFA SM:Z: tag's strain count, so the red box is a segment K12 alone walks." src="/img/pangenome/pggb_carriage_lane.png" />
 
 The [depth track](#pangenome-depth-projection-core-vs-accessory) answers the
 same question as a mean over windows, so an accessory stretch shorter than one

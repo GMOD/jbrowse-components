@@ -52,8 +52,9 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot
-       * show the display's color key when it has one (the `legend` slot, or a
-       * variant track's consequence-impact / SV-type presets).
+       * show the display's color key when it has one: the key a `color`
+       * field derives, or a variant track's consequence-impact / SV-type
+       * presets.
        */
       showLegend: {
         type: 'boolean',

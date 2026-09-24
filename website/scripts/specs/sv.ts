@@ -2165,7 +2165,13 @@ export const svSpecs: ScreenshotSpec[] = [
               displayId: 'hg008t_nygc_cnv-LinearBasicDisplay',
               // the call is the file's own `type` column, which reaches
               // feature.type because a BED feature has no type of its own
-              color: "jexl:feature.type=='DEL'?'#2166ac':'#b2182b'",
+              color: {
+                field: 'type',
+                domain: ['DEL', 'DUP'],
+                range: ['#2166ac', '#b2182b'],
+                labels: ['Loss (DEL)', 'Gain (DUP)'],
+                title: 'Call',
+              },
               labels: { name: "jexl:feature.type+' '+feature.cytoband" },
             },
           ],

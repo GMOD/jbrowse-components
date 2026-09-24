@@ -2962,10 +2962,39 @@ export const configManifest: ConfigManifest = {
             {
               "name": "range",
               "type": "CssColorEntry[]"
+            },
+            {
+              "name": "labels",
+              "type": "string[]"
+            },
+            {
+              "name": "scheme",
+              "type": "(ColorScheme | undefined)"
+            },
+            {
+              "name": "reverse",
+              "type": "boolean"
+            },
+            {
+              "name": "domainMid",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "domainMin",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "domainMax",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "title",
+              "type": "(string | undefined)"
             }
           ],
           "shorthand": "value",
           "fieldScale": {
+            "score": "linear",
             "*": "categorical"
           }
         },
@@ -3014,10 +3043,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "showOnlyGenes",
           "type": "boolean"
-        },
-        {
-          "name": "legend",
-          "type": "frozen"
         },
         {
           "name": "connectorColor",
@@ -4071,7 +4096,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "color",
-          "type": "FeatureColorConfigurationSchema",
+          "type": "MultiWayGeneColorConfigurationSchema",
           "subSlots": [
             {
               "name": "value",
@@ -4083,7 +4108,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "scale",
-              "type": "(FeatureColorScale | undefined)"
+              "type": "(MultiWayGeneColorScale | undefined)"
             },
             {
               "name": "domain",
@@ -4306,10 +4331,39 @@ export const configManifest: ConfigManifest = {
             {
               "name": "range",
               "type": "CssColorEntry[]"
+            },
+            {
+              "name": "labels",
+              "type": "string[]"
+            },
+            {
+              "name": "scheme",
+              "type": "(ColorScheme | undefined)"
+            },
+            {
+              "name": "reverse",
+              "type": "boolean"
+            },
+            {
+              "name": "domainMid",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "domainMin",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "domainMax",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "title",
+              "type": "(string | undefined)"
             }
           ],
           "shorthand": "value",
           "fieldScale": {
+            "score": "linear",
             "*": "categorical"
           }
         },

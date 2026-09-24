@@ -154,34 +154,29 @@ export const ALT_ALLELE_COLOR = 'rgb(60,65,72)'
 // of membership drawn along the reference instead of read off one clicked node.
 //
 // Five discrete steps rather than a continuous ramp, because five strains is
-// five answers and the legend then names each one. Grey for all five: the core
+// five answers and the key then names each one. Grey for all five: the core
 // backbone is the background these figures are not about, and the private boxes
-// have to be what the eye lands on. The last color is a fallback, not a sixth
-// step — an rGFA has no tag column, so `carriers` is absent there rather than 0.
+// have to be what the eye lands on. An rGFA has no tag column, so `carriers` is
+// absent there and paints the no-value grey.
 //
 // Shared because both builders' graphs carry the same five strains and the same
 // tag: the pggb figures read it off `ecoli_pggb` and the Minigraph-Cactus one
-// off `ecoli_cactus`, and a second copy of the ramp would let the two pages
+// off `ecoli_cactus`, and a second copy of the scale would let the two pages
 // answer the same question in different colors.
-const CARRIAGE_COLORS = {
-  1: '#e31a1c',
-  2: '#fd8d3c',
-  3: '#feb24c',
-  4: '#fed976',
-  5: '#bdbdbd',
-} as const
-
 export const CARRIAGE_DISPLAY = {
-  color: `jexl:${[5, 4, 3, 2]
-    .map(n => `feature.carriers==${n}?'${CARRIAGE_COLORS[n as 5]}':`)
-    .join('')}feature.carriers==1?'${CARRIAGE_COLORS[1]}':'#eeeeee'`,
-  legend: [
-    { label: 'All 5 strains (core)', color: CARRIAGE_COLORS[5] },
-    { label: '4 strains', color: CARRIAGE_COLORS[4] },
-    { label: '3 strains', color: CARRIAGE_COLORS[3] },
-    { label: '2 strains', color: CARRIAGE_COLORS[2] },
-    { label: '1 strain (private)', color: CARRIAGE_COLORS[1] },
-  ],
+  color: {
+    field: 'carriers',
+    domain: ['5', '4', '3', '2', '1'],
+    range: ['#bdbdbd', '#fed976', '#feb24c', '#fd8d3c', '#e31a1c'],
+    labels: [
+      'All 5 strains (core)',
+      '4 strains',
+      '3 strains',
+      '2 strains',
+      '1 strain (private)',
+    ],
+    title: 'Strains carrying',
+  },
 }
 
 // The linear half of the graph view's 'Reference position' color scheme, which

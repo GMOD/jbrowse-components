@@ -54,27 +54,19 @@ const COOKBOOK_MULTIWIG_TRACK = {
   },
 }
 
-// The exact "color by strand" recipe taught in docs/cookbook.md. It paints the
-// strand colors **Color by... -> Strand** paints (`STRAND_PALETTE` in
-// plugins/canvas/src/RenderFeatureDataRPC/featureColors.ts), so the recipe and
-// the menu produce the same picture.
-//
-// Copied rather than imported, for the reason @jbrowse/img gives at its own
-// copy: remark-figure.ts pulls this module into the Astro build to resolve
-// every figure's live link, so importing from @jbrowse/plugin-canvas here would
-// drag the whole plugin (React, CSS) into the site bundle to read one string.
-//
-// It replaced a hand-rolled `strand==1?'#1f77b4':'#d62728'`, whose blue-forward
-// reading is the INVERSE of the built-in and of the synteny ribbons' own scheme
-// (colorSchemes.strand, posColor '#f00' / negColor '#00f') -- so the cookbook
-// taught a strand vocabulary the rest of the app contradicts.
-const STRAND_COLOR =
-  "jexl:feature.strand==1?'tomato':feature.strand==-1?'cornflowerblue':'goldenrod'"
+// The exact "color by strand" recipe taught in docs/cookbook.md: the object
+// **Color by... -> Strand** writes, so the recipe and the menu produce the same
+// picture.
+const STRAND_COLOR = { field: 'strand' }
 
-// The exact lookup-table recipe taught in docs/cookbook.md, kept in one place so
-// the figure and the recipe text can't drift.
-const RMSK_CLASS_COLOR =
-  "jexl:{SINE:'#e41a1c',LINE:'#377eb8',LTR:'#4daf4a',DNA:'#984ea3',Simple_repeat:'#ff7f00',Low_complexity:'#a65628'}[get(feature,'repClass')] || 'gray'"
+// The exact recipe taught in docs/cookbook.md, kept in one place so the figure
+// and the recipe text can't drift.
+const RMSK_CLASS_COLOR = {
+  field: 'repClass',
+  domain: ['SINE', 'LINE', 'LTR', 'DNA', 'Simple_repeat', 'Low_complexity'],
+  range: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#a65628'],
+  labels: ['SINE', 'LINE', 'LTR', 'DNA', 'Simple repeat', 'Low complexity'],
+}
 
 // Figures that back the copy-paste recipes in docs/cookbook.md. Each spec
 // applies the exact recipe config to a demo track via inline per-track display
@@ -83,8 +75,8 @@ const RMSK_CLASS_COLOR =
 // and every figure links to a live instance running that recipe.
 export const cookbookSpecs: ScreenshotSpec[] = [
   // "Color by strand" recipe: NCBI RefSeq genes on hg38 (reviewer: use hg38 +
-  // ncbi gff) tinted red on the + strand and blue on the - strand via the jexl
-  // color slot the recipe teaches. The chr17p13 window spans several genes on
+  // ncbi gff) tinted red on the + strand and blue on the - strand through the
+  // strand field the recipe teaches. The chr17p13 window spans several genes on
   // both strands (TP53−, WRAP53+, ATP1B2, EFNB3, …) so both colors show.
   {
     mode: 'url',
@@ -105,13 +97,15 @@ export const cookbookSpecs: ScreenshotSpec[] = [
     viewportHeight: 460,
   },
 
-  // "Color by category (lookup table)" recipe: UCSC RepeatMasker over a
-  // repeat-dense 50 kb 17q21 window, each repeat colored by its `repClass` via
-  // the exact jexl lookup the recipe teaches (SINE red, LINE blue, LTR green,
-  // DNA purple, Simple_repeat orange, Low_complexity brown, everything else
-  // gray). A track with real categorical variety — six repeat classes visibly
-  // interleaved — unlike a gene model's CDS/exon/gene handful (reviewer: "not
-  // much type variety here … use a repeatmasker track").
+  // "Color by category" recipe: UCSC RepeatMasker over a repeat-dense 50 kb
+  // 17q21 window, each repeat colored by its `repClass` through the domain and
+  // range the recipe teaches (SINE red, LINE blue, LTR green, DNA purple,
+  // Simple_repeat orange, Low_complexity brown, every other class a color of
+  // its own), with the key the scale derives (reviewer: "unclear what the
+  // coloring is. need legend"). A track with real categorical variety — six
+  // repeat classes visibly interleaved — unlike a gene model's CDS/exon/gene
+  // handful (reviewer: "not much type variety here … use a repeatmasker
+  // track").
   {
     mode: 'url',
     name: 'cookbook_color_by_type',
@@ -123,33 +117,6 @@ export const cookbookSpecs: ScreenshotSpec[] = [
             {
               type: 'LinearBasicDisplay',
               color: RMSK_CLASS_COLOR,
-              // A REAL LEGEND (reviewer: "unclear what the coloring is. need
-              // legend"), from the display's own `legend` slot rather than an
-              // overlay this spec hand-places over a layout that moves. That
-              // slot is new and exists for exactly this: a jexl color
-              // expression is a lookup table whose keys live in the config, so
-              // the drawn block carries the color and nothing carries what it
-              // MEANS. The entries repeat the expression's own colors, which is
-              // the point — the config declares the vocabulary beside the
-              // expression that paints it.
-              //
-              // The previous answer was to relabel every feature with its
-              // repClass, which said the same thing six hundred times and threw
-              // away the repeat family names in the process.
-              //
-              // ON THE TRACK'S OWN displays, not on the view's tracks entry:
-              // the spec form routes an inline key onto the display config only
-              // when `isConfigurationSlot` says so, so anything else is dropped
-              // in silence.
-              legend: [
-                { label: 'SINE', color: '#e41a1c' },
-                { label: 'LINE', color: '#377eb8' },
-                { label: 'LTR', color: '#4daf4a' },
-                { label: 'DNA', color: '#984ea3' },
-                { label: 'Simple repeat', color: '#ff7f00' },
-                { label: 'Low complexity', color: '#a65628' },
-                { label: 'other', color: 'gray' },
-              ],
             },
           ],
         },

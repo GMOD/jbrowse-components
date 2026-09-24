@@ -121,9 +121,10 @@ and a theme. Every recipe below changes one piece of it.
 
 ## Colors
 
-`color` takes a CSS color or a `jexl:` expression that runs once per feature.
-These are the colors **Color by... → Strand** writes, so forward stays red
-everywhere in the app, synteny ribbons included:
+`color` is a CSS color, or an object that paints each feature by one of its
+fields and draws a key saying what each color means. This is the object **Color
+by... → Strand** writes, so forward stays red everywhere in the app, synteny
+ribbons included:
 
 ```json addtrack
 {
@@ -133,30 +134,31 @@ everywhere in the app, synteny ribbons included:
   "assemblyNames": ["volvox"],
   "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
   "displayDefaults": {
-    "color": "jexl:feature.strand==1?'tomato':feature.strand==-1?'cornflowerblue':'goldenrod'"
+    "color": { "field": "strand" }
   }
 }
 ```
 
 <Figure caption="NCBI RefSeq genes on hg38 with this recipe applied: forward-strand genes red, reverse-strand blue." src="/img/cookbook_color_by_strand.png"/>
 
-Every attribute is a plain property on `feature`. VCF `INFO` fields parse as
-arrays, so index them (`feature.INFO.SVTYPE[0]`), and on a gene track the
-expression runs once per exon, so a transcript's attribute is
-`feature.parent.myattr`. A `color` that comes out undefined paints magenta.
+`field` names any attribute the track carries. On a gene track a transcript's
+parts paint in the transcript's value, or the gene's where the transcript has
+none.
 
-| Recipe                            | `displayDefaults`                                                                             |
-| --------------------------------- | --------------------------------------------------------------------------------------------- |
-| Solid color                       | `{ "color": "#6a3d9a" }`                                                                      |
-| By feature type (lookup table)    | `{ "color": "jexl:{CDS:'#d62728',exon:'#2ca02c',gene:'#1f77b4'}[feature.type] \|\| 'gray'" }` |
-| By a numeric threshold            | `{ "color": "jexl:feature.score > 7.3 ? 'red' : '#0068d1'" }`                                 |
-| Continuous gradient from a number | ``{ "color": "jexl:`hsl(${feature.score*3},50%,50%)`" }``                                     |
-| Auto color per category           | `{ "color": "jexl:randomColor(feature.type)" }`                                               |
-| BED file's own colors             | leave `color` unset                                                                           |
-| BAM/CRAM tag (`AlignmentsTrack`)  | `{ "color": { "field": "tags.HP" } }`                                                         |
+| Recipe                        | `color`                                                                                      |
+| ----------------------------- | -------------------------------------------------------------------------------------------- |
+| Solid color                   | `"#6a3d9a"`                                                                                  |
+| A color per value             | `{ "field": "type" }`                                                                        |
+| Chosen colors for some values | `{ "field": "type", "domain": ["CDS", "exon"], "range": ["#d62728", "#2ca02c"] }`            |
+| Bins of a number              | `{ "field": "score", "scale": "threshold", "domain": ["7.3"], "range": ["#0068d1", "red"] }` |
+| A gradient along a number     | `{ "field": "score", "scheme": "viridis" }`                                                  |
+| BED file's own colors         | leave `color` unset                                                                          |
+| Anything else                 | a `jexl:` expression over `feature` returning a color                                        |
 
-The lookup table can key on any field the track exposes, and the `legend` slot
-names what each color stands for:
+`score` paints a gradient unless `scale` says otherwise, and any other field a
+color per value; `domainMin` and `domainMax` pin a gradient's ends, which
+otherwise follow the loaded features. `labels` names the `domain` values in the
+key and `title` heads it:
 
 ```json addtrack
 {
@@ -166,21 +168,38 @@ names what each color stands for:
   "assemblyNames": ["hg38"],
   "adapter": { "type": "BedTabixAdapter", "uri": "rmsk.bed.gz" },
   "displayDefaults": {
-    "color": "jexl:{SINE:'#e41a1c',LINE:'#377eb8',LTR:'#4daf4a',DNA:'#984ea3',Simple_repeat:'#ff7f00',Low_complexity:'#a65628'}[feature.repClass] || 'gray'",
-    "legend": [
-      { "label": "SINE", "color": "#e41a1c" },
-      { "label": "LINE", "color": "#377eb8" },
-      { "label": "LTR", "color": "#4daf4a" },
-      { "label": "DNA", "color": "#984ea3" },
-      { "label": "Simple repeat", "color": "#ff7f00" },
-      { "label": "Low complexity", "color": "#a65628" },
-      { "label": "other", "color": "gray" }
-    ]
+    "color": {
+      "field": "repClass",
+      "domain": [
+        "SINE",
+        "LINE",
+        "LTR",
+        "DNA",
+        "Simple_repeat",
+        "Low_complexity"
+      ],
+      "range": [
+        "#e41a1c",
+        "#377eb8",
+        "#4daf4a",
+        "#984ea3",
+        "#ff7f00",
+        "#a65628"
+      ],
+      "labels": [
+        "SINE",
+        "LINE",
+        "LTR",
+        "DNA",
+        "Simple repeat",
+        "Low complexity"
+      ]
+    }
   }
 }
 ```
 
-<Figure caption="UCSC RepeatMasker over a 17q21 window with the lookup table above: every repeat gets the color of its repClass, and classes missing from the table draw gray. The key over the track is the legend slot." src="/img/cookbook_color_by_type.png"/>
+<Figure caption="UCSC RepeatMasker over a 17q21 window with this recipe: each repeat gets the color of its repClass, and every class the domain leaves out a color of its own. The key over the track comes from the same object." src="/img/cookbook_color_by_type.png"/>
 
 [](/docs/config_guides/customizing_feature_colors) covers reading the type list
 off the file and moving an outgrown callback into a plugin.

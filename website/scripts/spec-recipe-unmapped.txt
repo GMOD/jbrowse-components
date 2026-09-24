@@ -22,7 +22,6 @@ hideUnlabelled
 highlightedPath
 jexlFiltersSetting
 layoutMode
-legend
 lineWidth
 marks
 nodeWidth

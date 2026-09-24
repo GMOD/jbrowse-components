@@ -14,31 +14,12 @@ import { createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
-describe('declared color legend', () => {
-  it('is no scale until the legend slot carries entries', () => {
+describe('the color key', () => {
+  it('is no scale while no field paints', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     expect(display.colorScales).toEqual([])
     expect(display.legendSpec.sections).toEqual([])
-
-    setConf(display, 'legend', [
-      { label: 'SINE', color: '#e41a1c' },
-      { label: 'LINE', color: '#377eb8' },
-    ])
-    expect(display.colorScales).toEqual([
-      {
-        kind: 'categorical',
-        id: 'legend',
-        entries: [
-          { value: 'SINE', label: 'SINE', color: '#e41a1c' },
-          { value: 'LINE', label: 'LINE', color: '#377eb8' },
-        ],
-      },
-    ])
-    expect(display.legendSpec.sections[0]!.items).toEqual([
-      { value: 'SINE', label: 'SINE', color: '#e41a1c' },
-      { value: 'LINE', label: 'LINE', color: '#377eb8' },
-    ])
   })
 
   it('offers the showLegend toggle only where there is a key', () => {
@@ -58,7 +39,21 @@ describe('declared color legend', () => {
 
     expect(legendItem()).toBeUndefined()
 
-    setConf(display, 'legend', [{ label: 'SINE', color: '#e41a1c' }])
+    display.setColorScale({ field: 'repClass' })
+    display.setRpcData(
+      0,
+      makeFeatureData({
+        colorValues: {
+          values: ['SINE', 'LINE'],
+          painted: [
+            { rowIndex: 0, valueIndex: 0 },
+            { rowIndex: 0, valueIndex: 1 },
+          ],
+          rows: [{ strand: undefined, groupKey: undefined }],
+        },
+      }),
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 },
+    )
     expect(display.showLegend).toBe(true)
     expect(legendItem()).toMatchObject({ type: 'checkbox', checked: true })
 
@@ -263,12 +258,6 @@ describe('derived color key', () => {
       ])
       expect(display.legendSpec.sections[0]?.items).toHaveLength(3)
     })
-  })
-
-  it('yields to a legend slot', () => {
-    const display = coloredDisplay({ field: 'biotype' })
-    setConf(display, 'legend', [{ label: 'SINE', color: '#e41a1c' }])
-    expect(display.colorScales.map(s => s.id)).toEqual(['legend'])
   })
 
   it('is no key while every value paints one color', () => {

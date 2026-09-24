@@ -207,10 +207,21 @@ describe('the band stands alone, and fetches nothing', () => {
   // screen; the toggle stays for the zoom back in.
   it('drops the color key while the band stands in, and keeps its toggle', () => {
     const { display } = refusableDisplay(DENSITY_ADAPTER)
-    setConf(display, 'legend', [
-      { label: 'gene', color: 'red' },
-      { label: 'exon', color: 'blue' },
-    ])
+    display.setColorScale({ field: 'type' })
+    display.setRpcData(
+      0,
+      makeFeatureData({
+        colorValues: {
+          values: ['gene', 'exon'],
+          painted: [
+            { rowIndex: 0, valueIndex: 0 },
+            { rowIndex: 0, valueIndex: 1 },
+          ],
+          rows: [{ strand: undefined, groupKey: undefined }],
+        },
+      }),
+      REGION,
+    )
     expect(display.colorScales).toHaveLength(1)
 
     setConf(display, 'densityTier', 'density')

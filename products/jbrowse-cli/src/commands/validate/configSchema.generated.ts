@@ -3563,11 +3563,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": ""
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field.",
+              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; linear or log a colour along a ramp from domainMin to domainMax; unset is linear for score and categorical for any other field.",
               "enum": [
                 "none",
                 "categorical",
-                "threshold"
+                "threshold",
+                "linear",
+                "log"
               ]
             },
             "domain": {
@@ -3589,11 +3591,54 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "range": {
-              "description": "CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
+              "description": "CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts; under linear or log the ramp's stops, winning over scheme.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/CssColor"
               }
+            },
+            "labels": {
+              "description": "what the key names each domain value, one each in order; a value past the list keeps its own name.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "scheme": {
+              "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
+              "enum": [
+                "viridis",
+                "magma",
+                "inferno",
+                "cividis",
+                "juicebox",
+                "fall",
+                "reds",
+                "blues",
+                "redblue",
+                "purpleorange"
+              ]
+            },
+            "reverse": {
+              "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
+              "type": "boolean",
+              "default": false
+            },
+            "domainMid": {
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain; unset, the stops are evenly spaced across it.",
+              "type": "number"
+            },
+            "domainMin": {
+              "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
+              "type": "number"
+            },
+            "domainMax": {
+              "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
+              "type": "number"
+            },
+            "title": {
+              "description": "key title; unset follows field, \\"\\" draws none.",
+              "$ref": "#/$defs/PlainString"
             }
           },
           "patternProperties": {
@@ -3815,12 +3860,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "showOnlyGenes": {
           "type": "boolean",
           "default": false
-        },
-        "legend": {
-          "description": "explicit {label,color} color key for a jexl-colored track; empty draws none. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
-          }
         },
         "connectorColor": {
           "description": "color of the connecting/intron lines between feature segments (defaults to the theme text color).",
@@ -5344,6 +5383,69 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "MultiWayGeneColor": {
+      "title": "MultiWayGeneColor",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "type": "string"
+        },
+        {
+          "title": "MultiWayGeneColor",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "value": {
+              "description": "CSS colour or jexl callback.",
+              "$ref": "#/$defs/CssColorOrJexl"
+            },
+            "field": {
+              "description": "a feature field, or a jexl expression over feature, whose values each paint one range colour with a key; cluster paints a gene by the ortholog group it carries and a placement box by its own.",
+              "$ref": "#/$defs/FeatureField",
+              "default": ""
+            },
+            "scale": {
+              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field.",
+              "enum": [
+                "none",
+                "categorical",
+                "threshold"
+              ]
+            },
+            "domain": {
+              "description": "the values that take the range first, in order; a value left out keeps a colour derived from itself that no listed value paints. Under threshold, the ascending cut points, a value on a cut taking the interval above it.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "range": {
+              "description": "CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/CssColor"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "RibbonColor": {
       "title": "RibbonColor",
       "anyOf": [
@@ -5422,7 +5524,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
         "color": {
-          "$ref": "#/$defs/FeatureColor"
+          "$ref": "#/$defs/MultiWayGeneColor"
         },
         "utrColor": {
           "description": "the fill color of the untranslated parts of a gene glyph, matching the canvas gene track default.",
@@ -8839,16 +8941,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showOnlyGenes": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showOnlyGenes"
             },
-            "legend": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/legend"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/legend"
-                }
-              ]
-            },
             "connectorColor": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/connectorColor"
             },
@@ -8943,6 +9035,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "colorRowLabels": {
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/colorRowLabels"
+            },
+            "legend": {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/legend"
             },
             "colorDomain": {
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/colorDomain"
