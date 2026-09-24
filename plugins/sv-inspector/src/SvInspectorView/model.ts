@@ -19,6 +19,12 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+// getViewType reads these packages' ViewTypeRegistry entries, which this
+// package's own esm build sees only if it imports them
+/* eslint-disable unicorn/require-module-specifiers */
+import type {} from '@jbrowse/plugin-circular-view'
+import type {} from '@jbrowse/plugin-spreadsheet-view'
+/* eslint-enable unicorn/require-module-specifiers */
 
 function trackConfId(configuration: unknown) {
   return typeof configuration === 'string'
