@@ -109,8 +109,6 @@ export function isCodingFeature(feature: Feature): boolean {
   return isCDS(feature) || getSubfeatures(feature).some(isCodingFeature)
 }
 
-export const STRAND_ARROW_WIDTH = 8
-
 export function boxLayout(feature: Feature, height: number): FeatureLayout {
   return { feature, glyphType: 'Box', y: 0, height, children: [] }
 }

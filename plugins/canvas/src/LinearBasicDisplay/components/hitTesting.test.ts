@@ -465,6 +465,38 @@ test('reversed base zoom resolves each pixel column to the base painted there', 
   expect(bpAt(99.9)).toBe(1000)
 })
 
+test('at base zoom the hit box ends a pad past the feature, not a base past it', () => {
+  // 20px per base: the feature paints 2000..4000px, its pad 4px either side.
+  const data = makeData([makeItem('gene1', 100, 200, 0, 20)])
+  const region = makeRegion(0, 0, 500, 0, 10000)
+  const hitAt = (x: number) =>
+    hit(new Map([[0, data]]), [region], x, 10)?.feature.featureId
+  expect(hitAt(1998)).toBe('gene1')
+  expect(hitAt(4002)).toBe('gene1')
+  expect(hitAt(4010)).toBeUndefined()
+  expect(hitAt(4019)).toBeUndefined()
+})
+
+test("the strand arrow's tip, 7px past the 3' end, answers hover", () => {
+  // 1bp per px: the feature paints 100..200px, its arrow 200..207px.
+  const plus = makeFlatbushItem({
+    featureId: 'plus',
+    startBp: 100,
+    endBp: 200,
+    bottomPx: 20,
+    strand: 1,
+  })
+  const region = makeRegion(0, 0, 1000, 0, 1000)
+  const hitAt = (item: FlatbushItem, x: number) =>
+    hit(new Map([[0, makeData([item])]]), [region], x, 10)?.feature.featureId
+  expect(hitAt(plus, 206)).toBe('plus')
+  expect(hitAt(plus, 96)).toBe('plus')
+  expect(hitAt(plus, 94)).toBeUndefined()
+  const minus = { ...plus, featureId: 'minus', strand: -1 }
+  expect(hitAt(minus, 94)).toBe('minus')
+  expect(hitAt(minus, 206)).toBeUndefined()
+})
+
 test('forward base zoom resolves each pixel column to the base painted there', () => {
   const data = makeData([makeItem('gene1', 1000, 1010, 0, 20)])
   const region = makeRegion(0, 1000, 1010, 0, 100)

@@ -1,7 +1,6 @@
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 
 import { createMoreIsoformsLabel } from '../RenderFeatureDataRPC/floatingLabels.ts'
-import { STRAND_ARROW_WIDTH } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import {
   PILE_RESERVATION_ID,
   pileHeightPx,
@@ -20,9 +19,9 @@ import {
   widerLabelWidths,
 } from './labelReservation.ts'
 import { bodyHeightPx } from './layoutInputs.ts'
+import { strandArrowReachPx } from './marks/strandArrow.ts'
 // Safe from this eager module: a `.js.generated.ts` holds the lifted scalar
 // functions only, never the shader source.
-import { arrowDraws } from './passes/shaders/arrow.js.generated.ts'
 import { OFFSCREEN_Y } from './rowPlacement.ts'
 
 import type {
@@ -41,24 +40,6 @@ import type {
 // Three stages so a solve probes ~10 factors against one preparation; the
 // `*FreeInputs` parameter types stop a stage reading a knob it must be
 // invariant to.
-
-// Only past the 3' end, and only where `arrowDraws` says the arrow paints:
-// reserving 8px for an arrow nothing paints packed 5000 sub-pixel stranded
-// marks 46 rows deep instead of 2. The pack is in ascending bp, and a flipped
-// region flips the arrow with the axis, so its bp side never changes.
-function strandArrowPadding(
-  ext: { strand: number; startBp: number; endBp: number },
-  bpPerPx: number,
-) {
-  const arrow =
-    ext.strand && arrowDraws((ext.endBp - ext.startBp) / bpPerPx)
-      ? STRAND_ARROW_WIDTH
-      : 0
-  return {
-    left: ext.strand === -1 ? arrow : 0,
-    right: ext.strand === 1 ? arrow : 0,
-  }
-}
 
 interface FeatureGeometry {
   readonly startBp: number
@@ -494,9 +475,11 @@ export function packPreparedRef(
       layoutHeights.set(id, ext.height)
       continue
     }
-    const { left: arrowLeft, right: arrowRight } = strandArrowPadding(
-      geom,
-      bpPerPx,
+    // Only where the arrow paints: reserving one for every stranded mark
+    // packed 5000 sub-pixel marks 46 rows deep instead of 2.
+    const { left: arrowLeft, right: arrowRight } = strandArrowReachPx(
+      geom.strand,
+      (geom.endBp - geom.startBp) / bpPerPx,
     )
     // Through `renderedSpanPx`, so the packer and the density collapse agree
     // where a sub-pixel mark sits.

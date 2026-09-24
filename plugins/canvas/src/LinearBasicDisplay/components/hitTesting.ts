@@ -1,6 +1,11 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { bpAtPx, regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
+import {
+  bpAtPx,
+  bpAtPxExact,
+  regionAtPixel,
+} from '@jbrowse/render-core/canvas2dUtils'
 
+import { strandArrowReachPx } from '../marks/strandArrow.ts'
 import { computeLabelExtraWidth } from './labelPositioning.ts'
 
 import type {
@@ -92,13 +97,13 @@ export function buildFeatureFlatbushIndex(
     return null
   }
   const index = new Flatbush(items.length)
-  const padBp = HIT_PAD_PX * bpPerPx
   for (const item of items) {
-    let hitStartBp = item.startBp - padBp
-    let hitEndBp = item.endBp + padBp
+    const featureWidthPx = (item.endBp - item.startBp) / bpPerPx
+    const arrow = strandArrowReachPx(item.strand, featureWidthPx)
+    let hitStartBp = item.startBp - Math.max(HIT_PAD_PX, arrow.left) * bpPerPx
+    let hitEndBp = item.endBp + Math.max(HIT_PAD_PX, arrow.right) * bpPerPx
     const labelData = floatingLabelsData.get(item.featureId)
     if (labelData) {
-      const featureWidthPx = (item.endBp - item.startBp) / bpPerPx
       const extraBp =
         computeLabelExtraWidth(
           labelData,
@@ -210,15 +215,15 @@ export function performMultiRegionHitDetection(
     const data = laidOutDataMap.get(vr.displayedRegionIndex)
     const indexes = flatbushIndexes.get(vr.displayedRegionIndex)
     if (data && indexes?.feature) {
-      const bpPos = bpAtPx(mouseXPx, vr)
-      const idx = topmostMatch(indexes.feature.search(bpPos, yPos, bpPos, yPos))
+      const x = bpAtPxExact(mouseXPx, vr)
+      const idx = topmostMatch(indexes.feature.search(x, yPos, x, yPos))
       if (idx !== undefined) {
         const feature = data.flatbushItems[idx]!
         return {
           feature,
-          subfeature: resolveSubfeature(data, indexes, bpPos, yPos, feature),
-          peptide: findPeptideAt(data, bpPos, yPos, idx),
-          bpPos,
+          subfeature: resolveSubfeature(data, indexes, x, yPos, feature),
+          peptide: findPeptideAt(data, x, yPos, idx),
+          bpPos: bpAtPx(mouseXPx, vr),
           bpPerPx: regionBpPerPx(vr),
           displayedRegionIndex: vr.displayedRegionIndex,
         }
