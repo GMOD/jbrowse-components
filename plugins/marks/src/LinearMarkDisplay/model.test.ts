@@ -2251,6 +2251,26 @@ test('a dialog submit over a display already faceted by source keeps its section
   })
 })
 
+test('a dialog submit over a display drawing a row per source keeps drawing rows', () => {
+  const { createDisplay } = createTestEnvironment(
+    [{ mark: 'bar', encoding: { y: 'score' } }],
+    REGION,
+    'BedAdapter',
+    { rows: 'source' },
+  )
+  const { display } = createDisplay()
+  expect(display.drawsRows).toBe(true)
+  display.setPlotFields({
+    numeric: ['score'],
+    categorical: [],
+    facet: 'source',
+  })
+  display.setPlotMarks({ ...display.plotSpec, mark: 'point' })
+  expect(display.markTypes).toEqual(['point'])
+  expect(display.facet).toBeUndefined()
+  expect(display.drawsRows).toBe(true)
+})
+
 // A config the dialog cannot read back is one a save would replace, and the
 // dialog says so before it does.
 test('a declared list the dialog cannot read counts as what a save replaces', () => {
