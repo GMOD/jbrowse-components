@@ -128,6 +128,10 @@ export function preprocessTrackConfigSnapshot(
  * fields in addition to its own.
  */
 export function createBaseTrackConfig(pluginManager: PluginManager) {
+  const noTextSearchAdapter = types.optional(types.undefined, undefined)
+  const textSearchAdapter = pluginManager.pluggableConfigSchemaType(
+    'text search adapter',
+  )
   return ConfigurationSchema(
     'BaseTrack',
     {
@@ -232,14 +236,19 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
          * track's features are only findable through an assembly-wide search
          * adapter.
          */
-        // Not `types.maybe(union)`: that unions the real type *before*
-        // `optional(undefined)`, and every member here is all-default, so an
-        // omitted key still resolved to the first registered one rather than
-        // to nothing (see textSearchAdapterSlotOmission.test.ts). Listing the
-        // undefined branch first is what actually wins the omitted-key default.
+        // A dispatcher rather than `types.maybe` or member order. Every
+        // adapter here is all-default, so an omitted key has to resolve to
+        // nothing rather than the first registered adapter
+        // (textSearchAdapterSlotOmission.test.ts). And clearing a set slot, as
+        // undo does, must not hand `undefined` to the current adapter's
+        // preProcessSnapshot, which MST's own matching does to test it.
         textSearchAdapter: types.union(
-          types.optional(types.undefined, undefined),
-          pluginManager.pluggableConfigSchemaType('text search adapter'),
+          {
+            dispatcher: snapshot =>
+              snapshot === undefined ? noTextSearchAdapter : textSearchAdapter,
+          },
+          noTextSearchAdapter,
+          textSearchAdapter,
         ),
       }),
 

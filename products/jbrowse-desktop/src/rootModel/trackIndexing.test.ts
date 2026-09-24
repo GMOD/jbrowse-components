@@ -132,6 +132,27 @@ test('indexing a session track writes the index into its session entry', async (
   expect(indexIdOf(root.jbrowse.tracks[0])).toBeUndefined()
 })
 
+// the session's history records the index like any other session edit, so
+// undo has to be able to take it back out of the entry
+test('undo and redo step over a session track index', async () => {
+  const root = createRoot()
+  spyOnRpc(root)
+  const history = root.history
+  await jest.advanceTimersByTimeAsync(QUEUE_DELAY_MS)
+  const entryIndex = () => indexIdOf(getSnapshot(root.session.sessionTracks[0]))
+
+  await runIndexJob(root, 'session_genes')
+  // the history records a change once the session has been quiet for 300ms
+  await jest.advanceTimersByTimeAsync(QUEUE_DELAY_MS)
+  expect(history.canUndo).toBe(true)
+
+  history.undo()
+  expect(entryIndex()).toBeUndefined()
+
+  history.redo()
+  expect(entryIndex()).toBe('session_genes-index')
+})
+
 test('indexing a config track writes the index into jbrowse.tracks', async () => {
   const root = createRoot()
   spyOnRpc(root)
