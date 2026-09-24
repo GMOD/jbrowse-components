@@ -20,12 +20,12 @@ function slot(schema: (typeof SCHEMAS)[keyof typeof SCHEMAS], name: string) {
 
 const NAMES = Object.keys(SCHEMAS) as (keyof typeof SCHEMAS)[]
 
-// The four slots `MafAdapterBase` reads. Each adapter used to spell them out
+// The slots `MafAdapterBase` reads. Each adapter used to spell them out
 // itself, and two had drifted: both bgzip schemas' `samples` description
 // stopped at `assemblyName` and never mentioned `assemblyConfigLocation`, which
 // `normalizeSamples` honors on all four — so a `.maf.gz` track's config page
 // said the field did not exist.
-test.each(['samples', 'nhLocation', 'annotationAdapter'])(
+test.each(['samples', 'nhLocation', 'samplesTsvLocation', 'annotationAdapter'])(
   '%s is one table, not four',
   name => {
     const first = slot(SCHEMAS[NAMES[0]!], name)

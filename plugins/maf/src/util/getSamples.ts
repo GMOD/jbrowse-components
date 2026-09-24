@@ -1,11 +1,15 @@
 import { openLocation } from '@jbrowse/core/util/io'
-import { parseNewick } from '@jbrowse/tree-sidebar'
+import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
+import { parseNewick, writeNewick } from '@jbrowse/tree-sidebar'
+import { pruneNewickToLeaves } from '@jbrowse/tree-sidebar/clusterUtils'
 
 import { navigationFields } from './navigationFields.ts'
 
 import type { MafAdapterOptions, Sample } from '../types.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { FileLocation, UriLocation } from '@jbrowse/core/util'
+import type { SamplesTsvRow } from '@jbrowse/core/util/samplesTsv'
 import type { NewickNode } from '@jbrowse/tree-sidebar'
 
 /** Sample-id set shared by all three adapters to resolve tokens — see `matchSampleId`. */
@@ -119,6 +123,10 @@ export function resolveSamplesFromTree(
  * - Without a tree: the `samples` config is the set, in its listed order.
  * - With neither: empty — the caller discovers the genomes from the data.
  *
+ * A `samplesTsvLocation` table then narrows that set to its rows, keeping the
+ * set's order, and its `label`, `color` and `assemblyName` cells win over the
+ * `samples` entries. With neither a tree nor `samples`, its rows are the set.
+ *
  * Tree/config names carry the haplotype suffix (`Species1.1`) that
  * `matchSampleId` resolves exactly.
  *
@@ -132,6 +140,8 @@ export function resolveSamplesFromTree(
 export async function getSamplesFromConfig(
   nhLocation: FileLocation | undefined,
   samplesConfig: SampleConfig,
+  samplesTsvLocation?: FileLocation,
+  pluginManager?: PluginManager,
 ) {
   const treeNewick = nhLocation
     ? await openLocation(nhLocation).readFile('utf8')
@@ -142,7 +152,47 @@ export async function getSamplesFromConfig(
     ? resolveSamplesFromTree(treeNewick, configSamples)
     : configSamples
 
-  return { samples, treeNewick }
+  if (!samplesTsvLocation) {
+    return { samples, treeNewick }
+  }
+  const { sources } = await getSamplesTsvSources({
+    location: samplesTsvLocation,
+    names: samples.length ? samples.map(s => s.id) : undefined,
+    namesLabel: treeNewick ? 'the guide tree' : 'the samples slot',
+    pluginManager,
+  })
+  const merged = mergeSamplesTsv(samples, sources)
+  return {
+    samples: merged,
+    treeNewick:
+      treeNewick && merged.length < samples.length
+        ? pruneTree(treeNewick, merged)
+        : treeNewick,
+  }
+}
+
+function mergeSamplesTsv(samples: Sample[], rows: SamplesTsvRow[]) {
+  const byId = new Map(rows.map(row => [row.name, row]))
+  const base = samples.length
+    ? samples.filter(s => byId.has(s.id))
+    : rows.map(row => ({ id: row.name, label: row.name }))
+  return base.map(sample => {
+    const { label, color, assemblyName } = byId.get(sample.id)!
+    return {
+      ...sample,
+      ...(label ? { label } : {}),
+      ...(color ? { color } : {}),
+      ...(assemblyName ? { assemblyName } : {}),
+    }
+  })
+}
+
+function pruneTree(treeNewick: string, samples: Sample[]) {
+  const pruned = pruneNewickToLeaves(
+    parseNewick(treeNewick),
+    new Set(samples.map(s => s.id)),
+  )
+  return pruned ? writeNewick(pruned) : undefined
 }
 
 /**
@@ -158,5 +208,7 @@ export function getSamplesFromAdapter(self: BaseFeatureDataAdapter) {
   return getSamplesFromConfig(
     self.getConf('nhLocation'),
     self.getConf('samples'),
+    self.getConf('samplesTsvLocation'),
+    self.pluginManager,
   )
 }

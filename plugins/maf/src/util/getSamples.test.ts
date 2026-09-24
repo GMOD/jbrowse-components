@@ -9,9 +9,9 @@ import {
 
 import type { NewickNode } from '@jbrowse/tree-sidebar'
 
-describe('getSamplesFromConfig sample-set resolution', () => {
-  const noTree = undefined
+const noTree = undefined
 
+describe('getSamplesFromConfig sample-set resolution', () => {
   test('no tree → samples config is the set, in listed order', async () => {
     const { samples } = await getSamplesFromConfig(noTree, ['b', 'a'])
     expect(samples.map(s => s.id)).toEqual(['b', 'a'])
@@ -20,6 +20,35 @@ describe('getSamplesFromConfig sample-set resolution', () => {
   test('no tree, no samples → empty (caller discovers from data)', async () => {
     const { samples } = await getSamplesFromConfig(noTree, [])
     expect(samples).toEqual([])
+  })
+})
+
+describe('getSamplesFromConfig with samplesTsvLocation', () => {
+  const local = (file: string) => ({
+    localPath: require.resolve(file),
+    locationType: 'LocalPathLocation' as const,
+  })
+  const tsv = local('./test_data/species.tsv')
+
+  test('with no samples of its own, the table is the set, in its order', async () => {
+    const { samples } = await getSamplesFromConfig(noTree, [], tsv)
+    expect(samples).toEqual([
+      { id: 'c', label: 'Species C', color: '#f00', assemblyName: 'cAsm' },
+      { id: 'a', label: 'Species A', assemblyName: 'aAsm' },
+    ])
+  })
+
+  test('the table narrows a tree, keeps its order and wins over samples', async () => {
+    const { samples, treeNewick } = await getSamplesFromConfig(
+      local('./test_data/species.nh'),
+      [{ id: 'a', label: 'Config A', color: 'blue' }],
+      tsv,
+    )
+    expect(samples).toEqual([
+      { id: 'a', label: 'Species A', color: 'blue', assemblyName: 'aAsm' },
+      { id: 'c', label: 'Species C', color: '#f00', assemblyName: 'cAsm' },
+    ])
+    expect(collectLeafNames(parseNewick(treeNewick!))).toEqual(['a', 'c'])
   })
 })
 

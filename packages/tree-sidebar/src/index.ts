@@ -75,6 +75,7 @@ export type {
 export { applyClusterRun } from './applyClusterRun.ts'
 export { rotateClusterRun } from './rotateClusterRun.ts'
 export { rotateNewickByDomain } from './rotateNewickByDomain.ts'
+export { writeNewick } from './writeNewick.ts'
 export type { ClusterRunModel } from './applyClusterRun.ts'
 export { generateClusterRScript, matrixToTsv } from './clusterRScript.ts'
 export { clusterProgressStatus } from './clusterProgressStatus.ts'

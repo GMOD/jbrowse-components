@@ -1,7 +1,9 @@
+import { samplesTsvAdapterConfigSchemaFields } from '@jbrowse/core/util/samplesTsv'
+
 /**
- * The four slots every MAF adapter has beyond its own file format — the same
- * four `MafAdapterBase` reads, which is why they belong beside it rather than
- * in four schemas.
+ * The slots every MAF adapter has beyond its own file format — the ones
+ * `MafAdapterBase` reads, which is why they belong beside it rather than in
+ * four schemas.
  *
  * They were copied out verbatim into each, and two had already drifted: the
  * `samples` description on both bgzip schemas stopped at `assemblyName` and
@@ -16,7 +18,7 @@
  *
  * `summaryAdapter` is the parameter because it is the one genuinely per-format
  * slot: what a zoom-out read costs depends on the file it reads, and the two
- * `.tai` formats have measured numbers to quote. The other three are identical
+ * `.tai` formats have measured numbers to quote. The others are identical
  * across the four by construction.
  */
 export function mafAdapterConfigSchemaFields({
@@ -50,6 +52,7 @@ export function mafAdapterConfigSchemaFields({
       type: 'maybeFrozen',
       description: summaryAdapter,
     },
+    ...samplesTsvAdapterConfigSchemaFields,
     /**
      * #slot
      */
