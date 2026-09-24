@@ -113,6 +113,37 @@ test('a pan does not move the reported span', () => {
   expect(lines(fakeRpcData(), hview)[0]).toBe('x: {hg38}chr1:101..200')
 })
 
+// An alignment reaching its chromosome's end has an endpoint exactly on the
+// region boundary, which pxToBp alone assigns to the next region.
+test.each([false, true])(
+  'a span ending on a region boundary stays in its region (reversed: %s)',
+  reversed => {
+    const hview = Dotplot1DView.create({
+      bpPerPx: 1,
+      offsetPx: 0,
+      displayedRegions: [
+        {
+          assemblyName: 'hg38',
+          refName: 'chr1',
+          start: 0,
+          end: 1000,
+          reversed,
+        },
+        { assemblyName: 'hg38', refName: 'chr2', start: 0, end: 500 },
+      ],
+    })
+    hview.setVolatileWidth(500)
+    const data = fakeRpcData({
+      p11: new Float64Array([900]),
+      p12: new Float64Array([1000]),
+    })
+    expect(lines(data, hview)[0]).toBe(
+      reversed ? 'x: {hg38}chr1:1..100' : 'x: {hg38}chr1:901..1,000',
+    )
+    expect(lines(data, hview)[3]).toBe('x len: 100')
+  },
+)
+
 // A feature endpoint is an exact integer bp, and the round trip out to px and
 // back cancels `offsetPx` against itself, landing a hair either side of the
 // integer. A floor takes the low side, so on a panned axis some endpoints came

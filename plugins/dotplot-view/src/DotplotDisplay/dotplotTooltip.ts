@@ -1,4 +1,4 @@
-import { assembleLocString } from '@jbrowse/core/util'
+import { assembleLocString, minmax } from '@jbrowse/core/util'
 import {
   comparativeTooltipLines,
   featureAttributes,
@@ -23,11 +23,11 @@ import type { ComparativeTooltipSide } from '@jbrowse/synteny-core'
 // dotplot axes routinely carry — auto-diagonalize flips query regions on the
 // vertical axis.
 //
-// Both endpoints land in the same displayed region by construction
-// (`clampBlockToRegions` trimmed the block to one region entry before
-// projecting), so one end's refName names the whole span. An endpoint sitting
-// exactly on a region boundary resolves into the neighbour, which still leaves
-// the coordinate at the boundary — hence no out-of-bounds arm here.
+// Both endpoints lie in one displayed region (`clampBlockToRegions` trimmed the
+// block to one region entry), so the region comes off the span's MIDPOINT and
+// both coordinates are measured inside it. Resolved per endpoint, one sitting
+// exactly on a region's end fell into the next region at offset 0, and
+// chr1:900-1000 printed as chr1:1-900.
 //
 // The coordinate is ROUNDED off `offset` rather than taken from `coord0`, which
 // floors. A feature endpoint is an exact integer bp, and the trip out to px and
@@ -55,23 +55,19 @@ function axisSpan(
   view: Dotplot1DViewModel,
 ): ComparativeTooltipSide {
   const { bpPerPx, offsetPx } = view
-  const at = (cumBp: number) => {
-    const r = view.pxToBp(cumBp / bpPerPx - offsetPx)
-    return {
-      assemblyName: r.assemblyName,
-      refName: r.refName,
-      coord: Math.round(r.reversed ? r.end - r.offset : r.start + r.offset),
-    }
+  const midCumBp = (cumBpA + cumBpB) / 2
+  const r = view.pxToBp(midCumBp / bpPerPx - offsetPx)
+  const regionCumBp = midCumBp - r.offset
+  const coord = (cumBp: number) => {
+    const offset = cumBp - regionCumBp
+    return Math.round(r.reversed ? r.end - offset : r.start + offset)
   }
-  const a = at(cumBpA)
-  const b = at(cumBpB)
-  const start = Math.min(a.coord, b.coord)
-  const end = Math.max(a.coord, b.coord)
+  const [start, end] = minmax(coord(cumBpA), coord(cumBpB))
   return {
     label,
     loc: assembleLocString({
-      assemblyName: a.assemblyName,
-      refName: a.refName,
+      assemblyName: r.assemblyName,
+      refName: r.refName,
       start,
       end,
     }),
