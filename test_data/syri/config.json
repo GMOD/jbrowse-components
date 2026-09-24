@@ -44,68 +44,62 @@
           "uri": "Eri.chrom.sizes"
         }
       }
+    },
+    {
+      "name": "Kyo",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Kyo-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Kyo.chrom.sizes"
+        }
+      }
+    },
+    {
+      "name": "Sha",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Sha-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Sha.chrom.sizes"
+        }
+      }
     }
   ],
   "tracks": [
     {
       "type": "SyntenyTrack",
-      "trackId": "syri_Col-0_Ler",
-      "name": "Col-0 vs Ler, SyRI regions",
-      "assemblyNames": ["Col-0", "Ler"],
+      "trackId": "syri_pangenome",
+      "name": "SyRI regions",
+      "assemblyNames": ["Col-0", "Ler", "Cvi", "Eri", "Kyo", "Sha"],
       "adapter": {
-        "type": "MCScanBlocksAdapter",
-        "uri": "Col-0_Ler.blocks",
-        "blockAssemblies": ["Col-0", "Ler"],
-        "bedLocations": [
-          {
-            "uri": "Col-0_Ler.Col-0.bed"
-          },
-          {
-            "uri": "Col-0_Ler.Ler.bed"
-          }
-        ],
-        "attributeColumns": ["type", "color", "length"]
+        "type": "MultiGenomePAFAdapter",
+        "uri": "syri_pangenome.paf",
+        "attributeColumns": ["syri", "color"]
       }
     },
     {
-      "type": "SyntenyTrack",
-      "trackId": "syri_Ler_Cvi",
-      "name": "Ler vs Cvi, SyRI regions",
-      "assemblyNames": ["Ler", "Cvi"],
+      "type": "FeatureTrack",
+      "trackId": "syri_regions_on_Col-0",
+      "name": "SyRI regions on Col-0, by accession",
+      "assemblyNames": ["Col-0"],
       "adapter": {
-        "type": "MCScanBlocksAdapter",
-        "uri": "Ler_Cvi.blocks",
-        "blockAssemblies": ["Ler", "Cvi"],
-        "bedLocations": [
-          {
-            "uri": "Ler_Cvi.Ler.bed"
-          },
-          {
-            "uri": "Ler_Cvi.Cvi.bed"
+        "type": "BedTabixAdapter",
+        "uri": "syri_regions.bed.gz",
+        "disableGeneHeuristic": true
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "syri_regions_on_Col-0-LinearMultiRowFeatureDisplay",
+          "rows": {
+            "field": "query",
+            "domain": ["Ler", "Cvi", "Eri", "Kyo", "Sha"]
           }
-        ],
-        "attributeColumns": ["type", "color", "length"]
-      }
-    },
-    {
-      "type": "SyntenyTrack",
-      "trackId": "syri_Cvi_Eri",
-      "name": "Cvi vs Eri, SyRI regions",
-      "assemblyNames": ["Cvi", "Eri"],
-      "adapter": {
-        "type": "MCScanBlocksAdapter",
-        "uri": "Cvi_Eri.blocks",
-        "blockAssemblies": ["Cvi", "Eri"],
-        "bedLocations": [
-          {
-            "uri": "Cvi_Eri.Cvi.bed"
-          },
-          {
-            "uri": "Cvi_Eri.Eri.bed"
-          }
-        ],
-        "attributeColumns": ["type", "color", "length"]
-      }
+        }
+      ]
     }
   ]
 }

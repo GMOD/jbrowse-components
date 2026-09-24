@@ -1749,6 +1749,39 @@ try:
 except SystemExit as e:
     check("an ambiguous --species tag is rejected", "is a prefix of" in str(e), True)
 
+# syri_to_paf.py: the SyRI tutorial's every figure is drawn from its two outputs.
+# A top-level region of each kept type becomes one PAF record between PanSN
+# names, 1-based inclusive SyRI coordinates turned 0-based half-open, a query
+# SyRI writes end-before-start normalized, and an inverted type on the minus
+# strand; a child row (parent set) or a local variant is left out.
+syri = load("scripts/syri_to_paf.py", "syri_to_paf")
+d = tempfile.mkdtemp()
+with open(os.path.join(d, "Col-0_Ler.syri.out"), "w") as fh:
+    fh.write("Chr4\t1001\t2000\t-\t-\tChr4\t1101\t2100\tSYN1\t-\tSYN\t-\n"
+             "Chr4\t1500\t1500\tA\tG\tChr4\t1600\t1600\tSNP1\tSYN1\tSNP\t-\n"
+             "Chr4\t3001\t4000\t-\t-\tChr4\t5100\t4101\tINV1\t-\tINV\t-\n"
+             "Chr4\t4001\t4500\t-\t-\t-\t-\t-\tNOTAL1\t-\tNOTAL\t-\n")
+with open(os.path.join(d, "Col-0.chrom.sizes"), "w") as fh:
+    fh.write("Chr4\t18585056\n")
+cwd = os.getcwd()
+os.chdir(d)
+try:
+    sys.argv = ["syri_to_paf.py", "Col-0_Ler.syri.out", "--prefix", "Col-0_Ler"]
+    with contextlib.redirect_stdout(io.StringIO()):
+        syri.main()
+finally:
+    os.chdir(cwd)
+check("each kept region is one PAF record, the inversion on the minus strand",
+      open(os.path.join(d, "Col-0_Ler.paf")).read().splitlines(),
+      ["Ler#1#Chr4\t0\t1100\t2100\t+\tCol-0#1#Chr4\t18585056\t1000\t2000"
+       "\t1000\t1000\t60\tsyri:Z:SYN\tcolor:Z:#c8c8c8",
+       "Ler#1#Chr4\t0\t4100\t5100\t-\tCol-0#1#Chr4\t18585056\t3000\t4000"
+       "\t1000\t1000\t60\tsyri:Z:INV\tcolor:Z:#ffa500"])
+check("the reference BED names the type, colors it and carries the query",
+      open(os.path.join(d, "Col-0_Ler.regions.bed")).read().splitlines()[1:],
+      ["Chr4\t1000\t2000\tSYN\t0\t+\t1000\t2000\t200,200,200\tLer",
+       "Chr4\t3000\t4000\tINV\t0\t-\t3000\t4000\t255,165,0\tLer"])
+
 if failed:
     sys.exit(1)
 print(f"ok: {len(scripts)} build scripts + {len(helpers)} python helpers valid, "

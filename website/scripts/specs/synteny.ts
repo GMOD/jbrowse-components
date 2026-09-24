@@ -26,6 +26,9 @@ export const HS1_MM39_CONFIG = 'test_data/hs1_vs_mm39/config.json'
 const AMYLASE_CONFIG = 'test_data/amylase/config.json'
 const C4_STACK_CONFIG = 'test_data/hprc_c4_stack/config.json'
 const SYRI_CONFIG = 'test_data/syri/config.json'
+// the stack order, reference first, and SyRI's types in plotsr's order
+const SYRI_ACCESSIONS = ['Col-0', 'Ler', 'Cvi', 'Eri', 'Kyo', 'Sha']
+const SYRI_TYPES = ['SYN', 'INV', 'TRANS', 'INVTR', 'DUP', 'INVDP']
 const AMYLASE_HG38 = 'chr1:103,520,894-103,832,637'
 
 // HG008-T v3.2 T2T assembly vs GRCh38 synteny as a session track, shared by the
@@ -2022,9 +2025,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
   },
 
   // SyRI's typed regions between two Arabidopsis accessions
-  // (scripts/build_syri_synteny.sh), colored by the table's own type column.
-  // The crossed ribbon is the 1.17 Mb Chr4 inversion between Col-0 and Ler, with
-  // syntenic regions either side of it as the control.
+  // (scripts/build_syri_synteny.sh), colored by the syri tag in plotsr's
+  // palette. The crossed ribbon is the 1.17 Mb Chr4 inversion between Col-0 and
+  // Ler, with syntenic regions either side of it as the control.
   {
     mode: 'url',
     name: 'syri/col_ler_chr4',
@@ -2036,8 +2039,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
             { assembly: 'Col-0', loc: 'Chr4:1-6,000,000' },
             { assembly: 'Ler', loc: 'Chr4:1-6,000,000' },
           ],
-          tracks: [['syri_Col-0_Ler']],
-          colorBy: { field: 'type' },
+          tracks: [['syri_pangenome']],
+          colorBy: { field: 'syri', domain: SYRI_TYPES },
           drawCurves: true,
           alpha: 0.9,
           fadeThinAlignmentsMode: 'off',
@@ -2051,35 +2054,66 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 460,
   },
 
-  // The four accessions plotsr's own figure stacks, each band the SyRI run
-  // between the two genomes it joins. The Chr4 inversion crosses under Col-0 and
-  // in no band below it.
+  // Six accessions, each band the SyRI run between the two genomes it joins,
+  // the first four in plotsr's own order. The Chr4 inversion crosses under
+  // Col-0 and in no band below it.
   {
     mode: 'url',
-    name: 'syri/four_accessions',
+    name: 'syri/six_accessions',
     url: sessionSpec(SYRI_CONFIG, {
       views: [
         {
           type: 'LinearSyntenyView',
-          views: [
-            { assembly: 'Col-0' },
-            { assembly: 'Ler' },
-            { assembly: 'Cvi' },
-            { assembly: 'Eri' },
-          ],
-          tracks: [['syri_Col-0_Ler'], ['syri_Ler_Cvi'], ['syri_Cvi_Eri']],
-          colorBy: { field: 'type' },
+          views: SYRI_ACCESSIONS.map(assembly => ({ assembly })),
+          tracks: SYRI_ACCESSIONS.slice(1).map(() => ['syri_pangenome']),
+          colorBy: { field: 'syri', domain: SYRI_TYPES },
           drawCurves: true,
           alpha: 0.9,
           fadeThinAlignmentsMode: 'off',
           collapseEmptyRows: true,
-          levelHeights: [180, 180, 180],
+          levelHeights: SYRI_ACCESSIONS.slice(1).map(() => 150),
         },
       ],
     }),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    viewportHeight: 800,
+    viewportHeight: 1000,
+  },
+
+  // The same accessions as lanes under Col-0's own coordinates: each lane placed
+  // by its SyRI run against Col-0, each band between lanes drawn from the run
+  // between those two accessions. The row track above is every accession's
+  // regions against Col-0. The inversion is Col-0's own, so every row and the
+  // Col-0 band cross while the bands between accessions run straight.
+  {
+    mode: 'url',
+    name: 'syri/col0_lanes',
+    url: sessionSpec(SYRI_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'Col-0',
+          loc: 'Chr4:1-6,000,000',
+          tracks: [
+            {
+              trackId: 'syri_regions_on_Col-0',
+              type: 'LinearMultiRowFeatureDisplay',
+              height: 110,
+            },
+            {
+              trackId: 'syri_pangenome',
+              type: 'MultiWaySyntenyDisplay',
+              domain: SYRI_ACCESSIONS.slice(1),
+              ribbonColor: { field: 'syri', domain: SYRI_TYPES },
+              height: 640,
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 120000,
+    viewportHeight: 1000,
   },
 
   // The same stack where the mammals break: at hg38 chr17 near 15.75 Mb the
