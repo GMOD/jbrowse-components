@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
+import { allSessionTracks } from '@jbrowse/core/util/tracks'
 import {
   EmbedProvider,
   TrackStack,
@@ -23,7 +24,7 @@ const variantTrack = {
 }
 
 function listTracks(session: Session) {
-  return session.tracks.map(conf => {
+  return allSessionTracks(session).map(conf => {
     const trackId: string = readConfObject(conf, 'trackId')
     const [category = 'Uncategorized'] = (readConfObject(conf, 'category') ??
       []) as string[]
