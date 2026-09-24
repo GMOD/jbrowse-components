@@ -12,13 +12,15 @@ import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
  * The key the color field derives from the values the worker found, each
  * painted through `field`, less a value only a hidden section carries. `order`
  * lists and names the rows: the facet's field where the facet reads the same
- * one, so the key runs in the sections' order.
+ * one, so the key runs in the sections' order. `title` heads the key, the
+ * field's name unset.
  */
 export function derivedColorKey(
   field: CategoricalField,
   regions: Iterable<{ colorValues?: ColorValues }>,
   isHidden?: (section: SectionStamp) => boolean,
   order: CategoricalField = field,
+  title?: string,
 ): ColorScale[] {
   const packed = new Map<string, number>()
   const colorOf = (key: string) => {
@@ -42,6 +44,6 @@ export function derivedColorKey(
         return !(isHidden && section && isHidden(section))
       },
     }),
-    { id: 'color', field: order },
+    { id: 'color', field: order, title },
   )
 }

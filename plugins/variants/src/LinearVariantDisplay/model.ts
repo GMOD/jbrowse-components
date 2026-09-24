@@ -1,6 +1,6 @@
 import { getDialogHost } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
-import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
+import { featureColorEncoding } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 // the subpath, not the barrel: the barrel is eager, and a value edge from it
 // into the canvas base display model would undo that display's lazy loading.
@@ -77,7 +77,7 @@ export default function stateModelFactory(
       get colorEncoding() {
         return (
           presetColorOf(self.colorSettings) ??
-          colorEncodingOf(self.colorSettings, 'categorical')
+          featureColorEncoding(self.colorSettings)
         )
       },
       /**

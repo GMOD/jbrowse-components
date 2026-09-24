@@ -1,16 +1,21 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
+import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
+import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
 import {
+  FEATURE_FIELD_SCALES,
   categoricalColorField,
-  colorEncodingOf,
   colorFieldOf,
   colorMembersOf,
   colorScaleChoicesOf,
+  featureColorEncoding,
 } from '@jbrowse/display-kit/colorConfigSchema'
-import { colorNotices } from '@jbrowse/display-kit/colorScale'
+import { colorNotices, fieldScaleOf } from '@jbrowse/display-kit/colorScale'
 
+import type { ColorValues } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LinearCanvasBaseDisplayConfigModel } from './baseConfigSchema.ts'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -18,6 +23,13 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 export interface ColorHost {
   configuration: Instance<LinearCanvasBaseDisplayConfigModel>
   conf: Instance<LinearCanvasBaseDisplayConfigModel>
+  rpcDataMap: ReadonlyMap<number, { colorValues?: ColorValues }>
+}
+
+// The value text a ramp reads: `''` is a feature with no value, which no
+// number stands for.
+function numericText(text: string) {
+  return text === '' ? Number.NaN : Number(text)
 }
 
 export function colorViews(self: ColorHost) {
@@ -50,9 +62,19 @@ export function colorViews(self: ColorHost) {
 
     /**
      * #getter
+     * The field the color paints by, through any scale, or undefined while
+     * `color.value` paints.
+     */
+    get colorFieldName(): string | undefined {
+      const encoding = this.colorEncoding
+      return typeof encoding === 'object' ? encoding.field : undefined
+    },
+
+    /**
+     * #getter
      */
     get colorByMode(): 'default' | 'strand' | 'attribute' {
-      const field = this.paintedColorField?.field
+      const field = this.colorFieldName
       return field === undefined
         ? 'default'
         : field === STRAND_FIELD
@@ -72,10 +94,11 @@ export function colorViews(self: ColorHost) {
      * #getter
      * `colorSettings` as it paints, through the one resolver every display's
      * colour object goes through: `color.value`, or a field through its
-     * categorical or threshold scale.
+     * scale, `score` a ramp and any other field categorical while `scale` is
+     * unset.
      */
     get colorEncoding() {
-      return colorEncodingOf(this.colorSettings, 'categorical')
+      return featureColorEncoding(this.colorSettings)
     },
 
     /**
@@ -90,8 +113,8 @@ export function colorViews(self: ColorHost) {
 
     /**
      * #getter
-     * The field the color channel paints through, a threshold's values filed
-     * under their bins, or undefined while `color.value` paints.
+     * The field the color channel paints through a categorical or threshold
+     * scale, a threshold's values filed under their bins.
      */
     get paintedColorField() {
       return colorFieldOf(this.colorEncoding)
@@ -99,10 +122,60 @@ export function colorViews(self: ColorHost) {
 
     /**
      * #getter
-     * The color a field value paints, while the field paints: what the
-     * main-thread encode fills each box carrying that value with.
+     * The key's heading: the color's `title` where written, else the field.
+     */
+    get colorKeyTitle(): string | undefined {
+      return this.colorSettings.title ?? this.colorFieldName
+    },
+
+    /**
+     * #getter
+     * The smallest and largest number the loaded regions' color field
+     * values hold, which a ramp's open ends follow.
+     */
+    get colorValueExtent(): [number, number] {
+      let min = Infinity
+      let max = -Infinity
+      for (const { colorValues } of self.rpcDataMap.values()) {
+        for (const text of colorValues?.values ?? []) {
+          const value = numericText(text)
+          if (Number.isFinite(value)) {
+            min = Math.min(min, value)
+            max = Math.max(max, value)
+          }
+        }
+      }
+      return [min, max]
+    },
+
+    /**
+     * #getter
+     * The ramp a linear or log color paints through, over the loaded
+     * values where an end is left open.
+     */
+    get colorRamp() {
+      const encoding = this.colorEncoding
+      return typeof encoding === 'object' &&
+        (encoding.scale === 'linear' || encoding.scale === 'log')
+        ? continuousColorScale(encoding, this.colorValueExtent)
+        : undefined
+    },
+
+    /**
+     * #getter
+     * The color a field value paints, while a field paints: what the
+     * main-thread encode fills each box carrying that value with. A ramp
+     * paints a box with no value the no-value grey, as the categorical and
+     * threshold scales do.
      */
     get paintColorValue(): ((value: string) => string) | undefined {
+      const ramp = this.colorRamp
+      if (ramp) {
+        return text =>
+          text === ''
+            ? NO_CATEGORY_COLOR
+            : abgrToCssRgba(ramp.colorOf(numericText(text)))
+      }
       const field = this.paintedColorField
       return field && (value => field.color(field.key(value)))
     },
@@ -113,7 +186,11 @@ export function colorViews(self: ColorHost) {
      * written, for the corner notice.
      */
     get notices(): string[] {
-      return colorNotices(this.colorSettings, 'categorical')
+      const settings = this.colorSettings
+      return colorNotices(
+        settings,
+        fieldScaleOf(FEATURE_FIELD_SCALES, settings.field),
+      )
     },
 
     /**
@@ -145,6 +222,13 @@ export function colorViews(self: ColorHost) {
         scale: getConf(self, ['color', 'scale']),
         domain: getConf(self, ['color', 'domain']),
         range: getConf(self, ['color', 'range']),
+        scheme: getConf(self, ['color', 'scheme']),
+        reverse: getConf(self, ['color', 'reverse']),
+        domainMin: getConf(self, ['color', 'domainMin']),
+        domainMax: getConf(self, ['color', 'domainMax']),
+        domainMid: getConf(self, ['color', 'domainMid']),
+        labels: getConf(self, ['color', 'labels']),
+        title: getConf(self, ['color', 'title']),
       }
     },
   }

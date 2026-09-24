@@ -33,6 +33,8 @@ export interface CategoricalRef {
   field: FieldRef
   scale: 'categorical'
   domain?: (string | number)[]
+  /** What a key names each `domain` value, one each in order. */
+  labels?: string[]
 }
 
 /**

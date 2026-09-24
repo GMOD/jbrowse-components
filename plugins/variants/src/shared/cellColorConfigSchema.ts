@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
-  FEATURE_COLOR_SCALES,
+  DISCRETE_COLOR_SCALES,
   colorChannelOptions,
   colorChannelSlots,
   colorDomainSlot,
@@ -51,7 +51,7 @@ export const cellColorConfigSchema = ConfigurationSchema(
       contextVariable: ['feature'],
     },
     ...colorChannelSlots({
-      scales: FEATURE_COLOR_SCALES,
+      scales: DISCRETE_COLOR_SCALES,
       scaleName: 'VariantCellColorScale',
       fieldType: 'featureField',
       field:

@@ -32,7 +32,7 @@ test('facet and color are the two settings, read back as the dialog shows them',
     field: 'subtrack',
     domain: ['key5', 'key2', 'key3'],
   })
-  expect(d.colorSettings).toEqual({
+  expect(d.colorSettings).toMatchObject({
     value: undefined,
     field: 'subtrack',
     scale: undefined,
@@ -86,7 +86,7 @@ test('an object replaces the channel whole, and null clears it', () => {
   const d = display()
   d.applyDisplaySettings({ color: { field: 'source', range: ['red'] } })
   d.applyDisplaySettings({ color: 'red' })
-  expect(d.colorSettings).toEqual({
+  expect(d.colorSettings).toMatchObject({
     value: 'red',
     field: '',
     scale: undefined,

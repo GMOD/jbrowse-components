@@ -40,6 +40,8 @@ export type ColorChannel =
       domainMin?: number
       domainMax?: number
       domainMid?: number
+      labels?: string[]
+      title?: string
     }
 
 export const CHANNELS = ['facet', 'rows', 'color', 'filter'] as const
@@ -84,6 +86,8 @@ const COLOR_MEMBERS = [
   'domainMin',
   'domainMax',
   'domainMid',
+  'labels',
+  'title',
 ]
 
 const NUMBER_MEMBERS = ['domainMin', 'domainMax', 'domainMid'] as const
@@ -122,12 +126,16 @@ function parseColor(value: unknown): ChannelSpec['color'] {
   if (paintedScale({ scale, field }, 'categorical') !== 'none') {
     const domain = strings(lifted.domain)
     const range = strings(lifted.range)
-    const { scheme, reverse } = lifted
+    const labels = strings(lifted.labels)
+    const { scheme, reverse, title } = lifted
     if (scheme !== undefined && typeof scheme !== 'string') {
       throw new Error('color.scheme is the name of a ramp')
     }
     if (reverse !== undefined && typeof reverse !== 'boolean') {
       throw new Error('color.reverse is true or false')
+    }
+    if (title !== undefined && typeof title !== 'string') {
+      throw new Error("color.title is the key's heading")
     }
     return {
       field,
@@ -136,6 +144,8 @@ function parseColor(value: unknown): ChannelSpec['color'] {
       ...(range?.length ? { range } : {}),
       ...(scheme ? { scheme } : {}),
       ...(reverse ? { reverse } : {}),
+      ...(labels?.length ? { labels } : {}),
+      ...(title === undefined ? {} : { title }),
       ...Object.assign(
         {},
         ...NUMBER_MEMBERS.map(key => numberMember(lifted, key)),
@@ -201,6 +211,8 @@ export function colorSpecOf(color: ColorSetting): ChannelSpec['color'] {
     domainMin,
     domainMax,
     domainMid,
+    labels,
+    title,
   } = color
   return {
     field,
@@ -212,6 +224,8 @@ export function colorSpecOf(color: ColorSetting): ChannelSpec['color'] {
     ...(domainMin === undefined ? {} : { domainMin }),
     ...(domainMax === undefined ? {} : { domainMax }),
     ...(domainMid === undefined ? {} : { domainMid }),
+    ...(labels?.length ? { labels: [...labels] } : {}),
+    ...(title === undefined ? {} : { title }),
   }
 }
 

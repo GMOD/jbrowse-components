@@ -10,7 +10,7 @@ import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { thresholdField } from '@jbrowse/core/util/thresholdScale'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { paintedScale } from './colorScale.ts'
+import { fieldScaleOf, paintedScale } from './colorScale.ts'
 
 import type { ColorScaleName, FieldScales } from './colorScale.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -23,11 +23,24 @@ export type { ColorScaleName } from './colorScale.ts'
 /** The scales of a colour object whose field takes a range colour per value. */
 export const CATEGORICAL_COLOR_SCALES = ['none', 'categorical'] as const
 
-/** The scales FeatureColor paints: a range colour per value, or per bin. */
-export const FEATURE_COLOR_SCALES = [
+/** The scales of a colour object whose field paints one of a set of colours: a range colour per value, or per bin. */
+export const DISCRETE_COLOR_SCALES = [
   ...CATEGORICAL_COLOR_SCALES,
   'threshold',
 ] as const
+
+/** The scales FeatureColor paints: a range colour per value or per bin, or a ramp. */
+export const FEATURE_COLOR_SCALES = [
+  ...DISCRETE_COLOR_SCALES,
+  'linear',
+  'log',
+] as const
+
+/** The scale a FeatureColor field paints through while `scale` is unset. */
+export const FEATURE_FIELD_SCALES = {
+  score: 'linear',
+  '*': 'categorical',
+} as const satisfies FieldScales
 
 /**
  * A colour object as written: the members every one declares, and the ones a
@@ -44,6 +57,8 @@ export interface ColorSetting {
   domainMin?: number | undefined
   domainMax?: number | undefined
   domainMid?: number | undefined
+  labels?: readonly string[]
+  title?: string | undefined
 }
 
 /**
@@ -135,6 +150,30 @@ export function colorRangeSlot({
     },
   } as const
 }
+
+/** What a key names each `domain` value, one each in order. */
+export const colorLabelsSlot = {
+  labels: {
+    type: 'stringArray',
+    defaultValue: [],
+    description:
+      'what the key names each domain value, one each in order; a value past the list keeps its own name',
+  },
+} as const
+
+/**
+ * #slot title
+ * The heading of the key this scale draws, naming what the colour measures.
+ * Three states: unset, the key is titled with `field`; some text is that text;
+ * `""` is a key with no title, and the only spelling of one. `null` reads as
+ * unset, as it does in every slot.
+ */
+export const colorTitleSlot = {
+  title: {
+    type: 'maybeString',
+    description: 'key title; unset follows field, "" draws none',
+  },
+} as const
 
 /** The colour a `domain`/`range` pair list sets on each value it names. */
 export function pairedColorsOf({
@@ -293,6 +332,7 @@ export function colorEncodingOf<V extends string | undefined>(
         scale,
         domain: listed(color.domain),
         range: listed(color.range),
+        labels: listed(color.labels ?? []),
       }
     case 'threshold':
       return {
@@ -314,6 +354,11 @@ export function colorEncodingOf<V extends string | undefined>(
         reverse: color.reverse ?? false,
       }
   }
+}
+
+/** What a FeatureColor paints, each field through its default scale where `scale` is unset. */
+export function featureColorEncoding(color: ColorSetting) {
+  return colorEncodingOf(color, fieldScaleOf(FEATURE_FIELD_SCALES, color.field))
 }
 
 interface PickableColor {
@@ -376,6 +421,7 @@ export function categoricalColorField(encoding: ColorEncoding | undefined) {
     ? categoricalField(encoding.field, {
         domain: encoding.domain?.map(String),
         range: encoding.range,
+        labels: encoding.labels,
       })
     : undefined
 }
@@ -400,10 +446,10 @@ export function colorFieldOf(encoding: ColorEncoding | undefined) {
  * #category display
  * The canvas feature displays' `color` setting: a CSS colour or `jexl:`
  * callback in `value`, or a field whose values each take a range colour,
- * or whose numbers each take the colour of the interval between cut points
- * they fall in, with a key. A string is the constant; the object binds the
- * field, and `scale: "none"` beside a field paints the constant while keeping
- * the field for the way back.
+ * whose numbers each take the colour of the interval between cut points they
+ * fall in, or whose numbers run along a colour ramp, with a key. A string is
+ * the constant; the object binds the field, and `scale: "none"` beside a
+ * field paints the constant while keeping the field for the way back.
  *
  * #example
  * ```js
@@ -424,6 +470,12 @@ export function colorFieldOf(encoding: ColorEncoding | undefined) {
  *     domain: ['0.5', '0.9'],
  *     range: ['#c6dbef', '#6baed6', '#08519c'],
  *   },
+ * }
+ * ```
+ * ```js
+ * {
+ *   type: 'LinearBasicDisplay',
+ *   color: { field: 'score', scheme: 'viridis', domainMin: 0 },
  * }
  * ```
  */
@@ -448,7 +500,7 @@ export const colorConfigSchema = ConfigurationSchema(
       field:
         "a feature field, or a jexl expression over feature, whose values each paint one range colour with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise",
       scale:
-        'none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field',
+        'none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; linear or log a colour along a ramp from domainMin to domainMax; unset is linear for score and categorical for any other field',
     }),
     ...colorDomainSlot({
       domain:
@@ -456,8 +508,12 @@ export const colorConfigSchema = ConfigurationSchema(
     }),
     ...colorRangeSlot({
       range:
-        'CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts',
+        "CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts; under linear or log the ramp's stops, winning over scheme",
     }),
+    ...colorLabelsSlot,
+    ...colorRampSlots,
+    ...colorDomainEndsSlots,
+    ...colorTitleSlot,
   },
-  colorChannelOptions('color'),
+  colorChannelOptions('color', FEATURE_FIELD_SCALES),
 )

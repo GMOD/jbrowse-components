@@ -29,6 +29,7 @@ import type { JexlInstance } from './jexlStrings.ts'
 import type {
   ColorEncoding,
   ColorScaleTable,
+  ContinuousRef,
   Encoded,
   EncodedChannels,
   FieldRef,
@@ -541,21 +542,13 @@ export function encodeFeatures<L extends LaneName>(
     const extent = finiteExtremes(rampValues, count)
     const { domainMin, domainMax, domainMid, range, scheme, reverse } =
       rampEncoding
-    const domain = rampDomain(domainMin, domainMax, extent)
-    const norm = makeScoreNormalizer(
-      domain[0],
-      domain[1],
-      scaleTypeCode(rampEncoding.scale),
-      1,
+    const { domain, stops, lut, colorOf } = continuousColorScale(
+      rampEncoding,
+      extent,
     )
-    const stops = colorRampStops(rampEncoding)
-    const lut = rampLut(stops, rampEncoding.scale, domain, domainMid)
     if (color) {
       for (let i = 0; i < count; i++) {
-        const v = rampValues[i]!
-        color[i] = Number.isFinite(v)
-          ? lutColorAt(lut, norm(v))
-          : FALLBACK_COLOR
+        color[i] = colorOf(rampValues[i]!)
       }
     }
     scale = {
@@ -687,6 +680,37 @@ function rampLut(
   domainMid: number | undefined,
 ) {
   return buildColorRampLut(stops, rampMid(scale, domain, domainMid))
+}
+
+/**
+ * #api
+ * A continuous colour scale over `extent`, the values it met: the domain its
+ * declared ends and the extent make, the stops and the table they bake to,
+ * and the packed colour a value paints through them, the misconfiguration
+ * grey for one that is not finite. The encoder and every display painting a
+ * ramp itself read it, so a value takes one colour whoever paints it.
+ */
+export function continuousColorScale(
+  encoding: ContinuousRef,
+  extent: readonly [number, number],
+) {
+  const { domainMin, domainMax, domainMid, scale } = encoding
+  const domain = rampDomain(domainMin, domainMax, extent)
+  const norm = makeScoreNormalizer(
+    domain[0],
+    domain[1],
+    scaleTypeCode(scale),
+    1,
+  )
+  const stops = colorRampStops(encoding)
+  const lut = rampLut(stops, scale, domain, domainMid)
+  return {
+    domain,
+    stops,
+    lut,
+    colorOf: (value: number) =>
+      Number.isFinite(value) ? lutColorAt(lut, norm(value)) : FALLBACK_COLOR,
+  }
 }
 
 const MAX_BAKED_RAMPS = 16

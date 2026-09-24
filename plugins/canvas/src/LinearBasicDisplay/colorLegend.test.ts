@@ -1,5 +1,10 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+import {
+  MISCONFIGURED_COLOR,
+  NO_CATEGORY_COLOR,
+} from '@jbrowse/core/util/color'
+import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import {
   makeFeatureData,
@@ -318,6 +323,79 @@ describe('derived color key', () => {
           /^color\.range: 2 threshold cuts make 3 intervals/,
         ),
       ])
+    })
+  })
+
+  it('names a listed value by its label, and heads the key with the title', () => {
+    const display = coloredDisplay({
+      field: 'biotype',
+      domain: ['lncRNA', 'protein_coding'],
+    })
+    setConf(display, ['color', 'labels'], ['Long non-coding', 'Coding'])
+    setConf(display, ['color', 'title'], 'Biotype')
+    expect(display.colorScales[0]).toMatchObject({ title: 'Biotype' })
+    expect(display.legendSpec.sections[0]?.items.map(i => i.label)).toEqual([
+      'Long non-coding',
+      'Coding',
+      'snoRNA',
+    ])
+    setConf(display, ['color', 'title'], '')
+    expect(display.colorScales[0]).toMatchObject({ title: '' })
+  })
+
+  describe('ramp color', () => {
+    function rampDisplay(color: Record<string, unknown> = { field: 'score' }) {
+      const { createDisplay } = createTestEnvironment()
+      const { display } = createDisplay()
+      setConf(display, 'color', color)
+      display.setRpcData(0, paintedData(['0', '50', '100', '']), ctgA)
+      return display
+    }
+
+    it('is what score paints through while scale is unset', () => {
+      const display = rampDisplay()
+      expect(display.colorEncoding).toMatchObject({
+        field: 'score',
+        scale: 'linear',
+      })
+      expect(display.colorByMode).toBe('attribute')
+      expect(display.colorField).toBeUndefined()
+    })
+
+    it('paints the loaded extent end to end, and a feature with no score grey', () => {
+      const paint = rampDisplay({
+        field: 'score',
+        range: ['#000000', '#ffffff'],
+      }).paintColorValue!
+      expect(paint('0')).toBe('rgba(0,0,0,1)')
+      expect(paint('100')).toBe('rgba(255,255,255,1)')
+      expect(paint('')).toBe(NO_CATEGORY_COLOR)
+      expect(paint('n/a')).toBe(
+        abgrToCssRgba(cssColorToABGR(MISCONFIGURED_COLOR)),
+      )
+    })
+
+    it('keys the ramp over the loaded extent, or the ends a config pins', () => {
+      expect(rampDisplay().colorScales).toEqual([
+        expect.objectContaining({
+          kind: 'ramp',
+          title: 'score',
+          domain: [0, 100],
+        }),
+      ])
+      expect(
+        rampDisplay({ field: 'score', domainMin: -50 }).colorScales[0],
+      ).toMatchObject({ domain: [-50, 100] })
+    })
+
+    it('takes a scheme and a log scale on any numeric field', () => {
+      const display = rampDisplay({
+        field: 'score',
+        scale: 'log',
+        scheme: 'magma',
+      })
+      expect(display.colorScales[0]).toMatchObject({ kind: 'ramp' })
+      expect(display.notices).toEqual([])
     })
   })
 })

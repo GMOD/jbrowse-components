@@ -18,6 +18,7 @@ import {
 } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
+import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import {
   activeJexlFilters,
   configuredJexlFilters,
@@ -205,6 +206,8 @@ export type { GroupByScanOptions } from './scanGroupByCandidates.ts'
 // Off this subpath rather than the barrel, so a subclass composing its own
 // "Color by..." presets holds no value edge into the eager entry.
 export { defaultColorItem } from './trackMenus.ts'
+
+const RAMP_KEY_STOPS = 8
 
 const ColorByAttributeDialog = lazy(
   () => import('./components/ColorByAttributeDialog.tsx'),
@@ -1467,6 +1470,18 @@ export default function baseStateModelFactory(
        * sections' order where the facet reads the same field.
        */
       get derivedColorScales(): ColorScale[] {
+        const { colorRamp, colorKeyTitle } = self
+        if (colorRamp) {
+          return [
+            {
+              kind: 'ramp',
+              id: 'color',
+              title: colorKeyTitle,
+              domain: colorRamp.domain,
+              stops: stopsFromRampLut(colorRamp.lut, RAMP_KEY_STOPS),
+            },
+          ]
+        }
         const scale = self.paintedColorField
         const { facet, hiddenGroupKeys, colorField } = self
         if (!scale) {
@@ -1481,8 +1496,9 @@ export default function baseStateModelFactory(
           self.rpcDataMap.values(),
           sectionOf && (section => hiddenGroupKeys.has(sectionOf(section).key)),
           facet && facet.field === colorField?.field
-            ? facetField(facet)
+            ? { ...facetField(facet), label: scale.label }
             : scale,
+          colorKeyTitle,
         )
       },
       /**
@@ -1515,7 +1531,7 @@ export default function baseStateModelFactory(
         colorByGroup: boolean,
       ): ChannelSpec {
         const colorField = self.colorField?.field ?? ''
-        const painted = self.paintedColorField?.field ?? ''
+        const painted = self.colorFieldName ?? ''
         const current = facetOf(self.facet)
         const wasGroupColor =
           colorField !== '' &&
@@ -1662,7 +1678,7 @@ export default function baseStateModelFactory(
               model: self,
               handleClose,
               color: self.colorSettings.value,
-              colorField: self.paintedColorField?.field ?? '',
+              colorField: self.colorFieldName ?? '',
             },
           ])
         },

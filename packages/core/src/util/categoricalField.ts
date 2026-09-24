@@ -61,13 +61,22 @@ export interface CategoricalField {
   color: (key: string) => string
 }
 
-/** #api */
+/**
+ * #api
+ * `labels` names the `domain`'s values in a key, one each in order, where a
+ * config spells them for a reader rather than as the data does.
+ */
 export function categoricalField(
   field: string,
   {
     domain = [],
     range = [],
-  }: { domain?: readonly string[]; range?: readonly string[] } = {},
+    labels = [],
+  }: {
+    domain?: readonly string[]
+    range?: readonly string[]
+    labels?: readonly string[]
+  } = {},
 ): CategoricalField {
   const vocabulary = VOCABULARIES[field]
   const order = domain.length > 0 ? domain : (vocabulary?.domain ?? [])
@@ -75,7 +84,12 @@ export function categoricalField(
     range.length > 0 || !vocabulary
       ? [order, range]
       : [vocabulary.domain, vocabulary.range]
-  const named = (key: string) => vocabulary?.labels[key]
+  const declared = new Map(
+    labels.flatMap((label, i) =>
+      i < domain.length ? [[domain[i]!, label]] : [],
+    ),
+  )
+  const named = (key: string) => declared.get(key) ?? vocabulary?.labels[key]
   let colorOf: ((key: string) => string) | undefined
   return {
     field,

@@ -314,7 +314,13 @@ The seams, named honestly:
   sorted rank had one value painting two colours across a pan. A quantitative ramp ships its raw values and the
   region's extent instead, and the display unions the extents into one domain
   the shapes read as a uniform (ADR-113), so an unpinned ramp agrees across
-  the loaded regions and a pan that widens it uploads no instance bytes. What
+  the loaded regions and a pan that widens it uploads no instance bytes. The
+  canvas feature display ships neither colours nor numbers but each region's
+  distinct field values and an index per box, and paints every scale —
+  categorical, threshold and ramp — in its main-thread encode, the ramp over
+  the extent of every loaded region
+  ([ADR-163](../architecture-decision-records/adr-163-the-feature-colours-scale-resolves-on-the-main-thread.md)),
+  so a recolour there refetches nothing. What
   remains is the dataset beyond the view: a value in no loaded region has
   never been seen, so the domain still grows as the user pans. That is the
   design and not a seam
@@ -336,9 +342,9 @@ The seams, named honestly:
   mapped to one colour are two rows with one swatch; here the hide toggle
   hides by colour, so they are one row with two names
   ([ADR-136](../architecture-decision-records/adr-136-a-legend-follows-its-scale-and-a-colour-slot-is-a-colour.md)).
-  The canvas feature display hands it the candidates its
-  worker walk recorded with a section stamp apiece, so a hidden section's
-  colours leave the key; Manhattan, the mark display and the multi-sample
+  The canvas feature display hands it the values its
+  worker walk recorded with a section stamp apiece, painted through the scale
+  the main thread holds, so a hidden section's colours leave the key; Manhattan, the mark display and the multi-sample
   variant cells hand it the entries of the scale table they resolved
   (`everyRowPaints`), the mark's rows drawing each shape a folded shape scale
   gives their values and the variant's their het and hom shades (its
@@ -457,10 +463,10 @@ it there as data: `strand` files a missing strand as `0`, orders forward,
 reverse, unstranded, names each and paints red, blue and goldenrod, each
 yielding to a declared `domain` or `range`. Only a facet on another field has
 the canvas worker stamp a key on each feature, so a strand facet never
-refetches. The canvas worker paints a part in its transcript's value (the
-emitter passes the level) and records each key it painted with the section its
-record files under, which `derivedColorKey` hands `derivedColorScale` as the key
-less the hidden sections.
+refetches. The canvas worker files a part under its transcript's value (the
+emitter passes the level) and records each value with the section its record
+files under; the main thread paints it, and `derivedColorKey` hands
+`derivedColorScale` the key less the hidden sections.
 
 The facet replaced a `frozen` `groupBy` slot,
 `{ type: 'strand' | 'attribute', attribute, domain }`, that the spec translated

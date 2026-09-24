@@ -1,9 +1,9 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { utrDefaultColor } from '@jbrowse/core/ui/palette'
-import { colorConfigSchema } from '@jbrowse/display-kit/colorConfigSchema'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { geneColorConfigSchema } from './geneColorConfigSchema.ts'
 import { ribbonColorConfigSchema } from './ribbonColorConfigSchema.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -85,7 +85,7 @@ export function configSchemaFactory() {
        * carries and a placement box by its own, so a group is one color down
        * the stack; a gene no group claims is the no-value grey.
        */
-      color: colorConfigSchema,
+      color: geneColorConfigSchema,
       /**
        * #slot
        */

@@ -100,7 +100,7 @@ test.each([
   [{ color: { field: 'x', scale: 'none' } }, 'color is a CSS color'],
   [
     { color: { field: 'x', palette: ['red'] } },
-    'color takes value, field, scale, domain, range, scheme, reverse, domainMin, domainMax, domainMid, not palette',
+    'color takes value, field, scale, domain, range, scheme, reverse, domainMin, domainMax, domainMid, labels, title, not palette',
   ],
   [
     { color: { field: 'x', scale: 'linear', domainMid: 'mid' } },
