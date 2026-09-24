@@ -72,18 +72,17 @@ export default class MafTabixAdapter extends MafAdapterBase<MafTabixAdapterConfi
       const { adapter } = await this.configure(opts)
       const refAssemblyName = this.getConf('refAssemblyName')
       const resolver = makeSourceResolver(buildSampleFilter(opts))
+      // Reads the reference entry when the sample filter drops it: the
+      // reference row still positions the block, as on the other three paths.
+      const anySource = makeSourceResolver()
 
       await subscribeToObservable(adapter.getFeatures(query, opts), feature => {
         const encoded = alignmentColumn(feature)
         const alignments: Record<string, AlignmentRecord> = {}
-        // Per feature, not per query: the last-resort reference is this
-        // stanza's own first species. MAF puts the reference first in every
-        // stanza, so this is the same answer on a well-formed file — but
-        // carrying one stanza's choice across the rest meant a stanza that
-        // happened to lack that species resolved to no reference sequence at
-        // all, and a block with an empty reference has no genomic extent, so
-        // it vanished from the rows and from coverage.
-        let firstAssemblyNameFound: string | undefined
+        // Per stanza, not per query: MAF puts the reference first in every
+        // stanza, and a stanza whose reference resolves to nothing has no
+        // genomic extent and vanishes from the rows and from coverage.
+        let firstEntrySeq: string | undefined
 
         // Walked with `indexOf` rather than `split(',')`. This column holds
         // every species' bases for the block, so it is nearly the whole line,
@@ -99,10 +98,12 @@ export default class MafTabixAdapter extends MafAdapterBase<MafTabixAdapterConfi
           const entry = scanMafTabixEntry(encoded, from, to, resolver.resolve)
           if (entry) {
             const { assemblyName, chr, start, strand, srcSize, seq } = entry
-            if (!firstAssemblyNameFound) {
-              firstAssemblyNameFound = assemblyName
-            }
             alignments[assemblyName] = { chr, start, strand, srcSize, seq }
+          }
+          if (from === 0) {
+            firstEntrySeq = (
+              entry ?? scanMafTabixEntry(encoded, 0, to, anySource.resolve)
+            )?.seq
           }
           from = to + 1
         }
@@ -119,7 +120,7 @@ export default class MafTabixAdapter extends MafAdapterBase<MafTabixAdapterConfi
               alignments,
               refAssemblyName,
               query.assemblyName,
-              firstAssemblyNameFound,
+              firstEntrySeq,
             ) ?? '',
           ),
         )

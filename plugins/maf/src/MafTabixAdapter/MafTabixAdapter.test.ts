@@ -142,6 +142,19 @@ describe('MafTabixAdapter reads a maf_to_bed BED', () => {
     warn.mockRestore()
   })
 
+  // The sequence widget's "Selected rows" and a `samples` config can both
+  // leave the reference out. The stanza's first entry is still the reference,
+  // and it used to fall through to the first species that survived the filter,
+  // so every column was walked by that species' gaps instead of the reference's.
+  it('keeps the reference sequence when the sample set leaves it out', async () => {
+    const [full] = await features(adapter())
+    const [narrowed] = await features(adapter(), [
+      { id: 'simvolvox', label: 'simvolvox' },
+    ])
+    expect(Object.keys(alignmentsOf(narrowed!))).toEqual(['simvolvox'])
+    expect(narrowed!.get('seq')).toBe(alignmentsOf(full!).volvox!.seq)
+  })
+
   // The one case that isn't narrowing: ids that describe some other file, so
   // every row drops. The track then paints the configured species as labelled
   // rows with not one base under them, which is indistinguishable from a region

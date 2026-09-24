@@ -340,25 +340,22 @@ export function parseMafTabixEntry(
 }
 
 /**
- * Selects the appropriate sequence from alignments based on the lookup order:
- * 1. refAssemblyName config value (if provided)
- * 2. query.assemblyName (from the region being queried)
- * 3. firstAssemblyNameFound (fallback to first assembly in data)
+ * The block's reference sequence: the row `refAssemblyName` names, else the
+ * row the queried assembly names, else the stanza's first entry, which MAF
+ * puts the reference in. The first entry's `seq` is taken before the sample
+ * filter runs, so a reference the filter drops still positions the block, as
+ * it does on the bigMaf, MAF and TAF paths.
  */
 export function selectReferenceSequenceString(
   alignments: Record<string, { seq: string }>,
   refAssemblyName: string | undefined,
   queryAssemblyName: string | undefined,
-  firstAssemblyNameFound: string | undefined,
+  firstEntrySeq: string | undefined,
 ): string | undefined {
-  for (const name of [
-    refAssemblyName,
-    queryAssemblyName,
-    firstAssemblyNameFound,
-  ]) {
+  for (const name of [refAssemblyName, queryAssemblyName]) {
     if (name && alignments[name]) {
       return alignments[name].seq
     }
   }
-  return undefined
+  return firstEntrySeq
 }
