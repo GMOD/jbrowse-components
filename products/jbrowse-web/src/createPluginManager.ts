@@ -1,4 +1,8 @@
-import { loadSessionSpec, preloadAppShell } from '@jbrowse/app-core'
+import {
+  loadSessionSpec,
+  preloadAppFrame,
+  preloadAppShell,
+} from '@jbrowse/app-core'
 import PluginManager, { corePluginRecords } from '@jbrowse/core/PluginManager'
 import {
   pluginDefinitionMetadata,
@@ -93,6 +97,8 @@ export async function createPluginManager(
   // views/tracks/extension-points; safe because configure() doesn't read
   // session state
   pluginManager.setRootModel(rootModel).configure()
+  preloadAppFrame()
+  preloadSessionAssemblies(rootModel, model)
   // the plugin list the worker gets is the trusted one, which exists from here
   if (rootModel.rpcManager.driverName === 'WebWorkerRpcDriver') {
     rootModel.rpcManager.warmUp()
@@ -118,6 +124,59 @@ export async function createPluginManager(
   // just as thoroughly as one that throws while its module is evaluated.
   markPermanentPluginLoadFinished()
   return pluginManager
+}
+
+function assemblyNamesIn(value: unknown, found = new Set<string>()) {
+  if (typeof value === 'object' && value !== null) {
+    for (const [key, child] of Object.entries(value)) {
+      if (
+        (key === 'assembly' || key === 'assemblyName') &&
+        typeof child === 'string'
+      ) {
+        found.add(child)
+      } else if (key === 'assemblyNames' && Array.isArray(child)) {
+        for (const name of child) {
+          if (typeof name === 'string') {
+            found.add(name)
+          }
+        }
+      } else {
+        assemblyNamesIn(child, found)
+      }
+    }
+  }
+  return found
+}
+
+/**
+ * Start loading the assemblies the session about to open names, so their
+ * chromosome lists download beside the session's view and display code rather
+ * than after its view exists. A hub session brings its own assemblies.
+ */
+function preloadSessionAssemblies(
+  rootModel: WebRootModel,
+  {
+    sessionSource,
+    configSnapshot,
+    defaultSessionViewInit,
+  }: PluginManagerSource,
+) {
+  const source =
+    sessionSource?.type === 'snapshot'
+      ? sessionSource.snapshot
+      : sessionSource?.type === 'spec'
+        ? sessionSource.spec
+        : sessionSource?.type === 'hub'
+          ? undefined
+          : defaultSessionViewInit?.assembly
+            ? defaultSessionViewInit
+            : configSnapshot?.defaultSession
+  const { assemblyManager } = rootModel
+  for (const name of assemblyNamesIn(source)) {
+    if (assemblyManager.has(name)) {
+      assemblyManager.waitForAssembly(name).catch(() => {})
+    }
+  }
 }
 
 // Safe mode is silent otherwise: the app comes up looking normal, missing

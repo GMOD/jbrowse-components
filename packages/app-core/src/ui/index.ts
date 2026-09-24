@@ -1,1 +1,6 @@
-export { App, DialogQueue, preloadAppShell } from './App/index.ts'
+export {
+  App,
+  DialogQueue,
+  preloadAppFrame,
+  preloadAppShell,
+} from './App/index.ts'

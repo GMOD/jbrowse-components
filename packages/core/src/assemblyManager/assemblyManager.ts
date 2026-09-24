@@ -3,6 +3,8 @@ import { autorun, untracked, when } from 'mobx'
 
 import { readConfObject } from '../configuration/index.ts'
 import assemblyFactory from './assembly.ts'
+import { preloadAssemblyAdapters } from './assemblyAdapters.ts'
+import { assemblyConfByName } from './assemblyConfByName.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
@@ -406,6 +408,10 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         // Core-handleUnrecognizedAssembly before there is anything to wait for
         let assembly = self.get(assemblyName)
         if (!assembly) {
+          const conf = assemblyConfByName(self, assemblyName)
+          if (conf) {
+            preloadAssemblyAdapters(conf, pm)
+          }
           await self.settleAssemblyResolution(assemblyName)
           assembly = self.get(assemblyName)
         }

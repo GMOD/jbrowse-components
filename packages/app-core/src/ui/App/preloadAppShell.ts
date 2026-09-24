@@ -12,6 +12,16 @@ import type { AppSession } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
+ * Request the views container and the drawer before the session exists, while
+ * the session's own view and display code downloads. Without it both land a
+ * round trip after the session, and the app's first render suspends on them.
+ */
+export function preloadAppFrame() {
+  preloadComponent(ClassicViewsContainer)
+  preloadComponent(DrawerWidget)
+}
+
+/**
  * Request the app frame's lazy parts that `session` will show (its views
  * container, the drawer and the widget open in it) as soon as the session
  * exists. Rendering asks for each only when it reaches it, a round trip apiece.

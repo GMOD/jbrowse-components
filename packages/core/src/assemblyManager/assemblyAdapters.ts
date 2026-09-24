@@ -29,6 +29,28 @@ async function instantiateAdapter<T>(
   return new CLASS(config, undefined, pluginManager) as T
 }
 
+/**
+ * Start downloading the code of the adapters an assembly config names, so its
+ * load does not spend a round trip on them after it starts.
+ */
+export function preloadAssemblyAdapters(
+  conf: AnyConfigurationModel,
+  pluginManager: PluginManager,
+) {
+  for (const adapter of [
+    conf.sequence?.adapter,
+    conf.refNameAliases?.adapter,
+    conf.cytobands?.adapter,
+  ]) {
+    if (adapter && pluginManager.hasAdapterType(adapter.type)) {
+      pluginManager
+        .getAdapterType(adapter.type)
+        .getAdapterClass()
+        .catch(() => {})
+    }
+  }
+}
+
 export async function getRefNameAliases({
   config,
   pluginManager,
