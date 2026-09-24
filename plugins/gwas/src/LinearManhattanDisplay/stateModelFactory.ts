@@ -558,8 +558,6 @@ export function stateModelFactory(
         },
       }))
       .actions(self => {
-        // From the colour as written, so a switch writes no LD default into
-        // the config
         function colorBy(field: string) {
           setConf(self, 'color', colorForField(self.writtenColor, field))
         }
@@ -589,28 +587,13 @@ export function stateModelFactory(
           },
           /**
            * #action
-           * `none` paints every point `value`; `categorical` paints the field
-           * again. The scale alone, so switching back to the field finds its
-           * order and palette as written.
-           */
-          setColorScale(scale: Exclude<ManhattanColorScale, 'threshold'>) {
-            setConf(self, ['color', 'scale'], scale)
-          },
-          /**
-           * #action
-           * Color by the values of a feature field. Re-picking the field keeps
-           * its order and palette; a new field starts from neither.
+           * What every Color by pick writes, through display-kit's
+           * `colorForField` over the colour as written: `''` paints `value`
+           * and keeps the field for the way back, `ld` colours by r² to the
+           * index SNP, and re-picking a field keeps its order and palette.
            */
           colorByField(field: string) {
             colorBy(field)
-          },
-          /**
-           * #action
-           * Color each point by its r² to the index SNP: the `ld` field, read
-           * from the adapter's `ldAdapter`.
-           */
-          colorByLd() {
-            colorBy(LD_FIELD)
           },
           /**
            * #action
@@ -677,7 +660,7 @@ export function stateModelFactory(
                   type: 'radio' as const,
                   checked: self.color.scale === 'none',
                   onClick: () => {
-                    self.setColorScale('none')
+                    self.colorByField('')
                   },
                 },
                 {
@@ -701,7 +684,7 @@ export function stateModelFactory(
                         type: 'radio' as const,
                         checked: isLdColoring(self.color),
                         onClick: () => {
-                          self.colorByLd()
+                          self.colorByField(LD_FIELD)
                         },
                       },
                     ]

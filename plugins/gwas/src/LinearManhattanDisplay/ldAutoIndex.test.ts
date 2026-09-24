@@ -1,6 +1,7 @@
 import { waitFor } from '@testing-library/react'
 import { when } from 'mobx'
 
+import { LD_FIELD } from './colorConfigSchema.ts'
 import { manhattanFixture } from './manhattanFixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -80,7 +81,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // "Color by LD" toggle, flipped on a display that has already loaded. Every
   // other test here starts in LD mode because that is what a restored session
   // does, and that shape cannot see a toggle whose write fails to reach the
-  // fetch — `setColorScale` writes a config slot, so it invalidates through
+  // fetch — `colorByField` writes a config slot, so it invalidates through
   // `settingsFetchInputs` rather than through anything the display holds.
   it('adopts the index when the user turns LD colouring on', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
@@ -95,7 +96,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     expect(display.indexSnp).toBeUndefined()
     const beforeToggle = mockRpcCall.mock.calls.length
 
-    display.colorByLd()
+    display.colorByField(LD_FIELD)
     await settle(8)
 
     await waitFor(() => {

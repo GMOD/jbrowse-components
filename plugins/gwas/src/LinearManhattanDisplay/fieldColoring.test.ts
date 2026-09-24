@@ -3,6 +3,7 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { ldColoringRequested } from '../ManhattanRPC/rpcTypes.ts'
+import { LD_FIELD } from './colorConfigSchema.ts'
 import { LD_DOMAIN, LD_LEGEND_TITLE, LD_PALETTE, ldLegend } from './ldBins.ts'
 import { manhattanFixture } from './manhattanFixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -203,7 +204,7 @@ describe('LinearManhattanDisplay field coloring', () => {
     const { display } = createTestEnvironment({
       color: { value: 'rebeccapurple', field: 'ld' },
     }).createDisplay()
-    display.setColorScale('none')
+    display.colorByField('')
     expect(display.color).toMatchObject({
       value: 'rebeccapurple',
       scale: 'none',
@@ -218,9 +219,9 @@ describe('LinearManhattanDisplay field coloring', () => {
         range: ['red'],
       },
     }).createDisplay()
-    display.setColorScale('none')
+    display.colorByField('')
     expect(display.color.scale).toBe('none')
-    display.setColorScale('categorical')
+    display.colorByField('population')
     expect(display.color).toMatchObject({
       field: 'population',
       scale: 'categorical',
@@ -296,7 +297,7 @@ describe('LinearManhattanDisplay field coloring', () => {
     const { display } = createTestEnvironment({
       color: { field: 'population', domain: ['EUR'] },
     }).createDisplay()
-    display.colorByLd()
+    display.colorByField(LD_FIELD)
     expect(display.color).toMatchObject({
       field: 'ld',
       scale: 'threshold',
@@ -304,7 +305,7 @@ describe('LinearManhattanDisplay field coloring', () => {
       range: LD_PALETTE,
     })
     expect(display.ldColoringActive).toBe(true)
-    display.setColorScale('none')
+    display.colorByField('')
     expect(display.color).toMatchObject({ field: 'ld', scale: 'none' })
     expect(display.ldColoringActive).toBe(false)
     display.colorByField('population')
@@ -318,12 +319,12 @@ describe('LinearManhattanDisplay field coloring', () => {
     const { display } = createTestEnvironment({
       color: { field: 'ld' },
     }).createDisplay()
-    display.setColorScale('none')
+    display.colorByField('')
     expect(getSnapshot(display.configuration).color).toEqual({
       field: 'ld',
       scale: 'none',
     })
-    display.colorByLd()
+    display.colorByField(LD_FIELD)
     expect(getSnapshot(display.configuration).color).toEqual({ field: 'ld' })
     expect(display.color).toMatchObject({
       scale: 'threshold',
@@ -375,6 +376,32 @@ describe('LinearManhattanDisplay field coloring', () => {
 
     display.colorByField('population')
     expect(labels(display.trackMenuItems())).toContain('Field (population)...')
+  })
+
+  it('the Single color and LD radios keep the field for the way back', () => {
+    const { display } = createTestEnvironment({
+      color: { field: 'population', domain: ['EUR'] },
+    }).createDisplay()
+    const click = (label: string) => {
+      const colorBy = display
+        .trackMenuItems()
+        .find(i => 'label' in i && i.label === 'Color by...')!
+      const item = ('subMenu' in colorBy ? resolveSubMenu(colorBy) : []).find(
+        i => 'label' in i && i.label === label,
+      )
+      if (item && 'onClick' in item) {
+        item.onClick()
+      }
+    }
+    click('Single color')
+    expect(getSnapshot(display.configuration).color).toEqual({
+      field: 'population',
+      scale: 'none',
+      domain: ['EUR'],
+    })
+    click('LD to index SNP')
+    expect(display.ldColoringActive).toBe(true)
+    expect(getSnapshot(display.configuration).color).toEqual({ field: 'ld' })
   })
 })
 
