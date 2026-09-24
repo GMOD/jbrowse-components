@@ -229,6 +229,35 @@ describe('layoutMatureProteinRegion', () => {
     expect(layout.children.every(c => c.ownsLabelRow)).toBe(true)
   })
 
+  it('counts no label row for a cleavage product with nothing to label it by', () => {
+    const named = mockFeature({
+      type: 'mature_protein_region',
+      start: 100,
+      end: 200,
+    })
+    const unnamed = {
+      get: (key: string) =>
+        ({ type: 'mature_protein_region', start: 200, end: 300, strand: 1 })[
+          key
+        ],
+      id: () => '',
+      parent: () => undefined,
+    } as unknown as Feature
+    const feature = mockFeature({
+      type: 'CDS',
+      start: 100,
+      end: 300,
+      subfeatures: [unnamed, named],
+    })
+    const layout = layoutMatureProteinRegion({
+      feature,
+      config: mockDisplayConfig({ subfeatureLabels: 'below' }),
+    })
+    expect(layout.labelRows).toBe(1)
+    expect(layout.children.map(c => c.ownsLabelRow)).toEqual([true, false])
+    expect(layout.children.map(c => c.labelRowsAbove)).toEqual([0, 1])
+  })
+
   it('counts no rows when below labels are off', () => {
     const feature = viralPolyprotein([
       'mature_protein_region',

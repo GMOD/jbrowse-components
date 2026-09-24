@@ -1,5 +1,6 @@
+import { reservesBelowLabelRow } from '../labelUtils.ts'
 import { featureType, getSubfeatures, isCDS } from '../util.ts'
-import { featureHeightPx, layoutChild, sortByPosition } from './glyphUtils.ts'
+import { featureHeightPx, sortByPosition } from './glyphUtils.ts'
 
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -48,41 +49,47 @@ export function collectPolyproteinCDS(feature: Feature): Feature[] {
 }
 
 export function layoutMatureProteinRegion(args: LayoutArgs): FeatureLayout {
-  const { feature, config } = args
-  const { subfeatureLabels } = config
+  const { feature, config, jexl } = args
   // Every cleavage-product row is a uniform slice of the CDS's own height, so
   // the rows stay even whatever a `featureHeight` expression returns.
-  const heightPx = featureHeightPx(feature, args)
+  const rowHeight = featureHeightPx(feature, args)
+  const padding = 1
 
-  const matureProteins = getMatureProteinChildren(feature)
   const sortedChildren = sortByPosition(
-    matureProteins.map(child => layoutChild(child, args)),
+    getMatureProteinChildren(feature).map(child => ({
+      feature: child,
+      glyphType: 'Box' as const,
+      y: 0,
+      height: rowHeight - padding * 2,
+      children: [],
+    })),
   )
+
+  let labelRows = 0
+  for (const [i, child] of sortedChildren.entries()) {
+    const ownsLabelRow = reservesBelowLabelRow({
+      feature: child.feature,
+      config,
+      glyphType: 'Box',
+      jexl,
+    })
+    child.y = i * rowHeight + padding
+    child.labelRowsAbove = labelRows
+    child.ownsLabelRow = ownsLabelRow
+    if (ownsLabelRow) {
+      labelRows++
+    }
+  }
 
   // findGlyph routes here only when there are children, but the glyph is
   // callable directly and a zero-height CDS would vanish rather than degrade to
   // a plain box.
-  const numRows = Math.max(1, sortedChildren.length)
-  const rowHeight = heightPx
-  const totalHeight = rowHeight * numRows
-
-  const padding = 1
-  const boxHeight = rowHeight - padding * 2
-  const below = subfeatureLabels === 'below'
-
-  for (const [i, child] of sortedChildren.entries()) {
-    child.y = i * rowHeight + padding
-    child.height = boxHeight
-    child.labelRowsAbove = below ? i : 0
-    child.ownsLabelRow = below
-  }
-
   return {
     feature,
     glyphType: 'MatureProteinRegion',
     y: 0,
-    height: totalHeight,
+    height: rowHeight * Math.max(1, sortedChildren.length),
     children: sortedChildren,
-    labelRows: below ? numRows : 0,
+    labelRows,
   }
 }

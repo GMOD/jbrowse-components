@@ -311,6 +311,7 @@ function processMatureProteinLayout(
     const childLabel = subfeatureLabelText(childFeature, ctx.config, ctx.jexl)
     const displayLabel =
       disambiguateWithCds &&
+      childLabel &&
       cdsLabel &&
       cdsLabel !== childLabel &&
       cdsLabel !== cdsFeature.id()
