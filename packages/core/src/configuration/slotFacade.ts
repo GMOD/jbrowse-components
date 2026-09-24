@@ -1,11 +1,4 @@
-import {
-  asModelType,
-  getSnapshot,
-  getType,
-  isArrayType,
-  isMapType,
-  isStateTreeNode,
-} from '@jbrowse/mobx-state-tree'
+import { asModelType, getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 import { getEnv } from '../util/mstUtils.ts'
@@ -14,7 +7,6 @@ import { setConf } from './getConf.ts'
 import {
   getConfigurationSchemaDefinition,
   getConfigurationSchemaMetadata,
-  getConfigurationSchemaOptions,
 } from './schemaRegistry.ts'
 import {
   isConfigurationSchemaType,
@@ -51,93 +43,6 @@ export function isConfigurationSlot(
   slotName: string,
 ): boolean {
   return !!slotDefinition(node, slotName)
-}
-
-/**
- * Whether `slotName` on a config node is a single nested sub-schema, the kind
- * `setSubschema` replaces whole (not an array or map of them).
- */
-export function isConfigurationSubschema(
-  node: AnyConfigurationModel,
-  slotName: string,
-): boolean {
-  const def = getConfigurationSchemaDefinition(node)?.[slotName]
-  return isConfigurationSchemaType(def) && !isArrayType(def) && !isMapType(def)
-}
-
-function isPlainObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v)
-}
-
-function isNamespace(member: unknown): member is AnyConfigurationModel {
-  const options = isStateTreeNode(member)
-    ? getConfigurationSchemaOptions(member as AnyConfigurationModel)
-    : undefined
-  return !!options && options.shorthand === undefined
-}
-
-// JSON Merge Patch (RFC 7396) over a namespace's snapshot: a `null` member
-// leaves the key out, which a stripDefault snapshot reads as the default
-function mergePatch(
-  namespace: AnyConfigurationModel,
-  patch: Record<string, unknown>,
-): Record<string, unknown> {
-  const out: Record<string, unknown> = { ...getSnapshot(namespace) }
-  for (const [k, v] of Object.entries(patch)) {
-    const member = (namespace as unknown as Record<string, unknown>)[k]
-    if (v === null) {
-      delete out[k]
-    } else {
-      out[k] =
-        isPlainObject(v) && isNamespace(member) ? mergePatch(member, v) : v
-    }
-  }
-  return out
-}
-
-/**
- * What to hand `setSubschema` for a write of `slotName`: `value` itself where
- * the sub-schema is a channel, and the node's own snapshot with `value`'s
- * members over it — recursing into the namespaces inside it — where it is not.
- * `null` resets at any depth of a namespace, the way it resets a slot (ADR-146).
- *
- * **A `shorthand` is what tells the two apart.** A sub-schema that takes a bare
- * string takes one written value, so `{ field: 'biotype' }` after
- * `{ field: 'biotype', domain: [...] }` is a colour or facet with no domain,
- * and a merge would leave the old one standing with no way to clear it. A
- * sub-schema with no shorthand is a namespace of independent settings, where
- * `{ scales: { y: { domainMin: 5 } } }` means "pin the bottom" and used to
- * reset `type` and `autoscale` with it.
- */
-export function mergedSubschemaValue(
-  node: AnyConfigurationModel,
-  slotName: string,
-  value: unknown,
-) {
-  const existing = (node as unknown as Record<string, unknown>)[slotName]
-  return isPlainObject(value) && isNamespace(existing)
-    ? mergePatch(existing, value)
-    : (value ?? {})
-}
-
-/**
- * Run `node`'s own schema `preProcessSnapshot` over a partial bag of slot
- * values headed for that config.
- *
- * A config.json snapshot gets this for free on `create`, but the session/URL
- * path writes slots one `setSlot` at a time onto an already-created config, so
- * without this a schema's shorthand expansions and legacy-key migrations apply
- * to `config.json` and silently no-op in a session spec, share link, or embed —
- * the surfaces that are supposed to speak the same vocabulary. The hooks are
- * written to normalize whatever subset of keys they're handed, so a partial bag
- * is the same shape they already tolerate.
- */
-export function preProcessSlotValues(
-  node: AnyConfigurationModel,
-  values: Record<string, unknown>,
-): Record<string, unknown> {
-  const schema = getConfigurationSchemaMetadata(getType(node))
-  return schema ? preProcessSnapshotWith(schema, values) : values
 }
 
 /**

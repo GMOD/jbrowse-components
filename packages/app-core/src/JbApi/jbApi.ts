@@ -5,8 +5,8 @@ import {
 import {
   getConf,
   getConfigurationSchemaDefinition,
-  getConfigurationSchemaOptions,
-  isConfigurationSubschema,
+  getConfigurationSchemaMetadata,
+  isConfigurationSchemaType,
   isSlotDefinitionEntry,
   readConfObject,
 } from '@jbrowse/core/configuration'
@@ -1353,17 +1353,20 @@ function describeSlots(
             ],
           ]
         }
-        if (isConfigurationSubschema(conf, name)) {
-          const node = conf[name] as AnyConfigurationModel
-          const shorthand = getConfigurationSchemaOptions(node)?.shorthand
+        // a single nested object, which has a slot table of its own; a list
+        // or map of them, or one nobody has written, does not
+        const node = isConfigurationSchemaType(def) ? conf[name] : undefined
+        const meta = mst.isStateTreeNode(node)
+          ? getConfigurationSchemaMetadata(node as AnyConfigurationModel)
+          : undefined
+        if (meta) {
+          const { shorthand } = meta.options
           return [
             [
               name,
               {
-                type: mst
-                  .getType(node)
-                  .name.replace(/ConfigurationSchema$/, ''),
-                slots: describeSlots(node),
+                type: meta.name,
+                slots: describeSlots(node as AnyConfigurationModel),
                 ...(shorthand ? { shorthand } : {}),
               },
             ],

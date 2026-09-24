@@ -36,7 +36,7 @@ settings written inline —
 
 `normalizeTrackInit` folds those keys into the display snapshot, and
 `showTrackGeneric` routes every one that is a real config slot onto the
-display's config through `preProcessSlotValues` and `setSlot`
+display's config through `applyConfSettings`
 (`packages/core/src/util/tracks.ts`). So the vocabulary of a track entry IS the
 display's config slot table — the same names the track menu writes, the config
 pages document, and `jbrowse validate` checks from

@@ -2,7 +2,7 @@ import { getSnapshot, setTypeChecking, types } from '@jbrowse/mobx-state-tree'
 
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
-import { readConfObject, setConf } from './index.ts'
+import { applyConfSettings, readConfObject, setConf } from './index.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()
@@ -143,5 +143,93 @@ describe('the two setSlot guards survive the path walk', () => {
       setTypeChecking(undefined)
     }
     expect(readConfObject(m.configuration, 'height')).toBe(100)
+  })
+})
+
+// A settings bag names the members it means, one key per member, and reaches
+// them the way setConf does; what it adds is the namespace walk and the
+// per-key report a session spec or an agent call needs.
+describe('a settings bag', () => {
+  test('writes slots and channels whole, and reports what the config does not declare', () => {
+    const { configuration } = model()
+    const report = applyConfSettings(configuration, {
+      height: 55,
+      facet: { field: 'HP', domain: ['1'] },
+      type: 'Display',
+      nonsense: 1,
+    })
+    expect(report).toEqual({
+      applied: ['height', 'facet'],
+      undeclared: { type: 'Display', nonsense: 1 },
+      failed: [],
+    })
+    expect(readConfObject(configuration, 'height')).toBe(55)
+    applyConfSettings(configuration, { facet: { field: 'HP' } })
+    expect(readConfObject(configuration, ['facet', 'domain'])).toEqual([])
+  })
+
+  test("writes a namespace's members one by one, keeping the node and the rest", () => {
+    const { configuration } = model()
+    const y = configuration.scales.y
+    applyConfSettings(configuration, { scales: { y: { type: 'log' } } })
+    applyConfSettings(configuration, { scales: { y: { domainMin: 5 } } })
+    expect(configuration.scales.y).toBe(y)
+    expect(readConfObject(configuration, ['scales', 'y'])).toEqual({
+      type: 'log',
+      domainMin: 5,
+    })
+    applyConfSettings(configuration, { scales: { y: { domainMin: null } } })
+    expect(readConfObject(configuration, ['scales', 'y', 'domainMin'])).toBe(
+      undefined,
+    )
+    applyConfSettings(configuration, { scales: { y: null } })
+    expect(readConfObject(configuration, ['scales', 'y', 'type'])).toBe(
+      'linear',
+    )
+  })
+
+  test("runs the config's lift over the bag, and a namespace's over its part", () => {
+    const lifted = ConfigurationSchema(
+      'Lifted',
+      {
+        color: { type: 'color', defaultValue: 'red' },
+        useBicolor: { type: 'boolean', defaultValue: true },
+        rows: ConfigurationSchema(
+          'LiftedRows',
+          { domain: { type: 'stringArray', defaultValue: [] } },
+          {
+            preProcessSnapshot: (snap: Record<string, unknown>) =>
+              typeof snap.domain === 'string'
+                ? { ...snap, domain: snap.domain.split(',') }
+                : snap,
+          },
+        ),
+      },
+      {
+        preProcessSnapshot: (snap: Record<string, unknown>) =>
+          snap.color !== undefined && snap.useBicolor === undefined
+            ? { ...snap, useBicolor: false }
+            : snap,
+      },
+    )
+    const node = lifted.create(undefined, { pluginManager })
+    applyConfSettings(node, { color: 'green', rows: { domain: 'a,b' } })
+    expect(getSnapshot(node)).toEqual({
+      color: 'green',
+      useBicolor: false,
+      rows: { domain: ['a', 'b'] },
+    })
+  })
+
+  test('a write that throws costs its key alone, at any depth', () => {
+    const { configuration } = model()
+    const report = applyConfSettings(configuration, {
+      height: 'tall',
+      scales: { y: { bogus: 1 } },
+      facet: 'strand',
+    })
+    expect(report.applied).toEqual(['facet'])
+    expect(report.failed.map(f => f.key)).toEqual(['height', 'scales'])
+    expect(report.failed[1]!.error).toContain('no config slot "bogus"')
   })
 })

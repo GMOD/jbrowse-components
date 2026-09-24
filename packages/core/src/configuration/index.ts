@@ -35,7 +35,6 @@ export type {
 
 export {
   getConfigurationSchemaDefinition,
-  getConfigurationSchemaOptions,
   // exported for scripts/generateConfigManifest.ts, which needs the
   // preProcessSnapshot off a schema whose pluggable type does not expose one —
   // TextSearchAdapterType, where the shorthand is nonetheless the documented
@@ -59,7 +58,8 @@ export {
 } from './formatDetailsConfigSchema.ts'
 export { mergeFormatCallbacks } from './mergeFormatCallbacks.ts'
 export { readConfObject, readConfigValue } from './readConfObject.ts'
-export { getConf, setConf } from './getConf.ts'
+export { applyConfSettings, getConf, setConf } from './getConf.ts'
+export type { ConfSettingsReport } from './getConf.ts'
 export { fillLocations } from './fillLocations.ts'
 export {
   preProcessConfigSnapshot,
@@ -78,10 +78,7 @@ export { toCallbackValue, toFixedValue } from './configurationSlot.ts'
 export {
   getSlotDefinition,
   isConfigurationSlot,
-  isConfigurationSubschema,
   makeSlotFacade,
-  mergedSubschemaValue,
-  preProcessSlotValues,
   slotChoices,
   slotValueRefusal,
 } from './slotFacade.ts'

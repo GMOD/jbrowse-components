@@ -14,7 +14,6 @@ import {
 import {
   getConf,
   getConfigurationSchemaMetadata,
-  getConfigurationSchemaOptions,
   preProcessConfigSnapshot,
   readConfObject,
   requirementProblems,
@@ -1580,7 +1579,9 @@ describe('a declared shorthand', () => {
 
   test('is readable off the registered options', () => {
     const node = Display.create({ facet: 'strand' })
-    expect(getConfigurationSchemaOptions(node.facet)?.shorthand).toBe('field')
+    expect(getConfigurationSchemaMetadata(node.facet)?.options.shorthand).toBe(
+      'field',
+    )
   })
 })
 

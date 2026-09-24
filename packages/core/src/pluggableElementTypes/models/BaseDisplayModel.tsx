@@ -1,12 +1,6 @@
 import { hasParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 
-import {
-  getConf,
-  isConfigurationSlot,
-  isConfigurationSubschema,
-  mergedSubschemaValue,
-  preProcessSlotValues,
-} from '../../configuration/index.ts'
+import { applyConfSettings, getConf } from '../../configuration/index.ts'
 import {
   getContainingTrack,
   getEnv,
@@ -287,45 +281,30 @@ function stateModelFactory() {
         // instantiation (see DisplayModel below); the base model composes
         // before it exists, hence the cast rather than a prop
         const { configuration } = self as unknown as DisplayModel
-        const applied: string[] = []
+        const { applied, undeclared, failed } = applyConfSettings(
+          configuration,
+          settings,
+        )
         const unapplied: UnappliedSetting[] = []
-        const failed: { key: string; error: string }[] = []
-        const slots = preProcessSlotValues(configuration, settings)
-        for (const [key, value] of Object.entries(slots)) {
+        for (const [key, value] of Object.entries(undeclared)) {
           if (!key || key === 'type') {
             unapplied.push({ key, reason: key ? 'display-type' : 'no-slot' })
             continue
           }
-          try {
-            if (isConfigurationSlot(configuration, key)) {
-              // the key arrives from runtime JSON; setConf's slot name is a
-              // compile-time type
-              // eslint-disable-next-line no-restricted-syntax
-              configuration.setSlot(key, value)
-              applied.push(key)
-              continue
-            }
-            if (isConfigurationSubschema(configuration, key)) {
-              configuration.setSubschema(
-                key,
-                mergedSubschemaValue(configuration, key, value),
-              )
-              applied.push(key)
-              continue
-            }
-            const setter = (self as unknown as Record<string, unknown>)[
-              displaySetterName(key)
-            ]
-            if (typeof setter !== 'function') {
-              unapplied.push({ key, reason: 'no-slot' })
-            } else if (options?.allowSetters) {
+          const setter = (self as unknown as Record<string, unknown>)[
+            displaySetterName(key)
+          ]
+          if (typeof setter !== 'function') {
+            unapplied.push({ key, reason: 'no-slot' })
+          } else if (!options?.allowSetters) {
+            unapplied.push({ key, reason: 'setter-only' })
+          } else {
+            try {
               ;(setter as (value: unknown) => void)(value)
               applied.push(`${key} (via setter)`)
-            } else {
-              unapplied.push({ key, reason: 'setter-only' })
+            } catch (e) {
+              failed.push({ key, error: `${e}` })
             }
-          } catch (e) {
-            failed.push({ key, error: `${e}` })
           }
         }
         return { applied, unapplied, failed }

@@ -1,11 +1,17 @@
-import { getType } from '@jbrowse/mobx-state-tree'
+import { getType, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
+import { isPlainObject } from '../util/objectUtils.ts'
 import { readConfObject } from './readConfObject.ts'
-import { getConfigurationSchemaDefinition } from './schemaRegistry.ts'
+import {
+  getConfigurationSchemaDefinition,
+  getConfigurationSchemaMetadata,
+} from './schemaRegistry.ts'
 import {
   isConfigurationModel,
   isConfigurationSchemaType,
+  isConstantEntry,
 } from './schemaTypes.ts'
+import { preProcessSnapshotWith } from './snapshotPreprocess.ts'
 
 import type {
   AnyConfigurationModel,
@@ -160,4 +166,80 @@ function writeConfPath(
     // eslint-disable-next-line no-restricted-syntax -- this is setConf
     node.setSlot(leaf, value)
   }
+}
+
+export interface ConfSettingsReport {
+  /** the keys the config declares, written */
+  applied: string[]
+  /** the keys it does not, with the values the lift left them */
+  undeclared: Record<string, unknown>
+  /** a declared key whose write threw, and why */
+  failed: { key: string; error: string }[]
+}
+
+// A sub-schema of independent settings, whose members a bag names one by one.
+// A channel — a sub-schema with a shorthand — takes one written value, so a
+// bag replaces it whole: `{ field }` after `{ field, domain }` is a facet with
+// no domain, and a merge would leave the old domain standing.
+function namespaceMetadata(member: unknown) {
+  const meta = isStateTreeNode(member)
+    ? getConfigurationSchemaMetadata(getType(member))
+    : undefined
+  return meta?.options.shorthand === undefined ? meta : undefined
+}
+
+function writeConfMember(
+  conf: AnyConfigurationModel,
+  key: string,
+  value: unknown,
+) {
+  const member = conf[key]
+  const namespace = isPlainObject(value) ? namespaceMetadata(member) : undefined
+  if (namespace) {
+    for (const [k, v] of Object.entries(
+      preProcessSnapshotWith(namespace, value),
+    )) {
+      writeConfMember(member, k, v)
+    }
+  } else {
+    writeConfPath(conf, [key], value)
+  }
+}
+
+/**
+ * #api core/configuration
+ * Write a settings bag — a session spec's track entry, a share link, an agent
+ * call — onto a config. Each key names a member: a slot or a channel is written
+ * whole, as `setConf` writes it, so `null` resets it (ADR-146); a namespace's
+ * object names members inside it, at any depth, and the ones it leaves out
+ * keep their values. The config's own lift and checks run over the bag first,
+ * and each namespace's over its part, so a shorthand or a legacy key reads the
+ * same here as in `config.json`. A key the config does not declare is reported
+ * for the caller to route or refuse, and a declared key whose write throws
+ * costs that key alone.
+ */
+export function applyConfSettings(
+  target: AnyConfigurationModel | { configuration: AnyConfigurationModel },
+  settings: Record<string, unknown>,
+): ConfSettingsReport {
+  const conf = isConfigurationModel(target) ? target : target.configuration
+  const meta = getConfigurationSchemaMetadata(conf)
+  const values = meta ? preProcessSnapshotWith(meta, settings) : settings
+  const report: ConfSettingsReport = { applied: [], undeclared: {}, failed: [] }
+  for (const [key, value] of Object.entries(values)) {
+    const declared = Object.hasOwn(meta?.definition ?? {}, key)
+      ? meta!.definition[key]
+      : undefined
+    if (declared === undefined || isConstantEntry(declared)) {
+      report.undeclared[key] = value
+      continue
+    }
+    try {
+      writeConfMember(conf, key, value)
+      report.applied.push(key)
+    } catch (e) {
+      report.failed.push({ key, error: `${e}` })
+    }
+  }
+  return report
 }

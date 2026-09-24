@@ -22,8 +22,8 @@ node not the snapshot, forwarding a callback slot raw, reference resolution.
   alone", while a snapshot handed to `create` resets an omitted slot already.
   **`create` reads a `null` member as unset too**, in a slot or a sub-schema at
   any depth (`preProcessSnapshotWith`), except in a frozen-family slot, which
-  stores it. A namespace's member takes the other merge, `mergedSubschemaValue`,
-  which reads `null` the same way at any depth. ADR-146.
+  stores it. A settings bag (`applyConfSettings`) writes a namespace's members
+  one by one, so a `null` among them resets that member at any depth. ADR-146.
 - **`setConf` classifies a member off the schema's definition**, not off what
   the node holds there: an optional sub-schema nobody has written holds nothing,
   and a `stringArray` slot holds an array.

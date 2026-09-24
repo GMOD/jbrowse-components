@@ -44,8 +44,17 @@ export function registerConfigurationSchema(
   schemaRegistry.set(type, metadata)
 }
 
-export function getConfigurationSchemaMetadata(type: IAnyType) {
-  return schemaRegistry.get(unwrapType(type))
+/**
+ * A schema's metadata, by the schema type or a live node of it. Undefined for
+ * anything `ConfigurationSchema` did not build — a pluggable union, an array
+ * of schemas.
+ */
+export function getConfigurationSchemaMetadata(
+  nodeOrType: AnyConfigurationModel | IAnyType,
+) {
+  return schemaRegistry.get(
+    unwrapType(isType(nodeOrType) ? nodeOrType : getType(nodeOrType)),
+  )
 }
 
 export function isRegisteredConfigurationSchema(type: IAnyType) {
@@ -76,37 +85,19 @@ export function getConfigurationSchemaUnion(type: IAnyType) {
   return unionRegistry.get(type)
 }
 
-// The three lookups above take a schema *type*; the two below take a live config
-// *node* and make the `getType` hop themselves, which is what every reader
-// actually wants — a node is what they hold. Leaving the hop to the call site is
-// how `slotFacade` came to reach the registry directly for `options` while going
-// through a helper for `definition`.
-
 /**
  * The slot/sub-schema/constant table for a config (includes slots merged in from
  * `baseConfiguration` at schema construction). Undefined when the argument isn't
  * a registered configuration schema. The single accessor for "what are this
  * config's slots?" — shared by the slot facade and `fullConfSnapshot`.
  *
- * Takes a live node *or* the schema type itself. Every in-tree reader holds a
- * node, which is why the `getType` hop is here; a caller enumerating registered
- * element types (`ConfigSlotDefaults.test.ts`) holds only the type, and for a
- * track schema it cannot get a node — `explicitIdentifier` makes `trackId` a
- * required MST identifier, so there is nothing to `create({})`.
+ * Takes a live node *or* the schema type itself: a caller enumerating
+ * registered element types (`ConfigSlotDefaults.test.ts`) holds only the type,
+ * and for a track schema it cannot get a node — `explicitIdentifier` makes
+ * `trackId` a required MST identifier, so there is nothing to `create({})`.
  */
 export function getConfigurationSchemaDefinition(
   nodeOrType: AnyConfigurationModel | IAnyType,
 ) {
-  return getConfigurationSchemaMetadata(
-    isType(nodeOrType) ? nodeOrType : getType(nodeOrType),
-  )?.definition
-}
-
-/**
- * The construction options a live config node's schema was built with
- * (identifier kind, `explicitlyTyped`, the `preProcessSnapshot` hook). Undefined
- * when the node's type isn't a registered configuration schema.
- */
-export function getConfigurationSchemaOptions(node: AnyConfigurationModel) {
-  return getConfigurationSchemaMetadata(getType(node))?.options
+  return getConfigurationSchemaMetadata(nodeOrType)?.definition
 }
