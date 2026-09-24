@@ -4,7 +4,7 @@ import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 
 type TrackCopySnapshot = {
   trackId: string
-  name: string
+  name?: string
   category?: unknown
   displays?: { type: string; displayId: string }[]
 } & Record<string, unknown>
@@ -23,8 +23,8 @@ export function copyTrackSnapshot(
   const snap = structuredClone(
     isStateTreeNode(config) ? getSnapshot(config) : config,
   ) as TrackCopySnapshot
+  snap.name = `${snap.name || snap.trackId} (copy)`
   snap.trackId += `-${Date.now()}`
-  snap.name += ' (copy)'
   if (opts.clearCategory) {
     snap.category = undefined
   }

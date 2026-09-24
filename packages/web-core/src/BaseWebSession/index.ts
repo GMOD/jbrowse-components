@@ -34,22 +34,18 @@ import type { AbstractWebRootModel } from '../WebRootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
-import type {
-  AnyConfiguration,
-  AnyConfigurationModel,
-} from '@jbrowse/core/configuration'
+import type { AnyConfiguration } from '@jbrowse/core/configuration'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { TrackActionView } from '@jbrowse/core/util/types'
-import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel BaseWebSessionModel
  *
  * Composable web session shared by jbrowse-web and react-app, before
- * {@link finalizeWebSession} (the snapshotProcessor can't be `compose`d).
+ * `finalizeSession` (the snapshotProcessor can't be `compose`d).
  * jbrowse-web composes `WebSessionManagementMixin` onto this; react-app uses it
  * as-is.
  */
@@ -185,20 +181,6 @@ export function BaseWebSessionModel({
         self.root.setSession(sessionSnapshot)
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       * opens the config editor for a track. Available for any track: a
-       * non-admin's edits to an admin-owned track persist as a delta
-       * (trackConfigDeltas) that rides along in the shared/saved session, rather
-       * than mutating the admin-owned config itself.
-       */
-      editTrackConfiguration(
-        configuration: AnyConfigurationModel | { trackId: string },
-      ) {
-        self.editConfiguration(configuration)
-      },
-    }))
     .views(self => ({
       /**
        * #method
@@ -265,24 +247,16 @@ export function BaseWebSessionModel({
     }))
 }
 
-/** Apply the `Core-extendSession` extension point + legacy snapshot processor. */
-export function finalizeWebSession<T extends IAnyModelType>(
-  pluginManager: PluginManager,
-  sessionModel: T,
-) {
-  return finalizeSession(pluginManager, sessionModel)
-}
-
 /**
  * Finalized web session without the session-database management surface, used
  * by the embedded react-app; jbrowse-web composes `WebSessionManagementMixin`
  * before finalizing. This is just {@link BaseWebSessionModel} run through
- * {@link finalizeWebSession}, so its state-model shape is documented there (the
+ * `finalizeSession`, so its state-model shape is documented there (the
  * autogen documents a single composable model per source file).
  */
 export function BaseWebSession(args: {
   pluginManager: PluginManager
   assemblyConfigSchema: BaseAssemblyConfigSchema
 }) {
-  return finalizeWebSession(args.pluginManager, BaseWebSessionModel(args))
+  return finalizeSession(args.pluginManager, BaseWebSessionModel(args))
 }

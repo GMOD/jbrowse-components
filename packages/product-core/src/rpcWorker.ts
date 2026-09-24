@@ -144,15 +144,6 @@ export async function initializeWorker(
   setStackTraceLimit()
   parallelizeWorkerChunkLoading()
 
-  // Workers fetch data; rendering happens on the main thread, and no RPC method
-  // renders React. Kept as a guard: if plugin code ever pulls an observer into
-  // this realm, static rendering keeps it from setting up reactions that would
-  // leak here. Here rather than in each product's worker entry, where four
-  // copies meant a fifth product would silently ship without it — the plugins
-  // that could trip it are not loaded until getPluginManager below, so this is
-  // still ahead of anything that observes.
-
-  // Add global error handler to catch uncaught errors in the worker
   self.addEventListener('error', event => {
     console.error('[Worker uncaught error]', event.error || event.message)
   })

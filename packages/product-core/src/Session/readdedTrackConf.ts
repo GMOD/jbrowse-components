@@ -1,6 +1,8 @@
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
+import { hydratedTrackForm } from './hydratedForms.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
@@ -19,11 +21,7 @@ function resolvedTrackConf(
 ) {
   return isStateTreeNode(conf)
     ? getSnapshot(conf)
-    : getSnapshot(
-        pluginManager
-          .pluggableConfigSchemaType('track')
-          .create(conf, { pluginManager }),
-      )
+    : hydratedTrackForm(pluginManager)(conf)
 }
 
 // Re-adding a trackId the session already holds returns the existing config,

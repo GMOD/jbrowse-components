@@ -338,51 +338,40 @@ function distinctNames(locations: NonPortableLocation[]): string[] {
   return [...new Set(locations.map(l => l.name))]
 }
 
-// Reads a `trackId` off a loosely-typed session-track snapshot, or undefined.
-function readTrackId(track: unknown): string | undefined {
-  const id = isRecord(track) ? track.trackId : undefined
-  return typeof id === 'string' ? id : undefined
+// A string-valued field off a loosely-typed snapshot entry, or undefined
+function readString(entry: unknown, key: string): string | undefined {
+  const value = isRecord(entry) ? entry[key] : undefined
+  return typeof value === 'string' ? value : undefined
 }
 
-// Concatenate session-track lists, keeping the last entry per trackId so a track
-// carried by both the prior session and the current snapshot ships once (a
-// duplicate trackId is an MST identifier collision on load). Entries without a
-// readable trackId are kept as-is, in order.
-function concatTracksByTrackId(...lists: unknown[][]): unknown[] {
-  const byId = new Map<string, unknown>()
+function readTrackId(track: unknown) {
+  return readString(track, 'trackId')
+}
+
+function readAssemblyName(assembly: unknown) {
+  return readString(assembly, 'name')
+}
+
+// Concatenate snapshot lists, keeping the last entry per `key` so one carried by
+// both the prior session and the current snapshot ships once. Entries without a
+// readable key are kept as-is, in order.
+//
+// A duplicate trackId is an MST identifier collision on load. A duplicate
+// assembly name is worse: it doesn't fail at load, it makes every assembly's
+// `configuration` safeReference ambiguous, so the assemblyManager throws on the
+// next read of one and the session is dead.
+function concatLastByKey(key: string, ...lists: unknown[][]): unknown[] {
+  const byKey = new Map<string, unknown>()
   const out: unknown[] = []
-  for (const t of lists.flat()) {
-    const id = readTrackId(t)
+  for (const entry of lists.flat()) {
+    const id = readString(entry, key)
     if (id === undefined) {
-      out.push(t)
+      out.push(entry)
     } else {
-      byId.set(id, t)
+      byKey.set(id, entry)
     }
   }
-  return [...out, ...byId.values()]
-}
-
-function readAssemblyName(assembly: unknown): string | undefined {
-  const name = isRecord(assembly) ? assembly.name : undefined
-  return typeof name === 'string' ? name : undefined
-}
-
-// Same idea as concatTracksByTrackId for assemblies, whose identifier is their
-// `name`. A duplicate is worse here than for tracks: it doesn't fail at load,
-// it makes every assembly's `configuration` safeReference ambiguous, so the
-// assemblyManager throws on the next read of one and the session is dead.
-function concatAssembliesByName(...lists: unknown[][]): unknown[] {
-  const byName = new Map<string, unknown>()
-  const out: unknown[] = []
-  for (const a of lists.flat()) {
-    const name = readAssemblyName(a)
-    if (name === undefined) {
-      out.push(a)
-    } else {
-      byName.set(name, a)
-    }
-  }
-  return [...out, ...byName.values()]
+  return [...out, ...byKey.values()]
 }
 
 // Session assemblies that don't collide with one the recipient's config already
@@ -396,7 +385,7 @@ function concatAssembliesByName(...lists: unknown[][]): unknown[] {
 // is there.
 //
 // Only the hostedConfigBase strategy needs this. A self-contained export ships
-// no config at all, and concatAssembliesByName already keeps its own two lists
+// no config at all, and concatLastByKey already keeps its own two lists
 // from colliding with each other.
 function withoutBaseAssemblies(
   sessionAssemblies: unknown[],
@@ -626,16 +615,12 @@ function extraPlugins(
 // `connections` getter concatenates on, so shipping one the base already
 // declares would list the same hub twice.
 function extraConnections(connections: unknown[], baseConnections: unknown[]) {
+  const readId = (c: unknown) => readString(c, 'connectionId')
   const baseIds = new Set(baseConnections.flatMap(c => readId(c) ?? []))
   return connections.filter(c => {
     const id = readId(c)
     return !id || !baseIds.has(id)
   })
-}
-
-function readId(connection: unknown): string | undefined {
-  const id = isRecord(connection) ? connection.connectionId : undefined
-  return typeof id === 'string' ? id : undefined
 }
 
 // Collects every `internetAccountId` a snapshot's file locations name, in
@@ -775,7 +760,8 @@ export function planWebExport(
               priorSessionAssemblies,
               baseAssemblyNames,
             ),
-            sessionTracks: concatTracksByTrackId(
+            sessionTracks: concatLastByKey(
+              'trackId',
               priorSessionTracks,
               hosted.addedTracks,
             ),
@@ -784,11 +770,12 @@ export function planWebExport(
         )
       : {
           ...defaultSession,
-          sessionAssemblies: concatAssembliesByName(
+          sessionAssemblies: concatLastByKey(
+            'name',
             priorSessionAssemblies,
             assemblies,
           ),
-          sessionTracks: concatTracksByTrackId(priorSessionTracks, tracks),
+          sessionTracks: concatLastByKey('trackId', priorSessionTracks, tracks),
         },
     hosted ? extraPlugins(plugins, baseConfig?.plugins ?? []) : plugins,
     hosted

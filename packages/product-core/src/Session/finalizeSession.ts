@@ -13,8 +13,7 @@ import type {
  * changed from an object to an array, so old snapshots must be filtered out,
  * xref https://github.com/GMOD/jbrowse-components/issues/1903).
  *
- * Shared by the web session (`finalizeWebSession`) and the desktop session
- * factory so the extension point + migration live in one place.
+ * Shared by the web and desktop session factories so the extension point + migration live in one place.
  */
 export function finalizeSession<T extends IAnyModelType>(
   pluginManager: PluginManager,

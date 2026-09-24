@@ -1,8 +1,8 @@
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { finalizeSession } from '@jbrowse/product-core'
 import {
   BaseWebSessionModel,
   WebSessionManagementMixin,
-  finalizeWebSession,
 } from '@jbrowse/web-core'
 
 import {
@@ -53,7 +53,7 @@ export default function sessionModelFactory({
   pluginManager: PluginManager
   assemblyConfigSchema: BaseAssemblyConfigSchema
 }) {
-  return finalizeWebSession(
+  return finalizeSession(
     pluginManager,
     types
       .compose(

@@ -426,10 +426,18 @@ export function BaseSessionModel<
        * #action
        */
       queueDialog(doneCallback: DoneCallback) {
-        const [component, props] = doneCallback(() => {
-          this.removeActiveDialog()
+        // its own entry, not the head: a late second call must not close the
+        // dialog queued behind it
+        const entry = doneCallback(() => {
+          this.removeDialog(entry)
         })
-        self.queueOfDialogs = [...self.queueOfDialogs, [component, props]]
+        self.queueOfDialogs = [...self.queueOfDialogs, entry]
+      },
+      /**
+       * #action
+       */
+      removeDialog(entry: [DialogComponentType, Record<string, unknown>]) {
+        self.queueOfDialogs = self.queueOfDialogs.filter(d => d !== entry)
       },
     }))
 

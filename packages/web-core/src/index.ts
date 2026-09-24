@@ -3,11 +3,7 @@ export {
   isWebSessionWithConnections,
 } from './SessionConnections.ts'
 export type { WebSessionWithConnections } from './SessionConnections.ts'
-export {
-  BaseWebSession,
-  BaseWebSessionModel,
-  finalizeWebSession,
-} from './BaseWebSession/index.ts'
+export { BaseWebSession, BaseWebSessionModel } from './BaseWebSession/index.ts'
 export { sessionLastUsed } from './WebRootModel.ts'
 export type {
   AbstractJBrowseModel,
