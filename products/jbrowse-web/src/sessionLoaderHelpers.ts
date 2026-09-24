@@ -6,6 +6,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 
 import packageJSON from '../package.json' with { type: 'json' }
 import { openSessionDB } from './openSessionDB.ts'
+import { takePrefetchedConfig } from './prefetchConfig.ts'
 import { configBaseUri } from './resolveConfigPath.ts'
 import { upsertSessionRows } from './sessionDbOps.ts'
 import { addRelativeUris } from './util.ts'
@@ -132,12 +133,14 @@ export async function writeSessionToIDB(snap: Snap, configPath: string) {
 }
 
 export async function fetchRemoteConfig(configPath: string) {
-  const text = await openLocation({
-    uri:
-      configPath +
-      (window.__jbrowseCacheBuster ? `?rand=${Math.random()}` : ''),
-    locationType: 'UriLocation',
-  }).readFile('utf8')
+  const text =
+    (await takePrefetchedConfig(configPath)) ??
+    (await openLocation({
+      uri:
+        configPath +
+        (window.__jbrowseCacheBuster ? `?rand=${Math.random()}` : ''),
+      locationType: 'UriLocation',
+    }).readFile('utf8'))
   const config = JSON.parse(text)
   const configUri = configBaseUri(configPath)
   addRelativeUris(config, configUri)
