@@ -20,7 +20,6 @@ import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
-import Flatbush from '@jbrowse/core/util/flatbush'
 import { compareGroupKeys, groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import { installPrerequisiteFetch } from '@jbrowse/core/util/installPrerequisiteFetch'
 import {
@@ -29,7 +28,10 @@ import {
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
-import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
+import {
+  DEFAULT_MARK_COLOR,
+  withHitIndex,
+} from '@jbrowse/core/util/markEncoding'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
@@ -187,16 +189,9 @@ const MarkClusterDialog = lazy(
 
 const NO_REGIONS: ReadonlyMap<number, MarkRegionData> = new Map()
 
-// The worker's layers as the display stores them: the Flatbush wrapped once
-// at the commit.
 function storedRegionData(result: EncodedFeaturesResult): MarkRegionData {
   return {
-    layers: result.layers.map((layer): StoredLayer => ({
-      ...layer,
-      flatbush: layer.flatbushData
-        ? Flatbush.from(layer.flatbushData)
-        : undefined,
-    })),
+    layers: result.layers.map(layer => withHitIndex(layer)),
     facet: result.facet,
     zoomRange: result.zoomRange,
   }

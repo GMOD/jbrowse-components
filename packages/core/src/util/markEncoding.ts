@@ -231,6 +231,27 @@ export function hitIndexOf(
 
 /**
  * #api
+ * An encoded payload as a display stores it: the hit index the worker built
+ * with {@link hitIndexOf}, wrapped once where the payload lands.
+ */
+export type HitIndexed<T extends EncodedChannels> = T & { flatbush?: Flatbush }
+
+/**
+ * #api
+ * {@link HitIndexed} over what the worker shipped.
+ */
+export function withHitIndex<T extends EncodedChannels>(
+  channels: T,
+): HitIndexed<T> {
+  const { flatbushData } = channels
+  return {
+    ...channels,
+    flatbush: flatbushData ? Flatbush.from(flatbushData) : undefined,
+  }
+}
+
+/**
+ * #api
  * Evaluate one encoding over a feature list into dense channel arrays for
  * the lanes named, the scale table each scaled channel came from, the `y`
  * extremes and — when `index` is among the lanes — a hit index.

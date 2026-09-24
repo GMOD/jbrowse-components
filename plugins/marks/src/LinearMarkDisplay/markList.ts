@@ -8,12 +8,12 @@ import {
 
 import type { MarkType } from './configSchema.ts'
 import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter/zoomRange'
-import type Flatbush from '@jbrowse/core/util/flatbush'
 import type {
   CoreEncodeFeaturesArgs,
   Encoded,
   EncodedChannels,
   FacetSection,
+  HitIndexed,
   LaneName,
 } from '@jbrowse/core/util/markEncoding'
 import type {
@@ -24,10 +24,7 @@ import type {
   MarkValueScaleType,
 } from '@jbrowse/render-core/marks'
 
-/** An encoded layer, its Flatbush wrapped once at the commit. */
-export interface StoredLayer extends EncodedChannels {
-  flatbush?: Flatbush
-}
+export type StoredLayer = HitIndexed<EncodedChannels>
 
 type ChannelLane = Exclude<LaneName, 'index'>
 

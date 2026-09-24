@@ -1,4 +1,4 @@
-import Flatbush from '@jbrowse/core/util/flatbush'
+import { hitIndexOf } from '@jbrowse/core/util/markEncoding'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 
@@ -32,27 +32,22 @@ export function manhattanFixture({
     yMin = v < yMin ? v : yMin
     yMax = v > yMax ? v : yMax
   }
-  let flatbushData: ArrayBuffer | undefined
-  if (flatbush && count > 0) {
-    const fb = new Flatbush(count, undefined, Float64Array)
-    for (let i = 0; i < count; i++) {
-      fb.add(x[i]!, y[i]!, x2[i], y[i])
-    }
-    fb.finish()
-    flatbushData = fb.data
-  }
+  const xs = Uint32Array.from(x)
+  const x2s = Uint32Array.from(x2)
+  const ys = Float32Array.from(y)
   return {
     count,
     skipped: 0,
-    x: Uint32Array.from(x),
-    x2: Uint32Array.from(x2),
-    y: Float32Array.from(y),
+    x: xs,
+    x2: x2s,
+    y: ys,
     color: Uint32Array.from(color),
     glyph: Uint8Array.from(glyph),
     featureIndex: Uint32Array.from(x.map((_, i) => i)),
     yMin,
     yMax,
-    flatbushData,
+    flatbushData:
+      flatbush && count > 0 ? hitIndexOf(xs, x2s, ys).data : undefined,
     ...rest,
   }
 }

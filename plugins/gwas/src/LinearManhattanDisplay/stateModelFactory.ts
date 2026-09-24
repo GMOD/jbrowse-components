@@ -9,11 +9,11 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost, openFeatureWidget, toLocale } from '@jbrowse/core/util'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
-import Flatbush from '@jbrowse/core/util/flatbush'
 import {
   MAX_LEGEND_ENTRIES,
   derivedColorScale,
 } from '@jbrowse/core/util/legendCandidates'
+import { withHitIndex } from '@jbrowse/core/util/markEncoding'
 import {
   thresholdCuts,
   thresholdKeyEntries,
@@ -97,13 +97,6 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ValueScale } from '@jbrowse/wiggle-core'
-
-function storedManhattanData(data: ManhattanRpcResult): StoredManhattanData {
-  return {
-    ...data,
-    flatbush: data.flatbushData ? Flatbush.from(data.flatbushData) : undefined,
-  }
-}
 
 const SetColorFieldDialog = lazy(
   () => import('./components/SetColorFieldDialog.tsx'),
@@ -583,7 +576,7 @@ export function stateModelFactory(
            * call. Production goes through `ctx.commitRegion`.
            */
           setRpcData(idx: number, data: ManhattanRpcResult, region: Region) {
-            self.setLoadedRegion(idx, region, storedManhattanData(data))
+            self.setLoadedRegion(idx, region, withHitIndex(data))
           },
           /**
            * #action
@@ -751,7 +744,7 @@ export function stateModelFactory(
           return fetchEachRegion(self, needed, {
             call: (region, ctx) =>
               ctx.callRpc('GetManhattanData', { ...rpcArgs(self), region }),
-            onResult: (_idx, result) => storedManhattanData(result),
+            onResult: (_idx, result) => withHitIndex(result),
           })
         },
         /**
