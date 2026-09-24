@@ -88,20 +88,4 @@ export default function stateModelF(
         }
       },
     }))
-    .views(self => {
-      const { trackMenuItems: superTrackMenuItems } = self
-      return {
-        trackMenuItems() {
-          return [
-            ...superTrackMenuItems(),
-            {
-              label: 'Add GC content track',
-              onClick: () => {
-                self.addGCContentTrack()
-              },
-            },
-          ]
-        },
-      }
-    })
 }

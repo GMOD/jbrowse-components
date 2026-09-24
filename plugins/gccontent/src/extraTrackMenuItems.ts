@@ -9,12 +9,13 @@ import { getConfAssemblyNames } from '@jbrowse/core/util/tracks'
 import { makeGCContentTrackConf } from './makeGCContentTrackConf.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 /**
- * Adds an "Add GC content track" item to the reference sequence track's menu in
- * the hierarchical track selector (where there's no open display to host the
- * action). Uses the shared Core-extraTrackMenuItems extension point so the
- * track-selector code stays decoupled from this plugin.
+ * Adds "Add GC content track" to the reference sequence track's menu, in the
+ * track selector and under the in-view menu's Track actions. The new track
+ * takes the window, step and mode of the reference track's own GC content
+ * display, which are slots on its config.
  */
 export default function GCContentExtraTrackMenuItemsF(
   pluginManager: PluginManager,
@@ -25,10 +26,19 @@ export default function GCContentExtraTrackMenuItemsF(
       ? {
           label: 'Add GC content track',
           onClick: () => {
+            const gcDisplay = (
+              config.displays as AnyConfigurationModel[] | undefined
+            )?.find(d => d.type === 'LinearGCContentDisplay')
             const conf = makeGCContentTrackConf({
               assemblyNames: getConfAssemblyNames(config),
               sequenceAdapter: readConfObject(config, 'adapter'),
-              gcMode: 'content',
+              ...(gcDisplay
+                ? {
+                    gcMode: readConfObject(gcDisplay, 'gcMode'),
+                    windowSize: readConfObject(gcDisplay, 'windowSize'),
+                    windowDelta: readConfObject(gcDisplay, 'windowDelta'),
+                  }
+                : { gcMode: 'content' as const }),
             })
             addAndShowTrack(session, conf, view)
           },

@@ -9,11 +9,11 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-// The "Add GC content track" menu action (on both the
-// LinearReferenceSequenceDisplay and the gccontent LinearGCContentDisplay)
-// spins up a standalone GCContentTrack session track whose GCContentAdapter
-// wraps the reference track's own sequence adapter.
-function makeSession(displays: { id: string; type: string }[]) {
+// "Add GC content track" spins up a standalone GCContentTrack session track
+// whose GCContentAdapter wraps the reference track's own sequence adapter.
+function makeSession(
+  displays: { id: string; type: string; configuration?: string }[],
+) {
   return createTestSessionAsync({
     jbrowseConfig: {
       assemblies: [
@@ -261,34 +261,57 @@ test('GCContentTrack display wraps a bare sequence adapter', async () => {
 
 // The gccontent plugin contributes this item through Core-extraTrackMenuItems,
 // which reaches both the hierarchical selector's track menu and the in-view
-// label menu. The sequence display used to carry its own copy as well, so an
-// open reference sequence track offered it twice — once nested under "Track
-// actions" and once at the top level — and the copy asked whether gccontent was
-// loaded by calling getTrackType, which throws on an unregistered type instead
-// of answering no.
-test('the refseq label menu offers "Add GC content track" exactly once', async () => {
-  const session = await makeSession([
-    { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
-  ])
+// label menu. Both displays of a reference sequence track used to carry a copy
+// of their own as well, so an open track offered it twice.
+function labelMenuItems(session: Awaited<ReturnType<typeof makeSession>>) {
   const view = session.views[0]
   const track = view.tracks[0]
-
   // the two sources TrackLabelMenu concatenates
-  const flatten = (items: MenuItem[]): string[] =>
-    items.flatMap(item => [
-      ...('label' in item && typeof item.label === 'string'
-        ? [item.label]
-        : []),
-      ...('subMenu' in item ? flatten(resolveSubMenu(item)) : []),
-    ])
-  const labels = [
-    ...flatten(
-      session.getTrackActionMenuItems({ config: track.configuration, view }),
-    ),
-    ...flatten(track.trackMenuItems()),
-  ]
+  return [
+    ...session.getTrackActionMenuItems({ config: track.configuration, view }),
+    ...track.trackMenuItems(),
+  ] as MenuItem[]
+}
 
-  expect(labels.filter(l => l === 'Add GC content track')).toHaveLength(1)
-  // the display's own items are still there — only the duplicate went
-  expect(labels).toContain('Show translation')
+function flatten(items: MenuItem[]): MenuItem[] {
+  return items.flatMap(item => [
+    item,
+    ...('subMenu' in item ? flatten(resolveSubMenu(item)) : []),
+  ])
+}
+
+const labelOf = (item: MenuItem) => ('label' in item ? item.label : undefined)
+
+test.each(['LinearReferenceSequenceDisplay', 'LinearGCContentDisplay'])(
+  'the refseq label menu on %s offers "Add GC content track" exactly once',
+  async type => {
+    const session = await makeSession([{ id: 'display1', type }])
+    const labels = flatten(labelMenuItems(session)).map(labelOf)
+    expect(labels.filter(l => l === 'Add GC content track')).toHaveLength(1)
+  },
+)
+
+test('the label menu row carries the GC display parameters onto the new track', async () => {
+  // the display's own entry on the track config, where its slots are written
+  const session = await makeSession([
+    {
+      id: 'display1',
+      type: 'LinearGCContentDisplay',
+      configuration: 'volvox_refseq-LinearGCContentDisplay',
+    },
+  ])
+  const display = session.views[0].tracks[0].displays[0]
+  display.setGCContentParams({ windowSize: 50, windowDelta: 10 })
+  display.setGCMode('skew')
+  const row = flatten(labelMenuItems(session)).find(
+    item => labelOf(item) === 'Add GC content track',
+  )
+  if (row && 'onClick' in row) {
+    row.onClick()
+  }
+
+  const trackDisplay = findGCTrack(session).displays[0]
+  expect(readConfObject(trackDisplay, 'windowSize')).toBe(50)
+  expect(readConfObject(trackDisplay, 'windowDelta')).toBe(10)
+  expect(readConfObject(trackDisplay, 'gcMode')).toBe('skew')
 })
