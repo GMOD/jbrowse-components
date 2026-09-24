@@ -9,10 +9,8 @@ import type { LinearGenomeViewModel } from '../model.ts'
 
 function TestRubberband({ model }: { model: LinearGenomeViewModel }) {
   const ref = useRef<HTMLDivElement>(null)
-  const { mouseDown, mouseMove, mouseOut, guideX, open } = useRangeSelect(
-    ref,
-    model,
-  )
+  const { mouseDown, mouseMove, mouseOut, guideX, anchorPosition } =
+    useRangeSelect(ref, model)
   return (
     <div
       data-testid="rubberband"
@@ -23,7 +21,7 @@ function TestRubberband({ model }: { model: LinearGenomeViewModel }) {
     >
       {/* expose internal hook state so assertions can observe it */}
       <span data-testid="guideX">{guideX ?? 'none'}</span>
-      <span data-testid="menuOpen">{String(open)}</span>
+      <span data-testid="menuOpen">{String(!!anchorPosition)}</span>
       <span data-testid="refLabel" {...scalebarRefLabelProps} />
     </div>
   )

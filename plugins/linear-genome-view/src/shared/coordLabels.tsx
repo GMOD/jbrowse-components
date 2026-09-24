@@ -54,7 +54,42 @@ const useStyles = makeStyles()(theme => ({
   insideRightEdge: {
     right: 0,
   },
+  guideLine: {
+    pointerEvents: 'none',
+    height: '100%',
+    width: 1,
+    position: 'absolute',
+    left: 0,
+    background: 'red',
+    zIndex: 1001,
+  },
 }))
+
+/** A red vertical line at `coordX` with `children` labelled above it. */
+export function VerticalGuideLine({
+  coordX,
+  viewWidth,
+  stickyTop,
+  children,
+}: {
+  coordX: number
+  viewWidth: number
+  stickyTop: string | undefined
+  children: React.ReactNode
+}) {
+  const { classes } = useStyles()
+  return (
+    <>
+      <GuideLabel coordX={coordX} viewWidth={viewWidth} stickyTop={stickyTop}>
+        {children}
+      </GuideLabel>
+      <div
+        className={classes.guideLine}
+        style={{ transform: `translateX(${coordX}px)` }}
+      />
+    </>
+  )
+}
 
 function anchorStyle(stickyTop: string | undefined) {
   return stickyTop === undefined

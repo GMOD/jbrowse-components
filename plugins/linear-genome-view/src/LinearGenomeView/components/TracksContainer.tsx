@@ -12,7 +12,6 @@ import OverviewHighlightBand from './OverviewHighlightBand.tsx'
 import PaddingBlocks from './PaddingBlocks.tsx'
 import RangeSelectOverlay from './RangeSelectOverlay.tsx'
 import Rubberband from './Rubberband.tsx'
-import Scalebar from './Scalebar.tsx'
 import VerticalGuide from './VerticalGuide.tsx'
 import { useRangeSelect } from './useRangeSelect.ts'
 import { useSideScroll } from './useSideScroll.ts'
@@ -90,18 +89,7 @@ const TracksContainer = observer(function TracksContainer({
         // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed 2-entry positional list (left/right guide), never reordered
         <VerticalGuide key={idx} model={model} coordX={guide.xPos} />
       ))}
-      <Rubberband
-        model={model}
-        ControlComponent={
-          <Scalebar
-            model={model}
-            style={{
-              height: SCALE_BAR_HEIGHT,
-              boxSizing: 'border-box',
-            }}
-          />
-        }
-      />
+      <Rubberband model={model} />
       <ScalebarHighlightGroup model={model} />
       <HighlightGroup model={model} />
       <PluggableElements

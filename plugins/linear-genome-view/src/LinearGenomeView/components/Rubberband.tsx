@@ -5,6 +5,7 @@ import { observer } from 'mobx-react'
 
 import { stickyChromeTops } from '../stickyChrome.ts'
 import RangeSelectOverlay from './RangeSelectOverlay.tsx'
+import Scalebar from './Scalebar.tsx'
 import { useRangeSelect } from './useRangeSelect.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -20,13 +21,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const Rubberband = observer(function Rubberband({
-  model,
-  ControlComponent = <div />,
-}: {
-  model: LGV
-  ControlComponent?: React.ReactElement
-}) {
+const Rubberband = observer(function Rubberband({ model }: { model: LGV }) {
   const ref = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
   const { stickyViewHeaders, headerHeight } = model
@@ -49,7 +44,7 @@ const Rubberband = observer(function Rubberband({
         // the next mousemove put it straight back
         onMouseLeave={range.mouseOut}
       >
-        {ControlComponent}
+        <Scalebar model={model} />
       </div>
     </>
   )

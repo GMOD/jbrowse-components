@@ -6,7 +6,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import RubberbandSpan from '../shared/RubberbandSpan.tsx'
-import VerticalGuide from './VerticalGuide.tsx'
+import { VerticalGuideLine } from '../shared/coordLabels.tsx'
 import { useRangeSelect } from './useRangeSelect.ts'
 
 import type { MultiLevelRubberbandModel } from './types.ts'
@@ -40,18 +40,26 @@ const MultiLevelRubberband = observer(function MultiLevelRubberband({
     width,
     left,
     anchorPosition,
-    open,
     handleMenuItemClick,
     handleClose,
     mouseMove,
     mouseDown,
     mouseOut,
   } = useRangeSelect(ref, model)
+  const viewWidth = Math.min(...model.views.map(view => view.width))
 
   return (
     <>
       {guideX !== undefined ? (
-        <VerticalGuide model={model} coordX={guideX} />
+        <VerticalGuideLine
+          coordX={guideX}
+          viewWidth={viewWidth}
+          stickyTop={undefined}
+        >
+          <PerLevelRows
+            rows={model.views.map(view => stringify(view.pxToBp(guideX), true))}
+          />
+        </VerticalGuideLine>
       ) : rubberbandOn ? (
         <RubberbandSpan
           leftLabel={
@@ -63,7 +71,7 @@ const MultiLevelRubberband = observer(function MultiLevelRubberband({
           size={<PerLevelRows rows={numOfBpSelected.map(getBpDisplayStr)} />}
           width={width}
           left={left}
-          viewWidth={Math.min(...model.views.map(view => view.width))}
+          viewWidth={viewWidth}
           stickyTop={undefined}
         />
       ) : null}
@@ -75,7 +83,7 @@ const MultiLevelRubberband = observer(function MultiLevelRubberband({
             top: anchorPosition.clientY,
           }}
           onMenuItemClick={handleMenuItemClick}
-          open={open}
+          open
           onClose={handleClose}
           menuItems={model.rubberBandMenuItems()}
         />

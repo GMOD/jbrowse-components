@@ -89,7 +89,7 @@ const SearchBox = observer(function SearchBox({
   const recentMenuItems = recentLocationsMenu({
     recentLocations,
     onNavigate: option => {
-      navigate(option).catch(() => {})
+      void navigate(option)
     },
     onClear: clearRecentLocations,
   })
@@ -97,7 +97,7 @@ const SearchBox = observer(function SearchBox({
   return (
     <RefNameAutocomplete
       onSelect={option => {
-        navigate(option).catch(() => {})
+        void navigate(option)
       }}
       assemblyName={assemblyName}
       fetchResults={(queryString, signal) =>

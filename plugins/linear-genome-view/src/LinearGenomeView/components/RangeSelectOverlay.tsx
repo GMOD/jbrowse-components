@@ -1,16 +1,13 @@
-import { Suspense, lazy } from 'react'
-
 import { Menu } from '@jbrowse/core/ui'
 import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import RubberbandSpan from '../../shared/RubberbandSpan.tsx'
 import { stickyChromeTops } from '../stickyChrome.ts'
 import VerticalGuide from './VerticalGuide.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { useRangeSelect } from './useRangeSelect.ts'
-
-const RubberbandSpan = lazy(() => import('../../shared/RubberbandSpan.tsx'))
 
 type LGV = LinearGenomeViewModel
 
@@ -27,12 +24,9 @@ const RangeSelectOverlay = observer(function RangeSelectOverlay({
   const { scalebar } = stickyChromeTops({ stickyViewHeaders, headerHeight })
   const {
     guideX,
-    rubberbandOn,
     rubberband,
     anchorPosition,
-    open,
     isClick,
-    clickBpOffset,
     handleMenuItemClick,
     handleClose,
   } = range
@@ -41,18 +35,16 @@ const RangeSelectOverlay = observer(function RangeSelectOverlay({
     <>
       {guideX !== undefined && !isScalebarRefNameMenuOpen ? (
         <VerticalGuide model={model} coordX={guideX} />
-      ) : rubberbandOn && rubberband ? (
-        <Suspense fallback={null}>
-          <RubberbandSpan
-            left={rubberband.left}
-            width={rubberband.width}
-            viewWidth={model.width}
-            stickyTop={scalebar}
-            leftLabel={stringify(rubberband.leftBpOffset)}
-            rightLabel={stringify(rubberband.rightBpOffset)}
-            size={getBpDisplayStr(rubberband.numOfBpSelected)}
-          />
-        </Suspense>
+      ) : rubberband && !isClick ? (
+        <RubberbandSpan
+          left={rubberband.left}
+          width={rubberband.width}
+          viewWidth={model.width}
+          stickyTop={scalebar}
+          leftLabel={stringify(rubberband.leftBpOffset)}
+          rightLabel={stringify(rubberband.rightBpOffset)}
+          size={getBpDisplayStr(rubberband.numOfBpSelected)}
+        />
       ) : null}
       {anchorPosition ? (
         <Menu
@@ -62,11 +54,13 @@ const RangeSelectOverlay = observer(function RangeSelectOverlay({
             top: anchorPosition.clientY,
           }}
           onMenuItemClick={handleMenuItemClick}
-          open={open}
+          open
           onClose={handleClose}
           menuItems={
-            isClick && clickBpOffset
-              ? model.rubberbandClickMenuItems(clickBpOffset)
+            isClick
+              ? model.rubberbandClickMenuItems(
+                  model.pxToBp(anchorPosition.offsetX),
+                )
               : model.rubberBandMenuItems()
           }
         />

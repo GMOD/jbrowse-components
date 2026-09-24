@@ -1,14 +1,14 @@
-import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { SCALE_BAR_HEIGHT } from '../consts.ts'
 import Gridlines from './Gridlines.tsx'
 import PaddingBlocks from './PaddingBlocks.tsx'
 import ScalebarCoordinateLabels from './ScalebarCoordinateLabels.tsx'
 import ScalebarRefNameLabels from './ScalebarRefNameLabels.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type React from 'react'
 
 type LGV = LinearGenomeViewModel
 
@@ -20,32 +20,23 @@ const useStyles = makeStyles()({
   container: {
     overflow: 'clip',
     position: 'relative',
+    height: SCALE_BAR_HEIGHT,
+    boxSizing: 'border-box',
   },
 })
 
-interface ScalebarProps {
-  model: LGV
-  style?: React.CSSProperties
-  className?: string
-}
-
-const Scalebar = observer(function Scalebar({
-  model,
-  style,
-  className,
-}: ScalebarProps) {
+const Scalebar = observer(function Scalebar({ model }: { model: LGV }) {
   const { classes } = useStyles()
 
   return (
     <Paper
-      // The rubberband owns presses on the scalebar (it wraps this as its
-      // ControlComponent), so the view's click-drag pan must not also start one
+      // The rubberband owns presses on the scalebar (it wraps this), so the
+      // view's click-drag pan must not also start one
       // on the paths where the rubberband doesn't stopPropagation — a press with
       // the refName menu already open. See ResizeHandle for the marker contract.
       data-gesture-owner="true"
-      className={cx(classes.container, className)}
+      className={classes.container}
       variant="outlined"
-      style={style}
     >
       {/* offset 1px for left track border */}
       <Gridlines model={model} offset={1} />

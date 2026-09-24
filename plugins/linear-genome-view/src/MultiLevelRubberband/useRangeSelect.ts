@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
 import { transaction } from 'mobx'
+
+import { useWindowDrag } from '../shared/useWindowDrag.ts'
 
 import type { MultiLevelRubberbandModel } from './types.ts'
 import type React from 'react'
@@ -44,56 +46,25 @@ export function useRangeSelect(
     clearOffsets()
   }, [clearOffsets])
 
-  useEffect(() => {
-    const el = ref.current
-    if (!mouseDragging || !el) {
-      return
-    }
-    // the container's left edge is fixed for the duration of a drag, so measure
-    // it once here rather than calling getBoundingClientRect on every mousemove
-    const { left } = el.getBoundingClientRect()
-
-    function globalMouseMove(event: MouseEvent) {
-      setCurrentX(event.clientX - left)
-    }
-
-    function globalMouseUp(event: MouseEvent) {
-      if (startX === undefined) {
-        return
-      }
-      const offsetX = event.clientX - left
-      if (Math.abs(offsetX - startX) <= 3) {
+  useWindowDrag(ref, mouseDragging ? startX : undefined, {
+    onMove: setCurrentX,
+    onEnd: ({ startX, endX, isClick, clientX, clientY }) => {
+      if (isClick) {
         handleClose()
         return
       }
-      setAnchorPosition({
-        offsetX,
-        clientX: event.clientX,
-        clientY: event.clientY,
-      })
-      const leftPx = Math.min(startX, offsetX)
-      const rightPx = Math.max(startX, offsetX)
+      setAnchorPosition({ offsetX: endX, clientX, clientY })
+      const leftPx = Math.min(startX, endX)
+      const rightPx = Math.max(startX, endX)
       transaction(() => {
         for (const view of model.views) {
           view.setOffsets(view.pxToBp(leftPx), view.pxToBp(rightPx))
         }
       })
       setGuideX(undefined)
-    }
-    function globalKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        handleClose()
-      }
-    }
-    window.addEventListener('mousemove', globalMouseMove)
-    window.addEventListener('mouseup', globalMouseUp)
-    window.addEventListener('keydown', globalKeyDown)
-    return () => {
-      window.removeEventListener('mousemove', globalMouseMove)
-      window.removeEventListener('mouseup', globalMouseUp)
-      window.removeEventListener('keydown', globalKeyDown)
-    }
-  }, [startX, mouseDragging, model, ref, handleClose])
+    },
+    onCancel: handleClose,
+  })
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
@@ -143,7 +114,6 @@ export function useRangeSelect(
   const views = rubberbandOn ? model.views : []
 
   return {
-    open: Boolean(anchorPosition),
     rubberbandOn,
     guideX,
     anchorPosition,

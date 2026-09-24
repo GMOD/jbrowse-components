@@ -95,11 +95,6 @@ const CrisprGuidePanel = observer(function CrisprGuidePanel({
   const [cutOffsetStr, setCutOffsetStr] = useState(
     String(DEFAULT_PRESET.cutOffset),
   )
-  // presets carry this; Custom is treated as a blunt cutter, so the panel does
-  // not grow a second offset field for a case config can express directly
-  const [cutOffsetBottom, setCutOffsetBottom] = useState(
-    DEFAULT_PRESET.cutOffsetBottom,
-  )
   const [searchForward, setSearchForward] = useState(true)
   const [searchReverse, setSearchReverse] = useState(true)
   const [filterQuality, setFilterQuality] = useState(false)
@@ -107,6 +102,8 @@ const CrisprGuidePanel = observer(function CrisprGuidePanel({
   // `Number('')` is 0, so an emptied field would otherwise read as a valid zero
   const guideLength = toBpCount(guideLengthStr)
   const cutOffset = toBpCount(cutOffsetStr)
+  // Custom is a blunt cutter: config can express a staggered one directly
+  const cutOffsetBottom = ENZYME_PRESETS[enzyme]?.cutOffsetBottom ?? cutOffset
   // both are bp counts used for fixed-length string slicing, so a fractional
   // value would silently truncate and skew the placement
   const guideLengthValid = Number.isInteger(guideLength) && guideLength > 0
@@ -140,7 +137,6 @@ const CrisprGuidePanel = observer(function CrisprGuidePanel({
       setPamLocation(preset.pamLocation)
       setGuideLengthStr(String(preset.guideLength))
       setCutOffsetStr(String(preset.cutOffset))
-      setCutOffsetBottom(preset.cutOffsetBottom)
     }
   }
 
@@ -157,7 +153,7 @@ const CrisprGuidePanel = observer(function CrisprGuidePanel({
         guideLength,
         pamLocation,
         cutOffset,
-        cutOffsetBottom: enzyme === 'Custom' ? cutOffset : cutOffsetBottom,
+        cutOffsetBottom,
         searchForward,
         searchReverse,
         excludePolyT: filterQuality,

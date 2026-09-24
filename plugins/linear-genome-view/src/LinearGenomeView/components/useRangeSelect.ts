@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
 
+import { useWindowDrag } from '../../shared/useWindowDrag.ts'
 import { isOnScalebarRefLabel } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -38,67 +39,34 @@ export function useRangeSelect(
     setGuideX(undefined)
   }, [])
 
-  useEffect(() => {
-    const el = ref.current
-    if (!mouseDragging || !el) {
-      return
-    }
-    // the container's left edge is fixed for the duration of a drag, so measure
-    // it once here rather than calling getBoundingClientRect on every mousemove
-    const { left } = el.getBoundingClientRect()
-
-    function globalMouseMove(event: MouseEvent) {
-      setCurrentX(event.clientX - left)
-    }
-
-    function globalMouseUp(event: MouseEvent) {
-      if (startX === undefined) {
-        return
-      }
-      const { clientX, clientY } = event
-      const offsetX = clientX - left
-      const isClick = Math.abs(offsetX - startX) <= 3
-
-      // A click that began on a scalebar refname label is handled by that
-      // label's onClick (opens its menu), not by the rubberband menu here.
-      // Drop the hover guide too: the label's menu covers it while it is open,
-      // and nothing else clears it, so picking an item like "Focus on X" left a
-      // red line stranded on the scalebar with the pointer nowhere near it
+  useWindowDrag(ref, mouseDragging ? startX : undefined, {
+    onMove: setCurrentX,
+    onEnd: ({ startX, endX, isClick, clientX, clientY }) => {
+      // A click on a scalebar refName label belongs to the label's own menu.
+      // Drop the hover guide too: that menu covers it, and nothing else clears
+      // it once the menu closes
       if (isClick && startedOnRefLabel) {
         setStartX(undefined)
         setCurrentX(undefined)
         setGuideX(undefined)
         return
       }
-
-      setAnchorPosition({ offsetX, clientX, clientY, isClick })
+      setAnchorPosition({ offsetX: endX, clientX, clientY, isClick })
       if (isClick) {
-        setGuideX(offsetX)
+        setGuideX(endX)
       } else {
         model.setOffsets(
-          model.pxToBp(Math.min(startX, offsetX)),
-          model.pxToBp(Math.max(startX, offsetX)),
+          model.pxToBp(Math.min(startX, endX)),
+          model.pxToBp(Math.max(startX, endX)),
         )
         setGuideX(undefined)
       }
-    }
-
-    function globalKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setStartX(undefined)
-        setCurrentX(undefined)
-      }
-    }
-
-    window.addEventListener('mousemove', globalMouseMove)
-    window.addEventListener('mouseup', globalMouseUp)
-    window.addEventListener('keydown', globalKeyDown)
-    return () => {
-      window.removeEventListener('mousemove', globalMouseMove)
-      window.removeEventListener('mouseup', globalMouseUp)
-      window.removeEventListener('keydown', globalKeyDown)
-    }
-  }, [startX, startedOnRefLabel, mouseDragging, model, ref])
+    },
+    onCancel: () => {
+      setStartX(undefined)
+      setCurrentX(undefined)
+    },
+  })
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     if (shiftOnly && !event.shiftKey) {
@@ -142,11 +110,7 @@ export function useRangeSelect(
     handleClose()
   }
 
-  const open = Boolean(anchorPosition)
   const isClick = anchorPosition?.isClick
-  const clickBpOffset = isClick
-    ? model.pxToBp(anchorPosition.offsetX)
-    : undefined
 
   // rubberband geometry only exists while a drag is in progress (startX set);
   // grouped so a single truthiness check narrows all fields for RubberbandSpan
@@ -173,12 +137,8 @@ export function useRangeSelect(
   }
 
   return {
-    open,
     isClick,
-    clickBpOffset,
     guideX,
-    // true only mid-drag and not a click — drives RubberbandSpan vs guide
-    rubberbandOn: rubberband !== undefined && !isClick,
     mouseDown,
     mouseMove,
     mouseOut,

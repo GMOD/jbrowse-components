@@ -9,7 +9,10 @@ import CrisprGuidePanel from './CrisprGuidePanel.tsx'
 import MotifListPanel from './MotifListPanel.tsx'
 import SequencePatternPanel from './SequencePatternPanel.tsx'
 
-import type { SequenceSearchModeProps } from './searchModes.ts'
+import type {
+  SequenceSearchModeProps,
+  SequenceSearchModel,
+} from './searchModes.ts'
 import type { ComponentType } from 'react'
 
 const useStyles = makeStyles()({
@@ -44,10 +47,7 @@ const SequenceSearchDialog = observer(function SequenceSearchDialog({
   model,
   handleClose,
 }: {
-  model: {
-    assemblyNames: string[]
-    launchTrack: (trackId: string) => Promise<unknown>
-  }
+  model: SequenceSearchModel
   handleClose: () => void
 }) {
   const { classes } = useStyles()

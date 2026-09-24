@@ -6,6 +6,8 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { TRACK_OUTLINE_BORDER } from '../consts.ts'
+
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { LinearDisplayModel } from '@jbrowse/display-kit/types'
@@ -132,7 +134,7 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
             model={model}
             track={track}
             className={classes.renderingComponentContainer}
-            style={{ left: showTrackOutlines ? -1 : 0 }}
+            style={{ left: showTrackOutlines ? -TRACK_OUTLINE_BORDER : 0 }}
           >
             <Suspense fallback={<LoadingOverlay isVisible immediate />}>
               <RenderingComponent
