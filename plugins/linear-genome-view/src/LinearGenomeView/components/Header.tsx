@@ -50,7 +50,7 @@ const Controls = observer(function Controls({
   const [ref, { width }] = useMeasure('width')
   const highlighted = highlightedDisplays(model)
   const viewMenu = getSession(model).viewTitleBars === false
-  const touchOnly = useMediaQuery('not all and (any-pointer: fine)', {
+  const touch = useMediaQuery('(pointer: coarse)', {
     noSsr: true,
   })
   const fit = headerFit({
@@ -58,7 +58,7 @@ const Controls = observer(function Controls({
     searchBoxPx: searchBoxWidth(model.coarseVisibleLocStrings),
     clearHighlight: highlighted.length > 0,
     viewMenu,
-    touchOnly,
+    touch,
   })
   return (
     <div className={classes.headerBar} ref={ref}>
@@ -74,11 +74,11 @@ const Controls = observer(function Controls({
         model={model}
         indent={fit.trackSelectorIndent}
       />
-      {touchOnly ? null : (
+      {touch ? null : (
         <ScrollZoomToggle model={model} iconOnly={!fit.scrollZoomLabel} />
       )}
       <div className={classes.spacer} />
-      {touchOnly ? null : (
+      {touch ? null : (
         <HeaderPanControls model={model} compact={!fit.panButtonSpacing} />
       )}
       <SearchBox model={model} />

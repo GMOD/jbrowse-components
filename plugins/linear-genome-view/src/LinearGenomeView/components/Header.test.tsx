@@ -9,13 +9,13 @@ import type { LinearGenomeViewModel } from '../model.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
-const TOUCH_ONLY = 'not all and (any-pointer: fine)'
+const COARSE_POINTER = '(pointer: coarse)'
 
 // jsdom has no matchMedia, so without this every render is the desktop header
-function installPointer(touchOnly: boolean) {
+function installPointer(touch: boolean) {
   window.matchMedia = (query: string) =>
     ({
-      matches: query === TOUCH_ONLY && touchOnly,
+      matches: query === COARSE_POINTER && touch,
       media: query,
       onchange: null,
       addEventListener() {},
@@ -88,7 +88,7 @@ test('a mouse gets the pan buttons and the scroll-zoom toggle', async () => {
 })
 
 // A swipe pans, and there is no wheel for the toggle to govern
-test('a touch-only device gets neither', async () => {
+test('a touch device gets neither', async () => {
   installPointer(true)
   const { queryByLabelText, container } = await renderHeader()
   expect(queryByLabelText('Pan left')).toBeNull()

@@ -38,6 +38,9 @@ const useStyles = makeStyles()(theme => ({
     gridColumn: 'main',
     display: 'grid',
     gridTemplateRows: '[menubar] min-content [components] minmax(0, 1fr)',
+    // an implicit column floors at the toolbar's min-content, which widened
+    // the page past a phone's screen rather than ellipsizing the session name
+    gridTemplateColumns: 'minmax(0, 1fr)',
     height: '100%',
   },
   appBar: {

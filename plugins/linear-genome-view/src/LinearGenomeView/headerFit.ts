@@ -16,11 +16,11 @@ const CLEAR_HIGHLIGHT_PX = 35
 // 40px icon button and its flex gap.
 const VIEW_MENU_PX = 44
 
-// A touch-only device drops the scroll-zoom toggle, which has no wheel to
+// A touch device drops the scroll-zoom toggle, which has no wheel to
 // govern, and the pan buttons, which a swipe replaces: 114 + 156, and the flex
 // gaps of the three items.
-const TOUCH_ONLY_ABSENT_PX = 282
-const TOUCH_ONLY_ABSENT = new Set(['panButtonSpacing', 'scrollZoomLabel'])
+const TOUCH_ABSENT_PX = 282
+const TOUCH_ABSENT = new Set(['panButtonSpacing', 'scrollZoomLabel'])
 
 // What the header gives up as its window narrows, cheapest first, with the
 // pixels each one frees. Whitespace goes before words, words before a redundant
@@ -61,13 +61,13 @@ export function headerFit({
   searchBoxPx,
   clearHighlight = false,
   viewMenu = false,
-  touchOnly = false,
+  touch = false,
 }: {
   width: number | undefined
   searchBoxPx: number
   clearHighlight?: boolean
   viewMenu?: boolean
-  touchOnly?: boolean
+  touch?: boolean
 }): HeaderFit {
   const fit = Object.fromEntries(SHEDDABLE.map(([k]) => [k, true])) as HeaderFit
   if (width === undefined) {
@@ -77,13 +77,12 @@ export function headerFit({
     width -
     (clearHighlight ? CLEAR_HIGHLIGHT_PX : 0) -
     (viewMenu ? VIEW_MENU_PX : 0)
-  let need =
-    ROW_WITHOUT_SEARCH_PX + searchBoxPx - (touchOnly ? TOUCH_ONLY_ABSENT_PX : 0)
+  let need = ROW_WITHOUT_SEARCH_PX + searchBoxPx - (touch ? TOUCH_ABSENT_PX : 0)
   for (const [key, saves] of SHEDDABLE) {
     if (need <= room) {
       break
     }
-    if (touchOnly && TOUCH_ONLY_ABSENT.has(key)) {
+    if (touch && TOUCH_ABSENT.has(key)) {
       continue
     }
     fit[key] = false
