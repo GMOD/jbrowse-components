@@ -143,6 +143,15 @@ export function configSchemaFactory() {
       /**
        * #slot
        */
+      laneGeneTracks: {
+        type: 'stringArray',
+        description:
+          "the trackId of the gene track each lane draws, one per genome. A lane whose genome no entry names draws the session's best-ranked annotation track for it, which on a config holding several gene sets per genome is whichever is declared first",
+        defaultValue: [],
+      },
+      /**
+       * #slot
+       */
       bridgeSkippedLanes: {
         type: 'boolean',
         description:

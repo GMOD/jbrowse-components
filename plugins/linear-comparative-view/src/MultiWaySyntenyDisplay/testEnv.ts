@@ -225,11 +225,21 @@ export function createDisplayWithSession({
       getTrackById: (id: string) =>
         id === 'multiway_track' ? syntenyTrack : undefined,
     }),
-    types.model({}).volatile(() => ({
-      tracks: sessionTracks,
-      connectionInstances,
-      animationMode,
-    })),
+    types
+      .model({})
+      .volatile(() => ({
+        tracks: sessionTracks,
+        connectionInstances,
+        animationMode,
+        views: [] as { id: string }[],
+        // what a lane's "Open" hop asked for, each view's type and init
+        addedViews: [] as { type: string; init: Record<string, unknown> }[],
+      }))
+      .actions(self => ({
+        addView(type: string, init: Record<string, unknown>) {
+          self.addedViews.push({ type, init })
+        },
+      })),
   )
 
   const session = Session.create({ configuration: {} }, { pluginManager })

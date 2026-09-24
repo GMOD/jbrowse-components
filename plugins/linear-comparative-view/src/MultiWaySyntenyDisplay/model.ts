@@ -20,7 +20,6 @@ import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
 import {
   allSessionTracks,
-  annotationTrackIds,
   getTrackAssemblyNames,
   isSameAssemblyName,
   openAssemblyInLinearView,
@@ -1303,14 +1302,16 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * per lane, the session's best-ranked annotation track declared for
-       * that assembly alone (`annotationRank`). Ranked rather than first
+       * per lane, the gene track it draws: the one `laneGeneTracks` names for
+       * its genome, else the session's best-ranked annotation track declared
+       * for that assembly alone (`annotationRank`). Ranked rather than first
        * found, since a config routinely puts `hg38-rmsk` in BED beside
        * `hg38-genes` in GFF3. One pass over the tracks against the lanes'
        * canonical names, so a cohort of lanes costs no more than one
        */
-      get laneGeneAdapters() {
+      get laneGeneTracks() {
         const session = getSession(self)
+        const named = new Set<string>(getConf(self, 'laneGeneTracks'))
         // two mates can spell one assembly two ways, and both lanes draw from
         // the one track
         const lanesByKey = new Map<string, string[]>()
@@ -1327,9 +1328,9 @@ export function stateModelFactory(
         for (const track of allSessionTracks(session)) {
           const names = readConfObject(track, 'assemblyNames') as string[]
           const type: unknown = readConfObject(track, ['adapter', 'type'])
-          const rank = annotationRank(
-            typeof type === 'string' ? type : undefined,
-          )
+          const rank = named.has(readConfObject(track, 'trackId') as string)
+            ? -1
+            : annotationRank(typeof type === 'string' ? type : undefined)
           if (names.length === 1 && rank !== undefined) {
             const key = self.laneKey(names[0]!)
             const held = best.get(key)
@@ -1341,15 +1342,24 @@ export function stateModelFactory(
             }
           }
         }
-        const out = new Map<string, Record<string, unknown>>()
+        const out = new Map<string, AnyConfigurationModel>()
         for (const [key, { track }] of best) {
-          const adapter = readConfObject(track, 'adapter') as Record<
-            string,
-            unknown
-          >
           for (const lane of lanesByKey.get(key)!) {
-            out.set(lane, adapter)
+            out.set(lane, track)
           }
+        }
+        return out
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * the adapter config of each lane's gene track
+       */
+      get laneGeneAdapters() {
+        const out = new Map<string, Record<string, unknown>>()
+        for (const [lane, track] of self.laneGeneTracks) {
+          out.set(lane, readConfObject(track, 'adapter'))
         }
         return out
       },
@@ -2407,11 +2417,13 @@ export function stateModelFactory(
        * #action
        * a lane's assembly in a linear genome view of its own, at `loc`, with
        * this track along so the new view is the same stack anchored there,
-       * and the session's annotation for the genome. Keyed on the display and
-       * the lane, so following one lane twice re-navigates the view
+       * and the gene track the lane draws — not every feature track the
+       * genome has, which on a hub is dozens. Keyed on the display and the
+       * lane, so following one lane twice re-navigates the view
        */
       openInNewView(assemblyName: string, loc: string) {
         const session = getSession(self)
+        const genes = self.laneGeneTracks.get(assemblyName)
         openAssemblyInLinearView({
           session,
           id: `${self.id}-mate-${assemblyName}`,
@@ -2419,7 +2431,7 @@ export function stateModelFactory(
           loc,
           tracks: [
             self.parentTrack.configuration.trackId,
-            ...annotationTrackIds(session, assemblyName),
+            ...(genes ? [readConfObject(genes, 'trackId') as string] : []),
           ],
         }).catch((e: unknown) => {
           session.notifyError(`${e}`, e)

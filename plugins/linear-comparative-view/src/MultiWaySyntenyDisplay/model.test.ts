@@ -1,4 +1,4 @@
-import { setConf } from '@jbrowse/core/configuration'
+import { readConfObject, setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { SimpleFeature } from '@jbrowse/core/util'
 import {
@@ -1076,6 +1076,33 @@ test('a lane annotated through a connection has an annotation', () => {
     display.laneStack.lanes.find(l => l.assemblyName === 'volvox_random')
       ?.hasAnnotation,
   ).toBe(true)
+})
+
+// A hub config carries several gene sets per genome in one adapter format, so
+// the rank ties and declaration order picked `hg38-ccdsGene` over RefSeq.
+test('a lane draws the gene track the display names for its genome', () => {
+  const { display, session } = createDisplayWithSession({
+    geneTracks: [
+      { trackId: 'volvox_genes', assemblyNames: ['volvox'] },
+      { trackId: 'volvox_random_ccds', assemblyNames: ['volvox_random'] },
+      { trackId: 'volvox_random_refseq', assemblyNames: ['volvox_random'] },
+    ],
+  })
+  display.setFeatures([mateRecord('f1', 'volvox_random', 'gene1')])
+  const trackIdOf = (lane: string) => {
+    const track = display.laneGeneTracks.get(lane)
+    return track && readConfObject(track, 'trackId')
+  }
+  expect(trackIdOf('volvox_random')).toBe('volvox_random_ccds')
+
+  setConf(display, 'laneGeneTracks', ['volvox_random_refseq'])
+  expect(trackIdOf('volvox_random')).toBe('volvox_random_refseq')
+  expect(trackIdOf('volvox')).toBe('volvox_genes')
+
+  display.openInNewView('volvox_random', 'ctgA:1-100')
+  expect(session.addedViews.map(view => view.init.tracks)).toEqual([
+    ['multiway_track', 'volvox_random_refseq'],
+  ])
 })
 
 test('two mates spelling one assembly two ways both draw from its one gene track', () => {
