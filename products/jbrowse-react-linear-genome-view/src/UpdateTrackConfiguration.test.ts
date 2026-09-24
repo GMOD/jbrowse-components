@@ -636,6 +636,7 @@ describe('a delta write re-resolves only its own track', () => {
     const session = state.session as unknown as DeltaSession & {
       addSessionTrackConf: (conf: Record<string, unknown>) => unknown
       withTrackEdits: (base: AnyConfigurationModel) => AnyConfigurationModel
+      getTrackConfigChanges: (trackId: string) => unknown[]
     }
     session.addSessionTrackConf(conf('session'))
     session.addSessionTrackConf(conf('sessionEdited'))
@@ -677,22 +678,34 @@ describe('a delta write re-resolves only its own track', () => {
     })
   })
 
-  test.each(ids)('an edit to %s resolves no other track', async edited => {
-    const { session, disposers } = await fourShown()
-    const { withTrackEdits } = session
-    const resolved: string[] = []
-    session.withTrackEdits = base => {
-      resolved.push(base.trackId)
-      return withTrackEdits(base)
-    }
+  test.each(ids)(
+    'an edit to %s resolves and diffs no other track',
+    async edited => {
+      const { session, disposers } = await fourShown()
+      const { withTrackEdits } = session
+      const resolved: string[] = []
+      session.withTrackEdits = base => {
+        resolved.push(base.trackId)
+        return withTrackEdits(base)
+      }
+      const diffed: string[] = []
+      const badges = ids.map(id =>
+        autorun(() => {
+          session.getTrackConfigChanges(id)
+          diffed.push(id)
+        }),
+      )
+      diffed.length = 0
 
-    session.updateTrackConfiguration({ ...conf(edited), name: 'edited' })
+      session.updateTrackConfiguration({ ...conf(edited), name: 'edited' })
 
-    expect(resolved).toEqual([edited])
-    disposers.forEach(d => {
-      d()
-    })
-  })
+      expect(resolved).toEqual([edited])
+      expect(diffed).toEqual([edited])
+      for (const d of [...disposers, ...badges]) {
+        d()
+      }
+    },
+  )
 
   test('no config resolution reads the delta map or the session tracks', async () => {
     const { disposers } = await fourShown()
