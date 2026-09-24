@@ -62,14 +62,14 @@ diff cut from the merge base, then a fix round), then land.
 
 ## Open branch 2: `mark-rows` (worktree `.claude/worktrees/mark-rows`)
 
-Thirteen commits on `dc9adf0665`, HEAD `c896d69cc0`, tree clean, **reviewed, not
-rebased, findings unfixed** (the fix agent was stopped before it changed
-anything). Rebase conflict map from the reviewer: text conflicts only in
-`model.ts`'s `./markList.ts` import (main added `zoomInRange`, the branch
-`rowValuesAt`: keep both) and the two autogen files (take main's, rerun
-`pnpm autogen`); main's three mark-display commits (`e3c92c9ed4`, `4f9ab04ae6`,
-`bc2175a8d5`: zoom-range bins, a per-window field scan, a "rows past the plot"
-notice feeding `waitReady`) stay. The findings, in order:
+Thirteen commits on `5fb2af80ad`, HEAD `c896d69cc0`, tree clean, **reviewed,
+findings unfixed** (the fix agent was stopped before it changed anything). Main's
+five commits past that base touch no mark-display file. The base already holds
+main's three mark-display commits (`e3c92c9ed4`, `4f9ab04ae6`, `bc2175a8d5`:
+zoom-range bins, a per-window field scan, a "rows cut" corner chip). The chip
+stays out of `notices`, so a cut pileup never reaches `waitReady`'s `notReady`,
+and under `rows` it counts the rows that `rowCount` returns. The findings, in
+order:
 
 1. **The multi-BigWig default is a new picture, not a fix.** Main never routes
    the `MultiQuantitativeTrack` seed `rows: 'source'` to the mark display (its
