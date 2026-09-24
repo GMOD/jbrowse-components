@@ -32,9 +32,13 @@ import type {
   Encoded,
   EncodedChannels,
   FieldRef,
+  LocusRef,
   ShapeEncoding,
   ShapeName,
   ShapeScaleTable,
+  SizeEncoding,
+  SizeRef,
+  SizeScaleTable,
   LaneName,
 } from './markEncodingTypes.ts'
 import type { ProgressReporter } from './progress.ts'
@@ -58,9 +62,14 @@ export type {
   FieldRef,
   FilterStep,
   FormulaStep,
+  LocusRef,
+  MateStep,
   ShapeEncoding,
   ShapeName,
   ShapeScaleTable,
+  SizeEncoding,
+  SizeRef,
+  SizeScaleTable,
   LaneName,
   LayerRequest,
   MarkEncoding,
@@ -74,6 +83,8 @@ export { COLOR_SCHEMES } from './colorSchemes.ts'
 export { NO_VALUE_LABEL } from './categoricalField.ts'
 
 export const DEFAULT_MARK_COLOR = '#0068d1'
+
+export const DEFAULT_SIZE_RANGE_PX: [number, number] = [1, 6]
 
 /**
  * #api
@@ -111,23 +122,28 @@ export type ChannelReader<T = unknown> = (feature: Feature) => T
  */
 export interface MarkEncodingInput {
   x?: FieldRef | ChannelReader
-  x2?: FieldRef | ChannelReader
+  x2?: FieldRef | LocusRef | ChannelReader
   y?: FieldRef | ChannelReader
   row?: FieldRef | ChannelReader | ArrayLike<number>
   color?: ColorEncoding | ChannelReader<number>
   shape?: ShapeEncoding | ChannelReader<number>
   text?: FieldRef | ChannelReader
+  size?: SizeEncoding
 }
 
 /**
  * #api
  * What surrounds an encode: the jexl instance a `jexl:` channel compiles
  * against — a caller whose channels are all readers or field names passes
- * none — and a progress reporter.
+ * none — a progress reporter, and the region the features were fetched for,
+ * in the adapter's naming, with which an `x2` on another sequence indexes
+ * over the whole region, since the curve to it reaches the region's edge
+ * from its near foot.
  */
 export interface EncodeContext {
   jexl?: JexlInstance
   report?: ProgressReporter
+  region?: { refName: string; start: number; end: number }
 }
 
 function jexlExpression(ref: string, jexl: JexlInstance | undefined) {
@@ -225,7 +241,9 @@ export function hitIndexOf(
   const fb = new Flatbush(count, undefined, Float64Array)
   for (let i = 0; i < count; i++) {
     const v = y ? y[i]! : 0
-    fb.add(x[i]!, v, x2[i], v)
+    const a = x[i]!
+    const b = x2[i]!
+    fb.add(Math.min(a, b), v, Math.max(a, b), v)
   }
   fb.finish()
   return fb
@@ -269,11 +287,33 @@ export function encodeFeatures<L extends LaneName>(
   lanes: readonly L[],
   ctx: EncodeContext = {},
 ): Encoded<L> {
-  const { jexl, report } = ctx
+  const { jexl, report, region } = ctx
   const n = features.length
   const has = (lane: LaneName) => (lanes as readonly LaneName[]).includes(lane)
   const readX = channelReader(encoding.x ?? 'start', jexl)
-  const readX2 = channelReader(encoding.x2 ?? 'end', jexl)
+  const { x2: x2Encoding } = encoding
+  const x2Locus = typeof x2Encoding === 'object' ? x2Encoding : undefined
+  const readX2 = channelReader(
+    typeof x2Encoding === 'object' ? x2Encoding.pos : (x2Encoding ?? 'end'),
+    jexl,
+  )
+  const readX2Chrom = x2Locus ? channelReader(x2Locus.chrom, jexl) : undefined
+  const x2Ref = has('x2Ref') ? new Uint32Array(n) : undefined
+  const x2RefNames: string[] = []
+  const refIndex = new Map<string, number>()
+  const hitLo = has('index') && x2Locus ? new Uint32Array(n) : undefined
+  const hitHi = hitLo ? new Uint32Array(n) : undefined
+  const { size: sizeEncoding } = encoding
+  const sizeRef: SizeRef | undefined =
+    has('size') &&
+    sizeEncoding !== undefined &&
+    typeof sizeEncoding !== 'number'
+      ? typeof sizeEncoding === 'string'
+        ? { field: sizeEncoding }
+        : sizeEncoding
+      : undefined
+  const size = sizeRef ? new Float32Array(n) : undefined
+  const readSize = sizeRef ? channelReader(sizeRef.field, jexl) : undefined
   const { y: yEncoding } = encoding
   const readY =
     has('y') && yEncoding !== undefined
@@ -394,8 +434,29 @@ export function encodeFeatures<L extends LaneName>(
     }
     x[count] = xv
     x2[count] = x2v
+    if (x2Ref || hitLo) {
+      const own = f.get('refName')
+      const there = readX2Chrom ? valueText(readX2Chrom(f)) : own
+      if (x2Ref) {
+        let ref = refIndex.get(there)
+        if (ref === undefined) {
+          ref = x2RefNames.length
+          refIndex.set(there, ref)
+          x2RefNames.push(there)
+        }
+        x2Ref[count] = ref
+      }
+      if (hitLo && hitHi) {
+        const away = there !== own
+        hitLo[count] = away ? (region?.start ?? xv) : Math.min(xv, x2v)
+        hitHi[count] = away ? (region?.end ?? xv) : Math.max(xv, x2v)
+      }
+    }
     if (y) {
       y[count] = yv
+    }
+    if (size && readSize) {
+      size[count] = numericValue(readSize(f))
     }
     if (readY) {
       if (yv < yMin) {
@@ -535,8 +596,24 @@ export function encodeFeatures<L extends LaneName>(
     }
   }
 
+  let sizeScale: SizeScaleTable | undefined
+  if (sizeRef && size) {
+    const extent = finiteExtremes(size, count)
+    const { domainMin, domainMax } = sizeRef
+    sizeScale = {
+      field: sizeRef.field,
+      scale: sizeRef.scale ?? 'linear',
+      domain: rampDomain(domainMin, domainMax, extent),
+      pinned: [domainMin !== undefined, domainMax !== undefined],
+      range: sizeRef.range ?? DEFAULT_SIZE_RANGE_PX,
+      extent,
+    }
+  }
+
   const flatbushData =
-    has('index') && count > 0 ? hitIndexOf(x, x2, y, count).data : undefined
+    has('index') && count > 0
+      ? hitIndexOf(hitLo ?? x, hitHi ?? x2, y, count).data
+      : undefined
 
   const encoded: EncodedChannels = {
     count,
@@ -565,6 +642,16 @@ export function encodeFeatures<L extends LaneName>(
   }
   if (text) {
     encoded.text = text.length === count ? text : text.slice(0, count)
+  }
+  if (size) {
+    encoded.size = size.subarray(0, count)
+  }
+  if (x2Ref) {
+    encoded.x2Ref = x2Ref.subarray(0, count)
+    encoded.x2RefNames = x2RefNames
+  }
+  if (sizeScale) {
+    encoded.sizeScale = sizeScale
   }
   if (flatbushData) {
     encoded.flatbushData = flatbushData
@@ -711,7 +798,15 @@ export function encodedChannelTransferables(c: EncodedChannels) {
     c.x2.buffer,
     c.featureIndex.buffer,
   ]
-  for (const lane of [c.y, c.row, c.color, c.colorValue, c.glyph]) {
+  for (const lane of [
+    c.y,
+    c.row,
+    c.color,
+    c.colorValue,
+    c.glyph,
+    c.size,
+    c.x2Ref,
+  ]) {
     if (lane) {
       buffers.push(lane.buffer)
     }

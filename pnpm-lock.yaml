@@ -395,6 +395,9 @@ importers:
       '@gmod/bgzf-filehandle':
         specifier: ^6.7.0
         version: 6.7.0
+      '@gmod/vcf':
+        specifier: ^7.2.0
+        version: 7.2.0
       '@gmod/range-cache-filehandle':
         specifier: ^1.4.0
         version: 1.4.0

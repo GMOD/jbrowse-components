@@ -14,6 +14,7 @@ import {
   DEFAULT_MARK_TYPE,
   DEFAULT_PILEUP_AS,
   DEFAULT_PILEUP_FIELDS,
+  MATE_FIELDS,
 } from './markVocabulary.ts'
 
 import type { ColorScaleName } from './markRuleFacts.ts'
@@ -117,6 +118,7 @@ export type StepSnapshot =
   | { type: 'coverage'; as?: string }
   | { type: 'flatten'; field?: string; index?: string; keepEmpty?: boolean }
   | { type: 'pileup'; as?: string; fields?: string[]; padding?: number }
+  | { type: 'mate' }
 
 interface ColorSnapshot {
   field?: string
@@ -332,6 +334,10 @@ function madeFields(steps: readonly StepSnapshot[]) {
       fields.add(step.as ?? DEFAULT_PILEUP_AS)
     } else if (step.type === 'flatten' && step.index) {
       fields.add(step.index)
+    } else if (step.type === 'mate') {
+      for (const field of MATE_FIELDS) {
+        fields.add(field)
+      }
     } else if (step.type === 'bin') {
       for (const edge of step.as?.length === 2 ? step.as : DEFAULT_BIN_AS) {
         fields.add(edge)

@@ -1127,8 +1127,12 @@ export function stateModelFactory(
             ...m.transform,
           ]
           const { x = 'start', x2 = 'end' } = encodings[i] ?? {}
+          const x2Field = typeof x2 === 'object' ? x2.pos : x2
           return [
-            ...new Set([positionSource(steps, x), positionSource(steps, x2)]),
+            ...new Set([
+              positionSource(steps, x),
+              positionSource(steps, x2Field),
+            ]),
           ]
         })
         return skippedFeatures(

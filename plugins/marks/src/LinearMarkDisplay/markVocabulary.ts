@@ -22,6 +22,17 @@ export const DEFAULT_PILEUP_AS = 'row'
 export const DEFAULT_PILEUP_FIELDS = ['start', 'end'] as const
 export const DEFAULT_TEXT_FIELD = 'name'
 
+/** What a `mate` step writes on every feature it answers. */
+export const MATE_FIELDS = [
+  'mate.refName',
+  'mate.start',
+  'mate.end',
+  'mate.mateDirection',
+  'mateDirection',
+  'alt',
+  'svtype',
+] as const
+
 export const AGGREGATE_OPS = ['count', 'sum', 'mean', 'min', 'max'] as const
 export type AggregateOpName = (typeof AGGREGATE_OPS)[number]
 export const DEFAULT_AGGREGATE_OP: AggregateOpName = 'count'

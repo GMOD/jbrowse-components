@@ -97,6 +97,42 @@ export type ShapeEncoding =
 
 /**
  * #api
+ * A position that may lie on another sequence: the field holding its refName
+ * and the field holding its 0-based coordinate, as a paired record states
+ * its mate (`{ chrom: 'mate.refName', pos: 'mate.start' }`). Spelt the way
+ * GenomeSpy spells a genomic position over two columns.
+ */
+export interface LocusRef {
+  chrom: FieldRef
+  pos: FieldRef
+}
+
+/**
+ * #api
+ * A numeric field read through a linear or log scale into a width in CSS px:
+ * `range` is the px at each end of the domain (1 to 6 unset), and each end of
+ * the domain is pinned by `domainMin` or `domainMax` or follows the loaded
+ * regions' extremes where unset, as a colour ramp's does. A feature holding
+ * no number takes the range's first px.
+ */
+export interface SizeRef {
+  field: FieldRef
+  scale?: 'linear' | 'log'
+  domainMin?: number
+  domainMax?: number
+  range?: [number, number]
+}
+
+/**
+ * #api
+ * How a mark's `size` channel resolves: a number is a constant width in CSS
+ * px for every instance, a field name is `{ field }` with the defaults, and
+ * the object binds the field to a scale.
+ */
+export type SizeEncoding = number | FieldRef | SizeRef
+
+/**
+ * #api
  * The declared mapping from a feature's fields to a mark's channels. Every
  * positional channel is a field: `x` defaults to `start` and `x2` to `end`, a
  * mark that plots no value leaves `y` off, and the scale `y` is read through
@@ -106,13 +142,16 @@ export type ShapeEncoding =
  */
 export interface MarkEncoding {
   x?: FieldRef
-  x2?: FieldRef
+  /** A field, or a {@link LocusRef} where the far end may lie on another sequence. */
+  x2?: FieldRef | LocusRef
   y?: FieldRef
   row?: FieldRef
   color?: ColorEncoding
   shape?: ShapeEncoding
   /** The field a `text` mark prints, read by that mark alone. */
   text?: FieldRef
+  /** The width a `link` mark strokes at, read by that mark alone. */
+  size?: SizeEncoding
 }
 
 /**
@@ -130,6 +169,8 @@ export type LaneName =
   | 'glyph'
   | 'row'
   | 'text'
+  | 'size'
+  | 'x2Ref'
   | 'index'
 
 /**
@@ -228,6 +269,22 @@ export interface ShapeScaleTable {
 
 /**
  * #api
+ * The scale a size channel is read through: the `size` lane holds the raw
+ * values and the shape maps them to px through this, so a display unions
+ * `extent` over its loaded regions into the open ends of `domain` and every
+ * region strokes the same value at the same width.
+ */
+export interface SizeScaleTable {
+  field: string
+  scale: 'linear' | 'log'
+  domain: [number, number]
+  pinned: [boolean, boolean]
+  range: [number, number]
+  extent: [number, number]
+}
+
+/**
+ * #api
  * Any channel's scale table; the kind names the channel.
  */
 export type ScaleTable = ColorScaleTable | ShapeScaleTable
@@ -275,6 +332,15 @@ export interface EncodedChannels {
    * cloned across the wire where the typed lanes are transferred.
    */
   text?: string[]
+  /** Each feature's raw `size` value, NaN where it holds no number. */
+  size?: Float32Array
+  /**
+   * Which sequence each feature's `x2` lies on, as an index into
+   * `x2RefNames`: the far end's own where `x2` is a {@link LocusRef}, else
+   * the feature's, in the adapter's naming either way.
+   */
+  x2Ref?: Uint32Array
+  x2RefNames?: string[]
   /** The finite `y` extremes, `Infinity`/`-Infinity` when nothing plotted. */
   yMin: number
   yMax: number
@@ -284,6 +350,8 @@ export interface EncodedChannels {
   scale?: ColorScaleTable
   /** The shape channel's table, when `shape` is a scale. */
   shapeScale?: ShapeScaleTable
+  /** The size channel's table, when the `size` lane was filled. */
+  sizeScale?: SizeScaleTable
 }
 
 /**
@@ -424,6 +492,21 @@ export interface PileupStep {
 
 /**
  * #api
+ * One feature per other end a record states: the `mate` a paired adapter
+ * fills in (BEDPE, STAR-Fusion), or each VCF `ALT` naming a locus, a
+ * breakend's mate or a symbolic allele's `END` on `CHR2` or its own
+ * sequence. Each answer carries `mate` (`refName`, `start`, `end`, 0-based
+ * and half-open, and the far end's `mateDirection`), its own end's
+ * `mateDirection`, the `alt` it came from and `svtype`, the record's
+ * `INFO.SVTYPE` or the allele's kind. A record naming no other end drops
+ * out, and two records or alleles stating one pair of ends answer once.
+ */
+export interface MateStep {
+  type: 'mate'
+}
+
+/**
+ * #api
  * One step over the features before a layer is encoded, named by `type` the
  * way GenomeSpy spells a transform; every step runs in order and the next
  * reads what the last answered.
@@ -436,6 +519,7 @@ export type TransformStep =
   | AggregateStep
   | CoverageStep
   | PileupStep
+  | MateStep
 
 export type CoreEncodeFeaturesArgs = {
   adapterConfig: Record<string, unknown>

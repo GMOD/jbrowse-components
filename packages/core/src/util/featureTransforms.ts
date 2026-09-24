@@ -4,6 +4,7 @@ import { fieldReader, isPlainFieldRef } from './fieldReader.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { numericValue } from './numericValue.ts'
 import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
+import { parseSvAlt, svTypeOfAlt } from './svAlt.ts'
 
 import type { JexlInstance } from './jexlStrings.ts'
 import type {
@@ -38,10 +39,12 @@ export const DEFAULT_PILEUP_FIELDS: [string, string] = ['start', 'end']
 class DerivedFeature implements Feature {
   private readonly base: Feature
   private readonly fields: Record<string, unknown>
+  private readonly ownId: string | undefined
 
-  constructor(base: Feature, fields: Record<string, unknown>) {
+  constructor(base: Feature, fields: Record<string, unknown>, id?: string) {
     this.base = base
     this.fields = fields
+    this.ownId = id
   }
 
   get(name: 'refName'): string
@@ -57,7 +60,7 @@ class DerivedFeature implements Feature {
   }
 
   id() {
-    return this.base.id()
+    return this.ownId ?? this.base.id()
   }
 
   parent() {
@@ -231,6 +234,95 @@ function flatten(features: readonly Feature[], step: FlattenStep) {
             } as SimpleFeatureSerialized)
       const flat = new FlattenedFeature(f, child)
       out.push(index ? new DerivedFeature(flat, { [index]: i }) : flat)
+    }
+  }
+  return out
+}
+
+interface MateEnd {
+  refName: string
+  start: number
+  end: number
+  mateDirection: number
+}
+
+function statedMate(f: Feature): MateEnd | undefined {
+  const mate = f.get('mate') as Partial<MateEnd> | undefined
+  return mate?.refName !== undefined && mate.start !== undefined
+    ? {
+        refName: mate.refName,
+        start: mate.start,
+        end: mate.end ?? mate.start + 1,
+        mateDirection: mate.mateDirection ?? 0,
+      }
+    : undefined
+}
+
+function mateFields(
+  f: Feature,
+  alt: string | undefined,
+  mate: MateEnd,
+  ownDirection: number,
+) {
+  const info = f.get('INFO') as Record<string, unknown[]> | undefined
+  const svtype = info?.SVTYPE?.[0] ?? svTypeOfAlt(alt)
+  return {
+    mate,
+    mateDirection: ownDirection,
+    ...(alt === undefined ? {} : { alt }),
+    ...(svtype === undefined ? {} : { svtype }),
+  }
+}
+
+function mates(features: readonly Feature[]) {
+  const out: Feature[] = []
+  const seen = new Set<string>()
+  const admit = (
+    f: Feature,
+    mate: MateEnd,
+    fields: Record<string, unknown>,
+    id?: string,
+  ) => {
+    const here = `${f.get('refName')}:${f.get('start')}`
+    const there = `${mate.refName}:${mate.start}`
+    const key = here < there ? `${here}|${there}` : `${there}|${here}`
+    if (!seen.has(key)) {
+      seen.add(key)
+      out.push(new DerivedFeature(f, fields, id))
+    }
+  }
+  for (const f of features) {
+    const stated = statedMate(f)
+    if (stated) {
+      const own = f.get('mateDirection')
+      admit(
+        f,
+        stated,
+        mateFields(f, undefined, stated, typeof own === 'number' ? own : 0),
+      )
+      continue
+    }
+    const alts = f.get('ALT')
+    if (!Array.isArray(alts)) {
+      continue
+    }
+    for (const [i, alt] of (alts as string[]).entries()) {
+      const parsed = parseSvAlt(f, alt)
+      if (!parsed) {
+        continue
+      }
+      const mate = {
+        refName: parsed.mateRefName,
+        start: parsed.matePos - 1,
+        end: parsed.matePos,
+        mateDirection: parsed.mateDirection ?? 0,
+      }
+      admit(
+        f,
+        mate,
+        mateFields(f, alt, mate, parsed.joinDirection ?? 0),
+        alts.length > 1 ? `${f.id()}#${i}` : undefined,
+      )
     }
   }
   return out
@@ -686,6 +778,10 @@ export function runTransforms(
       }
       case 'pileup': {
         current = pileup(current, step)
+        break
+      }
+      case 'mate': {
+        current = mates(current)
         break
       }
     }

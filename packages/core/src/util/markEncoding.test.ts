@@ -874,3 +874,96 @@ test('a categorical table says whether every key it met was a number', () => {
   expect(of('score')).not.toHaveProperty('numericKeys')
   expect(of('absent', [feature(9, {})])).not.toHaveProperty('numericKeys')
 })
+
+test('size is a raw lane with a table, so every region strokes a value alike', () => {
+  const out = encodeFeatures(
+    features,
+    { size: { field: 'score', scale: 'log', domainMax: 100, range: [2, 10] } },
+    ['size'],
+  )
+  expect([...out.size]).toEqual([10, 40, 25, NaN, NaN])
+  expect(out.sizeScale).toEqual({
+    field: 'score',
+    scale: 'log',
+    domain: [10, 100],
+    pinned: [false, true],
+    range: [2, 10],
+    extent: [10, 40],
+  })
+})
+
+test('a bare field name is a linear size over the default range, and a number fills no lane', () => {
+  const named = encodeFeatures(features, { size: 'score' }, ['size'])
+  expect(named.sizeScale).toMatchObject({
+    field: 'score',
+    scale: 'linear',
+    range: [1, 6],
+    pinned: [false, false],
+  })
+  const constant = encodeFeatures(features, { size: 3 }, ['size'])
+  expect(constant.size).toBeUndefined()
+  expect(constant.sizeScale).toBeUndefined()
+  expect(encodeFeatures(features, { size: 'score' }, []).size).toBeUndefined()
+})
+
+const paired = [
+  feature(0, { mate: { refName: 'chr1', start: 5000, end: 5001 } }),
+  feature(1, { mate: { refName: 'chr7', start: 300, end: 301 } }, 900, 950),
+  feature(2, { mate: { refName: 'chr1', start: 20, end: 21 } }),
+  feature(3, {}),
+]
+
+test('a locus x2 reads its position and files its sequence in the refName dictionary', () => {
+  const out = encodeFeatures(
+    paired,
+    { x2: { chrom: 'mate.refName', pos: 'mate.start' } },
+    ['x2Ref'],
+  )
+  expect([...out.x2]).toEqual([5000, 300, 20])
+  expect(out.x2RefNames).toEqual(['chr1', 'chr7'])
+  expect([...out.x2Ref]).toEqual([0, 1, 0])
+  // the record with no mate has no position and is a skipped feature
+  expect(out.skipped).toBe(1)
+  expect(out.skippedPosition).toBe(1)
+})
+
+test('a plain x2 files every feature under its own sequence when the lane is asked for', () => {
+  const out = encodeFeatures(features, {}, ['x2Ref'])
+  expect(out.x2RefNames).toEqual(['chr1'])
+  expect([...out.x2Ref]).toEqual([0, 0, 0, 0, 0])
+})
+
+test('the hit index boxes a link between its feet whichever way round, and a far sequence over the region', () => {
+  const links = [
+    feature(0, { mate: { refName: 'chr1', start: 20 } }, 200, 250),
+    feature(1, { mate: { refName: 'chr7', start: 300 } }, 900, 950),
+  ]
+  const encoding = { x2: { chrom: 'mate.refName', pos: 'mate.start' } }
+  const region = { refName: 'chr1', start: 0, end: 10_000 }
+  const fb = Flatbush.from(
+    encodeFeatures(links, encoding, ['index'], { region }).flatbushData!,
+  )
+  // the upstream mate at 20 boxes from 20 to the feature's own 200, and the
+  // chr7 mate reaches the region's edge from its near foot, so its box covers
+  // every column of the region
+  expect(fb.search(100, -1, 101, 1).sort()).toEqual([0, 1])
+  expect(fb.search(9_000, -1, 9_001, 1)).toEqual([1])
+  expect(fb.search(10, -1, 11, 1)).toEqual([1])
+  // without a region, a far mate boxes its near foot alone
+  const bare = Flatbush.from(
+    encodeFeatures(links, encoding, ['index']).flatbushData!,
+  )
+  expect(bare.search(9_000, -1, 9_001, 1)).toEqual([])
+  expect(bare.search(900, -1, 900, 1)).toEqual([1])
+})
+
+test('the size and x2Ref lanes ride the transfer list', () => {
+  const out = encodeFeatures(
+    paired,
+    { x2: { chrom: 'mate.refName', pos: 'mate.start' }, size: 'score' },
+    ['x2Ref', 'size'],
+  )
+  const buffers = encodedChannelTransferables(out)
+  expect(buffers).toContain(out.size.buffer)
+  expect(buffers).toContain(out.x2Ref.buffer)
+})

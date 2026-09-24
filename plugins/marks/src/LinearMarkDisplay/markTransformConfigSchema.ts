@@ -218,6 +218,20 @@ const flatten = ConfigurationSchema(
   STEP,
 )
 
+/**
+ * #config mate
+ * #category display
+ * One feature per other end a record states: the `mate` a paired adapter
+ * fills in (BEDPE, STAR-Fusion), or each VCF `ALT` naming a locus, a
+ * breakend's mate or a symbolic allele's `END`. Writes `mate.refName`,
+ * `mate.start`, `mate.end` and `mate.mateDirection`, the record's own
+ * `mateDirection`, the `alt` it came from and `svtype`, so a `link` mark's
+ * `x2` reads `{ chrom: 'mate.refName', pos: 'mate.start' }` and its colour
+ * `svtype`. A record naming no other end drops out, and two records or
+ * alleles stating one pair of ends answer once.
+ */
+const mate = ConfigurationSchema('mate', {}, STEP)
+
 const pileup = ConfigurationSchema(
   'pileup',
   {
@@ -286,6 +300,7 @@ export const markTransformStep = ConfigurationSchemaUnion('MarkTransform', {
   coverage,
   flatten,
   pileup,
+  mate,
 } satisfies Record<StepSnapshot['type'], AnyConfigurationSchemaType>)
 
 export type MarkTransformStepConfig = Instance<typeof markTransformStep>

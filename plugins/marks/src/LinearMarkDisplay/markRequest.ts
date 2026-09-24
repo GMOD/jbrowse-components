@@ -155,6 +155,8 @@ export function stepsOf(
           fields: pairOf(step.fields, DEFAULT_PILEUP_FIELDS),
           padding: step.padding,
         }
+      case 'mate':
+        return { type: 'mate' }
     }
   })
 }

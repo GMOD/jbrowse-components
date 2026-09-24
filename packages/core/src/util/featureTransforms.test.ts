@@ -673,3 +673,107 @@ test('a pileup over shuffled input with tied starts packs as the comparator sort
     )
   }
 })
+
+function sv(
+  start: number,
+  alts: string[],
+  info: Record<string, unknown[]> = {},
+  id = `sv${start}`,
+) {
+  return new SimpleFeature({
+    uniqueId: id,
+    refName: 'ctgA',
+    start,
+    end: start + 1,
+    ALT: alts,
+    INFO: info,
+  })
+}
+
+test('mate answers one feature per breakend ALT, with the mate locus 0-based and both directions', () => {
+  const out = runTransforms(
+    [sv(999, ['N[ctgB:2000[', ']ctgA:5000]N'], { SVTYPE: ['BND'] })],
+    [{ type: 'mate' }],
+  )
+  expect(out.map(f => f.id())).toEqual(['sv999#0', 'sv999#1'])
+  expect(rows(out, 'start', 'alt', 'svtype', 'mateDirection')).toEqual([
+    [999, 'N[ctgB:2000[', 'BND', -1],
+    [999, ']ctgA:5000]N', 'BND', 1],
+  ])
+  expect(out[0]!.get('mate')).toEqual({
+    refName: 'ctgB',
+    start: 1999,
+    end: 2000,
+    mateDirection: 1,
+  })
+  expect(out[1]!.get('mate')).toEqual({
+    refName: 'ctgA',
+    start: 4999,
+    end: 5000,
+    mateDirection: -1,
+  })
+  expect(out[0]!.toJSON()).toMatchObject({ alt: 'N[ctgB:2000[', start: 999 })
+})
+
+test('mate reads a symbolic allele off END and CHR2, and names its kind where INFO does not', () => {
+  const out = runTransforms(
+    [
+      sv(100, ['<DEL>'], { END: [400] }),
+      sv(500, ['<TRA>'], { END: [50], CHR2: ['ctgC'], SVTYPE: ['TRA'] }),
+      sv(700, ['<DUP:TANDEM>'], { END: [900] }),
+    ],
+    [{ type: 'mate' }],
+  )
+  expect(rows(out, 'start', 'svtype', 'mateDirection')).toEqual([
+    [100, 'DEL', 0],
+    [500, 'TRA', 0],
+    [700, 'DUP', 0],
+  ])
+  expect(out.map(f => f.get('mate'))).toEqual([
+    { refName: 'ctgA', start: 399, end: 400, mateDirection: 0 },
+    { refName: 'ctgC', start: 49, end: 50, mateDirection: 0 },
+    { refName: 'ctgA', start: 899, end: 900, mateDirection: 0 },
+  ])
+  expect(out.map(f => f.id())).toEqual(['sv100', 'sv500', 'sv700'])
+})
+
+test('mate passes a paired record through on its own mate, and drops a record naming no other end', () => {
+  const bedpe = feature(10, 20, {
+    mate: { refName: 'ctgB', start: 30, end: 40 },
+    mateDirection: -1,
+    score: 7,
+  })
+  const out = runTransforms(
+    [bedpe, sv(50, ['A']), feature(60, 70)],
+    [{ type: 'mate' }],
+  )
+  expect(out).toHaveLength(1)
+  expect(out[0]!.get('mate')).toEqual({
+    refName: 'ctgB',
+    start: 30,
+    end: 40,
+    mateDirection: 0,
+  })
+  expect(rows(out, 'mateDirection', 'score', 'alt', 'svtype')).toEqual([
+    [-1, 7, undefined, undefined],
+  ])
+})
+
+test('mate answers a pair of ends once, whichever record or allele states it', () => {
+  const out = runTransforms(
+    [
+      sv(999, ['N[ctgA:5000['], {}, 'a'),
+      sv(4999, [']ctgA:1000]N'], {}, 'b'),
+      feature(10, 11, { mate: { refName: 'ctgB', start: 30, end: 31 } }),
+      new SimpleFeature({
+        uniqueId: 'flipped',
+        refName: 'ctgB',
+        start: 30,
+        end: 31,
+        mate: { refName: 'ctgA', start: 10, end: 11 },
+      }),
+    ],
+    [{ type: 'mate' }],
+  )
+  expect(out.map(f => f.id())).toEqual(['a', '10-11'])
+})
