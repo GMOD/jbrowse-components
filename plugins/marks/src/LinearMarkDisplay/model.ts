@@ -1403,7 +1403,7 @@ export function stateModelFactory(
       setPlotMarks(spec: PlotSpec) {
         const fields = self.plotFields ?? { numeric: [], categorical: [] }
         self.conf.setSubschemaArray('marks', plotMarks(spec, fields))
-        if (fields.facet) {
+        if (fields.facet && self.splitField !== fields.facet) {
           self.setFacetField(fields.facet)
         }
       },
@@ -1663,7 +1663,7 @@ export function stateModelFactory(
             const marks = defaultPlotMarks(fields)
             if (marks) {
               self.conf.setSubschemaArray('marks', marks)
-              if (fields.facet) {
+              if (fields.facet && self.splitField !== fields.facet) {
                 self.setFacetField(fields.facet)
               }
             } else {
