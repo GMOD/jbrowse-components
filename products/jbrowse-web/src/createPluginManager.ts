@@ -112,6 +112,7 @@ export async function createPluginManager(
     await pluginManager.preloadSessionTypes(model.sessionSource.snapshot)
   }
   await pluginManager.preloadSessionTypes(model.configSnapshot?.defaultSession)
+  await nextTask()
   initSession(rootModel, pluginManager, model)
   if (rootModel.session) {
     preloadAppShell(rootModel.session)
@@ -124,7 +125,19 @@ export async function createPluginManager(
   // just as thoroughly as one that throws while its module is evaluated.
   markPermanentPluginLoadFinished()
   await appFrame
+  await nextTask()
   return pluginManager
+}
+
+/**
+ * Building the session and rendering the app are each one long task. A chunk
+ * that landed meanwhile runs, and starts what waited on it (an assembly's file
+ * fetch), only between tasks.
+ */
+function nextTask() {
+  return new Promise(resolve => {
+    setTimeout(resolve, 0)
+  })
 }
 
 function assemblyNamesIn(value: unknown, found = new Set<string>()) {
