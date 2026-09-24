@@ -17,16 +17,10 @@ the track's own for a per-track index or to the config's one assembly.
 
 ```js
 {
-  type: 'TextSearchAdapter',
-  trackId: 'my_track',
-  name: 'My track',
+  type: 'TrixTextSearchAdapter',
+  textSearchAdapterId: 'hg38-index',
+  uri: 'trix/hg38.ix',
   assemblyNames: ['hg38'],
-  adapter: {
-    type: 'TrixTextSearchAdapter',
-    textSearchAdapterId: 'hg38-index',
-    uri: 'trix/hg38.ix',
-    assemblyNames: ['hg38'],
-  },
 }
 ```
 

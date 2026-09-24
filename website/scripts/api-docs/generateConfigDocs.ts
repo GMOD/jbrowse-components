@@ -933,8 +933,10 @@ function renderConfig(
   const examples =
     category === 'Adapter' || category === 'Track'
       ? header.examples.map(ex => {
+          // a text search adapter sits in aggregateTextSearchAdapters or a
+          // track's textSearching, never in a track's `adapter`
           const content =
-            category === 'Adapter'
+            category === 'Adapter' && header.trackType !== 'TextSearchAdapter'
               ? wrapAdapterExample(ex.content, header.trackType)
               : ex.content
           const loose = loosened ? '' : looseTrackExample(content)

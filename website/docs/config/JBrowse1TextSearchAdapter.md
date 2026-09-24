@@ -14,16 +14,10 @@ search index is reused rather than rebuilt with `jbrowse text-index`:
 
 ```js
 {
-  type: 'TextSearchAdapter',
-  trackId: 'my_track',
-  name: 'My track',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'JBrowse1TextSearchAdapter',
-    textSearchAdapterId: 'jbrowse1-names',
-    namesIndexLocation: { uri: 'https://example.com/jbrowse1/data/names/' },
-    assemblyNames: ['hg19'],
-  },
+  type: 'JBrowse1TextSearchAdapter',
+  textSearchAdapterId: 'jbrowse1-names',
+  namesIndexLocation: { uri: 'https://example.com/jbrowse1/data/names/' },
+  assemblyNames: ['hg19'],
 }
 ```
 
