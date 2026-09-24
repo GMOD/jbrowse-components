@@ -85,6 +85,10 @@ const FeatureDetails = observer(function FeatureDetails(
   // it is only defaulted here -- passing raw props left it undefined at the top
   // level, so a panel selecting on `depth === 0` could never match
   const panelProps = { ...props, depth }
+  const rawSubfeatures =
+    unformatted.subfeatures?.length === subfeatures?.length
+      ? unformatted.subfeatures
+      : undefined
   return (
     <BaseCard title={generateTitle(name, id, type)}>
       {joinByDivider(
@@ -141,11 +145,8 @@ const FeatureDetails = observer(function FeatureDetails(
                 uniqueId: `${uniqueId}_${idx}`,
               }}
               unformatted={
-                unformatted.subfeatures?.[idx]
-                  ? {
-                      ...unformatted.subfeatures[idx],
-                      uniqueId: `${uniqueId}_${idx}`,
-                    }
+                rawSubfeatures?.[idx]
+                  ? { ...rawSubfeatures[idx], uniqueId: `${uniqueId}_${idx}` }
                   : undefined
               }
               model={model}

@@ -262,3 +262,54 @@ test('the sequence panel reads the feature before formatDetails rewrote it', asy
   fireEvent.click((await findAllByText('Show feature sequence'))[0]!)
   expect((await findAllByRole('combobox'))[0]!.textContent).toBe('EDEN.1')
 })
+
+test('a callback that filters subfeatures leaves each card its own sequence', async () => {
+  const pluginManager = new PluginManager([])
+  const Session = types.model({
+    rpcManager: types.optional(types.frozen(), {}),
+    configuration: ConfigurationSchema('test', {
+      formatDetails: FormatDetailsConfigSchemaFactory(),
+    }),
+    widget: stateModelFactory(pluginManager),
+  })
+  const model = Session.create(
+    {
+      configuration: {
+        formatDetails: {
+          feature: 'jexl:{subfeatures:[feature.subfeatures[1]]}',
+        },
+      },
+      widget: {
+        type: 'BaseFeatureWidget',
+        unformattedFeatureData: {
+          uniqueId: 'g',
+          refName: 'ctgA',
+          start: 0,
+          end: 100,
+          type: 'gene',
+          subfeatures: [
+            { refName: 'ctgA', start: 0, end: 100, type: 'region' },
+            {
+              refName: 'ctgA',
+              start: 0,
+              end: 100,
+              type: 'mRNA',
+              subfeatures: [
+                { refName: 'ctgA', start: 0, end: 100, type: 'exon' },
+                { refName: 'ctgA', start: 10, end: 90, type: 'CDS' },
+              ],
+            },
+          ],
+        },
+      },
+    },
+    { pluginManager },
+  )
+  const { findAllByRole, findAllByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <BaseFeatureDetails model={model.widget} />
+    </ThemeProvider>,
+  )
+  fireEvent.click((await findAllByText('Show feature sequence'))[1]!)
+  expect((await findAllByRole('combobox'))[0]!.textContent).toBe('CDS')
+})
