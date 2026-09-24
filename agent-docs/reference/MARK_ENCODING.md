@@ -206,6 +206,21 @@ It answers a `DerivedFeature` over the input in start order, so nothing is
 copied per feature and a later `bin` or `aggregate` still reads the original
 fields.
 
+**`facet` and `rows` are one split in the worker.** `CoreEncodeFeatures`
+splits the features on the request's `facet.field` after the shared steps and
+runs each layer's steps over each section alone (`facetLayers`,
+[ADR-130](../architecture-decision-records/adr-130-a-facet-is-the-displays-and-splits-before-each-layers-steps.md)).
+The mark display sends its `facet`, or where it has none its `rows.field`
+under the same name, so the worker never learns which it was. The main thread
+lays the answer out one of two ways: labelled sections as deep as their
+packing, under chips, capped at forty and hidden from a chip (`facetLayout`);
+or one row per value in the tree sidebar's arrangement, focus included, every
+row a region packed a value into landing on that value's one row
+(`rowsLayout`). `rows` takes no steps of its own, so `facet.transform` with no
+facet field runs over the shared list before the split, as it does with no
+split at all. The row lane, `markRowHeightPx` and `bandTops` are the same for
+both ([ADR-157](../architecture-decision-records/adr-157-a-row-displays-arrangement-is-the-rows-config-object.md)).
+
 The request's shared `transform` runs first, then each layer's own, so a
 `marks` list can hold a binned count and the raw features over one fetch:
 the display's `jexlFilters` are the shared steps and a mark's `transform`

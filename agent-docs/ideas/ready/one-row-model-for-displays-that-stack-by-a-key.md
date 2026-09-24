@@ -145,10 +145,11 @@ before it is asked.
 4. **Colour**, as above.
 5. **A tree per band**, ComplexHeatmap's `row_split` with `cluster_rows`, which
    retires "a band yields to a tree".
-6. **The mark display takes `rows`** for bar and point marks, whose rows are one
-   band each; a pileup's variable-height sections need a tree laid against
-   section tops. Its integer `encoding.row` gets another name then — not
-   "lane", which already names a synteny section.
+6. ~~**The mark display takes `rows`** for bar and point marks, whose rows are
+   one band each~~ (ADR-157). `facet` with `rows` waits on step 5's bands, and
+   a pileup's variable-height sections need a tree laid against section tops.
+   Its integer `encoding.row` gets another name then — not "lane", which
+   already names a synteny section.
 
 ## Declined
 

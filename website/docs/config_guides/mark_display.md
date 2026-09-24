@@ -367,6 +367,39 @@ alignments, variant, multiway synteny and multi-row displays each take their own
 way — [grouping and lane order](/docs/config_guides/grouping_and_ordering) has
 the shared mechanism across all of them.
 
+## Rows
+
+The display's `rows` gives each value of a field one row, for bar and point
+marks: over a multi-BigWig, whose features carry the file they came from in
+`source`, it draws one xyplot per file, the value axis repeated on each row tall
+enough to hold it.
+
+```json
+"displays": [
+  {
+    "type": "LinearMarkDisplay",
+    "rows": "source",
+    "marks": [{ "mark": "bar", "encoding": { "y": "score" } }]
+  }
+]
+```
+
+A label names each row over the left of the plot, and the track menu has what
+the other row displays have: **Cluster rows by similarity...** orders the rows
+by the values their bars or points stand at across the window and draws the tree
+beside them, **Edit colors/arrangement...** reorders, relabels and tints them,
+and a right-click on a bar offers **Sort rows by value here**. As an object,
+`rows` takes the order too —
+`{ "field": "source", "domain": ["tumor", "normal"] }` puts the rows it lists
+first, and the rest sort as sections do — and a reorder, a clustering run or a
+clade picked off the tree is written there, so undo, **Reset row order** and a
+share link reach it.
+
+`facet` and `rows` both split the features on a field, and differ in what a
+value gets: a facet section is as deep as its packing and wears a chip, where a
+row is one row. Both on one display, bands of rows, is not drawn yet, so the
+facet draws alone and the track says so.
+
 ## Transforms
 
 A mark's `transform` is a list of steps over the region's features, run in the
@@ -558,6 +591,9 @@ chip in its corner naming the slot, and the mark when the slot is a mark's:
   them together;
 - a `pileup` in the display's `transform` under a `facet`, which packs across
   every section where the facet's own `transform` packs per section;
+- `rows` beside a `facet`, where the facet draws alone until bands of rows land;
+- a `pileup` or a `row` field under `rows`, whose packed rows share their
+  value's one row;
 - a zoom range whose `minBpPerPx` is not below its `maxBpPerPx`, which never
   draws.
 

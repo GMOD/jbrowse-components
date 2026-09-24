@@ -1,6 +1,6 @@
 ---
 name: mark-display-showcase-pages
-description: Three pages that would show the mark display off — a Vega-Lite-style examples gallery, small multiples over a multi-BigWig with facet "source", and a flatten step over a per-transcript GFF attribute — parked after v5.0.0 because each is new content with figures and nothing in the release turns on it; plus the SV-sizes-as-points plot, declined because a point misrepresents a structural variant that spans kilobases
+description: Three pages that would show the mark display off — a Vega-Lite-style examples gallery, small multiples over a multi-BigWig with rows "source", and a flatten step over a per-transcript GFF attribute — parked after v5.0.0 because each is new content with figures and nothing in the release turns on it; plus the SV-sizes-as-points plot, declined because a point misrepresents a structural variant that spans kilobases
 ---
 
 # Mark display showcase pages
@@ -17,7 +17,7 @@ tutorials don't give them one.
 **Small multiples over a multi-BigWig.** A `MultiQuantitativeTrack`'s rows
 carry `source`
 ([ADR-126](../../architecture-decision-records/adr-126-a-row-lane-on-bar-and-point.md)),
-so `facet: "source"` on a mark display draws one band per file with the bands
+so `rows: "source"` on a mark display draws one row per file with the rows
 sharing one y axis, like ggplot2's `facet_grid`. `scatac_pseudobulk`'s
 per-cell-type BigWigs fit it. The multi-wiggle display already draws those
 files as rows, so the page is worth writing only where the grammar adds

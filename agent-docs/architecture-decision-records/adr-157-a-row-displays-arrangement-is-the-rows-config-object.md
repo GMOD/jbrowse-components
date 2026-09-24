@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A row display's arrangement (the row order, per-row labels, the cluster tree with its provenance and the clade focus) is its `rows` config object, `field | { field, domain, labels, tree, treeProvenance, kept }` from display-kit, which every product edits as a session delta, so undo, reset and a share link reach it and it survives unticking the track. Every arrangement writer flushes to the session at once (`persistConfigurationNow`), so a clustering run is one undo step, and Reset row order returns each member to what the config.json declares rather than to empty. The quantitative display moves first: `facet: 'source'` is `rows: 'source'`, a leftover `facet` in a display config fails the load, and `rowColor: { domain, range }` holds the colour a reader sets on a subtrack, painted on the row's identity channel for the mode. `TreeSidebarMixin` is the config-backed arrangement. The multi-sample variant displays move second, onto the field-less `RowArrangement` their rows being the samples, with names at the rendering mode's granularity and `rowColor: field | { field, domain, range }`. The multi-row feature display moves third: `rows.field` is the attribute it partitions on, and `rowColor: { domain, range }` is the one map of row colours, the config's and the dialog's. MAF moves fourth, onto the field-less `RowArrangement`, its adapter's guide tree drawn while some rotation of it lists `rows.domain` and never written to `rows.tree`, and `rowColor: { domain, range }` its label tints. `TreeSidebarMixin` then holds the row colours, the dialog's submit and the row derivation the four displays each carried, over hooks each supplies, and `LayoutTreeSidebarMixin` goes. Supersedes ADR-143's `facet` as the quantitative display's layout. No migration"
+summary: "A row display's arrangement (the row order, per-row labels, the cluster tree with its provenance and the clade focus) is its `rows` config object, `field | { field, domain, labels, tree, treeProvenance, kept }` from display-kit, which every product edits as a session delta, so undo, reset and a share link reach it and it survives unticking the track. Every arrangement writer flushes to the session at once (`persistConfigurationNow`), so a clustering run is one undo step, and Reset row order returns each member to what the config.json declares rather than to empty. The quantitative display moves first: `facet: 'source'` is `rows: 'source'`, a leftover `facet` in a display config fails the load, and `rowColor: { domain, range }` holds the colour a reader sets on a subtrack, painted on the row's identity channel for the mode. `TreeSidebarMixin` is the config-backed arrangement. The multi-sample variant displays move second, onto the field-less `RowArrangement` their rows being the samples, with names at the rendering mode's granularity and `rowColor: field | { field, domain, range }`. The multi-row feature display moves third: `rows.field` is the attribute it partitions on, and `rowColor: { domain, range }` is the one map of row colours, the config's and the dialog's. MAF moves fourth, onto the field-less `RowArrangement`, its adapter's guide tree drawn while some rotation of it lists `rows.domain` and never written to `rows.tree`, and `rowColor: { domain, range }` its label tints. `TreeSidebarMixin` then holds the row colours, the dialog's submit and the row derivation the four displays each carried, over hooks each supplies, and `LayoutTreeSidebarMixin` goes. The mark display moves fifth: `rows.field` on bar and point marks is the worker's one facet split laid out one row per value, `rowColor` its label tint, and `facet` keeps the labelled sections. Supersedes ADR-143's `facet` as the quantitative display's layout. No migration"
 ---
 
 # ADR-157: A row display's arrangement is the `rows` config object, written as session deltas
@@ -11,7 +11,8 @@ Accepted (2026-09-23). Step 3 of
 [one-row-model-for-displays-that-stack-by-a-key](../ideas/ready/one-row-model-for-displays-that-stack-by-a-key.md):
 the quantitative display moves first, the multi-sample variant displays
 second, the multi-row feature display third and MAF fourth, each gated on a
-zero image diff. Supersedes
+zero image diff. The mark display moves fifth, which is step 6 for bar and
+point marks. Supersedes
 [ADR-143](adr-143-one-quantitative-display-and-facet-is-the-layout.md)'s
 "`facet` is the layout" and its `facet.domain` row order; the rest of ADR-143
 stands. Builds on `130e41de08`, which made every product edit a track's config
@@ -210,6 +211,23 @@ edits that tint, where it had edited a `color` no renderer read. A
 `clusterTree`, `clusterProvenance` or `subtreeFilter` on its display snapshot,
 fail the load naming `rows`.
 
+**The mark display moves fifth.** Its rows are a field's values, so `rows`
+is the field-keyed `Rows`, beside `facet`, which keeps the labelled sections
+with their chips, cap and hide. The worker splits on `rows.field` exactly as
+on `facet.field`, the request naming it `facet`, and the display lays the
+answer out one row per value in the arrangement narrowed to the focus
+(`rowsLayout`); the row lane, `markRowHeightPx` and `bandTops` draw it
+unchanged, so `rows: 'source'` draws what `facet: 'source'` drew
+(`rowDerivation.test.ts`). `discoveredRows` are the keys the loaded regions'
+section tables name, sorted as sections are; `identityChannel` is
+`labelColor`, since each mark paints the plot in its own colour; and a
+clustering run compares the values the first drawing bar or point stands at,
+binned over the window in the worker (`MarkClusterRows`). `facet` and `rows`
+together are bands of rows, which step 5 draws; until then the facet draws and
+a notice says so, and a pileup or `row` field under `rows` is reported, its
+packed rows sharing their value's row. A bar or point spelled `facet:
+'source'` draws as it did.
+
 **Edit as JSON speaks `rows`.** `ChannelSpec` takes
 `rows: field | { field, domain }` beside `facet`, `color` and `filter`, and
 `ChannelSpecDialog` refuses `facet` on a display with no facet and `rows` on
@@ -277,6 +295,9 @@ one-shot trigger that clears itself.
   that lists its species; on one that discovers them from the blocks it applies
   as given, on the worker and in `sources` alike, since such a track lists no
   species before it reads, so a focus naming none the blocks hold draws no rows.
+- The mark display's Plot field default for a multi-source track writes
+  `rows: 'source'` where it wrote `facet: 'source'`, so it opens with row
+  labels where it had chips. A config spelling `facet: 'source'` keeps them.
 - A clustered tree lives in the track's config now, where it was display
   state. The session snapshot already carried display state into every
   autosave and share link, so the size is not new, only now in config. hclust
