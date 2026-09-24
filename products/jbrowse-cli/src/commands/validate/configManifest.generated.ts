@@ -3164,6 +3164,14 @@ export const configManifest: ConfigManifest = {
           "type": "RowColorConfigurationSchema",
           "subSlots": [
             {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "scale",
+              "type": "(RowColorScale | undefined)"
+            },
+            {
               "name": "domain",
               "type": "string[]",
               "liftsNumbers": true
@@ -3172,7 +3180,8 @@ export const configManifest: ConfigManifest = {
               "name": "range",
               "type": "CssColorEntry[]"
             }
-          ]
+          ],
+          "shorthand": "field"
         },
         {
           "name": "rowHeight",
@@ -4465,8 +4474,16 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rowColor",
-          "type": "VariantRowColorConfigurationSchema",
+          "type": "RowColorConfigurationSchema",
           "subSlots": [
+            {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "scale",
+              "type": "(RowColorScale | undefined)"
+            },
             {
               "name": "domain",
               "type": "string[]",
@@ -4475,10 +4492,6 @@ export const configManifest: ConfigManifest = {
             {
               "name": "range",
               "type": "CssColorEntry[]"
-            },
-            {
-              "name": "field",
-              "type": "string"
             }
           ],
           "shorthand": "field"
@@ -4649,8 +4662,16 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rowColor",
-          "type": "VariantRowColorConfigurationSchema",
+          "type": "RowColorConfigurationSchema",
           "subSlots": [
+            {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "scale",
+              "type": "(RowColorScale | undefined)"
+            },
             {
               "name": "domain",
               "type": "string[]",
@@ -4659,10 +4680,6 @@ export const configManifest: ConfigManifest = {
             {
               "name": "range",
               "type": "CssColorEntry[]"
-            },
-            {
-              "name": "field",
-              "type": "string"
             }
           ],
           "shorthand": "field"
@@ -4826,6 +4843,14 @@ export const configManifest: ConfigManifest = {
           "type": "RowColorConfigurationSchema",
           "subSlots": [
             {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "scale",
+              "type": "(RowColorScale | undefined)"
+            },
+            {
               "name": "domain",
               "type": "string[]",
               "liftsNumbers": true
@@ -4834,7 +4859,8 @@ export const configManifest: ConfigManifest = {
               "name": "range",
               "type": "CssColorEntry[]"
             }
-          ]
+          ],
+          "shorthand": "field"
         },
         {
           "name": "height",
@@ -5065,6 +5091,14 @@ export const configManifest: ConfigManifest = {
           "type": "RowColorConfigurationSchema",
           "subSlots": [
             {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "scale",
+              "type": "(RowColorScale | undefined)"
+            },
+            {
               "name": "domain",
               "type": "string[]",
               "liftsNumbers": true
@@ -5073,7 +5107,8 @@ export const configManifest: ConfigManifest = {
               "name": "range",
               "type": "CssColorEntry[]"
             }
-          ]
+          ],
+          "shorthand": "field"
         },
         {
           "name": "height",
@@ -5316,6 +5351,14 @@ export const configManifest: ConfigManifest = {
           "type": "RowColorConfigurationSchema",
           "subSlots": [
             {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "scale",
+              "type": "(RowColorScale | undefined)"
+            },
+            {
               "name": "domain",
               "type": "string[]",
               "liftsNumbers": true
@@ -5324,7 +5367,8 @@ export const configManifest: ConfigManifest = {
               "name": "range",
               "type": "CssColorEntry[]"
             }
-          ]
+          ],
+          "shorthand": "field"
         },
         {
           "name": "height",
@@ -5610,6 +5654,14 @@ export const configManifest: ConfigManifest = {
           "type": "RowColorConfigurationSchema",
           "subSlots": [
             {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "scale",
+              "type": "(RowColorScale | undefined)"
+            },
+            {
               "name": "domain",
               "type": "string[]",
               "liftsNumbers": true
@@ -5618,7 +5670,8 @@ export const configManifest: ConfigManifest = {
               "name": "range",
               "type": "CssColorEntry[]"
             }
-          ]
+          ],
+          "shorthand": "field"
         },
         {
           "name": "showLegend",

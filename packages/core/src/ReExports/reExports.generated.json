@@ -1544,6 +1544,7 @@
         "getQueryColor",
         "hashString",
         "paletteColors",
+        "paletteFromSpec",
         "refNameColor",
         "refNamePaletteColorAt",
         "set1",
@@ -3839,6 +3840,7 @@
         "colorRangeSlot",
         "colorReverseSlot",
         "colorScaleChoicesOf",
+        "dealRowColors",
         "normalizeChannel",
         "paintedScale",
         "pairedColorsOf"

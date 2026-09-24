@@ -3835,39 +3835,59 @@
     },
     "RowColor": {
       "title": "RowColor",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "domain": {
-          "description": "the rows given a colour of their own, by name.",
-          "anyOf": [
-            {
+      "anyOf": [
+        {
+          "description": "Shorthand for `{ \"field\": ... }`.",
+          "$ref": "#/$defs/PlainString",
+          "default": "name",
+          "type": "string"
+        },
+        {
+          "title": "RowColor",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "the row attribute whose values take the colours: name, the row itself, or on the multi-sample variant displays a column of the adapter's samplesTsvLocation, e.g. population.",
+              "$ref": "#/$defs/PlainString",
+              "default": "name"
+            },
+            "scale": {
+              "description": "none paints nothing from this setting and keeps the field for a switch back; categorical a colour per value of field; unset follows field.",
+              "enum": ["none", "categorical"]
+            },
+            "domain": {
+              "description": "the field's values given a colour of their own, in order: under name, rows by name.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "range": {
+              "description": "the CSS colour each value in domain takes, in the same order.",
               "type": "array",
               "items": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ]
+                "$ref": "#/$defs/CssColor"
               }
             }
-          ]
-        },
-        "range": {
-          "description": "the CSS colour each row in domain takes, in the same order.",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/CssColor"
-          }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
         }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
+      ]
     },
     "LinearMultiRowFeatureDisplaySlots": {
       "type": "object",
@@ -5445,58 +5465,6 @@
       },
       "additionalProperties": false
     },
-    "VariantRowColor": {
-      "title": "VariantRowColor",
-      "anyOf": [
-        {
-          "description": "Shorthand for `{ \"field\": ... }`.",
-          "$ref": "#/$defs/PlainString",
-          "default": "",
-          "type": "string"
-        },
-        {
-          "title": "VariantRowColor",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "domain": {
-              "description": "the rows given a colour of their own, by name.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
-                  }
-                }
-              ]
-            },
-            "range": {
-              "description": "the CSS colour each row in domain takes, in the same order.",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/CssColor"
-              }
-            },
-            "field": {
-              "description": "the sample-metadata attribute (a column of the adapter's samplesTsvLocation, e.g. population) whose values each take a palette colour; while set it wins over a row's own colour.",
-              "$ref": "#/$defs/PlainString",
-              "default": ""
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
     "LinearMultiSampleVariantDisplaySlots": {
       "type": "object",
       "properties": {
@@ -5599,7 +5567,7 @@
           "default": true
         },
         "rowColor": {
-          "$ref": "#/$defs/VariantRowColor"
+          "$ref": "#/$defs/RowColor"
         },
         "facet": {
           "$ref": "#/$defs/Facet"
@@ -5757,7 +5725,7 @@
           "default": true
         },
         "rowColor": {
-          "$ref": "#/$defs/VariantRowColor"
+          "$ref": "#/$defs/RowColor"
         },
         "facet": {
           "$ref": "#/$defs/Facet"
