@@ -1745,13 +1745,7 @@ describe('a closed schema', () => {
       { expr: { type: 'string', defaultValue: '' } },
       { explicitIdentifier: 'stepId', closed: true },
     )
-    const Implicit = ConfigurationSchema(
-      'ClosedImplicit',
-      { expr: { type: 'string', defaultValue: '' } },
-      { implicitIdentifier: true, closed: true },
-    )
     expect(Explicit.create({ stepId: 's', expr: 'x' }).stepId).toBe('s')
-    expect(getSnapshot(Implicit.create({ id: 'i' }))).toEqual({ id: 'i' })
     expect(() => Explicit.create({ stepId: 's', id: 'i' })).toThrow(
       'ClosedExplicit takes expr and stepId, not id',
     )

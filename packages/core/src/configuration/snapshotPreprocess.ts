@@ -1,11 +1,7 @@
 import { isJexl } from '../util/jexlStrings.ts'
 import { slotWriteRefusal } from './configurationSlot.ts'
 import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
-import {
-  identifierName,
-  isConstantEntry,
-  isSlotDefinitionEntry,
-} from './schemaTypes.ts'
+import { isConstantEntry, isSlotDefinitionEntry } from './schemaTypes.ts'
 
 import type { ConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
@@ -24,7 +20,7 @@ function refuseUndeclaredKeys(
   { name, definition, options }: ConfigurationSchemaMetadata,
   snapshot: unknown,
 ) {
-  const id = identifierName(options)
+  const id = options.explicitIdentifier
   const declared = [
     ...Object.keys(definition).filter(key => !isConstantEntry(definition[key])),
     ...(options.explicitlyTyped ? ['type'] : []),

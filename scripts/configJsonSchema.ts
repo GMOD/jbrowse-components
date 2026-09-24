@@ -36,7 +36,6 @@ export interface SchemaMetadata {
   options: {
     explicitlyTyped?: boolean
     explicitIdentifier?: string
-    implicitIdentifier?: string | boolean
     shorthand?: string
     closed?: boolean
     shorthandWith?: Record<string, unknown>
@@ -536,14 +535,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     if (meta.options.explicitlyTyped) {
       properties.type = { const: name }
     }
-    const { explicitIdentifier, implicitIdentifier } = meta.options
-    const idName =
-      explicitIdentifier ??
-      (typeof implicitIdentifier === 'string'
-        ? implicitIdentifier
-        : implicitIdentifier
-          ? 'id'
-          : undefined)
+    const idName = meta.options.explicitIdentifier
     if (idName) {
       properties[idName] = { type: 'string' }
     }

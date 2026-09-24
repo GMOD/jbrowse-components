@@ -20,7 +20,6 @@ import {
   isRegisteredConfigurationSchema,
 } from './schemaRegistry.ts'
 
-import type { MergedConfigurationSchemaOptions } from './configurationSchema.ts'
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type {
   AnyConfigurationModel,
@@ -99,15 +98,6 @@ export function isSlotDefinitionEntry(
   return (
     typeof def === 'object' && def !== null && !isType(def) && 'type' in def
   )
-}
-
-/** The prop an explicit or implicit identifier option installs, named `id` when the option is `true`. */
-export function identifierName({
-  explicitIdentifier,
-  implicitIdentifier,
-}: MergedConfigurationSchemaOptions<any, any>) {
-  const spec = explicitIdentifier || implicitIdentifier
-  return spec ? (typeof spec === 'string' ? spec : 'id') : undefined
 }
 
 export function isConfigurationModel(

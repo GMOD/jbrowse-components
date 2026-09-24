@@ -7,7 +7,6 @@ import {
 } from '@jbrowse/mobx-state-tree'
 
 import { getContainingTrack, getSession } from '../util/mstUtils.ts'
-import { ElementId } from '../util/types/mst.ts'
 import ConfigSlot, { slotWriteRefusal } from './configurationSlot.ts'
 import { checkRequirements } from './requirements.ts'
 import {
@@ -15,7 +14,6 @@ import {
   registerConfigurationSchema,
 } from './schemaRegistry.ts'
 import {
-  identifierName,
   isConfigurationSchemaType,
   isConstantEntry,
   isSlotDefinitionEntry,
@@ -80,7 +78,6 @@ export interface ConfigurationSchemaOptions<
 > {
   explicitlyTyped?: EXPLICITLY_TYPED
   explicitIdentifier?: EXPLICIT_IDENTIFIER
-  implicitIdentifier?: string | boolean
   baseConfiguration?: BASE_SCHEMA
 
   actions?: (self: unknown) => any
@@ -263,16 +260,9 @@ function makeConfigurationSchemaModel<
     modelDefinition.type = types.optional(types.literal(modelName), modelName)
   }
 
-  if (options.explicitIdentifier && options.implicitIdentifier) {
-    throw new Error(
-      `Cannot have both explicit and implicit identifiers in ${modelName}`,
-    )
-  }
-  const identifier = identifierName(options)
+  const identifier = options.explicitIdentifier
   if (identifier) {
-    modelDefinition[identifier] = options.explicitIdentifier
-      ? types.identifier
-      : ElementId
+    modelDefinition[identifier] = types.identifier
   }
 
   // String/number entries in the schema definition become volatile instance
