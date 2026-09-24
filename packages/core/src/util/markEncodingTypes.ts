@@ -111,6 +111,8 @@ export interface MarkEncoding {
   row?: FieldRef
   color?: ColorEncoding
   shape?: ShapeEncoding
+  /** The field a `text` mark prints, read by that mark alone. */
+  text?: FieldRef
 }
 
 /**
@@ -121,7 +123,14 @@ export interface MarkEncoding {
  * allocated nor transferred, and a caller that never hovers declines the
  * index, which is most of the encoder's cost after the walk.
  */
-export type LaneName = 'y' | 'color' | 'colorValue' | 'glyph' | 'row' | 'index'
+export type LaneName =
+  | 'y'
+  | 'color'
+  | 'colorValue'
+  | 'glyph'
+  | 'row'
+  | 'text'
+  | 'index'
 
 /**
  * #api
@@ -260,6 +269,12 @@ export interface EncodedChannels {
   /** The point painter's code for each feature's `shape`. */
   glyph?: Uint8Array
   row?: Uint32Array
+  /**
+   * Each feature's `text` channel as text, `''` where the field holds
+   * nothing; a list joins its members with commas. Strings, so the lane is
+   * cloned across the wire where the typed lanes are transferred.
+   */
+  text?: string[]
   /** The finite `y` extremes, `Infinity`/`-Infinity` when nothing plotted. */
   yMin: number
   yMax: number

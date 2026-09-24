@@ -763,6 +763,39 @@ test('only the lanes asked for are filled, and the index only when named', () =>
   expect(Flatbush.from(spans.flatbushData!).search(90, -1, 160, 1)).toEqual([1])
 })
 
+test('text is a lane of strings, filled only when named, empty where the field holds nothing', () => {
+  const r = encodeFeatures(
+    [
+      feature(0, { name: 'geneA' }),
+      feature(1, {}),
+      feature(2, { name: ['a', 'b'] }),
+      feature(3, { name: 7 }),
+    ],
+    { text: 'name' },
+    ['text'],
+    { jexl },
+  )
+  expect(r.text).toEqual(['geneA', '', 'a,b', '7'])
+  expect(encodedChannelTransferables(r)).toHaveLength(3)
+  const derived = encodeFeatures(
+    [feature(0, { score: 4 })],
+    { text: 'jexl:"n="+feature.score' },
+    ['text'],
+    { jexl },
+  )
+  expect(derived.text).toEqual(['n=4'])
+  expect(
+    encodeFeatures(features, { text: 'type' }, ['y'], { jexl }).text,
+  ).toBeUndefined()
+  expect(encodeFeatures(features, {}, ['text'], { jexl }).text).toEqual([
+    '',
+    '',
+    '',
+    '',
+    '',
+  ])
+})
+
 test('row is an integer lane, 0 where the field is missing or negative', () => {
   const r = encodeFeatures(
     [

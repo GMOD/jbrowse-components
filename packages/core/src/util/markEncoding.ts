@@ -11,6 +11,7 @@ import { cssColorToABGR, packAbgr } from './colorBits.ts'
 import { buildColorRampLut, colorRampStops, rampDomain } from './colorRamp.ts'
 import { fieldReader } from './fieldReader.ts'
 import Flatbush from './flatbush/index.ts'
+import { valueText } from './groupKeys.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { numericValue } from './numericValue.ts'
 import { SHAPE_CODES, SHAPE_NAMES } from './shapeNames.ts'
@@ -115,6 +116,7 @@ export interface MarkEncodingInput {
   row?: FieldRef | ChannelReader | ArrayLike<number>
   color?: ColorEncoding | ChannelReader<number>
   shape?: ShapeEncoding | ChannelReader<number>
+  text?: FieldRef | ChannelReader
 }
 
 /**
@@ -285,11 +287,18 @@ export function encodeFeatures<L extends LaneName>(
       ? channelReader(rowEncoding, jexl)
       : undefined
 
+  const { text: textEncoding } = encoding
+  const readText =
+    has('text') && textEncoding !== undefined
+      ? channelReader(textEncoding, jexl)
+      : undefined
+
   const x = new Uint32Array(n)
   const x2 = new Uint32Array(n)
   const y = has('y') ? new Float32Array(n) : undefined
   const row = has('row') ? new Uint32Array(n) : undefined
   const glyph = has('glyph') ? new Uint8Array(n) : undefined
+  const text = has('text') ? new Array<string>(n) : undefined
   const featureIndex = new Uint32Array(n)
   let yMin = Infinity
   let yMax = -Infinity
@@ -407,6 +416,9 @@ export function encodeFeatures<L extends LaneName>(
       shapeCategories.collect(f, count)
     } else if (glyph && readShape) {
       glyph[count] = readShape(f)
+    }
+    if (text) {
+      text[count] = readText ? valueText(readText(f)) : ''
     }
     featureIndex[count] = i
     if (colorCategories) {
@@ -550,6 +562,9 @@ export function encodeFeatures<L extends LaneName>(
   }
   if (glyph) {
     encoded.glyph = glyph.subarray(0, count)
+  }
+  if (text) {
+    encoded.text = text.length === count ? text : text.slice(0, count)
   }
   if (flatbushData) {
     encoded.flatbushData = flatbushData
