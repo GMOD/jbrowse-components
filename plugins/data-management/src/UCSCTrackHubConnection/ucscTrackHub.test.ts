@@ -201,6 +201,24 @@ searchTrix ixIxx/refSeq.ix
   })
 })
 
+// the id a session saved and a search hit names must agree, so it is the one
+// the track had before the connection searched it
+test('generateTracks keeps a searched track the id it had unsearched', () => {
+  const [track] = generateTracks({
+    trackDb: new TrackDbFile(`track ncbiRefSeq
+type bigGenePred
+shortLabel RefSeq All
+longLabel NCBI RefSeq genes
+bigDataUrl bbi/refSeq.bb
+searchIndex name
+searchTrix ixIxx/refSeq.ix
+`),
+    trackDbLoc: uri('https://x.org/volvox/trackDb.txt'),
+    assemblyName: 'volvox',
+  })
+  expect(track?.trackId).toBe('ucsc-trackhub--1902820995')
+})
+
 test('generateTracks searches a searchIndex without a searchTrix exactly', () => {
   const geneDb = new TrackDbFile(`track genes
 type bigBed 6

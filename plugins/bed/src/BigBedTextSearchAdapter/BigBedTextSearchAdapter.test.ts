@@ -5,8 +5,9 @@ import configSchema from './configSchema.ts'
 
 // genes.bb holds three EDEN transcripts overlapping on ctgA, two Apple
 // transcripts apart on ctgA, and Banana on ctgB, extra-indexed on name (the
-// accession) and name2 (the gene); genes.ix is ixIxx over both. genes.bed,
-// genes.as and genes.ixin.txt rebuild them
+// accession) and name2 (the gene); genes.ix is ixIxx over the accession
+// without its version, as GenArk's is, and the gene. genes.bed, genes.as and
+// genes.ixin.txt rebuild them
 function local(file: string) {
   return {
     localPath: require.resolve(`./test_data/${file}`),
@@ -49,26 +50,34 @@ test('transcripts of one name in two places stay two places', async () => {
   ])
 })
 
-test('an accession finds its own transcript', async () => {
+test('an accession finds its own transcript, in any case', async () => {
   expect(await summary(true, 'nm_0004.1')).toEqual([
     ['NM_0004.1', 'ctgB:1001..2000', true],
   ])
 })
 
-test('a prefix offers the names it starts, by name alone', async () => {
+test('an accession without its version finds every version', async () => {
   expect(await summary(true, 'nm_0001')).toEqual([
-    ['NM_0001.1', undefined, false],
-    ['NM_0001.2', undefined, false],
-    ['NM_0001.3', undefined, false],
+    ['NM_0001.1', 'ctgA:1050..9000', true],
+    ['NM_0001.2', 'ctgA:1050..9000', true],
+    ['NM_0001.3', 'ctgA:1300..9500', true],
+  ])
+})
+
+test('a word the query only prefixes lands where its exact word would', async () => {
+  expect(await summary(true, 'ed')).toEqual([
+    ['EDEN', 'ctgA:1050..9500', false],
+  ])
+  expect(await summary(true, 'ap')).toEqual([
+    ['Apple', 'ctgA:17400..23000', false],
+    ['Apple', 'ctgA:30001..32000', false],
   ])
 })
 
 test('an exact search resolves no prefixes', async () => {
-  expect(await summary(true, 'nm_0001', 'exact')).toEqual([])
+  expect(await summary(true, 'ed', 'exact')).toEqual([])
 })
 
-// GenArk's trix drops an accession's version, so no word matches
-// NM_009764.3 while the extra index holds exactly that
 test('a name the trix has no word for still matches exactly as typed', async () => {
   const a = adapter(true)
   a.trix = { search: async () => [] } as unknown as typeof a.trix

@@ -15,10 +15,10 @@ import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterC
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 // each name a query resolves costs a walk of the BigBed's B+ tree, so a query
-// resolves every name its exact word carries up to the first cap, and one name
-// for each of the first few words it only prefixes
+// resolves every name its exact word carries up to one cap, and the words it
+// only prefixes, each whole, while their names fit the other
 const MAX_EXACT_NAMES = 50
-const MAX_PREFIX_WORDS = 10
+const MAX_PREFIX_NAMES = 50
 const MAX_TRIX_HITS = 500
 
 interface Hit {
@@ -78,6 +78,21 @@ export function mergeTranscripts(hits: Hit[]) {
   return merged
 }
 
+// A word is resolved whole or not at all, since a word missing some of its
+// names would land on part of its gene
+function prefixedNames(byWord: Map<string, string[]>, word: string) {
+  const pairs: (readonly [string, string])[] = []
+  for (const [term, names] of byWord) {
+    if (term !== word && term.startsWith(word)) {
+      if (pairs.length + names.length > MAX_PREFIX_NAMES) {
+        break
+      }
+      pairs.push(...names.map(name => [term, name] as const))
+    }
+  }
+  return pairs
+}
+
 export default class BigBedTextSearchAdapter
   extends BaseAdapter<BigBedTextSearchAdapterConfig>
   implements BaseTextSearchAdapter
@@ -107,15 +122,17 @@ export default class BigBedTextSearchAdapter
   }
 
   // The names to look up: the query as spelled, which the extra index answers
-  // however the trix split it into words (GenArk's drops an accession's
-  // version), then the names the trix finds for its word
+  // however the trix split it into words, then the names the trix finds for
+  // its word. GenArk's trix drops an accession's version, so a versioned query
+  // asks for the bare word and keeps the names spelling the query
   async names(query: string, exactOnly: boolean, signal?: AbortSignal) {
     const word = query.toLowerCase()
     if (!this.trix) {
       return { exact: [query], prefixed: [] }
     }
+    const trixWord = word.replace(/\.\d+$/, '')
     const byWord = new Map<string, string[]>()
-    for (const [term, name] of await this.trix.search(word, { signal })) {
+    for (const [term, name] of await this.trix.search(trixWord, { signal })) {
       const names = byWord.get(term)
       if (names) {
         names.push(name)
@@ -123,17 +140,13 @@ export default class BigBedTextSearchAdapter
         byWord.set(term, [name])
       }
     }
+    const exact =
+      trixWord === word
+        ? (byWord.get(word) ?? [])
+        : (byWord.get(trixWord) ?? []).filter(n => n.toLowerCase() === word)
     return {
-      exact: [...new Set([query, ...(byWord.get(word) ?? [])])].slice(
-        0,
-        MAX_EXACT_NAMES,
-      ),
-      prefixed: exactOnly
-        ? []
-        : [...byWord]
-            .filter(([term]) => term !== word)
-            .slice(0, MAX_PREFIX_WORDS)
-            .map(([term, names]) => [term, names[0]!] as const),
+      exact: [...new Set([query, ...exact])].slice(0, MAX_EXACT_NAMES),
+      prefixed: exactOnly ? [] : prefixedNames(byWord, word),
     }
   }
 
@@ -158,19 +171,18 @@ export default class BigBedTextSearchAdapter
       ),
     ])
     checkAbortSignal(signal)
-    const located = mergeTranscripts(exactHits.flat()).map(
-      ({ label, refName, start, end }) =>
-        new BaseResult({
-          label,
-          locString: `${refName}:${start + 1}..${end}`,
-          exact: true,
-        }),
-    )
-    // a word the query only prefixes is offered by name alone: picking it
-    // searches that name exactly, which resolves every one of its transcripts
-    const named = [...new Set(prefixHits.flat().map(h => h.label))].map(
-      label => new BaseResult({ label }),
-    )
-    return [...located, ...named]
+    const results = (hits: Hit[], exact: boolean) =>
+      mergeTranscripts(hits).map(
+        ({ label, refName, start, end }) =>
+          new BaseResult({
+            label,
+            locString: `${refName}:${start + 1}..${end}`,
+            exact,
+          }),
+      )
+    return [
+      ...results(exactHits.flat(), true),
+      ...results(prefixHits.flat(), false),
+    ]
   }
 }

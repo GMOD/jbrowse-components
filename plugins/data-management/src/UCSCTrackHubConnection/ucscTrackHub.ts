@@ -78,11 +78,17 @@ export function generateTracks({
         resolvedType: trackDb.settings(trackName).type || '',
       }),
     }))
-    .map(r => ({
-      ...r,
-      trackId: `ucsc-trackhub-${objectHash(r)}`,
-      assemblyNames: [assemblyName],
-    }))
+    .map(r => {
+      const { textSearching: _, ...unsearched } = {
+        textSearching: undefined,
+        ...r,
+      }
+      return {
+        ...r,
+        trackId: `ucsc-trackhub-${objectHash(unsearched)}`,
+        assemblyNames: [assemblyName],
+      }
+    })
 }
 
 // bigGenePred rows are transcripts; BigBedAdapter groups them into genes by

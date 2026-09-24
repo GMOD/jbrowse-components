@@ -69,3 +69,17 @@ test('a gene name lands on the gene and opens the hub track it came from', async
     ),
   ).toEqual(['hub_genes'])
 })
+
+test('Enter on a word the query only prefixes lands on its gene', async () => {
+  const view = await setup()
+
+  expect(await view.navToLocString('ed', 'volvox')).toBe(true)
+
+  const { refName, start, end } = parseLocString(
+    view.visibleLocStrings,
+    refName => refName === 'ctgA',
+  )
+  expect(refName).toBe('ctgA')
+  expect(start).toBeLessThanOrEqual(1050)
+  expect(end).toBeGreaterThanOrEqual(9500)
+})
