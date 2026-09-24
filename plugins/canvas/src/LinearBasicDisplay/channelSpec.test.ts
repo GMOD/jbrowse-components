@@ -178,6 +178,15 @@ describe('the Group by dialog applies a channel spec', () => {
     })
   })
 
+  it('brings back the order and range Solid color parked', () => {
+    const d = display()
+    d.setColorScale({ field: 'biotype', domain: ['lncRNA'], range: ['red'] })
+    d.setFeatureColor('purple')
+    d.applyGroupBy('biotype', true)
+    expect(d.colorField?.domain).toEqual(['lncRNA'])
+    expect(d.colorField?.color('lncRNA')).toBe('red')
+  })
+
   it('names no color domain from the facet on either route', () => {
     const viaDialog = display()
     const viaJson = display()

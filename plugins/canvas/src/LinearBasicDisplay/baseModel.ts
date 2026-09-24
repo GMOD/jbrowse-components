@@ -1569,24 +1569,6 @@ export default function baseStateModelFactory(
       },
       /**
        * #action
-       * What the Group by dialog applies: the channels its choice changes,
-       * through the setters the menus use.
-       */
-      applyGroupBy(field: string | undefined, colorByGroup: boolean) {
-        const { facet, color } = self.groupByChannelSpec(field, colorByGroup)
-        if (facet !== undefined) {
-          self.setFacet(facet ?? undefined)
-        }
-        if (color !== undefined) {
-          if (typeof color === 'string') {
-            self.setFeatureColor(color)
-          } else {
-            self.setColorScale(color ?? undefined)
-          }
-        }
-      },
-      /**
-       * #action
        * What a menu or dialog naming only a field writes: the field, keeping
        * the domain and range while it is the field already painting.
        */
@@ -1607,6 +1589,24 @@ export default function baseStateModelFactory(
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * What the Group by dialog applies: the channels its choice changes,
+       * through the setters the menus use.
+       */
+      applyGroupBy(field: string | undefined, colorByGroup: boolean) {
+        const { facet, color } = self.groupByChannelSpec(field, colorByGroup)
+        if (facet !== undefined) {
+          self.setFacet(facet ?? undefined)
+        }
+        if (color === null) {
+          self.setColorScale()
+        } else if (typeof color === 'string') {
+          self.setFeatureColor(color)
+        } else if (color !== undefined) {
+          self.colorByField(color.field)
+        }
+      },
       /**
        * #action
        */
