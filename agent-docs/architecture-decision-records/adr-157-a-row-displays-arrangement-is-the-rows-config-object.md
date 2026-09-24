@@ -222,11 +222,14 @@ unchanged, so `rows: 'source'` draws what `facet: 'source'` drew
 section tables name, sorted as sections are; `identityChannel` is
 `labelColor`, since each mark paints the plot in its own colour; and a
 clustering run compares the values the first drawing bar or point stands at,
-binned over the window in the worker (`MarkClusterRows`). `facet` and `rows`
-together are bands of rows, which step 5 draws; until then the facet draws and
-a notice says so, and a pileup or `row` field under `rows` is reported, its
-packed rows sharing their value's row. A bar or point spelled `facet:
-'source'` draws as it did.
+binned over the window in the worker (`MarkClusterRows`). Beside a `facet`
+the facet draws: on the same field that is the whole picture, and on another
+it asks for bands of rows, which step 5 draws, so until then a notice says so.
+A pileup or `row` field under `rows` is reported, its packed rows sharing their
+value's row. A `MultiQuantitativeTrack` seeds `rows: 'source'` into its
+`displayDefaults`, which ADR-134 routes to every display taking the value, so a
+mark display over one draws a row per source unless it names a facet, and one
+spelled `facet: 'source'` draws as it did with nothing to report.
 
 **Edit as JSON speaks `rows`.** `ChannelSpec` takes
 `rows: field | { field, domain }` beside `facet`, `color` and `filter`, and

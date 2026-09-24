@@ -397,8 +397,11 @@ share link reach it.
 
 `facet` and `rows` both split the features on a field, and differ in what a
 value gets: a facet section is as deep as its packing and wears a chip, where a
-row is one row. Both on one display, bands of rows, is not drawn yet, so the
-facet draws alone and the track says so.
+row is one row. Beside a facet the facet draws: on the same field that is the
+whole picture, and on another it asks for bands of rows, which are not drawn
+yet, so the track says so. A `MultiQuantitativeTrack` asks every display it has
+for `rows: "source"`, so a mark display over one draws a row per file unless it
+names a facet.
 
 ## Transforms
 
@@ -591,7 +594,8 @@ chip in its corner naming the slot, and the mark when the slot is a mark's:
   them together;
 - a `pileup` in the display's `transform` under a `facet`, which packs across
   every section where the facet's own `transform` packs per section;
-- `rows` beside a `facet`, where the facet draws alone until bands of rows land;
+- `rows` beside a `facet` on another field, where the facet draws alone until
+  bands of rows land;
 - a `pileup` or a `row` field under `rows`, whose packed rows share their
   value's one row;
 - a zoom range whose `minBpPerPx` is not below its `maxBpPerPx`, which never

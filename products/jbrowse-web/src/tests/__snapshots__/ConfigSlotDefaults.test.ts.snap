@@ -611,7 +611,11 @@ exports[`every registered schema slot default 1`] = `
     "minWidthPx": "number = 1",
     "minimalTicks": "boolean = false",
     "origin": "number = 0",
+    "showBranchLength": "boolean = true",
     "showLegend": "boolean = true",
+    "showRowLabels": "boolean = true",
+    "showTree": "boolean = true",
+    "treeAreaWidth": "number = 80",
   },
   "display: LinearMultiRowFeatureDisplay": {
     "clusterField": "featureField = "auto"",

@@ -543,14 +543,15 @@ test('a density source on a span, or on a second mark, waits unread', () => {
   ])
 })
 
-test('rows beside a facet is named as not drawn yet, and the facet draws', () => {
+test('rows beside a facet on another field is named as not drawn yet', () => {
   const BAR = { mark: 'bar', encoding: { y: 'score' } }
   expect(found([BAR], undefined, undefined, 'source')).toEqual([])
   expect(
     problemsOf([BAR], 'tissue', undefined, 'source').map(problemText),
   ).toEqual([
-    'rows.field: facet stacks a labelled section per value and rows one row per value; bands of rows, the two at once, are not drawn yet, so the facet draws alone',
+    'rows.field: facet stacks a labelled section per value and rows one row per value; bands of rows over two fields are not drawn yet, so the facet draws alone',
   ])
+  expect(found([BAR], 'source', undefined, 'source')).toEqual([])
 })
 
 test("a pileup under rows is told its packed rows share their value's row", () => {

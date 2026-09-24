@@ -512,12 +512,12 @@ export function markProblems(
             : [],
         )
       : []),
-    ...(faceted && named(rows?.field)
+    ...(faceted && named(rows?.field) && rows?.field !== facet?.field
       ? [
           found(
             'rows-beside-facet',
             'rows.field',
-            'facet stacks a labelled section per value and rows one row per value; bands of rows, the two at once, are not drawn yet, so the facet draws alone',
+            'facet stacks a labelled section per value and rows one row per value; bands of rows over two fields are not drawn yet, so the facet draws alone',
           ),
         ]
       : []),

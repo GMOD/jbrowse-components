@@ -178,6 +178,7 @@ describe('a marks list in a config file', () => {
     expect(found([BAR], { rows: 'source', facet: 'tissue' })).toEqual([
       `warning rows-beside-facet ${DISPLAY}.rows.field`,
     ])
+    expect(found([BAR], { rows: 'source', facet: 'source' })).toEqual([])
     expect(found([BAR, PILEUP], { rows: { field: 'source' } })).toEqual([
       `warning packing-under-rows ${DISPLAY}.marks[1].transform[0]`,
     ])

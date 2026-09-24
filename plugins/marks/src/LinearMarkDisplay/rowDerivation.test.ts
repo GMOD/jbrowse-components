@@ -194,11 +194,16 @@ test('a reset returns the order, labels, tree and focus to the config', async ()
   expect(drawn(display)).toEqual(drawn(loaded(seed)))
 })
 
-test('rows beside a facet leave the facet drawing, and say so', () => {
-  const both = loaded({ facet: 'source', rows: 'source' })
-  expect(drawn(both)).toEqual(drawn(loaded({ facet: 'source' })))
-  expect(both.sources).toEqual([])
-  expect(both.notices).toEqual([
-    'rows.field: facet stacks a labelled section per value and rows one row per value; bands of rows, the two at once, are not drawn yet, so the facet draws alone',
+// A MultiQuantitativeTrack seeds `rows: 'source'` for every display taking
+// it, so a mark display there faceted by source carries both.
+test('rows beside a facet leave the facet drawing, and say so on another field', () => {
+  const same = loaded({ facet: 'source', rows: 'source' })
+  expect(drawn(same)).toEqual(drawn(loaded({ facet: 'source' })))
+  expect(same.sources).toEqual([])
+  expect(same.notices).toEqual([])
+  const other = loaded({ facet: 'tissue', rows: 'source' })
+  expect(drawn(other)).toEqual(drawn(loaded({ facet: 'tissue' })))
+  expect(other.notices).toEqual([
+    'rows.field: facet stacks a labelled section per value and rows one row per value; bands of rows over two fields are not drawn yet, so the facet draws alone',
   ])
 })

@@ -398,9 +398,9 @@ export function configSchemaFactory() {
        * a multi-BigWig is one xyplot per file. The worker splits the features
        * on the field as it does for `facet`, and the rows take the tree
        * sidebar, the row labels, clustering and the arrangement dialog, whose
-       * order, labels, tree and focus this object holds. `facet` and `rows` on
-       * one display, bands of rows, is not drawn yet: the facet draws and a
-       * notice says so.
+       * order, labels, tree and focus this object holds. Beside a `facet`, the
+       * facet draws; on another field that asks for bands of rows, which are
+       * not drawn yet, and a notice says so.
        *
        * #example
        * ```js
