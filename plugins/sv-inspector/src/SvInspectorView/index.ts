@@ -15,7 +15,7 @@ import { svChordColor } from './svChordColor.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ViewTypeRegistry } from '@jbrowse/core/PluginManager'
-import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { FindJunctionsNear, SvEvent } from '@jbrowse/sv-core'
 
 // `chordTrack` is the ChordVariantDisplay: the display is what the
@@ -41,7 +41,7 @@ function defaultOnChordClick(
         drilldownTrackIds: string[]
         spreadsheet?: {
           findJunctionsNear: () => FindJunctionsNear
-          svEventFor: (feature: SimpleFeatureSerialized) => SvEvent | undefined
+          svEventFor: (feature: { uniqueId: string }) => SvEvent | undefined
         }
       }
     }>(view)
@@ -49,32 +49,23 @@ function defaultOnChordClick(
       parentView.type === 'SvInspectorView'
         ? parentView.spreadsheetView
         : undefined
+    const sheet = inspector?.spreadsheet
+    // the inspector's sheet holds the callset parsed already, which beats the
+    // adapter re-reading it over RPC one 2 kb window per hop
+    const findJunctionsNear = sheet
+      ? sheet.findJunctionsNear()
+      : chordTrack.adapterConfig
+        ? makeFindJunctionsNear(
+            chordTrack as Parameters<typeof makeFindJunctionsNear>[0],
+            assemblyName,
+          )
+        : undefined
     launchBreakpointSplitView({
       session,
       feature,
       assemblyName,
-      // A chord click has the whole callset behind it, so this is the launch
-      // site where "Follow further breakends at each end" is most obviously
-      // wanted -- the reader is already looking at every junction at once.
-      // Without it the dialog does not offer the option at all.
-      //
-      // In the SV inspector the sheet holds that callset parsed already, and
-      // answering from it beats asking the display's adapter, which ships the
-      // records back through RPC one 2 kb window per hop to re-read them. A
-      // circular view standing on its own has no sheet and keeps the adapter.
-      ...(inspector?.spreadsheet
-        ? { findJunctionsNear: inspector.spreadsheet.findJunctionsNear() }
-        : chordTrack.adapterConfig
-          ? {
-              findJunctionsNear: makeFindJunctionsNear(
-                chordTrack as Parameters<typeof makeFindJunctionsNear>[0],
-                assemblyName,
-              ),
-            }
-          : {}),
-      event: inspector?.spreadsheet?.svEventFor(
-        unwrapFeature(feature).toJSON(),
-      ),
+      findJunctionsNear,
+      event: sheet?.svEventFor({ uniqueId: unwrapFeature(feature).id() }),
       defaultTrackIds: inspector?.drilldownTrackIds,
       // in the SV inspector, reuse the same view the sheet's own row menu opens
       // so a chord click and a row click don't stack two of them. Other

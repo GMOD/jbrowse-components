@@ -9,28 +9,31 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
 
+import { circularViewOptionsBarHeight } from './consts.ts'
 import { featureRefNames } from './featureRefNames.ts'
 import { svInspectorLaunchKeys } from './launchKeys.ts'
 import { sameCircularRegions } from './sameCircularRegions.ts'
 
 import type { SvInspectorViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-export { circularViewOptionsBarHeight } from './consts.ts'
-import { circularViewOptionsBarHeight } from './consts.ts'
-
-/**
- * The trackId a persisted circular-view track names. A track opened from the
- * session's config carries its trackId as a string; one given an inline config —
- * which is how the chord track is built — carries the whole object.
- */
+// a track from the session's config carries its trackId as a string; the chord
+// track is given an inline config, so it carries the whole object
 function trackConfId(configuration: unknown) {
   return typeof configuration === 'string'
     ? configuration
-    : ((configuration as { trackId?: string } | undefined)?.trackId ??
-        undefined)
+    : (configuration as { trackId?: string } | undefined)?.trackId
+}
+
+function variantTrackIdFor(viewId: string) {
+  return `sv-inspector-variant-track-${viewId}`
+}
+
+function rowFeatures(rows?: { feature?: SimpleFeatureSerialized }[]) {
+  return rows?.map(row => row.feature).filter(f => !!f) ?? []
 }
 
 /**
@@ -236,11 +239,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        * the records of the rows the sheet's filters leave
        */
       get features() {
-        return (
-          self.spreadsheetView.spreadsheet?.visibleRows
-            ?.map(row => row.feature)
-            .filter(f => !!f) ?? []
-        )
+        return rowFeatures(self.spreadsheetView.spreadsheet?.visibleRows)
       },
       /**
        * #getter
@@ -250,11 +249,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        * copied again on every filter change
        */
       get allFeatures() {
-        return (
-          self.spreadsheetView.spreadsheet?.rows
-            ?.map(row => row.feature)
-            .filter(f => !!f) ?? []
-        )
+        return rowFeatures(self.spreadsheetView.spreadsheet?.rows)
       },
       /**
        * #getter
@@ -268,25 +263,17 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * every refName the features' chords land on, both ends included
-       */
-      get featureRefNames() {
-        return [
-          ...new Set(
-            this.features
-              .flatMap(f => featureRefNames(f))
-              .filter(f => f !== undefined),
-          ),
-        ]
-      },
-      /**
-       * #getter
+       * every canonical refName the visible features' chords land on, both
+       * ends included
        */
       get canonicalFeatureRefNameSet() {
         const asm = this.currentAssembly
         return new Set(
           asm?.initialized
-            ? this.featureRefNames.map(r => asm.getCanonicalRefName2(r))
+            ? this.features
+                .flatMap(f => featureRefNames(f))
+                .filter(r => r !== undefined)
+                .map(r => asm.getCanonicalRefName2(r))
             : [],
         )
       },
@@ -309,23 +296,24 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * the two subview widths, with the divider taken out of the total first:
-       * the two plus the divider have to add up to our own width, or the flex
-       * row overflows and squeezes the circle.
-       *
-       * The fraction is clamped on read as well as on write, so a session
-       * carrying an out-of-range one (hand-authored, or from a future default)
-       * can't drive the circle under the width floor it clamps itself to
+       * spreadsheetWidthFraction clamped, so a hand-authored out-of-range one
+       * can't drive the circle under its width floor
+       */
+      get effectiveSpreadsheetWidthFraction() {
+        return clamp(
+          self.spreadsheetWidthFraction,
+          minWidthFraction,
+          maxWidthFraction,
+        )
+      },
+      /**
+       * #getter
+       * the two subview widths, which with the divider add up to our own width
        */
       get subviewWidths() {
         const available = self.width - dividerWidth
         const spreadsheet = Math.round(
-          available *
-            clamp(
-              self.spreadsheetWidthFraction,
-              minWidthFraction,
-              maxWidthFraction,
-            ),
+          available * this.effectiveSpreadsheetWidthFraction,
         )
         return { spreadsheet, circular: available - spreadsheet }
       },
@@ -347,7 +335,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        * #getter
        */
       get variantTrackId() {
-        return `sv-inspector-variant-track-${self.id}`
+        return variantTrackIdFor(self.id)
       },
       /**
        * #getter
@@ -382,8 +370,21 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             }
           : undefined
       },
+      /**
+       * #method
+       */
+      menuItems() {
+        return [
+          {
+            label: 'Return to import form',
+            icon: FolderOpenIcon,
+            onClick: () => {
+              self.spreadsheetView.returnToImportForm()
+            },
+          },
+        ]
+      },
     }))
-
     .actions(self => ({
       /**
        * #action
@@ -402,20 +403,15 @@ function SvInspectorViewF(pluginManager: PluginManager) {
 
       /**
        * #action
-       * move the divider between the two subviews. Stored as a fraction so the
-       * width binding can reapply it, rather than resizing the subviews directly
-       * and having the next parent resize overwrite it.
-       *
-       * The delta accumulates onto the fraction rather than being read back off
-       * spreadsheetView.width: the binding writes a rounded, divider-adjusted
-       * width there, so a round trip through it lost a pixel on every drag
-       * frame and the divider crept left even while the pointer was still
+       * move the divider between the two subviews. The delta accumulates onto
+       * the fraction rather than being read back off spreadsheetView.width,
+       * which the width binding rounds, so the divider doesn't creep a pixel
+       * per drag frame
        */
       resizeSpreadsheetWidth(distance: number) {
-        const fraction =
-          self.spreadsheetWidthFraction + distance / (self.width - dividerWidth)
         self.spreadsheetWidthFraction = clamp(
-          fraction,
+          self.effectiveSpreadsheetWidthFraction +
+            distance / (self.width - dividerWidth),
           minWidthFraction,
           maxWidthFraction,
         )
@@ -426,22 +422,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
        */
       setLaunch(launch?: LaunchInput<SvInspectorViewCommands>) {
         self.launch = launch
-      },
-    }))
-    .views(self => ({
-      /**
-       * #method
-       */
-      menuItems() {
-        return [
-          {
-            label: 'Return to import form',
-            icon: FolderOpenIcon,
-            onClick: () => {
-              self.spreadsheetView.returnToImportForm()
-            },
-          },
-        ]
       },
     }))
     .actions(self => ({
@@ -588,24 +568,12 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      // the launch blob is forwarded to the child spreadsheet synchronously in
-      // afterAttach, and that view caches the file location just as
-      // synchronously, so this node's copy has nothing left to reconstruct.
-      //
-      // The chord track is built here from the sheet's rows, and
-      // showTrackGeneric puts that config on the track *inline*, so persisting
-      // it would write every visible feature into the session a second time —
-      // and the autorun rebuilds it on attach anyway. Only that one is dropped:
-      // the circle keeps its track selector so a reader can lay a second
-      // callset beside this one, and dropping the whole array took theirs with
-      // it. Nothing else about the subview is derived: displayedRegions,
-      // bpPerPx, offsetRadians and autoFit are the user's own pan and zoom,
-      // which the circular view means to keep across a reload, and dropping the
-      // whole node used to reset the circle on every session load.
-      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
+      // the chord track's inline config holds every row, and the autorun
+      // rebuilds it on attach, so drop just that track. A second callset's
+      // track and the user's pan and zoom persist
       const { circularView, ...rest } = snap
       const { tracks, ...circular } = circularView
-      const generatedId = `sv-inspector-variant-track-${snap.id}`
+      const generatedId = variantTrackIdFor(snap.id)
       const kept = tracks.filter(
         (t: { configuration?: unknown }) =>
           trackConfId(t.configuration) !== generatedId,
