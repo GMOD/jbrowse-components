@@ -8,9 +8,14 @@ import {
 
 import { LD_FIELD } from './colorConfigSchema.ts'
 
+import type { ShapeName } from '@jbrowse/core/util/markEncoding'
+
+// `shape` is the point the plot draws: the index SNP as a diamond, every
+// other point as a disc (`makeLdEvaluator`)
 export interface LdSwatch {
   label: string
   color: string
+  shape: ShapeName
 }
 
 // The LocusZoom r² convention as the display's colour object: the cuts and the
@@ -28,10 +33,12 @@ export const LD_PALETTE = [
 export const LD_INDEX_SWATCH: LdSwatch = {
   label: 'Index SNP',
   color: '#c951c9',
+  shape: 'diamond',
 }
 export const LD_MISSING_SWATCH: LdSwatch = {
   label: 'No LD data',
   color: '#b8b8b8',
+  shape: 'circle',
 }
 
 // The title of the display's `legend` value under LD coloring, which both the
@@ -95,7 +102,11 @@ export function ldLegend(color: LdColor): LdSwatch[] {
   return [
     LD_INDEX_SWATCH,
     ...thresholdLabels(cuts)
-      .map((label, i) => ({ label, color: colors[i]! }))
+      .map((label, i) => ({
+        label,
+        color: colors[i]!,
+        shape: 'circle' as const,
+      }))
       .reverse(),
     LD_MISSING_SWATCH,
   ]

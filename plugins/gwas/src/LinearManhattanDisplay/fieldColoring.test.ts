@@ -134,20 +134,31 @@ describe('LinearManhattanDisplay field coloring', () => {
   })
 
   // Without it an export where nothing matched the index SNP is an all-grey
-  // plot under a full r² key that implies the colors mean something.
-  it('a missing index SNP adds a note row saying why every point is grey', () => {
+  // plot under a full r² key that implies the colors mean something. The index
+  // itself stays the purple diamond, so the note says every OTHER point.
+  it('a missing index SNP notes why every other point is grey', () => {
     const ld = createTestEnvironment({ color: { field: 'ld' } }).createDisplay()
       .display
     ld.setIndexSnp('ctgA:500')
     ld.setRpcData(0, { ...payload(), indexFound: false }, REGION)
     expect(ld.indexSnpMissing).toBe(true)
     const [scale] = ld.colorScales
-    const last =
-      scale?.kind === 'categorical' ? scale.entries.at(-1) : undefined
-    expect(last).toEqual({
-      value: 'missing',
-      label: 'Index SNP not in LD data: all grey',
-    })
+    expect(scale?.kind === 'categorical' && scale.note).toBe(
+      'No LD data for the index SNP: every other point is grey',
+    )
+  })
+
+  // The key draws the point the plot draws: the index a diamond, the rest discs
+  it('keys each LD row with the shape its points are drawn in', () => {
+    const ld = createTestEnvironment({ color: { field: 'ld' } }).createDisplay()
+      .display
+    const [scale] = ld.colorScales
+    const shapes =
+      scale?.kind === 'categorical'
+        ? scale.entries.map(e => e.swatches?.[0]?.shape)
+        : []
+    expect(shapes[0]).toBe('diamond')
+    expect(new Set(shapes.slice(1))).toEqual(new Set(['circle']))
   })
 
   // The constant stays in the config for the way back, and the worker is sent

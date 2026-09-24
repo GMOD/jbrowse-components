@@ -135,16 +135,14 @@ function ldScale(
     kind: 'categorical',
     id: 'ld',
     title: LD_LEGEND_TITLE,
-    entries: [
-      ...ldLegend(color).map(({ label, color }) => ({
-        value: label,
-        label,
-        color,
-      })),
-      ...(indexSnpMissing
-        ? [{ value: 'missing', label: 'Index SNP not in LD data: all grey' }]
-        : []),
-    ],
+    ...(indexSnpMissing
+      ? { note: 'No LD data for the index SNP: every other point is grey' }
+      : {}),
+    entries: ldLegend(color).map(({ label, color, shape }) => ({
+      value: label,
+      label,
+      swatches: [{ color, shape }],
+    })),
   }
 }
 
