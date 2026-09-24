@@ -2,6 +2,7 @@ import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { svgTrackName } from '@jbrowse/core/svg/trackNames'
 import { getSession } from '@jbrowse/core/util'
+import { exportsTooLargeNote } from '@jbrowse/display-kit/renderDisplaySvg'
 
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import SVGTrackLabel from './SVGTrackLabel.tsx'
@@ -63,7 +64,11 @@ export default function SVGTracks({
             >
               <g transform={`translate(${trackLabelOffset} ${textOffset})`}>
                 {result}
-                <SVGRegionSeparators model={model} height={display.height} />
+                {/* the note covers the whole box, so a separator would only
+                    strike through its text */}
+                {exportsTooLargeNote(display) ? null : (
+                  <SVGRegionSeparators model={model} height={display.height} />
+                )}
               </g>
             </SvgClipRect>
             <SVGTrackLabel

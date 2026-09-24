@@ -43,7 +43,9 @@ test('test stats estimation pileup, zooming past the floor keeps the banner', as
     await createView(config)
   view.setNewView(30, 183)
   fireEvent.click(await findByTestId(hts('volvox_cram_pileup'), ...o))
-  await findAllByText(/Requested too much data/, ...o)
+  const [banner] = await findAllByText(/Requested too much data/, ...o)
+  // above the region separators, which paint over the display's own box
+  expect(banner!.closest('[data-track-overlay-node]')).not.toBeNull()
 
   async function zoomIn() {
     const before = view.bpPerPx

@@ -62,6 +62,17 @@ export interface LgvSvgExportable extends SvgExportable, IStateTreeNode {
 }
 
 /**
+ * Whether the export draws `SvgChrome`'s too-large note, an opaque box over the
+ * display's whole area, in place of its body.
+ */
+export function exportsTooLargeNote(model: {
+  regionTooLarge?: boolean
+  drawsWhenTooLarge?: boolean
+}) {
+  return !!model.regionTooLarge && !model.drawsWhenTooLarge
+}
+
+/**
  * What the shell resolves for the body. `canvasWidth` is the load-bearing one:
  * see {@link renderDisplaySvg}.
  */
@@ -296,7 +307,7 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
   const overlays = !opts?.plotOnly
   return (
     <SvgChrome
-      regionTooLarge={model.regionTooLarge && !model.drawsWhenTooLarge}
+      regionTooLarge={exportsTooLargeNote(model)}
       width={view.width}
       height={height}
     >

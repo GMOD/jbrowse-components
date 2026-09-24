@@ -25,7 +25,11 @@ interface TrackHeights {
 export interface SvgDisplayResult {
   track: {
     configuration: AnyConfigurationModel
-    displays: { height: number }[]
+    displays: {
+      height: number
+      regionTooLarge?: boolean
+      drawsWhenTooLarge?: boolean
+    }[]
   }
   result: ReactNode
 }
