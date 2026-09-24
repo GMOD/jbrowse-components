@@ -130,7 +130,7 @@ function makeModel(overrides: Partial<LegendModel> = {}): LegendModel {
     densityBandLayer: { regions: new Map(), maxDepth: 0 },
     densityPeakReadout: '',
     svgReady: true,
-    drawnRegionData,
+    indelGlyphRegions: undefined,
     encodedChannels: new Map(
       [...drawnRegionData].map(([k, d]) => [
         k,

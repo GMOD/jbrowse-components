@@ -34,7 +34,7 @@ export interface RenderSvgModel extends SvgExportable {
   coarseTierStandsIn: boolean
   densityBandLayer: DensityBandLayer
   densityPeakReadout: string
-  drawnRegionData: ReadonlyMap<number, MultiRowRegionData>
+  indelGlyphRegions: ReadonlyMap<number, MultiRowRegionData> | undefined
   // the screen's own channels: `renderState` spreads `featurePaintInputs`, the
   // encode's only inputs, so what the upload holds is what the export paints
   encodedChannels: ReadonlyMap<number, MultiRowEncoded>
@@ -103,10 +103,10 @@ function MultiRowSvgBody({
           )
           // Same layer, after the blocks, so the export stacks them the way
           // the on-screen overlay composites over the canvas.
-          if (overlays) {
+          if (overlays && self.indelGlyphRegions) {
             drawMultiRowIndelGlyphs(
               ctx,
-              self.drawnRegionData,
+              self.indelGlyphRegions,
               renderBlocks,
               state,
               exportPalette.insertion,
