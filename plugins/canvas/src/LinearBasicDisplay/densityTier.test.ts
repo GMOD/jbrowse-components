@@ -203,6 +203,21 @@ describe('the band stands alone, and fetches nothing', () => {
     expect(display.laidOutDataMap.size).toBe(1)
   })
 
+  // The band paints no feature color, so a key over it names colors nothing on
+  // screen; the toggle stays for the zoom back in.
+  it('drops the color key while the band stands in, and keeps its toggle', () => {
+    const { display } = refusableDisplay(DENSITY_ADAPTER)
+    setConf(display, 'legend', [
+      { label: 'gene', color: 'red' },
+      { label: 'exon', color: 'blue' },
+    ])
+    expect(display.colorScales).toHaveLength(1)
+
+    setConf(display, 'densityTier', 'density')
+    expect(display.colorScales).toEqual([])
+    expect(display.hasLegendKey).toBe(true)
+  })
+
   it('suspends the feature fetch under a forced density, refused or not', () => {
     const { display } = refusableDisplay(DENSITY_ADAPTER)
     expect(display.fetchSuspended).toBe(false)

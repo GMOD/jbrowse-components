@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
+import { colorScaleIsEmpty } from '@jbrowse/core/ui/colorScale'
 import {
   getDialogHost,
   getPaletteHost,
@@ -1550,6 +1551,32 @@ export default function baseStateModelFactory(
           spec,
           getEnv<{ pluginManager: PluginManager }>(self).pluginManager.jexl,
         )
+      },
+      /**
+       * #getter
+       * Overridable hook: the key while features draw, by default the one the
+       * color channel's scale derives.
+       */
+      get featureColorScales(): ColorScale[] {
+        return this.derivedColorScales
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * `LegendMixin`'s hook: `featureColorScales`, or nothing while the
+       * density band stands in, since the band paints no feature color.
+       */
+      get colorScales(): ColorScale[] {
+        return self.coarseTierStandsIn ? [] : self.featureColorScales
+      },
+      /**
+       * #getter
+       * Overrides `LegendMixin`'s: the band standing in keeps the "Show
+       * legend" toggle, since the key returns on zooming in.
+       */
+      get hasLegendKey(): boolean {
+        return self.featureColorScales.some(scale => !colorScaleIsEmpty(scale))
       },
     }))
     .actions(self => ({

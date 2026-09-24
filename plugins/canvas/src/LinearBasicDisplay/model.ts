@@ -269,10 +269,11 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * `LegendMixin`'s hook: the `legend` config slot as one categorical
-       * scale, or, with no slot, the key the color channel's scale derives.
+       * The key while features draw: the `legend` config slot as one
+       * categorical scale, or, with no slot, the key the color channel's
+       * scale derives.
        */
-      get colorScales(): ColorScale[] {
+      get featureColorScales(): ColorScale[] {
         const legend = configuredLegendEntries(getConf(self, 'legend'))
         return legend.length
           ? [
