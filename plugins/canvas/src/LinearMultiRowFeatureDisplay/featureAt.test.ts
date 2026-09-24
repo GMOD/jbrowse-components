@@ -341,7 +341,7 @@ describe('featureAt', () => {
       expect(display.colorLegend.map(e => e.label)).toEqual(['cat1', 'cat2'])
       expect(display.featureAt(150, 10)?.id).toBe('a1')
 
-      display.toggleCategory('cat1')
+      display.toggleCategory(['cat1'])
 
       expect(display.featureAt(150, 10)).toBeUndefined()
       expect(display.featureAt(150, 75)?.id).toBe('b1')
@@ -382,7 +382,7 @@ describe('featureAt', () => {
         ),
       )
       display.applyRowEdits([{ name: 'a', color: 'green' }, { name: 'b' }])
-      display.toggleCategory('cat1')
+      display.toggleCategory(['cat1'])
 
       expect(display.featureAt(150, 10)?.id).toBe('a1')
       expect(display.featureAt(150, 75)).toBeUndefined()

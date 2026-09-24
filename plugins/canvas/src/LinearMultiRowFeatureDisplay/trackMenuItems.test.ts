@@ -156,8 +156,8 @@ describe('multi-row track menu', () => {
     const items = buildMultiRowTrackMenuItems(
       makeSelf({
         colorLegend: [
-          { label: 'promoter', color: 1 },
-          { label: 'enhancer', color: 2 },
+          { label: 'promoter', values: ['promoter'], color: 1 },
+          { label: 'enhancer', values: ['enhancer'], color: 2 },
         ],
       }),
     )
@@ -198,7 +198,9 @@ describe('multi-row track menu', () => {
     )
 
     const withLegend = buildMultiRowTrackMenuItems(
-      makeSelf({ colorLegend: [{ label: 'promoter', color: 1 }] }),
+      makeSelf({
+        colorLegend: [{ label: 'promoter', values: ['promoter'], color: 1 }],
+      }),
     )
     expect(labels(withLegend)).toContain('Categories')
     expect(labels(subMenuOf(withLegend, 'Show...'))).toContain('Show legend')
@@ -224,8 +226,8 @@ describe('multi-row track menu', () => {
     const items = buildMultiRowTrackMenuItems(
       makeSelf({
         colorLegend: [
-          { label: 'promoter', color: 1 },
-          { label: 'quiescent', color: 2 },
+          { label: 'promoter', values: ['promoter'], color: 1 },
+          { label: 'quiescent', values: ['quiescent'], color: 2 },
         ],
         hiddenCategories: ['quiescent'],
       }),

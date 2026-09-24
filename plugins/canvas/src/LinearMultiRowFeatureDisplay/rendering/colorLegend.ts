@@ -1,4 +1,5 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { compareGroupKeys } from '@jbrowse/core/util/groupKeys'
 import { unionLegendCandidates } from '@jbrowse/core/util/legendCandidates'
 
 import { configuredLegendEntries } from '../../shared/configuredLegend.ts'
@@ -6,11 +7,17 @@ import { resolveLocalRowIndices } from './featurePainting.ts'
 
 import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
 
-// A key row keyed by the name its features carry, so a click hides that
-// name's color.
+// A key row: a color and every name painted in it, which `label` joins. A
+// category is hidden by name, so a name joining the color later does not
+// unhide it.
 export interface LegendEntry {
   label: string
+  values: string[]
   color: number
+}
+
+export function entryHidden(entry: LegendEntry, hidden: ReadonlySet<string>) {
+  return entry.values.some(v => hidden.has(v))
 }
 
 // Deduped on both halves: a repeated label collides as the React key, and a
@@ -25,7 +32,7 @@ export function resolveConfiguredLegend(entries: unknown): LegendEntry[] {
     if (!seenLabels.has(e.label) && !seenColors.has(color)) {
       seenLabels.add(e.label)
       seenColors.add(color)
-      result.push({ label: e.label, color })
+      result.push({ label: e.label, values: [e.label], color })
     }
   }
   return result
@@ -42,6 +49,7 @@ export function buildColorLegend(
   regions: Iterable<MultiRowRegionData>,
   rowIndexByValue: ReadonlyMap<string, number>,
   rowColorsByIndex: readonly (number | undefined)[],
+  compare: (a: string, b: string) => number = compareGroupKeys,
 ): LegendEntry[] {
   // No region need be read when every row is overridden, which is the default
   // configuration: an unset `color` slot over features with no itemRgb gives
@@ -66,6 +74,9 @@ export function buildColorLegend(
     }
   })
   return entries.length > 1
-    ? entries.map(({ values, color }) => ({ label: values.join(', '), color }))
+    ? entries.map(({ values, color }) => {
+        const sorted = values.toSorted(compare)
+        return { label: sorted.join(', '), values: sorted, color }
+      })
     : []
 }

@@ -9,6 +9,7 @@ import { legendIsReadable } from '@jbrowse/core/ui'
 import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
@@ -50,7 +51,6 @@ import {
   fetchCanvasFeatureDetails,
 } from '../shared/fetchCanvasFeatureDetails.ts'
 import { createCanvasFeatureDetailsOpener } from '../shared/openCanvasFeatureDetails.ts'
-import { toggleArrayMember } from '../shared/toggleArrayMember.ts'
 import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
 import {
   contextTargetAtPixel,
@@ -69,6 +69,7 @@ import {
 } from './partitionFields.ts'
 import {
   buildColorLegend,
+  entryHidden,
   resolveConfiguredLegend,
 } from './rendering/colorLegend.ts'
 import { buildMultiRowChannels } from './rendering/multiRowChannels.ts'
@@ -522,6 +523,7 @@ export default function stateModelFactory(
               self.drawnRegionData.values(),
               self.rowIndexByValue,
               self.rowColorsByIndex,
+              groupKeyComparator(self.colorDomain),
             )
       },
     }))
@@ -548,7 +550,9 @@ export default function stateModelFactory(
         }
         const hidden = self.hiddenCategorySet
         return new Set(
-          self.colorLegend.filter(e => hidden.has(e.label)).map(e => e.color),
+          self.colorLegend
+            .filter(e => entryHidden(e, hidden))
+            .map(e => e.color),
         )
       },
     }))
@@ -631,10 +635,11 @@ export default function stateModelFactory(
             title: 'Feature colors',
             domain: self.colorDomain,
             entries: self.colorLegend.map(e => ({
-              value: e.label,
+              value: e.values[0]!,
+              values: e.values,
               label: e.label,
               color: abgrToCssRgba(e.color),
-              hidden: hidden.has(e.label),
+              hidden: entryHidden(e, hidden),
             })),
           },
           {
@@ -874,10 +879,18 @@ export default function stateModelFactory(
         },
         /**
          * #action
-         * Show/hide a legend category by label, at render time with no refetch.
+         * Show or hide a key row's names together, at render time with no
+         * refetch: a row any of whose names is hidden shows again.
          */
-        toggleCategory(label: string) {
-          toggleArrayMember(self.hiddenCategories, label)
+        toggleCategory(values: readonly string[]) {
+          const hidden = self.hiddenCategorySet
+          if (values.some(v => hidden.has(v))) {
+            self.hiddenCategories.replace(
+              self.hiddenCategories.filter(v => !values.includes(v)),
+            )
+          } else {
+            self.hiddenCategories.push(...values)
+          }
         },
         /**
          * #action

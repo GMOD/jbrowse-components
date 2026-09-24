@@ -1,5 +1,9 @@
 import { collectLegendCandidates } from '../../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
-import { buildColorLegend, resolveConfiguredLegend } from './colorLegend.ts'
+import {
+  buildColorLegend,
+  entryHidden,
+  resolveConfiguredLegend,
+} from './colorLegend.ts'
 
 import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
 
@@ -36,8 +40,8 @@ test('distinct (name -> color) pairs, first-seen order', () => {
   expect(
     buildColorLegend([region], rowIndexByValue, [undefined, undefined]),
   ).toEqual([
-    { label: 'TssA', color: 0xff0000ff },
-    { label: 'Quies', color: 0xff00ff00 },
+    { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
+    { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
   ])
 })
 
@@ -77,9 +81,9 @@ test('unions the candidates of every loaded region', () => {
   expect(
     buildColorLegend([region, second], rowIndexByValue, [undefined, undefined]),
   ).toEqual([
-    { label: 'TssA', color: 0xff0000ff },
-    { label: 'Quies', color: 0xff00ff00 },
-    { label: 'Enh', color: 0xffabcdef },
+    { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
+    { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
+    { label: 'Enh', values: ['Enh'], color: 0xffabcdef },
   ])
   expect(
     buildColorLegend([region, region], rowIndexByValue, [undefined, undefined]),
@@ -90,8 +94,8 @@ test('rows with a per-row color override contribute nothing', () => {
   expect(
     buildColorLegend([region], rowIndexByValue, [0xff123456, undefined]),
   ).toEqual([
-    { label: 'TssA', color: 0xff0000ff },
-    { label: 'Quies', color: 0xff00ff00 },
+    { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
+    { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
   ])
   expect(
     buildColorLegend([region], rowIndexByValue, [0xff123456, 0xff654321]),
@@ -109,8 +113,8 @@ test('a category only an overridden row carries is left out', () => {
   expect(
     buildColorLegend([withRowOnly], rowIndexByValue, [0xff123456, undefined]),
   ).toEqual([
-    { label: 'Quies', color: 0xff00ff00 },
-    { label: 'Enh', color: 0xffabcdef },
+    { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
+    { label: 'Enh', values: ['Enh'], color: 0xffabcdef },
   ])
 })
 
@@ -150,9 +154,32 @@ test('two names sharing a color are one row naming both', () => {
   expect(
     buildColorLegend([shared], rowIndexByValue, [undefined, undefined]),
   ).toEqual([
-    { label: 'TssA, TssAFlnk', color: 0xff0000ff },
-    { label: 'Quies', color: 0xff00ff00 },
+    {
+      label: 'TssA, TssAFlnk',
+      values: ['TssA', 'TssAFlnk'],
+      color: 0xff0000ff,
+    },
+    { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
   ])
+})
+
+// Hiding is by name: a scroll that brings TssAFlnk into TssA's color, in
+// either order, renames the row but must not unhide TssA.
+test('a hidden name stays hidden when another joins its color', () => {
+  const later = regionData({
+    ...region,
+    featureNames: ['TssAFlnk', 'Quies', 'TssA', 'Quies'],
+  })
+  const [row] = buildColorLegend([later], rowIndexByValue, [
+    undefined,
+    undefined,
+  ])
+  expect(row).toEqual({
+    label: 'TssA, TssAFlnk',
+    values: ['TssA', 'TssAFlnk'],
+    color: 0xff0000ff,
+  })
+  expect(entryHidden(row!, new Set(['TssA']))).toBe(true)
 })
 
 test('a name reused across two colors keeps its first-seen color', () => {
@@ -166,8 +193,8 @@ test('a name reused across two colors keeps its first-seen color', () => {
   expect(
     buildColorLegend([reused], rowIndexByValue, [undefined, undefined]),
   ).toEqual([
-    { label: 'TssA', color: 0xff0000ff },
-    { label: 'Quies', color: 0xff00ff00 },
+    { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
+    { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
   ])
 })
 
@@ -183,8 +210,8 @@ test('a second name on a color still carries it when the first is taken', () => 
   expect(
     buildColorLegend([masked], rowIndexByValue, [undefined, undefined]),
   ).toEqual([
-    { label: 'TssA', color: 0xff0000ff },
-    { label: 'Quies', color: 0xff00ff00 },
+    { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
+    { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
   ])
 })
 
@@ -203,8 +230,8 @@ test('configured legend converts CSS colors to ABGR, drops malformed', () => {
       { label: 'Paternal', color: 'rgb(31,120,180)' },
     ]),
   ).toEqual([
-    { label: 'Maternal', color: 0xff1c1ae3 },
-    { label: 'Paternal', color: 0xffb4781f },
+    { label: 'Maternal', values: ['Maternal'], color: 0xff1c1ae3 },
+    { label: 'Paternal', values: ['Paternal'], color: 0xffb4781f },
   ])
 })
 
@@ -214,7 +241,7 @@ test('configured legend dedupes repeated labels first-seen', () => {
       { label: 'Maternal', color: 'rgb(227,26,28)' },
       { label: 'Maternal', color: 'rgb(31,120,180)' },
     ]),
-  ).toEqual([{ label: 'Maternal', color: 0xff1c1ae3 }])
+  ).toEqual([{ label: 'Maternal', values: ['Maternal'], color: 0xff1c1ae3 }])
 })
 
 test('configured legend dedupes repeated colors first-seen', () => {
@@ -223,7 +250,7 @@ test('configured legend dedupes repeated colors first-seen', () => {
       { label: 'Maternal', color: 'rgb(227,26,28)' },
       { label: 'Untransmitted', color: 'rgb(227,26,28)' },
     ]),
-  ).toEqual([{ label: 'Maternal', color: 0xff1c1ae3 }])
+  ).toEqual([{ label: 'Maternal', values: ['Maternal'], color: 0xff1c1ae3 }])
 })
 
 test('too many distinct labels is treated as non-categorical', () => {

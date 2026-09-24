@@ -18,6 +18,7 @@ import LegendToggleIcon from '@mui/icons-material/LegendToggle'
 import TableRowsIcon from '@mui/icons-material/TableRows'
 
 import { partitionRowCountHint } from './partitionFields.ts'
+import { entryHidden } from './rendering/colorLegend.ts'
 
 import type { PartitionRowCount } from './partitionFields.ts'
 import type { LegendEntry } from './rendering/colorLegend.ts'
@@ -71,7 +72,7 @@ interface MultiRowMenuSelf
   setShowTree: (f: boolean) => void
   setShowLegend: (f: boolean) => void
   setShowRowSeparators: (f: boolean) => void
-  toggleCategory: (label: string) => void
+  toggleCategory: (values: readonly string[]) => void
   setHiddenCategories: (labels: string[]) => void
   setShowBranchLength: (f: boolean) => void
   setRowFocus: (names?: readonly string[]) => void
@@ -123,8 +124,8 @@ function categoriesMenuItems(self: MultiRowMenuSelf): MenuItem[] {
   const hidden = self.hiddenCategories.length
   const hiddenSet = self.hiddenCategorySet
   const toggles = self.colorLegend.map(entry =>
-    checkboxItem(entry.label, !hiddenSet.has(entry.label), () => {
-      self.toggleCategory(entry.label)
+    checkboxItem(entry.label, !entryHidden(entry, hiddenSet), () => {
+      self.toggleCategory(entry.values)
     }),
   )
   return toggles.length || hidden
