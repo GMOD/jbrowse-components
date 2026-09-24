@@ -1,3 +1,8 @@
+---
+name: arabidopsis-1001g-pangenome-demo
+description: The 1001G+ Arabidopsis demo (26 accessions vs TAIR10) as of 2026-09-24. SyRI lanes and a minigraph graph built on ada; the SyRI-only config is on jbrowse.org; a lane-order graph rebuild was running; the steps left to deploy the graph and add the dataset to jb2hubs. Read before touching demos/arabidopsis_pangenome or its build script.
+---
+
 # 1001G+ Arabidopsis pangenome demo: finish the graph half, deploy, add to jb2hubs
 
 Branch `1001g-syri-demo` (worktree `.claude/worktrees/1001g-syri-demo`), rebased
