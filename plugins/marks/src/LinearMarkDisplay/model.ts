@@ -688,12 +688,20 @@ export function stateModelFactory(
           return 'labelColor'
         },
         /**
-         * #getter
+         * #method
          * `TreeSidebarMixin`'s hook: no row palette, since a row's tint is its
          * `rowColor` entry or its adapter's colour.
          */
-        get rowColorDeal(): RowColorDeal<RowSource> | undefined {
+        rowColorDealFor(): RowColorDeal<RowSource> | undefined {
           return undefined
+        },
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: none, since a row is a value of the rows
+         * field and carries no attribute of its own.
+         */
+        get rowColorFields(): readonly string[] {
+          return []
         },
       }))
       .views(self => ({

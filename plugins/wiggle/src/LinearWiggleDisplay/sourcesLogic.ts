@@ -106,9 +106,10 @@ export function sourceColorDeal(
   }
 }
 
-// A source's own colors always win — the palette only fills what it left
-// unset — and an unfilled channel stays undefined so the renderer falls back to
-// its own default.
+// A source's own colors win — the palette only fills what it left unset —
+// save under a colour by an attribute, which the reader asked for over them.
+// An unfilled channel stays undefined so the renderer falls back to its own
+// default.
 //
 // Under a gradient `labelColor` falls back to the source's OWN `color` before the
 // group palette because that color is what the ramp paints the row with: a
@@ -120,10 +121,13 @@ function synthesizeColors(
   s: Source,
   gradientPaints: boolean,
   dealt: string | undefined,
+  paletteLeads: boolean,
 ) {
+  const own = gradientPaints ? (s.labelColor ?? s.color) : s.color
+  const identity = paletteLeads ? (dealt ?? own) : (own ?? dealt)
   return gradientPaints
-    ? { color: s.color, labelColor: s.labelColor ?? s.color ?? dealt }
-    : { color: s.color ?? dealt, labelColor: s.labelColor }
+    ? { color: s.color, labelColor: identity }
+    : { color: identity, labelColor: s.labelColor }
 }
 
 // What the canvas/SVG renderers consume: the editable sources with their colors
@@ -139,11 +143,12 @@ export function buildSources(
   kept: readonly string[] | undefined,
   dealt: ReadonlyMap<string, string>,
   gradientPaints: boolean,
+  paletteLeads = false,
 ): Source[] {
   return keptRows(
     editableSources.map(s => ({
       ...s,
-      ...synthesizeColors(s, gradientPaints, dealt.get(s.name)),
+      ...synthesizeColors(s, gradientPaints, dealt.get(s.name), paletteLeads),
     })),
     kept,
   )

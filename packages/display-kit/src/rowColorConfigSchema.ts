@@ -18,11 +18,11 @@ import {
  * arrangement dialog is an entry under `name`. Each display paints it on the
  * channel that carries a row's identity: the quantitative display's plot, or
  * the tint beside its label while a score gradient paints; the multi-row
- * feature display's blocks; the multi-sample variant displays' label tint,
- * where `field` may also name a samplesTsv column whose values each take a
- * palette colour; the MAF display's label tint, over the adapter's
- * `samples[].color`; the mark display's label tint, over a listed source's
- * colour. A string is the field.
+ * feature display's blocks; the multi-sample variant displays' label tint; the
+ * MAF display's label tint, over the adapter's `samples[].color`; the mark
+ * display's label tint, over a listed source's colour. Where the rows carry
+ * attributes, a samplesTsv column or a subtrack's group, `field` may name one,
+ * and its values each take a palette colour. A string is the field.
  *
  * #example
  * ```js
@@ -44,7 +44,7 @@ export const rowColorConfigSchema = ConfigurationSchema(
       fieldType: 'string',
       fieldDefault: 'name',
       field:
-        "the row attribute whose values take the colours: name, the row itself, or on the multi-sample variant displays a column of the adapter's samplesTsvLocation, e.g. population",
+        "the row attribute whose values take the colours: name, the row itself, or an attribute the rows carry, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group",
       scale:
         'none paints nothing from this setting and keeps the field for a switch back; categorical a colour per value of field; unset follows field',
     }),

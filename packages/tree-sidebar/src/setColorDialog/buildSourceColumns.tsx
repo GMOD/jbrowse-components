@@ -9,18 +9,45 @@ import type { GridColDef } from '@mui/x-data-grid'
 
 export function buildSourceColumns<S extends { name: string; color?: string }>({
   colorColumn,
+  swatchOf,
   extras,
   rows,
   onChange,
   cellClassName,
 }: {
   colorColumn: ColorColumn<S> | undefined
+  swatchOf?: (row: S) => string | undefined
   extras: string[]
   rows: S[]
   onChange: (arg: S[]) => void
   cellClassName: string
 }): GridColDef<S>[] {
   return [
+    ...(swatchOf
+      ? [
+          {
+            field: 'rowColorSwatch',
+            headerName: 'Color',
+            width: 70,
+            sortable: false,
+            renderCell: ({ row }) => {
+              const color = swatchOf(row)
+              return color ? (
+                <span
+                  data-testid="row-color-swatch"
+                  style={{
+                    display: 'inline-block',
+                    width: 24,
+                    height: 14,
+                    verticalAlign: 'middle',
+                    background: color,
+                  }}
+                />
+              ) : null
+            },
+          } satisfies GridColDef<S>,
+        ]
+      : []),
     ...(colorColumn
       ? [
           {

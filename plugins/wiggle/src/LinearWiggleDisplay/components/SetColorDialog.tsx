@@ -23,7 +23,7 @@ const COLUMN: Record<IdentityChannel, ColorColumn<Source>> = {
 
 // The channel the mode does not edit still rides on the rows, from the adapter
 // or from an earlier sitting in the other mode; reserved so the grid neither
-// offers it as a raw hex column nor the palettizer as a key.
+// offers it as a raw hex column.
 const RESERVED = new Set(['color', 'labelColor'])
 
 export default observer(function WiggleSetColorDialog({
@@ -41,7 +41,6 @@ export default observer(function WiggleSetColorDialog({
       colorColumns={[COLUMN[model.identityChannel]]}
       reservedFields={RESERVED}
       enableBulkEdit
-      enableRowPalettizer
     />
   )
 })

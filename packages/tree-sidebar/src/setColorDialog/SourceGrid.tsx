@@ -41,14 +41,16 @@ export default observer(function SourceGrid<
   rows,
   onChange,
   colorColumn,
+  swatchOf,
   reserved,
 }: {
   rows: S[]
   onChange: (arg: S[]) => void
-  // The single color column shown as editable swatches. The dialog owns which
-  // one is active (see SetColorDialog's toggle) so the palettizer paints the
-  // same field the grid edits.
+  // The single color column shown as editable swatches, while the rows are
+  // colored each their own. The dialog owns which one is active.
   colorColumn: ColorColumn<S> | undefined
+  // The color each row takes from an attribute, shown and not edited.
+  swatchOf?: (row: S) => string | undefined
   // Fields that drive their own dedicated column or are plumbing, so they must
   // not appear in the auto-derived extras. Includes every color field, not just
   // the active one — an inactive color column would otherwise render as a raw
@@ -91,6 +93,7 @@ export default observer(function SourceGrid<
           columnHeaderHeight={33}
           columns={buildSourceColumns({
             colorColumn,
+            swatchOf,
             extras,
             rows,
             onChange,

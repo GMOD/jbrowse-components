@@ -92,6 +92,7 @@ import type {
   IdentityChannel,
   RowAlias,
   RowColorDeal,
+  RowColorEntries,
 } from '@jbrowse/tree-sidebar'
 
 type CellDataMode = CellDataResult['mode']
@@ -888,7 +889,7 @@ export default function MultiSampleVariantBaseModelF(
            * and drops no cluster tree.
            */
           setRowColorField(field: string) {
-            if (field !== self.rowColorField) {
+            if (field !== self.rowColorChoice) {
               setConf(
                 self,
                 'rowColor',
@@ -1074,16 +1075,26 @@ export default function MultiSampleVariantBaseModelF(
         },
 
         /**
-         * #getter
-         * `TreeSidebarMixin`'s hook: the `rowColor` attribute's palette
-         * (`attributeColorDeal`), none while it names no attribute.
+         * #method
+         * `TreeSidebarMixin`'s hook: the attribute's palette
+         * (`attributeColorDeal`), none while `setting` names no attribute.
          */
-        get rowColorDeal(): RowColorDeal<ProcessedSource> | undefined {
+        rowColorDealFor(
+          setting: RowColorEntries,
+        ): RowColorDeal<ProcessedSource> | undefined {
           return attributeColorDeal(
-            self.rowColorField,
-            self.rowColorSetting,
+            setting.field === 'name' ? '' : setting.field,
+            setting,
             self.adapterSamples ?? [],
           )
+        },
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: the samplesTsv attributes, the ones
+         * "Color by..." offers.
+         */
+        get rowColorFields(): readonly string[] {
+          return this.colorByAttributes
         },
         /**
          * #getter

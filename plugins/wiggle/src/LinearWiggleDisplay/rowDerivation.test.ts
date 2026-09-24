@@ -1,3 +1,4 @@
+import { set1 } from '@jbrowse/core/ui/colors'
 import { waitFor } from '@testing-library/react'
 
 import { createTestEnvironment, makeSource } from './testEnv.ts'
@@ -102,6 +103,25 @@ test('rows, density: identity moves to the label tint', async () => {
     defaultRendering: 'density',
   })
   expect(derived(display)).toMatchSnapshot()
+})
+
+// A colour by an attribute is the reader's choice, so its colour leads a
+// subtrack's own, which leads the palette only under `name`.
+test('rows colored by an attribute take its values colors over their own', async () => {
+  const display = await loaded(GROUPED, {
+    ...rowsPerSource(),
+    defaultRendering: 'line',
+    rowColor: 'group',
+  })
+  expect(display.rowColorFields).toEqual(['group'])
+  expect(
+    Object.fromEntries(display.sources.map(s => [s.name, s.color])),
+  ).toEqual({
+    Grain1: set1[0],
+    Grain2: set1[0],
+    Grain3: set1[1],
+    Grain4: set1[2],
+  })
 })
 
 test('rows: the declared order leads and the rest keep adapter order', async () => {

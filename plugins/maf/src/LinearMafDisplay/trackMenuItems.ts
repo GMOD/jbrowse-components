@@ -28,6 +28,7 @@ import type { MafClusterSelf } from './runMafClustering.ts'
 import type { MafSource } from './stateModel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
 const SetRowArrangementDialog = lazy(
   () => import('./components/SetRowArrangementDialog.tsx'),
@@ -63,7 +64,8 @@ const HEIGHT_PRESETS = [
   { label: 'Compact', rowHeight: 8, rowProportion: 0.9 },
 ]
 
-interface MafMenuSelf extends IStateTreeNode, MafClusterSelf {
+interface MafMenuSelf
+  extends IStateTreeNode, MafClusterSelf, TreeLayoutModel<MafSource> {
   // The shared "Show legend" row: LegendMixin's members, plus whether this
   // display has a key for them to be about.
   hasLegendKey: boolean
@@ -126,10 +128,6 @@ interface MafMenuSelf extends IStateTreeNode, MafClusterSelf {
   // `resetRowOrderMenuItems` gates on the first and calls the second.
   rowArrangementIsCustom: boolean
   resetRowArrangement: () => void
-  // Consumed structurally by SetRowArrangementDialog's TreeLayoutModel<MafSource>
-  // prop (model={self}), not directly in this file.
-  applyRowEdits: (s: MafSource[]) => void
-  rowOrderWillDropTree: (s: MafSource[]) => boolean
 }
 
 // The CDS-frame overlays only mean anything with a reading frame, so they

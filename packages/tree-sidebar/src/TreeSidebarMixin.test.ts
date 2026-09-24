@@ -6,7 +6,7 @@ import {
 import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
@@ -285,15 +285,120 @@ describe('the default row palette', () => {
     stop()
   })
 
-  it('turns a recolour under another field into name pairs', () => {
-    const display = makePalette({ rowColor: 'group' })
-    const before = Object.fromEntries(display.rowColorScale)
-    const [a, b, c] = display.editableSources
-    display.applyRowEdits([a!, { ...b!, color: '#123456' }, c!])
-    expect(display.rowColorSetting.field).toBe('name')
-    expect(Object.fromEntries(display.rowColors)).toEqual({
-      ...before,
-      b: '#123456',
+  it('offers the attributes the rows carry, and previews a setting', () => {
+    const display = makePalette()
+    expect(display.rowColorFields).toEqual(['group'])
+    const preview = display.rowColorsFor({
+      field: 'group',
+      scale: undefined,
+      domain: ['y'],
+      range: ['#abcdef'],
     })
+    expect(Object.fromEntries(preview)).toEqual({
+      x: categoricalPalette[0],
+      y: '#abcdef',
+    })
+  })
+})
+
+// The dialog shows one `rowColor` object and submits it: a row's colour is
+// read only while the rows are coloured each their own.
+describe('a dialog submit of the row colours', () => {
+  function makeGrouped(configuration: Record<string, unknown> = {}) {
+    return types
+      .compose(
+        'GroupedTreeDisplay',
+        TreeSidebarMixin(),
+        types.model({
+          type: types.literal('GroupedTreeDisplay'),
+          configuration: configSchema,
+        }),
+      )
+      .volatile(() => ({
+        rows: [
+          { name: 'a', group: 'x' },
+          { name: 'b', group: 'y' },
+          { name: 'c', group: 'x' },
+        ],
+      }))
+      .views(self => ({
+        get discoveredRows() {
+          return self.rows
+        },
+      }))
+      .create({ type: 'GroupedTreeDisplay', configuration })
+  }
+  const recoloured = (display: ReturnType<typeof makeGrouped>) => {
+    const [a, b, c] = display.editableSources
+    return [a!, { ...b!, color: '#123456' }, c!]
+  }
+
+  it('reads no row colour while the rows are colored by an attribute', () => {
+    const display = makeGrouped({ rowColor: 'group' })
+    const before = Object.fromEntries(display.rowColorScale)
+    display.applyRowEdits(recoloured(display))
+    expect(display.rowColorChoice).toBe('group')
+    expect(Object.fromEntries(display.rowColorScale)).toEqual(before)
+  })
+
+  it("writes an attribute's colors as the dialog shows them", () => {
+    const display = makeGrouped({ rowColor: 'group' })
+    display.applyRowEdits(display.editableSources, {
+      field: 'group',
+      domain: ['y'],
+      range: ['#abcdef'],
+    })
+    expect(display.rowColorScale.get('b')).toBe('#abcdef')
+    expect(display.rowColorScale.get('a')).toBe(categoricalPalette[0])
+  })
+
+  it('starts each row its own from the colors the dialog left on the rows', () => {
+    const display = makeGrouped({ rowColor: 'group' })
+    display.applyRowEdits(recoloured(display), { field: 'name' })
+    expect(display.rowColorChoice).toBe('name')
+    expect(Object.fromEntries(display.rowColors)).toEqual({ b: '#123456' })
+  })
+
+  it('keeps the field and its colors under None, and returns to them', () => {
+    const display = makeGrouped({
+      rowColor: { field: 'group', domain: ['y'], range: ['#abcdef'] },
+    })
+    display.applyRowEdits(display.editableSources, {
+      field: 'group',
+      scale: 'none',
+      domain: ['y'],
+      range: ['#abcdef'],
+    })
+    expect(display.rowColorChoice).toBe('')
+    expect(display.rowColorScale.size).toBe(0)
+    display.applyRowEdits(display.editableSources, {
+      field: 'group',
+      domain: ['y'],
+      range: ['#abcdef'],
+    })
+    expect(display.rowColorScale.get('b')).toBe('#abcdef')
+  })
+
+  it('brings back the pairs None kept when each row is its own again', () => {
+    const display = makeGrouped({
+      rowColor: { scale: 'none', domain: ['b'], range: ['#00f'] },
+    })
+    expect(display.rowColors.size).toBe(0)
+    display.applyRowEdits(display.editableSources, { field: 'name' })
+    expect(display.rowColorChoice).toBe('name')
+    expect(Object.fromEntries(display.rowColors)).toEqual({ b: '#00f' })
+  })
+
+  it('writes nothing on a submit that changes nothing', () => {
+    const display = makeGrouped({
+      rowColor: { field: 'group', domain: ['y'], range: ['#abcdef'] },
+    })
+    const before = getSnapshot(display.configuration)
+    display.applyRowEdits(display.editableSources, {
+      field: 'group',
+      domain: ['y'],
+      range: ['#abcdef'],
+    })
+    expect(getSnapshot(display.configuration)).toBe(before)
   })
 })

@@ -1,5 +1,4 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
-import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import { isSessionWithBaseTrackConfig } from '@jbrowse/core/util/types'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
@@ -10,8 +9,9 @@ import { compareStructural } from 'mobx'
 import { arrangeRows, orderRowsByDomain } from './arrangeRows.ts'
 import { applySubtreeFilter, buildTree, keptRows } from './clusterUtils.ts'
 import { maxNodeHeight } from './hierarchy.ts'
-import { colorsByRow, dealtColors, rowFieldValue } from './rowColorScale.ts'
+import { colorsByRow, dealtColors, fieldColorDeal } from './rowColorScale.ts'
 import { rowEdits } from './rowEdits.ts'
+import { IDENTITY_FIELDS, extraColumns } from './sourcesGridUtils.ts'
 
 import type {
   IdentityChannel,
@@ -19,7 +19,7 @@ import type {
   UnlistedRowsSort,
 } from './arrangeRows.ts'
 import type { ClusterProvenance } from './clusterProvenance.ts'
-import type { RowColorDeal } from './rowColorScale.ts'
+import type { RowColorDeal, RowColorEntries } from './rowColorScale.ts'
 import type { RowSortSpec } from './rowSortAutorun.ts'
 import type { TreeSidebarConfigModel } from './treeSidebarConfigSchemaFields.ts'
 import type { HoveredTreeNode, RowSource } from './types.ts'
@@ -36,6 +36,16 @@ const confNode = (self: object) => self as TreeSidebarHost
 
 type ArrangementMember = (typeof ROW_ARRANGEMENT_MEMBERS)[number]
 type Arrangement = Partial<Record<ArrangementMember, unknown>>
+
+// A row's name, label and colours are what a row colour is set on, never what
+// one is set by.
+const NOT_COLOUR_FIELDS = new Set<string>([
+  ...IDENTITY_FIELDS,
+  'id',
+  'label',
+  'color',
+  'labelColor',
+])
 
 // What "Reset row order" is offered on: the focus has a clear of its own, and
 // a reset still takes it with the rest.
@@ -106,6 +116,15 @@ function liftRowColor(value: unknown): RowColorSnapshot {
 
 function paintsNamePairs({ field, scale }: RowColorSnapshot) {
   return (field || 'name') === 'name' && scale !== 'none'
+}
+
+function sameRowColor(a: RowColorSnapshot, b: RowColorSnapshot) {
+  return (
+    (a.field || 'name') === (b.field || 'name') &&
+    (a.scale ?? 'categorical') === (b.scale ?? 'categorical') &&
+    compareStructural(a.domain ?? [], b.domain ?? []) &&
+    compareStructural(a.range ?? [], b.range ?? [])
+  )
 }
 
 // The colours a `rowColor` object sets row by row: its pairs while it paints
@@ -323,6 +342,15 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
+       * What the rows are coloured by, as the arrangement dialog and a menu
+       * offer it: '' for none, `name` for each row its own, or an attribute.
+       */
+      get rowColorChoice(): string {
+        const { field, scale } = this.rowColorSetting
+        return scale === 'none' ? '' : field
+      },
+      /**
+       * #getter
        * The `rowColor` object this display's base declares, as written, which
        * a reset returns to and "is this the reader's" compares against.
        */
@@ -429,34 +457,55 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     }))
     .views(self => ({
       /**
+       * #method
+       * Overridable hook: what the row palette deals under `setting`, the
+       * config's or one the arrangement dialog previews, or undefined to deal
+       * none. By default the values of `setting.field` over the rows in the
+       * base arrangement, the values its `domain` lists taking its `range`,
+       * and every other value the next palette colour, so no reorder, focus or
+       * relabel recolours a row.
+       */
+      rowColorDealFor(setting: RowColorEntries): RowColorDeal<S> | undefined {
+        return fieldColorDeal(
+          setting,
+          orderRowsByDomain(
+            self.expandedRows,
+            self.baseRowDomain,
+            self.rowAlias,
+          ),
+        )
+      },
+      /**
        * #getter
-       * Overridable hook: what the row palette deals, or undefined to deal
-       * none. By default the values of `rowColor.field` over the rows in the
-       * base arrangement, the values `rowColor.domain` lists taking its
-       * `range`, and every other value the next palette colour, so no
-       * reorder, focus or relabel recolours a row.
+       * Overridable hook: the row attributes a reader can colour the rows by,
+       * offered beside None and Each row. By default every attribute a row
+       * carries but its name, label and colours.
+       */
+      get rowColorFields(): readonly string[] {
+        return extraColumns(self.expandedRows, NOT_COLOUR_FIELDS)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * What the row palette deals under the config's `rowColor`, none under
+       * `scale: 'none'`.
        */
       get rowColorDeal(): RowColorDeal<S> | undefined {
-        const { field, scale, domain, range } = self.rowColorSetting
-        if (scale === 'none') {
-          return undefined
-        }
-        const valueOf = (row: S) =>
-          field === 'name' ? row.name : rowFieldValue(row, field)
-        return {
-          order: [
-            ...domain,
-            ...orderRowsByDomain(
-              self.expandedRows,
-              self.baseRowDomain,
-              self.rowAlias,
-            ).map(valueOf),
-          ],
-          valueOf,
-          domain,
-          range,
-          palette: categoricalPalette,
-        }
+        const setting = self.rowColorSetting
+        return setting.scale === 'none'
+          ? undefined
+          : self.rowColorDealFor(setting)
+      },
+      /**
+       * #method
+       * The colour each value takes under `setting`, which the arrangement
+       * dialog shows before it writes the setting.
+       */
+      rowColorsFor(setting: RowColorSetting): ReadonlyMap<string, string> {
+        return dealtColors(
+          setting.scale === 'none' ? undefined : self.rowColorDealFor(setting),
+        )
       },
     }))
     .views(self => ({
@@ -695,39 +744,48 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         /**
          * #action
          * The arrangement dialog's submit: the rows in their new order, each
-         * carrying the label and colour the reader left on it. The labels go
-         * to `rows` and the colours to the `rowColor` pairs, by the rule
-         * `rowEdits` states, and the order to `rows.domain` unless it moves no
-         * row, so a submit that changes nothing writes nothing. Where
-         * `rowColor` paints by another field, a recolour first makes every
-         * row's current colour a `name` pair and the field `name`.
+         * carrying the label and colour the reader left on it, and the
+         * `rowColor` object the dialog shows, the config's own when omitted.
+         * The labels go to `rows` by the rule `rowEdits` states, and the order
+         * to `rows.domain` unless it moves no row, so a submit that changes
+         * nothing writes nothing. The rows' colours are read only under an
+         * object painting by `name`, whose pairs they become; any other object
+         * is written as the dialog shows it, so a colour set on one row never
+         * stands for its attribute's value.
          */
-        applyRowEdits(rows: readonly S[]) {
-          const setting = self.rowColorSetting
-          const byName = paintsNamePairs(setting)
-          const colors = byName ? self.rowColors : self.rowColorScale
-          const { labels, rowColor } = rowEdits({
+        applyRowEdits(rows: readonly S[], rowColor?: RowColorSnapshot) {
+          const current = self.rowColorSetting
+          const next = rowColor ? liftRowColor(rowColor) : current
+          const pairs: ReadonlyMap<string, string> =
+            current.field === 'name' ? pairedColorsOf(current) : new Map()
+          const edits = rowEdits({
             rows,
             shown: self.editableSources,
             adapter: self.expandedRows,
             labels: self.rowLabels,
-            colors,
+            colors: pairs,
             baseOrder: self.baseRowColor.domain ?? [],
             identityChannel: self.identityChannel,
             rowAlias: self.rowAlias,
           })
-          const moved = !movesNoRow(rows, self.editableSources)
-          const recoloured = !compareStructural(
-            Object.fromEntries(pairedColorsOf(rowColor)),
-            Object.fromEntries(colors),
-          )
-          if (recoloured && byName) {
-            writeRowColor(rowColor)
-          } else if (recoloured) {
-            setConf(confNode(self), 'rowColor', { field: 'name', ...rowColor })
+          if (!paintsNamePairs(next)) {
+            if (!sameRowColor(next, current)) {
+              setConf(confNode(self), 'rowColor', next)
+            }
+          } else if (paintsNamePairs(current)) {
+            if (
+              !compareStructural(namePairs(edits.rowColor), namePairs(current))
+            ) {
+              writeRowColor(edits.rowColor)
+            }
+          } else {
+            setConf(confNode(self), 'rowColor', {
+              field: 'name',
+              ...edits.rowColor,
+            })
           }
-          write('labels', labels)
-          if (moved) {
+          write('labels', edits.labels)
+          if (!movesNoRow(rows, self.editableSources)) {
             writeOrder(rows)
           }
           persist()

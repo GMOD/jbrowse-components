@@ -167,17 +167,16 @@ kept these displays on a label gutter of their own.
 
 **An attribute in `rowColor.field` beats a `samplesTsv` `color` column**: a
 channel bound to a variable beats a per-row constant. The palette is dealt by
-`TreeSidebarMixin` over this display's `rowColorDeal` (`attributeColorDeal`),
+`TreeSidebarMixin` over this display's `rowColorDealFor` (`attributeColorDeal`),
 the values ranked by how many samples carry them, so a focus or the phased
 expansion recolours nothing. `setRowColorField` writes the object through
-`colorForField`: a new attribute starts with no entries, and '' is
-`scale: 'none'` keeping the attribute. A dialog tint set under the palette turns
-every row's colour into a `name` pair, since one object holds one field's
-values; a reset returns `rowColor` only where its `name` pairs differ from the
-config's, so over a config setting no row colour Color by survives it and a mode
-switch; a tint set under a Color by the reader picked leaves nothing to return
-to, and a reset then clears every colour. The flip ADR-160 names puts the row's
-own colour ahead of the palette here too.
+`colorForField`: a new attribute starts with no entries, '' is `scale: 'none'`
+keeping the attribute, and `name` is each row its own. The menu's Samples group
+and the arrangement dialog offer the same choices (`rowColorChoice`), and under
+an attribute the dialog edits each value's colour, never a row's (ADR-163). A
+reset returns `rowColor` only where its `name` pairs differ from the config's,
+so over a config setting no row colour a Color by survives it and a mode switch.
+The flip ADR-160 names puts the row's own colour ahead of the palette here too.
 
 **The `facet` band yields while a cluster tree describes the rows**
 (`treeDescribesRows`), the mechanism `LinearMultiRowFeatureDisplay` uses for its

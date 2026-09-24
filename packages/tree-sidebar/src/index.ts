@@ -67,8 +67,13 @@ export {
   validateClusterOrder,
 } from './clusterUtils.ts'
 export { orderRowsByDomain } from './arrangeRows.ts'
-export { rowColorScale, rowFieldValue, valuesByCount } from './rowColorScale.ts'
-export type { RowColorDeal } from './rowColorScale.ts'
+export {
+  fieldColorDeal,
+  rowColorScale,
+  rowFieldValue,
+  valuesByCount,
+} from './rowColorScale.ts'
+export type { RowColorDeal, RowColorEntries } from './rowColorScale.ts'
 export type {
   IdentityChannel,
   RowAlias,
@@ -135,7 +140,6 @@ export {
   moveUp,
   updateRows,
 } from './sourcesGridUtils.ts'
-export { paletteColorsByRow } from './setColorDialog/applyColorPalette.ts'
 export { default as SetColorDialog } from './setColorDialog/SetColorDialog.tsx'
 export type {
   SetColorDialogProps,

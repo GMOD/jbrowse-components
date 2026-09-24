@@ -141,12 +141,16 @@ hook's name throws at `create`:
   MAF and marks tint the label.
 - `unlistedRowsSort` — `source` by default; multi-row's discovered values sort.
 - `rowOrder` — `rows.domain` by default; MAF leads with a drawn tree's leaves.
-- `rowColorDeal` — what `dealRowColors` deals into `dealtRowColors`, a colour
-  per value dealt again only when the deal changes, which `rowColorScale` maps
-  each row onto: by default `rowColor.field`'s values over the base arrangement,
-  so no reorder, focus or relabel recolours a row. Wiggle, multi-row and
-  variants hand in the order and palette they dealt before ADR-160; MAF and the
-  mark display deal none.
+- `rowColorDealFor(setting)` — what `dealRowColors` deals under a `rowColor`
+  object, the config's (`rowColorDeal`, none under `scale: 'none'`, dealt into
+  `dealtRowColors`, which `rowColorScale` maps each row onto) or one the dialog
+  previews (`rowColorsFor`): by default the field's values over the base
+  arrangement, so no reorder, focus or relabel recolours a row. Under `name`
+  wiggle, multi-row and variants hand in the order and palette they dealt before
+  ADR-160; MAF and the mark display deal none.
+- `rowColorFields` — the row attributes offered to colour by: by default every
+  attribute the rows carry but their name, label and colours; variants' are its
+  samplesTsv columns; MAF and the mark display offer none.
 
 MAF also overrides `clusterableSources`, since on a track that discovers its
 species a focus applies as given, as the worker's does. `focusLegendEntry` stays
@@ -167,14 +171,20 @@ What else the mixin owns:
   `resetRowStyling` writes the base's whole `rowColor` back only where the
   `name` pairs differ, so over a config setting no row colour a Color by alone
   survives a reset and a mode switch.
-- **The dialog's submit is `applyRowEdits`**, and `rowEdits` is its rule: an
-  entry the config holds stands unless the reader changed that row, so an entry
-  repeating the adapter's value survives an unchanged submit; a value changed
-  back to what the row shows with no entry of its own removes the entry; a row
-  the dialog never showed keeps its entry. An order that moves no row is not
-  written. The pairs are written with two `setConf`s, never `setSubschema`,
-  which would drop `field` and `scale`. A recolour where `rowColor` paints by an
-  attribute first turns every row's current colour into a `name` pair.
+- **The dialog shows the `rowColor` object and submits it**
+  (`applyRowEdits(rows, rowColor)`, ADR-163): "Color rows by" None, Each row or
+  an attribute; under an attribute a table of its values, each with its colour
+  and row count, and read-only row swatches; under Each row editable swatches,
+  with "Start from" copying an attribute's colours onto them once. A row's
+  swatch is read only under Each row, where `rowEdits` is the rule: an entry the
+  config holds stands unless the reader changed that row, so an entry repeating
+  the adapter's value survives an unchanged submit; a value changed back to what
+  the row shows with no entry of its own removes the entry; a row the dialog
+  never showed keeps its entry. Any other object is written as the dialog shows
+  it, so a colour set on one row never stands for its value, and nothing is
+  materialised. An order that moves no row is not written. The pairs are written
+  with two `setConf`s, never `setSubschema`, which would drop `field` and
+  `scale`.
 - **A reorder keeps the names it did not show.** `setRowOrder` writes the rows
   it was handed ahead of every name the current order carries beyond them, so on
   the multi-row display, whose rows are discovered per region, a declared order

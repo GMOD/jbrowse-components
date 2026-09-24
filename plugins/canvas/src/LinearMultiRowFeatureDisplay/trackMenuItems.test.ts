@@ -4,7 +4,7 @@ import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
 import type { PartitionRowCount } from './partitionFields.ts'
 import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
-import type { RowSource } from '@jbrowse/tree-sidebar'
+import type { RowColorSetting, RowSource } from '@jbrowse/tree-sidebar'
 
 // The builder only reads state, so a plain object stands in for the display —
 // structural, like `MultiRowMenuSelf`, so a drifted field fails here.
@@ -55,6 +55,15 @@ function makeSelf(
     applyRowEdits: () => {},
     resetRowArrangement: () => {},
     rowOrderWillDropTree: () => false,
+    rowColorSetting: {
+      field: 'name',
+      scale: undefined,
+      domain: [],
+      range: [],
+    } as RowColorSetting,
+    rowColorChoice: 'name',
+    rowColorFields: [],
+    rowColorsFor: () => new Map(),
     setRowHeight: () => {},
     setFitToHeight: () => {},
     ...overrides,

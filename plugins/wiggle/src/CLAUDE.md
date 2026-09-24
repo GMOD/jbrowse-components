@@ -271,16 +271,19 @@ of the adapter's colour and the palette, so a colour set on the plot moves to
 the label tint when a gradient starts painting rather than into the ramp; in one
 shared box there is no label to tint, so the colour goes to the plot whatever
 the gradient. `group` has no config home, so a `group` pasted into the bulk
-editor is read for the palettizer's "Color by group" and not kept.
+editor is not kept.
 
-**The palette is dealt by `TreeSidebarMixin`, over this display's order.** The
-`rowColorDeal` hook is `sourceColorDeal`: one cursor over a colour per source's
-`range` then `set1`, the groups first as they appear, then, for a colour per
-source outside a gradient, the ungrouped subtracks its `domain` lists ahead. It
-deals over the rows as currently arranged, as the display always has, so a
-reorder can still recolour a row; the base arrangement is the flip ADR-160
+**The palette is dealt by `TreeSidebarMixin`, over this display's order.** Under
+`name` the `rowColorDealFor` hook is `sourceColorDeal`: one cursor over a colour
+per source's `range` then `set1`, the groups first as they appear, then, for a
+colour per source outside a gradient, the ungrouped subtracks its `domain` lists
+ahead. It deals over the rows as currently arranged, as the display always has,
+so a reorder can still recolour a row; the base arrangement is the flip ADR-160
 names. `buildSources` paints the dealt colour after the row's own: on `color`,
-or under a gradient on `labelColor` after the row's own `color`.
+or under a gradient on `labelColor` after the row's own `color`. Under an
+attribute the hook deals that attribute's values from `set1` over the base
+arrangement, and the dealt colour leads the row's own, since the reader asked
+for the attribute.
 
 **Density is where the fallback differs.** Outside it an unset row `color` is
 painted in the resolved `posColor`, so the key resolves to it; in density that

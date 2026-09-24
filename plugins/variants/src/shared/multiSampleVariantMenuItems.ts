@@ -70,6 +70,36 @@ function sampleAttributeItems(
   ]
 }
 
+// The rows' colour, as the arrangement dialog offers it: none, each row its
+// own, or an attribute's values.
+function rowColorItems(self: MultiSampleVariantBaseModel): MenuItem[] {
+  const current = self.rowColorChoice
+  const pick = (field: string) => () => {
+    self.setRowColorField(field)
+  }
+  return [
+    {
+      label: 'None',
+      type: 'radio',
+      checked: current === '',
+      onClick: pick(''),
+    },
+    {
+      label: 'Each row',
+      helpText: 'The colours set row by row in Edit colors/arrangement...',
+      type: 'radio',
+      checked: current === 'name',
+      onClick: pick('name'),
+    },
+    ...self.colorByAttributes.map(attr => ({
+      label: capitalizeFirst(attr),
+      type: 'radio' as const,
+      checked: current === attr,
+      onClick: pick(attr),
+    })),
+  ]
+}
+
 // Items for the "Show..." submenu — the toggles both displays share. Extended
 // by subclasses via super-capture (the regular display adds its variant lane
 // rows); the subtree filter has its own entry via `clusteringMenuItem`.
@@ -297,13 +327,7 @@ export function variantTrackMenuItems(
                 label: 'Samples',
                 type: 'subHeader' as const,
               },
-              ...sampleAttributeItems(
-                self.colorByAttributes,
-                self.rowColorField,
-                arg => {
-                  self.setRowColorField(arg)
-                },
-              ),
+              ...rowColorItems(self),
             ]
           : []),
       ],

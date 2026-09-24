@@ -853,12 +853,20 @@ export default function stateModelFactory(
           return 'labelColor'
         },
         /**
-         * #getter
+         * #method
          * `TreeSidebarMixin`'s hook: no row palette, since a species row
          * takes its adapter's colour or none.
          */
-        get rowColorDeal(): RowColorDeal<MafSource> | undefined {
+        rowColorDealFor(): RowColorDeal<MafSource> | undefined {
           return undefined
+        },
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: none, since a species row carries no
+         * attribute to colour it by.
+         */
+        get rowColorFields(): readonly string[] {
+          return []
         },
         /**
          * #getter

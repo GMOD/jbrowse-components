@@ -2,10 +2,11 @@ import '@testing-library/jest-dom'
 
 import React from 'react'
 
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 
 import SetColorDialog from './SetColorDialog.tsx'
 
+import type { RowColorSetting } from '../TreeSidebarMixin.ts'
 import type { TreeLayoutModel } from './SetColorDialog.tsx'
 import type { ColorColumn } from './SourceGrid.tsx'
 
@@ -16,15 +17,58 @@ interface Src {
   group?: string
 }
 
+const PALETTE = ['#111111', '#222222', '#333333']
+
+// A deal of each value of the setting's field, its listed values taking their
+// range colour, the rest the palette in first-seen order.
+function previewOf(rows: Src[]) {
+  return (setting: RowColorSetting) => {
+    const colors = new Map<string, string>()
+    setting.domain.forEach((value, i) => colors.set(value, setting.range[i]!))
+    let next = 0
+    for (const row of rows) {
+      const value =
+        setting.field === 'name'
+          ? row.name
+          : String((row as unknown as Record<string, unknown>)[setting.field])
+      if (!colors.has(value)) {
+        colors.set(value, PALETTE[next++ % PALETTE.length]!)
+      }
+    }
+    return colors
+  }
+}
+
 function fakeModel(overrides: Partial<TreeLayoutModel<Src>> = {}) {
+  const editableSources = overrides.editableSources ?? [
+    { name: 'a', color: '#f00' },
+    { name: 'b' },
+  ]
+  const rowColorSetting: RowColorSetting = overrides.rowColorSetting ?? {
+    field: 'name',
+    scale: undefined,
+    domain: [],
+    range: [],
+  }
   return {
-    editableSources: [{ name: 'a', color: '#f00' }, { name: 'b' }] as Src[],
+    editableSources,
     applyRowEdits: jest.fn(),
     resetRowArrangement: jest.fn(),
     rowOrderWillDropTree: jest.fn(() => false),
+    rowColorSetting,
+    rowColorChoice:
+      rowColorSetting.scale === 'none' ? '' : rowColorSetting.field,
+    rowColorFields: [],
+    rowColorsFor: previewOf(editableSources),
     ...overrides,
   }
 }
+
+const GROUPED: Src[] = [
+  { name: 'a', group: 'g1' },
+  { name: 'b', group: 'g2' },
+  { name: 'c', group: 'g1' },
+]
 
 const TWO_COLOR_COLUMNS: ColorColumn<Src>[] = [
   { field: 'color', headerName: 'Track color' },
@@ -37,13 +81,20 @@ function setup(model: TreeLayoutModel<Src>) {
   return { handleClose }
 }
 
+function submitted(model: TreeLayoutModel<Src>) {
+  const calls = (model.applyRowEdits as jest.Mock).mock.calls
+  return calls[calls.length - 1] as [Src[], Record<string, unknown>]
+}
+
 test('Submit persists the layout and closes when no tree would be cleared', () => {
   const model = fakeModel()
   const { handleClose } = setup(model)
 
   fireEvent.click(screen.getByText('Submit'))
 
-  expect(model.applyRowEdits).toHaveBeenCalledWith(model.editableSources)
+  expect(model.applyRowEdits).toHaveBeenCalledWith(model.editableSources, {
+    field: 'name',
+  })
   expect(handleClose).toHaveBeenCalled()
   expect(screen.queryByText(/Clear cluster tree/)).toBeNull()
 })
@@ -92,60 +143,119 @@ test('the header toggle switches which color column the grid edits', () => {
   ).not.toBeInTheDocument()
 })
 
-// Regression: "Color by" used to hardcode `color`, so in multi-wiggle density
-// mode — where the grid edits `labelColor` because `color` drives the score
-// ramp — palettizing silently painted a field the user wasn't looking at.
-test('Color by paints the active color column, not always `color`', () => {
-  const applyRowEdits = jest.fn()
+// "Start from" is how a reader colours by an attribute and then changes one
+// row: a one-off copy onto the rows, in the column the grid edits.
+test('Start from copies the attribute colors onto the active color column', () => {
+  const model = fakeModel({
+    editableSources: GROUPED,
+    rowColorFields: ['group'],
+  })
   render(
     <SetColorDialog
-      model={fakeModel({
-        applyRowEdits,
-        editableSources: [
-          { name: 'a', group: 'g1' },
-          { name: 'b', group: 'g2' },
-        ],
-      })}
+      model={model}
       handleClose={jest.fn()}
       colorColumns={TWO_COLOR_COLUMNS}
       defaultColorField="labelColor"
-      enableRowPalettizer
     />,
   )
 
-  fireEvent.click(screen.getByRole('button', { name: /Color by/ }))
-  fireEvent.click(screen.getByRole('menuitem', { name: 'group' }))
+  fireEvent.mouseDown(screen.getByLabelText('Start from'))
+  fireEvent.click(screen.getByRole('option', { name: 'group colors' }))
   fireEvent.click(screen.getByText('Submit'))
 
-  const submitted = applyRowEdits.mock.calls[0]![0] as Src[]
-  expect(submitted.every(s => !!s.labelColor)).toBe(true)
-  expect(submitted.every(s => s.color === undefined)).toBe(true)
-  // distinct groups get distinct palette entries
-  expect(submitted[0]!.labelColor).not.toBe(submitted[1]!.labelColor)
+  const [rows, rowColor] = submitted(model)
+  expect(rows.map(s => s.labelColor)).toEqual(['#111111', '#222222', '#111111'])
+  expect(rows.every(s => s.color === undefined)).toBe(true)
+  expect(rowColor).toEqual({ field: 'name' })
 })
 
-test('Clear names the active color column and unsets only that field', () => {
-  const applyRowEdits = jest.fn()
+test('Clear row colors unsets only the active column', () => {
+  const model = fakeModel({
+    editableSources: [{ name: 'a', color: '#f00', labelColor: '#0f0' }],
+  })
   render(
     <SetColorDialog
-      model={fakeModel({
-        applyRowEdits,
-        editableSources: [{ name: 'a', color: '#f00', labelColor: '#0f0' }],
-      })}
+      model={model}
       handleClose={jest.fn()}
       colorColumns={TWO_COLOR_COLUMNS}
       defaultColorField="labelColor"
-      enableRowPalettizer
     />,
   )
 
-  fireEvent.click(screen.getByRole('button', { name: /Color by/ }))
-  fireEvent.click(screen.getByRole('menuitem', { name: 'Clear label colors' }))
+  fireEvent.click(screen.getByText('Clear row colors'))
   fireEvent.click(screen.getByText('Submit'))
 
-  const submitted = applyRowEdits.mock.calls[0]![0] as Src[]
-  expect(submitted[0]!.labelColor).toBeUndefined()
-  expect(submitted[0]!.color).toBe('#f00')
+  const [rows] = submitted(model)
+  expect(rows[0]!.labelColor).toBeUndefined()
+  expect(rows[0]!.color).toBe('#f00')
+})
+
+describe('colored by an attribute', () => {
+  const byGroup = () =>
+    fakeModel({
+      editableSources: GROUPED,
+      rowColorFields: ['group'],
+      rowColorSetting: {
+        field: 'group',
+        scale: undefined,
+        domain: ['g2'],
+        range: ['#abcdef'],
+      },
+    })
+
+  test('lists each value with its rows, and the rows show its color unedited', () => {
+    const model = byGroup()
+    setup(model)
+
+    const values = within(screen.getByTestId('row-color-values'))
+    expect(values.getByText('g1')).toBeInTheDocument()
+    expect(values.getByText('2 rows')).toBeInTheDocument()
+    expect(values.getByText('1 row')).toBeInTheDocument()
+    expect(
+      screen.getAllByTestId('row-color-swatch').map(s => s.style.background),
+    ).toEqual(['rgb(17, 17, 17)', 'rgb(171, 205, 239)', 'rgb(17, 17, 17)'])
+    expect(screen.queryByText('Clear row colors')).toBeNull()
+  })
+
+  test('Submit writes the attribute and its colors', () => {
+    const model = byGroup()
+    setup(model)
+
+    fireEvent.click(screen.getByText('Submit'))
+    expect(submitted(model)[1]).toEqual({
+      field: 'group',
+      domain: ['g2'],
+      range: ['#abcdef'],
+    })
+  })
+
+  test('Reset returns every value to the palette', () => {
+    const model = byGroup()
+    setup(model)
+
+    fireEvent.click(screen.getByText('Reset group colors'))
+    fireEvent.click(screen.getByText('Submit'))
+    expect(submitted(model)[1]).toEqual({
+      field: 'group',
+      domain: [],
+      range: [],
+    })
+  })
+
+  test('None keeps the attribute and its colors for the way back', () => {
+    const model = byGroup()
+    setup(model)
+
+    fireEvent.click(screen.getByRole('button', { name: 'None' }))
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(submitted(model)[1]).toEqual({
+      field: 'group',
+      scale: 'none',
+      domain: ['g2'],
+      range: ['#abcdef'],
+    })
+  })
 })
 
 // Regression: the warning must consult the model live, not a snapshot taken at

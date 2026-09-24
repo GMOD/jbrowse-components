@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { legendIsReadable } from '@jbrowse/core/ui'
+import { set1 } from '@jbrowse/core/ui/colors'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
@@ -45,6 +46,7 @@ import {
   sortRowsHereMenuItem,
   treeSidebarOffset,
   treeSidebarShowMenuItems,
+  fieldColorDeal,
 } from '@jbrowse/tree-sidebar'
 import { axisPlotBox, makeCrossHatchItem } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -97,7 +99,11 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { RowsSetting } from '@jbrowse/display-kit/rowsConfigSchema'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { IdentityChannel, RowColorDeal } from '@jbrowse/tree-sidebar'
+import type {
+  IdentityChannel,
+  RowColorDeal,
+  RowColorEntries,
+} from '@jbrowse/tree-sidebar'
 import type { ValueScale, WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
@@ -439,17 +445,24 @@ export default function stateModelFactory(
           : 'color'
       },
       /**
-       * #getter
-       * `TreeSidebarMixin`'s hook: the group palette, and a colour per source
-       * where the colour is one, dealt over the rows as currently arranged
-       * (`sourceColorDeal`).
+       * #method
+       * `TreeSidebarMixin`'s hook: under `name` the group palette, and a
+       * colour per source where the colour is one, dealt over the rows as
+       * currently arranged (`sourceColorDeal`); under an attribute, its
+       * values' from the same palette.
        */
-      get rowColorDeal(): RowColorDeal<Source> {
-        return sourceColorDeal(
-          orderRowsByDomain(self.expandedRows, self.rowOrder),
-          sourcePalette(self.colorEncoding),
-          self.scoreGradientPaints,
-        )
+      rowColorDealFor(setting: RowColorEntries): RowColorDeal<Source> {
+        return setting.field === 'name'
+          ? sourceColorDeal(
+              orderRowsByDomain(self.expandedRows, self.rowOrder),
+              sourcePalette(self.colorEncoding),
+              self.scoreGradientPaints,
+            )
+          : fieldColorDeal(
+              setting,
+              orderRowsByDomain(self.expandedRows, self.baseRowDomain),
+              set1,
+            )
       },
     }))
     .views(self => ({
@@ -459,6 +472,7 @@ export default function stateModelFactory(
           self.rowFocus,
           self.rowColorScale,
           self.scoreGradientPaints,
+          self.rowColorSetting.field !== 'name',
         )
       },
     }))

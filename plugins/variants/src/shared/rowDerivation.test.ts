@@ -170,22 +170,26 @@ describe('allele count', () => {
     expect(derived(display)).toMatchSnapshot()
   })
 
-  // `rowColor` holds one field's values, so a dialog colour under the
-  // population palette makes every row's colour a `name` pair: the rows left
-  // alone keep theirs and the one recoloured shows it.
-  test('a dialog colour under the rowColor palette pairs every row by name', () => {
+  // Under a colour by population the dialog edits a population's colour, and
+  // the rows' own swatches are not read: the Color by and its legend stay.
+  test("a dialog recolours a population's rows, and keeps the Color by", () => {
     const display = loaded({ rowColor: 'population' })
-    const before = display.sources.map(s => s.labelColor)
     const [s0, s1, ...rest] = display.editableSources
     display.applyRowEdits([s0!, { ...s1!, labelColor: '#123456' }, ...rest])
-    expect(display.rowColorSetting.field).toBe('name')
-    expect(display.sources.map(s => s.labelColor)).toEqual([
-      before[0],
+    expect(display.rowColorChoice).toBe('population')
+    expect(display.sources.find(s => s.name === s1!.name)!.labelColor).not.toBe(
       '#123456',
-      before[2],
-      before[3],
-    ])
-    expect(derived(display).groupLegend).toBeUndefined()
+    )
+
+    display.applyRowEdits(display.editableSources, {
+      field: 'population',
+      domain: ['AFR'],
+      range: ['#123456'],
+    })
+    const afr = display.sources.filter(s => s.population === 'AFR')
+    expect(afr.length).toBeGreaterThan(1)
+    expect(afr.every(s => s.labelColor === '#123456')).toBe(true)
+    expect(derived(display).groupLegend).toBeDefined()
   })
 
   test('a cluster run lands its order and tree, and a facet yields to it', async () => {

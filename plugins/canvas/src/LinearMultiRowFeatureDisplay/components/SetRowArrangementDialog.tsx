@@ -26,7 +26,6 @@ export default function SetRowArrangementDialog({
       title="Multi-row painting — colors & arrangement"
       colorColumns={COLOR_COLUMNS}
       enableBulkEdit
-      enableRowPalettizer
     />
   )
 }

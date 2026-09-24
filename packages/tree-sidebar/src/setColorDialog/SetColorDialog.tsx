@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import DraggableDialog from '@jbrowse/core/ui/DraggableDialog'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import {
   Button,
   DialogActions,
@@ -11,12 +12,15 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { rowFieldValue } from '../rowColorScale.ts'
 import { IDENTITY_FIELDS } from '../sourcesGridUtils.ts'
 import BulkEditPanel from './BulkEditPanel.tsx'
 import ClearTreeWarningDialog from './ClearTreeWarningDialog.tsx'
-import RowPalettizer from './RowPalettizer.tsx'
+import RowColorPanel from './RowColorPanel.tsx'
 import SourceGrid from './SourceGrid.tsx'
 
+import type { RowColorSetting, RowColorSnapshot } from '../TreeSidebarMixin.ts'
+import type { ValueColor } from './RowColorPanel.tsx'
 import type { ColorColumn } from './SourceGrid.tsx'
 
 const useStyles = makeStyles()({
@@ -38,11 +42,15 @@ const useStyles = makeStyles()({
 // until Submit.
 export interface TreeLayoutModel<S extends { name: string }> {
   editableSources: S[]
-  applyRowEdits: (s: S[]) => void
+  applyRowEdits: (s: S[], rowColor?: RowColorSnapshot) => void
   resetRowArrangement: () => void
   // Whether submitting `next` would invalidate a loaded cluster tree; when true
   // the ClearTreeWarning is shown before Submit.
   rowOrderWillDropTree: (next: S[]) => boolean
+  rowColorSetting: RowColorSetting
+  rowColorChoice: string
+  rowColorFields: readonly string[]
+  rowColorsFor: (setting: RowColorSetting) => ReadonlyMap<string, string>
 }
 
 export interface SetColorDialogProps<
@@ -57,16 +65,50 @@ export interface SetColorDialogProps<
   defaultColorField?: keyof S & string
   title?: string
   enableBulkEdit?: boolean
-  enableRowPalettizer?: boolean
   // Plugin-specific field names that are internal plumbing (e.g. variants'
-  // `sampleName`/`HP`): hidden from both the auto-derived "extras" column
-  // list and the palettizer's per-field buttons.
+  // `sampleName`/`HP`): hidden from the auto-derived "extras" column list.
   reservedFields?: ReadonlySet<string>
   // Display-level color controls (not per-row), rendered above the grid. These
   // write the model directly rather than joining `currLayout`, so they take
   // effect immediately and Cancel does not revert them — keep them to settings
   // whose own dialog would be overkill (multi-wiggle's score-sign palette).
   displayControls?: React.ReactNode
+}
+
+type Entries = Readonly<Record<string, Readonly<Record<string, string>>>>
+
+// The colours a `rowColor` object sets on its field's values, by field, which
+// the dialog edits before it writes one object back.
+function entriesOf(setting: RowColorSetting): Entries {
+  return setting.field === 'name'
+    ? {}
+    : { [setting.field]: Object.fromEntries(pairedColorsOf(setting)) }
+}
+
+function settingFor(field: string, entries: Entries): RowColorSetting {
+  const own = entries[field] ?? {}
+  return {
+    field,
+    scale: undefined,
+    domain: Object.keys(own),
+    range: Object.values(own),
+  }
+}
+
+// Each value of `field` over the rows, most rows first, with its colour.
+function valueColors(
+  rows: readonly object[],
+  field: string,
+  colors: ReadonlyMap<string, string>,
+): ValueColor[] {
+  const counts = new Map<string, number>()
+  for (const row of rows) {
+    const value = rowFieldValue(row, field)
+    counts.set(value, (counts.get(value) ?? 0) + 1)
+  }
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([value, count]) => ({ value, count, color: colors.get(value) }))
 }
 
 export default observer(function SetColorDialog<
@@ -78,7 +120,6 @@ export default observer(function SetColorDialog<
   defaultColorField,
   title = 'Color/arrangement editor',
   enableBulkEdit = false,
-  enableRowPalettizer = false,
   reservedFields,
   displayControls,
 }: SetColorDialogProps<S>) {
@@ -86,33 +127,60 @@ export default observer(function SetColorDialog<
   const getSources = () => model.editableSources
   const [showBulkEditor, setShowBulkEditor] = useState(false)
   const [currLayout, setCurrLayout] = useState(getSources)
+  const [choice, setChoice] = useState(model.rowColorChoice)
+  const [entries, setEntries] = useState(() => entriesOf(model.rowColorSetting))
   const [pendingReorderConfirm, setPendingReorderConfirm] = useState(false)
   const [activeField, setActiveField] = useState(
     defaultColorField ?? colorColumns[0]?.field,
   )
 
-  // The grid edits one color column at a time; the palettizer and bulk button
-  // paint that same one.
+  // The grid edits one color column at a time; the bulk button paints that
+  // same one.
   const activeColumn =
     colorColumns.find(c => c.field === activeField) ?? colorColumns[0]
 
   // Every color column is reserved from the auto-derived extras, not just the
   // active one, so an inactive swatch field never leaks as a raw hex column.
-  // The palettizer takes this same set rather than the bare `reservedFields`:
-  // its menu is also derived by `extraColumns`, so anything the grid declines to
-  // show as a column it must equally decline to offer as a palette KEY — a
-  // per-row hex value buckets every row on its own and paints ~40 palette
-  // entries one row each. It only agreed by accident, because both color
-  // columns in the tree are named `color`/`labelColor`, which the palettizer
-  // hardcodes; a display naming a third one diverged silently.
   const reserved = new Set<string>([
     ...IDENTITY_FIELDS,
     ...colorColumns.map(c => c.field),
     ...(reservedFields ?? []),
   ])
 
+  const byField = choice !== '' && choice !== 'name' ? choice : undefined
+  const fieldColors = byField
+    ? model.rowColorsFor(settingFor(byField, entries))
+    : undefined
+
+  // What the submit writes: the object as the reader left it, keeping the
+  // field and its entries under None for the way back.
+  const chosenRowColor = (): RowColorSnapshot => {
+    const setting = model.rowColorSetting
+    if (choice === '') {
+      return {
+        field: setting.field,
+        scale: 'none',
+        domain: [...setting.domain],
+        range: [...setting.range],
+      }
+    }
+    if (choice === 'name') {
+      return { field: 'name' }
+    }
+    const { domain, range } = settingFor(choice, entries)
+    return { field: choice, domain, range }
+  }
+
+  const paintRows = (colorOf: (row: S) => string | undefined) => {
+    if (activeColumn) {
+      setCurrLayout(
+        currLayout.map(row => ({ ...row, [activeColumn.field]: colorOf(row) })),
+      )
+    }
+  }
+
   const submit = () => {
-    model.applyRowEdits(currLayout)
+    model.applyRowEdits(currLayout, chosenRowColor())
     handleClose()
   }
 
@@ -128,6 +196,8 @@ export default observer(function SetColorDialog<
   const resetToModel = () => {
     model.resetRowArrangement()
     setCurrLayout(getSources())
+    setChoice(model.rowColorChoice)
+    setEntries(entriesOf(model.rowColorSetting))
   }
 
   return (
@@ -145,16 +215,8 @@ export default observer(function SetColorDialog<
       ) : (
         <>
           <DialogContent className={classes.content}>
-            <div className={classes.fr}>
-              {enableRowPalettizer ? (
-                <RowPalettizer
-                  currLayout={currLayout}
-                  setCurrLayout={setCurrLayout}
-                  colorColumn={activeColumn}
-                  excludedFields={reserved}
-                />
-              ) : null}
-              {enableBulkEdit ? (
+            {enableBulkEdit ? (
+              <div className={classes.fr}>
                 <Button
                   color="secondary"
                   variant="contained"
@@ -164,12 +226,43 @@ export default observer(function SetColorDialog<
                 >
                   Bulk row editor
                 </Button>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
 
             {displayControls}
 
-            {colorColumns.length > 1 ? (
+            <RowColorPanel
+              fields={model.rowColorFields}
+              choice={choice}
+              values={
+                byField && fieldColors
+                  ? valueColors(currLayout, byField, fieldColors)
+                  : []
+              }
+              onChoice={setChoice}
+              onValueColor={(value, color) => {
+                if (byField) {
+                  setEntries({
+                    ...entries,
+                    [byField]: { ...entries[byField], [value]: color },
+                  })
+                }
+              }}
+              onResetValues={() => {
+                if (byField) {
+                  setEntries({ ...entries, [byField]: {} })
+                }
+              }}
+              onStartFrom={field => {
+                const colors = model.rowColorsFor(settingFor(field, entries))
+                paintRows(row => colors.get(rowFieldValue(row, field)))
+              }}
+              onClearRows={() => {
+                paintRows(() => undefined)
+              }}
+            />
+
+            {choice === 'name' && colorColumns.length > 1 ? (
               <ToggleButtonGroup
                 exclusive
                 size="small"
@@ -191,7 +284,12 @@ export default observer(function SetColorDialog<
             <SourceGrid
               rows={currLayout}
               onChange={setCurrLayout}
-              colorColumn={activeColumn}
+              colorColumn={choice === 'name' ? activeColumn : undefined}
+              swatchOf={
+                fieldColors && byField
+                  ? row => fieldColors.get(rowFieldValue(row, byField))
+                  : undefined
+              }
               reserved={reserved}
             />
           </DialogContent>

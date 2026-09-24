@@ -38,6 +38,7 @@ import {
   rowLabelsCarryText,
   setupTreeSidebarAutoruns,
   sortRowsAtColumn,
+  fieldColorDeal,
   sortRowsHereMenuItem,
   treeDescribesRows,
   treeSidebarOffset,
@@ -108,6 +109,7 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   RowColorDeal,
+  RowColorEntries,
   RowSource,
   UnlistedRowsSort,
 } from '@jbrowse/tree-sidebar'
@@ -315,24 +317,22 @@ export default function stateModelFactory(
           return 'sorted'
         },
         /**
-         * #getter
-         * `TreeSidebarMixin`'s hook: a palette colour per row, dealt over the
-         * rows in the base arrangement, a row with a `rowColor` entry still
-         * taking its turn; none under `rowColor.scale: 'none'`.
+         * #method
+         * `TreeSidebarMixin`'s hook: under `name` a palette colour per row,
+         * dealt over the rows in the base arrangement, a row with a `rowColor`
+         * entry still taking its turn; under an attribute, its values'.
          */
-        get rowColorDeal(): RowColorDeal<RowSource> | undefined {
-          if (getConf(self, ['rowColor', 'scale']) === 'none') {
-            return undefined
-          }
-          return {
-            order: orderRowsByDomain(self.expandedRows, self.baseRowDomain).map(
-              s => s.name,
-            ),
-            valueOf: s => s.name,
-            domain: [],
-            range: [],
-            palette: categoricalPalette,
-          }
+        rowColorDealFor(setting: RowColorEntries): RowColorDeal<RowSource> {
+          const rows = orderRowsByDomain(self.expandedRows, self.baseRowDomain)
+          return setting.field === 'name'
+            ? {
+                order: rows.map(s => s.name),
+                valueOf: s => s.name,
+                domain: [],
+                range: [],
+                palette: categoricalPalette,
+              }
+            : fieldColorDeal(setting, rows)
         },
         /**
          * #getter

@@ -1,3 +1,4 @@
+import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import { dealRowColors } from '@jbrowse/display-kit/colorConfigSchema'
 
 /**
@@ -14,6 +15,34 @@ export interface RowColorDeal<S> {
 }
 
 const NONE: ReadonlyMap<string, string> = new Map()
+
+/**
+ * The deal of `setting.field`'s values over `rows`, taken in the order given:
+ * the values `setting.domain` lists take its `range`, and every other value
+ * the next `palette` colour, first seen first.
+ */
+export function fieldColorDeal<S extends { name: string }>(
+  { field, domain, range }: RowColorEntries,
+  rows: readonly S[],
+  palette: readonly string[] = categoricalPalette,
+): RowColorDeal<S> {
+  const valueOf = (row: S) =>
+    field === 'name' ? row.name : rowFieldValue(row, field)
+  return {
+    order: [...domain, ...rows.map(valueOf)],
+    valueOf,
+    domain,
+    range,
+    palette,
+  }
+}
+
+/** A `rowColor` object's field and the colours it pairs with that field's values. */
+export interface RowColorEntries {
+  field: string
+  domain: readonly string[]
+  range: readonly string[]
+}
 
 /** The colour `deal` gives each value it deals. */
 export function dealtColors<S>(
