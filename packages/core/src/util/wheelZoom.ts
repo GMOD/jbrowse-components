@@ -110,6 +110,35 @@ export function applyZoomAccum(
   return d > 0 ? bpPerPx * (1 + d) : bpPerPx / (1 - d)
 }
 
+// A mouse notch lands as ~80ms of eased motion instead of one frame's jump, and
+// a trackpad whose events fall two or three to a frame zooms at an even pace
+const ZOOM_EASE_MS = 24
+
+// in log(bpPerPx): a free-spinning wheel can't bank a zoom that runs on after
+// the hand stops
+const MAX_ZOOM_BACKLOG = Math.log(16)
+
+const ZOOM_SETTLE = 1e-3
+
+function zoomAccumToLog(zoomAccum: number) {
+  return zoomAccum > 0 ? Math.log1p(zoomAccum) : -Math.log1p(-zoomAccum)
+}
+
+function addToZoomBacklog(backlog: number, zoomAccum: number) {
+  return Math.max(
+    -MAX_ZOOM_BACKLOG,
+    Math.min(MAX_ZOOM_BACKLOG, backlog + zoomAccumToLog(zoomAccum)),
+  )
+}
+
+// the rate limit bounds how fast the owed zoom lands, never how much of it
+function easeZoomBacklog(backlog: number, elapsedMs: number) {
+  const rest = backlog * Math.exp(-elapsedMs / ZOOM_EASE_MS)
+  const step = Math.abs(rest) < ZOOM_SETTLE ? backlog : backlog - rest
+  const max = Math.log1p(MAX_ZOOM_RATE_PER_MS * elapsedMs)
+  return Math.max(-max, Math.min(max, step))
+}
+
 export interface WheelZoomView {
   bpPerPx: number
   zoomTo: (bpPerPx: number, offset?: number) => void
@@ -157,7 +186,8 @@ export interface WheelZoomControllerOptions {
 
 interface WheelState {
   scrollDelta: number
-  zoomAccum: number
+  // in log(bpPerPx)
+  zoomBacklog: number
   target: WheelZoomTarget | undefined
   lastClientX: number
   // Left edge of the origin element, measured once per gesture. Reading it in
@@ -169,8 +199,8 @@ interface WheelState {
   // resize or a drawer opening measures again, because the cache lives exactly
   // as long as the gesture.
   originLeft: number | undefined
-  // the previous frame's stamp, which the zoom rate limit measures elapsed
-  // against. The frame itself belongs to the coalescer, not to this state.
+  // the previous frame's stamp, null once frames stop: the gap to the next one
+  // is then idle time, not a frame interval
   lastRafTime: number | null
   lastZoomTime: number | null
   lastEventTime: number | null
@@ -198,6 +228,10 @@ interface WheelState {
  * inertial scroll) collapses to a single update per frame instead of thrashing
  * the views once per event.
  *
+ * A zoom lands eased over the frames after its event (`easeZoomBacklog`), and
+ * all of it lands: how far a gesture zooms depends on the wheel alone, never on
+ * the frame rate or how the events happened to fall into frames.
+ *
  * Returns its disposer.
  */
 export function createWheelZoomController({
@@ -210,7 +244,7 @@ export function createWheelZoomController({
   const frame = createFrameCoalescer()
   const s: WheelState = {
     scrollDelta: 0,
-    zoomAccum: 0,
+    zoomBacklog: 0,
     target: undefined,
     lastClientX: 0,
     originLeft: undefined,
@@ -226,7 +260,7 @@ export function createWheelZoomController({
   const presence = releaseOnPointerLeave
     ? trackPointerPresence(element, () => {
         s.scrollDelta = 0
-        s.zoomAccum = 0
+        s.zoomBacklog = 0
         s.originLeft = undefined
       })
     : undefined
@@ -237,20 +271,26 @@ export function createWheelZoomController({
     const { target } = s
     if (target) {
       const origin = target.originElement()
-      if (s.zoomAccum !== 0 && origin && s.originLeft === undefined) {
+      if (s.zoomBacklog !== 0 && origin && s.originLeft === undefined) {
         s.originLeft = origin.getBoundingClientRect().left
       }
       const originLeft = s.originLeft
+      if (originLeft === undefined) {
+        s.zoomBacklog = 0
+      }
+      const step = easeZoomBacklog(s.zoomBacklog, elapsed)
       const apply = () => {
         transaction(() => {
-          if (s.zoomAccum !== 0 && originLeft !== undefined) {
+          if (step !== 0 && originLeft !== undefined) {
             const offset = s.lastClientX - originLeft
+            let moved = false
             for (const view of target.views) {
-              view.zoomTo(
-                applyZoomAccum(view.bpPerPx, s.zoomAccum, elapsed),
-                offset,
-              )
+              const before = view.bpPerPx
+              view.zoomTo(before * Math.exp(step), offset)
+              moved ||= view.bpPerPx !== before
             }
+            // pinned at a zoom limit, the rest can never land
+            s.zoomBacklog = moved ? s.zoomBacklog - step : 0
           }
           if (s.scrollDelta !== 0) {
             for (const view of target.views) {
@@ -264,9 +304,15 @@ export function createWheelZoomController({
       } else {
         apply()
       }
+    } else {
+      s.zoomBacklog = 0
     }
-    s.zoomAccum = 0
     s.scrollDelta = 0
+    if (s.zoomBacklog !== 0) {
+      frame.schedule(flush)
+    } else {
+      s.lastRafTime = null
+    }
   }
 
   function onWheel(event: WheelEvent) {
@@ -312,7 +358,10 @@ export function createWheelZoomController({
           )
         }
         event.preventDefault()
-        s.zoomAccum += wheelZoomAccum(deltaY, isCtrlZoom)
+        s.zoomBacklog = addToZoomBacklog(
+          s.zoomBacklog,
+          wheelZoomAccum(deltaY, isCtrlZoom),
+        )
         s.lastClientX = event.clientX
         s.lastZoomTime = event.timeStamp
         // drop any side-scroll accumulated earlier this frame — we're zooming,

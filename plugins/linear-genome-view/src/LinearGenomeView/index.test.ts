@@ -376,7 +376,7 @@ describe('scroll-zoom diagnostic — cursor bp stability across frames', () => {
     // you get depends on where the arithmetic happens to land.
     const samples: { bpPerPx: number; offset: number; index: number }[] = []
 
-    // mimic wheel handler: zoomAccum capped at MAX_ZOOM_RATE_PER_MS * 16.67 ≈ 0.2
+    // mimic wheel handler: frames of zoom about one cursor pixel
     const d = sign * 0.05
     const ratio = d > 0 ? 1 + d : 1 / (1 - d)
     for (let frame = 0; frame < 30; frame++) {

@@ -1,4 +1,5 @@
 import {
+  MAX_ZOOM_RATE_PER_MS,
   createWheelZoomController,
   SCROLL_ZOOM_FACTOR_DIVISOR,
   ZOOM_ACTIVE_WINDOW_MS,
@@ -470,19 +471,103 @@ describe('createWheelZoomController', () => {
     expect(view.zoomTo).not.toHaveBeenCalled()
   })
 
-  test('the rate limit scales with the frame gap, not the event count', () => {
-    const view = makeView()
+  // a view whose zoomTo lands, so the frames after the first see the zoom so far
+  function makeMovingView(bpPerPx = 10, { min = 0, max = Infinity } = {}) {
+    const view = {
+      bpPerPx,
+      zoomTo: jest.fn((next: number) => {
+        view.bpPerPx = Math.min(max, Math.max(min, next))
+      }),
+      horizontalScroll: jest.fn(),
+    }
+    return view
+  }
+
+  // runs frames 16ms apart until the controller stops asking for them
+  function settle(start = 1000) {
+    let now = start
+    let count = 0
+    while (frames.length && count < 200) {
+      runFrame(now)
+      now += 16
+      count++
+    }
+    return count
+  }
+
+  test('a mouse notch lands over several frames, all of it', () => {
+    const view = makeMovingView(10)
+    setup({ views: [view], scrollZoom: false })
+    wheel({ deltaY: 120, ctrlKey: true, clientX: 100 })
+    const count = settle()
+
+    expect(count).toBeGreaterThan(3)
+    expect(view.bpPerPx).toBeCloseTo(10 * (1 + 120 / getZoomNormalizer(120)))
+    const steps = view.zoomTo.mock.calls.map(c => c[0])
+    expect(steps.every((bp, i) => bp > (steps[i - 1] ?? 10))).toBe(true)
+  })
+
+  test('a fast spin zooms as far as a slow one', () => {
+    // notches on a wall clock with frames every 16ms between them, the way a
+    // browser interleaves them
+    function spin(gapMs: number) {
+      const view = makeMovingView(10)
+      setup({ views: [view], scrollZoom: false })
+      let now = 1000
+      for (let i = 0; i < 8; i++) {
+        const at = 1000 + i * gapMs
+        while (now + 16 <= at) {
+          now += 16
+          runFrame(now)
+        }
+        wheel({ deltaY: -120, ctrlKey: true, timeStamp: at })
+      }
+      settle(now + 16)
+      dispose?.()
+      dispose = undefined
+      return view.bpPerPx
+    }
+
+    const fast = spin(40)
+    expect(fast).toBeCloseTo(spin(100))
+    expect(fast).toBeCloseTo(10 / (1 + 120 / getZoomNormalizer(120)) ** 8)
+  })
+
+  test('the rate limit bounds how fast the zoom lands, not how much', () => {
+    const view = makeMovingView(10)
     setup({ views: [view], scrollZoom: true })
-    // a single huge delta, so the accumulator is well past any frame's ceiling
+    // a single huge delta, well past what any one frame may take
     wheel({ deltaY: 5000, timeStamp: 1000 })
     runFrame(1000)
-    const shortFrame = view.zoomTo.mock.calls[0]![0]
+    const first = view.bpPerPx / 10
+    runFrame(1050)
+    const second = view.bpPerPx / (10 * first)
 
-    view.zoomTo.mockClear()
-    wheel({ deltaY: 5000, timeStamp: 1010 })
-    runFrame(1060)
-    const longFrame = view.zoomTo.mock.calls[0]![0]
+    expect(first).toBeCloseTo(1 + MAX_ZOOM_RATE_PER_MS * 16.67)
+    expect(second).toBeCloseTo(1 + MAX_ZOOM_RATE_PER_MS * 50)
+    settle(1066)
+    expect(view.bpPerPx).toBeGreaterThan(10 * second * first)
+  })
 
-    expect(longFrame).toBeGreaterThan(shortFrame)
+  test('frames stop once a view reaches its zoom limit', () => {
+    const view = makeMovingView(10, { max: 12 })
+    setup({ views: [view], scrollZoom: false })
+    wheel({ deltaY: 120, ctrlKey: true })
+    const count = settle()
+
+    expect(view.bpPerPx).toBe(12)
+    expect(count).toBeLessThan(5)
+  })
+
+  test('leaving the element abandons zoom still owed', () => {
+    const view = makeMovingView(10)
+    setup({ views: [view], scrollZoom: true, releaseOnPointerLeave: true })
+    wheel({ deltaY: 120, ctrlKey: true })
+    runFrame(1000)
+    const landed = view.bpPerPx
+    element.dispatchEvent(new MouseEvent('mouseleave'))
+    settle(1016)
+
+    expect(view.bpPerPx).toBe(landed)
   })
 })
