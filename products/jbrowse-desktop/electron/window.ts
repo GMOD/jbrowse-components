@@ -261,7 +261,17 @@ export function createChallengeWindow(url: string): Promise<boolean> {
     }
   })
 
-  win.loadURL(url).catch(logError)
+  // The window only opens once the server has challenged a request, so a
+  // clearance already in the jar is one it just refused. Left there, the poll
+  // below found it within a second and closed the window before the user could
+  // solve anything, and the retry was challenged again.
+  const { cookies } = win.webContents.session
+  const cleared = cookies.remove(url, 'cf_clearance').catch(logError)
+  void cleared.then(() => {
+    if (!win.isDestroyed()) {
+      win.loadURL(url).catch(logError)
+    }
+  })
 
   return new Promise(resolve => {
     let settled = false
@@ -278,10 +288,10 @@ export function createChallengeWindow(url: string): Promise<boolean> {
     // domain-bound, and an unfiltered lookup would match a cf_clearance left by
     // any other Cloudflare site and finish(true) before the user solves this one
     const timer = setInterval(() => {
-      win.webContents.session.cookies
-        .get({ url, name: 'cf_clearance' })
-        .then(cookies => {
-          if (cookies.length) {
+      cleared
+        .then(() => cookies.get({ url, name: 'cf_clearance' }))
+        .then(found => {
+          if (found.length) {
             finish(true)
           }
         })
