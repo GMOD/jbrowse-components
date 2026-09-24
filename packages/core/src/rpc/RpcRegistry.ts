@@ -126,6 +126,10 @@ export interface RpcRegistry {
     args: Record<string, unknown>
     return: void
   }
+  CoreLoadAdapterCode: {
+    args: { adapterTypes: string[] }
+    return: void
+  }
 }
 
 export type RpcMethodName = keyof RpcRegistry

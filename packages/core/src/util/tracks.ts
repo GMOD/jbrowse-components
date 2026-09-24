@@ -22,6 +22,7 @@ import {
 import { observable, runInAction, untracked } from 'mobx'
 
 import { readConfObject } from '../configuration/index.ts'
+import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import {
   getFileHandle,
   storeFileHandle,
@@ -1437,8 +1438,58 @@ export function warmTrackDisplayGeneric(
       .resolveDisplayTypeRecord(picked.type)
       ?.loadStateModel()
       .catch(() => {})
+    warmTrackAdapterCode(self, trackId)
   } catch {
     // the launch reports an unresolvable track
+  }
+}
+
+function adapterTypesIn(
+  value: unknown,
+  pluginManager: PluginManager,
+  found = new Set<string>(),
+) {
+  if (typeof value === 'object' && value !== null) {
+    const { type } = value as { type?: unknown }
+    if (typeof type === 'string' && pluginManager.hasAdapterType(type)) {
+      found.add(type)
+    }
+    for (const child of Object.values(value)) {
+      adapterTypesIn(child, pluginManager, found)
+    }
+  }
+  return found
+}
+
+/**
+ * Sent under the id the track's own requests will use, so it reaches, and
+ * boots, the worker that serves them. That id hashes the adapter config as the
+ * track's config node reads it, so a frozen config.json entry is read through a
+ * node of its type: its raw adapter snapshot hashes to another worker.
+ */
+function warmTrackAdapterCode(self: GenericView, trackId: string) {
+  const { pluginManager } = getEnv(self)
+  const session = getSession(self)
+  const raw: AnyConfigurationModel | Record<string, unknown> | undefined =
+    session.getTrackById(trackId)
+  const conf = isStateTreeNode(raw)
+    ? raw
+    : typeof raw?.type === 'string'
+      ? pluginManager
+          .getTrackType(raw.type)
+          .configSchema.create(raw, { pluginManager })
+      : undefined
+  if (conf) {
+    const adapterConfig = readConfObject(conf, 'adapter') as Record<
+      string,
+      unknown
+    >
+    const sessionId = adapterConfigCacheKey(adapterConfig)
+    session.rpcManager
+      .call(sessionId, 'CoreLoadAdapterCode', {
+        adapterTypes: [...adapterTypesIn(adapterConfig, pluginManager)],
+      })
+      .catch(() => {})
   }
 }
 
