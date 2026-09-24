@@ -1,7 +1,6 @@
 import { useImperativeHandle } from 'react'
 
 import { useCreateOnce } from '@jbrowse/product-core'
-import { observer } from 'mobx-react'
 
 import JBrowseLinearGenomeView from '../JBrowseLinearGenomeView/index.ts'
 import createViewState from '../createViewState.ts'
@@ -39,23 +38,15 @@ export interface LinearGenomeViewProps extends CreateViewStateBaseOptions {
  * `<JBrowseLinearGenomeView>`, which destroys the engine on unmount, or
  * `createLinearGenomeView`, which owns the whole lifecycle.
  */
-const LinearGenomeView = observer(function LinearGenomeView({
+export default function LinearGenomeView({
   ref,
   ...rest
 }: LinearGenomeViewProps) {
-  // `view` is passed straight through: createViewState takes the same blob and
-  // fills in the assembly name, so this component is the prop-shaped face of
-  // that call and nothing about launching a view lives only here. With no view
-  // it shows the import form, same as a bare createViewState.
-  //
   // `useCreateOnce`, not `useState(() => …)`: StrictMode double-invokes a state
-  // initializer and discards the second result, which for an engine is a whole
-  // orphaned worker pool per mount, and this component never destroys anything.
+  // initializer, which for an engine orphans a whole worker pool
   const state = useCreateOnce(() => createViewState(rest))
 
   useImperativeHandle(ref, () => state, [state])
 
   return <JBrowseLinearGenomeView viewState={state} />
-})
-
-export default LinearGenomeView
+}
