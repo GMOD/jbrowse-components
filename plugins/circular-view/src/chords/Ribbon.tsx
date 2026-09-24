@@ -7,6 +7,7 @@ import { observer } from 'mobx-react'
 
 import { ribbonPath } from './ribbonGeometry.ts'
 import { ribbonLabel } from './ribbonLabel.ts'
+import { DIMMED_OPACITY } from './types.ts'
 
 import type { RibbonDisplayModel } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -20,6 +21,7 @@ const Ribbon = observer(function Ribbon({
   restingFill,
   bezierRadius,
   selected,
+  dimmed,
   onClick,
 }: {
   feature: Feature
@@ -29,6 +31,7 @@ const Ribbon = observer(function Ribbon({
   restingFill: RibbonDisplayModel['ribbonFill']
   bezierRadius: number
   selected: boolean
+  dimmed: boolean
   onClick: (feat: Feature) => void
 }) {
   const [hovered, setHovered] = useState(false)
@@ -62,6 +65,7 @@ const Ribbon = observer(function Ribbon({
         bezierRadius,
       })}
       {...getFillProps(fill)}
+      opacity={dimmed && !hovered ? DIMMED_OPACITY : undefined}
       onClick={() => {
         onClick(feature)
       }}

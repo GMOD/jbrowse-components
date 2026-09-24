@@ -21,10 +21,12 @@ export interface ChordDisplayFrameModel {
   reload: () => void
 }
 
-// the part of a chord display's model that the chord components read. A slice
-// is looked up by the assembly AND refName a feature carries, since two genomes
-// on one circle can each carry a `chr1`
-export interface ChordDisplayModel extends ChordDisplayFrameModel {
+export const DIMMED_OPACITY = 0.15
+
+// What the chord and ribbon components both read. A slice is looked up by the
+// assembly AND refName a feature carries, since two genomes on one circle can
+// each carry a `chr1`
+interface ChordLayerModel extends ChordDisplayFrameModel {
   drawnFeatures: Feature[] | undefined
   selectedFeatureId: string | undefined
   highlightedFeatureIdSet?: Set<string>
@@ -33,20 +35,13 @@ export interface ChordDisplayModel extends ChordDisplayFrameModel {
     assemblyName: string | undefined,
     refName: string,
   ) => Slice | undefined
+}
+
+export interface ChordDisplayModel extends ChordLayerModel {
   onChordClick: (feature: Feature) => void
 }
 
-// the ribbon components' half. A synteny record names an assembly on each side,
-// so the slice lookup takes both: two assemblies on one circle can each carry a
-// `chr1`, and a refName-keyed table answers whichever was written last
-export interface RibbonDisplayModel extends ChordDisplayFrameModel {
-  features: Feature[] | undefined
+export interface RibbonDisplayModel extends ChordLayerModel {
   ribbonFill: (feature: Feature) => string
-  selectedFeatureId: string | undefined
-  bezierRadius: number
-  sliceFor: (
-    assemblyName: string | undefined,
-    refName: string,
-  ) => Slice | undefined
   onRibbonClick: (feature: Feature) => void
 }

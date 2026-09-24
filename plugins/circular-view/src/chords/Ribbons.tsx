@@ -10,13 +10,14 @@ const Ribbons = observer(function Ribbons({
   display: RibbonDisplayModel
 }) {
   const {
-    features,
+    drawnFeatures,
     configuration,
     ribbonFill,
     sliceFor,
     radiusPx,
     bezierRadius,
     selectedFeatureId,
+    highlightedFeatureIdSet,
     onRibbonClick,
   } = display
   return (
@@ -24,7 +25,7 @@ const Ribbons = observer(function Ribbons({
     // ribbon — a whole-genome alignment is tens of thousands of them, and each
     // copy is also a dead attribute in the SVG export
     <g data-testid="syntenyRibbonRenderer" cursor="crosshair">
-      {features?.map(feature => (
+      {drawnFeatures?.map(feature => (
         <Ribbon
           key={feature.id()}
           feature={feature}
@@ -34,6 +35,7 @@ const Ribbons = observer(function Ribbons({
           bezierRadius={bezierRadius}
           sliceFor={sliceFor}
           selected={selectedFeatureId === feature.id()}
+          dimmed={highlightedFeatureIdSet?.has(feature.id()) === false}
           onClick={onRibbonClick}
         />
       ))}

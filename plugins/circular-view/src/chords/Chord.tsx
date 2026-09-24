@@ -5,11 +5,10 @@ import { getStrokeProps } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import { chordLabel } from './chordLabel.ts'
+import { DIMMED_OPACITY } from './types.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-
-const DIMMED_OPACITY = 0.15
 
 const Chord = observer(function Chord({
   feature,

@@ -38,9 +38,9 @@ const slices = {
   'mm39 chr1': block('chr1', 'mm39', 3),
 }
 
-function alignment(strand: number) {
+function alignment(strand: number, uniqueId = 'aln1') {
   return new SimpleFeature({
-    uniqueId: 'aln1',
+    uniqueId,
     assemblyName: 'hg38',
     refName: 'chr1',
     start: 1000,
@@ -66,7 +66,7 @@ function ribbonModel(
     ready: phase === 'ready',
     displayPhase: phase,
     svgReady: phase !== 'loading',
-    features: [],
+    drawnFeatures: [],
     selectedFeatureId: undefined,
     configuration,
     ribbonFill: feature => readConfObject(configuration, 'color', { feature }),
@@ -128,7 +128,9 @@ test('the error terminal is finished rather than pending', () => {
 // each end resolves against its own assembly's slices, which is what a
 // two-assembly circle needs: both sides here are named chr1
 test('an alignment across two assemblies draws one ribbon', () => {
-  const { container } = draw(ribbonModel('ready', { features: [alignment(1)] }))
+  const { container } = draw(
+    ribbonModel('ready', { drawnFeatures: [alignment(1)] }),
+  )
   const paths = container.querySelectorAll('path')
   expect(paths).toHaveLength(1)
   expect(paths[0]!.getAttribute('d')).toMatch(/^M .* Z$/)
@@ -137,7 +139,7 @@ test('an alignment across two assemblies draws one ribbon', () => {
 test('an end whose slice is off the circle drops the ribbon', () => {
   const { container } = draw(
     ribbonModel('ready', {
-      features: [alignment(1)],
+      drawnFeatures: [alignment(1)],
       sliceFor: assemblyName =>
         assemblyName === 'hg38' ? slices['hg38 chr1'] : undefined,
     }),
@@ -149,7 +151,7 @@ test('clicking a ribbon hands the feature to the display', () => {
   const clicked: string[] = []
   const { container } = draw(
     ribbonModel('ready', {
-      features: [alignment(-1)],
+      drawnFeatures: [alignment(-1)],
       onRibbonClick: feature => {
         clicked.push(feature.id())
       },
@@ -157,4 +159,23 @@ test('clicking a ribbon hands the feature to the display', () => {
   )
   fireEvent.click(container.querySelector('path')!)
   expect(clicked).toEqual(['aln1'])
+})
+
+test('ribbons outside the highlighted set dim, and with no set none do', () => {
+  const opacities = (overrides: Partial<RibbonDisplayModel>) => {
+    const { container } = draw(
+      ribbonModel('ready', {
+        drawnFeatures: [alignment(1, 'a'), alignment(1, 'b')],
+        ...overrides,
+      }),
+    )
+    return [...container.querySelectorAll('path')].map(p =>
+      p.getAttribute('opacity'),
+    )
+  }
+  expect(opacities({})).toEqual([null, null])
+  expect(opacities({ highlightedFeatureIdSet: new Set(['b']) })).toEqual([
+    '0.15',
+    null,
+  ])
 })
