@@ -144,7 +144,7 @@ import {
 } from '@jbrowse/capture'
 
 // launch, wait, shoot, close
-const { pending, paintContract } = await captureJBrowse({
+const { unsettled, tooLarge } = await captureJBrowse({
   hub: 'hg38',
   loc: 'BRCA1',
   tracks: ['hg38-ncbiRefSeqCurated'],
@@ -165,10 +165,11 @@ yourself.
 naming which gate it was. Pass `allowUnsettled` / `--allowUnsettled` if you
 actually want the frame as it stands.
 
-**Read the return fields before trusting the image.** `unsettled` lists stages
-that timed out; `pending` lists displays still unpainted at capture time;
-`paintContract` is false when the build could not report that at all, so an
-empty `pending` there means "cannot tell", not "all done".
+**Read the return fields before trusting the image.** `unsettled` says what did
+not settle, and is empty unless you passed `allowUnsettled`; `pending` lists the
+displays not showing their data at capture time, each with its phase; `tooLarge`
+lists the displays showing "too much data" in place of their features, which is
+no failure but is not the picture either.
 
 ## Practical
 
