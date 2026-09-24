@@ -201,6 +201,33 @@ test('an unresponsive renderer un-gates the close', async () => {
   expect(win.close()).toBe(false)
 })
 
+test('a renderer that recovers from a hang gates the close again', async () => {
+  const { invoke, win } = setup()
+  await invoke('setSessionOpen', true)
+
+  win.emit('unresponsive')
+  win.emit('responsive')
+
+  // the session it reported is still open, and a close without a flush would
+  // drop the last second of edits for the rest of that session
+  expect(win.close()).toBe(true)
+  expect(win.sent).toEqual(['flushSessionForClose'])
+})
+
+test('a page load clears the report until the new page makes one', async () => {
+  const { invoke, win, guard } = setup()
+  await invoke('setSessionOpen', true)
+
+  // a reload lands on the start screen, which reports nothing
+  win.emit('did-navigate')
+
+  expect(guard.sessionOpen).toBe(false)
+  expect(win.close()).toBe(false)
+
+  await invoke('setSessionOpen', true)
+  expect(guard.sessionOpen).toBe(true)
+})
+
 test('returning to the start screen un-gates the close', async () => {
   const { invoke, win } = setup()
   await invoke('setSessionOpen', true)

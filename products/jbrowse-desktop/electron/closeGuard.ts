@@ -19,9 +19,10 @@ import { ipcHandle, ipcSend } from './ipc/channels.ts'
  * - **Held once.** A second close attempt always closes. If the renderer never
  *   answers, clicking the X again gets you out, with no timer deciding how long
  *   "too long" is.
- * - **A dead renderer un-gates itself.** render-process-gone and unresponsive
- *   both clear the flag: neither can flush, and the worst case is the behavior
- *   we had before this existed.
+ * - **A dead renderer un-gates itself.** Neither a crashed nor a hung renderer
+ *   can flush, and the worst case is the behavior we had before this existed.
+ *   A hung one that recovers still has its session, so `responsive` gates the
+ *   close again; a page load clears the report until the new page makes one.
  * - **Quit stays quit.** `app.quit()` closes the window, so a naive hold turns
  *   macOS's Quit into "close the window and keep running". Tracking that a quit
  *   is in progress and re-issuing it after the flush is what prevents that —
@@ -93,17 +94,21 @@ export function createCloseGuard({
    */
   quitApp: () => void
 }): CloseGuard {
-  let sessionOpen = false
+  // what the renderer last reported, and whether it can act on that now: a
+  // renderer that hangs and recovers still holds its session
+  let reported = false
+  let responsive = true
   let quitting = false
   // the window whose close is being held, or null when nothing is pending
   let holding: Electron.BrowserWindow | null = null
+  const sessionOpen = () => reported && responsive
 
   onQuitting(() => {
     quitting = true
   })
 
   ipcHandle('setSessionOpen', (_, open) => {
-    sessionOpen = open
+    reported = open
   })
 
   ipcHandle('sessionFlushed', () => {
@@ -123,22 +128,31 @@ export function createCloseGuard({
 
   return {
     get sessionOpen() {
-      return sessionOpen
+      return sessionOpen()
     },
     register(window) {
       const release = () => {
-        // whatever the renderer's last word was, it cannot flush now
-        sessionOpen = false
+        reported = false
+        responsive = true
         holding = null
       }
       window.webContents.on('render-process-gone', release)
-      window.webContents.on('unresponsive', release)
+      // a committed page load, and not did-start-navigation, which also fires
+      // for a link click that will-navigate cancels
+      window.webContents.on('did-navigate', release)
+      window.webContents.on('unresponsive', () => {
+        responsive = false
+        holding = null
+      })
+      window.webContents.on('responsive', () => {
+        responsive = true
+      })
       window.on('closed', release)
 
       window.on('close', event => {
         // holding !== null means this is the second attempt on a close the
         // renderer never answered: let it through
-        if (sessionOpen && !holding) {
+        if (sessionOpen() && !holding) {
           event.preventDefault()
           holding = window
           ipcSend(window.webContents, 'flushSessionForClose')
