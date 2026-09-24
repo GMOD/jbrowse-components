@@ -527,10 +527,6 @@ export function TrackColorsMixin() {
         },
         /**
          * #action
-         * Close the legend for the mode in use.
-         */
-        /**
-         * #action
          * The legend host's setter: closing the key hides it for this mode
          * only, so picking another mode brings its key up.
          */
