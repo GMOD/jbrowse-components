@@ -71,6 +71,15 @@ structure separates from background.
 **Color scheme → Log scale** maps counts to color on a log2 scale, compressing
 the diagonal further still.
 
+The scale's top follows the loaded counts, so it moves as you zoom and differs
+between tracks. To compare two tracks, or one region at two zooms, on one scale,
+pin the top in each track's config with
+[`color.domainMax`](/docs/config/hiccolor/#slot-domainmax):
+
+```json
+"displayDefaults": { "color": { "domainMax": 500 } }
+```
+
 ## Normalization
 
 Raw contact counts carry coverage biases from restriction-site density,

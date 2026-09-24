@@ -56,6 +56,9 @@ shows what each does to the picture:
 - **[`resolutionBias`](/docs/config/linearhicdisplay/#slot-resolutionbias)** is
   a signed offset from the zoom-derived binsize, so the choice survives zooming:
   negative is finer, positive coarser
+- **[`color.domainMax`](/docs/config/hiccolor/#slot-domainmax)** pins the count
+  the color scale saturates at. Unset, it follows the loaded counts, so two
+  tracks given the same number share one scale
 
 ## Loops and interactions as arcs
 
