@@ -11,7 +11,6 @@ import {
   getEnv,
   getSnapshot,
   getType,
-  isMapType,
   isStateTreeNode,
 } from '@jbrowse/mobx-state-tree'
 
@@ -22,7 +21,6 @@ import type { Feature } from '../util/index.ts'
 import type { JexlInstance } from '../util/jexlStrings.ts'
 import type {
   AnyConfigurationModel,
-  AnyConfigurationSchemaType,
   AnyConfigurationSnapshot,
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
@@ -30,7 +28,6 @@ import type {
   ConfigurationSlotPathValue,
   ConfigurationSlotValue,
 } from './types.ts'
-import type { IMSTMap } from '@jbrowse/mobx-state-tree'
 
 // Evaluate a slot's `jexl:...` callback string against the realm's single jexl
 // instance (carrying plugin-registered functions), read from the config node's
@@ -62,28 +59,9 @@ function evalConfigCallback(
   return evaluateJexl(expr, args, jexl)
 }
 
-// A config readable by readConfObject: a live schema model, a plain config
-// snapshot (an un-hydrated session.tracks entry, etc.), or a top-level
-// types.map of sub-schemas (e.g. an assembly's per-key configs) whose entries
-// are reachable via `.get()` rather than property access.
-type ReadableConfig =
-  | AnyConfigurationModel
-  | AnyConfigurationSnapshot
-  | IMSTMap<AnyConfigurationSchemaType>
-
-function isConfigMap(
-  confObject: ReadableConfig,
-): confObject is IMSTMap<AnyConfigurationSchemaType> {
-  return isStateTreeNode(confObject) && isMapType(getType(confObject))
-}
-
-// Read a slot's raw stored value, drilling into a map entry via `.get()` when
-// the config is itself a types.map.
-function rawSlotValue(confObject: ReadableConfig, slotName: string) {
-  return isConfigMap(confObject)
-    ? confObject.get(slotName)
-    : confObject[slotName]
-}
+// A config readable by readConfObject: a live schema model, or a plain config
+// snapshot (an un-hydrated session.tracks entry, etc.).
+type ReadableConfig = AnyConfigurationModel | AnyConfigurationSnapshot
 
 function isFeatureField(confObject: ReadableConfig, slotName: string) {
   return (
@@ -103,7 +81,7 @@ function readSlot(
 ) {
   // strict undefined check, not truthiness — a slot value can legitimately be
   // falsy (0, '', false, null)
-  const value = rawSlotValue(confObject, slotName)
+  const value = confObject[slotName]
   if (value === undefined) {
     return undefined
   }
@@ -160,23 +138,10 @@ export function readConfObject<
 ): SLOT extends string
   ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
   : ConfigurationSlotPathValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
-// A top-level types.map of sub-schemas (e.g. an assembly's per-key configs)
-// carries no resolvable schema type, so slot names/values aren't checked
-// (returns any); rawSlotValue falls back to map.get() for these. Deliberately
-// admits ONLY the map — not `AnyConfigurationModel`, and not
-// `AnyConfigurationSnapshot` (see the doc comment above). Admitting the model
-// here made this overload a catch-all: a slot-name typo failed overload 2's
-// `ConfigurationSlotName` constraint, fell through to here, and compiled clean
-// as `any`. That is the whole reason `readConfObject` used to be the looser
-// reader of the pair; it is now exactly as strict as `getConf`.
-export function readConfObject(
-  confObject: IMSTMap<AnyConfigurationSchemaType>,
-  slotPath?: string | string[],
-  args?: Record<string, unknown>,
-): any
 // loose implementation signature: the body returns values that are `any` by
-// nature (raw slot values, snapshots); the typed overload above is what callers
-// see.
+// nature (raw slot values, snapshots); the typed overloads above are what
+// callers see. No looser overload admits the model: one that did was a
+// catch-all a slot-name typo fell through to, compiling clean as `any`.
 export function readConfObject(
   confObject: ReadableConfig,
   slotPath?: string | string[],
@@ -205,7 +170,7 @@ export function readConfObject(
   // whole argument-shape preamble above at each level.
   let conf: ReadableConfig = confObject
   for (let i = 0; i < slotPath.length - 1; i++) {
-    const subConf = rawSlotValue(conf, slotPath[i]!)
+    const subConf = conf[slotPath[i]!]
     if (subConf === undefined) {
       return undefined
     }

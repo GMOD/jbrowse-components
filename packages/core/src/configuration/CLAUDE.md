@@ -5,8 +5,6 @@ node not the snapshot, forwarding a callback slot raw, reference resolution.
 
 ## Readers
 
-- `readConfObject`'s map overload takes only `IMSTMap`; widened to admit
-  `AnyConfigurationModel` it let a typo compile as `any`.
 - `getConf` is exactly `readConfObject(model.configuration, path)` and equally
   strict about slot names — **switching readers cannot make a slot-name error go
   away.**

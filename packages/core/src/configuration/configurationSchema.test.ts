@@ -1489,30 +1489,6 @@ describe('readConfObject path resolution', () => {
   // A top-level config can itself be a types.map (e.g. an assembly's per-key
   // configs). rawSlotValue falls back from property access to map.get() so the
   // same readConfObject API drills into map entries. Easy to break unknowingly.
-  describe('top-level types.map config (rawSlotValue map fallback)', () => {
-    const MapConfig = types.map(
-      ConfigurationSchema('Item', { val: { type: 'number', defaultValue: 1 } }),
-    )
-    const make = () =>
-      MapConfig.create({ a: { val: 5 }, b: { val: 1 } }, { pluginManager })
-
-    test('reading a key returns that entry as a snapshot', () => {
-      expect(readConfObject(make(), 'a')).toEqual({ val: 5 })
-    })
-
-    test('an all-default entry snapshots as an empty object', () => {
-      expect(readConfObject(make(), 'b')).toEqual({})
-    })
-
-    test('a missing key returns undefined', () => {
-      expect(readConfObject(make(), 'zzz')).toBeUndefined()
-    })
-
-    test('an array path drills into a map entry slot', () => {
-      expect(readConfObject(make(), ['a', 'val'])).toBe(5)
-    })
-  })
-
   // The two spellings of one nested read disagree: a sub-config slot read hands
   // back a stripDefault'd snapshot, so reading a defaulted slot off *that*
   // answers undefined ("no limit declared") instead of the default. A real bug —
