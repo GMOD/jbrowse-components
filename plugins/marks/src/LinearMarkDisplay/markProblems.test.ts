@@ -541,6 +541,9 @@ test('a density source on a span, or on a second mark, waits unread', () => {
   expect(found([{ mark: 'span', source: 'density' }])).toEqual([
     'warning span-density-source mark 0 source',
   ])
+  expect(found([{ mark: 'span', source: 'density' }, density])).toEqual([
+    'warning span-density-source mark 0 source',
+  ])
 })
 
 test('rows beside a facet on another field is named as not drawn yet', () => {

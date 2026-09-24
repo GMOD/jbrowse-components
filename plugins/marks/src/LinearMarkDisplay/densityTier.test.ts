@@ -155,6 +155,40 @@ test('the banner stands where no mark declares the sidecar', () => {
   expect(display.densityStandInNotice).toBeUndefined()
 })
 
+test('a span declaring the sidecar, which draws no bins, keeps the banner', () => {
+  const { createDisplay } = createTestEnvironment(
+    [{ mark: 'span', source: 'density' }],
+    SIDECAR,
+  )
+  const { display, view } = createDisplay()
+  refuse(display, view)
+  expect(display.densityMarkIndex).toBe(-1)
+  expect(display.coarseTierMode).toBe('never')
+  expect(display.coarseTierStandsIn).toBe(false)
+})
+
+test('a bar declaring the sidecar after a span draws it', () => {
+  const { createDisplay } = createTestEnvironment(
+    [
+      { mark: 'span', source: 'density' },
+      { mark: 'bar', source: 'density', encoding: { y: 'count' } },
+    ],
+    SIDECAR,
+  )
+  const { display, view } = createDisplay()
+  refuse(display, view)
+  display.setCoarseTier([{ displayedRegionIndex: 0, payload: bins() }], {
+    regions: [],
+    key: '',
+  })
+  expect(display.densityMarkIndex).toBe(1)
+  const block = display.renderBlocks[0]!
+  const region = display.rpcDataMap.get(block.displayedRegionIndex)!
+  expect(
+    display.markList[1]!.ink!(region, block, display.renderState, 1),
+  ).toBeDefined()
+})
+
 test('a density mark with no sidecar on the adapter keeps the banner', () => {
   const { createDisplay } = createTestEnvironment(DENSITY_MARKS)
   const { display, view } = createDisplay()
