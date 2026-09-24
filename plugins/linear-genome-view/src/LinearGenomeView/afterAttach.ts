@@ -271,9 +271,13 @@ function setupInitWarmup(self: LinearGenomeViewModel) {
         untracked(() => {
           const assembly = pending?.assembly ?? self.launchAssemblyName
           if (pending && assembly) {
-            getSession(self)
-              .assemblyManager.waitForAssembly(assembly)
-              .catch(() => {})
+            try {
+              getSession(self)
+                .assemblyManager.waitForAssembly(assembly)
+                .catch(() => {})
+            } catch {
+              // navigation reports an assembly that cannot load
+            }
           }
           for (const t of tracks) {
             const { trackId, displaySnapshot } = normalizeTrackInit(t)
