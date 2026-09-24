@@ -464,6 +464,15 @@ test('re-anchoring offers an undo that puts the view back where it was', async (
   expect(windowOf()).toEqual(before)
 })
 
+test('re-anchoring on a lane drawn [rev] reverses the view', async () => {
+  const { display, session } = createDisplayWithSession()
+  display.reanchor('volvox_random', 'ctgA:1..100[rev]')
+  for (let i = 0; i < 50 && !session.notifications.length; i++) {
+    await new Promise(resolve => setTimeout(resolve, 10))
+  }
+  expect(display.anchorReversed).toBe(true)
+})
+
 // rowAssemblies narrows to the selection and the anchor is never a lane, so
 // the genome a re-anchor moves out of the anchor lane fell outside a selection
 // that had no reason to name it, and vanished from the stack

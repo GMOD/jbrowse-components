@@ -103,7 +103,8 @@ export function laneHeaderMenuItems(
     ]
   }
   const region = laneRegion(lane)
-  const loc = region && assembleLocStringRaw(region)
+  const loc =
+    region && assembleLocStringRaw({ ...region, reversed: lane.frame?.flipped })
   const held = model.holdsAssembly(name)
   return [
     ...sectionRowMenuItems(
@@ -120,12 +121,7 @@ export function laneHeaderMenuItems(
       label: openMateLabel(name),
       disabled: loc === undefined || !held,
       onClick: () => {
-        // the way the lane reads, so its genes run as they did beside the
-        // anchor
-        model.openInNewView(
-          name,
-          assembleLocStringRaw({ ...region!, reversed: lane.frame?.flipped }),
-        )
+        model.openInNewView(name, loc!)
       },
     },
     ...(model.canReanchor

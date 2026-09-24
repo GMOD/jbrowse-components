@@ -415,19 +415,22 @@ test('a mate lane header opens its assembly elsewhere or re-anchors the track on
   ])
 })
 
-test('a lane drawn [rev] opens its assembly reversed', () => {
+test('a lane drawn [rev] opens and re-anchors its assembly reversed', () => {
   const { model, calls } = headerModel()
   const items = laneHeaderMenuItems(model, {
     ...peach,
     frame: { ...peach.frame, flipped: true },
   })
-  click(
-    items.find(
-      item =>
-        'label' in item && item.label === 'Open peach at the matching region',
-    ),
-  )
-  expect(calls).toEqual(['open peach Pp1:101..2000[rev]'])
+  for (const label of [
+    'Open peach at the matching region',
+    'Re-anchor on peach',
+  ]) {
+    click(items.find(item => 'label' in item && item.label === label))
+  }
+  expect(calls).toEqual([
+    'open peach Pp1:101..2000[rev]',
+    'reanchor peach Pp1:101..2000[rev]',
+  ])
 })
 
 // A star aligns every lane to its one anchor, so a mate made the anchor
