@@ -40,7 +40,7 @@ them a pair answers nothing and composes through GRCh38, as before.
 
 Each half is inert without the other: the hosted plugin bundle declares no
 capability, and a JBrowse without the display change never reads it. The plugin
-half is two commits after 3.0.3 on its local main, unpushed. To ship it:
+half is three commits after 3.0.3 on its local main, unpushed. To ship it:
 `pnpm version patch` in the plugin, then `scripts/betabuild.sh` for the hosted
 bundle. The deploy redraws every graph figure (memory
 `graph-figures-lag-the-unpublished-plugin`); among the lane figures,

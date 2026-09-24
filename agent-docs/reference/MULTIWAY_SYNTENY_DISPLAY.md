@@ -201,11 +201,12 @@ for every adjacent pair, star or not, on the anchor's merged blocks with
 `queryAssemblyName: upper` and `targetAssemblyName: lower`; a pangenome graph is
 cut on its reference alone, and every lane's walk runs through that window.
 `pairLinks` composes a pair's links through the anchor
-(`MW/composeLaneLinks.ts`) for a star that was not asked, for a pair whose fetch
-has not landed, came back empty or failed, and for a pair the session lacks an
-assembly of; `composeLaneLinks` linearly interpolates each record between its
-clipped ends (`projectOntoLane`), so sequence two lanes share and the anchor
-lacks composes as nothing.
+(`MW/composeLaneLinks.ts`) wherever a star holds no direct records for the pair
+(not asked, not landed yet, or answered empty), for any pair whose fetch came
+back empty or failed, and for a pair the session lacks an assembly of; a
+non-star pair whose fetch has not landed draws nothing yet. `composeLaneLinks`
+linearly interpolates each record between its clipped ends (`projectOntoLane`),
+so sequence two lanes share and the anchor lacks composes as nothing.
 
 **Rendering.** Cells keyed by identity: `bands`, `ribbons:<row>` per gutter plus
 `ribbons:<row>><toRow>` per bridge, `ticks:<row>`, `glyphs:<row>` and
@@ -262,14 +263,16 @@ Today's providers:
 - `GbzBaseSyntenyAdapter` (`P/src/GbzBaseSyntenyAdapter/GbzBaseSyntenyAdapter.ts`):
   anchor-only (a lane-assembly region emits nothing). With `queryAssemblyName`
   it answers `lanePairsOnAnchor`: the two lanes' walks cut out of the anchor
-  window and aligned by `Subgraph.pairAlignments` (gbz-base 2.7.0), on the
-  upper lane's contigs, but only from a cut walked off the haplotype index's
-  anchor rows, the one cut that holds a walk whole; otherwise the pair answers
-  nothing and composes. One record per
-  haplotype contig after the sibling join (`G/src/subgraph.ts:255-300`), header
-  `lanes` = every haplotype in the graph minus the reference (`:265-313`; 464 on
-  HPRC v2.1), `hasCoarseTier: false`, no `identity`, and a haplotype filter that
-  runs after every walk has been extracted, identified and aligned (`:392-412`).
+  window, one cut per reference fragment it overlaps, and aligned by
+  `Subgraph.pairAlignments` (gbz-base 2.7.0), on the upper lane's contigs with
+  `identity`, but only from cuts walked off the haplotype index's anchor rows,
+  the one cut that holds a walk whole; otherwise the pair answers nothing and
+  composes. Its reference records: one per haplotype contig after the sibling
+  join (`G/src/subgraph.ts:255-300`), header `lanes` = every haplotype in the
+  graph minus the reference (`getHeader`; 464 on HPRC v2.1),
+  `hasCoarseTier: false`, no `identity`, and the lane selection handed to
+  gbz-base as `keep`, which walks only those haplotypes where the companion has
+  anchor rows (`keepPredicate`).
   Measured at context 1000 with both files hosted: C4 60 kb 5.0 s, CFH 8.1 s,
   KIV-2 130 kb 8.5 s, MHC class II 12.7 s, AMY1 12.8 s
   (`P/agent-docs/GBZ_HANDOFF.md:157-168`).
