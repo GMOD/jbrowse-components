@@ -112,11 +112,35 @@ export function workerScriptLoadMessage(scriptUrl: string, error: unknown) {
     : `Failed to load ${scriptUrl} in the worker: ${detail}`
 }
 
+const workerPrefetches = new Map<string, Promise<void>>()
+
+/**
+ * `importScripts` blocks until its file arrives, so a worker loading its
+ * plugins with it waited one round trip per plugin, in a row. Fetching them all
+ * first makes each `importScripts` a cache read — provided the fetch is the
+ * request `importScripts` makes: no-cors, with credentials. Chrome and Firefox
+ * both re-download for any other mode (probe-worker-script-cache.ts).
+ */
+function prefetchWorkerScript(url: string) {
+  if (!workerPrefetches.has(url)) {
+    workerPrefetches.set(
+      url,
+      fetch(url, { mode: 'no-cors', credentials: 'include' })
+        .then(r => r.arrayBuffer())
+        .then(
+          () => {},
+          () => {},
+        ),
+    )
+  }
+}
+
 async function loadScript(scriptUrl: string, integrity?: string) {
   const scope = globalThis
   if (!isWebWorker()) {
     return promisifiedLoadScript(scriptUrl, integrity)
   } else if (hasImportScripts(scope)) {
+    await workerPrefetches.get(scriptUrl)
     try {
       scope.importScripts(scriptUrl)
     } catch (error) {
@@ -218,13 +242,26 @@ function umdPluginUrl(
  * The registry has to be published before a plugin bundle runs, but not before
  * it downloads, so each bundle is preloaded while the registry is fetched.
  * Skipped under the cache-buster, whose query string differs per request.
+ *
+ * Exported for a worker told its plugins ahead of its boot configuration.
  */
-function preloadUMDBundles(defs: PluginDefinition[], baseUri?: string) {
-  if (
-    isWebWorker() ||
-    typeof document === 'undefined' ||
-    '__jbrowseCacheBuster' in globalThis
-  ) {
+export function preloadUMDBundles(defs: PluginDefinition[], baseUri?: string) {
+  if ('__jbrowseCacheBuster' in globalThis) {
+    return
+  }
+  if (isWebWorker()) {
+    for (const def of defs) {
+      if (isUMDPluginDefinition(def)) {
+        try {
+          prefetchWorkerScript(umdPluginUrl(def, baseUri).href)
+        } catch {
+          // loadPlugin reports a url it cannot resolve
+        }
+      }
+    }
+    return
+  }
+  if (typeof document === 'undefined') {
     return
   }
   for (const def of defs) {

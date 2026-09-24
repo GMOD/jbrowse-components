@@ -130,6 +130,51 @@ test('loadSettled preloads UMD bundles while the registry is still loading', () 
   }
 })
 
+test('a worker fetches every UMD bundle before it runs the first', async () => {
+  jest.resetModules()
+  const scope = globalThis as unknown as Record<string, unknown>
+  const events: string[] = []
+  scope.WorkerGlobalScope = class {}
+  scope.importScripts = (url: string) => {
+    events.push(`run ${url}`)
+    scope[url.includes('one') ? 'JBrowsePluginOne' : 'JBrowsePluginTwo'] = {
+      default: class {},
+    }
+  }
+  const fetchSpy = jest
+    .spyOn(globalThis, 'fetch')
+    .mockImplementation(async (url, init) => {
+      events.push(`fetch ${String(url)} ${init?.mode} ${init?.credentials}`)
+      return { arrayBuffer: async () => new ArrayBuffer(0) } as Response
+    })
+  try {
+    const { default: Loader } = await import('./PluginLoader.ts')
+    await new Loader([
+      { name: 'One', url: 'https://example.com/one.js' },
+      { name: 'Two', url: 'https://example.com/two.js' },
+    ]).load()
+  } finally {
+    fetchSpy.mockRestore()
+    for (const key of [
+      'WorkerGlobalScope',
+      'importScripts',
+      'JBrowsePluginOne',
+      'JBrowsePluginTwo',
+    ]) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete scope[key]
+    }
+  }
+  // no-cors with credentials is the request importScripts makes, which is
+  // what lets it read the prefetched copy from the HTTP cache
+  expect(events).toEqual([
+    'fetch https://example.com/one.js no-cors include',
+    'fetch https://example.com/two.js no-cors include',
+    'run https://example.com/one.js',
+    'run https://example.com/two.js',
+  ])
+})
+
 // load() stays all-or-nothing for callers that cannot degrade (the RPC worker),
 // and rethrows by definition order so which error surfaces doesn't depend on
 // which request happened to fail first.
