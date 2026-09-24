@@ -45,7 +45,7 @@ export interface YMorphAutorunHost extends YMorphState, IStateTreeNode {
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
   beginYMorph: (fromTops: Map<string, number>, fromMaxY: number) => void
-  endYMorph: () => void
+  endAnimation: () => void
 }
 
 export function yMorphVolatiles() {
@@ -90,15 +90,24 @@ export function yMorphViews(self: YMorphHost) {
     get renderDataMap(): ReadonlyMap<number, FeatureDataResult> {
       const from = self.morphFromTops
       const t = this.morphEased
-      // t === 1 is the settled frame between the clock's final
-      // `setMorphProgress(1)` and `endYMorph`, so it returns the destination
-      // by reference rather than an identical rebuilt map.
+      // t === 1 is a morph driven to its end but not yet settled, so it
+      // returns the destination by reference rather than an identical rebuilt
+      // map.
       if (from === undefined || t === 1) {
         return self.laidOutDataMap
       }
       return interpolateYData(from, self.laidOutDataMap, t)
     },
   }
+}
+
+function settleYMorph(self: YMorphState) {
+  self.morphFromTops = undefined
+  self.morphProgress = 1
+  // Cleared, not left behind: the morph autorun folds it into the next hold
+  // with a plain `Math.max`, which is only right if a settled display holds no
+  // height.
+  self.morphFromMaxY = 0
 }
 
 export function yMorphActions(self: YMorphState) {
@@ -120,14 +129,21 @@ export function yMorphActions(self: YMorphState) {
     },
     /**
      * #action
+     * the chrome's frame clock
      */
-    endYMorph() {
-      self.morphFromTops = undefined
-      self.morphProgress = 1
-      // Cleared, not left behind: the morph autorun folds it into the next
-      // hold with a plain `Math.max`, which is only right if a settled
-      // display holds no height.
-      self.morphFromMaxY = 0
+    advanceAnimation(nowMs: number) {
+      const t = (nowMs - self.morphStartMs) / MORPH_DURATION_MS
+      if (t < 1) {
+        self.morphProgress = Math.max(0, t)
+      } else {
+        settleYMorph(self)
+      }
+    },
+    /**
+     * #action
+     */
+    endAnimation() {
+      settleYMorph(self)
     },
   }
 }
@@ -194,7 +210,7 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
       ) {
         self.beginYMorph(fromTops, fromMaxY)
       } else {
-        self.endYMorph()
+        self.endAnimation()
       }
     },
     { name: 'CanvasYMorph' },
@@ -206,7 +222,7 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
         ? undefined
         : self.morphStartMs + MORPH_DURATION_MS,
     () => {
-      self.endYMorph()
+      self.endAnimation()
     },
     'CanvasYMorphDeadline',
   )

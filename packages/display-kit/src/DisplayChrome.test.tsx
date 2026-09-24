@@ -778,6 +778,41 @@ test('the chrome publishes data-display-animating off the model, leaving the pha
   expect(el.dataset.displayPhase).toBe('ready')
 })
 
+test('the chrome advances an animating display once a frame and ends it on unmount', () => {
+  jest.useFakeTimers()
+  const model = TestChromeModel.volatile(() => ({
+    frames: 0,
+    ended: false,
+  }))
+    .actions(self => ({
+      advanceAnimation() {
+        self.frames += 1
+        if (self.frames === 3) {
+          self.animating = false
+        }
+      },
+      endAnimation() {
+        self.ended = true
+      },
+    }))
+    .create({})
+  const { unmount } = renderChrome(model)
+  act(() => {
+    jest.advanceTimersByTime(200)
+  })
+  expect(model.frames).toBe(0)
+  act(() => {
+    model.setAnimating(true)
+  })
+  act(() => {
+    jest.advanceTimersByTime(200)
+  })
+  expect(model.frames).toBe(3)
+  unmount()
+  expect(model.ended).toBe(true)
+  jest.useRealTimers()
+})
+
 // One element carries the display's whole identity. Three testid shapes and a
 // second wrapper element used to split this across two nodes, which is what
 // forced `PENDING_DISPLAYS` into a three-way union and `displayReady()` into a

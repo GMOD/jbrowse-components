@@ -306,7 +306,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
       return ends.length > 0 ? Math.max(...ends) : undefined
     },
     () => {
-      self.endLaneMotion()
+      self.endAnimation()
     },
     'MultiWayLaneMotionDeadline',
   )

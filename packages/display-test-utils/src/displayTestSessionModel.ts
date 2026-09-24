@@ -57,7 +57,7 @@ export function displayTestSessionModel<VIEW extends IAnyModelType>({
       // `animationAllowed(getSession(self).animationMode)` gates canvas's Y
       // morph, and absent this it read `undefined` — so every display suite ran
       // with the morph off and `installYMorphAutorun` only ever took its
-      // `endYMorph` branch. The same silent shape as the `palette` gap above,
+      // `endAnimation` branch. The same silent shape as the `palette` gap above,
       // minus the `TypeError` that made that one findable: a missing gate input
       // reads as a refusal, and a refusal is what a green suite looks like.
       //

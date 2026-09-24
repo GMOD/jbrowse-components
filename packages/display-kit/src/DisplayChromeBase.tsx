@@ -17,8 +17,10 @@ import ReplacedDisplay from './ReplacedDisplay.tsx'
 import { isAxisHost } from './axisHost.ts'
 import { isHighlightHost } from './highlightHost.ts'
 import { isLegendHost } from './legendHost.ts'
+import { useAnimationFrames } from './useAnimationFrames.ts'
 
 import type { StatusChromeModel } from './DisplayStatusChromeBase.tsx'
+import type { AnimationHost } from './useAnimationFrames.ts'
 import type {
   MouseState,
   MouseTracker,
@@ -46,11 +48,8 @@ export type ChromeModel = {
   // reads a member of its own type; a display without a sidebar leaves it
   // undeclared and publishes nothing.
   hierarchy?: unknown
-  // A transition still drawing frames toward the settled picture, published as
-  // `data-display-animating`. Not a phase: the phase stays `ready`, so no scrim
-  // goes up over a motion the reader is meant to watch.
-  animating?: boolean
-} & StatusChromeModel
+} & AnimationHost &
+  StatusChromeModel
 
 export interface CanvasHandle {
   canvasRef: (node: HTMLCanvasElement | null) => void
@@ -205,6 +204,7 @@ function DisplayChromeBaseInner<B extends RenderingBackend>({
       handleMouseLeave()
     }
   }, [containerMounted, handleMouseLeave])
+  useAnimationFrames(model)
   if (phase === 'renderError') {
     // destructured for the same reason as in DisplayStatusChromeBase: a plain
     // component-typed prop reads better as `<RenderError/>` than as a member

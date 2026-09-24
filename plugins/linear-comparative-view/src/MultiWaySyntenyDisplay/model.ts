@@ -358,7 +358,7 @@ export function stateModelFactory(
       /**
        * #volatile
        * the wall clock the last drawn frame of a transition read, advanced by
-       * the component's frame loop
+       * the chrome's frame clock
        */
       laneMotionClockMs: 0,
       /**
@@ -1467,10 +1467,10 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * the frame loop's clock; a transition past its end is dropped, which
-         * repacks its lane in its settled frame alone
+         * the chrome's frame clock; a transition past its end is dropped,
+         * which repacks its lane in its settled frame alone
          */
-        tickLaneMotion(nowMs: number) {
+        advanceAnimation(nowMs: number) {
           self.laneMotionClockMs = nowMs
           const running = laneTransitionsRunning(self.laneTransitions, nowMs)
           if (running.size !== self.laneTransitions.size) {
@@ -1482,7 +1482,7 @@ export function stateModelFactory(
          * #action
          * every lane to its settled frame now
          */
-        endLaneMotion() {
+        endAnimation() {
           if (self.laneTransitions.size > 0) {
             self.laneTransitions = new Map()
           }

@@ -195,7 +195,7 @@ describe.each([
     const { display } = await settledDisplay()
     if (Object.keys(before).length) {
       redecide(display, () => before)
-      display.endLaneMotion()
+      display.endAnimation()
     }
     const old = picture(display)
     expect(old.rects.length).toBeGreaterThanOrEqual(20)
@@ -206,7 +206,7 @@ describe.each([
     expectSamePicture(picture(display), old)
 
     const { startMs } = display.laneTransitions.get(C)!
-    display.tickLaneMotion(startMs + MORPH_DURATION_MS)
+    display.advanceAnimation(startMs + MORPH_DURATION_MS)
     expect(display.animating).toBe(false)
     const landed = picture(display)
     // the settled frame with nothing moving is the same decision drawn fresh
@@ -221,7 +221,7 @@ describe.each([
     const { display } = await settledDisplay()
     if (Object.keys(before).length) {
       redecide(display, () => before)
-      display.endLaneMotion()
+      display.endAnimation()
     }
     redecide(display, after)
     const cell = display.laneGlyphCells.get(glyphsKey(1))!
@@ -241,7 +241,7 @@ describe.each([
 test("a strand arrow rides its gene's end through a rescale", async () => {
   const { display } = await settledDisplay()
   redecide(display, () => ({ rung: 3 }))
-  display.endLaneMotion()
+  display.endAnimation()
   const old = picture(display).heads
   expect(old.length).toBeGreaterThan(3)
   redecide(display, () => ({ rung: 1 }))
@@ -258,7 +258,7 @@ test('mid-flight the hit test, the hover ink and the selection ink sit on the dr
     pivotLaneBp: d.pivotLaneBp + 200,
   }))
   const { startMs } = display.laneTransitions.get(C)!
-  display.tickLaneMotion(startMs + MORPH_DURATION_MS / 3)
+  display.advanceAnimation(startMs + MORPH_DURATION_MS / 3)
   const map = laneMapOf(display, 1)
   expect(Math.abs(map.scale)).toBeLessThan(1)
 
@@ -338,7 +338,7 @@ test('split strands, a flip keeps its rows until halfway and turns them over the
   const { display } = await settledDisplay()
   display.setSplitStrands(true)
   redecide(display, () => ({ rung: 3 }))
-  display.endLaneMotion()
+  display.endAnimation()
   const old = picture(display)
   const geneTops = () => {
     const cell = display.laneGlyphCells.get(glyphsKey(1))!
@@ -351,14 +351,14 @@ test('split strands, a flip keeps its rows until halfway and turns them over the
   expect(display.animating).toBe(true)
   expectSamePicture(picture(display), old)
   const { startMs } = display.laneTransitions.get(C)!
-  display.tickLaneMotion(startMs + MORPH_DURATION_MS * 0.45)
+  display.advanceAnimation(startMs + MORPH_DURATION_MS * 0.45)
   expect(geneTops()).toEqual(before)
-  display.tickLaneMotion(startMs + MORPH_DURATION_MS * 0.55)
+  display.advanceAnimation(startMs + MORPH_DURATION_MS * 0.55)
   const after = geneTops()
   expect(after.size).toBe(1)
   expect([...after][0]).toBeGreaterThan([...before][0]!)
 
-  display.tickLaneMotion(startMs + MORPH_DURATION_MS)
+  display.advanceAnimation(startMs + MORPH_DURATION_MS)
   const landed = picture(display)
   const decisions = new Map(display.laneDecisions)
   display.setLaneFrames(display.renderOriginPx, new Map())
@@ -375,9 +375,9 @@ test('a moving lane names the frame it is drawn nearer to', async () => {
   display.flipLane(C)
   const { startMs } = display.laneTransitions.get(C)!
   expect(header()).toBe(before)
-  display.tickLaneMotion(startMs + MORPH_DURATION_MS * 0.45)
+  display.advanceAnimation(startMs + MORPH_DURATION_MS * 0.45)
   expect(header()).toBe(before)
-  display.tickLaneMotion(startMs + MORPH_DURATION_MS * 0.55)
+  display.advanceAnimation(startMs + MORPH_DURATION_MS * 0.55)
   expect(header()).toContain('[rev]')
 })
 

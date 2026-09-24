@@ -1,13 +1,9 @@
-import React, { useCallback, useEffect, useId, useState } from 'react'
+import React, { useCallback, useId, useState } from 'react'
 
 import { ScrollChrome } from '@jbrowse/core/ui'
 import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
-import {
-  MORPH_DURATION_MS,
-  capitalizeFirst,
-  morphClockMs,
-} from '@jbrowse/core/util'
+import { capitalizeFirst } from '@jbrowse/core/util'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
@@ -22,7 +18,6 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { ScrollLockedOverlay } from '@jbrowse/render-core/ScrollLockedOverlay'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
-import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import DensityBandOverlay from '../../shared/DensityBandOverlay.tsx'
@@ -176,45 +171,6 @@ const FeatureBody = observer(function FeatureBody({
   const height = model.height
 
   usePanelVirtualScroll(panel, model, view.scrollZoom)
-
-  // The model decides when to morph; the frame loop that advances it lives here
-  // because it is a DOM-side effect.
-  useEffect(() => {
-    // The frame handle doubles as "a frame is already pending" — rAF handles are
-    // never 0 — so one morph cannot schedule the loop twice.
-    let raf = 0
-    const tick = () => {
-      raf = 0
-      if (!isAlive(model) || model.morphFromTops === undefined) {
-        return
-      }
-      const t = Math.min(
-        1,
-        (morphClockMs() - model.morphStartMs) / MORPH_DURATION_MS,
-      )
-      model.setMorphProgress(t)
-      if (t < 1) {
-        raf = requestAnimationFrame(tick)
-      } else {
-        model.endYMorph()
-      }
-    }
-    const dispose = autorun(() => {
-      if (model.morphFromTops !== undefined && raf === 0) {
-        raf = requestAnimationFrame(tick)
-      }
-    })
-    return () => {
-      dispose()
-      cancelAnimationFrame(raf)
-      // This clock alone advances morphProgress, so a morph left in flight would
-      // freeze renderDataMap partway and hold `maxY` at the taller layout for as
-      // long as the display lives.
-      if (isAlive(model)) {
-        model.endYMorph()
-      }
-    }
-  }, [model])
 
   const hitTestAt = (canvasX: number, canvasY: number) =>
     performMultiRegionHitDetection(

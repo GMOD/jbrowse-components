@@ -182,7 +182,7 @@ snap. A moving lane's header, and its strand rows under `splitStrands`, name the
 frame the lane is drawn nearer to and turn over at the midpoint
 (`lanesPastHalfway`), where a flip is edge-on. The model publishes `animating` for the capture waits, and a deadline in
 `MW/afterAttach.ts` ends every transition at its end time whatever the
-component's frame loop did.
+chrome's frame clock (`useAnimationFrames`) did.
 
 **Lane genes.** `laneGeneAdapters` walks every session track (connections
 included) and keeps, per lane, the best-ranked single-assembly annotation track
