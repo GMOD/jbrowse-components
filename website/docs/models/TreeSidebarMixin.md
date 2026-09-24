@@ -13,8 +13,9 @@ The rows are derived in stages, each a computed of its own: the display's
 haplotypes), then `editableSources`, ordered by `rowOrder`, relabelled by
 `rows.labels` and tinted by the `rowColor` pairs on the `identityChannel`,
 then `clusterableSources`, narrowed to the focus. The row palette is
-`rowColorScale`, dealt by `rowColorDeal` once per change to the rows, and
-each display paints it, with its bands, over those.
+`dealtRowColors`, dealt by `rowColorDeal` once per change to the deal, and
+`rowColorScale` hands each row its value's colour, which each display
+paints, with its bands, over those.
 
 Every arrangement write reaches the session at once rather than after the
 track's 400 ms save, so a clustering run is one undo step and undoable the
@@ -67,7 +68,8 @@ or what a track the session owns was added with, and never touches
 | <span id="getter-rowstylingiscustom">**rowStylingIsCustom**</span><br><code>boolean</code> | Whether `rowColor` sets a row a colour the config does not, so "Reset row order" is offered for a recolour too. A colour by attribute sets none row by row, so over a config setting none, picking one is not a custom arrangement. |
 | <span id="getter-expandedrows">**expandedRows**</span><br><code>S[]</code> | `discoveredRows` through `expandRows`: the rows at the granularity drawn, before any arrangement. |
 | <span id="getter-rowcolordeal">**rowColorDeal**</span><br><code>RowColorDeal&lt;S&gt; &#124; undefined</code> | Overridable hook: what the row palette deals, or undefined to deal none. By default the values of `rowColor.field` over the rows in the base arrangement, the values `rowColor.domain` lists taking its `range`, and every other value the next palette colour, so no reorder, focus or relabel recolours a row. |
-| <span id="getter-rowcolorscale">**rowColorScale**</span><br><code>ReadonlyMap&lt;string, string&gt;</code> | The colour the row palette deals each row, by name, once per change to the rows or the deal. Each display paints it where its palette lands, with its own precedence over a row's own colour. |
+| <span id="getter-dealtrowcolors">**dealtRowColors**</span><br><code>ReadonlyMap&lt;string, string&gt;</code> | The colour the row palette deals each value of `rowColorDeal`, dealt again only when the deal changes, never on a region arrival that leaves it alone. |
+| <span id="getter-rowcolorscale">**rowColorScale**</span><br><code>ReadonlyMap&lt;string, string&gt;</code> | The colour the row palette deals each row, by name: each row's value looked up in `dealtRowColors`. Each display paints it where its palette lands, with its own precedence over a row's own colour. |
 | <span id="getter-rowarrangementiscustom">**rowArrangementIsCustom**</span><br><code>boolean</code> | Whether the arrangement differs from what the config declares — what "Reset row order" is offered on. |
 | <span id="getter-editablesources">**editableSources**</span><br><code>S[]</code> | The rows in the reader's arrangement, with no focus, palette or band: the list the arrangement dialog edits, so a submit writes back only what the reader chose. `expandedRows` itself while nothing is arranged. |
 | <span id="getter-clusterablesources">**clusterableSources**</span><br><code>S[]</code> | `editableSources` narrowed to the focus: the rows a clustering run clusters, and deliberately not the display's decorated `sources`, whose palette and band a run has no business writing back. |

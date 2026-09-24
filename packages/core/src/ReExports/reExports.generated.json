@@ -2958,7 +2958,8 @@
     "@jbrowse/core/util/installPrerequisiteFetch": {
       "package": "@jbrowse/core",
       "names": [
-        "installPrerequisiteFetch"
+        "installPrerequisiteFetch",
+        "readFor"
       ],
       "worker": "real"
     },

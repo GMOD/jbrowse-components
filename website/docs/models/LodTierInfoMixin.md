@@ -8,20 +8,27 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 
 What the tiered adapter said about its file, held by every display that
 resolves a level-of-detail tier (LinearSyntenyDisplay, DotplotDisplay,
-LGVSyntenyDisplay) and read by their `lodTier` getters through
-`resolveLodTier`. Filled by `installLodTierInfoFetch`; undefined until it
-lands, which the resolver treats as "trust the config slot".
+LGVSyntenyDisplay, MultiWaySyntenyDisplay) and read by their `lodTier`
+getters through `resolveLodTier`. Filled by `installLodTierInfoFetch`.
 
 ## Volatiles
 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-lodtierinfo">**lodTierInfo**</span><br><code>lodTierInfo: undefined as LodTierInfo &#124; undefined</code> |  |
+| <span id="volatile-adapterheaderread">**adapterHeaderRead**</span><br><code>adapterHeaderRead: undefined as AdapterRead&lt;unknown&gt; &#124; undefined</code> | The adapter's `CoreGetInfo` header, stamped with the adapter config it answers. |
+
+## Getters
+
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="getter-adapterheader">**adapterHeader**</span><br><code>unknown</code> | The header of the adapter config the display holds, undefined until its read lands. |
+| <span id="getter-lodtierinfo">**lodTierInfo**</span><br><code>LodTierInfo &#124; undefined</code> | The file's tiers, undefined until the header lands, which the resolver treats as "trust the config slot". |
 
 ## Actions
 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setlodtierinfo">**setLodTierInfo**</span><br><code>(info: LodTierInfo &#124; undefined) =&gt; void</code> |  |
+| <span id="action-setadapterheader">**setAdapterHeader**</span><br><code>(read: AdapterRead&lt;unknown&gt;) =&gt; void</code> |  |
