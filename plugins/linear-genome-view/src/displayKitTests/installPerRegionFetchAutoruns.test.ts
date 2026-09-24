@@ -530,11 +530,9 @@ describe('the dependency set is the contract', () => {
   // block. Both hook lookups are dynamic, so a display declaring no `rpcProps`
   // still registers its existence probe; this one declares `zoomFetchArgs`, so
   // the zoom tier is its `fetchKey` read, listed below. The rest is the track's
-  // adapter config read through `getConf` — its slots, the observability probes
-  // `readConfObject` makes on them, and one MST snapshot computed, which MobX
-  // names by allocation order and so is normalized below.
+  // adapter config read through `getConf` — its slots and the observability
+  // probes `readConfObject` makes on them.
   const fetchKeyAxes = [
-    'ComputedValue@<id>',
     'CytobandAdapterConfigurationSchema.cytobandLocation',
     'CytobandAdapterConfigurationSchema.isMobXAtom?',
     'CytobandAdapterConfigurationSchema.isMobXComputedValue?',
@@ -550,9 +548,7 @@ describe('the dependency set is the contract', () => {
   ]
 
   function dependencies(display: PerRegionTestDisplay) {
-    return reactionDependencies(display, 'FetchVisibleRegions').map(name =>
-      name.replace(/^ComputedValue@\d+$/, 'ComputedValue@<id>'),
-    )
+    return reactionDependencies(display, 'FetchVisibleRegions')
   }
 
   it('after a fetch: the signals, the blocking flags, the gate, the track, the viewport and the key', async () => {
