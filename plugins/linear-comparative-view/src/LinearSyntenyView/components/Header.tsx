@@ -52,14 +52,7 @@ const Header = observer(function Header({
       <ScrollZoomToggle model={model} iconOnly={!labels} />
       <FollowSyntenyToggle model={model} iconOnly={!labels} />
 
-      <ColorBySelector
-        model={model}
-        pointBased={false}
-        // 'reference' coloring only carries meaning across a stack of >=2
-        // levels; for a single-level (two-genome) view it degenerates to
-        // query/target
-        showReference={model.levels.length > 1}
-      />
+      <ColorBySelector model={model} />
       <SyntenySettingsMenu model={model} />
 
       {prefs.showSearchBoxes ? (

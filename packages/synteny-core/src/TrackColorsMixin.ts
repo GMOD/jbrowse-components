@@ -14,6 +14,7 @@ import {
 import { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
 
 import type { CigarOpMask, ColorChip } from './colorLegend.ts'
+import type { SyntenyColorSurface } from './colorModes.ts'
 import type { AttributeRange } from './colorRamps.ts'
 import type { SyntenyColorSnapshot } from './syntenyColorConfigSchema.ts'
 import type { ColorableTrack } from './trackColors.ts'
@@ -228,10 +229,20 @@ export function TrackColorsMixin() {
       },
       /**
        * #method
-       * Overridable hook: whether the view draws each alignment as one flat
-       * point (the dotplot) rather than a ribbon with match and indel blocks.
+       * Overridable hook: what draws each alignment, a ribbon with match and
+       * indel blocks or one flat point (the dotplot). The key, the menu's help
+       * text and which fields key at all read it.
        */
-      legendPointBased(): boolean {
+      colorSurface(): SyntenyColorSurface {
+        return 'ribbons'
+      },
+      /**
+       * #method
+       * Overridable hook: whether the view has a shared reference for the
+       * `reference` field to anchor on. It needs a stack of two or more
+       * levels; below that it is query or target by another name.
+       */
+      offersReferenceColor(): boolean {
         return false
       },
     }))
@@ -337,14 +348,16 @@ export function TrackColorsMixin() {
       },
       /**
        * #getter
-       * Whether the mode has a key worth a box: a track palette, a ramp, or
-       * a reader-named column. The two structural presets key nothing on
-       * screen — their colors are the menu preview's.
+       * Whether the mode has a key worth a box: a track palette, a ramp, a
+       * reader-named column, or strand on points. A reversed ribbon twists,
+       * but a whole-genome dotplot is mostly dots with no slope to read, so
+       * there the colour is the only strand cue and needs its key.
        */
       get hasLegendKey(): boolean {
         const field = this.colorByField
         return (
           field === 'track' ||
+          (field === 'strand' && self.colorSurface() === 'points') ||
           presetRamp(field) !== undefined ||
           isColumnField(field)
         )
@@ -406,7 +419,7 @@ export function TrackColorsMixin() {
         // only a text column's rows are the reader's to order; a track
         // palette and a ramp key what they key
         return colorByScales(field, {
-          pointBased: self.legendPointBased(),
+          pointBased: self.colorSurface() === 'points',
           cigarOps: self.legendCigarOps(),
           trackChips: self.colorLegendChips,
           attributeRanges: self.attributeRanges,

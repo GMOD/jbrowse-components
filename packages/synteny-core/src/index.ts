@@ -264,7 +264,7 @@ export { default as ComparativeFetchStatus } from './ComparativeFetchStatus.tsx'
 export type { ComparativeStatusModel } from './ComparativeFetchStatus.tsx'
 export { MAX_MIN_LENGTH_BP, MIN_LENGTH_HELP } from './minLengthHelp.ts'
 export { COLOR_MODES, VALUE_MODES_LABEL } from './colorModes.ts'
-export type { ColorModeSurface } from './colorModes.ts'
+export type { ColorModeSurface, SyntenyColorSurface } from './colorModes.ts'
 export { SETTINGS_SURFACE_LABELS } from './settingsSurfaces.ts'
 export { defaultSyntenyFileFormats } from './defaultSyntenyFileFormats.tsx'
 export {

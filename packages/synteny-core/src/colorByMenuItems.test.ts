@@ -91,7 +91,7 @@ test('a surface lists the structural modes it paints, and one track has no swatc
   expect(got).toEqual(['Default', 'Strand', VALUE_MODES_LABEL])
 })
 
-function viewModel(tracks: number): TrackColorsModel {
+function viewModel(tracks: number, reference = false): TrackColorsModel {
   return {
     colorableTracks: Array.from({ length: tracks }, (_, i) => ({
       trackId: `t${i}`,
@@ -103,6 +103,8 @@ function viewModel(tracks: number): TrackColorsModel {
     hideUnlabelled: false,
     colorDomain: [],
     trackColorFor: () => '#4e79a7',
+    colorSurface: () => 'ribbons',
+    offersReferenceColor: () => reference,
     setColorBy: noop,
     setHideUnlabelled: noop,
     setColorDomain: noop,
@@ -114,11 +116,8 @@ function viewModel(tracks: number): TrackColorsModel {
 // One track has nothing to be told apart from, and 'reference' is meaningless
 // below two stacked levels
 test('a view offers Track once two tracks overlay, and Reference across a stack', () => {
-  const modesOf = (tracks: number, showReference: boolean) =>
-    colorByMenuTargetFor(viewModel(tracks), {
-      pointBased: false,
-      showReference,
-    }).structuralFields
+  const modesOf = (tracks: number, reference: boolean) =>
+    colorByMenuTargetFor(viewModel(tracks, reference)).structuralFields
   expect(modesOf(1, false)).toEqual(['', 'strand', 'query', 'target'])
   expect(modesOf(2, true)).toEqual([
     '',

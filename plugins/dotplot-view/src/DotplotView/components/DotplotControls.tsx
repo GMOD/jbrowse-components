@@ -152,13 +152,7 @@ const DotplotControls = observer(function DotplotControls({
       >
         <MoreVert />
       </CascadingMenuButton>
-      <ColorBySelector
-        model={model}
-        pointBased
-        // the dotplot compares exactly two genomes, so there is no third
-        // assembly for 'reference' to anchor on
-        showReference={false}
-      />
+      <ColorBySelector model={model} />
 
       {model.dotplotDisplays.length > 0 ? (
         <DotplotSettingsMenu model={model} />

@@ -170,6 +170,16 @@ test('the color legend is exported outside the clip, at the top right', async ()
   expect(Number(x![1])).toBeGreaterThan(view.viewWidth / 2)
 }, 20000)
 
+// A strand-coloured figure used to export with nothing saying which of the two
+// colours is the inversion.
+test('a strand-coloured plot exports its two-colour key', async () => {
+  const { view } = await setup()
+  view.setColorBy('strand')
+  const legend = legendContents(await renderToSvg(view, {}))
+  expect(legend).toContain('>forward<')
+  expect(legend).toContain('>reverse<')
+}, 20000)
+
 // A column's ramp has no declared domain, so the legend's end labels come
 // from what the loaded data spanned — and an absent range is not a
 // missing legend, it is a legend confidently labelled "0 → 0"

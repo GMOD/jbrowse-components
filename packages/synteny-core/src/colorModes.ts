@@ -3,6 +3,9 @@ export const VALUE_MODES_LABEL = 'Color by value'
 /** what draws the alignments: synteny ribbons, dotplot points, or ribbons between multi-way lanes */
 export type ColorModeSurface = 'ribbons' | 'points' | 'lanes'
 
+/** what a view carrying `TrackColorsMixin` draws; lanes are a display's */
+export type SyntenyColorSurface = Exclude<ColorModeSurface, 'lanes'>
+
 /**
  * One radio of the Color by menu, keyed by the field it writes; `''` is the
  * default colour. A `structural` field is what an alignment is (its strand,

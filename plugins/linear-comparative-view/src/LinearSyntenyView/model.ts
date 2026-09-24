@@ -678,6 +678,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       legendCigarOps(): CigarOpMask {
         return this.presentCigarKinds
       },
+      /**
+       * #method
+       * A stack of two or more levels shares an anchor assembly.
+       */
+      offersReferenceColor(): boolean {
+        return self.levels.length > 1
+      },
     }))
     .views(self => ({
       /**

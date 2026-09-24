@@ -1,4 +1,4 @@
-import type { ColorModeSurface } from './colorModes.ts'
+import type { ColorModeSurface, SyntenyColorSurface } from './colorModes.ts'
 import type { AttributeRange } from './colorRamps.ts'
 import type { ColorableTrack } from './trackColors.ts'
 
@@ -14,16 +14,11 @@ export interface ColorByMenuTrack {
 /**
  * #api
  * Project a view carrying `TrackColorsMixin` onto the menu builder's input.
- * `track` is offered once two tracks overlay, and `reference` only across a
- * stack of two or more levels, since below that it degenerates to query or
- * target.
+ * `track` is offered once two tracks overlay, and `reference` where the view
+ * says it has a reference to anchor on.
  */
 export function colorByMenuTargetFor(
   model: TrackColorsModel,
-  {
-    pointBased,
-    showReference,
-  }: { pointBased: boolean; showReference: boolean },
 ): ColorByMenuTarget {
   const tracks = model.colorableTracks.map(({ trackId, name, color }) => ({
     trackId,
@@ -39,11 +34,11 @@ export function colorByMenuTargetFor(
       ...(tracks.length > 1 ? ['track'] : []),
       'query',
       'target',
-      ...(showReference ? ['reference'] : []),
+      ...(model.offersReferenceColor() ? ['reference'] : []),
     ],
     attributes: model.colorableAttributes,
     attributeRanges: model.attributeRanges,
-    surface: pointBased ? 'points' : 'ribbons',
+    surface: model.colorSurface(),
     hideUnlabelled: model.hideUnlabelled,
     colorDomain: model.colorDomain,
     setColorBy: field => {
@@ -78,6 +73,8 @@ export interface TrackColorsModel {
   hideUnlabelled: boolean
   colorDomain: readonly string[]
   trackColorFor: (trackId: string) => string
+  colorSurface: () => SyntenyColorSurface
+  offersReferenceColor: () => boolean
   setColorBy: (field: string) => void
   setHideUnlabelled: (value: boolean) => void
   setColorDomain: (domain: string[]) => void

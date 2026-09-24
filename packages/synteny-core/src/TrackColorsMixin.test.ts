@@ -180,6 +180,26 @@ describe('a categorical column', () => {
   })
 })
 
+// A whole-genome dotplot is mostly dots with no slope, so its strand colour is
+// the only strand cue on screen and gets the key a ribbon's twist makes
+// unnecessary.
+test('strand keys its two colours on points, and nothing on ribbons', () => {
+  const on = (surface: 'points' | 'ribbons') =>
+    TrackColorsMixin()
+      .views(() => ({
+        colorSurface() {
+          return surface
+        },
+      }))
+      .create({ colorBy: { field: 'strand' } })
+  expect(
+    on('points').legendSpec.sections[0]!.items.map(item => item.label),
+  ).toEqual(['forward', 'reverse'])
+  expect(on('points').showLegend).toBe(true)
+  expect(on('ribbons').showLegend).toBe(false)
+  expect(on('ribbons').legendSpec.sections).toEqual([])
+})
+
 // A launched stack puts one track on every level, so the view lists it once per
 // level. The legend names a track once, in the color it paints.
 test('the track legend lists a track on several levels once', () => {

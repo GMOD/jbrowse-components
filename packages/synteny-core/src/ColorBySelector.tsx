@@ -10,36 +10,20 @@ import type { TrackColorsModel } from './colorByMenuTarget.ts'
 
 /**
  * #api
- * The palette button both comparative headers render. The menu it opens was
- * already shared (`colorByMenuItems` over the structural `TrackColorsModel`), and
- * what was left in each plugin was the same button around it — which had already
- * drifted: only the synteny one said what mode it was currently in.
- *
- * The two flags are the whole of the difference, and each is a fact about the
- * view rather than a preference, so the caller states it:
- *
- * - `pointBased` picks the point-based wording for the modes whose help text
- *   describes a ribbon (a dotplot's Default is black, synteny's is red).
- * - `showReference` is whether there is a shared reference to anchor on: 'reference'
- *   coloring only carries meaning across a stack of two or more levels, and
- *   degenerates to query/target below that — a two-genome dotplot never has one.
+ * The palette button both comparative headers render, over the view's
+ * `TrackColorsMixin`: what the view draws and whether it has a reference to
+ * anchor on are the view's own hooks, so the button takes nothing else.
  */
 const ColorBySelector = observer(function ColorBySelector({
   model,
-  pointBased,
-  showReference,
 }: {
   model: TrackColorsModel
-  pointBased: boolean
-  showReference: boolean
 }) {
   return (
     <CascadingMenuButton
       data-testid="color_by_menu"
       tooltip={`Color by: ${colorByShortLabel(model.colorByField)}`}
-      menuItems={colorByMenuItems(
-        colorByMenuTargetFor(model, { pointBased, showReference }),
-      )}
+      menuItems={colorByMenuItems(colorByMenuTargetFor(model))}
     >
       <PaletteIcon />
     </CascadingMenuButton>

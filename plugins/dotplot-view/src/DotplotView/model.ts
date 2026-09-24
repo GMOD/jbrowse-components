@@ -721,8 +721,8 @@ export default function stateModelFactory(pm: PluginManager) {
          * #method
          * Flat points, never a CIGAR op.
          */
-        legendPointBased(): boolean {
-          return true
+        colorSurface() {
+          return 'points' as const
         },
 
         /**
