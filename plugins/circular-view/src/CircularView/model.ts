@@ -592,7 +592,8 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * this is displayedRegions, post-processed to elide regions that are too
-       * small to see reasonably
+       * small to see reasonably. A run of them never crosses from one assembly
+       * into the next, so each genome's arcs stay its own.
        */
       get elidedRegions() {
         const visible: SliceRegion[] = []
@@ -600,9 +601,11 @@ function stateModelFactory(pluginManager: PluginManager) {
           const widthBp = region.end - region.start
           const widthPx = widthBp / self.bpPerPx
           if (widthPx < self.minVisibleWidth) {
-            // too small to see, collapse into a single elision region
             const lastVisible = visible.at(-1)
-            if (lastVisible?.elided) {
+            if (
+              lastVisible?.elided &&
+              lastVisible.regions[0]!.assemblyName === region.assemblyName
+            ) {
               lastVisible.regions.push({ ...region })
               lastVisible.widthBp += widthBp
             } else {
@@ -613,15 +616,11 @@ function stateModelFactory(pluginManager: PluginManager) {
               })
             }
           } else {
-            // big enough to see, display it
             visible.push({ ...region, widthBp, elided: false })
           }
         }
 
-        // a single-region elision isn't worth collapsing: promote it back to a
-        // normal region. Drop the elided `regions` wrapper so its Slice key
-        // (assembleLocString) matches a natively-visible region of the same
-        // coords instead of diverging to JSON.stringify(regions).
+        // a lone elided region draws as itself, keyed like any visible region
         return visible.map(v =>
           v.elided && v.regions.length === 1
             ? { ...v.regions[0]!, widthBp: v.widthBp, elided: false as const }

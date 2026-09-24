@@ -73,6 +73,26 @@ test('the fit accounts for regions elided at the fitted zoom', () => {
   expect(view.figureSize).toBeCloseTo(400)
 })
 
+// the mirrored second genome lists its unplaced contigs first, straight after
+// the first genome's
+test('an elided run stops at the assembly boundary', () => {
+  const view = createView({
+    regions: [
+      region('chr1', 50_000_000),
+      region('scaffoldA1', 1000),
+      region('scaffoldA2', 1000),
+      { ...region('scaffoldB1', 1000), assemblyName: 'other' },
+      { ...region('scaffoldB2', 1000), assemblyName: 'other' },
+      { ...region('chr1', 50_000_000), assemblyName: 'other' },
+    ],
+  })
+  expect(
+    view.elidedRegions.map(r =>
+      r.elided ? r.regions.map(x => x.assemblyName) : r.assemblyName,
+    ),
+  ).toEqual(['test', ['test', 'test'], ['other', 'other'], 'other'])
+})
+
 test('a taller-than-wide box fits to its width', () => {
   const view = createView({
     regions: [region('chr1', 1_000_000)],
