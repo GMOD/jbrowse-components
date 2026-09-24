@@ -1,9 +1,14 @@
 # 1001G+ Arabidopsis pangenome demo: finish the graph half, deploy, add to jb2hubs
 
-Branch `1001g-syri-demo` (worktree `.claude/worktrees/1001g-syri-demo`), based
-on the syri-pangenome worktree's commit 5dc19f4ae2 (PAF adapters declare
-`attributeColumns`), which had not landed on main as of 2026-09-24. Land that
-first, or rebase this branch onto it once it lands.
+Branch `1001g-syri-demo` (worktree `.claude/worktrees/1001g-syri-demo`), rebased
+onto main after the attributeColumns commit landed there as 98f939e486.
+
+ada went down on 2026-09-24 while minigraph was about 10 of 27 genomes in: ping
+answered and the port-8790 static server still served, but sshd refused
+connections. Once ada is back, check whether `graph/1001g.rgfa` exists. If it
+does not, rerun `build_graph.sh`; it keeps the PanSN FASTAs it has already
+written. Then run `project_graph.sh`. The SyRI outputs are already staged on the
+laptop, so step 2 below can ship the SyRI half without the graph.
 
 ## What exists
 
