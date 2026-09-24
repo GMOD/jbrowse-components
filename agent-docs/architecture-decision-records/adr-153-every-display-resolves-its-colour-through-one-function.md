@@ -80,7 +80,7 @@ cut at each crossing, as it did at the one cut.
 the one cursor that serves the subtrack groups first and then the ungrouped
 subtracks, those its `domain` lists ahead of the rest (`sourcePalette`,
 ~~`buildSources`~~ `sourceColorDeal`, dealt by `dealRowColors` since
-[ADR-159](adr-159-a-rows-colour-is-one-categorical-channel-on-the-row-axis.md)).
+[ADR-160](adr-160-a-rows-colour-is-one-categorical-channel-on-the-row-axis.md)).
 
 **An insert-size `domain` is a threshold's cuts.** The field's default scale
 is `threshold`, so `{ field: 'insertSize', domain: ['150', '600'] }` pins as it

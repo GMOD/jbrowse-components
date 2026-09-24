@@ -278,7 +278,7 @@ editor is read for the palettizer's "Color by group" and not kept.
 `range` then `set1`, the groups first as they appear, then, for a colour per
 source outside a gradient, the ungrouped subtracks its `domain` lists ahead. It
 deals over the rows as currently arranged, as the display always has, so a
-reorder can still recolour a row; the base arrangement is the flip ADR-159
+reorder can still recolour a row; the base arrangement is the flip ADR-160
 names. `buildSources` paints the dealt colour after the row's own: on `color`,
 or under a gradient on `labelColor` after the row's own `color`.
 

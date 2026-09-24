@@ -51,7 +51,7 @@ rebased**. The agent was stopped while rebasing onto main; its last word was
 that conflict again; keep both. What it holds, per the step-4 plan's first half:
 named categorical palettes and a capture-time palette override
 (`933516c2aa`, `9c892e6a2d`), `rowColor: field | { field, scale, domain, range }`
-as one categorical channel on the row axis (`63d447b5cb`), ADR-159
+as one categorical channel on the row axis (`63d447b5cb`), ADR-160
 (`af9501e1a6`), the `rowColorScale` census column (`4f18ca6183`), a census settle
 fix (`4770fa6af1`), the MAF double-`sources` fix (`eef4bb1152`). Unknown: whether
 its gates were re-run after the rebase began, whether the phased-relabel fetch
@@ -133,7 +133,7 @@ writes over the config's own entries and skips rows the current list lacks;
 MAF's guide tree follows the rotation rule; a submit that moves no row writes
 no order. ADR-158: session tracks have a base; `updateTrackConf` replaces the
 last entry of a repeated id; a delta write resolves one track. On the colour
-branch (ADR-159, unlanded): one `rowColor` channel, one keyspace per field, a
+branch (ADR-160, unlanded): one `rowColor` channel, one keyspace per field, a
 hand recolour under a non-`name` field materialises every row's resolved colour
 (about 60 KB for 2,500 rows; kept in one function so it can change).
 

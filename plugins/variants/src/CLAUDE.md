@@ -172,7 +172,7 @@ expansion recolours nothing. `setRowColorField` writes the object through
 `scale: 'none'` keeping the attribute. A dialog tint set under the palette turns
 every row's colour into a `name` pair, since one object holds one field's
 values; a reset returns `rowColor` only where its `name` pairs differ from the
-config's, so Color by survives it and a mode switch. The flip ADR-159 names puts
+config's, so Color by survives it and a mode switch. The flip ADR-160 names puts
 the row's own colour ahead of the palette here too.
 
 **The `facet` band yields while a cluster tree describes the rows**

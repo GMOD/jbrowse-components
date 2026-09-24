@@ -163,7 +163,7 @@ lands. `rowColor` is `field | { field, domain, range }` (`VariantRowColor`):
 the field is the samplesTsv attribute whose palette tints every row, as the
 string was, ~~and the pairs hold the dialog's per-row tints, which the palette
 still beats~~ and since
-[ADR-159](adr-159-a-rows-colour-is-one-categorical-channel-on-the-row-axis.md)
+[ADR-160](adr-160-a-rows-colour-is-one-categorical-channel-on-the-row-axis.md)
 the dialog's per-row tints are the entries of `field: "name"`, one keyspace per
 object, so a tint set under the attribute palette turns every row's colour into
 one. A `layout`, `clusterTree`, `clusterProvenance` or `subtreeFilter`
