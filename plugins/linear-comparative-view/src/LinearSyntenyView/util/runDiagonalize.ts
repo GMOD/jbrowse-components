@@ -1,6 +1,5 @@
 import { getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { prepareDiagonalizeAdapter } from '@jbrowse/synteny-core'
+import { prepareDiagonalizeAdapters } from '@jbrowse/synteny-core'
 
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { StatusCallback } from '@jbrowse/core/util'
@@ -80,34 +79,18 @@ export async function runDiagonalize(
   for (const i of order) {
     const downward = i >= anchor
     const level = model.levels[i]!
-    const displays = level.linearSyntenyDisplays
-    if (displays.length > 0) {
-      // Route to the same rpcSessionId the track renders with (it lives on the
-      // track) so the call lands on that track's sticky worker and hits the
-      // already-parsed adapter instead of re-parsing into a fresh cache.
-      const sessionId = getRpcSessionId(displays[0])
-      // referenceRegions/currentRegions stay canonical; the worker matches
-      // against them and reorders currentRegions back into the view. Each
-      // adapter may use its own refName namespace, so refName reconciliation is
-      // resolved per-adapter here on the main thread (the worker has no
-      // assemblyManager): the reference regions are renamed for the fetch, and
-      // per-axis adapter->canonical maps let the worker translate fetched
-      // alignments back to canonical.
+    const [first, ...rest] = level.linearSyntenyDisplays
+    if (first) {
       const referenceIndex = downward ? i : i + 1
       const currentIndex = downward ? i + 1 : i
       const referenceRegions = model.views[referenceIndex]!.displayedRegions
       const currentRegions = model.views[currentIndex]!.displayedRegions
-      const adapters = await Promise.all(
-        displays.map(d =>
-          prepareDiagonalizeAdapter({
-            assemblyManager,
-            sessionId,
-            adapterConfig: d.adapterConfig,
-            referenceRegions,
-            currentRegions,
-          }),
-        ),
-      )
+      const { sessionId, adapters } = await prepareDiagonalizeAdapters({
+        assemblyManager,
+        displays: [first, ...rest],
+        referenceRegions,
+        currentRegions,
+      })
       const result = await rpcManager.call(sessionId, 'DiagonalizeSynteny', {
         adapters,
         referenceRegions,

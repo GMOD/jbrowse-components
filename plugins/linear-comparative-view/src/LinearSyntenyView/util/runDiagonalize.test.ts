@@ -5,25 +5,25 @@ import { runDiagonalize } from './runDiagonalize.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
 
-// jest hoists these mocks above the imports. prepareDiagonalizeAdapter only
-// does refName reconciliation, irrelevant to the sweep order, so stub it to a
-// passthrough spec.
+// jest hoists these mocks above the imports. prepareDiagonalizeAdapters only
+// does refName reconciliation and routing, irrelevant to the sweep order, so
+// stub it to passthrough specs.
 jest.mock('@jbrowse/synteny-core', () => ({
-  prepareDiagonalizeAdapter: async ({
-    adapterConfig,
+  prepareDiagonalizeAdapters: async ({
+    displays,
     referenceRegions,
   }: {
-    adapterConfig: Record<string, unknown>
+    displays: { adapterConfig: Record<string, unknown> }[]
     referenceRegions: Region[]
   }) => ({
-    adapterConfig,
-    fetchRegions: referenceRegions,
-    refRefNameMap: {},
-    queryRefNameMap: {},
+    sessionId: 'test-session',
+    adapters: displays.map(({ adapterConfig }) => ({
+      adapterConfig,
+      fetchRegions: referenceRegions,
+      refRefNameMap: {},
+      queryRefNameMap: {},
+    })),
   }),
-}))
-jest.mock('@jbrowse/core/util/tracks', () => ({
-  getRpcSessionId: () => 'test-session',
 }))
 jest.mock('@jbrowse/core/util', () => ({
   getSession: jest.fn(),
@@ -43,8 +43,7 @@ function makeView(regions: Region[]) {
   }
 }
 
-// A level with one display; getRpcSessionId is stubbed so adapterConfig is a
-// placeholder.
+// A level with one display, whose adapterConfig is a placeholder
 function makeLevel() {
   return { linearSyntenyDisplays: [{ adapterConfig: {} }] }
 }

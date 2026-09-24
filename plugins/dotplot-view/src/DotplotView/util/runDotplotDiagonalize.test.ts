@@ -5,25 +5,26 @@ import { runDotplotDiagonalize } from './runDotplotDiagonalize.ts'
 import type { DotplotViewModel } from '../model.ts'
 import type { Region } from '@jbrowse/core/util'
 
-// jest hoists these mocks above the imports. prepareDiagonalizeAdapter only does
-// refName reconciliation, irrelevant here, so stub it to a passthrough spec that
-// keeps the adapterConfig identifiable. Mirrors the synteny twin's test.
+// jest hoists these mocks above the imports. prepareDiagonalizeAdapters only
+// does refName reconciliation and routing, irrelevant here, so stub it to
+// passthrough specs that keep each adapterConfig identifiable. Mirrors the
+// synteny twin's test.
 jest.mock('@jbrowse/synteny-core', () => ({
-  prepareDiagonalizeAdapter: async ({
-    adapterConfig,
+  prepareDiagonalizeAdapters: async ({
+    displays,
     referenceRegions,
   }: {
-    adapterConfig: Record<string, unknown>
+    displays: { adapterConfig: Record<string, unknown> }[]
     referenceRegions: Region[]
   }) => ({
-    adapterConfig,
-    fetchRegions: referenceRegions,
-    refRefNameMap: {},
-    queryRefNameMap: {},
+    sessionId: 'test-session',
+    adapters: displays.map(({ adapterConfig }) => ({
+      adapterConfig,
+      fetchRegions: referenceRegions,
+      refRefNameMap: {},
+      queryRefNameMap: {},
+    })),
   }),
-}))
-jest.mock('@jbrowse/core/util/tracks', () => ({
-  getRpcSessionId: () => 'test-session',
 }))
 jest.mock('@jbrowse/core/util', () => ({
   getSession: jest.fn(),

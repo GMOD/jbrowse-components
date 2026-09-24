@@ -114,7 +114,7 @@ export type {
   DiagonalizeExecuteArgs,
 } from './executeDiagonalize.ts'
 export { runDiagonalize } from './runDiagonalize.ts'
-export { prepareDiagonalizeAdapter } from './prepareDiagonalizeAdapter.ts'
+export { prepareDiagonalizeAdapters } from './prepareDiagonalizeAdapter.ts'
 export {
   colorSchemes,
   defaultCigarColors,

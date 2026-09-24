@@ -1,3 +1,5 @@
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+
 import {
   getAdapterToCanonicalRefNameMap,
   renameRegionsForAdapter,
@@ -5,6 +7,7 @@ import {
 
 import type { DiagonalizeAdapterSpec } from './executeDiagonalize.ts'
 import type { AssemblyManager, Region } from '@jbrowse/core/util'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * Build one adapter's {@link DiagonalizeAdapterSpec} for a diagonalize RPC.
@@ -51,4 +54,40 @@ export async function prepareDiagonalizeAdapter({
     }),
   ])
   return { adapterConfig, fetchRegions, refRefNameMap, queryRefNameMap }
+}
+
+/**
+ * The adapter specs for one diagonalize call over every display drawn between
+ * a pair of axes, and the rpcSessionId to route it by: the first display's,
+ * which lives on its track, so the call lands on the sticky worker that already
+ * parsed the adapter rather than re-parsing it into a fresh cache.
+ */
+export async function prepareDiagonalizeAdapters({
+  assemblyManager,
+  displays,
+  referenceRegions,
+  currentRegions,
+}: {
+  assemblyManager: AssemblyManager
+  displays: readonly [DiagonalizeDisplay, ...DiagonalizeDisplay[]]
+  referenceRegions: Region[]
+  currentRegions: Region[]
+}) {
+  const sessionId = getRpcSessionId(displays[0])
+  const adapters = await Promise.all(
+    displays.map(d =>
+      prepareDiagonalizeAdapter({
+        assemblyManager,
+        sessionId,
+        adapterConfig: d.adapterConfig,
+        referenceRegions,
+        currentRegions,
+      }),
+    ),
+  )
+  return { sessionId, adapters }
+}
+
+interface DiagonalizeDisplay extends IStateTreeNode {
+  adapterConfig: Record<string, unknown>
 }
