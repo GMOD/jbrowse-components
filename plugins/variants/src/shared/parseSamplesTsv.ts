@@ -32,6 +32,8 @@ export function parseSamplesTsv(
   const lines = txt.split(/\n|\r\n|\r/)
   const header = lines[0]!.split('\t')
   const vcfSampleSet = new Set(vcfSamples)
+  const metadataSet = new Set<string>()
+  const duplicates = new Set<string>()
   const metadataLines = lines
     .slice(1)
     .filter(Boolean)
@@ -44,7 +46,14 @@ export function parseSamplesTsv(
         name: name!,
       }
     })
-  const metadataSet = new Set(metadataLines.map(r => r.name))
+    .filter(row => {
+      if (metadataSet.has(row.name)) {
+        duplicates.add(row.name)
+        return false
+      }
+      metadataSet.add(row.name)
+      return true
+    })
   const metadataNotInVcf = [...metadataSet].filter(f => !vcfSampleSet.has(f))
   const vcfNotInMetadata = [...vcfSampleSet].filter(f => !metadataSet.has(f))
   const sources = metadataLines.filter(f => vcfSampleSet.has(f.name))
@@ -57,6 +66,11 @@ export function parseSamplesTsv(
     )
   }
   const warnings: string[] = []
+  if (duplicates.size) {
+    warnings.push(
+      `${duplicates.size} samples appear more than once in the metadata file ${fileLabel}; the first row of each is used: ${shorten2([...duplicates].join(','))}`,
+    )
+  }
   if (metadataNotInVcf.length) {
     warnings.push(
       `${metadataNotInVcf.length} of the ${metadataLines.length} samples in the metadata file ${fileLabel} are not in the VCF (${vcfSamples.length} samples) and were dropped: ${shorten2(metadataNotInVcf.join(','))}`,

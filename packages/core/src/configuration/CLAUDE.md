@@ -17,13 +17,15 @@ node not the snapshot, forwarding a callback slot raw, reference resolution.
   cannot spell `undefined` and a session spec, share link or agent call would
   otherwise be able to set a slot and not put it back. So **no slot declares
   `null` as its default** — a slot meaning "unset" is `maybeFrozen`, never
-  `frozen` with `defaultValue: null`. Omitting the key is a different thing:
-  `setSlot` is the merge path, where an absent key means "leave it alone", while
-  a snapshot handed to `create` resets an omitted slot already. **`create` reads
-  a `null` member as unset too**, in a slot or a sub-schema at any depth
-  (`preProcessSnapshotWith`), except in a frozen-family slot, which stores it. A
-  namespace's member takes the other merge, `mergedSubschemaValue`, which reads
-  `null` the same way at any depth. ADR-146.
+  `frozen` with `defaultValue: null`, and a sidecar file the adapter works
+  without is `maybeFileLocation`, never `fileLocation` with a `/path/to/...`
+  placeholder the reader compares against. Omitting the key is a different
+  thing: `setSlot` is the merge path, where an absent key means "leave it
+  alone", while a snapshot handed to `create` resets an omitted slot already.
+  **`create` reads a `null` member as unset too**, in a slot or a sub-schema at
+  any depth (`preProcessSnapshotWith`), except in a frozen-family slot, which
+  stores it. A namespace's member takes the other merge, `mergedSubschemaValue`,
+  which reads `null` the same way at any depth. ADR-146.
 - **`setConf` classifies a member off the schema's definition**, not off what
   the node holds there: an optional sub-schema nobody has written holds nothing,
   and a `stringArray` slot holds an array.

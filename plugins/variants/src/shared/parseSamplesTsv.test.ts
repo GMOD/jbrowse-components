@@ -30,6 +30,19 @@ test('handles windows line endings', () => {
   expect(parse(crlf, ['NA12878']).sources[0]?.name).toBe('NA12878')
 })
 
+// A sample listed twice would otherwise become two rows answering to one name,
+// which every arrangement, filter and tint keyed by name then hits twice.
+test('a sample listed twice keeps its first row and is reported', () => {
+  const twice = `${tsv}\nNA12878\tGBR\tEUR`
+  const { sources, warnings } = parse(twice, ['NA12878', 'NA19240'])
+  expect(sources.map(r => [r.name, r.pop])).toEqual([
+    ['NA12878', 'CEU'],
+    ['NA19240', 'YRI'],
+  ])
+  expect(warnings[0]).toContain('1 samples appear more than once')
+  expect(warnings[0]).toContain('NA12878')
+})
+
 // A partial match keeps filtering, but both halves of the disagreement are
 // reported rather than logged to the worker's console: the display notifies off
 // these strings.
