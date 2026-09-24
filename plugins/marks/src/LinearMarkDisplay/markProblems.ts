@@ -331,6 +331,10 @@ function madeFields(steps: readonly StepSnapshot[]) {
       fields.add(step.as ?? DEFAULT_PILEUP_AS)
     } else if (step.type === 'flatten' && step.index) {
       fields.add(step.index)
+    } else if (step.type === 'bin') {
+      for (const edge of step.as?.length === 2 ? step.as : DEFAULT_BIN_AS) {
+        fields.add(edge)
+      }
     }
   }
   return fields

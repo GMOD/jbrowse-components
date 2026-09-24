@@ -219,6 +219,19 @@ test('a y the steps do not write names what they leave', () => {
       },
     ]),
   ).toEqual(['error unwritten-y mark 0 encoding.y'])
+  // A bin behind the step that made the features writes its edges too.
+  expect(
+    found([
+      {
+        mark: 'bar',
+        transform: [
+          { type: 'coverage' },
+          { type: 'bin', step: 1000, field: 'coverage', as: ['lo', 'hi'] },
+        ],
+        encoding: { y: 'lo' },
+      },
+    ]),
+  ).toEqual([])
 })
 
 // The display's steps run before every mark's, so a field they make is one a
