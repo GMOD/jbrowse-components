@@ -42,6 +42,7 @@ theme; anything you don't set keeps its preset value.
 | `skip` | `string` | Skipped regions, such as introns in RNA-seq reads |
 | `hardclip` | `string` | Hard-clipped bases (clipped bases removed from the read) |
 | `deletion` | `string` | Deletion markers in alignments |
+| `mafGap` | `string` | MAF alignment-gap cells, where a species has no base |
 | `readOverlap` | `string` | Span where two segments of one molecule both align (view-as-pairs / chains) |
 | `modificationFwd` | `string` | Base modifications on the forward strand |
 | `modificationRev` | `string` | Base modifications on the reverse strand |
@@ -56,6 +57,7 @@ theme; anything you don't set keeps its preset value.
 | `featureHoverStrong` | `string` | Hover shading over a feature group, e.g. a linked-read chain |
 | `featureSelected` | `string` | Border accent around the click-selected feature |
 | `featureDescription` | `string` | Feature description labels, e.g. gene descriptions |
+| `featureConnector` | `string` | Intron lines, strand chevrons and strand arrows in feature tracks |
 | `tertiary` | `PaletteColor` | Accordion headers and some toolbar chrome |
 | `quaternary` | `PaletteColor` | Secondary floating-action-button background |
 | `highlight` | `PaletteColor` | Selection highlights |

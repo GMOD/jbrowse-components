@@ -1262,10 +1262,7 @@
         "SvgChrome",
         "SvgClipRect"
       ],
-      "worker": "stub",
-      "uiVia": [
-        "@mui/material"
-      ]
+      "worker": "real"
     },
     "@jbrowse/core/svg/svgId": {
       "package": "@jbrowse/core",
@@ -4325,7 +4322,6 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material",
         "react-dom"
       ]
     },

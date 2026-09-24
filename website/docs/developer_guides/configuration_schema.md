@@ -467,7 +467,7 @@ them as the third argument to `readConfObject`:
 color: {
   type: 'color',
   description: 'the color of the arcs',
-  defaultValue: 'darkblue',
+  defaultValue: '#1976d2',
   contextVariable: ['feature'],
 },
 ```

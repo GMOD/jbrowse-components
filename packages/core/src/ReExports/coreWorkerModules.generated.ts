@@ -48,6 +48,7 @@ import * as m48 from '../rpc/WebWorkerRpcDriver.ts'
 import * as m49 from '../svg/constants.ts'
 import * as m50 from '../svg/exportViewSvg.ts'
 import * as m51 from '../svg/saveSvgAsImage.ts'
+import * as m53 from '../svg/SvgExport.tsx'
 import * as m54 from '../svg/svgId.ts'
 import * as m55 from '../svg/svgReady.ts'
 import * as m57 from '../svg/trackNames.ts'
@@ -266,7 +267,7 @@ const libs: Record<string, unknown> = {
   '@jbrowse/core/svg/exportViewSvg': m50,
   '@jbrowse/core/svg/saveSvgAsImage': m51,
   '@jbrowse/core/svg/serializeSvg': uiNamespace(['normalizeSvgMarkup', 'serializeSvg']),
-  '@jbrowse/core/svg/SvgExport': uiNamespace(['SVGBackground', 'SVGExportRoot', 'SVGMessageBox', 'SvgChrome', 'SvgClipRect']),
+  '@jbrowse/core/svg/SvgExport': m53,
   '@jbrowse/core/svg/svgId': m54,
   '@jbrowse/core/svg/svgReady': m55,
   '@jbrowse/core/svg/SvgThemeProviders': uiNamespace(['SvgThemeProviders']),

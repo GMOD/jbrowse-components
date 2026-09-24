@@ -7183,7 +7183,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "color": {
           "description": "the color of the arcs.",
           "$ref": "#/$defs/CssColorOrJexl",
-          "default": "darkblue"
+          "default": "#1976d2"
         },
         "thickness": {
           "description": "the thickness of the arcs, in pixels; an arc given 0 or less is not drawn at all.",
