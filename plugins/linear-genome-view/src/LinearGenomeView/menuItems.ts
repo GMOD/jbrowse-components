@@ -45,15 +45,6 @@ const TRACK_LABEL_OPTIONS = [
   { value: 'hidden', label: 'Hidden' },
 ] as const
 
-/**
- * Zoom all the way out — the bottom of the same "Zoom out 100x" ladder it sits
- * under.
- *
- * The label is the import form's button text verbatim (`ImportForm.tsx`), which
- * is where most people meet the phrase. No icon: the four-arrows glyph it
- * carried reads as "fullscreen", and nothing else names the same gesture, so a
- * substitute would be decoration rather than a distinction.
- */
 function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
   return {
     label: 'Show all regions in assembly',
@@ -63,11 +54,6 @@ function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
   }
 }
 
-/**
- * The zoom ladder, shared by the header's zoom button and the view menu's
- * "Zoom" — one definition so the two cannot drift, and the view menu is the
- * only one of the two that survives `hideHeader`.
- */
 export function zoomMenuItems(self: LinearGenomeViewModel): MenuItem[] {
   return [
     ...[10, 50, 100].map(r => ({
@@ -98,11 +84,6 @@ export function zoomMenuItems(self: LinearGenomeViewModel): MenuItem[] {
 /**
  * Build the main view menu items. A row stacked in another view has no import
  * form of its own, so only a top-level view offers the way back to one.
- *
- * Four actions, a Zoom group and a Show group. The four are what people open
- * this menu to do — pick tracks, take a picture, search the sequence, start
- * over — and the once-a-session settings that used to sit beside them are a
- * popup away instead of in front of every reader every time.
  */
 export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
   if (!self.hasDisplayedRegions) {
@@ -165,9 +146,6 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
           },
         ]
       : []),
-    // The one row a close-up adds, and the only one of its own it needs.
-    // Top-level rather than under Zoom: a close-up is a second panel on the
-    // page, and taking a panel away is not a zoom.
     ...(host
       ? [
           {
@@ -187,14 +165,10 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       },
     },
     {
-      label: 'Zoom',
-      icon: ZoomInIcon,
-      subMenu: zoomMenuItems(self),
-    },
-    {
       label: 'Show...',
       icon: VisibilityIcon,
       subMenu: [
+        showAllRegionsMenuItem(self),
         // Collapsing a row is about height and what it hides is the tracks, so
         // it is the widest of the visibility answers and heads them. A checkbox
         // rather than the pair of labels it was: "Collapse to ruler" turning
@@ -273,22 +247,26 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
             self.setHideNoTracksActive(!self.hideNoTracksActive)
           },
         },
-        { type: 'subHeader', label: 'Highlights' },
         {
-          label: 'Show highlights',
-          type: 'checkbox',
-          checked: session.highlightsVisible,
-          onClick: () => {
-            session.setHighlightsVisible(!session.highlightsVisible)
-          },
-        },
-        {
-          label: 'Show highlight labels',
-          type: 'checkbox',
-          checked: self.labelsVisible,
-          onClick: () => {
-            self.setLabelsVisible(!self.labelsVisible)
-          },
+          label: 'Highlights',
+          subMenu: [
+            {
+              label: 'Show highlights',
+              type: 'checkbox',
+              checked: session.highlightsVisible,
+              onClick: () => {
+                session.setHighlightsVisible(!session.highlightsVisible)
+              },
+            },
+            {
+              label: 'Show highlight labels',
+              type: 'checkbox',
+              checked: self.labelsVisible,
+              onClick: () => {
+                self.setLabelsVisible(!self.labelsVisible)
+              },
+            },
+          ],
         },
         // The two answers to what the sequence draws as: one colours the
         // codons, the other spells them out. Both lost the palette icon they

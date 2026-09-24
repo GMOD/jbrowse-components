@@ -104,6 +104,7 @@ test('Hide the bands from the view menu', async () => {
 
   fireEvent.click(await findByTestId('view_menu_icon'))
   fireEvent.click(await findByText('Show...'))
+  fireEvent.click(await findByText('Highlights'))
   fireEvent.click(await findByText('Show highlights'))
 
   expect(session.highlightsVisible).toBe(false)
