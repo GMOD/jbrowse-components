@@ -55,6 +55,24 @@ test('+ strand: a deletion straddling the window start is trimmed, an insertion 
   expect(extents(atInsertion)).toEqual([1120, 1250, 5100, 5250])
 })
 
+test('keepAlignment hands each piece its own stretch of the alignment', () => {
+  const unpack = (f: Feature) =>
+    [...(f.get('alignmentOps') as Uint32Array)].map(
+      w => `${w >>> 4}${'MIDNSHP=X'[w & 0xf]}`,
+    )
+  const [piece] = clipFeatureToRegion(
+    record({ CIGAR }),
+    { start: 1120, end: 1300 },
+    undefined,
+    true,
+  )
+  expect(extents(piece!)).toEqual([1120, 1300, 5100, 5300])
+  expect(unpack(piece!)).toEqual(['30D', '100M', '50I', '50M'])
+  expect(piece!.get('CIGAR')).toBeUndefined()
+  const whole = clipFeatureToRegion(record({ CIGAR }), { start: 0, end: 9000 })
+  expect(whole[0]!.get('alignmentOps')).toBeUndefined()
+})
+
 test('− strand: the mate runs from its far end', () => {
   const plus = clipFeatureToRegion(record({ CIGAR }), {
     start: 1000,

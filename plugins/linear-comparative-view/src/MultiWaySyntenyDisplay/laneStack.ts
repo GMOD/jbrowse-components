@@ -137,6 +137,8 @@ export interface Lane {
    * vanishing whole.
    */
   spanOf: (refName: string, start: number, end: number) => Span | undefined
+  /** the bp one px of this lane covers */
+  bpPerPx: number
   /**
    * What this lane calls a sequence. A placement carries whatever refName the
    * table's BED used, a gene whatever that assembly's GFF3 used, and for a
@@ -196,6 +198,7 @@ export interface BuildLanesOpts {
   axisSpanOf: (refName: string, start: number, end: number) => Span | undefined
   /** each displayed region on the anchor lane's axis — `displayedRegionSpans` bound to the view */
   anchorRegionSpans: Span[]
+  anchorBpPerPx: number
   /**
    * a lane's contig by canonical refName, or undefined where the session does
    * not hold the lane's genome or has not loaded it
@@ -241,6 +244,7 @@ export function buildLanes({
   laneGeneAdapters,
   axisSpanOf,
   anchorRegionSpans,
+  anchorBpPerPx,
   contigOf,
   refNameAliasOf,
   width,
@@ -319,6 +323,11 @@ export function buildLanes({
               frame && canon(refName) === frameRefName
                 ? frameSpan(frame, start, end, width)
                 : undefined,
+        bpPerPx: isAnchor
+          ? anchorBpPerPx
+          : frame
+            ? (frame.max - frame.min) / width
+            : Infinity,
         baseline: isAnchor
           ? anchorRegionSpans.flatMap(span => clipSpan(span, reach))
           : frame && contig

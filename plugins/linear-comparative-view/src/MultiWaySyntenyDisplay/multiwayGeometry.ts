@@ -1,3 +1,13 @@
+import {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_N,
+  CIGAR_RUN,
+  CIGAR_X,
+  visitCigarRenderedSegments,
+} from '@jbrowse/cigar-utils'
 import { assembleLocString } from '@jbrowse/core/util'
 import { cssColorToABGR, withAbgrAlpha } from '@jbrowse/core/util/colorBits'
 import { UTR_HEIGHT_FRACTION, centerShrink } from '@jbrowse/plugin-canvas'
@@ -10,7 +20,14 @@ import {
   resolveContinuousMode,
 } from '@jbrowse/synteny-core'
 
-import { KIND_BASE, KIND_MARKER } from '../LinearSyntenyRPC/syntenyColors.ts'
+import {
+  KIND_BASE,
+  KIND_CIGAR_D,
+  KIND_CIGAR_I,
+  KIND_CIGAR_N,
+  KIND_MARKER,
+  buildIndelColors,
+} from '../LinearSyntenyRPC/syntenyColors.ts'
 import { annotatedSpans, geneGlyphGeometry } from './geneGlyph.ts'
 import {
   frameMagnification,
@@ -233,6 +250,126 @@ export function ribbonFeatureId(
   return idx === undefined ? 0 : idx + 1
 }
 
+interface LinkMate {
+  refName: string
+  start: number
+  end: number
+  assemblyName?: string
+}
+
+export interface AlignmentColors {
+  I: number
+  D: number
+  N: number
+  X: number
+}
+
+export function alignmentColors(field: string): AlignmentColors {
+  const { cigarColors } =
+    field === 'strand' ? colorSchemes.strand : colorSchemes.default
+  return {
+    ...buildIndelColors(field),
+    X: cssColorToABGR(cigarColors.X),
+  }
+}
+
+function indelKind(op: number) {
+  return op === CIGAR_I
+    ? KIND_CIGAR_I
+    : op === CIGAR_D
+      ? KIND_CIGAR_D
+      : op === CIGAR_N
+        ? KIND_CIGAR_N
+        : undefined
+}
+
+/**
+ * A record's own alignment between the two lanes it joins, over the ribbon it
+ * already draws. Insertions and deletions are walked in each lane's own bp and
+ * merged below a px of either, the way the synteny view merges them, so a lane
+ * pair aligned base by base draws the wedges LinearSyntenyView draws for the
+ * same PAF. Each mismatch joins its base on one lane to its base on the other,
+ * at least a px wide whatever the zoom.
+ */
+function addAlignmentDetail(
+  builder: RibbonBuilder,
+  feature: Feature,
+  upper: Lane,
+  lower: Lane,
+  featureIdx: number,
+  colors: AlignmentColors,
+) {
+  const ops = feature.get('alignmentOps') as Uint32Array | undefined
+  const mate = feature.get('mate') as LinkMate | undefined
+  if (
+    ops &&
+    mate &&
+    (mate.assemblyName === undefined ||
+      mate.assemblyName === lower.assemblyName)
+  ) {
+    const refName: string = feature.get('refName')
+    const start: number = feature.get('start')
+    const dir2 = feature.get('strand') === -1 ? -1 : 1
+    const start2 = dir2 === -1 ? mate.end : mate.start
+    const add = (
+      bp1Start: number,
+      bp1End: number,
+      bp2Start: number,
+      bp2End: number,
+      kind: number,
+      color: number,
+    ) => {
+      const s1 = upper.spanOf(refName, bp1Start, bp1End)
+      const s2 = lower.spanOf(mate.refName, bp2Start, bp2End)
+      if (s1 && s2) {
+        builder.add(s1, s2, kind, featureIdx, color)
+      }
+    }
+    visitCigarRenderedSegments(
+      ops,
+      start,
+      start2,
+      upper.bpPerPx,
+      lower.bpPerPx,
+      1,
+      dir2,
+      (op, bp1Start, bp1End, bp2Start, bp2End) => {
+        const kind = indelKind(op)
+        if (kind !== undefined) {
+          add(
+            bp1Start,
+            bp1End,
+            bp2Start,
+            bp2End,
+            kind,
+            op === CIGAR_I ? colors.I : op === CIGAR_D ? colors.D : colors.N,
+          )
+        }
+      },
+    )
+    let bp1 = start
+    let bp2 = start2
+    for (let k = 0; k < ops.length; k++) {
+      const len = ops[k]! >>> 4
+      const op = ops[k]! & 0xf
+      if (op === CIGAR_X) {
+        add(bp1, bp1 + len, bp2, bp2 + len * dir2, KIND_BASE, colors.X)
+      }
+      if (op === CIGAR_RUN) {
+        bp1 += len
+        bp2 += (ops[++k]! >>> 4) * dir2
+      } else if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
+        bp1 += len
+        bp2 += len * dir2
+      } else if (op === CIGAR_D || op === CIGAR_N) {
+        bp1 += len
+      } else if (op === CIGAR_I) {
+        bp2 += len * dir2
+      }
+    }
+  }
+}
+
 /**
  * The ortholog ribbons between each adjacent lane pair, one per pair of runs
  * both lanes place, and from the second gutter down the direct alignment
@@ -247,6 +384,7 @@ export function buildRibbonGeometry({
   hideUnlabelled = false,
   drawCurves,
   bridgeSkippedLanes,
+  alignmentDetail = false,
 }: {
   stack: LaneStack
   /** per `upper|lower` pair, the direct records fetched for it */
@@ -262,6 +400,12 @@ export function buildRibbonGeometry({
    * that does; off, the chain breaks at every lane the group is missing from
    */
   bridgeSkippedLanes: boolean
+  /**
+   * draw each record's own indels and mismatches, which only reads true where
+   * every gutter is a direct pair: a star's lower gutters are composed through
+   * its anchor and carry none
+   */
+  alignmentDetail?: boolean
 }): RibbonGeometry {
   const { lanes, glyphHeight } = stack
   const color = cssColorToABGR(ribbonColor)
@@ -271,6 +415,7 @@ export function buildRibbonGeometry({
     attributeRanges,
     hideUnlabelled,
   )
+  const detailColors = alignmentColors(ribbonColorField)
   const cells = new Map<string, MultiWayCell>()
   const layers: RibbonLayer[] = []
   const targets: RibbonTarget[] = []
@@ -316,16 +461,33 @@ export function buildRibbonGeometry({
         builder = bridges.get(toRow) ?? new RibbonBuilder()
         bridges.set(toRow, builder)
       }
+      // the anchor gutter's groups are the anchor's own records, each against
+      // one lane, so the first gutter carries each record's alignment too
+      const direct =
+        alignmentDetail &&
+        upper.isAnchor &&
+        !bridged &&
+        spans.length === 1 &&
+        far.spans.length === 1
       spans.forEach((s1, i) => {
         far.spans.forEach((s2, j) => {
           if (wideEnough(s1, s2, upper, farLane)) {
-            builder.add(
-              s1,
-              s2,
-              KIND_BASE,
-              targetOfGroup(key, group),
-              colorOf(orientations[i]! * far.orientations[j]!, group.feature),
+            const target = targetOfGroup(key, group)
+            const fill = colorOf(
+              orientations[i]! * far.orientations[j]!,
+              group.feature,
             )
+            builder.add(s1, s2, KIND_BASE, target, fill)
+            if (direct && fill >>> 24 !== 0) {
+              addAlignmentDetail(
+                builder,
+                group.feature,
+                upper,
+                farLane,
+                target,
+                detailColors,
+              )
+            }
           }
         })
       })
@@ -370,13 +532,11 @@ export function buildRibbonGeometry({
               : []),
           ].join('\n'),
         })
-        ribbons.add(
-          s1,
-          ordered,
-          KIND_BASE,
-          idx,
-          colorOf(link.get('strand') === -1 ? -1 : 1, link),
-        )
+        const fill = colorOf(link.get('strand') === -1 ? -1 : 1, link)
+        ribbons.add(s1, ordered, KIND_BASE, idx, fill)
+        if (alignmentDetail && fill >>> 24 !== 0) {
+          addAlignmentDetail(ribbons, link, upper, lower, idx, detailColors)
+        }
       }
     }
     const key = ribbonsKey(row)

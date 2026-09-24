@@ -65,6 +65,7 @@ function interpolateClip(
 
 interface Piece extends ClippedIntervals {
   suffix: string
+  cigar?: Uint32Array
 }
 
 function clipIntervals(
@@ -72,13 +73,14 @@ function clipIntervals(
   mate: Interval,
   window: Interval,
   splitAtGapBp: number | undefined,
+  keepAlignment: boolean,
 ): Piece[] {
   const own = { start: feature.get('start'), end: feature.get('end') }
   const strand = feature.get('strand') === -1 ? -1 : 1
   const holds = (i: Interval) => i.start >= window.start && i.end <= window.end
   const windowSuffix = `:${window.start}-${window.end}`
   const ops =
-    holds(own) && splitAtGapBp === undefined
+    holds(own) && splitAtGapBp === undefined && !keepAlignment
       ? undefined
       : getAlignmentOps(feature)
   if (ops === undefined) {
@@ -123,7 +125,8 @@ function clipIntervals(
 function clippedFeature(
   feature: Feature,
   mate: SerializedMate,
-  { suffix, ...clipped }: Piece,
+  { suffix, cigar, ...clipped }: Piece,
+  keepAlignment: boolean,
 ) {
   const source = feature.toJSON()
   const data: SimpleFeatureSerialized = {
@@ -139,6 +142,9 @@ function clippedFeature(
   for (const field of ALIGNMENT_STRING_FIELDS) {
     delete data[field]
   }
+  if (keepAlignment && cigar) {
+    data.alignmentOps = cigar
+  }
   return new SyntenyFeature(data)
 }
 
@@ -147,7 +153,8 @@ function clippedFeature(
  * the record misses the window, one otherwise, and with `splitAtGapBp` one per
  * gap-free run of its alignment. A piece keeps every field of the record
  * except the alignment strings, which are what made the whole record
- * expensive to ship.
+ * expensive to ship; `keepAlignment` hands back the piece's own stretch of
+ * them as packed ops in `alignmentOps`.
  *
  * A piece the window cuts names the window in its ids, so the pieces one
  * record leaves in two regions stay two features. A record or run the window
@@ -162,13 +169,18 @@ export function clipFeatureToRegion(
   feature: Feature,
   window: Interval,
   splitAtGapBp?: number,
+  keepAlignment = false,
 ): Feature[] {
   const mate = mateOf(feature)
   if (mate === undefined) {
     return [feature]
   } else {
-    return clipIntervals(feature, mate, window, splitAtGapBp).map(piece =>
-      clippedFeature(feature, mate, piece),
-    )
+    return clipIntervals(
+      feature,
+      mate,
+      window,
+      splitAtGapBp,
+      keepAlignment,
+    ).map(piece => clippedFeature(feature, mate, piece, keepAlignment))
   }
 }

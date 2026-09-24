@@ -265,6 +265,7 @@ for (let step = 0; step < 19; step++, span *= 1.35) {
       laneGeneAdapters: geneAdapters,
       axisSpanOf: (_r, s, e) => [pxOf(s), pxOf(e)],
       anchorRegionSpans: [[0, WIDTH]],
+      anchorBpPerPx: 1,
       contigOf: () => undefined,
       refNameAliasOf: a => canonOf.get(a),
       width: WIDTH,

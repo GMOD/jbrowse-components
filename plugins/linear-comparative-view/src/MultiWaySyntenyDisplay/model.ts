@@ -977,6 +977,15 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * whether every gutter joins its two lanes by their own alignment
+       * rather than one composed through a star's anchor, which carries no
+       * alignment to draw
+       */
+      get adjacentLanesAlignDirectly(): boolean {
+        return self.adapterPairsOnAnchor || self.starAnchor === undefined
+      },
+      /**
+       * #getter
        * the orientation the reader pinned each lane to against the anchor the
        * view is on, which outranks the lane's own vote while it draws the
        * contig the pin was set on
@@ -1736,10 +1745,7 @@ export function stateModelFactory(
       get laneLinksFetchSpecs(): LaneLinksFetchSpec[] {
         const specs: LaneLinksFetchSpec[] = []
         const onAnchor = self.adapterPairsOnAnchor
-        if (
-          self.featuresAreNameless &&
-          (onAnchor || self.starAnchor === undefined)
-        ) {
+        if (self.featuresAreNameless && self.adjacentLanesAlignDirectly) {
           const { lodTier } = self
           const rows = self.rowAssemblies
           const view = self.lgv
@@ -1811,6 +1817,7 @@ export function stateModelFactory(
           axisSpanOf: (refName, start, end) =>
             axisSpan(view, refName, start, end, self.renderOriginPx),
           anchorRegionSpans: displayedRegionSpans(view, self.renderOriginPx),
+          anchorBpPerPx: view.bpPerPx,
           contigOf: (assemblyName, refName) => {
             const assembly = heldAssembly(assemblyName)
             const index = assembly?.refNameToIndex?.get(refName)
@@ -1949,6 +1956,7 @@ export function stateModelFactory(
           hideUnlabelled: self.hideUnlabelled,
           drawCurves: self.drawCurves,
           bridgeSkippedLanes: self.bridgeSkippedLanes,
+          alignmentDetail: self.adjacentLanesAlignDirectly,
         })
       },
     }))

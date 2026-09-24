@@ -80,7 +80,7 @@ const MARKER_COLOR_HIDDEN = packAbgr(0, 0, 0, 0)
 
 // I/D/N indel colors for the active scheme (strand recolors N/D purple). Both
 // schemes always define I/D/N, so these are unconditional.
-function buildIndelColors(field: string) {
+export function buildIndelColors(field: string) {
   const { cigarColors } =
     field === 'strand' ? colorSchemes.strand : colorSchemes.default
   return {

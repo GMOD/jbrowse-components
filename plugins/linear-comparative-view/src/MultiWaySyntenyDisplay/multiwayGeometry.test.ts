@@ -1,3 +1,10 @@
+import {
+  CIGAR_D,
+  CIGAR_EQ,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_X,
+} from '@jbrowse/cigar-utils'
 import { categoricalColor } from '@jbrowse/core/ui/colors'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
@@ -7,7 +14,13 @@ import {
   withAbgrAlpha,
 } from '@jbrowse/core/util/colorBits'
 
-import { KIND_BASE, KIND_MARKER } from '../LinearSyntenyRPC/syntenyColors.ts'
+import {
+  KIND_BASE,
+  KIND_CIGAR_D,
+  KIND_CIGAR_I,
+  KIND_MARKER,
+  buildIndelColors,
+} from '../LinearSyntenyRPC/syntenyColors.ts'
 import { composeLaneLinks } from './composeLaneLinks.ts'
 import { LaneGene } from './geneGlyph.ts'
 import { buildLanes } from './laneStack.ts'
@@ -16,6 +29,7 @@ import {
   buildBandCell,
   buildLaneCells,
   buildRibbonGeometry,
+  alignmentColors,
   buildTickGeometry,
   glyphHitAt,
 } from './multiwayGeometry.ts'
@@ -28,6 +42,10 @@ import type { MultiWayCell } from './multiwayRenderTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const WIDTH = 800
+
+function ops(...pairs: [number, number][]) {
+  return Uint32Array.from(pairs.map(([len, op]) => (len << 4) | op))
+}
 const HEIGHT = 240
 
 function ribbonData(cells: Map<string, MultiWayCell>, key: string) {
@@ -128,6 +146,7 @@ function stack({
     ]),
     laneGeneAdapters: new Map([['grape', {}]]),
     axisSpanOf,
+    anchorBpPerPx: 1,
     anchorRegionSpans: [axisSpanOf('chr1', 0, 1000)!],
     contigOf,
     refNameAliasOf: () => undefined,
@@ -308,6 +327,104 @@ describe('the ribbons', () => {
     expect(layers.map(l => l.key)).toEqual(['ribbons:0', 'ribbons:1'])
     expect(ribbonData(cells, 'ribbons:0').instanceCount).toBe(1)
     expect(ribbonData(cells, 'ribbons:1').instanceCount).toBe(1)
+  })
+
+  test('a lane pair’s own deletion draws as a wedge over its ribbon', () => {
+    const s = stack({
+      features: [
+        pairFeature('g1', 100, 200),
+        pairFeature('g2', 300, 400, { mate: 'cacao', mateRef: 'Tc1' }),
+      ],
+      assemblyNames: ['grape', 'peach', 'cacao'],
+    })
+    const link = new SimpleFeature({
+      uniqueId: 'link',
+      refName: 'Pp1',
+      start: 1500,
+      end: 1600,
+      strand: 1,
+      assemblyName: 'peach',
+      mate: { assemblyName: 'cacao', refName: 'Tc1', start: 1500, end: 1580 },
+      alignmentOps: ops([40, CIGAR_M], [20, CIGAR_D], [40, CIGAR_M]),
+    })
+    const { cells } = buildRibbonGeometry({
+      stack: s,
+      laneLinks: new Map([['peach|cacao', { links: [link] }]]),
+      ribbonColor: 'grey',
+      drawCurves: false,
+      bridgeSkippedLanes: false,
+      alignmentDetail: true,
+    })
+    const data = ribbonData(cells, 'ribbons:1')
+    expect([...data.kinds]).toEqual([KIND_BASE, KIND_CIGAR_D])
+    // Pp1:1540-1560 over the one point Tc1:1540, at 0.8 px/bp from 1000
+    expect([data.bp1[1], data.bp2[1], data.bp4[1], data.bp3[1]]).toEqual([
+      432, 448, 432, 432,
+    ])
+    expect(data.colors[1]).toBe(buildIndelColors('').D)
+  })
+
+  test('a mismatch joins its two bases, however far out the lanes are', () => {
+    const s = stack({
+      features: [
+        pairFeature('g1', 100, 200),
+        pairFeature('g2', 300, 400, { mate: 'cacao', mateRef: 'Tc1' }),
+      ],
+      assemblyNames: ['grape', 'peach', 'cacao'],
+    })
+    const link = new SimpleFeature({
+      uniqueId: 'link',
+      refName: 'Pp1',
+      start: 1500,
+      end: 1600,
+      strand: 1,
+      assemblyName: 'peach',
+      mate: { assemblyName: 'cacao', refName: 'Tc1', start: 1500, end: 1600 },
+      alignmentOps: ops([50, CIGAR_EQ], [1, CIGAR_X], [49, CIGAR_EQ]),
+    })
+    const { cells } = buildRibbonGeometry({
+      stack: s,
+      laneLinks: new Map([['peach|cacao', { links: [link] }]]),
+      ribbonColor: 'grey',
+      drawCurves: false,
+      bridgeSkippedLanes: false,
+      alignmentDetail: true,
+    })
+    const data = ribbonData(cells, 'ribbons:1')
+    expect(data.instanceCount).toBe(2)
+    // Pp1:1550-1551 onto Tc1:1550-1551, a 0.8px quad the renderer widens to 1
+    expect([data.bp1[1], data.bp2[1], data.bp4[1], data.bp3[1]]).toEqual(
+      [440, 440.8, 440, 440.8].map(Math.fround),
+    )
+    expect(data.colors[1]).toBe(alignmentColors('').X)
+  })
+
+  // the walk starts at the mate's end and runs back along it, as a '-' PAF
+  // record's CIGAR does
+  test('a reverse anchor record’s insertion lands on the mate walked backwards', () => {
+    const record = new SimpleFeature({
+      uniqueId: 'r1',
+      refName: 'chr1',
+      start: 100,
+      end: 200,
+      strand: -1,
+      assemblyName: 'grape',
+      mate: { assemblyName: 'peach', refName: 'Pp1', start: 1100, end: 1220 },
+      alignmentOps: ops([50, CIGAR_M], [20, CIGAR_I], [50, CIGAR_M]),
+    })
+    const { cells } = buildRibbonGeometry({
+      stack: stack({ features: [record] }),
+      laneLinks: undefined,
+      ribbonColor: 'grey',
+      drawCurves: false,
+      bridgeSkippedLanes: false,
+      alignmentDetail: true,
+    })
+    const data = ribbonData(cells, 'ribbons:0')
+    expect([...data.kinds]).toEqual([KIND_BASE, KIND_CIGAR_I])
+    expect([data.bp1[1], data.bp2[1], data.bp4[1], data.bp3[1]]).toEqual([
+      120, 120, 136, 120,
+    ])
   })
 
   // g2's record is reverse against the anchor, so its ribbon takes the reverse

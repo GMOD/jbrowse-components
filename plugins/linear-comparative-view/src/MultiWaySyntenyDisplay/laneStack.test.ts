@@ -80,6 +80,7 @@ function stack(overrides: Partial<BuildLanesOpts> = {}) {
     rowFrames: new Map([['peach', peachFrame]]),
     laneGeneAdapters: new Map([['grape', {}]]),
     axisSpanOf,
+    anchorBpPerPx: 1,
     anchorRegionSpans: [axisSpanOf('chr1', 0, 1000)!],
     contigOf: () => undefined,
     refNameAliasOf: () => undefined,

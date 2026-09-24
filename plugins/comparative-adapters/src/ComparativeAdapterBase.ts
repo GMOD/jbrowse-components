@@ -40,10 +40,10 @@ export abstract class ComparativeAdapterBase<
   }
 
   /**
-   * `clipToRegion` and `splitAtGapBp` are honoured here and nowhere below:
-   * `getFeatures` never sees them, so an adapter composed of others (the star)
-   * clips its children's records once, after its own re-keying, rather than
-   * once per child and once for itself.
+   * `clipToRegion`, `splitAtGapBp` and `keepAlignment` are honoured here and
+   * nowhere below: `getFeatures` never sees them, so an adapter composed of
+   * others (the star) clips its children's records once, after its own
+   * re-keying, rather than once per child and once for itself.
    *
    * Emission is in REGION order, not arrival order. The base class's `merge`
    * emits in arrival order, and `MultiGenomeIndexedPAFAdapter` sorts its
@@ -58,7 +58,7 @@ export abstract class ComparativeAdapterBase<
     regions: Region[],
     opts: ComparativeOptions = {},
   ) {
-    const { clipToRegion, splitAtGapBp, ...rest } = opts
+    const { clipToRegion, splitAtGapBp, keepAlignment, ...rest } = opts
     const clip = clipToRegion && this.recordsAreAlignments
     const slot = createStatusFanOut(rest.statusCallback)
     return from(regions).pipe(
@@ -66,7 +66,12 @@ export abstract class ComparativeAdapterBase<
         this.getFeatures(region, { ...rest, statusCallback: slot() }).pipe(
           mergeMap((feature): Feature[] =>
             clip
-              ? clipFeatureToRegion(feature, region, splitAtGapBp)
+              ? clipFeatureToRegion(
+                  feature,
+                  region,
+                  splitAtGapBp,
+                  keepAlignment,
+                )
               : [feature],
           ),
           toArray(),

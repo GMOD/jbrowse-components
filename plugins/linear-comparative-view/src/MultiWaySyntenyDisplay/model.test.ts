@@ -940,6 +940,8 @@ describe('the level-of-detail tier', () => {
       lodMode: 'fine',
       clipToRegion: true,
       splitAtGapBp: 10000,
+      // a header naming no star anchor: every gutter is a direct pair
+      keepAlignment: true,
     })
     expect(args.regions).toEqual([
       { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
