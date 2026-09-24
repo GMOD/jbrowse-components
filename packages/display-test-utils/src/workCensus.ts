@@ -236,17 +236,12 @@ async function settleTimers() {
   await jest.advanceTimersByTimeAsync(SETTLE_MS)
 }
 
+// Only the step names are aligned: a count that widens its cell then moves
+// its own line of the snapshot and no other.
 function table(lines: string[][]) {
-  const widths = lines[0]!.map((_, i) =>
-    Math.max(...lines.map(line => line[i]!.length)),
-  )
+  const width = Math.max(...lines.map(([name]) => name!.length))
   return lines
-    .map(line =>
-      line
-        .map((cell, i) => cell.padEnd(widths[i]!))
-        .join('  ')
-        .trimEnd(),
-    )
+    .map(([name, ...cells]) => [name!.padEnd(width), ...cells].join('  '))
     .join('\n')
 }
 

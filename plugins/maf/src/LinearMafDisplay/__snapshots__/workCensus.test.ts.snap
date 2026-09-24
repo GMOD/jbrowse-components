@@ -2,13 +2,13 @@
 
 exports[`what each row step recomputes 1`] = `
 "initial load              arrange 1 (4 rows)  alias 0  clusterable 1  sources 2  FetchCoarseTier 1, FetchVisibleRegions 1, Maf:placedRows 1
-second region arrival     arrange 0           alias 0  clusterable 0  sources 0  Maf:placedRows 1
-pan, no arrival           arrange 0           alias 0  clusterable 0  sources 0  ClearBlockingStateOnViewportChange 1, FetchVisibleRegions 1
+second region arrival     arrange 0  alias 0  clusterable 0  sources 0  Maf:placedRows 1
+pan, no arrival           arrange 0  alias 0  clusterable 0  sources 0  ClearBlockingStateOnViewportChange 1, FetchVisibleRegions 1
 drag reorder              arrange 1 (4 rows)  alias 0  clusterable 1  sources 1  Maf:placedRows 1
-focus                     arrange 0           alias 0  clusterable 1  sources 1  FetchVisibleRegions 2, Maf:placedRows 1, SettingsInvalidate 1
+focus                     arrange 0  alias 0  clusterable 1  sources 1  FetchVisibleRegions 2, Maf:placedRows 1, SettingsInvalidate 1
 relabel                   arrange 1 (4 rows)  alias 0  clusterable 1  sources 1  Maf:placedRows 1
 recolour                  arrange 1 (4 rows)  alias 0  clusterable 1  sources 1  Maf:placedRows 1
 cluster run lands a tree  arrange 1 (4 rows)  alias 0  clusterable 1  sources 1  Maf:placedRows 1
-region arrival, arranged  arrange 0           alias 0  clusterable 0  sources 0  Maf:placedRows 1
+region arrival, arranged  arrange 0  alias 0  clusterable 0  sources 0  Maf:placedRows 1
 reset                     arrange 1 (4 rows)  alias 0  clusterable 1  sources 1  FetchVisibleRegions 1, Maf:placedRows 1, SettingsInvalidate 1"
 `;
