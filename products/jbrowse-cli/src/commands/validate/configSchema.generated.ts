@@ -8310,6 +8310,32 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "facet": {
           "$ref": "#/$defs/MarkFacet"
         },
+        "rows": {
+          "$ref": "#/$defs/Rows"
+        },
+        "rowColor": {
+          "$ref": "#/$defs/RowColor"
+        },
+        "showTree": {
+          "description": "show the cluster tree beside the rows.",
+          "type": "boolean",
+          "default": true
+        },
+        "showBranchLength": {
+          "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
+          "type": "boolean",
+          "default": true
+        },
+        "showRowLabels": {
+          "description": "draw the row value over the left of each row.",
+          "type": "boolean",
+          "default": true
+        },
+        "treeAreaWidth": {
+          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
+          "type": "number",
+          "default": 80
+        },
         "scales": {
           "$ref": "#/$defs/Scales4"
         },
@@ -8902,7 +8928,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/outline"
             },
             "rows": {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rows"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rows"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rows"
+                }
+              ]
             },
             "clusterField": {
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/clusterField"
@@ -8911,7 +8944,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/lengthField"
             },
             "rowColor": {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowColor"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowColor"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
+                }
+              ]
             },
             "rowHeight": {
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowHeight"
@@ -8932,16 +8972,44 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowGroups"
             },
             "showTree": {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showTree"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showTree"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
+                }
+              ]
             },
             "showBranchLength": {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showBranchLength"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showBranchLength"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showBranchLength"
+                }
+              ]
             },
             "showRowLabels": {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showRowLabels"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showRowLabels"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowLabels"
+                }
+              ]
             },
             "treeAreaWidth": {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/treeAreaWidth"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/treeAreaWidth"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
+                }
+              ]
             },
             "thickness": {
               "$ref": "#/$defs/LinearArcDisplaySlots/properties/thickness"
@@ -9328,6 +9396,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
+            },
+            "rows": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rows"
+            },
+            "rowColor": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
+            },
+            "showTree": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
+            },
+            "showBranchLength": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showBranchLength"
+            },
+            "showRowLabels": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowLabels"
+            },
+            "treeAreaWidth": {
+              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
@@ -9884,6 +9970,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/showTree"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
                 }
               ]
             },
@@ -9894,6 +9983,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/showBranchLength"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showBranchLength"
                 }
               ]
             },
@@ -9904,6 +9996,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/showRowLabels"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowLabels"
                 }
               ]
             },
@@ -9914,6 +10009,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/treeAreaWidth"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
                 }
               ]
             },
@@ -9924,6 +10022,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/rows"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rows"
                 }
               ]
             },
@@ -10004,6 +10105,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/rowColor"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
                 }
               ]
             },
@@ -10324,10 +10428,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
             "rows": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rows"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rows"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rows"
+                }
+              ]
             },
             "rowColor": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rowColor"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rowColor"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
+                }
+              ]
             },
             "height": {
               "anyOf": [
@@ -10411,16 +10529,44 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
             "showTree": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showTree"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showTree"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
+                }
+              ]
             },
             "showBranchLength": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showBranchLength"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showBranchLength"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showBranchLength"
+                }
+              ]
             },
             "showRowLabels": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowLabels"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowLabels"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowLabels"
+                }
+              ]
             },
             "treeAreaWidth": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/treeAreaWidth"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/treeAreaWidth"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
+                }
+              ]
             },
             "showRowSeparators": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
@@ -10567,10 +10713,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
             "rows": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rows"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rows"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rows"
+                }
+              ]
             },
             "rowColor": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rowColor"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rowColor"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
+                }
+              ]
             },
             "height": {
               "anyOf": [
@@ -10654,16 +10814,44 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
             "showTree": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showTree"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showTree"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
+                }
+              ]
             },
             "showBranchLength": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showBranchLength"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showBranchLength"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showBranchLength"
+                }
+              ]
             },
             "showRowLabels": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowLabels"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowLabels"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowLabels"
+                }
+              ]
             },
             "treeAreaWidth": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/treeAreaWidth"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/treeAreaWidth"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
+                }
+              ]
             },
             "showRowSeparators": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
@@ -15717,6 +15905,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearMarkDisplayState": {
       "type": "object",
       "properties": {
+        "runClustering": {
+          "type": "boolean"
+        },
+        "clusterRegion": {
+          "type": "string"
+        },
+        "sortRowsBy": {},
         "jexlFiltersSetting": {
           "type": "array",
           "items": {

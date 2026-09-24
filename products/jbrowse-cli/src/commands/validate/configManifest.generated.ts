@@ -6158,6 +6158,70 @@ export const configManifest: ConfigManifest = {
           "shorthand": "field"
         },
         {
+          "name": "rows",
+          "type": "RowsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "labels",
+              "type": "Map<string, string>"
+            },
+            {
+              "name": "tree",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "treeProvenance",
+              "type": "(frozen | undefined)"
+            },
+            {
+              "name": "kept",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "field",
+              "type": "string"
+            }
+          ],
+          "shorthand": "field"
+        },
+        {
+          "name": "rowColor",
+          "type": "RowColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "range",
+              "type": "CssColorEntry[]"
+            }
+          ]
+        },
+        {
+          "name": "showTree",
+          "type": "boolean"
+        },
+        {
+          "name": "showBranchLength",
+          "type": "boolean"
+        },
+        {
+          "name": "showRowLabels",
+          "type": "boolean"
+        },
+        {
+          "name": "treeAreaWidth",
+          "type": "number"
+        },
+        {
           "name": "scales",
           "type": "ScalesConfigurationSchema",
           "subSlots": [
@@ -6244,6 +6308,9 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
+        "runClustering",
+        "clusterRegion",
+        "sortRowsBy",
         "configuration",
         "jexlFiltersSetting"
       ]
