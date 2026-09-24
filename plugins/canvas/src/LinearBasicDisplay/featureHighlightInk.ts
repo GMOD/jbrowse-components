@@ -4,7 +4,10 @@ import { inkOfInstances } from '@jbrowse/render-core/marks'
 
 import { renderedTextWidth } from '../RenderFeatureDataRPC/constants.ts'
 import { ROOT_CHILD_ORDINAL } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import { placeFeatureLabels } from './components/labelPositioning.ts'
+import {
+  labelsReachRegion,
+  placeFeatureLabels,
+} from './components/labelPositioning.ts'
 import { CANVAS_FEATURE_MARKS } from './marks/canvasFeatureMarks.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -138,7 +141,15 @@ function labelRects(
   }
   const { scrollY } = self.renderState
   for (const block of blocks) {
-    if (labelData.maxX < block.start || labelData.minX > block.end) {
+    if (
+      !labelsReachRegion(
+        labelData,
+        block,
+        context.showLabels,
+        context.showDescriptions,
+        fontSize,
+      )
+    ) {
       continue
     }
     return placeFeatureLabels(

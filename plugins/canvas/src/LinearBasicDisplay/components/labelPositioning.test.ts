@@ -149,6 +149,41 @@ describe('forEachRenderedLabel', () => {
     expect(result).toHaveLength(0)
   })
 
+  // 1bp per px: the name pins to the feature's left edge and runs 80px on,
+  // over the view though the feature itself has left it.
+  test('emits a name that overhangs into the region after its feature has left it', () => {
+    const overhanging = (minX: number, maxX: number) =>
+      makeData({
+        f1: makeLabelData('f1', {
+          minX,
+          maxX,
+          nameLabel: makeLabel({ textWidth: 80 }),
+        }),
+      })
+    const visibility = { showLabels: true, showDescriptions: false }
+    expect(
+      collect(
+        overhanging(90, 95),
+        { ...FULL_REGION, start: 96, end: 1096 },
+        visibility,
+      ),
+    ).toHaveLength(1)
+    expect(
+      collect(
+        overhanging(1002, 1007),
+        { ...FULL_REGION, reversed: true },
+        visibility,
+      ),
+    ).toHaveLength(1)
+    expect(
+      collect(
+        overhanging(90, 95),
+        { ...FULL_REGION, start: 400, end: 1400 },
+        visibility,
+      ),
+    ).toHaveLength(0)
+  })
+
   test('does not emit when no labels would render', () => {
     const data = makeData({
       f1: makeLabelData('f1', { nameLabel: makeLabel() }),
