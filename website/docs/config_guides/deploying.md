@@ -186,8 +186,12 @@ Protocols h2 http/1.1
 The
 [gzip settings](/docs/config_guides/serving_data#configure-gzip-for-text-never-for-bgzf)
 for text apply to the app's scripts too. Brotli, where the server or CDN offers
-it, is smaller still for JavaScript; on CloudFront it is a checkbox in the cache
-policy. Keep both off BGZF data files, for the reasons on that page.
+it, is smaller still: on jbrowse.org it took `main.js` from 111 to 103 KB and
+the hg38 hub's 2.1 MB `config.json` from 419 to 367 KB. On CloudFront it is a
+checkbox in the cache policy. A distribution still on legacy cache settings has
+no policy and serves gzip only; move it to a cache policy that keys on the same
+query strings and headers, and tick Brotli there. Keep both off BGZF data files,
+for the reasons on that page.
 
 ## Cache-busting in index.html
 
