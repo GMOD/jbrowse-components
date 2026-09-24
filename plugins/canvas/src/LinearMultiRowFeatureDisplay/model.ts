@@ -655,11 +655,16 @@ export default function stateModelFactory(
        * #getter
        * Overrides BaseLinearDisplay.height so the track container matches the
        * rendering canvas. The MIN_DISPLAY_HEIGHT floor is on the track, never
-       * on the row, so a sub-pixel row stays legitimate while a display with no
-       * rows at all still draws its own chrome.
+       * on the row, so a sub-pixel row stays legitimate. With no rows, as under
+       * the density band, it is the `height` slot whatever the row mode.
        */
       get height(): number {
-        return Math.max(MIN_DISPLAY_HEIGHT, self.nrow * self.effectiveRowHeight)
+        return Math.max(
+          MIN_DISPLAY_HEIGHT,
+          self.sources.length === 0
+            ? self.fitTargetHeight
+            : self.nrow * self.effectiveRowHeight,
+        )
       },
     }))
     .views(self => ({
@@ -959,7 +964,8 @@ export default function stateModelFactory(
         /**
          * #action
          * Set the track height: auto-fit restretches the rows to it, fixed mode
-         * redistributes it across the current rows as a row height.
+         * redistributes it across the current rows as a row height, and with no
+         * rows it is the `height` slot either way.
          */
         // Both branches floor the track at MIN_DISPLAY_HEIGHT, never the row: a
         // sub-pixel row is legitimate here, and flooring the row instead stalls
@@ -967,7 +973,7 @@ export default function stateModelFactory(
         // past the point where its resize handle can be grabbed again.
         setHeight(newHeight: number) {
           const clamped = Math.max(newHeight, MIN_DISPLAY_HEIGHT)
-          if (self.rowHeight === 0) {
+          if (self.rowHeight === 0 || self.sources.length === 0) {
             setConf(self, 'height', clamped)
           } else {
             setConf(self, 'rowHeight', clamped / self.nrow)

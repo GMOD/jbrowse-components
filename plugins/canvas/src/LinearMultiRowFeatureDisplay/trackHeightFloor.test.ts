@@ -66,16 +66,30 @@ describe('the track cannot be dragged below a usable height', () => {
 })
 
 // The derived `height` sizes the canvas, the too-large banner and the density
-// band alike, and a pinned row height over no rows sizes every one of them to a
-// sliver.
-describe('the derived height carries the floor the drag does', () => {
-  it('floors a pinned row height over no rows at all', () => {
+// band alike, and a pinned row height over no rows sized every one of them to a
+// sliver, which a drag then turned into one enormous row.
+describe('a display with no rows', () => {
+  it('takes the height slot under a pinned row height', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setHeight(150)
+    display.setRowHeight(14)
+
+    expect(display.sources).toHaveLength(0)
+    expect(display.height).toBe(150)
+  })
+
+  it('keeps the pinned row height through a drag, for the rows that land after', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setRowHeight(14)
 
-    expect(display.sources).toHaveLength(0)
-    expect(display.height).toBe(MIN_DISPLAY_HEIGHT)
+    display.setHeight(200)
+    expect(display.height).toBe(200)
+    expect(display.rowHeight).toBe(14)
+
+    display.setRpcData(0, rowsOnly(12), ctgA)
+    expect(display.height).toBeCloseTo(168)
   })
 
   it('leaves a taller stack alone', () => {
