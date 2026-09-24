@@ -6,14 +6,22 @@ accessions.tsv (id, name, country, admixture group), takes the accessions whose
 SyRI pair exists, and points every per-accession annotation and epigenome
 track at the 1001 Genomes data centre itself. The graph tracks appear once the
 minigraph projections are beside the config.
+
+The files it wrote are named relative to the config. --base-url <prefix>
+writes them as absolute URLs instead, for a config hosted somewhere else, such
+as GMOD/jb2hubs' pangenome page.
 """
 
 import json
 import os
+import sys
 import urllib.request
+
+BASE = sys.argv[sys.argv.index('--base-url') + 1].rstrip('/') + '/' if '--base-url' in sys.argv else ''
 
 PORTAL = 'https://1001genomes.org/data/1001Gp/27genomes/releases/current'
 GENARK = 'https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/bbi/GCF_000001735.4_TAIR10.1'
+EVA = 'https://ftp.ebi.ac.uk/pub/databases/eva'
 GRAPH = 'arabidopsis-tair10-minigraph'
 PANSN = {'assemblyNameToPanSN': {'TAIR10': 'TAIR10'}}
 SYRI_TYPES = ['SYN', 'INV', 'TRANS', 'INVTR', 'DUP', 'INVDP']
@@ -39,10 +47,11 @@ def accessions():
     return rows
 
 
-def assembly(name, display, sequence_adapter, aliases):
+def assembly(name, display, sequence_adapter, aliases, names_also=()):
     return {
         'name': name,
         'displayName': display,
+        **({'aliases': list(names_also)} if names_also else {}),
         'sequence': {
             'type': 'ReferenceSequenceTrack',
             'trackId': f'{name}-ReferenceSequenceTrack',
@@ -181,6 +190,17 @@ def graph_tracks(names):
     return tracks
 
 
+def absolutize(node):
+    if isinstance(node, dict):
+        return {
+            k: BASE + v if k == 'uri' and isinstance(v, str) and '://' not in v else absolutize(v)
+            for k, v in node.items()
+        }
+    if isinstance(node, list):
+        return [absolutize(v) for v in node]
+    return node
+
+
 def main():
     rows = accessions()
     names = [r['name'] for r in rows]
@@ -198,6 +218,9 @@ def main():
                 'TAIR10 (Col-0 reference)',
                 {'type': 'BgzipFastaAdapter', 'uri': 'TAIR10.fa.gz'},
                 'TAIR10.aliases.txt',
+                # the hosted GenArk config's name for it, so a launch written
+                # against that config opens here too
+                names_also=('GCF_000001735.4', 'tair10'),
             ),
             *[
                 assembly(
@@ -237,6 +260,27 @@ def main():
                 'name': 'OmegaPlus selective sweep scan, 1135 accessions (10 kb windows)',
                 'assemblyNames': ['TAIR10'],
                 'adapter': {'type': 'BigWigAdapter', 'uri': 'omega.bw'},
+            },
+            {
+                'type': 'VariantTrack',
+                'trackId': 'snps_1135',
+                'name': '1001 Genomes SNPs and short indels, 1135 accessions (SnpEff, EVA PRJNA273563)',
+                'assemblyNames': ['TAIR10'],
+                'adapter': {
+                    'type': 'VcfTabixAdapter',
+                    'uri': f'{EVA}/PRJNA273563/1001genomes_snp-short-indel_only_ACGTN_v3.1.snpeff.garys.final.vcf.gz',
+                },
+            },
+            {
+                'type': 'VariantTrack',
+                'trackId': 'insertions_1001Ara',
+                'name': 'Insertion SVs across 1001 Genomes accessions (INSSV, EVA PRJEB58052)',
+                'assemblyNames': ['TAIR10'],
+                'adapter': {
+                    'type': 'VcfTabixAdapter',
+                    'vcfGzLocation': {'uri': f'{EVA}/PRJEB58052/INSSV-1001Ara_merged.vcf.gz'},
+                    'index': {'indexType': 'CSI', 'location': {'uri': f'{EVA}/PRJEB58052/INSSV-1001Ara_merged.vcf.csi'}},
+                },
             },
             {
                 'type': 'FeatureTrack',
@@ -288,7 +332,7 @@ def main():
         },
     }
     with open('config.json', 'w') as fh:
-        json.dump(config, fh, indent=2)
+        json.dump(absolutize(config), fh, indent=2)
         fh.write('\n')
     print(f"{len(rows)} accessions: {' '.join(names)}")
     print(f"{len(config['tracks'])} tracks")
