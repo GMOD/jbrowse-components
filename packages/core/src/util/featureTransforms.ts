@@ -513,18 +513,23 @@ function pileup(features: readonly Feature[], step: PileupStep) {
  */
 function coverage(features: readonly Feature[], step: CoverageStep) {
   const as = step.as ?? DEFAULT_COVERAGE_AS
-  const n = features.length
+  const spanStarts = new Float64Array(features.length)
+  const spanEnds = new Float64Array(features.length)
+  let n = 0
+  for (const f of features) {
+    const start = numericValue(f.get('start'))
+    const end = numericValue(f.get('end'))
+    if (Number.isFinite(start) && Number.isFinite(end)) {
+      spanStarts[n] = start
+      spanEnds[n] = end
+      n++
+    }
+  }
   if (n === 0) {
     return []
   }
-  const starts = new Float64Array(n)
-  const ends = new Float64Array(n)
-  for (let i = 0; i < n; i++) {
-    starts[i] = features[i]!.get('start')
-    ends[i] = features[i]!.get('end')
-  }
-  starts.sort()
-  ends.sort()
+  const starts = spanStarts.subarray(0, n).sort()
+  const ends = spanEnds.subarray(0, n).sort()
   const refName = features[0]!.get('refName')
   const out: Feature[] = []
   let depth = 0
