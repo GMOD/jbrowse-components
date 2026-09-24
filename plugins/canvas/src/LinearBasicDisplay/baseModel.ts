@@ -1054,19 +1054,6 @@ export default function baseStateModelFactory(
       // flickers the banner on every zoom.
       /**
        * #action
-       * The gate's own measurements, which are keyed by region and are not
-       * fetch payloads, so the store's bound does not reach them.
-       */
-      pruneDensityStatsToVisible(visibleDisplayedRegionIndices: Set<number>) {
-        for (const key of self.densityStatsPerRegion.keys()) {
-          if (!visibleDisplayedRegionIndices.has(key)) {
-            self.densityStatsPerRegion.delete(key)
-          }
-        }
-      },
-
-      /**
-       * #action
        */
       startRenderingBackend(backend: CanvasFeatureRenderingBackend) {
         // `renderDataMap` is `laidOutDataMap` by reference when idle and
@@ -1438,11 +1425,6 @@ export default function baseStateModelFactory(
           const maxFeatureDensity = self.maxFeatureDensity
           const args = rpcArgs(self)
           const zoomArgs = self.zoomFetchArgs()
-          self.pruneDensityStatsToVisible(
-            new Set(
-              view.bufferedVisibleRegions.map(b => b.displayedRegionIndex),
-            ),
-          )
           void fetchGatedRegions(self, needed, {
             call: (region, ctx) => {
               // The assembly's genetic code, so the worker can translate
