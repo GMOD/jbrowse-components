@@ -1,18 +1,13 @@
 #!/bin/bash
-# Runs "$@" holding one of JB_HEAVY_SLOTS machine-wide slots, so the several
-# agent worktrees that typecheck concurrently queue instead of all resident at
-# once. Per-run budgets cannot do this: each run sizes itself as though alone,
-# so N agents each politely taking one checker still total N checkers. Measured
-# on 16 cores at load 55: 7 concurrent tsc processes held 10.2GB and the box
-# was 33GB into swap, where the wall-clock cost is paging, not CPU.
+# Runs "$@" holding one of JB_HEAVY_SLOTS machine-wide slots, so the agent
+# worktrees that typecheck or type-aware lint at the same time queue instead of
+# all resident at once. Per-run budgets cannot do this: each run sizes itself as
+# though alone. Each gated run is a whole-repo tsgo program at ~4GB, so twelve
+# agents ungated is ~48GB on a 30GB box, and the wall-clock cost is paging.
 #
-# The slot directory is deliberately machine-global rather than under rootDir.
-# Every worktree is a full checkout, so a per-checkout path would give each its
-# own private set of slots and gate nothing.
-#
-# Holding the lock is an fd this shell keeps across `exec`, which is what makes
-# a crash safe: the kernel drops flock when the process dies, however it dies,
-# so a slot is never left stale and nothing has to clean up after a SIGKILL.
+# The slot directory is fixed under /tmp rather than under rootDir or $TMPDIR.
+# Every worktree is a full checkout and a session may set its own TMPDIR, and a
+# private set of slots gates nothing.
 set -u
 
 slots=${JB_HEAVY_SLOTS:-3}
@@ -28,7 +23,7 @@ then
   exec "$@"
 fi
 
-dir=${TMPDIR:-/tmp}/jb-heavy-slots
+dir=/tmp/jb-heavy-slots
 mkdir -p "$dir" 2>/dev/null || exec "$@"
 
 # Sweep the slots rather than blocking on one. Blocking on a slot picked up
@@ -40,9 +35,9 @@ while :; do
   for i in $(seq 1 "$slots"); do
     exec {fd}>"$dir/$i" || exec "$@"
     if flock -w 0.25 "$fd"; then
-      exec "$@"
+      break 2
     fi
-    eval "exec $fd>&-"
+    exec {fd}>&-
   done
   # Once, on the first full sweep that finds nothing. A run that queues behind
   # three others is indistinguishable from a hung one otherwise, and the whole
@@ -51,4 +46,24 @@ while :; do
     waited=1
     echo "waiting for one of $slots machine-wide slots (JB_HEAVY_SLOTS=0 disables)" >&2
   fi
+done
+
+# This shell holds the lock and the command runs as its child, never via
+# `exec`. An inherited lock fd does not survive the command re-executing
+# itself: typescript7's tsc wrapper hands off to the native binary with Node's
+# process.execve, which drops it, so an exec'd slot freed the moment tsc
+# started and gated nothing. The kernel still drops the lock however this shell
+# dies, so a slot is never left stale.
+#
+# Backgrounded so a trap can forward signals while it waits, with stdin handed
+# over explicitly since a background command otherwise reads /dev/null.
+child=
+trap '[ -n "$child" ] && kill -TERM "$child" 2>/dev/null' TERM INT HUP
+exec {stdin}<&0
+"$@" <&"$stdin" {stdin}<&- {fd}>&- &
+child=$!
+while :; do
+  wait "$child"
+  status=$?
+  kill -0 "$child" 2>/dev/null || exit "$status"
 done

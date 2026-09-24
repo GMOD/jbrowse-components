@@ -101,6 +101,7 @@ const GATES: Gate[] = [
   {
     name: 'lint',
     argv: scoped(pnpm('lint'), files => [
+      join(root, 'scripts/heavy-run-slot.sh'),
       bin('oxlint'),
       '--type-aware',
       '--deny-warnings',

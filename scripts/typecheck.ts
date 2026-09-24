@@ -1,15 +1,15 @@
-// Picks tsc's checker count instead of letting tsgo derive one from the core
-// count, which on 16 cores means 16 and is the worst of the settings measured.
-// Whole-repo cold --noEmit with tsconfig.tsbuildinfo cleared (incremental:true
-// means an uncleared run measures the cache):
+// Picks tsc's checker count. Whole-repo cold --noEmit with
+// tsconfig.tsbuildinfo cleared (incremental:true means an uncleared run
+// measures the cache):
 //
-//   checkers   1      2      4      8      16 (tsgo default here)
-//   seconds    14.4    9.6    8.5    9.1    10.8
-//   peak RSS   2.9GB  3.1GB  3.7GB  5.0GB   6.6GB
+//   checkers   1      2      4 (tsgo 7 default)   8      16
+//   seconds    14.4    9.6    8.5                 9.1    10.8
+//   peak RSS   2.9GB  3.1GB  3.7GB               5.0GB   6.6GB
 //
-// Four is the knee, and it beats the default on both axes at once, so there is
-// no agent tier to carry: three concurrent runs, the most heavy-run-slot.sh
-// admits, peak at 11GB against the 15GB that one checker each used to.
+// Agent runs take 2. Several agents typecheck at once, so the cores are already
+// taken and extra checkers mostly queue for them, while each run still pays for
+// them: 3.7GB peak at 2 against 4.4GB at 4 on 2026-09-24's tree. A human at a
+// terminal keeps 4, the knee.
 // A warm no-op is ~1.0s at any of them.
 import { spawn, spawnSync } from 'node:child_process'
 
@@ -19,7 +19,10 @@ function resolveCheckers() {
   const override = Number(process.env.TSC_CHECKERS)
   return Number.isInteger(override) && override > 0
     ? { value: String(override), source: 'TSC_CHECKERS' }
-    : { value: '4', source: 'set TSC_CHECKERS=<n> to override' }
+    : {
+        value: process.env.CLAUDECODE ? '2' : '4',
+        source: 'set TSC_CHECKERS=<n> to override',
+      }
 }
 
 const { value: checkers, source } = resolveCheckers()
@@ -67,8 +70,8 @@ if (flags.some(f => f === '--watch' || f === '-w')) {
     spawn(process.execPath, tscArgs(project), { stdio: 'inherit' })
   }
 } else {
-  // A per-run checker count cannot cap the machine: each checkout picks four
-  // as though it were alone, and the checkouts cannot see each other. The slot
+  // A per-run checker count cannot cap the machine: each checkout picks its
+  // count as though it were alone, and the checkouts cannot see each other. The slot
   // is machine-wide so they queue instead.
   for (const project of projects) {
     const { status } = spawnSync(

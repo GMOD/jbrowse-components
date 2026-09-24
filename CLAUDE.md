@@ -113,6 +113,11 @@ Desktop's MCP server — `run_javascript`, `docs`, `open`, `screenshot` — and
   executed on their last run — holds a changed file; a comment- or type-only
   edit runs nothing. `reference/TEST_INFRASTRUCTURE.md` §"Which suites a change
   runs".
+- **Typecheck with `pnpm typecheck`, never a bare `tsc` or `npx tsc`.** Each
+  whole-repo tsgo program is ~4GB, so agent runs of typecheck, type-aware lint
+  and `build:esm` queue on three machine-wide slots
+  (`scripts/heavy-run-slot.sh`). A bare `tsc` skips that queue, and a dozen
+  agents doing so swap the box.
 - **The `jbrowse-web` jest project runs on remote CI, not here.** Its app-level
   suites are half the suite clock; `pnpm test` and `test-related` leave them
   out, and `pnpm test-ci` on push runs them. Don't run them before landing, not

@@ -206,9 +206,11 @@ fi
 # --no-error-on-unmatched-pattern: a commit is mostly not JavaScript. Without
 # it, oxlint exits 1 with "No files found to lint" on a docs-only commit, and
 # every path it has no parser for -- .md, .json, .slang -- reads as unmatched.
+# Type-aware, so even a one-file commit builds a ~1GB tsgo program; the slot
+# queues it behind the typechecks other agents are running.
 status=0
 printf '%s' "$whole" | tr '\n' '\0' |
-  xargs -0 "$oxlint" --type-aware --deny-warnings \
+  xargs -0 "$root/scripts/heavy-run-slot.sh" "$oxlint" --type-aware --deny-warnings \
     --no-error-on-unmatched-pattern --fix -- || status=$?
 
 # oxlint's fixes are not formatted -- it rewrites an arrow shorthand as
