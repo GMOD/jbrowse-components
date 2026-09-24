@@ -1,10 +1,18 @@
 import { getConf } from '@jbrowse/core/configuration'
 
-import type { LayoutRecord } from './types.ts'
+import type { LayoutRecord, OverlayKind } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+export function overlayKind(trackType: string): OverlayKind | undefined {
+  return trackType === 'AlignmentsTrack'
+    ? 'alignment'
+    : trackType === 'VariantTrack'
+      ? 'variant'
+      : undefined
+}
 
 /**
  * The one thing a row's assembly is asked for when placing a feature: the total
@@ -33,6 +41,8 @@ interface OverlayDisplayBase {
    * a type error.
    */
   linkedReads?: 'off' | 'normal'
+  /** the same display's curved connectors; `'all'` links every pair itself */
+  bezierArcScope?: 'all' | 'crossRegion' | 'none'
 }
 
 /** A display that indexes its features, so an overlay can ask where one landed. */
@@ -168,6 +178,15 @@ export function intersect<T>(
 
 export function calc(track: OverlayTrack, f: Feature) {
   return track.displays[0]!.searchFeatureByID?.(f.id())
+}
+
+// Everything that stays inside one row is already connected by the display
+// itself, whether chained onto rows or curved over the pileup.
+export function linksOwnReads(d: OverlayDisplay) {
+  return (
+    (d.linkedReads !== undefined && d.linkedReads !== 'off') ||
+    d.bezierArcScope === 'all'
+  )
 }
 
 // A failed `calc` is ambiguous. With a layout, the feature really is off-display

@@ -9,6 +9,7 @@ import {
   findFeatureViewLevel,
   isOffscreenLayout,
   layoutUnknown,
+  linksOwnReads,
   makeOffscreenLayout,
 } from './util.ts'
 
@@ -58,6 +59,29 @@ describe('layoutUnknown', () => {
 
   test('a display that keeps no layout at all keeps the bottom-edge behavior', () => {
     expect(layoutUnknown(trackWith({ height: 100 }))).toBe(false)
+  })
+})
+
+describe('linksOwnReads', () => {
+  test('chained rows link every read in the row', () => {
+    expect(linksOwnReads({ height: 100, linkedReads: 'normal' })).toBe(true)
+  })
+
+  test('curved connectors on every pair link them too', () => {
+    expect(
+      linksOwnReads({ height: 100, linkedReads: 'off', bezierArcScope: 'all' }),
+    ).toBe(true)
+  })
+
+  test('cross-region curves alone leave the row to the overlay', () => {
+    expect(
+      linksOwnReads({
+        height: 100,
+        linkedReads: 'off',
+        bezierArcScope: 'crossRegion',
+      }),
+    ).toBe(false)
+    expect(linksOwnReads({ height: 100 })).toBe(false)
   })
 })
 

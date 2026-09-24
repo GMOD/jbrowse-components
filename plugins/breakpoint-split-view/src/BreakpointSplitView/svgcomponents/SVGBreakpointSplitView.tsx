@@ -158,7 +158,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
             width={width}
             height={totalHeightSvg}
           >
-            {model.matchedTracks
+            {model.overlayTracks
               .filter(track =>
                 // skip tracks minimized in any view: they have no rendered body
                 // to anchor a ribbon to (getTrackOffsets omits them)

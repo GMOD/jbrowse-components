@@ -57,8 +57,9 @@ export interface OverlayLevel {
   offsetPx: number
   /**
    * the display links its own reads (view-as-pairs / link supplementary
-   * alignments), so it already connects everything that stays inside this
-   * level and an intra-view overlay curve would just double it up
+   * alignments, or curved connectors on every pair), so it already connects
+   * everything that stays inside this level and an intra-view overlay curve
+   * would just double it up
    */
   linksReads: boolean
 }

@@ -34,14 +34,14 @@ const BreakpointSplitViewOverlay = observer(
     model: BreakpointViewModel
   }) {
     const { classes } = useStyles()
-    const { matchedTracks, views } = model
+    const { overlayTracks, views } = model
     const divRef = useRef<HTMLDivElement>(null)
     useOverlayWheelZoom(divRef, views)
 
     return (
       <div ref={divRef} className={classes.overlay}>
         <svg className={classes.base}>
-          {matchedTracks.map(track => {
+          {overlayTracks.map(track => {
             const trackId = track.configuration.trackId
             return <Overlay key={trackId} model={model} trackId={trackId} />
           })}

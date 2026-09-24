@@ -44,7 +44,9 @@ import {
   getBlockFeatures,
   intersect,
   layoutUnknown,
+  linksOwnReads,
   makeOffscreenLayout,
+  overlayKind,
 } from './util.ts'
 
 import type {
@@ -354,13 +356,24 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * The matched tracks the overlay draws for — alignments and variants.
+       * The overlay fetch asks for these alone.
+       */
+      get overlayTracks(): OverlayTrack[] {
+        return this.matchedTracks.filter(
+          track => overlayKind(track.type) !== undefined,
+        )
+      },
+
+      /**
+       * #getter
        * Same name and same meaning as `FetchMixin.fetchInert`, on a view rather
-       * than a display: with nothing matched across the rows there is nothing
-       * for the overlay fetch to ask for, so `prepare` declines instead of
-       * running an empty fetch and commit on every pan.
+       * than a display: with no overlay track matched across the rows there is
+       * nothing for the overlay fetch to ask for, so `prepare` declines instead
+       * of running an empty fetch and commit on every pan.
        */
       get fetchInert(): boolean {
-        return this.matchedTracks.length === 0
+        return this.overlayTracks.length === 0
       },
 
       /**
@@ -375,7 +388,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * track resizes under a pointer that never moved, plus `regionTooLarge`,
        * whose flip swaps the body for the banner and back.
        *
-       * Scoped to the matched tracks rather than every track in the view: an
+       * Scoped to the overlay tracks rather than every track in the view: an
        * unrelated track finishing its first render resizes nothing the overlay
        * draws on, and clearing the hover for it would read as a flicker.
        */
@@ -384,7 +397,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         for (const view of self.views) {
           parts.push(view.offsetPx, view.bpPerPx)
         }
-        for (const { configuration } of this.matchedTracks) {
+        for (const { configuration } of this.overlayTracks) {
           for (const track of this.getMatchedTracks(configuration.trackId)) {
             const d = track.displays[0]
             parts.push(
@@ -459,7 +472,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             coverageOffset: d.coverageDisplayHeight ?? 0,
             scrollTop: d.scrollTop ?? 0,
             offsetPx: view.offsetPx,
-            linksReads: d.linkedReads !== undefined && d.linkedReads !== 'off',
+            linksReads: linksOwnReads(d),
           })
           layouts.push({
             displayedRegions: view.displayedRegions,
@@ -540,7 +553,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       get matchedTrackChunks(): Map<string, MatchedChunks> {
         const result = new Map<string, MatchedChunks>()
-        for (const track of this.matchedTracks) {
+        for (const track of this.overlayTracks) {
           const trackId = track.configuration.trackId
           const featureArrays = self.matchedTrackFeatures[trackId]
           if (!featureArrays) {
@@ -549,8 +562,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           const allFeatures = new Map(
             featureArrays.flat().map(f => [f.id(), f] as const),
           )
-          const type = track.type
-          if (type === 'AlignmentsTrack') {
+          const kind = overlayKind(track.type)
+          if (kind === 'alignment') {
             // Paired-vs-split is decided per track-match here (any PAIRED flag
             // ⇒ treat the whole match as paired). Consequence: a paired read
             // that is ALSO SA-split has its split junctions drawn with the
@@ -569,7 +582,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               hasPairedReads: paired,
               chains: paired ? undefined : matched.map(readChainSegments),
             })
-          } else if (type === 'VariantTrack') {
+          } else if (kind === 'variant') {
             result.set(trackId, {
               kind: 'variant',
               matched: getVariantJunctions(allFeatures),
@@ -782,7 +795,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             // says nothing about the other matched tracks, and dropping the key
             // also clears any features left from before the track went over its
             // limit.
-            const tracks = self.matchedTracks.filter(
+            const tracks = self.overlayTracks.filter(
               track => !track.displays[0]!.regionTooLarge,
             )
             // THE READ THAT MAKES A PAN REFETCH, and it belongs here rather

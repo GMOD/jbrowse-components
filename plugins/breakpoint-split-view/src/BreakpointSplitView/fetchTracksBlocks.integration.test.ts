@@ -43,6 +43,19 @@ const trackConf = {
   },
 }
 
+const geneTrackConf = {
+  trackId: 'genes',
+  type: 'FeatureTrack',
+  name: 'genes',
+  assemblyNames: ['volvox'],
+  adapter: {
+    type: 'FromConfigAdapter',
+    features: [
+      { uniqueId: 'g1', refName: 'ctgA', start: 100, end: 200, name: 'g1' },
+    ],
+  },
+}
+
 function blockDesc(view: { staticBlocks: { contentBlocks: unknown[] } }) {
   return (view.staticBlocks.contentBlocks as { start: number; end: number }[])
     .map(b => `${b.start}-${b.end}`)
@@ -53,18 +66,26 @@ async function setup() {
   const session = createTestSession()
   session.addAssemblyConf(assembly)
   session.addTrackConf(trackConf)
+  session.addTrackConf(geneTrackConf)
 
   // Observable, so `when` below can actually wait on it — a plain array never
   // wakes the reaction and every wait times out looking like a missing fetch.
   const fetched = observable.array<string>([], { deep: false })
+  const fetchedFeatureIds = new Set<string>()
   const rpc = session.rpcManager
   const call = rpc.call.bind(rpc)
   rpc.call = ((
     sessionId: string,
     method: string,
-    args: { regions?: { start: number; end: number }[] },
+    args: {
+      regions?: { start: number; end: number }[]
+      adapterConfig?: { features?: { uniqueId: string }[] }
+    },
   ) => {
     if (method === 'BreakpointGetFeatures') {
+      for (const f of args.adapterConfig?.features ?? []) {
+        fetchedFeatureIds.add(f.uniqueId)
+      }
       const desc = (args.regions ?? [])
         .map(r => `${r.start}-${r.end}`)
         .join(',')
@@ -84,6 +105,9 @@ async function setup() {
   view.setWidth(800)
   await when(() => view.initialized, { timeout: 20000 })
   for (const v of view.views) {
+    await v.launchTrack('genes')
+  }
+  for (const v of view.views) {
     await v.launchTrack('tk1')
   }
   // Both rows blocked out AND fetched at those blocks, which is the state both
@@ -98,7 +122,7 @@ async function setup() {
       ),
     { timeout: 20000 },
   )
-  return { view, fetched }
+  return { view, fetched, fetchedFeatureIds }
 }
 
 // The overlay fetch is an autorun, and the blocks it fetches over are the only
@@ -142,4 +166,13 @@ test('the unmoved row is refetched at its own unchanged blocks', async () => {
 
   expect(blockDesc(view.views[1]!)).toBe(still)
   expect(fetched.slice(before)).toContain(still)
+}, 60000)
+
+test('a matched track the overlay draws nothing for is not fetched', async () => {
+  const { view, fetchedFeatureIds } = await setup()
+
+  expect(view.matchedTracks.map(t => t.configuration.trackId)).toContain(
+    'genes',
+  )
+  expect(fetchedFeatureIds).toEqual(new Set(['f1']))
 }, 60000)
