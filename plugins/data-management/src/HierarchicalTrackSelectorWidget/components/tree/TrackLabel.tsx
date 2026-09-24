@@ -85,11 +85,7 @@ const TrackCheckbox = observer(function TrackCheckbox({
       className={className}
       checked={model.shownTrackIds.has(trackId)}
       onChange={() => {
-        void (async () => {
-          if (await model.trackContainer?.launchToggleTrack(trackId)) {
-            model.addToRecentlyUsed(trackId)
-          }
-        })()
+        void model.toggleTrack(trackId)
       }}
       disabled={disabled}
     />
@@ -143,7 +139,7 @@ const TrackLabel = observer(function TrackLabel({
         aria-description={description}
         onClick={event => {
           if (event.ctrlKey || event.metaKey) {
-            if (model.selectionSet.has(trackId)) {
+            if (model.isSelected(trackId)) {
               model.removeFromSelection([trackId])
             } else {
               model.addToSelection([trackId])

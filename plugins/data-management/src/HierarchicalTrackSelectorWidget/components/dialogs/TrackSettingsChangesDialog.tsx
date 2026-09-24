@@ -46,23 +46,16 @@ const TrackSettingsChangesDialog = observer(
         maxWidth="md"
       >
         <DialogContent className={classes.content}>
-          {changes.length ? (
-            <>
-              <Typography variant="subtitle2" className={classes.heading}>
-                Edited on this track
-              </Typography>
-              <DialogContentText>
-                These settings differ from the track's default configuration.
-              </DialogContentText>
-              <SettingsChangesTable changes={changes} />
-            </>
-          ) : null}
-          {changes.length ? null : (
-            <Typography>This track has no setting changes.</Typography>
-          )}
+          <Typography variant="subtitle2" className={classes.heading}>
+            Edited on this track
+          </Typography>
+          <DialogContentText>
+            These settings differ from the track's default configuration.
+          </DialogContentText>
+          <SettingsChangesTable changes={changes} />
         </DialogContent>
         <DialogActions>
-          {changes.length && onReset ? (
+          {onReset ? (
             <Button
               variant="contained"
               color="secondary"

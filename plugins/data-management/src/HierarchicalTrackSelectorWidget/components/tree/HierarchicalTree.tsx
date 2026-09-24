@@ -27,11 +27,7 @@ const HierarchicalTree = observer(function HierarchicalTree({
   if (scrollTop > maxScrollTop) {
     setScrollTop(maxScrollTop)
   }
-  const effectiveScrollTop = Math.min(scrollTop, maxScrollTop)
-  const { startIndex, endIndex } = model.visibleRange(
-    height,
-    effectiveScrollTop,
-  )
+  const { startIndex, endIndex } = model.visibleRange(height, scrollTop)
 
   return (
     <div
@@ -54,12 +50,9 @@ const HierarchicalTree = observer(function HierarchicalTree({
           position: 'relative',
         }}
       >
-        {Array.from({ length: endIndex - startIndex + 1 }, (_, i) => {
-          const row = rows[startIndex + i]
-          return row ? (
-            <TreeItem key={row.item.id} model={model} row={row} />
-          ) : null
-        })}
+        {rows.slice(startIndex, endIndex + 1).map(row => (
+          <TreeItem key={row.item.id} model={model} row={row} />
+        ))}
       </div>
       <SharedTooltip containerRef={containerRef} model={model} />
     </div>

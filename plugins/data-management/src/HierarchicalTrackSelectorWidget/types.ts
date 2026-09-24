@@ -1,9 +1,6 @@
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
-// A resolved track plus where the tree put it. Extends the source rather than
-// restating four of its fields, so a field added to TrackNodeSource reaches the
-// row without a second declaration and a copy in generateHierarchy — which is
-// three places to remember, and the adornment found all three.
+// a resolved track plus where the tree put it
 export interface TreeTrackNode extends TrackNodeSource {
   // unique per-node key for React/DOM/test ids, group-prefixed e.g.
   // "Tracks,myTrackId"; NOT the track identity. Use trackId to toggle a track

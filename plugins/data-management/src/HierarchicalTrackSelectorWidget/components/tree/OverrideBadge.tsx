@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { getSession } from '@jbrowse/core/util'
+import { getDialogHost, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import EditIcon from '@mui/icons-material/Edit'
 import { IconButton, Tooltip } from '@mui/material'
@@ -21,15 +21,6 @@ const useStyles = makeStyles()(theme => ({
     color: theme.palette.text.secondary,
   },
 }))
-
-// Whether `trackId` is open in the track list this selector is attached to. A
-// closed track's edited state isn't visible anywhere to act on, so it gets no
-// badge.
-function isOpen(model: HierarchicalTrackSelectorModel, trackId: string) {
-  return !!model.trackContainer?.tracks.some(
-    t => t.configuration.trackId === trackId,
-  )
-}
 
 // shown when a track's effective settings differ from its configured defaults:
 // a per-track config edit shadowing an admin track (see
@@ -62,7 +53,7 @@ const OpenTrackBadge = observer(function OpenTrackBadge({
         className={classes.editButton}
         data-testid="track_edited_badge"
         onClick={() => {
-          session.queueDialog(handleClose => [
+          getDialogHost(model).queueDialog(handleClose => [
             TrackSettingsChangesDialog,
             {
               changes,
@@ -79,9 +70,8 @@ const OpenTrackBadge = observer(function OpenTrackBadge({
   )
 })
 
-// Only a track that's currently shown can be badged. The gate lives out here
-// because one badge renders per row of the tree, and most rows are closed
-// tracks.
+// A closed track's edits aren't on screen to act on, so only a shown track is
+// badged. The gate lives out here because most rows are closed tracks.
 const OverrideBadge = observer(function OverrideBadge({
   model,
   trackId,
@@ -91,7 +81,7 @@ const OverrideBadge = observer(function OverrideBadge({
   trackId: string
   name: string
 }) {
-  return isOpen(model, trackId) ? (
+  return model.shownTrackIds.has(trackId) ? (
     <OpenTrackBadge model={model} trackId={trackId} name={name} />
   ) : null
 })

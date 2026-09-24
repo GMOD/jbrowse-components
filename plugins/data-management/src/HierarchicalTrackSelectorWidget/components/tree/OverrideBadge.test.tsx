@@ -123,18 +123,4 @@ describe('TrackSettingsChangesDialog', () => {
     fireEvent.click(getByText('Reset to default'))
     expect(reset).toHaveBeenCalledTimes(1)
   })
-
-  it('says so when the track has no changes', () => {
-    const { getByText, queryByText } = render(
-      theme(
-        <TrackSettingsChangesDialog
-          changes={[]}
-          trackName="Genes"
-          handleClose={() => {}}
-        />,
-      ),
-    )
-    expect(getByText('This track has no setting changes.')).toBeTruthy()
-    expect(queryByText('Reset to default')).toBeNull()
-  })
 })

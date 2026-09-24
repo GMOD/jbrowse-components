@@ -5,11 +5,7 @@ import TrackCategory from './TrackCategory.tsx'
 import TrackLabel from './TrackLabel.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
-import type {
-  ResolvedCategoryMode,
-  TreeCategoryNode,
-  TreeRow,
-} from '../../types.ts'
+import type { TreeRow } from '../../types.ts'
 
 const levelWidth = 10
 
@@ -73,30 +69,6 @@ function NestingMarkers({
   )
 }
 
-// an expandable (non-folder) category gets the accordion background; a folder
-// category renders bare
-const CategoryRow = observer(function CategoryRow({
-  item,
-  model,
-  mode,
-  useAccordionStyle,
-  className,
-}: {
-  item: TreeCategoryNode
-  model: HierarchicalTrackSelectorModel
-  mode: ResolvedCategoryMode
-  useAccordionStyle: boolean
-  className: string
-}) {
-  return useAccordionStyle ? (
-    <div className={className}>
-      <TrackCategory model={model} item={item} mode={mode} />
-    </div>
-  ) : (
-    <TrackCategory model={model} item={item} mode={mode} />
-  )
-})
-
 const TreeItem = observer(function TreeItem({
   row,
   model,
@@ -125,13 +97,14 @@ const TreeItem = observer(function TreeItem({
         style={{ marginLeft }}
       >
         {item.type === 'category' ? (
-          <CategoryRow
-            item={item}
-            model={model}
-            mode={mode}
-            useAccordionStyle={accordion}
-            className={classes.accordionColor}
-          />
+          // a folder category renders bare, without the accordion background
+          accordion ? (
+            <div className={classes.accordionColor}>
+              <TrackCategory model={model} item={item} mode={mode} />
+            </div>
+          ) : (
+            <TrackCategory model={model} item={item} mode={mode} />
+          )
         ) : (
           <TrackLabel model={model} item={item} />
         )}

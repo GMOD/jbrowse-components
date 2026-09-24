@@ -10,27 +10,23 @@ import { Badge } from '@mui/material'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { HierarchicalTrackSelectorModel } from '../model.ts'
 
 const ShoppingCart = observer(function ShoppingCart({
   model,
 }: {
-  model: {
-    clearSelection: () => void
-    selection: AnyConfigurationModel[]
-  }
+  model: HierarchicalTrackSelectorModel
 }) {
   const session = getSession(model)
-  const { selection } = model
+  const { selection, sessionTrackIds } = model
   const { pluginManager } = getEnv(model)
-  const { adminMode, sessionTracks } = session
-  const s = new Set<string>(sessionTracks?.map(t => t.trackId))
-  const canEdit = (t: string) => adminMode || s.has(t)
   const items = buildMultiTrackMenuItems(pluginManager, { session })
   const canDeleteAll =
     isSessionWithDeleteTrackConf(session) &&
     selection.every(
-      elt => canEdit(elt.trackId) && elt.type !== 'ReferenceSequenceTrack',
+      elt =>
+        (session.adminMode || sessionTrackIds.has(elt.trackId)) &&
+        elt.type !== 'ReferenceSequenceTrack',
     )
 
   return selection.length ? (
