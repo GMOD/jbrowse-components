@@ -7,13 +7,16 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 import { MAX_GROUPS, OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
 import {
   DEFAULT_MARK_COLOR,
+  NO_VALUE_ABGR,
   encodeFeatures,
 } from '@jbrowse/core/util/markEncoding'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { thresholdPalette } from '@jbrowse/core/util/thresholdScale'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
 import { YSCALEBAR_LABEL_OFFSET, axisPlotBox } from '@jbrowse/display-ui'
 import { asArrayType, isType } from '@jbrowse/mobx-state-tree'
@@ -2056,6 +2059,63 @@ test('a hidden section leaves the key and the axis the way it leaves the plot', 
   display.hideGroup('b')
   expect(keyed()).toEqual(['exon'])
   expect(display.domain![1]).toBeLessThan(90)
+})
+
+test("a threshold key keeps the no-value row another region paints after a hidden section took one region's", () => {
+  const { display } = createTestEnvironment(
+    [
+      {
+        mark: 'bar',
+        encoding: {
+          y: 'score',
+          color: { field: 'pip', scale: 'threshold', domain: [0.5] },
+        },
+      },
+    ],
+    REGION,
+    'BedAdapter',
+    { facet: 'sample' },
+  ).createDisplay()
+  const LOW = cssColorToABGR(thresholdPalette(2)[0]!)
+  const threshold = {
+    kind: 'threshold' as const,
+    field: 'pip',
+    domain: [0.5],
+    missing: true,
+  }
+  display.setRpcData(
+    0,
+    result(
+      [
+        {
+          y: [3, 4],
+          row: [0, 1],
+          color: [NO_VALUE_ABGR, LOW],
+          scale: threshold,
+        },
+      ],
+      [
+        { key: 'a', firstRow: 0, rowCount: 1 },
+        { key: 'b', firstRow: 1, rowCount: 1 },
+      ],
+    ),
+    REGION,
+  )
+  display.setRpcData(
+    1,
+    result(
+      [{ y: [5], row: [0], color: [NO_VALUE_ABGR], scale: threshold }],
+      [{ key: 'b', firstRow: 0, rowCount: 1 }],
+    ),
+    REGION,
+  )
+  const keyed = () =>
+    display.colorScales.flatMap(c =>
+      c.kind === 'categorical' ? c.entries.map(e => e.label) : [],
+    )
+  expect(keyed()).toContain('(no value)')
+  display.hideGroup('a')
+  expect(keyed()).toContain('(no value)')
 })
 
 test("a key over the facet's field follows the sections' order", () => {
