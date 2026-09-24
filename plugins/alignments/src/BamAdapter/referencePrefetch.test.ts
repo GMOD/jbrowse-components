@@ -211,8 +211,8 @@ test('an unmapped read placed beside its mate never starts the prefetch', async 
   const features = await run()
   await run()
 
-  // BWA writes MD on every aligned read of this file and none on the unmapped
-  // mates it places at their partner's position
+  // HISAT2 wrote MD on every aligned read of this file, and none on the
+  // placed unmapped reads with a CIGAR of *
   expect(features.some(f => (f.get('flags') as number) & 4)).toBe(true)
   expect(reads).toBe(0)
 })

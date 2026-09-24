@@ -303,23 +303,23 @@ export default class BamSlightlyLazyFeature
   // invisible until bamRecordOverrides.test.ts went looking for it.
   override toJSON(): SimpleFeatureSerialized {
     return {
-      uniqueId: this.id(),
-      type: 'match',
       start: this.start,
-      end: this.end,
       name: this.name,
+      end: this.end,
       score: this.score,
       strand: this.strand,
-      refName: this.refName,
-      flags: this.flags,
       template_length: this.template_length,
+      flags: this.flags,
+      tags: convertTagsToPlainArrays(this.tags),
+      refName: this.refName,
+      type: 'match',
       pair_orientation: this.pair_orientation,
       next_ref: this.next_ref,
       next_pos: this.matePos,
       next_segment_position: this.next_segment_position,
+      uniqueId: this.id(),
       CIGAR: this.CIGAR,
       seq: this.seq,
-      tags: convertTagsToPlainArrays(this.tags),
       qual: this.qualString,
     }
   }
@@ -371,7 +371,7 @@ export default class BamSlightlyLazyFeature
  *     fallback decodes EVERY tag on the read to answer one.
  *   - `get('mismatches')` must resolve against THIS binding, so it can't be
  *     forwarded to the unbound base like every other field.
- *   - `fields`/`toJSON` are only reached off the render path, so they forward.
+ *   - `toJSON` is only reached off the render path, so it forwards.
  */
 class RegionBoundBamFeature implements MismatchFeature {
   constructor(

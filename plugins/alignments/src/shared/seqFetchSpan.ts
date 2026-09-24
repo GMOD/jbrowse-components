@@ -7,8 +7,8 @@ import { SAM_FLAG_UNMAPPED } from '@jbrowse/cigar-utils'
  * here keeps a whole-chromosome contig alignment from fetching sequence outside
  * the visible slice (the mismatch walk is windowed to the same region).
  *
- * An unmapped read has nothing to compare. BWA places one at its mate's
- * position with no MD, so counting it opened BAM's sticky `needsReference` on
+ * An unmapped read has nothing to compare, and aligners place one without
+ * writing it an MD, so counting it opened BAM's sticky `needsReference` on
  * files whose every aligned read carries MD.
  *
  * Exactly the reads' own span: the walk bounds only base COMPARISON by what the

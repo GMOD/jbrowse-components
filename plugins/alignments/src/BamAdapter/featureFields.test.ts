@@ -59,6 +59,14 @@ test('the serialized-only fields still answer through get', async () => {
   )
 })
 
+// The details panel renders these keys in order, so the tag block sits above
+// the read's sequence rather than between SEQ and QUAL
+test('the serialized read lists its tags before its sequence', async () => {
+  const [read] = await readsOf('volvox-rnasim.bam')
+  const keys = Object.keys(read!.toJSON())
+  expect(keys.indexOf('tags')).toBeLessThan(keys.indexOf('seq'))
+})
+
 test.each([
   ['volvox-translocation.bam', 'a mate on another reference'],
   ['paired_end_stranded_rnaseq.bam', 'an unmapped mate'],

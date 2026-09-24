@@ -184,10 +184,10 @@ export default class CramSlightlyLazyFeature
   // Still memoized, because a consumer that asks once usually asks again
   // (the modification path, several walks per read).
   //
-  // `fields`, `CIGAR` and `tags` were measured and are deliberately *not*
-  // memoized: `fields` and `CIGAR` are read 0 times per read on the render path
-  // (only toJSON/details touch them, once), and re-spreading `tags` on each of
-  // its ~3 reads per read beats installing a per-instance copy.
+  // `CIGAR` and `tags` were measured and are deliberately *not* memoized:
+  // `CIGAR` is read 0 times per read on the render path (only toJSON/details
+  // touch it, once), and re-spreading `tags` on each of its ~3 reads per read
+  // beats installing a per-instance copy.
   get NUMERIC_CIGAR() {
     this.numericCigar ??= packCigar(this)
     return this.numericCigar
@@ -352,23 +352,23 @@ export default class CramSlightlyLazyFeature
   // rather than a SimpleFeatureSerialized.
   override toJSON(): SimpleFeatureSerialized {
     return {
-      uniqueId: this.id(),
-      type: 'match',
       start: this.start,
-      end: this.end,
       name: this.name,
+      end: this.end,
       score: this.score,
       strand: this.strand,
-      refName: this.refName,
-      flags: this.flags,
       template_length: this.template_length,
+      flags: this.flags,
+      tags: convertTagsToPlainArrays(this.tags),
+      refName: this.refName,
+      type: 'match',
       pair_orientation: this.pair_orientation,
       next_ref: this.next_ref,
       next_pos: this.next_pos,
       next_segment_position: this.next_segment_position,
+      uniqueId: this.id(),
       CIGAR: this.CIGAR,
       seq: this.seq,
-      tags: convertTagsToPlainArrays(this.tags),
       qual: this.qual,
     }
   }
