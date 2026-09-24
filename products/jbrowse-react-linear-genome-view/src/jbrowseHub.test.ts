@@ -4,6 +4,8 @@ import { fetchHub } from '@jbrowse/core/util/fetchHub'
 import createViewState, { createViewStateAsync } from './createViewState.ts'
 import { destroyViewState } from './destroyViewState.ts'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+
 jest.mock('@jbrowse/core/util/fetchHub', () => ({ fetchHub: jest.fn() }))
 
 function featureTrack(trackId: string, name = trackId) {
@@ -30,7 +32,6 @@ const hub = {
   aggregateTextSearchAdapters: [
     {
       type: 'TrixTextSearchAdapter',
-      textSearchAdapterId: 'hub_index',
       assemblyNames: ['volvox'],
       ixFilePath: { uri: 'https://example.com/volvox.ix' },
       ixxFilePath: { uri: 'https://example.com/volvox.ixx' },
@@ -64,9 +65,9 @@ test("jbrowseHub brings the hub's assembly, catalog and search index, and the ho
     })
     expect(
       state.config.aggregateTextSearchAdapters.map(
-        (a: { textSearchAdapterId: string }) => a.textSearchAdapterId,
+        (a: AnyConfigurationModel) => readConfObject(a, 'ixFilePath').uri,
       ),
-    ).toEqual(['hub_index'])
+    ).toEqual(['https://example.com/volvox.ix'])
   } finally {
     destroyViewState(state)
   }

@@ -14,8 +14,7 @@ export function createTextSearchConf(
 ) {
   const paths = trixFilePaths(locationPath, name)
   return {
-    type: 'TrixTextSearchAdapter',
-    textSearchAdapterId: name,
+    type: 'TrixTextSearchAdapter' as const,
     ixFilePath: {
       localPath: paths.ix,
       locationType: 'LocalPathLocation' as const,

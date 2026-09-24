@@ -281,10 +281,7 @@ class GeneIndexPlugin extends Plugin {
           configSchema: ConfigurationSchema(
             'GeneIndex',
             { assemblyNames: { type: 'stringArray', defaultValue: [] } },
-            {
-              explicitlyTyped: true,
-              explicitIdentifier: 'textSearchAdapterId',
-            },
+            { explicitlyTyped: true },
           ),
           AdapterClass: class {
             async searchIndex() {
@@ -350,7 +347,6 @@ const hub = {
   aggregateTextSearchAdapters: [
     {
       type: 'GeneIndex',
-      textSearchAdapterId: 'hub_index',
       assemblyNames: ['volvox'],
     },
   ],

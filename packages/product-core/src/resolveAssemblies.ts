@@ -1,14 +1,14 @@
 import { fetchHub } from '@jbrowse/core/util/fetchHub'
 import { isSequenceUri, makeAssembly } from '@jbrowse/core/util/makeAssembly'
 
-import { withHostOverrides } from './controllerTracks.ts'
+import { searchIndexKey, withHostOverrides } from './controllerTracks.ts'
 
 import type { HubConfig } from '@jbrowse/core/util/fetchHub'
 
 export type AssemblyConfig = Record<string, unknown>
 
 export interface TextSearchAdapterConfig {
-  textSearchAdapterId: string
+  type: string
   [key: string]: unknown
 }
 type SearchAdapters = TextSearchAdapterConfig[] | undefined
@@ -19,13 +19,11 @@ export interface HubTrackConfig {
 }
 
 // A hub's config arrives off the network, so its search adapters are untyped
-// there. Keep the ones that carry the id everything downstream references,
-// rather than casting the lot: an entry without one cannot be referred to by a
-// config anyway, so dropping it loses nothing and keeps this cast-free.
+// there. Keep the ones naming an adapter type, rather than casting the lot: an
+// entry without one cannot be constructed anyway.
 function searchAdaptersOf(hub: HubConfig): SearchAdapters {
   const found = (hub.aggregateTextSearchAdapters ?? []).filter(
-    (a): a is TextSearchAdapterConfig =>
-      typeof a.textSearchAdapterId === 'string',
+    (a): a is TextSearchAdapterConfig => typeof a.type === 'string',
   )
   return found.length ? found : undefined
 }
@@ -140,7 +138,7 @@ export async function resolveAssemblies<
   const adapters = withHostOverrides<TextSearchAdapterConfig | Index>(
     resolved.flatMap(r => r.aggregateTextSearchAdapters ?? []),
     host.aggregateTextSearchAdapters,
-    'textSearchAdapterId',
+    searchIndexKey,
   )
   return {
     assemblies: resolved.map(r => r.assembly),

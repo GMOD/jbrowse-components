@@ -747,7 +747,6 @@
   "aggregateTextSearchAdapters": [
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "R64-index",
       "ixFilePath": {
         "uri": "trix/R64.ix",
         "locationType": "UriLocation"
@@ -760,7 +759,6 @@
     },
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "YJM1447-index",
       "ixFilePath": {
         "uri": "trix/YJM1447.ix",
         "locationType": "UriLocation"

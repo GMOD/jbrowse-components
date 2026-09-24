@@ -115,7 +115,6 @@ const SearchResultsDropdown = observer(function SearchResultsDropdown() {
     aggregateTextSearchAdapters: [
       {
         type: 'TrixTextSearchAdapter',
-        textSearchAdapterId: 'hg38-index',
         assemblyNames: ['hg38'],
         ixFilePath: {
           uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix',

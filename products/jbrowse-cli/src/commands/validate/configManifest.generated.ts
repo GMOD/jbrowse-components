@@ -6386,10 +6386,6 @@ export const configManifest: ConfigManifest = {
           "type": "\"BigBedTextSearchAdapter\""
         },
         {
-          "name": "textSearchAdapterId",
-          "type": "identifier"
-        },
-        {
           "name": "bigBedLocation",
           "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
@@ -6415,10 +6411,6 @@ export const configManifest: ConfigManifest = {
           "type": "\"JBrowse1TextSearchAdapter\""
         },
         {
-          "name": "textSearchAdapterId",
-          "type": "identifier"
-        },
-        {
           "name": "namesIndexLocation",
           "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
@@ -6438,10 +6430,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "type",
           "type": "\"TrixTextSearchAdapter\""
-        },
-        {
-          "name": "textSearchAdapterId",
-          "type": "identifier"
         },
         {
           "name": "ixFilePath",

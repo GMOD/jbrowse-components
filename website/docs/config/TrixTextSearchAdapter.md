@@ -12,27 +12,18 @@ Auto-generated config schema for the current JBrowse release — see the [config
 you. The `uri` shorthand points at the `.ix` and the sibling `.ixx` is derived
 from it, so the pair only needs spelling out when they are named against
 convention. Written by hand, `{ uri: 'trix/hg38.ix' }` is the whole entry: a
-`.ix` implies this type, the id is generated, and `assemblyNames` defaults to
+`.ix` implies this type, and `assemblyNames` defaults to
 the track's own for a per-track index or to the config's one assembly.
 
 ```js
 {
   type: 'TrixTextSearchAdapter',
-  textSearchAdapterId: 'hg38-index',
   uri: 'trix/hg38.ix',
   assemblyNames: ['hg38'],
 }
 ```
 
 _See the **Config slots** section below for all available configuration fields._
-
-## Overview
-
-### TrixTextSearchAdapter - Identifier
-
-Every TrixTextSearchAdapter has a unique `textSearchAdapterId`, a top-level field (not one of the config slots below) that identifies it; it is auto-generated when omitted.
-
-an explicit `textSearchAdapterId` is still honored when given
 
 ## Config slots
 

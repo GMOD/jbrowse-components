@@ -123,7 +123,7 @@ export {
   resolveLocalFileUris,
 } from './localFiles.ts'
 export type { LocalFileInput } from './localFiles.ts'
-export { withHostOverrides } from './controllerTracks.ts'
+export { searchIndexKey, withHostOverrides } from './controllerTracks.ts'
 export type { TrackInput } from './controllerTracks.ts'
 // the lifecycle behind each single-view product's imperative controller
 export { createEmbeddedController } from './embeddedController.ts'

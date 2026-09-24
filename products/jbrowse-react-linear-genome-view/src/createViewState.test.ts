@@ -406,9 +406,6 @@ test("a search index written as just a uri is found for the embed's assembly", (
     'https://example.com/genes.ix',
     'https://example.com/volvox.ix',
   ])
-  for (const index of indexes) {
-    expect(readConfObject(index, 'textSearchAdapterId')).toBeTruthy()
-  }
 })
 
 test('a restored session that will not load takes its engine down with it', () => {

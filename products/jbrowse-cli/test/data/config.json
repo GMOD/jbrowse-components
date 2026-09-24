@@ -75,7 +75,6 @@
         "indexingFeatureTypesToExclude": ["CDS", "exon"],
         "textSearchAdapter": {
           "type": "TrixTextSearchAdapter",
-          "textSearchAdapterId": "au9_scaffold-index",
           "ixFilePath": {
             "uri": "trix/au9_scaffold.ix",
             "locationType": "UriLocation"
@@ -112,7 +111,6 @@
         "indexingFeatureTypesToExclude": ["CDS", "exon"],
         "textSearchAdapter": {
           "type": "TrixTextSearchAdapter",
-          "textSearchAdapterId": "gff3tabix_genes-index",
           "ixFilePath": {
             "uri": "trix/gff3tabix_genes.ix",
             "locationType": "UriLocation"
@@ -149,7 +147,6 @@
         "indexingFeatureTypesToExclude": ["CDS", "exon"],
         "textSearchAdapter": {
           "type": "TrixTextSearchAdapter",
-          "textSearchAdapterId": "online_gff3tabix_genes-index",
           "ixFilePath": {
             "uri": "trix/online_gff3tabix_genes.ix",
             "locationType": "UriLocation"
@@ -185,7 +182,6 @@
         "indexingAttributes": ["exon_id"],
         "textSearchAdapter": {
           "type": "TrixTextSearchAdapter",
-          "textSearchAdapterId": "gtfdemo-index",
           "ixFilePath": {
             "uri": "trix/gtfdemo.ix",
             "locationType": "UriLocation"
@@ -222,7 +218,6 @@
         "indexingFeatureTypesToExclude": ["CDS", "exon"],
         "textSearchAdapter": {
           "type": "TrixTextSearchAdapter",
-          "textSearchAdapterId": "online_au9_scaffold-index",
           "ixFilePath": {
             "uri": "trix/online_au9_scaffold.ix",
             "locationType": "UriLocation"
@@ -283,7 +278,6 @@
   "aggregateTextSearchAdapters": [
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "volvox-index",
       "ixFilePath": {
         "uri": "trix/volvox.ix",
         "locationType": "UriLocation"

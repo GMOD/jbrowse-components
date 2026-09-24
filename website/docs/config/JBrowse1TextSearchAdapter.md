@@ -15,7 +15,6 @@ search index is reused rather than rebuilt with `jbrowse text-index`:
 ```js
 {
   type: 'JBrowse1TextSearchAdapter',
-  textSearchAdapterId: 'jbrowse1-names',
   namesIndexLocation: { uri: 'https://example.com/jbrowse1/data/names/' },
   assemblyNames: ['hg19'],
 }
@@ -23,13 +22,7 @@ search index is reused rather than rebuilt with `jbrowse text-index`:
 
 _See the **Config slots** section below for all available configuration fields._
 
-## Overview
-
 note: metadata about tracks and assemblies covered by text search adapter
-
-### JBrowse1TextSearchAdapter - Identifier
-
-Every JBrowse1TextSearchAdapter has a unique `textSearchAdapterId`, a required top-level field that identifies it (not one of the config slots below).
 
 ## Config slots
 

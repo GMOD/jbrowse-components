@@ -12,7 +12,7 @@ import type {
 } from '@jbrowse/product-core'
 
 interface TextSearchAdapterConfig {
-  textSearchAdapterId: string
+  type: string
   [key: string]: unknown
 }
 interface InternetAccountConfig {

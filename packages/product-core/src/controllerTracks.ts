@@ -148,16 +148,31 @@ export async function reconcileTracks(
 
 /**
  * A hub's entries followed by the host's own, the host's winning where both
- * carry the same `idKey`.
+ * carry the same id: the `idKey` member, or what an `idKey` function returns.
  */
 export function withHostOverrides<T extends object>(
   hub: readonly T[] = [],
   host: readonly T[] = [],
-  idKey: string,
+  idKey: string | ((entry: T) => unknown),
 ): T[] {
-  const idOf = (entry: T) => (entry as Record<string, unknown>)[idKey]
+  const idOf = (entry: T) =>
+    typeof idKey === 'function'
+      ? idKey(entry)
+      : (entry as Record<string, unknown>)[idKey]
   const hostIds = new Set<unknown>(
     host.map(idOf).filter(id => id !== undefined),
   )
   return [...hub.filter(entry => !hostIds.has(idOf(entry))), ...host]
+}
+
+/**
+ * A search index is the trix file it reads, so a host's entry naming the same
+ * file replaces the hub's. An index with no trix file is only ever itself.
+ */
+export function searchIndexKey(entry: object) {
+  const { uri, ixFilePath } = entry as {
+    uri?: string
+    ixFilePath?: { uri?: string; localPath?: string }
+  }
+  return ixFilePath?.uri ?? ixFilePath?.localPath ?? uri ?? entry
 }

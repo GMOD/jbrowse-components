@@ -7907,9 +7907,6 @@
       "properties": {
         "type": {
           "const": "BigBedTextSearchAdapter"
-        },
-        "textSearchAdapterId": {
-          "type": "string"
         }
       },
       "required": ["type"],
@@ -7956,9 +7953,6 @@
       "properties": {
         "type": {
           "const": "JBrowse1TextSearchAdapter"
-        },
-        "textSearchAdapterId": {
-          "type": "string"
         }
       },
       "required": ["type"],
@@ -8012,9 +8006,6 @@
       "properties": {
         "type": {
           "const": "TrixTextSearchAdapter"
-        },
-        "textSearchAdapterId": {
-          "type": "string"
         }
       },
       "required": ["type"],
@@ -13182,9 +13173,6 @@
           "items": {
             "type": "string"
           }
-        },
-        "textSearchAdapterId": {
-          "type": "string"
         }
       },
       "required": ["uri"],

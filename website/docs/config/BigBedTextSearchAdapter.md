@@ -19,17 +19,11 @@ Auto-generated config schema for the current JBrowse release — see the [config
 
 _See the **Config slots** section below for all available configuration fields._
 
-## Overview
-
 Finds features by the names a BigBed was built to look up, its
 `bedToBigBed -extraIndex` columns, which a UCSC hub declares with
 `searchIndex`. The hub's `searchTrix` index, when given, adds prefix and
 case-insensitive matching. A UCSC track hub connection configures one for
 every track that declares a `searchIndex`.
-
-### BigBedTextSearchAdapter - Identifier
-
-Every BigBedTextSearchAdapter has a unique `textSearchAdapterId`, a top-level field (not one of the config slots below) that identifies it; it is auto-generated when omitted.
 
 ## Config slots
 

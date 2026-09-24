@@ -944,7 +944,6 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
         uri: { type: 'string', pattern: '\\.ix([?#].*)?$' },
         baseUri: shorthandSchema('baseUri'),
         assemblyNames: { type: 'array', items: { type: 'string' } },
-        textSearchAdapterId: { type: 'string' },
       },
       ['uri'],
       { not: { required: ['type'] } },

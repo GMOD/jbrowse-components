@@ -218,7 +218,6 @@
   "aggregateTextSearchAdapters": [
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "volvox-index",
       "ixFilePath": {
         "uri": "trix_main_thread/volvox.ix",
         "locationType": "UriLocation"

@@ -92,7 +92,6 @@
   "aggregateTextSearchAdapters": [
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "GCF_016746395.2-index",
       "ixFilePath": {
         "uri": "https://jbrowse.org/hubs/genark/GCF/016/746/395/GCF_016746395.2/trix/GCF_016746395.2.ix",
         "locationType": "UriLocation"
@@ -105,7 +104,6 @@
     },
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "GCF_004382145.1-index",
       "ixFilePath": {
         "uri": "https://jbrowse.org/hubs/genark/GCF/004/382/145/GCF_004382145.1/trix/GCF_004382145.1.ix",
         "locationType": "UriLocation"

@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import path from 'node:path'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
@@ -72,12 +73,13 @@ function createRoot() {
   return root
 }
 
-function indexIdOf(track: { textSearching?: unknown } | undefined) {
-  return (
+function indexFileOf(track: { textSearching?: unknown } | undefined) {
+  const localPath = (
     track?.textSearching as
-      | { textSearchAdapter?: { textSearchAdapterId?: string } }
+      | { textSearchAdapter?: { ixFilePath?: { localPath?: string } } }
       | undefined
-  )?.textSearchAdapter?.textSearchAdapterId
+  )?.textSearchAdapter?.ixFilePath?.localPath
+  return localPath === undefined ? undefined : path.basename(localPath)
 }
 
 async function runIndexJob(
@@ -123,13 +125,13 @@ test('indexing a session track writes the index into its session entry', async (
   await runIndexJob(root, 'session_genes')
 
   expect(rpcCall).toHaveBeenCalledTimes(1)
-  expect(indexIdOf(getSnapshot(root.session.sessionTracks[0]))).toBe(
-    'session_genes-index',
+  expect(indexFileOf(getSnapshot(root.session.sessionTracks[0]))).toBe(
+    'session_genes-index.ix',
   )
-  expect(indexIdOf(root.session.getTrackById('session_genes'))).toBe(
-    'session_genes-index',
+  expect(indexFileOf(root.session.getTrackById('session_genes'))).toBe(
+    'session_genes-index.ix',
   )
-  expect(indexIdOf(root.jbrowse.tracks[0])).toBeUndefined()
+  expect(indexFileOf(root.jbrowse.tracks[0])).toBeUndefined()
 })
 
 // the session's history records the index like any other session edit, so
@@ -139,7 +141,8 @@ test('undo and redo step over a session track index', async () => {
   spyOnRpc(root)
   const history = root.history
   await jest.advanceTimersByTimeAsync(QUEUE_DELAY_MS)
-  const entryIndex = () => indexIdOf(getSnapshot(root.session.sessionTracks[0]))
+  const entryIndex = () =>
+    indexFileOf(getSnapshot(root.session.sessionTracks[0]))
 
   await runIndexJob(root, 'session_genes')
   // the history records a change once the session has been quiet for 300ms
@@ -150,7 +153,7 @@ test('undo and redo step over a session track index', async () => {
   expect(entryIndex()).toBeUndefined()
 
   history.redo()
-  expect(entryIndex()).toBe('session_genes-index')
+  expect(entryIndex()).toBe('session_genes-index.ix')
 })
 
 test('indexing a config track writes the index into jbrowse.tracks', async () => {
@@ -158,6 +161,8 @@ test('indexing a config track writes the index into jbrowse.tracks', async () =>
   spyOnRpc(root)
   await runIndexJob(root, 'config_genes')
 
-  expect(indexIdOf(root.jbrowse.tracks[0])).toBe('config_genes-index')
-  expect(indexIdOf(getSnapshot(root.session.sessionTracks[0]))).toBeUndefined()
+  expect(indexFileOf(root.jbrowse.tracks[0])).toBe('config_genes-index.ix')
+  expect(
+    indexFileOf(getSnapshot(root.session.sessionTracks[0])),
+  ).toBeUndefined()
 })

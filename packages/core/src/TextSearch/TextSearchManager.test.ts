@@ -179,7 +179,6 @@ describe('relevantAdapters', () => {
           aggregateTextSearchAdapters: [
             {
               assemblyNames,
-              textSearchAdapterId: 'agg',
             },
           ],
         },

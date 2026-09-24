@@ -1666,8 +1666,8 @@ export function unknownExampleKeys(
 // the manifest entry rather than by name:
 //   - `type`, the discriminator. Not a setting anyone tunes, and `slotNesting`
 //     plus every `#example` already show it in place.
-//   - `identifier`-typed slots (trackId, displayId, connectionId,
-//     textSearchAdapterId), which carry an `#identifier` tag rather than
+//   - `identifier`-typed slots (trackId, displayId, connectionId), which
+//     carry an `#identifier` tag rather than
 //     `#slot` and render as the page's identity, not a row.
 //   - a container sub-schema, whose own row `slotsTable` hides (isContainerSlot)
 //     and whose children render as `index.*` rows.

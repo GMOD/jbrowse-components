@@ -3080,7 +3080,6 @@
   "aggregateTextSearchAdapters": [
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "volvox-index",
       "ixFilePath": {
         "uri": "trix/volvox.ix",
         "locationType": "UriLocation"
@@ -3093,7 +3092,6 @@
     },
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "volvox-rev-del-index",
       "ixFilePath": {
         "uri": "trix/volvox-rev-del.ix",
         "locationType": "UriLocation"

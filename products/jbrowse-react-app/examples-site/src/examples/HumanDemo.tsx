@@ -26,7 +26,6 @@ const tracks = [
     textSearching: {
       textSearchAdapter: {
         type: 'TrixTextSearchAdapter',
-        textSearchAdapterId: 'gff3tabix_genes-index',
         ixFilePath: {
           uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix',
         },

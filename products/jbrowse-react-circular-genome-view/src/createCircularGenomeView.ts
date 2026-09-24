@@ -1,5 +1,6 @@
 import {
   createEmbeddedController,
+  searchIndexKey,
   withHostOverrides,
 } from '@jbrowse/product-core'
 
@@ -180,7 +181,7 @@ export function createCircularGenomeView(
         aggregateTextSearchAdapters: withHostOverrides(
           resolved.aggregateTextSearchAdapters,
           opts.aggregateTextSearchAdapters,
-          'textSearchAdapterId',
+          searchIndexKey,
         ),
         localFiles: opts.localFiles,
         internetAccounts: opts.internetAccounts,

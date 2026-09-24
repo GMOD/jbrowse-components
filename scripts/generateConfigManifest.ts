@@ -369,8 +369,8 @@ const LEGACY_CANDIDATES = {
 // rather than by a list someone has to remember to update.
 function legacyKeysOf(configSchema, declaredSlots) {
   const declared = new Set(declaredSlots.map(slot => slot.name))
-  // Every schema has a required explicitIdentifier (displayId / trackId /
-  // textSearchAdapterId / ...), and two things go wrong without pinning it:
+  // Most schemas have a required explicitIdentifier (displayId / trackId /
+  // ...), and two things go wrong without pinning it:
   // create({}) throws outright, and a schema that DEFAULTS its identifier
   // generates a fresh random one per create — so baseline and probe differ
   // every time and every candidate reads as consumed. Pinning fixes both.

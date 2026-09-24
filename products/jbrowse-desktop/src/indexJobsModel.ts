@@ -7,7 +7,13 @@ import {
   statusMessageText,
   statusReading,
 } from '@jbrowse/core/util'
-import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  getParent,
+  getSnapshot,
+  isStateTreeNode,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { getOrCreateJobsListWidget } from '@jbrowse/plugin-jobs-management'
 import {
   createTextSearchConf,
@@ -20,6 +26,7 @@ import { invokeIpc } from './ipc.ts'
 
 import type { DesktopRootModel } from './rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { RpcStatus, SessionWithDrawerWidgets } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -34,10 +41,9 @@ import type { indexType } from '@jbrowse/text-indexing/util'
 export interface JobsManagerParent {
   jbrowse: {
     rpcManager: RpcManager
-    aggregateTextSearchAdapters: { textSearchAdapterId: string }[]
+    aggregateTextSearchAdapters: AggregateEntry[]
   }
   session: SessionWithDrawerWidgets & { trackBasesById: Map<string, Track> }
-  textSearchManager: { clearCache: () => void }
   updateTrackBase: (trackConf: {
     trackId: string
     [key: string]: unknown
@@ -99,13 +105,32 @@ function indexedTrackConf(
   }
 }
 
+type TextSearchConf = ReturnType<typeof createTextSearchConf>
+type AggregateEntry = AnyConfigurationModel | TextSearchConf
+
+// an assembly's aggregate index is the trix covering it alone, whoever wrote
+// it, so a re-index replaces a CLI-built one as well as its own last run
+function isAggregateIndexOf(entry: AggregateEntry, assemblyName: string) {
+  const { type, assemblyNames } = (
+    isStateTreeNode(entry) ? getSnapshot(entry) : entry
+  ) as Partial<TextSearchConf>
+  return (
+    type === 'TrixTextSearchAdapter' &&
+    assemblyNames?.length === 1 &&
+    assemblyNames[0] === assemblyName
+  )
+}
+
 function addAggregateTextSearchConf(
-  adapters: { textSearchAdapterId: string }[],
+  adapters: AggregateEntry[],
   { assemblyName, outLocation }: { assemblyName: string; outLocation: string },
 ) {
-  const id = `${assemblyName}-index`
-  const trixConf = createTextSearchConf(id, [assemblyName], outLocation)
-  const foundIdx = adapters.findIndex(x => x.textSearchAdapterId === id)
+  const trixConf = createTextSearchConf(
+    `${assemblyName}-index`,
+    [assemblyName],
+    outLocation,
+  )
+  const foundIdx = adapters.findIndex(x => isAggregateIndexOf(x, assemblyName))
   if (foundIdx === -1) {
     adapters.push(trixConf)
   } else {
@@ -358,9 +383,6 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             }
           }
 
-          // clear the text search adapter cache so stale adapters pointing
-          // at old index files are discarded
-          self.root.textSearchManager.clearCache()
           this.dequeue()
           const jobStatusWidget = self.getJobStatusWidget()
           session.showWidget(jobStatusWidget)

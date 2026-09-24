@@ -8412,9 +8412,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "type": {
           "const": "BigBedTextSearchAdapter"
-        },
-        "textSearchAdapterId": {
-          "type": "string"
         }
       },
       "required": [
@@ -8463,9 +8460,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "type": {
           "const": "JBrowse1TextSearchAdapter"
-        },
-        "textSearchAdapterId": {
-          "type": "string"
         }
       },
       "required": [
@@ -8521,9 +8515,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "type": {
           "const": "TrixTextSearchAdapter"
-        },
-        "textSearchAdapterId": {
-          "type": "string"
         }
       },
       "required": [
@@ -13988,9 +13979,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "items": {
             "type": "string"
           }
-        },
-        "textSearchAdapterId": {
-          "type": "string"
         }
       },
       "required": [

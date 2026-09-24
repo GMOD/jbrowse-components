@@ -1,5 +1,5 @@
 import { parseCommaSeparatedString, writeJsonFile } from '../../utils.ts'
-import { createTrixAdapter } from './adapter-utils.ts'
+import { createTrixAdapter, indexFileOf } from './adapter-utils.ts'
 import {
   formatDryRun,
   getAssemblyNames,
@@ -58,7 +58,7 @@ export async function aggregateIndex(flags: TextIndexFlags): Promise<void> {
     const trixConf = createTrixAdapter(asm, [asm])
     if (
       !force &&
-      existing.some(x => x.textSearchAdapterId === trixConf.textSearchAdapterId)
+      existing.some(x => indexFileOf(x) === indexFileOf(trixConf))
     ) {
       console.log(
         `Note: ${asm} has already been indexed with this configuration, use --force to overwrite this assembly. Skipping for now`,
@@ -85,12 +85,12 @@ export async function aggregateIndex(flags: TextIndexFlags): Promise<void> {
   if (!dryrun) {
     await writeJsonFile(configPath, {
       ...config,
-      // upsert by adapter id: a Map keyed on it keeps the first occurrence's
+      // upsert by index file: a Map keyed on it keeps the first occurrence's
       // position while the last value wins, so re-indexing an assembly replaces
-      // its adapter in place and a new one lands at the end
+      // its entry in place and a new one lands at the end
       aggregateTextSearchAdapters: [
         ...new Map(
-          [...existing, ...written].map(a => [a.textSearchAdapterId, a]),
+          [...existing, ...written].map(a => [indexFileOf(a), a]),
         ).values(),
       ],
     })

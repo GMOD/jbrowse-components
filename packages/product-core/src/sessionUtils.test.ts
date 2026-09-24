@@ -981,7 +981,6 @@ test('planWebExport keeps a remote track whose text-search index is local', () =
           indexingAttributes: ['Name', 'ID'],
           textSearchAdapter: {
             type: 'TrixTextSearchAdapter',
-            textSearchAdapterId: 'remote-gff-index',
             ixFilePath: {
               localPath: '/home/me/trix/remote-gff.ix',
               locationType: 'LocalPathLocation',

@@ -27,12 +27,11 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * you. The `uri` shorthand points at the `.ix` and the sibling `.ixx` is derived
  * from it, so the pair only needs spelling out when they are named against
  * convention. Written by hand, `{ uri: 'trix/hg38.ix' }` is the whole entry: a
- * `.ix` implies this type, the id is generated, and `assemblyNames` defaults to
+ * `.ix` implies this type, and `assemblyNames` defaults to
  * the track's own for a per-track index or to the config's one assembly.
  * ```js
  * {
  *   type: 'TrixTextSearchAdapter',
- *   textSearchAdapterId: 'hg38-index',
  *   uri: 'trix/hg38.ix',
  *   assemblyNames: ['hg38'],
  * }
@@ -78,12 +77,6 @@ const TrixTextSearchAdapter = ConfigurationSchema(
   {
     explicitlyTyped: true,
     /**
-     * #identifier
-     * an explicit `textSearchAdapterId` is still honored when given
-     */
-    implicitIdentifier: 'textSearchAdapterId',
-
-    /**
      * #preProcessSnapshot
      *
      *
@@ -94,8 +87,7 @@ const TrixTextSearchAdapter = ConfigurationSchema(
      * {
      *   "type": "TrixTextSearchAdapter",
      *   "uri": "file.ix",
-     *   "assemblyNames": ["hg19"],
-     *   "textSearchAdapterId": "hg19SearchIndex"
+     *   "assemblyNames": ["hg19"]
      * }
      * ```
      */

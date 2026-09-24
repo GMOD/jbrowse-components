@@ -62,11 +62,6 @@ describe('createTextSearchConf', () => {
       locationType: 'LocalPathLocation',
     })
   })
-
-  it('textSearchAdapterId retains the original unsanitized name', () => {
-    const conf = createTextSearchConf('test_a/b-index', [], outDir)
-    expect(conf.textSearchAdapterId).toBe('test_a/b-index')
-  })
 })
 
 describe('findTrackConfigsToIndex', () => {

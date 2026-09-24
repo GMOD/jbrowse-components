@@ -97,7 +97,7 @@ export interface Track {
 }
 
 export interface TextSearchAdapter {
-  textSearchAdapterId: string
+  type: string
   [key: string]: unknown
 }
 

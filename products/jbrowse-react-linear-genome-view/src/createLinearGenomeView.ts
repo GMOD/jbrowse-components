@@ -1,5 +1,6 @@
 import {
   createEmbeddedController,
+  searchIndexKey,
   withHostOverrides,
 } from '@jbrowse/product-core'
 
@@ -173,7 +174,7 @@ export function createLinearGenomeView(
         aggregateTextSearchAdapters: withHostOverrides(
           resolved.aggregateTextSearchAdapters,
           opts.aggregateTextSearchAdapters,
-          'textSearchAdapterId',
+          searchIndexKey,
         ),
         localFiles: opts.localFiles,
         internetAccounts: opts.internetAccounts,

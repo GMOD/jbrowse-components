@@ -58,7 +58,7 @@ test('one config opens with every field it carries', () => {
     assemblies: [{ name: 'hg38' }],
     tracks: [{ trackId: 'genes' }],
     aggregateTextSearchAdapters: [
-      { type: 'TrixTextSearchAdapter', textSearchAdapterId: 'hg38-index' },
+      { type: 'TrixTextSearchAdapter', uri: 'trix/hg38.ix' },
     ],
     connections: [{ connectionId: 'hub' }],
     defaultSession: { name: 'hg38' },
@@ -75,17 +75,17 @@ test('one config opens with every field it carries', () => {
 test('the search indexes and connections union across entries', () => {
   const merged = mergeConfigInputs([
     {
-      aggregateTextSearchAdapters: [{ textSearchAdapterId: 'hg38-index' }],
+      aggregateTextSearchAdapters: [{ uri: 'trix/hg38.ix' }],
       connections: [{ connectionId: 'a' }],
     },
     {
-      aggregateTextSearchAdapters: [{ textSearchAdapterId: 'hg19-index' }],
+      aggregateTextSearchAdapters: [{ uri: 'trix/hg19.ix' }],
       connections: [{ connectionId: 'b' }],
     },
   ])
   expect(merged.aggregateTextSearchAdapters).toEqual([
-    { textSearchAdapterId: 'hg38-index' },
-    { textSearchAdapterId: 'hg19-index' },
+    { uri: 'trix/hg38.ix' },
+    { uri: 'trix/hg19.ix' },
   ])
   expect(merged.connections).toEqual([
     { connectionId: 'a' },

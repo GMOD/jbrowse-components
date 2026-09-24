@@ -208,7 +208,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * ```js
  * {
  *   type: 'JBrowse1TextSearchAdapter',
- *   textSearchAdapterId: 'jbrowse1-names',
  *   namesIndexLocation: { uri: 'https://example.com/jbrowse1/data/names/' },
  *   assemblyNames: ['hg19'],
  * }
@@ -242,21 +241,13 @@ export default ConfigurationSchema(
       description: 'List of assemblies covered by text search adapter',
     },
   },
-  {
-    explicitlyTyped: true,
-    /**
-     * #identifier
-     */
-    explicitIdentifier: 'textSearchAdapterId',
-  },
+  { explicitlyTyped: true },
 )
 ````
 
 `assemblyNames` is required; `TextSearchManager` uses it to pick which adapters
-to query for a given assembly. A config's `textSearchAdapterId` writes to
-`explicitIdentifier`, and the adapter cache keys on it too — two adapters
-sharing an id are one cache entry. (`TrixTextSearchAdapter` uses
-`implicitIdentifier` instead, so its id is optional in a config.)
+to query for a given assembly. The manager caches an adapter by a hash of its
+config, as data adapters are, so an edited config loads a fresh one.
 
 The `#config` / `#slot` JSDoc tags generate the published config page for the
 adapter; they are optional.
@@ -306,7 +297,6 @@ global search, or under a track's `textSearching` field for track-scoped search:
   "aggregateTextSearchAdapters": [
     {
       "type": "MyTextSearchAdapter",
-      "textSearchAdapterId": "my-search",
       "endpoint": "https://my-api.example.com/search",
       "assemblyNames": ["hg38"]
     }
@@ -322,7 +312,6 @@ Per-track:
   "textSearching": {
     "textSearchAdapter": {
       "type": "MyTextSearchAdapter",
-      "textSearchAdapterId": "my-track-search",
       "endpoint": "https://my-api.example.com/search",
       "assemblyNames": ["hg38"]
     }

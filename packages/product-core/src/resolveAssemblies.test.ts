@@ -11,7 +11,8 @@ const hub = {
     { trackId: 'repeats', name: 'Hub repeats' },
   ],
   aggregateTextSearchAdapters: [
-    { type: 'TrixTextSearchAdapter', textSearchAdapterId: 'hg38-index' },
+    { type: 'TrixTextSearchAdapter', uri: 'trix/hg38.ix' },
+    { type: 'TrixTextSearchAdapter', uri: 'trix/hg38-extra.ix' },
   ],
 }
 
@@ -23,10 +24,15 @@ test('an assembly with no hub and a host with nothing adds no keys a spread coul
   expect({ ...options, ...resolved }.tracks).toEqual([{ trackId: 'mine' }])
 })
 
-test("a hub's catalog and index come back merged with the host's, the host winning an id", async () => {
+test("a hub's catalog and indexes come back merged with the host's, the host winning an id or a file", async () => {
+  const mine = {
+    type: 'TrixTextSearchAdapter',
+    ixFilePath: { uri: 'trix/hg38-extra.ix' },
+    assemblyNames: ['hg38'],
+  }
   const resolved = await resolveAssemblies([hub], {
     tracks: [{ trackId: 'genes', name: 'My genes' }, { trackId: 'mine' }],
-    aggregateTextSearchAdapters: [{ uri: 'mine.ix' }],
+    aggregateTextSearchAdapters: [mine, { uri: 'mine.ix' }],
   })
 
   expect(resolved.tracks).toEqual([
@@ -35,7 +41,8 @@ test("a hub's catalog and index come back merged with the host's, the host winni
     { trackId: 'mine' },
   ])
   expect(resolved.aggregateTextSearchAdapters).toEqual([
-    { type: 'TrixTextSearchAdapter', textSearchAdapterId: 'hg38-index' },
+    { type: 'TrixTextSearchAdapter', uri: 'trix/hg38.ix' },
+    mine,
     { uri: 'mine.ix' },
   ])
 })

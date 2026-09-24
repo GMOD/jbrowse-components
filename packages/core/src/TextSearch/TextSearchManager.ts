@@ -1,6 +1,7 @@
-import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { hydrateTrackConfig, readConfObject } from '../configuration/index.ts'
+import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
 import { checkAbortSignal, isAbortException } from '../util/aborting.ts'
 import { allSessionTracks, canonicalAssemblyNames } from '../util/tracks.ts'
@@ -62,8 +63,8 @@ export default class TextSearchManager {
   loadTextSearchAdapters(assemblyName: string) {
     return settle(
       this.relevantIndexes(assemblyName).map(async ({ conf, trackId }) => {
-        const adapterId = readConfObject(conf, 'textSearchAdapterId')
-        const cached = this.adapterCache.get(adapterId)
+        const key = adapterConfigCacheKey(getSnapshot(conf))
+        const cached = this.adapterCache.get(key)
         if (cached) {
           return { adapter: cached, trackId }
         } else {
@@ -76,7 +77,7 @@ export default class TextSearchManager {
             undefined,
             this.pluginManager,
           ) as BaseTextSearchAdapter
-          this.adapterCache.set(adapterId, adapter)
+          this.adapterCache.set(key, adapter)
           return { adapter, trackId }
         }
       }),

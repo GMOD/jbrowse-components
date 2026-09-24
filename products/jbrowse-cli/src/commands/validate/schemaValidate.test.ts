@@ -412,7 +412,6 @@ describe('the schema', () => {
     config.tracks[0]!.textSearching = {
       textSearchAdapter: {
         type: 'TrixTextSearchAdapter',
-        textSearchAdapterId: 'a',
         ixFilePth: { uri: 'a.ix' },
       },
     }
@@ -441,7 +440,6 @@ describe('the schema', () => {
       aggregateTextSearchAdapters: [
         {
           type: 'TrixTextSearchAdapter',
-          textSearchAdapterId: 'a',
           ixxFilePth: { uri: 'a.ixx' },
         },
       ],

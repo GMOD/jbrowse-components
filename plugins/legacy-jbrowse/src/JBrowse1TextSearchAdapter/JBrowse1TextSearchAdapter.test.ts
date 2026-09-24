@@ -33,7 +33,6 @@ test('search upper case', async () => {
   const adapter = new Adapter(
     configSchema.create({
       type: 'JBrowse1TextSearchAdapter',
-      textSearchAdapterId: 'JBrowse1GenerateNamesAdapterTest',
       namesIndexLocation: {
         uri: decodeURI(new URL(`file://${rootTemplate}`).href),
         locationType: 'UriLocation',
@@ -71,7 +70,6 @@ test('search lower case', async () => {
   const adapter = new Adapter(
     configSchema.create({
       type: 'JBrowse1TextSearchAdapter',
-      textSearchAdapterId: 'JBrowse1GenerateNamesAdapterTest',
       namesIndexLocation: {
         uri: decodeURI(new URL(`file://${rootTemplate}`).href),
         locationType: 'UriLocation',

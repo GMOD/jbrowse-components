@@ -30,7 +30,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "locationType": "UriLocation",
         "uri": "trix/volvox.ixx",
       },
-      "textSearchAdapterId": "volvox-index",
       "type": "TrixTextSearchAdapter",
     },
     {
@@ -45,7 +44,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "locationType": "UriLocation",
         "uri": "trix/volvox-rev-del.ixx",
       },
-      "textSearchAdapterId": "volvox-rev-del-index",
       "type": "TrixTextSearchAdapter",
     },
   ],

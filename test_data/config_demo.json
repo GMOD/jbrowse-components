@@ -5606,13 +5606,11 @@
   "aggregateTextSearchAdapters": [
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "hg19-index",
       "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix",
       "assemblyNames": ["hg19"]
     },
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "hg38-index",
       "uri": "https://jbrowse.org/genomes/GRCh38/trix/hg38.ix",
       "assemblyNames": ["hg38"]
     }

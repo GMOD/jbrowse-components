@@ -59,7 +59,6 @@ describe('TrixTextSearchAdapter', () => {
   const adapter = new Adapter(
     configSchema.create({
       type: 'TrixTextSearchAdapter',
-      textSearchAdapterId: 'TrixTextSearchAdapterTest',
       ixFilePath: {
         localPath: path.resolve(__dirname, 'test_data/volvox.ix'),
         locationType: 'LocalPathLocation',

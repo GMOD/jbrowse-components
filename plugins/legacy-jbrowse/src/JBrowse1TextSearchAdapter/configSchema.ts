@@ -13,7 +13,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * ```js
  * {
  *   type: 'JBrowse1TextSearchAdapter',
- *   textSearchAdapterId: 'jbrowse1-names',
  *   namesIndexLocation: { uri: 'https://example.com/jbrowse1/data/names/' },
  *   assemblyNames: ['hg19'],
  * }
@@ -47,11 +46,5 @@ export default ConfigurationSchema(
       description: 'List of assemblies covered by text search adapter',
     },
   },
-  {
-    explicitlyTyped: true,
-    /**
-     * #identifier
-     */
-    explicitIdentifier: 'textSearchAdapterId',
-  },
+  { explicitlyTyped: true },
 )

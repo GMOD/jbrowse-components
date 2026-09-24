@@ -59,13 +59,7 @@ const BigBedTextSearchAdapter = ConfigurationSchema(
       description: 'List of assemblies covered by text search adapter',
     },
   },
-  {
-    explicitlyTyped: true,
-    /**
-     * #identifier
-     */
-    implicitIdentifier: 'textSearchAdapterId',
-  },
+  { explicitlyTyped: true },
 )
 
 export interface BigBedTextSearchAdapterConfig extends Instance<

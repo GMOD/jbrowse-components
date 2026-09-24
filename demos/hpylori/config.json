@@ -197,7 +197,6 @@
   "aggregateTextSearchAdapters": [
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "hpylori_26695-index",
       "ixFilePath": {
         "uri": "trix/hpylori_26695.ix",
         "locationType": "UriLocation"
@@ -210,7 +209,6 @@
     },
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "hpylori_j99-index",
       "ixFilePath": {
         "uri": "trix/hpylori_j99.ix",
         "locationType": "UriLocation"
@@ -223,7 +221,6 @@
     },
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "hpylori_chc155-index",
       "ixFilePath": {
         "uri": "trix/hpylori_chc155.ix",
         "locationType": "UriLocation"

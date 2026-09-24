@@ -7,6 +7,7 @@ import {
   registerLocalFiles,
   resolveAssembly,
   resolveLocalFileUris,
+  searchIndexKey,
   withHostOverrides,
 } from '@jbrowse/product-core'
 
@@ -168,7 +169,7 @@ async function resolveJBrowseHub(
     aggregateTextSearchAdapters: withHostOverrides(
       hub.aggregateTextSearchAdapters,
       rest.aggregateTextSearchAdapters,
-      'textSearchAdapterId',
+      searchIndexKey,
     ),
   }
 }

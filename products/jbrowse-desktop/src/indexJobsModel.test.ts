@@ -115,8 +115,7 @@ function setup({
       return new Map(tracks.map(t => [t.trackId, t]))
     },
   }
-  const textSearchManager = { clearCache: jest.fn() }
-  const aggregateTextSearchAdapters: { textSearchAdapterId: string }[] = []
+  const aggregateTextSearchAdapters: Record<string, unknown>[] = []
 
   // replace-by-index, not a mutation of the found entry, so this fake
   // exercises the identity change the hydration cache (ADR-031) needs to see
@@ -135,7 +134,6 @@ function setup({
         aggregateTextSearchAdapters,
       },
       session,
-      textSearchManager,
       updateTrackBase,
     }))
 
@@ -145,7 +143,6 @@ function setup({
     jobsManager: root.jobsManager,
     widget,
     session,
-    textSearchManager,
     aggregateTextSearchAdapters,
     call,
   }
@@ -198,7 +195,9 @@ test('re-indexing keeps the track’s own indexing policy', async () => {
 
   expect(tracks[0]!.textSearching).toMatchObject({
     indexingFeatureTypesToInclude: ['gene', 'mRNA'],
-    textSearchAdapter: { textSearchAdapterId: 't1-index' },
+    textSearchAdapter: {
+      ixFilePath: { localPath: expect.stringMatching(/t1-index\.ix$/) },
+    },
   })
 })
 
@@ -217,7 +216,7 @@ test('a successful perTrack run indexes only the supported adapters', async () =
     makeTrack('t2', 'BamAdapter'),
   ]
   const originalT1 = tracks[0]
-  const { jobsManager, widget, session, textSearchManager, call } = setup({
+  const { jobsManager, widget, session, call } = setup({
     tracks,
   })
   jobsManager.queueJob(
@@ -250,14 +249,24 @@ test('a successful perTrack run indexes only the supported adapters', async () =
   // replaced, not mutated (ADR-031's hydration cache keys on object identity)
   expect(tracks[0]).not.toBe(originalT1)
 
-  expect(textSearchManager.clearCache).toHaveBeenCalled()
   expect(widget.inState('finished').map(j => j.name)).toEqual(['job1'])
   expect(jobsManager.running).toBe(false)
 })
 
-test('an aggregate run writes one adapter per assembly, replacing any existing', async () => {
+test("an aggregate run replaces its assembly's index and no other", async () => {
   const { jobsManager, aggregateTextSearchAdapters } = setup()
-  aggregateTextSearchAdapters.push({ textSearchAdapterId: 'volvox-index' })
+  const trix = (assemblyNames: string[], localPath: string) => ({
+    type: 'TrixTextSearchAdapter',
+    assemblyNames,
+    ixFilePath: { localPath, locationType: 'LocalPathLocation' },
+  })
+  const both = trix(['volvox', 'other'], 'both.ix')
+  const other = trix(['other'], 'other.ix')
+  aggregateTextSearchAdapters.push(
+    trix(['volvox'], 'trix/volvox.ix'),
+    both,
+    other,
+  )
 
   jobsManager.queueJob(
     makeEntry({
@@ -269,12 +278,16 @@ test('an aggregate run writes one adapter per assembly, replacing any existing',
   )
   await jobsManager.runJob()
 
-  expect(aggregateTextSearchAdapters).toHaveLength(1)
-  expect(aggregateTextSearchAdapters[0]).toHaveProperty(
-    'textSearchAdapterId',
-    'volvox-index',
-  )
-  expect(aggregateTextSearchAdapters[0]).toHaveProperty('ixFilePath')
+  expect(aggregateTextSearchAdapters).toEqual([
+    expect.objectContaining({
+      assemblyNames: ['volvox'],
+      ixFilePath: expect.objectContaining({
+        localPath: expect.stringMatching(/volvox-index\.ix$/),
+      }),
+    }),
+    both,
+    other,
+  ])
 })
 
 test('a job naming a since-deleted track is dequeued, not left stuck', async () => {
