@@ -92,29 +92,21 @@ export async function waitForFrame(
   }: Omit<ReadyOptions, keyof SessionExpectations> = {},
 ): Promise<ReadyReport> {
   const unsettled: string[] = []
-  const ready = await waitForAppSettled(page, { timeout })
-  if (!ready) {
+  // the paint wait is skipped once the marker timed out, so a stuck page costs
+  // one timeout rather than two
+  if (!(await waitForAppSettled(page, { timeout }))) {
     unsettled.push('the app never held itself ready')
+  } else if (!(await waitForDisplaysDone(page, timeout))) {
+    unsettled.push('a display never reported its first paint')
   }
-  // Skipped when the marker itself timed out: the paint wait would spend a
-  // second full timeout on a page already known unsettled, and the census below
-  // reports the unpainted displays either way. Free on a page with no canvas.
-  if (ready) {
-    const drawn = await waitForDisplaysDone(page, timeout)
-    if (!drawn) {
-      unsettled.push('a display never reported its first paint')
-    }
-  }
+  const timedOut = unsettled.length > 0
 
   if (settleMs > 0) {
     await delay(settleMs)
   }
 
-  // The shutter-time census, taken ONCE and after the settle, so the throw and
-  // the report it ships with agree. Taken before it they did not: a display
-  // that painted during `settleMs` was absent from `pending` and still failed
-  // the run, while the CLI's own warning recommended raising `--settle` to fix
-  // exactly that.
+  // taken after the settle, so the throw and the report describe the captured
+  // frame
   const pending = await pendingDisplayStates(page)
   const canceled = pending.filter(d => d.phase === 'canceled')
   const unpainted = pending.filter(d => d.phase !== 'canceled')
@@ -129,18 +121,15 @@ export async function waitForFrame(
     )
   }
   if (!allowUnsettled && unsettled.length > 0) {
-    // Throwing is the point. Each stage swallows its own timeout so a slow page
-    // is not failed for being slow, which historically meant the run ended with
-    // an image and an exit code of 0 whether it had settled or not. A caller
-    // that genuinely wants the frame anyway asks for it by name.
+    const stillLoading = pending.some(
+      d => d.phase === undefined || d.phase === 'loading',
+    )
     throw new Error(
-      unsettled.length === 1 && canceled.length > 0
-        ? `${unsettled[0]}. No timeout lifts a cancel; press Retry on the ` +
-            'track, or pass allowUnsettled (--allowUnsettled) to capture the ' +
-            'frame as it stands.'
-        : `gave up waiting after ${timeout}ms: ${unsettled.join('; ')}. ` +
-            'Raise the timeout, or pass allowUnsettled (--allowUnsettled) to ' +
-            'capture the frame as it stands.',
+      `${timedOut ? `gave up waiting after ${timeout}ms: ` : ''}${unsettled.join('; ')}. ` +
+        (timedOut || stillLoading
+          ? 'Raise the timeout, or pass'
+          : 'No timeout changes that; pass') +
+        ' allowUnsettled (--allowUnsettled) to capture the frame as it stands.',
     )
   }
   const tooLarge = await page.evaluate(tooLargeDisplaysInPage)

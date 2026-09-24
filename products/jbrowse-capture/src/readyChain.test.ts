@@ -133,7 +133,7 @@ test('an errored display is named unsettled instead of burning the timeout', asy
   )
   await expect(
     waitForJBrowseReady(fakePage(), { timeout: 30000 }),
-  ).rejects.toThrow(/display\(s\) never painted: pileup is error/)
+  ).rejects.toThrow(/^display\(s\) never painted: pileup is error\. No timeout/)
 }, 15000)
 
 // The marker reads `ready` over a cancel, which is finished work; the capture
@@ -202,8 +202,21 @@ test('a display whose renderer failed fails the chain', async () => {
   )
   await expect(
     waitForJBrowseReady(fakePage(), { timeout: 10000 }),
-  ).rejects.toThrow(/display\(s\) never painted: hg38-genes is renderError/)
+  ).rejects.toThrow(
+    /^display\(s\) never painted: hg38-genes is renderError\. No timeout/,
+  )
 }, 20000)
+
+test('a stage that timed out says so, and names the timeout as the fix', async () => {
+  app(
+    'loading',
+    `<div data-testid="pileup" data-display-drawn="false"
+          data-display-phase="loading"></div>`,
+  )
+  await expect(
+    waitForJBrowseReady(fakePage(), { timeout: 200 }),
+  ).rejects.toThrow(/^gave up waiting after 200ms: .*Raise the timeout/)
+}, 15000)
 
 // `views` is a session expectation like the other two, so the whole chain has
 // to hand it to the gate rather than a copied subset of the options
