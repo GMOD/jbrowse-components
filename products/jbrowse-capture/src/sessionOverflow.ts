@@ -1,15 +1,7 @@
 /**
- * How many CSS pixels of the session lie below the window.
- *
- * JBrowse scrolls a column inside the app rather than the document, so the
- * document is always exactly the window's height. The overflow is that column's,
- * found as `overflow` in jbApi finds it, less the trailing room `ViewStack`
- * leaves for scrolling the last view up, which is space rather than content. A
- * workspace scrolls each panel on its own, so the answer is the most any panel
- * overflows: enough for panels side by side, while a panel stacked under
- * another gets only its share of the growth.
- *
- * Serialized into the page, so it declares everything it uses.
+ * How many CSS pixels of the session lie below the window: the most any
+ * scrolling column holding a view overflows, less the empty room `ViewStack`
+ * leaves below the last view. Serialized into the page.
  */
 export function sessionOverflowInPage(): number {
   let most = Math.max(

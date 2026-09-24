@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import { parseArgs } from './args.ts'
 import { captureJBrowse } from './capture.ts'
 import { resolveAgainstConfig } from './catalog.ts'
-import { listHubAssemblies, listHubTracks } from './hub.ts'
+import { listHubAssemblies, listHubTracks, trackName } from './hub.ts'
 import { jbrowseUrl } from './url.ts'
 
 import type { ParsedArgs } from './args.ts'
@@ -126,7 +126,7 @@ async function runList(positionals: string[]) {
   const pad = Math.min(60, Math.max(...tracks.map(t => t.trackId.length)))
   for (const t of tracks) {
     console.log(
-      `  ${t.trackId.padEnd(pad)}  ${(t.type ?? '').padEnd(18)}  ${t.name ?? ''}`,
+      `  ${t.trackId.padEnd(pad)}  ${(t.type ?? '').padEnd(18)}  ${trackName(t)}`,
     )
   }
 }

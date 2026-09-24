@@ -1,17 +1,16 @@
-// The DECODED value of the `session=` query param that jbrowse-web reads to open
-// a declarative session without a saved-session backend: a `spec-` prefix plus
-// the session JSON. This is what the app sees after the query string is parsed,
-// so it is the right thing to hand to `URLSearchParams.set`, which does its own
-// encoding.
+/**
+ * The decoded `session=` value that opens a session spec. Hand it to
+ * `URLSearchParams`, which encodes it once itself.
+ */
 export function sessionSpecParam(session: object): string {
   return `spec-${JSON.stringify(session)}`
 }
 
-// The same value pre-encoded, for callers that concatenate a query string by
-// hand rather than going through URL. Passing THIS to `URLSearchParams.set`
-// encodes it a second time, and the app then decodes once and parses `%7B…` as
-// JSON — so pick one path and stay on it. Shared so the runner and screenshot
-// generator can't drift on the encoding.
+/**
+ * The `session=` value pre-encoded, for a query string built by hand. Passed
+ * through `URLSearchParams` as well, it is encoded twice and the app fails to
+ * parse it.
+ */
 export function encodeSessionSpec(session: object): string {
   return encodeURIComponent(sessionSpecParam(session))
 }
@@ -38,29 +37,19 @@ type TrackEntry =
 
 interface SpecShape {
   views?: {
-    // a circular view takes a list, one arc per genome
     assembly?: string | string[]
-    // where a saved snapshot keeps its assembly
     displayedRegions?: { assemblyName?: string }[]
     assemblyNames?: string[]
-    // a synteny spec's `tracks` may be nested — one string[] per level (the
-    // gap between adjacent rows), the shape normalizeTrackLevels accepts
+    // a synteny spec may nest one list per level
     tracks?: (TrackEntry | string[])[]
-    // the restructured snapshot spelling of the same thing, for a session
-    // saved from a running view rather than written as a spec
     levels?: { tracks?: TrackEntry[] }[]
     views?: SpecShape['views']
   }[]
 }
 
 /**
- * The assembly the first view of a session spec or saved snapshot opens, if it
- * names one.
- *
- * The session gate needs this because a spec can be loaded against any config —
- * `--hub hg38 --spec spec.json` where the spec opens a different assembly is
- * legitimate, and defaulting the expectation to the hub name would fail a
- * perfectly good capture.
+ * The assembly the first view of a session spec or saved snapshot opens, if
+ * it names one.
  */
 export function assemblyFromSession(session: object): string | undefined {
   const find = (views: SpecShape['views']): string | undefined => {
@@ -80,16 +69,10 @@ export function assemblyFromSession(session: object): string | undefined {
 }
 
 /**
- * Every trackId a session spec or saved snapshot opens, including nested views
- * (a synteny or breakpoint-split view puts its LGVs one level down).
- *
- * Used as the session gate's expectation: it is what turns "the browser loaded"
- * into "the tracks I named are open", and a session is the one input where the
- * caller has not spelled those ids out separately.
+ * Every trackId a session spec or saved snapshot opens, nested views
+ * included.
  */
 export function trackIdsFromSession(session: object): string[] {
-  // an entry that names no trackId is malformed rather than a track to expect,
-  // so it drops out here instead of gating on undefined
   const idOf = (t: TrackEntry) =>
     typeof t === 'string'
       ? t
@@ -97,29 +80,21 @@ export function trackIdsFromSession(session: object): string[] {
         (typeof t.configuration === 'string'
           ? t.configuration
           : t.configuration?.trackId))
-  const idsOf = (tracks: TrackEntry[] | undefined): string[] =>
-    (tracks ?? []).map(idOf).filter(id => id !== undefined)
+  const idsOf = (tracks: TrackEntry[] = []) =>
+    tracks.map(idOf).filter(id => id !== undefined)
   const collect = (views: SpecShape['views']): string[] =>
     (views ?? []).flatMap(view => [
-      // a nested entry is a synteny spec's per-level list; these used to be
-      // filtered out as malformed, so a synteny --session gated on nothing
-      ...(view.tracks ?? []).flatMap(t =>
-        Array.isArray(t) ? idsOf(t) : idsOf([t]),
-      ),
+      ...idsOf(view.tracks?.flat()),
       ...(view.levels ?? []).flatMap(l => idsOf(l.tracks)),
       ...collect(view.views),
     ])
   return collect((session as SpecShape).views)
 }
 
-// Full `?config=…&session=…&sessionName=…` query string, for a caller that has
-// an origin but no JBrowse instance URL to hand `jbrowseUrl`.
-//
-// Built with URLSearchParams, the same encoder and the same rule as
-// `jbrowseUrl`: hand it the DECODED spec, because it encodes once itself. It
-// used to interpolate `config` raw and ask callers to pre-encode it, which none
-// of them did — harmless only for as long as no config URL contained a `?` or
-// an `&`, at which point the link loads a truncated config and reports nothing.
+/**
+ * `?config=…&session=…&sessionName=…`, for a caller that has an origin but no
+ * JBrowse instance URL to hand `jbrowseUrl`.
+ */
 export function sessionSpecQuery({
   config,
   session,

@@ -11,6 +11,7 @@ import {
 import { resolveAgainstConfig } from './catalog.ts'
 import { assertImagePath } from './imagePath.ts'
 import { assertSupportedInstance } from './instanceVersion.ts'
+import { DEFAULT_TIMEOUT } from './poll.ts'
 import { waitForFrame, waitForJBrowseReady } from './ready.ts'
 import {
   assemblyFromSession,
@@ -24,15 +25,10 @@ import type { ReadyOptions, ReadyReport } from './ready.ts'
 import type { JBrowseUrlOptions } from './url.ts'
 import type { Browser, Page } from 'puppeteer'
 
-// Puppeteer's own `goto` default is 30s, half of what a caller passing nothing
-// is told each wait stage gets. Defaulted here so the navigation, the chain and
-// the fullPage re-settle all run on one budget.
-const DEFAULT_TIMEOUT = 60000
-
 export interface OpenOptions extends JBrowseUrlOptions, ReadyOptions {
   width?: number
   height?: number
-  /** 2 renders a retina-density image, which is what a figure usually wants. */
+  /** Device pixel ratio. Default 2, the density a figure usually wants. */
   deviceScaleFactor?: number
   headless?: boolean
   /** Chrome binary. Defaults to $CHROME_PATH, a system Chrome, then Puppeteer's own. */
@@ -50,16 +46,10 @@ export interface OpenResult extends ReadyReport {
 }
 
 /**
- * Launch a browser, navigate to a JBrowse session, and wait until it has
- * rendered. The caller owns the returned browser and must close it.
- *
- * Use this when the screenshot is not the end of the job: clicking a feature,
- * reading state back out of `window.JBrowseSession`, capturing a dialog. For a
- * plain image, `captureJBrowse` wraps the whole thing.
- *
- * The assembly and trackIds asked for in the URL become the session gate's
- * expectations unless you override them, so a mistyped trackId fails here rather
- * than producing an image of an empty browser.
+ * Launch a browser, open a JBrowse session, and wait until it has rendered.
+ * The caller owns the returned browser and must close it. The assembly and
+ * tracks asked for become the session gate's expectations unless `trackIds`
+ * names others.
  */
 export async function openJBrowse(
   options: OpenOptions = {},
@@ -77,10 +67,11 @@ export async function openJBrowse(
     ...given
   } = options
   assertSessionStandsAlone(given)
-  await assertSupportedInstance(given.instance ?? PUBLIC_INSTANCE)
-  const urlOptions = await resolveAgainstConfig(given)
-  // a named session keeps the header free of the timestamp an unnamed one gets,
-  // which otherwise differs on every capture of the same view
+  const [urlOptions] = await Promise.all([
+    resolveAgainstConfig(given),
+    assertSupportedInstance(given.instance ?? PUBLIC_INSTANCE),
+  ])
+  // named, so the header carries no timestamp that differs on every capture
   const url = jbrowseUrl({
     ...urlOptions,
     sessionName: urlOptions.sessionName ?? 'Screenshot',
@@ -104,26 +95,18 @@ export async function openJBrowse(
         onConsole(`uncaught ${error instanceof Error ? error.stack : error}`)
       })
     }
-    // domcontentloaded, not networkidle2: an app that streams track data may
-    // never go idle, and the session gate below is a far better "it is up"
-    // signal than the absence of requests.
+    // an app streaming track data may never reach networkidle; the session
+    // gate is the signal that it is up
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout })
     const { spec, session, assembly, hub, tracks } = urlOptions
     const opens = spec ?? (session && savedSnapshot(session))
-    // Spread rather than listed, so every ready option arrives by construction:
-    // a hand-copied list is what once dropped `allowUnsettled`.
     const report = await waitForJBrowseReady(page, {
       ...options,
-      timeout,
-      // a session may open another assembly than the hub that supplies its config
       assembly: opens ? assemblyFromSession(opens) : (assembly ?? hub),
       trackIds: trackIds ?? (opens ? trackIdsFromSession(opens) : tracks),
     })
     return { browser, page, url, ...report }
   } catch (error) {
-    // A launch that got as far as a page and then failed still holds a Chrome
-    // process; without this the caller has no handle to close it. The close is
-    // guarded so its own failure cannot replace the error worth reporting.
     await browser.close().catch(() => {})
     throw error
   }
@@ -137,9 +120,7 @@ export interface CaptureOptions extends OpenOptions {
   out?: string
   /**
    * Capture every view rather than the viewport: the viewport grows by however
-   * far the session runs past it, and the frame is waited for again. Never
-   * puppeteer's `fullPage`, which measures the document (always the window's
-   * height here) and shoots before the resized content re-rasters.
+   * far the session runs past it, and the frame is waited for again.
    */
   fullPage?: boolean
 }
@@ -150,8 +131,8 @@ export interface CaptureResult extends ReadyReport {
 }
 
 /**
- * Open a JBrowse session, wait for it to render, screenshot it, close the
- * browser. The one-call form.
+ * Open a JBrowse session, wait for it to render, screenshot it, and close the
+ * browser.
  */
 export async function captureJBrowse(
   options: CaptureOptions = {},
@@ -171,12 +152,7 @@ export async function captureJBrowse(
         ...viewport,
         height: viewport.height + overflow,
       })
-      // the resize repaints, and can start work, so the report describes the
-      // frame after it
-      report = await waitForFrame(page, {
-        ...openOptions,
-        timeout: openOptions.timeout ?? DEFAULT_TIMEOUT,
-      })
+      report = await waitForFrame(page, openOptions)
     }
     const image = await page.screenshot({ path: out })
     return { url, image, ...report }

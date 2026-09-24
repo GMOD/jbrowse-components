@@ -610,3 +610,7 @@ raster as a fact of life.
 - Reproduce reliability with N forced runs and watch the content-stable diff
   percentage; a figure that flips between two states shows up as an occasional
   large `% diff` on `--force` re-render.
+- A regen that reports the whole corpus changed is app drift since the last
+  `Bump snaps` sweep, not the browser: one spec rendered byte-identical under
+  Chrome 147.0.7727.57 and 151.0.7922.47 (measured 2026-08-02). `CHROME_PATH`
+  pins a run to one binary to check.

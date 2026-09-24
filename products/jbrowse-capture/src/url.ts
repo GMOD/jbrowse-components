@@ -1,8 +1,6 @@
 import { hubUrl } from './hub.ts'
 import { savedSessionParam, sessionSpecParam } from './session.ts'
 
-// The public JBrowse Web build the docs' own figure links point at. Any other
-// deployment works the same way, including a local `npx serve` of a build.
 export const PUBLIC_INSTANCE = 'https://jbrowse.org/code/jb2/latest/'
 
 export interface JBrowseUrlOptions {
@@ -13,9 +11,9 @@ export interface JBrowseUrlOptions {
   /** Assembly to open. Defaults to `hub`, whose config names its assembly after it. */
   assembly?: string
   /**
-   * Where to open. A locstring (`chr1:1,000-2,000`, several space-separated for
-   * a discontinuous view), or — on a config that ships a text index, which every
-   * UCSC assembly on genomes.jbrowse.org does — a feature name such as `BRCA1`.
+   * Where to open: a locstring (`chr1:1,000-2,000`, several space-separated
+   * for a discontinuous view), or a feature name such as `BRCA1` on a config
+   * with a text index, which every UCSC assembly on genomes.jbrowse.org has.
    */
   loc?: string
   /** trackIds from the config to open. */
@@ -34,8 +32,8 @@ export interface JBrowseUrlOptions {
 }
 
 /**
- * A spec or a saved session says which assembly, locations and tracks to open,
- * and the URL can carry one of the three ways of saying so, never two.
+ * A spec or a saved session says which assembly, locations and tracks to
+ * open, so the URL carries one of the three ways of saying so, never two.
  */
 export function assertSessionStandsAlone({
   spec,
@@ -57,19 +55,15 @@ export function assertSessionStandsAlone({
 }
 
 /**
- * The URL that opens a JBrowse Web instance onto a described view. Useful on its
- * own: an agent can hand this to a human, or paste it into a report, without
- * launching a browser at all.
+ * The URL that opens a JBrowse Web instance onto a described view, for a
+ * person to follow without launching a browser here.
  *
- * Two ways to say where to go, and they are not interchangeable. `assembly` /
- * `loc` / `tracks` become the [URL parameters](https://jbrowse.org/jb2/docs/urlparams/),
- * which route `loc` through the config's text-search index, so a **gene name**
- * works there. `spec` becomes a
+ * `assembly`/`loc`/`tracks` become the
+ * [URL parameters](https://jbrowse.org/jb2/docs/urlparams/), whose `loc`
+ * takes a gene name. `spec` becomes a
  * [session spec](https://jbrowse.org/jb2/docs/urlparams/#session-spec), which
- * can describe several views and per-display settings but whose `init.loc` is
- * parsed as a locstring only and throws on a gene name, and `session` opens a
- * saved session as it was exported. Pass one of the three: `&loc=` starts a
- * fresh session, so the URL cannot carry two.
+ * can describe several views and per-display settings but whose `init.loc`
+ * takes a locstring only. `session` opens a saved session as exported.
  */
 export function jbrowseUrl({
   hub,
@@ -83,8 +77,6 @@ export function jbrowseUrl({
   instance = PUBLIC_INSTANCE,
 }: JBrowseUrlOptions) {
   assertSessionStandsAlone({ spec, session, assembly, loc, tracks })
-  // In the fragment, which never reaches a server: a whole session spec in the
-  // query string can exceed the request-line limit and come back HTTP 414.
   const params = new URLSearchParams()
   const set = (key: string, value: string | undefined) => {
     if (value) {
@@ -103,6 +95,7 @@ export function jbrowseUrl({
   }
   set('sessionName', sessionName)
   const url = new URL(instance)
+  // the fragment never reaches a server, so a large spec cannot hit HTTP 414
   url.hash = params.toString()
   return url.href
 }

@@ -1,13 +1,9 @@
-// v5 is the first release to publish `[data-app-phase]` and the census beside
-// it, which are the only signals this package waits on.
+// the first release to publish `[data-app-phase]` and its census
 const MIN_MAJOR = 5
 
 /**
- * Refuse a JBrowse Web instance older than v5 before launching a browser at it.
- *
- * Every jbrowse-web build writes its version to `version.txt`. An instance that
- * serves none, or serves its index page there, cannot be judged and passes; the
- * session gate still fails on it, a timeout later.
+ * Refuse a JBrowse Web instance older than v5, read off its `version.txt`. An
+ * instance that serves no version passes, and the session gate judges it.
  */
 export async function assertSupportedInstance(instance: string) {
   const text = await fetch(new URL('version.txt', instance), {
