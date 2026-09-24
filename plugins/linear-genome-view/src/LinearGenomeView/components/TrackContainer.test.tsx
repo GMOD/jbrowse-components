@@ -1,3 +1,5 @@
+import '@jbrowse/display-test-utils/enableReactRenderLogging'
+
 import Plugin from '@jbrowse/core/Plugin'
 import {
   ConfigurationReference,
@@ -7,10 +9,12 @@ import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { colord } from '@jbrowse/core/util/colord'
+import { captureTeardownNoise } from '@jbrowse/display-test-utils'
+import { renderLoggedComponents } from '@jbrowse/display-test-utils/renderLogRecord'
 import { getRoot, onAction, types } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, waitFor } from '@testing-library/react'
 
 import { RESIZE_HANDLE_HEIGHT } from '../consts.ts'
 import LinearGenomeView from './LinearGenomeView.tsx'
@@ -173,6 +177,36 @@ test('double-clicking the divider asks the display to expand', async () => {
   dispose()
 
   expect(calls).toContain('expandToContentHeight')
+}, 20000)
+
+// React's dev-mode render logging diffs a component's previous props against
+// its new ones, so a component kept across a display swap reads the dead display
+test('switching the display type reads nothing off the replaced display', async () => {
+  const model = await setup()
+  const { findByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <LinearGenomeView model={model} />
+    </ThemeProvider>,
+  )
+  await findByTestId(`trackRenderingContainer-${model.id}-genes`)
+  const track = model.tracks[0]!
+  const target = track.compatibleDisplays.find(
+    d => d.type === 'LinearMarkDisplay',
+  )!
+
+  const log = captureTeardownNoise()
+  try {
+    await act(async () => {
+      await track.launchDisplay(target.displayId)
+    })
+  } finally {
+    log.restore()
+  }
+
+  expect(track.activeDisplay.type).toBe('LinearMarkDisplay')
+  expect(log.thrown).toEqual([])
+  expect(log.deadReads).toEqual([])
+  expect(renderLoggedComponents().length).toBeGreaterThan(0)
 }, 20000)
 
 /**

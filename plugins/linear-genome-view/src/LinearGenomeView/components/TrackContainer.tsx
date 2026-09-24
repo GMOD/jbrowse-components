@@ -190,12 +190,12 @@ const TrackContainer = observer(function TrackContainer({
           Chrome that lives inline (LDColorLegend) or runs its own drag
           (ResizeHandle, VerticalScrollbar) still carries its own marker. */}
       <TrackOverlaySlot zIndex={100} overlayStyle={{ left: -outlineOffset }}>
-        {/* Resets on the display, not the track: swapping a track's display
-            type (pileup to SNPCoverage, say) replaces the display node, so the
-            banner the old one left is about code that is no longer mounted.
-            Retry is the same clearing, asked for by hand. */}
+        {/* Keyed on the display: a display swap destroys the old node, so its
+            subtree remounts rather than re-rendering with the dead node in its
+            previous props, which React's dev-mode props diff reads. The remount
+            also drops the old display's error banner. */}
         <ErrorBoundary
-          resetKeys={[display.id]}
+          key={display.id}
           FallbackComponent={e => (
             <ErrorBanner error={e.error} onReset={e.resetErrorBoundary} />
           )}

@@ -14,8 +14,8 @@ interface Props {
   FallbackComponent: React.FC<FallbackProps>
   /**
    * clear the caught error when any of these changes, compared with `Object.is`
-   * element by element. For the cause a caller can name — the display was
-   * swapped, the view was replaced — so a banner does not outlive it.
+   * element by element. For the cause a caller can name, so a banner does not
+   * outlive it.
    */
   resetKeys?: unknown[]
   /** runs before the error clears, on either reset path */
