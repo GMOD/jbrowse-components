@@ -40,6 +40,8 @@ export interface TimedRequest {
   start: number
   end?: number
   inWorker: boolean
+  // which target made it: 'page', or the worker's CDP session id
+  scope: string
 }
 
 // Every request the page and its web workers make, with `latencyMs` added to
@@ -65,6 +67,7 @@ export async function collectTimedRequests(page: Page, latencyMs: number) {
         range: e.request.headers.Range ?? e.request.headers.range,
         start: (e.timestamp - t0) * 1000,
         inWorker: scope !== 'page',
+        scope,
       })
     })
     const finish = (e: { requestId: string; timestamp: number }) => {

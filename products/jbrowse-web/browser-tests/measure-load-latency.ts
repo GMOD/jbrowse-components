@@ -78,6 +78,7 @@ function summarize(requests: TimedRequest[], readyMs: number) {
   )
   return {
     readyMs,
+    workers: new Set(settled.filter(r => r.inWorker).map(r => r.scope)).size,
     firstWorkerRequestMs: workerJs[0]?.start,
     firstDataRequestMs: firstData?.start,
     // how long the worker's first data request trailed the last file the page
@@ -162,7 +163,7 @@ async function main() {
     for (let i = 0; i < runs; i++) {
       const r = await measure(root, query, chromeArgs)
       console.log(
-        `  ready ${ms(r.readyMs)} | worker's first request ${ms(r.firstWorkerRequestMs)} | first data request ${ms(r.firstDataRequestMs)}, ${ms(r.workerLagMs)} after the page's last read | worker loads that waited on the previous ${r.serialWorkerLoads} | page chunk rounds ${r.pageRounds} | plugins loaded: page ${ms(r.pagePluginsMs)}, worker ${ms(r.workerPluginsMs)}`,
+        `  ready ${ms(r.readyMs)} | workers ${r.workers} | worker's first request ${ms(r.firstWorkerRequestMs)} | first data request ${ms(r.firstDataRequestMs)}, ${ms(r.workerLagMs)} after the page's last read | worker loads that waited on the previous ${r.serialWorkerLoads} | page chunk rounds ${r.pageRounds} | plugins loaded: page ${ms(r.pagePluginsMs)}, worker ${ms(r.workerPluginsMs)}`,
       )
     }
   }
