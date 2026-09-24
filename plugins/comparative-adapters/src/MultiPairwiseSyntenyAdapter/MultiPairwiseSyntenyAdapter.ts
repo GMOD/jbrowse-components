@@ -5,8 +5,8 @@ import {
 import { createStatusFanOut } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { adapterAssemblyNames, readLodTierInfo } from '@jbrowse/synteny-core'
-import { merge } from 'rxjs'
-import { map } from 'rxjs/operators'
+import { forkJoin } from 'rxjs'
+import { map, mergeMap, toArray } from 'rxjs/operators'
 
 import { ComparativeAdapterBase } from '../ComparativeAdapterBase.ts'
 import { AssemblyNotInAdapterError } from '../PairwiseAdapterBase.ts'
@@ -214,6 +214,13 @@ export default class MultiPairwiseSyntenyAdapter extends ComparativeAdapterBase<
     return [...new Set(names.flat())]
   }
 
+  /**
+   * Emitted in CHILD order, not arrival order, for the reason
+   * `getFeaturesInMultipleRegions` gives for regions: the multiway lane sort
+   * tie-breaks on first appearance, and a star's lanes tie exactly wherever
+   * each mate places the window as one gap-free run. Every child still
+   * subscribes at once.
+   */
   getFeatures(region: Region, opts: ComparativeOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const star = await this.star(opts)
@@ -223,13 +230,18 @@ export default class MultiPairwiseSyntenyAdapter extends ComparativeAdapterBase<
         opts.targetAssemblyName,
       )
       const slot = createStatusFanOut(opts.statusCallback)
-      merge(
-        ...children.map(child =>
+      forkJoin(
+        children.map(child =>
           child.adapter
             .getFeatures(region, { ...opts, statusCallback: slot() })
-            .pipe(map(feature => rekey(child.index, feature))),
+            .pipe(
+              map(feature => rekey(child.index, feature)),
+              toArray(),
+            ),
         ),
-      ).subscribe(observer)
+      )
+        .pipe(mergeMap(perChild => perChild.flat()))
+        .subscribe(observer)
     }, opts.signal)
   }
 }

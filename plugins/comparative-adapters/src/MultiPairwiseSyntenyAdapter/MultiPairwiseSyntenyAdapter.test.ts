@@ -1,5 +1,5 @@
 import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
+import { delay, toArray } from 'rxjs/operators'
 
 import PAFAdapter from '../PAFAdapter/PAFAdapter.ts'
 import PAFConfigSchema from '../PAFAdapter/configSchema.ts'
@@ -173,6 +173,36 @@ describe('MultiPairwiseSyntenyAdapter', () => {
     expect([c.get('start'), c.get('end')]).toEqual([8000, 20000])
     expect(mateOf(c).refName).toBe('cctg1')
     expect(b.get('CIGAR')).toBe('10000M')
+  })
+
+  it('emits in child order whichever child answers first', async () => {
+    const firstChildLast = new Adapter(
+      configSchema.create({ adapters: STAR }),
+      conf => {
+        const child = new PairwiseIndexedPAFAdapter(
+          PairwiseIndexedConfigSchema.create(conf),
+        )
+        const getFeatures = child.getFeatures.bind(child)
+        const wait = JSON.stringify(conf).includes('b_vs_anchor') ? 50 : 0
+        child.getFeatures = (region, opts) =>
+          getFeatures(region, opts).pipe(delay(wait))
+        return Promise.resolve({
+          dataAdapter: child as BaseFeatureDataAdapter,
+          sessionIds: new Set<string>(),
+        })
+      },
+    )
+    const features = await fetch(firstChildLast, {
+      assemblyName: 'anchor',
+      refName: 'ctgA',
+      start: 0,
+      end: 30000,
+    })
+    expect(features.map(f => mateOf(f).assemblyName)).toEqual([
+      'genomeB',
+      'genomeC',
+      'genomeD',
+    ])
   })
 
   it('narrows an anchor query to the target pair', async () => {
