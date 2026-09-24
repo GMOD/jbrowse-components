@@ -77,6 +77,8 @@ export interface MarkRenderState extends MarkFrame {
   /** The display's one y scale, which every valued mark is placed through. */
   domainY: [number, number]
   scaleTypeY: MarkValueScaleType
+  /** `scales.y.symlogConstant` resolved against `domainY`, as the axis resolves it. */
+  symlogConstantY: number
   /** Mark `i`'s colour ramp, undefined where its colour is not one. */
   colorRamps: (MarkRamp | undefined)[]
   bpPerPx: number
@@ -182,6 +184,7 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
           params: (s: MarkRenderState) => ({
             domain: s.domainY,
             scaleType: s.scaleTypeY,
+            symlogConstant: s.symlogConstantY,
             ramp: s.colorRamps[i],
             origin: s.origin,
             minWidthPx: s.minWidthPx,
@@ -200,6 +203,7 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
           params: (s: MarkRenderState) => ({
             domain: s.domainY,
             scaleType: s.scaleTypeY,
+            symlogConstant: s.symlogConstantY,
             ramp: s.colorRamps[i],
             diameterPx: s.markSizes[i]!,
             insetPx: s.valueInsetPx,

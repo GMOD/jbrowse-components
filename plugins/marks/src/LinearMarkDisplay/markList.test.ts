@@ -2,6 +2,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
 import { MockHal } from '@jbrowse/render-core/hal'
 import { pointInsetPx } from '@jbrowse/render-core/marks'
+import { SCALE_TYPE_SYMLOG } from '@jbrowse/render-core/scoreScale'
 import * as barShader from '@jbrowse/render-core/shaders/barMarkIface'
 import * as pointShader from '@jbrowse/render-core/shaders/pointMarkIface'
 import * as spanShader from '@jbrowse/render-core/shaders/spanMarkIface'
@@ -70,6 +71,7 @@ function entries(...types: MarkEntry['type'][]): MarkEntry[] {
 const state: MarkRenderState = {
   domainY: [0, 10],
   scaleTypeY: 'linear',
+  symlogConstantY: 1,
   colorRamps: [],
   canvasWidth: 800,
   canvasHeight: 400,
@@ -256,6 +258,43 @@ test('a bar mark writes the origin and the domain into its uniforms', () => {
   expect(u[barShader.UNIFORM_OFFSET_F32.domainMax]).toBe(10)
 })
 
+test('a symlog y scale writes its type and resolved constant into both marks', () => {
+  const marks = buildMarkList(entries('bar', 'point'))
+  const symlog = {
+    ...state,
+    scaleTypeY: 'symlog' as const,
+    symlogConstantY: 0.05,
+  }
+  const clip = clipBlock(block, state.canvasWidth, state.canvasHeight, {
+    x: 1,
+    y: 1,
+  })!
+  const data: MarkRegionData = {
+    layers: [layer([500], [5], [RED]), layer([800], [8], [BLUE])],
+  }
+  const uniformsOf = (i: number) => {
+    const hal = new MockHal([marks[i]!.pass])
+    const scratch = new ArrayBuffer(marks[i]!.pass.uniformByteSize)
+    marks[i]!.drawRegion(hal, scratch, block, clip, data, symlog, 0)
+    const f32 = hal.getLastUniformsF32()!
+    return { f32, i32: new Int32Array(f32.buffer) }
+  }
+  const bar = uniformsOf(0)
+  expect(bar.i32[barShader.UNIFORM_OFFSET_I32.valueScaleType]).toBe(
+    SCALE_TYPE_SYMLOG,
+  )
+  expect(bar.f32[barShader.UNIFORM_OFFSET_F32.valueSymlogConstant]).toBeCloseTo(
+    0.05,
+  )
+  const point = uniformsOf(1)
+  expect(point.i32[pointShader.UNIFORM_OFFSET_I32.valueScaleType]).toBe(
+    SCALE_TYPE_SYMLOG,
+  )
+  expect(
+    point.f32[pointShader.UNIFORM_OFFSET_F32.valueSymlogConstant],
+  ).toBeCloseTo(0.05)
+})
+
 test('every mark places its value through the display s one domain', () => {
   const marks = buildMarkList(entries('bar', 'point'))
   const shared = { ...state, domainY: [0, 100] as [number, number] }
@@ -404,6 +443,31 @@ describe('findMarkHit', () => {
       REGIONS,
     )
     expect(hit).toMatchObject({ markIndex: 1, start: 800, y: 32 })
+  })
+
+  test('a point on a symlog scale is asked about through its own constant', () => {
+    // 9.9 on a symlog [0, 1000] with constant 0.1 is half way, y=200, and
+    // the window read there has to hold it; a constant of 1 draws it at y=262
+    const symlogRegions = new Map<number, MarkRegionData>([
+      [0, { layers: [layer([500], [0], [RED]), layer([800], [9.9], [BLUE])] }],
+    ])
+    const hitAt = (symlogConstantY: number) =>
+      findMarkHit(
+        641,
+        205,
+        [block],
+        symlogRegions,
+        marks,
+        {
+          ...state,
+          domainY: [0, 1000],
+          scaleTypeY: 'symlog',
+          symlogConstantY,
+        },
+        REGIONS,
+      )
+    expect(hitAt(0.1)).toMatchObject({ markIndex: 1, start: 800 })
+    expect(hitAt(1)).toBeUndefined()
   })
 })
 

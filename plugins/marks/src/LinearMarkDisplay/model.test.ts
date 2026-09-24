@@ -292,14 +292,14 @@ test('the autoscale mode scales.y names is the one the domain takes', () => {
   expect(clipped.domain![1]).toBeLessThan(10)
 })
 
-// Both radios derive from `scales.y` now: two scale types declared, and an
+// Both radios derive from `scales.y` now: three scale types declared, and an
 // autoscale member present.
 test('the score menu offers the scale-type and autoscale radios', () => {
   const { createDisplay } = createTestEnvironment([
     { mark: 'bar', encoding: { y: 'score' } },
   ])
   const { display } = createDisplay()
-  expect(display.scaleTypeChoices).toEqual(['linear', 'log'])
+  expect(display.scaleTypeChoices).toEqual(['linear', 'log', 'symlog'])
   const score = display
     .trackMenuItems()
     .find(item => 'subMenu' in item && item.label === 'Score')!
@@ -481,6 +481,53 @@ test('a rule on a log axis sits where the log places its value', () => {
   expect(ruleMarksOf(display)[0]!.y).toBeCloseTo((yTop + yBottom) / 2)
 })
 
+// The axis resolves symlog's constant from the domain inside `computeYTicks`,
+// the bars from the render state; both are far from the 1 the bars once took.
+test.each([
+  ['derived from the domain, 0.05', {}],
+  ['configured, 5', { symlogConstant: 5 }],
+])(
+  'a symlog axis ticks each value at the height its bar reaches, its constant %s',
+  (_label, constant) => {
+    const { createDisplay } = createTestEnvironment(
+      [{ mark: 'bar', encoding: { y: 'score' } }],
+      REGION,
+      'BedAdapter',
+      {
+        scales: {
+          y: {
+            type: 'symlog',
+            domainMin: -20,
+            domainMax: 50,
+            rules: [7],
+            ...constant,
+          },
+        },
+      },
+    )
+    const { display } = createDisplay()
+    display.setRpcData(0, result([{ y: [1] }]), REGION)
+    const { ticks } = display.axes[0]!
+    const tickAt = (value: number) =>
+      ticks.items.find(t => t.value === value)!.y
+    const valued = ticks.items.map(t => t.value).filter(v => v !== 0)
+    expect(valued.length).toBeGreaterThan(3)
+    const values = [...valued, 7]
+    display.setRpcData(0, result([{ y: values }]), REGION)
+    const [rule] = ruleMarksOf(display)
+    values.forEach((value, i) => {
+      display.setHoveredFeature(hitOn(0, i))
+      const [box] = display.hoverInk
+      const [valueEnd, originEnd] =
+        value > 0
+          ? [box!.top, box!.top + box!.height]
+          : [box!.top + box!.height, box!.top]
+      expect(valueEnd).toBeCloseTo(value === 7 ? rule!.y : tickAt(value), 3)
+      expect(originEnd).toBeCloseTo(tickAt(0), 3)
+    })
+  },
+)
+
 test('a rule in a banded plot is placed in the band every row repeats', () => {
   const { createDisplay } = createTestEnvironment(
     [{ mark: 'bar', encoding: { y: 'score' } }],
@@ -634,7 +681,7 @@ test('an encoding channel refuses a key it does not declare', () => {
       { scales: { y: { min: 0 } } },
     ).createDisplay(),
   ).toThrow(
-    'ValueScale takes type, domainMin, domainMax, autoscaleGroup, autoscale, numStdDev, numQuantile, title and rules, not min',
+    'ValueScale takes type, domainMin, domainMax, autoscaleGroup, symlogConstant, autoscale, numStdDev, numQuantile, title and rules, not min',
   )
   expect(() =>
     createTestEnvironment(

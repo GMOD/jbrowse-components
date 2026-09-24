@@ -428,14 +428,13 @@ export function configSchemaFactory() {
        * #slot scales
        * The scales the marks are read through, owned by the display rather
        * than by a mark: `y` alone, and every mark's `encoding.y` shares it.
-       * The same object the wiggle family declares, with this display's own
-       * scale types — no symlog, which `valueToYPxScaled` does not place —
-       * and with the guides the scale owns: `rules`, its reference lines,
-       * and `title`, the caption beside its axis.
+       * The same object the wiggle family declares, with its three scale
+       * types and with the guides the scale owns: `rules`, its reference
+       * lines, and `title`, the caption beside its axis.
        */
       scales: scalesSchema(
         valueScaleSchema({
-          types: ['linear', 'log'],
+          types: ['linear', 'log', 'symlog'],
           autoscale: {
             modes: ['local', 'localsd', 'localpercentile'],
             default: 'local',

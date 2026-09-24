@@ -81,6 +81,7 @@ import {
   makeCrossHatchItem,
   makeScoreSubMenu,
   resolveRenderState,
+  resolveSymlogConstant,
   visibleStatsRange,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
@@ -895,6 +896,7 @@ export function stateModelFactory(
           {
             domain: self.domain,
             scaleType: self.scaleType,
+            symlogConstant: self.symlogConstant,
             ...band,
             left: treeSidebarOffset(self),
             minimalTicks,
@@ -977,11 +979,18 @@ export function stateModelFactory(
       get renderState(): MarkRenderState {
         const canvasWidth = self.canvasWidthPx
         const canvasHeight = axisPlotBox(self.height).plotHeight
-        const scaleTypeY = self.scaleType === 'log' ? 'log' : 'linear'
+        const { scaleType } = self
+        const scaleTypeY =
+          scaleType === 'log' || scaleType === 'symlog' ? scaleType : 'linear'
         const { colorRamps } = this
         return resolveRenderState(self.domain, domainY => ({
           domainY,
           scaleTypeY,
+          symlogConstantY: resolveSymlogConstant(
+            domainY[0],
+            domainY[1],
+            self.symlogConstant,
+          ),
           colorRamps,
           canvasWidth,
           canvasHeight,
