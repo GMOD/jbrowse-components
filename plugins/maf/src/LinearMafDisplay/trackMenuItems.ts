@@ -169,8 +169,8 @@ function frameMenuItems(self: MafMenuSelf): MenuItem[] {
  * already uses for the same problem, makes the exclusivity the menu's rather
  * than something the user has to know.
  *
- * `Show bases when zoomed in` rides along because it qualifies the two identity
- * options and nothing else.
+ * The toggles after the radios qualify them: `Show bases when zoomed in` the
+ * two identity plots, and the three letter toggles how the bases are drawn.
  *
  * The codon option is the one whose tick can sit on a rendering that is not
  * painting: codons only exist at base level and not at all on the summary tier,
@@ -218,27 +218,27 @@ function rowRenderingMenuItem(self: MafMenuSelf): MenuItem {
         // identity options above and is inert under the others.
         { helpText: 'for the identity plots above' },
       ),
+      toggleItem(
+        'Show letters at all positions',
+        self.showAllLetters,
+        self.setShowAllLetters,
+      ),
+      toggleItem(
+        'Show mismatches colored by base',
+        self.mismatchRendering,
+        self.setMismatchRendering,
+      ),
+      toggleItem(
+        'Show letters as uppercase',
+        self.showAsUpperCase,
+        self.setShowAsUpperCase,
+      ),
     ],
   })
 }
 
 function showMenuItems(self: MafMenuSelf): MenuItem[] {
   return [
-    toggleItem(
-      'Show letters at all positions',
-      self.showAllLetters,
-      self.setShowAllLetters,
-    ),
-    toggleItem(
-      'Show mismatches colored by base',
-      self.mismatchRendering,
-      self.setMismatchRendering,
-    ),
-    toggleItem(
-      'Show letters as uppercase',
-      self.showAsUpperCase,
-      self.setShowAsUpperCase,
-    ),
     ...treeSidebarShowMenuItems(self),
     showRowLabelsMenuItem(self),
     // Only where a key exists to show: `bases` mode paints the reference's own
