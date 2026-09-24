@@ -4729,6 +4729,7 @@
         "getGpuOverride",
         "isGpuRenderingDisabled",
         "onDeviceLost",
+        "requestFirstAdapter",
         "resetGpuDeviceForTests",
         "setBuiltRenderer",
         "setGpuOverride"
@@ -4740,7 +4741,8 @@
       "names": [
         "effectiveRenderer",
         "getGraphicsCapabilities",
-        "isSoftwareRenderer"
+        "isSoftwareRenderer",
+        "prewarmGraphics"
       ],
       "worker": "real"
     },
