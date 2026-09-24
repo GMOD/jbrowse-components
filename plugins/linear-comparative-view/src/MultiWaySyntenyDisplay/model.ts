@@ -174,6 +174,8 @@ export interface HoverTarget extends RibbonRef {
   feature: Feature
 }
 
+const NO_FLIP_PINS: ReadonlyMap<string, LaneFlipPin> = new Map()
+
 function regionKey(r: LaneRegion) {
   return `${r.refName}:${r.start}-${r.end}`
 }
@@ -335,12 +337,12 @@ export function stateModelFactory(
       pinnedLaneContigs: new Map<string, string>(),
       /**
        * #volatile
-       * the orientation the reader pinned a lane to from its header menu,
-       * which outranks the lane's own vote while it draws the contig the pin
-       * was set on. A commit of another anchor's features drops them all:
-       * the pins are stated against the anchor's order
+       * per anchor, the orientation the reader pinned each lane to from its
+       * header menu; see `pinnedLaneFlips`. Keyed by the anchor because a pin
+       * is stated against its order, so re-anchoring away leaves them alone
+       * and coming back finds them
        */
-      pinnedLaneFlips: new Map<string, LaneFlipPin>(),
+      laneFlipPinsByAnchor: new Map<string, ReadonlyMap<string, LaneFlipPin>>(),
       /**
        * #volatile
        * the view's scroll offset the stack is laid out against, refreshed with
@@ -393,16 +395,6 @@ export function stateModelFactory(
           features: Feature[],
           anchor: string = containingLgv(self).assemblyNames[0]!,
         ) {
-          if (
-            self.pinnedLaneFlips.size > 0 &&
-            !isSameAssemblyName(
-              self.fetchedFeatures?.anchor,
-              anchor,
-              getSession(self).assemblyManager,
-            )
-          ) {
-            self.pinnedLaneFlips = new Map()
-          }
           self.fetchedFeatures = { anchor, features }
           observeRibbonFeatures(features)
         },
@@ -454,29 +446,6 @@ export function stateModelFactory(
             pins.set(assemblyName, refName)
           }
           self.pinnedLaneContigs = pins
-        },
-        /**
-         * #action
-         * mirror a lane against its current orientation, pinned to the contig
-         * it draws
-         */
-        flipLane(assemblyName: string) {
-          const decision = self.laneDecisions.get(assemblyName)
-          if (decision) {
-            self.pinnedLaneFlips = new Map(self.pinnedLaneFlips).set(
-              assemblyName,
-              { refName: decision.refName, flipped: !decision.flipped },
-            )
-          }
-        },
-        /**
-         * #action
-         * let a flipped lane choose its orientation again
-         */
-        unpinLaneFlip(assemblyName: string) {
-          const pins = new Map(self.pinnedLaneFlips)
-          pins.delete(assemblyName)
-          self.pinnedLaneFlips = pins
         },
         /**
          * #action
@@ -922,6 +891,56 @@ export function stateModelFactory(
         )
       },
     }))
+    .views(self => ({
+      /**
+       * #getter
+       * the orientation the reader pinned each lane to against the anchor the
+       * view is on, which outranks the lane's own vote while it draws the
+       * contig the pin was set on
+       */
+      get pinnedLaneFlips(): ReadonlyMap<string, LaneFlipPin> {
+        return (
+          self.laneFlipPinsByAnchor.get(
+            self.laneKey(self.anchorAssemblyName),
+          ) ?? NO_FLIP_PINS
+        )
+      },
+    }))
+    .actions(self => {
+      function setFlipPins(pins: ReadonlyMap<string, LaneFlipPin>) {
+        self.laneFlipPinsByAnchor = new Map(self.laneFlipPinsByAnchor).set(
+          self.laneKey(self.anchorAssemblyName),
+          pins,
+        )
+      }
+      return {
+        /**
+         * #action
+         * mirror a lane against its current orientation, pinned to the contig
+         * it draws
+         */
+        flipLane(assemblyName: string) {
+          const decision = self.laneDecisions.get(assemblyName)
+          if (decision) {
+            setFlipPins(
+              new Map(self.pinnedLaneFlips).set(assemblyName, {
+                refName: decision.refName,
+                flipped: !decision.flipped,
+              }),
+            )
+          }
+        },
+        /**
+         * #action
+         * let a flipped lane choose its orientation again
+         */
+        unpinLaneFlip(assemblyName: string) {
+          const pins = new Map(self.pinnedLaneFlips)
+          pins.delete(assemblyName)
+          setFlipPins(pins)
+        },
+      }
+    })
     .views(self => ({
       /**
        * #getter

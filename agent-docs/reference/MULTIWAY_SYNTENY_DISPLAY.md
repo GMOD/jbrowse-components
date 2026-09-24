@@ -154,8 +154,9 @@ placed weight (`HOLD_COVERAGE`). Two reader pins from the lane header menu
 outrank the vote: a contig pin (`pinnedLaneContigs`) while the window places
 anything on that contig, and a flip pin (`pinnedLaneFlips`, against the anchor's
 order) while the lane draws the contig it was set on. A lapsed or released pin
-leaves no incumbent, so the lane decides fresh, and a commit of another anchor's
-features drops every flip pin. The decision is
+leaves no incumbent, so the lane decides fresh. Flip pins are held per anchor
+(`laneFlipPinsByAnchor`), so another anchor reads none of them and a return to
+the first, by Undo or by re-anchoring back, finds them again. The decision is
 `{refName, flipped, rung, pivotAnchor, pivotLaneBp, fitMin, fitMax, alsoOn, alsoOnMore, pinned, orientationPinned}`
 and the drawn frame is derived from it against the live view on every pan
 (`frameFromDecision`; the model's `rowFrames`). A mate lane draws its frame plus

@@ -167,7 +167,7 @@ test('Undo back onto the first genome decides from its own groups again', async 
 
 // a flip pin is stated against the anchor's order, which another genome
 // does not share even where the lane draws the same contig
-test('Flip lane holds through a refetch on its anchor and lapses on another', async () => {
+test('Flip lane holds on its anchor, lapses on another, and is back on return', async () => {
   const starts = [100, 250, 400, 550, 700]
   const display = setup()
   const onA = (shift: number) =>
@@ -189,6 +189,10 @@ test('Flip lane holds through a refetch on its anchor and lapses on another', as
   )
   expect(display.pinnedLaneFlips.size).toBe(0)
   expect(flippedOf(display, C)).toBe(false)
+
+  onto(display, A)
+  display.setFeatures(onA(40))
+  expect(flippedOf(display, C)).toBe(true)
 })
 
 // a fetch issued before the navigation can still land after it, before the
