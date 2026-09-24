@@ -3,11 +3,13 @@
   "version": "5.0.0-beta.9",
   "private": true,
   "type": "module",
-  "description": "Internal jsdom harness pieces every display plugin's testEnv.ts builds on: the stub session, the stub assembly manager, and the ADR-069 teardown-noise watch the products' destroy suites hold",
+  "description": "Internal jsdom harness pieces every display plugin's testEnv.ts builds on: the stub session, the stub assembly manager, and the ADR-069 teardown-noise watch and React render-logging gate the teardown suites hold",
   "license": "Apache-2.0",
   "main": "src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./enableReactRenderLogging": "./src/enableReactRenderLogging.ts",
+    "./renderLogRecord": "./src/renderLogRecord.ts"
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",

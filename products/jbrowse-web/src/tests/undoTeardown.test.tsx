@@ -1,14 +1,14 @@
-import '../components/enableReactRenderLogging.ts'
+import '@jbrowse/display-test-utils/enableReactRenderLogging'
 import '@testing-library/jest-dom'
 
 import {
   measureTeardownNoise,
   suppressTeardownNoise,
 } from '@jbrowse/display-test-utils'
+import { renderLoggedComponents } from '@jbrowse/display-test-utils/renderLogRecord'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 
-import { renderLoggedComponents } from '../components/renderLogRecord.ts'
 import {
   createView,
   doBeforeEach,

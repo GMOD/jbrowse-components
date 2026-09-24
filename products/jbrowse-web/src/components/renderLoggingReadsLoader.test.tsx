@@ -3,8 +3,9 @@
 // import sorter is free to move a named import below the react-dom ones (it
 // did, and the test went green having exercised nothing — which is what the
 // renderLoggedComponents() assertion at the bottom now catches).
-import './enableReactRenderLogging.ts'
+import '@jbrowse/display-test-utils/enableReactRenderLogging'
 
+import { renderLoggedComponents } from '@jbrowse/display-test-utils/renderLogRecord'
 // the /pure entry point: no auto-cleanup on afterEach. The failure under test
 // throws out of React's commit and leaves the renderer wedged, and RTL's
 // teardown unmount then throws "Should not already be working" over the top of
@@ -14,7 +15,6 @@ import { when } from 'mobx'
 
 import SessionLoader from '../SessionLoader.ts'
 import Renderer from './Renderer.tsx'
-import { renderLoggedComponents } from './renderLogRecord.ts'
 import { useLoaderLifecycle } from './useLoaderLifecycle.ts'
 
 import type { SessionLoaderModel } from '../SessionLoader.ts'

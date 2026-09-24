@@ -1,12 +1,12 @@
-import '../components/enableReactRenderLogging.ts'
+import '@jbrowse/display-test-utils/enableReactRenderLogging'
 
 import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
+import { renderLoggedComponents } from '@jbrowse/display-test-utils/renderLogRecord'
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { act, render, waitFor } from '@testing-library/react'
 
 // deliberately NOT ./loaderUtil.tsx: this test is about the real disposeLoader
 import { Loader } from '../components/Loader.tsx'
-import { renderLoggedComponents } from '../components/renderLogRecord.ts'
 import { handleRequest, volvoxGetFile } from './generateReadBuffer.ts'
 
 import type { WebRootModel } from '../rootModel/rootModel.ts'
