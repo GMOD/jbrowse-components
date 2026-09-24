@@ -223,7 +223,7 @@ describe('MultiPairwiseSyntenyAdapter', () => {
         )
         const getFeatures = child.getFeatures.bind(child)
         child.getFeatures = (region, opts) => {
-          opened.push(JSON.stringify(conf.assemblyNames))
+          opened.push(JSON.stringify(conf?.assemblyNames))
           return getFeatures(region, opts)
         }
         return Promise.resolve({
