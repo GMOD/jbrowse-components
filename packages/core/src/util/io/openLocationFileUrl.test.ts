@@ -38,6 +38,22 @@ test('a percent-encoded file: uri decodes to the path it names', () => {
   expect(keyOf(encoded)).toBe(keyOf(asPath))
 })
 
+// Desktop gives a config opened from \\server\share\proj a baseUri of
+// file://server/share/proj/; reading only the pathname dropped the server and
+// looked for /share/proj/reads.bam on the local disk.
+test('a file: uri naming a network share keeps its server', () => {
+  const share = openLocation({
+    uri: 'reads.bam',
+    baseUri: 'file://server/share/proj/',
+    locationType: 'UriLocation',
+  })
+  const asPath = openLocation({
+    localPath: '//server/share/proj/reads.bam',
+    locationType: 'LocalPathLocation',
+  })
+  expect(keyOf(share)).toBe(keyOf(asPath))
+})
+
 test('a bare absolute path with no baseUri opens as a local path', () => {
   const bare = openLocation({
     uri: '/data/proj/reads.bam',
