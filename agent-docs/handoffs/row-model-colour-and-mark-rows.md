@@ -1,6 +1,6 @@
 ---
 name: row-model-colour-and-mark-rows
-description: State of the row-model thread on 2026-09-24. Step 4's first half (ADR-160, one rowColor channel and one dealer) and rows on the mark display (ADR-157's fifth display) are on main, each probed by a second review whose defects are fixed; the colour half's zero-image-diff browser run was never recorded; eleven calls are Colin's, each answered by a page not yet made, and no visible flip lands before them. Read before touching a row display's colour, bands, the mark display's rows or the palette.
+description: State of the row-model thread on 2026-09-24. Step 4's first half (ADR-160, one rowColor channel and one dealer) and rows on the mark display (ADR-157's fifth display) are on main, each probed by two review rounds whose defects are fixed, the third finding an undo that blanked a variant display for good; the colour half's zero-image-diff browser run was never recorded; eleven calls are Colin's, each answered by a page not yet made, and no visible flip lands before them. Read before touching a row display's colour, bands, the mark display's rows or the palette.
 ---
 
 # Row model: colour and mark rows
@@ -37,6 +37,21 @@ landed, and the design-pass plans for steps 4–6 are appended to that doc.
   - The palette is dealt once per change to the deal.
   - Multi-row honours `scale: 'none'`.
   - `setSlot` refills an array slot instead of reconciling it.
+- **Third review round, 2026-09-24 evening:** an Opus review probing session
+  mechanics and a Fable review of the round's fixes. Fixed:
+  - `readFor` compares adapter configs by value, as the fetch key does. An undo
+    rebuilds a track's working copy, and by identity a variant display lost its
+    sample list for good after undoing a drag
+    (`prerequisiteReadUndo.test.ts`).
+  - A prerequisite read of a config the display has left lands nothing. Undo an
+    adapter edit mid-scan and the abandoned read used to commit, and the
+    variant display reset and persisted the reader's arrangement.
+  - A phased region arrival re-derives no row: the expansion reads
+    `samplePloidy`, which keeps its identity while the ploidies hold.
+  - `setSlot` refills through `spliceWithArray`, since a spread overflows the
+    stack past about 120,000 names.
+  - `BaseTrackModel.canConfigure`, which had no reader, and
+    `materializedRowColors` are gone.
 
 ## Not run
 
@@ -52,7 +67,9 @@ parity everywhere except the deviations ADR-160 already lists.
    step-4 plan. The question: at 20 rows, which palette keeps neighbours apart
    on a 1 px line and a 4 px block? And past its length, wrap or re-lit laps?
    The multi-row display recolours rows on a pan until the dealer's order
-   changes with this call.
+   changes with this call, and "Save track settings to config" recolours every
+   row, since the palette is dealt over the base order and the save rewrites the
+   base: the flip should deal over an order no save changes.
 2. Label boxes always tinted on multi-row and rows-layout wiggle (on/off pair).
 3. Variants' value order: first-seen versus count-ranked (the legend both ways).
 4. A field mapping versus a samplesTsv colour column (no fixture has one).
@@ -69,16 +86,22 @@ parity everywhere except the deviations ADR-160 already lists.
 11. Rows past the pixels: `rows` on a field with thousands of values
     (`rows: 'name'` on a gene track) draws sub-pixel rows and swatch-only
     labels, with nothing on screen saying why. `facet` caps at forty with an
-    overflow band; `rows` has no cap and no notice.
+    overflow band; `rows` has no cap and no notice. The Fable review's answer:
+    a notice, not a cap, since 127 Roadmap epigenomes as rows is a legitimate
+    track. Past one device pixel a row, draw the rows that fit and an overflow
+    band saying how many of how many.
 
 **On call 5, a recommendation.** While `rowColor` paints by an attribute, a
 dialog recolour could set that value's colour, an entry under the attribute,
 rather than turning every row into a `name` pair. That keeps one keyspace, the
-Color by and its legend, and needs no materialisation, which today costs
-0.3–0.9 s at 5,000 phased rows and loses the Color by on the next reset. A
-per-sample tint would then be Color by → None, a plain rule the menu already
-shows. The dialog would need to show the painted colour under an attribute;
-today it lists `editableSources`, which carry none of the palette.
+Color by and its legend, and needs no materialisation, which loses the
+Color by on the next reset (writing it costs 75–160 ms at 5,000 phased rows in
+a session). A per-sample tint would then be Color by → None, a plain rule the
+menu already shows. The dialog would need to show the painted colour under an
+attribute; today it lists `editableSources`, which carry none of the palette.
+The Fable review reached the same answer, and adds that the dialog's
+palettizer (`RowPalettizer`, per-row colours by an attribute) is the same
+operation spelled a second way, to retire into the Color by menu.
 
 ## Next steps, in order
 
@@ -96,12 +119,14 @@ today it lists `editableSources`, which carry none of the palette.
 6. Small fixes:
    - a phased dialog opened before the first cellData and submitted over
      haplotype rows still writes the sample order;
-   - `BaseTrackModel.canConfigure` reads the whole delta map;
-   - the add-a-track census line resolves every observed id;
-   - under a focus, Sort rows by value here sends the hidden rows last, since
-     their instances are not in `rpcDataMap`;
+   - a dialog recolour under a multi-row `rowColor: { scale: 'none' }`
+     replaces the object and turns the palette back on for every row (only a
+     hand-written config reaches it);
    - a density sidecar standing in under `rows` draws in the first row only,
      and `valueMarkIndex` picks the hidden mark (no shipped config reaches it);
-   - the MST fork's `reconcileArrayChildren` could skip its reuse scan for a
-     scalar element type, the root of the `setSlot` refill, which needs a
-     fork release.
+   - the MST fork's `reconcileArrayChildren`, which needs a fork release:
+     its reuse scan could skip a scalar element type, the root of the `setSlot`
+     refill, and its removal branch splices each removed node off the front of
+     the run, so one `clear()` is quadratic (1.4 s at 100,000 names, 60 ms at
+     20,000). A pass building the result array instead of splicing in place
+     makes both linear, and the refill can then go.
