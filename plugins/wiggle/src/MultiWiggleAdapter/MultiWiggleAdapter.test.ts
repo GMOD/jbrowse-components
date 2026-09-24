@@ -1004,3 +1004,51 @@ describe('MultiWiggleAdapter.getFeaturesArray order', () => {
     expect(cold.map(f => f.id())).toEqual(['slow', 'fast'])
   })
 })
+
+describe('MultiWiggleAdapter with samplesTsvLocation', () => {
+  function adapterWithTsv() {
+    const getFeatureArrays = jest.fn().mockResolvedValue({
+      starts: new Int32Array(0),
+      ends: new Int32Array(0),
+      scores: new Float32Array(0),
+      minScores: undefined,
+      maxScores: undefined,
+      count: 0,
+    })
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        bigWigs: ['https://x/a.bw', 'https://x/b.bw', 'https://x/c.bw'],
+        samplesTsvLocation: {
+          localPath: require.resolve('./test_data/samples.tsv'),
+          locationType: 'LocalPathLocation',
+        },
+      }),
+      jest.fn().mockImplementation(async (conf: { source: string }) => ({
+        dataAdapter: { id: conf.source, getFeatureArrays },
+      })),
+    )
+    return { adapter, getFeatureArrays }
+  }
+
+  it('narrows the subtracks to the table, in its order, carrying its columns', async () => {
+    const { adapter } = adapterWithTsv()
+    const { sources, warnings } = await adapter.getSourcesAndWarnings()
+    expect(sources).toEqual([
+      { name: 'c', source: 'c', tissue: 'liver', color: '#f00' },
+      { name: 'a', source: 'a', tissue: 'brain', color: '#00f' },
+    ])
+    expect(warnings).toHaveLength(2)
+    expect(warnings[0]).toContain('zzz')
+    expect(warnings[1]).toContain('1 of the 3 samples in the subtrack list')
+  })
+
+  it('fetches only the listed subtracks when the caller names none', async () => {
+    const { adapter, getFeatureArrays } = adapterWithTsv()
+    const result = await adapter.getMultiSourceFeatureArraysMulti(
+      [{ refName: 'chr1', start: 0, end: 100, assemblyName: 'hg38' }],
+      { bpPerPx: 1, resolution: 1 },
+    )
+    expect(result.map(r => r.source)).toEqual(['a', 'c'])
+    expect(getFeatureArrays).toHaveBeenCalledTimes(2)
+  })
+})

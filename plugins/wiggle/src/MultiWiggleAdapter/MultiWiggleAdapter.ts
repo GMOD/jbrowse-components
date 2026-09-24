@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter/stats'
 import { SimpleFeature, createStatusFanOut } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 import { firstValueFrom, merge } from 'rxjs'
 import { map, toArray } from 'rxjs/operators'
 
@@ -189,10 +190,10 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
 
   private async getFilteredAdapters(sources?: { name: string }[]) {
     const adapters = await this.getAdapters()
-    if (!sources?.length) {
-      return adapters
-    }
-    const sourceNames = new Set(sources.map(s => s.name))
+    const wanted = sources?.length
+      ? sources
+      : (await this.getSourcesAndWarnings()).sources
+    const sourceNames = new Set(wanted.map(s => s.name))
     return adapters.filter(adp => sourceNames.has(adp.source))
   }
 
@@ -335,15 +336,29 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     return aggregateQuantitativeStats(allStats)
   }
 
-  // in another adapter type, this could be dynamic depending on region or
-  // something, but it is static for this particular multi-wiggle adapter type
+  getSourcesAndWarnings = cachedSetup({
+    setup: async () => {
+      const sources = (await this.getAdapters()).map(
+        ({ type: _t, bigWigLocation: _bw, dataAdapter: _da, ...rest }) => ({
+          ...rest,
+          name: rest.source,
+        }),
+      )
+      const { sources: rows, warnings } = await getSamplesTsvSources({
+        location: this.getConf('samplesTsvLocation'),
+        names: sources.map(s => s.name),
+        namesLabel: 'the subtrack list',
+        pluginManager: this.pluginManager,
+      })
+      const byName = new Map(sources.map(s => [s.name, s]))
+      return {
+        sources: rows.map(row => ({ ...byName.get(row.name)!, ...row })),
+        warnings,
+      }
+    },
+  })
+
   async getSources(_regions: Region[]) {
-    const adapters = await this.getAdapters()
-    return adapters.map(
-      ({ type: _t, bigWigLocation: _bw, dataAdapter: _da, ...rest }) => ({
-        ...rest,
-        name: rest.source,
-      }),
-    )
+    return (await this.getSourcesAndWarnings()).sources
   }
 }

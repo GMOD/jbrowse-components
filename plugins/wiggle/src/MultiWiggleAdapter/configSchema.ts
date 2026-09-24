@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { samplesTsvAdapterConfigSchemaFields } from '@jbrowse/core/util/samplesTsv'
 
 /**
  * #config MultiWiggleAdapter
@@ -45,6 +46,22 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  *   ],
  * }
  * ```
+ *
+ * #example
+ * Per-subtrack metadata from a table: the first column of `samplesTsvLocation`
+ * names each subtrack as the adapter does (for `bigWigs`, the filename without
+ * its extension), and the other columns ride along as source metadata. The
+ * track shows only the subtracks the table lists:
+ * ```js
+ * {
+ *   type: 'MultiWiggleAdapter',
+ *   bigWigs: [
+ *     'https://example.com/sample1.bw',
+ *     'https://example.com/sample2.bw',
+ *   ],
+ *   samplesTsvLocation: { uri: 'https://example.com/samples.tsv' },
+ * }
+ * ```
  */
 
 const MultiWiggleAdapter = ConfigurationSchema(
@@ -77,6 +94,7 @@ const MultiWiggleAdapter = ConfigurationSchema(
       description:
         'what relative bigWigs URLs resolve against, stamped from the location the config was loaded from',
     },
+    ...samplesTsvAdapterConfigSchemaFields,
   },
   { explicitlyTyped: true },
 )
