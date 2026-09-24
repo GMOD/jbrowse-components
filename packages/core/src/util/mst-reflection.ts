@@ -1,8 +1,9 @@
 import {
+  asArrayType,
+  asMapType,
   getUnionSubtypes,
   isArrayType,
   isLateType,
-  isMapType,
   isOptionalType,
   isUnionType,
 } from '@jbrowse/mobx-state-tree'
@@ -19,9 +20,8 @@ export interface ILiteralType<T> extends ISimpleType<T> {
   value: T
 }
 
-// MST's getSubTypes() returns this sentinel string when a type can't report a
-// single subtype. It isn't exported by name, so we detect it structurally: a
-// real subtype is an IAnyType object, never a string or null.
+// getSubTypes() answers null, or the `cannotDetermineSubtype` string, when a
+// type reports no subtype; anything it does report is an object.
 function isSubtype(t: unknown): t is IAnyType {
   return typeof t === 'object' && t !== null
 }
@@ -36,8 +36,9 @@ export function getSubType(type: IAnyType): IAnyType {
   if (isSubtype(sub)) {
     return sub
   }
-  if (isArrayType(type) || isMapType(type)) {
-    return type.getChildType()
+  const collection = asArrayType(type) ?? asMapType(type)
+  if (collection) {
+    return collection.getChildType()
   }
   throw new TypeError('unsupported mst type')
 }

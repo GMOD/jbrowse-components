@@ -12,7 +12,7 @@ import {
   DEFAULT_PILEUP_AS as WORKER_PILEUP_AS,
   DEFAULT_PILEUP_FIELDS as WORKER_PILEUP_FIELDS,
 } from '@jbrowse/core/util/featureTransforms'
-import { isArrayType, isType } from '@jbrowse/mobx-state-tree'
+import { asArrayType, isType } from '@jbrowse/mobx-state-tree'
 
 import { markTransformStep } from './markTransformConfigSchema.ts'
 import {
@@ -95,9 +95,8 @@ function slotLines(schema: IAnyType, prefix: string): [string, string][] {
           ],
         ]
       }
-      return isType(entry) && isArrayType(entry)
-        ? slotLines(entry.getChildType(), `${prefix}${name}[].`)
-        : []
+      const array = isType(entry) ? asArrayType(entry) : undefined
+      return array ? slotLines(array.getChildType(), `${prefix}${name}[].`) : []
     },
   )
 }

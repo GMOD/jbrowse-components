@@ -16,7 +16,7 @@ import {
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
 import { YSCALEBAR_LABEL_OFFSET, axisPlotBox } from '@jbrowse/display-ui'
-import { isArrayType, isType } from '@jbrowse/mobx-state-tree'
+import { asArrayType, isType } from '@jbrowse/mobx-state-tree'
 import LinearGenomeViewPlugin, {
   linearGenomeViewStateModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -1113,15 +1113,18 @@ type StepPair = [Record<string, unknown>, Record<string, unknown>]
 // sub-schemas (an aggregate's ops) contributes each of its entry's pairs.
 function defaultWrites(schema: IAnyType): StepPair[] {
   return Object.entries(getConfigurationSchemaDefinition(schema)!).flatMap(
-    ([slot, entry]): StepPair[] =>
-      isSlotDefinitionEntry(entry)
-        ? [[{}, { [slot]: entry.defaultValue }]]
-        : isType(entry) && isArrayType(entry)
-          ? defaultWrites(entry.getChildType()).map(([left, written]) => [
-              { [slot]: [left] },
-              { [slot]: [written] },
-            ])
-          : [],
+    ([slot, entry]): StepPair[] => {
+      if (isSlotDefinitionEntry(entry)) {
+        return [[{}, { [slot]: entry.defaultValue }]]
+      }
+      const array = isType(entry) ? asArrayType(entry) : undefined
+      return array
+        ? defaultWrites(array.getChildType()).map(([left, written]) => [
+            { [slot]: [left] },
+            { [slot]: [written] },
+          ])
+        : []
+    },
   )
 }
 

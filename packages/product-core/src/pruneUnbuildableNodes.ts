@@ -1,13 +1,16 @@
 import { pluggableElementTypeGroups } from '@jbrowse/core/PluginManager'
 import {
+  asArrayType,
+  asMapType,
+  asModelType,
   getPropertyMembers,
   getUnionSubtypes,
-  isArrayType,
   isMapType,
   isModelType,
   isReferenceType,
   isType,
   isUnionType,
+  unwrapType,
 } from '@jbrowse/mobx-state-tree'
 
 import { isRecord } from './snapshotUtils.ts'
@@ -130,32 +133,9 @@ function buildableElements(pluginManager: PluginManager, group: Group) {
   }) as unknown as { name: string; aliases?: string[]; stateModel: IAnyType }[]
 }
 
-// optional/stripDefault/late/snapshotProcessor all report the type they wrap,
-// so one loop reaches the array, map, model or union a property really declares.
-function unwrapType(type: IAnyType) {
-  let current = type
-  for (let i = 0; i < 16; i++) {
-    const sub = current.getSubTypes()
-    if (
-      !sub ||
-      typeof sub !== 'object' ||
-      Array.isArray(sub) ||
-      sub === current
-    ) {
-      return current
-    }
-    current = sub
-  }
-  return current
-}
-
 // The array or map a property really declares, or undefined for anything else.
-//
-// A union is descended into rather than tested, because `isArrayType` and
-// `isMapType` read TypeFlags and a union ORs its members' flags upward: the
-// sentinel spelling `types.maybe(types.array(types.string))` answers isArrayType
-// while being a `Union` carrying no `getChildType` at all. The container is the
-// member, never the union around it.
+// A union is descended into: the container is the member, never the union
+// around it (`types.maybe(types.array(types.string))` is a union).
 type Container = IAnyType & { getChildType(): IAnyType }
 
 function containerType(type: IAnyType): Container | undefined {
@@ -168,7 +148,7 @@ function containerType(type: IAnyType): Container | undefined {
     }
     return undefined
   }
-  return isArrayType(type) || isMapType(type) ? type : undefined
+  return asArrayType(type) ?? asMapType(type)
 }
 
 // One prune's view of the plugin manager. The unions are built on first use, so
@@ -591,7 +571,7 @@ function concreteModel(type: IAnyType, value: Record<string, unknown>) {
         )?.value === value.type,
     ) as IAnyModelType | undefined
   }
-  return isModelType(type) ? type : undefined
+  return asModelType(type)
 }
 
 function walkValue(

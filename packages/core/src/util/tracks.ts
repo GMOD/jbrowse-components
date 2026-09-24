@@ -11,12 +11,12 @@ export { getFileName } from './getFileName.ts'
 export { getRpcSessionId } from './parentWalk.ts'
 
 import {
+  asModelType,
   getParent,
   getSnapshot,
   getType,
   hasParent,
   isAlive,
-  isModelType,
   isStateTreeNode,
 } from '@jbrowse/mobx-state-tree'
 import { observable, runInAction, untracked } from 'mobx'
@@ -799,8 +799,8 @@ interface SettingsReport {
 // volatile or a getter of the same name (`scrollTop`) did not land and the
 // caller has to hear about it.
 function didNotLand(unapplied: UnappliedSetting[], display: unknown) {
-  const type = display ? getType(display) : undefined
-  const props = type && isModelType(type) ? Object.keys(type.properties) : []
+  const model = display ? asModelType(getType(display)) : undefined
+  const props = model ? Object.keys(model.properties) : []
   return unapplied.filter(entry => !props.includes(entry.key))
 }
 

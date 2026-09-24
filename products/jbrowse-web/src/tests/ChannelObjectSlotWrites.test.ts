@@ -7,7 +7,7 @@ import {
   makeSlotFacade,
   slotChoices,
 } from '@jbrowse/core/configuration'
-import { getSnapshot, isArrayType } from '@jbrowse/mobx-state-tree'
+import { asArrayType, getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import corePlugins from '../corePlugins.ts'
 
@@ -32,7 +32,7 @@ function subSchemas(type: IAnyType): IAnyType[] {
     if (!isConfigurationSchemaType(entry)) {
       return []
     }
-    const inner: IAnyType = isArrayType(entry) ? entry.getChildType() : entry
+    const inner: IAnyType = asArrayType(entry)?.getChildType() ?? entry
     return [inner, ...subSchemas(inner)]
   })
 }

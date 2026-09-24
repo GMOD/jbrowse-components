@@ -16,7 +16,7 @@
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@jbrowse/core": "workspace:*",
-    "@jbrowse/mobx-state-tree": "^6.5.2",
+    "@jbrowse/mobx-state-tree": "^6.6.0",
     "@jbrowse/react-app2": "workspace:*",
     "astro": "^7.3.3",
     "mobx": "^7.0.3",

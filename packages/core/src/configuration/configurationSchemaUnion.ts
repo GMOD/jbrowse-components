@@ -1,6 +1,5 @@
-import { isArrayType, isOptionalType, types } from '@jbrowse/mobx-state-tree'
+import { asArrayType, types } from '@jbrowse/mobx-state-tree'
 
-import { getSubType } from '../util/mst-reflection.ts'
 import {
   getConfigurationSchemaMetadata,
   getConfigurationSchemaUnion,
@@ -118,8 +117,6 @@ export function ConfigurationSchemaUnion<
  * the slot's MST type, or undefined for any other slot.
  */
 export function arraySlotUnion(slotType: IAnyType) {
-  const array = isOptionalType(slotType) ? getSubType(slotType) : slotType
-  return isArrayType(array)
-    ? getConfigurationSchemaUnion(array.getChildType())
-    : undefined
+  const array = asArrayType(slotType)
+  return array ? getConfigurationSchemaUnion(array.getChildType()) : undefined
 }
