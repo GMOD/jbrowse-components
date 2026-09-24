@@ -14990,6 +14990,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearSyntenyDisplayState": {
       "type": "object",
       "properties": {
+        "hiddenFeatureIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."

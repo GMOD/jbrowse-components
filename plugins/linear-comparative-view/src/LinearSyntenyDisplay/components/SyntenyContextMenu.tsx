@@ -1,6 +1,7 @@
 import { ContextMenu } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 
 import { centerStackOnFeature } from '../../SyntenyFeatureDetail/centerOnFeature.ts'
 import { bandMoveTargets } from '../bandMoveTargets.ts'
@@ -75,6 +76,13 @@ export default function SyntenyContextMenu({
             if (problems.length > 0) {
               session.notify(problems.join(' ... '), 'warning')
             }
+          },
+        },
+        {
+          label: 'Hide this feature',
+          icon: VisibilityOffIcon,
+          onClick: () => {
+            model.hideFeature(feature.id)
           },
         },
       ]}

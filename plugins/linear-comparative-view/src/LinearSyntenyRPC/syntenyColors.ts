@@ -112,6 +112,7 @@ export function computeSyntenyColors({
   namePosition,
   attributeRanges,
   hideUnlabelled,
+  hiddenFeatures,
 }: {
   instanceData: InstanceInputs
   featureData: ColorFunctionInputs
@@ -136,6 +137,7 @@ export function computeSyntenyColors({
   // one, not this fetch's. See `createComparativeColorFunction`.
   attributeRanges: Record<string, AttributeRange>
   hideUnlabelled?: boolean
+  hiddenFeatures?: ReadonlySet<number>
 }) {
   const { kinds, instanceFeatureIdx, instanceCount } = instanceData
   const colorFn = createComparativeColorFunction({
@@ -171,14 +173,15 @@ export function computeSyntenyColors({
     if (kind === KIND_MARKER) {
       out[i] = marker
     } else if (indelColor !== undefined) {
-      // an indel of a ribbon the colour mode hides goes with it
+      // an indel of a hidden ribbon goes with it
+      const f = instanceFeatureIdx[i]!
       out[i] =
-        hideUnlabelled && colorFn(instanceFeatureIdx[i]!) >>> 24 === 0
+        hiddenFeatures?.has(f) || (hideUnlabelled && colorFn(f) >>> 24 === 0)
           ? 0
           : indelColor
     } else {
       const f = instanceFeatureIdx[i]!
-      const base = colorFn(f)
+      const base = hiddenFeatures?.has(f) ? 0 : colorFn(f)
       // a ribbon the colour mode hides stays hidden under the identity fade
       if (opacityByIdentity && base >>> 24 !== 0) {
         // Identity in [0,1] -> alpha byte in [0x4c, 0xff] (30% floor so

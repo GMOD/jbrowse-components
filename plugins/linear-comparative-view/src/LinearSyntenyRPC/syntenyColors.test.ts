@@ -349,3 +349,24 @@ test('scaffolds after the chromosomes do not compress the palette', () => {
   // red-through-green leaves it at zero for every chromosome.
   expect(hues.some(c => (c >>> 16) & 0xff)).toBe(true)
 })
+
+test('a hidden feature paints its ribbon and indels invisible, and only its own', () => {
+  const colors = computeSyntenyColors({
+    groundColor: '#fff',
+    instanceData: {
+      kinds: new Uint8Array([KIND_BASE, KIND_CIGAR_I, KIND_BASE, KIND_CIGAR_I]),
+      instanceFeatureIdx: new Uint32Array([0, 0, 1, 1]),
+      instanceCount: 4,
+    },
+    featureData,
+    field: 'track',
+    trackColor: TRACK_COLOR,
+    attributeRanges: {},
+    opacityByIdentity: true,
+    hiddenFeatures: new Set([0]),
+  })
+  expect(colors[0]).toBe(0)
+  expect(colors[1]).toBe(0)
+  expect(abgrAlpha(colors[2]!)).toBeGreaterThan(0)
+  expect(abgrAlpha(colors[3]!)).toBeGreaterThan(0)
+})

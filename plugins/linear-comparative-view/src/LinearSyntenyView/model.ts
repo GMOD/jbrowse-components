@@ -35,6 +35,7 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import ViewStreamIcon from '@mui/icons-material/ViewStream'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun } from 'mobx'
 
 import { linearSyntenyViewHelperModelFactory } from '../LinearSyntenyViewHelper/stateModelFactory.ts'
@@ -398,6 +399,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       get allSyntenyDisplays() {
         return self.levels.flatMap(l => l.linearSyntenyDisplays)
+      },
+
+      /**
+       * #getter
+       */
+      get hiddenFeatureCount() {
+        return this.allSyntenyDisplays.reduce(
+          (sum, d) => sum + d.hiddenFeatureIds.length,
+          0,
+        )
       },
 
       /**
@@ -1335,6 +1346,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               ],
             },
             ...extraSubMenus,
+            ...(self.hiddenFeatureCount > 0
+              ? [
+                  {
+                    label: `Show all hidden features (${self.hiddenFeatureCount})`,
+                    icon: VisibilityIcon,
+                    onClick: () => {
+                      for (const display of self.allSyntenyDisplays) {
+                        display.showAllHidden()
+                      }
+                    },
+                  },
+                ]
+              : []),
             exportSvgMenuItem,
           ]
         },

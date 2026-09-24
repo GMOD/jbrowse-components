@@ -197,6 +197,10 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         */
+        hiddenFeatureIds: types.stripDefault(types.array(types.string), []),
       }),
     )
     .volatile(() => ({
@@ -261,6 +265,23 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         self.geometryRegionSignature = regionSignature
         self.hoveredInstanceIdx = -1
         self.contextMenuAnchor = undefined
+      },
+      /**
+       * #action
+       */
+      hideFeature(featureId: string) {
+        if (!self.hiddenFeatureIds.includes(featureId)) {
+          self.hiddenFeatureIds.push(featureId)
+        }
+        if (self.clickedFeatureUniqueId === featureId) {
+          self.clickedFeatureUniqueId = undefined
+        }
+      },
+      /**
+       * #action
+       */
+      showAllHidden() {
+        self.hiddenFeatureIds.clear()
       },
       /**
        * #action
@@ -330,9 +351,8 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * so either strip can mark the ones the band is currently culling. One
        * per row, since culling is symmetric. Lazy by construction: with the
        * marks off nothing observes it. Both perspectives are one walk; whether
-       * the lower row's is drawn is `laneData`'s question. With unlabelled
-       * ribbons hidden it reads the colours too, so a hidden ribbon leaves no
-       * mark.
+       * the lower row's is drawn is `laneData`'s question. With any ribbon
+       * hidden it reads the colours too, so a hidden ribbon leaves no mark.
        */
       get culledRibbonMates() {
         const { featureData, instanceData } = self
@@ -340,7 +360,9 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           ? culledRibbonMateData(
               instanceData,
               featureData,
-              this.view.hideUnlabelled ? this.computedColors : undefined,
+              this.view.hideUnlabelled || self.hiddenFeatureIds.length > 0
+                ? this.computedColors
+                : undefined,
             )
           : undefined
       },
@@ -545,6 +567,21 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
+       */
+      get hiddenFeatureIdx(): ReadonlySet<number> {
+        const out = new Set<number>()
+        const ids = new Set(self.hiddenFeatureIds)
+        if (ids.size > 0) {
+          self.featureData?.featureIds.forEach((id, f) => {
+            if (ids.has(id)) {
+              out.add(f)
+            }
+          })
+        }
+        return out
+      },
+      /**
+       * #getter
        * Main-thread-computed per-instance colors. Recomputes whenever
        * colorBy, featureData, or instanceData descriptors change — this is
        * the gpuProps half of the rpcProps/gpuProps split. colorBy changes
@@ -573,6 +610,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           namePosition: this.paintedRefNamePosition,
           attributeRanges: this.view.attributeRanges,
           hideUnlabelled: this.view.hideUnlabelled,
+          hiddenFeatures: this.hiddenFeatureIdx,
         })
       },
       /**

@@ -3708,7 +3708,8 @@ export const configManifest: ConfigManifest = {
       "stateModelProps": [
         "id",
         "type",
-        "configuration"
+        "configuration",
+        "hiddenFeatureIds"
       ]
     },
     "LGVSyntenyDisplay": {
