@@ -13,7 +13,7 @@
 //
 // The shader converts window-relative bp to screen px with
 // `bpRel*bpPerPxInv + panPx`, where `panPx = (base - viewBp)/bpPerPx` is folded
-// on the CPU (float64) from a SMALL delta (see GpuDotplotRenderer.render), then
+// on the CPU (float64) from a SMALL delta (see segmentMark.writeUniforms), then
 // draws the segment as render-core's shared `capsule` shape — a quad expanded
 // in the segment's own frame, clipped by the fragment to a round-capped stroke
 // — matching Canvas2D's lineCap:'round' behavior, so short alignments render
@@ -21,7 +21,7 @@
 // the analytic-AA reasoning live in capsule.slang.
 //
 // Colors are pre-packed ABGR u32 on the CPU side
-// (dotplotColors.ts#packColor). Blend uses premultiplied alpha
+// (computeDotplotColors). Blend uses premultiplied alpha
 // (one / one-minus-src-alpha). The plot-wide opacity slider is the `alpha`
 // UNIFORM, never baked into those bytes — same split as the synteny renderer's
 // `fillShade`. Baking it meant an opacity drag recomputed the whole colors

@@ -170,8 +170,8 @@ test('the color legend is exported outside the clip, at the top right', async ()
   expect(Number(x![1])).toBeGreaterThan(view.viewWidth / 2)
 }, 20000)
 
-// An `attribute:<column>` ramp has no declared domain, so the legend's end
-// labels come from what the loaded data spanned — and an absent range is not a
+// A column's ramp has no declared domain, so the legend's end labels come
+// from what the loaded data spanned — and an absent range is not a
 // missing legend, it is a legend confidently labelled "0 → 0"
 // (`resolveContinuousMode` defaults min/max to 0). So the failure this guards
 // against is silent on both sides: the export renders a legend, and it disagrees

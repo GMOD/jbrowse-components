@@ -329,10 +329,10 @@ async function applyInit(
   // LaunchDotplotView takes untrusted spec data, so say so rather than
   // half-launch. Both consume the init the way a successful apply does: neither
   // could succeed on a retry.
-  const [target, query] = init.views.map(v => v.assembly)
-  if (!target && !query) {
+  const [x, y] = init.views.map(v => v.assembly)
+  if (!x && !y) {
     // the import form, deliberately
-  } else if (!target || !query) {
+  } else if (!x || !y) {
     getNotificationSink(self).notifyError(
       'DotplotView init needs an assembly on each of its two views',
     )
@@ -341,7 +341,7 @@ async function applyInit(
     // outlives this pass (only the reorder itself lowers it) where the
     // `initPending` term covers only the apply window below
     self.beginAutoDiagonalize(!!init.autoDiagonalize)
-    self.setAssemblyNames(target, query)
+    self.setAssemblyNames(x, y)
     await applyInitTracks(self, init)
     // must land before autoDiagonalize: the reorder is computed over whatever
     // the axes currently display, so restricting afterwards would diagonalize

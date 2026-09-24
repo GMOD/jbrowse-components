@@ -21,9 +21,8 @@ import {
 import type { DotplotViewModel } from '../model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// Not in synteny-core beside MIN_LENGTH_HELP: the synteny view enforces its
-// filters as shader uniforms over an instance buffer that carries no identity
-// lane, so it has no twin of this control to diverge from yet.
+// Not in synteny-core beside MIN_LENGTH_HELP: the synteny view has no identity
+// filter to share it with.
 const MIN_IDENTITY_HELP =
   'Hide alignments below this sequence identity. One with no identity ' +
   'reported is kept at every threshold.'

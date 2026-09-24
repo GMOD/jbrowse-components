@@ -290,17 +290,15 @@ export default function stateModelFactory(pm: PluginManager) {
           lockAspectRatio: types.stripDefault(types.boolean, false),
           /**
            * #property
-           * Screen-space line width (CSS pixels) applied to every dotplot
-           * display in this view. View-level because the GPU pass renders all
-           * displays with one uniform.
+           * Screen-space line width (CSS pixels) of every dotplot display in
+           * this view
            */
           lineWidth: types.stripDefault(types.number, DEFAULT_LINE_WIDTH),
           /**
            * #property
-           * Plot-wide alpha applied to every point. View-level for the same
-           * reason lineWidth is: the only control is view-level, so storing it
-           * per display meant a track shown after the slider moved rendered at
-           * the default while the slider said otherwise.
+           * Plot-wide alpha applied to every point. View-level because its
+           * only control is: stored per display, a track shown after the slider
+           * moved rendered at the default while the slider said otherwise.
            */
           alpha: types.stripDefault(types.number, DEFAULT_ALPHA),
           /**
@@ -1235,8 +1233,8 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #action
          */
-        setAssemblyNames(target: string, query: string) {
-          self.assemblyNames = cast([target, query])
+        setAssemblyNames(x: string, y: string) {
+          self.assemblyNames = cast([x, y])
           // Clear displayed regions to trigger re-initialization with the new
           // assemblies. The dotplotRegionsAutorun will re-populate them.
           self.hview.setDisplayedRegions([])

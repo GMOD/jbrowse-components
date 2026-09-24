@@ -54,12 +54,18 @@ export const COLOR_MODES: ColorModeEntry[] = [
     label: 'Query',
     helpText:
       'One color per sequence on this side, so contigs can be told apart.',
+    surfaceHelpText: {
+      points: 'One color per X-axis sequence, so contigs can be told apart.',
+    },
   },
   {
     field: 'target',
     kind: 'structural',
     label: 'Target',
     helpText: 'One color per sequence on the other side.',
+    surfaceHelpText: {
+      points: 'One color per Y-axis sequence.',
+    },
   },
   {
     field: 'reference',

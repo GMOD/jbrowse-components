@@ -71,8 +71,8 @@ export function computeDotplotColors({
   // Where a refName sits in the axis assembly the painting mode keys on; see
   // `DotplotDisplay.paintedRefNamePosition`.
   namePosition?: RefNamePosition
-  // The domain an `attribute:<name>` ramp scales to — the view's accumulated
-  // one, not this fetch's. See `createComparativeColorFunction`.
+  // The domain a ramp scales to — the view's accumulated one, not this
+  // fetch's. See `createComparativeColorFunction`.
   attributeRanges: Record<string, AttributeRange>
   hideUnlabelled?: boolean
 }) {
