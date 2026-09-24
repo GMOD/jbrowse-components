@@ -143,6 +143,13 @@ export interface PaddingSpan {
 // it and a caller that sorted in place would do so for the whole session.
 const NO_PADDING_SPANS = Object.freeze([]) as readonly PaddingSpan[]
 
+interface HighlightRegion {
+  assemblyName?: string
+  refName: string
+  start: number
+  end: number
+}
+
 /**
  * Calculate the offsetPx needed to center content within a viewport.
  * Returns a negative offset when content is smaller than viewport (padding on left).
@@ -152,19 +159,29 @@ function getCenteredOffsetPx(contentPx: number, viewportPx: number) {
 }
 
 /**
- * Resolve a region's refName to the assembly's canonical name, falling back to
- * the raw refName when the assemblyName is missing or unknown (so highlights
- * authored without an assembly still render in single-assembly views).
+ * A refName in the named assembly's canonical spelling, or unchanged when that
+ * assembly is missing or unknown, so a highlight authored without one still
+ * lands in a single-assembly view.
  */
-function resolveCanonicalRefName(
-  self: IAnyStateTreeNode,
-  region: { assemblyName?: string; refName: string },
+function canonicalRefName(
+  assemblyManager: AssemblyManager,
+  assemblyName: string | undefined,
+  refName: string,
 ) {
+  const asm = assemblyName ? assemblyManager.get(assemblyName) : undefined
+  return asm?.getCanonicalRefName2(refName) ?? refName
+}
+
+function canonicalHighlight(self: IAnyStateTreeNode, region: HighlightRegion) {
   const { assemblyManager } = getSession(self)
-  const asm = region.assemblyName
-    ? assemblyManager.get(region.assemblyName)
-    : undefined
-  return asm?.getCanonicalRefName2(region.refName) ?? region.refName
+  return {
+    ...region,
+    refName: canonicalRefName(
+      assemblyManager,
+      region.assemblyName,
+      region.refName,
+    ),
+  }
 }
 
 // bpPerPx deltas smaller than this are treated as no zoom change, avoiding
@@ -185,23 +202,6 @@ function sameBlockKeys(a: BlockSet, b: BlockSet) {
   return (
     a.blocks.length === b.blocks.length &&
     a.blocks.every((block, i) => block.key === b.blocks[i]!.key)
-  )
-}
-
-/**
- * Resolve a NavLocation's refName to the assembly's canonical name, falling
- * back to the raw refName (and the view's default assembly) when the assembly
- * is missing or unknown.
- */
-function navLocationRefName(
-  assemblyManager: AssemblyManager,
-  defaultAssemblyName: string,
-  location: NavLocation,
-) {
-  return (
-    assemblyManager
-      .get(location.assemblyName || defaultAssemblyName)
-      ?.getCanonicalRefName2(location.refName) || location.refName
   )
 }
 
@@ -228,10 +228,10 @@ function resolveNavEndpoint({
   displayedRegions: Region[]
   grow?: number
 }) {
-  const refName = navLocationRefName(
+  const refName = canonicalRefName(
     assemblyManager,
-    defaultAssemblyName,
-    location,
+    location.assemblyName || defaultAssemblyName,
+    location.refName,
   )
   const first = displayedRegions.find(r => r.refName === refName)
   if (!first) {
@@ -464,16 +464,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
          */
         hideNoTracksActive: types.stripDefault(types.boolean, false),
 
-        /**
-         * #property
-         * vestigial: the hierarchical selector is the only one that exists, so
-         * this value is ignored. Retained because saved sessions and configs
-         * persist it.
-         */
-        trackSelectorType: types.stripDefault(
-          types.enumeration(['hierarchical']),
-          'hierarchical',
-        ),
         /**
          * #property
          * show the "center line"
@@ -1374,19 +1364,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      // A resize needs no arithmetic: the window is what is stored, so a new
-      // width simply divides into it and `bpPerPx` follows. The view keeps the
-      // sequence it was framing rather than letting the right edge eat into it.
-      //
-      // Keeping the scale instead — which is what storing pixels amounted to —
-      // was a block-cache optimization: block boundaries are
-      // `blockNum * ceil(800 * bpPerPx)` and block keys embed start/end, so
-      // holding bpPerPx across a resize kept every block key, and so every
-      // fetched region, identical. Rescaling makes a resize a zoom, and a zoom
-      // is already a solved case: FetchVisibleRegions' 300ms debounce coalesces
-      // the gesture into one refetch, its in-flight guard caps concurrent
-      // batches at one, and rpcDataMap is overwritten in place rather than
-      // cleared, so nothing blanks (ADR-008, ADR-006).
       setTrackLabelBand(trackId: string, band: number) {
         if (band === 0) {
           self.trackLabelBands.delete(trackId)
@@ -1394,7 +1371,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self.trackLabelBands.set(trackId, band)
         }
       },
-
+      /**
+       * #action
+       * A resize keeps the window in bp, so `bpPerPx` follows the new width
+       * and the view keeps framing the same sequence (ADR-070).
+       */
       setWidth(newWidth: number) {
         const unmeasured = self.bpPerPx <= 0
         self.volatileWidth = newWidth
@@ -1707,81 +1688,74 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      moveTrackDown(idOrTrackId: string) {
+    .actions(self => {
+      function shownIndex(idOrTrackId: string) {
         const id = self.trackModelId(idOrTrackId)
-        const section = self.trackSection(id)
-        const idx = section.findIndex(t => t.id === id)
-        if (idx !== -1 && idx < section.length - 1) {
-          this.moveTrack(id, section[idx + 1]!.id)
+        const index = self.tracks.findIndex(track => track.id === id)
+        if (index === -1) {
+          throw new Error(
+            `No shown track has id or trackId "${idOrTrackId}" — the view's tracks are ${self.tracks.map(t => t.configuration.trackId).join(', ') || 'none'}`,
+          )
         }
-      },
-      /**
-       * #action
-       */
-      moveTrackUp(idOrTrackId: string) {
-        const id = self.trackModelId(idOrTrackId)
-        const section = self.trackSection(id)
-        const idx = section.findIndex(t => t.id === id)
-        if (idx > 0) {
-          this.moveTrack(id, section[idx - 1]!.id)
-        }
-      },
-      /**
-       * #action
-       */
-      moveTrackToTop(idOrTrackId: string) {
-        const id = self.trackModelId(idOrTrackId)
-        const section = self.trackSection(id)
-        if (section.length && section[0]!.id !== id) {
-          this.moveTrack(id, section[0]!.id)
-        }
-      },
-      /**
-       * #action
-       */
-      moveTrackToBottom(idOrTrackId: string) {
-        const id = self.trackModelId(idOrTrackId)
-        const section = self.trackSection(id)
-        const last = section[section.length - 1]
-        if (last && last.id !== id) {
-          this.moveTrack(id, last.id)
-        }
-      },
+        return index
+      }
+
       /**
        * #action
        * Move one shown track to another's position; each is a track model id
        * or a trackId.
        */
-      moveTrack(moving: string, target: string) {
-        const movingId = self.trackModelId(moving)
-        const targetId = self.trackModelId(target)
-        const oldIndex = self.tracks.findIndex(track => track.id === movingId)
-        if (oldIndex === -1) {
-          throw new Error(
-            `No shown track has id or trackId "${moving}" — the view's tracks are ${self.tracks.map(t => t.configuration.trackId).join(', ') || 'none'}`,
-          )
-        }
-        const newIndex = self.tracks.findIndex(track => track.id === targetId)
-        if (newIndex === -1) {
-          throw new Error(
-            `No shown track has id or trackId "${target}" — the view's tracks are ${self.tracks.map(t => t.configuration.trackId).join(', ') || 'none'}`,
-          )
-        }
-
-        // direction-aware placement: filtering out oldIndex shifts the target
-        // left by one when dragging down (oldIndex < newIndex), so splicing at
-        // newIndex lands the track *after* the target; dragging up leaves the
-        // target's index intact, landing *before* it. This matches the side
-        // the dragged track approaches from.
+      function moveTrack(moving: string, target: string) {
+        const oldIndex = shownIndex(moving)
+        const newIndex = shownIndex(target)
+        // splicing at newIndex after removing oldIndex lands a track dragged
+        // down after its target and one dragged up before it
         const tracks = self.tracks.filter((_, idx) => idx !== oldIndex)
         tracks.splice(newIndex, 0, self.tracks[oldIndex])
         self.tracks = cast(tracks)
-      },
+      }
 
+      function moveWithinSection(
+        idOrTrackId: string,
+        pick: <T>(section: T[], index: number) => T | undefined,
+      ) {
+        const moving = self.tracks[shownIndex(idOrTrackId)]!
+        const section = self.trackSection(moving.id)
+        const target = pick(section, section.indexOf(moving))
+        if (target && target !== moving) {
+          moveTrack(moving.id, target.id)
+        }
+      }
+
+      return {
+        moveTrack,
+        /**
+         * #action
+         */
+        moveTrackDown(idOrTrackId: string) {
+          moveWithinSection(idOrTrackId, (section, i) => section[i + 1])
+        },
+        /**
+         * #action
+         */
+        moveTrackUp(idOrTrackId: string) {
+          moveWithinSection(idOrTrackId, (section, i) => section[i - 1])
+        },
+        /**
+         * #action
+         */
+        moveTrackToTop(idOrTrackId: string) {
+          moveWithinSection(idOrTrackId, section => section[0])
+        },
+        /**
+         * #action
+         */
+        moveTrackToBottom(idOrTrackId: string) {
+          moveWithinSection(idOrTrackId, section => section.at(-1))
+        },
+      }
+    })
+    .actions(self => ({
       /**
        * #action
        */
@@ -1920,7 +1894,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             const movingDown = targetIdx > draggingIdx
             if (shouldSwapTracks(self.lastTrackDragY, currentY, movingDown)) {
               self.lastTrackDragY = currentY
-              this.moveTrack(draggingTrackId, targetId)
+              self.moveTrack(draggingTrackId, targetId)
             }
           }
         }
@@ -2668,7 +2642,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * #getter
          */
         get effectiveTotalBp() {
-          return self.bpPerPx * self.width
+          return self.windowWidthBp
         },
 
         /**
@@ -2758,7 +2732,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * as. Prefer `setWindow`: pixels mean nothing without the width they were
        * measured at, so a round trip through here is only exact while the width
        * holds still. Kept for callers that genuinely have pixels — a wheel
-       * gesture, a rubberband — and for reading old snapshots.
+       * gesture, a rubberband.
        */
       setNewView(bpPerPx: number, offsetPx: number) {
         self.zoomTo(bpPerPx)
@@ -3256,14 +3230,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * assemblyName is missing or unknown so highlights authored without an
        * assembly still render in single-assembly views.
        */
-      getHighlightCoords(region: {
-        assemblyName?: string
-        refName: string
-        start: number
-        end: number
-      }) {
-        const refName = resolveCanonicalRefName(self, region)
-        return getLayoutHighlightCoords(self, { ...region, refName })
+      getHighlightCoords(region: HighlightRegion) {
+        return getLayoutHighlightCoords(self, canonicalHighlight(self, region))
       },
 
       /**
@@ -3271,17 +3239,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * like getHighlightCoords but laid out against the overview scalebar and
        * shifted by the cytoband offset
        */
-      getOverviewHighlightCoords(region: {
-        assemblyName?: string
-        refName: string
-        start: number
-        end: number
-      }) {
-        const refName = resolveCanonicalRefName(self, region)
-        const coords = getLayoutHighlightCoords(self.overviewLayout, {
-          ...region,
-          refName,
-        })
+      getOverviewHighlightCoords(region: HighlightRegion) {
+        const coords = getLayoutHighlightCoords(
+          self.overviewLayout,
+          canonicalHighlight(self, region),
+        )
         return coords
           ? { ...coords, left: coords.left + self.cytobandOffset }
           : undefined

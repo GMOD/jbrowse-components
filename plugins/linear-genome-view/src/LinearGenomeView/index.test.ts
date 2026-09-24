@@ -408,7 +408,6 @@ test('can instantiate a mostly empty model and read a default configuration valu
   )
 
   expect(model.tracks[0]).toBeTruthy()
-  expect(model.trackSelectorType).toBe('hierarchical')
 })
 
 test('can instantiate a model that lets you navigate', () => {

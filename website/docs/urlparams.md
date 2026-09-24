@@ -474,7 +474,6 @@ restores natively:
 | [`showGridlines`](/docs/models/lineargenomeview#property-showgridlines) | show the "gridlines" in the track area |
 | [`showTrackOutlines`](/docs/models/lineargenomeview#property-showtrackoutlines) | show the track outlines |
 | [`trackLabels`](/docs/models/lineargenomeview#property-tracklabels) | how to display the track labels, can be "overlapping", "offset", or "hidden", or empty string "" (which results in the LinearGenomeViewPlugin config default being used). the resolved value is the `effectiveTrackLabels` getter. see LinearGenomeViewPlugin https://jbrowse.org/jb2/docs/config/lineargenomeviewconfigschema/ docs for how conf is used |
-| [`trackSelectorType`](/docs/models/lineargenomeview#property-trackselectortype) | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and configs persist it. |
 | [`windowStartBp`](/docs/models/lineargenomeview#property-windowstartbp) | Left edge of the viewport, in linearized bp — the concatenated `displayedRegions` space that `offsetPx` indexes, which carries no inter-region padding, so the two differ only by `bpPerPx`. May be negative, which is the view scrolled past the left end.<br><br>The viewport is stored as the genomic WINDOW it frames rather than as the pixels that framed it, because pixels mean nothing without the width they were measured at and a snapshot does not carry one. Storing them anyway is why a session authored in a 1000px window used to open at 500px showing half the region its author was looking at, while the same location as a `&loc=` opened correctly — the two ways to share a view disagreed, and only the one that stores intent was right. |
 | [`windowWidthBp`](/docs/models/lineargenomeview#property-windowwidthbp) | Width of the viewport in bp. Zero means "not established yet": no width has been measured, so there is nothing to divide by. The first measure fills it in, and `bpPerPx` is `windowWidthBp / width` from then on. |
 
@@ -650,7 +649,6 @@ restores natively:
 | [`paddingPx`](/docs/models/circularview#property-paddingpx) | blank margin between the circle and the edge of the figure |
 | [`showLegend`](/docs/models/circularview#property-showlegend) | a key naming each track's ring, chords or ribbons in the corner |
 | [`spacingPx`](/docs/models/circularview#property-spacingpx) | the gap drawn between adjacent chromosome arcs |
-| [`trackSelectorType`](/docs/models/circularview#property-trackselectortype) | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and configs persist it. |
 
 <!-- SPEC_KEYS CircularView END -->
 
@@ -720,7 +718,6 @@ restores natively:
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
 | [`showGridlines`](/docs/models/dotplotview#property-showgridlines) | carry each axis' ruler ticks across the plot as faint lines, the way LinearGenomeView's gridlines carry its own down over the tracks |
 | [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `colorBy: { field: 'track' }`. Absent means the track takes an automatic slot from the palette. |
-| [`trackSelectorType`](/docs/models/dotplotview#property-trackselectortype) | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and configs persist it. |
 | [`vview`](/docs/models/dotplotview#property-vview) | the vertical axis, the counterpart to `hview`. A spec writes `views[1]`. |
 
 <!-- SPEC_KEYS DotplotView END -->
@@ -843,7 +840,6 @@ restores natively:
 | [`overdrawPx`](/docs/models/linearsyntenyview#property-overdrawpx) | pixels beyond the visible viewport edge that synteny lines are still drawn. Effective up to the pan buffer (`syntenyPanBufferPx`: 2000px, or half the viewport when that is wider) — the worker emits CIGAR detail and location markers only that far, so a larger value draws ribbons whose detail stops partway along them. |
 | [`showOffscreenMates`](/docs/models/linearsyntenyview#property-showoffscreenmates) | Mark the alignments the view cannot draw a ribbon for, along both edges of each band. Costs a second query per pair of rows. |
 | [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `colorBy: { field: 'track' }`. Absent means the track takes an automatic slot from the palette. |
-| [`trackSelectorType`](/docs/models/linearsyntenyview#property-trackselectortype) | Ignored: the hierarchical selector is the only one. Declared because configs still carry it. |
 
 <!-- SPEC_KEYS LinearSyntenyView END -->
 

@@ -588,7 +588,6 @@
             "tracks": [],
             "hideHeader": true,
             "hideHeaderOverview": false,
-            "trackSelectorType": "hierarchical",
             "trackLabels": "overlapping",
             "showCenterLine": false
           },
@@ -721,7 +720,6 @@
             "tracks": [],
             "hideHeader": true,
             "hideHeaderOverview": false,
-            "trackSelectorType": "hierarchical",
             "trackLabels": "overlapping",
             "showCenterLine": false
           }

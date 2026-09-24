@@ -15,7 +15,6 @@
         "vtextRotation": 0,
         "htextRotation": -90,
         "fontSize": 15,
-        "trackSelectorType": "hierarchical",
         "assemblyNames": ["grape", "peach"],
         "drawCigar": true,
         "hview": {

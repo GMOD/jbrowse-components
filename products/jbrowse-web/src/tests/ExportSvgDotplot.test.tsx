@@ -33,7 +33,6 @@ test('export svg of dotplot', async () => {
           vtextRotation: 0,
           htextRotation: -90,
           fontSize: 15,
-          trackSelectorType: 'hierarchical',
           assemblyNames: ['volvox_random_inv', 'volvox'],
           drawCigar: true,
           hview: {

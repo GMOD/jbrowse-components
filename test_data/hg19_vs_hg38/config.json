@@ -54,7 +54,6 @@
         "type": "DotplotView",
         "height": 600,
         "displayName": "hg19 vs hg38 dotplot",
-        "trackSelectorType": "hierarchical",
         "views": [
           {
             "assembly": "hg38"

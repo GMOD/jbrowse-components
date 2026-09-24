@@ -137,8 +137,7 @@
                 ]
               }
             ],
-            "hideHeader": true,
-            "trackSelectorType": "hierarchical"
+            "hideHeader": true
           },
           {
             "id": "0Q9aAu1h7g",
@@ -181,8 +180,7 @@
                 ]
               }
             ],
-            "hideHeader": true,
-            "trackSelectorType": "hierarchical"
+            "hideHeader": true
           }
         ]
       }

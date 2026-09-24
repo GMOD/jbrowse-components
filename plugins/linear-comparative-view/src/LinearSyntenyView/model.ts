@@ -236,12 +236,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         >(),
         /**
          * #property
-         * Ignored: the hierarchical selector is the only one. Declared because
-         * configs still carry it.
-         */
-        trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
-        /**
-         * #property
          * The non-anchor rows follow the anchor row through the alignment,
          * moving to whatever region aligns to its window.
          */

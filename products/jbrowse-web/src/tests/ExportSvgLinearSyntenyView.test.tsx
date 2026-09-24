@@ -38,7 +38,6 @@ const syntenySession = {
       id: 'p1',
       minimized: false,
       type: 'LinearSyntenyView',
-      trackSelectorType: 'hierarchical',
       showIntraviewLinks: true,
       linkViews: true,
       interactToggled: false,

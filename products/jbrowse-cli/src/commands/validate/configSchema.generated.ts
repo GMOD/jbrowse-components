@@ -17854,9 +17854,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "hideNoTracksActive": {
           "type": "boolean"
         },
-        "trackSelectorType": {
-          "const": "hierarchical"
-        },
         "showCenterLine": {
           "type": "boolean"
         },
@@ -18821,9 +18818,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "minVisibleWidth": {
           "type": "number"
         },
-        "trackSelectorType": {
-          "type": "string"
-        },
         "launch": {},
         "assembly": {
           "description": "The assembly to open; a view that lays several out (the circular view) takes a list.",
@@ -19021,9 +19015,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "height": {
           "type": "number"
-        },
-        "trackSelectorType": {
-          "type": "string"
         },
         "assemblyNames": {
           "type": "array",
@@ -19299,9 +19290,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ]
         },
         "launch": {},
-        "trackSelectorType": {
-          "type": "string"
-        },
         "followSynteny": {
           "type": "boolean"
         },

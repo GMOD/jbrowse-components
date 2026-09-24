@@ -67,7 +67,6 @@
         "hideHeader": false,
         "hideHeaderOverview": false,
         "hideNoTracksActive": false,
-        "trackSelectorType": "hierarchical",
         "showCenterLine": false,
         "showCytobands": true,
         "trackLabels": "offset",

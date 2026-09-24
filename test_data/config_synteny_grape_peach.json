@@ -60,7 +60,6 @@
         "displayName": "Grape vs Peach - MCScan (Python version) synteny",
         "type": "LinearSyntenyView",
         "height": 400,
-        "trackSelectorType": "hierarchical",
         "showIntraviewLinks": true,
         "interactiveOverlay": false,
         "middleComparativeHeight": 100,
@@ -96,7 +95,6 @@
             "tracks": [],
             "hideHeader": true,
             "hideHeaderOverview": false,
-            "trackSelectorType": "hierarchical",
             "trackLabels": "overlapping",
             "showCenterLine": false,
             "showCytobands": true
@@ -118,7 +116,6 @@
             "tracks": [],
             "hideHeader": true,
             "hideHeaderOverview": false,
-            "trackSelectorType": "hierarchical",
             "trackLabels": "overlapping",
             "showCenterLine": false,
             "showCytobands": true
@@ -130,7 +127,6 @@
         "displayName": "Grape vs Peach - PAF file synteny",
         "type": "LinearSyntenyView",
         "height": 400,
-        "trackSelectorType": "hierarchical",
         "showIntraviewLinks": true,
         "interactiveOverlay": false,
         "middleComparativeHeight": 100,
@@ -1496,7 +1492,6 @@
             "tracks": [],
             "hideHeader": true,
             "hideHeaderOverview": false,
-            "trackSelectorType": "hierarchical",
             "trackLabels": "overlapping",
             "showCenterLine": false,
             "showCytobands": true
@@ -1742,7 +1737,6 @@
             "tracks": [],
             "hideHeader": true,
             "hideHeaderOverview": false,
-            "trackSelectorType": "hierarchical",
             "trackLabels": "overlapping",
             "showCenterLine": false,
             "showCytobands": true
