@@ -53,7 +53,7 @@ export function labelFontSize(displayMode: DisplayMode) {
 
 // Matches the config slot's own default, so a broken `featureHeight` expression
 // degrades to the standard row rather than to nothing.
-export const FALLBACK_FEATURE_HEIGHT = 10
+const FALLBACK_FEATURE_HEIGHT = 10
 
 // `featureHeight` is a per-feature callback slot, so reading it as a bare number
 // flows the expression STRING into a Float32Array height and the track paints

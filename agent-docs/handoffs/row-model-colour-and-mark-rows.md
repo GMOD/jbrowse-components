@@ -63,9 +63,10 @@ diff cut from the merge base, then a fix round), then land.
 **A multi-row row changes colour on a pan, on main and on this branch.** The
 palette is dealt over the rows loaded now (`discoveredRows` on main,
 `expandedRows` in `rowColorDeal` here), so panning to where an early-sorting
-value such as rmsk's `RC` appears or goes recolours every row after it. Left
-unfixed on main on 2026-09-23 because the fix is the dealer's order and a
-visible palette change, which is call 1 below.
+value such as rmsk's `RC` appears or goes recolours every row after it. Core's
+`categoricalValueColor` states the rule this breaks and is the by-value
+alternative. Left unfixed on main on 2026-09-23 because the fix is the
+dealer's order and a visible palette change, which is call 1 below.
 
 **Deferred until both branches land:** the retired-settings refusal and the
 shorthand router are copied across multi-row (`retiredSettings.ts`,

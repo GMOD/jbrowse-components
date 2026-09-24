@@ -29,7 +29,7 @@ export function overDensityBudget(
 
 // Carrying featureCount lets the model's derived density banner and force-load
 // behave identically whichever gate rejected the region.
-export function tooManyFeaturesResult(
+function tooManyFeaturesResult(
   featureCount: number,
   bytes: number | undefined,
 ): RegionTooLargeResult {

@@ -23,7 +23,7 @@ const FRAMES = [1, 2, 3, -1, -2, -3]
 // class plus a fixed stride.
 const LIGHT_TINT = FRAMES.length
 const MID_TINT = FRAMES.length * 2
-export const COLOR_CLASS_COUNT = FIRST_FRAME + FRAMES.length * 3
+const COLOR_CLASS_COUNT = FIRST_FRAME + FRAMES.length * 3
 
 /**
  * `LITERAL` for a frame outside `getFrame`'s range, where the box keeps
