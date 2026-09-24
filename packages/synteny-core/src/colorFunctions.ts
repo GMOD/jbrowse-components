@@ -79,6 +79,30 @@ export function paletteColorAt(position: number) {
 export type RefNamePosition = (refName: string) => number | undefined
 
 /**
+ * #api
+ * The `RefNamePosition` a chromosome-painting field hands its palette out by:
+ * `query` reads the first of the alignment's two assemblies, `target` the
+ * second. Undefined for any other field, and while that assembly loads.
+ */
+export function refNamePositionFor(
+  field: string,
+  [queryAssembly, targetAssembly]: readonly (string | undefined)[],
+  assemblyManager: {
+    get: (name: string) => { getRefNamePosition: RefNamePosition } | undefined
+  },
+): RefNamePosition | undefined {
+  const name =
+    field === 'query'
+      ? queryAssembly
+      : field === 'target'
+        ? targetAssembly
+        : undefined
+  return name === undefined
+    ? undefined
+    : assemblyManager.get(name)?.getRefNamePosition
+}
+
+/**
  * Chromosome painting against a dictionary-encoded refName lane.
  *
  * BY POSITION IN THE ASSEMBLY when the caller can ask it, which both displays

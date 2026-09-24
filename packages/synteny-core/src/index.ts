@@ -207,6 +207,7 @@ export {
   paletteColorAt,
 } from './colorFunctions.ts'
 export type { ColorFunctionInputs, RefNamePosition } from './colorFunctions.ts'
+export { refNamePositionFor } from './colorFunctions.ts'
 export {
   CIGAR_OP_D,
   CIGAR_OP_I,

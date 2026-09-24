@@ -7,9 +7,10 @@ import {
   createComparativeColorFunction,
   makeNameColorFunction,
   paletteColorAt,
+  refNamePositionFor,
 } from './colorFunctions.ts'
 
-import type { ColorFunctionInputs } from './colorFunctions.ts'
+import type { ColorFunctionInputs, RefNamePosition } from './colorFunctions.ts'
 
 // what `Assembly.getRefNamePosition` answers, for a fixed chromosome order
 function positionIn(order: readonly string[]) {
@@ -269,4 +270,22 @@ describe('a categorical attribute', () => {
     expect(fn(0)).not.toBe(fn(1))
     expect(fn(0)).not.toBe(MISSING_VALUE_COLOR)
   })
+})
+
+test('refNamePositionFor reads query off the first assembly and target off the second', () => {
+  const positions: Record<string, RefNamePosition> = {
+    hg38: () => 1,
+    mm10: () => 2,
+  }
+  const assemblyManager = {
+    get: (name: string) =>
+      positions[name] ? { getRefNamePosition: positions[name] } : undefined,
+  }
+  const at = (field: string, sides: (string | undefined)[]) =>
+    refNamePositionFor(field, sides, assemblyManager)?.('chr1')
+  expect(at('query', ['hg38', 'mm10'])).toBe(1)
+  expect(at('target', ['hg38', 'mm10'])).toBe(2)
+  expect(at('strand', ['hg38', 'mm10'])).toBeUndefined()
+  expect(at('target', ['hg38', undefined])).toBeUndefined()
+  expect(at('query', ['unloaded', 'mm10'])).toBeUndefined()
 })

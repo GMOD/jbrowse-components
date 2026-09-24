@@ -20,6 +20,7 @@ import {
   getCoarseBpPerPxThreshold,
   fetchWindowSignature,
   lodTierAt,
+  refNamePositionFor,
   regionSignature,
   swappedAssembliesWarning,
   syntenyFetchRegions,
@@ -635,17 +636,12 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * a color must not change with which chromosomes happen to be in view.
        */
       get paintedRefNamePosition(): RefNamePosition | undefined {
-        const field = this.paintedField
-        if (field !== 'query' && field !== 'target') {
-          return undefined
-        }
         const pair = this.parentHelper.rowPair
-        const row = field === 'query' ? pair?.v0 : pair?.v1
-        const assemblyName = row?.assemblyNames[0]
-        return assemblyName === undefined
-          ? undefined
-          : getSession(self).assemblyManager.get(assemblyName)
-              ?.getRefNamePosition
+        return refNamePositionFor(
+          this.paintedField,
+          [pair?.v0.assemblyNames[0], pair?.v1.assemblyNames[0]],
+          getSession(self).assemblyManager,
+        )
       },
       /**
        * #getter

@@ -10,6 +10,7 @@ import {
   LodTierInfoMixin,
   comparativeDisplayPhase,
   lodTierAt,
+  refNamePositionFor,
   swappedAssembliesWarning,
   syntenyFetchRegions,
 } from '@jbrowse/synteny-core'
@@ -195,15 +196,11 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * mate's).
        */
       get paintedRefNamePosition(): RefNamePosition | undefined {
-        const field = this.paintedField
-        if (field !== 'query' && field !== 'target') {
-          return undefined
-        }
-        const assemblyName = this.view.assemblyNames[field === 'query' ? 0 : 1]
-        return assemblyName === undefined
-          ? undefined
-          : getSession(self).assemblyManager.get(assemblyName)
-              ?.getRefNamePosition
+        return refNamePositionFor(
+          this.paintedField,
+          this.view.assemblyNames,
+          getSession(self).assemblyManager,
+        )
       },
       /**
        * #getter
