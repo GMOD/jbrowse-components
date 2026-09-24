@@ -20,8 +20,6 @@ ref https://mobx-state-tree.js.org/concepts/volatiles on volatile state used her
 | <span id="getter-fitbpperpx">**fitBpPerPx**</span><br><code>number</code> | The zoom that fits this axis' whole genome, with a tenth of the axis to spare. Its own getter, separate from `maxBpPerPx`, because on a locked plot the two differ — see `DotplotHView`. |
 | <span id="getter-maxbpperpx">**maxBpPerPx**</span><br><code>number</code> |  |
 | <span id="getter-minbpperpx">**minBpPerPx**</span><br><code>number</code> |  |
-| <span id="getter-maxoffset">**maxOffset**</span><br><code>number</code> | One rule at every zoom level: scroll until only `leftPadding` px of content remain visible on the right, or `rightPadding` px on the left.<br><br>Deliberately NOT special-cased for content narrower than the view. Pinning both bounds to the centered offset there gives zoomTo — which clamps its anchor-preserving offset into [minOffset, maxOffset] — a degenerate range, so zoomTo discards the cursor anchor and the plot snaps back to centered. That was the max-zoom-out "edge jump": the first zoom step displaced the locus under the cursor by the centered-vs-anchored gap, which grows with distance from center (~41px near the edge, ~0 at the center). `center()` still centers explicitly, so the initial view is unchanged. |
-| <span id="getter-minoffset">**minOffset**</span><br><code>number</code> |  |
 
 ## Actions
 
