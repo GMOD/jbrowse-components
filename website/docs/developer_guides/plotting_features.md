@@ -451,7 +451,7 @@ Manhattan's whole drawing, over `pointMark`:
 ```ts
 import { defineMark, pointMark } from '@jbrowse/render-core/marks'
 
-import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { ManhattanChannels } from './manhattanLayer.ts'
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 
 /**
@@ -466,7 +466,7 @@ import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 export const MANHATTAN_MARKS = [
   defineMark({
     shape: pointMark,
-    channels: (d: ManhattanRpcResult) => d,
+    channels: (d: ManhattanChannels) => d,
     params: (s: ManhattanRenderState) => ({
       domain: s.domainY,
       diameterPx: s.pointDiameterPx,

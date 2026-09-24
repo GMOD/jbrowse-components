@@ -622,6 +622,22 @@ Any channel's scale table; the kind names the channel.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+## selectEncodedFeature
+
+Open the feature widget on the feature behind one instance of a
+`CoreEncodeFeatures` answer. A display holds channels, not records, so it
+sends `CoreGetEncodedFeature` the request the instance's region came back
+under, and the worker answers the entry of `layer`'s list that the
+instance's `featureIndex` names: the record as the adapter wrote it, or the
+bin or run the steps made. A second click aborts the first.
+
+```js
+// type signature
+(self: IStateTreeNode<IAnyType>, rotation: { begin(): ActiveFetch; cancel: () => void; dispose(): void; }, args: Omit<CoreEncodeFeaturesArgs, "byteLimit"> & { ...; }) => void
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/selectEncodedFeature.ts)
+
 ## SessionPaletteProvider
 
 Make JBrowse follow the host's light/dark state — the whole of it, in one
