@@ -1,6 +1,5 @@
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 
-import { HEIGHT_MULTIPLIERS } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { featureGroupSections } from './facet.ts'
 import {
   MIN_FIT_BOX_PX,
@@ -17,7 +16,6 @@ import {
 } from './layout.ts'
 import { minDrawnBoxHeight } from './layoutQueries.ts'
 
-import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { FeatureFacet } from './facet.ts'
 import type { FitRung, FitStage, LabelReservation } from './fitLadder.ts'
@@ -61,7 +59,6 @@ export interface FitLadderHost {
     Required<Pick<LayoutInputs, 'expandedGeneIds'>>
   showLabels: boolean
   effectiveShowDescriptions: boolean
-  displayMode: DisplayMode
   facet: FeatureFacet | undefined
   fitMeasureFeatureIds: ReadonlySet<string> | undefined
   fitHeightToDisplay: boolean
@@ -382,14 +379,6 @@ export function fitLadderViews(self: FitLadderHost) {
     },
     /**
      * #getter
-     * Ceiling on the fit grow: the largest vertical scale before a feature
-     * body exceeds the height it would have outside fit mode.
-     */
-    get fitMaxScale() {
-      return Math.max(1, 1 / HEIGHT_MULTIPLIERS[self.displayMode])
-    },
-    /**
-     * #getter
      * The resolved fit outcome — which reservation `level` survived, its
      * unscaled `layout`, and the vertical `scale` to fill the track — bundled
      * so the three can never disagree.
@@ -398,7 +387,8 @@ export function fitLadderViews(self: FitLadderHost) {
       const base = this.baseLaidOutDataMap
       const fit = self.fitHeightToDisplay
       // Non-fit mode routes through `resolveFitLadder` too, with minScale =
-      // maxScale = 1, so FitStage is assembled in one place.
+      // 1, so FitStage is assembled in one place. maxScale is 1 in every
+      // mode: a stack with room to spare keeps its display mode's size.
       const trimmed = () => this.fitIsoformCount
       const full: FitRung = {
         level: 'full',
@@ -460,7 +450,7 @@ export function fitLadderViews(self: FitLadderHost) {
             : [full, ...isoformRung],
         self.fitTargetHeight,
         fit ? this.fitMinScale : 1,
-        fit ? this.fitMaxScale : 1,
+        1,
         self.fitMeasureFeatureIds,
         // The chip rows keep their 16 px under the squeeze, so the scale is
         // solved over the rows alone.

@@ -560,7 +560,6 @@ describe('canvas display fit escalation ladder', () => {
     const { display } = createDisplay()
     display.setRpcData(0, labeledStackedRegionData(3, 10), ctgA)
     const fullH = maxBottom(display.baseLaidOutDataMap)
-    expect(display.fitMaxScale).toBe(1)
     display.setHeightMode('fit')
 
     display.setHeight(Math.round(fullH * 3))
@@ -591,18 +590,17 @@ describe('canvas display fit escalation ladder', () => {
     expect(display.hasOverflow).toBe(false)
   })
 
-  it('grows compact bodies only up to the normal feature height', () => {
+  it('keeps compact bodies compact when the stack has room to spare', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setDisplayMode('compact')
     display.setRpcData(0, labeledStackedRegionData(3, 10), ctgA)
-    expect(display.fitMaxScale).toBeCloseTo(1 / 0.6)
     const fullH = maxBottom(display.baseLaidOutDataMap)
     display.setHeightMode('fit')
 
-    display.setHeight(Math.round(fullH * display.fitMaxScale * 3))
-    expect(display.fitScale).toBe(display.fitMaxScale)
-    expect(display.maxY).toBeLessThan(display.height)
+    display.setHeight(Math.round(fullH * 3))
+    expect(display.fitScale).toBe(1)
+    expect(display.maxY).toBe(fullH)
     expect(display.hasOverflow).toBe(false)
   })
 
@@ -629,7 +627,6 @@ describe('canvas display fit escalation ladder', () => {
     const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
     display.setHeightMode('fit')
     const minScale = display.fitMinScale
-    const maxScale = display.fitMaxScale
 
     const rungs = [
       ['full', fullH],
@@ -654,8 +651,7 @@ describe('canvas display fit escalation ladder', () => {
       fullH - 1,
       fullH,
       fullH + 1,
-      Math.round(fullH * maxScale) - 1, // grows, just under the cap
-      fullH * maxScale + 200, // grows to the cap, surplus is whitespace
+      fullH + 200, // surplus is whitespace
     ]
     for (const requested of heights) {
       display.setHeight(requested)
@@ -667,10 +663,8 @@ describe('canvas display fit escalation ladder', () => {
       expect(level).toBe(expectedLevel(h))
 
       expect(scale).toBeGreaterThanOrEqual(minScale)
-      expect(scale).toBeLessThanOrEqual(maxScale)
-      expect(scale).toBeCloseTo(
-        Math.max(minScale, Math.min(maxScale, h / active)),
-      )
+      expect(scale).toBeLessThanOrEqual(1)
+      expect(scale).toBeCloseTo(Math.max(minScale, Math.min(1, h / active)))
 
       const floored = active * scale > h + 0.5
       if (floored) {

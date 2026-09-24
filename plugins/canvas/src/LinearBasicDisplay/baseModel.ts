@@ -688,9 +688,8 @@ export default function baseStateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Uniform vertical scale for fit mode; 1 unless the resolved stack is
-       * being grown to fill the track (> 1) or the bodies stack squeezed to
-       * fit (< 1).
+       * Uniform vertical scale for fit mode; below 1 only while the stack is
+       * squeezed to fit.
        */
       get fitScale() {
         return self.fitStage.scale
@@ -698,7 +697,7 @@ export default function baseStateModelFactory(
       /**
        * #getter
        * What every consumer (hit test, GPU upload, React render) reads: the
-       * resolved fit layout, cloned and scaled only when grown or squeezed.
+       * resolved fit layout, cloned and scaled only when squeezed.
        */
       get laidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
         const { layout, scale } = self.fitStage
@@ -788,7 +787,7 @@ export default function baseStateModelFactory(
        */
       get renderedShowSubfeatureLabels() {
         const { scale, dropBelowLabelRows } = self.fitStage
-        return scale >= 1 && !dropBelowLabelRows
+        return scale === 1 && !dropBelowLabelRows
       },
       /**
        * #getter

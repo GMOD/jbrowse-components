@@ -82,8 +82,8 @@ const LANE_FEATURE_HEIGHT = 10
 /**
  * The lane packs in `compact`, with bodies at 0.6x and label text shrunk to
  * match, so a 40px band holds two labeled rows where `normal` holds one.
- * `compact` also gives the fit ladder room to GROW a sparse window:
- * `fitMaxScale` is `1 / 0.6`, so a handful of records fills the band at up to
+ * `compact` also gives the fit ladder room to GROW a sparse window: the lane's
+ * grow ceiling is `1 / 0.6`, so a handful of records fills the band at up to
  * normal size.
  */
 const LANE_DISPLAY_MODE = 'compact' as const
@@ -752,9 +752,8 @@ export function stateModelFactory(
             // the same floor a track's squeeze bottoms out at, and the same one
             // every variant painter here already draws to (`variantCellSpanPx`)
             squeezeFloorScale(shortestBox, MIN_FIT_BOX_PX),
-            // the grow ceiling is the display mode's compact ratio inverted, as
-            // `fitMaxScale` spells it — a sparse band fills up to normal feature
-            // height and no further
+            // the display mode's compact ratio inverted: a sparse band fills up
+            // to normal feature height and no further
             1 / HEIGHT_MULTIPLIERS[LANE_DISPLAY_MODE],
           )
         },
