@@ -140,6 +140,21 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "omia_cattle_variants",
+      "name": "OMIA causal variants (cattle)",
+      "assemblyNames": ["bosTau9"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "omia_cattle_variants.gff3.gz"
+      },
+      "displayDefaults": {
+        "labels": {
+          "description": "jexl:feature.inheritance"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "bovine_minigraph_segments",
       "name": "Bovine super-pangenome (rGFA segments)",
       "assemblyNames": ["bosTau9"],
@@ -213,13 +228,49 @@
       "assemblyNames": ["bosTau9"],
       "adapter": {
         "type": "VcfTabixAdapter",
-        "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.vcf.gz"
+        "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.vcf.gz",
+        "samplesTsvLocation": {
+          "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.samples.tsv"
+        }
       },
       "displays": [
         {
           "type": "LinearMultiSampleVariantDisplay",
           "displayId": "bovine_pangenome_vcf_regular",
-          "renderingMode": "phased"
+          "renderingMode": "phased",
+          "rows": {
+            "domain": [
+              "ANG",
+              "BSW",
+              "HIG",
+              "OBV",
+              "PIE",
+              "SIM",
+              "BRA",
+              "NEL",
+              "GAU",
+              "BIS",
+              "YAK"
+            ],
+            "labels": {
+              "ANG": "Angus",
+              "BSW": "Brown Swiss",
+              "HIG": "Highland",
+              "OBV": "Original Braunvieh",
+              "PIE": "Piedmontese",
+              "SIM": "Simmental",
+              "BRA": "Brahman",
+              "NEL": "Nellore",
+              "GAU": "Gaur",
+              "BIS": "Bison",
+              "YAK": "Yak"
+            }
+          },
+          "rowColor": {
+            "field": "lineage",
+            "domain": ["taurine", "indicine", "gaur", "bison", "yak"],
+            "range": ["#0072B2", "#E69F00", "#009E73", "#CC79A7", "#D55E00"]
+          }
         }
       ]
     }

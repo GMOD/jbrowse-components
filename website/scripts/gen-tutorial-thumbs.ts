@@ -524,7 +524,7 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   // half the card, and the alignment rows the card is about were a thin strip at
   // the bottom.
   pangenome_cattle: {
-    // The BoLA window from the gene lane down: the genotype matrix is the one
+    // The HSPA1A window from the gene lane down: the genotype matrix is the one
     // row on the page that names which assembly carries an allele rather than
     // just where the graph varies, and it reads as a matrix only with the
     // breed labels beside it. The band drops the app chrome above the tracks;

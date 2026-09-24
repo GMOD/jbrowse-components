@@ -170,90 +170,104 @@ const dock2Spec: ScreenshotSpec = {
 // Bovine
 // ---------------------------------------------------------------------------
 
-// The BoLA class II region around BTNL2, and the figure the whole bovine half
-// exists for: it is where the graph route and the variant route say different
-// things about the same 124 kb, and both are right.
+// Each figure below reproduces a published variant off the deconstructed
+// callset, and names its carriers from the GT columns:
 //
-// The graph route reports 52 segments and 7 bubbles here, with two very large
-// insertions -- 157,021 bp attributed to BIS and 110,779 bp to BRA. But
-// "attributed" is P-line order, not carriage: the published graphs record no
-// SR, so rank is the order the 12 paths appear in and `firstSeenIn` means "the
-// first of that fixed order carrying this segment". Nothing in the BED files
-// can say who else has it.
-//
-// The variant route can. `vg deconstruct` over the same graph gives 26 records
-// in this window, and the site at chr23:25,864,769 is NINE-allelic with a
-// reference span of 84 kb and a longest alternate of 362 kb; its GT row reads
-// 1 2 3 4 1 5 6 7 8 9 1, i.e. ANG, GAU and YAK share one allele and the other
-// eight assemblies each carry their own. That is a cattle MHC behaving exactly
-// like the human one, and it is invisible in the graph lanes.
-const BOLA_LOC = 'chr23:25,844,769-25,968,809'
+//   POLLED   chr1:2,429,329   7 bp -> 209 bp, ANG only. Medugorac et al. 2012's
+//                             Celtic allele; OMIA 000483-9913 states it as
+//                             g.[2429327_2429336del;2429109_2429320dupins].
+//   KIT      chr6:70,099,508  REF 20,622, ALT 1 / 37,545, SIM alone on the long
+//                             allele, whose nested record is one 14,320 bp
+//                             unit. Milia et al. 2025, Genome Res 35:1041.
+//   TAS2R46  chr5:98,587,383  REF 17,020, GAU alone on the 1 bp allele. Leonard
+//                             et al. 2022 Fig 7e: 98,587,384-98,604,401.
+//   HSPA1B   chr23:27,520,698 an ~11 kb insertion in every assembly bar YAK.
+//                             Leonard et al. 2022 found it in all of theirs,
+//                             which had no yak.
+const bovineVariantLane = (height: number) => ({
+  trackId: 'bovine_pangenome_vcf',
+  type: 'LinearMultiSampleVariantDisplay',
+  height,
+})
 
-export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
-  dock2Spec,
-  {
+const bovineGenes = {
+  trackId: 'bosTau9_ncbiRefSeq_ucsc',
+  type: 'LinearBasicDisplay',
+  height: 90,
+}
+
+const bovineOmia = {
+  trackId: 'omia_cattle_variants',
+  type: 'LinearBasicDisplay',
+  height: 60,
+}
+
+function bovineLocusSpec(
+  name: string,
+  loc: string,
+  tracks: Record<string, unknown>[],
+  viewportHeight: number,
+): ScreenshotSpec {
+  return {
     mode: 'url',
-    name: 'pangenome/bovine_bola',
+    name,
     url: sessionSpec(CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
-          id: 'bovine-bola-lgv',
+          id: `${name.replace('/', '-')}-lgv`,
           assembly: 'bosTau9',
-          loc: BOLA_LOC,
-          // Sized for the same reason the mouse figure's lanes are, and this is
-          // the one where it bit hardest: the allele inventory plus an
-          // eleven-row genotype lane at default heights took the whole viewport
-          // and the graph pane never drew.
-          tracks: [
-            {
-              trackId: 'bosTau9_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              height: 90,
-            },
-            {
-              trackId: 'bovine_minigraph_bubbles',
-              type: 'LinearBasicDisplay',
-              height: 90,
-            },
-            // One row per assembly, so the nine-allelic site at 25,864,769
-            // reads across eleven rows rather than as one wide box. 11 rows at
-            // ~17 px is the floor that keeps the row labels legible.
-            {
-              trackId: 'bovine_pangenome_vcf',
-              type: 'LinearMultiSampleVariantDisplay',
-              height: 190,
-            },
-            {
-              trackId: 'bovine_minigraph_alleles',
-              type: 'LinearPileupDisplay',
-              height: 90,
-            },
-          ],
+          loc,
+          tracks,
         },
       ],
     }),
     readyTimeout: 300000,
     viewportWidth: 1400,
-    // No graph pane and no segments lane (review: "unclear what i'm looking
-    // at"): the anchored drawing's rank rows restated the lanes, and what the
-    // figure compares is the graph's lanes against the callset.
-    viewportHeight: 800,
+    viewportHeight,
     hideTooltip: true,
-    annotations: [
-      {
-        type: 'text',
-        text: 'each red row is a different allele',
-        fontSize: 18,
-        leader: true,
-        anchor: {
-          track: 'bovine_pangenome_vcf',
-          locus: 'chr23:25,905,000',
-          fracY: 0.2,
+  }
+}
+
+export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
+  dock2Spec,
+  bovineLocusSpec(
+    'pangenome/bovine_polled',
+    'chr1:2,424,000-2,436,000',
+    [bovineGenes, bovineOmia, bovineVariantLane(220)],
+    620,
+  ),
+  bovineLocusSpec(
+    'pangenome/bovine_kit',
+    'chr6:70,080,000-70,180,000',
+    [bovineGenes, bovineVariantLane(220)],
+    560,
+  ),
+  bovineLocusSpec(
+    'pangenome/bovine_tas2r46',
+    'chr5:98,575,000-98,615,000',
+    [bovineGenes, bovineVariantLane(220)],
+    560,
+  ),
+  // The graph lanes against the callset at one published insertion: the
+  // allele inventory holds the HSPA1B segment as alleles with no carriers, and
+  // the callset says every assembly bar the yak has one.
+  {
+    ...bovineLocusSpec(
+      'pangenome/bovine_bola',
+      'chr23:27,508,000-27,536,000',
+      [
+        bovineGenes,
+        bovineVariantLane(220),
+        {
+          trackId: 'bovine_minigraph_alleles',
+          type: 'LinearPileupDisplay',
+          height: 90,
         },
-        dx: 30,
-        dy: -70,
-      },
+      ],
+      660,
+    ),
+    annotations: [
       {
         type: 'text',
         text: 'graph alleles, listed without their carriers',
@@ -261,10 +275,10 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
         leader: true,
         anchor: {
           track: 'bovine_minigraph_alleles',
-          locus: 'chr23:25,935,000',
+          locus: 'chr23:27,521,000',
           fracY: 0.45,
         },
-        dx: -60,
+        dx: 60,
         dy: 30,
       },
     ],

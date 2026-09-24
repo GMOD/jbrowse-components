@@ -168,9 +168,14 @@ Files
      chr23:25,864,769, in the BoLA/MHC region, is a 9-allelic site whose
      reference span is 84 kb and whose longest alternate is 362 kb, and whose GT
      row reads 1 2 3 4 1 5 6 7 8 9 1 -- every assembly on its own allele bar
-     three sharing one. The window list below calls that locus a "157 kb
-     insertion (BIS)", which was the rank convention talking; this file replaces
-     it with who carries what.
+     three sharing one.
+
+  bovine-arsucd12-minigraph.samples.tsv            breed and lineage per VCF
+                                                   sample, for the adapter's
+                                                   samplesTsvLocation
+
+     Added 2026-09-24. Columns name, breed, lineage; lineage is taurine,
+     indicine, gaur, bison or yak.
 
 
   Stable names are PanSN, so a JBrowse track on an ordinary bosTau9 assembly
@@ -238,20 +243,22 @@ Using them
   A gene track for the same assembly is already hosted at
     https://jbrowse.org/ucsc/bosTau9/ncbiRefSeq.gff.gz   (csi: true)
 
-Some windows worth opening
---------------------------
+Published variants the callset reproduces
+-----------------------------------------
 
-  chr8:70,277,073-70,365,819    RHOBTB2          726 kb insertion (BSW)
-  chr9:87,066,686-87,166,962    RAET1L           251 kb insertion (BRA)
-  chr18:57,241,316-57,354,396   SIGLECL1         113 kb insertion (BIS)
-  chr23:25,844,769-25,968,809   BTNL2 (BoLA)     157 kb insertion (BIS)
-  chr17:14,003,965-14,060,481   GYPA             108 kb insertion (BSW)
-  chr3:8,543,335-8,644,701      ITLN2             54 kb deletion  (HIG)
-  chr11:99,289,720-99,369,766   KYAT1, SPOUT1     47 kb insertion (BIS)
-  chr15:80,556,572-80,634,088   PRG3, P2RX3       68 kb insertion (HIG)
+  Carriers are read off the VCF's GT columns.
 
-  Sample codes in parentheses are `firstSeenIn`, which is the convention
-  described above, not carriage.
+  chr1:2,429,329     Celtic POLLED allele, 202 bp          ANG
+                     duplication-insertion
+                     Medugorac et al. 2012, PLoS ONE 7:e39477; OMIA 000483-9913
+  chr6:70,099,508    14.3 kb repeat upstream of KIT,       SIM expanded, every
+                     white head                            other a deletion
+                     Milia et al. 2025, Genome Res 35:1041
+  chr5:98,587,383    17 kb deletion of TAS2R46             GAU
+                     Leonard et al. 2022, Nat Commun 13:3012, Fig 7
+  chr23:27,520,698   11 kb HSPA1B segment ARS-UCD1.2       all but YAK
+                     lacks
+                     Leonard et al. 2022, Nat Commun 13:3012
 
 Two gotchas worth recording
 ---------------------------

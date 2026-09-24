@@ -404,9 +404,20 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
     order, so it is weaker than minigraph's own SR and is not carriage. The
     tarball's `pggb` (23.7 GB) and `cactus` (26.1 GB) sets are base-level and
     do state per-assembly walks, so `build_pggb_tabix.sh` over one of them
-    would emit the same five files carrying `SM:Z:`, and `vg deconstruct` the
-    VCF this demo lacks. That needs no new download and is what would make
-    bovine a peer of `demos/hprc` rather than a structural-resolution sibling.
+    would emit the same five files carrying `SM:Z:`, and `vg deconstruct` a
+    base-level VCF. That needs no new download and is what would make bovine a
+    peer of `demos/hprc` rather than a structural-resolution sibling.
+  - **The minigraph VCF reproduces published variants** (tutorial figures
+    `bovine_polled`, `bovine_kit`, `bovine_tas2r46`, `bovine_bola`): Celtic
+    POLLED in ANG, the KIT white-head repeat expanded in SIM, the TAS2R46
+    deletion in GAU with Leonard 2022's breakpoints, and the HSPA1B segment in
+    all but YAK. It does not reproduce Leonard 2022's GC duplication in BSW/OBV,
+    the PRDM9 zinc-finger counts, or the QRICH2/ACAN repeats: too fine for
+    minigraph, or tangled. OMIA's recessive lethal SVs are absent from all 11.
+  - **Genotype distance recovers the three-way split** (taurine, indicine,
+    wild) on any chromosome, as Leonard 2023 Fig 1d, but places gaur with bison
+    and yak, which the species tree does not: reference-anchored distance
+    saturates for distant species. No figure claims the tree.
   - `genome_annotation.bed.gz`, the other Zenodo file, is **not** a gene
     annotation despite the name: a four-column repeat/mappability
     classification of the reference, 6,089,641 rows, chromosomes named `1..29`.
