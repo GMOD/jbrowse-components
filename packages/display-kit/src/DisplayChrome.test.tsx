@@ -1,5 +1,6 @@
 import { useMouseState } from '@jbrowse/core/ui/useMouseTracking'
 import { measureText } from '@jbrowse/core/util/measureText'
+import { TrackOverlaySlot } from '@jbrowse/display-ui'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   isGpuRenderingDisabled,
@@ -63,6 +64,30 @@ test('tooLarge phase commits TooLargeMessage and replaces the canvas', async () 
   ).toBe('test-display')
   expect(queryByTestId('probe-display')).toBeNull()
 })
+
+test.each([
+  ['tooLarge', /Requested too much data/],
+  ['renderError', /boom-render-error/],
+] as const)(
+  '%s banner lands in the track overlay layer, above the region masks',
+  async (phase, text) => {
+    const model = TestChromeModel.create({})
+    if (phase === 'tooLarge') {
+      model.setRegionTooLarge(true, 'Requested too much data')
+    } else {
+      model.setRenderError(new Error('boom-render-error'))
+    }
+    const { findByText } = render(
+      <TrackOverlaySlot zIndex={100}>
+        <DisplayChrome model={model} factory={stubFactory} testid="probe">
+          {({ canvasRef }) => <canvas ref={canvasRef} />}
+        </DisplayChrome>
+      </TrackOverlaySlot>,
+    )
+    const banner = await findByText(text)
+    expect(banner.closest('[data-track-overlay-node]')).not.toBeNull()
+  },
+)
 
 test('renderError phase commits DisplayRenderErrorOverlay and replaces the canvas', async () => {
   const model = TestChromeModel.create({})
