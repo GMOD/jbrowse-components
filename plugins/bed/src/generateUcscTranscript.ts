@@ -1,3 +1,5 @@
+import { copyExcept } from './copyExcept.ts'
+
 import type { MinimalFeature } from './types.ts'
 
 interface UcscTranscriptCheck {
@@ -98,6 +100,24 @@ interface UcscTranscriptOutput extends MinimalFeature {
   [key: string]: unknown
 }
 
+const TRANSCRIPT_OWN = new Set([
+  'strand',
+  'uniqueId',
+  'start',
+  'end',
+  'thickStart',
+  'thickEnd',
+  'refName',
+  'subfeatures',
+  'chrom',
+  'chromStart',
+  'chromEnd',
+  'chromStarts',
+  'blockStarts',
+  'blockSizes',
+  'blockCount',
+])
+
 export function generateUcscTranscript(
   data: UcscTranscriptInput,
 ): UcscTranscriptOutput {
@@ -110,15 +130,8 @@ export function generateUcscTranscript(
     thickEnd,
     refName,
     subfeatures: oldSubfeatures,
-    chrom,
-    chromStart,
-    chromEnd,
-    chromStarts,
-    blockStarts,
-    blockSizes,
-    blockCount,
-    ...rest
   } = data
+  const rest = copyExcept(data, TRANSCRIPT_OWN)
 
   // exonFrames from bigGenePred - the @gmod/bed parser returns it in genomic order.
   // _exonFrames fallback supports BED files that use the underscore-prefixed column

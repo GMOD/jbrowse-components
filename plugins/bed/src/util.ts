@@ -1,6 +1,7 @@
 import BED from '@gmod/bed'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 
+import { copyExcept } from './copyExcept.ts'
 import {
   generateBedMethylFeature,
   isBedMethylFeature,
@@ -193,6 +194,18 @@ export function parseStrand(strand: string | number | undefined): number {
   return 0
 }
 
+const BED_OWN = new Set(['strand', 'score', 'chrom', 'chromStart', 'chromEnd'])
+const REPEAT_OWN = new Set([
+  ...BED_OWN,
+  'description',
+  'chromStarts',
+  'blockSizes',
+  'blockStarts',
+  'blockCount',
+  'thickStart',
+  'thickEnd',
+])
+
 export function featureData({
   splitLine,
   refName,
@@ -240,32 +253,14 @@ export function featureData({
   }
 
   const data: BedData = parser.parseLine(splitLine, { uniqueId })
-  const {
-    strand: strandRaw,
-    score: scoreRaw,
-    chrom,
-    chromStart,
-    chromEnd,
-    ...rest
-  } = data
-  const strand = parseStrand(strandRaw)
-  const rawScore = scoreColumn ? data[scoreColumn] : scoreRaw
+  const strand = parseStrand(data.strand)
+  const rawScore = scoreColumn ? data[scoreColumn] : data.score
   const score = rawScore === undefined ? undefined : Number(rawScore)
 
-  const repeat = parseRepeatMaskerDescription(rest.description)
+  const repeat = parseRepeatMaskerDescription(data.description)
   if (repeat) {
-    const {
-      description,
-      chromStarts,
-      blockSizes,
-      blockStarts,
-      blockCount,
-      thickStart,
-      thickEnd,
-      ...rest2
-    } = rest
     return {
-      ...rest2,
+      ...copyExcept(data, REPEAT_OWN),
       ...repeat,
       uniqueId,
       score,
@@ -276,23 +271,24 @@ export function featureData({
     }
   }
 
-  const subfeatures = rest.blockCount
+  const rest = copyExcept(data, BED_OWN)
+  const subfeatures = data.blockCount
     ? makeBlocks({
         start,
         uniqueId,
         refName,
-        chromStarts: rest.chromStarts,
-        blockCount: rest.blockCount,
-        blockSizes: rest.blockSizes,
-        blockStarts: rest.blockStarts,
+        chromStarts: data.chromStarts,
+        blockCount: data.blockCount,
+        blockSizes: data.blockSizes,
+        blockStarts: data.blockStarts,
       })
     : undefined
 
   const transcriptCheck = {
     strand,
-    blockCount: rest.blockCount,
-    thickStart: rest.thickStart,
-    thickEnd: rest.thickEnd,
+    blockCount: data.blockCount,
+    thickStart: data.thickStart,
+    thickEnd: data.thickEnd,
   }
   if (
     !disableGeneHeuristic &&

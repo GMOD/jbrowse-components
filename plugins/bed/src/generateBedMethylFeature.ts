@@ -10,16 +10,21 @@ export function isBedMethylFeature({
   start: number
   end: number
 }) {
+  if (
+    splitLine.length < 18 ||
+    +splitLine[6]! !== start ||
+    +splitLine[7]! !== end
+  ) {
+    return false
+  }
   // columns 9-17 are the nine numeric methylation stats
-  const nums = splitLine.slice(9, 18)
-  return (
-    splitLine[6] !== undefined &&
-    +splitLine[6] === start &&
-    splitLine[7] !== undefined &&
-    +splitLine[7] === end &&
-    nums.length === 9 &&
-    nums.every(x => x && !Number.isNaN(+x))
-  )
+  for (let i = 9; i < 18; i++) {
+    const x = splitLine[i]!
+    if (!x || Number.isNaN(+x)) {
+      return false
+    }
+  }
+  return true
 }
 
 export function generateBedMethylFeature({
