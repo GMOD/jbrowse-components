@@ -381,9 +381,7 @@ Authoritative docs (with named canary tests) live alongside the code at
   or `getConf` still types against the base factory's schema. `types.compose`
   **overrides** props rather than intersecting them (`_OverrideProps` in the MST
   typings), so the redeclaration costs nothing at runtime — same node either
-  way — and buys own-slot narrowing. `showInsertionGlyphsSlot.test.ts` is the
-  worked case, on `LinearMultiSampleVariantDisplay` against
-  `SharedVariantConfigModel`.
+  way — and buys own-slot narrowing.
 
 The inline-config branch is not a quirk to simplify away — ADR-084 chose it
 over the session list it replaced, and `assertTrackConfOutlivesItsAssemblies`
