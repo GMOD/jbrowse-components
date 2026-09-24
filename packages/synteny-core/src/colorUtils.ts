@@ -1,4 +1,4 @@
-import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
+import { abgrAlpha, cssColorToRgb } from '@jbrowse/core/util/colorBits'
 
 /**
  * #api
@@ -105,4 +105,14 @@ export function blendOverGround(color: string, a: number, ground: string) {
   const [gr, gg, gb] = cssColorToRgb(ground)
   const mix = (c: number, g: number) => Math.round(c * a + g * (1 - a))
   return `rgb(${mix(r, gr)},${mix(g, gg)},${mix(b, gb)})`
+}
+
+// Alpha under 1% once the opacity slider applies: the floor below which a
+// comparative display neither paints an instance on its Canvas2D/SVG path nor
+// lets the pick hit it. One function because the two answers have to agree — a
+// pick that weighed the packed byte alone left a plot faded to 0 blank and
+// still hoverable. A synteny location marker passes 1, since it is drawn at its
+// packed alpha whatever the slider says.
+export function isInstanceInvisible(packedColor: number, displayAlpha: number) {
+  return abgrAlpha(packedColor) * displayAlpha < 3
 }

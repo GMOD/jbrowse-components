@@ -5,17 +5,12 @@ import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { DiagonalizationResult } from '@jbrowse/core/util/diagonalizeRegions'
 import type { DiagonalizeArgs } from '@jbrowse/synteny-core'
 
-// One synteny level (the gap between two adjacent views): the alignment
-// adapters drawn there, the region set of the reference view (above), and the
-// region set of the view being reordered (below). Called once per level so each
-// routes to the same worker its track renders on (rpcSessionId is per-track),
-// reusing that worker's already-parsed adapters.
-export type DiagonalizeSyntenyArgs = DiagonalizeArgs
-
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
+    // one level: the reference view's regions (above) and the reordered view's
+    // (below), called per level so each lands on its track's worker
     DiagonalizeSynteny: {
-      args: DiagonalizeSyntenyArgs
+      args: DiagonalizeArgs
       // null when the level has no alignments to reorder
       return: DiagonalizationResult | null
     }

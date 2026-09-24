@@ -1,7 +1,7 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
+import { isInstanceInvisible } from '@jbrowse/synteny-core'
 
-import { isSegmentInvisible } from './dotplotColors.ts'
 import { DOTPLOT_MARKS } from './dotplotMarks.ts'
 
 import type {
@@ -183,7 +183,7 @@ function* visibleSegments(
   ).sort((a, b) => b[0] - a[0])
   for (const [start, end] of runs) {
     for (let s = end - 1; s >= start; s--) {
-      if (!isSegmentInvisible(colors[s]!, alpha)) {
+      if (!isInstanceInvisible(colors[s]!, alpha)) {
         yield s
       }
     }

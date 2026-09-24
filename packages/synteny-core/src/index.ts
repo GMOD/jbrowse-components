@@ -116,11 +116,12 @@ export type {
 export { runDiagonalize } from './runDiagonalize.ts'
 export { prepareDiagonalizeAdapter } from './prepareDiagonalizeAdapter.ts'
 export {
-  legendChipColor,
   colorSchemes,
   defaultCigarColors,
   getQueryColor,
   hashString,
+  isInstanceInvisible,
+  legendChipColor,
   strandCigarColors,
 } from './colorUtils.ts'
 export type { ColorScheme } from './colorUtils.ts'

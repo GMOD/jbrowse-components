@@ -42,7 +42,8 @@ export interface DotplotGeometryData extends DotplotInstanceData {
 // v-axis flip both measure against; the SVG export overrides them with its own
 // layer's.
 export interface DotplotRenderState {
-  // Absolute genomic cumBp position of the left/top edge of the view.
+  // Absolute cumBp at the view's left edge (H) and bottom edge (V, which lays
+  // out bottom-up)
   viewBpH: number
   viewBpV: number
   bpPerPxHInv: number

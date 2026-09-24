@@ -1,8 +1,9 @@
+import { isInstanceInvisible } from '@jbrowse/synteny-core'
+
 import { pickFeatureAtPoint } from './syntenyPickEngine.ts'
 import {
   buildFeaturePath,
   computeTransform,
-  isInstanceInvisible,
   isRibbonCulled,
   makeCornerScratch,
   projectCorners,

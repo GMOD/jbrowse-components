@@ -1,4 +1,4 @@
-import { abgrAlpha, cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import {
   colorSchemes,
   createComparativeColorFunction,
@@ -19,13 +19,6 @@ import type { AttributeRange } from '@jbrowse/synteny-core'
 // black point rather than the ribbon's red match block) and the per-SEGMENT
 // expansion, since dotplot geometry is one line per CIGAR step where synteny's
 // is one instance per drawn tile.
-
-// Under 1% alpha once the opacity slider is applied: the Canvas2D/SVG draw and
-// the hover pick both skip it, so nothing the plot doesn't show can be hovered
-// or exported. Same floor as the synteny display's `isInstanceInvisible`.
-export function isSegmentInvisible(packedColor: number, alpha: number) {
-  return abgrAlpha(packedColor) * alpha < 3
-}
 
 // Dotplot's own default, the one thing the shared switch takes as a parameter.
 const POINT_COLOR = cssColorToABGR(colorSchemes.default.pointColor)

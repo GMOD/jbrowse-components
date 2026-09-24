@@ -1,8 +1,7 @@
 import { category10 } from '@jbrowse/core/ui/colors'
 import { abgrAlpha, abgrRed } from '@jbrowse/core/util/colorBits'
-import { colorSchemes } from '@jbrowse/synteny-core'
+import { colorSchemes, isInstanceInvisible } from '@jbrowse/synteny-core'
 
-import { isInstanceInvisible } from '../LinearSyntenyDisplay/syntenyRibbonPath.ts'
 import { packSyntenyFeatureData } from '../LinearSyntenyDisplay/testUtils.ts'
 import {
   KIND_BASE,

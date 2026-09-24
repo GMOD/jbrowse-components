@@ -6,6 +6,7 @@ import {
   abgrRed,
   cssColorToRgb,
 } from '@jbrowse/core/util/colorBits'
+import { isInstanceInvisible } from '@jbrowse/synteny-core'
 
 import { STROKE_ALPHA } from './shaders/syntenyTypes.generated.ts'
 import {
@@ -18,7 +19,6 @@ import {
 import {
   buildFeaturePath,
   computeTransform,
-  isInstanceInvisible,
   isRibbonCulled,
   makeCornerScratch,
   projectCorners,

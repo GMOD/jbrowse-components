@@ -45,18 +45,12 @@ export async function renderSvg(
       height={viewHeight}
       opts={opts}
       paint={ctx => {
-        // The view's own render state, so the export can't drift from what is
-        // on screen, with the canvas box taken from the layer this paints into.
         paintMarkBlocks(
           ctx,
           DOTPLOT_MARKS,
           new Map([[0, geometry]]),
           canvasWideBlocks([0], viewWidth),
-          {
-            ...dotplotRenderState,
-            canvasWidth: viewWidth,
-            canvasHeight: viewHeight,
-          },
+          dotplotRenderState,
         )
       }}
     />

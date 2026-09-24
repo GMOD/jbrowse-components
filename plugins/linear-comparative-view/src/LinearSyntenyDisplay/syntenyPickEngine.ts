@@ -1,10 +1,10 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { isInstanceInvisible } from '@jbrowse/synteny-core'
 
 import { KIND_BASE_TILE } from './shaders/syntenyTypes.generated.ts'
 import {
   buildFeaturePath,
   computeTransform,
-  isInstanceInvisible,
   isRibbonCulled,
   makeCornerScratch,
   projectSpanCorners,
