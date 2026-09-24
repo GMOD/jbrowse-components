@@ -178,6 +178,15 @@ export async function initializeWorker(
   self.addEventListener('unhandledrejection', event => {
     console.error('[Worker unhandled rejection]', event.reason)
   })
+  // the page posts calls without waiting for 'ready', and only the server
+  // built once the plugins have loaded can answer them
+  const early: MessageEvent[] = []
+  const hold = (e: MessageEvent<{ libRpc?: boolean }>) => {
+    if (e.data.libRpc) {
+      early.push(e)
+    }
+  }
+  self.addEventListener('message', hold)
 
   try {
     const pluginManager = await getPluginManager(corePlugins, opts)
@@ -190,8 +199,12 @@ export async function initializeWorker(
         .map(e => [e.name, wrapForRpc(e.invoke.bind(e))]),
     )
 
-    self.rpcServer = new RpcServer(rpcConfig)
-
+    const server = new RpcServer(rpcConfig)
+    self.rpcServer = server
+    self.removeEventListener('message', hold)
+    for (const e of early) {
+      server.handler(e)
+    }
     postMessage({ message: 'ready' })
   } catch (e) {
     // The boot handshake's last frame, and it must never fail to send — for the

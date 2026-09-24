@@ -24,6 +24,7 @@ interface PendingCall {
 export default class RpcClient {
   worker: Worker
   pending = new Map<string, PendingCall>()
+  private destroyed = false
   private events = new Map<string, Listener[]>()
   private counter = 0
 
@@ -117,6 +118,7 @@ export default class RpcClient {
   // never arrive, so reject it here instead of leaving the caller's promise (and
   // everything its continuation holds) unsettled forever
   destroy() {
+    this.destroyed = true
     this.rejectAllPending(new Error('RPC worker was terminated'))
     this.events.clear()
   }
@@ -180,6 +182,10 @@ export default class RpcClient {
   call(method: string, data: unknown, signal?: AbortSignal) {
     const uid = String(++this.counter)
     return new Promise((resolve, reject) => {
+      if (this.destroyed) {
+        reject(new Error('RPC worker was terminated'))
+        return
+      }
       if (signal?.aborted) {
         reject(makeAbortError())
         return

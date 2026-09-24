@@ -169,11 +169,21 @@ class LazyWorker {
 
   async getWorker() {
     if (!this.workerP) {
-      const booted = this.driver.makeWorker()
+      let early: WorkerHandle | undefined
+      const booted = this.driver.makeWorker(handle => {
+        early = handle
+      })
       this.bootP = booted
-      // once per booted worker by construction, rather than per dispatch behind
-      // a memo
-      this.workerP = booted.then(worker => this.driver.extendWorker(worker))
+      // A booting worker holds the calls it is sent, so with nothing to extend
+      // them a call goes out now rather than when the page gets round to the
+      // worker's 'ready'. A boot that fails rejects those calls with the
+      // handle. An extended worker is extended once booted, as promised.
+      this.workerP =
+        early && !this.driver.extendsWorkers()
+          ? Promise.resolve(early)
+          : // once per booted worker by construction, rather than per dispatch
+            // behind a memo
+            booted.then(worker => this.driver.extendWorker(worker))
       // drop this slot so the next getWorker re-boots, whether the boot failed
       // or the booted worker later died (a dead worker never replies)
       const invalidate = () => {
@@ -332,6 +342,12 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
    * call", so folding at dispatch needed a WeakMap to stop rebuilding a
    * plugin's wrapper per RPC; once per boot has nothing to memoize.
    */
+  extendsWorkers() {
+    return (
+      this.pluginManager.extensionPointCallbackCount('Core-extendWorker') > 0
+    )
+  }
+
   extendWorker(worker: WorkerHandle) {
     return this.pluginManager.evaluateExtensionPoint(
       /** #extensionPoint Core-extendWorker | sync | Take a booted RPC web worker: subscribe to the events it emits, post to it, or wrap its `call`. Fired once per booted worker, not per call */
@@ -355,7 +371,9 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
    * Boot one worker and run the configuration handshake. Overridable so a test
    * can hand the pool a fake handle without a `Worker`; nothing in the app does.
    */
-  async makeWorker(): Promise<WorkerHandle> {
+  async makeWorker(
+    onHandle?: (handle: WorkerHandle) => void,
+  ): Promise<WorkerHandle> {
     // one RpcClient per worker so we can do our own state-group-aware load
     // balancing across the pool
     const instance = this.options.makeWorkerInstance()
@@ -432,6 +450,7 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
       // sent again on readyForConfig for a worker whose startup awaits chunks
       // and so would drop this one; the worker keeps the first.
       sendConfig()
+      onHandle?.(handle)
     })
   }
 }

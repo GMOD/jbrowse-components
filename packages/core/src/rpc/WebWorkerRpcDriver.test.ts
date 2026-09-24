@@ -18,6 +18,7 @@ const rpcMethod = {
 const fakePluginManager = {
   getRpcMethodType: () => rpcMethod,
   evaluateExtensionPoint: (_name: string, worker: unknown) => worker,
+  extensionPointCallbackCount: () => 0,
 } as unknown as PluginManager
 
 class FakeHandle implements WorkerHandle {
@@ -380,10 +381,10 @@ class FakeWorkerInstance extends EventTarget {
   }
 }
 
-function makeDriver() {
+function makeDriver(pluginManager = fakePluginManager) {
   const worker = new FakeWorkerInstance()
   const driver = new WebWorkerRpcDriver(
-    fakePluginManager,
+    pluginManager,
     rpcConfigSchema.create({}),
     {
       makeWorkerInstance: () => worker as unknown as Worker,
@@ -475,5 +476,54 @@ describe('WebWorkerRpcDriver status channel', () => {
     const posted = await callWith()
     expect(posted.data).not.toHaveProperty('channel')
     expect(posted.data).toEqual({ sessionId: 's' })
+  })
+})
+
+describe('WebWorkerRpcDriver calls to a booting worker', () => {
+  const settle = () =>
+    new Promise(resolve => {
+      setTimeout(resolve, 0)
+    })
+  const callFrames = (worker: FakeWorkerInstance) =>
+    worker.posted.filter(p => (p as { libRpc?: boolean }).libRpc)
+
+  test('go out before the worker reports ready', async () => {
+    const { worker, driver } = makeDriver()
+    void driver.call('s', 'SomeMethod', { sessionId: 's' })
+    await settle()
+
+    expect(callFrames(worker)).toEqual([
+      expect.objectContaining({ method: 'SomeMethod' }),
+    ])
+  })
+
+  test('wait for ready when a plugin extends workers', async () => {
+    const { worker, driver } = makeDriver({
+      getRpcMethodType: () => rpcMethod,
+      evaluateExtensionPoint: (_name: string, handle: unknown) => handle,
+      extensionPointCallbackCount: () => 1,
+    } as unknown as PluginManager)
+    void driver.call('s', 'SomeMethod', { sessionId: 's' })
+    await settle()
+    expect(callFrames(worker)).toEqual([])
+
+    worker.send('ready')
+    await settle()
+    expect(callFrames(worker)).toEqual([
+      expect.objectContaining({ method: 'SomeMethod' }),
+    ])
+  })
+
+  test('are rejected when the boot fails', async () => {
+    const { worker, driver } = makeDriver()
+    const call = driver.call('s', 'SomeMethod', { sessionId: 's' })
+    await settle()
+
+    worker.send('error', {
+      error: { name: 'Error', message: 'plugin blew up' },
+    })
+
+    await expect(call).rejects.toThrow('RPC worker was terminated')
+    expect(worker.terminated).toBe(true)
   })
 })

@@ -136,3 +136,35 @@ test('a boot failure whose error cannot be cloned is still reported', async () =
   expect(typeof errors[0]!.error).toBe('string')
   expect(errors[0]!.error).toContain('plugin exploded')
 })
+
+test('a call sent while the worker boots is answered once it has booted', async () => {
+  const posts: { uid?: string; message?: string }[] = []
+  const original = globalThis.postMessage
+  globalThis.postMessage = ((msg: { uid?: string; message?: string }) => {
+    posts.push(msg)
+  }) as typeof globalThis.postMessage
+  const send = (data: unknown) => {
+    self.dispatchEvent(new MessageEvent('message', { data }))
+  }
+  try {
+    const booted = initializeWorker([], {
+      reExports: () => Promise.resolve({ default: {} }),
+    })
+    send({ libRpc: true, method: 'NotRegistered', uid: 'early', data: {} })
+    send({
+      message: 'config',
+      config: { plugins: [], windowHref: 'https://example.com' },
+    })
+    await booted
+    await new Promise(resolve => {
+      setTimeout(resolve, 0)
+    })
+  } finally {
+    globalThis.postMessage = original
+  }
+
+  const ready = posts.findIndex(p => p.message === 'ready')
+  const answer = posts.findIndex(p => p.uid === 'early')
+  expect(ready).toBeGreaterThan(-1)
+  expect(answer).toBeGreaterThan(-1)
+})
