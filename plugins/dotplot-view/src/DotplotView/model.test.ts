@@ -3,6 +3,7 @@ import {
   createTestSession,
   createTestSessionAsync,
 } from '@jbrowse/web/testUtils'
+import { when } from 'mobx'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -546,4 +547,23 @@ test('a dragged rect opens a synteny view whose rows span it at full width', asy
   expect(top!.offsetPx * top!.bpPerPx).toBeCloseTo(100, 0)
   expect(bottom!.bpPerPx * 800).toBeCloseTo(400)
   expect(bottom!.offsetPx * bottom!.bpPerPx).toBeCloseTo(200, 0)
+})
+
+test('the synteny view a dragged rect opens paints and filters as the plot does', async () => {
+  const model = await setup()
+  model.setWidth(800)
+  model.setColorBy('query')
+  model.setTrackColor('t1', '#123456')
+  model.setHideUnlabelled(true)
+  model.setMinAlignmentLength(500)
+  model.setLodMode('coarse')
+  const session = getSession(model) as unknown as { views: unknown[] }
+  model.launchLinearSyntenyView([100, 100], [300, 300])
+  await when(() => session.views.length === 2)
+  const synteny = session.views[1] as typeof model
+  expect(synteny.colorByField).toBe('query')
+  expect(synteny.trackColors.get('t1')).toBe('#123456')
+  expect(synteny.hideUnlabelled).toBe(true)
+  expect(synteny.minAlignmentLength).toBe(500)
+  expect(synteny.lodMode).toBe('coarse')
 })
