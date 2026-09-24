@@ -59,6 +59,7 @@ import type {
 } from './types.ts'
 import type { OverlayTrack } from './util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature, StatusChannel } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
@@ -861,7 +862,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
-      menuItems() {
+      menuItems(): MenuItem[] {
         return [
           ...self.views.map((view, idx) => ({
             label: `Row ${idx + 1} view menu`,
@@ -911,15 +912,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   self.setShowIntraviewLinks(!self.showIntraviewLinks)
                 },
               },
-              {
-                label: 'Allow clicking alignment squiggles',
-                type: 'checkbox',
-                checked: self.interactiveOverlay,
-                onClick: () => {
-                  self.setInteractiveOverlay(!self.interactiveOverlay)
-                },
-              },
             ],
+          },
+          {
+            label: 'Allow clicking alignment squiggles',
+            type: 'checkbox',
+            checked: self.interactiveOverlay,
+            onClick: () => {
+              self.setInteractiveOverlay(!self.interactiveOverlay)
+            },
           },
           {
             label: 'Export SVG',

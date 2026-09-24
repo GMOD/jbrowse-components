@@ -333,8 +333,8 @@ directionality. The header bar accepts location searches in either panel.
 
 Hovering a spline shades the reads it joins, every segment of the read in every
 panel it visits, and every other spline of the same read thickens alongside it.
-Untick **Show... → Allow clicking alignment squiggles** to turn the overlay back
-into a static picture.
+Untick **Allow clicking alignment squiggles** in the view menu to turn the
+overlay back into a static picture.
 
 ### Launching it
 
