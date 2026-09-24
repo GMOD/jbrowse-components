@@ -1,11 +1,11 @@
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
+import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
 import {
   assembleLocString,
   getSession,
   resolveSelectedIds,
 } from '@jbrowse/core/util'
 import { getHighlightColor } from '@jbrowse/core/util/highlights'
-import { useTheme } from '@mui/material'
 import {
   DataGrid,
   GRID_CHECKBOX_SELECTION_COL_DEF,
@@ -70,7 +70,7 @@ const HighlightGrid = observer(function HighlightGrid({
 }) {
   const { classes } = useCellStyles()
   const apiRef = useGridApiRef()
-  const theme = useTheme()
+  const theme = useStyleTheme()
   const session = getSession(model)
   const hiddenCount = session.highlights.length - model.rows.length
   const rows = model.rows.map(({ key, highlight }): Row => {

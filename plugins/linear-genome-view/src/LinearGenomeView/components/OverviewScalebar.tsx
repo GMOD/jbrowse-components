@@ -1,7 +1,8 @@
 import { PluggableElements } from '@jbrowse/core/ui'
+import { alpha } from '@jbrowse/core/ui/palette'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
-import { Typography, alpha, useTheme } from '@mui/material'
+import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { HEADER_BAR_HEIGHT, HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
@@ -110,8 +111,7 @@ const OverviewBox = observer(function OverviewBox({
   block: ContentBlock
   showRefName: boolean
 }) {
-  const { classes } = useStyles()
-  const theme = useTheme()
+  const { classes, theme } = useStyles()
   const {
     cytobandOffset,
     effectiveShowCytobands,
@@ -200,8 +200,7 @@ const VisibleRegionBox = observer(function VisibleRegionBox({
 }: {
   model: LGV
 }) {
-  const { classes } = useStyles()
-  const theme = useTheme()
+  const { classes, theme } = useStyles()
   const {
     effectiveShowCytobands,
     cytobandOffset,

@@ -1,5 +1,4 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
@@ -73,10 +72,7 @@ function CanvasFeaturesSvgBody({
   overlays,
   opts,
 }: LgvSvgBodyProps<RenderSvgModel>) {
-  // The JBrowse palette, not MUI's `useTheme`: `highlight` is a JBrowse entry
-  // a bare Material theme lacks.
   const palette = usePalette()
-  const theme = createJBrowseTheme(opts?.theme)
   const visibleRegions = view.visibleRegions
   // Anchors the chips to the content edge; non-zero only when scrolled
   // before the genome start.
@@ -184,7 +180,7 @@ function CanvasFeaturesSvgBody({
           left={contentLeft}
           width={canvasWidth}
           canvasHeight={height}
-          theme={theme}
+          theme={{ palette }}
         />
       ) : null}
     </>

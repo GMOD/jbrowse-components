@@ -3,7 +3,6 @@ import React from 'react'
 
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette, colorLongreadInv } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -57,7 +56,6 @@ function MafSvgBody({
   opts,
 }: LgvSvgBodyProps<LinearMafDisplayModel>) {
   const state = model.renderState
-  const theme = createJBrowseTheme(opts?.theme)
   // SVG export colors follow the export-chosen theme, not the live session one
   const palette = resolvePalette({ configTheme: opts?.theme })
   const {
@@ -150,13 +148,13 @@ function MafSvgBody({
                 drawCodonConservation(ctx, model.visibleCodonConservation, {
                   conservationHeight: conservationDisplayHeight,
                   canvasWidth: width,
-                  theme,
+                  palette,
                 })
               } else {
                 drawConservation(ctx, renderBlocks, model.rpcDataMap, {
                   conservationHeight: conservationDisplayHeight,
                   canvasWidth: width,
-                  theme,
+                  palette,
                 })
               }
             }}
@@ -257,7 +255,7 @@ function MafSvgBody({
         the same reason: with both bands drawn they are told apart only by
         their Y-axis units, and an exported figure can't be hovered. */}
       {overlays ? (
-        <SvgBandLabels labels={model.bandLabels} theme={theme} />
+        <SvgBandLabels labels={model.bandLabels} palette={palette} />
       ) : null}
     </>
   )

@@ -1,5 +1,5 @@
+import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
 import { getSession } from '@jbrowse/core/util'
-import { useTheme } from '@mui/material'
 
 import SVGHighlightBand from '../components/SVGHighlightBand.tsx'
 import { getHighlightColor, highlightKey } from '../components/util.ts'
@@ -24,7 +24,7 @@ export default function SVGHighlights({
   model: LinearGenomeViewModel
   height: number
 }) {
-  const theme = useTheme()
+  const theme = useStyleTheme()
   return getSession(model).highlightsVisible
     ? model.highlights.map((h, idx) => {
         const coords = model.getHighlightCoords(h)

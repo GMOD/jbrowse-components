@@ -3,7 +3,8 @@ import {
   pairDirection,
   splitInversion,
 } from '@jbrowse/alignments-core'
-import { alpha, useTheme } from '@mui/material'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { alpha } from '@jbrowse/core/ui/palette'
 
 import type { PairDirection } from '@jbrowse/alignments-core'
 
@@ -14,11 +15,11 @@ const pairOrientationLabels: Record<PairDirection, string> = {
   RL: 'outward-facing pair orientation (RL) — possible duplication/insertion',
 }
 
-// Maps the shared orientation categories (@jbrowse/alignments-core) to MUI theme
+// Maps the shared orientation categories (@jbrowse/alignments-core) to palette
 // colors + labels for the SVG overlay; the alignments GPU/arc/linked-read paths
 // map the same categories to palette indices instead.
 export function useOrientationColor() {
-  const { palette } = useTheme()
+  const palette = usePalette()
   const { pairLR, pairRL, pairLL, pairRR } = palette.alignmentFill
   const colors: Record<PairDirection, string> = {
     LR: alpha(pairLR, 0.8),

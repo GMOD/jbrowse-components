@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef } from 'react'
 
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { virtualRange } from '@jbrowse/core/util/virtualRange'
 import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
-import { useTheme } from '@mui/material'
 
 import { CHAR_WIDTH, ROW_HEIGHT } from './constants.ts'
 import { drawSequenceGrid } from './drawSequenceGrid.ts'
@@ -40,7 +40,7 @@ export default function SequenceCanvas({
   onHover,
   onLeave,
 }: SequenceCanvasProps) {
-  const theme = useTheme()
+  const palette = usePalette()
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const seqLength = sequences[0]?.length ?? 0
@@ -79,7 +79,7 @@ export default function SequenceCanvas({
         width: canvasWidth,
         height: canvasHeight,
         colorBackground,
-        theme,
+        palette,
       })
     }
   }, [
@@ -91,7 +91,7 @@ export default function SequenceCanvas({
     startCol,
     endCol,
     colorBackground,
-    theme,
+    palette,
   ])
 
   const handleMouseMove = useCallback(

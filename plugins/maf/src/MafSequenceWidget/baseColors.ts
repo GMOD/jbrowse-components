@@ -1,4 +1,4 @@
-import type { Theme } from '@mui/material'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 type BaseKey = 'A' | 'C' | 'G' | 'T'
 
@@ -18,16 +18,14 @@ function getBaseKey(base: string): BaseKey | undefined {
   }
 }
 
-export function getBaseColor(base: string, theme: Theme): string {
+export function getBaseColor(base: string, palette: JBrowsePalette): string {
   const key = getBaseKey(base)
-  return key ? theme.palette.bases[key].main : theme.palette.grey[500]
+  return key ? palette.bases[key].main : palette.grey[500]
 }
 
-export function getContrastText(base: string, theme: Theme): string {
+export function getContrastText(base: string, palette: JBrowsePalette): string {
   const key = getBaseKey(base)
-  return key
-    ? theme.palette.bases[key].contrastText
-    : theme.palette.common.white
+  return key ? palette.bases[key].contrastText : palette.common.white
 }
 
 /** Glyph color for a sequence cell: gaps/missing-data grays, otherwise the
@@ -35,13 +33,13 @@ export function getContrastText(base: string, theme: Theme): string {
 export function getTextColor(
   base: string,
   colorBackground: boolean,
-  theme: Theme,
+  palette: JBrowsePalette,
 ): string {
   return base === '-'
-    ? theme.palette.grey[400]
+    ? palette.grey[400]
     : base === '.'
-      ? theme.palette.grey[500]
+      ? palette.grey[500]
       : colorBackground
-        ? getContrastText(base, theme)
-        : getBaseColor(base, theme)
+        ? getContrastText(base, palette)
+        : getBaseColor(base, palette)
 }

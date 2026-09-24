@@ -1,3 +1,4 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import {
   getSession,
   polarToCartesian,
@@ -6,7 +7,6 @@ import {
   toLocale,
 } from '@jbrowse/core/util'
 import { makeContrasting } from '@jbrowse/core/util/color'
-import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
 import {
@@ -24,7 +24,7 @@ import {
 import type { CircularViewModel } from '../model.ts'
 import type { AssemblyArc } from '../rulerLabels.ts'
 import type { Slice, SliceNonElidedRegion } from '../slices.ts'
-import type { Theme } from '@mui/material/styles'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 // the slice's own angular span as an SVG arc. A slice covers its region
 // exactly, so this is equally the arc from its first base to its last
@@ -140,14 +140,14 @@ const RulerLabel = observer(function RulerLabel({
 function regionColor(
   model: CircularViewModel,
   { assemblyName, refName }: SliceNonElidedRegion,
-  theme: Theme,
+  palette: JBrowsePalette,
 ) {
   const refNameColor = getSession(model)
     .assemblyManager.get(assemblyName)
     ?.getRefNameColor(refName)
   return refNameColor
-    ? makeContrasting(refNameColor, theme.palette.background.paper)
-    : theme.palette.text.primary
+    ? makeContrasting(refNameColor, palette.background.paper)
+    : palette.text.primary
 }
 
 const Ruler = observer(function Ruler({
@@ -159,10 +159,10 @@ const Ruler = observer(function Ruler({
   slice: Slice
   alongArc: boolean
 }) {
-  const theme = useTheme()
+  const palette = usePalette()
   const { radiusPx, offsetRadians } = model
   const { region, endRadians, startRadians } = slice
-  const color = region.elided ? undefined : regionColor(model, region, theme)
+  const color = region.elided ? undefined : regionColor(model, region, palette)
   return (
     <>
       <RulerLabel
@@ -177,11 +177,11 @@ const Ruler = observer(function Ruler({
         maxWidthPx={(endRadians - startRadians) * radiusPx}
         radians={(endRadians + startRadians) / 2}
         radiusPx={radiusPx}
-        color={color ?? theme.palette.text.primary}
+        color={color ?? palette.text.primary}
       />
       <path
         d={sliceArcPath(slice, radiusPx + 1)}
-        stroke={stripAlpha(color ?? theme.palette.text.secondary)}
+        stroke={stripAlpha(color ?? palette.text.secondary)}
         strokeWidth={2}
         strokeDasharray={region.elided ? '2,2' : undefined}
         fill="none"
@@ -199,7 +199,7 @@ const AssemblyArcLabel = observer(function AssemblyArcLabel({
   arc: AssemblyArc
   radiusPx: number
 }) {
-  const theme = useTheme()
+  const palette = usePalette()
   const { assemblyName, startRadians, endRadians } = arc
   const radians = (startRadians + endRadians) / 2
   const labelRadiusPx =
@@ -216,7 +216,7 @@ const AssemblyArcLabel = observer(function AssemblyArcLabel({
     <>
       <path
         d={sliceArcPath(arc, radiusPx)}
-        stroke={theme.palette.text.secondary}
+        stroke={palette.text.secondary}
         strokeWidth={1.5}
         fill="none"
       />
@@ -228,7 +228,7 @@ const AssemblyArcLabel = observer(function AssemblyArcLabel({
         textAnchor={textAnchor}
         dominantBaseline="middle"
         transform={`translate(${polarToCartesian(labelRadiusPx, radians)}) rotate(${rotation})`}
-        fill={theme.palette.text.primary}
+        fill={palette.text.primary}
       >
         {name}
       </text>

@@ -1,4 +1,4 @@
-import { useTheme } from '@mui/material'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 
 import {
   clusterProvenanceDrifted,
@@ -25,15 +25,15 @@ export function SvgClusterProvenanceHint({
   clusterProvenance: ClusterProvenance | undefined
   contentBlocks: readonly ClusterProvenanceRegion[]
 }) {
-  const theme = useTheme()
+  const palette = usePalette()
   return clusterProvenance &&
     clusterProvenanceDrifted(clusterProvenance, contentBlocks) ? (
     <text
       x={2}
       y={12}
       fontSize={11}
-      fill={theme.palette.warning.dark}
-      stroke={theme.palette.background.paper}
+      fill={palette.warning.dark}
+      stroke={palette.background.paper}
       strokeWidth={3}
       paintOrder="stroke"
     >

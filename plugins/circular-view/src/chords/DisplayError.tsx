@@ -1,5 +1,5 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { radToDeg } from '@jbrowse/core/util'
-import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
 import HatchCircle from './HatchCircle.tsx'
@@ -21,7 +21,7 @@ const DisplayError = observer(function DisplayError({
   onClick?: () => void
   onRetry?: () => void
 }) {
-  const theme = useTheme()
+  const palette = usePalette()
   const text = truncate(String(model.displayError), 80)
   return (
     <g
@@ -36,8 +36,8 @@ const DisplayError = observer(function DisplayError({
     >
       <HatchCircle
         radius={model.radiusPx}
-        fill={theme.palette.error.light}
-        hatchColor={theme.palette.error.main}
+        fill={palette.error.light}
+        hatchColor={palette.error.main}
         textRotationDeg={-radToDeg(model.view.offsetRadians)}
         text={
           <>

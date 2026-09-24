@@ -31,7 +31,7 @@ const useStyles = makeStyles()(theme => ({
       content: '""',
       position: 'absolute',
       inset: 0,
-      border: `${CLOSE_UP_FRAME_WIDTH}px solid ${closeUpColor(theme)}`,
+      border: `${CLOSE_UP_FRAME_WIDTH}px solid ${closeUpColor(theme.palette)}`,
       pointerEvents: 'none',
       zIndex: 1,
     },

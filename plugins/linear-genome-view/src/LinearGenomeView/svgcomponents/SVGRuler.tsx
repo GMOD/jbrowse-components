@@ -1,7 +1,7 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { stripAlpha } from '@jbrowse/core/util'
-import { useTheme } from '@mui/material'
 
 import {
   REF_NAME_LABEL_FONT_SIZE,
@@ -44,8 +44,8 @@ function Ruler({
   // Baseline y for the tick-number text, positioned above the tick marks.
   numbersBaselineY: number
 }) {
-  const theme = useTheme()
-  const color = stripAlpha(theme.palette.text.secondary)
+  const palette = usePalette()
+  const color = stripAlpha(palette.text.secondary)
   const { scalebarLabels, width } = model
   const { dx, major, minor } = gridlineTickXs(model)
   // major and minor marks share a stroke and differ only in length, so both
@@ -96,8 +96,8 @@ function Ruler({
 // counting down as the only evidence it was flipped. On screen the search box
 // says so; a figure has no search box.
 function SVGRefNameLabels({ model }: { model: LGV }) {
-  const theme = useTheme()
-  const fill = stripAlpha(theme.palette.text.primary)
+  const palette = usePalette()
+  const fill = stripAlpha(palette.text.primary)
   const { labels, caption } = getScalebarRefNameLabels({
     blocks: model.staticBlocks.blocks,
     offsetPx: model.offsetPx,

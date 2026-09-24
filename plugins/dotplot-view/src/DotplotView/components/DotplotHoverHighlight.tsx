@@ -1,5 +1,5 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model.ts'
@@ -40,14 +40,14 @@ const DotplotHoverHighlight = observer(function DotplotHoverHighlight({
   model: DotplotViewModel
 }) {
   const { classes } = useStyles()
-  const theme = useTheme()
+  const palette = usePalette()
   const { hoveredHighlight, lineWidth, viewWidth, viewHeight } = model
   return hoveredHighlight ? (
     <svg className={classes.root} width={viewWidth} height={viewHeight}>
       <path
         d={hoveredHighlight.path}
         fill="none"
-        stroke={theme.palette.background.default}
+        stroke={palette.background.default}
         strokeOpacity={0.85}
         strokeWidth={lineWidth + KNOCKOUT_EXTRA_PX}
         strokeLinecap="round"

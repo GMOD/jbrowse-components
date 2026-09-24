@@ -16,7 +16,11 @@ import {
 } from './groupLabelStyle.ts'
 
 import type { GroupChipSection } from './GroupLabelChips.tsx'
-import type { Theme } from '@mui/material'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
+
+interface GroupLabelTheme {
+  palette: Pick<JBrowsePalette, 'background' | 'text' | 'divider'>
+}
 
 const MEDIUM_WEIGHT_WIDTH_FACTOR = 1.05
 
@@ -30,7 +34,7 @@ export default function GroupLabelBox({
   x: number
   y: number
   text: string
-  theme: Theme
+  theme: GroupLabelTheme
 }) {
   const fontSize = GROUP_LABEL_FONT_SIZE
   const paddingX = GROUP_LABEL_PADDING_X
@@ -90,7 +94,7 @@ export function GroupLabelBoxes({
   left: number
   width: number
   canvasHeight: number
-  theme: Theme
+  theme: GroupLabelTheme
 }) {
   return (
     <>

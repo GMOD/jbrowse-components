@@ -1,6 +1,6 @@
 import { useId } from 'react'
 
-import { useTheme } from '@mui/material/styles'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { observer } from 'mobx-react'
 
 import type { ReactNode } from 'react'
@@ -22,7 +22,7 @@ const HatchCircle = observer(function HatchCircle({
   textRotationDeg: number
   children?: ReactNode
 }) {
-  const theme = useTheme()
+  const palette = usePalette()
   const uniqueId = useId()
   const patternId = `hatch${uniqueId.replaceAll(':', '')}`
   return (
@@ -52,7 +52,7 @@ const HatchCircle = observer(function HatchCircle({
         transform={`rotate(${textRotationDeg} 0 0)`}
         dominantBaseline="middle"
         textAnchor="middle"
-        fill={theme.palette.text.primary}
+        fill={palette.text.primary}
       >
         {text}
       </text>

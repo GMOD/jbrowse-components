@@ -1,7 +1,7 @@
 import { connectionEndpointBps } from '@jbrowse/cigar-utils'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { bezierConnectorPath } from '@jbrowse/core/util'
 import { HIDDEN_SEGMENT_DASH, hiddenSegmentsNote } from '@jbrowse/sv-core'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { useOrientationColor } from './getOrientationColor.tsx'
@@ -24,7 +24,7 @@ const AlignmentConnections = observer(function AlignmentConnections(
   props: OverlayProps,
 ) {
   const { showIntraviewLinks } = props.model
-  const theme = useTheme()
+  const palette = usePalette()
   const { getPairedOrientation, getLongReadOrientation } = useOrientationColor()
   return (
     <OverlayPaths
@@ -136,7 +136,7 @@ const AlignmentConnections = observer(function AlignmentConnections(
                 // the chunk is the read chain, so hovering any one of its
                 // junctions emphasizes all of them and boxes every segment
                 emphasisGroup: `chunk-${chunkIndex}`,
-                stroke: orientation?.color ?? theme.palette.text.disabled,
+                stroke: orientation?.color ?? palette.text.disabled,
                 strokeDasharray: hiddenNote ? HIDDEN_SEGMENT_DASH : undefined,
                 tooltip: () =>
                   buildPairTooltip(

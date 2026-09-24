@@ -1,6 +1,6 @@
+import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
 import { getSession } from '@jbrowse/core/util'
 import { highlightKey } from '@jbrowse/core/util/highlights'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import DotplotHighlightBands from './DotplotHighlightBands.tsx'
@@ -13,7 +13,7 @@ const DotplotHighlights = observer(function DotplotHighlights({
 }: {
   model: DotplotViewModel
 }) {
-  const theme = useTheme()
+  const theme = useStyleTheme()
   return getSession(model).highlightsVisible
     ? model.highlights.map((h, i) => (
         <DotplotHighlightBands

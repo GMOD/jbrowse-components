@@ -1,11 +1,11 @@
+import { alpha } from '@jbrowse/core/ui/palette'
 import { getFillProps } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { AXIS_GUTTER_WIDTH_PX } from '@jbrowse/wiggle-core'
-import { alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
-import type { Theme } from '@mui/material'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 // Just clear of the Y-axis gutter the two bands share.
 const LABEL_X = AXIS_GUTTER_WIDTH_PX + 2
@@ -40,10 +40,10 @@ const useStyles = makeStyles()(theme => ({
  */
 export function SvgBandLabels({
   labels,
-  theme,
+  palette,
 }: {
   labels: { text: string; top: number }[]
-  theme: Theme
+  palette: JBrowsePalette
 }) {
   return (
     <>
@@ -53,7 +53,7 @@ export function SvgBandLabels({
           x={LABEL_X}
           y={top + BASELINE_OFFSET}
           fontSize={FONT_SIZE}
-          {...getFillProps(theme.palette.text.secondary)}
+          {...getFillProps(palette.text.secondary)}
         >
           {text}
         </text>

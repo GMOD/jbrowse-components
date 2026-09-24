@@ -1,10 +1,11 @@
 import { useState } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { alpha } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
-import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { pointToSegmentDist, svgMousePoint } from '../util.ts'
@@ -85,9 +86,9 @@ const ConnectorLineField = observer(function ConnectorLineField({
   exportSVG?: boolean
   opts?: PaintLayerOpts
 }) {
-  const theme = useTheme()
+  const palette = usePalette()
   const color = alpha(
-    theme.palette.text.primary,
+    palette.text.primary,
     connectorFieldAlpha(lineCoords, strokeWidth),
   )
   const paint = (ctx: Ctx2D) => {

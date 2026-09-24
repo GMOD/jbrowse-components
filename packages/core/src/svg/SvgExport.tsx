@@ -3,8 +3,7 @@
 // (`constants.ts`, `svgReady.ts`) so this stays component-only for
 // react-refresh.
 
-import { useTheme } from '@mui/material'
-
+import { usePalette } from '../ui/PaletteContext.tsx'
 import { stripAlpha } from '../util/svgColorProps.ts'
 import { exportMargin } from './constants.ts'
 import { svgSafeId } from './svgId.ts'
@@ -17,12 +16,12 @@ export function SVGBackground({
   width: number
   height: number
 }) {
-  const theme = useTheme()
+  const palette = usePalette()
   return (
     <rect
       width={width}
       height={height}
-      fill={stripAlpha(theme.palette.background.default)}
+      fill={stripAlpha(palette.background.default)}
     />
   )
 }

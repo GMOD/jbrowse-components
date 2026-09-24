@@ -1,7 +1,7 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getStrokeProps } from '@jbrowse/core/util'
-import { useTheme } from '@mui/material'
 
 import { gridlineTickXs, vlinePath } from './util.ts'
 
@@ -17,11 +17,11 @@ export default function SVGGridlines({
   height: number
 }) {
   const { width } = model
-  const theme = useTheme()
+  const palette = usePalette()
   // share the on-screen gridline colors; getStrokeProps splits the rgba alpha
   // into strokeOpacity so the exported SVG stays renderer-safe
-  const minorProps = getStrokeProps(theme.palette.gridlineMinor)
-  const majorProps = getStrokeProps(theme.palette.gridlineMajor)
+  const minorProps = getStrokeProps(palette.gridlineMinor)
+  const majorProps = getStrokeProps(palette.gridlineMajor)
   const { major, minor } = gridlineTickXs(model)
 
   // gridlineTicks spans the whole staticBlocks frame, which overhangs the

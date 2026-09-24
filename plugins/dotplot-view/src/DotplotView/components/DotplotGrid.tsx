@@ -1,5 +1,5 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model.ts'
@@ -37,7 +37,7 @@ const RegionGrid = observer(function RegionGrid({
   const { viewWidth, viewHeight, hview, vview } = model
   const hblocks = hview.dynamicBlocks.contentBlocks
   const vblocks = vview.dynamicBlocks.contentBlocks
-  const theme = useTheme()
+  const palette = usePalette()
   const htop = hview.displayedRegionsTotalPx - hview.offsetPx
   const vtop = vview.displayedRegionsTotalPx - vview.offsetPx
   const hbottom = hblocks[0]!.offsetPx - hview.offsetPx
@@ -46,7 +46,7 @@ const RegionGrid = observer(function RegionGrid({
   // lighter than a MAJOR gridline, which made the chromosome seam disappear into
   // a plot that now draws fifty lines — and the seam is the landmark every
   // coordinate here hangs off.
-  const stroke = theme.palette.regionBoundary
+  const stroke = palette.regionBoundary
 
   // Clamp both of the rect's edges to the viewport and take the span between
   // them — very large offscreen SVG rects can sometimes fail to draw. Sizing it
@@ -75,19 +75,19 @@ const RegionGrid = observer(function RegionGrid({
         y={ry}
         width={w}
         height={h}
-        {...getFillProps(theme.palette.background.default)}
+        {...getFillProps(palette.background.default)}
       />
       <path
         d={minorD}
         fill="none"
         strokeWidth={1}
-        {...getStrokeProps(theme.palette.plotGridlineMinor)}
+        {...getStrokeProps(palette.plotGridlineMinor)}
       />
       <path
         d={majorD}
         fill="none"
         strokeWidth={1}
-        {...getStrokeProps(theme.palette.plotGridlineMajor)}
+        {...getStrokeProps(palette.plotGridlineMajor)}
       />
       {hRegionLines.map(({ key, px }) => (
         <line
@@ -123,13 +123,13 @@ const DotplotGrid = observer(function DotplotGrid({
   model: DotplotViewModel
 }) {
   const { viewWidth, viewHeight, hasVisibleRegions } = model
-  const theme = useTheme()
+  const palette = usePalette()
   return (
     <>
       <rect
         width={viewWidth}
         height={viewHeight}
-        {...getFillProps(theme.palette.divider)}
+        {...getFillProps(palette.divider)}
       />
       {hasVisibleRegions ? <RegionGrid model={model} /> : null}
     </>

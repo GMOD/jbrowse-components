@@ -1,5 +1,5 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { stripAlpha } from '@jbrowse/core/util'
-import { useTheme } from '@mui/material'
 
 import {
   TRACK_LABEL_GAP,
@@ -67,7 +67,7 @@ export default function SVGTrackLabel({
   trackLabelOffset: number
   x: number
 }) {
-  const theme = useTheme()
+  const palette = usePalette()
   if (trackLabels === 'hidden') {
     return null
   }
@@ -83,7 +83,7 @@ export default function SVGTrackLabel({
   const halo =
     trackLabels === 'overlapping'
       ? {
-          stroke: stripAlpha(theme.palette.background.paper),
+          stroke: stripAlpha(palette.background.paper),
           strokeWidth: 3,
           paintOrder: 'stroke',
         }
@@ -94,7 +94,7 @@ export default function SVGTrackLabel({
       y={pos.y}
       textAnchor={pos.textAnchor}
       fontSize={fontSize}
-      fill={stripAlpha(theme.palette.text.primary)}
+      fill={stripAlpha(palette.text.primary)}
       {...halo}
     >
       {trackName}

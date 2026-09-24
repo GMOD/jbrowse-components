@@ -10,15 +10,15 @@ import { makeCellPxRange } from './visibleRegionGeometry.ts'
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { CodonConservationBar } from './computeVisibleCodons.ts'
 import type { CellPxRange } from './visibleRegionGeometry.ts'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
-import type { Theme } from '@mui/material'
 
 interface DrawConservationState {
   conservationHeight: number
   canvasWidth: number
-  theme: Theme
+  palette: JBrowsePalette
 }
 
 /**
@@ -108,7 +108,7 @@ export function drawConservation(
   regions: ReadonlyMap<number, MafRegionData>,
   state: DrawConservationState,
 ) {
-  const { conservationHeight, canvasWidth, theme } = state
+  const { conservationHeight, canvasWidth, palette } = state
   const width = Math.ceil(canvasWidth)
   if (width <= 0) {
     return
@@ -136,14 +136,14 @@ export function drawConservation(
       )
     }
   }
-  // The coverage palette color (grey[700]) — a readable, theme-driven
+  // The coverage palette color — a readable, theme-driven
   // quantitative-profile fill; the 0-100% Y-axis distinguishes it from the
   // depth coverage band above.
   // Inset the band by YSCALEBAR_LABEL_OFFSET (via coverageLayout, matching the
   // depth coverage band) so the 0%/100% ticks align with the band edges instead
   // of being clipped at the SVG boundary.
   const { effectiveH, bottom } = coverageLayout(conservationHeight)
-  ctx.fillStyle = theme.palette.coverage
+  ctx.fillStyle = palette.coverage
   for (let x = 0; x < width; x++) {
     const c = count[x]!
     if (c > 0) {
@@ -168,9 +168,9 @@ export function drawCodonConservation(
   bars: CodonConservationBar[],
   state: DrawConservationState,
 ) {
-  const { conservationHeight, theme } = state
+  const { conservationHeight, palette } = state
   const { effectiveH, bottom } = coverageLayout(conservationHeight)
-  ctx.fillStyle = theme.palette.coverage
+  ctx.fillStyle = palette.coverage
   for (const bar of bars) {
     if (!Number.isNaN(bar.fraction)) {
       const h = bar.fraction * effectiveH

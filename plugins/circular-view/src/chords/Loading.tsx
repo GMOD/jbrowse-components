@@ -1,7 +1,7 @@
 import { useDelayedFlag } from '@jbrowse/core/ui/LoadingOverlay'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { radToDeg } from '@jbrowse/core/util'
 import { keyframes, makeStyles } from '@jbrowse/core/util/tss-react'
-import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
 import HatchCircle from './HatchCircle.tsx'
@@ -35,15 +35,15 @@ const Loading = observer(function Loading({
   model: { radiusPx: number; view: { offsetRadians: number } }
 }) {
   const { classes } = useStyles()
-  const theme = useTheme()
+  const palette = usePalette()
 
   const shown = useDelayedFlag(true, 400)
 
   return !shown ? null : (
     <HatchCircle
       radius={model.radiusPx}
-      fill={theme.palette.action.hover}
-      hatchColor={theme.palette.action.disabledBackground}
+      fill={palette.action.hover}
+      hatchColor={palette.action.disabledBackground}
       textRotationDeg={-radToDeg(model.view.offsetRadians)}
       text="Loading…"
     >

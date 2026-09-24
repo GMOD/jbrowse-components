@@ -1,5 +1,5 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getBpDisplayStr, stripAlpha } from '@jbrowse/core/util'
-import { useTheme } from '@mui/material'
 
 import { SVG_SCALEBAR_CAP } from '../consts.ts'
 import { labelBaselineFromTop } from './util.ts'
@@ -19,11 +19,11 @@ export default function SVGScalebar({
     offsetPx,
     dynamicBlocks: { totalWidthPxWithoutBorders: totalWidthPx, totalBp },
   } = model
-  const theme = useTheme()
+  const palette = usePalette()
   const displayBp = getBpDisplayStr(totalBp)
   const x0 = Math.max(-offsetPx, 0)
   const x1 = x0 + totalWidthPx
-  const color = stripAlpha(theme.palette.text.secondary)
+  const color = stripAlpha(palette.text.secondary)
   // the bar is drawn on this component's own origin (y=0), with capped ends and
   // the bp label hanging just below; callers translate it to the desired line y
   return (

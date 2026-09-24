@@ -5,8 +5,9 @@ import {
   getInputWidth,
   useRecentLocations,
 } from '@jbrowse/core/ui'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { alpha } from '@jbrowse/core/ui/palette'
 import { getSession } from '@jbrowse/core/util'
-import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
@@ -68,7 +69,7 @@ const SearchBox = observer(function SearchBox({
   maxWidth?: number
   style?: React.CSSProperties
 }) {
-  const theme = useTheme()
+  const palette = usePalette()
   const session = getSession(model)
   const { textSearchManager, assemblyManager } = session
   const { assemblyNames } = model
@@ -127,7 +128,7 @@ const SearchBox = observer(function SearchBox({
       inputStyle={{
         padding: 0,
         height: WIDGET_HEIGHT,
-        background: alpha(theme.palette.background.paper, 0.8),
+        background: alpha(palette.background.paper, 0.8),
       }}
     />
   )

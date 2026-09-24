@@ -1,10 +1,10 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getSession, stripAlpha } from '@jbrowse/core/util'
 import {
   createOverviewLayout,
   getOverviewRegionPxSpan,
 } from '@jbrowse/core/util/Base1DUtils'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
-import { useTheme } from '@mui/material'
 
 import Cytobands from '../components/Cytobands.tsx'
 import OverviewScalebarPolygon from '../components/OverviewScalebarPolygon.tsx'
@@ -78,8 +78,8 @@ export default function SVGHeader({
   layout: HeaderLayout
   showCytobands: boolean
 }) {
-  const theme = useTheme()
-  const fill = stripAlpha(theme.palette.text.primary)
+  const palette = usePalette()
+  const fill = stripAlpha(palette.text.primary)
   // nothing on screen to label: no assembly name, scalebar or ruler
   if (!model.hasVisibleContent) {
     return null

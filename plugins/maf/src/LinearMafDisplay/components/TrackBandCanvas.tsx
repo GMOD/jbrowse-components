@@ -1,15 +1,15 @@
 import { useEffect, useRef } from 'react'
 
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
-import { useTheme } from '@mui/material'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
-import type { Theme } from '@mui/material'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 /**
- * What a band paints, given the display and the theme. **A module-level
+ * What a band paints, given the display and the palette. **A module-level
  * function, never a closure built in the parent's render** — it is an `autorun`
  * dependency, so a fresh identity per render tore the autorun down and rebuilt
  * it on every parent render. Taking the model as an argument is also what keeps
@@ -20,7 +20,7 @@ import type { Theme } from '@mui/material'
 export type BandDraw = (
   ctx: CanvasRenderingContext2D,
   model: LinearMafDisplayModel,
-  theme: Theme,
+  palette: JBrowsePalette,
 ) => void
 
 /**
@@ -54,17 +54,17 @@ const TrackBandCanvas = observer(function TrackBandCanvas({
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const width = model.canvasWidthPx
-  const theme = useTheme()
+  const palette = usePalette()
 
   useEffect(
     () =>
       autorun(() => {
         const ctx = getPreparedCanvas2D(canvasRef.current, width, height)
         if (ctx && show) {
-          draw(ctx, model, theme)
+          draw(ctx, model, palette)
         }
       }),
-    [model, width, height, show, draw, theme],
+    [model, width, height, show, draw, palette],
   )
 
   return show ? (

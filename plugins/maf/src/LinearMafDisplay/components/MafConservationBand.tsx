@@ -4,7 +4,7 @@ import MafBand from './MafBand.tsx'
 import { drawCodonConservation, drawConservation } from './drawConservation.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
-import type { Theme } from '@mui/material'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 /**
  * Percent-identity conservation band, stacked directly below the coverage band.
@@ -28,12 +28,12 @@ import type { Theme } from '@mui/material'
 function drawBand(
   ctx: CanvasRenderingContext2D,
   model: LinearMafDisplayModel,
-  theme: Theme,
+  palette: JBrowsePalette,
 ) {
   const state = {
     conservationHeight: model.conservationDisplayHeight,
     canvasWidth: model.canvasWidthPx,
-    theme,
+    palette,
   }
   if (model.codonConservationActive) {
     drawCodonConservation(ctx, model.visibleCodonConservation, state)

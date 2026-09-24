@@ -1,7 +1,7 @@
+import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
 import { getSession } from '@jbrowse/core/util'
 import CloseIcon from '@mui/icons-material/Close'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import HighlightBand from './HighlightBand.tsx'
@@ -24,7 +24,7 @@ const Highlight = observer(function Highlight({
   model: LGV
   highlight: HighlightType
 }) {
-  const theme = useTheme()
+  const theme = useStyleTheme()
   const coords = model.getHighlightCoords(highlight)
   const bandColor = getHighlightColor(highlight, theme)
   const label = model.labelsVisible ? highlight.label : undefined

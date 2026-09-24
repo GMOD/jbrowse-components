@@ -1,6 +1,7 @@
 import { useLayoutEffect } from 'react'
 
-import { alpha, useTheme } from '@mui/material'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { alpha } from '@jbrowse/core/ui/palette'
 
 import { normalizeSearchQuery } from './searchText.ts'
 
@@ -58,8 +59,8 @@ export function useSearchHighlight(
   query: string,
   highlightName: string,
 ) {
-  const theme = useTheme()
-  const color = alpha(theme.palette.textHighlight.main, 0.45)
+  const palette = usePalette()
+  const color = alpha(palette.textHighlight.main, 0.45)
 
   // No deps: must re-run after every render, because a Range detaches when its
   // text node is removed — scrolling a virtualized table swaps the rendered

@@ -1,7 +1,7 @@
 import { getBaseColor, getTextColor } from './baseColors.ts'
 import { CHAR_WIDTH, FONT, ROW_HEIGHT } from './constants.ts'
 
-import type { Theme } from '@mui/material'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 /**
  * Paint the visible window of the alignment grid. Cells are laid out relative
@@ -19,7 +19,7 @@ export function drawSequenceGrid({
   width,
   height,
   colorBackground,
-  theme,
+  palette,
 }: {
   ctx: CanvasRenderingContext2D
   sequences: string[]
@@ -30,9 +30,9 @@ export function drawSequenceGrid({
   width: number
   height: number
   colorBackground: boolean
-  theme: Theme
+  palette: JBrowsePalette
 }) {
-  ctx.fillStyle = theme.palette.background.paper
+  ctx.fillStyle = palette.background.paper
   ctx.fillRect(0, 0, width, height)
 
   ctx.font = FONT
@@ -47,10 +47,10 @@ export function drawSequenceGrid({
       if (char) {
         const x = (colIdx - startCol) * CHAR_WIDTH
         if (colorBackground && char !== '-' && char !== '.') {
-          ctx.fillStyle = getBaseColor(char, theme)
+          ctx.fillStyle = getBaseColor(char, palette)
           ctx.fillRect(x, y, CHAR_WIDTH, ROW_HEIGHT)
         }
-        ctx.fillStyle = getTextColor(char, colorBackground, theme)
+        ctx.fillStyle = getTextColor(char, colorBackground, palette)
         ctx.fillText(char, x + 2, y + 2)
       }
     }

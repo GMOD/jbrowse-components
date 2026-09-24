@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
 
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { virtualRange } from '@jbrowse/core/util/virtualRange'
 import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
-import { useTheme } from '@mui/material'
 
 import { FONT, ROW_HEIGHT } from './constants.ts'
 
@@ -23,7 +23,7 @@ export default function LabelsCanvas({
   scrollTop,
   containerHeight,
 }: LabelsCanvasProps) {
-  const theme = useTheme()
+  const palette = usePalette()
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const { start: startRow, end: endRow } = virtualRange({
@@ -39,11 +39,11 @@ export default function LabelsCanvas({
   useEffect(() => {
     const ctx = getPreparedCanvas2D(canvasRef.current, labelWidth, canvasHeight)
     if (ctx && canvasHeight > 0 && labelWidth > 0) {
-      ctx.fillStyle = theme.palette.background.paper
+      ctx.fillStyle = palette.background.paper
       ctx.fillRect(0, 0, labelWidth, canvasHeight)
       ctx.font = FONT
       ctx.textBaseline = 'top'
-      ctx.fillStyle = theme.palette.text.secondary
+      ctx.fillStyle = palette.text.secondary
       for (let rowIdx = startRow; rowIdx < endRow; rowIdx++) {
         ctx.fillText(
           samples[rowIdx]!.label,
@@ -52,7 +52,7 @@ export default function LabelsCanvas({
         )
       }
     }
-  }, [samples, labelWidth, canvasHeight, startRow, endRow, theme])
+  }, [samples, labelWidth, canvasHeight, startRow, endRow, palette])
 
   return (
     <canvas

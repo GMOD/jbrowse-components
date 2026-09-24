@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { axisPlotBox } from '@jbrowse/display-ui'
@@ -52,7 +52,7 @@ function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
             left={0}
             width={canvasWidth}
             canvasHeight={plotHeight}
-            theme={createJBrowseTheme(opts?.theme)}
+            theme={{ palette: resolvePalette({ configTheme: opts?.theme }) }}
           />
         </g>
       ) : null}

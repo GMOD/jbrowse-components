@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
 
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import {
   assembleLocString,
   getSession,
@@ -8,7 +9,6 @@ import {
 } from '@jbrowse/core/util'
 import { pxToBp } from '@jbrowse/core/util/Base1DUtils'
 import { breakendTickPx } from '@jbrowse/sv-core'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import BreakpointTooltip from './BreakpointTooltip.tsx'
@@ -278,7 +278,7 @@ export const OverlayPaths = observer(function OverlayPaths({
   render,
 }: OverlayPathsProps) {
   const { interactiveOverlay, views, assemblies } = model
-  const theme = useTheme()
+  const palette = usePalette()
   const session = getSession(model)
   const { hoveredOverlay } = model
   const match = model.overlayMatches.get(trackId)
@@ -308,7 +308,7 @@ export const OverlayPaths = observer(function OverlayPaths({
           key={key}
           data-testid="chain-highlight"
           {...rect}
-          fill={theme.palette.featureHoverStrong}
+          fill={palette.featureHoverStrong}
         />
       ))}
       {specs

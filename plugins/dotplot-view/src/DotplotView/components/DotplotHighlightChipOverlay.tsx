@@ -1,10 +1,11 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
 import { getSession } from '@jbrowse/core/util'
 import { highlightKey } from '@jbrowse/core/util/highlights'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import LinkIcon from '@mui/icons-material/Link'
-import { Box, Tooltip, useTheme } from '@mui/material'
+import { Box, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { getHighlightColor } from './highlightUtils.ts'
@@ -29,7 +30,7 @@ const HighlightChip = observer(function HighlightChip({
   highlight: HighlightType
   position: { left: number; top: number }
 }) {
-  const theme = useTheme()
+  const theme = useStyleTheme()
   const { classes } = useStyles()
   const bandColor = getHighlightColor(highlight, theme)
   const chipColor =

@@ -1,5 +1,6 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { alpha, getContrastText } from '@jbrowse/core/ui/palette'
 import { getFillProps, max, measureText } from '@jbrowse/core/util'
-import { alpha, useTheme } from '@mui/material'
 
 import { rowLabelsCarryText } from './rowLabelsCarryText.ts'
 import { rowRuns } from './rowRuns.ts'
@@ -39,10 +40,10 @@ export function SvgRowLabels({
   scrollTop?: number
   availableHeight?: number
 }) {
-  const theme = useTheme()
+  const palette = usePalette()
   const fontSize = Math.min(rowHeight, 12)
   const boxHeight = Math.min(rowHeight, 20)
-  const defaultBackground = alpha(theme.palette.background.paper, 0.8)
+  const defaultBackground = alpha(palette.background.paper, 0.8)
   const textFits = rowLabelsCarryText(rowHeight)
   // Without a tint there is nothing left once the text is gone, so a track whose
   // rows carry no color draws nothing rather than a bare stripe of the default
@@ -71,9 +72,7 @@ export function SvgRowLabels({
         // Per-source labelColor tints the label box (identity coding for
         // multirow/density tracks); text auto-contrasts against it.
         const lc = source.labelColor
-        const fg = lc
-          ? theme.palette.getContrastText(lc)
-          : theme.palette.text.primary
+        const fg = lc ? getContrastText(lc) : palette.text.primary
         return offscreen(y, rowHeight) ? null : (
           <g key={source.name}>
             <rect

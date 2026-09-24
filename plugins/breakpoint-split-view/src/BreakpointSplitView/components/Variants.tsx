@@ -1,6 +1,6 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { assembleLocString } from '@jbrowse/core/util'
 import { junctionEnds } from '@jbrowse/sv-core'
-import { useTheme } from '@mui/material'
 
 import { computeOverlayX, findFeatureViewLevel } from './overlayGeometry.ts'
 import {
@@ -26,12 +26,12 @@ const NO_LAYOUT: LayoutRecord = [0, 0, 0, 0]
 // as whichever kind it saw first and gave a symbolic DEL/DUP/INV no curve at
 // all. junctionEnds answers for all of them, so what is left is geometry.
 export default function Variants(props: OverlayProps) {
-  const theme = useTheme()
+  const palette = usePalette()
   return (
     <OverlayPaths
       {...props}
       pathTestId="r2"
-      stroke={theme.palette.success.main}
+      stroke={palette.success.main}
       strokeWidth={5}
       hoverStrokeWidth={10}
       render={variantPaths}

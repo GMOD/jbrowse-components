@@ -1,5 +1,4 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
@@ -41,7 +40,6 @@ function AlignmentsSvgBody({
   overlays,
   opts,
 }: LgvSvgBodyProps<LinearAlignmentsDisplayModel>) {
-  const theme = createJBrowseTheme(opts?.theme)
   // Export colors follow the export theme, not the live session theme, so the
   // pileup matches the labels and contrast that already use it.
   const palette = resolvePalette({ configTheme: opts?.theme })
@@ -129,7 +127,7 @@ function AlignmentsSvgBody({
           left={contentLeft}
           width={canvasWidth}
           canvasHeight={scroll.canvasHeight}
-          theme={theme}
+          theme={{ palette }}
         />
       ) : null}
     </>

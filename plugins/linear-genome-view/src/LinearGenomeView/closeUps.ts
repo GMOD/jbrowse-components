@@ -9,9 +9,9 @@ import { autorun, untracked } from 'mobx'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Region } from '@jbrowse/core/util/types'
 import type { IAnyModelType, IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { Theme } from '@mui/material'
 
 /**
  * A close-up is a LinearGenomeView nested under another one, drawn below the
@@ -64,12 +64,12 @@ export const CLOSE_UP_FRAME_WIDTH = 1
  * overview's colour, but the dark themes set it near black, so those take its
  * light shade.
  */
-export function closeUpColor(theme: {
-  palette: Pick<Theme['palette'], 'mode' | 'tertiary'>
-}) {
-  return theme.palette.mode === 'dark'
-    ? theme.palette.tertiary.light
-    : theme.palette.tertiary.main
+export function closeUpColor(
+  palette: Pick<JBrowsePalette, 'mode' | 'tertiary'>,
+) {
+  return palette.mode === 'dark'
+    ? palette.tertiary.light
+    : palette.tertiary.main
 }
 
 /**

@@ -1,7 +1,7 @@
 import { colord } from './colord.ts'
 import { parseLocString } from './locString.ts'
 
-import type { Theme } from '@mui/material'
+import type { JBrowsePalette } from '../ui/palette.ts'
 
 // A translucent band over a genomic region. The session holds one list of them,
 // and every view draws the entries on its own assemblies.
@@ -52,7 +52,7 @@ export function highlightKey(
 // and dotplot highlight bands (which differ only in their default alpha).
 export function getHighlightColor(
   highlight: { color?: string },
-  theme: Theme,
+  theme: { palette: Pick<JBrowsePalette, 'highlight'> },
   alpha = 0.2,
 ) {
   return highlight.color

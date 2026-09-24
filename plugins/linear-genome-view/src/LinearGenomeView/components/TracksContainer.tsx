@@ -1,9 +1,9 @@
 import { Suspense, lazy, useRef } from 'react'
 
 import { PluggableElements } from '@jbrowse/core/ui'
+import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { SCALE_BAR_HEIGHT } from '../consts.ts'
@@ -125,7 +125,7 @@ const ScalebarHighlightGroup = observer(function ScalebarHighlightGroup({
 }: {
   model: LGV
 }) {
-  const theme = useTheme()
+  const theme = useStyleTheme()
   const { pluginManager } = getEnv(model)
   const { classes } = useStyles()
   const viewBands = getSession(model).highlightsVisible

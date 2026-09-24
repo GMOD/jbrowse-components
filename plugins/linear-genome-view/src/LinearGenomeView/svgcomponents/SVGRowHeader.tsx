@@ -1,5 +1,5 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { stripAlpha } from '@jbrowse/core/util'
-import { useTheme } from '@mui/material'
 
 import SVGRuler from './SVGRuler.tsx'
 import SVGScalebar from './SVGScalebar.tsx'
@@ -39,7 +39,7 @@ export default function SVGRowHeader({
   showAssemblyName?: boolean
   showScalebar?: boolean
 }) {
-  const theme = useTheme()
+  const palette = usePalette()
   const { assemblyLabelBaselineY, scalebarLineY } = getRowHeaderLayout({
     fontSize,
     showScalebar,
@@ -60,7 +60,7 @@ export default function SVGRowHeader({
           x={0}
           y={assemblyLabelBaselineY}
           fontSize={fontSize}
-          fill={stripAlpha(theme.palette.text.primary)}
+          fill={stripAlpha(palette.text.primary)}
         >
           {view.assemblyNames.join(', ')}
         </text>

@@ -1,4 +1,5 @@
-import { alpha, useTheme } from '@mui/material'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { alpha } from '@jbrowse/core/ui/palette'
 
 import type { DragRect } from './useDragSelection.ts'
 
@@ -11,7 +12,7 @@ import type { DragRect } from './useDragSelection.ts'
  * cursor on any scrolled track.
  */
 export default function DragSelectionRect({ rect }: { rect: DragRect }) {
-  const theme = useTheme()
+  const palette = usePalette()
   const { startX, startY, endX, endY } = rect
   return (
     <div
@@ -21,8 +22,8 @@ export default function DragSelectionRect({ rect }: { rect: DragRect }) {
         top: Math.min(startY, endY),
         width: Math.abs(endX - startX),
         height: Math.abs(endY - startY),
-        backgroundColor: alpha(theme.palette.primary.main, 0.2),
-        border: `1px solid ${alpha(theme.palette.primary.main, 0.5)}`,
+        backgroundColor: alpha(palette.primary.main, 0.2),
+        border: `1px solid ${alpha(palette.primary.main, 0.5)}`,
         pointerEvents: 'none',
       }}
     />

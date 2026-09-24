@@ -1,6 +1,6 @@
+import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
 import { getSession, notEmpty } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import OverviewHighlightBand from './OverviewHighlightBand.tsx'
@@ -15,7 +15,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
 }: {
   model: LGV
 }) {
-  const theme = useTheme()
+  const theme = useStyleTheme()
   const themed = colord(theme.palette.highlight.main)
 
   // gate on highlightsVisible to match the main-view band, scalebar band, and

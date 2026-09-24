@@ -1,5 +1,5 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { polarToCartesian, radToDeg } from '@jbrowse/core/util'
-import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
 import { ringAxisTicks } from './ringHost.ts'
@@ -18,14 +18,14 @@ export const RingAxes = observer(function RingAxes({
 }: {
   model: CircularViewModel
 }) {
-  const theme = useTheme()
+  const palette = usePalette()
   const { ringHost, offsetRadians, radiusPx, effectiveSpacingPx } = model
   const angle = -effectiveSpacingPx / radiusPx / 2
   const [tx, ty] = [Math.sin(angle), -Math.cos(angle)]
   const labelAnchor =
     Math.cos(angle + offsetRadians - Math.PI / 2) < 0 ? 'end' : 'start'
-  const fg = theme.palette.text.secondary
-  const bg = theme.palette.background.paper
+  const fg = palette.text.secondary
+  const bg = palette.background.paper
   const rotation = -radToDeg(offsetRadians)
   const axes = ringHost.rings
     .map(ring => ({ ring, ticks: ringAxisTicks(ring) }))

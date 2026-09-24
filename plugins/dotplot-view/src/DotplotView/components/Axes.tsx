@@ -1,8 +1,8 @@
 import { Fragment } from 'react'
 
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getBpDisplayStr, stripAlpha } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
@@ -77,7 +77,7 @@ function AxisTitle({
 // One hue for axis text (fill) and tick lines (stroke), shared by the horizontal
 // and vertical axes: the primary text color, as an opaque hex.
 function useAxisColor() {
-  return stripAlpha(useTheme().palette.text.primary)
+  return stripAlpha(usePalette().text.primary)
 }
 
 export const HorizontalAxis = observer(function HorizontalAxis({

@@ -120,7 +120,7 @@ const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
         <polygon
           points={points}
           fill={`url(#${id})`}
-          stroke={closeUpColor(theme)}
+          stroke={closeUpColor(theme.palette)}
           strokeWidth={CLOSE_UP_FRAME_WIDTH}
           strokeLinejoin="round"
         />

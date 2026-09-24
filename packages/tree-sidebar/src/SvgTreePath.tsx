@@ -1,4 +1,4 @@
-import { useTheme } from '@mui/material'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 
 import { renderTreeSVG, treeStroke } from './hierarchy.ts'
 
@@ -11,13 +11,13 @@ export function SvgTreePath({
   hierarchy: ClusterHierarchyNode
   scrollTop?: number
 }) {
-  const theme = useTheme()
+  const palette = usePalette()
   return (
     <g transform={`translate(0 ${-scrollTop})`}>
       <path
         d={renderTreeSVG(hierarchy)}
         fill="none"
-        stroke={treeStroke(theme.palette)}
+        stroke={treeStroke(palette)}
         strokeWidth={1}
       />
     </g>
