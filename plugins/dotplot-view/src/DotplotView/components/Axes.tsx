@@ -206,14 +206,12 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
   const blocks = dynamicBlocks.contentBlocks
   const color = useAxisColor()
 
-  // Vertical axis is flipped: block offsetPx grows upward visually, so we map
-  // alongPx (downward-natural) to viewHeight - alongPx.
   return (
     <>
       {blocks
         .filter(b => !hide.has(b.key))
         .map(b => {
-          const yoff = Math.floor(viewHeight - b.offsetPx + offsetPx)
+          const yoff = Math.floor(vview.toScreenPx(b.offsetPx - offsetPx))
           return (
             <text
               key={b.key}
@@ -229,7 +227,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
           )
         })}
       {ticks.map(({ tick, alongPx, labeled }) => {
-        const y = viewHeight - alongPx
+        const y = vview.toScreenPx(alongPx)
         return (
           <Fragment key={tickKey(tick)}>
             <line

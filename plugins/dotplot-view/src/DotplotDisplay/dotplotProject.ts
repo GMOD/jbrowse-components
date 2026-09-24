@@ -1,4 +1,4 @@
-// The cumBp -> plot px reconstruction, in one place.
+// The cumBp <-> plot px reconstruction, both directions in one place.
 //
 // Absolute genomic cumBp is the space all dotplot geometry lives in
 // (`buildLineSegments`), and every consumer has to put it on screen with the
@@ -42,4 +42,18 @@ export function cumBpToPxV(
   viewHeight: number,
 ) {
   return viewHeight - (cumBp - viewBpV) * bpPerPxVInv
+}
+
+// The inverse pair, for the pick's cursor
+export function pxToCumBpH(px: number, viewBpH: number, bpPerPxH: number) {
+  return viewBpH + px * bpPerPxH
+}
+
+export function pxToCumBpV(
+  px: number,
+  viewBpV: number,
+  bpPerPxV: number,
+  viewHeight: number,
+) {
+  return viewBpV + (viewHeight - px) * bpPerPxV
 }

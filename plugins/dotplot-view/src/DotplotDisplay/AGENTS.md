@@ -101,13 +101,15 @@
   covers a resize; `dotplotRenderState` names the four it wants and adds the
   canvas box, which is what a mark frame measures a block clip and the v-axis
   flip against — so the pick, which asks the mark shape where the ink is, takes
-  that one. Then project with `cumBpToPxH` / `cumBpToPxV` rather than writing
-  `viewHeight - (…)` again: draw and pick have to agree pixel for pixel or the
-  cursor picks an alignment other than the one it is pointing at, and the v-axis
-  flip is the half a fourth copy would get wrong. The scalar-primitive shape is
-  not a style choice — a transform-object helper costs the Canvas2D loop 1.45x
-  and a projector closure 3.5x, both measured in
-  `benches/cumBpProjection.bench.ts` and declined.
+  that one. Then project with `cumBpToPxH` / `cumBpToPxV` (and back with
+  `pxToCumBpH` / `pxToCumBpV`) rather than writing `viewHeight - (…)` again:
+  draw and pick have to agree pixel for pixel or the cursor picks an alignment
+  other than the one it is pointing at, and the v-axis flip is the half a fourth
+  copy would get wrong. Off the hot path — the axes, the grid, the tooltips,
+  box-zoom, highlights — the flip is the plot axis' own `toScreenPx` /
+  `fromScreenPx`. The scalar-primitive shape is not a style choice — a
+  transform-object helper costs the Canvas2D loop 1.45x and a projector closure
+  3.5x, both measured in `benches/cumBpProjection.bench.ts` and declined.
 - **The pick's tie-break is the ORDER it offers candidates in.** Where the ink
   is belongs to `segmentMark.hitNearest`, and a mark replaces its best only on a
   strictly nearer candidate, so a tie goes to whoever was offered first — hence

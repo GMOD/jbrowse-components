@@ -3,6 +3,7 @@ import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 import { isInstanceInvisible } from '@jbrowse/synteny-core'
 
 import { DOTPLOT_MARKS } from './dotplotMarks.ts'
+import { pxToCumBpH, pxToCumBpV } from './dotplotProject.ts'
 
 import type {
   DotplotGeometryData,
@@ -227,8 +228,8 @@ export function pickDotplotFeature({
   const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv, canvasHeight } = state
   const bpPerPxH = 1 / bpPerPxHInv
   const bpPerPxV = 1 / bpPerPxVInv
-  const cursorBpH = viewBpH + x * bpPerPxH
-  const cursorBpV = viewBpV + (canvasHeight - y) * bpPerPxV
+  const cursorBpH = pxToCumBpH(x, viewBpH, bpPerPxH)
+  const cursorBpV = pxToCumBpV(y, viewBpV, bpPerPxV, canvasHeight)
   // The tolerance is a px radius, so it is a different bp distance on each axis.
   const tolH = tolerancePx * bpPerPxH
   const tolV = tolerancePx * bpPerPxV

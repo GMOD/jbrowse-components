@@ -892,21 +892,21 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #method
-         * Both corners of a drag rect, in bp on each axis. The vertical axis
-         * lays out bottom-up, so its pixels are flipped through viewHeight
-         * first. Undefined for a drag too small to be a selection — the same
-         * threshold the interaction hook uses to tell a drag from a click.
+         * Both corners of a drag rect, in bp on each axis. Undefined for a
+         * drag too small to be a selection — the same threshold the
+         * interaction hook uses to tell a drag from a click.
          */
         getCoords(mousedown: Coord, mouseup: Coord) {
+          const { hview, vview } = self
           const [xmin, xmax] = minmax(mouseup[0], mousedown[0])
           const [ymin, ymax] = minmax(mouseup[1], mousedown[1])
           return xmax - xmin > DRAG_THRESHOLD_PX &&
             ymax - ymin > DRAG_THRESHOLD_PX
             ? {
-                x1: self.hview.pxToBp(xmin),
-                x2: self.hview.pxToBp(xmax),
-                y1: self.vview.pxToBp(this.viewHeight - ymin),
-                y2: self.vview.pxToBp(this.viewHeight - ymax),
+                x1: hview.pxToBp(hview.fromScreenPx(xmin)),
+                x2: hview.pxToBp(hview.fromScreenPx(xmax)),
+                y1: vview.pxToBp(vview.fromScreenPx(ymin)),
+                y2: vview.pxToBp(vview.fromScreenPx(ymax)),
               }
             : undefined
         },
@@ -1165,17 +1165,17 @@ export default function stateModelFactory(pm: PluginManager) {
          * #action
          * Zoom both axes by `factor`, holding the locus under a plot-area
          * point still. The anchor is the same component-px `Coord` the drag
-         * handlers pass around, so the vertical flip through `viewHeight`
-         * happens here — the way `getCoords` already does it — rather than at
-         * the call site against a separately measured element height.
+         * handlers pass around, so each axis takes it through its own
+         * `fromScreenPx`, as `getCoords` does.
          *
          * Multiplying both axes by one factor keeps wheel zoom
          * ratio-preserving, so the aspect lock never has to correct it. One
          * action, for the reason `scrollXY` documents.
          */
         zoomAt(factor: number, [x, y]: Coord) {
-          self.hview.zoomTo(self.hview.bpPerPx * factor, x)
-          self.vview.zoomTo(self.vview.bpPerPx * factor, self.viewHeight - y)
+          const { hview, vview } = self
+          hview.zoomTo(hview.bpPerPx * factor, hview.fromScreenPx(x))
+          vview.zoomTo(vview.bpPerPx * factor, vview.fromScreenPx(y))
         },
       }))
       .actions(self => ({
@@ -1504,8 +1504,7 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #method
          * Map a highlight region to {top, height} px on the vertical
-         * axis. The vview lays out bottom-to-top, so the band is y-flipped into
-         * screen space. Returns undefined when the region isn't on vview's
+         * axis. Returns undefined when the region isn't on vview's
          * assembly/displayed regions.
          */
         getVHighlightCoords(region: {
@@ -1518,7 +1517,7 @@ export default function stateModelFactory(pm: PluginManager) {
           const coords = r ? getLayoutHighlightCoords(self.vview, r) : undefined
           return coords
             ? {
-                top: self.viewHeight - (coords.left + coords.width),
+                top: self.vview.toScreenPx(coords.left + coords.width),
                 height: coords.width,
               }
             : undefined

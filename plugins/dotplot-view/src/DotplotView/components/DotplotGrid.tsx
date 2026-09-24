@@ -1,9 +1,25 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
+import { getFillProps, getStrokeProps, minmax } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import type { DotplotPlotAxisModel } from '../1dview.ts'
 import type { DotplotViewModel } from '../model.ts'
 import type { TickLine } from './util.ts'
+
+// The screen span an axis' displayed regions cover, clamped to the plot: very
+// large offscreen SVG rects can fail to draw, and clamping only the near edge
+// let the backdrop run past the far end of the genome by however much the near
+// end was offscreen. Reads the axis' first block, which `hasVisibleRegions`
+// guarantees.
+function coveredSpan(axis: DotplotPlotAxisModel) {
+  const { offsetPx, displayedRegionsTotalPx, width } = axis
+  const [lo, hi] = minmax(
+    axis.toScreenPx(axis.dynamicBlocks.contentBlocks[0]!.offsetPx - offsetPx),
+    axis.toScreenPx(displayedRegionsTotalPx - offsetPx),
+  )
+  const start = Math.max(lo, 0)
+  return { start, size: Math.max(Math.min(hi, width) - start, 0) }
+}
 
 // Both axes' gridlines collapse into one <path> per weight, the way
 // LinearGenomeView's do: a whole-genome plot can carry a couple of hundred of
@@ -27,37 +43,22 @@ function gridPath(
   ].join('')
 }
 
-// Mounted only under `hasVisibleRegions`, which is what makes each axis's first
-// block (the near end of its backdrop rect) safe to read.
+// Mounted only under `hasVisibleRegions`
 const RegionGrid = observer(function RegionGrid({
   model,
 }: {
   model: DotplotViewModel
 }) {
   const { viewWidth, viewHeight, hview, vview } = model
-  const hblocks = hview.dynamicBlocks.contentBlocks
-  const vblocks = vview.dynamicBlocks.contentBlocks
   const palette = usePalette()
-  const htop = hview.displayedRegionsTotalPx - hview.offsetPx
-  const vtop = vview.displayedRegionsTotalPx - vview.offsetPx
-  const hbottom = hblocks[0]!.offsetPx - hview.offsetPx
-  const vbottom = vblocks[0]!.offsetPx - vview.offsetPx
   // `regionBoundary`, not the divider tint this used to draw at: that tint is
   // lighter than a MAJOR gridline, which made the chromosome seam disappear into
   // a plot that now draws fifty lines — and the seam is the landmark every
   // coordinate here hangs off.
   const stroke = palette.regionBoundary
 
-  // Clamp both of the rect's edges to the viewport and take the span between
-  // them — very large offscreen SVG rects can sometimes fail to draw. Sizing it
-  // from the unclamped span instead (`htop - hbottom`) let the backdrop run past
-  // the far end of the genome by however much the near end was offscreen: only
-  // ever reachable if `dynamicBlocks` stopped being viewport-clipped, but it is
-  // the rule the vertical axis already follows and one fewer thing to hold true.
-  const rx = Math.max(hbottom, 0)
-  const ry = Math.max(viewHeight - vtop, 0)
-  const w = Math.max(Math.min(htop, viewWidth) - rx, 0)
-  const h = Math.max(Math.min(viewHeight - vbottom, viewHeight) - ry, 0)
+  const x = coveredSpan(hview)
+  const y = coveredSpan(vview)
 
   // Both line sets come from the model: the SVG export renders this same
   // component, and the gridlines have to be able to see which pixels a boundary
@@ -71,10 +72,10 @@ const RegionGrid = observer(function RegionGrid({
   return (
     <>
       <rect
-        x={rx}
-        y={ry}
-        width={w}
-        height={h}
+        x={x.start}
+        y={y.start}
+        width={x.size}
+        height={y.size}
         {...getFillProps(palette.background.default)}
       />
       <path

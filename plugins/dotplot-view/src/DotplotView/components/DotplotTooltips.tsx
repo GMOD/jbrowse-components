@@ -17,12 +17,10 @@ const DotplotTooltips = observer(function DotplotTooltips({
   interaction: DotplotInteraction
 }) {
   const { validSelect, anchor, pointer, dx, selecting } = interaction
-  const { hview, vview, viewHeight, hoveredTooltipLines } = model
-  // The cursor's own position on both axes. The v axis lays out bottom-up, so
-  // its pixel is flipped through the plot height first.
+  const { hview, vview, hoveredTooltipLines } = model
   const coordLines = (point: PointerSample) => [
-    `x - ${locstr(point.x, hview)}`,
-    `y - ${locstr(viewHeight - point.y, vview)}`,
+    `x - ${locstr(hview.fromScreenPx(point.x), hview)}`,
+    `y - ${locstr(vview.fromScreenPx(point.y), vview)}`,
   ]
   // One tooltip at the pointer, and the alignment under it wins: its own two
   // locations are strictly more than the cursor coordinates they would replace.

@@ -185,7 +185,8 @@ interface DotplotAxisParent {
 
 // One axis of the plot, as long as the plot dimension it runs along. The
 // vertical one lays out bottom-up, so its along-axis px are flipped into screen
-// y through `toScreenPx`.
+// y through `toScreenPx` and back through `fromScreenPx`, and nothing on the
+// main thread writes that flip again.
 function plotAxis(length: 'viewWidth' | 'viewHeight') {
   return Dotplot1DView.extend(self => ({
     views: {
@@ -211,6 +212,11 @@ function plotAxis(length: 'viewWidth' | 'viewHeight') {
 
       toScreenPx(alongPx: number) {
         return length === 'viewHeight' ? self.width - alongPx : alongPx
+      },
+
+      // a reflection is its own inverse
+      fromScreenPx(screenPx: number) {
+        return this.toScreenPx(screenPx)
       },
 
       // Region-boundary lines in plot px, shared by the screen grid and the SVG
