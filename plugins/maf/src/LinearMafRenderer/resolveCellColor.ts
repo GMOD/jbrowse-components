@@ -17,8 +17,8 @@ import { DASH, LOWER_BIT, SPACE } from '../util/asciiBytes.ts'
 
 /**
  * Per-cell color decisions are resolved against the theme: matches reuse
- * MUI's `action.disabledBackground` (the canonical "neutral filler" tone),
- * alignment gaps reuse `palette.deletion`, off-mode mismatches reuse
+ * the palette's `action.disabledBackground` (the neutral filler tone),
+ * alignment gaps take `palette.mafGap`, off-mode mismatches reuse
  * `palette.mutedSnpBase`, and unknown bases fall back to `palette.text.primary`.
  * The lightblue used when `showAllLetters && !mismatchRendering` has no theme
  * equivalent, so it stays as the one explicit constant.

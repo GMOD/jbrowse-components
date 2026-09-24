@@ -1,3 +1,4 @@
+import { getContrastText } from '@jbrowse/core/ui/palette'
 import {
   cssColorToNormalizedRgb,
   normalizedRgbToCssRgba,
@@ -49,10 +50,7 @@ export function drawAlignmentLabels(
     } else if (label.type === 'mismatch') {
       fillColor = contrastMap[label.text] ?? 'black'
     } else if (label.type === 'deletion') {
-      // the deletion length sits on the grey deletion rect: mid-grey #808080 in
-      // light mode (white text reads best) vs lightened #c8c8c8 in dark mode
-      // (black text reads best)
-      fillColor = palette.mode === 'dark' ? palette.common.black : white
+      fillColor = getContrastText(palette.deletion)
     } else {
       fillColor = white
     }

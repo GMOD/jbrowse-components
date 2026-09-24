@@ -351,9 +351,10 @@ export const colorFwdStrand = '#EC8B8B'
 export const colorRevStrand = '#8F8FD8'
 /** #color alignments-pair-orientation | LR (→ ←) | Normal proper pair */
 export const colorPairLR = '#d3d3d3'
-// Dimmer grey for dark mode: the light #d3d3d3 reads as near-white glaring
-// blocks against a dark track background. Wired into the dark alignmentFill.
-export const colorPairLRDark = '#8a8a8a'
+// Below #d3d3d3, which glares on a dark track, and light enough that
+// insertions, soft clips and deletions stay darker than the read, the order the
+// light theme draws them in.
+export const colorPairLRDark = '#b0b0b0'
 /** #color alignments-pair-orientation | RL (← →) | Mates point away from each other */
 export const colorPairRL = '#0099bb'
 /** #color alignments-pair-orientation | LL (→ →) | Both mates on the forward strand */
@@ -487,11 +488,6 @@ export const colorShortInsert = '#f582c0'
 // gaps between rows and cannot be found. A few px of row is what a value here
 // has to survive, not a 40 px square.
 //
-// The nearest dark-mode neighbour is the coverage histogram's grey[700] #616161
-// at dE 9.7, which is not a collision in the sense the numbers above are about:
-// coverage is a bar in a different subtrack, never a fill a read can take, so
-// nothing is ever read against it.
-//
 // White was the previous dark value, and it reads as the loudest thing in a dark
 // pileup — louder than the coloured categories it is meant to be quieter than —
 // which is the "glaring near-white blocks" failure `colorPairLRDark` already
@@ -593,6 +589,8 @@ export interface StringColors {
   hardclip: string
   /** Deletion markers in alignments */
   deletion: string
+  /** MAF alignment-gap cells, where a species has no base */
+  mafGap: string
   /** Span where two segments of one molecule both align (view-as-pairs / chains) */
   readOverlap: string
   /** Base modifications on the forward strand */
@@ -629,6 +627,8 @@ export interface StringColors {
   featureSelected: string
   /** Feature description labels, e.g. gene descriptions */
   featureDescription: string
+  /** Intron lines, strand chevrons and strand arrows in feature tracks */
+  featureConnector: string
 }
 
 /** #color theme-colors | Stop codon | Stop codon in gene/CDS tracks */
@@ -664,7 +664,7 @@ const skip = '#009a8a'
  *
  * So the value has one job: read as NEITHER segment. The alignments vocabulary's
  * one neutral grey is light (`colorPairLR` #d3d3d3, and `colorPairLRDark`
- * #8a8a8a on the dark theme), so this sits past
+ * #b0b0b0 on the dark theme), so this sits past
  * the dark end of them in light mode and past the light end in dark mode,
  * which is also why it inverts rather than dimming: on a dark track background
  * a charcoal span is the background showing through, i.e. a gap where the mark
@@ -689,6 +689,7 @@ const lightStringColors: StringColors = {
   coverage: grey[400],
   insertion,
   deletion,
+  mafGap: deletion,
   readOverlap,
   softclip,
   hardclip,
@@ -715,13 +716,14 @@ const lightStringColors: StringColors = {
   featureSelected: 'rgba(0,100,255,0.8)',
   // blue accent for feature description labels (e.g. gene descriptions)
   featureDescription: 'blue',
+  featureConnector: 'rgba(0, 0, 0, 0.6)',
 }
 
 // Dark overrides. White-on-dark reads far stronger than dark-on-white at the
 // same alpha, so the gridlines and hover shades are gentler and inverted rather
 // than reused, and the colors that would otherwise vanish are lightened.
 const darkStringColors: Partial<StringColors> = {
-  coverage: grey[700],
+  coverage: grey[500],
   gridlineMinor: 'rgba(255,255,255,0.06)',
   gridlineMajor: 'rgba(255,255,255,0.15)',
   plotGridlineMinor: 'rgba(255,255,255,0.05)',
@@ -732,13 +734,18 @@ const darkStringColors: Partial<StringColors> = {
   featureSelected: 'rgba(120,180,255,0.9)',
   // plain CSS 'blue' reads as near-black against a dark track
   featureDescription: blue[300],
-  // the deletion rect replaces the read on the dark track background, where the
-  // mid-grey #808080 reads as a muddy block, so lighten it
-  deletion: '#c8c8c8',
+  // a 1px light line on a dark ground reads thinner than the same line dark on
+  // white, so this runs at more ink than the light value's 0.6
+  featureConnector: 'rgba(255, 255, 255, 0.9)',
+  // drawn over a read, so it keeps the light theme's step below the read fill:
+  // #d3d3d3 to #808080 is 31 L*, #b0b0b0 to this is 33
+  deletion: '#5c5c5c',
+  // MAF gap cells sit beside match cells painted `action.disabledBackground`,
+  // which is dark here, so the gap is the lighter of the two
+  mafGap: '#c8c8c8',
   // inverted rather than dimmed, for the reason on the light value: the mark
   // has to be the one neutral no read category paints, and on a dark track that
-  // is the light end. Clear of the dark theme's own `colorPairLRDark` #8a8a8a
-  // and of `colorNostrand` #c8c8c8, the two lightest fills it can land beside.
+  // is the light end, clear of `colorPairLRDark` #b0b0b0
   readOverlap: '#e4e4e4',
 }
 
@@ -798,6 +805,17 @@ const defaultFrames: FrameTuple<ShadeInput> = [
   { main: '#d8d8d8' },
   { main: '#adadad' },
   { main: '#8f8f8f' },
+]
+
+// The same order as the light greys, with the outer frames nearest the ground
+const defaultFramesDark: FrameTuple<ShadeInput> = [
+  null,
+  { main: '#6e6e6e' },
+  { main: '#525252' },
+  { main: '#303030' },
+  { main: '#303030' },
+  { main: '#525252' },
+  { main: '#6e6e6e' },
 ]
 
 // ---------------------------------------------------------------------------
@@ -864,7 +882,7 @@ export interface ThemeInput {
  * the preset colors are stated once.
  */
 // The JBrowse-branded colors every built-in preset starts from. Deliberately
-// does NOT carry the string colors or alignmentFill: those have light and dark
+// does NOT carry the string colors, alignmentFill or frames: those have light and dark
 // variants that `resolvePalette` picks off `mode`, and baking the light ones in
 // here would shadow the dark set for any theme built on top.
 const brandDefaults: PaletteInput = {
@@ -875,7 +893,6 @@ const brandDefaults: PaletteInput = {
   highlight: { main: mandarin },
   textHighlight: { main: textHighlightYellow },
   bases: defaultBases,
-  frames: defaultFrames,
   framesCDS: defaultFramesCDS,
 }
 
@@ -997,7 +1014,10 @@ export function resolvePalette(args: PaletteArgs = {}): JBrowsePalette {
         augmentColor(input.bases?.[key] ?? defaultBases[key]),
       ]),
     ) as Record<BaseKey, ColorQuad>,
-    frames: resolveFrames(input.frames, defaultFrames),
+    frames: resolveFrames(
+      input.frames,
+      isDark ? defaultFramesDark : defaultFrames,
+    ),
     framesCDS: resolveFrames(input.framesCDS, defaultFramesCDS),
     alignmentFill: {
       ...(isDark ? darkAlignmentFill : lightAlignmentFill),

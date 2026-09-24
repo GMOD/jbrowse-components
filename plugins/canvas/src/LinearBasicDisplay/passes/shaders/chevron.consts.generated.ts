@@ -7,6 +7,6 @@ export const CHEVRON_W_PX = 4
 
 export const CHEVRON_H_PX = 4
 
-export const CHEVRON_THICKNESS_PX = 0.5
+export const CHEVRON_THICKNESS_PX = 1
 
 export const CHEVRON_VERTS = 12

@@ -40,11 +40,8 @@ function draw(mode: 'light' | 'dark') {
   return texts
 }
 
-// The gap cells the count sits on are filled with `palette.gapColor`, which is
-// `palette.deletion` — and that is the one MAF cell color with a dark-mode
-// override, lightened from #808080 to #c8c8c8 so the run reads against a dark
-// track. A hardcoded white count was therefore invisible on every dark-mode MAF
-// (and on every dark-theme SVG export, whatever the session's own theme).
+// The gap cells the count sits on are `palette.mafGap`: #808080 in light and
+// #c8c8c8 in dark, so a fixed white count vanishes on every dark-mode MAF.
 test('the deleted-base count reads against the run it sits in, in both themes', () => {
   expect(draw('light')).toEqual([{ text: '42', fillStyle: '#fff' }])
   expect(draw('dark')).toEqual([

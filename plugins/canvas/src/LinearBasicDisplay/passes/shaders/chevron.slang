@@ -19,7 +19,7 @@ import featureGlyphUniforms;
 static const float CHEVRON_SPACING_PX  = 40.0;
 static const float CHEVRON_W_PX        = 4.0;
 static const float CHEVRON_H_PX        = 4.0;
-static const float CHEVRON_THICKNESS_PX = 0.5;
+static const float CHEVRON_THICKNESS_PX = 1.0;
 
 // One chevron is two arms, each an ordinary 6-vertex quad (2 triangles), so
 // `vs_main` splits `SV_VertexID` by both numbers below. The pass's per-instance
@@ -210,9 +210,7 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   //
   // The half-max contour does not move — that is `coreHalfPx - |dist| == 0`,
   // which no ramp width touches. What moves is how much of the arm reaches full
-  // ink: a 0.5px arm peaked at alpha 0.625 instead of 0.677 at dpr 1, and 0.75
-  // instead of 0.854 at dpr 2, with the fade spreading sqrt(2) further to
-  // compensate. So the chevrons read washed out rather than fat.
+  // ink, so fwidth would wash the chevrons out rather than fatten them.
   //
   // Measured rather than analytic because this shader has no dpr uniform —
   // see antialias.slang for which of the two a shader gets to use.

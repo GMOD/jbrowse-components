@@ -37,7 +37,7 @@ export function getMafColorPalette(palette: JBrowsePalette): MafColorPalette {
   return {
     colorForBase: getColorBaseMap(palette),
     matchColor: palette.action.disabledBackground,
-    gapColor: palette.deletion,
+    gapColor: palette.mafGap,
     mismatchOffColor: palette.mutedSnpBase,
     unknownBaseColor: palette.text.primary,
     insertionColor: palette.insertion,

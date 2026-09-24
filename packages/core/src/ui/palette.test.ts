@@ -46,6 +46,7 @@ const stringKeys: (keyof StringColors)[] = [
   'skip',
   'hardclip',
   'deletion',
+  'mafGap',
   'modificationFwd',
   'modificationRev',
   'mutedSnpBase',
@@ -59,6 +60,7 @@ const stringKeys: (keyof StringColors)[] = [
   'featureHoverStrong',
   'featureSelected',
   'featureDescription',
+  'featureConnector',
 ]
 
 const baseKeys: BaseKey[] = ['A', 'C', 'G', 'T', 'N']

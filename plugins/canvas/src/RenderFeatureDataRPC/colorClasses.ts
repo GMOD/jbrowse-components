@@ -62,7 +62,7 @@ function faintOutline(palette: JBrowsePalette) {
  */
 export function themedColorTable(palette: JBrowsePalette) {
   const table = new Uint32Array(COLOR_CLASS_COUNT)
-  table[STROKE] = cssColorToABGR(palette.text.secondary)
+  table[STROKE] = cssColorToABGR(palette.featureConnector)
   table[OUTLINE] = cssColorToABGR(faintOutline(palette))
   for (const [i, frame] of FRAMES.entries()) {
     const solid = palette.framesCDS.at(frame)!.main

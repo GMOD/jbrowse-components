@@ -18,11 +18,8 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
  * Takes the palette for the same reason `drawMafEmptyLines` and
  * `drawMafInsertions` do, and this was the one marker drawing that didn't: the
  * label sits on the gap cells, which the base pass fills with
- * `palette.gapColor`, and that color is theme-varying in the one direction that
- * matters. It is `palette.deletion` — `#808080` in light, deliberately
- * lightened to `#c8c8c8` in dark so the run reads against a dark track — so a
- * hardcoded white count was invisible on every dark-mode MAF, and on every
- * dark-theme SVG export regardless of the session's own theme.
+ * `palette.gapColor`, and that color is theme-varying: `palette.mafGap`,
+ * `#808080` in light and `#c8c8c8` in dark.
  */
 export function drawMafDeletionLabels(
   ctx: Ctx2D,
