@@ -134,12 +134,13 @@ function newArm(): Arm {
   return { executeArgs: {}, statuses: [] }
 }
 
-// the two members a driver reaches for: the method to run, and the
-// `Core-extendWorker` fold the pool applies once per booted worker
+// what a driver reaches for: the method to run, and the `Core-extendWorker`
+// fold the pool applies once per booted worker, which nothing registered for
 function stubPluginManager(method: RpcMethodType) {
   return {
     getRpcMethodType: () => method,
     evaluateExtensionPoint: (_name: string, worker: unknown) => worker,
+    extensionPointCallbackCount: () => 0,
   } as unknown as PluginManager
 }
 
