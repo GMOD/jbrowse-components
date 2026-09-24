@@ -1,8 +1,10 @@
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 import {
+  SearchResultsNotFoundError,
   checkRef,
   fetchResults,
+  nameNotFound,
   splitLast,
   unanimousResult,
 } from './searchUtils.ts'
@@ -311,5 +313,32 @@ describe('unanimousResult', () => {
         new BaseResult({ label: 'EDEN.1' }),
       ]),
     ).toBeUndefined()
+  })
+})
+
+describe('nameNotFound', () => {
+  it('reports a miss against a working index as the name being absent', () => {
+    const e = nameNotFound('BRCA1', 'hg38', { indexCount: 1, failures: [] })
+    expect(e).toBeInstanceOf(SearchResultsNotFoundError)
+    expect(e.message).toBe('No results found for "BRCA1"')
+  })
+
+  it('says so when the assembly has no index to search', () => {
+    expect(
+      nameNotFound('BRCA1', 'hg38', { indexCount: 0, failures: [] }).message,
+    ).toBe('No results found for "BRCA1": hg38 has no text search index')
+  })
+
+  it('reports a failed index as a failure, not a miss', () => {
+    const cause = new Error('HTTP 404 fetching hg38.ixx')
+    const e = nameNotFound('BRCA1', 'hg38', {
+      indexCount: 2,
+      failures: [cause],
+    })
+    expect(e).not.toBeInstanceOf(SearchResultsNotFoundError)
+    expect(e.message).toBe(
+      'Searching for "BRCA1" failed: Error: HTTP 404 fetching hg38.ixx',
+    )
+    expect(e.cause).toBe(cause)
   })
 })

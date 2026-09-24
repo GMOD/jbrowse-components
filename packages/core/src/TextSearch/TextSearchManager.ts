@@ -15,20 +15,31 @@ import type BaseResult from './BaseResults.ts'
 
 // A misconfigured or unreachable index (a 404 .ix, a config missing
 // ixFilePath) must not take down search as a whole: the remaining indexes, and
-// the refName results the caller merges in afterwards, are still useful. Log
-// the failures and keep going rather than rejecting. An abort is not a failure
-// — every keystroke supersedes the previous query, so logging those would turn
-// normal typing into console spam.
-async function keepFulfilled<T>(promises: Promise<T>[], message: string) {
-  const out: T[] = []
+// the refName results the caller merges in afterwards, are still useful. The
+// failures are logged and handed back, so a miss can say an index failed rather
+// than that the name is absent. An abort is not a failure — every keystroke
+// supersedes the previous query, so logging those would turn normal typing
+// into console spam.
+async function settle<T>(promises: Promise<T>[], message: string) {
+  const values: T[] = []
+  const failures: unknown[] = []
   for (const settled of await Promise.allSettled(promises)) {
     if (settled.status === 'fulfilled') {
-      out.push(settled.value)
+      values.push(settled.value)
     } else if (!isAbortException(settled.reason)) {
       console.error(message, settled.reason)
+      failures.push(settled.reason)
     }
   }
-  return out
+  return { values, failures }
+}
+
+export interface TextSearchReport {
+  results: BaseResult[]
+  /** the indexes covering the assembly, zero when it has none to search */
+  indexCount: number
+  /** what each index that could not answer threw */
+  failures: unknown[]
 }
 
 export default class TextSearchManager {
@@ -43,7 +54,7 @@ export default class TextSearchManager {
   }
 
   loadTextSearchAdapters(assemblyName: string) {
-    return keepFulfilled(
+    return settle(
       this.relevantAdapters(assemblyName).map(async conf => {
         const adapterId = readConfObject(conf, 'textSearchAdapterId')
         const r = this.adapterCache.get(adapterId)
@@ -138,19 +149,29 @@ export default class TextSearchManager {
   }
 
   async search(args: BaseTextSearchArgs, assemblyName: string) {
-    const adapters = await this.loadTextSearchAdapters(assemblyName)
-    const results = await keepFulfilled(
-      adapters.map(a => a.searchIndex(args)),
+    return (await this.searchIndexes(args, assemblyName)).results
+  }
+
+  async searchIndexes(
+    args: BaseTextSearchArgs,
+    assemblyName: string,
+  ): Promise<TextSearchReport> {
+    const loaded = await this.loadTextSearchAdapters(assemblyName)
+    const searched = await settle(
+      loaded.values.map(a => a.searchIndex(args)),
       'text search adapter failed',
     )
     // the ranking below is the expensive half — a dynamic import plus a fuzzy
     // sort over every hit — and a superseded keystroke has no use for it.
-    // Checked here rather than only inside the adapters because keepFulfilled
-    // deliberately drops a failing adapter and carries on, so an abort thrown
-    // by one of them would otherwise still land here as "no results from that
-    // index" and rank the rest
+    // Checked here rather than only inside the adapters because settle drops an
+    // abort thrown by one of them, which would otherwise land here as "no
+    // results from that index" and rank the rest
     checkAbortSignal(args.signal)
-    return await this.sortResults({ args, results: results.flat() })
+    return {
+      results: await this.sortResults({ args, results: searched.values.flat() }),
+      indexCount: loaded.values.length + loaded.failures.length,
+      failures: [...loaded.failures, ...searched.failures],
+    }
   }
 
   // Ranks, never filters: the adapters have already decided what matches, and

@@ -58,10 +58,13 @@ describe('search resilience', () => {
     // refName results fetchResults merges in afterwards, so a single broken
     // index made even "type chr1 and hit enter" fail
     const m = new TextSearchManager({} as never)
-    m.loadTextSearchAdapters = async () => [
-      fakeAdapter(() => Promise.reject(new Error('404 out.ix'))),
-      fakeAdapter(async () => [new BaseResult({ label: 'BRCA1' })]),
-    ]
+    m.loadTextSearchAdapters = async () => ({
+      values: [
+        fakeAdapter(() => Promise.reject(new Error('404 out.ix'))),
+        fakeAdapter(async () => [new BaseResult({ label: 'BRCA1' })]),
+      ],
+      failures: [],
+    })
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
 
     const results = await m.search({ queryString: 'BRCA1' }, 'hg38')
@@ -71,13 +74,37 @@ describe('search resilience', () => {
     spy.mockRestore()
   })
 
+  it('reports what failed and how many indexes it asked', async () => {
+    const m = new TextSearchManager({} as never)
+    const notLoaded = new Error('no ixFilePath')
+    const notFound = new Error('404 out.ix')
+    m.loadTextSearchAdapters = async () => ({
+      values: [
+        fakeAdapter(() => Promise.reject(notFound)),
+        fakeAdapter(async () => []),
+      ],
+      failures: [notLoaded],
+    })
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+    const report = await m.searchIndexes({ queryString: 'BRCA1' }, 'hg38')
+
+    expect(report).toEqual({
+      results: [],
+      indexCount: 3,
+      failures: [notLoaded, notFound],
+    })
+    spy.mockRestore()
+  })
+
   it('drops a superseded query before ranking it', async () => {
     // every keystroke supersedes the previous one, and the ranking is the
     // expensive half (a dynamic import plus a fuzzy sort over every hit)
     const m = new TextSearchManager({} as never)
-    m.loadTextSearchAdapters = async () => [
-      fakeAdapter(async () => [new BaseResult({ label: 'BRCA1' })]),
-    ]
+    m.loadTextSearchAdapters = async () => ({
+      values: [fakeAdapter(async () => [new BaseResult({ label: 'BRCA1' })])],
+      failures: [],
+    })
     const sortSpy = jest.spyOn(m, 'sortResults')
     const signalController = new AbortController()
     const signal = signalController.signal
@@ -93,9 +120,10 @@ describe('search resilience', () => {
 
   it('still ranks a query whose signal is not aborted', async () => {
     const m = new TextSearchManager({} as never)
-    m.loadTextSearchAdapters = async () => [
-      fakeAdapter(async () => [new BaseResult({ label: 'BRCA1' })]),
-    ]
+    m.loadTextSearchAdapters = async () => ({
+      values: [fakeAdapter(async () => [new BaseResult({ label: 'BRCA1' })])],
+      failures: [],
+    })
     const results = await m.search(
       { queryString: 'BRCA1', signal: new AbortController().signal },
       'hg38',

@@ -410,14 +410,14 @@ export async function handleSelectedRegion({
     // adapters answer 'exact' by filtering exactly this list. An adapter that
     // tags nothing simply never wins the exact pass, which is the behaviour it
     // had when it returned nothing for searchType: 'exact'.
-    const allResults = await fetchResults({
+    const found = await searchNames({
       queryString: input,
       assemblyName,
       textSearchManager,
       assembly,
     })
-    const exactResults = allResults.filter(r => r.isExact())
-    const results = exactResults.length ? exactResults : allResults
+    const exactResults = found.results.filter(r => r.isExact())
+    const results = exactResults.length ? exactResults : found.results
 
     // the view may have been closed/detached while the text-search RPC ran
     if (!isAlive(model)) {
@@ -449,17 +449,15 @@ export async function handleSelectedRegion({
       // no search hits: still try to resolve the input as a locstring (bare
       // refname, "ref start end" triplet, etc). if that also can't find a
       // refname AND the input is a single bare token (a plausible gene name),
-      // reframe the unknown-ref error as a clean "no results" message; keep the
-      // specific ref error for coordinate/multi-part queries
+      // reframe the unknown-ref error as a name miss; keep the specific ref
+      // error for coordinate/multi-part queries
       try {
         await navToLocstrings()
         return true
       } catch (e) {
         const isPlainName = !input.includes(':') && !input.includes(' ')
         if (e instanceof UnknownRefNameError && isPlainName) {
-          throw new SearchResultsNotFoundError(
-            `No results found for "${input}"`,
-          )
+          throw nameNotFound(input, assemblyName, found)
         } else {
           throw e
         }
@@ -473,14 +471,7 @@ export function checkRef(str: string, isRef: (name: string) => boolean) {
   return isRef(str) || (isRef(ref) && /^\d/.test(rest))
 }
 
-export async function fetchResults({
-  queryString,
-  searchType,
-  assemblyName,
-  textSearchManager,
-  assembly,
-  signal,
-}: {
+interface SearchArgs {
   queryString: string
   assemblyName: string
   searchType?: SearchType
@@ -489,8 +480,17 @@ export async function fetchResults({
   // the autocomplete aborts it when a keystroke supersedes this one, dropping
   // the ranking and formatting of an answer that is already stale
   signal?: AbortSignal
-}) {
-  const textSearchResults = await textSearchManager?.search(
+}
+
+async function searchNames({
+  queryString,
+  searchType,
+  assemblyName,
+  textSearchManager,
+  assembly,
+  signal,
+}: SearchArgs) {
+  const report = await textSearchManager?.searchIndexes(
     {
       queryString,
       searchType,
@@ -507,9 +507,36 @@ export async function fetchResults({
     ? searchRefNames(assembly, queryString, searchType)
     : []
 
-  return dedupe([...refNameResults, ...(textSearchResults ?? [])], elt =>
-    elt.getId(),
-  )
+  return {
+    results: dedupe([...refNameResults, ...(report?.results ?? [])], elt =>
+      elt.getId(),
+    ),
+    indexCount: report?.indexCount ?? 0,
+    failures: report?.failures ?? [],
+  }
+}
+
+export async function fetchResults(args: SearchArgs) {
+  return (await searchNames(args)).results
+}
+
+// A broken index, or none at all, says so rather than reporting the name as
+// absent
+export function nameNotFound(
+  input: string,
+  assemblyName: string,
+  { indexCount, failures }: { indexCount: number; failures: unknown[] },
+) {
+  const [failure] = failures
+  return failure !== undefined
+    ? new Error(`Searching for "${input}" failed: ${failure}`, {
+        cause: failure,
+      })
+    : new SearchResultsNotFoundError(
+        indexCount
+          ? `No results found for "${input}"`
+          : `No results found for "${input}": ${assemblyName} has no text search index`,
+      )
 }
 
 // Scan assembly refnames for query matches, resolving aliases (e.g. 'contigB')
