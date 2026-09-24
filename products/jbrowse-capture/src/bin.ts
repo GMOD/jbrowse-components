@@ -133,15 +133,7 @@ async function runList(positionals: string[]) {
 
 async function main() {
   const argv = process.argv.slice(2)
-  const [first, ...rest] = argv
-  // `list` is the one form that takes bare words, so it is the one that allows
-  // positionals. Routing it through the parser at all is what makes a flag
-  // after it an error: `list hg38 --foo` used to filter the track list on the
-  // string "--foo" and report that nothing matched.
-  const isSubcommand = first === 'list' || first === 'url'
-  const args = parseArgs(isSubcommand ? rest : argv, {
-    allowPositionals: first === 'list',
-  })
+  const args = parseArgs(argv)
   if (args.help || argv.length === 0) {
     console.log(HELP)
     return
@@ -153,11 +145,11 @@ async function main() {
     console.log(version)
     return
   }
-  if (first === 'list') {
+  if (args.command === 'list') {
     await runList(args.positionals)
     return
   }
-  if (first === 'url') {
+  if (args.command === 'url') {
     console.log(jbrowseUrl(await resolveAgainstConfig(urlOptions(args))))
     return
   }

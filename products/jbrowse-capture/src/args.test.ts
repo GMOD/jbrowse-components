@@ -103,16 +103,28 @@ test('a bare positional is an error', () => {
   expect(() => parseArgs(['hg38'])).toThrow("Unexpected argument 'hg38'")
 })
 
-// `list` is the one form that takes bare words, and routing it through the
-// parser is what makes a flag after it an error: `list hg38 --foo` used to
-// filter the track list on the string "--foo" and report that nothing matched.
 test('list takes its hub and filter as positionals, and still rejects flags', () => {
-  expect(
-    parseArgs(['hg38', 'conservation'], { allowPositionals: true }).positionals,
-  ).toEqual(['hg38', 'conservation'])
-  expect(() =>
-    parseArgs(['hg38', '--foo'], { allowPositionals: true }),
-  ).toThrow("Unknown option '--foo'")
+  const args = parseArgs(['list', 'hg38', 'conservation'])
+  expect(args.command).toBe('list')
+  expect(args.positionals).toEqual(['hg38', 'conservation'])
+  expect(() => parseArgs(['list', 'hg38', '--foo'])).toThrow(
+    "Unknown option '--foo'",
+  )
+})
+
+test('a subcommand refuses a flag it does not use', () => {
+  expect(parseArgs(['url', '--hub', 'hg38']).hub).toBe('hg38')
+  expect(() => parseArgs(['url', '--hub', 'hg38', '-o', 'x.png'])).toThrow(
+    '-o does not apply to `jb2capture url`',
+  )
+  expect(() => parseArgs(['list', '--hub', 'hg38'])).toThrow(
+    '--hub does not apply to `jb2capture list`',
+  )
+  expect(parseArgs(['url', '--help']).help).toBe(true)
+})
+
+test('anything else is a capture', () => {
+  expect(parseArgs(['--hub', 'hg38', '-o', 'x.png']).command).toBe('capture')
 })
 
 test.each(['--constructor', '--toString'])(
