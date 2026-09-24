@@ -1,3 +1,4 @@
+import { sampleColorRamp } from '@jbrowse/core/util/colorRamp'
 import {
   clipBlockForCanvas,
   makeBpMapper,
@@ -15,6 +16,7 @@ import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendT
 import type { RowIdentityMode } from '../rowIdentityModes.ts'
 import type { CellPxRange } from './visibleRegionGeometry.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -31,22 +33,22 @@ interface DrawRowIdentityState {
   mode: RowIdentityMode
 }
 
+const IDENTITY_STOPS: readonly ColorRampStop[] = [
+  [199, 67, 56, 255],
+  [140, 140, 140, 255],
+  [47, 102, 176, 255],
+]
+
 /**
  * Diverging red→grey→blue identity ramp: divergent (0) → neutral (0.5) →
  * conserved (1), returned as an `[r,g,b]` triple. Grey neutral midpoint (rather
  * than the white of a sequential density ramp) keeps low-identity bases visible
  * while reserving the saturated blue end for the conserved positions that
- * matter. Pure so it can be unit-tested independent of any canvas.
+ * matter.
  */
 export function identityColor(t: number): [number, number, number] {
-  const c = t < 0 ? 0 : t > 1 ? 1 : t
-  const lerp = (a: number, b: number, f: number) => Math.round(a + (b - a) * f)
-  if (c < 0.5) {
-    const f = c / 0.5
-    return [lerp(199, 140, f), lerp(67, 140, f), lerp(56, 140, f)]
-  }
-  const f = (c - 0.5) / 0.5
-  return [lerp(140, 47, f), lerp(140, 102, f), lerp(140, 176, f)]
+  const [r, g, b] = sampleColorRamp(IDENTITY_STOPS, t)
+  return [r, g, b]
 }
 
 /** `identityColor` as a CSS string, for the legend swatches. */
