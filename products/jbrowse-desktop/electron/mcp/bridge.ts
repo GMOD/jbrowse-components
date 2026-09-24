@@ -93,9 +93,13 @@ export function startMcpBridge({
   // answers nothing. The renderer says when it is listening; relays wait here.
   let listening: McpReadyState | undefined
   let waiters: (() => void)[] = []
+  // why the page is gone, while it is: a crashed renderer never announces
+  // again, so without this every call waited out its whole budget
+  let crashed: string | undefined
 
   ipcHandle('mcpReady', (_event, state) => {
     listening = state
+    crashed = undefined
     const pending = waiters
     waiters = []
     for (const wake of pending) {
@@ -144,13 +148,17 @@ export function startMcpBridge({
     }
     watchedContents = win.webContents.id
     applyThrottling()
-    // did-start-navigation, not did-start-loading: the latter also toggles for
-    // load activity that leaves the subscription intact, and clearing on it
-    // made every relay pay the ready wait on a busy page
-    win.webContents.on('did-start-navigation', details => {
-      if (details.isMainFrame && !details.isSameDocument) {
-        stopListening()
-      }
+    // a committed main-frame page load: did-start-navigation also fires for a
+    // link click that will-navigate cancels, which leaves the page listening
+    // with nothing to announce it again
+    win.webContents.on('did-navigate', () => {
+      crashed = undefined
+      stopListening()
+    })
+    win.webContents.on('render-process-gone', (_event, { reason }) => {
+      crashed = `the app's page crashed (${reason}); use the open tool to reload it`
+      listening = undefined
+      settleOrphans(crashed)
     })
     win.webContents.on('destroyed', stopListening)
   }
@@ -193,6 +201,9 @@ export function startMcpBridge({
       }
     }
     watchWindow()
+    if (crashed) {
+      return { error: crashed }
+    }
     // Answering fast beats sending into the void: a push to a page that has not
     // subscribed is discarded silently, so proceeding anyway would buy nothing
     // and cost the whole relay timeout. The caller can retry cheaply.
@@ -421,6 +432,12 @@ export function startMcpBridge({
     socket.on('close', () => {
       connectedClients -= 1
       applyThrottling()
+      // nobody is left to read these answers, so the code behind them stops
+      for (const [call, relay] of relayForRequest) {
+        if (call.startsWith(`${connection}:`)) {
+          relayToRenderer('cancel', { id: relay }, 5000).catch(console.error)
+        }
+      }
     })
     // Everything in here runs in the MAIN process, where an uncaught throw
     // takes the app down with the user's unsaved session — so the whole body is

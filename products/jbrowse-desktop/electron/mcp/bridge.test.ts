@@ -130,10 +130,20 @@ function start(openTarget: () => Promise<unknown> = () => Promise.resolve()) {
       } as never)
     },
     navigate: () => {
+      contentsEvents.get('did-navigate')?.()
+    },
+    // a link click will-navigate cancels: it starts and never commits
+    startNavigation: () => {
       contentsEvents.get('did-start-navigation')?.({
         isMainFrame: true,
         isSameDocument: false,
       } as never)
+    },
+    crash: () => {
+      contentsEvents.get('render-process-gone')?.(
+        undefined as never,
+        { reason: 'oom' } as never,
+      )
     },
     // the last thing the bridge pushed at the renderer, which is what a relayed
     // tool call and a cancel both look like from here
@@ -233,6 +243,68 @@ it('settles the calls a page took with it when it navigated', async () => {
   expect(await answered).toEqual({
     id: 1,
     error: 'the page reloaded before the app answered; try again',
+  })
+})
+
+it('keeps trusting a page whose navigation never commits', async () => {
+  const b = bridge()
+  const c = b.connect()
+  await settle()
+  b.ready({ install: 'first', phase: 'session' })
+  const inFlight = c.send(1, 'run_javascript', { code: 'return 1' })
+  await settle()
+  const relayId = b.lastPush().id
+  b.startNavigation()
+  void c.send(2, 'run_javascript', { code: 'return 2' })
+  await settle()
+
+  expect(b.lastPush()).toMatchObject({ tool: 'run_javascript' })
+  expect(b.lastPush().id).not.toBe(relayId)
+  b.answer(relayId, { result: { value: 1 } })
+  expect(await inFlight).toEqual({ id: 1, result: { value: 1 } })
+})
+
+// A crashed renderer never announces again, so every call used to wait out its
+// whole budget and a screenshot captured the dead page.
+it('answers at once while the page is crashed, and relays again once reloaded', async () => {
+  const b = bridge()
+  const c = b.connect()
+  await settle()
+  b.ready({ install: 'first', phase: 'session' })
+  const inFlight = c.send(1, 'run_javascript', { code: 'return 1' })
+  await settle()
+  b.crash()
+  const crashed = {
+    error: "the app's page crashed (oom); use the open tool to reload it",
+  }
+  expect(await inFlight).toEqual({ id: 1, ...crashed })
+  const pushes = b.pushed.length
+  expect(await c.send(2, 'run_javascript', { code: 'return 2' })).toEqual({
+    id: 2,
+    ...crashed,
+  })
+  expect(b.pushed).toHaveLength(pushes)
+
+  b.ready({ install: 'second', phase: 'session' })
+  void c.send(3, 'run_javascript', { code: 'return 3' })
+  await settle()
+  expect(b.pushed).toHaveLength(pushes + 1)
+})
+
+it('cancels the code of a client that exits mid-call', async () => {
+  const b = bridge()
+  const gone = b.connect()
+  await settle()
+  b.ready({ install: 'first', phase: 'session' })
+  void gone.send(1, 'run_javascript', { code: 'x' })
+  await settle()
+  const relayId = b.lastPush().id
+  gone.destroy()
+  await settle()
+
+  expect(b.lastPush()).toMatchObject({
+    tool: 'cancel',
+    args: { id: relayId },
   })
 })
 
