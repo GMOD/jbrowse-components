@@ -21,7 +21,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 // A multi-BigWig lists its files without reading a region, and each feature
 // carries its file as `source`; any other adapter's `getSources` scans the
 // features the split already read.
-function listsSources(adapter: object) {
+export function listsSources(adapter: object) {
   return 'getMultiSourceFeatureArraysMulti' in adapter
 }
 

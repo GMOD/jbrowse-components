@@ -2397,7 +2397,7 @@ function scanEnvironment(answers: (() => Promise<unknown>)[]) {
     'BedAdapter',
     {},
     (_sessionId, method, args) => {
-      if (method === 'CoreGetFeatures') {
+      if (method === 'MarkScanPlotFields') {
         scanned.push((args as { regions: unknown }).regions)
         return answers[scanned.length - 1]!()
       }
@@ -2407,17 +2407,8 @@ function scanEnvironment(answers: (() => Promise<unknown>)[]) {
   return { ...createDisplay(), scanned }
 }
 
-const SCORED = () =>
-  Promise.resolve([
-    new SimpleFeature({
-      uniqueId: 'a',
-      refName: 'ctgA',
-      start: 0,
-      end: 1,
-      score: 3,
-    }),
-  ])
-const NOTHING = () => Promise.resolve([])
+const SCORED = () => Promise.resolve({ numeric: ['score'], categorical: [] })
+const NOTHING = () => Promise.resolve({ numeric: [], categorical: [] })
 
 test('a scan finding no numeric field answers only for the window it read', async () => {
   const { display, view, scanned } = scanEnvironment([NOTHING, SCORED])

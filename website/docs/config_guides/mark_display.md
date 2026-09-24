@@ -615,10 +615,13 @@ are. Each finding names the slot, and the mark when the slot is a mark's, and
 numeric field the loaded features carry, a bar or a point, optionally a colour
 field — a categorical scale for a text column, a linear one for a number — and a
 "count per bin zoomed out" box that adds the second `bin`/`aggregate` mark with
-`step: "auto"` and the `minBpPerPx`/`maxBpPerPx` handoff at 100. It reopens on
-what a single-mark config already declares, so editing is the same dialog. A
-display shown with no `marks` at all plots `score` as bars where the features
-carry a numeric one, and opens this dialog where they do not.
+`step: "auto"` and the `minBpPerPx`/`maxBpPerPx` handoff at 100. A structured
+field lists its members by the path a channel reads, so a VCF offers `INFO.DP`
+and a BAM `tags.NM`, and a text field with more values than a colour key names
+is not offered as a colour. It reopens on what a single-mark config already
+declares, so editing is the same dialog. A display shown with no `marks` at all
+plots `score` as bars where the features carry a numeric one, and opens this
+dialog where they do not.
 
 <Figure src="/img/mark_display/plot_field.png" caption="The Plot field dialog over an Alu track, reopened on the mark that track declares: the numeric fields the loaded features carry, the mark, the colour field and the count-per-bin box."/>
 

@@ -1,10 +1,8 @@
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
-import { scanPlotFields } from './plotFields.ts'
-
-import type { PlotFields } from './plotFields.ts'
-import type { Feature, StatusCallback } from '@jbrowse/core/util'
+import type { PlotFields } from './scanPlotFields.ts'
+import type { StatusCallback } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -42,13 +40,11 @@ export async function fetchPlotFields({
   regions: Region[]
   opts?: { signal?: AbortSignal; statusCallback?: StatusCallback }
 }): Promise<PlotFields> {
-  if (regions.length === 0) {
-    return { numeric: [], categorical: [] }
-  }
-  const features: Feature[] = await getSession(self).rpcManager.call(
-    getRpcSessionId(self),
-    'CoreGetFeatures',
-    { adapterConfig: self.adapterConfig, regions, ...opts },
-  )
-  return scanPlotFields(features)
+  return regions.length === 0
+    ? { numeric: [], categorical: [] }
+    : getSession(self).rpcManager.call(
+        getRpcSessionId(self),
+        'MarkScanPlotFields',
+        { adapterConfig: self.adapterConfig, regions, ...opts },
+      )
 }

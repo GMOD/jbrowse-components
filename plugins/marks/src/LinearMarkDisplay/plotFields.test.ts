@@ -6,9 +6,9 @@ import {
   BINNED_BP_PER_PX,
   defaultPlotMarks,
   plotMarks,
-  scanPlotFields,
   specOfMarks,
 } from './plotFields.ts'
+import { scanPlotFields } from './scanPlotFields.ts'
 
 import type { MarkSnapshot } from './plotFields.ts'
 
@@ -31,6 +31,7 @@ test('a field is numeric only where every value it carries reads as a number', (
       { score: 5, milliDiv: '120', repClass: 'Alu', strand: 1 },
       { score: 7, milliDiv: 'n/a', repClass: 'L1', strand: -1 },
     ]),
+    { multiSource: false },
   )
   expect(fields.numeric).toEqual(['score'])
   // milliDiv reads as text in one row, and strand is a code
@@ -46,12 +47,13 @@ test('the default is a bar of score, and nothing where the features carry none',
   ).toBeUndefined()
 })
 
-test('features from more than one source name source as the facet field', () => {
+test("a multi-source adapter's features from more than one source name source as the facet field", () => {
   const multi = scanPlotFields(
     features([
       { score: 5, source: 'k1' },
       { score: 7, source: 'k2' },
     ]),
+    { multiSource: true },
   )
   expect(multi.facet).toBe('source')
   expect(defaultPlotMarks(multi)).toEqual([
@@ -62,11 +64,58 @@ test('features from more than one source name source as the facet field', () => 
       { score: 5, source: 'k1' },
       { score: 7, source: 'k1' },
     ]),
+    { multiSource: true },
   )
   expect(single.facet).toBeUndefined()
   expect(defaultPlotMarks(single)).toEqual([
     { mark: 'bar', encoding: { y: 'score' } },
   ])
+})
+
+test("a GFF3 record's source column is a colour field, not a facet", () => {
+  const fields = scanPlotFields(
+    features([
+      { score: 5, source: 'est' },
+      { score: 7, source: 'exonerate' },
+    ]),
+    { multiSource: false },
+  )
+  expect(fields.facet).toBeUndefined()
+  expect(fields.categorical).toEqual(['source'])
+})
+
+test('a structured field offers its members by the path a channel reads', () => {
+  const fields = scanPlotFields(
+    features([
+      {
+        QUAL: 50,
+        INFO: { DP: [31], SVTYPE: ['DEL'], AF: [0.1, 0.2], IMPRECISE: true },
+        samples: { HG00096: { GT: ['0|1'] } },
+      },
+      {
+        QUAL: 20,
+        INFO: { DP: [12], SVTYPE: ['INS'], AF: [0.3, 0.4] },
+        samples: { HG00096: { GT: ['1|1'] } },
+      },
+    ]),
+    { multiSource: false },
+  )
+  expect(fields.numeric).toEqual(['INFO.DP', 'QUAL'])
+  expect(fields.categorical).toEqual(['INFO.IMPRECISE', 'INFO.SVTYPE'])
+})
+
+test('a text field with more values than a colour key names is no colour choice', () => {
+  const fields = scanPlotFields(
+    features(
+      Array.from({ length: 30 }, (_, i) => ({
+        score: i,
+        seq: `ACGT${i}`,
+        tags: { RG: i % 2 ? 'lib1' : 'lib2', MD: `${i}A` },
+      })),
+    ),
+    { multiSource: false },
+  )
+  expect(fields.categorical).toEqual(['tags.RG'])
 })
 
 test('a colour field takes a categorical or a linear scale by what it holds', () => {

@@ -142,7 +142,8 @@ import type {
   RowsSnapshot,
   StepSnapshot,
 } from './markProblems.ts'
-import type { PlotFields, PlotSpec } from './plotFields.ts'
+import type { PlotSpec } from './plotFields.ts'
+import type { PlotFields } from './scanPlotFields.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {

@@ -12,7 +12,8 @@ import { observer } from 'mobx-react'
 
 import { MARK_TYPE_CHOICES } from '../plotFields.ts'
 
-import type { PlotFields, PlotMark, PlotSpec } from '../plotFields.ts'
+import type { PlotMark, PlotSpec } from '../plotFields.ts'
+import type { PlotFields } from '../scanPlotFields.ts'
 
 export interface PlotFieldDialogModel {
   plotFields: PlotFields | undefined

@@ -1,7 +1,7 @@
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import { paintedScale } from '@jbrowse/display-kit/colorConfigSchema'
 
-import type { Feature } from '@jbrowse/core/util'
+import type { PlotFields } from './scanPlotFields.ts'
 import type { ColorScaleName } from '@jbrowse/display-kit/colorConfigSchema'
 
 /**
@@ -9,77 +9,6 @@ import type { ColorScaleName } from '@jbrowse/display-kit/colorConfigSchema'
  * draws below it and the binned count at or above it.
  */
 export const BINNED_BP_PER_PX = 100
-
-export const PLOT_FIELD_SAMPLE = 200
-
-// Structure rather than data: a plot of `start` or of `uniqueId` says nothing,
-// and `subfeatures` is a tree.
-const NON_PLOT_FIELDS = new Set([
-  'uniqueId',
-  'refName',
-  'start',
-  'end',
-  'subfeatures',
-  'parentId',
-  'type',
-  'name',
-  'id',
-  'description',
-])
-
-// A code, not a quantity: +1 and -1 want a palette and never a ramp.
-const ALWAYS_CATEGORICAL = new Set(['strand'])
-
-/** The plottable fields the scanned features carry, split by what they hold. */
-export interface PlotFields {
-  numeric: string[]
-  categorical: string[]
-  /** The `source` field where the features carry more than one, a row each. */
-  facet?: string
-}
-
-const FACET_FIELD = 'source'
-
-function isNumericValue(v: unknown) {
-  return typeof v === 'number'
-    ? Number.isFinite(v)
-    : typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v))
-}
-
-/**
- * The fields a sample of features carry, each numeric only where every value
- * seen for it read as a finite number. Enumerated through `toJSON`, not
- * `tags()`: `tags` is `SimpleFeature`'s, and the `Feature` interface an adapter
- * may implement carries only the serializer.
- */
-export function scanPlotFields(features: Feature[]): PlotFields {
-  const numeric = new Map<string, boolean>()
-  const sources = new Set<unknown>()
-  const n = Math.min(features.length, PLOT_FIELD_SAMPLE)
-  for (let i = 0; i < n; i++) {
-    for (const [field, value] of Object.entries(features[i]!.toJSON())) {
-      if (field === FACET_FIELD) {
-        sources.add(value)
-      }
-      if (
-        NON_PLOT_FIELDS.has(field) ||
-        value === undefined ||
-        value === null ||
-        value === ''
-      ) {
-        continue
-      }
-      const num = !ALWAYS_CATEGORICAL.has(field) && isNumericValue(value)
-      numeric.set(field, (numeric.get(field) ?? true) && num)
-    }
-  }
-  const fields = [...numeric.keys()].sort()
-  return {
-    numeric: fields.filter(f => numeric.get(f)!),
-    categorical: fields.filter(f => !numeric.get(f)!),
-    ...(sources.size > 1 ? { facet: FACET_FIELD } : {}),
-  }
-}
 
 export const MARK_TYPE_CHOICES = ['bar', 'point'] as const
 export type PlotMark = (typeof MARK_TYPE_CHOICES)[number]
