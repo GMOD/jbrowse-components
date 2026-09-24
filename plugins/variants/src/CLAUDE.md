@@ -154,7 +154,9 @@ which both clustering paths send. `sources` adds the palette and the band.
 **Phased rows are the ploidy `sampleInfo` reports plus any haplotype the order
 names.** Until the ploidy lands, the named haplotypes stand in for it, so an
 arranged track keeps its haplotype rows and its tree across the refetch a
-settings change triggers rather than folding back to samples.
+settings change triggers rather than folding back to samples. The expansion
+reads `samplePloidy`, which keeps its identity while each fetch reports the same
+ploidies, so a region arrival re-derives no row.
 
 **The row tint is `labelColor`**, the channel tree-sidebar's `RowLabelsOverlay`
 and `SvgRowLabels` draw — the cells are colored by genotype, so a row has no

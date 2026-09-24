@@ -34,6 +34,7 @@ import {
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
+import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
@@ -60,6 +61,7 @@ import {
 import { buildSampleIndex } from './genotypeCodec.ts'
 import {
   expandPhasedRows,
+  ploidyBySample,
   parseRowName,
   resolveSampleName,
   rowAliasOf,
@@ -632,6 +634,22 @@ export default function MultiSampleVariantBaseModelF(
           return self.cellData?.sampleInfo
         },
       }))
+      .views(self => {
+        const ploidy = stableIdentityComputed(() =>
+          ploidyBySample(self.sampleInfo),
+        )
+        return {
+          /**
+           * #getter
+           * Each sample's ploidy as the latest fetch reports it, the same
+           * object while a region arrival reports the same ploidies, so the
+           * phased rows are expanded again only when one changes.
+           */
+          get samplePloidy(): Readonly<Record<string, number>> | undefined {
+            return ploidy.get()
+          },
+        }
+      })
       .views(self => ({
         /**
          * #method
@@ -1103,13 +1121,13 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #method
          * `TreeSidebarMixin`'s hook: phased mode draws a row per haplotype,
-         * once `sampleInfo` gives the ploidy or the order names them.
+         * once `samplePloidy` lands or the order names them.
          */
         expandRows(rows: ProcessedSource[]): ProcessedSource[] {
           return self.renderingMode === 'phased'
             ? expandPhasedRows({
                 rows,
-                sampleInfo: self.sampleInfo,
+                ploidy: self.samplePloidy,
                 domain: self.rowDomain,
               })
             : rows

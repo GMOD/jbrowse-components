@@ -140,18 +140,32 @@ export function buildCanonicalRows({
     : rows
 }
 
-// The haplotypes a sample takes a row for: the ploidy `sampleInfo` reports,
-// plus any the order names beyond it. Until `sampleInfo` lands the names
-// alone stand for it, so an arranged track keeps its haplotype rows across a
-// refetch rather than folding back to samples.
+/** Each sample's ploidy as `sampleInfo` reports it. */
+export function ploidyBySample(
+  sampleInfo: Record<string, SampleInfo> | undefined,
+): Record<string, number> | undefined {
+  if (!sampleInfo) {
+    return undefined
+  }
+  const ploidy: Record<string, number> = {}
+  for (const sampleName in sampleInfo) {
+    ploidy[sampleName] = sampleInfo[sampleName]!.maxPloidy
+  }
+  return ploidy
+}
+
+// The haplotypes a sample takes a row for: its ploidy, plus any the order
+// names beyond it. Until the ploidy lands the names alone stand for it, so an
+// arranged track keeps its haplotype rows across a refetch rather than folding
+// back to samples.
 function haplotypesOf(
   sampleName: string,
-  sampleInfo: Record<string, SampleInfo> | undefined,
+  ploidy: Readonly<Record<string, number>> | undefined,
   named: ReadonlyMap<string, readonly number[]>,
 ) {
-  const ploidy = sampleInfo ? (sampleInfo[sampleName]?.maxPloidy ?? 2) : 0
+  const count = ploidy ? (ploidy[sampleName] ?? 2) : 0
   const hps = new Set(named.get(sampleName))
-  for (let i = 0; i < ploidy; i++) {
+  for (let i = 0; i < count; i++) {
     hps.add(i)
   }
   return [...hps].sort((a, b) => a - b)
@@ -178,11 +192,11 @@ function haplotypesNamed(domain: readonly string[], samples: Set<string>) {
  */
 export function expandPhasedRows({
   rows,
-  sampleInfo,
+  ploidy,
   domain,
 }: {
   rows: ProcessedSource[]
-  sampleInfo: Record<string, SampleInfo> | undefined
+  ploidy: Readonly<Record<string, number>> | undefined
   domain: readonly string[]
 }): ProcessedSource[] {
   const named = haplotypesNamed(
@@ -192,7 +206,7 @@ export function expandPhasedRows({
   let expanded = false
   const out: ProcessedSource[] = []
   for (const row of rows) {
-    const hps = haplotypesOf(row.sampleName, sampleInfo, named)
+    const hps = haplotypesOf(row.sampleName, ploidy, named)
     if (hps.length) {
       expanded = true
       for (const HP of hps) {

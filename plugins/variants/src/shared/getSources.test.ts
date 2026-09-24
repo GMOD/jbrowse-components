@@ -129,15 +129,11 @@ describe('expandPhasedRows', () => {
     { name: 'HG002', sampleName: 'HG002', label: 'Two' },
     { name: 'HG003', sampleName: 'HG003' },
   ]
-  const sampleInfo = {
-    HG001: { isPhased: true, maxPloidy: 2 },
-    HG002: { isPhased: true, maxPloidy: 2 },
-    HG003: { isPhased: true, maxPloidy: 1 },
-  }
+  const ploidy = { HG001: 2, HG002: 2, HG003: 1 }
   const names = (out: { name: string }[]) => out.map(r => r.name)
 
   test('a row per haplotype by ploidy, each carrying its sample', () => {
-    const out = expandPhasedRows({ rows, sampleInfo, domain: [] })
+    const out = expandPhasedRows({ rows, ploidy, domain: [] })
     expect(names(out)).toEqual([
       'HG001 HP0',
       'HG001 HP1',
@@ -156,18 +152,16 @@ describe('expandPhasedRows', () => {
   // Until the ploidy lands the names stand for it, so an arranged track keeps
   // its haplotype rows across a refetch; a sample the order names only as a
   // sample waits for the ploidy.
-  test('without sampleInfo: the haplotypes the order names', () => {
+  test('without a ploidy: the haplotypes the order names', () => {
     const out = expandPhasedRows({
       rows,
-      sampleInfo: undefined,
+      ploidy: undefined,
       domain: ['HG002 HP1', 'HG002 HP0', 'HG001'],
     })
     expect(names(out)).toEqual(['HG001', 'HG002 HP0', 'HG002 HP1', 'HG003'])
   })
 
   test('the rows themselves while no sample expands', () => {
-    expect(expandPhasedRows({ rows, sampleInfo: undefined, domain: [] })).toBe(
-      rows,
-    )
+    expect(expandPhasedRows({ rows, ploidy: undefined, domain: [] })).toBe(rows)
   })
 })
