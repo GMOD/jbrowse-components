@@ -153,15 +153,17 @@ points and `range` one colour per range, one more than the cuts. Allele
 frequency split into ultra-rare, rare, low-frequency and common:
 
 ```json
-{
-  "type": "LinearMultiSampleVariantDisplay",
-  "color": {
-    "field": "INFO.AF",
-    "scale": "threshold",
-    "domain": ["0.001", "0.01", "0.05"],
-    "range": ["#b2182b", "#ef8a62", "#67a9cf", "#2166ac"]
+"displays": [
+  {
+    "type": "LinearMultiSampleVariantDisplay",
+    "color": {
+      "field": "INFO.AF",
+      "scale": "threshold",
+      "domain": ["0.001", "0.01", "0.05"],
+      "range": ["#b2182b", "#ef8a62", "#67a9cf", "#2166ac"]
+    }
   }
-}
+]
 ```
 
 ### Auto-coloring samples by metadata
