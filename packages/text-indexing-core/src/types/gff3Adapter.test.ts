@@ -156,6 +156,42 @@ describe('indexGff3', () => {
     expect(results[0]).toContain('gene1')
   })
 
+  test('a GENCODE row with no Name is named by its own gene_name or transcript_name', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gff3-index-'))
+    const file = path.join(tmpDir, 'gencode.gff3')
+    const gene = 'gene_id=ENSG1.1;gene_name=DDX11L2'
+    const tx = `${gene};transcript_id=ENST1.2;transcript_name=DDX11L2-202`
+    fs.writeFileSync(
+      file,
+      [
+        `chr1\tHAVANA\tgene\t11869\t14409\t.\t+\t.\tID=ENSG1.1;${gene}`,
+        `chr1\tHAVANA\ttranscript\t11869\t14409\t.\t+\t.\tID=ENST1.2;Parent=ENSG1.1;${tx}`,
+        `chr1\tHAVANA\tUTR\t11869\t12000\t.\t+\t.\tID=UTR5:ENST1.2;Parent=ENST1.2;${tx}`,
+        '',
+      ].join('\n'),
+    )
+
+    const words: string[][] = []
+    for await (const record of indexGff3({
+      config: { trackId: 't' },
+      attributesToIndex: ['Name', 'ID', 'symbol'],
+      inLocation: file,
+      outDir: tmpDir,
+      featureTypesToExclude: [],
+      onStart: () => {},
+      onUpdate: () => {},
+    })) {
+      words.push(record.trim().split(' ').slice(1))
+    }
+    fs.rmSync(tmpDir, { recursive: true, force: true })
+
+    expect(words).toEqual([
+      ['DDX11L2', 'ENSG1.1'],
+      ['DDX11L2-202', 'ENST1.2'],
+      ['UTR5:ENST1.2'],
+    ])
+  })
+
   describe('real HTTP server integration', () => {
     let server: http.Server
     let serverPort: number

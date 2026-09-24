@@ -7,6 +7,21 @@ import {
 
 import type { Gff3IndexerOptions } from '../util.ts'
 
+// GENCODE writes no `Name`: a gene row carries `gene_name`, a transcript row
+// `transcript_name`, and every row repeats its parents' names too. So `Name`
+// falls back to the name whose id is this row's own ID, which leaves a UTR or
+// codon row unnamed rather than answering a search for its transcript.
+function ownName(attrs: Record<string, string | undefined>) {
+  const id = attrs.ID
+  return id === undefined
+    ? undefined
+    : id === attrs.transcript_id
+      ? attrs.transcript_name
+      : id === attrs.gene_id
+        ? attrs.gene_name
+        : undefined
+}
+
 /**
  * Stream one GFF3 into trix records, one line per indexed feature.
  *
@@ -85,7 +100,11 @@ export async function* indexGff3({
     ) {
       const col9attrs = parseAttributes(col9, decodeURIComponentNoThrow)
       const attrs = attributesToIndex
-        .map(attr => col9attrs[attr])
+        .map(
+          attr =>
+            col9attrs[attr] ??
+            (attr === 'Name' ? ownName(col9attrs) : undefined),
+        )
         .filter((f): f is string => !!f)
 
       if (attrs.length > 0) {

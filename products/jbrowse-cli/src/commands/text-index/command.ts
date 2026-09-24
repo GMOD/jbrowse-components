@@ -109,7 +109,9 @@ export async function run(args?: string[]) {
     `Only tracks with an indexable adapter type (${Object.keys(indexableAdapters).sort().join(', ')}) are indexed; ` +
     'tracks with other adapter types are skipped automatically.\n\n' +
     'GTF has no Name/ID attributes, so the default --attributes also match ' +
-    'their GTF spellings (gene_name, transcript_name, gene_id, transcript_id).' +
+    'their GTF spellings (gene_name, transcript_name, gene_id, transcript_id). ' +
+    'A GFF3 row with no Name, as in GENCODE, is named by its own gene_name or ' +
+    'transcript_name.' +
     '\n\n' +
     '--exclude names types not to index; --include names the only types to ' +
     'index. Reach for --include when the file draws from a vocabulary you do ' +
