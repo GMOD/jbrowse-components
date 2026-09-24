@@ -5,6 +5,7 @@ import { observer } from 'mobx-react'
 
 import { useDebounce } from '../../util/hooks.ts'
 import { useFetch } from '../../util/useFetch.ts'
+import SearchOption from './SearchOption.tsx'
 import {
   cap,
   coerceToResult,
@@ -156,6 +157,21 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
         />
       )}
       getOptionLabel={getOptionLabel}
+      slotProps={{
+        popper: {
+          placement: 'bottom-start',
+          style: { width: 'max-content', minWidth: width, maxWidth: 480 },
+        },
+      }}
+      renderOption={(props, option) => (
+        <SearchOption
+          key={props.key}
+          props={props}
+          option={option}
+          session={session}
+          assembly={assembly}
+        />
+      )}
     />
   )
 })

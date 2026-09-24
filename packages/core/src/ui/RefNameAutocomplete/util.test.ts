@@ -1,4 +1,4 @@
-import BaseResult from '../../TextSearch/BaseResults.ts'
+import BaseResult, { RefSequenceResult } from '../../TextSearch/BaseResults.ts'
 import { MAX_GLOB_REGIONS } from '../../util/selectNamedRegions.ts'
 import {
   adornmentReservePx,
@@ -8,6 +8,7 @@ import {
   getInputWidth,
   getOptionLabel,
   getRefNameOptions,
+  optionDetail,
 } from './util.ts'
 
 const opt = (label: string) => ({ result: new BaseResult({ label }) })
@@ -373,5 +374,53 @@ describe('adornmentReservePx', () => {
     expect(adornmentReservePx({ showHelp: false, menuItemCount: 1 })).toBe(
       adornmentReservePx({ showHelp: true }),
     )
+  })
+})
+
+describe('optionDetail', () => {
+  const lookups = {
+    trackNameOf: (id: string) => (id === 'genes' ? 'RefSeq All' : undefined),
+    lengthOf: (refName: string) =>
+      refName === 'chr1' ? 248_956_422 : undefined,
+  }
+
+  it('says where a hit goes and which track it came from', () => {
+    const result = new BaseResult({
+      label: 'BRCA1',
+      locString: 'chr17:43044295..43125483',
+      trackId: 'genes',
+    })
+    expect(optionDetail(result, lookups)).toBe(
+      'chr17:43,044,295-43,125,483 · RefSeq All',
+    )
+  })
+
+  it('gives a sequence its length', () => {
+    const result = new RefSequenceResult({ label: 'chr1', refName: 'chr1' })
+    expect(optionDetail(result, lookups)).toBe('249Mbp')
+  })
+
+  it('counts the hits a row stands for', () => {
+    const result = new BaseResult({
+      label: 'EDEN',
+      results: [opt('EDEN').result, opt('EDEN').result],
+    })
+    expect(optionDetail(result, lookups)).toBe('2 matches')
+  })
+
+  it('gives a row sharing its name with a sequence that length', () => {
+    const result = new BaseResult({
+      label: 'chr1',
+      results: [
+        new RefSequenceResult({ label: 'chr1', refName: 'chr1' }),
+        new BaseResult({ label: 'chr1', locString: 'chr1:1..248956422' }),
+      ],
+    })
+    expect(optionDetail(result, lookups)).toBe('249Mbp')
+  })
+
+  it('describes no row standing for many regions', () => {
+    const result = new BaseResult({ label: 'all', locString: 'chr1 chr2' })
+    expect(optionDetail(result, lookups)).toBeUndefined()
   })
 })

@@ -1,5 +1,5 @@
 import BaseResult, { RefSequenceResult } from '../../TextSearch/BaseResults.ts'
-import { measureText } from '../../util/index.ts'
+import { getBpDisplayStr, measureText, toLocale } from '../../util/index.ts'
 import {
   MAX_GLOB_REGIONS,
   matchRefNames,
@@ -162,6 +162,47 @@ export function getDeduplicatedResult(results: BaseResult[]): Option[] {
           }),
         },
   )
+}
+
+function formatLocString(locString: string) {
+  const match = /^(.+):(\d+)\.\.(\d+)$/.exec(locString)
+  return match
+    ? `${match[1]}:${toLocale(Number(match[2]))}-${toLocale(Number(match[3]))}`
+    : locString
+}
+
+/**
+ * The muted line under a row: a sequence's length, where a hit goes and the
+ * track it came from, or how many hits share the row. A row sharing its name
+ * with a sequence is about the sequence, since an annotation's region feature
+ * names it too. A row standing for many regions needs none.
+ */
+export function optionDetail(
+  result: BaseResult,
+  {
+    trackNameOf,
+    lengthOf,
+  }: {
+    trackNameOf: (trackId: string) => string | undefined
+    lengthOf: (refName: string) => number | undefined
+  },
+) {
+  const locString = result.getLocation()
+  const trackId = result.getTrackId()
+  const sequence = result.results?.find(r => r instanceof RefSequenceResult)
+  if (sequence) {
+    return optionDetail(sequence, { trackNameOf, lengthOf })
+  } else if (result.results?.length) {
+    return `${result.results.length} matches`
+  } else if (!locString || /\s/.test(locString)) {
+    return undefined
+  } else if (result instanceof RefSequenceResult) {
+    const length = lengthOf(locString)
+    return length === undefined ? undefined : getBpDisplayStr(length)
+  } else {
+    const trackName = trackId === undefined ? undefined : trackNameOf(trackId)
+    return [formatLocString(locString), trackName].filter(Boolean).join(' · ')
+  }
 }
 
 // MUI freeSolo hands back the raw typed string when nothing in the list is
