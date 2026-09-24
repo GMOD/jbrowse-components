@@ -22,15 +22,37 @@ export interface FormatDetailsTiers {
   track?: AnyConfigurationModel
 }
 
-function readTiers(
+function readCallback(
+  conf: AnyConfigurationModel,
+  where: string,
+  slot: string,
+  args: Record<string, unknown>,
+) {
+  try {
+    return mergeFormatCallbacks(
+      readConfObject(conf, ['formatDetails', slot], args),
+    )
+  } catch (e) {
+    throw new Error(`formatDetails.${slot} of ${where}: ${e}`, { cause: e })
+  }
+}
+
+function readCallbacks(
   { session, track }: FormatDetailsTiers,
   slot: string,
-  args?: Record<string, unknown>,
+  args: Record<string, unknown>,
 ) {
-  return [
-    readConfObject(session, ['formatDetails', slot], args),
-    track ? readConfObject(track, ['formatDetails', slot], args) : undefined,
-  ]
+  return mergeFormatCallbacks(
+    readCallback(session, 'the session configuration', slot, args),
+    track
+      ? readCallback(
+          track,
+          `track "${readConfObject(track, 'trackId')}"`,
+          slot,
+          args,
+        )
+      : undefined,
+  )
 }
 
 /**
@@ -56,7 +78,10 @@ function declaresCallback(
 
 /** `depth` or `maxDepth`: the track's value when set, else the session's. */
 export function formatDetailsNumber(tiers: FormatDetailsTiers, slot: string) {
-  const [fromSession, fromTrack] = readTiers(tiers, slot)
+  const fromSession = readConfObject(tiers.session, ['formatDetails', slot])
+  const fromTrack = tiers.track
+    ? readConfObject(tiers.track, ['formatDetails', slot])
+    : undefined
   return typeof fromTrack === 'number'
     ? fromTrack
     : typeof fromSession === 'number'
@@ -99,14 +124,12 @@ export function applyFormatDetails(
               format(
                 sub,
                 level + 1,
-                mergeFormatCallbacks(
-                  ...readTiers(tiers, 'subfeatures', {
-                    feature: sub,
-                    parent: node,
-                    depth: level + 1,
-                    track,
-                  }),
-                ),
+                readCallbacks(tiers, 'subfeatures', {
+                  feature: sub,
+                  parent: node,
+                  depth: level + 1,
+                  track,
+                }),
               ),
             ),
           }
@@ -118,8 +141,6 @@ export function applyFormatDetails(
   return format(
     feature,
     0,
-    formatsFeature
-      ? mergeFormatCallbacks(...readTiers(tiers, 'feature', { feature, track }))
-      : {},
+    formatsFeature ? readCallbacks(tiers, 'feature', { feature, track }) : {},
   )
 }

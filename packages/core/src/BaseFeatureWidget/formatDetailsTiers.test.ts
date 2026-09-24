@@ -308,6 +308,18 @@ test('a callback returning something other than an object is an error', () => {
   reported.mockRestore()
 })
 
+test('a broken session callback names the session, not the track', () => {
+  const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
+  const model = setup({
+    sessionFormatDetails: { feature: 'jexl:feature.name' },
+    trackFormatDetails: {},
+  })
+  model.widget.setFeatureData(feature)
+  expect(`${model.widget.error}`).toContain('the session configuration')
+  expect(`${model.widget.error}`).not.toContain('testtrack')
+  reported.mockRestore()
+})
+
 test('a broken callback reports which track to look at', () => {
   const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
   const model = setup({ trackFormatDetails: { feature: 'jexl:{{{' } })

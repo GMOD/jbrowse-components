@@ -147,11 +147,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
             ),
           }
         } catch (e) {
-          const where = self.trackId
-            ? `track "${self.trackId}"`
-            : 'the session configuration'
           const error = new Error(
-            `Error running the formatDetails callbacks for ${where}: ${e}`,
+            `Error running the formatDetails callbacks: ${e}`,
             { cause: e },
           )
           console.error(error)
