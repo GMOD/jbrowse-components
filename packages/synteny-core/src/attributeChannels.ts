@@ -30,15 +30,25 @@ export const PRESET_ATTRIBUTES = [
   'dnds',
 ] as const
 
-// `attributeColumns` is the MCScanBlocksAdapter slot naming an ortholog table's
-// extra columns. Read straight off the adapter config the worker was handed: it
-// is a declared, bounded list, and reaching for it here means no extra RPC
-// argument to thread from the display and keep in sync.
-export function declaredAttributes(adapterConfig: Record<string, unknown>) {
-  const declared = adapterConfig.attributeColumns
-  return Array.isArray(declared)
-    ? declared.filter(x => typeof x === 'string')
-    : []
+// `attributeColumns` names an ortholog table's extra columns or a PAF's tags; a
+// composed adapter (MultiPairwiseSyntenyAdapter) declares its children's. Read
+// straight off the adapter config the worker was handed: it is a declared,
+// bounded list, and reaching for it here means no extra RPC argument to thread
+// from the display and keep in sync.
+export function declaredAttributes(adapterConfig: unknown): string[] {
+  if (typeof adapterConfig !== 'object' || adapterConfig === null) {
+    return []
+  }
+  const own =
+    'attributeColumns' in adapterConfig &&
+    Array.isArray(adapterConfig.attributeColumns)
+      ? adapterConfig.attributeColumns.filter(x => typeof x === 'string')
+      : []
+  const children =
+    'adapters' in adapterConfig && Array.isArray(adapterConfig.adapters)
+      ? adapterConfig.adapters.flatMap(child => declaredAttributes(child))
+      : []
+  return [...new Set([...own, ...children])]
 }
 
 /**

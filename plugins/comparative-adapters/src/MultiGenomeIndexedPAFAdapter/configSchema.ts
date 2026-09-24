@@ -4,6 +4,8 @@ import {
   tabixIndexFields,
 } from '@jbrowse/core/configuration'
 
+import { pafAttributeColumns } from '../pafAttributeColumns.ts'
+
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
@@ -40,6 +42,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 const MultiGenomeIndexedPAFAdapter = ConfigurationSchema(
   'MultiGenomeIndexedPAFAdapter',
   {
+    ...pafAttributeColumns,
     /**
      * #slot
      * The assemblies this track appears on and can back synteny bands for — list

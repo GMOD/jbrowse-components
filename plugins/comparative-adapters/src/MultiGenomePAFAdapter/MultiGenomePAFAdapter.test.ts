@@ -62,6 +62,30 @@ const byMateRef = (fa: Awaited<ReturnType<typeof feats>>) =>
     ]),
   )
 
+// A SyRI region carries its type and plotsr's color as tags; the slot names
+// them as color-by fields, and the tags ride onto the feature either way.
+test('declared attribute tags reach the feature', async () => {
+  const loc = writePaf([
+    'Ler#1#Chr4\t1000\t100\t200\t-\tCol-0#1#Chr4\t1000\t100\t200\t100\t100\t60\tsyri:Z:INV\tcolor:Z:#ffa500',
+  ])
+  const adapter = new Adapter(
+    configSchema.create({
+      pafLocation: loc,
+      assemblyNames: ['Col-0', 'Ler'],
+      attributeColumns: ['syri', 'color'],
+    }),
+  )
+  expect(adapter.getConf('attributeColumns')).toEqual(['syri', 'color'])
+  const [f] = await feats(adapter, {
+    refName: 'Chr4',
+    start: 0,
+    end: 1000,
+    assemblyName: 'Col-0',
+  })
+  expect(f?.get('syri')).toBe('INV')
+  expect(f?.get('color')).toBe('#ffa500')
+})
+
 test('cross-sample block sharing a contig name + coords is not dropped as a self-diagonal', async () => {
   // col = qname qlen qstart qend strand tname tlen tstart tend nmatch blocklen mapq
   const loc = writePaf([

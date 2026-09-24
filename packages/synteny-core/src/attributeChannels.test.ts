@@ -2,8 +2,26 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import {
   createAttributeChannels,
+  declaredAttributes,
   writeFeatureAttribute,
 } from './attributeChannels.ts'
+
+// A star composed of pairwise files, each declaring the tags it carries, offers
+// what any of them does: the adapter the worker is handed is the composition.
+test("a composed adapter declares its children's columns once each", () => {
+  expect(
+    declaredAttributes({
+      type: 'MultiPairwiseSyntenyAdapter',
+      adapters: [
+        { type: 'PAFAdapter', attributeColumns: ['syri', 'color'] },
+        { type: 'PAFAdapter', attributeColumns: ['syri', 'color'] },
+        { type: 'PAFAdapter' },
+      ],
+    }),
+  ).toEqual(['syri', 'color'])
+  expect(declaredAttributes({ attributeColumns: ['dn', 3] })).toEqual(['dn'])
+  expect(declaredAttributes(undefined)).toEqual([])
+})
 
 function feature(data: Record<string, unknown>) {
   return new SimpleFeature({

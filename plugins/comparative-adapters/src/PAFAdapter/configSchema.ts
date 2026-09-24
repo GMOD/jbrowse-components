@@ -1,5 +1,6 @@
 import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
 
+import { pafAttributeColumns } from '../pafAttributeColumns.ts'
 import { pairwiseAssemblyFields } from '../pairwiseAssemblyFields.ts'
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
@@ -39,6 +40,7 @@ const PAFAdapter = ConfigurationSchema(
   'PAFAdapter',
   {
     ...pairwiseAssemblyFields,
+    ...pafAttributeColumns,
     /**
      * #slot
      * location of the PAF file (minimap2, wfmash, and similar). May be gzipped.

@@ -1,5 +1,7 @@
 import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
 
+import { pafAttributeColumns } from '../pafAttributeColumns.ts'
+
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -37,6 +39,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 const MultiGenomePAFAdapter = ConfigurationSchema(
   'MultiGenomePAFAdapter',
   {
+    ...pafAttributeColumns,
     /**
      * #slot
      * The assemblies this track appears on and can back synteny bands for — list

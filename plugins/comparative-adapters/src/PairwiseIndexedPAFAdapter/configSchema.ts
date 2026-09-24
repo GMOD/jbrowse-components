@@ -4,6 +4,7 @@ import {
   tabixIndexFields,
 } from '@jbrowse/core/configuration'
 
+import { pafAttributeColumns } from '../pafAttributeColumns.ts'
 import { pairwiseAssemblyFields } from '../pairwiseAssemblyFields.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -33,6 +34,7 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
   'PairwiseIndexedPAFAdapter',
   {
     ...pairwiseAssemblyFields,
+    ...pafAttributeColumns,
     /**
      * #slot
      */
