@@ -16,6 +16,7 @@ import {
   permanentPluginSafeModeSuspects,
   readPermanentPlugins,
 } from './permanentPlugins.ts'
+import { discardPrewarmedWorker } from './prewarmedWorker.ts'
 import JBrowseRootModelFactory from './rootModel/rootModel.ts'
 import sessionModelFactory from './sessionModel/index.ts'
 
@@ -92,6 +93,12 @@ export async function createPluginManager(
   // views/tracks/extension-points; safe because configure() doesn't read
   // session state
   pluginManager.setRootModel(rootModel).configure()
+  // the plugin list the worker gets is the trusted one, which exists from here
+  if (rootModel.rpcManager.driverName === 'WebWorkerRpcDriver') {
+    rootModel.rpcManager.warmUp()
+  } else {
+    discardPrewarmedWorker()
+  }
   doAnalytics(rootModel, model.initialTimestamp, model.sessionQuery)
   // both: the config's default session is initSession's fallback on any
   // failure
