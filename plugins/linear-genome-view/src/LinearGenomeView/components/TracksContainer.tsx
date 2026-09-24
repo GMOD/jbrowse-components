@@ -26,8 +26,9 @@ const useStyles = makeStyles()({
   tracksContainer: {
     position: 'relative',
     contain: 'layout style',
-    // horizontal drags are the pan's; vertical scroll and pinch stay the page's
-    touchAction: 'pan-y pinch-zoom',
+    // horizontal drags and pinches are the view's; vertical scroll stays the
+    // page's
+    touchAction: 'pan-y',
   },
   scalebarHighlights: {
     position: 'absolute',

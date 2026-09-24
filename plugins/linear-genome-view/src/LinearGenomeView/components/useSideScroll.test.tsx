@@ -15,10 +15,37 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
-// The hook only ever calls `horizontalScroll`, so the view is that one method.
+// What the hook calls on the view. `zoomTo` moves `bpPerPx` the way the real
+// one does, since a pinch reads it back on the next frame.
 function fakeView() {
-  return { horizontalScroll: jest.fn() } as unknown as LinearGenomeViewModel & {
+  const view = {
+    bpPerPx: 10,
+    horizontalScroll: jest.fn(),
+    zoomTo: jest.fn((bpPerPx: number) => {
+      view.bpPerPx = bpPerPx
+    }),
+    cancelZoomAnimation: jest.fn(),
+  }
+  return view as unknown as LinearGenomeViewModel & {
     horizontalScroll: jest.Mock
+    zoomTo: jest.Mock
+  }
+}
+
+// Holds animation frames for the test to run, so each move can land in its own
+// frame rather than being overwritten by the next before any frame applied it.
+function heldFrames() {
+  const frames: FrameRequestCallback[] = []
+  jest.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => {
+    frames.push(cb)
+    return frames.length
+  })
+  return () => {
+    act(() => {
+      for (const cb of frames.splice(0)) {
+        cb(0)
+      }
+    })
   }
 }
 
@@ -97,43 +124,88 @@ test('a cancelled touch ends the pan', () => {
   expect(model.horizontalScroll.mock.calls).toEqual([[10]])
 })
 
-// A second finger is its own pointer: its press starts nothing, and its moves
-// are not the pan's, so it neither re-anchors the drag nor jerks the view by the
-// distance between the two fingers.
-test('a second finger neither starts a pan nor moves the first', () => {
-  // each move gets its own frame, or the first finger's move would overwrite a
-  // stray one before any frame applied it
-  const frames: FrameRequestCallback[] = []
-  jest.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => {
-    frames.push(cb)
-    return frames.length
-  })
-  const runFrames = () => {
-    act(() => {
-      for (const cb of frames.splice(0)) {
-        cb(0)
-      }
-    })
-  }
-  const model = fakeView()
-  const { getByTestId } = render(<Harness model={model} />)
-  const canvas = getByTestId('canvas')
-  const first = { pointerType: 'touch', pointerId: 1 }
-  const second = { pointerType: 'touch', pointerId: 2, isPrimary: false }
+const first = { pointerType: 'touch', pointerId: 1 }
+const second = { pointerType: 'touch', pointerId: 2, isPrimary: false }
 
+function pinchFrom(canvas: Element) {
   act(() => {
     fireEvent.pointerDown(canvas, { button: 0, clientX: 100, ...first })
   })
   act(() => {
-    fireEvent.pointerDown(canvas, { button: 0, clientX: 300, ...second })
+    fireEvent.pointerDown(canvas, { button: 0, clientX: 200, ...second })
   })
-  pointer('pointermove', { clientX: 200, ...second })
+}
+
+// Doubling the spread halves bpPerPx about the midpoint the fingers started
+// from, and the midpoint moving from 150 to 200 carries that base with it.
+test('spreading two fingers zooms in about their midpoint', () => {
+  const runFrames = heldFrames()
+  const model = fakeView()
+  const { getByTestId } = render(<Harness model={model} />)
+
+  pinchFrom(getByTestId('canvas'))
+  pointer('pointermove', { clientX: 300, ...second })
   runFrames()
+
+  expect(model.zoomTo.mock.calls).toEqual([[5, 150]])
+  expect(model.horizontalScroll.mock.calls).toEqual([[-50]])
+})
+
+// The finger left behind measures from where it is, not from where it was
+// when the pinch began, so the view does not jump when the other lifts.
+test('lifting one finger of a pinch goes back to panning with the other', () => {
+  const runFrames = heldFrames()
+  const model = fakeView()
+  const { getByTestId } = render(<Harness model={model} />)
+
+  pinchFrom(getByTestId('canvas'))
+  pointer('pointermove', { clientX: 300, ...second })
+  pointer('pointerup', { clientX: 300, ...second })
+  model.horizontalScroll.mockClear()
   pointer('pointermove', { clientX: 80, ...first })
   runFrames()
-  pointer('pointerup', { clientX: 200, ...second })
   pointer('pointerup', { clientX: 80, ...first })
 
+  expect(model.zoomTo).toHaveBeenCalledTimes(1)
+  expect(model.horizontalScroll.mock.calls).toEqual([[20]])
+})
+
+// However little the fingers travelled, the release that ends a pinch is not a
+// tap on whatever is under the first finger.
+test('a pinch is never a click', () => {
+  const model = fakeView()
+  const { getByTestId } = render(<Harness model={model} />)
+  const canvas = getByTestId('canvas')
+
+  pinchFrom(canvas)
+
+  expect(Object.hasOwn(canvas.parentElement!.dataset, 'panMoved')).toBe(true)
+})
+
+// A mouse has one pointer; any other pointer that is not a finger (a pen
+// beside a mouse drag) is not the second half of a pinch.
+test('a pointer that is not a finger does not join the pan', () => {
+  const model = fakeView()
+  const { getByTestId } = render(<Harness model={model} />)
+  const canvas = getByTestId('canvas')
+
+  act(() => {
+    fireEvent.pointerDown(canvas, { button: 0, clientX: 100 })
+  })
+  act(() => {
+    fireEvent.pointerDown(canvas, {
+      button: 0,
+      clientX: 300,
+      pointerType: 'pen',
+      pointerId: 5,
+      isPrimary: false,
+    })
+  })
+  pointer('pointermove', { clientX: 400, pointerType: 'pen', pointerId: 5 })
+  pointer('pointermove', { clientX: 80 })
+  pointer('pointerup', { clientX: 80 })
+
+  expect(model.zoomTo).not.toHaveBeenCalled()
   expect(model.horizontalScroll.mock.calls).toEqual([[20]])
 })
 
