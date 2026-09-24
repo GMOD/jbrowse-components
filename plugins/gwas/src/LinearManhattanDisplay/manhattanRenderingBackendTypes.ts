@@ -14,10 +14,6 @@ export interface ManhattanRenderState {
   domainY: [number, number]
   canvasWidth: number
   canvasHeight: number
-  // Point diameter in CSS pixels (user-configurable via scatterPointSize),
-  // threaded through state so Canvas2D, GPU and SVG export all draw identically
-  // sized points. Separate from findManhattanHit's larger HIT_RADIUS_PX grab
-  // tolerance.
   pointDiameterPx: number
 }
 

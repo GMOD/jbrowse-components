@@ -22,9 +22,6 @@ const TooltipComponent = observer(function TooltipComponent({
     <HoverTooltip hit={hoveredFeature} mouseState={mouseState}>
       {hoveredFeature ? (
         <div>
-          {/* assembleLocString collapses a one-bp SNP to a single 1-based
-              coordinate rather than printing "101..101", and localizes the
-              numbers — this used to be a local formatCoord doing both by hand */}
           {assembleLocString(hoveredFeature)}
           <br />
           score: {toP(hoveredFeature.score, 4)}

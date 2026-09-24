@@ -12,16 +12,12 @@ import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 /** The right-clicked point and the SNP it resolved to, held as one value. */
 export type ManhattanContextMenuInfo = ContextMenuAnchor & { hit: ManhattanHit }
 
-// Component-facing slice of LinearManhattanDisplayModel. Hand-rolled because
-// `renderSvg.tsx` intersects this with `ScorePlotSvgModel` and
-// naming the inferred model there closes a type cycle; the component takes the
-// same slice so the two can't disagree about what a manhattan display is.
+// Hand-rolled because naming the inferred model in `renderSvg.tsx` closes a
+// type cycle
 export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   ManhattanRenderingBackend,
   StoredManhattanData
 > {
-  // read by DisplayChrome, which publishes it as `data-display-id` — the stable
-  // hook the browser tests use to target one track's display
   configuration: { displayId: string }
   renderBlocks: RenderBlock[]
   renderState: ManhattanRenderState

@@ -110,9 +110,6 @@ const SetColorFieldDialog = lazy(
   () => import('./components/SetColorFieldDialog.tsx'),
 )
 
-// The LD key's rows, and — where nothing matched the index SNP — a note saying
-// so, or an export where every point is grey sits under a full r² key that
-// implies the colors mean something.
 function ldScale(
   color: { domain: readonly string[]; range: readonly string[] },
   indexSnpMissing: boolean,
@@ -255,10 +252,8 @@ export function stateModelFactory(
          * to undefined for "absent")
          */
         get ldAdapterConfig(): Record<string, unknown> | undefined {
-          // array slot path off the LIVE parent track, not a read against
-          // `self.adapterConfig` — that is itself a snapshot, and
-          // `types.stripDefault` omits a slot at its default, so a slot read
-          // against a snapshot can report a defaulted slot as absent
+          // off the live track: `self.adapterConfig` is a snapshot, which
+          // omits a slot at its default
           return (
             getConf(self.parentTrack, ['adapter', 'ldAdapter']) ?? undefined
           )
@@ -457,9 +452,6 @@ export function stateModelFactory(
           let bestIdx = -1
           const indexes = [...self.rpcDataMap.keys()].sort((a, b) => a - b)
           for (const idx of indexes) {
-            // hoisted out of the loop: this walks every SNP of every loaded
-            // region, and a whole-genome GWAS puts hundreds of thousands in
-            // each, so the two array lookups are the loop body
             const { y, x, count } = self.rpcDataMap.get(idx)!
             for (let i = 0; i < count; i++) {
               const s = y[i]!
@@ -535,9 +527,6 @@ export function stateModelFactory(
             ]
           }
           if (scale === 'categorical') {
-            // Every point of a region carries the same table, so the region is
-            // its own source and every entry paints: the display has no rows
-            // to hide a color behind.
             return derivedColorScale(
               self.rpcDataMap.values(),
               ({ scale }) => ({
@@ -640,10 +629,6 @@ export function stateModelFactory(
          */
         trackMenuItems() {
           return [
-            // Neither radio is drawn, because `scales.y` declares one scale
-            // type and no autoscale mode: the domain is plain min/max over the
-            // loaded regions with the manual bounds applied on top. Set min/max
-            // score is the one score control that does anything here.
             makeScoreSubMenu(self, { domain: self.domain }),
             ...makePointSizeSubMenu({
               label: 'Point size',
@@ -695,7 +680,6 @@ export function stateModelFactory(
               ],
             },
             {
-              // whole submenu greys out without a configured .ld adapter
               label: 'LD options',
               disabled: !self.hasLdData,
               disabledHelpText: 'Requires a configured LD (PLINK .ld) adapter',
@@ -791,10 +775,8 @@ export function stateModelFactory(
           })
         },
       }))
-      // Its own block, after `startRenderingBackend`: the export types `self` as
-      // the same `ManhattanDisplayModel` slice the component takes, and MST
-      // doesn't type a block's own members onto its `self`, so declaring this
-      // alongside them left that contract unsatisfied.
+      // a block of its own so `self` is typed with `startRenderingBackend`,
+      // which the `ManhattanDisplayModel` slice needs
       .actions(self => ({
         /**
          * #action
@@ -807,14 +789,9 @@ export function stateModelFactory(
       .actions(self => {
         return {
           afterAttach() {
-            // LocusZoom-style default: while no index SNP is pinned, keep the
-            // index anchored on the highest-scoring loaded SNP, re-tracking it as
-            // higher-scoring data lands.
-            //
-            // indexSnp is both a fetch input and derived from the loaded data,
-            // so it is adopted only from a complete load: mid-batch, topSnp is
-            // the winner among whatever arrived so far, and adopting it would
-            // refetch forever (ldAutoIndex.test.ts).
+            // adopted only from a complete load: mid-batch, topSnp is the best
+            // of what has arrived, and adopting it would refetch forever
+            // (ldAutoIndex.test.ts)
             namedAutorun(
               self,
               () => {
@@ -840,14 +817,8 @@ export type LinearManhattanDisplayStateModel = ReturnType<
 export type LinearManhattanDisplayModel =
   Instance<LinearManhattanDisplayStateModel>
 
-// Compile-time proof the real MST model still satisfies the structural type its
-// component takes. A `DisplayType`'s `ReactComponent` is typed
-// `AnyReactComponentType`, so registering the pair erases the prop type and a
-// renamed/dropped field would be a silent runtime failure inside the lazy
-// component. The slice itself stays hand-rolled for `renderSvg.tsx`'s sake —
-// see manhattanDisplayTypes.ts. Type-only, so it's erased at runtime; it lives
-// in this file (not a standalone one) so a "remove files with no importers"
-// sweep can't drop the guard.
+// The model satisfies the slice its component takes, which registering the
+// pair as a DisplayType would otherwise erase.
 type _ComponentContract<T extends ManhattanDisplayModel> = T
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type _ModelSatisfiesComponentContract =

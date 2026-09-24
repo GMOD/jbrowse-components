@@ -17,8 +17,7 @@ interface ScoreAdapterFields {
   scoreTransform?: string
 }
 
-// mixinData is the widget's untyped bag of adapter config fragments; this
-// component owns the `adapter` key, so it reads back its own shape here
+// this component owns mixinData's `adapter` key
 function readScoreFields(mixinData: Record<string, unknown>) {
   const { adapter } = mixinData
   return (
@@ -26,13 +25,10 @@ function readScoreFields(mixinData: Record<string, unknown>) {
   ) as ScoreAdapterFields
 }
 
-// The defaults live in the GWASAdapter schema, so accepting them still produces
-// a working track; mixinData is only written once the user actually edits a
-// field. It's retracted on unmount so switching to a non-GWAS adapter isn't
-// left with a stale scoreColumn/scoreTransform.
 const GWASAddTrackComponent = observer(function ({
   model,
 }: AddTrackComponentProps) {
+  // a switch to another adapter type must not carry these fields over
   useEffect(() => {
     return () => {
       if (isAlive(model)) {
@@ -45,9 +41,6 @@ const GWASAddTrackComponent = observer(function ({
   const scoreColumn = adapter.scoreColumn ?? DEFAULT_SCORE_COLUMN
   const scoreTransform = adapter.scoreTransform ?? DEFAULT_SCORE_TRANSFORM
 
-  // Both fields live in one adapter object, so each edit rewrites the pair to
-  // avoid dropping the other; fields at their schema default are omitted so
-  // accepting the defaults writes no config noise.
   function update(next: { scoreColumn: string; scoreTransform: string }) {
     model.setMixinData({ adapter: scoreAdapterFields(next) })
   }

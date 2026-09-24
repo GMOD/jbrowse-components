@@ -5,8 +5,6 @@ import { DEFAULT_SCORE_COLUMN, SCORE_TRANSFORMS } from './configSchema.ts'
 
 import type { ScoreTransform } from './configSchema.ts'
 
-// UI labels for each native preset. Keyed by the enum so adding a mode to
-// SCORE_TRANSFORMS is a compile error here until it's given a label.
 const TRANSFORM_LABELS: Record<ScoreTransform, string> = {
   none: 'None — column is already -log10(p)',
   negLog10: '-log10 — column is a raw p-value',
@@ -14,15 +12,8 @@ const TRANSFORM_LABELS: Record<ScoreTransform, string> = {
 }
 
 const CUSTOM = 'custom'
-// Starter expression when switching into custom mode — identity on the column
-// value, so the plot is unchanged until the user edits it.
 const CUSTOM_STARTER = 'jexl:score'
 
-// Score-column + transform inputs shared by both GWAS add-track entry points
-// (the dedicated workflow and the generic adapter-selected component), so the
-// label, default column, and transform options can't drift between them. A
-// custom `jexl:` expression is an escape hatch for columns the native presets
-// don't cover.
 export default function ScoreColumnFields({
   scoreColumn,
   setScoreColumn,

@@ -10,9 +10,6 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { ScorePlotSvgModel } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 import type React from 'react'
 
-// The component's hand-rolled model slice, which `_ModelSatisfiesComponentContract`
-// pins, rather than the inferred model, whose type would close a cycle through
-// this export's own action.
 type RenderSvgModel = ManhattanDisplayModel & ScorePlotSvgModel
 
 export async function renderSvg(

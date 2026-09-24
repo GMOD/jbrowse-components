@@ -9,9 +9,6 @@ import {
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 
-// A GWAS file is always a tabix BED, so an upload with no derivable `.tbi`
-// (blob/file-handle) must carry an explicit index; the LD file only when it's
-// the bgzipped (.gz) variant.
 export function canSubmit({
   gwasLocation,
   gwasIndexLocation,
@@ -37,11 +34,6 @@ export function canSubmit({
   return gwasOk && ldOk && trackName.trim().length > 0 && !!assembly
 }
 
-// Full GWAS track config. The GWAS data is a bgzipped+tabixed BED
-// (GWASAdapter extends BedTabixAdapter → bedGzLocation + index). When an LD
-// file is supplied, a LinearManhattanDisplay is configured for LocusZoom-style
-// r²-to-index coloring (`color: { field: 'ld' }`); the index SNP auto-picks
-// the top hit.
 export function buildGwasTrackConfig({
   trackId,
   trackName,
@@ -74,12 +66,7 @@ export function buildGwasTrackConfig({
       index: makeTabixIndex(
         gwasIndexLocation ?? deriveTbiLocation(gwasLocation),
       ),
-      // scoreColumn/scoreTransform omitted when at their schema defaults to keep
-      // the config minimal (the already-`-log10` genome-wide case writes
-      // neither).
       ...scoreAdapterFields({ scoreColumn, scoreTransform }),
-      // LD is a second data source nested on the adapter (like MAF's
-      // annotationAdapter); the Manhattan display reads it as the `ld` field.
       ...(ldLocation
         ? { ldAdapter: buildLdAdapterConfig(ldLocation, ldIndexLocation) }
         : {}),

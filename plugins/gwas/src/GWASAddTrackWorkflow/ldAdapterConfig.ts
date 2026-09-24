@@ -9,23 +9,15 @@ export function isTabixLocation(loc: FileLocation): boolean {
   return /\.b?gz$/.test(getFileName(loc))
 }
 
-// Sibling `.tbi` for a location we can derive one for — a URL or a localPath.
-// A blob / file-handle upload has no directory around it, so it returns
-// undefined and its index must be supplied explicitly, which is what
-// `needsExplicitIndex` reports.
+// undefined for a blob or file handle, which has no directory to look in
 export function deriveTbiLocation(loc: FileLocation): FileLocation | undefined {
   return siblingLocation(loc, `${getFileName(loc)}.tbi`)
 }
 
-// A tabix file needs its index supplied by hand exactly when we can't derive a
-// sibling for it (a blob / file-handle upload, not a URL or local path).
 export function needsExplicitIndex(loc: FileLocation): boolean {
   return deriveTbiLocation(loc) === undefined
 }
 
-// Index config for a tabix file: sniff CSI vs TBI from the actual index
-// filename rather than assuming TBI. A supplied `.csi` (needed for contigs
-// > ~512 Mb) must be typed CSI; a derived `<file>.tbi` reads back as TBI.
 export function makeTabixIndex(location: FileLocation | undefined) {
   return {
     indexType: makeIndexType(location && getFileName(location), 'CSI', 'TBI'),
@@ -33,16 +25,8 @@ export function makeTabixIndex(location: FileLocation | undefined) {
   }
 }
 
-// Build the PLINK .ld adapter config for the `GWASAdapter`'s `ldAdapter`
-// sub-adapter slot. A bgzipped (.gz) file uses the tabix adapter, a plain .ld
-// file the in-memory one.
-//
-// Both PLINK adapters accept a `uri` shorthand (their `preProcessSnapshot` sets
-// `ldLocation`, and the tabix one derives `<uri>.tbi`), which `getAdapter`
-// expands when the sub-adapter is instantiated — so for a URL with no custom
-// index we emit just `{ type, uri }`. The explicit `ldLocation`/`index` form is
-// only needed for a non-URL location (blob/localPath, no `uri` to shorthand) or
-// a custom tabix index the derived `.tbi` can't express.
+// Both PLINK adapters expand a `uri` shorthand, the tabix one deriving
+// `<uri>.tbi`, so only a non-URL location or a custom index is spelt out.
 export function buildLdAdapterConfig(
   ldLocation: FileLocation,
   ldIndexLocation?: FileLocation,

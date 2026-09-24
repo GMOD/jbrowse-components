@@ -54,8 +54,6 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
 
   const { assembly } = model
   const ldIsTabix = !!ldLocation && isTabixLocation(ldLocation)
-  // Uploaded (blob/file-handle) tabix files have no derivable `<file>.tbi`, so
-  // the index must be supplied by hand; a URL or local path derives it.
   const gwasIndexRequired = !!gwasLocation && needsExplicitIndex(gwasLocation)
   const ldIndexRequired =
     !!ldLocation && ldIsTabix && needsExplicitIndex(ldLocation)
@@ -66,7 +64,6 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
       if (!gwasLocation || !assembly) {
         throw new Error('Please supply a GWAS file and an assembly')
       }
-      // one trim, so the id and the name are derived from the same string
       const name = trackName.trim()
       addTrackFromWidget({
         model,

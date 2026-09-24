@@ -11,17 +11,8 @@ import { manhattanColorConfigSchema } from './colorConfigSchema.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-// Declares its own slots rather than extending LinearWiggleDisplay's schema.
-// It used to, which put sixteen inherited slots on a GWAS track of which twelve
-// did nothing — `defaultRendering: 'density'`, `useBicolor`, `summaryScoreMode`,
-// the pos/neg palette, `origin`, `lineWidth`, `maxGapMultiple` — all read
-// only by wiggle code a Manhattan plot never runs. A config doc that advertises
-// a slot is a promise it works; these were promises nothing kept. What Manhattan
-// genuinely shares is the value scale, so it takes `scales.y` and nothing else.
-// `baseLinearDisplayConfigSchema` went the same way and for the same reason: of its five slots only `height` is read here, so this schema
-// declares that one and drops `mouseover`, `jexlFilters`,
-// `maxFeatureScreenDensity` and the byte-gate pair a display that never enables
-// the gate cannot honour.
+// Extending LinearWiggleDisplay's schema advertised twelve slots no Manhattan
+// code reads, so this declares its own and shares only `scales.y`.
 /**
  * #config LinearManhattanDisplay
  * #category display
@@ -159,10 +150,6 @@ export function configSchemaFactory() {
         type: 'number',
         defaultValue: DEFAULT_POINT_DIAMETER_PX,
         description: 'Diameter in px of Manhattan points',
-        // wiggle marks this advanced because scatter is one of its several
-        // renderings; Manhattan is only ever a scatter, so point size is a
-        // basic setting here and stays out of "Show advanced settings"
-        advanced: false,
       },
       /**
        * #slot

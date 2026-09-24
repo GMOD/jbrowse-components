@@ -11,30 +11,17 @@ import type { GWASAdapterConfig } from './configSchema.ts'
 import type { GWASFetchOptions, LdJoin } from './ldJoin.ts'
 import type { Region } from '@jbrowse/core/util'
 
-// A BedTabixAdapter that can remap its score column into Manhattan -log10(p)
-// space (for files whose p-value column is a raw or natural-log p-value rather
-// than pre-computed -log10). With scoreTransform 'none' (the default, and the
-// Pan-UKBB flat-file case where columns are already -log10) the parent stream
-// is returned untouched, so the genome-wide hot path is unchanged.
 export default class GWASAdapter extends BedTabixAdapter {
   declare config: GWASAdapterConfig
 
-  // getFeatures runs per block, so the mode is resolved (and a `jexl:`
-  // expression parsed) once per adapter instance rather than per region. Held
-  // behind a separate `resolved` flag because `undefined` is itself a meaningful
-  // result — the `none` fast path, where the feature stream isn't wrapped at all.
-  private scoreTransform: ((score: number) => number) | undefined
-  private scoreTransformResolved = false
+  private readonly scoreTransform: ((score: number) => number) | undefined
 
-  private getTransform() {
-    if (!this.scoreTransformResolved) {
-      this.scoreTransformResolved = true
-      this.scoreTransform = getScoreTransform(
-        this.config.scoreTransform,
-        this.pluginManager?.jexl,
-      )
-    }
-    return this.scoreTransform
+  constructor(...args: ConstructorParameters<typeof BedTabixAdapter>) {
+    super(...args)
+    this.scoreTransform = getScoreTransform(
+      this.config.scoreTransform,
+      this.pluginManager?.jexl,
+    )
   }
 
   private async ldToIndex(
@@ -59,7 +46,7 @@ export default class GWASAdapter extends BedTabixAdapter {
   }
 
   getFeatures(region: Region, opts: GWASFetchOptions = {}) {
-    const transform = this.getTransform()
+    const transform = this.scoreTransform
     const features = super.getFeatures(region, opts)
     const scored = transform
       ? features.pipe(

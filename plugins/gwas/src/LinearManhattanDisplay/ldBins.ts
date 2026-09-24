@@ -16,9 +16,7 @@ export interface LdSwatch {
   shape: ShapeName
 }
 
-// The LocusZoom r² convention as the display's colour object: the cuts and the
-// palette a config author may move. Hex values match the LocusZoom.js default
-// palette.
+// LocusZoom.js's default r² cuts and palette
 export const LD_DOMAIN = ['0.2', '0.4', '0.6', '0.8']
 export const LD_PALETTE = [
   '#357ebd',
@@ -28,8 +26,6 @@ export const LD_PALETTE = [
   '#d43f3a',
 ]
 
-// The title of the display's `legend` value under LD coloring, which both the
-// on-screen key and the SVG export render.
 export const LD_LEGEND_TITLE = 'r² to index'
 
 interface LdColor {

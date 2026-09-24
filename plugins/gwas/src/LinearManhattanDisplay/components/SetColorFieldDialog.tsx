@@ -6,10 +6,7 @@ import { observer } from 'mobx-react'
 
 import { LD_FIELD } from '../../GWASAdapter/ldFields.ts'
 
-// Free text rather than a pick list: the fields a file carries are only known
-// once its features are, and a BED extra column or GFF attribute is named by
-// whoever wrote the file. Submitting switches the scheme to field coloring in
-// the same action, so one refetch colors the points and derives the key.
+// free text: a file's fields are known only once its features are
 const SetColorFieldDialog = observer(function SetColorFieldDialog({
   display,
   handleClose,
