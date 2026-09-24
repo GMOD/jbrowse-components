@@ -5,6 +5,8 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { LAUNCH_LABEL } from '@jbrowse/core/ui'
+import { checkboxItem } from '@jbrowse/core/ui/menuItems'
+import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import {
   addAndShowTrack,
   getContainingTrack,
@@ -43,7 +45,6 @@ import type {
 } from './components/sequenceGeometry.ts'
 import type { SequenceHover } from './components/sequenceHover.ts'
 import type { LinearReferenceSequenceDisplayConfigModel } from './configSchema.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -518,34 +519,25 @@ export function modelFactory(
                 },
               ],
             },
-            ...(self.isDna
-              ? ([
-                  {
-                    label: 'Show forward',
-                    type: 'checkbox',
-                    checked: self.showForward,
-                    onClick: () => {
+            ...makeShowSubMenu(
+              self.isDna
+                ? [
+                    checkboxItem('Show forward', self.showForward, () => {
                       self.toggleShowForward()
-                    },
-                  },
-                  {
-                    label: 'Show reverse',
-                    type: 'checkbox',
-                    checked: self.showReverse,
-                    onClick: () => {
+                    }),
+                    checkboxItem('Show reverse', self.showReverse, () => {
                       self.toggleShowReverse()
-                    },
-                  },
-                  {
-                    label: 'Show translation',
-                    type: 'checkbox',
-                    checked: self.showTranslation,
-                    onClick: () => {
-                      self.toggleShowTranslation()
-                    },
-                  },
-                ] satisfies MenuItem[])
-              : []),
+                    }),
+                    checkboxItem(
+                      'Show translation',
+                      self.showTranslation,
+                      () => {
+                        self.toggleShowTranslation()
+                      },
+                    ),
+                  ]
+                : [],
+            ),
           ]
         },
       }
