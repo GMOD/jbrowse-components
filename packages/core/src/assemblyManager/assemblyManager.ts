@@ -3,8 +3,6 @@ import { autorun, untracked, when } from 'mobx'
 
 import { readConfObject } from '../configuration/index.ts'
 import assemblyFactory from './assembly.ts'
-import { preloadAssemblyAdapters } from './assemblyAdapters.ts'
-import { assemblyConfByName } from './assemblyConfByName.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
@@ -408,10 +406,6 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         // Core-handleUnrecognizedAssembly before there is anything to wait for
         let assembly = self.get(assemblyName)
         if (!assembly) {
-          const conf = assemblyConfByName(self, assemblyName)
-          if (conf) {
-            preloadAssemblyAdapters(conf, pm)
-          }
           await self.settleAssemblyResolution(assemblyName)
           assembly = self.get(assemblyName)
         }
@@ -484,6 +478,24 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
     }))
     .actions(self => ({
       afterAttach() {
+        const reconcile = (assemblyConfs: Conf[]) => {
+          // filter() returns a new plain array, so removing from
+          // self.assemblies in the loop below does not skip elements
+          // (removeAssembly splices the live observable array)
+          const orphaned = self.assemblies.filter(a => !a.configuration)
+          for (const asm of orphaned) {
+            this.removeAssembly(asm)
+          }
+          for (const conf of assemblyConfs) {
+            const name = readConfObject(conf, 'name')
+            if (!self.assemblies.some(a => a.name === name)) {
+              this.addAssembly(conf)
+            }
+          }
+        }
+        // also here, because an enclosing action defers the autorun's first
+        // run, and a load waiting on the model would wait for that
+        reconcile(self.assemblyList)
         addDisposer(
           self,
           autorun(
@@ -491,19 +503,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
               const assemblyConfs = self.assemblyList
               // eslint-disable-next-line no-restricted-syntax -- self-write: removes from the assemblies it reads
               untracked(() => {
-                // filter() returns a new plain array, so removing from
-                // self.assemblies in the loop below does not skip elements
-                // (removeAssembly splices the live observable array)
-                const orphaned = self.assemblies.filter(a => !a.configuration)
-                for (const asm of orphaned) {
-                  this.removeAssembly(asm)
-                }
-                for (const conf of assemblyConfs) {
-                  const name = readConfObject(conf, 'name')
-                  if (!self.assemblies.some(a => a.name === name)) {
-                    this.addAssembly(conf)
-                  }
-                }
+                reconcile(assemblyConfs)
               })
             },
             { name: 'assemblyManagerAfterAttach' },
