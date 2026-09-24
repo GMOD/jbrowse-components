@@ -31,6 +31,13 @@ export async function loadPluginRecords(defs: PluginDefinition[]) {
   // gate has already run, PluginManager records these definitions, and
   // RpcManager ships them to the worker. So main thread and worker cannot
   // resolve the same ref to two different builds; only one of them resolves.
+  //
+  // The registry does not depend on which build a ref resolves to, so it
+  // downloads while the store answers.
+  const registry = dropVendoredPlugins(defs).length
+    ? import('./reExports.generated.ts')
+    : undefined
+  registry?.catch(() => {})
   const { definitions, failures: unresolved } = await resolveStorePluginRefs(
     defs,
     packageJSON.version,
@@ -43,7 +50,7 @@ export async function loadPluginRecords(defs: PluginDefinition[]) {
       })
         .installGlobalReExports(
           window,
-          () => import('./reExports.generated.ts'),
+          () => registry ?? import('./reExports.generated.ts'),
         )
         .loadSettled(window.location.href)
     : { records: [], failures: [] }

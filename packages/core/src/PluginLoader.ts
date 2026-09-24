@@ -203,6 +203,49 @@ function addCacheBuster(url: string) {
   return u.href
 }
 
+function umdPluginUrl(
+  def: UMDPluginDefinition | LegacyUMDPluginDefinition,
+  baseUri?: string,
+) {
+  return 'url' in def
+    ? resolvePluginUrl(def.url, baseUri)
+    : 'umdUrl' in def
+      ? resolvePluginUrl(def.umdUrl, baseUri)
+      : resolvePluginUrl(def.umdLoc.uri, def.umdLoc.baseUri)
+}
+
+/**
+ * The registry has to be published before a plugin bundle runs, but not before
+ * it downloads, so each bundle is preloaded while the registry is fetched.
+ * Skipped under the cache-buster, whose query string differs per request.
+ */
+function preloadUMDBundles(defs: PluginDefinition[], baseUri?: string) {
+  if (
+    isWebWorker() ||
+    typeof document === 'undefined' ||
+    '__jbrowseCacheBuster' in globalThis
+  ) {
+    return
+  }
+  for (const def of defs) {
+    if (isUMDPluginDefinition(def)) {
+      try {
+        const link = document.createElement('link')
+        link.rel = 'preload'
+        link.as = 'script'
+        if (def.integrity) {
+          link.setAttribute('integrity', def.integrity)
+          link.setAttribute('crossorigin', 'anonymous')
+        }
+        link.href = umdPluginUrl(def, baseUri).href
+        document.head.append(link)
+      } catch {
+        // loadPlugin reports a url it cannot resolve
+      }
+    }
+  }
+}
+
 export default class PluginLoader {
   definitions: PluginDefinition[] = []
 
@@ -249,12 +292,7 @@ export default class PluginLoader {
     def: UMDPluginDefinition | LegacyUMDPluginDefinition,
     baseUri?: string,
   ) {
-    const parsedUrl =
-      'url' in def
-        ? resolvePluginUrl(def.url, baseUri)
-        : 'umdUrl' in def
-          ? resolvePluginUrl(def.umdUrl, baseUri)
-          : resolvePluginUrl(def.umdLoc.uri, def.umdLoc.baseUri)
+    const parsedUrl = umdPluginUrl(def, baseUri)
 
     const moduleName = def.name
     const umdName = `JBrowsePlugin${moduleName}`
@@ -362,6 +400,7 @@ export default class PluginLoader {
    * fail renders with a much worse message) keep using `load`.
    */
   async loadSettled(baseUri?: string) {
+    preloadUMDBundles(this.definitions, baseUri)
     // before the first plugin script evaluates — a UMD bundle reads
     // `JBrowseExports` off the global at module scope
     await this.publishReExports()

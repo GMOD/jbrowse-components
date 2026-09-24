@@ -99,6 +99,37 @@ test('loadSettled separates loaded plugins from failures', async () => {
   expect(`${failures[0]!.error}`).toMatch(/404 not found/)
 })
 
+test('loadSettled preloads UMD bundles while the registry is still loading', () => {
+  const signed = {
+    name: 'Signed',
+    umdUrl: 'https://example.com/signed.umd.js',
+    integrity: 'sha384-abc',
+  }
+  const plain = { name: 'Plain', umdUrl: 'https://example.com/plain.umd.js' }
+  void new PluginLoader([signed, plain])
+    .installGlobalReExports(window, () => new Promise(() => {}))
+    .loadSettled()
+
+  const links = [
+    ...document.head.querySelectorAll<HTMLLinkElement>('link[rel="preload"]'),
+  ]
+  expect(
+    links.map(l => [
+      l.href,
+      l.as,
+      l.getAttribute('integrity'),
+      l.getAttribute('crossorigin'),
+    ]),
+  ).toEqual([
+    [signed.umdUrl, 'script', 'sha384-abc', 'anonymous'],
+    [plain.umdUrl, 'script', null, null],
+  ])
+  expect(document.head.querySelector('script[src]')).toBeNull()
+  for (const l of links) {
+    l.remove()
+  }
+})
+
 // load() stays all-or-nothing for callers that cannot degrade (the RPC worker),
 // and rethrows by definition order so which error surfaces doesn't depend on
 // which request happened to fail first.
