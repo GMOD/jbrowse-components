@@ -155,3 +155,42 @@ test('what each row step recomputes, phased', async () => {
   expect(display.rowTree).toBeUndefined()
   expect(table).toMatchSnapshot()
 })
+
+// Under a Color by the palette is dealt over the samples, so a fetch that
+// re-expands the haplotypes, a reorder and a focus deal nothing again; only
+// the per-row lookup reruns.
+test('what each row step recomputes, phased and coloured by population', async () => {
+  const { display } = createTestEnvironment({
+    displayConfig: { renderingMode: 'phased', rowColor: 'population' },
+  }).createDisplay()
+  const table = await workCensus(display, [
+    {
+      name: 'initial load',
+      run: () => {
+        display.setSources(SOURCES)
+        landCells(display, 0)
+      },
+    },
+    {
+      name: 'second region arrival',
+      run: () => {
+        landCells(display, 1)
+      },
+    },
+    {
+      name: 'drag reorder',
+      run: () => {
+        const [a, b, ...rest] = display.editableSources
+        display.setRowOrder([b!, a!, ...rest])
+      },
+    },
+    {
+      name: 'focus',
+      run: () => {
+        display.setRowFocus(['S0', 'S2'])
+      },
+    },
+  ])
+  expect(display.sources.every(row => row.labelColor)).toBe(true)
+  expect(table).toMatchSnapshot()
+})

@@ -15,24 +15,39 @@ export interface RowColorDeal<S> {
 
 const NONE: ReadonlyMap<string, string> = new Map()
 
-/** The colour `deal` gives each of `rows`, by row name. */
-export function rowColorScale<S extends { name: string }>(
+/** The colour `deal` gives each value it deals. */
+export function dealtColors<S>(
+  deal: RowColorDeal<S> | undefined,
+): ReadonlyMap<string, string> {
+  return deal ? dealRowColors(deal.order, deal, deal.palette) : NONE
+}
+
+/** The colour each of `rows` takes by its value in `dealt`, by row name. */
+export function colorsByRow<S extends { name: string }>(
   rows: readonly S[],
   deal: RowColorDeal<S> | undefined,
+  dealt: ReadonlyMap<string, string>,
 ): ReadonlyMap<string, string> {
   if (!deal) {
     return NONE
   }
-  const colors = dealRowColors(deal.order, deal, deal.palette)
   const byName = new Map<string, string>()
   for (const row of rows) {
     const value = deal.valueOf(row)
-    const color = value === undefined ? undefined : colors.get(value)
+    const color = value === undefined ? undefined : dealt.get(value)
     if (color !== undefined) {
       byName.set(row.name, color)
     }
   }
   return byName
+}
+
+/** The colour `deal` gives each of `rows`, by row name. */
+export function rowColorScale<S extends { name: string }>(
+  rows: readonly S[],
+  deal: RowColorDeal<S> | undefined,
+): ReadonlyMap<string, string> {
+  return colorsByRow(rows, deal, dealtColors(deal))
 }
 
 /** `field`'s value on `row`, `''` where the row has none of its own. */

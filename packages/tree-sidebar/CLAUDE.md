@@ -139,14 +139,14 @@ hook's name throws at `create`:
   the edit diff falls back to the sample's entry.
 - `identityChannel` — `color` by default; wiggle's follows the mode, variants,
   MAF and marks tint the label.
-- `unlistedRowsSort` — `source` by default; multi-row's and marks' discovered
-  values sort.
+- `unlistedRowsSort` — `source` by default; multi-row's discovered values sort.
 - `rowOrder` — `rows.domain` by default; MAF leads with a drawn tree's leaves.
-- `rowColorDeal` — what `dealRowColors` deals into `rowColorScale`, once per
-  change to the rows: by default `rowColor.field`'s values over the base
-  arrangement, so no reorder, focus or relabel recolours a row. Wiggle,
-  multi-row and variants hand in the order and palette they dealt before
-  ADR-160; MAF and the mark display deal none.
+- `rowColorDeal` — what `dealRowColors` deals into `dealtRowColors`, a colour
+  per value dealt again only when the deal changes, which `rowColorScale` maps
+  each row onto: by default `rowColor.field`'s values over the base arrangement,
+  so no reorder, focus or relabel recolours a row. Wiggle, multi-row and
+  variants hand in the order and palette they dealt before ADR-160; MAF and the
+  mark display deal none.
 
 MAF also overrides `clusterableSources`, since on a track that discovers its
 species a focus applies as given, as the worker's does. `focusLegendEntry` stays

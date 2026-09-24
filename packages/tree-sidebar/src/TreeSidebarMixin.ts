@@ -4,7 +4,6 @@ import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import { isSessionWithBaseTrackConfig } from '@jbrowse/core/util/types'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { ROW_ARRANGEMENT_MEMBERS } from '@jbrowse/display-kit/rowArrangementConfigSchema'
-import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { getSnapshot, hasParent, types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
@@ -12,8 +11,9 @@ import { arrangeRows, orderRowsByDomain } from './arrangeRows.ts'
 import { applySubtreeFilter, buildTree, keptRows } from './clusterUtils.ts'
 import { maxNodeHeight } from './hierarchy.ts'
 import {
+  colorsByRow,
+  dealtColors,
   materializedRowColors,
-  rowColorScale,
   rowFieldValue,
 } from './rowColorScale.ts'
 import { rowEdits } from './rowEdits.ts'
@@ -190,8 +190,9 @@ export interface ClusterRun {
  * haplotypes), then `editableSources`, ordered by `rowOrder`, relabelled by
  * `rows.labels` and tinted by the `rowColor` pairs on the `identityChannel`,
  * then `clusterableSources`, narrowed to the focus. The row palette is
- * `rowColorScale`, dealt by `rowColorDeal` once per change to the rows, and
- * each display paints it, with its bands, over those.
+ * `dealtRowColors`, dealt by `rowColorDeal` once per change to the deal, and
+ * `rowColorScale` hands each row its value's colour, which each display
+ * paints, with its bands, over those.
  *
  * Every arrangement write reaches the session at once rather than after the
  * track's 400 ms save, so a clustering run is one undo step and undoable the
@@ -463,22 +464,32 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         }
       },
     }))
-    .views(self => {
-      const scale = stableIdentityComputed(() =>
-        rowColorScale(self.expandedRows, self.rowColorDeal),
-      )
-      return {
-        /**
-         * #getter
-         * The colour the row palette deals each row, by name, once per change
-         * to the rows or the deal. Each display paints it where its palette
-         * lands, with its own precedence over a row's own colour.
-         */
-        get rowColorScale(): ReadonlyMap<string, string> {
-          return scale.get()
-        },
-      }
-    })
+    .views(self => ({
+      /**
+       * #getter
+       * The colour the row palette deals each value of `rowColorDeal`, dealt
+       * again only when the deal changes, never on a region arrival that
+       * leaves it alone.
+       */
+      get dealtRowColors(): ReadonlyMap<string, string> {
+        return dealtColors(self.rowColorDeal)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The colour the row palette deals each row, by name: each row's value
+       * looked up in `dealtRowColors`. Each display paints it where its
+       * palette lands, with its own precedence over a row's own colour.
+       */
+      get rowColorScale(): ReadonlyMap<string, string> {
+        return colorsByRow(
+          self.expandedRows,
+          self.rowColorDeal,
+          self.dealtRowColors,
+        )
+      },
+    }))
     .views(self => ({
       /**
        * #getter

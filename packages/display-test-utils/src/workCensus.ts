@@ -282,7 +282,12 @@ export async function runCensus(
   }
 }
 
-const ROW_GETTERS = ['clusterableSources', 'sources', 'rowColorScale'] as const
+const ROW_GETTERS = [
+  'clusterableSources',
+  'sources',
+  'dealtRowColors',
+  'rowColorScale',
+] as const
 
 /**
  * The work a `TreeSidebarMixin` display does per step, counted: arranger runs
