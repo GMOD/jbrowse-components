@@ -26,9 +26,10 @@ type ModelOf<T> = T extends IAnyType ? Instance<T> : never
 /**
  * The methods on a model that return a menu. Derived from the model rather than
  * listed, which is what makes a renamed or retired method a compile error at
- * the call site: there are six of them across views and displays (`menuItems`,
+ * the call site: there are seven of them across views and displays (`menuItems`,
  * `trackMenuItems`, `contextMenuItems`, `rubberBandMenuItems`,
- * `rubberBandLaunchMenuItems`, `highlightMenuItems`), they are a convention
+ * `rubberBandLaunchMenuItems`, `highlightMenuItems`, `highlightsSubMenuItems`),
+ * they are a convention
  * rather than one declared interface, and a contribution to a name the model no
  * longer has is otherwise silent.
  *

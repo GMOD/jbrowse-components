@@ -82,6 +82,7 @@ import { planFlight } from './flyTo.ts'
 import { setupKeyboardHandler } from './keyboardHandler.ts'
 import { lgvLaunchKeys } from './launchKeys.ts'
 import {
+  buildHighlightsSubMenuItems,
   buildMenuItems,
   buildRubberBandMenuItems,
   buildRubberbandClickMenuItems,
@@ -2096,6 +2097,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       menuItems(): MenuItem[] {
         return buildMenuItems(self as LinearGenomeViewModel)
+      },
+      /**
+       * #method
+       * the view menu's Show... → Highlights submenu; extend this to add a row
+       * there
+       */
+      highlightsSubMenuItems(): MenuItem[] {
+        return buildHighlightsSubMenuItems(self as LinearGenomeViewModel)
       },
       /**
        * #method

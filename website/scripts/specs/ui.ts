@@ -1910,6 +1910,8 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'click', text: 'Highlight region' },
       { type: 'delay', ms: 500 },
       { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+      { type: 'click', text: 'Show...' },
+      { type: 'click', text: 'Highlights' },
       { type: 'click', text: 'Open highlight list' },
       { type: 'waitForText', text: 'Add label...' },
       { type: 'delay', ms: 1000 },

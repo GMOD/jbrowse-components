@@ -89,6 +89,8 @@ export const uiVideos: VideoSpec[] = [
         say: 'Open the highlight list from the view menu',
         hold: 800,
       },
+      { type: 'click', text: 'Show...', hold: 600 },
+      { type: 'click', text: 'Highlights', hold: 600 },
       { type: 'waitForText', text: 'Open highlight list' },
       { type: 'click', text: 'Open highlight list' },
       { type: 'waitForText', text: 'Add label...' },

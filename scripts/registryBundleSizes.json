@@ -1,11 +1,11 @@
 {
   "main": {
-    "bytes": 7213148,
+    "bytes": 7213179,
     "uiBytes": 2240811,
     "modules": 1974
   },
   "worker": {
-    "bytes": 4688421,
+    "bytes": 4688452,
     "uiBytes": 471164,
     "modules": 1132
   },

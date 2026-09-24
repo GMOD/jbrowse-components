@@ -27,7 +27,7 @@ export default class GridBookmarkPlugin extends Plugin {
           },
         }))
         .views(self => {
-          const superMenuItems = self.menuItems
+          const superHighlightsSubMenuItems = self.highlightsSubMenuItems
           const superHighlightMenuItems = self.highlightMenuItems
           const openList = {
             label: 'Open highlight list',
@@ -38,8 +38,8 @@ export default class GridBookmarkPlugin extends Plugin {
             /**
              * #method
              */
-            menuItems() {
-              return [...superMenuItems(), openList]
+            highlightsSubMenuItems() {
+              return [...superHighlightsSubMenuItems(), openList]
             },
             /**
              * #method

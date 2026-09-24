@@ -81,6 +81,30 @@ export function zoomMenuItems(self: LinearGenomeViewModel): MenuItem[] {
   ]
 }
 
+export function buildHighlightsSubMenuItems(
+  self: LinearGenomeViewModel,
+): MenuItem[] {
+  const session = getSession(self)
+  return [
+    {
+      label: 'Show highlights',
+      type: 'checkbox',
+      checked: session.highlightsVisible,
+      onClick: () => {
+        session.setHighlightsVisible(!session.highlightsVisible)
+      },
+    },
+    {
+      label: 'Show highlight labels',
+      type: 'checkbox',
+      checked: self.labelsVisible,
+      onClick: () => {
+        self.setLabelsVisible(!self.labelsVisible)
+      },
+    },
+  ]
+}
+
 /**
  * Build the main view menu items. A row stacked in another view has no import
  * form of its own, so only a top-level view offers the way back to one.
@@ -249,24 +273,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
         },
         {
           label: 'Highlights',
-          subMenu: [
-            {
-              label: 'Show highlights',
-              type: 'checkbox',
-              checked: session.highlightsVisible,
-              onClick: () => {
-                session.setHighlightsVisible(!session.highlightsVisible)
-              },
-            },
-            {
-              label: 'Show highlight labels',
-              type: 'checkbox',
-              checked: self.labelsVisible,
-              onClick: () => {
-                self.setLabelsVisible(!self.labelsVisible)
-              },
-            },
-          ],
+          subMenu: self.highlightsSubMenuItems(),
         },
         // The two answers to what the sequence draws as: one colours the
         // codons, the other spells them out. Both lost the palette icon they

@@ -71,6 +71,8 @@ test('Open the highlight list from the view menu', async () => {
   const { findByTestId, findByText } = await createView(config)
 
   fireEvent.click(await findByTestId('view_menu_icon'))
+  fireEvent.click(await findByText('Show...'))
+  fireEvent.click(await findByText('Highlights'))
   fireEvent.click(await findByText('Open highlight list'))
 
   expect(await findByTestId('grid_bookmark_menu', ...opts)).toBeTruthy()
@@ -114,6 +116,8 @@ test('Navigate to a highlight with the link in the list', async () => {
   const { view, session, findByTestId, findByText } = await createView(config)
 
   fireEvent.click(await findByTestId('view_menu_icon'))
+  fireEvent.click(await findByText('Show...'))
+  fireEvent.click(await findByText('Highlights'))
   fireEvent.click(await findByText('Open highlight list'))
   session.addHighlight(region)
 
