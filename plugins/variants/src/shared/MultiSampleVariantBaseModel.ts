@@ -1006,13 +1006,11 @@ export default function MultiSampleVariantBaseModelF(
 
         /**
          * #getter
-         * Whether the "Show reference alleles" row belongs in this display's
-         * menu. True here: the regular display lays variants out at their
-         * genomic positions, so `skip` turns the gaps between them into one
-         * solid grey row and overlapping SVs read against it. The matrix packs
-         * every column with a variant and paints its reference cells in the
-         * same grey the background would be, so the toggle moves nothing there
-         * and overrides this to false.
+         * Whether the "Show reference alleles" row belongs in the menu: at
+         * genomic positions `skip` turns the gaps between variants into one
+         * solid grey row that overlapping SVs read against, while columns
+         * paint their reference cells the grey the background would be, so
+         * the toggle moves nothing there.
          */
         get showsReferenceToggle(): boolean {
           return self.atGenomicPositions
@@ -1223,11 +1221,8 @@ export default function MultiSampleVariantBaseModelF(
         // Only settings the *worker* reads belong here, and nothing fetch-derived
         // may appear (`sampleFilter` reads `sourcesBase`, not `sources`, because
         // `sources` reads `sampleInfo` — a fetch result — and would loop).
-        // `referenceDrawingMode` is deliberately absent: it changes the shipped
-        // cells in regular mode (computeVariantCells drops reference cells when
-        // 'skip'), so that display adds it back via super-capture, but the matrix
-        // computes ref cells unconditionally and greys its background in CSS
-        // instead.
+        // `referenceDrawingMode` is added by the display at genomic positions
+        // alone, where the worker drops reference cells under 'skip'.
         rpcProps() {
           return {
             mode: self.cellDataMode,
@@ -1627,8 +1622,8 @@ export default function MultiSampleVariantBaseModelF(
          * window, which is what puts the marker's explanation in the legend.
          *
          * Declared here, returning false, so `colorScales` below can be
-         * written once: the matrix display draws no markers at all, and the
-         * regular display overrides this with the painter's own answer.
+         * written once; the display overrides it with the painter's own
+         * answer.
          */
         get drawsInsertionMarkers(): boolean {
           return false
@@ -1680,10 +1675,6 @@ export default function MultiSampleVariantBaseModelF(
         },
       }))
       .actions(self => ({
-        // `setScrollTop` and the re-clamp autorun are TrackHeightMixin's, earned
-        // by overriding `scrollableHeight` above — the matrix display has no DOM
-        // overflow container to self-correct a stranded offset.
-
         clearDisplaySpecificData() {
           self.setCellData(undefined)
         },

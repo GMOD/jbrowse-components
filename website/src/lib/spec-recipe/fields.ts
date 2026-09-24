@@ -1119,6 +1119,22 @@ export const trackFields: Record<string, FieldRecipe> = {
               : undefined,
         }
       : undefined,
+  variantLayout: (value, { displayType }) =>
+    (value === 'genomic' || value === 'columns') && displayType
+      ? MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
+        ? {
+            path: `${TRACK_MENU} → Variant layout → ${value === 'columns' ? 'Equal-width columns' : 'At genomic positions'}`,
+          }
+        : displayType === 'LDTrackDisplay'
+          ? {
+              path: `${TRACK_MENU} → Show... → Show cells with genome proportions`,
+              note:
+                value === 'genomic'
+                  ? 'Checked: cells sized by the genomic distance between SNPs.'
+                  : 'Unchecked: one uniform cell per SNP.',
+            }
+          : undefined
+      : undefined,
   clusterRegion: (value, { displayType }) =>
     typeof value === 'string' &&
     displayType &&

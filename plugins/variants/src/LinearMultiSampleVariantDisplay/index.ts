@@ -2,6 +2,7 @@ import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchemaFactory from './configSchema.ts'
+import { foldRetiredMatrixDisplay } from './retiredMatrixDisplay.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -12,6 +13,10 @@ const VariantDisplayComponent = lazyWithPreload(
 export default function LinearMultiSampleVariantDisplayF(
   pluginManager: PluginManager,
 ) {
+  pluginManager.addToExtensionPoint(
+    'Core-preProcessTrackConfig',
+    foldRetiredMatrixDisplay,
+  )
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory()
     return new DisplayType({

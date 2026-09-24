@@ -266,6 +266,9 @@ export function stateModelFactory(
          */
         setVariantLayout(arg: 'genomic' | 'columns') {
           setConf(self, 'variantLayout', arg)
+          // the other layout mounts a backend of its own; a failure of this
+          // one's must not keep the banner up in its place
+          self.setRenderError(undefined)
         },
         /**
          * #action
@@ -1090,18 +1093,18 @@ export function stateModelFactory(
               self.backendDrawsColumns
                 ? self.matrixRegions
                 : self.perRegionCellMap,
+            // the width follows the backend, not the setting, which the
+            // outgoing backend still sees for one flush after a switch
             render: b =>
               b.columns
-                ? b.renderBlocks(
-                    self.matrixBlocks,
-                    self.matrixRegions,
-                    self.renderState,
-                  )
-                : b.renderBlocks(
-                    self.renderBlocks,
-                    self.perRegionCellMap,
-                    self.renderState,
-                  ),
+                ? b.renderBlocks(self.matrixBlocks, self.matrixRegions, {
+                    ...self.renderState,
+                    canvasWidth: self.matrixWidth,
+                  })
+                : b.renderBlocks(self.renderBlocks, self.perRegionCellMap, {
+                    ...self.renderState,
+                    canvasWidth: self.canvasWidthPx,
+                  }),
           })
         },
       }))

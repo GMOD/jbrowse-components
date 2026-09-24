@@ -46,6 +46,5 @@ sideBySide
 structures
 transcriptId
 uniprotId
-variantLayout
 walkRowSamples
 zoomToBaseLevel
