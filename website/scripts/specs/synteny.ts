@@ -4718,8 +4718,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // does rather than something a reader can do to the track in front of them.
   //
   // Track menu -> Color by... -> Attribute..., then the attribute's name. The
-  // dialog prints the expression it will write under the field, which is the
-  // one thing that ties this frame to the figure above it: the same string.
+  // caption under the field lists the values the genes in view carry, which
+  // are the names the figure beside it colours. The field is an Autocomplete,
+  // so it is typed into by testid (its label text resolves to an element that
+  // takes no focus), and Escape folds the suggestion list off the caption.
   //
   // The FIRST panel's track menu, by testid index. `track_menu_icon` is not
   // unique here -- three stacked panels each carry a gene lane -- and the
@@ -4744,8 +4746,15 @@ export const syntenySpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Attribute...' },
       { type: 'click', text: 'Attribute...' },
       { type: 'waitForText', text: 'Color by attribute' },
-      { type: 'type', text: 'Attribute name', value: 'gene', clear: true },
-      { type: 'delay', ms: 1200 },
+      {
+        type: 'type',
+        selector: '[data-testid="color-by-attribute"]',
+        value: 'gene',
+        clear: true,
+      },
+      { type: 'waitForText', text: 'Found' },
+      { type: 'press', key: 'Escape' },
+      { type: 'delay', ms: 300 },
     ],
   },
 
