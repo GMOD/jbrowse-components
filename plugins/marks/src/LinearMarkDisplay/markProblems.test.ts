@@ -74,6 +74,7 @@ interface ShippedConfig {
       marks?: unknown[]
       facet?: unknown
       transform?: unknown[]
+      rows?: unknown
     }[]
   }[]
 }
@@ -96,7 +97,7 @@ test.each(SHIPPED)('%s draws every mark it declares as written', path => {
   expect(displays.length).toBeGreaterThan(0)
   expect(
     displays.flatMap(d =>
-      problemsOf(d.marks ?? [], d.facet, d.transform).map(
+      problemsOf(d.marks ?? [], d.facet, d.transform, d.rows).map(
         p => `${d.trackId}: ${problemText(p)}`,
       ),
     ),
