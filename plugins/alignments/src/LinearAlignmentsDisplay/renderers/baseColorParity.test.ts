@@ -1,8 +1,8 @@
-import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
+import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 import { MockHal } from '@jbrowse/render-core/hal'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import { buildBaseTupleMap } from '../../features/mismatch/baseColors.ts'
+import { buildBaseCssMap } from '../../features/mismatch/baseColors.ts'
 import { UNIFORM_OFFSET_U32 } from '../../shaders/slang/read.iface.generated.ts'
 import { makeTestPalette, makeTestRenderState } from '../testUtils.ts'
 import {
@@ -13,8 +13,8 @@ import {
 import type { AlignmentsSources } from './rendererTypes.ts'
 
 /**
- * The five per-base colours reach the GPU as UBO slots and Canvas2D as a tuple
- * map, and both resolve through `effectiveBaseColors` — but only the CPU side of
+ * The five per-base colours reach the GPU as UBO slots and Canvas2D as a CSS
+ * table, and both resolve through `effectiveBaseColors` — but only the CPU side of
  * that is unit-tested (`features/mismatch/baseColors.test.ts`). What is left is
  * the projection: five named uniform slots, filled from five named fields, in a
  * renderer that cannot say which base a slot is for. A transposed pair paints
@@ -84,11 +84,11 @@ function gpuBaseSlots(showModifications: boolean) {
 }
 
 function canvasBaseColors(showModifications: boolean) {
-  const tuples = buildBaseTupleMap(renderState(showModifications))
+  const css = buildBaseCssMap(renderState(showModifications))
   return Object.fromEntries(
     BASE_SLOTS.map(([base, code]) => {
-      const rgb = tuples[code]!
-      return [base, normalizedRgbToABGR(rgb[0], rgb[1], rgb[2])]
+      const [r, g, b] = cssColorToRgb(css[code]!)
+      return [base, packAbgr(r, g, b, 255)]
     }),
   )
 }

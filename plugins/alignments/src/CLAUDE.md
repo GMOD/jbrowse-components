@@ -62,12 +62,12 @@ hover from scanning the whole thing three times to reject most of it on a type
 byte the layout already guarantees. Both renderers therefore hand the marks the
 merged array the worker ships rather than pre-sliced views of it.
 
-**The coverage band's five directories hold no `packGpu.ts`, `drawCanvas.ts` or
-`hitTest.ts`** — `coverage/`, `snpCoverage/`, `modCoverage/`, `interbase/` and
-`indicator/` keep their computes, and the band's passes, painters, hit test
-(`hitCoverageBand`, `coverageBinAt`) and tooltip tables are
-`@jbrowse/alignments-core`'s, shared with MAF and declared once in
-`LinearAlignmentsDisplay/renderers/coverageMarks.ts`.
+**The coverage band is `@jbrowse/alignments-core`'s** — its computes, passes,
+painters, hit test (`hitCoverageBand`, `coverageBinAt`) and tooltip tables,
+shared with MAF and declared once in
+`LinearAlignmentsDisplay/renderers/coverageMarks.ts`. What stays here is the
+plugin's own: `coverage/` (the density tier's band), `modCoverage/` (the
+modification stacks) and `indicator/` (the hit type).
 
 One directory is **not** a pass and says so by having no `packGpu.ts` —
 `sashimi/` computes geometry for a React SVG overlay, which is a separate draw

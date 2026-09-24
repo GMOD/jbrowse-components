@@ -6,17 +6,14 @@ import {
 import { MockHal } from '@jbrowse/render-core/hal'
 import { UNIFORM_OFFSET_F32 } from '@jbrowse/render-core/shaders/coverageSnp'
 
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { makeTestPalette, makeTestRenderState } from '../testUtils.ts'
 import {
   ALIGNMENTS_PASSES,
   GpuAlignmentsRenderer,
-} from '../../LinearAlignmentsDisplay/renderers/GpuAlignmentsRenderer.ts'
-import {
-  makeTestPalette,
-  makeTestRenderState,
-} from '../../LinearAlignmentsDisplay/testUtils.ts'
-import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+} from './GpuAlignmentsRenderer.ts'
 
-import type { AlignmentsSources } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { AlignmentsSources } from './rendererTypes.ts'
 
 /**
  * The coverage band's allele-fraction floor. At depth 500 every sequencing

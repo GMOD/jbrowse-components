@@ -28,7 +28,6 @@ function feat(
     insertSize: 0,
     pairOrientation: 0,
     strand: 1,
-    nextRef: undefined,
     ...partial,
   }
 }

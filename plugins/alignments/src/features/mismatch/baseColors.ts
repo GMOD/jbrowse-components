@@ -61,14 +61,13 @@ function baseTable<T>(state: BaseColorState, of: (c: RGBColor) => T): T[] {
 
 // Memo shared by both tables, since a caller wanting one of them at a given
 // palette is about to want the other: the mismatch mark reads the CSS entry for
-// an opaque mismatch and the tuple entry for a faded one, and which it needs is
+// an opaque mismatch and the faded prefix for a faded one, and which it needs is
 // per mismatch.
 let tableMemo:
   | {
       colors: ColorPalette
       showModifications: boolean
       css: string[]
-      tuples: RGBColor[]
       faded: string[]
     }
   | undefined
@@ -82,7 +81,6 @@ function baseTables(state: BaseColorState) {
       colors: state.colors,
       showModifications: state.showModifications,
       css: baseTable(state, rgb255),
-      tuples: baseTable(state, c => c),
       faded: baseTable(state, rgbaPrefix255),
     }
   }
@@ -114,15 +112,6 @@ function baseTables(state: BaseColorState) {
 // serve the unmuted table for the whole session after one modifications toggle.
 export function buildBaseCssMap(state: BaseColorState): string[] {
   return baseTables(state).css
-}
-
-// The same table as RGB tuples, for the one draw that applies a per-mark alpha
-// (the mismatch mark, through `rgba255`). A table rather than the five-entry map
-// it used to be, so the faded branch stops re-spelling the fallback with a `??`
-// — the exact thing the CSS table exists to prevent, left in the one call site
-// that needed both.
-export function buildBaseTupleMap(state: BaseColorState): RGBColor[] {
-  return baseTables(state).tuples
 }
 
 // The same table again as `rgba255` prefixes, for the one draw that applies a

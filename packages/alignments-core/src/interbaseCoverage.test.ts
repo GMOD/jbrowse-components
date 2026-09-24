@@ -1,8 +1,5 @@
-import {
-  computeInterbaseCoverage,
-  readIndicators,
-  readInterbaseSegments,
-} from '@jbrowse/alignments-core'
+import { computeInterbaseCoverage } from './interbaseCoverage.ts'
+import { readIndicators, readInterbaseSegments } from './interbaseSegments.ts'
 
 function cov(depths: Float32Array, maxDepth: number, startPos = 100) {
   return { depths, maxDepth, startPos }

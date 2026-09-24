@@ -21,7 +21,6 @@ export interface ChainFeatureData extends FeatureData {
   // half of what `readNames` cost. Chain mode does need it: `chainGroupingKey`
   // is what puts mates and split segments on one row.
   name: string
-  nextRef: string | undefined
 }
 
 export interface GapData {

@@ -42,6 +42,5 @@ export function buildChainFeatureData(
   return {
     ...buildBaseFeatureData(feature, readIdPrefix),
     name: feature.get('name') ?? '',
-    nextRef: feature.get('next_ref') as string | undefined,
   }
 }
