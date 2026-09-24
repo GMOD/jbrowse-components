@@ -29,9 +29,15 @@ function readCallback(
   args: Record<string, unknown>,
 ) {
   try {
-    return mergeFormatCallbacks(
+    const fields = mergeFormatCallbacks(
       readConfObject(conf, ['formatDetails', slot], args),
     )
+    if (fields.subfeatures != null) {
+      throw new Error(
+        'a callback can hide subfeatures but not replace them; reshape each one with the subfeatures callback',
+      )
+    }
+    return fields
   } catch (e) {
     throw new Error(`formatDetails.${slot} of ${where}: ${e}`, { cause: e })
   }

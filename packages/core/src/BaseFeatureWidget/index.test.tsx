@@ -263,7 +263,8 @@ test('the sequence panel reads the feature before formatDetails rewrote it', asy
   expect((await findAllByRole('combobox'))[0]!.textContent).toBe('EDEN.1')
 })
 
-test('a callback that filters subfeatures leaves each card its own sequence', async () => {
+test('a callback cannot replace subfeatures, which the sequence panel pairs by position', () => {
+  const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
   const pluginManager = new PluginManager([])
   const Session = types.model({
     rpcManager: types.optional(types.frozen(), {}),
@@ -286,30 +287,47 @@ test('a callback that filters subfeatures leaves each card its own sequence', as
           refName: 'ctgA',
           start: 0,
           end: 100,
-          type: 'gene',
           subfeatures: [
-            { refName: 'ctgA', start: 0, end: 100, type: 'region' },
-            {
-              refName: 'ctgA',
-              start: 0,
-              end: 100,
-              type: 'mRNA',
-              subfeatures: [
-                { refName: 'ctgA', start: 0, end: 100, type: 'exon' },
-                { refName: 'ctgA', start: 10, end: 90, type: 'CDS' },
-              ],
-            },
+            { refName: 'ctgA', start: 0, end: 50 },
+            { refName: 'ctgA', start: 50, end: 100 },
           ],
         },
       },
     },
     { pluginManager },
   )
-  const { findAllByRole, findAllByText } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <BaseFeatureDetails model={model.widget} />
-    </ThemeProvider>,
+  expect(`${model.widget.error}`).toContain('not replace them')
+  expect(`${model.widget.error}`).toContain('the session configuration')
+  reported.mockRestore()
+})
+
+test('a callback can still hide subfeatures', () => {
+  const pluginManager = new PluginManager([])
+  const Session = types.model({
+    rpcManager: types.optional(types.frozen(), {}),
+    configuration: ConfigurationSchema('test', {
+      formatDetails: FormatDetailsConfigSchemaFactory(),
+    }),
+    widget: stateModelFactory(pluginManager),
+  })
+  const model = Session.create(
+    {
+      configuration: {
+        formatDetails: { feature: 'jexl:{subfeatures:undefined}' },
+      },
+      widget: {
+        type: 'BaseFeatureWidget',
+        unformattedFeatureData: {
+          uniqueId: 'g',
+          refName: 'ctgA',
+          start: 0,
+          end: 100,
+          subfeatures: [{ refName: 'ctgA', start: 0, end: 50 }],
+        },
+      },
+    },
+    { pluginManager },
   )
-  fireEvent.click((await findAllByText('Show feature sequence'))[1]!)
-  expect((await findAllByRole('combobox'))[0]!.textContent).toBe('CDS')
+  expect(model.widget.error).toBeUndefined()
+  expect(model.widget.featureData?.subfeatures).toBeUndefined()
 })

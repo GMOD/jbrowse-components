@@ -44,6 +44,8 @@ the panel:
   `{type: undefined}` removes the Type row, `{name: ...}` rewrites the Name row.
   `length` counts as one even though the panel computes it from `start`/`end`.
 - **`undefined` or `null`** hides the row.
+- **`subfeatures` can be hidden but not replaced.** Reshape each subfeature with
+  the `subfeatures` callback instead; returning a new list is an error.
 - **A non-object return is an error.** `"jexl:feature.name"` where
   `"jexl:{name:feature.name}"` was meant replaces the panel with a message
   naming the track, or the session configuration, whose callback failed.
