@@ -136,3 +136,73 @@ test('reload() rewakes the fetch after an error', async () => {
   await when(() => display.ready)
   expect(display.features).toHaveLength(1)
 }, 20000)
+
+// A caller that writes one record per translocation leaves the mate's contig
+// with no record of its own, so the file never names it and the adapter's name
+// table has no entry for it
+test('a mate on a contig the file holds no record on still finds its slice', async () => {
+  const session = createTestSession()
+  session.addAssemblyConf({
+    name: 'volvox',
+    refNameAliases: {
+      adapter: {
+        type: 'FromConfigAdapter',
+        features: [
+          { refName: 'ctgA', uniqueId: 'alias1', aliases: ['A'] },
+          { refName: 'ctgB', uniqueId: 'alias2', aliases: ['B'] },
+        ],
+      },
+    },
+    sequence: {
+      trackId: 'volvox_refseq',
+      type: 'ReferenceSequenceTrack',
+      adapter: {
+        type: 'FromConfigSequenceAdapter',
+        features: [
+          {
+            refName: 'ctgA',
+            uniqueId: 'ctgA',
+            start: 0,
+            end: 16000,
+            seq: 'a'.repeat(16000),
+          },
+          {
+            refName: 'ctgB',
+            uniqueId: 'ctgB',
+            start: 0,
+            end: 8000,
+            seq: 'a'.repeat(8000),
+          },
+        ],
+      },
+    },
+  })
+  session.addSessionTrackConf({
+    trackId: 'sv',
+    type: 'VariantTrack',
+    assemblyNames: ['volvox'],
+    adapter: {
+      type: 'FromConfigAdapter',
+      features: [
+        {
+          uniqueId: 'tra1',
+          refName: 'A',
+          start: 100,
+          end: 101,
+          mate: { refName: 'B', start: 1000, end: 1001 },
+        },
+      ],
+    },
+  })
+  const view = (await session.launchView('CircularView', {
+    assembly: 'volvox',
+    tracks: ['sv'],
+  })) as CircularViewModel
+  view.setWidth(800)
+  await when(() => view.tracks.length > 0)
+  const display = view.tracks[0]!.displays[0]!
+  await when(() => display.ready)
+  expect(display.features).toHaveLength(1)
+  expect(display.sliceFor(undefined, 'A')?.region.refName).toBe('ctgA')
+  expect(display.sliceFor(undefined, 'B')?.region.refName).toBe('ctgB')
+}, 20000)

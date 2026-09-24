@@ -273,15 +273,35 @@ export function BaseChordDisplay() {
        * #method
        * the slice one end of a feature lands on. A feature that names no
        * assembly, as a VCF record does not, is on the track's first assembly.
+       * A refName the adapter's name table lacks — a mate on a contig the file
+       * holds no record on — resolves through the assembly's aliases.
        */
       sliceFor(assemblyName: string | undefined, refName: string) {
-        const [first] = self.trackAssemblyNames
-        const spelled =
-          assemblyName ??
-          (first === undefined
-            ? undefined
-            : (self.adapterNames?.[first]?.assemblyName ?? first))
-        return self.sliceIndex[sliceKey(spelled, refName)]
+        const canonical =
+          assemblyName === undefined
+            ? self.trackAssemblyNames[0]
+            : self.trackAssemblyNames.find(
+                name =>
+                  (self.adapterNames?.[name]?.assemblyName ?? name) ===
+                  assemblyName,
+              )
+        const names =
+          canonical === undefined ? undefined : self.adapterNames?.[canonical]
+        const spelled = assemblyName ?? names?.assemblyName ?? canonical
+        const slice = self.sliceIndex[sliceKey(spelled, refName)]
+        if (slice || canonical === undefined) {
+          return slice
+        }
+        const canonicalRefName =
+          getSession(self)
+            .assemblyManager.get(canonical)
+            ?.getCanonicalRefName2(refName) ?? refName
+        return self.sliceIndex[
+          sliceKey(
+            spelled,
+            names?.refNameMap[canonicalRefName] ?? canonicalRefName,
+          )
+        ]
       },
     }))
     .actions(self => ({
