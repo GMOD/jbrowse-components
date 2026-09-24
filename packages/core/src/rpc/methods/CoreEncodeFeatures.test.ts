@@ -95,6 +95,34 @@ test('the zoom reaches the adapter, so one with zoom levels answers at it', asyn
   )
 })
 
+test("the request's adapter options reach the adapter, under the zoom and signal", async () => {
+  const getFeaturesArray = jest.fn(
+    async (_region: unknown, _opts: object) => features,
+  )
+  jest.mocked(getAdapter).mockResolvedValue({
+    dataAdapter: {
+      getFeatures: () => {},
+      getFeaturesArray,
+      getZoomRange: async () => undefined,
+      setSequenceAdapterConfig: () => {},
+    },
+  } as unknown as Awaited<ReturnType<typeof getAdapter>>)
+  await new CoreEncodeFeatures({
+    jexl: createJexlInstance(),
+  } as PluginManager).invoke({
+    sessionId: 's',
+    adapterConfig: { type: 'AnyAdapter' },
+    region: { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
+    layers: [{ encoding: { y: 'score' }, lanes: ['y'] }],
+    bpPerPx: 500,
+    opts: { ld: { refName: 'chr1' }, bpPerPx: 1 },
+  })
+  expect(getFeaturesArray.mock.calls[0]![1]).toMatchObject({
+    ld: { refName: 'chr1' },
+    bpPerPx: 500,
+  })
+})
+
 test('a facet runs every layer per section and stacks the sections', async () => {
   const reads = (
     [

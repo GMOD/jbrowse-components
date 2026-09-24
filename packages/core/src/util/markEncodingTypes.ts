@@ -435,6 +435,12 @@ export type CoreEncodeFeaturesArgs = {
    * is full resolution.
    */
   bpPerPx?: number
+  /**
+   * What the adapter's `getFeatures` takes beside the region and the zoom, for
+   * an adapter whose answer depends on more than those: the GWAS adapter reads
+   * its LD join here.
+   */
+  opts?: object
   byteLimit?: number
   sequenceAdapter?: Record<string, unknown>
 }

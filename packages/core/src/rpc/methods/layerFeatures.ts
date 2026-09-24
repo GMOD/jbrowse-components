@@ -72,7 +72,7 @@ export async function layerFeatures(
   dataAdapter: BaseFeatureDataAdapter,
   args: Pick<
     CoreEncodeFeaturesArgs,
-    'region' | 'layers' | 'transform' | 'facet' | 'bpPerPx'
+    'region' | 'layers' | 'transform' | 'facet' | 'bpPerPx' | 'opts'
   > & { signal?: AbortSignal; statusCallback?: StatusCallback },
   jexl: JexlInstance,
 ) {
@@ -82,10 +82,11 @@ export async function layerFeatures(
     transform = [],
     facet,
     bpPerPx,
+    opts,
     signal,
     statusCallback,
   } = args
-  const fetchOpts = { bpPerPx, statusCallback, signal }
+  const fetchOpts = { ...opts, bpPerPx, statusCallback, signal }
   const [fetched, zoomRange] = await updateStatus(
     'Downloading features',
     statusCallback,
