@@ -109,6 +109,17 @@ test('coverage is one feature per run of constant depth, zero runs left out', ()
   ])
 })
 
+test('coverage keeps one run where one feature ends as another starts, or one adds no depth', () => {
+  const out = runTransforms(
+    [feature(0, 10), feature(10, 20), feature(15, 15), feature(0, 30)],
+    [{ type: 'coverage' }],
+  )
+  expect(rows(out, 'start', 'end', 'coverage')).toEqual([
+    [0, 20, 2],
+    [20, 30, 1],
+  ])
+})
+
 test('coverage over nothing is nothing, and a named field carries the depth', () => {
   expect(runTransforms([], [{ type: 'coverage' }])).toEqual([])
   const out = runTransforms(
