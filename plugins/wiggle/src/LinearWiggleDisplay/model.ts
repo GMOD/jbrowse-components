@@ -1014,18 +1014,23 @@ export default function stateModelFactory(
               self.openChannelSpecDialog()
             },
           },
-          rowArrangementMenuItem({
-            ready: !!self.discoveredRows.length,
-            onOpen: () => {
-              getDialogHost(self).queueDialog(handleClose => [
-                SetColorDialog,
-                {
-                  model: self,
-                  handleClose,
-                },
-              ])
-            },
-          }),
+          // one source has nothing to arrange, and its color is Edit color's
+          ...(self.isRowLayout || self.discoveredRows.length > 1
+            ? [
+                rowArrangementMenuItem({
+                  ready: !!self.discoveredRows.length,
+                  onOpen: () => {
+                    getDialogHost(self).queueDialog(handleClose => [
+                      SetColorDialog,
+                      {
+                        model: self,
+                        handleClose,
+                      },
+                    ])
+                  },
+                }),
+              ]
+            : []),
         ]
       },
 

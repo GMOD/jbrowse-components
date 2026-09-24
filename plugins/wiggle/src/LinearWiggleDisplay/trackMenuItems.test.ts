@@ -167,6 +167,20 @@ describe('the wiggle display track menu', () => {
     expect(session.queuedDialogs[0]![1]).toMatchObject({ model: display })
   })
 
+  it('offers the arrangement only where there is more than one source', () => {
+    expect(labels(makeDisplay().display.trackMenuItems())).toContain(
+      'Edit colors/arrangement...',
+    )
+    expect(
+      labels(
+        makeDisplay({
+          sources: ['a'],
+          faceted: false,
+        }).display.trackMenuItems(),
+      ),
+    ).not.toContain('Edit colors/arrangement...')
+  })
+
   it('keeps the menu open on every toggle, like the rest of the app', () => {
     const { display } = makeDisplay()
     const items = subMenuOf(display.trackMenuItems(), 'Show...')
