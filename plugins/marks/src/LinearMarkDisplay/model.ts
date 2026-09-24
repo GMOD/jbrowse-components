@@ -20,7 +20,7 @@ import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
-import { compareGroupKeys, groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
+import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import { installPrerequisiteFetch } from '@jbrowse/core/util/installPrerequisiteFetch'
 import {
   activeJexlFilters,
@@ -168,7 +168,6 @@ import type {
   IdentityChannel,
   RowColorDeal,
   RowSource,
-  UnlistedRowsSort,
 } from '@jbrowse/tree-sidebar'
 import type { ScoreSpan, ValueScale, VisibleEntry } from '@jbrowse/wiggle-core'
 
@@ -561,14 +560,6 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * `TreeSidebarMixin`'s hook: values discovered in features sort, digits
-       * by magnitude, as the facet's sections do.
-       */
-      get unlistedRowsSort(): UnlistedRowsSort {
-        return 'sorted'
-      },
-      /**
-       * #getter
        * `TreeSidebarMixin`'s hook: a `rowColor` entry tints the label, since
        * each mark's own `color` paints the plot.
        */
@@ -670,29 +661,34 @@ export function stateModelFactory(
             ? self.adapterSources.map(source => [source.name, source])
             : [],
         )
-        const keys = new Set(listed.keys())
+        const found = new Set<string>()
         for (const { facet } of self.featurePayloads.values()) {
           for (const { key } of facet ?? []) {
-            keys.add(key)
+            if (!listed.has(key)) {
+              found.add(key)
+            }
           }
         }
-        return [...keys].sort(compareGroupKeys).map((name): RowSource => {
-          const own = listed.get(name)
-          const label = own?.label ?? field.label(name)
-          return {
-            name,
-            ...(label === name ? {} : { label }),
-            ...(own?.color ? { labelColor: own.color } : {}),
-          }
-        })
+        return [...listed.keys(), ...[...found].sort(field.compare)].map(
+          (name): RowSource => {
+            const own = listed.get(name)
+            const label = own?.label ?? field.label(name)
+            return {
+              name,
+              ...(label === name ? {} : { label }),
+              ...(own?.color ? { labelColor: own.color } : {}),
+            }
+          },
+        )
       })
       return {
         /**
          * #getter
-         * `TreeSidebarMixin`'s hook: the values the worker split the loaded
-         * regions on and, under `rows: 'source'`, every source the adapter
-         * lists with its label and colour, sorted; a source with nothing in
-         * the loaded regions keeps its row.
+         * `TreeSidebarMixin`'s hook: under `rows: 'source'`, every source the
+         * adapter lists, in its order and with its label and colour, so a
+         * source with nothing in the loaded regions keeps its row; then the
+         * other values the worker split the loaded regions on, in the order
+         * the field's sections stack.
          */
         get discoveredRows(): RowSource[] {
           return discoveredRows.get()

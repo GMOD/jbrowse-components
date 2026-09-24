@@ -28,12 +28,12 @@ const FAMILY = features([
   { source: 'mom', start: 600, end: 700, score: 3 },
 ])
 
-function loaded(display: Record<string, unknown>) {
+function loaded(display: Record<string, unknown>, feats = FAMILY) {
   const { display: model } = createTestEnvironment({
     marks: BARS,
     ...display,
   }).createDisplay()
-  model.setRpcData(0, workerResult(model, FAMILY), REGION)
+  model.setRpcData(0, workerResult(model, feats), REGION)
   return model
 }
 
@@ -224,17 +224,20 @@ const LISTED = [
   { name: 's99', label: 'Unsequenced' },
 ]
 
-async function listingSources(display: Record<string, unknown>) {
+async function listingSources(
+  display: Record<string, unknown>,
+  listed: { name: string; label?: string; color?: string }[] = LISTED,
+) {
   const env = createTestEnvironment({ marks: BARS, ...display })
   env.mockRpcCall.mockImplementation((_sessionId: string, method: string) =>
     method === 'MarkGetRowSources'
-      ? Promise.resolve(LISTED)
+      ? Promise.resolve(listed)
       : new Promise(() => {}),
   )
   const { display: model } = env.createDisplay()
   model.setRpcData(0, workerResult(model, FAMILY), REGION)
   await waitFor(() => {
-    expect(model.adapterSources).toBe(LISTED)
+    expect(model.adapterSources).toBe(listed)
   })
   return model
 }
@@ -313,4 +316,52 @@ test('rows beside a facet leave the facet drawing, and say so on another field',
   expect(other.notices).toEqual([
     'rows.field: facet stacks a labelled section per value and rows one row per value; bands of rows over two fields are not drawn yet, so the facet draws alone',
   ])
+})
+
+test('the Plot field default facets a display with no rows, and leaves rows drawing', () => {
+  const plot = {
+    field: 'score',
+    mark: 'point',
+    colorField: '',
+    binned: false,
+  } as const
+  const fields = { numeric: ['score'], categorical: [], facet: 'source' }
+  const bare = loaded({})
+  bare.setPlotFields(fields)
+  bare.setPlotMarks(plot)
+  expect(bare.facet?.field).toBe('source')
+
+  const rows = loaded({ rows: 'source' })
+  rows.setPlotFields(fields)
+  rows.setPlotMarks(plot)
+  expect(rows.facet).toBeUndefined()
+  expect(rows.drawsRows).toBe(true)
+  expect(rows.sources.map(row => row.name)).toEqual(['dad', 'mom', 's2', 's10'])
+})
+
+test("under rows: 'source' the listed sources keep the adapter's order, and values it does not list follow", async () => {
+  const display = await listingSources({ rows: 'source' }, [
+    { name: 's10' },
+    { name: 'mom' },
+    { name: 'dad' },
+  ])
+  expect(display.sources.map(row => row.name)).toEqual([
+    's10',
+    'mom',
+    'dad',
+    's2',
+  ])
+})
+
+test("rows on a field with a vocabulary stack in the order the facet's sections do", () => {
+  const stranded = features([
+    { strand: -1, start: 0, end: 100, score: 1 },
+    { strand: 0, start: 100, end: 200, score: 2 },
+    { strand: 1, start: 200, end: 300, score: 3 },
+  ])
+  const rows = loaded({ rows: 'strand' }, stranded)
+  const facet = loaded({ facet: 'strand' }, stranded)
+  expect(rows.sources.map(row => row.name)).toEqual(
+    facet.facetLayout.sections.map(section => section.key),
+  )
 })
