@@ -1,9 +1,11 @@
 import { bpAtPxExact } from '../canvas2dUtils.ts'
-import { denormalizeScore, scaleTypeCode } from '../scoreScale.ts'
+import { denormalizeScore } from '../scoreScale.ts'
+import { valueScaleUniforms } from './valueScale.ts'
 
 import type { RenderBlock } from '../renderBlock.ts'
 import type { RowParams } from './rowLane.ts'
-import type { Mark, MarkFrame, MarkHit, MarkValueScaleType } from './types.ts'
+import type { Mark, MarkFrame, MarkHit } from './types.ts'
+import type { MarkValueScale } from './valueScale.ts'
 
 /**
  * What a cursor's grab radius spans in one block for one mark: the bp, and
@@ -149,15 +151,14 @@ export function valueWindow(
   yPx: number,
   radiusPx: number,
   { canvasHeight }: MarkFrame,
-  scale: RowParams & {
-    domain: [number, number]
-    scaleType?: MarkValueScaleType
-    insetPx?: number
-    origin?: number
-  },
+  scale: RowParams &
+    MarkValueScale & {
+      insetPx?: number
+      origin?: number
+    },
 ): [number, number] {
   const { domain, insetPx = 0, origin } = scale
-  const code = scaleTypeCode(scale.scaleType)
+  const { valueScaleType, valueSymlogConstant } = valueScaleUniforms(scale)
   const height = scale.rowHeight ?? canvasHeight
   const inset = Math.min(insetPx, height / 2)
   const bands = height > 0 ? Math.ceil(canvasHeight / height) : 1
@@ -173,8 +174,8 @@ export function valueWindow(
         1 - (y - top - inset) / (height - 2 * inset),
         domain[0],
         domain[1],
-        code,
-        1,
+        valueScaleType,
+        valueSymlogConstant,
       )
     const lo =
       yPx + radiusPx >= top + height - inset

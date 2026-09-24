@@ -71,12 +71,12 @@ function normalizeScore(score: number, domainMin: number, domainMax: number, sca
   return _clamp(((t - tMin) / tRange), 0.0, 1.0)
 }
 
-function valueToYPxScaled(value: number, domainMin: number, domainMax: number, h: number, scaleType: number): number {
-  return ((1.0 - normalizeScore(value, domainMin, domainMax, scaleType, 1.0)) * h)
+function valueToYPxScaled(value: number, domainMin: number, domainMax: number, h: number, scaleType: number, symlogConstant: number): number {
+  return ((1.0 - normalizeScore(value, domainMin, domainMax, scaleType, symlogConstant)) * h)
 }
 
 function valueToYPx(value: number, domainMin: number, domainMax: number, h: number): number {
-  return valueToYPxScaled(value, domainMin, domainMax, h, 0)
+  return valueToYPxScaled(value, domainMin, domainMax, h, 0, 1.0)
 }
 
 export function scoreBarHeightPx(score: number, domainMin: number, domainMax: number, canvasHeight: number): number {

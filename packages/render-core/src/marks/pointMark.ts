@@ -1,6 +1,5 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
 import { CappedPath, getDpr, makeBpMapper } from '../canvas2dUtils.ts'
-import { scaleTypeCode } from '../scoreScale.ts'
 import * as shader from '../shaders/pointMark.generated.ts'
 import { pointDrawsBar, pointYPx } from '../shaders/pointMark.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
@@ -10,10 +9,12 @@ import { inkAtPoint, inkOnRect, nearestInk } from './markHit.ts'
 import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
 import { valueWindow } from './nearestMarkHit.ts'
 import { bandHeightPx, bandTopPx, rowLane } from './rowLane.ts'
+import { valueScaleUniforms } from './valueScale.ts'
 
 import type { ColorChannel } from './markRamp.ts'
 import type { RowChannel, RowParams } from './rowLane.ts'
-import type { MarkRamp, MarkShape, MarkValueScaleType } from './types.ts'
+import type { MarkRamp, MarkShape } from './types.ts'
+import type { MarkValueScale } from './valueScale.ts'
 
 /**
  * The `point` shape's channels: a glyph per instance at `x`, on the `y` scale,
@@ -31,11 +32,7 @@ export interface PointChannels extends ColorChannel, RowChannel {
   count: number
 }
 
-export interface PointParams extends RowParams {
-  /** `[min, max]` `y` is read through. */
-  domain: [number, number]
-  /** How that domain is read; linear when absent. */
-  scaleType?: MarkValueScaleType
+export interface PointParams extends RowParams, MarkValueScale {
   /** The quantitative colour scale, for a point whose colour is a ramp. */
   ramp?: MarkRamp
   /** Glyph diameter in CSS px. */
@@ -65,7 +62,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       canvasHeight: frame.canvasHeight,
       domainMin: params.domain[0],
       domainMax: params.domain[1],
-      valueScaleType: scaleTypeCode(params.scaleType),
+      ...valueScaleUniforms(params),
       ...rampUniforms(params.ramp),
       zero: 0,
       // viewportWidth and radiusPx stay in CSS units to match canvasHeight:
@@ -90,7 +87,8 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     const band = bandHeightPx(params, frame.canvasHeight)
     const domainMin = domain[0]
     const domainMax = domain[1]
-    const st = scaleTypeCode(params.scaleType)
+    const { valueScaleType: st, valueSymlogConstant: c } =
+      valueScaleUniforms(params)
     const bpToPx = makeBpMapper(block)
 
     let current = color[0]!
@@ -108,7 +106,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       const xEnd = bpToPx(x2[i]!)
       const yPx =
         bandTopPx(row, i, band) +
-        pointYPx(y[i]!, domainMin, domainMax, band, st, insetPx)
+        pointYPx(y[i]!, domainMin, domainMax, band, st, insetPx, c)
       const widthPx = Math.abs(xEnd - xStart)
       if (pointDrawsBar(widthPx, r)) {
         ctx.rect(Math.min(xStart, xEnd), yPx - r, widthPx, diameterPx)
@@ -129,16 +127,11 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     const xEnd = bpToPx(x2[i]!)
     const r = diameterPx / 2
     const band = bandHeightPx(params, frame.canvasHeight)
+    const { valueScaleType: st, valueSymlogConstant: c } =
+      valueScaleUniforms(params)
     const cy =
       bandTopPx(row, i, band) +
-      pointYPx(
-        y[i]!,
-        domain[0],
-        domain[1],
-        band,
-        scaleTypeCode(params.scaleType),
-        insetPx,
-      )
+      pointYPx(y[i]!, domain[0], domain[1], band, st, insetPx, c)
     const lo = Math.min(xStart, xEnd)
     const hi = Math.max(xStart, xEnd)
     return pointDrawsBar(hi - lo, r)
@@ -157,13 +150,14 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     const domainMin = domain[0]
     const domainMax = domain[1]
     const band = bandHeightPx(params, frame.canvasHeight)
-    const st = scaleTypeCode(params.scaleType)
+    const { valueScaleType: st, valueSymlogConstant: c } =
+      valueScaleUniforms(params)
     return nearestInk(candidates, maxDistSq, i => {
       const xStart = bpToPx(x[i]!)
       const xEnd = bpToPx(x2[i]!)
       const cy =
         bandTopPx(row, i, band) +
-        pointYPx(y[i]!, domainMin, domainMax, band, st, insetPx)
+        pointYPx(y[i]!, domainMin, domainMax, band, st, insetPx, c)
       const lo = Math.min(xStart, xEnd)
       const hi = Math.max(xStart, xEnd)
       return pointDrawsBar(hi - lo, diameterPx / 2)

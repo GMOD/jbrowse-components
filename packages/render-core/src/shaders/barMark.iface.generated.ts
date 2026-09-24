@@ -11,7 +11,7 @@ export const BINDINGS: readonly ShaderBinding[] = [
 
 export const VERTS_PER_INSTANCE = 6
 
-export const UNIFORMS_SIZE_BYTES = 64
+export const UNIFORMS_SIZE_BYTES = 80
 
 // Word indices into a Float32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
@@ -19,20 +19,21 @@ export const UNIFORM_OFFSET_F32 = {
   canvasHeight: 3,
   domainMin: 4,
   domainMax: 5,
-  rampMin: 8,
-  rampMax: 9,
-  origin: 10,
-  rowHeight: 11,
-  zero: 12,
-  minCellDenomPx: 13,
-  minWidthPx: 14,
-  devicePixelRatio: 15,
+  valueSymlogConstant: 7,
+  rampMin: 9,
+  rampMax: 10,
+  origin: 11,
+  rowHeight: 12,
+  zero: 13,
+  minCellDenomPx: 14,
+  minWidthPx: 15,
+  devicePixelRatio: 16,
 } as const
 
 // Word indices into a Int32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_I32 = {
   valueScaleType: 6,
-  rampMode: 7,
+  rampMode: 8,
 } as const
 
 
@@ -42,6 +43,7 @@ export interface Uniforms {
   domainMin: number
   domainMax: number
   valueScaleType: number
+  valueSymlogConstant: number
   rampMode: number
   rampMin: number
   rampMax: number
@@ -63,15 +65,16 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[4] = uniforms.domainMin
   f32[5] = uniforms.domainMax
   i32[6] = uniforms.valueScaleType
-  i32[7] = uniforms.rampMode
-  f32[8] = uniforms.rampMin
-  f32[9] = uniforms.rampMax
-  f32[10] = uniforms.origin
-  f32[11] = uniforms.rowHeight
-  f32[12] = uniforms.zero
-  f32[13] = uniforms.minCellDenomPx
-  f32[14] = uniforms.minWidthPx
-  f32[15] = uniforms.devicePixelRatio
+  f32[7] = uniforms.valueSymlogConstant
+  i32[8] = uniforms.rampMode
+  f32[9] = uniforms.rampMin
+  f32[10] = uniforms.rampMax
+  f32[11] = uniforms.origin
+  f32[12] = uniforms.rowHeight
+  f32[13] = uniforms.zero
+  f32[14] = uniforms.minCellDenomPx
+  f32[15] = uniforms.minWidthPx
+  f32[16] = uniforms.devicePixelRatio
 }
 
 export const INSTANCE_STRIDE_BYTES = 20

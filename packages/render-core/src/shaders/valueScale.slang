@@ -6,10 +6,10 @@ module valueScale;
 
 import scoreScale;
 
-public float valueToYPxScaled(float value, float domainMin, float domainMax, float h, int scaleType) {
-  return (1.0 - normalizeScore(value, domainMin, domainMax, scaleType, 1.0)) * h;
+public float valueToYPxScaled(float value, float domainMin, float domainMax, float h, int scaleType, float symlogConstant) {
+  return (1.0 - normalizeScore(value, domainMin, domainMax, scaleType, symlogConstant)) * h;
 }
 
 public float valueToYPx(float value, float domainMin, float domainMax, float h) {
-  return valueToYPxScaled(value, domainMin, domainMax, h, 0);
+  return valueToYPxScaled(value, domainMin, domainMax, h, 0, 1.0);
 }

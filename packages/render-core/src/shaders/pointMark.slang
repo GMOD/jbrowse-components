@@ -35,6 +35,8 @@ struct Uniforms {
   float  domainMax;
   // `scoreScale`'s scale-type vocabulary, for the declared y scale.
   int    valueScaleType;
+  // Already resolved from the domain (`resolveSymlogConstant`); read by symlog alone.
+  float  valueSymlogConstant;
   // `markColor`'s: 0 packs the instance's colour, 1 and 2 read its slot as a
   // value through the ramp below.
   int    rampMode;
@@ -100,9 +102,9 @@ static const float DIAMOND_GLYPH_SCALE = 1.6;
 
 // The shape's own placement: the vertex branch, the Canvas2D painter, the ink
 // box and the hit test all read a value's y through this.
-float pointYPx(float value, float domainMin, float domainMax, float h, int scaleType, float insetPx) {
+float pointYPx(float value, float domainMin, float domainMax, float h, int scaleType, float insetPx, float symlogConstant) {
   float inset = min(insetPx, h * 0.5);
-  return inset + valueToYPxScaled(value, domainMin, domainMax, h - 2.0 * inset, scaleType);
+  return inset + valueToYPxScaled(value, domainMin, domainMax, h - 2.0 * inset, scaleType, symlogConstant);
 }
 
 // The glyph channel's values. The numbering is a contract between whatever
@@ -123,7 +125,7 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
 
   float startClipX = bpToClipX(inst.x, u);
   float endClipX = bpToClipX(inst.x2, u);
-  float yPx = u.rowHeight * float(inst.row) + pointYPx(inst.y, u.domainMin, u.domainMax, u.rowHeight, u.valueScaleType, u.insetPx);
+  float yPx = u.rowHeight * float(inst.row) + pointYPx(inst.y, u.domainMin, u.domainMax, u.rowHeight, u.valueScaleType, u.insetPx, u.valueSymlogConstant);
   float centerClipY = yPxToClipY(yPx, u.canvasHeight);
 
   // Genomic span in CSS px (clip width spans -1..1 across viewportWidth).

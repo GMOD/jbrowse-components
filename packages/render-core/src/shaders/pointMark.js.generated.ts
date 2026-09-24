@@ -71,13 +71,13 @@ function normalizeScore(score: number, domainMin: number, domainMax: number, sca
   return _clamp(((t - tMin) / tRange), 0.0, 1.0)
 }
 
-export function valueToYPxScaled(value: number, domainMin: number, domainMax: number, h: number, scaleType: number): number {
-  return ((1.0 - normalizeScore(value, domainMin, domainMax, scaleType, 1.0)) * h)
+export function valueToYPxScaled(value: number, domainMin: number, domainMax: number, h: number, scaleType: number, symlogConstant: number): number {
+  return ((1.0 - normalizeScore(value, domainMin, domainMax, scaleType, symlogConstant)) * h)
 }
 
-export function pointYPx(value: number, domainMin: number, domainMax: number, h: number, scaleType: number, insetPx: number): number {
+export function pointYPx(value: number, domainMin: number, domainMax: number, h: number, scaleType: number, insetPx: number, symlogConstant: number): number {
   let _t0 = _min(insetPx, (h * 0.5))
-  return (_t0 + valueToYPxScaled(value, domainMin, domainMax, (h - (2.0 * _t0)), scaleType))
+  return (_t0 + valueToYPxScaled(value, domainMin, domainMax, (h - (2.0 * _t0)), scaleType, symlogConstant))
 }
 
 export function pointDrawsBar(spanPx: number, radiusPx: number): boolean {

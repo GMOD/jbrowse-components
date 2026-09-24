@@ -48,6 +48,8 @@ struct Uniforms {
   float  domainMax;
   // `scoreScale`'s scale-type vocabulary, for the declared y scale.
   int    valueScaleType;
+  // Already resolved from the domain (`resolveSymlogConstant`); read by symlog alone.
+  float  valueSymlogConstant;
   // `markColor`'s: 0 packs the instance's colour, 1 and 2 read its slot as a
   // value through the ramp below.
   int    rampMode;
@@ -94,8 +96,8 @@ VsOut vs_main(BarMarkInstance inst, uint vid : SV_VertexID) {
   float2 q = quadLocal(vid);
 
   float bandTop = u.rowHeight * float(inst.row);
-  float valueY = bandTop + valueToYPxScaled(inst.y, u.domainMin, u.domainMax, u.rowHeight, u.valueScaleType);
-  float originY = bandTop + valueToYPxScaled(u.origin, u.domainMin, u.domainMax, u.rowHeight, u.valueScaleType);
+  float valueY = bandTop + valueToYPxScaled(inst.y, u.domainMin, u.domainMax, u.rowHeight, u.valueScaleType, u.valueSymlogConstant);
+  float originY = bandTop + valueToYPxScaled(u.origin, u.domainMin, u.domainMax, u.rowHeight, u.valueScaleType, u.valueSymlogConstant);
   float topPx = min(valueY, originY);
   float botPx = max(valueY, originY);
   float padPx = barAaPx();

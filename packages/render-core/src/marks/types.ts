@@ -82,7 +82,7 @@ export type MarkTexture = Uint8Array | MarkImage
 
 export type MarkFrame = FrameDimensions
 
-export type MarkValueScaleType = 'linear' | 'log'
+export type MarkValueScaleType = 'linear' | 'log' | 'symlog'
 
 /**
  * The colour scale a ramp channel's raw `colorValue`s resolve through each
@@ -90,7 +90,7 @@ export type MarkValueScaleType = 'linear' | 'log'
  */
 export interface MarkRamp {
   domain: [number, number]
-  scale: MarkValueScaleType
+  scale: 'linear' | 'log'
   lut: Uint8Array
 }
 

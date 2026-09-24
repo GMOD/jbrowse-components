@@ -24,7 +24,7 @@ function scoreToY(
   [min, max]: [number, number],
   canvasHeight: number,
 ) {
-  return valueToYPxScaled(score, min, max, canvasHeight, 0)
+  return valueToYPxScaled(score, min, max, canvasHeight, 0, 1)
 }
 
 // -log10 p is the conventional GWAS score, so the domains are small positive
