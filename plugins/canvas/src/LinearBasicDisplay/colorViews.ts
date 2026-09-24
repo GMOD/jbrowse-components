@@ -99,6 +99,16 @@ export function colorViews(self: ColorHost) {
 
     /**
      * #getter
+     * The color a field value paints, while the field paints: what the
+     * main-thread encode fills each box carrying that value with.
+     */
+    get paintColorValue(): ((value: string) => string) | undefined {
+      const field = this.paintedColorField
+      return field && (value => field.color(field.key(value)))
+    },
+
+    /**
+     * #getter
      * What the `color` object's slots say together that it cannot paint as
      * written, for the corner notice.
      */

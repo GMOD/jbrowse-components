@@ -20,6 +20,7 @@ export interface RectData extends PrimitiveBase {
   end: number
   height: number
   strand: number
+  colorValue?: number
 }
 
 export interface LineData extends PrimitiveBase {
@@ -97,6 +98,18 @@ function colorClassArray(items: { colorClass: number }[]) {
   return out
 }
 
+// LENGTH ZERO when no rect carries a color field value.
+function colorValueArray(items: { colorValue?: number }[]) {
+  if (!items.some(i => i.colorValue)) {
+    return new Uint32Array(0)
+  }
+  const out = new Uint32Array(items.length)
+  for (const [i, item] of items.entries()) {
+    out[i] = item.colorValue ?? 0
+  }
+  return out
+}
+
 // Filters a per-feature accumulator down to the visible bp window and packs the
 // parallel typed arrays the GPU/Canvas2D renderers consume.
 export function packRenderArrays(
@@ -128,6 +141,7 @@ export function packRenderArrays(
   // dense-pileup regime per FEATURE.
   const rectDensityFade = new Uint32Array(visibleRects.length)
   const rectColorClasses = colorClassArray(visibleRects)
+  const rectColorValues = colorValueArray(visibleRects)
   const rectFeatureIndices = new Uint32Array(visibleRects.length)
   const rectLabelRows = labelRowArray(visibleRects)
   const rectChildOrdinals = childOrdinalArray(visibleRects)
@@ -191,6 +205,7 @@ export function packRenderArrays(
     rectStrands,
     rectDensityFade,
     rectColorClasses,
+    rectColorValues,
     rectFeatureIndices,
     rectLabelRows,
     rectChildOrdinals,

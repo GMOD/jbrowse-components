@@ -54,8 +54,9 @@ export function collectRenderData(
     floatingLabelsData: collector.floatingLabelsData,
     flatbushItems: collector.flatbushItems,
     subfeatureInfos: collector.subfeatureInfos,
-    colorKey: collector.colorKey && {
-      candidates: collector.colorKey.candidates,
+    colorValues: collector.colorKey && {
+      values: collector.colorKey.values,
+      painted: collector.colorKey.painted,
       rows: collector.colorKey.rows,
     },
     aminoAcidOverlay:

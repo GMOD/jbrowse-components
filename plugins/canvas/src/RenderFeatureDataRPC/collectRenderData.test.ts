@@ -1,12 +1,12 @@
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { collectRenderData } from './collectRenderData.ts'
 import { findGlyph } from './glyphs/findGlyph.ts'
 import { layoutRepeatRegion } from './glyphs/repeatRegion.ts'
 import { layoutSubfeatures } from './glyphs/subfeatures.ts'
-import { mockDisplayConfig } from './testUtils.ts'
+import { mockDisplayConfig, paintThroughColor } from './testUtils.ts'
 
 import type { MockDisplayConfigOverrides } from './testUtils.ts'
 import type { FeatureLayout } from './types.ts'
@@ -917,36 +917,50 @@ describe('color key', () => {
     })
   }
 
-  it('names each value with the color its boxes painted, and the section it files under', () => {
-    const result = collectAll({
-      color: {
-        value: undefined,
-        field: 'biotype',
-        domain: ['lncRNA'],
-        range: ['#123456'],
-      },
-    })
-    expect(result.colorKey).toEqual({
-      candidates: [
-        { rowIndex: 0, value: 'protein_coding', color: result.rectColors[0] },
-        { rowIndex: 1, value: 'lncRNA', color: cssColorToABGR('#123456') },
-        {
-          rowIndex: 0,
-          value: '',
-          color: cssColorToABGR(NO_CATEGORY_COLOR),
-        },
+  it('ships each value its boxes carry, and the section it files under', () => {
+    const result = collectAll({ color: { field: 'biotype' } })
+    expect(result.colorValues).toEqual({
+      values: ['protein_coding', 'lncRNA', ''],
+      painted: [
+        { rowIndex: 0, valueIndex: 0 },
+        { rowIndex: 1, valueIndex: 1 },
+        { rowIndex: 0, valueIndex: 2 },
       ],
       rows: [
         { strand: 1, groupKey: undefined },
         { strand: -1, groupKey: undefined },
       ],
     })
-    expect(result.rectColors[1]).toBe(cssColorToABGR('#123456'))
+    expect([...result.rectColorValues]).toEqual([1, 2, 3])
   })
 
-  it('is not collected while the color slot paints', () => {
-    expect(collectAll({ color: 'red' }).colorKey).toBeUndefined()
-    expect(collectAll({}).colorKey).toBeUndefined()
+  it('paints and keys each value through the scale the main thread holds', () => {
+    const result = collectAll({ color: { field: 'biotype' } })
+    const { rectColors, key } = paintThroughColor(result, {
+      field: 'biotype',
+      domain: ['lncRNA'],
+      range: ['#123456'],
+    })
+    expect(rectColors[1]).toBe(cssColorToABGR('#123456'))
+    expect(rectColors[2]).toBe(cssColorToABGR(NO_CATEGORY_COLOR))
+    expect(
+      key[0]?.kind === 'categorical' && key[0].entries.map(e => e.value),
+    ).toEqual(['lncRNA', 'protein_coding', ''])
+  })
+
+  it('ships no values while no field is named', () => {
+    expect(collectAll({ color: 'red' }).colorValues).toBeUndefined()
+    expect(collectAll({}).colorValues).toBeUndefined()
+    expect(collectAll({}).rectColorValues).toHaveLength(0)
+  })
+
+  it('keeps the color slot in the color lane, for when the field stops painting', () => {
+    const result = collectAll({ color: { value: 'red', field: 'biotype' } })
+    expect([...result.rectColors]).toEqual([
+      cssColorToABGR('red'),
+      cssColorToABGR('red'),
+      cssColorToABGR('red'),
+    ])
   })
 
   it("paints a transcript's exons the threshold bin of the transcript's value, and a transcript with none grey", () => {
@@ -954,25 +968,28 @@ describe('color key', () => {
       layouts: [geneWithTwoTranscripts({ tx1: { dif: '0.45' } })],
       regionStart: 0,
       regionEnd: 1000,
-      config: mockDisplayConfig({
-        color: {
-          value: undefined,
-          field: 'dif',
-          scale: 'threshold',
-          domain: ['-0.3', '0', '0.3'],
-          range: ['#0000ff', '#8888ff', '#ff8888', '#ff0000'],
-        },
-      }),
+      config: mockDisplayConfig({ color: { field: 'dif' } }),
       colorByCDS: false,
       peptideDataMap: undefined,
       jexl,
     })
+    const { rectColors, key } = paintThroughColor(result, {
+      field: 'dif',
+      scale: 'threshold',
+      domain: ['-0.3', '0', '0.3'],
+      range: ['#0000ff', '#8888ff', '#ff8888', '#ff0000'],
+    })
     const red = cssColorToABGR('#ff0000')
     const grey = cssColorToABGR(NO_CATEGORY_COLOR)
-    expect([...result.rectColors]).toEqual([red, red, grey, grey])
-    expect(result.colorKey?.candidates.map(c => [c.value, c.color])).toEqual([
-      ['≥ 0.3', red],
-      ['', grey],
+    expect(rectColors).toEqual([red, red, grey, grey])
+    const entries = key[0]?.kind === 'categorical' ? key[0].entries : []
+    expect(
+      entries
+        .filter(e => e.value === '≥ 0.3' || e.value === '')
+        .map(e => [e.value, e.color]),
+    ).toEqual([
+      ['≥ 0.3', abgrToCssRgba(red)],
+      ['', abgrToCssRgba(grey)],
     ])
   })
 })
@@ -1047,16 +1064,15 @@ describe("a glyph's own palette is the default the track's color beats", () => {
   })
 
   it('paints and keys every part by a field the track colors by', () => {
-    const result = collectRepeat({
-      color: {
-        value: undefined,
-        field: 'Classification',
-        domain: ['LTR/Copia'],
-        range: ['#123456'],
-      },
+    const result = collectRepeat({ color: { field: 'Classification' } })
+    const { rectColors, key } = paintThroughColor(result, {
+      field: 'Classification',
+      domain: ['LTR/Copia'],
+      range: ['#123456'],
     })
     const painted = cssColorToABGR('#123456')
-    expect([...result.rectColors]).toEqual([painted, painted, painted])
-    expect(result.colorKey?.candidates.map(c => c.value)).toContain('LTR/Copia')
+    expect(rectColors).toEqual([painted, painted, painted])
+    expect(result.colorValues?.values).toEqual(['LTR/Copia'])
+    expect(key).toEqual([])
   })
 })

@@ -101,6 +101,7 @@ function makeModel(overrides: Partial<LegendModel> = {}): LegendModel {
     height: 100,
     scrollTop: 0,
     outlineColorSlot: '',
+    paintColorValue: undefined,
     displayDirectionalChevrons: true,
     error: undefined,
     regionTooLarge: false,

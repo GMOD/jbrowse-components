@@ -26,6 +26,45 @@ const MID_TINT = FRAMES.length * 2
 const COLOR_CLASS_COUNT = FIRST_FRAME + FRAMES.length * 3
 
 /**
+ * A codon stripe over a box the color field paints: the field's color,
+ * lightened as a stripe over a literal box is. The class lane carries it
+ * beside the box's value, and the literal it falls back to while no field
+ * paints is already lightened in the color lane.
+ */
+export const FIELD_LIGHT_TINT = COLOR_CLASS_COUNT
+export const FIELD_MID_TINT = COLOR_CLASS_COUNT + 1
+
+function isThemeClass(colorClass: number) {
+  return colorClass !== LITERAL && colorClass < COLOR_CLASS_COUNT
+}
+
+function fieldTintOf(colorClass: number) {
+  return colorClass === FIELD_LIGHT_TINT
+    ? 1
+    : colorClass === FIELD_MID_TINT
+      ? 2
+      : 0
+}
+
+/**
+ * The packed color each of `values` paints through `paint`, then its light
+ * and mid codon tints, three words a value.
+ */
+export function fieldColorTable(
+  values: readonly string[],
+  paint: (value: string) => string,
+) {
+  const table = new Uint32Array(values.length * 3)
+  for (const [i, value] of values.entries()) {
+    const hex = formatHEX(parseCssColor(paint(value)))
+    table[i * 3] = cssColorToABGR(hex)
+    table[i * 3 + 1] = cssColorToABGR(lighten(hex, 0.5))
+    table[i * 3 + 2] = cssColorToABGR(lighten(hex, 0.35))
+  }
+  return table
+}
+
+/**
  * `LITERAL` for a frame outside `getFrame`'s range, where the box keeps
  * whatever color the config resolved for it.
  */
@@ -75,18 +114,28 @@ export function themedColorTable(palette: JBrowsePalette) {
 }
 
 /**
- * Returns the worker's own array when nothing in it is themed, so an unthemed
- * region re-encodes to the identical reference and the upload diff skips it.
+ * Returns the worker's own array when nothing in it is themed or painted by
+ * the field, so such a region re-encodes to the identical reference and the
+ * upload diff skips it. `fieldTable` is absent while no field paints, and the
+ * value lane is then ignored.
  */
 export function resolveColorLane(
   colors: Uint32Array,
   classes: Uint8Array,
   table: Uint32Array,
+  values?: Uint32Array,
+  fieldTable?: Uint32Array,
 ) {
+  const byValue = fieldTable && values && values.length > 0 ? values : undefined
   let out: Uint32Array | undefined
-  for (let i = 0; i < classes.length; i++) {
-    const colorClass = classes[i]!
-    if (colorClass !== LITERAL) {
+  const n = Math.max(classes.length, byValue?.length ?? 0)
+  for (let i = 0; i < n; i++) {
+    const colorClass = classes.length > 0 ? classes[i]! : LITERAL
+    const value = byValue ? byValue[i]! : 0
+    if (value > 0) {
+      out ??= new Uint32Array(colors)
+      out[i] = fieldTable![(value - 1) * 3 + fieldTintOf(colorClass)]!
+    } else if (isThemeClass(colorClass)) {
       out ??= new Uint32Array(colors)
       out[i] = table[colorClass]!
     }

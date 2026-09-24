@@ -45,6 +45,8 @@ export function readConfigValueSafe<T>(
 // is not a worker input and toggling it refetches nothing.
 export const THEME_DERIVED_COLOR = '#f0f'
 
+export type WorkerColor = Pick<ColorSetting, 'value' | 'field'>
+
 // Fully enumerated — no index signature, so a typo on any property is a type
 // error rather than silently typing as `unknown`.
 export interface DisplayConfig {
@@ -74,7 +76,9 @@ export interface DisplayConfig {
   // union makes any new direct read a type error rather than a Float32Array full
   // of NaN.
   featureHeight: number | string
-  color: ColorSetting
+  // The two members a box reads: its value, and the field whose values it
+  // ships. The scale is the main thread's, so a recolor never refetches.
+  color: WorkerColor
   // `maybeColor` slots, as `color.value`.
   connectorColor: string | undefined
   utrColor: string | undefined
@@ -178,5 +182,7 @@ export function pickDisplayConfig(snapshot: Record<string, unknown>) {
   for (const key of DISPLAY_CONFIG_KEYS) {
     picked[key] = source[key]
   }
+  const { value, field } = (source.color ?? {}) as Partial<ColorSetting>
+  picked.color = { value, field: field ?? '' }
   return picked as unknown as SettingsDisplayConfig
 }

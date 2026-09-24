@@ -1565,6 +1565,45 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     expect(display.loadedRegions.size).toBe(1)
   })
 
+  // The worker ships the field's values and the scale is the main thread's,
+  // so everything about how a named field paints re-encodes what is loaded.
+  it('a recolor of the field already named does not refetch', async () => {
+    const { display, mockRpcCall } = await loadedDisplay()
+    display.colorByField('biotype')
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+    const callsBefore = mockRpcCall.mock.calls.length
+
+    display.setColorScale({
+      field: 'biotype',
+      domain: ['lncRNA'],
+      range: ['#123456'],
+    })
+    display.pinColorDomain()
+    setConf(display, ['color', 'scale'], 'threshold')
+    display.setColorScale()
+    display.colorByField('biotype')
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+    expect(display.loadedRegions.size).toBe(1)
+  })
+
+  it('a new color field refetches, for the values it reads', async () => {
+    const { display, mockRpcCall } = await loadedDisplay()
+    const callsBefore = mockRpcCall.mock.calls.length
+
+    display.colorByField('biotype')
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    expect(mockRpcCall.mock.calls.at(-1)![2]).toMatchObject({
+      displayConfig: { color: { value: undefined, field: 'biotype' } },
+    })
+  })
+
   it('a compact displayMode does not refetch', async () => {
     const { display, mockRpcCall } = await loadedDisplay()
     const callsBefore = mockRpcCall.mock.calls.length

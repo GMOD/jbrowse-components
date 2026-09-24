@@ -41,6 +41,7 @@ export interface RenderSvgModel extends SvgExportable {
   densityBandLayer: DensityBandLayer
   densityPeakReadout: string
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>
+  paintColorValue: ((value: string) => string) | undefined
   outlineColorSlot: string
   displayDirectionalChevrons: boolean
   // Drawn by the shell, over this body — not here. Declared so the export's
@@ -99,7 +100,11 @@ function CanvasFeaturesSvgBody({
   }
   // Resolved against the export theme's palette, not the session's, which is
   // why the colors ride as classes.
-  const dataMap = resolveMapColors(model.laidOutDataMap, palette)
+  const dataMap = resolveMapColors(
+    model.laidOutDataMap,
+    palette,
+    model.paintColorValue,
+  )
   // Culled with the DOM overlay's own band so the export emits exactly the
   // labels on screen; anything outside the clip would be written and then
   // clipped away.

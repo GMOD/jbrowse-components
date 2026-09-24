@@ -5,7 +5,12 @@ import {
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
 
-import { LITERAL, codonStripeClass } from '../colorClasses.ts'
+import {
+  FIELD_LIGHT_TINT,
+  FIELD_MID_TINT,
+  LITERAL,
+  codonStripeClass,
+} from '../colorClasses.ts'
 import { createTranscriptFloatingLabel } from '../floatingLabels.ts'
 import { hasVisibleText, isUTR } from '../util.ts'
 import {
@@ -118,8 +123,13 @@ export function emitCodonRects(
     baseHex === undefined ? 0 : colorToUint32(lighten(baseHex, 0.5))
   const color2 =
     baseHex === undefined ? 0 : colorToUint32(lighten(baseHex, 0.35))
-  const class1 = codonStripeClass(baseColor.colorClass, false)
-  const class2 = codonStripeClass(baseColor.colorClass, true)
+  const { colorValue } = baseColor
+  const class1 = colorValue
+    ? FIELD_LIGHT_TINT
+    : codonStripeClass(baseColor.colorClass, false)
+  const class2 = colorValue
+    ? FIELD_MID_TINT
+    : codonStripeClass(baseColor.colorClass, true)
 
   // One call per CDS segment, so the stripe phase alternates by the global
   // residue index rather than the loop index and stays continuous across exon
@@ -137,6 +147,7 @@ export function emitCodonRects(
           ? color2
           : color1,
       colorClass: aa.isTranslExcept ? LITERAL : odd ? class2 : class1,
+      colorValue: aa.isTranslExcept ? undefined : colorValue,
       strand,
 
       flatbushIdx,

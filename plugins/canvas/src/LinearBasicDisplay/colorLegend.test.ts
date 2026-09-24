@@ -1,7 +1,5 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
-import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import {
   makeFeatureData,
@@ -78,59 +76,52 @@ describe('derived color key', () => {
     end: 10_000,
   }
 
-  // Two records, one per biotype, each painting its own color.
+  const noSection = [{ strand: undefined, groupKey: undefined }]
+
+  // What the worker's walk ships: the field's values, each a box carried, in
+  // the section its record files under.
+  function paintedData(
+    values: string[],
+    rows: { strand: undefined; groupKey: string | undefined }[] = noSection,
+  ) {
+    return makeFeatureData({
+      colorValues: {
+        values,
+        painted: values.map((_, i) => ({
+          rowIndex: rows.length > 1 ? i : 0,
+          valueIndex: i,
+        })),
+        rows,
+      },
+    })
+  }
+
+  // Three records, one per biotype, each in its own section.
   function coloredDisplay(scale: {
     field: string
     domain?: string[]
-    palette?: string[]
+    range?: string[]
   }) {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setColorScale(scale)
+    const biotypes = ['protein_coding', 'lncRNA', 'snoRNA']
     display.setRpcData(
       0,
-      makeFeatureData({
+      {
+        ...paintedData(
+          biotypes,
+          biotypes.map(groupKey => ({ strand: undefined, groupKey })),
+        ),
         flatbushItems: [
           makeFlatbushItem({ featureId: 'pc', groupKey: 'protein_coding' }),
           makeFlatbushItem({ featureId: 'lnc', groupKey: 'lncRNA' }),
           makeFlatbushItem({ featureId: 'sno', groupKey: 'snoRNA' }),
         ],
-        colorKey: {
-          candidates: [
-            {
-              rowIndex: 0,
-              value: 'protein_coding',
-              color: cssColorToABGR('red'),
-            },
-            { rowIndex: 1, value: 'lncRNA', color: cssColorToABGR('blue') },
-            { rowIndex: 2, value: 'snoRNA', color: cssColorToABGR('green') },
-          ],
-          rows: [
-            { strand: undefined, groupKey: 'protein_coding' },
-            { strand: undefined, groupKey: 'lncRNA' },
-            { strand: undefined, groupKey: 'snoRNA' },
-          ],
-        },
-      }),
+      },
       ctgA,
     )
     return display
-  }
-
-  // What the worker's walk records: a colour per key, `''` for no value.
-  function paintedData(keys: string[]) {
-    return makeFeatureData({
-      colorKey: {
-        candidates: keys.map((value, i) => ({
-          rowIndex: 0,
-          value,
-          color: cssColorToABGR(
-            value === '' ? NO_CATEGORY_COLOR : `hsl(${i * 40}, 70%, 50%)`,
-          ),
-        })),
-        rows: [{ strand: undefined, groupKey: undefined }],
-      },
-    })
   }
 
   const keyValues = (display: ReturnType<typeof coloredDisplay>) =>
@@ -185,23 +176,7 @@ describe('derived color key', () => {
 
   it('names strand values as strands', () => {
     const display = coloredDisplay({ field: 'strand' })
-    display.setRpcData(
-      0,
-      makeFeatureData({
-        colorKey: {
-          candidates: [
-            { rowIndex: 0, value: '1', color: cssColorToABGR('tomato') },
-            {
-              rowIndex: 0,
-              value: '-1',
-              color: cssColorToABGR('cornflowerblue'),
-            },
-          ],
-          rows: [{ strand: undefined, groupKey: undefined }],
-        },
-      }),
-      ctgA,
-    )
+    display.setRpcData(0, paintedData(['1', '-1']), ctgA)
     expect(display.legendSpec.sections[0]?.items.map(i => i.label)).toEqual([
       'Forward strand',
       'Reverse strand',
@@ -264,35 +239,24 @@ describe('derived color key', () => {
     })
 
     it('pins every value of a row two values share, so the pin tells them apart', () => {
-      const display = coloredDisplay({ field: 'biotype' })
+      // Two colors for three values: two of them share one.
+      const display = coloredDisplay({
+        field: 'biotype',
+        range: ['red', 'blue'],
+      })
       display.setRpcData(
         0,
-        makeFeatureData({
-          colorKey: {
-            candidates: [
-              {
-                rowIndex: 0,
-                value: 'protein_coding',
-                color: cssColorToABGR('red'),
-              },
-              { rowIndex: 0, value: 'lncRNA', color: cssColorToABGR('red') },
-              { rowIndex: 0, value: 'snoRNA', color: cssColorToABGR('blue') },
-            ],
-            rows: [{ strand: undefined, groupKey: undefined }],
-          },
-        }),
+        paintedData(['protein_coding', 'lncRNA', 'snoRNA']),
         ctgA,
       )
-      expect(display.legendSpec.sections[0]?.items.map(i => i.label)).toEqual([
-        'lncRNA, protein_coding',
-        'snoRNA',
-      ])
+      expect(display.legendSpec.sections[0]?.items).toHaveLength(2)
       pinRow(display)!.onClick()
-      expect(display.colorSettings.domain).toEqual([
+      expect(display.colorSettings.domain.toSorted()).toEqual([
         'lncRNA',
         'protein_coding',
         'snoRNA',
       ])
+      expect(display.legendSpec.sections[0]?.items).toHaveLength(3)
     })
   })
 
@@ -305,20 +269,12 @@ describe('derived color key', () => {
   it('is no key while every value paints one color', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setColorScale({ field: 'biotype' })
-    display.setRpcData(
-      0,
-      makeFeatureData({
-        colorKey: {
-          candidates: [
-            { rowIndex: 0, value: 'a', color: cssColorToABGR('red') },
-            { rowIndex: 0, value: 'b', color: cssColorToABGR('red') },
-          ],
-          rows: [{ strand: undefined, groupKey: undefined }],
-        },
-      }),
-      ctgA,
-    )
+    display.setColorScale({
+      field: 'biotype',
+      domain: ['a', 'b'],
+      range: ['red', 'red'],
+    })
+    display.setRpcData(0, paintedData(['a', 'b']), ctgA)
     expect(display.colorScales).toEqual([])
   })
 
@@ -337,23 +293,7 @@ describe('derived color key', () => {
 
     it('keys every bin in order, and the no-value row once something paints it', () => {
       const display = thresholdDisplay()
-      display.setRpcData(
-        0,
-        makeFeatureData({
-          colorKey: {
-            candidates: [
-              { rowIndex: 0, value: '≥ 0.3', color: cssColorToABGR('#ff0000') },
-              {
-                rowIndex: 0,
-                value: '',
-                color: cssColorToABGR(NO_CATEGORY_COLOR),
-              },
-            ],
-            rows: [{ strand: undefined, groupKey: undefined }],
-          },
-        }),
-        ctgA,
-      )
+      display.setRpcData(0, paintedData(['0.45', '']), ctgA)
       expect(display.colorScales[0]).toMatchObject({ title: 'dif' })
       expect(keyValues(display)).toEqual(['< -0.3', '-0.3 – 0.3', '≥ 0.3', ''])
       expect(display.colorByMode).toBe('attribute')

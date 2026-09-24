@@ -1,3 +1,10 @@
+import {
+  colorEncodingOf,
+  colorFieldOf,
+} from '@jbrowse/display-kit/colorConfigSchema'
+
+import { resolveRegionColors } from '../LinearBasicDisplay/components/resolveRegionColors.ts'
+import { derivedColorKey } from '../LinearBasicDisplay/derivedColorKey.ts'
 import { LITERAL } from './colorClasses.ts'
 import { createFeatureFloatingLabels } from './floatingLabels.ts'
 import { TRANSCRIPT_PADDING_RATIO } from './glyphs/glyphUtils.ts'
@@ -13,6 +20,7 @@ import type {
   FloatingLabelsDataMap,
   SubfeatureInfo,
 } from './rpcTypes.ts'
+import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
 // `floatingLabelsData` is a Map in the render contract, but a fixture reads far
 // better as a literal keyed by feature id.
@@ -37,9 +45,6 @@ export function mockDisplayConfig({
     color: {
       value: undefined,
       field: '',
-      scale: undefined,
-      domain: [],
-      range: [],
       ...(typeof color === 'string' ? { value: color } : color),
     },
     featureHeight: 10,
@@ -261,5 +266,31 @@ export function makeFeatureData(
     floatingLabelsData: new Map(),
     featureCount: 0,
     ...overrides,
+  }
+}
+
+/**
+ * A payload painted through a color object the way the display's encode
+ * paints it, and the key the display derives: the worker ships each box's
+ * field value, and the scale is the main thread's.
+ */
+export function paintThroughColor(
+  data: Pick<FeatureDataResult, 'colorValues'> & Partial<FeatureDataResult>,
+  color: Partial<ColorSetting> & { field: string },
+) {
+  const field = colorFieldOf(
+    colorEncodingOf(
+      { value: undefined, scale: undefined, domain: [], range: [], ...color },
+      'categorical',
+    ),
+  )!
+  const resolved = resolveRegionColors(
+    data as FeatureDataResult,
+    new Uint32Array(32),
+    value => field.color(field.key(value)),
+  )
+  return {
+    rectColors: [...resolved.rectColors],
+    key: derivedColorKey(field, [data]),
   }
 }

@@ -1,57 +1,48 @@
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
-import { createLegendCandidateCollector } from '@jbrowse/core/util/legendCandidates'
-import {
-  colorEncodingOf,
-  colorFieldOf,
-} from '@jbrowse/display-kit/colorConfigSchema'
 
 import type { DisplayConfig } from '../renderConfig.ts'
-import type { SectionStamp } from '../rpcTypes.ts'
+import type { ColorValues, SectionStamp } from '../rpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
-export interface PaintedValue {
-  key: string
-  css: string
-  packed: number
-}
-
 /**
- * The color channel's scale for one region's walk, and the key it derives:
- * every value a box painted, with that color and the section its record files
- * under, so the key lists exactly what was painted and a hidden section's
- * values can leave it.
+ * The color field's values for one region's walk: each box a field could
+ * paint carries its value's index into `values`, and `painted` lists every
+ * value with the section its record files under. The scale that turns a value
+ * into a color is the main thread's, so a recolor re-encodes what is loaded.
  */
 export function createColorKey(config: DisplayConfig, jexl: JexlInstance) {
-  const field = colorFieldOf(colorEncodingOf(config.color, 'categorical'))
+  const { field } = config.color
   if (!field) {
     return undefined
   }
-  const read = fieldReader(field.field, jexl)
-  const painted = new Map<string, PaintedValue>()
+  const read = fieldReader(field, jexl)
+  const values: string[] = []
+  const indexOfText = new Map<string, number>()
   const rows: SectionStamp[] = []
   const rowOf = new Map<string, number>()
-  const collector = createLegendCandidateCollector()
+  const painted: ColorValues['painted'] = []
+  const paintedIds = new Set<string>()
   let row = 0
 
   // A box paints its level's value — a transcript's, for its exons and CDS —
   // or the nearest ancestor's, and its own only where nothing above carries
   // the field.
-  function valueAt(box: Feature, level: Feature) {
+  function textAt(box: Feature, level: Feature) {
     for (let cur: Feature | undefined = level; cur; cur = cur.parent?.()) {
-      const value = read(cur)
-      if (valueText(value) !== '') {
-        return value
+      const text = valueText(read(cur))
+      if (text !== '') {
+        return text
       }
     }
-    return box === level ? undefined : read(box)
+    return box === level ? '' : valueText(read(box))
   }
 
   return {
+    values,
     rows,
-    candidates: collector.candidates,
+    painted,
     enterRecord(stamp: SectionStamp) {
       const current = rows[row]
       if (
@@ -70,18 +61,24 @@ export function createColorKey(config: DisplayConfig, jexl: JexlInstance) {
       }
       row = index
     },
-    valueOf(box: Feature, level: Feature): PaintedValue {
-      const key = field.key(valueAt(box, level))
-      let value = painted.get(key)
-      if (value === undefined) {
-        const css = field.color(key)
-        value = { key, css, packed: cssColorToABGR(css) }
-        painted.set(key, value)
+    // One-based, the lane's 0 being "no field value".
+    laneValueOf(box: Feature, level: Feature) {
+      const text = textAt(box, level)
+      let index = indexOfText.get(text)
+      if (index === undefined) {
+        index = values.length
+        values.push(text)
+        indexOfText.set(text, index)
       }
-      return value
+      return index + 1
     },
-    record({ key, packed }: PaintedValue) {
-      collector.add(row, key, packed)
+    record(laneValue: number) {
+      const valueIndex = laneValue - 1
+      const id = `${row}:${valueIndex}`
+      if (!paintedIds.has(id)) {
+        paintedIds.add(id)
+        painted.push({ rowIndex: row, valueIndex })
+      }
     },
   }
 }

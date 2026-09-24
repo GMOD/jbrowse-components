@@ -627,11 +627,14 @@ export default function baseStateModelFactory(
        * #method
        * What the main-thread encode needs beyond a region's own data: the
        * packed color for every theme class the worker emitted, off
-       * `session.palette` so a theme toggle re-encodes what is loaded
-       * instead of refetching it.
+       * `session.palette`, and the color field's scale, so a theme toggle or
+       * a recolor re-encodes what is loaded instead of refetching it.
        */
       gpuProps() {
-        return { colorTable: themedColorTable(getPaletteHost(self).palette) }
+        return {
+          colorTable: themedColorTable(getPaletteHost(self).palette),
+          paintColorValue: self.paintColorValue,
+        }
       },
     }))
     .views(self => ({
@@ -1067,8 +1070,8 @@ export default function baseStateModelFactory(
         installUpload(self, backend, {
           cells: () => self.renderDataMap,
           inputs: () => self.gpuProps(),
-          encode: (data, { colorTable }) =>
-            resolveRegionColors(data, colorTable),
+          encode: (data, { colorTable, paintColorValue }) =>
+            resolveRegionColors(data, colorTable, paintColorValue),
           render: (b, encoded) =>
             b.renderBlocks(self.renderBlocks, encoded, self.renderState),
         })
@@ -1474,11 +1477,12 @@ export default function baseStateModelFactory(
             ? sectionIdsOf(self.laidOutDataMap, facet)
             : undefined
         return derivedColorKey(
+          scale,
+          self.rpcDataMap.values(),
+          sectionOf && (section => hiddenGroupKeys.has(sectionOf(section).key)),
           facet && facet.field === colorField?.field
             ? facetField(facet)
             : scale,
-          self.rpcDataMap.values(),
-          sectionOf && (section => hiddenGroupKeys.has(sectionOf(section).key)),
         )
       },
       /**

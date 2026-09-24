@@ -37,13 +37,7 @@ export function laneDisplayConfig({
     // every mark alike; the BED-color path (`itemRgb`, which `boxColor` falls
     // through to when this is unset) takes only an `r,g,b` triple and would drop
     // the alpha a jexl-authored cell color can carry.
-    color: {
-      value: `jexl:get(feature,'laneColor')`,
-      field: '',
-      scale: undefined,
-      domain: [],
-      range: [],
-    },
+    color: { value: `jexl:get(feature,'laneColor')`, field: '' },
     featureHeight,
     // The label content the `variantLaneLabels` slot asked for, expressed the
     // way plugin-canvas expresses it: withholding the jexl IS how a kind is

@@ -94,20 +94,23 @@ const BOX_COLOR_SLOTS = {
 } as const
 
 /**
- * `color` is undefined exactly when `colorClass` is not `LITERAL`: the worker
+ * `color` is undefined exactly when `colorClass` is a theme class: the worker
  * holds no palette, so a themed color has no literal to fall back to.
+ * `colorValue` is the box's index into the color field's values, one-based,
+ * which the main thread paints in `color`'s place while the field paints.
  */
 export interface ClassedColor {
   color: string | undefined
   colorClass: number
+  colorValue?: number
 }
 
 /**
  * Unpacked, because `emitCodonRects` lightens the CSS string. `colorKey` is
- * the color channel's scale when it has one, which paints in the `color`
- * slot's place from `level`'s value and records a value only where its color
- * is the one drawn. `glyphDefault` is a glyph's own palette, which paints
- * only where the track sets no color, as a BED's own colors do.
+ * the color field when the track names one: the box carries `level`'s value,
+ * recorded only where no reading frame paints over it. `glyphDefault` is a
+ * glyph's own palette, which paints only where the track sets no color, as a
+ * BED's own colors do.
  */
 export function boxColor(
   feature: Feature,
@@ -124,13 +127,9 @@ export function boxColor(
   // default.
   const isUtrBox = isUTR(feature)
   const slot = isUtrBox && config.utrColor !== undefined ? 'utrColor' : 'color'
-  const scaled =
-    slot === 'color' ? colorKey?.valueOf(feature, level) : undefined
   const raw = slot === 'color' ? config.color.value : config.utrColor
-
-  const fill = scaled
-    ? scaled.css
-    : raw === undefined
+  const fill =
+    raw === undefined
       ? (inheritedBedColor(feature) ??
         glyphDefault ??
         BOX_COLOR_SLOTS[isUtrBox ? 'utrColor' : 'color'])
@@ -164,10 +163,12 @@ export function boxColor(
     }
   }
 
-  if (scaled) {
-    colorKey?.record(scaled)
+  const colorValue =
+    slot === 'color' ? colorKey?.laneValueOf(feature, level) : undefined
+  if (colorValue !== undefined) {
+    colorKey?.record(colorValue)
   }
-  return { color: fill, colorClass: LITERAL }
+  return { color: fill, colorClass: LITERAL, colorValue }
 }
 
 /**
@@ -198,12 +199,18 @@ export function strokeColor(feature: Feature, ctx: RenderContext): PackedColor {
 export interface PackedColor {
   color: number
   colorClass: number
+  colorValue?: number
 }
 
-export function packColor({ color, colorClass }: ClassedColor): PackedColor {
+export function packColor({
+  color,
+  colorClass,
+  colorValue,
+}: ClassedColor): PackedColor {
   return {
     color: color === undefined ? 0 : colorToUint32(color),
     colorClass,
+    colorValue,
   }
 }
 

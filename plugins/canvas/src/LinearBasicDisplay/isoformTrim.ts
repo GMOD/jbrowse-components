@@ -242,6 +242,7 @@ function trimPrimitiveKind(
   data[`${kind}FeatureIndices`] = pick(featureIndices, kept, 1)
 
   if (kind === 'rect') {
+    data.rectColorValues = pick(data.rectColorValues, kept, 1)
     data.rectPositions = pick(data.rectPositions, kept, 2)
     data.rectStrands = pick(data.rectStrands, kept, 1)
     data.rectDensityFade = pick(data.rectDensityFade, kept, 1)

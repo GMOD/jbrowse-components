@@ -2,6 +2,7 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import {
   OUTLINE,
+  fieldColorTable,
   resolveColorLane,
   themedColorTable,
 } from '../../RenderFeatureDataRPC/colorClasses.ts'
@@ -11,19 +12,25 @@ import type { FeatureDataResult } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 /**
- * The worker has no palette, so it ships themed colors as classes with a zero
- * color lane and the main thread fills them in, so a light/dark toggle
- * re-encodes the loaded regions without refetching them. An unthemed
- * region comes back by reference, because the upload diff compares by reference.
+ * The worker has no palette and no scale, so it ships themed colors as
+ * classes and a box's color field value as an index, and the main thread
+ * fills both in, so a light/dark toggle or a recolor re-encodes the loaded
+ * regions without refetching them. A region with neither comes back by
+ * reference, because the upload diff compares by reference.
  */
 export function resolveRegionColors(
   data: FeatureDataResult,
   colorTable: Uint32Array,
+  paintColorValue?: (value: string) => string,
 ) {
   const rectColors = resolveColorLane(
     data.rectColors,
     data.rectColorClasses,
     colorTable,
+    data.rectColorValues,
+    paintColorValue &&
+      data.colorValues &&
+      fieldColorTable(data.colorValues.values, paintColorValue),
   )
   const lineColors = resolveColorLane(
     data.lineColors,
@@ -59,11 +66,12 @@ export function resolveOutlineColor(slot: string, palette: JBrowsePalette) {
 export function resolveMapColors(
   map: ReadonlyMap<number, FeatureDataResult>,
   palette: JBrowsePalette,
+  paintColorValue?: (value: string) => string,
 ) {
   const colorTable = themedColorTable(palette)
   const out = new Map<number, FeatureDataResult>()
   for (const [idx, data] of map) {
-    out.set(idx, resolveRegionColors(data, colorTable))
+    out.set(idx, resolveRegionColors(data, colorTable, paintColorValue))
   }
   return out
 }

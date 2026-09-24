@@ -6,7 +6,6 @@ import type {
   RegionTooLargeResult,
 } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
-import type { LegendCandidate } from '@jbrowse/core/util/legendCandidates'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 export interface LabelItem {
@@ -112,6 +111,9 @@ export interface FeatureDataResult {
   // LENGTH ZERO when every rect here carries a literal color. The worker has no
   // palette, so a CDS painted by reading frame ships its class and a zero color.
   rectColorClasses: Uint8Array
+  // LENGTH ZERO when the track names no color field: each rect's one-based
+  // index into `colorValues.values`, 0 where no field value paints it.
+  rectColorValues: Uint32Array
   // LENGTH ZERO when this region emits no `below` subfeature labels. The main
   // thread adds `count × labelFontPx` after the compact scale, because the row
   // height is the mode's label font size and the worker is mode-agnostic.
@@ -160,12 +162,9 @@ export interface FeatureDataResult {
 
   aminoAcidOverlay?: AminoAcidOverlayItem[]
 
-  // Undefined unless the color channel is a scale. A candidate's `rowIndex`
-  // indexes `rows`, the section its record files under.
-  colorKey?: {
-    candidates: LegendCandidate[]
-    rows: SectionStamp[]
-  }
+  // Undefined unless the track names a color field. The scale is the main
+  // thread's, which paints each value and derives the key from `painted`.
+  colorValues?: ColorValues
 
   featureCount: number
 
@@ -209,6 +208,7 @@ export type RegionRenderData = Pick<
     | `${string}FeatureIndices`
     | `${string}LabelRows`
     | `${string}ColorClasses`
+    | `${string}ColorValues`
     | `${string}ChildOrdinals`
   >
 > & { outlineColor?: number }
@@ -252,6 +252,17 @@ export interface HitItemBase {
   // Rides on the shared base so a nested transcript carries it on its
   // SubfeatureInfo and a standalone one on its FlatbushItem.
   transcript?: TranscriptCoords
+}
+
+/**
+ * The color field's distinct values in one region, as text. `painted` lists
+ * each value a box carries with the section its record files under: `rowIndex`
+ * indexes `rows`.
+ */
+export interface ColorValues {
+  values: string[]
+  painted: { rowIndex: number; valueIndex: number }[]
+  rows: SectionStamp[]
 }
 
 // What a record's section is read off.

@@ -1,6 +1,7 @@
 import { categoricalColor } from '@jbrowse/core/ui/colors'
 import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { SimpleFeature } from '@jbrowse/core/util'
+import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { mockDisplayConfig } from '../testUtils.ts'
@@ -195,10 +196,19 @@ describe('boxColor (color by a field)', () => {
     const colorKey = createColorKey(config, jexl)!
     colorKey.enterRecord({ strand: undefined, groupKey: undefined })
     const ctx = { config, colorByCDS, jexl }
+    const scale = categoricalField(field)
+    const keyOf = (valueIndex: number) => scale.key(colorKey.values[valueIndex])
     return {
-      paint: (box: Feature, level?: Feature) =>
-        boxColor(box, ctx, colorKey, level).color,
-      labels: () => colorKey.candidates.map(c => c.value),
+      paint: (box: Feature, level?: Feature) => {
+        const { color: literal, colorValue } = boxColor(
+          box,
+          ctx,
+          colorKey,
+          level,
+        )
+        return colorValue ? scale.color(keyOf(colorValue - 1)) : literal
+      },
+      labels: () => colorKey.painted.map(p => keyOf(p.valueIndex)),
     }
   }
 
