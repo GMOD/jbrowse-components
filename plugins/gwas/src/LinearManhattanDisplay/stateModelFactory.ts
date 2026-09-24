@@ -79,6 +79,7 @@ import type { ManhattanHit } from './findManhattanHit.ts'
 import type {
   ManhattanRenderState,
   ManhattanRenderingBackend,
+  StoredManhattanData,
 } from './manhattanRenderingBackendTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -96,14 +97,6 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ValueScale, VisibleEntry } from '@jbrowse/wiggle-core'
 
-// The Manhattan walker: the worker ships each region's score extremes already
-// reduced, so the domain is their min/max rather than a scan of the scores.
-// The Flatbush the hit test needs, wrapped once at the commit and carried in
-// the stored payload. It was a second per-region map beside the data, and
-// keeping the two in step was what `clearDisplaySpecificData` had to clear
-// together.
-type StoredManhattanData = ManhattanRpcResult & { flatbush?: Flatbush }
-
 function storedManhattanData(data: ManhattanRpcResult): StoredManhattanData {
   return {
     ...data,
@@ -111,6 +104,8 @@ function storedManhattanData(data: ManhattanRpcResult): StoredManhattanData {
   }
 }
 
+// The worker ships each region's score extremes already reduced, so the
+// domain is their min/max rather than a scan of the scores.
 function shippedExtremes(entries: VisibleEntry<ManhattanRpcResult>[]) {
   let scoreMin = Infinity
   let scoreMax = -Infinity
@@ -199,28 +194,11 @@ export function stateModelFactory(
         /**
          * #getter
          * The fetched points, keyed by displayedRegionIndex — the foundation's
-         * per-region store, narrowed. The Flatbush rides in the payload rather
-         * than in a second map kept in lockstep with it, so a single-region
-         * fetch still wraps only that region.
+         * per-region store, narrowed to this display's payload.
          */
         get rpcDataMap(): ReadonlyMap<number, StoredManhattanData> {
           return self.regionPayloads as ReadonlyMap<number, StoredManhattanData>
         },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * The per-region hit-test indexes, as the map `findManhattanHit` takes.
-         */
-        get flatbushes(): ReadonlyMap<number, Flatbush> {
-          return new Map(
-            [...self.rpcDataMap].flatMap(([idx, d]) =>
-              d.flatbush ? [[idx, d.flatbush] as const] : [],
-            ),
-          )
-        },
-      }))
-      .views(self => ({
         /**
          * #getter
          * the config typed off the concrete schema; `ConfigurationReference`
@@ -229,6 +207,25 @@ export function stateModelFactory(
          */
         get conf(): LinearManhattanDisplayConfig {
           return self.configuration
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The `color` object as the config spells it, no default filled in.
+         * `value` is read raw rather than through `getConf`, which would
+         * evaluate a `jexl:` callback against no feature and throw; the worker
+         * binds `feature` and evaluates it per point
+         * (`colorSlotTransport.test.ts`).
+         */
+        get writtenColor() {
+          return {
+            value: self.conf.color.value,
+            field: getConf(self, ['color', 'field']),
+            scale: getConf(self, ['color', 'scale']),
+            domain: getConf(self, ['color', 'domain']),
+            range: getConf(self, ['color', 'range']),
+          }
         },
       }))
       .views(self => ({
@@ -244,31 +241,22 @@ export function stateModelFactory(
          * #getter
          * The `color` object as painted, its `scale` the one that paints and
          * LD's default cuts and colours filled in; `rpcProps` hands it to the
-         * worker as the encoder takes it. `value` is read raw rather than through `getConf`,
-         * which would evaluate a `jexl:` callback against no feature and
-         * throw; the worker binds `feature` and evaluates it per point
-         * (`colorSlotTransport.test.ts`).
+         * worker as the encoder takes it.
          */
         get color(): ColorSetting & {
           value: string
           scale: ManhattanColorScale
         } {
-          const field = getConf(self, ['color', 'field'])
+          const written = self.writtenColor
+          const { field } = written
           const scale = paintedScale(
-            { scale: getConf(self, ['color', 'scale']), field },
+            written,
             fieldScaleOf(MANHATTAN_FIELD_SCALES, field),
           )
-          const written = {
-            domain: getConf(self, ['color', 'domain']),
-            range: getConf(self, ['color', 'range']),
-          }
           return {
-            value: self.conf.color.value,
-            field,
+            ...written,
             scale,
-            ...(isLdColoring({ field, scale })
-              ? ldColorDefaults(written)
-              : written),
+            ...(isLdColoring({ field, scale }) ? ldColorDefaults(written) : {}),
           }
         },
         /**
@@ -296,11 +284,10 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * LD coloring is actually in effect — the scale is `ld` *and* there's
-         * an .ld adapter for it to read. The scale alone can be `ld` from config
-         * with no adapter configured, in which case the worker paints
-         * `color.value`, so every LD affordance (legend, missing-index warning)
-         * keys off this getter.
+         * LD coloring is in effect: `field: 'ld'` on a threshold scale *and* an
+         * .ld adapter to read r² from. Without the adapter the worker reads
+         * `ld` off the features like any other threshold field, so every LD
+         * affordance (the r² key, the missing-index warning) keys off this.
          */
         get ldColoringActive(): boolean {
           return isLdColoring(this.color) && this.hasLdData
@@ -450,15 +437,10 @@ export function stateModelFactory(
          * as written, for the corner notice.
          */
         get notices(): string[] {
-          const field: string = getConf(self, ['color', 'field'])
+          const written = self.writtenColor
           return colorNotices(
-            {
-              field,
-              scale: getConf(self, ['color', 'scale']),
-              domain: getConf(self, ['color', 'domain']),
-              range: getConf(self, ['color', 'range']),
-            },
-            fieldScaleOf(MANHATTAN_FIELD_SCALES, field),
+            written,
+            fieldScaleOf(MANHATTAN_FIELD_SCALES, written.field),
           )
         },
       }))
@@ -505,14 +487,9 @@ export function stateModelFactory(
          * #getter
          * true when LD coloring is active with data loaded, but no region's LD
          * data referenced the index SNP — so every point is grey. LD is a
-         * single-region analysis, so "found in no loaded region" means missing.
-         *
-         * Panning is no longer one of the ways in: the LD read is anchored on
-         * the index rather than on the viewport (`ldQueryWindow`), so a loaded
-         * region on the index's own contig finds it wherever the view has
-         * moved to. What is left is the index being absent from the file,
-         * named differently there than in the GWAS file, or on a contig none
-         * of the loaded regions are.
+         * single-region analysis, so "found in no loaded region" means missing:
+         * absent from the file, named differently there than in the GWAS
+         * file, or on a contig none of the loaded regions are.
          */
         get indexSnpMissing(): boolean {
           return (
@@ -524,20 +501,13 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Fills MultiRegionDisplayMixin's supersession hook: the loaded data was
-         * colored under an index SNP the auto-pick is about to replace with the
-         * top hit, so `setIndexSnp` — an `rpcProps` field — will clear it and
-         * refetch.
-         *
-         * The condition is the auto-pick's own, the `ld` scale rather than
-         * `ldColoringActive`: what invalidates the load is the WRITE, and the
-         * autorun writes whether or not an `ldAdapter` is configured. Gating
-         * this on the adapter left `{ field: 'ld' }` with none — a config the
-         * getters above document as supported — exporting the empty lane this
-         * exists to prevent. On screen that is one invisible tick; an export samples
-         * `svgReady` once, and sampling it here captured the doomed load and
-         * painted the emptied map, which is a Manhattan lane with no points in
-         * it and the LD legend beside it.
+         * Fills MultiRegionDisplayMixin's supersession hook, and is the
+         * auto-pick's trigger: the loaded data was colored under an index SNP
+         * other than the top hit, so adopting it — an `rpcProps` write — will
+         * clear the data and refetch. Keyed on the `ld` scale rather than
+         * `ldColoringActive`, because the auto-pick writes whether or not an
+         * `ldAdapter` is configured, and an export sampling `svgReady` must
+         * not capture the load that write discards.
          */
         get dataSuperseded(): boolean {
           return (
@@ -561,10 +531,6 @@ export function stateModelFactory(
           }
           const { scale, field, domain, range } = self.color
           if (scale === 'threshold') {
-            // `field: 'ld'` with no adapter paints `value`, so it keys nothing.
-            if (isLdColoring(self.color)) {
-              return []
-            }
             const tables = [...self.rpcDataMap.values()].map(d => d.scale)
             const met = (flag: 'missing' | 'notNumber') =>
               tables.some(t => t?.kind === 'threshold' && t[flag])
@@ -604,17 +570,10 @@ export function stateModelFactory(
         },
       }))
       .actions(self => {
-        // The colour as written, not `self.color`, which fills in LD's
-        // default cuts and range
+        // From the colour as written, so a switch writes no LD default into
+        // the config
         function colorBy(field: string) {
-          const written = {
-            value: self.conf.color.value,
-            field: getConf(self, ['color', 'field']),
-            scale: getConf(self, ['color', 'scale']),
-            domain: getConf(self, ['color', 'domain']),
-            range: getConf(self, ['color', 'range']),
-          }
-          setConf(self, 'color', colorForField(written, field))
+          setConf(self, 'color', colorForField(self.writtenColor, field))
         }
         return {
           /**
@@ -720,11 +679,8 @@ export function stateModelFactory(
             ...makeShowSubMenu([
               makeCrossHatchItem(self),
               legendCheckboxItem(self, {
-                disabled: !(
-                  self.ldColoringActive || self.color.scale === 'categorical'
-                ),
-                disabledHelpText:
-                  'Requires LD or field coloring; a single color has no key',
+                disabled: self.color.scale === 'none',
+                disabledHelpText: 'A single color has no key',
               }),
             ]),
             {
@@ -865,46 +821,22 @@ export function stateModelFactory(
             // index anchored on the highest-scoring loaded SNP, re-tracking it as
             // higher-scoring data lands.
             //
-            // indexSnp is both a fetch input (rpcProps bakes per-feature color on
-            // the worker, so changing it clears every loaded region) and derived
-            // from the loaded data, so this only settles when it reads a
-            // *complete* load: mid-batch, topSnp is the winner among whatever
-            // arrived so far, and adopting it invalidates the very data that
-            // produced it. Unless the top hit is in the first region to land, the
-            // index then flips between each partial winner and the true one,
-            // refetching forever and never painting. loadedRegions is committed
-            // only once a batch fully resolves, making topSnp a fixpoint here, so
-            // adopting it costs one recolor fetch and converges. The && chain also
-            // keeps the topSnp rescan off every other coloring path.
+            // indexSnp is both a fetch input and derived from the loaded data,
+            // so it is adopted only from a complete load: mid-batch, topSnp is
+            // the winner among whatever arrived so far, and adopting it would
+            // refetch forever (ldAutoIndex.test.ts).
             namedAutorun(
               self,
               () => {
                 if (
-                  isLdColoring(self.color) &&
-                  !self.indexSnpPinned &&
+                  self.dataSuperseded &&
                   self.viewportWithinLoadedData &&
-                  !self.isLoading &&
-                  self.topSnp &&
-                  self.topSnp !== self.indexSnp
+                  !self.isLoading
                 ) {
                   self.setIndexSnp(self.topSnp)
                 }
               },
               { name: 'ManhattanAdoptTopSnp' },
-            )
-
-            // `flatbushes` is read only by the hit test, which runs in a
-            // pointer handler where nothing is tracked — and MobX discards an
-            // unobserved computed's value as it hands it over, so every
-            // rAF-coalesced mousemove rebuilt the map. Held for the same reason
-            // canvas holds `CanvasHitIndexes`, and safe for the same one: its
-            // dependencies are the store, never per-frame view geometry.
-            namedAutorun(
-              self,
-              () => {
-                void self.flatbushes
-              },
-              { name: 'ManhattanHitIndexes' },
             )
           },
         }

@@ -15,12 +15,6 @@ const useStyles = makeStyles()({
 
 // Shown over the plot when LD coloring is on but the index SNP wasn't found in
 // the LD data for the loaded regions, so every point is grey.
-//
-// There used to be a second message here for an index simply panned off
-// screen, because the LD read queried the viewport and moving the index out of
-// it greyed the plot. The read is anchored on the index now
-// (`ldQueryWindow`), so panning is not a cause and the remaining one is a data
-// problem worth naming.
 export default function LdIndexWarning({ offsetTop }: { offsetTop: number }) {
   const { classes } = useStyles()
   return (

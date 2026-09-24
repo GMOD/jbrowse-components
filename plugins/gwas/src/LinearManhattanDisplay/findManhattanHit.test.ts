@@ -3,8 +3,10 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { findManhattanHit } from './findManhattanHit.ts'
 import { manhattanFixture } from './manhattanFixture.ts'
 
-import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
-import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
+import type {
+  ManhattanRenderState,
+  StoredManhattanData,
+} from './manhattanRenderingBackendTypes.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // One block covering bp 0..1000 across 100 screen px (10 bp/px).
@@ -28,27 +30,20 @@ const regions = [{ refName: 'chr1' }]
 
 function mkData(positions: number[], scores: number[]) {
   const result = manhattanFixture({ x: positions, y: scores })
-  const data = new Map<number, ManhattanRpcResult>([[0, result]])
-  const flatbushes = new Map<number, Flatbush>()
-  if (result.flatbushData) {
-    flatbushes.set(0, Flatbush.from(result.flatbushData))
-  }
-  return { data, flatbushes }
+  return new Map<number, StoredManhattanData>([
+    [0, { ...result, flatbush: Flatbush.from(result.flatbushData!) }],
+  ])
 }
 
 test('returns undefined when nothing within hit radius', () => {
   // bp=500 → screen (50, 50). Mouse far away at (0,0).
-  const { data, flatbushes } = mkData([500], [5])
-  expect(
-    findManhattanHit(0, 0, [block], data, flatbushes, state, regions),
-  ).toBeUndefined()
+  const data = mkData([500], [5])
+  expect(findManhattanHit(0, 0, [block], data, state, regions)).toBeUndefined()
 })
 
 test('finds nearest point within hit radius', () => {
-  const { data, flatbushes } = mkData([500], [5])
-  expect(
-    findManhattanHit(51, 49, [block], data, flatbushes, state, regions),
-  ).toEqual({
+  const data = mkData([500], [5])
+  expect(findManhattanHit(51, 49, [block], data, state, regions)).toEqual({
     refName: 'chr1',
     start: 500,
     end: 501,
@@ -60,34 +55,25 @@ test('finds nearest point within hit radius', () => {
 
 test('picks closest of two candidates', () => {
   // bp=500 → x=50, bp=510 → x=51 (both at score=5 → y=50)
-  const { data, flatbushes } = mkData([500, 510], [5, 5])
-  const hit = findManhattanHit(
-    52,
-    50,
-    [block],
-    data,
-    flatbushes,
-    state,
-    regions,
-  )
+  const data = mkData([500, 510], [5, 5])
+  const hit = findManhattanHit(52, 50, [block], data, state, regions)
   expect(hit?.start).toBe(510)
 })
 
 test('skips blocks with no data', () => {
   expect(
-    findManhattanHit(50, 50, [block], new Map(), new Map(), state, regions),
+    findManhattanHit(50, 50, [block], new Map(), state, regions),
   ).toBeUndefined()
 })
 
 test('respects reversed block direction', () => {
   // Reversed: bp=900 → screen x = (1000 - 900) / 10 = 10
-  const { data, flatbushes } = mkData([900], [5])
+  const data = mkData([900], [5])
   const hit = findManhattanHit(
     10,
     50,
     [{ ...block, reversed: true }],
     data,
-    flatbushes,
     state,
     regions,
   )
@@ -99,16 +85,8 @@ test('finds the right point in a dense array via Flatbush', () => {
   // should pick the bp=500 point (screen x=50), not bp=0 or bp=1000.
   const positions = Array.from({ length: 1001 }, (_, i) => i)
   const scores = positions.map(() => 5)
-  const { data, flatbushes } = mkData(positions, scores)
-  const hit = findManhattanHit(
-    50,
-    50,
-    [block],
-    data,
-    flatbushes,
-    state,
-    regions,
-  )
+  const data = mkData(positions, scores)
+  const hit = findManhattanHit(50, 50, [block], data, state, regions)
   expect(hit?.start).toBe(500)
 })
 
@@ -116,15 +94,7 @@ test('Flatbush Y-prune rejects same-X point at a far-off score', () => {
   // Two features at bp=500 (same screen x=50): score=5 (y=50) and score=10
   // (y=0). Mouse at (50, 50) is on top of the score=5 point and >>HIT_RADIUS
   // away in Y from score=10 — Y prune must reject the latter and pick score=5.
-  const { data, flatbushes } = mkData([500, 500], [5, 10])
-  const hit = findManhattanHit(
-    50,
-    50,
-    [block],
-    data,
-    flatbushes,
-    state,
-    regions,
-  )
+  const data = mkData([500, 500], [5, 10])
+  const hit = findManhattanHit(50, 50, [block], data, state, regions)
   expect(hit?.score).toBe(5)
 })

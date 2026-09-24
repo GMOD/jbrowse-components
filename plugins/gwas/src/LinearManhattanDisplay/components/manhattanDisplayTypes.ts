@@ -1,11 +1,10 @@
-import type { ManhattanRpcResult } from '../../ManhattanRPC/rpcTypes.ts'
 import type { ManhattanHit } from '../findManhattanHit.ts'
 import type {
   ManhattanRenderState,
   ManhattanRenderingBackend,
+  StoredManhattanData,
 } from '../manhattanRenderingBackendTypes.ts'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
-import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
@@ -19,13 +18,12 @@ export type ManhattanContextMenuInfo = ContextMenuAnchor & { hit: ManhattanHit }
 // same slice so the two can't disagree about what a manhattan display is.
 export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   ManhattanRenderingBackend,
-  ManhattanRpcResult
+  StoredManhattanData
 > {
   // read by DisplayChrome, which publishes it as `data-display-id` — the stable
   // hook the browser tests use to target one track's display
   configuration: { displayId: string }
   renderBlocks: RenderBlock[]
-  flatbushes: ReadonlyMap<number, Flatbush>
   renderState: ManhattanRenderState
   scatterPointSize: number
   hoveredFeature: ManhattanHit | undefined

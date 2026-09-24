@@ -27,7 +27,6 @@ const LinearManhattanDisplayComponent = observer(
             y,
             model.renderBlocks,
             model.rpcDataMap,
-            model.flatbushes,
             model.renderState,
             model.host.displayedRegions,
           )

@@ -2,9 +2,10 @@ import { nearestMarkHit } from '@jbrowse/render-core/marks'
 
 import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 
-import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
-import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
-import type Flatbush from '@jbrowse/core/util/flatbush'
+import type {
+  ManhattanRenderState,
+  StoredManhattanData,
+} from './manhattanRenderingBackendTypes.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export interface ManhattanHit {
@@ -30,8 +31,7 @@ export function findManhattanHit(
   mouseX: number,
   mouseY: number,
   blocks: RenderBlock[],
-  regionData: ReadonlyMap<number, ManhattanRpcResult>,
-  flatbushMap: ReadonlyMap<number, Flatbush>,
+  regionData: ReadonlyMap<number, StoredManhattanData>,
   state: ManhattanRenderState,
   displayedRegions: readonly { refName: string }[],
 ): ManhattanHit | undefined {
@@ -44,10 +44,8 @@ export function findManhattanHit(
     mouseY,
     {
       radiusPx: HIT_RADIUS_PX,
-      candidates: (_data, _mark, { block, bpMin, bpMax, valueMin, valueMax }) =>
-        flatbushMap
-          .get(block.displayedRegionIndex)
-          ?.search(bpMin, valueMin, bpMax, valueMax),
+      candidates: (data, _mark, { bpMin, bpMax, valueMin, valueMax }) =>
+        data.flatbush?.search(bpMin, valueMin, bpMax, valueMax),
     },
   )
   if (!hit) {

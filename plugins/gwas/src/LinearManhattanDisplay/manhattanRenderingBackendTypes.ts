@@ -1,5 +1,9 @@
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+
+/** A region's payload as the display stores it: the hit-test index wrapped once at the commit. */
+export type StoredManhattanData = ManhattanRpcResult & { flatbush?: Flatbush }
 
 export interface ManhattanRenderState {
   domainY: [number, number]

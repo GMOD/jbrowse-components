@@ -247,6 +247,40 @@ describe('LinearManhattanDisplay field coloring', () => {
     expect(rows()).toEqual(['< 0.1', '0.1 – 0.5', '≥ 0.5', '(no value)'])
   })
 
+  it("keys { field: 'ld' } with no ldAdapter as the ld field the worker read, grey where it met none", () => {
+    const { display } = createTestEnvironment({
+      color: { field: 'ld' },
+      ldAdapter: false,
+    }).createDisplay()
+    display.setRpcData(
+      0,
+      manhattanFixture({
+        x: [100],
+        y: [3],
+        flatbush: false,
+        scale: {
+          kind: 'threshold',
+          field: 'ld',
+          domain: [0.2, 0.4, 0.6, 0.8],
+          missing: true,
+        },
+      }),
+      REGION,
+    )
+    const [scale] = display.colorScales
+    expect(scale?.title).toBe('ld')
+    expect(
+      scale?.kind === 'categorical' ? scale.entries.map(e => e.label) : [],
+    ).toEqual([
+      '< 0.2',
+      '0.2 – 0.4',
+      '0.4 – 0.6',
+      '0.6 – 0.8',
+      '≥ 0.8',
+      '(no value)',
+    ])
+  })
+
   it('LD is the ld field on a threshold scale, whose cuts default to the r² bins', () => {
     const { display } = createTestEnvironment({
       color: { field: 'population', domain: ['EUR'] },

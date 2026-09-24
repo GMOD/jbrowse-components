@@ -41,10 +41,18 @@ describe('Manhattan showLegend', () => {
     expect(getConf(display, 'showLegend')).toBe(false)
   })
 
-  // The row is greyed out without LD coloring, but it is still built.
   it('still offers the row under the plain color scheme, disabled', () => {
     const { display } = createTestEnvironment().createDisplay()
     const row = legendRow(display.trackMenuItems())
     expect(row && 'disabled' in row ? row.disabled : undefined).toBe(true)
+  })
+
+  it('enables the row under a threshold scale over any field, which draws a key', () => {
+    const { display } = createTestEnvironment({
+      color: { field: 'p', scale: 'threshold', domain: ['0.1'] },
+    }).createDisplay()
+    const row = legendRow(display.trackMenuItems())
+    expect(display.colorScales).toHaveLength(1)
+    expect(row && 'disabled' in row ? row.disabled : undefined).toBe(false)
   })
 })
