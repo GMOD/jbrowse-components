@@ -87,6 +87,7 @@ function indexedTrackConf(
   return {
     ...track,
     textSearching: {
+      ...track.textSearching,
       textSearchAdapter: createTextSearchConf(
         `${track.trackId}-index`,
         assemblies,

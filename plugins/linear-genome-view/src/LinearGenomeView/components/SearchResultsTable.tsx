@@ -1,9 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import {
-  assembleLocString,
-  getSession,
-  parseLocString,
-} from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import {
   Button,
   Paper,
@@ -16,7 +12,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { isOpenInView, navToOption } from '../../searchUtils.ts'
+import { canonicalLocString, isOpenInView } from '../../searchUtils.ts'
 
 import type { LinearGenomeViewModel } from '../../index.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
@@ -26,11 +22,13 @@ const SearchResultsTable = observer(function SearchResultsTable({
   assemblyName,
   model,
   handleClose,
+  onPick,
 }: {
   searchResults: BaseResult[]
   assemblyName: string
   model: LinearGenomeViewModel
   handleClose: () => void
+  onPick: (result: BaseResult) => Promise<unknown>
 }) {
   const session = getSession(model)
   const { assemblyManager } = session
@@ -42,27 +40,12 @@ const SearchResultsTable = observer(function SearchResultsTable({
     return conf ? (readConfObject(conf, 'name') as string) : ''
   }
 
-  // the raw locString, prettified to the assembly's canonical refName when the
-  // assembly is loaded and the string parses. A result the assembly can't
-  // resolve is still listed as-is rather than blowing up the dialog: the Go
-  // button navigates through navToOption, which reports its own failure
+  // A location the assembly can't resolve is listed as-is: Go navigates
+  // through navToOption, which reports its own failure
   function formatLocation(locString: string | undefined) {
-    if (assembly && locString) {
-      try {
-        const loc = parseLocString(locString, refName =>
-          assembly.isValidRefName(refName),
-        )
-        return assembleLocString({
-          ...loc,
-          refName: assembly.getCanonicalRefName2(loc.refName),
-        })
-      } catch (e) {
-        console.warn('failed to parse location string', locString, e)
-        return locString
-      }
-    } else {
-      return locString
-    }
+    return assembly && locString
+      ? canonicalLocString(locString, assembly)
+      : locString
   }
 
   // A hit in a track that is already on screen is usually the one meant, so it
@@ -99,11 +82,7 @@ const SearchResultsTable = observer(function SearchResultsTable({
                 <Button
                   onClick={async () => {
                     try {
-                      await navToOption({
-                        option: result,
-                        model,
-                        assemblyName,
-                      })
+                      await onPick(result)
                     } catch (e) {
                       console.error(e)
                       session.notifyError(`${e}`, e)

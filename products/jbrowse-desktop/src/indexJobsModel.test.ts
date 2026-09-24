@@ -186,6 +186,22 @@ test('reportStatus turns the worker’s byte counts into a human status', () => 
   expect(card.progressPct).toBeUndefined()
 })
 
+test('re-indexing keeps the track’s own indexing policy', async () => {
+  const track = {
+    ...makeTrack('t1', 'Gff3TabixAdapter'),
+    textSearching: { indexingFeatureTypesToInclude: ['gene', 'mRNA'] },
+  }
+  const tracks = [track]
+  const { jobsManager } = setup({ tracks })
+  jobsManager.queueJob(makeEntry())
+  await jobsManager.runJob()
+
+  expect(tracks[0]!.textSearching).toMatchObject({
+    indexingFeatureTypesToInclude: ['gene', 'mRNA'],
+    textSearchAdapter: { textSearchAdapterId: 't1-index' },
+  })
+})
+
 test('queueJob shows the widget and files the job as queued', () => {
   const { jobsManager, widget, session } = setup()
   jobsManager.queueJob(makeEntry())

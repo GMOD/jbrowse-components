@@ -92,7 +92,7 @@ export function isOpenInView(result: BaseResult, model: LinearGenomeViewModel) {
 // raw, which can only ever split a group that would otherwise have merged —
 // the safe direction, since the picker is what an unprovable match falls back
 // to.
-function canonicalLocString(locString: string, assembly: Assembly) {
+export function canonicalLocString(locString: string, assembly: Assembly) {
   try {
     const loc = parseLocString(locString, refName =>
       assembly.isValidRefName(refName),
@@ -226,7 +226,9 @@ export async function showSearchResults({
     })
     return true
   } else {
-    model.setSearchResults(results, query, assemblyName)
+    model.setSearchResults(results, query, assemblyName, result =>
+      navToOption({ option: result, model, assemblyName, grow, showHitTrack }),
+    )
     return false
   }
 }

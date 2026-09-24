@@ -61,7 +61,7 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { observable, when } from 'mobx'
 
-import { handleSelectedRegion } from '../searchUtils.ts'
+import { handleSelectedRegion, navToOption } from '../searchUtils.ts'
 import { doAfterAttach } from './afterAttach.ts'
 import { closeUpHost, closeUpType } from './closeUps.ts'
 import { shouldSwapTracks } from './components/util.ts'
@@ -1575,11 +1575,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       * @param onPick - where a picked result lands; by default it navigates
+       * there and shows the track its index came from
        */
       setSearchResults(
         searchResults: BaseResult[],
         searchQuery: string,
         assemblyName: string,
+        onPick: (result: BaseResult) => Promise<unknown> = result =>
+          navToOption({
+            option: result,
+            model: self as LinearGenomeViewModel,
+            assemblyName,
+          }),
       ) {
         getDialogHost(self).queueDialog(handleClose => [
           SearchResultsDialog,
@@ -1589,6 +1597,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             searchQuery,
             handleClose,
             assemblyName,
+            onPick,
           },
         ])
       },

@@ -12,12 +12,14 @@ export default function SearchResultsDialog({
   searchQuery,
   searchResults,
   handleClose,
+  onPick,
 }: {
   model: LinearGenomeViewModel
   assemblyName: string
   searchQuery: string
   searchResults: BaseResult[]
   handleClose: () => void
+  onPick: (result: BaseResult) => Promise<unknown>
 }) {
   return (
     <InfoDialog open maxWidth="xl" onClose={handleClose} title="Search results">
@@ -35,6 +37,7 @@ export default function SearchResultsDialog({
             handleClose={handleClose}
             assemblyName={assemblyName}
             searchResults={searchResults}
+            onPick={onPick}
           />
         </>
       )}
