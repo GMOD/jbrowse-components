@@ -36,6 +36,6 @@ factory function for the Base-level root model shared by all products
 | --- | --- |
 | <span id="action-seterror">**setError**</span><br><code>(error: unknown) =&gt; void</code> |  |
 | <span id="action-setsession">**setSession**</span><br><code>(sessionSnapshot?: any) =&gt; void</code> | Sets the active session. Remaps any legacy display type names (e.g. LinearPileupDisplay → LinearAlignmentsDisplay), drops nodes whose pluggable type this build has no plugin for (see `pruneUnbuildableNodes`), then walks the resulting MST tree to drop open tracks whose config can't hydrate so shared sessions still load when referencing tracks that no longer exist. Both kinds of drop are surfaced to the user via a snackbar. If filtering throws, the previous session is restored. |
-| <span id="action-setdefaultsession">**setDefaultSession**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-setdefaultsession">**setDefaultSession**</span><br><code>() =&gt; void</code> | Starts a new session from the config's defaultSession. An `id` in it (a pasted session export carries one) is dropped, since sessions are autosaved by id and each new one would otherwise overwrite the last. |
 | <span id="action-setsessionpath">**setSessionPath**</span><br><code>(path: string) =&gt; void</code> |  |
 | <span id="action-renamecurrentsession">**renameCurrentSession**</span><br><code>(newName: string) =&gt; void</code> |  |
