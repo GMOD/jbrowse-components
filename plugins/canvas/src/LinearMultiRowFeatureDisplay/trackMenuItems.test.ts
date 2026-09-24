@@ -3,8 +3,8 @@ import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
 import type { PartitionRowCount } from './partitionFields.ts'
-import type { MultiRowSource } from './rowSources.ts'
 import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
+import type { RowSource } from '@jbrowse/tree-sidebar'
 
 // The builder only reads state, so a plain object stands in for the display —
 // structural, like `MultiRowMenuSelf`, so a drifted field fails here.
@@ -15,7 +15,7 @@ function makeSelf(
     }
   > = {},
 ) {
-  const rows: MultiRowSource[] = [{ name: 'a' }, { name: 'b' }]
+  const rows: RowSource[] = [{ name: 'a' }, { name: 'b' }]
   const self = {
     showTree: true,
     showLegend: true,

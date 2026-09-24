@@ -1,7 +1,6 @@
 import { SetColorDialog } from '@jbrowse/tree-sidebar'
 
-import type { MultiRowSource } from '../rowSources.ts'
-import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
+import type { RowSource, TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
 // A per-row `color` overrides that row's blocks at render time, over the
 // worker-baked per-feature color.
@@ -17,7 +16,7 @@ export default function SetRowArrangementDialog({
   model,
   handleClose,
 }: {
-  model: TreeLayoutModel<MultiRowSource>
+  model: TreeLayoutModel<RowSource>
   handleClose: () => void
 }) {
   return (

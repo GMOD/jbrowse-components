@@ -95,7 +95,7 @@ import type {
   MultiRowRenderState,
   MultiRowRenderingBackend,
 } from './rendering/multiRowRenderingBackendTypes.ts'
-import type { MultiRowSource, RowGroup } from './rowSources.ts'
+import type { RowGroup } from './rowSources.ts'
 import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Region } from '@jbrowse/core/util'
@@ -105,7 +105,11 @@ import type {
 } from '@jbrowse/display-kit/highlightHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { RowColorDeal, UnlistedRowsSort } from '@jbrowse/tree-sidebar'
+import type {
+  RowColorDeal,
+  RowSource,
+  UnlistedRowsSort,
+} from '@jbrowse/tree-sidebar'
 import type React from 'react'
 
 const EMPTY_REGION_DATA: ReadonlyMap<number, MultiRowRegionData> = new Map()
@@ -131,7 +135,7 @@ export default function stateModelFactory(
       DensityBandMixin(),
       LegendMixin(),
       RowHeightMixin(),
-      TreeSidebarMixin<MultiRowSource>(),
+      TreeSidebarMixin(),
       ContextMenuMixin<MultiRowContextMenuInfo>(),
       StoredHoverMixin<MultiRowHit>(
         (a, b) => a.id === b.id && a.regionIndex === b.regionIndex,
@@ -297,7 +301,7 @@ export default function stateModelFactory(
          * loaded regions, in the order the config.json declares, the rest
          * sorted.
          */
-        get discoveredRows(): MultiRowSource[] {
+        get discoveredRows(): RowSource[] {
           return discoveredRows.get()
         },
         /**
@@ -315,7 +319,7 @@ export default function stateModelFactory(
          * rows in the base arrangement, a row with a `rowColor` entry still
          * taking its turn.
          */
-        get rowColorDeal(): RowColorDeal<MultiRowSource> {
+        get rowColorDeal(): RowColorDeal<RowSource> {
           return {
             order: orderRowsByDomain(self.expandedRows, self.baseRowDomain).map(
               s => s.name,
@@ -411,7 +415,7 @@ export default function stateModelFactory(
        * on another group has to reach the rows the first click hid, and the
        * filter matches the same `name`s.
        */
-      get groupedSources(): MultiRowSource[] {
+      get groupedSources(): RowSource[] {
         return applyRowGroups(self.editableSources, self.rowGroups, {
           partition: false,
         })
@@ -424,7 +428,7 @@ export default function stateModelFactory(
        * all key off. `rowGroups` decorates them here but partitions them into
        * blocks only when no cluster tree already names this order.
        */
-      get sources(): MultiRowSource[] {
+      get sources(): RowSource[] {
         const rows = self.clusterableSources
         return applyRowGroups(rows, self.rowGroups, {
           partition: !(self.root && treeDescribesRows(self.root, rows)),
@@ -469,7 +473,7 @@ export default function stateModelFactory(
        * carried into `labelColor` when `colorRowLabels` is on. A `rowGroups`
        * `labelColor` wins, and per-feature color mode is a no-op.
        */
-      get labelSources(): MultiRowSource[] {
+      get labelSources(): RowSource[] {
         const colors = self.rowColorStringsByIndex
         return self.colorRowLabels
           ? self.sources.map((s, i) => ({
@@ -837,7 +841,7 @@ export default function stateModelFactory(
        * #getter
        * The row the hovered feature sits on, off the live order.
        */
-      get hoveredRow(): MultiRowSource | undefined {
+      get hoveredRow(): RowSource | undefined {
         return hitRow(self, self.hoveredFeature)
       },
     }))

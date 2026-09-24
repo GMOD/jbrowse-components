@@ -5,7 +5,7 @@ import { runMultiRowClustering } from './runMultiRowClustering.ts'
 import { createTestEnvironment, ctgA, ctgB } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
-import type { MultiRowSource } from './rowSources.ts'
+import type { RowSource } from '@jbrowse/tree-sidebar'
 
 beforeEach(() => {
   jest.useFakeTimers()
@@ -44,7 +44,7 @@ test('what each row step recomputes', async () => {
   const { display, view } = createTestEnvironment({
     displayConfig: { rows: 'sample' },
   }).createDisplay(REGIONS)
-  const firstEdited = (edit: Partial<MultiRowSource>) => {
+  const firstEdited = (edit: Partial<RowSource>) => {
     const [first, ...rest] = display.editableSources
     return [{ ...first!, ...edit }, ...rest]
   }

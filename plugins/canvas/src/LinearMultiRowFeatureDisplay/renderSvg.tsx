@@ -16,13 +16,13 @@ import type {
   MultiRowRegionData,
   MultiRowRenderState,
 } from './rendering/multiRowRenderingBackendTypes.ts'
-import type { MultiRowSource } from './rowSources.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type {
-  ClusterProvenance,
   ClusterHierarchyNode,
+  ClusterProvenance,
+  RowSource,
 } from '@jbrowse/tree-sidebar'
 
 export interface RenderSvgModel extends SvgExportable {
@@ -39,10 +39,10 @@ export interface RenderSvgModel extends SvgExportable {
   // encode's only inputs, so what the upload holds is what the export paints
   encodedChannels: ReadonlyMap<number, MultiRowEncoded>
   renderState: MultiRowRenderState
-  sources: MultiRowSource[]
+  sources: RowSource[]
   // The sidebar's view of the rows, and the only one the tree/labels layer
   // should read.
-  labelSources: MultiRowSource[]
+  labelSources: RowSource[]
   effectiveRowHeight: number
   treeAreaWidth: number
   showTree: boolean

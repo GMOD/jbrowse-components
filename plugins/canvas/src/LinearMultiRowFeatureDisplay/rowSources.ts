@@ -1,13 +1,6 @@
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 
-// `labelColor` tints the sidebar swatch only, never the blocks.
-export interface MultiRowSource {
-  name: string
-  label?: string
-  color?: string
-  group?: string
-  labelColor?: string
-}
+import type { RowSource } from '@jbrowse/tree-sidebar'
 
 // Ordered: a row joins the first entry whose `match` regex it matches.
 export interface RowGroup {
@@ -23,10 +16,10 @@ export interface RowGroup {
  * costs its own stripe rather than the display.
  */
 export function applyRowGroups(
-  sources: MultiRowSource[],
+  sources: RowSource[],
   rowGroups: RowGroup[],
   { partition }: { partition: boolean },
-): MultiRowSource[] {
+): RowSource[] {
   const compiled = rowGroups.flatMap(g => {
     try {
       return [{ ...g, re: new RegExp(g.match) }]
@@ -66,7 +59,7 @@ export function applyRowGroups(
  * per-feature coloring compose; an undefined palette deals none.
  */
 export function resolveRowColorStrings(
-  rows: MultiRowSource[],
+  rows: RowSource[],
   palette: ReadonlyMap<string, string> | undefined,
 ): (string | undefined)[] {
   return rows.map(s => s.color ?? palette?.get(s.name))

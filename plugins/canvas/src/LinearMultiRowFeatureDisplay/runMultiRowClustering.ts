@@ -4,15 +4,18 @@ import {
 } from '@jbrowse/tree-sidebar'
 
 import type { MatrixEncoding } from '../MultiRowClusterFeaturesRPC/buildMultiRowMatrix.ts'
-import type { MultiRowSource } from './rowSources.ts'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { ClusterRunModel, RpcMethodCaller } from '@jbrowse/tree-sidebar'
+import type {
+  ClusterRunModel,
+  RowSource,
+  RpcMethodCaller,
+} from '@jbrowse/tree-sidebar'
 
 type MultiRowClusterCaller = RpcMethodCaller<'MultiRowClusterFeatures'>
 
-export interface MultiRowClusterModel extends ClusterRunModel<MultiRowSource> {
-  clusterableSources: MultiRowSource[]
+export interface MultiRowClusterModel extends ClusterRunModel<RowSource> {
+  clusterableSources: RowSource[]
   adapterConfig: Record<string, unknown>
   // The resolved field, never the raw slot: the matrix has to bucket each
   // feature into the row the painting drew it in.

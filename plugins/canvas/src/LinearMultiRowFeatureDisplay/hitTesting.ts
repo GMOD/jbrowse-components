@@ -14,10 +14,10 @@ import type {
   MultiRowRegionData,
   MultiRowRenderState,
 } from './rendering/multiRowRenderingBackendTypes.ts'
-import type { MultiRowSource } from './rowSources.ts'
 import type { ContextMenuAnchor } from '@jbrowse/core/ui'
 import type { MarkInstance } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+import type { RowSource } from '@jbrowse/tree-sidebar'
 
 export interface MultiRowHit {
   id: string
@@ -63,7 +63,7 @@ export interface MultiRowHitTestSlice {
   showTree: boolean
   hierarchy?: unknown
   treeAreaWidth: number
-  sources: MultiRowSource[]
+  sources: RowSource[]
   rowIndexByValue: ReadonlyMap<string, number>
   effectiveRowHeight: number
   rowProportion: number

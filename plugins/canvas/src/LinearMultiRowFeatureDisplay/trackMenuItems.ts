@@ -21,12 +21,11 @@ import { partitionRowCountHint } from './partitionFields.ts'
 
 import type { PartitionRowCount } from './partitionFields.ts'
 import type { LegendEntry } from './rendering/colorLegend.ts'
-import type { MultiRowSource } from './rowSources.ts'
 import type { MultiRowClusterDialogModel } from './runMultiRowClustering.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
+import type { RowSource, TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
 const SetRowArrangementDialog = lazy(
   () => import('./components/SetRowArrangementDialog.tsx'),
@@ -43,7 +42,7 @@ const ROW_HEIGHT_PRESETS = [
 interface MultiRowMenuSelf
   extends
     IStateTreeNode,
-    TreeLayoutModel<MultiRowSource>,
+    TreeLayoutModel<RowSource>,
     MultiRowClusterDialogModel {
   showTree: boolean
   showLegend: boolean
