@@ -37,10 +37,6 @@ function translucent(color: string) {
   return colord(color).alpha(RIBBON_ALPHA).toRgbString()
 }
 
-function invert(map: Record<string, string>) {
-  return Object.fromEntries(Object.entries(map).map(([k, v]) => [v, k]))
-}
-
 /**
  * #stateModel ChordSyntenyDisplay
  *
@@ -154,20 +150,22 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           return feature => (feature.get('strand') === -1 ? neg : pos)
         }
         const [first] = self.trackAssemblyNames
-        const names =
-          first === undefined ? undefined : self.adapterNames?.[first]
-        if (colorBy !== 'chromosome' || first === undefined || !names) {
+        if (colorBy !== 'chromosome' || first === undefined) {
           return configured
         }
         const assembly = getSession(self).assemblyManager.get(first)
-        const canonical = invert(names.refNameMap)
         return feature => {
           const mate = getMate(feature)
           const refName =
-            mate && feature.get('assemblyName') !== names.assemblyName
+            mate &&
+            self.assemblyOf(
+              feature.get('assemblyName') as string | undefined,
+            ) !== first
               ? mate.refName
               : feature.get('refName')
-          const color = assembly?.getRefNameColor(canonical[refName] ?? refName)
+          const color = assembly?.getRefNameColor(
+            self.canonicalRefName(first, refName),
+          )
           return color ? translucent(color) : configured(feature)
         }
       },
@@ -187,34 +185,32 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
        * reorder reads instead of fetching the file again
        */
       alignmentsBetween(referenceAssembly: string, currentAssembly: string) {
-        const ref = self.adapterNames?.[referenceAssembly]
-        const cur = self.adapterNames?.[currentAssembly]
         const out: AlignmentData[] = []
-        if (!ref || !cur || !self.features) {
-          return out
-        }
-        const refNames = invert(ref.refNameMap)
-        const curNames = invert(cur.refNameMap)
-        for (const feature of self.features) {
+        for (const feature of self.features ?? []) {
           const mate = getMate(feature)
           const own = {
-            assemblyName: feature.get('assemblyName') as string,
             refName: feature.get('refName'),
             start: feature.get('start'),
             end: feature.get('end'),
           }
+          const ownAssembly = self.assemblyOf(
+            feature.get('assemblyName') as string | undefined,
+          )
+          const mateAssembly = mate
+            ? self.assemblyOf(mate.assemblyName)
+            : undefined
           const [r, q] =
-            own.assemblyName === ref.assemblyName &&
-            mate?.assemblyName === cur.assemblyName
+            ownAssembly === referenceAssembly &&
+            mateAssembly === currentAssembly
               ? [own, mate]
-              : own.assemblyName === cur.assemblyName &&
-                  mate?.assemblyName === ref.assemblyName
+              : ownAssembly === currentAssembly &&
+                  mateAssembly === referenceAssembly
                 ? [mate, own]
                 : []
           if (r && q) {
             out.push({
-              refRefName: refNames[r.refName] ?? r.refName,
-              queryRefName: curNames[q.refName] ?? q.refName,
+              refRefName: self.canonicalRefName(referenceAssembly, r.refName),
+              queryRefName: self.canonicalRefName(currentAssembly, q.refName),
               refStart: r.start,
               refEnd: r.end,
               queryStart: q.start,

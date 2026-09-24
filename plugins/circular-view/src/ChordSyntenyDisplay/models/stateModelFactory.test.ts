@@ -113,6 +113,31 @@ test('two assemblies keep their own contigs of the same name', async () => {
   expect(assemblyOf(display.sliceFor('volvox2', 'ctgA'))).toBe('volvox2')
 }, 20000)
 
+// a track may name an assembly by its alias, and its features then carry the
+// alias too; the circle names it canonically
+test('a track spelling an assembly by its alias places and reorders by the canonical one', async () => {
+  const session = createTestSession()
+  addAssemblyConf(session, 'volvox')
+  addAssemblyConf(session, 'volvox2')
+  session.assemblyManager
+    .get('volvox2')!
+    .configuration.setSlot('aliases', ['v2'])
+  addTrackConf(session, ['volvox', 'v2'])
+  const view = (await session.launchView('CircularView', {
+    assembly: ['volvox', 'volvox2'],
+    tracks: ['aln'],
+  })) as CircularViewModel
+  view.setWidth(800)
+  await when(() => view.tracks.length > 0)
+  const display = view.tracks[0]!.displays[0]!
+  await when(() => display.ready)
+  expect(display.trackAssemblyNames).toEqual(['volvox', 'volvox2'])
+  expect(assemblyOf(display.sliceFor('v2', 'ctgB'))).toBe('volvox2')
+  expect(display.alignmentsBetween('volvox', 'volvox2')).toEqual([
+    expect.objectContaining({ refRefName: 'ctgA', queryRefName: 'ctgB' }),
+  ])
+}, 20000)
+
 test('reload() rewakes the fetch after an error', async () => {
   const { display } = await setup(['volvox', 'volvox'])
 

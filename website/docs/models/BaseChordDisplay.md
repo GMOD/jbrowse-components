@@ -6,9 +6,9 @@ sidebar_label: Display -> BaseChordDisplay
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/chords/BaseChordDisplay.ts).
 
-What the circular view's chord and ribbon displays share: the features and the
-per-assembly name tables that place them, the slice index a feature end is
-looked up in, and the lifecycle getters `ChordDisplayFrame` publishes. A track
+What the circular view's chord and ribbon displays share: the features, the
+slice index a feature end is looked up in, and the lifecycle getters
+`ChordDisplayFrame` publishes. A track
 draws on the arcs of its own assemblies, so a one-genome variant track on a
 two-genome circle fetches and places only that genome's chords.
 
@@ -28,7 +28,6 @@ Members a composed model contributes are listed here too, so these tables are th
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="volatile-features">**features**</span><br><code>features: undefined as Feature[] &#124; undefined</code> |  | BaseChordDisplay |
-| <span id="volatile-adapternames">**adapterNames**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>adapterNames: undefined as Record&lt;string, AdapterNames&gt; &#124; undef…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>adapterNames: undefined as Record&lt;string, AdapterNames&gt; &#124; undefined</code></pre></dialog></span> | one entry per assembly of the track on the circle, keyed by canonical name | BaseChordDisplay |
 | <span id="volatile-reloadcounter">**reloadCounter**</span><br><code>reloadCounter: 0</code> | the fetch's pure "go again" signal | BaseChordDisplay |
 | <span id="volatile-highlightedfeatureids">**highlightedFeatureIds**</span><br><code>highlightedFeatureIds: undefined as string[] &#124; undefined</code> | ids of the features to keep at full strength while the rest dim; undefined dims nothing. The SV inspector writes the selected record's event here | BaseChordDisplay |
 | <span id="volatile-visiblefeatureids">**visibleFeatureIds**</span><br><code>visibleFeatureIds: undefined as string[] &#124; undefined</code> | ids of the features to draw; undefined draws them all. The SV inspector writes the rows its sheet's filters leave here, so a filter change is a redraw and no refetch | BaseChordDisplay |
@@ -44,7 +43,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;Omit&lt;Omit&lt;…&gt;, never&gt;, { .…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;Omit&lt;Omit&lt;…&gt;, never&gt;, { ...; }&gt;&gt; &amp; ... 15 more ... &amp; IStateTreeNode&lt;...&gt;</code></pre></dialog></span> |  | BaseChordDisplay |
 | <span id="getter-trackassemblynames">**trackAssemblyNames**</span><br><code>string[]</code> | the track's assemblies that are on the circle, canonical and in the order the circle lays them out | BaseChordDisplay |
 | <span id="getter-fetchinert">**fetchInert**</span><br><code>boolean</code> | nothing of this track's is on the circle, so the fetch never runs; the SVG export's wait and the retry contract check both read it | BaseChordDisplay |
-| <span id="getter-loaded">**loaded**</span><br><code>boolean</code> | both halves of a draw have arrived: the features and the name tables that place their ends | BaseChordDisplay |
+| <span id="getter-loaded">**loaded**</span><br><code>boolean</code> |  | BaseChordDisplay |
 | <span id="getter-ready">**ready**</span><br><code>boolean</code> |  | BaseChordDisplay |
 | <span id="getter-displayerror">**displayError**</span><br><code>unknown</code> | what the error ring shows | BaseChordDisplay |
 | <span id="getter-svgready">**svgReady**</span><br><code>boolean</code> | the off-screen export gate, on the shared `computeSvgReady` policy. A radial display has no box to draw an error in, so the export fails rather than exporting a message | BaseChordDisplay |
@@ -52,7 +51,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-radiuspx">**radiusPx**</span><br><code>number</code> |  | BaseChordDisplay |
 | <span id="getter-bezierradiusratio">**bezierRadiusRatio**</span><br><code>number</code> | how far from the center a chord across the circle passes, as a fraction of the radius; a shorter chord bows less, in proportion to its span | BaseChordDisplay |
 | <span id="getter-bezierradius">**bezierRadius**</span><br><code>number</code> |  | BaseChordDisplay |
-| <span id="getter-sliceindex">**sliceIndex**</span><br><code>Record&lt;string, Slice&gt;</code> | every slice of the circle, keyed by the assembly AND refName a feature off this display's adapter carries. Both halves are needed: two genomes on one circle can each carry a `chr1`. An elided slice answers to each refName it swallowed. | BaseChordDisplay |
+| <span id="getter-sliceindex">**sliceIndex**</span><br><code>Record&lt;string, Slice&gt;</code> | every slice of the circle, keyed by canonical assembly AND refName: two genomes on one circle can each carry a `chr1`. An elided slice answers to each refName it swallowed. | BaseChordDisplay |
 | <span id="getter-drawnfeatures">**drawnFeatures**</span><br><code>Feature[] &#124; undefined</code> | what the chord components draw: `features`, narrowed to `visibleFeatureIds` | BaseChordDisplay |
 | <span id="getter-highlightedfeatureidset">**highlightedFeatureIdSet**</span><br><code>Set&lt;string&gt; &#124; undefined</code> |  | BaseChordDisplay |
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  | BaseChordDisplay |
@@ -70,7 +69,9 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="method-slicefor">**sliceFor**</span><br><code>(assemblyName: string &#124; undefined, refName: string) =&gt; Slice</code> | the slice one end of a feature lands on. A feature that names no assembly, as a VCF record does not, is on the track's first assembly. A refName the adapter's name table lacks — a mate on a contig the file holds no record on — resolves through the assembly's aliases. | BaseChordDisplay |
+| <span id="method-assemblyof">**assemblyOf**</span><br><code>(assemblyName: string &#124; undefined) =&gt; string &#124; undefined</code> | the assembly on the circle a feature names, in whatever spelling the adapter wrote. A feature that names none, as a VCF record does not, is on the track's first assembly. | BaseChordDisplay |
+| <span id="method-canonicalrefname">**canonicalRefName**</span><br><code>(assemblyName: string, refName: string) =&gt; string</code> | a refName as the adapter wrote it, in the assembly's canonical spelling | BaseChordDisplay |
+| <span id="method-slicefor">**sliceFor**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(assemblyName: string &#124; undefined, refName: string) =&gt; Slice &#124;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(assemblyName: string &#124; undefined, refName: string) =&gt; Slice &#124; undefined</code></pre></dialog></span> | the slice one end of a feature lands on | BaseChordDisplay |
 | <span id="method-renderingprops">**renderingProps**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { displayModel: ModelInstanceTypeProps&lt;{ id: IOptionalITy…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { displayModel: ModelInstanceTypeProps&lt;{ id: IOptionalIType&lt;…&gt;; type: ISimpleType&lt;string&gt;; }&gt; &amp; { ...; } &amp; { ...; } &amp; { ...; } &amp; IStateTreeNode&lt;...&gt;; }</code></pre></dialog></span> | <span data-pagefind-ignore>props passed to the renderer's React "Rendering" component. these are client-side only and never sent to the worker. includes displayModel and callbacks</span> | [BaseDisplay](../basedisplay#method-renderingprops) |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  | [BaseDisplay](../basedisplay#method-trackmenuitems) |
 
@@ -81,7 +82,6 @@ Members a composed model contributes are listed here too, so these tables are th
 | --- | --- | --- |
 | <span id="action-openerrordialog">**openErrorDialog**</span><br><code>() =&gt; void</code> |  | BaseChordDisplay |
 | <span id="action-setfeatures">**setFeatures**</span><br><code>(features: Feature[] &#124; undefined) =&gt; void</code> |  | BaseChordDisplay |
-| <span id="action-setadapternames">**setAdapterNames**</span><br><code>(names: Record&lt;string, AdapterNames&gt; &#124; undefined) =&gt; void</code> |  | BaseChordDisplay |
 | <span id="action-sethighlightedfeatureids">**setHighlightedFeatureIds**</span><br><code>(ids: string[] &#124; undefined) =&gt; void</code> |  | BaseChordDisplay |
 | <span id="action-setvisiblefeatureids">**setVisibleFeatureIds**</span><br><code>(ids: string[] &#124; undefined) =&gt; void</code> |  | BaseChordDisplay |
 | <span id="action-reload">**reload**</span><br><code>() =&gt; void</code> |  | BaseChordDisplay |

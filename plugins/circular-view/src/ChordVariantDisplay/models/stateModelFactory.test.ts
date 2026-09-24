@@ -74,12 +74,9 @@ async function setup(assemblies = ['volvox']) {
   return { session, view, display }
 }
 
-test('both halves of a chord render land before the display is ready', async () => {
+test('a ready display places both ends of its chords', async () => {
   const { display } = await setup()
   expect(display.features).toHaveLength(1)
-  // the adapter names only the refNames its features start on; a slice whose
-  // refName the adapter never mentions keys itself under its own name
-  expect(display.adapterNames.volvox.refNameMap).toEqual({ ctgA: 'ctgA' })
   expect(display.sliceFor(undefined, 'ctgA')?.region.refName).toBe('ctgA')
   expect(display.sliceFor(undefined, 'ctgB')?.region.refName).toBe('ctgB')
 }, 20000)
@@ -95,28 +92,17 @@ test('a one-genome variant track on a two-genome circle keeps to its genome', as
   )
 }, 20000)
 
-// The features and the refName map used to be fetched by two autoruns with
-// different dependencies, sharing one `error` slot. A refName map that failed
-// to load was then never asked for again, while the next displayedRegions
-// change re-ran the feature fetch, whose setFeatures(undefined) cleared the
-// error out from under it — leaving the display on its loading hatch forever
-// with nothing said. Refetching them together is what makes the failure
-// retryable, so pin that they move as one.
-test('a region change re-requests the refName map, not just the features', async () => {
+// `ready` is this display's whole freshness answer, so the old features must
+// not outlive a region change into the new layout
+test('a region change blanks the features until the refetch lands', async () => {
   const { view, display } = await setup()
 
   view.setDisplayedRegions([view.displayedRegions[0]!])
 
-  // the refetch is debounced now that this fetch runs on the shared skeleton,
-  // so the blank arrives with the run rather than with the action — and it is
-  // both halves, which is the point: `ready` is this display's whole freshness
-  // answer, so a stale map left in place would wave a render through
-  await when(() => display.adapterNames === undefined)
-  expect(display.features).toBeUndefined()
+  await when(() => display.features === undefined)
   expect(display.displayPhase).toBe('loading')
 
   await when(() => display.ready)
-  expect(display.adapterNames.volvox.refNameMap).toEqual({ ctgA: 'ctgA' })
   expect(display.displayPhase).toBe('ready')
 }, 20000)
 

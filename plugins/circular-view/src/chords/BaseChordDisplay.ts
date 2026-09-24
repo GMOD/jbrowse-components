@@ -10,7 +10,6 @@ import {
   getSession,
   isFeature,
 } from '@jbrowse/core/util'
-import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import {
   getConfAssemblyNamesOrNone,
@@ -19,10 +18,6 @@ import {
 } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { computeDisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
-import {
-  adapterAssemblyNames,
-  regionsInAssemblyNamespace,
-} from '@jbrowse/synteny-core'
 
 import type { CircularViewModel } from '../CircularView/model.ts'
 import type { Slice } from '../CircularView/slices.ts'
@@ -37,23 +32,11 @@ const ErrorMessageStackTraceDialog = lazy(
   () => import('@jbrowse/core/ui/ErrorMessageStackTraceDialog'),
 )
 
-/**
- * One assembly on the circle as the adapter spells it: its name in the
- * adapter's config, and the canonical-to-adapter refName map. A feature off the
- * wire carries these spellings, so this is what finds its slice.
- */
-export interface AdapterNames {
-  assemblyName: string
-  refNameMap: Record<string, string>
-}
-
 export interface ChordFetchArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
   /** the displayed regions on the track's assemblies, canonical */
   regions: Region[]
-  /** the track's assemblies on the circle, canonical, in circle order */
-  assemblyNames: string[]
 }
 
 // The host's config, narrowed to the slot this base reads: `getConf` checks a
@@ -65,16 +48,16 @@ interface ChordConfigHost {
 
 const confNode = (self: object) => self as ChordConfigHost
 
-function sliceKey(assemblyName: string | undefined, refName: string) {
-  return `${assemblyName ?? ''}\u0000${refName}`
+function sliceKey(assemblyName: string, refName: string) {
+  return `${assemblyName}\u0000${refName}`
 }
 
 /**
  * #stateModel BaseChordDisplay
  *
- * What the circular view's chord and ribbon displays share: the features and the
- * per-assembly name tables that place them, the slice index a feature end is
- * looked up in, and the lifecycle getters `ChordDisplayFrame` publishes. A track
+ * What the circular view's chord and ribbon displays share: the features, the
+ * slice index a feature end is looked up in, and the lifecycle getters
+ * `ChordDisplayFrame` publishes. A track
  * draws on the arcs of its own assemblies, so a one-genome variant track on a
  * two-genome circle fetches and places only that genome's chords.
  */
@@ -86,12 +69,6 @@ export function BaseChordDisplay() {
        * #volatile
        */
       features: undefined as Feature[] | undefined,
-      /**
-       * #volatile
-       * one entry per assembly of the track on the circle, keyed by canonical
-       * name
-       */
-      adapterNames: undefined as Record<string, AdapterNames> | undefined,
       /**
        * #volatile
        * the fetch's pure "go again" signal
@@ -145,11 +122,9 @@ export function BaseChordDisplay() {
       },
       /**
        * #getter
-       * both halves of a draw have arrived: the features and the name tables
-       * that place their ends
        */
       get loaded() {
-        return self.features !== undefined && self.adapterNames !== undefined
+        return self.features !== undefined
       },
       /**
        * #getter
@@ -213,10 +188,9 @@ export function BaseChordDisplay() {
       },
       /**
        * #getter
-       * every slice of the circle, keyed by the assembly AND refName a feature
-       * off this display's adapter carries. Both halves are needed: two genomes
-       * on one circle can each carry a `chr1`. An elided slice answers to each
-       * refName it swallowed.
+       * every slice of the circle, keyed by canonical assembly AND refName: two
+       * genomes on one circle can each carry a `chr1`. An elided slice answers
+       * to each refName it swallowed.
        */
       get sliceIndex(): Record<string, Slice> {
         const result: Record<string, Slice> = {}
@@ -225,13 +199,7 @@ export function BaseChordDisplay() {
             ? block.region.regions
             : [block.region]
           for (const region of regions) {
-            const names = self.adapterNames?.[region.assemblyName]
-            result[
-              sliceKey(
-                names?.assemblyName ?? region.assemblyName,
-                names?.refNameMap[region.refName] ?? region.refName,
-              )
-            ] = block
+            result[sliceKey(region.assemblyName, region.refName)] = block
           }
         }
         return result
@@ -271,37 +239,42 @@ export function BaseChordDisplay() {
     .views(self => ({
       /**
        * #method
-       * the slice one end of a feature lands on. A feature that names no
-       * assembly, as a VCF record does not, is on the track's first assembly.
-       * A refName the adapter's name table lacks — a mate on a contig the file
-       * holds no record on — resolves through the assembly's aliases.
+       * the assembly on the circle a feature names, in whatever spelling the
+       * adapter wrote. A feature that names none, as a VCF record does not, is
+       * on the track's first assembly.
+       */
+      assemblyOf(assemblyName: string | undefined) {
+        const { assemblyManager } = getSession(self)
+        return assemblyName === undefined
+          ? self.trackAssemblyNames[0]
+          : self.view.assemblyNames.find(name =>
+              isSameAssemblyName(name, assemblyName, assemblyManager),
+            )
+      },
+      /**
+       * #method
+       * a refName as the adapter wrote it, in the assembly's canonical spelling
+       */
+      canonicalRefName(assemblyName: string, refName: string) {
+        return (
+          getSession(self)
+            .assemblyManager.get(assemblyName)
+            ?.getCanonicalRefName2(refName) ?? refName
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * the slice one end of a feature lands on
        */
       sliceFor(assemblyName: string | undefined, refName: string) {
-        const canonical =
-          assemblyName === undefined
-            ? self.trackAssemblyNames[0]
-            : self.trackAssemblyNames.find(
-                name =>
-                  (self.adapterNames?.[name]?.assemblyName ?? name) ===
-                  assemblyName,
-              )
-        const names =
-          canonical === undefined ? undefined : self.adapterNames?.[canonical]
-        const spelled = assemblyName ?? names?.assemblyName ?? canonical
-        const slice = self.sliceIndex[sliceKey(spelled, refName)]
-        if (slice || canonical === undefined) {
-          return slice
-        }
-        const canonicalRefName =
-          getSession(self)
-            .assemblyManager.get(canonical)
-            ?.getCanonicalRefName2(refName) ?? refName
-        return self.sliceIndex[
-          sliceKey(
-            spelled,
-            names?.refNameMap[canonicalRefName] ?? canonicalRefName,
-          )
-        ]
+        const assembly = self.assemblyOf(assemblyName)
+        return assembly === undefined
+          ? undefined
+          : self.sliceIndex[
+              sliceKey(assembly, self.canonicalRefName(assembly, refName))
+            ]
       },
     }))
     .actions(self => ({
@@ -319,12 +292,6 @@ export function BaseChordDisplay() {
        */
       setFeatures(features: Feature[] | undefined) {
         self.features = features
-      },
-      /**
-       * #action
-       */
-      setAdapterNames(names: Record<string, AdapterNames> | undefined) {
-        self.adapterNames = names
       },
       /**
        * #action
@@ -354,10 +321,9 @@ export interface BaseChordDisplayModel extends Instance<
 
 /**
  * A chord display's one fetch: the features `fetchFeatures` brings back over
- * the track's regions, and the name tables, together, since a draw needs both
- * and they share one `error` slot. Keyed on the region set ignoring order and
- * `reversed`, because the slice index re-places features and a reorder only
- * moves and flips regions.
+ * the track's regions. Keyed on the region set ignoring order and `reversed`,
+ * because the slice index re-places features and a reorder only moves and flips
+ * regions.
  */
 export function installChordFetch(
   self: BaseChordDisplayModel,
@@ -387,56 +353,20 @@ export function installChordFetch(
             sessionId: getRpcSessionId(self),
             adapterConfig: structuredClone(self.adapterConfig),
             regions: structuredClone(regions),
-            assemblyNames: [...trackAssemblyNames],
           }
         : undefined
     },
-    fetchKey: ({ adapterConfig, regions, assemblyNames }) => ({
+    fetchKey: ({ adapterConfig, regions }) => ({
       adapterConfig,
-      assemblyNames,
       regions: regions
         .map(r => `${r.assemblyName}:${r.refName}:${r.start}-${r.end}`)
         .sort(),
     }),
-    run: async (args, ctx) => {
-      const { sessionId, adapterConfig, assemblyNames } = args
-      const { assemblyManager } = getSession(self)
-      const spelled = regionsInAssemblyNamespace(
-        assemblyNames.map(assemblyName => ({ assemblyName })),
-        adapterAssemblyNames(adapterConfig),
-        assemblyManager,
-      )
-      const [featCtx, mapCtx] = fanOutStatus(ctx, 2)
-      const [features, maps] = await Promise.all([
-        fetchFeatures(args, featCtx!),
-        Promise.all(
-          assemblyNames.map(async (assemblyName, i) => {
-            const refNameMap = await assemblyManager.getRefNameMapForAdapter(
-              adapterConfig,
-              assemblyName,
-              {
-                signal: mapCtx!.signal,
-                sessionId,
-                statusCallback: mapCtx!.statusCallback,
-              },
-            )
-            return [
-              assemblyName,
-              { assemblyName: spelled[i]!.assemblyName, refNameMap },
-            ] as const
-          }),
-        ),
-      ])
-      return { features, adapterNames: Object.fromEntries(maps) }
-    },
-    commit: ({ features, adapterNames }) => {
-      self.setAdapterNames(adapterNames)
+    run: fetchFeatures,
+    commit: features => {
       self.setFeatures(features)
     },
-    // freshness is `loaded` alone, so a stale half left in place would read as
-    // current and the old tables name the previous regions' contigs
     onBegin: () => {
-      self.setAdapterNames(undefined)
       self.setFeatures(undefined)
     },
     setError: error => {
