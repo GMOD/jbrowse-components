@@ -215,6 +215,11 @@ export function runMcpStdioServer({
   now?: () => number
 }) {
   const callBridge = connectBridge(socketPath)
+  // A client that dies with calls in flight leaves stdout a broken pipe, and
+  // the write that finds it emits 'error': unheard, that crashed the process,
+  // with a main-process error dialog in the Electron --mcp entry. Nobody is
+  // left to answer, so it exits.
+  output.on('error', onExit)
 
   // Whether the agent has been briefed this session: by reading the guide, or
   // by the guidance the first run_javascript result carried. Decided when the

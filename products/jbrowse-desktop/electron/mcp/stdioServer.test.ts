@@ -531,6 +531,21 @@ test('a cancel for a request that is not in flight reaches nobody', async () => 
   bridge.close()
 })
 
+test('a broken stdout exits rather than crashing', () => {
+  const output = new PassThrough()
+  const onExit = jest.fn()
+  runMcpStdioServer({
+    socketPath: '/nonexistent/mcp.sock',
+    version: '1.2.3',
+    onExit,
+    input: new PassThrough(),
+    output,
+  })
+
+  expect(() => output.emit('error', new Error('write EPIPE'))).not.toThrow()
+  expect(onExit).toHaveBeenCalled()
+})
+
 test('closing stdin drains in-flight calls before onExit', async () => {
   let answer: (() => void) | undefined
   const bridge = await startFakeBridgeAsync(request => {
