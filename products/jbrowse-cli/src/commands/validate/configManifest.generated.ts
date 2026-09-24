@@ -6723,7 +6723,9 @@ export const configManifest: ConfigManifest = {
       ],
       "passThrough": [
         "bpPerPx",
-        "offsetPx"
+        "cytobandsVisible",
+        "offsetPx",
+        "showCytobandsSetting"
       ]
     },
     "CircularView": {
@@ -6821,6 +6823,9 @@ export const configManifest: ConfigManifest = {
         "sameScale",
         "tracks",
         "views"
+      ],
+      "passThrough": [
+        "fadeThinAlignments"
       ]
     },
     "SpreadsheetView": {

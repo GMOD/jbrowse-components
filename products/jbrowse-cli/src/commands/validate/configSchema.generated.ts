@@ -17899,6 +17899,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "offsetPx": {
           "deprecated": true,
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "showCytobandsSetting": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        },
+        "cytobandsVisible": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
         }
       }
     },
@@ -19357,6 +19365,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "collapseEmptyRows": {
           "description": "Launch key, resolved by the LinearSyntenyView launcher on open."
+        },
+        "fadeThinAlignments": {
+          "deprecated": true,
+          "description": "Legacy spelling the view's own preProcessSnapshot converts."
         }
       }
     },
