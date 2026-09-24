@@ -13,9 +13,15 @@ import type { BaseTextSearchAdapter } from '../data_adapters/BaseAdapter/index.t
 
 const manager = new TextSearchManager({} as never)
 
-// minimal stand-in exposing only the surface search() calls
-function fakeAdapter(searchIndex: () => Promise<BaseResult[]>) {
-  return { searchIndex } as unknown as BaseTextSearchAdapter
+// a loaded index whose adapter exposes only the surface search() calls
+function fakeAdapter(
+  searchIndex: () => Promise<BaseResult[]>,
+  trackId?: string,
+) {
+  return {
+    adapter: { searchIndex } as unknown as BaseTextSearchAdapter,
+    trackId,
+  }
 }
 
 const sort = async (labels: string[], queryString: string) =>
@@ -130,6 +136,29 @@ describe('search resilience', () => {
     )
     expect(results.map(r => r.getLabel())).toEqual(['BRCA1'])
   })
+
+  // a UCSC hub's index holds feature names only, so the hit would otherwise
+  // open no track and show none in the picker
+  it('a per-track index answers for its track when its hits name none', async () => {
+    const m = new TextSearchManager({} as never)
+    m.loadTextSearchAdapters = async () => ({
+      values: [
+        fakeAdapter(
+          async () => [
+            new BaseResult({ label: 'BRCA1' }),
+            new BaseResult({ label: 'BRCA2', trackId: 'named' }),
+          ],
+          'genes',
+        ),
+      ],
+      failures: [],
+    })
+    const results = await m.search({ queryString: 'BRCA' }, 'hg38')
+    expect(results.map(r => [r.getLabel(), r.getTrackId()])).toEqual([
+      ['BRCA1', 'genes'],
+      ['BRCA2', 'named'],
+    ])
+  })
 })
 
 // A track's text index names whatever assembly the track it was built from
@@ -185,7 +214,10 @@ describe('relevantAdapters', () => {
 // exercises the real schema-union resolution rather than a fake track shape —
 // closest unit analogue of the desktop E2E regression this pins.
 describe('getTrackAdaptersWithAssembly', () => {
-  function pluginManagerWithFeatureTrack(sessionTracks: unknown[]) {
+  function pluginManagerWithFeatureTrack(
+    sessionTracks: unknown[],
+    connectionTracks: unknown[] = [],
+  ) {
     const pluginManager = new PluginManager()
     pluginManager.addTextSearchAdapterType(
       () =>
@@ -218,7 +250,10 @@ describe('getTrackAdaptersWithAssembly', () => {
     pluginManager.configure()
     pluginManager.setRootModel({
       jbrowse: { aggregateTextSearchAdapters: [] },
-      session: { tracks: sessionTracks },
+      session: {
+        tracks: sessionTracks,
+        connectionInstances: [{ tracks: connectionTracks }],
+      },
     } as never)
     return pluginManager
   }
@@ -232,23 +267,36 @@ describe('getTrackAdaptersWithAssembly', () => {
     ).toEqual([])
   })
 
-  it('finds a track that names its own search index', () => {
-    const pluginManager = pluginManagerWithFeatureTrack([
-      {
-        trackId: 't1',
-        type: 'FeatureTrack',
+  const indexedTrack = (trackId: string) => ({
+    trackId,
+    type: 'FeatureTrack',
+    assemblyNames: ['volvox'],
+    textSearching: {
+      textSearchAdapter: {
+        type: 'TrixTextSearchAdapter',
+        uri: 'genes.ix',
         assemblyNames: ['volvox'],
-        textSearching: {
-          textSearchAdapter: {
-            type: 'TrixTextSearchAdapter',
-            uri: 'genes.ix',
-            assemblyNames: ['volvox'],
-          },
-        },
       },
-    ])
+    },
+  })
+
+  it('finds a track that names its own search index', () => {
+    const pluginManager = pluginManagerWithFeatureTrack([indexedTrack('t1')])
     expect(
       new TextSearchManager(pluginManager).relevantAdapters('volvox'),
     ).toHaveLength(1)
+  })
+
+  // a hub's tracks live on its connection, not in session.tracks
+  it("finds a connection track's index and the track it belongs to", () => {
+    const pluginManager = pluginManagerWithFeatureTrack(
+      [indexedTrack('t1')],
+      [indexedTrack('hub1')],
+    )
+    expect(
+      new TextSearchManager(pluginManager)
+        .relevantIndexes('volvox')
+        .map(i => i.trackId),
+    ).toEqual(['t1', 'hub1'])
   })
 })

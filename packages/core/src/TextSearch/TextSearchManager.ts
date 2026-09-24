@@ -3,7 +3,7 @@ import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { hydrateTrackConfig, readConfObject } from '../configuration/index.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
 import { checkAbortSignal, isAbortException } from '../util/aborting.ts'
-import { canonicalAssemblyNames } from '../util/tracks.ts'
+import { allSessionTracks, canonicalAssemblyNames } from '../util/tracks.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
@@ -34,6 +34,12 @@ async function settle<T>(promises: Promise<T>[], message: string) {
   return { values, failures }
 }
 
+export interface SearchIndex {
+  conf: AnyConfigurationModel
+  /** the track a per-track index belongs to */
+  trackId?: string
+}
+
 export interface TextSearchReport {
   results: BaseResult[]
   /** the indexes covering the assembly, zero when it has none to search */
@@ -55,23 +61,23 @@ export default class TextSearchManager {
 
   loadTextSearchAdapters(assemblyName: string) {
     return settle(
-      this.relevantAdapters(assemblyName).map(async conf => {
+      this.relevantIndexes(assemblyName).map(async ({ conf, trackId }) => {
         const adapterId = readConfObject(conf, 'textSearchAdapterId')
-        const r = this.adapterCache.get(adapterId)
-        if (r) {
-          return r
+        const cached = this.adapterCache.get(adapterId)
+        if (cached) {
+          return { adapter: cached, trackId }
         } else {
           const adapterType = this.pluginManager.getTextSearchAdapterType(
             conf.type,
           )
           const AdapterClass = await adapterType.getAdapterClass()
-          const adapterInstance = new AdapterClass(
+          const adapter = new AdapterClass(
             conf,
             undefined,
             this.pluginManager,
           ) as BaseTextSearchAdapter
-          this.adapterCache.set(adapterId, adapterInstance)
-          return adapterInstance
+          this.adapterCache.set(adapterId, adapter)
+          return { adapter, trackId }
         }
       }),
       'failed to load text search adapter',
@@ -79,6 +85,10 @@ export default class TextSearchManager {
   }
 
   relevantAdapters(assemblyName: string) {
+    return this.relevantIndexes(assemblyName).map(index => index.conf)
+  }
+
+  relevantIndexes(assemblyName: string): SearchIndex[] {
     const { rootModel } = this.pluginManager
     // jbrowse is typed as a bare state tree node, so its config slots need a
     // shape assertion; both it and the session are absent until a session is
@@ -99,11 +109,14 @@ export default class TextSearchManager {
     const [wanted] = canonical([assemblyName])
     const matches = (names: string[] | undefined) =>
       !!wanted && !!names && canonical(names).includes(wanted)
+    const session = rootModel?.session
     return [
-      ...this.getAdaptersWithAssembly(matches, aggregateTextSearchAdapters),
+      ...this.getAdaptersWithAssembly(matches, aggregateTextSearchAdapters).map(
+        conf => ({ conf }),
+      ),
       ...this.getTrackAdaptersWithAssembly(
         matches,
-        rootModel?.session?.tracks ?? [],
+        session ? allSessionTracks(session) : [],
       ),
     ]
   }
@@ -137,15 +150,17 @@ export default class TextSearchManager {
           )
         )
       })
-      .map(conf => {
-        const live = isStateTreeNode(conf)
-          ? conf
-          : hydrateTrackConfig(this.pluginManager, conf)
-        return live?.textSearching.textSearchAdapter as
+      .flatMap(track => {
+        const live = isStateTreeNode(track)
+          ? track
+          : hydrateTrackConfig(this.pluginManager, track)
+        const conf = live?.textSearching.textSearchAdapter as
           | AnyConfigurationModel
           | undefined
+        return conf
+          ? [{ conf, trackId: readConfObject(track, 'trackId') as string }]
+          : []
       })
-      .filter(conf => conf !== undefined)
   }
 
   async search(args: BaseTextSearchArgs, assemblyName: string) {
@@ -158,7 +173,17 @@ export default class TextSearchManager {
   ): Promise<TextSearchReport> {
     const loaded = await this.loadTextSearchAdapters(assemblyName)
     const searched = await settle(
-      loaded.values.map(a => a.searchIndex(args)),
+      loaded.values.map(async ({ adapter, trackId }) => {
+        const found = await adapter.searchIndex(args)
+        // a per-track index answers for its track, whether or not its records
+        // name it — a UCSC hub's index holds only feature names
+        if (trackId) {
+          for (const result of found) {
+            result.trackId ??= trackId
+          }
+        }
+        return found
+      }),
       'text search adapter failed',
     )
     // the ranking below is the expensive half — a dynamic import plus a fuzzy
