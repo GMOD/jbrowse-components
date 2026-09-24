@@ -154,11 +154,10 @@ export async function setSessionFavoriteRow(
   id: string,
   favorite: boolean,
 ) {
-  const tx = db.transaction('metadata', 'readwrite')
-  const metadata = tx.objectStore('metadata')
-  const meta = await metadata.get(id)
-  if (meta) {
-    await metadata.put({ ...meta, favorite }, id)
-  }
-  await tx.done
+  await withBothStores(db, async ({ metadata }) => {
+    const meta = await metadata.get(id)
+    if (meta) {
+      await metadata.put({ ...meta, favorite }, id)
+    }
+  })
 }

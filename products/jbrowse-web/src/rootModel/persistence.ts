@@ -227,20 +227,9 @@ function setupUnloadFlush(self: WebRootModel) {
     }
   }
   window.addEventListener('beforeunload', flush)
-  // Every reloadPluginManager builds a replacement root model, so a listener left
-  // behind accumulates one per reload for the life of the tab. It is the leak this
-  // prevents, not a bad write — the isAlive check above already covers that, and
-  // the two are deliberately redundant.
-  //
-  // On detach rather than on destroy, because the destroy is a task later than
-  // the swap (rootModel's `detach`) and the swap is when this has to stop.
-  // addDisposer as well, for the tests that destroy a root directly; both are
-  // idempotent.
-  const remove = () => {
+  registerTeardown(self, () => {
     window.removeEventListener('beforeunload', flush)
-  }
-  self.addDetachDisposer(remove)
-  addDisposer(self, remove)
+  })
 }
 
 // The config the replacement app boots from when a plugin is installed.
