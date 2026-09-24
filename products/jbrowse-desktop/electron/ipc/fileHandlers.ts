@@ -55,13 +55,15 @@ export function registerFileHandlers(paths: AppPaths) {
         paths,
         `${path.basename(filename)}-${Date.now()}`,
       )
+      // opened before anything can fail, so the cleanup below never runs ahead
+      // of a stream still creating the file
+      const fai = await fs.promises.open(faiPath, 'w')
       try {
         const stream = await getFileStream(location, signal)
-        const write = Writable.toWeb(fs.createWriteStream(faiPath))
         // generateFastaIndex locks the stream it is handed, so cancelling that
         // one is refused: the signal has to abort a pipe in front of it
         await generateFastaIndex(
-          write,
+          Writable.toWeb(fai.createWriteStream()),
           stream.pipeThrough(new TransformStream(), { signal }),
         )
         // an abort landing after the last read still means the user left
@@ -69,6 +71,7 @@ export function registerFileHandlers(paths: AppPaths) {
       } catch (e) {
         // a rejected or cancelled index has already written part of the .fai,
         // which would otherwise sit in faiDir looking valid
+        await fai.close()
         await fs.promises.rm(faiPath, { force: true })
         throw signal.aborted
           ? new Error('FASTA indexing cancelled', { cause: e })
