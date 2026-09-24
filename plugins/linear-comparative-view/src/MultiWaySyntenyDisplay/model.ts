@@ -49,7 +49,6 @@ import {
   LodTierInfoMixin,
   orderAttributeLabels,
   paintedField,
-  syntenyColorFor,
   trackHasLodTiers,
   widenAttributeRanges,
 } from '@jbrowse/synteny-core'
@@ -177,6 +176,23 @@ export interface HoverTarget extends RibbonRef {
 
 function regionKey(r: LaneRegion) {
   return `${r.refName}:${r.start}-${r.end}`
+}
+
+function drawnRect(
+  map: LaneMap,
+  [x1, x2]: Span,
+  dragOffsetPx: number,
+  top: number,
+  height: number,
+): HighlightRect {
+  const a = drawnPx(map, x1)
+  const b = drawnPx(map, x2)
+  return {
+    left: Math.min(a, b) + dragOffsetPx,
+    top,
+    width: Math.abs(b - a),
+    height,
+  }
 }
 
 function ribbonChannelNames(adapterConfig: Record<string, unknown>) {
@@ -494,9 +510,10 @@ export function stateModelFactory(
          * #action
          */
         setRibbonColorBy(field: string) {
-          self.configuration.setSubschema(
+          setConf(
+            self,
             'ribbonColor',
-            syntenyColorFor(field, ribbonColorSetting()),
+            colorForField(ribbonColorSetting(), field),
           )
           // the way back from a label order or a span one window fixed: the
           // ribbons re-key from the features in hand
@@ -1486,12 +1503,7 @@ export function stateModelFactory(
         if (view.initialized) {
           const anchorAdapter = adapters.get(self.anchorAssemblyName)
           const regions = mergeContiguousRegions(
-            view.staticBlocks.contentBlocks.map(block => ({
-              assemblyName: self.anchorAssemblyName,
-              refName: block.refName,
-              start: Math.max(0, block.start),
-              end: block.end,
-            })),
+            view.staticBlocks.contentBlocks,
           )
           if (anchorAdapter && regions.length) {
             specs.push({
@@ -2001,16 +2013,14 @@ export function stateModelFactory(
           : lanes.flatMap((lane, row) => {
               const map = laneMapOf(self, row)
               return (lane.placements.get(hoveredGroupKey)?.spans ?? []).map(
-                span => {
-                  const a = drawnPx(map, span[0])
-                  const b = drawnPx(map, span[1])
-                  return {
-                    left: Math.min(a, b) + dragOffsetPx,
-                    top: lane.glyphTop - scrollTop,
-                    width: Math.abs(b - a),
-                    height: glyphHeight,
-                  }
-                },
+                span =>
+                  drawnRect(
+                    map,
+                    span,
+                    dragOffsetPx,
+                    lane.glyphTop - scrollTop,
+                    glyphHeight,
+                  ),
               )
             })
       },
@@ -2031,16 +2041,15 @@ export function stateModelFactory(
                 return cell?.kind === 'glyphs'
                   ? cell.data.hits
                       .filter(hit => hit.feature.id() === selectedFeatureId)
-                      .map(hit => {
-                        const a = drawnPx(map, hit.x1)
-                        const b = drawnPx(map, hit.x2)
-                        return {
-                          left: Math.min(a, b) + dragOffsetPx,
-                          top: hit.y1 - scrollTop,
-                          width: Math.abs(b - a),
-                          height: hit.y2 - hit.y1,
-                        }
-                      })
+                      .map(hit =>
+                        drawnRect(
+                          map,
+                          [hit.x1, hit.x2],
+                          dragOffsetPx,
+                          hit.y1 - scrollTop,
+                          hit.y2 - hit.y1,
+                        ),
+                      )
                   : []
               })
             })
@@ -2208,17 +2217,19 @@ export function stateModelFactory(
        * the order they draw, then a ribbon through the pick engine
        */
       hitTest(x: number, y: number): HoverTarget | undefined {
-        const ox = x - self.dragOffsetPx
         const oy = y + self.scrollTop
         const { lanes, glyphHeight } = self.laneStack
         const row = lanes.findIndex(
           lane => oy >= lane.glyphTop && oy <= lane.glyphTop + glyphHeight,
         )
-        const px = packedPx(laneMapOf(self, row), ox)
-        for (const key of row < 0 ? [] : [boxesKey(row), glyphsKey(row)]) {
-          const cell = self.laneGlyphCells.get(key)
-          if (cell?.kind === 'glyphs') {
-            const hit = glyphHitAt(cell.data.hits, px, oy)
+        if (row >= 0) {
+          const px = packedPx(laneMapOf(self, row), x - self.dragOffsetPx)
+          for (const key of [boxesKey(row), glyphsKey(row)]) {
+            const cell = self.laneGlyphCells.get(key)
+            const hit =
+              cell?.kind === 'glyphs'
+                ? glyphHitAt(cell.data.hits, px, oy)
+                : undefined
             if (hit) {
               return {
                 label: hit.label,
