@@ -49,17 +49,17 @@ const HOSTED_DEMO = 'https://jbrowse.org/demos/ecoli_pangenome'
 // of pixels that moved on every regen was enough to hide a real change (an
 // orange recolour shipped as goldenrod in three figures under that threshold).
 //
-// Every fixture pins `esmUrl` to a content-addressed bundle
-// (test_data/graphgenomeview/README.md), so the plugin cannot change these
-// figures without a diff in this repo.
+// Every fixture names the plugin's unversioned npm url
+// (test_data/graphgenomeview/README.md), so a plugin publish moves these
+// figures at the next regen, with no diff in this repo.
 //
-// Deterministic in PIXELS is not deterministic in BYTES, and a pin bump is
-// where that bites. Regenerating this set with `--filter` to check what a new
+// Deterministic in PIXELS is not deterministic in BYTES, and a plugin publish
+// is where that bites. Regenerating this set with `--filter` to check what a new
 // bundle moved rewrites all of them, because --filter implies --force and force
 // skips the 0.5% gate that normally absorbs the sub-pixel jitter two
 // consecutive renders of the same spec produce. The result reads as "the bundle
 // moved 25 figures" and is 25 figures of churn in figures.lock. Regenerate
-// UNFILTERED after a pin bump and let the gate answer, or accept that the
+// UNFILTERED after a publish and let the gate answer, or accept that the
 // answer you get is not about the bundle.
 
 // The plugin's showLoading holds the view phase until its geometry is built.
@@ -73,8 +73,8 @@ export const GRAPH_DRAWN =
 // fire on whichever landed first.
 export const TOOLBAR_READY = `body:has(${GRAPH_DRAWN}) [data-testid="graph-layout-select"]`
 
-// The tracked fixtures, whose `esmUrl` is the published, content-addressed
-// plugin bundle. Their `*_local.json` siblings point that url at a local
+// The tracked fixtures, whose `esmUrl` is the plugin's npm url on unpkg.
+// Their `*_local.json` siblings point that url at a local
 // `pnpm build` of the plugin instead and are gitignored, so a spec naming one
 // renders here and gives the reader a live link to a config that exists on no
 // server (checked by `pnpm check-live-configs`). Iterate against a local plugin

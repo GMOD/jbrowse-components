@@ -347,13 +347,13 @@ picture, so review them by eye after a regen. Three things they taught:
   which cannot be told apart from a real change of that size — regenerate those
   with `--force`.
 
-**The figures can only cover what is deployed.** Both tutorials load the plugin
-from `jbrowse.org/demos/graphgenomeviewer`, and that bundle is code-split, so
-audit it by grepping the entry *and every chunk it references* (the color-scheme
-labels live in a chunk, not the entry):
+**The figures can only cover what is published.** Both tutorials load the
+plugin from npm through unpkg's unversioned url, and that bundle is code-split,
+so audit it by grepping the entry *and every chunk it references* (the
+color-scheme labels live in a chunk, not the entry):
 
 ```bash
-curl -s https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js \
+curl -sL https://unpkg.com/jbrowse-plugin-graphgenomeviewer/dist/jbrowse-plugin-graphgenomeviewer.esm.js \
   | grep -c 'Graph genome view (visible region)'
 md5sum ~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer/dist/*.esm.js   # vs the hosted one
 ```

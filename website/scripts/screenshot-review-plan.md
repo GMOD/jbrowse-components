@@ -684,20 +684,20 @@ reports `instanceData.alignmentLengths` instead of `index 19`.
 ## Pangenome graph figures: the plugin publish loop
 
 The plugin lives in `~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer`, and the
-three `test_data/graphgenomeview/*.json` configs pin `esmUrl` to a
-content-addressed prefix, so **a plugin change reaches no figure until it is
-published**. The loop, all three steps or none:
+`test_data/graphgenomeview/*.json` configs name the plugin's unversioned npm url
+on unpkg, so **a plugin change reaches no figure until it is published**. The
+loop:
 
 ```bash
-cd ~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer && pnpm betabuild   # prints the hash
-sed -i 's|graphgenomeviewer/<old>/|graphgenomeviewer/<new>/|g' test_data/graphgenomeview/*.json
+cd ~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer && pnpm version patch   # CI publishes the tag to npm
 cd website && node scripts/generate-screenshots.ts --force --filter pangenome/
 ```
 
-`betabuild` uploads to the public `s3://jbrowse.org/demos/graphgenomeviewer/`,
-moves the unversioned entry point the published figures' live links resolve, and
-invalidates CloudFront — **ask before running it.** Last published
-`4bcef24fbaa7` (2026-08-14).
+A publish is live for every config at once: unpkg's unversioned url redirects to
+the newest release, which the published figures' live links resolve too — **ask
+before running it.** Until 2026-09-24 the plugin deployed through its
+`betabuild` script to `jbrowse.org/demos/graphgenomeviewer/`, and the fixtures
+pinned its content-addressed prefix until 2026-09-06.
 
 **A publish ships every plugin commit since the last one, not just yours**, so
 the figures it moves are not the figures your change explains. That publish
@@ -869,9 +869,10 @@ channel), not a spec edit.
   graph genome viewer"). Rendered against a local plugin build at
   `paneHeight: 420`: the drawing goes 24.6% to 16.1%, the boxed arc is still
   what the eye lands on, the chain stays legible, 180 px back. **After the next
-  `betabuild`, the spec edit is one line** — `paneHeight: 420` on that figure's
-  `GraphGenomeView` — and the figure's `viewportHeight` drops from 1495 to
-  ~1315. Do not add it before the publish: the hosted bundle has no such prop.
+  plugin publish, the spec edit is one line** — `paneHeight: 420` on that
+  figure's `GraphGenomeView` — and the figure's `viewportHeight` drops from 1495
+  to ~1315. Do not add it before the publish: the hosted bundle has no such
+  prop.
 - **`bubbleSpread: 'compress'` is not a height fix, and was tried on that same
   figure.** It does shorten the arc, and the result is worse: the subject node
   becomes a ~20 px box at the end of a long thin chain and the annotation box

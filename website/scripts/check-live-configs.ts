@@ -64,26 +64,31 @@ const HOSTED_MIRRORS: Record<string, string> = {
     'https://jbrowse.org/demos/mouse_pangenome/README.txt',
 }
 
-// Every config, demo or screenshot fixture, names the plugin's UNVERSIONED
-// entry point. A demo is a session a visitor opens, so it wants what the
-// tutorials tell that visitor to install; a fixture wants the same build the
-// figures' live links open. Pinning a content-addressed build buys nothing and
-// costs a bump nobody remembers: `demos/hprc/config.json` went stale twice
-// that way, once two builds behind (`29402c586a`, which cost visitors a
-// Bandage engine that aborted on every minigraph rGFA and then exhausted the
-// worker's heap) and once one build behind. The fixtures pinned until
-// 2026-09-06, on the argument that a figure must not change without a commit
-// here; the decision since is that a plugin publish is allowed to move the
-// graph figures, and `pnpm figures:report` after the next regen is where that
-// move is read.
+// Every config, demo or screenshot fixture, names the plugin's UNVERSIONED npm
+// url on unpkg, which redirects to the newest release. A demo is a session a
+// visitor opens, so it wants what the tutorials tell that visitor to install; a
+// fixture wants the same build the figures' live links open. Pinning a version
+// buys nothing and costs a bump nobody remembers: `demos/hprc/config.json` went
+// stale twice on the plugin's old content-addressed betabuild prefix, once two
+// builds behind (`29402c586a`, which cost visitors a Bandage engine that
+// aborted on every minigraph rGFA and then exhausted the worker's heap) and
+// once one build behind. The fixtures pinned until 2026-09-06, on the argument
+// that a figure must not change without a commit here; the decision since is
+// that a plugin publish is allowed to move the graph figures, and `pnpm
+// figures:report` after the next regen is where that move is read. The
+// betabuild prefix itself (`jbrowse.org/demos/graphgenomeviewer/`) retired on
+// 2026-09-24, when the plugin reached npm.
 //
 // `*_local.json` is the GRAPH_PLUGIN_LOCAL switch's output, gitignored and
 // pointed at a local build on purpose.
 const PLUGIN_URL_RE =
-  /https:\/\/jbrowse\.org\/demos\/graphgenomeviewer\/(?:([0-9a-f]+)\/)?jbrowse-plugin-graphgenomeviewer\.esm\.js/g
+  /https:\/\/unpkg\.com\/jbrowse-plugin-graphgenomeviewer(?:@([^/]+))?\/dist\/jbrowse-plugin-graphgenomeviewer\.esm\.js/g
+const BETABUILD_URL_RE =
+  /https:\/\/jbrowse\.org\/demos\/graphgenomeviewer\/\S+/g
 
 function pluginUrls(dir: string) {
-  const found: { file: string; hash: string | undefined }[] = []
+  const found: { file: string; hash: string | undefined; retired?: string }[] =
+    []
   for (const entry of readdirSync(join(repoRoot, dir), {
     recursive: true,
     withFileTypes: true,
@@ -92,8 +97,16 @@ function pluginUrls(dir: string) {
       continue
     }
     const file = join(entry.parentPath, entry.name)
-    for (const m of readFileSync(file, 'utf8').matchAll(PLUGIN_URL_RE)) {
+    const text = readFileSync(file, 'utf8')
+    for (const m of text.matchAll(PLUGIN_URL_RE)) {
       found.push({ file: relative(repoRoot, file), hash: m[1] })
+    }
+    for (const m of text.matchAll(BETABUILD_URL_RE)) {
+      found.push({
+        file: relative(repoRoot, file),
+        hash: undefined,
+        retired: m[0],
+      })
     }
   }
   return found
@@ -101,13 +114,17 @@ function pluginUrls(dir: string) {
 
 function checkPluginPins() {
   const problems: string[] = []
-  for (const { file, hash } of [
+  for (const { file, hash, retired } of [
     ...pluginUrls('test_data'),
     ...pluginUrls('demos'),
   ]) {
     if (hash) {
       problems.push(
-        `${file} pins the plugin at ${hash}, so it gets whatever build was current when someone last remembered. Name the unversioned entry point, as demos/ecoli_pangenome/config.json does.`,
+        `${file} pins the plugin at ${hash}, so it gets whatever release was current when someone last remembered. Name the unversioned unpkg url, as demos/ecoli_pangenome/config.json does.`,
+      )
+    } else if (retired) {
+      problems.push(
+        `${file} loads the plugin from ${retired}, the retired betabuild prefix. Name the unversioned unpkg url, as demos/ecoli_pangenome/config.json does.`,
       )
     }
   }
