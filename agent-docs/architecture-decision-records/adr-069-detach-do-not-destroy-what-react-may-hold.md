@@ -118,6 +118,14 @@ liveliness reads to the undo's 4, same shape, all on the display's
 `configuration` and `type`. Detaching below a view is not a further application
 of this rule but a worse trade — see "Detach a track or a display too" below.
 
+**A display swap destroys in place too, so the React subtree over a display is
+keyed on `display.id`.** `replaceDisplay` writes a new node into the track's
+`displays` slot. LGV's `TrackContainer` used to keep its `TrackRenderingContainer`
+across that write, and React's dev-mode props diff then read every key the two
+displays share off the dead one: 14 reads for three tracks switched to
+`LinearMarkDisplay` on volvox. The circular, ring and synteny views already key
+on the display id; `TrackContainer.test.tsx` pins LGV.
+
 **A `safeReference` into the detached tree is the live-root asymmetry again**,
 and it reaches the widgets. MST hangs the invalidation hook on the reference's
 TARGET node, so a reference to the view itself empties on the view's way out
