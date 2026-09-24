@@ -1,5 +1,5 @@
 import { fetchJson, hubUrl, trackName, tracksMatching } from './hub.ts'
-import { PUBLIC_INSTANCE } from './url.ts'
+import { instanceUrl } from './url.ts'
 
 import type { Track } from './hub.ts'
 import type { JBrowseUrlOptions } from './url.ts'
@@ -93,18 +93,10 @@ export function resolveTrackId(
 export async function resolveAgainstConfig(
   options: JBrowseUrlOptions,
 ): Promise<JBrowseUrlOptions> {
-  const {
-    hub,
-    config,
-    assembly,
-    tracks,
-    spec,
-    session,
-    instance = PUBLIC_INSTANCE,
-  } = options
+  const { hub, config, assembly, tracks, spec, session, instance } = options
   const wanted = assembly ?? hub
   const url = config
-    ? new URL(config, instance).href
+    ? new URL(config, instanceUrl(instance)).href
     : hub
       ? hubUrl(hub)
       : undefined

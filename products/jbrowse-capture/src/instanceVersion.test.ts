@@ -37,6 +37,13 @@ test('a v4 instance is refused, naming its version', async () => {
   )
 })
 
+test('an instance given without its trailing slash is still read', async () => {
+  body = '4.3.0'
+  await expect(
+    assertSupportedInstance(instance().replace(/\/$/, '')),
+  ).rejects.toThrow(/serves JBrowse 4\.3\.0/)
+})
+
 test.each(['5.0.0-beta.8', '5.0.0', '6.1.2'])('%s passes', async version => {
   body = version
   await expect(assertSupportedInstance(instance())).resolves.toBeUndefined()

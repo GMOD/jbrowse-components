@@ -3,6 +3,18 @@ import { savedSessionParam, sessionSpecParam } from './session.ts'
 
 export const PUBLIC_INSTANCE = 'https://jbrowse.org/code/jb2/latest/'
 
+/**
+ * The instance as the page that loads it sees it: a directory given without
+ * its slash, which the host redirects, resolves relative URLs one level up.
+ */
+export function instanceUrl(instance = PUBLIC_INSTANCE) {
+  const url = new URL(instance)
+  if (!url.pathname.endsWith('/') && !/\.html?$/.test(url.pathname)) {
+    url.pathname += '/'
+  }
+  return url
+}
+
 export interface JBrowseUrlOptions {
   /** A genomes.jbrowse.org assembly: a UCSC db name (`hg38`) or GenArk accession. */
   hub?: string
@@ -74,7 +86,7 @@ export function jbrowseUrl({
   spec,
   session,
   sessionName,
-  instance = PUBLIC_INSTANCE,
+  instance,
 }: JBrowseUrlOptions) {
   assertSessionStandsAlone({ spec, session, assembly, loc, tracks })
   const params = new URLSearchParams()
@@ -94,7 +106,7 @@ export function jbrowseUrl({
     set('tracks', tracks?.join(','))
   }
   set('sessionName', sessionName)
-  const url = new URL(instance)
+  const url = instanceUrl(instance)
   // the fragment never reaches a server, so a large spec cannot hit HTTP 414
   url.hash = params.toString()
   return url.href

@@ -98,3 +98,19 @@ test('instance selects the deployment', () => {
 test('no config and no session yields the bare instance', () => {
   expect(jbrowseUrl({})).toBe('https://jbrowse.org/code/jb2/latest/')
 })
+
+test.each([
+  [
+    'a directory without its slash gains one',
+    'https://x.org/jb2/v4.0.0',
+    'https://x.org/jb2/v4.0.0/',
+  ],
+  ['an origin is its root', 'http://localhost:3000', 'http://localhost:3000/'],
+  [
+    'a page is left alone',
+    'https://x.org/jb2/index.html',
+    'https://x.org/jb2/index.html',
+  ],
+])('%s', (_name, instance, expected) => {
+  expect(jbrowseUrl({ instance })).toBe(expected)
+})

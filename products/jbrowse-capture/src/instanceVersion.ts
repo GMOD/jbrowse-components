@@ -1,3 +1,5 @@
+import { instanceUrl } from './url.ts'
+
 // the first release to publish `[data-app-phase]` and its census
 const MIN_MAJOR = 5
 
@@ -6,7 +8,7 @@ const MIN_MAJOR = 5
  * instance that serves no version passes, and the session gate judges it.
  */
 export async function assertSupportedInstance(instance: string) {
-  const text = await fetch(new URL('version.txt', instance), {
+  const text = await fetch(new URL('version.txt', instanceUrl(instance)), {
     signal: AbortSignal.timeout(10000),
   })
     .then(res => (res.ok ? res.text() : ''))
