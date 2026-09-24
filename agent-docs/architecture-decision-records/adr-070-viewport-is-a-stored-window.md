@@ -80,6 +80,14 @@ reinterprets every link ever shared. `legacyBpPerPx` instead carries the old
 scale to the first measure, which adopts it at whatever width arrives — bit for
 bit what the old code did — so an old link keeps its old behavior.
 
+**Delete the migration once old sessions age out.** Rejected 2026-09-24, and
+not up for revisiting. `legacyBpPerPx` and the `bpPerPx`/`offsetPx`
+pass-through in `launchKeys.ts` are permanent: many share links in circulation
+name `bpPerPx` and `offsetPx`, the tree cannot count them, and removing the pair
+silently changes the zoom every one of them opens at. The 5.0 rule that old
+sessions need no migrations covers configs we can edit, not URLs other people
+hold. A review listing this pair as dead code is wrong.
+
 **Leave the resize policy alone and fix only the restore.** Rejected because
 they are one thing. The restore is the first measure; a first measure that
 honors the window and a later measure that does not is two rules for one event.
@@ -126,10 +134,3 @@ honors the window and a later measure that does not is two rules for one event.
 - A drag-resize measurably outruns the fetch debounce. The fix is at the
   debounce, not by pinning `bpPerPx` again — that reintroduces the restore bug,
   which is the same bug wearing the resize's clothes.
-- `legacyBpPerPx` and the `bpPerPx`/`offsetPx` pass-through (`launchKeys.ts`)
-  can go. They are one field and one list and they are the whole migration, so
-  the work is not the question — the question is whether anything still opens a
-  session written before this change, and the answer is a judgement about shared
-  links and published `defaultSession`s rather than anything the tree can be
-  asked. Both are named in the tests that pin them (`pre-window`), and dropping
-  them costs an old link its scale, not its locus.

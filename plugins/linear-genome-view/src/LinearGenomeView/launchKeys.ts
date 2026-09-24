@@ -9,8 +9,8 @@ import type { InitState } from './types.ts'
 // `bpPerPx`/`offsetPx` are the viewport spelling from before it was stored as a
 // window. Neither is a declared property, so the partition would read them as
 // typos; the model's own preProcessSnapshot still converts them, so a URL or
-// saved spec naming them goes on working. The pair is deletable with
-// `legacyBpPerPx`.
+// saved spec naming them goes on working. Many share links do, so the pair
+// stays.
 //
 // #launchKeys LinearGenomeView — the URL parameters page renders this list
 // rather than restating it; each of these keys has its own `&param=` section

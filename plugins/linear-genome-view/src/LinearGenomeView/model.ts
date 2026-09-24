@@ -388,8 +388,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * MIGRATION ONLY, and safe to delete once pre-window sessions are no
-         * longer in circulation.
+         * MIGRATION ONLY, and permanent: share links written before the window
+         * was stored carry `bpPerPx`/`offsetPx`, and there are many of them.
          *
          * A snapshot written before the window was stored carries `offsetPx` and
          * `bpPerPx` but not the width they were measured at, so the window they
