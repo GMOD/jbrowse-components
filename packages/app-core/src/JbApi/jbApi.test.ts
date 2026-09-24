@@ -1624,7 +1624,7 @@ describe('setSession', () => {
   // StubView declares launch keys, so its accepted set is published;
   // PluginView declares none, standing in for a view whose launcher holds the
   // vocabulary (ProteinView's uniprotId), where the properties are the set
-  // `legacyFlag` stands in for LinearGenomeView's `bpPerPx`: a
+  // `legacyFlag` stands in for LinearSyntenyView's `fadeThinAlignments`: a
   // legacy spelling the view's own preProcessSnapshot converts, declared in
   // `passThrough` so `acceptedKeys` answers for it
   const stubViewType = {

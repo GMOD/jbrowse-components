@@ -7,10 +7,11 @@ import type { InitState } from './types.ts'
 // key that partitions as a typo.
 //
 // `bpPerPx`/`offsetPx` are the viewport spelling from before it was stored as a
-// window. Neither is a declared property, so the partition would read them as
-// typos; the model's own preProcessSnapshot still converts them, so a URL or
-// saved spec naming them goes on working. Many share links do, so the pair
-// stays.
+// window, and `showCytobandsSetting`/`cytobandsVisible` the two the cytoband
+// toggle had before `showCytobands`. None is a declared property, so the
+// partition would read them as typos; the model's own preProcessSnapshot still
+// converts them, so a URL or saved spec naming them goes on working. Share
+// links carry all four, so they stay.
 //
 // #launchKeys LinearGenomeView — the URL parameters page renders this list
 // rather than restating it; each of these keys has its own `&param=` section
@@ -28,6 +29,11 @@ export const lgvLaunchKeys = defineLaunchKeys<InitState>()(
     highlight: { kind: 'launch' },
   },
   {
-    passThrough: ['bpPerPx', 'offsetPx'],
+    passThrough: [
+      'bpPerPx',
+      'offsetPx',
+      'showCytobandsSetting',
+      'cytobandsVisible',
+    ],
   },
 )

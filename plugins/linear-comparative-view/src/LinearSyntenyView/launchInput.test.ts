@@ -201,3 +201,20 @@ test('the tracks lift leaves the levels to the launch', async () => {
   expect(view.launch).toEqual({ views: ROWS, tracks: [['a_track']] })
   expect(getSnapshot(view).levels).toEqual([])
 })
+
+// `fadeThinAlignments` is the boolean the fade was before the tri-state
+// `fadeThinAlignmentsMode`. The view's own preProcessSnapshot converts it and
+// `passThrough` declares it, so neither the partition nor a document's key
+// check reads it as a typo. `true` converts as well as `false`: only `false`
+// ever persisted, but a hand-written spec reaches for `true` to turn the fade
+// on, and dropping it would leave the key looking accepted while it wrote
+// nothing.
+test('the legacy fade boolean converts both ways, and warns about neither', async () => {
+  const off = await open({ views: ROWS, fadeThinAlignments: false })
+  expect(off.fadeThinAlignmentsMode).toBe('off')
+
+  const on = await open({ views: ROWS, fadeThinAlignments: true })
+  expect(on.fadeThinAlignmentsMode).toBe('on')
+
+  expect(warnings()).toEqual([])
+})

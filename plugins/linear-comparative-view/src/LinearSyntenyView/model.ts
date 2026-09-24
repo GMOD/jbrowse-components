@@ -1416,19 +1416,33 @@ export default function stateModelFactory(pluginManager: PluginManager) {
   return withLaunchInput(model, linearSyntenyLaunchKeys, {
     registry: pluginManager,
     materialized: snap => !!snap.views?.length,
-  }).postProcessSnapshot(snap => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (!snap) {
-      return snap
-    }
-    // redundant once the rows exist; until then it is the only thing a
-    // reload can rebuild the view from
-    if (snap.views.length) {
-      const { launch, ...rest } = snap
-      return rest as typeof snap
-    }
-    return snap
   })
+    .preProcessSnapshot<
+      ({ fadeThinAlignments?: boolean } & Record<string, unknown>) | undefined
+    >(snap => {
+      // the boolean spelling of fadeThinAlignmentsMode, which shares its name
+      // with the resolved getter
+      const { fadeThinAlignments, ...rest } = snap || {}
+      return typeof fadeThinAlignments === 'boolean'
+        ? {
+            ...rest,
+            fadeThinAlignmentsMode: fadeThinAlignments ? 'on' : 'off',
+          }
+        : rest
+    })
+    .postProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap) {
+        return snap
+      }
+      // redundant once the rows exist; until then it is the only thing a
+      // reload can rebuild the view from
+      if (snap.views.length) {
+        const { launch, ...rest } = snap
+        return rest as typeof snap
+      }
+      return snap
+    })
 }
 export type LinearSyntenyViewStateModel = ReturnType<typeof stateModelFactory>
 
