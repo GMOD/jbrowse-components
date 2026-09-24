@@ -127,7 +127,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           type: 'GCContentTrack',
           trackId: 'gc_content_hpylori',
           name: 'GC content',
-          assemblyNames: ['hpylori_26695'],
+          assemblyNames: ['GCF_000307795.1'],
           adapter: {
             type: 'GCContentAdapter',
             sequenceAdapter: HPYLORI_26695_SEQ_ADAPTER,
@@ -146,7 +146,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           type: 'GCContentTrack',
           trackId: 'gc_skew_hpylori',
           name: 'GC skew',
-          assemblyNames: ['hpylori_26695'],
+          assemblyNames: ['GCF_000307795.1'],
           adapter: {
             type: 'GCContentAdapter',
             sequenceAdapter: HPYLORI_26695_SEQ_ADAPTER,
@@ -166,7 +166,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
         },
         // The two replication landmarks the GC skew reveals, as an actual
         // feature track (not just highlight bands). oriC is anchored on the
-        // annotated dnaA gene (NC_018939.1:1,607,647-1,609,020, the chromosomal
+        // annotated dnaA gene (NC_018939v1:1,607,647-1,609,020, the chromosomal
         // replication initiator that binds the origin) — a known landmark that
         // coincides with the cumulative-skew minimum; the terminus sits at the
         // skew maximum. Widened to ~20kb region markers so they're visible at
@@ -176,12 +176,12 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           type: 'FeatureTrack',
           trackId: 'hpylori_repl_origin',
           name: 'Replication origin / terminus (from GC skew)',
-          assemblyNames: ['hpylori_26695'],
+          assemblyNames: ['GCF_000307795.1'],
           adapter: {
             type: 'FromConfigAdapter',
             features: [
               {
-                refName: 'NC_018939.1',
+                refName: 'NC_018939v1',
                 uniqueId: 'oriC',
                 start: 1_598_000,
                 end: 1_618_000,
@@ -189,7 +189,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
                 color: '#1e8484',
               },
               {
-                refName: 'NC_018939.1',
+                refName: 'NC_018939v1',
                 uniqueId: 'terminus',
                 start: 804_000,
                 end: 824_000,
@@ -203,8 +203,8 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'hpylori_26695',
-          loc: 'NC_018939.1',
+          assembly: 'GCF_000307795.1',
+          loc: 'NC_018939v1',
           // interactive chip on each highlight band uses the link icon (chips are
           // opt-in; default off draws a bare band)
           // Faint vertical guides at the two replication landmarks the origin
@@ -213,17 +213,17 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           // here, to avoid double-labeling).
           highlight: [
             {
-              refName: 'NC_018939.1',
+              refName: 'NC_018939v1',
               start: 1_598_000,
               end: 1_618_000,
-              assemblyName: 'hpylori_26695',
+              assemblyName: 'GCF_000307795.1',
               color: 'rgba(30,132,132,0.14)',
             },
             {
-              refName: 'NC_018939.1',
+              refName: 'NC_018939v1',
               start: 804_000,
               end: 824_000,
-              assemblyName: 'hpylori_26695',
+              assemblyName: 'GCF_000307795.1',
               color: 'rgba(214,40,40,0.12)',
             },
           ],
@@ -253,7 +253,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
         text: 'Mostly positive skew (leading strand)',
         anchor: {
           track: 'gc_skew_hpylori',
-          locus: 'NC_018939.1:166,800',
+          locus: 'NC_018939v1:166,800',
           fracY: 0.11,
         },
         maxWidth: 260,
@@ -263,7 +263,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
         text: 'Mostly negative skew (lagging strand)',
         anchor: {
           track: 'gc_skew_hpylori',
-          locus: 'NC_018939.1:1,034,100',
+          locus: 'NC_018939v1:1,034,100',
           fracY: 0.89,
         },
         maxWidth: 260,
@@ -274,7 +274,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
         leader: true,
         anchor: {
           track: 'gc_skew_hpylori',
-          locus: 'NC_018939.1:814,000',
+          locus: 'NC_018939v1:814,000',
           fracY: 0.45,
         },
         dx: 60,
@@ -287,7 +287,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
         leader: true,
         anchor: {
           track: 'gc_skew_hpylori',
-          locus: 'NC_018939.1:1,608,000',
+          locus: 'NC_018939v1:1,608,000',
           fracY: 0.45,
         },
         dx: -60,

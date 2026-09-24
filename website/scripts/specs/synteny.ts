@@ -96,22 +96,22 @@ export function hpyloriSyntenyWithGenes({
         tracks: [['26695_vs_chc155.pif'], ['chc155_vs_j99.pif']],
         views: [
           {
-            loc: 'NC_018939.1:177696-190329',
-            assembly: 'hpylori_26695',
-            tracks: [geneTrack('hpylori_26695.gff')],
+            loc: 'NC_018939v1:177696-190329',
+            assembly: 'GCF_000307795.1',
+            tracks: [geneTrack('GCF_000307795.1-ncbiGff')],
           },
           {
-            loc: 'NZ_AP026446.1:287157-299790',
-            assembly: 'hpylori_chc155',
-            tracks: [geneTrack('hpylori_chc155.gff')],
+            loc: 'NZ_AP026446v1:287157-299790',
+            assembly: 'GCF_025998455.1',
+            tracks: [geneTrack('GCF_025998455.1-ncbiGff')],
           },
           {
             // j99 aligns to chc155 in inverted orientation, so the [rev]
             // suffix flips this panel (declarative loc-string reverse) to
             // straighten the level-1 ribbons — otherwise they cross in an X
-            loc: 'NZ_CP011330.1:872350-884982[rev]',
-            assembly: 'hpylori_j99',
-            tracks: [geneTrack('hpylori_j99.gff')],
+            loc: 'NZ_CP011330v1:872350-884982[rev]',
+            assembly: 'GCF_000982695.1',
+            tracks: [geneTrack('GCF_000982695.1-ncbiGff')],
           },
         ],
       },
@@ -4704,7 +4704,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
           // this track, so the tutorial's click-path lands on this exact plot:
           // assemblyNames is [query, target] = [j99, 26695], and a dotplot puts
           // query on y / target on x. hview is views[0], vview is views[1].
-          views: [{ assembly: 'hpylori_26695' }, { assembly: 'hpylori_j99' }],
+          views: [
+            { assembly: 'GCF_000307795.1' },
+            { assembly: 'GCF_000982695.1' },
+          ],
         },
       ],
     }),
@@ -4713,9 +4716,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_synteny/linear_synteny_genes',
-    viewportHeight: 812,
+    viewportHeight: 822,
     url: hpyloriSyntenyWithGenes(),
-    readyText: 'NC_018939.1',
+    readyText: 'NC_018939v1',
     readyTimeout: 60000,
   },
 
@@ -4747,7 +4750,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     url: hpyloriSyntenyWithGenes({
       geneColor: "jexl:randomColor(get(feature,'gene'))",
     }),
-    readyText: 'NC_018939.1',
+    readyText: 'NC_018939v1',
     readyTimeout: 60000,
     // the default 800 clips the bottom strain's gene labels
     viewportHeight: 822,
@@ -4774,7 +4777,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_synteny/color_by_attribute',
     url: hpyloriSyntenyWithGenes(),
-    readyText: 'NC_018939.1',
+    readyText: 'NC_018939v1',
     readyTimeout: 60000,
     // the dialog is what the frame is for, and it opens centred over a stack
     // whose lower half is the other two strains
@@ -4840,10 +4843,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
           type: 'SyntenyTrack',
           trackId: 'hpylori_reversed_assembly_names',
           name: '26695 vs CHC155 (assemblyNames reversed)',
-          assemblyNames: ['hpylori_26695', 'hpylori_chc155'],
+          assemblyNames: ['GCF_000307795.1', 'GCF_025998455.1'],
           adapter: {
             type: 'PairwiseIndexedPAFAdapter',
-            assemblyNames: ['hpylori_26695', 'hpylori_chc155'],
+            assemblyNames: ['GCF_000307795.1', 'GCF_025998455.1'],
             pifGzLocation: {
               uri: 'https://jbrowse.org/demos/hpylori/26695_vs_chc155.pif.gz',
               locationType: 'UriLocation',
@@ -4865,8 +4868,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
           collapseEmptyRows: true,
           levelHeights: [200],
           views: [
-            { assembly: 'hpylori_26695', loc: 'NC_018939.1' },
-            { assembly: 'hpylori_chc155', loc: 'NZ_AP026446.1' },
+            { assembly: 'GCF_000307795.1', loc: 'NC_018939v1' },
+            { assembly: 'GCF_025998455.1', loc: 'NZ_AP026446v1' },
           ],
         },
       ],
@@ -5367,10 +5370,12 @@ export const syntenyVideoFixtures = {
   // Where the track-menu launch tour starts: the same grasses lane state its
   // still is of.
   grassesLanes: GRASSES_RICE_LANES,
+  // Each row's dropdown lists the assembly's displayName, and the strain is the
+  // part of it no other row shares.
   strains: {
-    top: 'hpylori_26695',
-    middle: 'hpylori_chc155',
-    bottom: 'hpylori_j99',
+    top: { label: '26695', assembly: 'GCF_000307795.1' },
+    middle: { label: 'CHC155', assembly: 'GCF_025998455.1' },
+    bottom: { label: 'J99', assembly: 'GCF_000982695.1' },
   },
   // Where the restack tour starts, which is the state
   // `multiway_synteny/blocks_one_vs_all` above captures: grape 11 with its genes

@@ -17,40 +17,43 @@ and read it whole-genome in a dotplot and base-level in the linear synteny view.
 
 - a JBrowse 2 instance (see the [web quickstart](/docs/quickstart_web), or the
   [desktop quickstart](/docs/quickstart_desktop); the steps below are identical
-  on both, and on Desktop the FASTAs and alignments are local files)
+  on both, and on Desktop the alignments are local files)
 - [minimap2](https://github.com/lh3/minimap2)
-- `samtools`
-- htslib (`bgzip`, `tabix`)
-- `unzip`
-- the NCBI
-  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-  CLI, which fetches the three assemblies and their gene annotations
+- `python3`, which the build script uses to copy the hub configs
 - `node`, for the [JBrowse CLI](/docs/cli)
 
-On Debian/Ubuntu, `apt install minimap2 samtools tabix unzip` covers most of
-these. The NCBI `datasets` CLI is a single-binary download, and `node` comes
+On Debian/Ubuntu, `apt install minimap2` covers the aligner, and `node` comes
 from [nodejs.org](https://nodejs.org/).
 
 ## Where the data comes from
 
-Three _H. pylori_ RefSeq assemblies, each fetched by accession with the
-`datasets` CLI.
+Three _H. pylori_ RefSeq assemblies and their genome hubs on genomes.jbrowse.org
+([26695](https://genomes.jbrowse.org/accession/GCF_000307795.1/),
+[CHC155](https://genomes.jbrowse.org/accession/GCF_025998455.1/),
+[J99](https://genomes.jbrowse.org/accession/GCF_000982695.1/)). Each hub serves
+the sequence minimap2 aligns and a config holding the assembly and its NCBI
+RefSeq genes.
 
-- 26695:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/307/795/GCF_000307795.1_ASM30779v1/
-- CHC155:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/025/998/455/GCF_025998455.1_ASM2599845v1/
-- J99:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/982/695/GCF_000982695.1_ASM98269v1/
-
-- the 26695 strain's gene annotation, rehosted so the color-by-attribute figure
-  loads without rerunning the pipeline:
-  https://jbrowse.org/demos/hpylori/hpylori_26695.gff.gz
+- 26695 GCF_000307795.1 sequence:
+  https://hgdownload.soe.ucsc.edu/hubs/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1.fa.gz
+- 26695 hub config:
+  https://jbrowse.org/hubs/genark/GCF/000/307/795/GCF_000307795.1/config.json
+- CHC155 GCF_025998455.1 sequence:
+  https://hgdownload.soe.ucsc.edu/hubs/GCF/025/998/455/GCF_025998455.1/GCF_025998455.1.fa.gz
+- CHC155 hub config:
+  https://jbrowse.org/hubs/genark/GCF/025/998/455/GCF_025998455.1/config.json
+- J99 GCF_000982695.1 sequence:
+  https://hgdownload.soe.ucsc.edu/hubs/GCF/000/982/695/GCF_000982695.1/GCF_000982695.1.fa.gz
+- J99 hub config:
+  https://jbrowse.org/hubs/genark/GCF/000/982/695/GCF_000982695.1/config.json
+- the alignments, indexed and rehosted beside the merged config the figures
+  open: https://jbrowse.org/demos/hpylori/26695_vs_j99.pif.gz and
+  https://jbrowse.org/demos/hpylori/config.json
 
 ## Three strains, stacked
 
-Three _Helicobacter pylori_ strains (26695, CHC155, and J99) go from raw
-assemblies to a stacked three-genome synteny view. The steps work the same on
+Three _Helicobacter pylori_ strains (26695, CHC155, and J99) go from their
+genome hubs to a stacked three-genome synteny view. The steps work the same on
 any pair of assemblies.
 
 ## Aligning the assemblies
@@ -58,7 +61,7 @@ any pair of assemblies.
 <!-- from: scripts/build_hpylori_synteny.sh -->
 
 ```bash
-minimap2 -c -x asm20 --eqx hpylori_j99.fa hpylori_26695.fa > 26695_vs_j99.paf
+minimap2 -c -x asm20 --eqx hpylori_j99.fa.gz hpylori_26695.fa.gz > 26695_vs_j99.paf
 ```
 
 - `-x asm20` is the assembly preset for the divergence between the genomes.
@@ -76,15 +79,44 @@ JBrowse also loads [MUMmer](https://github.com/mummer4/mummer) `.delta` and UCSC
 
 ## Loading the assemblies and the alignment
 
-The 26695 and J99 assemblies are added before the alignment that references
-them:
+Each strain's hub `config.json` holds a whole JBrowse assembly: the 2bit
+sequence, an alias table and the NCBI RefSeq gene track. The build copies each
+assembly entry and gene track into its own config as the hub wrote it, relabels
+the row, and adds the old short name as an alias so a session can still say
+`hpylori_26695`:
+
+```json
+{
+  "name": "GCF_000307795.1",
+  "displayName": "H. pylori 26695",
+  "aliases": ["hpylori_26695"],
+  "sequence": {
+    "type": "ReferenceSequenceTrack",
+    "trackId": "GCF_000307795.1-ReferenceSequenceTrack",
+    "adapter": {
+      "type": "TwoBitAdapter",
+      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1.2bit",
+      "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1.chrom.sizes.txt"
+    }
+  },
+  "refNameAliases": {
+    "adapter": {
+      "type": "RefNameAliasAdapter",
+      "refNameColumnHeaderName": "ucsc",
+      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1.chromAlias.txt"
+    }
+  }
+}
+```
+
+`refNameColumnHeaderName` makes the UCSC name canonical, so the views read
+`NC_018939v1` where the FASTA and the PAF say `NC_018939.1`, and the alias table
+maps one to the other. The alignment then goes on under the hub names:
 
 <!-- from: scripts/build_hpylori_synteny.sh -->
 
 ```bash
-jbrowse add-assembly hpylori_26695.fa --load copy
-jbrowse add-assembly hpylori_j99.fa --load copy
-jbrowse add-track 26695_vs_j99.paf -a hpylori_26695,hpylori_j99 --load copy
+jbrowse add-track 26695_vs_j99.paf -a GCF_000307795.1,GCF_000982695.1 --load copy
 ```
 
 The `-a` order is `query,target`, the reverse of the minimap2 argument order:
@@ -111,11 +143,12 @@ needs the two adjacent alignments:
 <!-- from: scripts/build_hpylori_synteny.sh -->
 
 ```bash
-minimap2 -c -x asm20 --eqx hpylori_chc155.fa hpylori_26695.fa > 26695_vs_chc155.paf
-minimap2 -c -x asm20 --eqx hpylori_j99.fa hpylori_chc155.fa > chc155_vs_j99.paf
+minimap2 -c -x asm20 --eqx hpylori_chc155.fa.gz hpylori_26695.fa.gz > 26695_vs_chc155.paf
+minimap2 -c -x asm20 --eqx hpylori_j99.fa.gz hpylori_chc155.fa.gz > chc155_vs_j99.paf
 ```
 
-Add the third assembly and both alignments the same way as above, then:
+Take the third assembly from its hub and add both alignments the same way as
+above, then:
 
 1. **Add → Linear synteny view**, then switch to **Manual**.
 2. Pick an assembly per row, with **Add row** for the third.
@@ -123,7 +156,8 @@ Add the third assembly and both alignments the same way as above, then:
    track: 26695 against CHC155, then CHC155 against J99.
 4. Click **Launch**, and all three strains stack in one view.
 
-Open each strain's gene track from its own track selector.
+Open each strain's gene track, **NCBI RefSeq - RefSeq All (GFF)**, from its own
+track selector.
 
 <Video src="/media/synteny/three_strain_import.mp4" caption="The four steps above and the gene tracks after them: Manual, a genome per row with Add row for the third, each connector showing the alignment it resolved for that pair, Launch, and each strain's gene track from the track selector for that row." />
 
@@ -144,17 +178,24 @@ panels. Features with no value are grey; most genes here carry only a locus tag.
 
 <Figure caption="The click and its result. Left, the Color by attribute dialog on the first strain's gene track with the attribute name set to gene. Right, the same three strains after applying it: a shared symbol holds one color down all three panels." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
 
-The dialog writes a display color expression, one line of config:
+The dialog writes a display color expression, one line of config on the hub's
+gene track:
 
 ```json addtrack
 {
   "type": "FeatureTrack",
-  "trackId": "hpylori_26695.gff",
-  "name": "H. pylori 26695 genes",
-  "assemblyNames": ["hpylori_26695"],
+  "trackId": "GCF_000307795.1-ncbiGff",
+  "name": "NCBI RefSeq - RefSeq All (GFF)",
+  "assemblyNames": ["GCF_000307795.1"],
   "adapter": {
     "type": "Gff3TabixAdapter",
-    "uri": "https://jbrowse.org/demos/hpylori/hpylori_26695.gff.gz"
+    "uri": "https://jbrowse.org/hubs/genark/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1_ASM30779v1_genomic.gff.gz",
+    "index": {
+      "location": {
+        "uri": "https://jbrowse.org/hubs/genark/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1_ASM30779v1_genomic.gff.gz.csi"
+      },
+      "indexType": "CSI"
+    }
   },
   "displayDefaults": {
     "showOnlyGenes": true,
@@ -197,10 +238,10 @@ bash build_hpylori_synteny.sh          # builds ./hpylori_synteny_build/jbrowse2
 npx --yes serve hpylori_synteny_build/jbrowse2 # then open the printed URL
 ```
 
-The script downloads the three assemblies, aligns the strain pairs, and writes a
-`config.json` with a gene track per strain, the pairwise synteny tracks, and a
-default session stacking all three. It needs the tools under
-[Prerequisites](#prerequisites).
+The script downloads each strain's hub sequence and config, aligns the strain
+pairs, and writes a `config.json` with the three hub assemblies and gene tracks,
+the pairwise synteny tracks, and a default session stacking all three. It needs
+the tools under [Prerequisites](#prerequisites).
 
 ## See also
 

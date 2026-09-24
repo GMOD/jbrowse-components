@@ -1,58 +1,136 @@
 {
   "assemblies": [
     {
-      "name": "hpylori_26695",
+      "name": "GCF_000307795.1",
+      "displayName": "H. pylori 26695",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "hpylori_26695-ReferenceSequenceTrack",
-        "adapter": {
-          "type": "IndexedFastaAdapter",
-          "fastaLocation": {
-            "uri": "hpylori_26695.fa",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "hpylori_26695.fa.fai",
-            "locationType": "UriLocation"
+        "metadata": {
+          "blatDb": "GCF_000307795.1",
+          "ucsc": {
+            "genome": "GCF_000307795.1",
+            "taxId": "85962",
+            "groups": "groups.txt",
+            "description": "Helicobacter pylori (26695 2012)",
+            "twoBitPath": "GCF_000307795.1.2bit",
+            "twoBitBptUrl": "GCF_000307795.1.2bit.bpt",
+            "chromSizes": "GCF_000307795.1.chrom.sizes.txt",
+            "chromAliasBb": "GCF_000307795.1.chromAlias.bb",
+            "organism": "ASM30779v1 Oct. 2012",
+            "defaultPos": "NC_018939.1:555964-565964",
+            "scientificName": "Helicobacter pylori 26695",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/000/307/795/GCF_000307795.1/html/GCF_000307795.1_ASM30779v1.description.html\">html/GCF_000307795.1_ASM30779v1.description.html</a>",
+            "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/000/307/795/GCF_000307795.1",
+            "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/000/307/795/GCF_000307795.1",
+            "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/000/307/795/GCF_000307795.1"
           }
+        },
+        "trackId": "GCF_000307795.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1.chrom.sizes.txt"
         }
-      }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "refNameColumnHeaderName": "ucsc",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1.chromAlias.txt"
+        }
+      },
+      "geneticCodes": {
+        "NC_018939.1": 11
+      },
+      "aliases": ["hpylori_26695"]
     },
     {
-      "name": "hpylori_j99",
+      "name": "GCF_025998455.1",
+      "displayName": "H. pylori CHC155",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "hpylori_j99-ReferenceSequenceTrack",
-        "adapter": {
-          "type": "IndexedFastaAdapter",
-          "fastaLocation": {
-            "uri": "hpylori_j99.fa",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "hpylori_j99.fa.fai",
-            "locationType": "UriLocation"
+        "metadata": {
+          "blatDb": "GCF_025998455.1",
+          "ucsc": {
+            "genome": "GCF_025998455.1",
+            "taxId": "210",
+            "groups": "groups.txt",
+            "description": "Helicobacter pylori (CHC155 2022)",
+            "twoBitPath": "GCF_025998455.1.2bit",
+            "twoBitBptUrl": "GCF_025998455.1.2bit.bpt",
+            "chromSizes": "GCF_025998455.1.chrom.sizes.txt",
+            "chromAliasBb": "GCF_025998455.1.chromAlias.bb",
+            "organism": "ASM2599845v1 Oct. 2022",
+            "defaultPos": "NZ_AP026446.1:565533-575533",
+            "scientificName": "Helicobacter pylori",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/025/998/455/GCF_025998455.1/html/GCF_025998455.1_ASM2599845v1.description.html\">html/GCF_025998455.1_ASM2599845v1.description.html</a>",
+            "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/025/998/455/GCF_025998455.1",
+            "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/025/998/455/GCF_025998455.1",
+            "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/025/998/455/GCF_025998455.1"
           }
+        },
+        "trackId": "GCF_025998455.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/025/998/455/GCF_025998455.1/GCF_025998455.1.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/025/998/455/GCF_025998455.1/GCF_025998455.1.chrom.sizes.txt"
         }
-      }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "refNameColumnHeaderName": "ucsc",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/025/998/455/GCF_025998455.1/GCF_025998455.1.chromAlias.txt"
+        }
+      },
+      "geneticCodes": {
+        "NZ_AP026446.1": 11
+      },
+      "aliases": ["hpylori_chc155"]
     },
     {
-      "name": "hpylori_chc155",
+      "name": "GCF_000982695.1",
+      "displayName": "H. pylori J99",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "hpylori_chc155-ReferenceSequenceTrack",
-        "adapter": {
-          "type": "IndexedFastaAdapter",
-          "fastaLocation": {
-            "uri": "hpylori_chc155.fa",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "hpylori_chc155.fa.fai",
-            "locationType": "UriLocation"
+        "metadata": {
+          "blatDb": "GCF_000982695.1",
+          "ucsc": {
+            "genome": "GCF_000982695.1",
+            "taxId": "85963",
+            "groups": "groups.txt",
+            "description": "Helicobacter pylori (J99 2015)",
+            "twoBitPath": "GCF_000982695.1.2bit",
+            "twoBitBptUrl": "GCF_000982695.1.2bit.bpt",
+            "chromSizes": "GCF_000982695.1.chrom.sizes.txt",
+            "chromAliasBb": "GCF_000982695.1.chromAlias.bb",
+            "organism": "ASM98269v1 Apr. 2015",
+            "defaultPos": "NZ_CP011330.1:566122-576122",
+            "scientificName": "Helicobacter pylori J99",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/000/982/695/GCF_000982695.1/html/GCF_000982695.1_ASM98269v1.description.html\">html/GCF_000982695.1_ASM98269v1.description.html</a>",
+            "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/000/982/695/GCF_000982695.1",
+            "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/000/982/695/GCF_000982695.1",
+            "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/000/982/695/GCF_000982695.1"
           }
+        },
+        "trackId": "GCF_000982695.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/982/695/GCF_000982695.1/GCF_000982695.1.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/982/695/GCF_000982695.1/GCF_000982695.1.chrom.sizes.txt"
         }
-      }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "refNameColumnHeaderName": "ucsc",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/982/695/GCF_000982695.1/GCF_000982695.1.chromAlias.txt"
+        }
+      },
+      "geneticCodes": {
+        "NZ_CP011330.1": 11
+      },
+      "aliases": ["hpylori_j99"]
     }
   ],
   "configuration": {},
@@ -63,9 +141,9 @@
       {
         "type": "LinearGenomeView",
         "loc": "NC_018939.1:391,180..408,961",
-        "assembly": "hpylori_26695",
+        "assembly": "GCF_000307795.1",
         "tracklist": true,
-        "tracks": ["hpylori_26695.gff", "26695_vs_j99.pif"]
+        "tracks": ["GCF_000307795.1-ncbiGff", "26695_vs_j99.pif"]
       }
     ]
   },
@@ -87,9 +165,9 @@
           },
           "indexType": "TBI"
         },
-        "assemblyNames": ["hpylori_j99", "hpylori_26695"]
+        "assemblyNames": ["GCF_000982695.1", "GCF_000307795.1"]
       },
-      "assemblyNames": ["hpylori_j99", "hpylori_26695"]
+      "assemblyNames": ["GCF_000982695.1", "GCF_000307795.1"]
     },
     {
       "type": "SyntenyTrack",
@@ -108,9 +186,9 @@
           },
           "indexType": "TBI"
         },
-        "assemblyNames": ["hpylori_chc155", "hpylori_26695"]
+        "assemblyNames": ["GCF_025998455.1", "GCF_000307795.1"]
       },
-      "assemblyNames": ["hpylori_chc155", "hpylori_26695"]
+      "assemblyNames": ["GCF_025998455.1", "GCF_000307795.1"]
     },
     {
       "type": "SyntenyTrack",
@@ -129,107 +207,191 @@
           },
           "indexType": "TBI"
         },
-        "assemblyNames": ["hpylori_j99", "hpylori_chc155"]
+        "assemblyNames": ["GCF_000982695.1", "GCF_025998455.1"]
       },
-      "assemblyNames": ["hpylori_j99", "hpylori_chc155"]
+      "assemblyNames": ["GCF_000982695.1", "GCF_025998455.1"]
     },
     {
       "type": "FeatureTrack",
-      "trackId": "hpylori_26695.gff",
-      "name": "hpylori_26695.gff",
+      "trackId": "GCF_000307795.1-ncbiGff",
+      "name": "NCBI RefSeq - RefSeq All (GFF)",
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "hpylori_26695.gff.gz",
+          "uri": "https://jbrowse.org/hubs/genark/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1_ASM30779v1_genomic.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "hpylori_26695.gff.gz.tbi",
+            "uri": "https://jbrowse.org/hubs/genark/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1_ASM30779v1_genomic.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
-      "assemblyNames": ["hpylori_26695"]
+      "category": ["Genes and Gene Predictions"],
+      "assemblyNames": ["GCF_000307795.1"],
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "GCF_000307795.1-ncbiGff-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:get(feature,'standard_name')||get(feature,'name')||get(feature,'gene')||get(feature,'note')||get(feature,'function')||get(feature,'regulatory_class')||split(get(feature,'target')||'',' ')[0]"
+          },
+          "mouseover": "jexl:get(feature,'standard_name')||get(feature,'name')||get(feature,'gene')||get(feature,'note')||get(feature,'function')||get(feature,'regulatory_class')||split(get(feature,'target')||'',' ')[0]"
+        }
+      ],
+      "textSearching": {
+        "indexingAttributes": ["Name", "ID", "gene_synonym"],
+        "indexingFeatureTypesToExclude": [
+          "CDS",
+          "exon",
+          "region",
+          "match",
+          "cDNA_match",
+          "biological_region",
+          "enhancer",
+          "silencer",
+          "promoter",
+          "protein_binding_site",
+          "transcriptional_cis_regulatory_region",
+          "nucleotide_motif"
+        ]
+      }
     },
     {
       "type": "FeatureTrack",
-      "trackId": "hpylori_j99.gff",
-      "name": "hpylori_j99.gff",
+      "trackId": "GCF_025998455.1-ncbiGff",
+      "name": "NCBI RefSeq - RefSeq All (GFF)",
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "hpylori_j99.gff.gz",
+          "uri": "https://jbrowse.org/hubs/genark/GCF/025/998/455/GCF_025998455.1/GCF_025998455.1_ASM2599845v1_genomic.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "hpylori_j99.gff.gz.tbi",
+            "uri": "https://jbrowse.org/hubs/genark/GCF/025/998/455/GCF_025998455.1/GCF_025998455.1_ASM2599845v1_genomic.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
-      "assemblyNames": ["hpylori_j99"]
+      "category": ["Genes and Gene Predictions"],
+      "assemblyNames": ["GCF_025998455.1"],
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "GCF_025998455.1-ncbiGff-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:get(feature,'standard_name')||get(feature,'name')||get(feature,'gene')||get(feature,'note')||get(feature,'function')||get(feature,'regulatory_class')||split(get(feature,'target')||'',' ')[0]"
+          },
+          "mouseover": "jexl:get(feature,'standard_name')||get(feature,'name')||get(feature,'gene')||get(feature,'note')||get(feature,'function')||get(feature,'regulatory_class')||split(get(feature,'target')||'',' ')[0]"
+        }
+      ],
+      "textSearching": {
+        "indexingAttributes": ["Name", "ID", "gene_synonym"],
+        "indexingFeatureTypesToExclude": [
+          "CDS",
+          "exon",
+          "region",
+          "match",
+          "cDNA_match",
+          "biological_region",
+          "enhancer",
+          "silencer",
+          "promoter",
+          "protein_binding_site",
+          "transcriptional_cis_regulatory_region",
+          "nucleotide_motif"
+        ]
+      }
     },
     {
       "type": "FeatureTrack",
-      "trackId": "hpylori_chc155.gff",
-      "name": "hpylori_chc155.gff",
+      "trackId": "GCF_000982695.1-ncbiGff",
+      "name": "NCBI RefSeq - RefSeq All (GFF)",
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "hpylori_chc155.gff.gz",
+          "uri": "https://jbrowse.org/hubs/genark/GCF/000/982/695/GCF_000982695.1/GCF_000982695.1_ASM98269v1_genomic.gff.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "hpylori_chc155.gff.gz.tbi",
+            "uri": "https://jbrowse.org/hubs/genark/GCF/000/982/695/GCF_000982695.1/GCF_000982695.1_ASM98269v1_genomic.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
-      "assemblyNames": ["hpylori_chc155"]
+      "category": ["Genes and Gene Predictions"],
+      "assemblyNames": ["GCF_000982695.1"],
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "GCF_000982695.1-ncbiGff-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:get(feature,'standard_name')||get(feature,'name')||get(feature,'gene')||get(feature,'note')||get(feature,'function')||get(feature,'regulatory_class')||split(get(feature,'target')||'',' ')[0]"
+          },
+          "mouseover": "jexl:get(feature,'standard_name')||get(feature,'name')||get(feature,'gene')||get(feature,'note')||get(feature,'function')||get(feature,'regulatory_class')||split(get(feature,'target')||'',' ')[0]"
+        }
+      ],
+      "textSearching": {
+        "indexingAttributes": ["Name", "ID", "gene_synonym"],
+        "indexingFeatureTypesToExclude": [
+          "CDS",
+          "exon",
+          "region",
+          "match",
+          "cDNA_match",
+          "biological_region",
+          "enhancer",
+          "silencer",
+          "promoter",
+          "protein_binding_site",
+          "transcriptional_cis_regulatory_region",
+          "nucleotide_motif"
+        ]
+      }
     }
   ],
   "aggregateTextSearchAdapters": [
     {
       "type": "TrixTextSearchAdapter",
       "ixFilePath": {
-        "uri": "trix/hpylori_26695.ix",
+        "uri": "https://jbrowse.org/hubs/genark/GCF/000/307/795/GCF_000307795.1/trix/GCF_000307795.1.ix",
         "locationType": "UriLocation"
       },
       "ixxFilePath": {
-        "uri": "trix/hpylori_26695.ixx",
+        "uri": "https://jbrowse.org/hubs/genark/GCF/000/307/795/GCF_000307795.1/trix/GCF_000307795.1.ixx",
         "locationType": "UriLocation"
       },
-      "assemblyNames": ["hpylori_26695"]
+      "assemblyNames": ["GCF_000307795.1"]
     },
     {
       "type": "TrixTextSearchAdapter",
       "ixFilePath": {
-        "uri": "trix/hpylori_j99.ix",
+        "uri": "https://jbrowse.org/hubs/genark/GCF/025/998/455/GCF_025998455.1/trix/GCF_025998455.1.ix",
         "locationType": "UriLocation"
       },
       "ixxFilePath": {
-        "uri": "trix/hpylori_j99.ixx",
+        "uri": "https://jbrowse.org/hubs/genark/GCF/025/998/455/GCF_025998455.1/trix/GCF_025998455.1.ixx",
         "locationType": "UriLocation"
       },
-      "assemblyNames": ["hpylori_j99"]
+      "assemblyNames": ["GCF_025998455.1"]
     },
     {
       "type": "TrixTextSearchAdapter",
       "ixFilePath": {
-        "uri": "trix/hpylori_chc155.ix",
+        "uri": "https://jbrowse.org/hubs/genark/GCF/000/982/695/GCF_000982695.1/trix/GCF_000982695.1.ix",
         "locationType": "UriLocation"
       },
       "ixxFilePath": {
-        "uri": "trix/hpylori_chc155.ixx",
+        "uri": "https://jbrowse.org/hubs/genark/GCF/000/982/695/GCF_000982695.1/trix/GCF_000982695.1.ixx",
         "locationType": "UriLocation"
       },
-      "assemblyNames": ["hpylori_chc155"]
+      "assemblyNames": ["GCF_000982695.1"]
     }
   ]
 }

@@ -50,11 +50,10 @@ const option = (assembly: string) => `li[role="option"]::-p-text(${assembly})`
 const connector = (top: number) =>
   `button[aria-label="Configure synteny track between row ${top} and ${top + 1}"]`
 
-// The one annotation track the hpylori config carries per genome, named in the
-// selector by the file it was built from -- so the row's assembly name plus the
-// suffix is the string on the row, and it is unique on the page (the assembly
-// name alone is also the row label and the location box's summary).
-const geneTrack = (assembly: string) => `${assembly}.gff`
+// The hub gene track each strain carries. All three share the hub's track
+// name, so the selector entry is found by trackId.
+const geneTrack = (assembly: string) =>
+  `[data-testid="htsTrackLabel-Tracks,${assembly}-ncbiGff"]`
 
 // The dotplot form's two chromosome boxes. Both carry the same placeholder and
 // the same label shape, so the testid on the input is the only handle that says
@@ -341,9 +340,9 @@ export const syntenyVideos: VideoSpec[] = [
       // row 2 goes first: setting row 1 to 26695 while row 2 still holds it
       // would ask the form to pair an assembly with itself.
       { type: 'click', selector: assemblyRow(2), say: 'Row 2', hold: 900 },
-      { type: 'click', selector: option(strains.middle), hold: 1200 },
+      { type: 'click', selector: option(strains.middle.label), hold: 1200 },
       { type: 'click', selector: assemblyRow(1), say: 'Row 1', hold: 900 },
-      { type: 'click', selector: option(strains.top), hold: 1200 },
+      { type: 'click', selector: option(strains.top.label), hold: 1200 },
       { type: 'click', text: 'Add row', say: 'Add row', hold: 1400 },
       // The new row's dropdown sits directly under the connector arrow Add row
       // put above it, and the cursor reaches it across that arrow, which raises
@@ -352,7 +351,7 @@ export const syntenyVideos: VideoSpec[] = [
       { type: 'press', key: 'Escape' },
       { type: 'delay', ms: 600 },
       { type: 'click', selector: assemblyRow(3), say: 'Row 3', hold: 900 },
-      { type: 'click', selector: option(strains.bottom), hold: 1400 },
+      { type: 'click', selector: option(strains.bottom.label), hold: 1400 },
       // The two connectors, opened rather than set: each pair has exactly one
       // alignment here and the form has already chosen it, so what these clicks
       // show is the choice being right, which is what a reader working through
@@ -402,8 +401,8 @@ export const syntenyVideos: VideoSpec[] = [
       },
       {
         type: 'click',
-        text: geneTrack(strains.top),
-        say: geneTrack(strains.top),
+        selector: geneTrack(strains.top.assembly),
+        say: `${strains.top.label} genes`,
         hold: 700,
       },
       {
@@ -413,8 +412,8 @@ export const syntenyVideos: VideoSpec[] = [
       },
       {
         type: 'click',
-        text: geneTrack(strains.middle),
-        say: geneTrack(strains.middle),
+        selector: geneTrack(strains.middle.assembly),
+        say: `${strains.middle.label} genes`,
         hold: 600,
       },
       {
@@ -424,8 +423,8 @@ export const syntenyVideos: VideoSpec[] = [
       },
       {
         type: 'click',
-        text: geneTrack(strains.bottom),
-        say: geneTrack(strains.bottom),
+        selector: geneTrack(strains.bottom.assembly),
+        say: `${strains.bottom.label} genes`,
         hold: 600,
       },
       // The rows get their width back here, which is both what the payoff frame
