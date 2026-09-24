@@ -161,19 +161,29 @@ describe('repartitioning', () => {
     expect(rowNames(display)).toEqual(['a', 'b', 'c'])
   })
 
-  // Against the effective field, not the slot: under auto the menu checks
-  // whatever the worker picked, so picking that same radio arrives as a name the
-  // slot does not hold and would read as a repartition.
-  it('leaves everything alone when the partition is already that', () => {
+  // Under auto the menu checks whatever the worker picked, so picking that
+  // same radio would pin it: a refetch for the painting already on screen.
+  it('pins nothing when auto already partitions on the picked field', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, regionData(['a', 'b'], ['sample']), ctgA)
-    display.setRowOrder([{ name: 'b' }, { name: 'a' }], { tree: '(b,a);' })
     expect(display.rowsField).toBe('')
 
     display.setRowsField(display.effectivePartitionField)
 
-    expect(display.rowDomain).toEqual(['b', 'a'])
-    expect(display.rowTree).toBe('(b,a);')
+    expect(display.rowsField).toBe('')
+  })
+
+  // The loaded rows still answer the old field until the refetch lands, so a
+  // guard on what they answered would swallow a pick back to it.
+  it('takes a pick back to the loaded field while a repartition is in flight', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setRpcData(0, regionData(['a', 'b'], ['sample']), ctgA)
+    const loaded = display.effectivePartitionField
+
+    display.setRowsField('other')
+    display.setRowsField(loaded)
+
+    expect(display.rowsField).toBe(loaded)
   })
 })
 

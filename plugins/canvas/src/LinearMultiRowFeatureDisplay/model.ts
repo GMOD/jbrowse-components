@@ -882,10 +882,10 @@ export default function stateModelFactory(
          * its own.
          */
         setRowsField(field: string) {
-          // Against the effective field, not the slot: under auto the menu
-          // checks whatever auto picked, and picking that same radio would pin
-          // it — a full refetch to produce the painting already on screen.
-          if (field === self.effectivePartitionField) {
+          // Under auto, against what auto picked, so picking that radio pins
+          // nothing; otherwise against the slot, since the loaded rows answer
+          // the old field until a repartition's refetch lands.
+          if (field === (self.rowsField || self.effectivePartitionField)) {
             return
           }
           setConf(self, ['rows', 'field'], field)
