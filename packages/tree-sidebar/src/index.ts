@@ -94,7 +94,11 @@ export {
   baseDisplayConfig,
   orderOver,
 } from './TreeSidebarMixin.ts'
-export type { ClusterRun } from './TreeSidebarMixin.ts'
+export type {
+  ClusterRun,
+  RowColorSetting,
+  RowColorSnapshot,
+} from './TreeSidebarMixin.ts'
 // Moved to display-kit on 2026-08-27 — right-click state is a display concern
 // every plugin has, not a tree one. Re-exported so nothing importing the old
 // name breaks; new code names the display-kit subpath.
