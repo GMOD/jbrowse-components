@@ -1,28 +1,22 @@
 import { makeSizeSubMenu } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { toggleItem, withHint } from '@jbrowse/core/ui/menuItems'
-import { toLocale } from '@jbrowse/core/util'
 import {
-  MAX_MIN_LENGTH_BP,
-  MIN_LENGTH_HELP,
   SETTINGS_SURFACE_LABELS,
   lodMenuItems,
+  minLengthMenuItem,
+  opacityMenuItem,
 } from '@jbrowse/synteny-core'
 import TuneIcon from '@mui/icons-material/Tune'
 import { observer } from 'mobx-react'
 
-import {
-  DEFAULT_ALPHA,
-  DEFAULT_LINE_WIDTH,
-  DEFAULT_MIN_ALIGNMENT_LENGTH,
-  DEFAULT_MIN_IDENTITY,
-} from '../consts.ts'
+import { DEFAULT_LINE_WIDTH, DEFAULT_MIN_IDENTITY } from '../consts.ts'
 
 import type { DotplotViewModel } from '../model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// Not in synteny-core beside MIN_LENGTH_HELP: the synteny view has no identity
-// filter to share it with.
+// Not in synteny-core beside the Min length row: the synteny view has no
+// identity filter to share it with.
 const MIN_IDENTITY_HELP =
   'Hide alignments below this sequence identity. One with no identity ' +
   'reported is kept at every threshold.'
@@ -70,26 +64,7 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
             },
           ),
           ...lodMenuItems(model),
-          makeSizeSubMenu({
-            label: 'opacity',
-            title: 'Opacity',
-            help: 'Lower lets overlapping points show through each other.',
-            min: 0,
-            max: 1,
-            step: 0.01,
-            // cubic gives fine control near 0, where a small opacity change is
-            // perceptually large
-            scale: 'cubic',
-            format: n => n.toFixed(3),
-            getValue: () => model.alpha,
-            isDefault: model.alpha === DEFAULT_ALPHA,
-            onChange: v => {
-              model.setAlpha(v)
-            },
-            onReset: () => {
-              model.setAlpha(DEFAULT_ALPHA)
-            },
-          }),
+          opacityMenuItem(model),
           makeSizeSubMenu({
             label: 'line width',
             title: 'Line width',
@@ -106,28 +81,7 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
               model.setLineWidth(DEFAULT_LINE_WIDTH)
             },
           }),
-          makeSizeSubMenu({
-            label: 'min length',
-            title: 'Min length',
-            help: MIN_LENGTH_HELP,
-            min: DEFAULT_MIN_ALIGNMENT_LENGTH,
-            max: MAX_MIN_LENGTH_BP,
-            step: 1,
-            scale: 'log',
-            format: n => `${toLocale(n)}bp`,
-            // raising the filter re-runs the geometry stage, so the model is
-            // written when the drag ends rather than on every pixel of it
-            commitOnRelease: true,
-            getValue: () => model.minAlignmentLength,
-            isDefault:
-              model.minAlignmentLength === DEFAULT_MIN_ALIGNMENT_LENGTH,
-            onChange: bp => {
-              model.setMinAlignmentLength(bp)
-            },
-            onReset: () => {
-              model.setMinAlignmentLength(DEFAULT_MIN_ALIGNMENT_LENGTH)
-            },
-          }),
+          minLengthMenuItem(model),
           makeSizeSubMenu({
             label: 'min identity',
             title: 'Min identity',
@@ -136,8 +90,7 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
             max: 1,
             step: 0.01,
             format: n => `${(n * 100).toFixed(0)}%`,
-            // same reason min length commits late: the threshold is enforced in
-            // the geometry build, not in a shader uniform
+            // enforced in the geometry build, so written once the drag ends
             commitOnRelease: true,
             getValue: () => model.minIdentity,
             isDefault: model.minIdentity === DEFAULT_MIN_IDENTITY,

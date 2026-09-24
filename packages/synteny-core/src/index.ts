@@ -134,6 +134,8 @@ export {
   orderAttributeLabels,
   widenAttributeRanges,
 } from './TrackColorsMixin.ts'
+export { SyntenyViewMixin } from './SyntenyViewMixin.ts'
+export { minLengthMenuItem, opacityMenuItem } from './settingsMenuItems.ts'
 export type { ColorableTrack, PalettableTrack } from './trackColors.ts'
 export { colorByMenuItems } from './colorByMenuItems.tsx'
 export { colorByMenuTargetFor } from './colorByMenuTarget.ts'
@@ -262,7 +264,6 @@ export { default as TrackWarningsButton } from './TrackWarningsButton.tsx'
 // looks the same in each — see the component for the drift it ends.
 export { default as ComparativeFetchStatus } from './ComparativeFetchStatus.tsx'
 export type { ComparativeStatusModel } from './ComparativeFetchStatus.tsx'
-export { MAX_MIN_LENGTH_BP, MIN_LENGTH_HELP } from './minLengthHelp.ts'
 export { COLOR_MODES, VALUE_MODES_LABEL } from './colorModes.ts'
 export type { ColorModeSurface, SyntenyColorSurface } from './colorModes.ts'
 export { SETTINGS_SURFACE_LABELS } from './settingsSurfaces.ts'

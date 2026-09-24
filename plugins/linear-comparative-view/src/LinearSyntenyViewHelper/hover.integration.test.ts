@@ -140,3 +140,11 @@ test('a repaint that moves nothing keeps the hover', async () => {
   view.setDrawCurves(!view.drawCurves)
   expect(display.hoveredInstanceIdx).toBe(3)
 }, 20000)
+
+// `SyntenyViewMixin` derives these from the view's `syntenyTracks()` hook, and a
+// hook the view failed to override answers an empty list without complaint.
+test("the palette and the level-of-detail gate read the level's tracks", async () => {
+  const { view } = await setup()
+  expect(view.colorableTracks.map(t => t.trackId)).toEqual(['pafTrack'])
+  expect(view.hasLodCapableAdapter).toBe(false)
+}, 20000)

@@ -1,15 +1,12 @@
-import { makeSizeSubMenu } from '@jbrowse/core/ui'
 import { toggleItem } from '@jbrowse/core/ui/menuItems'
-import { toLocale } from '@jbrowse/core/util'
 import {
-  MAX_MIN_LENGTH_BP,
-  MIN_LENGTH_HELP,
   lodMenuItems,
+  minLengthMenuItem,
+  opacityMenuItem,
 } from '@jbrowse/synteny-core'
 import WarningIcon from '@mui/icons-material/WarningAmber'
 
 import { CIGAR_MODE_OPTIONS } from '../cigarModes.ts'
-import { DEFAULT_ALPHA, DEFAULT_MIN_ALIGNMENT_LENGTH } from '../consts.ts'
 
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -88,42 +85,7 @@ export function syntenySettingsMenuItems(
         ]
       : []),
     ...lodMenuItems(model),
-    makeSizeSubMenu({
-      label: 'opacity',
-      title: 'Opacity',
-      help: 'Lower lets overlapping ribbons show through each other.',
-      min: 0,
-      max: 1,
-      step: 0.01,
-      scale: 'cubic',
-      format: n => n.toFixed(3),
-      getValue: () => model.alpha,
-      isDefault: model.alpha === DEFAULT_ALPHA,
-      onChange: v => {
-        model.setAlpha(v)
-      },
-      onReset: () => {
-        model.setAlpha(DEFAULT_ALPHA)
-      },
-    }),
-    makeSizeSubMenu({
-      label: 'min length',
-      title: 'Min length',
-      help: MIN_LENGTH_HELP,
-      min: DEFAULT_MIN_ALIGNMENT_LENGTH,
-      max: MAX_MIN_LENGTH_BP,
-      step: 1,
-      scale: 'log',
-      format: n => `${toLocale(n)}bp`,
-      commitOnRelease: true,
-      getValue: () => model.minAlignmentLength,
-      isDefault: model.minAlignmentLength === DEFAULT_MIN_ALIGNMENT_LENGTH,
-      onChange: bp => {
-        model.setMinAlignmentLength(bp)
-      },
-      onReset: () => {
-        model.setMinAlignmentLength(DEFAULT_MIN_ALIGNMENT_LENGTH)
-      },
-    }),
+    opacityMenuItem(model),
+    minLengthMenuItem(model),
   ] satisfies MenuItem[]
 }

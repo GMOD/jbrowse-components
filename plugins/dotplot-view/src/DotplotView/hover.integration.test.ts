@@ -239,3 +239,11 @@ test('a reference colour paints the horizontal axis, as query does', async () =>
   view.setColorBy('reference')
   expect([...a.computedColors!]).toEqual(query)
 }, 20000)
+
+// `SyntenyViewMixin` derives these from the view's `syntenyTracks()` hook, and a
+// hook the view failed to override answers an empty list without complaint.
+test('the palette and the level-of-detail gate read the plot tracks', async () => {
+  const { view } = await setup()
+  expect(view.colorableTracks.map(t => t.trackId)).toEqual(['trackA', 'trackB'])
+  expect(view.hasLodCapableAdapter).toBe(false)
+}, 20000)

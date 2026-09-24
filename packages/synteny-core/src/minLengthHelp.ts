@@ -1,13 +1,10 @@
 // What the "Min length" row says in both comparative views, so the two cannot
-// describe the same control differently.
+// describe the same control differently. A leaf, so `SyntenyViewMixin` reads
+// the default without pulling in the menu builder.
 //
-// A leaf module, for the reason `cigarModes.ts` is one: it is read by menu
-// builders that must stay clear of React, and by the website's recipe tables,
-// whose node script cannot load a module importing MUI or a lazy `.tsx`.
-//
-// The second sentence is the one that earns its place. `buildSyntenyGeometry`
-// filters each drawn block by its OWN span and deliberately cannot group blocks
-// that share a name — a BAM read's QNAME is shared across its supplementary
+// The help's second sentence is the one that earns its place:
+// `buildSyntenyGeometry` filters each drawn block by its OWN span and
+// deliberately cannot group blocks that share a name — a BAM read's QNAME is shared across its supplementary
 // alignments, and summing those would keep a read whose pieces are each tiny
 // while hiding a substantial single block. The visible consequence is on the
 // coarse LOD tier, where make-pif has split a long alignment on its large
@@ -21,3 +18,6 @@ export const MIN_LENGTH_HELP =
 // Where the log-scaled Min length slider tops out, in bp. Shared so the synteny
 // view and the dotplot cannot offer different ranges over the same setting.
 export const MAX_MIN_LENGTH_BP = 1_000_000
+
+// The Min length slider's floor and reset, and the property's default
+export const DEFAULT_MIN_ALIGNMENT_LENGTH = 0

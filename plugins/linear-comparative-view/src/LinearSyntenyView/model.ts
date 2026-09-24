@@ -1,6 +1,5 @@
 import { lazy } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import {
@@ -21,13 +20,11 @@ import { addDisposer, cast, detach, types } from '@jbrowse/mobx-state-tree'
 import {
   DiagonalizeProgressMixin,
   ImportFormSyntenyMixin,
-  TrackColorsMixin,
+  SyntenyViewMixin,
   allSessionTracks,
   collectTrackWarnings,
-  colorableColumns,
   getSyntenyTracks,
   releaseTemporaryAssemblies,
-  trackHasLodTiers,
 } from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
@@ -43,11 +40,7 @@ import { followDirection } from '../SyntenyFollow/followDirection.ts'
 import { EMPTY_FOLLOW_REPORT } from '../SyntenyFollow/followHost.ts'
 import { installSyntenyFollow } from '../SyntenyFollow/installSyntenyFollow.ts'
 import { doAfterAttach } from './afterAttach.ts'
-import {
-  DEFAULT_ALPHA,
-  DEFAULT_MIN_ALIGNMENT_LENGTH,
-  DEFAULT_OVERDRAW_PX,
-} from './consts.ts'
+import { DEFAULT_ALPHA, DEFAULT_OVERDRAW_PX } from './consts.ts'
 import { FADE_AUTO_MIN_FEATURES, fadesThinAt } from './fadeThin.ts'
 import { linearSyntenyLaunchKeys } from './launchKeys.ts'
 import { levelHeightForCount } from './levelHeightBudget.ts'
@@ -81,7 +74,6 @@ import type {
   AttributeRange,
   CigarOpMask,
   ComparativeTrackModel,
-  LodMode,
 } from '@jbrowse/synteny-core'
 
 // lazies
@@ -130,7 +122,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       BaseViewModel,
       DiagonalizeProgressMixin(),
       ImportFormSyntenyMixin(),
-      TrackColorsMixin(),
+      SyntenyViewMixin({ defaultAlpha: DEFAULT_ALPHA }),
       types.model({
         /**
          * #property
@@ -178,33 +170,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * ribbons whose detail stops partway along them.
          */
         overdrawPx: types.stripDefault(types.number, DEFAULT_OVERDRAW_PX),
-        /**
-         * #property
-         * Per-feature opacity in [0,1]. The default is tuned for dense
-         * unfiltered hairballs; a whole-genome view with minAlignmentLength set
-         * can use a higher value (~0.4) for stronger color.
-         */
-        alpha: types.stripDefault(types.number, DEFAULT_ALPHA),
-        /**
-         * #property
-         * Hide alignment blocks shorter than this many bp, which cuts
-         * whole-genome hairball noise.
-         */
-        minAlignmentLength: types.stripDefault(
-          types.number,
-          DEFAULT_MIN_ALIGNMENT_LENGTH,
-        ),
-        /**
-         * #property
-         * Level-of-detail tier selection for PIF adapters. 'auto' uses the
-         * adapter's bpPerPx threshold; 'fine' forces the per-row CIGAR tier
-         * (t/q); 'coarse' forces the tier whose CIGAR is folded to its large
-         * indels (T/Q) when present.
-         */
-        lodMode: types.stripDefault(
-          types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
-          'auto',
-        ),
         /**
          * #property
          * Fade alignment blocks by per-feature identity (lower identity = more
@@ -535,18 +500,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return self.cigarMode === 'matches'
       },
       /**
-       * #getter
+       * #method
+       * Every synteny track across every level, in order.
        */
-      get syntenyTracks(): ComparativeTrackModel[] {
+      syntenyTracks(): ComparativeTrackModel[] {
         return self.levels.flatMap(l => l.tracks)
-      },
-      /**
-       * #getter
-       * Whether any track has an adapter with tiered storage, which gates the
-       * "Level of detail" setting.
-       */
-      get hasLodCapableAdapter() {
-        return this.syntenyTracks.some(track => trackHasLodTiers(track))
       },
       /**
        * #getter
@@ -628,31 +586,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #method
-       * Every synteny track across every level, in order.
-       */
-      colorableTrackConfigs() {
-        return this.syntenyTracks.map(t => {
-          const { trackId, name } = t.configuration
-          return { trackId, name }
-        })
-      },
-      /**
-       * #method
-       * The numeric columns the overlaid tracks declare (the ortholog-table
-       * adapter's `attributeColumns`), one color mode each.
-       */
-      colorableAttributeNames() {
-        return colorableColumns(
-          this.syntenyTracks.flatMap(t => {
-            const declared = getConf(t, ['adapter', 'attributeColumns']) as
-              | string[]
-              | undefined
-            return declared ?? []
-          }),
-        )
-      },
-      /**
-       * #method
        * Each loaded display's observed attribute spans, which the mixin unions
        * into the domain the legend labels its ramp with.
        */
@@ -660,15 +593,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return self.allSyntenyDisplays.map(
           d => d.featureData?.attributeRanges ?? {},
         )
-      },
-
-      /**
-       * #method
-       * The key's chips are composited by the ribbon alpha, as the ribbons
-       * are.
-       */
-      legendAlpha(): number {
-        return self.alpha
       },
 
       /**
@@ -1196,24 +1120,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setOverdrawPx(arg: number) {
         self.overdrawPx = arg
-      },
-      /**
-       * #action
-       */
-      setAlpha(arg: number) {
-        self.alpha = arg
-      },
-      /**
-       * #action
-       */
-      setMinAlignmentLength(arg: number) {
-        self.minAlignmentLength = arg
-      },
-      /**
-       * #action
-       */
-      setLodMode(arg: LodMode) {
-        self.lodMode = arg
       },
       /**
        * #action

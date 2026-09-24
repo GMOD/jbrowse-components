@@ -1,6 +1,5 @@
 import { lazy } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -41,13 +40,11 @@ import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 import {
   DiagonalizeProgressMixin,
   ImportFormSyntenyMixin,
-  TrackColorsMixin,
+  SyntenyViewMixin,
   collectTrackWarnings,
   comparativeSurfacePhase,
-  colorableColumns,
   comparativeSurfaceSettled,
   releaseTemporaryAssemblies,
-  trackHasLodTiers,
 } from '@jbrowse/synteny-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import HighlightIcon from '@mui/icons-material/Highlight'
@@ -82,7 +79,6 @@ import type {
   AttributeRange,
   ComparativeSurface,
   ComparativeTrackModel,
-  LodMode,
 } from '@jbrowse/synteny-core'
 
 // lazies
@@ -179,17 +175,9 @@ function dragToHighlight(a: PxToBpResult, b: PxToBpResult): HighlightType {
   }
 }
 
-export {
-  DEFAULT_ALPHA,
-  DEFAULT_LINE_WIDTH,
-  DEFAULT_MIN_ALIGNMENT_LENGTH,
-  DEFAULT_MIN_IDENTITY,
-  defaultHeight,
-} from './consts.ts'
 import {
   DEFAULT_ALPHA,
   DEFAULT_LINE_WIDTH,
-  DEFAULT_MIN_ALIGNMENT_LENGTH,
   DEFAULT_MIN_IDENTITY,
   defaultHeight,
 } from './consts.ts'
@@ -229,7 +217,7 @@ export default function stateModelFactory(pm: PluginManager) {
         RenderLifecycleMixin(),
         DiagonalizeProgressMixin(),
         ImportFormSyntenyMixin(),
-        TrackColorsMixin(),
+        SyntenyViewMixin({ defaultAlpha: DEFAULT_ALPHA }),
         types.model({
           /**
            * #property
@@ -272,17 +260,6 @@ export default function stateModelFactory(pm: PluginManager) {
           showGridlines: types.stripDefault(types.boolean, true),
           /**
            * #property
-           * Level-of-detail tier override for PIF adapters. 'auto' uses the
-           * adapter's bpPerPx threshold; 'fine'/'coarse' force a tier. Stored
-           * view-level so all displays render at the same tier and the menu
-           * doesn't need to fan out per display.
-           */
-          lodMode: types.stripDefault(
-            types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
-            'auto',
-          ),
-          /**
-           * #property
            * When true, hview and vview are kept at the same bpPerPx so the
            * dotplot stays square. Wheel zoom already preserves the ratio;
            * box-zoom and other independent ops trigger an autorun resync.
@@ -295,29 +272,11 @@ export default function stateModelFactory(pm: PluginManager) {
           lineWidth: types.stripDefault(types.number, DEFAULT_LINE_WIDTH),
           /**
            * #property
-           * Plot-wide opacity of every alignment. Held on the view because its
-           * one control is the view's: stored per display, a track shown after
-           * the slider moved drew at the default while the slider said
-           * otherwise.
-           */
-          alpha: types.stripDefault(types.number, DEFAULT_ALPHA),
-          /**
-           * #property
-           * Hide alignments shorter than this many bp. Enforced per feature in
-           * buildLineSegments. Cuts whole-genome hairball noise. View-level, see
-           * alpha.
-           */
-          minAlignmentLength: types.stripDefault(
-            types.number,
-            DEFAULT_MIN_ALIGNMENT_LENGTH,
-          ),
-          /**
-           * #property
            * Hide alignments whose sequence identity is below this fraction
            * (0-1), enforced per feature in buildLineSegments beside
            * minAlignmentLength. A feature carrying no identity at all is kept
            * at every threshold — the alternative blanks a plot whose adapter
-           * simply never reported one. View-level, see alpha.
+           * simply never reported one.
            */
           minIdentity: types.stripDefault(types.number, DEFAULT_MIN_IDENTITY),
           /**
@@ -670,34 +629,11 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #method
-         * Every track that can take a palette slot, in paint order, paired with
-         * whatever color the user pinned on it.
+         * Annotated for the reason `ComparativeTrackModel` documents: the
+         * array is `any`.
          */
-        colorableTrackConfigs() {
-          return self.tracks.map((t: ComparativeTrackModel) => {
-            const { trackId, name } = t.configuration
-            return { trackId, name }
-          })
-        },
-        /**
-         * #method
-         * The numeric columns the overlaid tracks declare, so the palette menu can
-         * offer one mode per measurement without any of them being a named mode.
-         * `attributeColumns` is the ortholog-table adapter's slot; a track whose
-         * adapter has no such slot contributes nothing.
-         */
-        colorableAttributeNames() {
-          // Annotated for the reason ComparativeTrackModel documents: this array
-          // is `any`, which switched off checking on the getConf call below
-          // until the shape was named.
-          return colorableColumns(
-            self.tracks.flatMap((t: ComparativeTrackModel) => {
-              const declared = getConf(t, ['adapter', 'attributeColumns']) as
-                | string[]
-                | undefined
-              return declared ?? []
-            }),
-          )
+        syntenyTracks(): ComparativeTrackModel[] {
+          return self.tracks
         },
         /**
          * #method
@@ -706,15 +642,6 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         loadedAttributeRanges(): Record<string, AttributeRange>[] {
           return this.dotplotDisplays.map(d => d.rpcData?.attributeRanges ?? {})
-        },
-
-        /**
-         * #method
-         * The key's chips are composited by the plot's alpha, as the points
-         * are.
-         */
-        legendAlpha(): number {
-          return self.alpha
         },
 
         /**
@@ -799,14 +726,6 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         get hoveredHighlight(): DotplotHoverHighlight | undefined {
           return this.hoveredDisplay?.hoveredFeatureHighlight
-        },
-        /**
-         * #getter
-         * True if any track has an adapter with tiered storage. Used to gate the
-         * LOD menu — only the indexed PIF adapters have tiers.
-         */
-        get hasLodCapableAdapter() {
-          return self.tracks.some(trackHasLodTiers)
         },
         /**
          * #getter
@@ -1043,12 +962,6 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #action
          */
-        setLodMode(value: LodMode) {
-          self.lodMode = value
-        },
-        /**
-         * #action
-         */
         setLockAspectRatio(flag: boolean) {
           self.lockAspectRatio = flag
         },
@@ -1057,18 +970,6 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         setLineWidth(value: number) {
           self.lineWidth = value
-        },
-        /**
-         * #action
-         */
-        setAlpha(value: number) {
-          self.alpha = value
-        },
-        /**
-         * #action
-         */
-        setMinAlignmentLength(value: number) {
-          self.minAlignmentLength = value
         },
         /**
          * #action
