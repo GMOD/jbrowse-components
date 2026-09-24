@@ -1,4 +1,4 @@
-import { decodeURIComponentNoThrow } from '../util.ts'
+import { decodeURIComponentNoThrow, trixLine } from '../util.ts'
 import {
   createReadlineInterface,
   getLocalOrRemoteStream,
@@ -69,7 +69,6 @@ export async function* indexGff3({
   const includeSet = featureTypesToInclude?.length
     ? new Set(featureTypesToInclude)
     : undefined
-  const encodedTrackId = encodeURIComponent(trackId)
 
   for await (const line of rl) {
     checkAbort?.()
@@ -108,12 +107,7 @@ export async function* indexGff3({
         .filter((f): f is string => !!f)
 
       if (attrs.length > 0) {
-        const locStr = `${seq_id}:${start}..${end}`
-        const encodedAttrs = attrs.map(a => `"${encodeURIComponent(a)}"`)
-        const record = `["${encodeURIComponent(locStr)}"|"${encodedTrackId}"|${encodedAttrs.join('|')}]`
-        const uniqueAttrs = [...new Set(attrs)]
-
-        yield `${record} ${uniqueAttrs.join(' ')}\n`
+        yield trixLine(`${seq_id}:${start}..${end}`, trackId, attrs)
       }
     }
   }

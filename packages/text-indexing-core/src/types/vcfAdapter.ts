@@ -1,4 +1,4 @@
-import { decodeURIComponentNoThrow } from '../util.ts'
+import { decodeURIComponentNoThrow, trixLine } from '../util.ts'
 import {
   createReadlineInterface,
   getLocalOrRemoteStream,
@@ -25,7 +25,6 @@ export async function* indexVcf({
   })
 
   const rl = createReadlineInterface(stream, inLocation)
-  const encodedTrackId = encodeURIComponent(trackId)
 
   for await (const line of rl) {
     checkAbort?.()
@@ -52,7 +51,6 @@ export async function* indexVcf({
     const endNum = Number(fields.END)
     const end = fields.END && Number.isFinite(endNum) ? endNum : Number(pos) + 1
     const locStr = `${ref}:${pos}..${end}`
-    const encodedLocStr = encodeURIComponent(locStr)
 
     const infoAttrs = attributesToIndex
       .map(attr => fields[attr])
@@ -70,12 +68,7 @@ export async function* indexVcf({
 
     for (const attrs of attrGroups) {
       if (attrs.length > 0) {
-        // attributes go in the record so the adapter can display them, and in
-        // the trailing word list so trix indexes them as searchable terms
-        const encodedAttrs = attrs.map(a => `"${encodeURIComponent(a)}"`)
-        const record = `["${encodedLocStr}"|"${encodedTrackId}"|${encodedAttrs.join('|')}]`
-
-        yield `${record} ${[...new Set(attrs)].join(' ')}\n`
+        yield trixLine(locStr, trackId, attrs)
       }
     }
   }

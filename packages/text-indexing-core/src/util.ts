@@ -130,6 +130,17 @@ export interface Gff3IndexerOptions extends IndexerOptions {
   featureTypesToInclude?: string[]
 }
 
+/**
+ * One line of ixIxx input: the record a search hit hands back —
+ * `["loc"|"trackId"|"attr"|...]`, fields URI-encoded so neither a comma nor a
+ * space can split it — then the words the hit is found by.
+ * TrixTextSearchAdapter reads the record back.
+ */
+export function trixLine(loc: string, trackId: string, attrs: string[]) {
+  const fields = [loc, trackId, ...attrs].map(f => `"${encodeURIComponent(f)}"`)
+  return `[${fields.join('|')}] ${[...new Set(attrs)].join(' ')}\n`
+}
+
 export function decodeURIComponentNoThrow(uri: string) {
   try {
     return decodeURIComponent(uri)

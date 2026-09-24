@@ -1,3 +1,4 @@
+import { trixLine } from '../util.ts'
 import { createReadlineInterface, getLocalOrRemoteStream } from './common.ts'
 
 import type { IndexerOptions } from '../util.ts'
@@ -108,7 +109,6 @@ export async function* indexGtf({
   })
 
   const rl = createReadlineInterface(stream, inLocation)
-  const encodedTrackId = encodeURIComponent(trackId)
   const attributeNames = expandAttributeNames(attributesToIndex)
   const groups = new Map<string, Group>()
 
@@ -190,10 +190,6 @@ export async function* indexGtf({
   }
 
   for (const { refName, start, end, attrs } of groups.values()) {
-    const locStr = `${refName}:${start}..${end}`
-    const encodedAttrs = [...attrs].map(a => `"${encodeURIComponent(a)}"`)
-    const record = `["${encodeURIComponent(locStr)}"|"${encodedTrackId}"|${encodedAttrs.join('|')}]`
-
-    yield `${record} ${[...attrs].join(' ')}\n`
+    yield trixLine(`${refName}:${start}..${end}`, trackId, [...attrs])
   }
 }
