@@ -1,3 +1,4 @@
+import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { getFrame } from '@jbrowse/core/util'
 import {
@@ -18,23 +19,9 @@ export const TRANSL_EXCEPT_HIGHLIGHT = colorToUint32('#ffc850')
 
 // Mature-protein regions take these by row order, so adjacent cleavage products
 // stay visually separable.
-export const MATURE_PROTEIN_COLOR_HEX = [
-  '#1f77b4',
-  '#ff7f0e',
-  '#2ca02c',
-  '#d62728',
-  '#9467bd',
-  '#8c564b',
-  '#e377c2',
-  '#7f7f7f',
-  '#bcbd22',
-  '#17becf',
-  '#aec7e8',
-  '#ffbb78',
-]
-export const MATURE_PROTEIN_COLORS = MATURE_PROTEIN_COLOR_HEX.map(c =>
-  colorToUint32(c),
-)
+export function matureProteinColor(index: number) {
+  return categoricalPalette[index % categoricalPalette.length]!
+}
 
 // These two overpaint the feature's own box, which is their background, so a
 // literal reads on either page theme.
@@ -63,7 +50,7 @@ const REPEAT_COLOR_MAP: Record<string, string> = {
   RTE_LINE_retrotransposon: '#808000',
   subtelomere: '#ffd8b1',
   target_site_duplication: '#000075',
-  Tc1_Mariner_TIR_transposon: '#808080',
+  Tc1_Mariner_TIR_transposon: '#fabebe',
 }
 
 const REPEAT_COLOR_BY_LOWER_TYPE = new Map(
@@ -119,13 +106,15 @@ export interface ClassedColor {
  * Unpacked, because `emitCodonRects` lightens the CSS string. `colorKey` is
  * the color channel's scale when it has one, which paints in the `color`
  * slot's place from `level`'s value and records a value only where its color
- * is the one drawn.
+ * is the one drawn. `glyphDefault` is a glyph's own palette, which paints
+ * only where the track sets no color, as a BED's own colors do.
  */
 export function boxColor(
   feature: Feature,
   ctx: RenderContext,
   colorKey?: ColorKey,
   level: Feature = feature,
+  glyphDefault?: string,
 ): ClassedColor {
   const { config, colorByCDS, jexl } = ctx
   // An unset slot lets the file's own color speak and any set value beats it.
@@ -143,6 +132,7 @@ export function boxColor(
     ? scaled.css
     : raw === undefined
       ? (inheritedBedColor(feature) ??
+        glyphDefault ??
         BOX_COLOR_SLOTS[isUtrBox ? 'utrColor' : 'color'])
       : readConfigValueSafe<string>(
           config,

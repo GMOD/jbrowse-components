@@ -1,4 +1,3 @@
-import { cssColorToABGR as colorToUint32 } from '@jbrowse/core/util/colorBits'
 import { valueText } from '@jbrowse/core/util/groupKeys'
 
 import { LITERAL } from '../colorClasses.ts'
@@ -25,12 +24,11 @@ import {
 import {
   CRISPR_PAM_COLOR,
   CUT_SITE_COLOR,
-  MATURE_PROTEIN_COLORS,
-  MATURE_PROTEIN_COLOR_HEX,
   REPEAT_BODY_HEIGHT_FRACTION,
   boxColor,
   featureTooltip,
   isRetrotransposonBody,
+  matureProteinColor,
   repeatSubpartColor,
   strokeColor,
 } from './glyphColors.ts'
@@ -272,7 +270,7 @@ function processMatureProteinLayout(
     const topPx = baseTopPx + childLayout.y
     const labelRowsAbove =
       place.labelRowsAbove + (childLayout.labelRowsAbove ?? 0)
-    const colorIdx = i % MATURE_PROTEIN_COLORS.length
+    const glyphDefault = matureProteinColor(i)
     const cStart = childFeature.get('start')
     const cEnd = childFeature.get('end')
     const childAminoAcids =
@@ -282,10 +280,13 @@ function processMatureProteinLayout(
       emitCodonRects(
         {
           aminoAcids: childAminoAcids,
-          baseColor: {
-            color: MATURE_PROTEIN_COLOR_HEX[colorIdx]!,
-            colorClass: LITERAL,
-          },
+          baseColor: boxColor(
+            childFeature,
+            ctx,
+            collector.colorKey,
+            childFeature,
+            glyphDefault,
+          ),
           topPx,
           height: childLayout.height,
           strand: cdsFeature.get('strand') ?? 0,
@@ -302,7 +303,7 @@ function processMatureProteinLayout(
           height: childLayout.height,
           flatbushIdx,
           labelRowsAbove,
-          colorOverride: MATURE_PROTEIN_COLORS[colorIdx],
+          glyphDefault,
         },
         ctx,
         collector,
@@ -386,7 +387,6 @@ function processRepeatRegionLayout(
           REPEAT_BODY_HEIGHT_FRACTION,
         )
       : [baseTopPx + childLayout.y, childLayout.height]
-    const color = repeatSubpartColor(childType)
 
     pushBoxRect(
       {
@@ -395,7 +395,7 @@ function processRepeatRegionLayout(
         height: heightPx,
         flatbushIdx,
         labelRowsAbove,
-        colorOverride: color === undefined ? undefined : colorToUint32(color),
+        glyphDefault: repeatSubpartColor(childType),
       },
       ctx,
       collector,

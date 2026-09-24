@@ -164,9 +164,7 @@ export function pushBoxRect(
     height: number
     flatbushIdx: number
     labelRowsAbove: number
-    // 0 is a valid packed color, so callers guard on `=== undefined` rather
-    // than falsiness.
-    colorOverride?: number
+    glyphDefault?: string
     // The feature a color scale reads, where it is not the box: a part's
     // transcript.
     level?: Feature
@@ -180,15 +178,14 @@ export function pushBoxRect(
     height: baseHeight,
     flatbushIdx,
     labelRowsAbove,
-    colorOverride,
+    glyphDefault,
     level,
   } = args
   const { rects } = collector
   const [y, height] = applyUTRSizing(baseTopPx, baseHeight, isUTR(feature))
-  const fill: PackedColor =
-    colorOverride === undefined
-      ? packColor(boxColor(feature, ctx, collector.colorKey, level))
-      : { color: colorOverride, colorClass: LITERAL }
+  const fill = packColor(
+    boxColor(feature, ctx, collector.colorKey, level, glyphDefault),
+  )
   rects.push({
     start: feature.get('start'),
     end: feature.get('end'),

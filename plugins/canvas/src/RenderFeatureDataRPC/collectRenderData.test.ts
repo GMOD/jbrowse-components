@@ -4,6 +4,7 @@ import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { collectRenderData } from './collectRenderData.ts'
 import { findGlyph } from './glyphs/findGlyph.ts'
+import { layoutRepeatRegion } from './glyphs/repeatRegion.ts'
 import { layoutSubfeatures } from './glyphs/subfeatures.ts'
 import { mockDisplayConfig } from './testUtils.ts'
 
@@ -973,5 +974,89 @@ describe('color key', () => {
       ['≥ 0.3', red],
       ['', grey],
     ])
+  })
+})
+
+describe("a glyph's own palette is the default the track's color beats", () => {
+  // EDTA files the classification on the repeat_region, so the parts reach
+  // it through their parent.
+  function transposon() {
+    const parts = [
+      mockFeature({
+        type: 'target_site_duplication',
+        id: 'tsd',
+        start: 100,
+        end: 105,
+      }),
+      mockFeature({
+        type: 'long_terminal_repeat',
+        id: 'ltr',
+        start: 105,
+        end: 305,
+      }),
+      mockFeature({
+        type: 'Copia_LTR_retrotransposon',
+        id: 'body',
+        start: 105,
+        end: 1095,
+      }),
+    ]
+    const te = mockFeature({
+      type: 'repeat_region',
+      id: 'te',
+      start: 100,
+      end: 1100,
+      attributes: { Classification: 'LTR/Copia' },
+      subfeatures: parts,
+    })
+    for (const part of parts) {
+      Object.assign(part, { parent: () => te })
+    }
+    return te
+  }
+
+  function collectRepeat(overrides: MockDisplayConfigOverrides) {
+    const repeatConfig = mockDisplayConfig(overrides)
+    return collectRenderData({
+      layouts: [
+        layoutRepeatRegion({ feature: transposon(), config: repeatConfig }),
+      ],
+      regionStart: 0,
+      regionEnd: 2000,
+      config: repeatConfig,
+      colorByCDS: false,
+      peptideDataMap: undefined,
+      jexl,
+    })
+  }
+
+  it('paints each part its SO type color while the track sets none', () => {
+    // The body draws first, so the LTR and TSD land on top of it.
+    expect([...collectRepeat({}).rectColors]).toEqual(
+      ['#118119', '#000075', '#fb0'].map(c => cssColorToABGR(c)),
+    )
+  })
+
+  it('paints every part the color the track sets', () => {
+    const red = cssColorToABGR('red')
+    expect([...collectRepeat({ color: 'red' }).rectColors]).toEqual([
+      red,
+      red,
+      red,
+    ])
+  })
+
+  it('paints and keys every part by a field the track colors by', () => {
+    const result = collectRepeat({
+      color: {
+        value: undefined,
+        field: 'Classification',
+        domain: ['LTR/Copia'],
+        range: ['#123456'],
+      },
+    })
+    const painted = cssColorToABGR('#123456')
+    expect([...result.rectColors]).toEqual([painted, painted, painted])
+    expect(result.colorKey?.candidates.map(c => c.value)).toContain('LTR/Copia')
   })
 })
