@@ -3,13 +3,27 @@ import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // `uri` is the shorthand for the anchor `.blocks` file only; the per-column
-// `bedLocations` array has no default naming convention, so it stays explicit.
+// `bedLocations` array has no default naming convention, so it stays explicit,
+// though an entry may be written as its path alone
 export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? fillLocations(snap, {
-        mcscanBlocksLocation: { uri: snap.uri, baseUri: snap.baseUri },
+  const { bedLocations } = snap
+  const beds =
+    Array.isArray(bedLocations) &&
+    bedLocations.some(bed => typeof bed === 'string')
+      ? {
+          ...snap,
+          bedLocations: bedLocations.map(bed =>
+            typeof bed === 'string'
+              ? { uri: bed, locationType: 'UriLocation' }
+              : bed,
+          ),
+        }
+      : snap
+  return beds.uri
+    ? fillLocations(beds, {
+        mcscanBlocksLocation: { uri: beds.uri, baseUri: beds.baseUri },
       })
-    : snap
+    : beds
 }
 
 /**
@@ -57,17 +71,14 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * that still draws nothing rather than erroring.
  *
  * #example
- * `uri` is the shorthand for the anchor `.blocks` file:
+ * `uri` is the shorthand for the anchor `.blocks` file, and each BED is its
+ * path:
  * ```js
  * {
  *   type: 'MCScanBlocksAdapter',
  *   uri: 'grape.blocks',
  *   blockAssemblies: ['grape', 'peach', 'cacao'],
- *   bedLocations: [
- *     { uri: 'grape.bed' },
- *     { uri: 'peach.bed' },
- *     { uri: 'cacao.bed' },
- *   ],
+ *   bedLocations: ['grape.bed', 'peach.bed', 'cacao.bed'],
  * }
  * ```
  */
@@ -103,8 +114,9 @@ const MCScanBlocksAdapter = ConfigurationSchema(
     },
     /**
      * #slot
-     * one BED fileLocation per column of the blocks file, parallel to
-     * blockAssemblies, resolving that column's gene ids to coordinates
+     * one BED per column of the blocks file, as a path or a fileLocation,
+     * parallel to blockAssemblies, resolving that column's gene ids to
+     * coordinates
      */
     bedLocations: {
       type: 'frozen',

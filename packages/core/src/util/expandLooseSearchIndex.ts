@@ -1,27 +1,44 @@
 /**
- * Fill in what a search index written short leaves out: `type` from a `uri`
- * naming a `.ix`, which is what `jbrowse text-index` writes, and
- * `assemblyNames` from the caller — the track's own for a per-track index, or a
- * config's only assembly. A key already written is kept.
+ * A search index as a config may write it: the whole adapter config, or just
+ * the `.ix` that `jbrowse text-index` wrote, as a string or as `{ uri }`.
  */
-export function expandLooseSearchIndex<T>(snap: T, assemblyNames?: unknown): T {
-  if (typeof snap !== 'object' || snap === null || Array.isArray(snap)) {
+export type LooseSearchIndex =
+  | string
+  | { uri: string; baseUri?: string; assemblyNames?: string[] }
+  | { type: string; [key: string]: unknown }
+
+function isTrixUri(uri: string) {
+  return /\.ix$/i.test(uri.split(/[?#]/)[0]!)
+}
+
+/**
+ * Fill in what a search index written short leaves out: a string is its `uri`,
+ * `type` comes from a `uri` naming a `.ix`, and `assemblyNames` from the caller
+ * — the track's own for a per-track index, or a config's only assembly. A key
+ * already written is kept.
+ */
+export function expandLooseSearchIndex(
+  snap: unknown,
+  assemblyNames?: unknown,
+): unknown {
+  const index = typeof snap === 'string' ? { uri: snap } : snap
+  if (typeof index !== 'object' || index === null || Array.isArray(index)) {
     return snap
   }
-  const index = snap as Record<string, unknown>
+  const entry = index as Record<string, unknown>
   const guessType =
-    index.type === undefined &&
-    typeof index.uri === 'string' &&
-    /\.ix$/i.test(index.uri.split(/[?#]/)[0]!)
+    entry.type === undefined &&
+    typeof entry.uri === 'string' &&
+    isTrixUri(entry.uri)
   const fillNames =
-    index.assemblyNames === undefined &&
+    entry.assemblyNames === undefined &&
     Array.isArray(assemblyNames) &&
     assemblyNames.length > 0
-  return guessType || fillNames
-    ? ({
-        ...index,
+  return guessType || fillNames || index !== snap
+    ? {
+        ...entry,
         ...(guessType ? { type: 'TrixTextSearchAdapter' } : {}),
         ...(fillNames ? { assemblyNames } : {}),
-      } as T)
+      }
     : snap
 }

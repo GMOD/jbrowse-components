@@ -11,6 +11,7 @@
 // graph track has a form of its own in the GraphGenomeView plugin, and the tab
 // walks that instead, since a config pasted as JSON is the one route a reader
 // cannot adapt to their own file without reading the adapter's docs.
+import { addRelativeUris } from '../../../packages/core/src/util/addRelativeUris.ts'
 import { aliasesUri } from './derive-add-assembly.ts'
 import { asRecord, nonEmpty } from './derive-cli-command.ts'
 
@@ -123,8 +124,17 @@ function relativeUris(value: unknown): string[] {
 
 // A relative uri resolves against the config.json it sits in, and a paste or a
 // form has none, so the reader's copy loads nothing until it names a real file.
+// A file written as a bare string resolves the same way, and addRelativeUris is
+// what knows which strings those are.
 function relativeUriNote(config: unknown): RootContent[] {
-  const uris = [...new Set(relativeUris(config))]
+  const lifted = structuredClone(config)
+  if (typeof lifted === 'object' && lifted !== null) {
+    addRelativeUris(
+      lifted as Record<string, unknown>,
+      new URL('https://config.invalid/'),
+    )
+  }
+  const uris = [...new Set(relativeUris(lifted))]
   return uris.length
     ? [
         paragraph([

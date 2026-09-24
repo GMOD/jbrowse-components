@@ -935,13 +935,14 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     deps.elements.displays,
     "How a track is drawn in one view type, with that display's own slots.",
   )
+  const trixIndexUri = { type: 'string', pattern: '\\.ix([?#].*)?$' }
   defs.UntypedTextSearchAdapter = {
     title: 'UntypedTextSearchAdapter',
     description:
       "A trix index named by its `.ix` alone: the type follows from the extension, and `assemblyNames` from the track it sits on or the config's one assembly.",
     ...closed(
       {
-        uri: { type: 'string', pattern: '\\.ix([?#].*)?$' },
+        uri: trixIndexUri,
         baseUri: shorthandSchema('baseUri'),
         assemblyNames: { type: 'array', items: { type: 'string' } },
       },
@@ -949,20 +950,29 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       { not: { required: ['type'] } },
     ),
   }
-  defs.TextSearchAdapter = union(
-    deps.elements.textSearchAdapters,
-    'A name-search index, built by `jbrowse text-index`.',
-    {
-      required: [],
-      allOf: [
-        ...dispatch(deps.elements.textSearchAdapters, e => e.name),
+  defs.TextSearchAdapter = {
+    anyOf: [
+      {
+        ...trixIndexUri,
+        description:
+          "A trix index as its `.ix` path or URL, the same as `{ uri }`: the type follows from the extension, and `assemblyNames` from the track it sits on or the config's one assembly.",
+      },
+      union(
+        deps.elements.textSearchAdapters,
+        'A name-search index, built by `jbrowse text-index`.',
         {
-          if: { type: 'object', not: { required: ['type'] } },
-          then: ref('UntypedTextSearchAdapter'),
+          required: [],
+          allOf: [
+            ...dispatch(deps.elements.textSearchAdapters, e => e.name),
+            {
+              if: { type: 'object', not: { required: ['type'] } },
+              then: ref('UntypedTextSearchAdapter'),
+            },
+          ],
         },
-      ],
-    },
-  )
+      ),
+    ],
+  }
   defs.Connection = union(
     deps.elements.connections,
     'A connection to an external track catalog.',

@@ -1,10 +1,14 @@
 /**
  * Stamp `baseUri` next to every `uri` in a config, and beside a MultiWiggle
  * `bigWigs` array of bare URI strings, so relative URIs resolve against the
- * location the config itself was loaded from. jbrowse-web runs this
- * when it fetches a config.json from a URL; anything that injects a fetched
- * config as an object (a hub, a track hub connection, a headless render) has to
- * run it too, or the config's relative data URIs resolve against the page.
+ * location the config itself was loaded from. A file written as a bare string
+ * where a location object can go (a search index, `refNameAliases`,
+ * `cytobands`, a `bedLocations` entry) has no object to stamp, so it becomes
+ * `{ uri, baseUri }`.
+ * jbrowse-web runs this when it fetches a config.json from a URL; anything that
+ * injects a fetched config as an object (a hub, a track hub connection, a
+ * headless render) has to run it too, or the config's relative data URIs
+ * resolve against the page.
  *
  * Lives in core because core is what consumes the result — the assembly config
  * schema and expandAssemblyConfigShorthand read `baseUri` back out.
@@ -15,7 +19,10 @@ export function addRelativeUris(
 ) {
   if (typeof config === 'object' && config !== null) {
     for (const key of Object.keys(config)) {
-      const value = config[key]
+      const value = liftBareFiles(key, config[key])
+      if (value !== config[key]) {
+        config[key] = value
+      }
       if (typeof value === 'object' && value !== null) {
         addRelativeUris(value as Record<string, unknown>, base)
       }
@@ -24,6 +31,23 @@ export function addRelativeUris(
       }
     }
   }
+}
+
+// the keys whose value may be a file written as a bare string, which has no
+// object to carry a baseUri until it becomes `{ uri }`
+const FILE_KEYS = new Set(['textSearchAdapter', 'refNameAliases', 'cytobands'])
+const FILE_LIST_KEYS = new Set(['aggregateTextSearchAdapters', 'bedLocations'])
+
+function liftBareFiles(key: string, value: unknown) {
+  const lift = (file: unknown) =>
+    typeof file === 'string' ? { uri: file } : file
+  return FILE_KEYS.has(key)
+    ? lift(value)
+    : FILE_LIST_KEYS.has(key) &&
+        Array.isArray(value) &&
+        value.some(file => typeof file === 'string')
+      ? value.map(lift)
+      : value
 }
 
 /**

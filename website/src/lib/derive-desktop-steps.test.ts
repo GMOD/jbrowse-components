@@ -124,6 +124,24 @@ test('a relative track uri is named as the file to replace before pasting', () =
   )
 })
 
+test('a file written as a bare string is named as one to replace too', () => {
+  const config = {
+    type: 'SyntenyTrack',
+    trackId: 'orthologs',
+    assemblyNames: ['grape', 'peach'],
+    adapter: {
+      type: 'MCScanBlocksAdapter',
+      uri: 'https://x/grape.blocks',
+      blockAssemblies: ['grape', 'peach'],
+      bedLocations: ['grape.bed', 'peach.bed'],
+    },
+    textSearching: { textSearchAdapter: 'trix/orthologs.ix' },
+  }
+  expect(flatten(desktopTrackNodes(config, JSON.stringify(config)))).toContain(
+    'grape.bed, peach.bed, trix/orthologs.ix are relative to a config.json.',
+  )
+})
+
 test('absolute uris and local paths need no replacing', () => {
   const config = {
     type: 'FeatureTrack',

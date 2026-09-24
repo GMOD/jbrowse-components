@@ -1,5 +1,6 @@
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
+import type { LooseSearchIndex } from '@jbrowse/core/util/expandLooseSearchIndex'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type {
   AssemblyInput,
@@ -11,10 +12,6 @@ import type {
   ViewLocation,
 } from '@jbrowse/product-core'
 
-interface TextSearchAdapterConfig {
-  type: string
-  [key: string]: unknown
-}
 interface InternetAccountConfig {
   internetAccountId: string
   [key: string]: unknown
@@ -50,7 +47,7 @@ export interface Config {
    */
   connections?: ConnectionConfig[]
   internetAccounts?: InternetAccountConfig[]
-  aggregateTextSearchAdapters?: TextSearchAdapterConfig[]
+  aggregateTextSearchAdapters?: LooseSearchIndex[]
   configuration?: Record<string, unknown>
   defaultSession?: SessionSnapshot
   /**

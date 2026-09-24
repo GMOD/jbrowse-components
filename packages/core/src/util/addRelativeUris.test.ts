@@ -33,6 +33,47 @@ test('addRelativeUris stamps baseUri beside a bigWigs array of strings', () => {
   })
 })
 
+test('an assembly file or a BED written as a bare string resolves against the config', () => {
+  const base = 'https://example.com/data/config.json'
+  const assembly = {
+    name: 'hg38',
+    refNameAliases: 'aliases.txt',
+    cytobands: 'cytoBand.txt',
+  }
+  const adapter = {
+    type: 'MCScanBlocksAdapter',
+    bedLocations: ['a.bed', { uri: 'b.bed' }],
+  }
+  addRelativeUris({ assemblies: [assembly], adapter }, new URL(base))
+  expect(assembly).toEqual({
+    name: 'hg38',
+    refNameAliases: { uri: 'aliases.txt', baseUri: base },
+    cytobands: { uri: 'cytoBand.txt', baseUri: base },
+  })
+  expect(adapter.bedLocations).toEqual([
+    { uri: 'a.bed', baseUri: base },
+    { uri: 'b.bed', baseUri: base },
+  ])
+})
+
+test('a search index written as a bare .ix string resolves against the config', () => {
+  const track = { textSearching: { textSearchAdapter: 'trix/genes.ix' } }
+  const config: Record<string, unknown> = {
+    tracks: [track],
+    aggregateTextSearchAdapters: ['trix/hg38.ix', { uri: 'trix/mm10.ix' }],
+  }
+  addRelativeUris(config, new URL('https://example.com/data/config.json'))
+  const base = 'https://example.com/data/config.json'
+  expect(track.textSearching.textSearchAdapter).toEqual({
+    uri: 'trix/genes.ix',
+    baseUri: base,
+  })
+  expect(config.aggregateTextSearchAdapters).toEqual([
+    { uri: 'trix/hg38.ix', baseUri: base },
+    { uri: 'trix/mm10.ix', baseUri: base },
+  ])
+})
+
 // preserve-existing is the behavior that differed from the (now-deleted)
 // data-management copy, which overwrote unconditionally
 test('addRelativeUris preserves an existing baseUri', () => {

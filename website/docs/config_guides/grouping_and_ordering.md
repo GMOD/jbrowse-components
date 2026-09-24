@@ -142,13 +142,13 @@ joins:
       "tomato"
     ],
     "bedLocations": [
-      { "uri": "grape.bed" },
-      { "uri": "peach.bed" },
-      { "uri": "cacao.bed" },
-      { "uri": "poplar.bed" },
-      { "uri": "citrus.bed" },
-      { "uri": "arabidopsis.bed" },
-      { "uri": "tomato.bed" }
+      "grape.bed",
+      "peach.bed",
+      "cacao.bed",
+      "poplar.bed",
+      "citrus.bed",
+      "arabidopsis.bed",
+      "tomato.bed"
     ]
   },
   "displays": [

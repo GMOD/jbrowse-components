@@ -103,10 +103,7 @@ mode, and `color` is the palette the file puts beside each type:
     "type": "MCScanBlocksAdapter",
     "uri": "Col-0_Ler.blocks",
     "blockAssemblies": ["Col-0", "Ler"],
-    "bedLocations": [
-      { "uri": "Col-0_Ler.Col-0.bed" },
-      { "uri": "Col-0_Ler.Ler.bed" }
-    ],
+    "bedLocations": ["Col-0_Ler.Col-0.bed", "Col-0_Ler.Ler.bed"],
     "attributeColumns": ["type", "color", "length"]
   }
 }

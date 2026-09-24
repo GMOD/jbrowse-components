@@ -166,26 +166,32 @@ test('an explicit trackId in the loose conf wins over the argument', async () =>
   })
 })
 
-test('a search index written as just a uri is found for the one assembly', async () => {
-  const { rootModel } = await getPluginManager(
-    {
-      ...config,
-      tracks: [
-        {
-          trackId: 'loose_gff',
-          uri: 'volvox.sort.gff3.gz',
-          textSearching: { textSearchAdapter: { uri: 'genes.ix' } },
-        },
-      ],
-      aggregateTextSearchAdapters: [{ uri: 'volvox.ix' }],
-    },
-    false,
-  )
-  const indexes =
-    rootModel.session!.textSearchManager.relevantAdapters('volvox')
-  expect(
-    indexes
-      .map((i: AnyConfigurationModel) => readConfObject(i, 'ixFilePath').uri)
-      .sort(),
-  ).toEqual(['genes.ix', 'volvox.ix'])
-})
+test.each([
+  ['a { uri }', (uri: string) => ({ uri })],
+  ['a bare string', (uri: string) => uri],
+])(
+  'a search index written as %s is found for the one assembly',
+  async (_, index) => {
+    const { rootModel } = await getPluginManager(
+      {
+        ...config,
+        tracks: [
+          {
+            trackId: 'loose_gff',
+            uri: 'volvox.sort.gff3.gz',
+            textSearching: { textSearchAdapter: index('genes.ix') },
+          },
+        ],
+        aggregateTextSearchAdapters: [index('volvox.ix')],
+      },
+      false,
+    )
+    const indexes =
+      rootModel.session!.textSearchManager.relevantAdapters('volvox')
+    expect(
+      indexes
+        .map((i: AnyConfigurationModel) => readConfObject(i, 'ixFilePath').uri)
+        .sort(),
+    ).toEqual(['genes.ix', 'volvox.ix'])
+  },
+)

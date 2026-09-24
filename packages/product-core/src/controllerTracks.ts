@@ -6,6 +6,7 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import { resolveLocalFileUris } from './localFiles.ts'
 
 import type { BlobLocation } from '@jbrowse/core/util'
+import type { LooseSearchIndex } from '@jbrowse/core/util/expandLooseSearchIndex'
 import type { LooseTrackInput } from '@jbrowse/core/util/tracks'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -150,7 +151,7 @@ export async function reconcileTracks(
  * A hub's entries followed by the host's own, the host's winning where both
  * carry the same id: the `idKey` member, or what an `idKey` function returns.
  */
-export function withHostOverrides<T extends object>(
+export function withHostOverrides<T>(
   hub: readonly T[] = [],
   host: readonly T[] = [],
   idKey: string | ((entry: T) => unknown),
@@ -167,12 +168,29 @@ export function withHostOverrides<T extends object>(
 
 /**
  * A search index is the trix file it reads, so a host's entry naming the same
- * file replaces the hub's. An index with no trix file is only ever itself.
+ * file replaces the hub's, however each spells it: a hub's relative `.ix` is
+ * resolved against its `baseUri`. An index with no trix file is only ever
+ * itself.
  */
-export function searchIndexKey(entry: object) {
-  const { uri, ixFilePath } = entry as {
-    uri?: string
-    ixFilePath?: { uri?: string; localPath?: string }
+export function searchIndexKey(entry: LooseSearchIndex) {
+  if (typeof entry === 'string') {
+    return entry
   }
-  return ixFilePath?.uri ?? ixFilePath?.localPath ?? uri ?? entry
+  const { uri, baseUri, ixFilePath } = entry as {
+    uri?: string
+    baseUri?: string
+    ixFilePath?: { uri?: string; baseUri?: string; localPath?: string }
+  }
+  return ixFilePath?.uri !== undefined
+    ? resolved(ixFilePath.uri, ixFilePath.baseUri)
+    : (ixFilePath?.localPath ??
+        (uri !== undefined ? resolved(uri, baseUri) : entry))
+}
+
+function resolved(uri: string, baseUri?: string) {
+  try {
+    return baseUri ? new URL(uri, baseUri).href : uri
+  } catch {
+    return uri
+  }
 }

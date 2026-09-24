@@ -10,22 +10,29 @@ Text searching comes in two forms, both built with
 once, for a genome-wide gene-name index. A **per-track index** (a track's
 `textSearching` slot) makes just one track searchable.
 
-An aggregate index. `uri` points at the `.ix` that `jbrowse text-index` wrote,
-and the `.ixx` and `_meta.json` beside it derive from that name:
+An index is written as the `.ix` that `jbrowse text-index` wrote, and the `.ixx`
+beside it derives from that name. In a config with one assembly, that path is
+the whole aggregate entry:
+
+```json
+{
+  "aggregateTextSearchAdapters": ["trix/hg19.ix"]
+}
+```
+
+A config holding several assemblies names the one each index covers:
 
 ```json
 {
   "aggregateTextSearchAdapters": [
-    {
-      "type": "TrixTextSearchAdapter",
-      "uri": "trix/hg19.ix",
-      "assemblyNames": ["hg19"]
-    }
+    { "uri": "trix/hg19.ix", "assemblyNames": ["hg19"] },
+    { "uri": "trix/mm10.ix", "assemblyNames": ["mm10"] }
   ]
 }
 ```
 
-A per-track index, with the two slots that decide what `text-index` puts in it:
+A per-track index searches its track's own assemblies, shown here with the two
+slots that decide what `text-index` puts in it:
 
 ```json addtrack
 {
@@ -38,11 +45,7 @@ A per-track index, with the two slots that decide what `text-index` puts in it:
     "uri": "yourfile.gff.gz"
   },
   "textSearching": {
-    "textSearchAdapter": {
-      "type": "TrixTextSearchAdapter",
-      "uri": "trix/mytrack.ix",
-      "assemblyNames": ["hg19"]
-    },
+    "textSearchAdapter": "trix/mytrack.ix",
     "indexingAttributes": ["Name", "ID"],
     "indexingFeatureTypesToExclude": ["CDS", "exon"]
   }

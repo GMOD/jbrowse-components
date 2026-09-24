@@ -73,6 +73,17 @@ export interface TrixTextSearchAdapter {
   assemblyNames: string[]
 }
 
+// what a config may already hold beside what text-index writes: any adapter
+// type, or a trix index written as its `.ix`, bare or as `{ uri }`
+export type SearchIndexEntry =
+  | string
+  | {
+      type?: string
+      uri?: string
+      ixFilePath?: UriLocation | LocalPathLocation
+      assemblyNames?: string[]
+    }
+
 // only connectionId is fixed; the location fields and anything from --config
 // vary by connection type, so they ride along in the index signature rather than
 // being narrowed away when add-connection round-trips the list
@@ -88,7 +99,7 @@ export interface Config {
   assemblies?: Assembly[]
   assembly?: Assembly
   configuration?: Record<string, unknown>
-  aggregateTextSearchAdapters?: TrixTextSearchAdapter[]
+  aggregateTextSearchAdapters?: SearchIndexEntry[]
   connections?: Connection[]
   defaultSession?: Record<string, unknown>
   tracks?: Track[]

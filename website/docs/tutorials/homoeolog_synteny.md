@@ -157,7 +157,7 @@ track's `assemblyNames`, and in both entries of `bedLocations`:
     "type": "MCScanBlocksAdapter",
     "uri": "oat.homoeologs.blocks.gz",
     "blockAssemblies": ["oat", "oat"],
-    "bedLocations": [{ "uri": "oat.bed.gz" }, { "uri": "oat.bed.gz" }],
+    "bedLocations": ["oat.bed.gz", "oat.bed.gz"],
     "attributeColumns": ["dn", "ds", "syn_subs", "fisher_p"]
   }
 }

@@ -42,12 +42,15 @@ test('flat { name, uri } fills in the sequence track and adapter', () => {
   expect(adapter.fastaLocation.uri).toBe('https://x.test/hg38.fa.gz')
 })
 
-test('refNameAliases/cytobands accept a bare { uri } shorthand', () => {
+test.each([
+  ['a bare { uri }', (uri: string) => ({ uri })],
+  ['a bare string', (uri: string) => uri],
+])('refNameAliases/cytobands accept %s', (_, file) => {
   const asm = assemblyFrom({
     name: 'test',
     uri: 'https://x.test/hg38.fa.gz',
-    refNameAliases: { uri: 'https://x.test/hg38.aliases.txt' },
-    cytobands: { uri: 'https://x.test/hg38.cytoBand.txt' },
+    refNameAliases: file('https://x.test/hg38.aliases.txt'),
+    cytobands: file('https://x.test/hg38.cytoBand.txt'),
   })
   const aliases = readConfObject(asm.refNameAliases.adapter)
   expect(aliases.type).toBe('RefNameAliasAdapter')

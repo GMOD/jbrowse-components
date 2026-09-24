@@ -4,7 +4,7 @@ const HUB_HOST = 'https://jbrowse.org'
 
 export interface HubConfig {
   assemblies?: Record<string, unknown>[]
-  aggregateTextSearchAdapters?: Record<string, unknown>[]
+  aggregateTextSearchAdapters?: (string | Record<string, unknown>)[]
   tracks?: Record<string, unknown>[]
   [key: string]: unknown
 }

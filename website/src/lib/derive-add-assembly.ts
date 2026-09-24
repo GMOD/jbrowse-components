@@ -48,6 +48,9 @@ function inferredSequenceType(uri: string) {
 // over one. A custom alias adapter (NcbiSequenceReportAliasAdapter) needs
 // `--refNameAliasesType custom` with inline JSON, and is left undrivable.
 export function aliasesUri(refNameAliases: unknown) {
+  if (typeof refNameAliases === 'string') {
+    return nonEmpty(refNameAliases)
+  }
   const slot = asRecord(refNameAliases)
   const adapter = asRecord(slot.adapter)
   return (

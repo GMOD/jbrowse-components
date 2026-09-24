@@ -21,14 +21,8 @@ const config = {
         uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
       },
       textSearching: {
-        textSearchAdapter: {
-          type: 'TrixTextSearchAdapter',
-          uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix',
-          // must match the assembly's `name` exactly. TextSearchManager filters
-          // adapters with a literal .includes(assemblyName), so 'GRCh38' here
-          // silently disabled gene-name search on an assembly named 'hg38'
-          assemblyNames: ['hg38'],
-        },
+        textSearchAdapter:
+          'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix',
       },
     },
     {

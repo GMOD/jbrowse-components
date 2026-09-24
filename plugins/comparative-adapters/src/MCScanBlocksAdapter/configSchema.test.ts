@@ -23,4 +23,19 @@ describe('MCScanBlocksAdapter configSchema', () => {
     })
     expect(readConfObject(conf, 'bedLocations')).toEqual(bedLocations)
   })
+
+  test('a bedLocations entry may be written as its path', () => {
+    const conf = configSchema.create({
+      type: 'MCScanBlocksAdapter',
+      uri: 'grape.blocks.gz',
+      bedLocations: [
+        'grape.bed',
+        { uri: 'peach.bed', baseUri: 'https://x.test/' },
+      ],
+    })
+    expect(readConfObject(conf, 'bedLocations')).toEqual([
+      { uri: 'grape.bed', locationType: 'UriLocation' },
+      { uri: 'peach.bed', baseUri: 'https://x.test/' },
+    ])
+  })
 })

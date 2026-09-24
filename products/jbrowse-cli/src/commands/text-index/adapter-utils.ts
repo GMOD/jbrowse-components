@@ -1,6 +1,6 @@
 import { trixFileUris } from '@jbrowse/text-indexing-core'
 
-import type { TrixTextSearchAdapter } from '../../base.ts'
+import type { SearchIndexEntry, TrixTextSearchAdapter } from '../../base.ts'
 
 export function createTrixAdapter(
   name: string,
@@ -22,13 +22,17 @@ export function createTrixAdapter(
 }
 
 // an aggregate entry is the index its files are, so a re-index of the same
-// assembly finds the entry pointing at them; an entry with no trix file, a
-// JBrowse 1 index, is only ever itself
-export function indexFileOf(entry: Partial<TrixTextSearchAdapter>) {
-  const { ixFilePath } = entry
+// assembly finds the entry pointing at them however it was written, `.ix`
+// string and `{ uri }` included; an entry with no trix file, a JBrowse 1
+// index, is only ever itself
+export function indexFileOf(entry: SearchIndexEntry) {
+  if (typeof entry === 'string') {
+    return entry
+  }
+  const { ixFilePath, uri } = entry
   return ixFilePath
     ? 'uri' in ixFilePath
       ? ixFilePath.uri
       : ixFilePath.localPath
-    : entry
+    : (uri ?? entry)
 }

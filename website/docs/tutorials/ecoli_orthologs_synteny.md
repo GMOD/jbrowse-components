@@ -132,10 +132,10 @@ stack, so the figure below shows every lane at once:
     "mcscanBlocksLocation": { "uri": "ecoli.blocks.gz" },
     "blockAssemblies": ["MG1655", "Sakai", "CFT073", "Sflexneri_301"],
     "bedLocations": [
-      { "uri": "MG1655.bed.gz" },
-      { "uri": "Sakai.bed.gz" },
-      { "uri": "CFT073.bed.gz" },
-      { "uri": "Sflexneri_301.bed.gz" }
+      "MG1655.bed.gz",
+      "Sakai.bed.gz",
+      "CFT073.bed.gz",
+      "Sflexneri_301.bed.gz"
     ]
   },
   "displays": [

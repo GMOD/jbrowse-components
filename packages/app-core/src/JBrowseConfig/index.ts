@@ -72,8 +72,10 @@ export function JBrowseConfigF({
     ),
     /**
      * #slot
-     * configuration for aggregate text search adapters (created by e.g.
-     * jbrowse text-index, but can be a pluggable TextSearchAdapter type)
+     * search indexes covering whole assemblies, as `jbrowse text-index` writes
+     * them or any pluggable text search adapter. A trix index can be just its
+     * `.ix` (`["trix/hg38.ix"]`), which takes the config's assembly when it
+     * has one; with several, write `{ uri, assemblyNames }`.
      */
     aggregateTextSearchAdapters: types.array(
       pluginManager.pluggableConfigSchemaType('text search adapter'),

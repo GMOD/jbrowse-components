@@ -36,16 +36,15 @@ mitochondrial contig with the vertebrate mitochondrial code (NCBI table 2):
 The flattest form: an assembly is just a `name` and a sequence-file `uri`.
 jbrowse-core picks the adapter (`Bgzip`/`Indexed`/`TwoBit`) from the
 extension, derives the `.fai`/`.gzi` siblings, and fills in the
-`ReferenceSequenceTrack`. `refNameAliases`/`cytobands` take the same bare
-`{ uri }` shorthand. (Keep the `uri` *key* rather than a bare string so
-relative URIs still resolve against the config's location.)
+`ReferenceSequenceTrack`. `refNameAliases`/`cytobands` are each just their
+file, as a path or `{ uri }`.
 
 ```js
 {
   name: 'hg38',
   uri: 'https://example.com/hg38.fa.gz',
-  refNameAliases: { uri: 'https://example.com/hg38.aliases.txt' },
-  cytobands: { uri: 'https://example.com/hg38.cytoBand.txt' },
+  refNameAliases: 'https://example.com/hg38.aliases.txt',
+  cytobands: 'https://example.com/hg38.cytoBand.txt',
 }
 ```
 

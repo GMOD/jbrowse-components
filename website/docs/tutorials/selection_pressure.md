@@ -130,7 +130,7 @@ is the `.blocks` shape
     "type": "MCScanBlocksAdapter",
     "uri": "primate.blocks.gz",
     "blockAssemblies": ["human", "rhesus"],
-    "bedLocations": [{ "uri": "human.bed.gz" }, { "uri": "rhesus.bed.gz" }],
+    "bedLocations": ["human.bed.gz", "rhesus.bed.gz"],
     "attributeColumns": ["dn", "ds", "syn_subs", "fisher_p"]
   }
 }

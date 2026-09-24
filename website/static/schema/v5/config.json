@@ -13235,80 +13235,89 @@
       "additionalProperties": false
     },
     "TextSearchAdapter": {
-      "type": "object",
-      "description": "A name-search index, built by `jbrowse text-index`.",
-      "properties": {
-        "type": {
+      "anyOf": [
+        {
           "type": "string",
-          "description": "Which registered type this is. A name the core plugins do not register (one a plugin adds) passes with its keys unchecked.",
-          "anyOf": [
-            {
-              "enum": [
-                "BigBedTextSearchAdapter",
-                "JBrowse1TextSearchAdapter",
-                "TrixTextSearchAdapter"
+          "pattern": "\\.ix([?#].*)?$",
+          "description": "A trix index as its `.ix` path or URL, the same as `{ uri }`: the type follows from the extension, and `assemblyNames` from the track it sits on or the config's one assembly."
+        },
+        {
+          "type": "object",
+          "description": "A name-search index, built by `jbrowse text-index`.",
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "Which registered type this is. A name the core plugins do not register (one a plugin adds) passes with its keys unchecked.",
+              "anyOf": [
+                {
+                  "enum": [
+                    "BigBedTextSearchAdapter",
+                    "JBrowse1TextSearchAdapter",
+                    "TrixTextSearchAdapter"
+                  ]
+                },
+                {
+                  "type": "string"
+                }
               ]
+            }
+          },
+          "required": [],
+          "allOf": [
+            {
+              "if": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "BigBedTextSearchAdapter"
+                  }
+                },
+                "required": ["type"]
+              },
+              "then": {
+                "$ref": "#/$defs/BigBedTextSearchAdapter"
+              }
             },
             {
-              "type": "string"
+              "if": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "JBrowse1TextSearchAdapter"
+                  }
+                },
+                "required": ["type"]
+              },
+              "then": {
+                "$ref": "#/$defs/JBrowse1TextSearchAdapter"
+              }
+            },
+            {
+              "if": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "TrixTextSearchAdapter"
+                  }
+                },
+                "required": ["type"]
+              },
+              "then": {
+                "$ref": "#/$defs/TrixTextSearchAdapter"
+              }
+            },
+            {
+              "if": {
+                "type": "object",
+                "not": {
+                  "required": ["type"]
+                }
+              },
+              "then": {
+                "$ref": "#/$defs/UntypedTextSearchAdapter"
+              }
             }
           ]
-        }
-      },
-      "required": [],
-      "allOf": [
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "BigBedTextSearchAdapter"
-              }
-            },
-            "required": ["type"]
-          },
-          "then": {
-            "$ref": "#/$defs/BigBedTextSearchAdapter"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "JBrowse1TextSearchAdapter"
-              }
-            },
-            "required": ["type"]
-          },
-          "then": {
-            "$ref": "#/$defs/JBrowse1TextSearchAdapter"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "const": "TrixTextSearchAdapter"
-              }
-            },
-            "required": ["type"]
-          },
-          "then": {
-            "$ref": "#/$defs/TrixTextSearchAdapter"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "not": {
-              "required": ["type"]
-            }
-          },
-          "then": {
-            "$ref": "#/$defs/UntypedTextSearchAdapter"
-          }
         }
       ]
     },
@@ -13784,45 +13793,63 @@
     },
     "RefNameAliases": {
       "title": "RefNameAliases",
-      "type": "object",
-      "properties": {
-        "adapter": {
-          "$ref": "#/$defs/Adapter"
-        },
-        "uri": {
+      "anyOf": [
+        {
           "type": "string",
-          "description": "Shorthand: the data file, from which the location slots (and the index location) are derived."
+          "description": "Shorthand for `{ \"uri\": ... }`."
         },
-        "baseUri": {
-          "type": "string",
-          "description": "Shorthand: a base URL `uri` resolves against."
+        {
+          "title": "RefNameAliases",
+          "type": "object",
+          "properties": {
+            "adapter": {
+              "$ref": "#/$defs/Adapter"
+            },
+            "uri": {
+              "type": "string",
+              "description": "Shorthand: the data file, from which the location slots (and the index location) are derived."
+            },
+            "baseUri": {
+              "type": "string",
+              "description": "Shorthand: a base URL `uri` resolves against."
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
         }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
+      ]
     },
     "Cytoband": {
       "title": "Cytoband",
-      "type": "object",
-      "properties": {
-        "adapter": {
-          "$ref": "#/$defs/Adapter"
-        },
-        "uri": {
+      "anyOf": [
+        {
           "type": "string",
-          "description": "Shorthand: the data file, from which the location slots (and the index location) are derived."
+          "description": "Shorthand for `{ \"uri\": ... }`."
         },
-        "baseUri": {
-          "type": "string",
-          "description": "Shorthand: a base URL `uri` resolves against."
+        {
+          "title": "Cytoband",
+          "type": "object",
+          "properties": {
+            "adapter": {
+              "$ref": "#/$defs/Adapter"
+            },
+            "uri": {
+              "type": "string",
+              "description": "Shorthand: the data file, from which the location slots (and the index location) are derived."
+            },
+            "baseUri": {
+              "type": "string",
+              "description": "Shorthand: a base URL `uri` resolves against."
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
         }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
+      ]
     },
     "Assembly": {
       "title": "Assembly",

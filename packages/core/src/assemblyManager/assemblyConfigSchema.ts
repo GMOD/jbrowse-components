@@ -39,15 +39,14 @@ export {
  * The flattest form: an assembly is just a `name` and a sequence-file `uri`.
  * jbrowse-core picks the adapter (`Bgzip`/`Indexed`/`TwoBit`) from the
  * extension, derives the `.fai`/`.gzi` siblings, and fills in the
- * `ReferenceSequenceTrack`. `refNameAliases`/`cytobands` take the same bare
- * `{ uri }` shorthand. (Keep the `uri` *key* rather than a bare string so
- * relative URIs still resolve against the config's location.)
+ * `ReferenceSequenceTrack`. `refNameAliases`/`cytobands` are each just their
+ * file, as a path or `{ uri }`.
  * ```js
  * {
  *   name: 'hg38',
  *   uri: 'https://example.com/hg38.fa.gz',
- *   refNameAliases: { uri: 'https://example.com/hg38.aliases.txt' },
- *   cytobands: { uri: 'https://example.com/hg38.cytoBand.txt' },
+ *   refNameAliases: 'https://example.com/hg38.aliases.txt',
+ *   cytobands: 'https://example.com/hg38.cytoBand.txt',
  * }
  * ```
  *
@@ -199,10 +198,12 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
         },
         {
           // the alias file is always a RefNameAliasAdapter, so both its type
-          // and the `adapter` nesting are boilerplate: allow a bare
-          // `refNameAliases: { uri: 'aliases.txt' }` (baseUri, stamped next to
-          // the uri key by addRelativeUris, rides along). An explicit `adapter`
-          // passes through untouched; absent, the empty default is filled in.
+          // and the `adapter` nesting are boilerplate: allow
+          // `refNameAliases: 'aliases.txt'` or `{ uri: 'aliases.txt' }`
+          // (baseUri, stamped by addRelativeUris, rides along). An explicit
+          // `adapter` passes through untouched; absent, the empty default is
+          // filled in.
+          shorthand: 'uri',
           preProcessSnapshot: snap =>
             snap.adapter
               ? snap
@@ -230,9 +231,10 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
           adapter: pluginManager.pluggableConfigSchemaType('adapter'),
         },
         {
-          // same shorthand as refNameAliases: `cytobands: { uri: 'cytoBand.txt' }`
-          // fills in the CytobandAdapter; an explicit `adapter` passes through,
+          // same shorthand as refNameAliases: `cytobands: 'cytoBand.txt'` fills
+          // in the CytobandAdapter; an explicit `adapter` passes through,
           // absent it defaults to the empty adapter.
+          shorthand: 'uri',
           preProcessSnapshot: snap =>
             snap.adapter
               ? snap

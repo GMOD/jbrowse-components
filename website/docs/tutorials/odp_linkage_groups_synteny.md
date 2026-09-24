@@ -115,10 +115,7 @@ its own.
     "type": "MCScanBlocksAdapter",
     "uri": "RES_EMU.blocks.gz",
     "blockAssemblies": ["RES", "EMU"],
-    "bedLocations": [
-      { "uri": "RES_EMU.RES.bed.gz" },
-      { "uri": "RES_EMU.EMU.bed.gz" }
-    ],
+    "bedLocations": ["RES_EMU.RES.bed.gz", "RES_EMU.EMU.bed.gz"],
     "attributeColumns": ["gene_group", "color"]
   }
 }

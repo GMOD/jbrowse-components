@@ -224,11 +224,7 @@ the adapter's `attributeColumns` names:
     "type": "MCScanBlocksAdapter",
     "uri": "grape.blocks",
     "blockAssemblies": ["grape", "peach", "cacao"],
-    "bedLocations": [
-      { "uri": "grape.bed" },
-      { "uri": "peach.bed" },
-      { "uri": "cacao.bed" }
-    ],
+    "bedLocations": ["grape.bed", "peach.bed", "cacao.bed"],
     "attributeColumns": ["score"]
   }
 }
@@ -350,11 +346,7 @@ to narrow it to fewer:
     "type": "MCScanBlocksAdapter",
     "uri": "grape.blocks.gz",
     "blockAssemblies": ["grape", "peach", "cacao"],
-    "bedLocations": [
-      { "uri": "grape.bed.gz" },
-      { "uri": "peach.bed.gz" },
-      { "uri": "cacao.bed.gz" }
-    ]
+    "bedLocations": ["grape.bed.gz", "peach.bed.gz", "cacao.bed.gz"]
   }
 }
 ```

@@ -26,9 +26,10 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * `jbrowse text-index` writes this entry into `aggregateTextSearchAdapters` for
  * you. The `uri` shorthand points at the `.ix` and the sibling `.ixx` is derived
  * from it, so the pair only needs spelling out when they are named against
- * convention. Written by hand, `{ uri: 'trix/hg38.ix' }` is the whole entry: a
- * `.ix` implies this type, and `assemblyNames` defaults to
- * the track's own for a per-track index or to the config's one assembly.
+ * convention. Written by hand, the string `'trix/hg38.ix'` is the whole entry,
+ * the same as `{ uri: 'trix/hg38.ix' }`: a `.ix` implies this type, and
+ * `assemblyNames` defaults to the track's own for a per-track index or to the
+ * config's one assembly.
  * ```js
  * {
  *   type: 'TrixTextSearchAdapter',

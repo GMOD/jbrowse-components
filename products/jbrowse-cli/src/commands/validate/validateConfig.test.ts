@@ -117,6 +117,22 @@ describe('validateConfig', () => {
     ])
   })
 
+  it('accepts a search index written as a bare .ix string, and reports one that is not', () => {
+    const config = {
+      ...baseConfig(),
+      tracks: [
+        {
+          ...baseConfig().tracks[0]!,
+          textSearching: { textSearchAdapter: 'trix/sample.ix' },
+        },
+      ],
+      aggregateTextSearchAdapters: ['trix/hg38.ix', 'names.txt'],
+    }
+    expect(errorsOf(config).map(e => e.where)).toEqual([
+      'aggregateTextSearchAdapters[1]',
+    ])
+  })
+
   it('a loose track still has to name its assembly among several', () => {
     const config = baseConfig()
     config.assemblies.push({ ...config.assemblies[0]!, name: 'hg19' })

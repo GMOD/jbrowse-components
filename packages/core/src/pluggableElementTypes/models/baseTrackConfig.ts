@@ -239,8 +239,8 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         /**
          * #slot textSearching.textSearchAdapter
          * a per-track name search index, normally a `TrixTextSearchAdapter`
-         * over what `jbrowse text-index --tracks` built; `{ uri: 'genes.ix' }`
-         * is enough, searching this track's assemblies. Without one, this
+         * over what `jbrowse text-index --tracks` built; `'genes.ix'` is
+         * enough, searching this track's assemblies. Without one, this
          * track's features are only findable through an assembly-wide search
          * adapter.
          */

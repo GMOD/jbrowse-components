@@ -450,12 +450,12 @@ One track backs every band of the stack, the same as the
       "wheat"
     ],
     "bedLocations": [
-      { "uri": "durum.bed.gz" },
-      { "uri": "emmer.bed.gz" },
-      { "uri": "tauschii.bed.gz" },
-      { "uri": "timopheevii.bed.gz" },
-      { "uri": "urartu.bed.gz" },
-      { "uri": "wheat.bed.gz" }
+      "durum.bed.gz",
+      "emmer.bed.gz",
+      "tauschii.bed.gz",
+      "timopheevii.bed.gz",
+      "urartu.bed.gz",
+      "wheat.bed.gz"
     ]
   }
 }

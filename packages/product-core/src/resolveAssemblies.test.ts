@@ -41,8 +41,48 @@ test("a hub's catalog and indexes come back merged with the host's, the host win
     { trackId: 'mine' },
   ])
   expect(resolved.aggregateTextSearchAdapters).toEqual([
-    { type: 'TrixTextSearchAdapter', uri: 'trix/hg38.ix' },
+    {
+      type: 'TrixTextSearchAdapter',
+      uri: 'trix/hg38.ix',
+      assemblyNames: ['hg38'],
+    },
     mine,
     { uri: 'mine.ix' },
+  ])
+})
+
+test("a hub's short index takes the hub's assembly before the merge, and the host's URL for the same file replaces it", async () => {
+  const mm39 = {
+    assemblies: [{ name: 'mm39', uri: 'mm39.2bit' }],
+    aggregateTextSearchAdapters: [
+      {
+        uri: 'trix/mm39.ix',
+        baseUri: 'https://jbrowse.org/ucsc/mm39/config.json',
+      },
+      'trix/mm39-extra.ix',
+    ],
+  }
+  const hostIndex = 'https://jbrowse.org/ucsc/mm39/trix/mm39.ix'
+  const resolved = await resolveAssemblies([hub, mm39], {
+    aggregateTextSearchAdapters: [hostIndex],
+  })
+
+  expect(resolved.aggregateTextSearchAdapters).toEqual([
+    {
+      type: 'TrixTextSearchAdapter',
+      uri: 'trix/hg38.ix',
+      assemblyNames: ['hg38'],
+    },
+    {
+      type: 'TrixTextSearchAdapter',
+      uri: 'trix/hg38-extra.ix',
+      assemblyNames: ['hg38'],
+    },
+    {
+      type: 'TrixTextSearchAdapter',
+      uri: 'trix/mm39-extra.ix',
+      assemblyNames: ['mm39'],
+    },
+    hostIndex,
   ])
 })

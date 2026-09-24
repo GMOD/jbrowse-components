@@ -188,14 +188,14 @@ below:
       "macaque"
     ],
     "bedLocations": [
-      { "uri": "human.bed.gz" },
-      { "uri": "chimp.bed.gz" },
-      { "uri": "bonobo.bed.gz" },
-      { "uri": "gorilla.bed.gz" },
-      { "uri": "sumatran.bed.gz" },
-      { "uri": "bornean.bed.gz" },
-      { "uri": "siamang.bed.gz" },
-      { "uri": "macaque.bed.gz" }
+      "human.bed.gz",
+      "chimp.bed.gz",
+      "bonobo.bed.gz",
+      "gorilla.bed.gz",
+      "sumatran.bed.gz",
+      "bornean.bed.gz",
+      "siamang.bed.gz",
+      "macaque.bed.gz"
     ]
   },
   "displays": [

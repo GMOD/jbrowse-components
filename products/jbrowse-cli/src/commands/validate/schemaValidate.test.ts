@@ -481,6 +481,15 @@ describe('the schema', () => {
       { name: 'hg38', uri: 'hg38.fa.gz', refNameAliases: { uri: 'aliases' } },
     ]
     expect(schemaProblems(config)).toEqual([])
+    config.assemblies = [
+      {
+        name: 'hg38',
+        uri: 'hg38.fa.gz',
+        refNameAliases: 'aliases.txt',
+        cytobands: 'cytoBand.txt',
+      },
+    ]
+    expect(schemaProblems(config)).toEqual([])
     config.assemblies = [{ name: 'hg38' }]
     expect(schemaProblems(config)[0]?.message).toContain('"sequence"')
   })

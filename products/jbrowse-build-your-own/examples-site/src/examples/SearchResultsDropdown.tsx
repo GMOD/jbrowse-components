@@ -113,16 +113,7 @@ const SearchResultsDropdown = observer(function SearchResultsDropdown() {
       },
     ],
     aggregateTextSearchAdapters: [
-      {
-        type: 'TrixTextSearchAdapter',
-        assemblyNames: ['hg38'],
-        ixFilePath: {
-          uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix',
-        },
-        ixxFilePath: {
-          uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ixx',
-        },
-      },
+      'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix',
     ],
     view: {
       loc: 'chr17:43,044,295..43,125,364',

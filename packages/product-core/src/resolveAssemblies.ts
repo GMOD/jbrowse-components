@@ -1,8 +1,10 @@
+import { expandLooseSearchIndex } from '@jbrowse/core/util/expandLooseSearchIndex'
 import { fetchHub } from '@jbrowse/core/util/fetchHub'
 import { isSequenceUri, makeAssembly } from '@jbrowse/core/util/makeAssembly'
 
 import { searchIndexKey, withHostOverrides } from './controllerTracks.ts'
 
+import type { LooseSearchIndex } from '@jbrowse/core/util/expandLooseSearchIndex'
 import type { HubConfig } from '@jbrowse/core/util/fetchHub'
 
 export type AssemblyConfig = Record<string, unknown>
@@ -18,13 +20,20 @@ export interface HubTrackConfig {
   [key: string]: unknown
 }
 
-// A hub's config arrives off the network, so its search adapters are untyped
-// there. Keep the ones naming an adapter type, rather than casting the lot: an
-// entry without one cannot be constructed anyway.
+// A hub is one assembly, so an index it writes short is on that assembly: it is
+// expanded here, before the merge puts it beside other hubs' assemblies where no
+// single one would fill it. What still names no adapter type cannot be
+// constructed, so it is dropped rather than cast.
 function searchAdaptersOf(hub: HubConfig): SearchAdapters {
-  const found = (hub.aggregateTextSearchAdapters ?? []).filter(
-    (a): a is TextSearchAdapterConfig => typeof a.type === 'string',
-  )
+  const name = hub.assemblies?.[0]?.name
+  const found = (hub.aggregateTextSearchAdapters ?? [])
+    .map(index =>
+      expandLooseSearchIndex(index, typeof name === 'string' ? [name] : []),
+    )
+    .filter(
+      (a): a is TextSearchAdapterConfig =>
+        typeof (a as { type?: unknown } | undefined)?.type === 'string',
+    )
   return found.length ? found : undefined
 }
 
@@ -57,7 +66,7 @@ export interface ResolvedAssembly {
 
 export interface ResolvedAssemblies<
   Track extends object = HubTrackConfig,
-  Index extends object = TextSearchAdapterConfig,
+  Index extends LooseSearchIndex = TextSearchAdapterConfig,
 > {
   assemblies: AssemblyConfig[]
   /** the hubs' search adapters, then the host's own */
@@ -67,7 +76,10 @@ export interface ResolvedAssemblies<
 }
 
 /** What a host already has, to merge with what its hubs bring. */
-export interface HostCatalog<Track extends object, Index extends object> {
+export interface HostCatalog<
+  Track extends object,
+  Index extends LooseSearchIndex,
+> {
   tracks?: readonly Track[]
   aggregateTextSearchAdapters?: readonly Index[]
 }
@@ -124,7 +136,7 @@ export async function resolveAssembly(
  */
 export async function resolveAssemblies<
   Track extends object = HubTrackConfig,
-  Index extends object = TextSearchAdapterConfig,
+  Index extends LooseSearchIndex = TextSearchAdapterConfig,
 >(
   inputs: AssemblyInput[],
   host: HostCatalog<Track, Index> = {},
