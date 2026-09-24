@@ -214,6 +214,7 @@ export function createDisplayWithSession({
         // fail on a TypeError a lane's own error handling then swallows
         waitForAssembly: () => Promise.resolve(testAssembly()),
         getCanonicalAssemblyName: (name: string) => assemblyAliases[name],
+        getDisplayName: (name: string) => assemblyOf(name).displayName || name,
         // a multi-genome file's other samples are lanes the session cannot
         // navigate or fetch against
         has: (name: string) => HELD_ASSEMBLIES.has(name),

@@ -250,7 +250,7 @@ export function stateModelFactory(
        * the ortholog fetch's answer beside the anchor assembly it asked for
        */
       fetchedFeatures: undefined as
-        | { anchor: string; features: Feature[] }
+        | { anchor: string; features: Feature[]; lanes?: string[] }
         | undefined,
       /**
        * #volatile
@@ -400,8 +400,9 @@ export function stateModelFactory(
         setFeatures(
           features: Feature[],
           anchor: string = containingLgv(self).assemblyNames[0]!,
+          lanes?: string[],
         ) {
-          self.fetchedFeatures = { anchor, features }
+          self.fetchedFeatures = { anchor, features, lanes }
           observeRibbonFeatures(features)
         },
         /**
@@ -1012,12 +1013,28 @@ export function stateModelFactory(
        * haplotypes from an anchor rather than naming all 464 and discarding.
        * For every other multiway source the term would be a refetch bought for
        * a filter it ignores, so it is withheld and `rowAssemblies` narrows the
-       * drawing exactly as before.
+       * drawing exactly as before. Each genome the session holds goes under
+       * every name the session knows it by: the adapter compares its own
+       * config's spelling, and the worker has no assembly manager to reconcile
+       * a track that spells a lane by an alias
        */
       get fetchLaneSelection(): string[] | undefined {
-        return self.adapterDeclaresLanes && self.laneSelection
-          ? [...self.laneSelection]
+        const selection = self.adapterDeclaresLanes
+          ? self.laneSelection
           : undefined
+        const { assemblyManager } = getSession(self)
+        return (
+          selection && [
+            ...new Set(
+              selection.flatMap(name => [
+                name,
+                ...((assemblyManager.has(name) &&
+                  assemblyManager.get(name)?.allAliases) ||
+                  []),
+              ]),
+            ),
+          ]
+        )
       },
     }))
     .views(self => ({
@@ -1078,12 +1095,10 @@ export function stateModelFactory(
        * label the source declares, else the name the placements carry
        */
       laneLabel(assemblyName: string) {
-        return (
-          (this.holdsAssembly(assemblyName)
-            ? getSession(self).assemblyManager.get(assemblyName)?.displayName
-            : this.declaredLaneLabels.get(self.laneKey(assemblyName))) ||
-          assemblyName
-        )
+        return this.holdsAssembly(assemblyName)
+          ? getSession(self).assemblyManager.getDisplayName(assemblyName)
+          : (this.declaredLaneLabels.get(self.laneKey(assemblyName)) ??
+              assemblyName)
       },
       /**
        * #getter
@@ -1103,16 +1118,16 @@ export function stateModelFactory(
         const selection = self.laneSelection
         const chosen = selection && new Set(selection.map(self.laneKey))
         const hidden = new Set(self.hiddenLanes.map(self.laneKey))
-        const asked =
-          self.fetchLaneSelection &&
-          new Set(self.fetchLaneSelection.map(self.laneKey))
+        const landed = self.features && self.fetchedFeatures?.lanes
+        const asked = landed && new Set(landed.map(self.laneKey))
         const known = (key: string) =>
           self.features !== undefined && (asked === undefined || asked.has(key))
         const out = new Map<string, LaneChoice>()
         const offer = (lane: DeclaredLane) => {
           const key = self.laneKey(lane.name)
           if (key !== anchor && !out.has(key)) {
-            const label = lane.label ?? this.laneLabel(lane.name)
+            const shown = this.laneLabel(lane.name)
+            const label = shown === lane.name ? lane.label : shown
             out.set(key, {
               ...lane,
               ...(label === lane.name ? {} : { label }),
@@ -1588,8 +1603,11 @@ export function stateModelFactory(
        */
       get laneGenesFetchSpecs(): LaneGenesFetchSpec[] {
         const view = self.lgv
+        const tracks = self.laneGeneTracks
         const adapters = self.laneGeneAdapters
         const specs: LaneGenesFetchSpec[] = []
+        const keyOf = (lane: string, regions: LaneRegion[]) =>
+          `${readConfObject(tracks.get(lane)!, 'trackId')}@${regions.map(regionKey).join(',')}`
         if (view.initialized) {
           const anchorAdapter = adapters.get(self.anchorAssemblyName)
           const regions = mergeContiguousRegions(
@@ -1598,7 +1616,7 @@ export function stateModelFactory(
           if (anchorAdapter && regions.length) {
             specs.push({
               lane: self.anchorAssemblyName,
-              key: regions.map(regionKey).join(','),
+              key: keyOf(self.anchorAssemblyName, regions),
               adapterConfig: anchorAdapter,
               regions,
             })
@@ -1606,12 +1624,12 @@ export function stateModelFactory(
           for (const [assemblyName, frame] of self.rowFrames) {
             const adapter = adapters.get(assemblyName)
             if (adapter && frame && self.holdsAssembly(assemblyName)) {
-              const region = { assemblyName, ...laneFetchRegion(frame) }
+              const regions = [{ assemblyName, ...laneFetchRegion(frame) }]
               specs.push({
                 lane: assemblyName,
-                key: regionKey(region),
+                key: keyOf(assemblyName, regions),
                 adapterConfig: adapter,
-                regions: [region],
+                regions,
               })
             }
           }

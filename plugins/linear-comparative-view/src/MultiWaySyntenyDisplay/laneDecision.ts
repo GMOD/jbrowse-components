@@ -340,8 +340,8 @@ function lanePlacementXs(
   )
 }
 
-// how the lane's shared groups run against the lane above: over every pair
-// of shared runs, the share of the paired evidence whose order on this lane
+// how the lane's shared groups run against the lane it is read against: over
+// every pair of shared runs, the share of the paired evidence whose order on this lane
 // reads backwards from its order above, and the majority it makes. Undefined
 // on fewer than three shared groups, or a tie. Two runs of one group share an
 // x above and say nothing about order between them.

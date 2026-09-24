@@ -93,8 +93,8 @@ function fetchPhases(
         }),
         r => r.id(),
       ),
-    commit: (features, { anchor }) => {
-      self.setFeatures(features, anchor)
+    commit: (features, { anchor, haplotypes }) => {
+      self.setFeatures(features, anchor, haplotypes)
     },
   }
 }

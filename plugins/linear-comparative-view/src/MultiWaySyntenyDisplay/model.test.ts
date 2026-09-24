@@ -6,7 +6,7 @@ import {
   categoricalField,
 } from '@jbrowse/core/util/categoricalField'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
-import { takeSnackbarAction } from '@jbrowse/display-test-utils'
+import { takeSnackbarAction, testAssembly } from '@jbrowse/display-test-utils'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { declaredLanesOf } from '@jbrowse/synteny-core'
 import { autorun, when } from 'mobx'
@@ -1085,11 +1085,14 @@ test('a lane draws the gene track the display names for its genome', () => {
   const { display, session } = createDisplayWithSession({
     geneTracks: [
       { trackId: 'volvox_genes', assemblyNames: ['volvox'] },
+      { trackId: 'volvox_refseq', assemblyNames: ['volvox'] },
       { trackId: 'volvox_random_ccds', assemblyNames: ['volvox_random'] },
       { trackId: 'volvox_random_refseq', assemblyNames: ['volvox_random'] },
     ],
   })
   display.setFeatures([mateRecord('f1', 'volvox_random', 'gene1')])
+  const anchorKey = () =>
+    display.laneGenesFetchSpecs.find(spec => spec.lane === 'volvox')?.key
   const trackIdOf = (lane: string) => {
     const track = display.laneGeneTracks.get(lane)
     return track && readConfObject(track, 'trackId')
@@ -1100,9 +1103,35 @@ test('a lane draws the gene track the display names for its genome', () => {
   expect(trackIdOf('volvox_random')).toBe('volvox_random_refseq')
   expect(trackIdOf('volvox')).toBe('volvox_genes')
 
+  // genes held under one track are stale once the lane names another
+  const held = anchorKey()
+  setConf(display, 'laneGeneTracks', ['volvox_random_refseq', 'volvox_refseq'])
+  expect(trackIdOf('volvox')).toBe('volvox_refseq')
+  expect(anchorKey()).not.toBe(held)
+
   display.openInNewView('volvox_random', 'ctgA:1-100')
   expect(session.addedViews.map(view => view.init.tracks)).toEqual([
     ['multiway_track', 'volvox_random_refseq'],
+  ])
+})
+
+// The adapter compares its config's own spelling of a lane, and the worker
+// has no assembly manager, so a track naming a lane by an alias asked for a
+// lane the source never heard of
+test('a lane selection reaches the adapter under every name the session knows the genome by', () => {
+  const { display } = createDisplayWithSession({
+    syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
+    assemblyOf: name =>
+      testAssembly(
+        name === 'volvox_random'
+          ? { allAliases: ['volvox_random', 'vr', 'volvox#2'] }
+          : {},
+      ),
+  })
+  expect(display.fetchLaneSelection).toEqual([
+    'volvox_random',
+    'vr',
+    'volvox#2',
   ])
 })
 
@@ -1357,10 +1386,11 @@ test('an adapter declaring its lanes has its header read once, and the universe 
   expect(display.rowAssemblies).toEqual([])
 
   await when(() => display.features !== undefined, { timeout: 5000 })
-  display.setFeatures([
-    mateRecord('r1', 'HG1#2'),
-    mateRecord('r2', 'sample#1#undeclared'),
-  ])
+  display.setFeatures(
+    [mateRecord('r1', 'HG1#2'), mateRecord('r2', 'sample#1#undeclared')],
+    'volvox',
+    display.fetchLaneSelection,
+  )
   // the fetch asked only for the track's lane, so the window says nothing of
   // HG1#1, which a picker would otherwise grey as placing nothing
   expect(display.laneUniverse.map(l => [l.name, l.placed])).toEqual([

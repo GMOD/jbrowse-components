@@ -299,8 +299,8 @@ A lane is `Lane` in `MW/laneStack.ts`: an assembly name, a frame, a
 `hasAnnotation` flag, the group placements in px, and two functions. The session
 does not know lanes exist. Concretely:
 
-- One annotation per lane, chosen by rank, never by the user
-  (`laneGeneAdapters`). A lane cannot show a second track, a wiggle, variants,
+- One annotation per lane, named by the `laneGeneTracks` slot or else chosen
+  by rank (`laneGeneTracks`). A lane cannot show a second track, a wiggle, variants,
   reads, or sequence, and the gene track it shows is not the track the user
   configured a display for; it is the raw adapter re-drawn through
   `geneGlyph.ts` with the canvas track's rules (design record §"Gene glyph

@@ -3,6 +3,7 @@ import type { Region } from '@jbrowse/core/util'
 export interface TestAssembly {
   initialized: boolean
   displayName: string
+  allAliases: string[]
   regions: Region[] | undefined
   refNameToIndex: Map<string, number> | undefined
   getCanonicalRefName: (refName: string) => string
@@ -37,6 +38,7 @@ export function testAssembly({
   regions = [VOLVOX_CTGA],
   aliases = { chra: 'ctgA' },
   displayName = '',
+  allAliases = [],
 }: {
   regions?: Region[]
   /** keys are compared lower-cased */
@@ -46,12 +48,15 @@ export function testAssembly({
    * it as unset, the way the real getter's fallback to the name reads
    */
   displayName?: string
+  /** the real getter leads with the name, which this stub cannot know */
+  allAliases?: string[]
 } = {}): TestAssembly {
   const canonical = (refName: string) =>
     aliases[refName.toLowerCase()] ?? refName
   return {
     initialized: true,
     displayName,
+    allAliases,
     regions,
     refNameToIndex: new Map(regions.map((region, i) => [region.refName, i])),
     getCanonicalRefName: canonical,
