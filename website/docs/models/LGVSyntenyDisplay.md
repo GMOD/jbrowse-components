@@ -376,6 +376,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="method-groupchiplabel">**groupChipLabel**</span><br><code>(label: string) =&gt; string</code> | A mate-assembly chip reads the assembly's display name | LGVSyntenyDisplay |
 | <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  | LGVSyntenyDisplay |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; (MenuItem &#124; { label: string; icon: OverridableComponent&lt;S…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; (MenuItem &#124; { label: string; icon: OverridableComponent&lt;SvgIconTypeMap&lt;{}, "svg"&gt;&gt; &amp; { muiName: string; }; type: "subMenu"; subMenu: (MenuItem &#124; { ...; })[]; })[]</code></pre></dialog></span> |  | LGVSyntenyDisplay |
 | <span id="method-legenditems">**legendItems**</span><br><code>() =&gt; LegendItem[]</code> |  | [LinearAlignmentsDisplay](../linearalignmentsdisplay#method-legenditems) |

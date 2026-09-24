@@ -105,7 +105,10 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   of peach. So 200 kb of grape corresponds to ~36 kb of peach and that is the
   data, not a mapping error.
 
-  refNames are RefSeq accessions, not `chr1`/`Pp01`: grape chr1 is
+  The three assemblies and their gene tracks are the genomes' GenArk hubs on
+  genomes.jbrowse.org, verbatim but for the label, with the short name
+  (`grape`) as an alias. The hubs make UCSC names canonical, so the ruler reads
+  `chr1`/`chrG1` while the BEDs keep RefSeq accessions: grape chr1 is
   `NC_081805.1` (27.8 Mb), peach chr1 is `NC_034009.1` (47.9 Mb).
 
 ## Datasets tried and rejected

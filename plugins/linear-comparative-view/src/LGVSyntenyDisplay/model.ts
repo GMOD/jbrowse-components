@@ -163,6 +163,16 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             ),
           ])
         },
+
+        /**
+         * #method
+         * A mate-assembly chip reads the assembly's display name
+         */
+        groupChipLabel(label: string) {
+          return self.facet?.field === 'mateAssembly'
+            ? getSession(self).assemblyManager.getDisplayName(label)
+            : label
+        },
       }))
       .views(self => ({
         /**

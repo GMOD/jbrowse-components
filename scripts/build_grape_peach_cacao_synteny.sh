@@ -1,21 +1,23 @@
 #!/usr/bin/env bash
 #
 # Reproducibly build the multi-way MCScan .blocks synteny view shown in
-# website/docs/tutorials/multiway_synteny_grape_peach_cacao.md, then wire up a
-# runnable JBrowse.
+# website/docs/tutorials/multiway_synteny_grape_peach_cacao.md, and a JBrowse
+# config that loads it.
 #
 # Everything comes from NCBI datasets: one accession per species supplies the
-# genome, the annotation and (through gffread) the CDS, so an assembly and the
-# annotation drawn on it can never be two different builds. That is not a
-# preference, it is the bug this script was rewritten to remove -- the previous
-# Ensembl Plants version produced a cacao BED whose chromosomes were 1..10 while
-# the hosted cacao assembly called them I..X, and those two builds disagree on
-# all ten chromosome LENGTHS. Renaming across that gap draws genes at plausible
-# wrong coordinates. One accession per species makes the question impossible.
+# genome, the annotation and (through gffread) the CDS, so the table and the
+# assembly it is drawn on are one build. The previous Ensembl Plants version
+# produced a cacao BED on chromosomes 1..10 of an assembly that disagreed with
+# the hosted one on all ten lengths, drawing genes at plausible wrong
+# coordinates.
+#
+# The three assemblies and their gene tracks are the genomes' GenArk hubs on
+# genomes.jbrowse.org, taken verbatim: the same RefSeq accessions, with the 2bit
+# sequence, a chromAlias table that resolves the NC_ names in the BEDs, and the
+# NCBI RefSeq genes.
 #
 # Requires: the NCBI `datasets` CLI, jcvi + the LAST aligner, gffread, samtools,
-#           bgzip/tabix (htslib), and node (JBrowse CLI, via npx unless
-#           `jbrowse` is on PATH).
+#           curl, python3
 # Usage:    bash scripts/build_grape_peach_cacao_synteny.sh [outdir]
 #
 set -euo pipefail
@@ -26,12 +28,10 @@ cd "$OUTDIR"
 
 # Species table: short name, RefSeq accession.
 #
-# The first three carry a genome because the stacked three-genome figure draws
-# their gene tracks, so they are loaded as JBrowse assemblies. The rest are
-# BLOCKS-ONLY mates: they appear solely as lanes on the grape axis in the
-# one-vs-all figure, and MCScanBlocksAdapter resolves a lane entirely from the
-# .blocks table plus that species' BED, so nothing reads their sequence. They
-# still need the genome downloaded, because the CDS is extracted from it.
+# The first three are JBrowse assemblies, rows of the stacked view with their
+# gene tracks. The rest are BLOCKS-ONLY mates: lanes on the grape axis, which
+# MCScanBlocksAdapter resolves from the .blocks table plus that species' BED.
+# They still need the genome downloaded, because the CDS is extracted from it.
 ASSEMBLY_SPECIES='
 grape  GCF_030704535.1
 peach  GCF_000346465.2
@@ -124,25 +124,6 @@ for sp in "${COLUMNS[@]}"; do
   [ -f "$sp.cds" ] || python -m jcvi.formats.fasta format "$sp.cds.fa" "$sp.cds"
 done
 
-# ── refNameAliases, so the accessions are readable ───────────────────────────
-# NCBI names sequences by accession (NC_083631.1), which is correct and
-# unreadable. The sequence report carries that accession's chromosome name, so
-# the alias is a lookup rather than a guess -- the one case where renaming a
-# refName is safe, as against mapping between two assemblies.
-for sp in "${COLUMNS[@]}"; do
-  [ -f "$sp.aliases.txt" ] || python3 - "$sp" <<'PY'
-import json, sys
-sp = sys.argv[1]
-with open(f'{sp}.aliases.txt', 'w') as out:
-    for line in open(f'{sp}.seqreport.jsonl'):
-        d = json.loads(line)
-        acc = d.get('refseqAccession') or d.get('genbankAccession')
-        name = d.get('chrName') or d.get('ucscStyleName')
-        if acc and name and name != 'Un':
-            out.write(f'{acc}\t{name}\n')
-PY
-done
-
 # ── jcvi: orthologs vs grape, MCScan each pair, join into one .blocks table ───
 for sp in "${MATES[@]}"; do
   [ -f "grape.$sp.lifted.anchors" ] || \
@@ -206,98 +187,97 @@ for (i, j), n in sorted(both.items(), key=lambda kv: -kv[1]):
           f'{share:.0%} of the smaller column{direct}')
 PY
 
-# ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ────────
-if command -v jbrowse >/dev/null 2>&1; then
-  jb() { jbrowse "$@"; }
-else
-  jb() { npx -y @jbrowse/cli "$@"; }
-fi
+# ── The hub each assembly is taken from ──────────────────────────────────────
+# A RefSeq genome is a GenArk hub on genomes.jbrowse.org under its accession,
+# whose path is the accession cut into GCF/000/346/465/<accession>.
+mkdir -p hubs
+while read -r name acc; do
+  [ -z "$name" ] && continue
+  base="https://jbrowse.org/hubs/genark/${acc:0:3}/${acc:4:3}/${acc:7:3}/${acc:10:3}/$acc"
+  echo "$base" > "hubs/$acc.base"
+  [ -s "hubs/$acc.config.json" ] || curl -fsS -o "hubs/$acc.config.json" "$base/config.json"
+done <<<"$ASSEMBLY_SPECIES"
 
-APP=jbrowse2
-[ -f "$APP/index.html" ] || jb create "$APP"
-
-# The .blocks + BEDs must sit beside config.json (add-track-json won't copy them)
-cp grape.blocks.gz "${COLUMNS[@]/%/.bed.gz}" "$APP"/
-
-# One assembly per genome, each with the accession-to-chromosome aliases so the
-# location box takes `11` and the ruler does not read NC_083631.1.
-for sp in "${ASSEMBLY_NAMES[@]}"; do
-  cp "$sp.aliases.txt" "$APP"/
-  # No --refNameAliasesType: it defaults to a tab-separated aliases file, which
-  # is what this is. Passing `custom` makes the CLI parse the TSV as JSON and
-  # die on "Unexpected token 'N'" -- `custom` means an inline adapter config.
-  jb add-assembly "$sp.fa" --name "$sp" --load copy --force --out "$APP" \
-    --refNameAliases "$sp.aliases.txt"
-done
-
-# Per-genome gene tracks, so "Show only genes" has something to draw
-for sp in "${ASSEMBLY_NAMES[@]}"; do
-  if [ ! -f "$sp.sorted.gff3.gz.tbi" ]; then
-    jb sort-gff "$sp.gff3" | bgzip > "$sp.sorted.gff3.gz"
-    tabix -f -p gff "$sp.sorted.gff3.gz"
-  fi
-  jb add-track "$sp.sorted.gff3.gz" -a "$sp" --name "$sp genes" \
-    --trackId "${sp}_genes" --load copy --force --out "$APP"
-done
-
-# The one multi-way synteny track that backs every band. Generated rather than
-# literal: blockAssemblies and bedLocations have to list grape then the mates in
-# exactly the .blocks column order, and a hand-kept copy of that list is the one
-# mistake the adapter's own error message calls out.
-python3 - "${COLUMNS[*]}" "${ASSEMBLY_NAMES[*]}" > blocks_track.json <<'PY'
+# ── The JBrowse config ───────────────────────────────────────────────────────
+# Each assembly and its gene track are the hub's, verbatim but for the lane
+# label, with the short name as an alias so a session can still say `grape`.
+# The track's assemblyNames lists only these three: a LinearSyntenyView row
+# on an assembly the config does not define comes up "No tracks active". The
+# blocks-only mates live in the adapter, which draws their lanes from the table
+# and their BEDs alone.
+python3 - "${COLUMNS[*]}" "$ASSEMBLY_SPECIES" <<'PY'
 import json, sys
+
 names = sys.argv[1].split()
-declared = sys.argv[2].split()
-mates = names[1:]
-print(json.dumps({
-    'type': 'SyntenyTrack',
-    'trackId': 'grape_peach_cacao_blocks',
-    'name': 'Grape vs %s (MCScan blocks)' % ', '.join(mates),
-    # ONLY the assemblies this config declares, never the full column list. A
-    # track naming an assembly the config does not define makes the stacked
-    # LinearSyntenyView fail to resolve it and all three rows come up "No
-    # tracks active". The blocks-only mates live in the adapter below, which is
-    # what draws their lanes in an LGV.
-    'assemblyNames': declared,
-    'adapter': {
-        'type': 'MCScanBlocksAdapter',
-        'uri': 'grape.blocks.gz',
-        'blockAssemblies': names,
-        'bedLocations': [{'uri': '%s.bed.gz' % n} for n in names],
-        'assemblyNames': names,
+accession = dict(line.split() for line in sys.argv[2].strip().splitlines())
+
+uri_keys = {'uri', 'chromSizes'}
+gene_track_order = ['ncbiRefSeq', 'ncbiRefSeqCurated', 'ncbiGene']
+
+
+def absolutize(node, base):
+    if isinstance(node, dict):
+        return {
+            k: f'{base}/{v}' if k in uri_keys and isinstance(v, str) and '://' not in v
+            else absolutize(v, base)
+            for k, v in node.items()
+        }
+    return [absolutize(x, base) for x in node] if isinstance(node, list) else node
+
+
+def hub_parts(name):
+    acc = accession[name]
+    config = json.load(open(f'hubs/{acc}.config.json'))
+    base = open(f'hubs/{acc}.base').read().strip()
+    assembly = next(a for a in config['assemblies'] if a['name'] == acc)
+    by_id = {t['trackId']: t for t in config['tracks']}
+    gene_id = next(f'{acc}-{k}' for k in gene_track_order if f'{acc}-{k}' in by_id)
+    assembly = {**absolutize(assembly, base), 'displayName': name, 'aliases': [name]}
+    return assembly, absolutize(by_id[gene_id], base)
+
+
+parts = {n: hub_parts(n) for n in accession}
+declared = [accession[n] for n in accession]
+columns = [accession.get(n, n) for n in names]
+
+config = {
+    'assemblies': [parts[n][0] for n in accession],
+    'tracks': [parts[n][1] for n in accession] + [{
+        'type': 'SyntenyTrack',
+        'trackId': 'grape_peach_cacao_blocks',
+        'name': 'Grape vs %s (MCScan blocks)' % ', '.join(names[1:]),
+        'assemblyNames': declared,
+        'adapter': {
+            'type': 'MCScanBlocksAdapter',
+            'uri': 'grape.blocks.gz',
+            'blockAssemblies': columns,
+            'bedLocations': [{'uri': f'{n}.bed.gz'} for n in names],
+            'assemblyNames': columns,
+        },
+    }],
+    'defaultSession': {
+        'name': 'Grape / Peach / Cacao multi-way synteny',
+        'views': [{
+            'type': 'LinearSyntenyView',
+            'displayName': 'Peach - Cacao - Grape (MCScan blocks)',
+            'views': [{'assembly': accession[n]} for n in ('peach', 'cacao', 'grape')],
+            'tracks': [['grape_peach_cacao_blocks'], ['grape_peach_cacao_blocks']],
+            'colorBy': {'field': 'reference'},
+            'autoDiagonalize': True,
+        }],
     },
-}, indent=2))
-PY
-# --update, so a second run overwrites the track rather than failing the build
-# on "a track with that trackId already exists"
-jb add-track-json blocks_track.json --update --out "$APP"
-
-# Default session: stack the three genomes peach - cacao - grape
-cat > session.json <<'JSON'
-{
-  "name": "Grape / Peach / Cacao multi-way synteny",
-  "views": [
-    {
-      "type": "LinearSyntenyView",
-      "displayName": "Peach - Cacao - Grape (MCScan blocks)",
-      "views": [
-        { "assembly": "peach" },
-        { "assembly": "cacao" },
-        { "assembly": "grape" }
-      ],
-      "tracks": [["grape_peach_cacao_blocks"], ["grape_peach_cacao_blocks"]],
-      "colorBy": { "field": "reference" },
-      "autoDiagonalize": true
-    }
-  ]
 }
-JSON
-jb set-default-session --session session.json --out "$APP"
+with open('config.json', 'w') as fh:
+    fh.write(json.dumps(config, indent=2) + '\n')
+PY
 
-echo
-echo "Built $APP/config.json with the grape/peach/cacao assemblies, gene tracks,"
-echo "the MCScan blocks synteny track, and a stacked default session."
-echo "Serve it and open in a browser, e.g.:"
-echo "  npx serve $(pwd)/$APP"
-echo "or open $(pwd)/$APP/config.json in JBrowse Desktop via File -> Session ->"
-echo "Open config.json or .jbrowse file... (the same session, no re-adding tracks)."
+cat <<EOF
+
+built in $(pwd):
+  config.json         the three hub assemblies, their gene tracks, the MCScan
+                      blocks track and a stacked default session
+  grape.blocks.gz     the ortholog table, $(wc -l < grape.blocks) rows
+  <genome>.bed.gz     gene placements, one per genome
+
+serve this directory and open config.json, e.g. npx serve $(pwd)
+EOF

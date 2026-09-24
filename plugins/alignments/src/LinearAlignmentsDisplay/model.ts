@@ -1738,6 +1738,14 @@ export default function stateModelFactory(
           },
 
           /**
+           * #method
+           * The text a group's chip shows for its section label
+           */
+          groupChipLabel(label: string) {
+            return label
+          },
+
+          /**
            * #getter
            * Raw (un-laid-out) data regrouped as group key → (region idx → data),
            * insertion-ordered so the first key is the primary group. The arc

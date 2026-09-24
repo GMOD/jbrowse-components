@@ -61,11 +61,11 @@ try {
     views: [
       {
         type: 'LinearGenomeView',
-        assembly: 'grape',
-        loc: '11:828,000-866,000',
+        assembly: 'GCF_030704535.1',
+        loc: 'chr11:828,000-866,000',
         tracks: [
           {
-            trackId: 'grape_genes',
+            trackId: 'GCF_030704535.1-ncbiRefSeq',
             type: 'LinearBasicDisplay',
             showOnlyGenes: true,
             displayMode: 'compact',

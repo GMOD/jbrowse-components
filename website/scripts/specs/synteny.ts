@@ -598,11 +598,11 @@ const LGV_TRACK_ZOOM_SESSION = sessionSpec(
     views: [
       {
         type: 'LinearGenomeView',
-        assembly: 'grape',
-        loc: '11:828,000-866,000',
+        assembly: 'GCF_030704535.1',
+        loc: 'chr11:828,000-866,000',
         tracks: [
           {
-            trackId: 'grape_genes',
+            trackId: 'GCF_030704535.1-ncbiRefSeq',
             type: 'LinearBasicDisplay',
             showOnlyGenes: true,
             displayMode: 'compact',
@@ -612,8 +612,8 @@ const LGV_TRACK_ZOOM_SESSION = sessionSpec(
             trackId: 'grape_peach_cacao_blocks',
             type: 'MultiWaySyntenyDisplay',
             domain: [
-              'peach',
-              'cacao',
+              'GCF_000346465.2',
+              'GCF_000208745.1',
               'poplar',
               'citrus',
               'arabidopsis',
@@ -784,8 +784,8 @@ const HOMOEOLOG_GROUPS = {
 // state stays an openable live link and the pair cannot drift from either.
 function peachGrapeChr1({
   marks,
-  peachLoc = 'NC_034009.1',
-  grapeLoc = 'NC_081805.1',
+  peachLoc = 'chrG1',
+  grapeLoc = 'chr1',
 }: { marks?: boolean; peachLoc?: string; grapeLoc?: string } = {}) {
   return sessionSpec(
     encodeURIComponent(
@@ -807,12 +807,12 @@ function peachGrapeChr1({
           // a few pixels tall.
           views: [
             {
-              assembly: 'peach',
+              assembly: 'GCF_000346465.2',
               loc: peachLoc,
               hideNoTracksActive: true,
             },
             {
-              assembly: 'grape',
+              assembly: 'GCF_030704535.1',
               loc: grapeLoc,
               hideNoTracksActive: true,
             },
@@ -847,7 +847,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         leader: true,
         anchor: {
           view: [0, 0],
-          locus: 'NC_034009.1:6,000,000',
+          locus: 'chrG1:6,000,000',
           alignY: 'bottom',
           dy: 8,
         },
@@ -1006,9 +1006,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
           {
             type: 'LinearSyntenyView',
             views: [
-              { assembly: 'peach' },
-              { assembly: 'cacao' },
-              { assembly: 'grape' },
+              { assembly: 'GCF_000346465.2' },
+              { assembly: 'GCF_000208745.1' },
+              { assembly: 'GCF_030704535.1' },
             ],
             tracks: [
               ['grape_peach_cacao_blocks'],
@@ -1025,7 +1025,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   },
 
   // Gene-level ortholog zoom: drill into a ~75 kb window of the conserved
-  // block (grape 11 / peach G7 / cacao IX). showOnlyGenes collapses each locus
+  // block (grape chr11 / peach chrG7 / cacao chr9). showOnlyGenes collapses each locus
   // to its gene glyph and compact displayMode packs the rows, so the ribbons
   // read one ortholog at a time. All three run in the same (forward)
   // orientation, so no [rev] flips are needed. The fan at the right of the
@@ -1044,11 +1044,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
             type: 'LinearSyntenyView',
             views: [
               {
-                assembly: 'peach',
-                loc: 'G7:18,555,000-18,690,000',
+                assembly: 'GCF_000346465.2',
+                loc: 'chrG7:18,555,000-18,690,000',
                 tracks: [
                   {
-                    trackId: 'peach_genes',
+                    trackId: 'GCF_000346465.2-ncbiRefSeq',
                     // Named even though it is what the track would open with
                     // anyway: the config is hosted, so the figure-recipe
                     // builder can't look the track up to learn its display,
@@ -1068,11 +1068,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 ],
               },
               {
-                assembly: 'grape',
-                loc: '11:778,000-905,000',
+                assembly: 'GCF_030704535.1',
+                loc: 'chr11:778,000-905,000',
                 tracks: [
                   {
-                    trackId: 'grape_genes',
+                    trackId: 'GCF_030704535.1-ncbiRefSeq',
                     type: 'LinearBasicDisplay',
                     showOnlyGenes: true,
                     displayMode: 'compact',
@@ -1083,11 +1083,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 ],
               },
               {
-                assembly: 'cacao',
-                loc: '9:3,890,000-3,995,000',
+                assembly: 'GCF_000208745.1',
+                loc: 'chr9:3,890,000-3,995,000',
                 tracks: [
                   {
-                    trackId: 'cacao_genes',
+                    trackId: 'GCF_000208745.1-ncbiRefSeq',
                     type: 'LinearBasicDisplay',
                     showOnlyGenes: true,
                     displayMode: 'compact',
@@ -1125,7 +1125,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // two more share rna-XM_020568573.1 from 778 kb and 784 kb.
     //
     // Those three grape loci are the trimethyltridecatetraene synthase copies
-    // the grape lane labels. So the fan is a tandem expansion in grape against a
+    // RefSeq names. So the fan is a tandem expansion in grape against a
     // single ortholog in each of the other two genomes -- 3:1 and 2:1 anchors
     // that MCScan is right to emit -- and it is the most interesting thing in
     // the frame rather than a rendering fault. Hence a pill instead of a fix.
@@ -1143,8 +1143,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
           // the MIDDLE panel of the three-genome stack; without the view path
           // this resolves against the top one (peach), which has no such track
           view: [0, 1],
-          track: 'grape_genes',
-          locus: '11:863,000',
+          track: 'GCF_030704535.1-ncbiRefSeq',
+          locus: 'chr11:863,000',
           fracY: 0.5,
         },
       },
@@ -1173,11 +1173,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
         views: [
           {
             type: 'LinearGenomeView',
-            assembly: 'grape',
-            loc: '11:778,000-866,000',
+            assembly: 'GCF_030704535.1',
+            loc: 'chr11:778,000-866,000',
             tracks: [
               {
-                trackId: 'grape_genes',
+                trackId: 'GCF_030704535.1-ncbiRefSeq',
                 type: 'LinearBasicDisplay',
                 showOnlyGenes: true,
                 displayMode: 'compact',
@@ -1233,11 +1233,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
         views: [
           {
             type: 'LinearGenomeView',
-            assembly: 'grape',
-            loc: '11:778,000-866,000',
+            assembly: 'GCF_030704535.1',
+            loc: 'chr11:778,000-866,000',
             tracks: [
               {
-                trackId: 'grape_genes',
+                trackId: 'GCF_030704535.1-ncbiRefSeq',
                 type: 'LinearBasicDisplay',
                 showOnlyGenes: true,
                 displayMode: 'compact',
@@ -1247,8 +1247,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 trackId: 'grape_peach_cacao_blocks',
                 type: 'MultiWaySyntenyDisplay',
                 domain: [
-                  'peach',
-                  'cacao',
+                  'GCF_000346465.2',
+                  'GCF_000208745.1',
                   'poplar',
                   'citrus',
                   'arabidopsis',
@@ -1286,11 +1286,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
         views: [
           {
             type: 'LinearGenomeView',
-            assembly: 'grape',
-            loc: '11:778,000-866,000',
+            assembly: 'GCF_030704535.1',
+            loc: 'chr11:778,000-866,000',
             tracks: [
               {
-                trackId: 'grape_genes',
+                trackId: 'GCF_030704535.1-ncbiRefSeq',
                 type: 'LinearBasicDisplay',
                 showOnlyGenes: true,
                 displayMode: 'compact',
@@ -1300,8 +1300,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 trackId: 'grape_peach_cacao_blocks',
                 type: 'MultiWaySyntenyDisplay',
                 domain: [
-                  'peach',
-                  'cacao',
+                  'GCF_000346465.2',
+                  'GCF_000208745.1',
                   'poplar',
                   'citrus',
                   'arabidopsis',
@@ -1339,7 +1339,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
       {
         type: 'click',
         anchor: {
-          locus: '11:836,500',
+          locus: 'chr11:836,500',
           track: 'grape_peach_cacao_blocks',
           fracY: 0.15,
         },
@@ -5331,11 +5331,11 @@ export const syntenyVideoFixtures = {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'grape',
-          loc: '11:828,000-866,000',
+          assembly: 'GCF_030704535.1',
+          loc: 'chr11:828,000-866,000',
           tracks: [
             {
-              trackId: 'grape_genes',
+              trackId: 'GCF_030704535.1-ncbiRefSeq',
               type: 'LinearBasicDisplay',
               showOnlyGenes: true,
               displayMode: 'compact',
@@ -5345,8 +5345,8 @@ export const syntenyVideoFixtures = {
               trackId: 'grape_peach_cacao_blocks',
               type: 'MultiWaySyntenyDisplay',
               domain: [
-                'peach',
-                'cacao',
+                'GCF_000346465.2',
+                'GCF_000208745.1',
                 'poplar',
                 'citrus',
                 'arabidopsis',
@@ -5363,7 +5363,7 @@ export const syntenyVideoFixtures = {
   // copies against one peach ortholog), whose ribbon the tour hovers: the
   // hover point sits just below the anchor lane's glyph row, where that
   // group's ribbon leaves it.
-  multiwayHoverLocus: '11:836,500',
+  multiwayHoverLocus: 'chr11:836,500',
   // Where the track-menu launch tour starts: the same grasses lane state its
   // still is of.
   grassesLanes: GRASSES_RICE_LANES,
@@ -5392,11 +5392,11 @@ export const syntenyVideoFixtures = {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'grape',
-          loc: '11:778,000-866,000',
+          assembly: 'GCF_030704535.1',
+          loc: 'chr11:778,000-866,000',
           tracks: [
             {
-              trackId: 'grape_genes',
+              trackId: 'GCF_030704535.1-ncbiRefSeq',
               type: 'LinearBasicDisplay',
               showOnlyGenes: true,
               displayMode: 'compact',
@@ -5422,12 +5422,12 @@ export const syntenyVideoFixtures = {
   // (rna-XM_007203660.2) and one cacao -- and this span is around it rather than
   // against the window's own edges, where a rubberband end has nothing to land
   // on.
-  restackSpan: { start: '11:800,000', end: '11:850,000' },
+  restackSpan: { start: 'chr11:800,000', end: 'chr11:850,000' },
   // The reference column of this table, and so the row the reorder moves. Named
   // rather than spelled twice: it is the assembly the drag is made on, which is
   // what puts it at the top of the dialog's list (the anchor is row 0, then the
   // mates in the track's declared `assemblyNames` order).
-  restackAnchor: 'grape',
+  restackAnchor: 'GCF_030704535.1',
   // Where the all-vs-all launch tour starts, which is the state
   // `multiway_synteny/ecoli_launch_selection` captures: K-12 with the all-vs-all
   // PAF drawn as an LGVSyntenyDisplay, one lane per other strain. The same const
@@ -5582,13 +5582,13 @@ function launchMenuStills(): ScreenshotSpec[] {
           views: [
             {
               type: 'LinearGenomeView',
-              assembly: 'grape',
-              loc: '11:778,000-866,000',
+              assembly: 'GCF_030704535.1',
+              loc: 'chr11:778,000-866,000',
               tracks: [
                 {
                   trackId: 'grape_peach_cacao_blocks',
                   type: 'MultiWaySyntenyDisplay',
-                  domain: ['peach', 'cacao', 'poplar'],
+                  domain: ['GCF_000346465.2', 'GCF_000208745.1', 'poplar'],
                   height: 260,
                 },
               ],
@@ -5603,7 +5603,7 @@ function launchMenuStills(): ScreenshotSpec[] {
       actions: [
         {
           type: 'rightclick',
-          selector: '[data-testid="multiway-lane-label-peach"]',
+          selector: '[data-testid="multiway-lane-label-GCF_000346465.2"]',
         },
         { type: 'waitForText', text: 'Re-anchor on peach' },
         { type: 'delay', ms: 500 },

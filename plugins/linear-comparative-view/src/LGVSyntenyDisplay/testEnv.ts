@@ -42,6 +42,7 @@ export function createSyntenyEnv({
   trackAssemblyNames = ['volvox', 'volvox_random'],
   loadedAssemblies = ['volvox', 'volvox_random'],
   getCanonicalAssemblyName = () => undefined,
+  getDisplayName = (name: string) => name,
   adapter,
   rpcCall = () => new Promise(() => {}),
   extend,
@@ -50,6 +51,7 @@ export function createSyntenyEnv({
   trackAssemblyNames?: string[]
   loadedAssemblies?: string[]
   getCanonicalAssemblyName?: (name: string) => string | undefined
+  getDisplayName?: (name: string) => string
   // A stand-in adapter type put on the track, declaring the slots the display
   // reads off it: `coarseBpPerPxThreshold` is what `trackHasLodTiers` keys on.
   // None by default, so the track has no adapter and no tiers.
@@ -161,6 +163,7 @@ export function createSyntenyEnv({
               (getCanonicalAssemblyName(name) ?? name) === 'volvox',
           }),
           getCanonicalAssemblyName,
+          getDisplayName,
           has: (name: string) => loadedAssemblies.includes(name),
         },
         getTrackById: (id: string) =>

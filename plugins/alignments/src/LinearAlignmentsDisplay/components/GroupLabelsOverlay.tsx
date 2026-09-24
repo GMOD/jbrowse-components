@@ -82,7 +82,7 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
         const hasOverride = section.heightOverridePx !== undefined
         return {
           key: groupKey,
-          label,
+          label: model.groupChipLabel(label),
           top: bandScreenTop(section.coverageTop, scroll),
           height: section.height,
           toggle: showPileup

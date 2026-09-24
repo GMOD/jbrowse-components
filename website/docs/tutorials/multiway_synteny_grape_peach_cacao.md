@@ -26,13 +26,10 @@ locus across all seven plant genomes.
   CLI
 - [gffread](https://github.com/gpertea/gffread)
 - `samtools`
-- htslib (`bgzip`, `tabix`)
-- `node`, for the [JBrowse CLI](/docs/cli)
 
-On Debian/Ubuntu, `apt install samtools tabix last-align gffread` covers the
-aligner and the file tools; jcvi installs with `pip install jcvi`, `datasets` is
-a single-binary download, and `node` comes from
-[nodejs.org](https://nodejs.org/).
+On Debian/Ubuntu, `apt install samtools last-align gffread` covers the aligner
+and the file tools; jcvi installs with `pip install jcvi`, and `datasets` is a
+single-binary download.
 
 ## Where the data comes from
 
@@ -53,7 +50,10 @@ Seven RefSeq assemblies, one per species, each fetched by accession with the
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/512/215/GCF_036512215.1_SLM_r2.1/
 - citrus:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/493/195/GCF_000493195.1_Citrus_clementina_v1.0/
-
+- grape's, peach's and cacao's hub configs on genomes.jbrowse.org, whose
+  assembly entry and NCBI RefSeq gene track each row takes verbatim:
+  https://jbrowse.org/hubs/genark/GCF/030/704/535/GCF_030704535.1/config.json
+  for grape, and peach and cacao at the same path under their own accessions
 - the finished `.blocks` table, BEDs and config, rehosted so the stacked view
   loads without rerunning the pipeline:
   https://jbrowse.org/demos/grape_peach_cacao/config.json
@@ -179,9 +179,7 @@ Each per-pair table is grape then the mate, so the join emits the grape column
 twice and `cut -f1,2,4` keeps it once, followed by one mate per lane, the order
 `blockAssemblies` and `bedLocations` list.
 
-Each assembly also gets a `refNameAliases` file from the download's sequence
-report, since NCBI names sequences by accession. The adapter reads `.blocks` and
-BED files plain or gzipped.
+The adapter reads `.blocks` and BED files plain or gzipped.
 
 ## Bringing your own ortholog table
 
@@ -324,10 +322,49 @@ when the two ends disagree.
 
 ## Setting up the three assemblies
 
-Grape, peach and cacao each become an assembly (`jbrowse add-assembly`, in the
-[script](#reproduce-it-end-to-end)) whose name matches the track's
-`assemblyNames` and whose sequence names match its `.bed`. See the
-[assemblies configuration guide](/docs/config_guides/assemblies) for the JSON.
+Grape, peach and cacao are each a genome hub on
+[genomes.jbrowse.org](https://genomes.jbrowse.org) under the RefSeq accession
+the table was built from, and a hub's `config.json` holds a whole JBrowse
+assembly: the 2bit sequence, an alias table that resolves the `NC_` names in the
+BEDs, and the NCBI RefSeq genes. Each row takes its assembly entry and gene
+track from there:
+
+```bash
+# a GenArk hub's path is its accession cut into threes
+curl -fO https://jbrowse.org/hubs/genark/GCF/000/346/465/GCF_000346465.2/config.json
+```
+
+The build keeps each entry as the hub wrote it, labels the row and adds the
+short name as an alias, so a session can still say `peach`:
+
+```json
+{
+  "name": "GCF_000346465.2",
+  "displayName": "peach",
+  "aliases": ["peach"],
+  "sequence": {
+    "type": "ReferenceSequenceTrack",
+    "trackId": "GCF_000346465.2-ReferenceSequenceTrack",
+    "adapter": {
+      "type": "TwoBitAdapter",
+      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/346/465/GCF_000346465.2/GCF_000346465.2.2bit",
+      "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/346/465/GCF_000346465.2/GCF_000346465.2.chrom.sizes.txt"
+    }
+  },
+  "refNameAliases": {
+    "adapter": {
+      "type": "RefNameAliasAdapter",
+      "refNameColumnHeaderName": "ucsc",
+      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/346/465/GCF_000346465.2/GCF_000346465.2.chromAlias.txt"
+    }
+  }
+}
+```
+
+`refNameColumnHeaderName` makes the UCSC names canonical, so peach's first
+chromosome reads `chrG1` where the BED says `NC_034009.1`, and grape's eleventh
+is `chr11`. The track below names each assembly by its accession, the name the
+hub gives it.
 
 ## Loading the blocks file with MCScanBlocksAdapter {#loading-it-in-jbrowse-with-mcscanblocksadapter}
 
@@ -341,11 +378,15 @@ to narrow it to fewer:
   "type": "SyntenyTrack",
   "trackId": "grape_peach_cacao_blocks",
   "name": "Grape / peach / cacao (MCScan blocks)",
-  "assemblyNames": ["grape", "peach", "cacao"],
+  "assemblyNames": ["GCF_030704535.1", "GCF_000346465.2", "GCF_000208745.1"],
   "adapter": {
     "type": "MCScanBlocksAdapter",
     "uri": "grape.blocks.gz",
-    "blockAssemblies": ["grape", "peach", "cacao"],
+    "blockAssemblies": [
+      "GCF_030704535.1",
+      "GCF_000346465.2",
+      "GCF_000208745.1"
+    ],
     "bedLocations": ["grape.bed.gz", "peach.bed.gz", "cacao.bed.gz"]
   }
 }
@@ -367,9 +408,9 @@ dialog. The declarative equivalent, stacking peach-cacao-grape:
         "type": "LinearSyntenyView",
         "displayName": "Peach - Cacao - Grape (MCScan blocks)",
         "views": [
-          { "assembly": "peach" },
-          { "assembly": "cacao" },
-          { "assembly": "grape" }
+          { "assembly": "GCF_000346465.2" },
+          { "assembly": "GCF_000208745.1" },
+          { "assembly": "GCF_030704535.1" }
         ],
         "tracks": [["grape_peach_cacao_blocks"], ["grape_peach_cacao_blocks"]],
         "colorBy": { "field": "reference" },
@@ -409,7 +450,8 @@ with **Show only genes**.
 `grape.blocks` carries seven columns, and a plain linear genome view on grape
 draws every mate at once:
 
-- Navigate to `11:778,000-866,000` and turn on the grape gene track.
+- Navigate to `chr11:778,000-866,000` and turn on grape's **NCBI RefSeq - RefSeq
+  All** track, the gene track from its hub.
 - Turn on **Grape vs peach, cacao, arabidopsis, poplar, tomato, citrus (MCScan
   blocks)**, which renders as an `LGVSyntenyDisplay`: every mate in one pileup.
 - Pick **Group by... → Mate assembly** for a lane per genome.
@@ -438,11 +480,11 @@ The lanes above, as a `defaultSession`:
     "views": [
       {
         "type": "LinearGenomeView",
-        "assembly": "grape",
-        "loc": "11:778,000-866,000",
+        "assembly": "GCF_030704535.1",
+        "loc": "chr11:778,000-866,000",
         "tracks": [
           {
-            "trackId": "grape_genes",
+            "trackId": "GCF_030704535.1-ncbiRefSeq",
             "type": "LinearBasicDisplay",
             "showOnlyGenes": true,
             "displayMode": "compact"
@@ -451,8 +493,8 @@ The lanes above, as a `defaultSession`:
             "trackId": "grape_peach_cacao_blocks",
             "type": "MultiWaySyntenyDisplay",
             "domain": [
-              "peach",
-              "cacao",
+              "GCF_000346465.2",
+              "GCF_000208745.1",
               "poplar",
               "citrus",
               "arabidopsis",
@@ -528,15 +570,15 @@ Two routes reach the stacked view from the lanes:
 ## Reproduce it end to end
 
 [`build_grape_peach_cacao_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_grape_peach_cacao_synteny.sh)
-runs everything above and writes a `config.json` with the assemblies, gene
-tracks, the synteny track and the stacked default session. Its
+runs everything above and writes a `config.json` with the hub assemblies and
+their gene tracks, the synteny track and the stacked default session. Its
 `BLOCKS_ONLY_SPECIES` list is where the extra lanes come from; a genome added
 there needs only CDS and GFF3.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_grape_peach_cacao_synteny.sh
 bash build_grape_peach_cacao_synteny.sh
-npx --yes serve grape_peach_cacao_build/jbrowse2  # then open the printed URL
+npx --yes serve grape_peach_cacao_build  # then open config.json at the printed URL
 ```
 
 The script needs the tools under [Prerequisites](#prerequisites).

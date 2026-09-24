@@ -1,97 +1,139 @@
 {
   "assemblies": [
     {
-      "name": "grape",
+      "name": "GCF_030704535.1",
+      "displayName": "grape",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "grape-ref",
-        "adapter": {
-          "type": "BgzipFastaAdapter",
-          "fastaLocation": {
-            "uri": "https://jbrowse.org/demos/grape_peach_cacao/grape.fa.gz",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "https://jbrowse.org/demos/grape_peach_cacao/grape.fa.gz.fai",
-            "locationType": "UriLocation"
-          },
-          "gziLocation": {
-            "uri": "https://jbrowse.org/demos/grape_peach_cacao/grape.fa.gz.gzi",
-            "locationType": "UriLocation"
+        "metadata": {
+          "blatDb": "GCF_030704535.1",
+          "ucsc": {
+            "genome": "GCF_030704535.1",
+            "taxId": "29760",
+            "groups": "groups.txt",
+            "description": "wine grape (Pinot Noir 40024 2023)",
+            "twoBitPath": "GCF_030704535.1.2bit",
+            "twoBitBptUrl": "GCF_030704535.1.2bit.bpt",
+            "chromSizes": "https://jbrowse.org/hubs/genark/GCF/030/704/535/GCF_030704535.1/GCF_030704535.1.chrom.sizes.txt",
+            "chromAliasBb": "GCF_030704535.1.chromAlias.bb",
+            "chromAuthority": "ucsc",
+            "organism": "ASM3070453v1 Aug. 2023",
+            "defaultPos": "NC_081822.1:12228090-12238090",
+            "scientificName": "Vitis vinifera",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/030/704/535/GCF_030704535.1/html/GCF_030704535.1_ASM3070453v1.description.html\">html/GCF_030704535.1_ASM3070453v1.description.html</a>",
+            "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/030/704/535/GCF_030704535.1",
+            "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/030/704/535/GCF_030704535.1",
+            "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/030/704/535/GCF_030704535.1"
           }
+        },
+        "trackId": "GCF_030704535.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/030/704/535/GCF_030704535.1/GCF_030704535.1.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/030/704/535/GCF_030704535.1/GCF_030704535.1.chrom.sizes.txt"
         }
       },
       "refNameAliases": {
         "adapter": {
           "type": "RefNameAliasAdapter",
-          "location": {
-            "uri": "https://jbrowse.org/demos/grape_peach_cacao/grape.aliases.txt",
-            "locationType": "UriLocation"
-          }
+          "refNameColumnHeaderName": "ucsc",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/030/704/535/GCF_030704535.1/GCF_030704535.1.chromAlias.txt"
         }
-      }
+      },
+      "geneticCodes": {
+        "NC_007957.1": 11
+      },
+      "aliases": ["grape"]
     },
     {
-      "name": "peach",
+      "name": "GCF_000346465.2",
+      "displayName": "peach",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "peach-ref",
-        "adapter": {
-          "type": "BgzipFastaAdapter",
-          "fastaLocation": {
-            "uri": "https://jbrowse.org/demos/grape_peach_cacao/peach.fa.gz",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "https://jbrowse.org/demos/grape_peach_cacao/peach.fa.gz.fai",
-            "locationType": "UriLocation"
-          },
-          "gziLocation": {
-            "uri": "https://jbrowse.org/demos/grape_peach_cacao/peach.fa.gz.gzi",
-            "locationType": "UriLocation"
+        "metadata": {
+          "blatDb": "GCF_000346465.2",
+          "ucsc": {
+            "genome": "GCF_000346465.2",
+            "taxId": "3760",
+            "groups": "groups.txt",
+            "description": "peach",
+            "twoBitPath": "GCF_000346465.2.2bit",
+            "twoBitBptUrl": "GCF_000346465.2.2bit.bpt",
+            "chromSizes": "https://jbrowse.org/hubs/genark/GCF/000/346/465/GCF_000346465.2/GCF_000346465.2.chrom.sizes.txt",
+            "chromAliasBb": "GCF_000346465.2.chromAlias.bb",
+            "chromAuthority": "ucsc",
+            "organism": "Prunus_persica_NCBIv2 Feb. 2017",
+            "defaultPos": "NC_034009.1:15950402-15960402",
+            "scientificName": "Prunus persica",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/000/346/465/GCF_000346465.2/html/GCF_000346465.2_Prunus_persica_NCBIv2.description.html\">html/GCF_000346465.2_Prunus_persica_NCBIv2.description.html</a>",
+            "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/000/346/465/GCF_000346465.2",
+            "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/000/346/465/GCF_000346465.2",
+            "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/000/346/465/GCF_000346465.2"
           }
+        },
+        "trackId": "GCF_000346465.2-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/346/465/GCF_000346465.2/GCF_000346465.2.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/346/465/GCF_000346465.2/GCF_000346465.2.chrom.sizes.txt"
         }
       },
       "refNameAliases": {
         "adapter": {
           "type": "RefNameAliasAdapter",
-          "location": {
-            "uri": "https://jbrowse.org/demos/grape_peach_cacao/peach.aliases.txt",
-            "locationType": "UriLocation"
-          }
+          "refNameColumnHeaderName": "ucsc",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/346/465/GCF_000346465.2/GCF_000346465.2.chromAlias.txt"
         }
-      }
+      },
+      "geneticCodes": {
+        "NC_014697.1": 11
+      },
+      "aliases": ["peach"]
     },
     {
-      "name": "cacao",
+      "name": "GCF_000208745.1",
+      "displayName": "cacao",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "cacao-ref",
-        "adapter": {
-          "type": "BgzipFastaAdapter",
-          "fastaLocation": {
-            "uri": "https://jbrowse.org/demos/grape_peach_cacao/cacao.fa.gz",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "https://jbrowse.org/demos/grape_peach_cacao/cacao.fa.gz.fai",
-            "locationType": "UriLocation"
-          },
-          "gziLocation": {
-            "uri": "https://jbrowse.org/demos/grape_peach_cacao/cacao.fa.gz.gzi",
-            "locationType": "UriLocation"
+        "metadata": {
+          "blatDb": "GCF_000208745.1",
+          "ucsc": {
+            "genome": "GCF_000208745.1",
+            "taxId": "3641",
+            "groups": "groups.txt",
+            "description": "cacao",
+            "twoBitPath": "GCF_000208745.1.2bit",
+            "twoBitBptUrl": "GCF_000208745.1.2bit.bpt",
+            "chromSizes": "https://jbrowse.org/hubs/genark/GCF/000/208/745/GCF_000208745.1/GCF_000208745.1.chrom.sizes.txt",
+            "chromAliasBb": "GCF_000208745.1.chromAlias.bb",
+            "chromAuthority": "ucsc",
+            "organism": "Criollo_cocoa_genome_V2 Jul. 2016",
+            "defaultPos": "NC_030851.1:13745480-13755480",
+            "scientificName": "Theobroma cacao",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/000/208/745/GCF_000208745.1/html/GCF_000208745.1_Criollo_cocoa_genome_V2.description.html\">html/GCF_000208745.1_Criollo_cocoa_genome_V2.description.html</a>",
+            "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/000/208/745/GCF_000208745.1",
+            "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/000/208/745/GCF_000208745.1",
+            "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/000/208/745/GCF_000208745.1"
           }
+        },
+        "trackId": "GCF_000208745.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/208/745/GCF_000208745.1/GCF_000208745.1.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/208/745/GCF_000208745.1/GCF_000208745.1.chrom.sizes.txt"
         }
       },
       "refNameAliases": {
         "adapter": {
           "type": "RefNameAliasAdapter",
-          "location": {
-            "uri": "https://jbrowse.org/demos/grape_peach_cacao/cacao.aliases.txt",
-            "locationType": "UriLocation"
-          }
+          "refNameColumnHeaderName": "ucsc",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/208/745/GCF_000208745.1/GCF_000208745.1.chromAlias.txt"
         }
-      }
+      },
+      "geneticCodes": {
+        "NC_014676.2": 11
+      },
+      "aliases": ["cacao"]
     }
   ],
   "configuration": {
@@ -99,74 +141,141 @@
   },
   "tracks": [
     {
-      "type": "FeatureTrack",
-      "trackId": "grape_genes",
-      "name": "Grape genes (NCBI RefSeq GCF_030704535.1)",
-      "assemblyNames": ["grape"],
-      "category": ["Genes"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "https://jbrowse.org/demos/grape_peach_cacao/grape.genes.gff3.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "https://jbrowse.org/demos/grape_peach_cacao/grape.genes.gff3.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
+      "metadata": {
+        "ucsc": {
+          "track": "ncbiRefSeq",
+          "parent": "refSeqComposite on",
+          "color": "12,12,120",
+          "shortLabel": "RefSeq All",
+          "type": "bigGenePred",
+          "urls": "name2=\"https://www.ncbi.nlm.nih.gov/gene/?term=$$\" geneName=\"https://www.ncbi.nlm.nih.gov/gene/$$\" geneName2=\"https://www.ncbi.nlm.nih.gov/nuccore/$$\"",
+          "labelFields": "name2,geneName,geneName2",
+          "defaultLabelFields": "name2",
+          "searchIndex": "name",
+          "searchTrix": "ixIxx/GCF_030704535.1_ASM3070453v1.ncbiRefSeq.ix",
+          "bigDataUrl": "bbi/GCF_030704535.1_ASM3070453v1.ncbiRefSeq.bb",
+          "longLabel": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "baseColorUseCds": "given",
+          "baseColorDefault": "genomicCodons",
+          "priority": "1"
         }
-      }
+      },
+      "category": ["Genes and Gene Predictions"],
+      "trackId": "GCF_030704535.1-ncbiRefSeq",
+      "description": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+      "assemblyNames": ["GCF_030704535.1"],
+      "name": "NCBI RefSeq - RefSeq All",
+      "type": "FeatureTrack",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/030/704/535/GCF_030704535.1/bbi/GCF_030704535.1_ASM3070453v1.ncbiRefSeq.bb",
+        "aggregateField": "name2"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "GCF_030704535.1-ncbiRefSeq-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:get(feature,'name')"
+          }
+        }
+      ]
     },
     {
-      "type": "FeatureTrack",
-      "trackId": "peach_genes",
-      "name": "Peach genes (NCBI RefSeq GCF_000346465.2)",
-      "assemblyNames": ["peach"],
-      "category": ["Genes"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "https://jbrowse.org/demos/grape_peach_cacao/peach.genes.gff3.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "https://jbrowse.org/demos/grape_peach_cacao/peach.genes.gff3.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
+      "metadata": {
+        "ucsc": {
+          "track": "ncbiRefSeq",
+          "parent": "refSeqComposite on",
+          "color": "12,12,120",
+          "shortLabel": "RefSeq All",
+          "type": "bigGenePred",
+          "urls": "name2=\"https://www.ncbi.nlm.nih.gov/gene/?term=$$\" geneName=\"https://www.ncbi.nlm.nih.gov/gene/$$\" geneName2=\"https://www.ncbi.nlm.nih.gov/nuccore/$$\"",
+          "labelFields": "name2,geneName,geneName2",
+          "defaultLabelFields": "name2",
+          "searchIndex": "name",
+          "searchTrix": "ixIxx/GCF_000346465.2_Prunus_persica_NCBIv2.ncbiRefSeq.ix",
+          "bigDataUrl": "bbi/GCF_000346465.2_Prunus_persica_NCBIv2.ncbiRefSeq.bb",
+          "longLabel": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "baseColorUseCds": "given",
+          "baseColorDefault": "genomicCodons",
+          "priority": "1"
         }
-      }
+      },
+      "category": ["Genes and Gene Predictions"],
+      "trackId": "GCF_000346465.2-ncbiRefSeq",
+      "description": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+      "assemblyNames": ["GCF_000346465.2"],
+      "name": "NCBI RefSeq - RefSeq All",
+      "type": "FeatureTrack",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/346/465/GCF_000346465.2/bbi/GCF_000346465.2_Prunus_persica_NCBIv2.ncbiRefSeq.bb",
+        "aggregateField": "name2"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "GCF_000346465.2-ncbiRefSeq-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:get(feature,'name')"
+          }
+        }
+      ]
     },
     {
-      "type": "FeatureTrack",
-      "trackId": "cacao_genes",
-      "name": "Cacao genes (NCBI RefSeq GCF_000208745.1)",
-      "assemblyNames": ["cacao"],
-      "category": ["Genes"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "https://jbrowse.org/demos/grape_peach_cacao/cacao.genes.gff3.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "https://jbrowse.org/demos/grape_peach_cacao/cacao.genes.gff3.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
+      "metadata": {
+        "ucsc": {
+          "track": "ncbiRefSeq",
+          "parent": "refSeqComposite on",
+          "color": "12,12,120",
+          "shortLabel": "RefSeq All",
+          "type": "bigGenePred",
+          "urls": "name2=\"https://www.ncbi.nlm.nih.gov/gene/?term=$$\" geneName=\"https://www.ncbi.nlm.nih.gov/gene/$$\" geneName2=\"https://www.ncbi.nlm.nih.gov/nuccore/$$\"",
+          "labelFields": "name2,geneName,geneName2",
+          "defaultLabelFields": "name2",
+          "searchIndex": "name",
+          "searchTrix": "ixIxx/GCF_000208745.1_Criollo_cocoa_genome_V2.ncbiRefSeq.ix",
+          "bigDataUrl": "bbi/GCF_000208745.1_Criollo_cocoa_genome_V2.ncbiRefSeq.bb",
+          "longLabel": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "baseColorUseCds": "given",
+          "baseColorDefault": "genomicCodons",
+          "priority": "1"
         }
-      }
+      },
+      "category": ["Genes and Gene Predictions"],
+      "trackId": "GCF_000208745.1-ncbiRefSeq",
+      "description": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+      "assemblyNames": ["GCF_000208745.1"],
+      "name": "NCBI RefSeq - RefSeq All",
+      "type": "FeatureTrack",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/208/745/GCF_000208745.1/bbi/GCF_000208745.1_Criollo_cocoa_genome_V2.ncbiRefSeq.bb",
+        "aggregateField": "name2"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "GCF_000208745.1-ncbiRefSeq-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:get(feature,'name')"
+          }
+        }
+      ]
     },
     {
       "type": "SyntenyTrack",
       "trackId": "grape_peach_cacao_blocks",
       "name": "Grape vs peach, cacao, arabidopsis, poplar, tomato, citrus (MCScan blocks)",
       "_comment_assemblyNames": "The three assemblies this config DECLARES, not the seven columns the table has. A track whose assemblyNames name an assembly the config does not define makes the stacked LinearSyntenyView fail to resolve it, and all three rows come up 'No tracks active'. The extra four are blocks-only mates: they exist in the adapter below, which is what draws their lanes in an LGV, and they need no assembly because a lane is resolved from the table plus that genome's BED.",
-      "assemblyNames": ["grape", "peach", "cacao"],
+      "assemblyNames": [
+        "GCF_030704535.1",
+        "GCF_000346465.2",
+        "GCF_000208745.1"
+      ],
       "category": ["Synteny"],
       "adapter": {
         "type": "MCScanBlocksAdapter",
@@ -175,9 +284,9 @@
           "locationType": "UriLocation"
         },
         "blockAssemblies": [
-          "grape",
-          "peach",
-          "cacao",
+          "GCF_030704535.1",
+          "GCF_000346465.2",
+          "GCF_000208745.1",
           "arabidopsis",
           "poplar",
           "tomato",
@@ -214,9 +323,9 @@
           }
         ],
         "assemblyNames": [
-          "grape",
-          "peach",
-          "cacao",
+          "GCF_030704535.1",
+          "GCF_000346465.2",
+          "GCF_000208745.1",
           "arabidopsis",
           "poplar",
           "tomato",
@@ -230,20 +339,22 @@
     "views": [
       {
         "type": "LinearSyntenyView",
-        "displayName": "Peach \u2013 Cacao \u2013 Grape (MCScan blocks)",
+        "displayName": "Peach - Cacao - Grape (MCScan blocks)",
         "views": [
           {
-            "assembly": "peach"
+            "assembly": "GCF_000346465.2"
           },
           {
-            "assembly": "cacao"
+            "assembly": "GCF_000208745.1"
           },
           {
-            "assembly": "grape"
+            "assembly": "GCF_030704535.1"
           }
         ],
         "tracks": [["grape_peach_cacao_blocks"], ["grape_peach_cacao_blocks"]],
-        "colorBy": { "field": "reference" },
+        "colorBy": {
+          "field": "reference"
+        },
         "autoDiagonalize": true
       }
     ]

@@ -56,7 +56,7 @@ const multiwayTrack = {
   height: 340,
 }
 const geneTrack = {
-  trackId: 'grape_genes',
+  trackId: 'GCF_030704535.1-ncbiRefSeq',
   type: 'LinearBasicDisplay',
   showOnlyGenes: true,
   displayMode: 'compact',
@@ -66,8 +66,8 @@ function session(withMultiway: boolean) {
     views: [
       {
         type: 'LinearGenomeView',
-        assembly: 'grape',
-        loc: '11:778,000-866,000',
+        assembly: 'GCF_030704535.1',
+        loc: 'chr11:778,000-866,000',
         tracks: withMultiway ? [geneTrack, multiwayTrack] : [geneTrack],
       },
     ],
@@ -194,10 +194,10 @@ async function runArm(page: Page, label: string, withMultiway: boolean) {
   })}`
   await page.goto(url, { waitUntil: 'domcontentloaded' })
   await waitForJBrowseReady(page, {
-    assembly: 'grape',
+    assembly: 'GCF_030704535.1',
     trackIds: withMultiway
-      ? ['grape_genes', 'grape_peach_cacao_blocks']
-      : ['grape_genes'],
+      ? ['GCF_030704535.1-ncbiRefSeq', 'grape_peach_cacao_blocks']
+      : ['GCF_030704535.1-ncbiRefSeq'],
     timeout: 120000,
     settleMs: 1500,
   })

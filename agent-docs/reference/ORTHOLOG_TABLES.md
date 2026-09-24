@@ -151,15 +151,9 @@ by scanning chr11 for the clearest presence/absence gradient rather than by eye
 the peach and cacao windows of the stacked figure come from the blocks table as
 the span of those genes' orthologs, both landing on one chromosome.
 
-**One cosmetic gap, deliberately left.** The ruler and row labels show
-accessions (`NC_081815.1`) rather than `11`. `refNameAliases` makes `11` resolve
-on input, but the display uses the assembly's own refName. Showing chromosome
-names means renaming the FASTA seqids to them and aliasing the accession
-instead. That is safe here -- NCBI's sequence report is a 1:1 map, so it is the
-unambiguous case, not the guess that broke cacao -- but it means regenerating
-and rehosting the FASTAs, BEDs and GFF3s with renamed seqids, and scaffolds
-without a `chrName` would keep accessions either way, so the naming ends up
-mixed. Worth doing next time this data is rebuilt rather than on its own.
+The ruler and row labels read UCSC names (`chr11`, `chrG7`): the three
+assemblies are the genomes' GenArk hubs, whose chromAlias table makes the `ucsc`
+column canonical and resolves the RefSeq accessions the BEDs carry.
 
 ### Current deployed state
 
