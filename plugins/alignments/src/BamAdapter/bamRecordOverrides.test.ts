@@ -4,7 +4,7 @@ import BamSlightlyLazyFeature from './BamSlightlyLazyFeature.ts'
 
 // The members BamSlightlyLazyFeature deliberately overrides on BamRecord.
 // Everything else it defines must be a name BamRecord does not have.
-const INTENDED_OVERRIDES = ['forEachMismatch', 'toJSON']
+const INTENDED_OVERRIDES = ['forEachMismatch', 'pair_orientation', 'toJSON']
 
 const own = (c: { prototype: object }) =>
   Object.getOwnPropertyNames(c.prototype).filter(n => n !== 'constructor')

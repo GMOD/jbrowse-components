@@ -2,7 +2,11 @@ import { BamRecord, forEachMismatchNumeric } from '@gmod/bam'
 import { clipLengthAtStartOfReadNumeric } from '@jbrowse/cigar-utils'
 
 import { collectMismatches } from '../shared/collectMismatches.ts'
-import { convertTagsToPlainArrays } from '../shared/util.ts'
+import {
+  convertTagsToPlainArrays,
+  hasPairOrientation,
+  nextSegmentPosition,
+} from '../shared/util.ts'
 
 import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
 import type { BamAdapterBase } from './BamAdapter.ts'
@@ -235,9 +239,14 @@ export default class BamSlightlyLazyFeature
         return this.clipLengthAtStartOfRead
       case 'score':
         return this.score
-
+      case 'next_segment_position':
+        return this.next_segment_position
+      case 'type':
+        return 'match'
+      case 'uniqueId':
+        return this.id()
       default:
-        return this.fields[field]
+        return undefined
     }
   }
 
@@ -247,29 +256,6 @@ export default class BamSlightlyLazyFeature
 
   children() {
     return undefined
-  }
-
-  // Only reached by toJSON() and the `default` branch of get() for fields with
-  // no case above — never on the render path (measured: 0 accesses per read over
-  // a pacbio pileup), so it is deliberately not memoized.
-  get fields(): SimpleFeatureSerialized {
-    return {
-      start: this.start,
-      name: this.name,
-      end: this.end,
-      score: this.score,
-      strand: this.strand,
-      template_length: this.template_length,
-      flags: this.flags,
-      tags: this.tags,
-      refName: this.refName,
-      type: 'match',
-      pair_orientation: this.pair_orientation,
-      next_ref: this.next_ref,
-      next_pos: this.matePos,
-      next_segment_position: this.next_segment_position,
-      uniqueId: this.id(),
-    }
   }
 
   get next_ref() {
@@ -301,8 +287,13 @@ export default class BamSlightlyLazyFeature
   }
 
   get next_segment_position() {
-    return this.isPaired()
-      ? `${this.adapter.refIdToName(this.next_refid)}:${this.next_pos + 1}`
+    return nextSegmentPosition(this.next_ref, this.matePos)
+  }
+
+  // OVERRIDES BamRecord.pair_orientation, which answers for every paired read
+  override get pair_orientation() {
+    return hasPairOrientation(this.flags, this.ref_id === this.next_refid)
+      ? super.pair_orientation
       : undefined
   }
 
@@ -312,7 +303,20 @@ export default class BamSlightlyLazyFeature
   // invisible until bamRecordOverrides.test.ts went looking for it.
   override toJSON(): SimpleFeatureSerialized {
     return {
-      ...this.fields,
+      uniqueId: this.id(),
+      type: 'match',
+      start: this.start,
+      end: this.end,
+      name: this.name,
+      score: this.score,
+      strand: this.strand,
+      refName: this.refName,
+      flags: this.flags,
+      template_length: this.template_length,
+      pair_orientation: this.pair_orientation,
+      next_ref: this.next_ref,
+      next_pos: this.matePos,
+      next_segment_position: this.next_segment_position,
       CIGAR: this.CIGAR,
       seq: this.seq,
       tags: convertTagsToPlainArrays(this.tags),

@@ -5,13 +5,11 @@ import {
   parseCigar2Typed,
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_MATE_REVERSE,
-  SAM_FLAG_MATE_UNMAPPED,
-  SAM_FLAG_PAIRED,
   SAM_FLAG_REVERSE,
-  SAM_FLAG_UNMAPPED,
 } from '@jbrowse/cigar-utils'
 
 import { collectMismatches } from '../shared/collectMismatches.ts'
+import { hasPairOrientation, nextSegmentPosition } from '../shared/util.ts'
 
 import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
 import type { SamRecordData } from './parseSam.ts'
@@ -142,10 +140,7 @@ export default class SamRecordFeature implements MismatchFeature {
   }
 
   get next_segment_position() {
-    const { next_ref, next_pos } = this.record
-    return next_ref !== undefined && next_pos !== undefined
-      ? `${next_ref}:${next_pos + 1}`
-      : undefined
+    return nextSegmentPosition(this.next_ref, this.next_pos)
   }
 
   get qualRaw() {
@@ -180,19 +175,10 @@ export default class SamRecordFeature implements MismatchFeature {
     return clipLengthAtStartOfReadNumeric(this.NUMERIC_CIGAR, this.strand)
   }
 
-  /**
-   * IGV's pair-orientation string (e.g. `F1R2`), read by the pair-orientation
-   * color mode. Only defined for a pair mapped to one reference, which is the
-   * only case the categories describe.
-   */
+  // IGV's pair-orientation string (e.g. `F1R2`)
   get pair_orientation() {
     const { flags, next_ref, next_pos, refName, start } = this.record
-    const paired =
-      flags & SAM_FLAG_PAIRED &&
-      !(flags & SAM_FLAG_UNMAPPED) &&
-      !(flags & SAM_FLAG_MATE_UNMAPPED) &&
-      next_ref === refName
-    if (!paired) {
+    if (!hasPairOrientation(flags, next_ref === refName)) {
       return undefined
     }
     const first = flags & SAM_FLAG_FIRST_IN_PAIR
@@ -287,8 +273,12 @@ export default class SamRecordFeature implements MismatchFeature {
         return this.template_length
       case 'clipLengthAtStartOfRead':
         return this.clipLengthAtStartOfRead
+      case 'type':
+        return 'match'
+      case 'uniqueId':
+        return this.uniqueId
       default:
-        return this.fields[field]
+        return undefined
     }
   }
 
@@ -300,29 +290,23 @@ export default class SamRecordFeature implements MismatchFeature {
     return undefined
   }
 
-  get fields(): SimpleFeatureSerialized {
+  toJSON(): SimpleFeatureSerialized {
     return {
       uniqueId: this.uniqueId,
+      type: 'match',
       start: this.start,
       end: this.end,
       name: this.name,
       score: this.score,
       strand: this.strand,
       refName: this.refName,
-      type: 'match',
       flags: this.flags,
-      tags: this.tags,
       template_length: this.template_length,
       pair_orientation: this.pair_orientation,
       next_ref: this.next_ref,
       next_pos: this.next_pos,
       next_segment_position: this.next_segment_position,
-    }
-  }
-
-  toJSON(): SimpleFeatureSerialized {
-    return {
-      ...this.fields,
+      tags: this.tags,
       CIGAR: this.CIGAR,
       seq: this.seq,
       qual: this.qual,

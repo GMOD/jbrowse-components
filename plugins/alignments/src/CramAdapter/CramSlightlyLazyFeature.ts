@@ -2,7 +2,11 @@ import { CramRecord } from '@gmod/cram'
 import { numericCigarToString } from '@jbrowse/cigar-utils'
 
 import { collectMismatches } from '../shared/collectMismatches.ts'
-import { convertTagsToPlainArrays } from '../shared/util.ts'
+import {
+  convertTagsToPlainArrays,
+  hasPairOrientation,
+  nextSegmentPosition,
+} from '../shared/util.ts'
 import { packCigar } from './packCigar.ts'
 
 import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
@@ -82,7 +86,12 @@ export default class CramSlightlyLazyFeature
   }
 
   get pair_orientation() {
-    return this.getPairOrientation()
+    return hasPairOrientation(
+      this.flags,
+      this.sequenceId === this.nextSequenceId,
+    )
+      ? this.getPairOrientation()
+      : undefined
   }
 
   get template_length() {
@@ -114,13 +123,15 @@ export default class CramSlightlyLazyFeature
   }
 
   get next_segment_position() {
-    return this.hasNextPosition()
-      ? `${this.adapter.refIdToName(this.nextSequenceId)}:${this.nextStart + 1}`
-      : undefined
+    return nextSegmentPosition(this.next_ref, this.next_pos)
   }
 
+  // An unplaced next segment has a position of -1, which a Uint32 per-read
+  // array would read as bp 4.29e9
   get next_pos() {
-    return this.hasNextPosition() ? this.nextStart : undefined
+    return this.hasNextPosition() && this.nextStart >= 0
+      ? this.nextStart
+      : undefined
   }
 
   // Read group lives outside the CRAM tag block, so it is spliced in to match
@@ -274,8 +285,12 @@ export default class CramSlightlyLazyFeature
         return this.template_length
       case 'clipLengthAtStartOfRead':
         return this.clipLengthAtStartOfRead
+      case 'type':
+        return 'match'
+      case 'uniqueId':
+        return this.id()
       default:
-        return this.fields[field]
+        return undefined
     }
   }
 
@@ -333,31 +348,24 @@ export default class CramSlightlyLazyFeature
     super.forEachMismatch(callback, MISMATCH_OPTS)
   }
 
-  get fields(): SimpleFeatureSerialized {
-    return {
-      start: this.start,
-      name: this.name,
-      end: this.end,
-      score: this.score,
-      strand: this.strand,
-      template_length: this.template_length,
-      flags: this.flags,
-      tags: this.tags,
-      refName: this.refName,
-      type: 'match',
-      pair_orientation: this.pair_orientation,
-      next_ref: this.next_ref,
-      next_pos: this.next_pos,
-      next_segment_position: this.next_segment_position,
-      uniqueId: this.id(),
-    }
-  }
-
   // OVERRIDES CramRecord.toJSON, which emits the library's own field names
   // rather than a SimpleFeatureSerialized.
   override toJSON(): SimpleFeatureSerialized {
     return {
-      ...this.fields,
+      uniqueId: this.id(),
+      type: 'match',
+      start: this.start,
+      end: this.end,
+      name: this.name,
+      score: this.score,
+      strand: this.strand,
+      refName: this.refName,
+      flags: this.flags,
+      template_length: this.template_length,
+      pair_orientation: this.pair_orientation,
+      next_ref: this.next_ref,
+      next_pos: this.next_pos,
+      next_segment_position: this.next_segment_position,
       CIGAR: this.CIGAR,
       seq: this.seq,
       tags: convertTagsToPlainArrays(this.tags),

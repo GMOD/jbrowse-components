@@ -1,4 +1,9 @@
-import { SAM_FLAG_SECOND_IN_PAIR } from '@jbrowse/cigar-utils'
+import {
+  SAM_FLAG_MATE_UNMAPPED,
+  SAM_FLAG_PAIRED,
+  SAM_FLAG_SECOND_IN_PAIR,
+  SAM_FLAG_UNMAPPED,
+} from '@jbrowse/cigar-utils'
 import { getContrastText } from '@jbrowse/core/ui/palette'
 
 import type { FilterBy } from './types.ts'
@@ -59,6 +64,26 @@ export function firstOfPairStrand(strand: number, flags: number) {
   return flags & SAM_FLAG_SECOND_IN_PAIR ? -strand : strand
 }
 
+// Pair orientation describes a fragment with both mates placed on one
+// reference. Every adapter's `pair_orientation` asks this, so grouping by it
+// files a read the same way whichever format the read came from.
+export function hasPairOrientation(flags: number, sameReference: boolean) {
+  return (
+    (flags & SAM_FLAG_PAIRED) !== 0 &&
+    (flags & (SAM_FLAG_UNMAPPED | SAM_FLAG_MATE_UNMAPPED)) === 0 &&
+    sameReference
+  )
+}
+
+export function nextSegmentPosition(
+  nextRef: string | undefined,
+  nextPos: number | undefined,
+) {
+  return nextRef !== undefined && nextPos !== undefined
+    ? `${nextRef}:${nextPos + 1}`
+    : undefined
+}
+
 // The SAM spec's "mapping quality is not available" sentinel — a real value with
 // a meaning, not a score. Named because two places have to agree on it: this
 // file produces it, and `readColorCategory` gives it its own color bucket rather
@@ -68,9 +93,7 @@ export const MAPQ_UNAVAILABLE = 255
 // A feature's mapping quality, or MAPQ_UNAVAILABLE when it has none.
 // BAM/CRAM spell it `score`; PAF/MashMap synteny features, which
 // LGVSyntenyDisplay pushes through this same pipeline, spell it `mappingQual`
-// and leave `score` unset. `score` is read first because it is a switch case on
-// BamSlightlyLazyFeature while any other field name falls through to its
-// lazily-materialized `fields` object, and this runs once per read.
+// and leave `score` unset.
 export function getMappingQuality(feature: Feature) {
   const score = feature.get('score')
   const mappingQual =
