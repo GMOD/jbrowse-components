@@ -466,6 +466,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
+         * vestigial: the hierarchical selector is the only one that exists, so
+         * this value is ignored. Retained because saved sessions and share
+         * links persist it.
+         */
+        trackSelectorType: types.stripDefault(
+          types.enumeration(['hierarchical']),
+          'hierarchical',
+        ),
+
+        /**
+         * #property
          * show the "center line"
          */
         showCenterLine: types.optional(types.boolean, () =>

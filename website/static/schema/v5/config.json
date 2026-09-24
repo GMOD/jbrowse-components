@@ -16746,6 +16746,9 @@
         "hideNoTracksActive": {
           "type": "boolean"
         },
+        "trackSelectorType": {
+          "const": "hierarchical"
+        },
         "showCenterLine": {
           "type": "boolean"
         },
@@ -17666,6 +17669,9 @@
         "minVisibleWidth": {
           "type": "number"
         },
+        "trackSelectorType": {
+          "type": "string"
+        },
         "launch": {},
         "assembly": {
           "description": "The assembly to open; a view that lays several out (the circular view) takes a list.",
@@ -17859,6 +17865,9 @@
         },
         "height": {
           "type": "number"
+        },
+        "trackSelectorType": {
+          "type": "string"
         },
         "assemblyNames": {
           "type": "array",
@@ -18114,6 +18123,9 @@
           "enum": ["auto", "on", "off"]
         },
         "launch": {},
+        "trackSelectorType": {
+          "type": "string"
+        },
         "followSynteny": {
           "type": "boolean"
         },

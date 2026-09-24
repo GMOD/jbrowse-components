@@ -375,6 +375,13 @@ function stateModelFactory(pluginManager: PluginManager) {
         ),
         /**
          * #property
+         * vestigial: the hierarchical selector is the only one that exists, so
+         * this value is ignored. Retained because saved sessions and share links
+         * persist it.
+         */
+        trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
+        /**
+         * #property
          * transient launch state: the settings written on the view object that
          * need resolving before they can be view state — the assembly the
          * circle is drawn from, the refNames to restrict it to, chord track

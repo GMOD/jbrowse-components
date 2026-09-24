@@ -6699,6 +6699,7 @@ export const configManifest: ConfigManifest = {
         "closeUps",
         "closeUpConnectorHeight",
         "hideNoTracksActive",
+        "trackSelectorType",
         "showCenterLine",
         "showCytobands",
         "trackLabels",
@@ -6748,6 +6749,7 @@ export const configManifest: ConfigManifest = {
         "spacingPx",
         "paddingPx",
         "minVisibleWidth",
+        "trackSelectorType",
         "launch"
       ],
       "launchKeys": [
@@ -6767,6 +6769,7 @@ export const configManifest: ConfigManifest = {
         "hideUnlabelled",
         "type",
         "height",
+        "trackSelectorType",
         "assemblyNames",
         "drawCigar",
         "showGridlines",
@@ -6808,6 +6811,7 @@ export const configManifest: ConfigManifest = {
         "opacityByIdentity",
         "fadeThinAlignmentsMode",
         "launch",
+        "trackSelectorType",
         "followSynteny",
         "sameScale",
         "followAnchorIndex",
