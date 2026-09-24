@@ -34,34 +34,20 @@ import type { indexType } from '@jbrowse/text-indexing/util'
 export interface JobsManagerParent {
   jbrowse: {
     rpcManager: RpcManager
-    tracks: Track[]
     aggregateTextSearchAdapters: { textSearchAdapterId: string }[]
-    updateTrackConf: (trackConf: {
-      trackId: string
-      [key: string]: unknown
-    }) => void
   }
-  session: SessionWithDrawerWidgets
+  session: SessionWithDrawerWidgets & { trackBasesById: Map<string, Track> }
   textSearchManager: { clearCache: () => void }
+  updateTrackBase: (trackConf: {
+    trackId: string
+    [key: string]: unknown
+  }) => void
 }
 
-// Compile-time guard: the real root model must actually provide everything
-// JobsManagerParent claims. getParent<JobsManagerParent> is an unchecked
-// assertion, so without this the shadow could silently drift from the root
-// (e.g. a renamed rpcManager) and only surface at runtime. If this errors, the
-// shadow above claims something rootModel no longer provides.
-//
-// It covers `jbrowse` and `textSearchManager` and NOT `session`, which it
-// cannot check at all: BaseRootModel declares `session` against the erased
-// `IAnyType` to avoid a root<->session cycle, so `DesktopRootModel['session']`
-// is `any` and any shape whatsoever satisfies this assert. Two things follow.
-// The declared `SessionWithDrawerWidgets` is a statement of what this file uses
-// rather than a checked fact — verify it against sessionModel.ts by hand. And
-// it hides that the real prop is `types.maybe`: every other desktop reader of
-// `rootModel.session` handles undefined, and this file is the one that does
-// not. That is deliberate, not an oversight — no action here is reachable
-// before pluginManagers.tsx sets the session, because `jobsQueue` is volatile
-// and so never arrives pre-populated from a snapshot.
+// getParent<JobsManagerParent> is unchecked, so this fails the build when the
+// root stops providing what the shadow claims. It cannot check `session`, which
+// BaseRootModel declares against IAnyType: those members are checked by hand
+// against sessionModel.ts, and no action here runs before a session is set.
 export type _JobsManagerParentCheck = AssertExtends<
   DesktopRootModel,
   JobsManagerParent
@@ -81,21 +67,9 @@ export interface TextJobsEntry {
   indexingParams: TrackTextIndexing
 }
 
-// Both conf writers are plain functions rather than actions on the model: they
-// are called from inside `runIndexingJob`, and MST's action context is the call
-// stack, so the writes are still inside one.
-//
-// This one is a builder, not a writer: it hands back a new track conf, and the
-// caller writes it through `jbrowse.updateTrackConf` rather than a
-// `track.textSearching = ...` mutation of the existing one. `jbrowse.tracks`
-// holds `types.frozen` plain objects, and the hydration cache a live track's
-// config goes through (ADR-031) is keyed by that object's identity — a track
-// already on screen was hydrated before this job finished, so mutating its
-// conf object in place left the write invisible to anything reading the
-// hydrated node afterward, which is what a displayed track and (since it
-// started calling `hydrateTrackConfig`) `TextSearchManager` both do.
-// `addAggregateTextSearchConf` below has no such problem: `aggregateTextSearchAdapters`
-// is a live MST array, not frozen, so mutating it in place is fine.
+// A new conf rather than a mutation of the base: a displayed track's hydration
+// cache (ADR-031) is keyed by the base object's identity, so a write in place
+// stays invisible to it and to TextSearchManager.
 function indexedTrackConf(
   track: Track,
   {
@@ -198,9 +172,10 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * Each track's base: its sessionTracks entry, else its config.json entry
        */
       get tracks() {
-        return this.root.jbrowse.tracks
+        return [...this.root.session.trackBasesById.values()]
       },
       /**
        * #getter
@@ -347,9 +322,9 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
               // re-found now, not the pre-RPC trackConfigs entry: indexing ran
               // for minutes, and writing that stale copy back would revert any
               // edit made to the track while it was indexing
-              const current = self.tracks.find(t => t.trackId === trackId)
+              const current = self.session.trackBasesById.get(trackId)
               if (current) {
-                self.root.jbrowse.updateTrackConf(
+                self.root.updateTrackBase(
                   indexedTrackConf(current, {
                     assemblies,
                     attributes,

@@ -7,7 +7,12 @@ import {
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaF from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { DNA } from '@jbrowse/core/ui/Icons'
-import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  applySnapshot,
+  getSnapshot,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   BaseRootModelFactory,
@@ -44,7 +49,11 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { DialogComponentType } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { BaseRootModel, BaseSession } from '@jbrowse/product-core'
+import type {
+  BaseRootModel,
+  BaseSession,
+  SessionWithSessionTracks,
+} from '@jbrowse/product-core'
 
 // lazies. A dialog reached through session.queueDialog can always be one:
 // DialogQueue Suspense-wraps whatever it is handed. OpenSequenceDialog was the
@@ -262,6 +271,25 @@ export default function rootModelFactory({
         async saveSession(val: SessionSnap) {
           if (self.sessionPath) {
             await invokeIpc('saveSession', self.sessionPath, val)
+          }
+        },
+        /**
+         * #action
+         * Replace a track's base config: its sessionTracks entry when the
+         * session owns the track, otherwise its jbrowse.tracks entry.
+         */
+        updateTrackBase(trackConf: {
+          trackId: string
+          [key: string]: unknown
+        }) {
+          const session: SessionWithSessionTracks | undefined = self.session
+          const entry = session?.sessionTracks.find(
+            t => t.trackId === trackConf.trackId,
+          )
+          if (entry) {
+            applySnapshot(entry, trackConf)
+          } else {
+            self.jbrowse.updateTrackConf(trackConf)
           }
         },
       }))

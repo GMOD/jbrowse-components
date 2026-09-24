@@ -111,14 +111,16 @@ function setup({
     addWidget: jest.fn(),
     notify: jest.fn(),
     notifyError: jest.fn(),
+    get trackBasesById() {
+      return new Map(tracks.map(t => [t.trackId, t]))
+    },
   }
   const textSearchManager = { clearCache: jest.fn() }
   const aggregateTextSearchAdapters: { textSearchAdapterId: string }[] = []
 
-  // mirrors JBrowseModel.updateTrackConf: replace-by-index, not a mutation of
-  // the found entry, so this fake exercises the same identity change the real
-  // hydration cache (ADR-031) needs to see the write
-  const updateTrackConf = (trackConf: { trackId: string }) => {
+  // replace-by-index, not a mutation of the found entry, so this fake
+  // exercises the identity change the hydration cache (ADR-031) needs to see
+  const updateTrackBase = (trackConf: { trackId: string }) => {
     const idx = tracks.findLastIndex(t => t.trackId === trackConf.trackId)
     if (idx !== -1) {
       tracks[idx] = trackConf as Track
@@ -130,12 +132,11 @@ function setup({
     .volatile(() => ({
       jbrowse: {
         rpcManager: { call },
-        tracks,
         aggregateTextSearchAdapters,
-        updateTrackConf,
       },
       session,
       textSearchManager,
+      updateTrackBase,
     }))
 
   const root = Root.create({})
