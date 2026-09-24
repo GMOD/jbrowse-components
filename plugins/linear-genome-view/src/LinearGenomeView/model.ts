@@ -143,7 +143,7 @@ export interface PaddingSpan {
 // it and a caller that sorted in place would do so for the whole session.
 const NO_PADDING_SPANS = Object.freeze([]) as readonly PaddingSpan[]
 
-interface HighlightRegion {
+export interface HighlightRegion {
   assemblyName?: string
   refName: string
   start: number
