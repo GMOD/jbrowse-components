@@ -1,3 +1,4 @@
+import { coarseStripHTML } from './coarseStripHTML.ts'
 import { namesTemporaryAssembly } from './temporaryAssembly.ts'
 import { isSameAssemblyName } from './tracks.ts'
 import {
@@ -124,7 +125,7 @@ export function addTrackFromWidget({
   if (namesTemporaryAssembly(session, conf)) {
     if (!trackContainer) {
       session.notify(
-        `Could not add "${conf.name ?? conf.trackId}": the view it was being added to has closed, and it uses an assembly that only that view had.`,
+        `Could not add "${coarseStripHTML(conf.name ?? conf.trackId)}": the view it was being added to has closed, and it uses an assembly that only that view had.`,
         'warning',
       )
       return undefined
@@ -148,7 +149,7 @@ export function addTrackFromWidget({
   } else {
     const assemblies = conf.assemblyNames?.filter(a => !!a) ?? []
     session.notify(
-      `Added track "${conf.name ?? conf.trackId}" to the session, but it was not displayed because it uses ${
+      `Added track "${coarseStripHTML(conf.name ?? conf.trackId)}" to the session, but it was not displayed because it uses ${
         assemblies.length
           ? `assembly "${assemblies.join('", "')}"`
           : 'an assembly'

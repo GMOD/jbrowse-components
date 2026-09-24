@@ -1,4 +1,5 @@
 import {
+  coarseStripHTML,
   containerDisplaysAssembly,
   finishAddTrack,
   getSession,
@@ -55,7 +56,7 @@ export async function doPasteConfigSubmit({
           ) {
             toShow.push(conf.trackId)
           } else {
-            notShown.push(conf.name ?? conf.trackId)
+            notShown.push(coarseStripHTML(conf.name ?? conf.trackId))
           }
         }
       }

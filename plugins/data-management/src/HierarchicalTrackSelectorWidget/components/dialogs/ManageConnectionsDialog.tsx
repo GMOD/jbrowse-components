@@ -1,5 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { InfoDialog } from '@jbrowse/core/ui'
+import { InfoDialog, SanitizedHTML } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import { IconButton, Tooltip, Typography } from '@mui/material'
@@ -62,7 +62,7 @@ const ManageConnectionsDialog = observer(function ManageConnectionsDialog({
               ) : (
                 <DisabledButton />
               )}
-              {name}
+              <SanitizedHTML html={name} />
             </Typography>
           )
         })}
