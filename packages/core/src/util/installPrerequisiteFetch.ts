@@ -52,10 +52,11 @@ export function readFor<T>(
 
 /**
  * A **prerequisite read**: one RPC about the adapter itself, beside the
- * display's primary fetch. Three in the tree — HiC's `CoreGetInfo` header read,
+ * display's primary fetch. Four in the tree — HiC's `CoreGetInfo` header read,
  * whose `resolutions` every contacts fetch waits on; the multi-sample sample
- * list, which `fetchNeeded` declines until; and the tiered alignment file's
- * `CoreGetInfo` header, which decides the LOD tier a synteny fetch asks for —
+ * list, which `fetchNeeded` declines until; the tiered alignment file's
+ * `CoreGetInfo` header, which decides the LOD tier a synteny fetch asks for;
+ * and the mark display's source list, which gives each listed source a row —
  * and they sit on three different fetch foundations, which is why this sits in
  * core beside the skeleton and not beside any of them.
  *
