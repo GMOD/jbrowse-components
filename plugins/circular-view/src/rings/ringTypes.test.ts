@@ -1,5 +1,5 @@
 import { createTestSession } from '@jbrowse/web/testUtils'
-import { when } from 'mobx'
+import { autorun, when } from 'mobx'
 
 import { RING_GAP_PX, ringAxisTicks } from './ringHost.ts'
 
@@ -248,6 +248,47 @@ test('a point on the wiggle ring unwarps to the strip column of its base', async
     r * Math.sin(screen + TWO_PI),
   )!
   expect(again.x).toBeCloseTo(hit.x)
+}, 30000)
+
+// the upload diffs cells by reference, so a cell that moved is a texture copy:
+// one ring repainting must not re-copy its neighbour's strip
+test("a ring repainting leaves the other ring's cell as it was", async () => {
+  const { session, view, display } = await wiggleSession()
+  session.addSessionTrackConf({
+    trackId: 'ring2',
+    name: 'ring2',
+    type: 'QuantitativeTrack',
+    assemblyNames: ['volvox'],
+    adapter: {
+      type: 'FromConfigAdapter',
+      features: scores('ctgA', CTG_A_BP, 100),
+    },
+  })
+  await view.launchTrack('ring2')
+  const host = view.ringHost
+  const second = view.tracks[1]!.displays[0] as RingDisplay & {
+    markCanvasDrawn: () => void
+  }
+  for (const d of [display, second]) {
+    host.setStripElement(
+      d.id,
+      fakeStrip(Math.round(host.width), d.height).strip,
+    )
+  }
+  const cells: (typeof host.ringCells)[] = []
+  const dispose = autorun(() => {
+    cells.push(host.ringCells)
+  })
+  await when(() => cells.at(-1)!.length === 2)
+  const [first, other] = cells.at(-1)!
+
+  second.markCanvasDrawn()
+
+  const [firstAfter, otherAfter] = cells.at(-1)!
+  expect(firstAfter).toBe(first)
+  expect(otherAfter).not.toBe(other)
+  expect(otherAfter!.strip?.image).toBe(other!.strip?.image)
+  dispose()
 }, 30000)
 
 function spans(refName: string, length: number, step: number, width: number) {
