@@ -1,4 +1,5 @@
 import { mergeSpans } from '../../shared/mergeSpans.ts'
+import { impliedUTRs } from '../impliedUTRs.ts'
 import { getSubfeatures, isCDS, isExon, isUTR } from '../util.ts'
 
 import type { Span } from '../../shared/mergeSpans.ts'
@@ -30,7 +31,8 @@ export function transcriptCoords(
   const codingOrUtr: Span[] = []
   let codeStart = Infinity
   let codeEnd = -Infinity
-  for (const sub of getSubfeatures(feature)) {
+  const subs = getSubfeatures(feature)
+  for (const sub of subs) {
     const span: Span = [sub.get('start'), sub.get('end')]
     if (isExon(sub)) {
       exons.push(span)
@@ -50,22 +52,10 @@ export function transcriptCoords(
     if (glyphType !== 'ProcessedTranscript') {
       return undefined
     }
-    spans = codingOrUtr
-    // A CDS-only annotation reconstructs its untranslated overhang from the
-    // transcript's own bounds, capped per side, because annotations come with
-    // one UTR row and not the other. A side a row already reaches into is left
-    // alone: a spliced UTR's introns are unknowable from the bounds, and
-    // bridging them would count untranscribed bases into the numbering.
-    if (coding) {
-      const start = feature.get('start')
-      const end = feature.get('end')
-      if (start < codeStart && !spans.some(([s]) => s < codeStart)) {
-        spans.push([start, codeStart])
-      }
-      if (end > codeEnd && !spans.some(([, e]) => e > codeEnd)) {
-        spans.push([codeEnd, end])
-      }
-    }
+    spans = [
+      ...codingOrUtr,
+      ...impliedUTRs(feature, subs).map(u => [u.start, u.end] as Span),
+    ]
   }
   const merged = mergeSpans(spans)
   if (merged.length === 0) {

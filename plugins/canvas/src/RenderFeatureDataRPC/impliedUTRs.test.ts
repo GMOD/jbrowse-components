@@ -71,12 +71,40 @@ test('the minus strand names the left end three prime', () => {
   ).toEqual(['three_prime_UTR', 'five_prime_UTR'])
 })
 
-test('a transcript naming any UTR row implies none', () => {
+test('a side a UTR row covers implies nothing, and the other side still fills', () => {
   expect(
     spans(
       transcript([
         { type: 'five_prime_UTR', start: 100, end: 200 },
         { type: 'CDS', start: 200, end: 400 },
+        { type: 'exon', start: 100, end: 500 },
+      ]),
+    ),
+  ).toEqual([[400, 500, 'three_prime_UTR', 'sub2']])
+})
+
+test('with no exons, the uncovered end fills from the transcript bounds', () => {
+  expect(
+    spans(
+      transcript(
+        [
+          { type: 'five_prime_UTR', start: 0, end: 50 },
+          { type: 'CDS', start: 50, end: 100 },
+          { type: 'CDS', start: 400, end: 450 },
+        ],
+        { start: 0, end: 500 },
+      ),
+    ),
+  ).toEqual([[450, 500, 'three_prime_UTR', 'tx']])
+})
+
+test('a transcript naming both UTRs implies none', () => {
+  expect(
+    spans(
+      transcript([
+        { type: 'five_prime_UTR', start: 100, end: 200 },
+        { type: 'CDS', start: 200, end: 400 },
+        { type: 'three_prime_UTR', start: 400, end: 500 },
         { type: 'exon', start: 100, end: 500 },
       ]),
     ),
