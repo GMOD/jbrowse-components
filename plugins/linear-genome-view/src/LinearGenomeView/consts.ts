@@ -1,6 +1,8 @@
 // most zoomed-in level: 50px per bp
 export const MIN_BP_PER_PX = 1 / 50
 
+export const MINIMUM_BLOCK_WIDTH = 3
+
 // fraction of the view width the whole genome fills at the most zoomed-out
 // level, leaving a 10% margin
 export const SHOW_ALL_REGIONS_FILL = 0.9

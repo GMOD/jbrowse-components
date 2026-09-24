@@ -69,6 +69,7 @@ import {
   HEADER_OVERVIEW_HEIGHT,
   MIN_BP_PER_PX,
   MINIMIZED_TRACK_HEIGHT,
+  MINIMUM_BLOCK_WIDTH,
   RESIZE_ALL_HANDLE_HEIGHT,
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
@@ -563,10 +564,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #volatile
          */
-        minimumBlockWidth: 3,
-        /**
-         * #volatile
-         */
         draggingTrackId: undefined as undefined | string,
         /**
          * #volatile
@@ -647,6 +644,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
       get offsetPx() {
         const { bpPerPx } = this
         return bpPerPx <= 0 ? 0 : self.windowStartBp / bpPerPx
+      },
+      /**
+       * #getter
+       * a displayed region narrower than this many pixels draws as an elided
+       * block
+       */
+      get minimumBlockWidth() {
+        return MINIMUM_BLOCK_WIDTH
       },
       /**
        * #getter
@@ -2049,7 +2054,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       let coverageRightPx = 0
       let prevBpPerPx: number | undefined
       let prevWidth: number | undefined
-      let prevMinimumBlockWidth: number | undefined
       let prevDisplayedRegions: typeof self.displayedRegions | undefined
       return {
         /**
@@ -2061,24 +2065,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * blocks to render their data for the region represented by the block
          */
         get staticBlocks() {
-          const {
-            offsetPx,
-            bpPerPx,
-            width,
-            minimumBlockWidth,
-            displayedRegions,
-          } = self
+          const { offsetPx, bpPerPx, width, displayedRegions } = self
 
           // Fast path: if only offsetPx changed and viewport is still within
           // the coverage range of existing blocks, skip the expensive
-          // calculateStaticBlocks call entirely. minimumBlockWidth is read here
-          // (not just in calculateStaticBlocks) so MobX still invalidates this
-          // computed if it changes while the viewport stays within coverage.
+          // calculateStaticBlocks call entirely.
           if (
             currentlyCalculatedStaticBlocks !== undefined &&
             bpPerPx === prevBpPerPx &&
             width === prevWidth &&
-            minimumBlockWidth === prevMinimumBlockWidth &&
             displayedRegions === prevDisplayedRegions &&
             offsetPx >= coverageLeftPx &&
             offsetPx + width <= coverageRightPx
@@ -2089,17 +2084,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const newBlocks = calculateStaticBlocks(self)
           // Hand back the previous BlockSet when the recompute produced the same
           // blocks, so a sideways scroll past the coverage edge doesn't re-render
-          // every track. minimumBlockWidth is part of the guard because block
-          // keys don't encode ContentBlock-vs-ElidedBlock, so a region can flip
-          // type with an unchanged key. Geometry is compared first: on a zoom it
-          // always differs, which skips the key walk entirely — the whole-genome
-          // view has one block per refName, so joining those keys into a string
-          // (as this used to) allocated an array and a string per zoom frame.
+          // every track. Geometry is compared first: on a zoom it always
+          // differs, which skips the key walk entirely — the whole-genome view
+          // has one block per refName, so joining those keys into a string (as
+          // this used to) allocated an array and a string per zoom frame.
           if (
             currentlyCalculatedStaticBlocks === undefined ||
             bpPerPx !== prevBpPerPx ||
             width !== prevWidth ||
-            minimumBlockWidth !== prevMinimumBlockWidth ||
             !sameBlockKeys(currentlyCalculatedStaticBlocks, newBlocks)
           ) {
             currentlyCalculatedStaticBlocks = newBlocks
@@ -2118,7 +2110,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
           prevBpPerPx = bpPerPx
           prevWidth = width
-          prevMinimumBlockWidth = minimumBlockWidth
           prevDisplayedRegions = displayedRegions
           return currentlyCalculatedStaticBlocks
         },
