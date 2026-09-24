@@ -870,11 +870,10 @@ const SUBFEATURE_LABELS: Record<string, string> = Object.fromEntries(
   SUBFEATURE_LABEL_OPTIONS.map(o => [o.value, o.label]),
 )
 
-// The two displays that own a per-feature size submenu title it differently:
-// the canvas display hard-codes 'Set feature height' (its trackMenus.ts), while
-// getFeatureHeightMenuItem — used by the alignments display and
-// LGVSyntenyDisplay — titles it after what the track holds. Both then group the
-// sizing radios under the same 'Track sizing' subheader.
+// The canvas display titles its size submenu 'Feature height' whatever the
+// track holds, while getFeatureHeightMenuItem — the alignments display and
+// LGVSyntenyDisplay — titles it after the track's noun. Both group the sizing
+// radios under the same 'Track sizing' subheader.
 //
 // An entry that named no display keeps the noun form this table has always
 // emitted. That is an assumption, not a resolution, and it is the one place
@@ -882,7 +881,7 @@ const SUBFEATURE_LABELS: Record<string, string> = Object.fromEntries(
 // registry.
 const heightMenu = (noun: string, displayType?: string) =>
   displayType && CANVAS_DISPLAYS.has(displayType)
-    ? `${TRACK_MENU} → Set feature height`
+    ? `${TRACK_MENU} → Feature height`
     : `${TRACK_MENU} → ${noun.charAt(0).toUpperCase()}${noun.slice(1)} height`
 
 // The canvas display's two flat radio groups, both imported. Both recipes are
@@ -1396,7 +1395,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     }
     const label = DISPLAY_MODES[value]
     return label && displayType && CANVAS_DISPLAYS.has(displayType)
-      ? { path: `${TRACK_MENU} → Set feature height → ${label}` }
+      ? { path: `${TRACK_MENU} → Feature height → ${label}` }
       : undefined
   },
   showLabels: (value, { displayType }) => {

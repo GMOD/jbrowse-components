@@ -107,7 +107,7 @@ describe('alignments fit-to-display-height', () => {
     expect(display.configuredFeatureHeight).toBe(20)
   })
 
-  // The "Set feature height" dialog edits the fixed config, so it must seed from
+  // The "Custom..." height dialog edits the fixed config, so it must seed from
   // `configuredFeatureHeight` — the resolved `featureHeight` becomes the
   // fractional fit pitch in Compressed mode, which the dialog would then bake.
   it('exposes configured feature size independent of the fit squeeze', () => {

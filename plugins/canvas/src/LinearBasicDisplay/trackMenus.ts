@@ -202,7 +202,7 @@ export function colorBySubMenuItems(self: ColorMenuSelf): MenuItem[] {
 export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
   return [
     {
-      label: 'Set feature height',
+      label: 'Feature height',
       icon: HeightIcon,
       subMenu: [
         ...radioItems(DISPLAY_MODE_OPTIONS, self.displayMode, mode => {

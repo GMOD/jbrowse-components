@@ -18,7 +18,7 @@ function subMenuOf(items: MenuItem[], label: string) {
 }
 
 function featureHeightSubMenu(display: { trackMenuItems: () => MenuItem[] }) {
-  return subMenuOf(display.trackMenuItems(), 'Set feature height')
+  return subMenuOf(display.trackMenuItems(), 'Feature height')
 }
 
 function radio(subMenu: MenuItem[], label: string) {

@@ -254,7 +254,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * #getter
      */
     // The configured fixed-mode read size, independent of the fit squeeze.
-    // Consumers that EDIT the size (the "Set feature height" dialog) must
+    // Consumers that EDIT the size (the "Custom..." height dialog) must
     // start from the configured value, not the fractional fit pitch that
     // `featureHeight` resolves to in fit mode — otherwise opening the dialog
     // while compressed would bake the squeezed height.

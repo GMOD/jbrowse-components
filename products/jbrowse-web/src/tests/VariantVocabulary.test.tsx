@@ -65,7 +65,7 @@ test('the variant track menu names controls generically, content by its noun', a
   expect(labels).toEqual(
     expect.arrayContaining([
       'Labels',
-      'Set feature height',
+      'Feature height',
       'Fixed feature height + fixed track height',
       'Fit feature height to track height',
     ]),
