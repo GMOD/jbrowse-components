@@ -2196,7 +2196,7 @@ test('nothing declared draws nothing, and the default rule is a bar of score', (
   const { display } = createDisplay()
   expect(display.markTypes).toEqual([])
   expect(display.rpcProps().layers).toEqual([])
-  display.conf.setSubschemaArray(
+  display.conf.setSubschema(
     'marks',
     defaultPlotMarks({ numeric: ['score'], categorical: ['name'] })!,
   )

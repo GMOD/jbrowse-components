@@ -1,4 +1,4 @@
-import { getType, isArrayType } from '@jbrowse/mobx-state-tree'
+import { getType } from '@jbrowse/mobx-state-tree'
 
 import { readConfObject } from './readConfObject.ts'
 import { getConfigurationSchemaDefinition } from './schemaRegistry.ts'
@@ -125,8 +125,8 @@ export function setConf<
 
 /**
  * Walk to the node the last segment names a member of, then write that member
- * through whichever of the node's three write actions the member is: a
- * sub-schema is replaced, an array of sub-schemas is replaced, and a slot goes
+ * through whichever of the node's two write actions the member is: a
+ * sub-schema, single or a collection, is replaced whole, and a slot goes
  * through `setSlot` so ADR-052's name guard and the value-type guard both run.
  * MST's `applyPatch` takes the same path and runs neither guard.
  */
@@ -153,12 +153,11 @@ function writeConfPath(
   // `stringArray` slot holds an array node, and an optional sub-schema nobody
   // has written yet holds nothing.
   const declared = getConfigurationSchemaDefinition(node)?.[leaf]
-  if (!isConfigurationSchemaType(declared)) {
+  if (isConfigurationSchemaType(declared)) {
+    // eslint-disable-next-line no-restricted-syntax -- this is setConf
+    node.setSubschema(leaf, value)
+  } else {
     // eslint-disable-next-line no-restricted-syntax -- this is setConf
     node.setSlot(leaf, value)
-  } else if (isArrayType(declared)) {
-    node.setSubschemaArray(leaf, value as unknown[])
-  } else {
-    node.setSubschema(leaf, value)
   }
 }

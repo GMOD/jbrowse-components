@@ -3454,10 +3454,7 @@ export default function stateModelFactory(
            * is not a reorder; a reorder is this action with a new domain.
            */
           setFacet(facet?: GroupBy) {
-            self.configuration.setSubschema(
-              'facet',
-              carryGroupDomain(facet, self.facet) ?? {},
-            )
+            setConf(self, 'facet', carryGroupDomain(facet, self.facet) ?? {})
             self.scrollTop = 0
           },
 

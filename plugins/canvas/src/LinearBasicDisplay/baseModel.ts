@@ -1152,10 +1152,7 @@ export default function baseStateModelFactory(
          * its order and range stay under `scale: 'none'` for the way back.
          */
         setFeatureColor(color?: string) {
-          self.configuration.setSubschema(
-            'color',
-            colorForValue(self.colorSettings, color),
-          )
+          setConf(self, 'color', colorForValue(self.colorSettings, color))
         },
 
         /**
@@ -1169,7 +1166,8 @@ export default function baseStateModelFactory(
           range?: readonly string[]
         }) {
           const { value } = self.colorSettings
-          self.configuration.setSubschema(
+          setConf(
+            self,
             'color',
             scale
               ? {
@@ -1232,7 +1230,8 @@ export default function baseStateModelFactory(
        * ungrouped. The stack starts over from the top.
        */
       setFacet(facet?: { field: string; domain?: readonly string[] }) {
-        self.configuration.setSubschema(
+        setConf(
+          self,
           'facet',
           facet
             ? { field: facet.field, domain: [...(facet.domain ?? [])] }
@@ -1597,10 +1596,7 @@ export default function baseStateModelFactory(
        * the domain and range while it is the field already painting.
        */
       colorByField(field: string) {
-        self.configuration.setSubschema(
-          'color',
-          colorForField(self.colorSettings, field),
-        )
+        setConf(self, 'color', colorForField(self.colorSettings, field))
       },
       /**
        * #action

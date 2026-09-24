@@ -76,10 +76,9 @@ const noNamedObserver = {
     'Write `observer(function Name() {…})` inline. babel-plugin-react-compiler does not compile an inline observer, but it DOES compile the `function Name(){}; observer(Name)` form, and a compiled MobX render can serve a stale read. See the React Compiler × MobX section of CLAUDE.md.',
 }
 const noSetSlot = {
-  selector:
-    "CallExpression[callee.property.name='setSlot'][callee.object.property.name='configuration']",
+  selector: 'CallExpression[callee.property.name=/^(setSlot|setSubschema)$/]',
   message:
-    'Write config with `setConf`, not `configuration.setSlot`. See the MST section of CLAUDE.md.',
+    "Write config with `setConf`, not a config node's `setSlot` or `setSubschema`. See the MST section of CLAUDE.md.",
 }
 const noAnyStateTreeNode = {
   selector:

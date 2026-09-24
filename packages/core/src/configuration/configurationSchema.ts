@@ -270,16 +270,11 @@ function makeConfigurationSchemaModel<
   // schema registry (a WeakMap keyed by the MST type, see schemaRegistry.ts),
   // not on the instance.
   const volatileConstants: Record<string, unknown> = {}
-  // Keys of single sub-schema slots (not array/map-of-sub-schema). setSubschema
-  // replaces such a node via `.create(data)`, which throws a confusing MST
-  // validation error if pointed at an array/map-typed slot, so those are
-  // excluded here — collected as the loop classifies each entry rather than
-  // re-scanning modelDefinition afterward.
+  // The members `setSubschema` replaces: a single sub-schema, swapped for a
+  // node built from the data, or a collection of them, assigned whole so MST
+  // reconciles the entries. Collected as the loop classifies each entry.
   const subSchemaKeys = new Set<string>()
-  // Keys of array-of-sub-schema slots, which `setSubschemaArray` replaces
-  // whole: a menu that authors a list of sub-schemas — the mark display's
-  // `marks` — has no slot to write and no single node to swap.
-  const arraySubSchemaKeys = new Set<string>()
+  const collectionKeys = new Set<string>()
   // The actual slots, which is a strictly smaller set than `modelDefinition`:
   // that also holds the sub-schema properties and the identifier, neither of
   // which setSlot may write. Same collect-as-you-classify as subSchemaKeys.
@@ -295,9 +290,10 @@ function makeConfigurationSchemaModel<
       // snapshot.
       if (isArrayType(slotDefinition)) {
         modelDefinition[slotName] = types.stripDefault(slotDefinition, [])
-        arraySubSchemaKeys.add(slotName)
+        collectionKeys.add(slotName)
       } else if (isMapType(slotDefinition)) {
         modelDefinition[slotName] = types.stripDefault(slotDefinition, {})
+        collectionKeys.add(slotName)
       } else {
         modelDefinition[slotName] = slotDefinition
         subSchemaKeys.add(slotName)
@@ -338,12 +334,17 @@ function makeConfigurationSchemaModel<
   let completeModel = types
     .model(`${modelName}ConfigurationSchema`, modelDefinition)
     // annotated so `ConfigurationSchemaType['Type']`, which has to name these
-    // three by hand (the model's own props are a `Record<string, any>`, so
+    // two by hand (the model's own props are a `Record<string, any>`, so
     // nothing derived off them keeps a signature), cannot drift from them
     .actions((self): ConfigNodeActions => ({
-      // `data` is whatever the sub-schema's `preProcessSnapshot` takes, a
-      // string shorthand included.
+      // Replace a sub-schema member whole. `data` is whatever the sub-schema's
+      // `preProcessSnapshot` takes, a string shorthand included; for a
+      // collection it is the whole list or map, and `null` empties it.
       setSubschema(slotName: string, data: unknown) {
+        if (collectionKeys.has(slotName)) {
+          self[slotName] = data ?? undefined
+          return self[slotName]
+        }
         if (!subSchemaKeys.has(slotName)) {
           throw new Error(`${slotName} is not a subschema, cannot replace`)
         }
@@ -352,14 +353,6 @@ function makeConfigurationSchemaModel<
           : modelDefinition[slotName].create(data)
         self[slotName] = newSchema
         return newSchema
-      },
-      setSubschemaArray(slotName: string, data: unknown[]) {
-        if (!arraySubSchemaKeys.has(slotName)) {
-          throw new Error(
-            `${slotName} is not an array of subschemas, cannot replace`,
-          )
-        }
-        self[slotName] = data
       },
       // generic slot setter the config editor's slot facade routes through. A
       // slot is a bare value-union property, so this is a plain assignment.

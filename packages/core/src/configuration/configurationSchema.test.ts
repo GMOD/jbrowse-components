@@ -635,36 +635,28 @@ describe('setSubschema', () => {
     )
   })
 
-  test('throws the same friendly error for a collection (array) of sub-schemas, not an MST validation error', () => {
-    // isConfigurationSchemaType recognizes an array-of-schema slot as a schema
-    // type too, but setSubschema's `.create(data)` call assumes a single
-    // sub-schema snapshot. Without excluding collections from the membership
-    // check, this throws a confusing "not assignable" MST error instead.
+  test('replaces a collection of sub-schemas whole, and null empties it', () => {
     const schema = ConfigurationSchema('WithCollection', {
       items: types.array(
         ConfigurationSchema('Item', {
           x: { type: 'number', defaultValue: 1 },
         }),
       ),
-    })
-    const node = schema.create(undefined, { pluginManager })
-    expect(() => node.setSubschema('items', { x: 2 })).toThrow(
-      /items is not a subschema, cannot replace/,
-    )
-  })
-
-  test('throws the same friendly error for a collection (map) of sub-schemas', () => {
-    const schema = ConfigurationSchema('WithMapCollection', {
-      items: types.map(
+      byKey: types.map(
         ConfigurationSchema('MapItem', {
           x: { type: 'number', defaultValue: 1 },
         }),
       ),
     })
-    const node = schema.create(undefined, { pluginManager })
-    expect(() => node.setSubschema('items', { x: 2 })).toThrow(
-      /items is not a subschema, cannot replace/,
-    )
+    const node = schema.create({ items: [{ x: 3 }] }, { pluginManager })
+    node.setSubschema('items', [{ x: 2 }, {}])
+    node.setSubschema('byKey', { a: { x: 5 } })
+    expect(getSnapshot(node)).toEqual({
+      items: [{ x: 2 }, {}],
+      byKey: { a: { x: 5 } },
+    })
+    node.setSubschema('items', null)
+    expect(node.items).toHaveLength(0)
   })
 })
 
@@ -1616,9 +1608,9 @@ describe('a shorthand naming a number slot', () => {
     expect(Scale.create({ rules: [0] }).rules).toHaveLength(1)
   })
 
-  test('lifts through setSubschemaArray', () => {
+  test('lifts through setSubschema', () => {
     const node = Scale.create({})
-    node.setSubschemaArray('rules', [2])
+    node.setSubschema('rules', [2])
     expect(node.rules[0]!.value).toBe(2)
   })
 

@@ -282,9 +282,7 @@ const Member = observer(function Member(props: {
               slot={slot}
               onChange={evt => {
                 if (evt.target.value !== slot?.type) {
-                  schema.setSubschema(slotName, {
-                    type: evt.target.value,
-                  })
+                  setConf(schema, slotName, { type: evt.target.value })
                 }
               }}
             />

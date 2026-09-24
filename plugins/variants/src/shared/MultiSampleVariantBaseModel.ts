@@ -873,7 +873,8 @@ export default function MultiSampleVariantBaseModelF(
            */
           setFacet(field: string) {
             const current = self.facet
-            self.configuration.setSubschema(
+            setConf(
+              self,
               'facet',
               field
                 ? {

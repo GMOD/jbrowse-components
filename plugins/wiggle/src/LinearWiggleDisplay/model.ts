@@ -820,7 +820,7 @@ export default function stateModelFactory(
        * are one setting; `undefined` returns to the layout's own picture.
        */
       setColor(color?: Partial<ColorSetting> | string) {
-        self.configuration.setSubschema('color', color ?? {})
+        setConf(self, 'color', color ?? {})
       },
 
       /**

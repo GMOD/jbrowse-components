@@ -10,6 +10,7 @@ import {
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 import { getEnv } from '../util/mstUtils.ts'
 import { slotWriteRefusal } from './configurationSlot.ts'
+import { setConf } from './getConf.ts'
 import {
   getConfigurationSchemaDefinition,
   getConfigurationSchemaMetadata,
@@ -268,7 +269,7 @@ export function makeSlotFacade(
       return slotName in (getSnapshot(node) as Record<string, unknown>)
     },
     set(val: unknown) {
-      node.setSlot(slotName, val)
+      setConf(node, slotName, val)
     },
   }
 }

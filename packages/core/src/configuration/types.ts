@@ -120,14 +120,14 @@ export type ConfigNodeProps<DEFINITION> = {
 }
 
 /**
- * The three write actions every config node carries. A type alias rather than
- * an interface because it annotates the `.actions` block: MST constrains that
- * to `ModelActions`, an index signature of functions, and only a type alias of
- * an object literal gets the implicit index signature that satisfies it.
+ * The two write actions every config node carries, which `setConf` is the
+ * spelling of. A type alias rather than an interface because it annotates the
+ * `.actions` block: MST constrains that to `ModelActions`, an index signature
+ * of functions, and only a type alias of an object literal gets the implicit
+ * index signature that satisfies it.
  */
 export type ConfigNodeActions = {
   setSubschema: (slotName: string, data: unknown) => unknown
-  setSubschemaArray: (slotName: string, data: unknown[]) => void
   setSlot: (slotName: string, value: unknown) => void
 }
 

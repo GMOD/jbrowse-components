@@ -1,4 +1,5 @@
 import { addSessionTracks, hubConnectionSpec } from '@jbrowse/app-core'
+import { setConf } from '@jbrowse/core/configuration'
 import { isSessionModelWithConnections } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { isBaseSession } from '@jbrowse/product-core'
@@ -142,9 +143,12 @@ export async function loadHubSpec(
         session.setName(sessionLabel)
       }
       if (isWebSessionWithConnections(session)) {
-        session.sessionConnections
-          .find(c => c.connectionId === firstURL)
-          ?.setSlot('name', sessionLabel)
+        const connection = session.sessionConnections.find(
+          c => c.connectionId === firstURL,
+        )
+        if (connection) {
+          setConf(connection, 'name', sessionLabel)
+        }
       }
     }
   } catch (e) {

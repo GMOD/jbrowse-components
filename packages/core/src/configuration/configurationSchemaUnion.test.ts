@@ -97,7 +97,7 @@ test('the refusal holds in a production build, where MST checks no type', () => 
     )
     const host = Host.create({ transform: [{ type: 'bin', step: 5 }] })
     expect(() => {
-      host.setSubschemaArray('transform', [{ type: 'nope' }])
+      host.setSubschema('transform', [{ type: 'nope' }])
     }).toThrow('not "nope"')
     expect(getSnapshot(host)).toEqual({
       transform: [{ type: 'bin', step: 5 }],
@@ -130,7 +130,7 @@ test('a whole-list write replaces, removes, appends and reorders, and each reloa
     list => list.toReversed(),
   ]
   for (const edit of edits) {
-    host.setSubschemaArray('transform', edit([...getSnapshot(host).transform!]))
+    host.setSubschema('transform', edit([...getSnapshot(host).transform!]))
     const snapshot = getSnapshot(host)
     expect(getSnapshot(Host.create(snapshot))).toEqual(snapshot)
   }
