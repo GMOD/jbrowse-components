@@ -24,7 +24,7 @@ function viewWith(tracks: { name: string; display: CircularLegendSource }[]) {
 test('a row per track, named by the track, in the color it paints', () => {
   const spec = circularLegendSpec(
     viewWith([
-      { name: 'coverage', display: { legendColor: '#1565c0' } },
+      { name: '<i>coverage</i>', display: { legendColor: '#1565c0' } },
       { name: 'translocations', display: { legendColor: '#ff8500' } },
     ]),
   )

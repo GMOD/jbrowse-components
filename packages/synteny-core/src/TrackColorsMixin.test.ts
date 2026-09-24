@@ -181,8 +181,8 @@ test('the track legend lists a track on several levels once', () => {
     .views(() => ({
       colorableTrackConfigs() {
         return [
-          { trackId: 'ortho', name: 'orthogroups' },
-          { trackId: 'ortho', name: 'orthogroups' },
+          { trackId: 'ortho', name: '<b>orthogroups</b>' },
+          { trackId: 'ortho', name: '<b>orthogroups</b>' },
           { trackId: 'other', name: 'other' },
         ]
       },

@@ -35,7 +35,7 @@ const swapped: ComparativeWarning = {
 test('each row is named by the track that raised it', () => {
   expect(
     collectTrackWarnings([
-      display('hg38_vs_mm10.paf', [swapped]),
+      display('<i>hg38_vs_mm10.paf</i>', [swapped]),
       display('hg38_vs_rn7.paf', [swapped]),
     ]),
   ).toEqual([

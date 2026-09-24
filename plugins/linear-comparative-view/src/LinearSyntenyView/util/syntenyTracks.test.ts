@@ -7,7 +7,7 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 const track = (trackId: string, assemblyNames: string[]) =>
   ({
     trackId,
-    name: trackId,
+    name: `<i>${trackId}</i>`,
     type: 'SyntenyTrack',
     assemblyNames,
   }) as unknown as AnyConfigurationModel
