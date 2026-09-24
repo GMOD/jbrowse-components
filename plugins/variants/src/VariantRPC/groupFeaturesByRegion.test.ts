@@ -22,6 +22,7 @@ test('keeps a feature that starts before the region but overlaps it', () => {
   const grouped = groupFeaturesByRegion(
     [feat('bigdel', 'ctgA', 1000, 51000), feat('snp', 'ctgA', 20000, 20001)],
     [region],
+    f => f,
   )
   expect(ids(grouped.get(0))).toEqual(['bigdel', 'snp'])
 })
@@ -34,20 +35,22 @@ test('drops a feature that only touches the region boundary', () => {
       feat('otherCtg', 'ctgB', 20000, 20001),
     ],
     [region],
+    f => f,
   )
   expect(grouped.get(0)).toBeUndefined()
 })
 
-test('assigns a feature spanning two regions to the first one only', () => {
+test('files a feature spanning two regions under both', () => {
   const grouped = groupFeaturesByRegion(
     [feat('span', 'ctgA', 15000, 45000)],
     [
       region,
       { refName: 'ctgA', start: 40000, end: 50000, displayedRegionIndex: 1 },
     ],
+    f => f,
   )
   expect(ids(grouped.get(0))).toEqual(['span'])
-  expect(grouped.get(1)).toBeUndefined()
+  expect(ids(grouped.get(1))).toEqual(['span'])
 })
 
 test('buckets by refName', () => {
@@ -57,6 +60,7 @@ test('buckets by refName', () => {
       region,
       { refName: 'ctgB', start: 10000, end: 30000, displayedRegionIndex: 1 },
     ],
+    f => f,
   )
   expect(ids(grouped.get(0))).toEqual(['a'])
   expect(ids(grouped.get(1))).toEqual(['b'])

@@ -1,6 +1,6 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
-import { updateStatus, withProgress } from '@jbrowse/core/util'
+import { withProgress } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 
 import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
@@ -14,12 +14,12 @@ import {
   CELL_UNPHASED,
 } from '../shared/variantCellStyles.ts'
 import { computeSampleInfo } from './computeSampleInfo.ts'
+import { fetchVariantFeatures } from './fetchVariantFeatures.ts'
 import { groupFeaturesByRegion } from './groupFeaturesByRegion.ts'
 import { orderByScreenPosition } from './orderByScreenPosition.ts'
 
 import type { VariantCellData } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import type { MatrixCellData } from '../LinearMultiSampleVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
-import type { FilteredVariant } from '../shared/minorAlleleFrequencyUtils.ts'
 import type { SampleInfo } from '../shared/types.ts'
 import type { SimplifiedVariantFeature } from './computeSampleInfo.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -123,9 +123,9 @@ export async function executeVariantCellData({
     mode,
     sampleFilter,
     renderingMode,
-    referenceDrawingMode,
+    referenceDrawingMode = 'skip',
     color,
-    shadeByDosage,
+    shadeByDosage = true,
     minorAlleleFrequencyFilter,
     maxMissingnessFilter,
     filters,
@@ -137,19 +137,6 @@ export async function executeVariantCellData({
     displayedRegionIndices,
     byteLimit,
   } = args
-
-  // Only regular mode consumes per-region grouping (it ships one cell blob per
-  // displayed region); matrix mode flattens back to a single flat list, so skip
-  // the grouping + per-region filtering entirely for it.
-  const regionLookup =
-    mode === 'regular' && displayedRegionIndices
-      ? regions.map((r, i) => ({
-          refName: r.refName,
-          start: r.start,
-          end: r.end,
-          displayedRegionIndex: displayedRegionIndices[i]!,
-        }))
-      : undefined
 
   const adapter = await getFeatureAdapterOrThrow({
     pluginManager,
@@ -171,87 +158,35 @@ export async function executeVariantCellData({
     return tooLarge
   }
 
-  const rawFeatures = await updateStatus(
-    'Downloading features',
-    statusCallback,
-    () => adapter.getFeaturesInMultipleRegionsArray(regions, args),
-  )
-
+  const features = await fetchVariantFeatures(adapter, regions, args)
   const genotypesCache = new Map<string, Record<string, string>>()
-
-  const perRegionRawFeatures = regionLookup
-    ? groupFeaturesByRegion(rawFeatures, regionLookup)
-    : undefined
-
   const progressOpts = {
     statusCallback,
     signal,
   }
-
-  let filteredVariants: FilteredVariant[]
-  let perRegionFilteredVariants: Map<number, FilteredVariant[]> | undefined
-  if (perRegionRawFeatures) {
-    perRegionFilteredVariants = await withProgress(
-      {
-        ...progressOpts,
-        label: 'Filtering variants',
-        total: rawFeatures.length,
-      },
-      report => {
-        // one shared reporter spans all regions: per-region calls accumulate
-        // into one global bar with no offset bookkeeping
-        const result = new Map<number, FilteredVariant[]>()
-        for (const [regionNum, features] of perRegionRawFeatures) {
-          result.set(
-            regionNum,
-            getFilteredVariants({
-              features,
-              minorAlleleFrequencyFilter,
-              maxMissingnessFilter,
-              filterChain: filters,
-              genotypesCache,
-              report,
-            }),
-          )
-        }
-        return result
-      },
-    )
-    const allFilteredVariants: FilteredVariant[] = []
-    for (const regionVariants of perRegionFilteredVariants.values()) {
-      for (const variant of regionVariants) {
-        allFilteredVariants.push(variant)
-      }
-    }
-    filteredVariants = allFilteredVariants
-  } else {
-    filteredVariants = await withProgress(
-      {
-        ...progressOpts,
-        label: 'Filtering variants',
-        total: rawFeatures.length,
-      },
-      report =>
-        getFilteredVariants({
-          features: rawFeatures,
-          minorAlleleFrequencyFilter,
-          maxMissingnessFilter,
-          filterChain: filters,
-          genotypesCache,
-          report,
-        }),
-    )
-    if (mode === 'matrix') {
-      // The list order is the column order here, so it has to be the on-screen
-      // order or the connector lines cross. Regular mode draws each variant at
-      // its own genomic position and doesn't care.
-      filteredVariants = orderByScreenPosition(
-        filteredVariants,
-        regions,
-        v => v.feature,
-      )
-    }
-  }
+  const passing = await withProgress(
+    {
+      ...progressOpts,
+      label: 'Filtering variants',
+      total: features.length,
+    },
+    report =>
+      getFilteredVariants({
+        features,
+        minorAlleleFrequencyFilter,
+        maxMissingnessFilter,
+        filterChain: filters,
+        genotypesCache,
+        report,
+      }),
+  )
+  // Screen order: the matrix's column order, and the order the anchored sort
+  // walks for a variant's neighbours in either mode.
+  const filteredVariants = orderByScreenPosition(
+    passing,
+    regions,
+    v => v.feature,
+  )
 
   const {
     sampleInfo,
@@ -300,60 +235,56 @@ export async function executeVariantCellData({
   const rowNames = effectiveSources.map(s => s.name)
 
   if (mode === 'regular') {
+    // Genomic order within a region, so overlapping records paint later over
+    // earlier as they lie in the file, whatever order the merged per-region
+    // fetches arrived in.
+    const perRegionVariants = groupFeaturesByRegion(
+      [...passing].sort(
+        (a, b) => a.feature.get('start') - b.feature.get('start'),
+      ),
+      regions.map((r, i) => ({
+        refName: r.refName,
+        start: r.start,
+        end: r.end,
+        displayedRegionIndex: displayedRegionIndices?.[i] ?? i,
+      })),
+      v => v.feature,
+    )
+    let total = 0
+    for (const list of perRegionVariants.values()) {
+      total += list.length
+    }
     const perRegionCellData = await withProgress(
       {
         ...progressOpts,
         label: 'Computing variant cells',
-        total: filteredVariants.length,
+        total,
       },
       report => {
-        if (perRegionFilteredVariants) {
-          // one shared reporter spans all regions: it owns the running counter,
-          // so per-region calls accumulate into one global bar with no offset
-          // bookkeeping
-          const result: Record<number, VariantCellData> = {}
-          for (const [regionNum, regionMafs] of perRegionFilteredVariants) {
-            result[regionNum] = computeVariantCells({
-              filteredVariants: regionMafs,
-              sources: effectiveSources,
-              renderingMode,
-              referenceDrawingMode: referenceDrawingMode ?? 'skip',
-              featureColor: hue.color,
-              featureDomain: hue.domain,
-              shadeDosage: shadeByDosage ?? true,
-              colorByPhaseSet,
-              featureGenotypeCodes,
-              genotypeDict,
-              sampleNames,
-              report,
-            })
-          }
-          return result
-        }
-        return {
-          0: computeVariantCells({
-            filteredVariants,
+        const result: Record<number, VariantCellData> = {}
+        for (const [regionNum, regionVariants] of perRegionVariants) {
+          result[regionNum] = computeVariantCells({
+            filteredVariants: regionVariants,
             sources: effectiveSources,
             renderingMode,
-            referenceDrawingMode: referenceDrawingMode ?? 'skip',
+            referenceDrawingMode,
             featureColor: hue.color,
             featureDomain: hue.domain,
-            shadeDosage: shadeByDosage ?? true,
+            shadeDosage: shadeByDosage,
             colorByPhaseSet,
             featureGenotypeCodes,
             genotypeDict,
             sampleNames,
             report,
-          }),
+          })
         }
+        return result
       },
     )
 
-    // A Set, not a list: one `genotypeCodes` array is now shared by every
-    // reference to its feature rather than rebuilt per shipped entry, and
-    // `getFeaturesInMultipleRegions` merges its per-region queries without
-    // deduping, so a variant spanning two of them arrives twice. Handing the
-    // same buffer to postMessage twice is a structured-clone error.
+    // A Set, not a list: a variant spanning two regions ships in both, sharing
+    // one `genotypeCodes` array, and handing the same buffer to postMessage
+    // twice is a structured-clone error.
     const painted = paintedLegendFlags(Object.values(perRegionCellData))
     const transferables = new Set<ArrayBufferLike>()
     const shippedPerRegion: Record<number, ShippedRegionData> = {}
@@ -408,7 +339,7 @@ export async function executeVariantCellData({
           renderingMode,
           featureColor: hue.color,
           featureDomain: hue.domain,
-          shadeDosage: shadeByDosage ?? true,
+          shadeDosage: shadeByDosage,
           colorByPhaseSet,
           featureGenotypeCodes,
           genotypeDict,
@@ -417,16 +348,13 @@ export async function executeVariantCellData({
         }),
     )
 
-    // See the regular branch: `featureData` is positional and its entries share
-    // one codes array per feature, so a variant that overlapped two displayed
-    // regions would otherwise offer the same buffer twice.
-    const transferables = new Set<ArrayBufferLike>([
+    const transferables: ArrayBufferLike[] = [
       cellData.cellFeatureIndices.buffer,
       cellData.cellRowIndices.buffer,
       cellData.cellColors.buffer,
-    ])
+    ]
     for (const fd of cellData.featureData) {
-      transferables.add(fd.genotypeCodes.buffer)
+      transferables.push(fd.genotypeCodes.buffer)
     }
 
     return rpcResult(
@@ -447,7 +375,7 @@ export async function executeVariantCellData({
         bytes,
         ...cellData,
       },
-      [...transferables],
+      transferables,
     )
   }
 }

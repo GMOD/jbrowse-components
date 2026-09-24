@@ -1,11 +1,12 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
+import { createProgressReporter } from '@jbrowse/core/util'
 import { createAbortBreakpoint } from '@jbrowse/core/util/aborting'
 
 import { expandSourcesToHaplotypes } from '../shared/getSources.ts'
 import { hasProcessGenotypes } from '../shared/hasProcessGenotypes.ts'
 import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
 import { buildHeaderRemap, collectSampleNames } from './computeSampleInfo.ts'
+import { fetchVariantFeatures } from './fetchVariantFeatures.ts'
 import {
   MISSING,
   readPhasedAlleleIndicators,
@@ -67,11 +68,7 @@ export async function getPhasedGenotypeMatrix({
   // visible and the other not.
   const rowSpecs = expandSourcesToHaplotypes({ sources, sampleInfo })
 
-  const rawFeatures = await updateStatus(
-    'Downloading features',
-    statusCallback,
-    () => dataAdapter.getFeaturesInMultipleRegionsArray(regions, args),
-  )
+  const rawFeatures = await fetchVariantFeatures(dataAdapter, regions, args)
   const filteredVariants = getFilteredVariants({
     minorAlleleFrequencyFilter,
     maxMissingnessFilter,

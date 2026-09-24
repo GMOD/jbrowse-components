@@ -8,26 +8,15 @@ export interface LookupRegion {
 }
 
 /**
- * Bucket the merged multi-region feature stream back into one list per displayed
- * region. `getFeaturesInMultipleRegions` merges N per-region queries without
- * deduping, so a feature spanning two fetched regions arrives twice; assigning
- * each feature to the *first* region it overlaps and stopping there keeps one
- * copy.
- *
- * Membership is overlap, not containment of the start: a tabix query returns
- * every record whose interval intersects the region, including a large DEL/INV
- * that began far to the left. Requiring `start >= region.start` dropped those
- * from every bucket, so panning or zooming past the start of a structural
- * variant made it disappear from the display entirely.
- *
- * Uses a linear scan over the per-refName candidates rather than a pointer
- * advance so features are assigned correctly regardless of emission order from
- * merge(). R (regions per refName) is almost always 1, so the O(N*R) cost is
- * effectively O(N).
+ * One list per displayed region, holding every item whose record overlaps it.
+ * A record spanning two regions goes in both, since each region draws from its
+ * own list. Overlap, not a start inside the region: a large DEL that began to
+ * the left still covers the region.
  */
-export function groupFeaturesByRegion(
-  features: Feature[],
+export function groupFeaturesByRegion<T>(
+  items: T[],
   regions: LookupRegion[],
+  getFeature: (item: T) => Feature,
 ) {
   const regionsByRefName = new Map<string, LookupRegion[]>()
   for (const r of regions) {
@@ -38,8 +27,9 @@ export function groupFeaturesByRegion(
     }
     list.push(r)
   }
-  const result = new Map<number, Feature[]>()
-  for (const feature of features) {
+  const result = new Map<number, T[]>()
+  for (const item of items) {
+    const feature = getFeature(item)
     const candidates = regionsByRefName.get(feature.get('refName'))
     if (candidates) {
       const start = feature.get('start')
@@ -51,8 +41,7 @@ export function groupFeaturesByRegion(
             list = []
             result.set(region.displayedRegionIndex, list)
           }
-          list.push(feature)
-          break
+          list.push(item)
         }
       }
     }

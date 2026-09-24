@@ -21,14 +21,9 @@ import type { Feature, Region } from '@jbrowse/core/util'
  * regions, six concurrent fetches) came back globally ascending under a ruler
  * running the other way.
  *
- * A feature is ranked by the first region it overlaps, the same rule
- * `groupFeaturesByRegion` uses. It does NOT dedupe: merge can emit a feature
- * once per fetched region it spans, but this display is genotypes at variant
- * sites, and measured on the figure that prompted all this — TP53 with its
- * introns collapsed, six regions — the longest REF allele is 30 bp against
- * introns hundreds of bp wide and nothing overlaps two regions. Ordering is one
- * job; if duplicate columns ever turn out to be real, the place to drop one is
- * the fetch that made it, not a sort.
+ * A feature is ranked by the first region it overlaps, and appears once:
+ * `fetchVariantFeatures` already dropped the copy merge emits per spanned
+ * region.
  *
  * A feature overlapping no region keeps its arrival order at the end rather than
  * being dropped. The caller asked for these features, and a missing column
