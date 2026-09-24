@@ -1,6 +1,11 @@
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
-import { isDisplayMode, readConfigValueSafe } from './renderConfig.ts'
+import {
+  GENE_GLYPH_DEFAULTS,
+  isDisplayMode,
+  pickDisplayConfig,
+  readConfigValueSafe,
+} from './renderConfig.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
 
@@ -66,5 +71,25 @@ describe('isDisplayMode', () => {
     expect(isDisplayMode('super-compact')).toBe(false)
     expect(isDisplayMode(undefined)).toBe(false)
     expect(isDisplayMode('')).toBe(false)
+  })
+})
+
+// The variant display declares no gene-glyph slots, and the worker reads them
+// all, so its fetch sends the defaults the feature display's slots start at.
+describe('pickDisplayConfig', () => {
+  it('sends the gene defaults for a display declaring no gene slots', () => {
+    const picked = pickDisplayConfig({ featureHeight: 10, height: 100 })
+    expect(picked).toMatchObject(GENE_GLYPH_DEFAULTS)
+    expect(picked).not.toHaveProperty('height')
+  })
+
+  it('lets a declared gene slot win over its default', () => {
+    const picked = pickDisplayConfig({
+      transcriptTypes: ['mRNA'],
+      subParts: 'CDS',
+    })
+    expect(picked.transcriptTypes).toEqual(['mRNA'])
+    expect(picked.subParts).toBe('CDS')
+    expect(picked.impliedUTRs).toBe(GENE_GLYPH_DEFAULTS.impliedUTRs)
   })
 })

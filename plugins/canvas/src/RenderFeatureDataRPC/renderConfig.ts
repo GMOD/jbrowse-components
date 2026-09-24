@@ -117,14 +117,66 @@ const DISPLAY_CONFIG_KEYS = Object.keys(
 ) as (keyof SettingsDisplayConfig)[]
 
 /**
+ * The half of the worker's settings that shapes a multi-part glyph. Only the
+ * feature display declares these as slots; a display drawing single records
+ * (the variant display, the variant lane) sends these values.
+ */
+export type GeneGlyphSettings = Pick<
+  SettingsDisplayConfig,
+  | 'subfeatureLabels'
+  | 'transcriptTypes'
+  | 'canonicalTranscriptField'
+  | 'canonicalTranscriptTags'
+  | 'containerTypes'
+  | 'subParts'
+  | 'impliedUTRs'
+  | 'hideSourceFeatures'
+  | 'connectorColor'
+  | 'utrColor'
+>
+
+export const GENE_GLYPH_DEFAULTS: GeneGlyphSettings = {
+  subfeatureLabels: 'none',
+  transcriptTypes: [
+    'mRNA',
+    'transcript',
+    'primary_transcript',
+    'V_gene_segment',
+    'C_gene_segment',
+    'D_gene_segment',
+    'J_gene_segment',
+  ],
+  canonicalTranscriptField: 'tag',
+  canonicalTranscriptTags: [
+    'MANE Select',
+    'MANE_Select',
+    'RefSeq Select',
+    'Ensembl_canonical',
+    'MANE Plus Clinical',
+    'MANE_Plus_Clinical',
+  ],
+  containerTypes: ['proteoform_orf'],
+  subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
+  impliedUTRs: true,
+  hideSourceFeatures: true,
+  connectorColor: undefined,
+  utrColor: undefined,
+}
+
+/**
  * Picks exactly the slots `DisplayConfig` declares out of the
- * everything-snapshot. Picking rather than excluding keeps an unrelated slot
+ * everything-snapshot, the gene half from `GENE_GLYPH_DEFAULTS` where the
+ * display declares none. Picking rather than excluding keeps an unrelated slot
  * write — `height` on every resize-drag frame — out of the RPC cache key.
  */
 export function pickDisplayConfig(snapshot: Record<string, unknown>) {
+  const source: Record<string, unknown> = {
+    ...GENE_GLYPH_DEFAULTS,
+    ...snapshot,
+  }
   const picked: Record<string, unknown> = {}
   for (const key of DISPLAY_CONFIG_KEYS) {
-    picked[key] = snapshot[key]
+    picked[key] = source[key]
   }
   return picked as unknown as SettingsDisplayConfig
 }

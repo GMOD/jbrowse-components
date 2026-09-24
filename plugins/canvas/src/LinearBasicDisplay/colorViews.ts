@@ -1,5 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
+import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import {
@@ -46,16 +46,6 @@ export function colorViews(self: ColorHost) {
     get featureColor() {
       const raw = self.conf.color.value
       return raw !== undefined && !isJexl(raw) ? raw : featureDefaultColor
-    },
-
-    /**
-     * #getter
-     */
-    // A `maybeColor` slot, resolved here so the getter never hands back
-    // undefined; raw read for the same reason as `featureColor`.
-    get utrColor(): string {
-      const raw = self.conf.utrColor
-      return raw !== undefined && !isJexl(raw) ? raw : utrDefaultColor
     },
 
     /**

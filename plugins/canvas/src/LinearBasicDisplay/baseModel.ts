@@ -122,7 +122,10 @@ import {
 } from './yMorphViews.ts'
 
 import type { IsoformPicks } from '../RenderFeatureDataRPC/isoformPicks.ts'
-import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
+import type {
+  DisplayMode,
+  SubfeatureLabels,
+} from '../RenderFeatureDataRPC/renderConfig.ts'
 // Importing any type from rpcTypes.ts pulls in its RpcRegistry augmentation,
 // which types `rpcManager.call()`.
 import type {
@@ -418,11 +421,12 @@ export default function baseStateModelFactory(
 
       /**
        * #getter
+       * Overridable hook (default on): whether intron lines carry chevrons.
        * Drawn from the render state, not baked by the worker, so the toggle
        * refetches nothing.
        */
       get displayDirectionalChevrons(): boolean {
-        return getConf(self, 'displayDirectionalChevrons')
+        return true
       },
 
       /**
@@ -463,12 +467,11 @@ export default function baseStateModelFactory(
 
       /**
        * #getter
-       * The subfeature-label mode the worker bakes.
+       * Overridable hook (default none): the subfeature-label mode the worker
+       * bakes.
        */
-      get effectiveSubfeatureLabels() {
-        return this.displayMode === 'collapsed'
-          ? 'none'
-          : getConf(self, 'subfeatureLabels')
+      get effectiveSubfeatureLabels(): SubfeatureLabels {
+        return 'none'
       },
 
       /**
@@ -669,10 +672,11 @@ export default function baseStateModelFactory(
       },
       /**
        * #getter
-       * Overridable hook: the gene-glyph mode the worker collapses under.
+       * Overridable hook (default all): the gene-glyph mode the worker
+       * collapses under.
        */
       get effectiveGeneGlyphMode(): GeneGlyphMode {
-        return getConf(self, 'geneGlyphMode')
+        return 'all'
       },
       /**
        * #getter
@@ -1180,13 +1184,6 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
-        setUtrColor(color?: string) {
-          setConf(self, 'utrColor', color)
-        },
-
-        /**
-         * #action
-         */
         // Skips no-op updates: mousemove fires per pixel but the base under
         // the cursor changes far less often.
         setSequenceHoverPosition(pos: SequenceHoverPosition | undefined) {
@@ -1246,10 +1243,10 @@ export default function baseStateModelFactory(
       /**
        * #action
        */
-      openSetColorDialog(showUtrColor = true) {
+      openSetColorDialog() {
         getDialogHost(self).queueDialog(handleClose => [
           SetColorDialog,
-          { model: self, handleClose, showUtrColor },
+          { model: self, handleClose },
         ])
       },
 

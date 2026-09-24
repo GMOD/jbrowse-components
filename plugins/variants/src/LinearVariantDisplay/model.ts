@@ -223,7 +223,7 @@ export default function stateModelFactory(
           {
             label: 'Solid color...',
             onClick: () => {
-              self.openSetColorDialog(false)
+              self.openSetColorDialog()
             },
           },
         ]

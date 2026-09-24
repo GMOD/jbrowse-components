@@ -2953,14 +2953,6 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
-          "name": "connectorColor",
-          "type": "(JexlString | (CssColor | undefined))"
-        },
-        {
-          "name": "utrColor",
-          "type": "(JexlString | (CssColor | undefined))"
-        },
-        {
           "name": "outlineColor",
           "type": "CssColor"
         },
@@ -2987,6 +2979,36 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "shorthand": "field"
+        },
+        {
+          "name": "labels",
+          "type": "CanvasFeatureLabelsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "name",
+              "type": "(JexlString | string)"
+            },
+            {
+              "name": "description",
+              "type": "(JexlString | string)"
+            }
+          ]
+        },
+        {
+          "name": "showOnlyGenes",
+          "type": "boolean"
+        },
+        {
+          "name": "legend",
+          "type": "frozen"
+        },
+        {
+          "name": "connectorColor",
+          "type": "(JexlString | (CssColor | undefined))"
+        },
+        {
+          "name": "utrColor",
+          "type": "(JexlString | (CssColor | undefined))"
         },
         {
           "name": "geneGlyphMode",
@@ -3027,28 +3049,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "hideSourceFeatures",
           "type": "boolean"
-        },
-        {
-          "name": "labels",
-          "type": "CanvasFeatureLabelsConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "name",
-              "type": "(JexlString | string)"
-            },
-            {
-              "name": "description",
-              "type": "(JexlString | string)"
-            }
-          ]
-        },
-        {
-          "name": "showOnlyGenes",
-          "type": "boolean"
-        },
-        {
-          "name": "legend",
-          "type": "frozen"
         }
       ],
       "legacyKeys": [
@@ -4275,14 +4275,6 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
-          "name": "connectorColor",
-          "type": "(JexlString | (CssColor | undefined))"
-        },
-        {
-          "name": "utrColor",
-          "type": "(JexlString | (CssColor | undefined))"
-        },
-        {
           "name": "outlineColor",
           "type": "CssColor"
         },
@@ -4311,46 +4303,6 @@ export const configManifest: ConfigManifest = {
           "shorthand": "field"
         },
         {
-          "name": "geneGlyphMode",
-          "type": "geneGlyphMode"
-        },
-        {
-          "name": "subfeatureLabels",
-          "type": "subfeatureLabels"
-        },
-        {
-          "name": "displayDirectionalChevrons",
-          "type": "boolean"
-        },
-        {
-          "name": "transcriptTypes",
-          "type": "string[]"
-        },
-        {
-          "name": "canonicalTranscriptField",
-          "type": "string"
-        },
-        {
-          "name": "canonicalTranscriptTags",
-          "type": "string[]"
-        },
-        {
-          "name": "containerTypes",
-          "type": "string[]"
-        },
-        {
-          "name": "subParts",
-          "type": "string"
-        },
-        {
-          "name": "impliedUTRs",
-          "type": "boolean"
-        },
-        {
-          "name": "hideSourceFeatures",
-          "type": "boolean"
-        },
-        {
           "name": "labels",
           "type": "CanvasFeatureLabelsConfigurationSchema",
           "subSlots": [
@@ -4370,8 +4322,6 @@ export const configManifest: ConfigManifest = {
         "autoHeight",
         "showDescriptions",
         "color1",
-        "color2",
-        "color3",
         "outline"
       ],
       "legacyValues": {

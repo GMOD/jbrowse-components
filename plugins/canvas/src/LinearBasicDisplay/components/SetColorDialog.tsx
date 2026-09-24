@@ -4,22 +4,22 @@ import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+// The UTR picker shows only on a display that has a `utrColor` slot.
 const SetColorDialog = observer(function SetColorDialog({
   model,
   handleClose,
-  showUtrColor = true,
 }: {
   model: {
     featureColor: string
-    utrColor: string
     colorSettings: { value?: string }
     setFeatureColor: (arg?: string) => void
-    setUtrColor: (arg?: string) => void
+    utrColor?: string
+    setUtrColor?: (arg?: string) => void
   }
   handleClose: () => void
-  showUtrColor?: boolean
 }) {
   const { value } = model.colorSettings
+  const { utrColor, setUtrColor } = model
   return (
     <SubmitDialog
       open
@@ -27,13 +27,9 @@ const SetColorDialog = observer(function SetColorDialog({
       submitText="Close"
       onCancel={handleClose}
       onSubmit={handleClose}
-      // Clearing a slot whose picker is hidden would undo a config-authored
-      // value through a control the user cannot see.
       onReset={() => {
         model.setFeatureColor(undefined)
-        if (showUtrColor) {
-          model.setUtrColor(undefined)
-        }
+        setUtrColor?.(undefined)
       }}
     >
       <Typography>Feature color</Typography>
@@ -49,13 +45,13 @@ const SetColorDialog = observer(function SetColorDialog({
           model.setFeatureColor(color)
         }}
       />
-      {showUtrColor ? (
+      {utrColor !== undefined && setUtrColor ? (
         <>
           <Typography>UTR color (gene/transcript UTRs)</Typography>
           <ColorPicker
-            color={model.utrColor}
+            color={utrColor}
             onChange={color => {
-              model.setUtrColor(color)
+              setUtrColor(color)
             }}
           />
         </>

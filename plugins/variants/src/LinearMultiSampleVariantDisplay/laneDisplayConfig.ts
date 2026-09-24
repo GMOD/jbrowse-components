@@ -1,4 +1,8 @@
-import { modeCanShowDescription, modeCanShowName } from '@jbrowse/plugin-canvas'
+import {
+  GENE_GLYPH_DEFAULTS,
+  modeCanShowDescription,
+  modeCanShowName,
+} from '@jbrowse/plugin-canvas'
 
 import type { DisplayConfig, ShowLabelsMode } from '@jbrowse/plugin-canvas'
 
@@ -15,7 +19,8 @@ import type { DisplayConfig, ShowLabelsMode } from '@jbrowse/plugin-canvas'
  *
  * Typed as `DisplayConfig`, an interface exhaustive over what the layout reads
  * (`WORKER_READS` in plugin-canvas checks it), so a field added there fails to
- * compile here instead of taking a default the lane never considered.
+ * compile here unless it joins the gene half, which takes
+ * `GENE_GLYPH_DEFAULTS` as a LinearVariantDisplay does.
  */
 export function laneDisplayConfig({
   labels,
@@ -39,8 +44,6 @@ export function laneDisplayConfig({
       domain: [],
       range: [],
     },
-    connectorColor: undefined,
-    utrColor: undefined,
     featureHeight,
     // The label content the `variantLaneLabels` slot asked for, expressed the
     // way plugin-canvas expresses it: withholding the jexl IS how a kind is
@@ -64,18 +67,9 @@ export function laneDisplayConfig({
     // this display's own worker-side `activeFilters()` admitted, so a second
     // pass here would be a second, differently-spelled filter.
     jexlFilters: [],
-    // Every gene-shaped decision, at the value that makes it a no-op for a
-    // record with no subfeatures. Spelled out rather than defaulted because the
-    // interface has no defaults — and because "a variant is a box" is the
-    // assumption the lane rests on, so it is worth being able to read.
+    // The gene half at what a LinearVariantDisplay sends, all of it inert for
+    // a record with no subfeatures.
+    ...GENE_GLYPH_DEFAULTS,
     geneGlyphMode: 'all',
-    subfeatureLabels: 'none',
-    transcriptTypes: [],
-    canonicalTranscriptField: '',
-    canonicalTranscriptTags: [],
-    containerTypes: [],
-    subParts: '',
-    impliedUTRs: false,
-    hideSourceFeatures: false,
   }
 }

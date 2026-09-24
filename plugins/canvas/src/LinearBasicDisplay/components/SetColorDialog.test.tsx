@@ -4,7 +4,9 @@ import { fireEvent, render } from '@testing-library/react'
 
 import SetColorDialog from './SetColorDialog.tsx'
 
-function renderDialog(showUtrColor: boolean, value?: string) {
+// `withUtr` stands for a display with a `utrColor` slot, the feature display;
+// the variant display has none.
+function renderDialog(withUtr: boolean, value?: string) {
   const setFeatureColor = jest.fn()
   const setUtrColor = jest.fn()
   const utils = render(
@@ -12,36 +14,35 @@ function renderDialog(showUtrColor: boolean, value?: string) {
       <SetColorDialog
         model={{
           featureColor: 'goldenrod',
-          utrColor: '#357089',
           colorSettings: { value },
           setFeatureColor,
-          setUtrColor,
+          ...(withUtr ? { utrColor: '#357089', setUtrColor } : {}),
         }}
         handleClose={() => {}}
-        showUtrColor={showUtrColor}
       />
     </ThemeProvider>,
   )
   return { ...utils, setFeatureColor, setUtrColor }
 }
 
-function setup(showUtrColor: boolean) {
-  const utils = renderDialog(showUtrColor)
+function setup(withUtr: boolean) {
+  const utils = renderDialog(withUtr)
   fireEvent.click(utils.getByText('Restore default'))
   return utils
 }
 
 describe('SetColorDialog reset', () => {
-  it('clears both slots when the UTR picker is shown', () => {
+  it('clears both slots on a display with a UTR color', () => {
     const { setFeatureColor, setUtrColor } = setup(true)
     expect(setFeatureColor).toHaveBeenCalledWith(undefined)
     expect(setUtrColor).toHaveBeenCalledWith(undefined)
   })
 
-  it('leaves utrColor alone when its picker is hidden', () => {
-    const { setFeatureColor, setUtrColor } = setup(false)
+  it('offers no UTR picker on a display without one', () => {
+    const { setFeatureColor, setUtrColor, queryByText } = setup(false)
     expect(setFeatureColor).toHaveBeenCalledWith(undefined)
     expect(setUtrColor).not.toHaveBeenCalled()
+    expect(queryByText(/UTR color/)).toBeNull()
   })
 })
 

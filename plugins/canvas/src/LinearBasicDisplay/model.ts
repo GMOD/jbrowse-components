@@ -4,7 +4,9 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
+import { utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { isGeneLikeType, pluralize } from '@jbrowse/core/util'
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import SegmentIcon from '@mui/icons-material/Segment'
@@ -88,6 +90,23 @@ export default function stateModelFactory(
 
       get subfeatureLabels(): DisplayConfig['subfeatureLabels'] {
         return getConf(self, 'subfeatureLabels')
+      },
+
+      // Collapsed mode forces 'none' here rather than in the renderer, since
+      // the label is baked in the worker.
+      get effectiveSubfeatureLabels(): DisplayConfig['subfeatureLabels'] {
+        return self.displayMode === 'collapsed' ? 'none' : this.subfeatureLabels
+      },
+
+      get displayDirectionalChevrons(): boolean {
+        return getConf(self, 'displayDirectionalChevrons')
+      },
+
+      // Raw slot rather than getConf, as `featureColor` reads its own: a jexl
+      // color evaluated without a feature throws.
+      get utrColor(): string {
+        const raw = this.conf.utrColor
+        return raw !== undefined && !isJexl(raw) ? raw : utrDefaultColor
       },
 
       get geneGlyphMode() {
@@ -211,6 +230,10 @@ export default function stateModelFactory(
 
       setDisplayDirectionalChevrons(value: boolean) {
         setConf(self, 'displayDirectionalChevrons', value)
+      },
+
+      setUtrColor(color?: string) {
+        setConf(self, 'utrColor', color)
       },
     }))
     .views(self => ({

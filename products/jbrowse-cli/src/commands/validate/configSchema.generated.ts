@@ -3740,14 +3740,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "color": {
           "$ref": "#/$defs/FeatureColor"
         },
-        "connectorColor": {
-          "description": "color of the connecting/intron lines between feature segments (defaults to the theme text color).",
-          "$ref": "#/$defs/CssColorOrJexl"
-        },
-        "utrColor": {
-          "description": "fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue.",
-          "$ref": "#/$defs/CssColorOrJexl"
-        },
         "outlineColor": {
           "description": "outline color for features (empty string = no outline).",
           "$ref": "#/$defs/CssColor",
@@ -3782,6 +3774,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "facet": {
           "$ref": "#/$defs/Facet"
+        },
+        "labels": {
+          "$ref": "#/$defs/CanvasFeatureLabels"
+        },
+        "showOnlyGenes": {
+          "type": "boolean",
+          "default": false
+        },
+        "legend": {
+          "description": "explicit {label,color} color key for a jexl-colored track; empty draws none. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
+        },
+        "connectorColor": {
+          "description": "color of the connecting/intron lines between feature segments (defaults to the theme text color).",
+          "$ref": "#/$defs/CssColorOrJexl"
+        },
+        "utrColor": {
+          "description": "fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue.",
+          "$ref": "#/$defs/CssColorOrJexl"
         },
         "geneGlyphMode": {
           "description": "Gene glyph display mode: \\"auto\\" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, \\"all\\" draws every transcript and scrolls the surplus instead of trimming, \\"longestCoding\\" shows one transcript per gene — the one canonicalTranscriptTags names, else the longest coding.",
@@ -3862,19 +3875,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "hide the GFF3 source record, the whole-molecule type=region feature NCBI RefSeq emits per sequence (gbkey=Src). It spans the entire chromosome and carries only taxon/strain metadata, so it draws as a bar across every window. Set false to draw it. No effect on files that carry no gbkey attribute.",
           "type": "boolean",
           "default": true
-        },
-        "labels": {
-          "$ref": "#/$defs/CanvasFeatureLabels"
-        },
-        "showOnlyGenes": {
-          "type": "boolean",
-          "default": false
-        },
-        "legend": {
-          "description": "explicit {label,color} color key for a jexl-colored track; empty draws none. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
-          }
         },
         "renderer": {
           "deprecated": true,
@@ -5607,14 +5607,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "color": {
           "$ref": "#/$defs/FeatureColor"
         },
-        "connectorColor": {
-          "description": "color of the connecting/intron lines between feature segments (defaults to the theme text color).",
-          "$ref": "#/$defs/CssColorOrJexl"
-        },
-        "utrColor": {
-          "description": "fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue.",
-          "$ref": "#/$defs/CssColorOrJexl"
-        },
         "outlineColor": {
           "description": "outline color for features (empty string = no outline).",
           "$ref": "#/$defs/CssColor",
@@ -5650,86 +5642,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "facet": {
           "$ref": "#/$defs/Facet"
         },
-        "geneGlyphMode": {
-          "description": "Gene glyph display mode: \\"auto\\" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, \\"all\\" draws every transcript and scrolls the surplus instead of trimming, \\"longestCoding\\" shows one transcript per gene — the one canonicalTranscriptTags names, else the longest coding.",
-          "enum": [
-            "auto",
-            "all",
-            "longestCoding"
-          ],
-          "default": "auto"
-        },
-        "subfeatureLabels": {
-          "description": "subfeature label display mode: \`none\` (the default), \`below\` or \`overlay\`.",
-          "enum": [
-            "none",
-            "below",
-            "overlay"
-          ],
-          "default": "none"
-        },
-        "displayDirectionalChevrons": {
-          "description": "Display directional chevrons on intron lines to indicate strand direction. Defaults to on.",
-          "type": "boolean",
-          "default": true
-        },
-        "transcriptTypes": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "mRNA",
-            "transcript",
-            "primary_transcript",
-            "V_gene_segment",
-            "C_gene_segment",
-            "D_gene_segment",
-            "J_gene_segment"
-          ]
-        },
-        "canonicalTranscriptField": {
-          "$ref": "#/$defs/PlainString",
-          "default": "tag"
-        },
-        "canonicalTranscriptTags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "MANE Select",
-            "MANE_Select",
-            "RefSeq Select",
-            "Ensembl_canonical",
-            "MANE Plus Clinical",
-            "MANE_Plus_Clinical"
-          ]
-        },
-        "containerTypes": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "proteoform_orf"
-          ]
-        },
-        "subParts": {
-          "description": "subparts for a glyph.",
-          "$ref": "#/$defs/PlainString",
-          "default": "CDS,UTR,five_prime_UTR,three_prime_UTR"
-        },
-        "impliedUTRs": {
-          "description": "imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures.",
-          "type": "boolean",
-          "default": true
-        },
-        "hideSourceFeatures": {
-          "description": "hide the GFF3 source record, the whole-molecule type=region feature NCBI RefSeq emits per sequence (gbkey=Src). It spans the entire chromosome and carries only taxon/strain metadata, so it draws as a bar across every window. Set false to draw it. No effect on files that carry no gbkey attribute.",
-          "type": "boolean",
-          "default": true
-        },
         "labels": {
           "$ref": "#/$defs/CanvasFeatureLabels"
         },
@@ -5746,14 +5658,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "color1": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "color2": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "color3": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -8891,12 +8795,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "connectorColor": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/connectorColor"
-            },
-            "utrColor": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/utrColor"
-            },
             "outlineColor": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/outlineColor"
             },
@@ -8922,6 +8820,28 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
                 }
               ]
+            },
+            "labels": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/labels"
+            },
+            "showOnlyGenes": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showOnlyGenes"
+            },
+            "legend": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/legend"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/legend"
+                }
+              ]
+            },
+            "connectorColor": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/connectorColor"
+            },
+            "utrColor": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/utrColor"
             },
             "geneGlyphMode": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/geneGlyphMode"
@@ -8952,22 +8872,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "hideSourceFeatures": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/hideSourceFeatures"
-            },
-            "labels": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/labels"
-            },
-            "showOnlyGenes": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showOnlyGenes"
-            },
-            "legend": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/legend"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/legend"
-                }
-              ]
             },
             "renderer": {
               "anyOf": [
@@ -9913,12 +9817,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "connectorColor": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/connectorColor"
-            },
-            "utrColor": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/utrColor"
-            },
             "outlineColor": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/outlineColor"
             },
@@ -9944,36 +9842,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "geneGlyphMode": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/geneGlyphMode"
-            },
-            "subfeatureLabels": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/subfeatureLabels"
-            },
-            "displayDirectionalChevrons": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/displayDirectionalChevrons"
-            },
-            "transcriptTypes": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/transcriptTypes"
-            },
-            "canonicalTranscriptField": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/canonicalTranscriptField"
-            },
-            "canonicalTranscriptTags": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/canonicalTranscriptTags"
-            },
-            "containerTypes": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/containerTypes"
-            },
-            "subParts": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/subParts"
-            },
-            "impliedUTRs": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/impliedUTRs"
-            },
-            "hideSourceFeatures": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/hideSourceFeatures"
-            },
             "labels": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/labels"
             },
@@ -9985,12 +9853,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "color1": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color1"
-            },
-            "color2": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color2"
-            },
-            "color3": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color3"
             },
             "outline": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/outline"

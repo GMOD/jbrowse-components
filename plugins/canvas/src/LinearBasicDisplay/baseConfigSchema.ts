@@ -7,15 +7,11 @@ import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeCon
 import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import {
-  DISPLAY_MODES,
-  SUBFEATURE_LABELS,
-} from '../RenderFeatureDataRPC/renderConfig.ts'
+import { DISPLAY_MODES } from '../RenderFeatureDataRPC/renderConfig.ts'
 import {
   MAX_DESCRIPTION_FEATURE_DENSITY,
   MAX_LABEL_FEATURE_DENSITY,
 } from '../RenderFeatureDataRPC/zoomThresholds.ts'
-import { GENE_GLYPH_MODES } from './geneGlyphMode.ts'
 import { migrateBasicConfigSnapshot } from './migrateBasicSnapshot.ts'
 import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
 
@@ -104,26 +100,6 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      // `maybeColor` for the same reason as `color`: the default is
-      // derive-from-theme, not a color.
-      connectorColor: {
-        type: 'maybeColor',
-        description:
-          'color of the connecting/intron lines between feature segments (defaults to the theme text color)',
-        contextVariable: ['feature'],
-      },
-      /**
-       * #slot
-       */
-      utrColor: {
-        type: 'maybeColor',
-        description:
-          "fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue",
-        contextVariable: ['feature'],
-      },
-      /**
-       * #slot
-       */
       outlineColor: {
         type: 'color',
         description: 'outline color for features (empty string = no outline)',
@@ -154,118 +130,6 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * or `{ field, domain }` with the order its sections stack in.
        */
       facet: facetConfigSchema,
-      /**
-       * #slot
-       */
-      geneGlyphMode: {
-        type: 'stringEnum',
-        model: types.enumeration('geneGlyphMode', [...GENE_GLYPH_MODES]),
-        description:
-          'Gene glyph display mode: "auto" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, "all" draws every transcript and scrolls the surplus instead of trimming, "longestCoding" shows one transcript per gene — the one canonicalTranscriptTags names, else the longest coding',
-        defaultValue: 'auto',
-      },
-      /**
-       * #slot
-       */
-      subfeatureLabels: {
-        type: 'stringEnum',
-        model: types.enumeration('subfeatureLabels', [...SUBFEATURE_LABELS]),
-        description:
-          'subfeature label display mode: `none` (the default), `below` or `overlay`',
-        defaultValue: 'none',
-      },
-      /**
-       * #slot
-       */
-      displayDirectionalChevrons: {
-        type: 'boolean',
-        description:
-          'Display directional chevrons on intron lines to indicate strand direction. Defaults to on',
-        defaultValue: true,
-      },
-      /**
-       * #slot
-       * feature types the gene-only view (`showOnlyGenes`) admits beside
-       * every gene, transcript and RNA type, plus the fallback for recognizing
-       * a CHILDLESS transcript as one of a gene's isoforms.
-       */
-      transcriptTypes: {
-        type: 'stringArray',
-        // Not the isoform test: keying that off this list dropped every
-        // `lnc_RNA`/`misc_RNA` isoform NCBI hangs off a gene, so the list is
-        // only the childless-transcript fallback and the gene-only gate.
-        defaultValue: [
-          'mRNA',
-          'transcript',
-          'primary_transcript',
-          'V_gene_segment',
-          'C_gene_segment',
-          'D_gene_segment',
-          'J_gene_segment',
-        ],
-      },
-      /**
-       * #slot
-       * feature attribute carrying an isoform's curated "this one represents
-       * the gene" tag.
-       */
-      canonicalTranscriptField: {
-        type: 'string',
-        defaultValue: 'tag',
-      },
-      /**
-       * #slot
-       * values of that attribute that mark an isoform as the gene's
-       * representative one, which is then ranked ahead of every other
-       * isoform: it is the transcript shown by `longestCoding`, and the first
-       * kept when `auto` caps a gene at the rows the track has.
-       */
-      canonicalTranscriptTags: {
-        type: 'stringArray',
-        defaultValue: [
-          'MANE Select',
-          'MANE_Select',
-          'RefSeq Select',
-          'Ensembl_canonical',
-          'MANE Plus Clinical',
-          'MANE_Plus_Clinical',
-        ],
-      },
-      /**
-       * #slot
-       * top-level feature types that always stack their children on separate
-       * rows.
-       */
-      containerTypes: {
-        type: 'stringArray',
-        defaultValue: ['proteoform_orf'],
-      },
-      /**
-       * #slot
-       */
-      subParts: {
-        type: 'string',
-        description: 'subparts for a glyph',
-        defaultValue: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
-      },
-      /**
-       * #slot
-       */
-      impliedUTRs: {
-        type: 'boolean',
-        description:
-          'imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures',
-        defaultValue: true,
-      },
-      /**
-       * #slot
-       */
-      hideSourceFeatures: {
-        type: 'boolean',
-        description:
-          'hide the GFF3 source record, the whole-molecule type=region feature NCBI RefSeq emits per sequence (gbkey=Src). It spans the entire chromosome and carries only taxon/strain metadata, so it draws as a bar across every window. Set false to draw it. No effect on files that carry no gbkey attribute',
-        defaultValue: true,
-      },
       labels: ConfigurationSchema('CanvasFeatureLabels', {
         /**
          * #slot labels.name
