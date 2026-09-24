@@ -10,6 +10,12 @@ export {
   suppressTeardownNoise,
 } from './teardownNoise.ts'
 export { testAssembly, testAssemblyManager } from './testAssembly.ts'
+export {
+  reactionColumn,
+  recomputeColumn,
+  runCensus,
+  workCensus,
+} from './workCensus.ts'
 
 export type {
   DisplayTestEnvironmentOptions,
@@ -17,3 +23,4 @@ export type {
 } from './createDisplayTestEnvironment.ts'
 export type { QueuedDialog } from './displayTestSessionModel.ts'
 export type { TestAssembly } from './testAssembly.ts'
+export type { CensusColumn, CensusStep } from './workCensus.ts'

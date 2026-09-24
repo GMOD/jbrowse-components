@@ -509,9 +509,15 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.2
         version: 6.5.2(mobx@7.0.3)
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../render-core
       '@testing-library/react':
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      mobx:
+        specifier: ^7.0.3
+        version: 7.0.3
 
   packages/display-ui:
     dependencies:
