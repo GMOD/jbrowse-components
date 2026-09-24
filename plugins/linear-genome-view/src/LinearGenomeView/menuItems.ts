@@ -195,9 +195,9 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       subMenu: [
         showAllRegionsMenuItem(self),
         {
-          label: 'Show tracks',
+          label: 'Show ruler only',
           type: 'checkbox',
-          checked: !self.scalebarOnly,
+          checked: self.scalebarOnly,
           onClick: () => {
             self.setScalebarOnly(!self.scalebarOnly)
           },

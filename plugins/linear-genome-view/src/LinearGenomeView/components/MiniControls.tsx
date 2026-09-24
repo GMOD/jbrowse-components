@@ -52,7 +52,7 @@ const MiniControls = observer(function MiniControls({
         <CascadingMenuButton menuItems={() => model.menuItems()}>
           <MoreVertIcon fontSize="small" />
         </CascadingMenuButton>
-        <Tooltip title={scalebarOnly ? 'Expand tracks' : 'Collapse to ruler'}>
+        <Tooltip title={scalebarOnly ? 'Show tracks' : 'Show ruler only'}>
           <IconButton
             size="small"
             onClick={() => {
