@@ -4,12 +4,22 @@ import { defineMark, spanMark } from '@jbrowse/render-core/marks'
 import { GAP_STROKE_OFFSET } from './rendering/types.ts'
 
 import type {
-  MafCellsPayload,
   MafCoverageRegion,
   MafGPURenderState,
+  MafRowsPayload,
   MafUploadPayload,
 } from './mafRenderingBackendTypes.ts'
-import type { Mark } from '@jbrowse/render-core/marks'
+import type {
+  Mark,
+  MarkShape,
+  SpanChannels,
+  SpanParams,
+} from '@jbrowse/render-core/marks'
+
+const rowsBand = (s: MafGPURenderState) => ({
+  top: s.rowsTop,
+  height: s.rowsHeight,
+})
 
 /**
  * The rows band, as a declaration: one `span` mark per run of same-coloured
@@ -23,7 +33,7 @@ import type { Mark } from '@jbrowse/render-core/marks'
  */
 export const MAF_ROW_MARK = defineMark({
   shape: spanMark,
-  channels: (d: MafCellsPayload) => d.cells,
+  channels: (d: MafRowsPayload) => d.cells,
   params: (s: MafGPURenderState) => ({
     rowHeight: s.rowHeight,
     rowProportion: s.rowProportion,
@@ -36,7 +46,30 @@ export const MAF_ROW_MARK = defineMark({
     seamPx: GAP_STROKE_OFFSET,
     scrollTop: s.scrollTop - s.rowsTop,
   }),
-  band: s => ({ top: s.rowsTop, height: s.rowsHeight }),
+  band: rowsBand,
+})
+
+// A pass id keys the instance buffer, so a second `span` mark needs its own.
+function spanPass(id: string): MarkShape<SpanChannels, SpanParams> {
+  return { ...spanMark, id, pass: { ...spanMark.pass, id } }
+}
+
+/**
+ * One block per row, where the rows band draws each block whole rather than
+ * base by base. Unlike the cells these are sparse intervals, so a block
+ * narrower than a pixel is widened to one and still reads as present.
+ */
+export const MAF_SOURCE_CHROM_MARK = defineMark({
+  shape: spanPass('mafSourceChrom'),
+  channels: (d: MafRowsPayload) => d.sourceChrom,
+  params: (s: MafGPURenderState) => ({
+    rowHeight: s.rowHeight,
+    rowProportion: s.rowProportion,
+    minWidthPx: 1,
+    seamPx: 0,
+    scrollTop: s.scrollTop - s.rowsTop,
+  }),
+  band: rowsBand,
 })
 
 /**
@@ -51,8 +84,14 @@ export const MAF_COVERAGE_MARKS = coverageBandMarks({
   band: s => ({ top: 0, height: s.coverage.height }),
 })
 
+/** The rows band's marks, in paint order. */
+export const MAF_ROWS_MARKS: Mark<MafRowsPayload, MafGPURenderState>[] = [
+  MAF_ROW_MARK,
+  MAF_SOURCE_CHROM_MARK,
+]
+
 /** Everything the rows canvas draws, in paint order. */
 export const MAF_MARKS: Mark<MafUploadPayload, MafGPURenderState>[] = [
   ...MAF_COVERAGE_MARKS,
-  MAF_ROW_MARK,
+  ...MAF_ROWS_MARKS,
 ]

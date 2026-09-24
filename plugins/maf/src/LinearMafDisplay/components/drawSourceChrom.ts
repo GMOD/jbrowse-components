@@ -1,16 +1,11 @@
-import {
-  forEachClippedBlock,
-  makeBpMapper,
-  spanRect,
-} from '@jbrowse/render-core/canvas2dUtils'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
-import { paintedBpRange } from './paintedBpRange.ts'
-import { rowBandGeometry, visibleRowRange } from './visibleRegionGeometry.ts'
-
-import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type {
+  MafBlock,
+  MafRegionData,
+} from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
-import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
-import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+import type { SpanChannels } from '@jbrowse/render-core/marks'
 
 // Per-rank palette for the color-by-source-chromosome mode. Coloring is by a
 // source chromosome's RANK within its own species row (see perRowChromRanks) —
@@ -74,8 +69,8 @@ export function sourceChromLegendItems(maxRank: number): LegendItem[] {
  * Rank each display row's source chromosomes by descending aligned bp, so rank 0
  * is that row's dominant (main) chromosome. Returns `rowIndex -> (chr -> rank)`
  * plus the max rank present (for sizing the legend). Pure over the region data,
- * so the on-screen canvas, the SVG export, and the legend getter can share it
- * and never disagree about which color a row's chromosome gets.
+ * so the span encode and the legend getter can share it and never disagree
+ * about which color a row's chromosome gets.
  */
 export function perRowChromRanks(regions: Iterable<MafRegionData>): {
   ranks: Map<number, Map<string, number>>
@@ -111,106 +106,43 @@ export function perRowChromRanks(regions: Iterable<MafRegionData>): {
   return { ranks, maxRank }
 }
 
-interface DrawSourceChromState {
-  rowHeight: number
-  rowProportion: number
-  /** display row count */
-  nRows: number
-  canvasWidth: number
-  /** the rows viewport (the canvas), which with `scrollTop` picks the rows drawn */
-  canvasHeight: number
-  scrollTop: number
-  /**
-   * `rowIndex -> (chr -> rank)` from the model's `sourceChromRanks` computed.
-   * Passed in rather than derived here: the walk covers every block × row of
-   * every visible region, and this draw re-fires on every pan and zoom, so
-   * computing it here recomputed per frame what the legend had already memoized.
-   */
-  ranks: ReadonlyMap<number, ReadonlyMap<string, number>>
-}
+const RANK_ABGR = SOURCE_CHROM_PALETTE.map(cssColorToABGR)
 
 /**
- * Color-by-source-chromosome rendering over the (cleared) GPU base canvas: each
- * species row's alignment blocks are filled by the RANK of their source
- * chromosome within that row (`perRowChromRanks`) — the row's main chromosome is
- * the primary color, a switch to a minority source chromosome takes an accent
- * color — so a translocation/rearrangement reads as a color change along the row
- * without a global name→color rainbow. `MafAlignedRow.chr` is already shipped, so
- * no extra fetch. Replaces the base SNP rendering when active (see
- * `activeRowRendering`); rows with no `chr` are left untouched. Shared by the
- * on-screen canvas and SVG export, like `drawRowIdentity`.
+ * The color-by-source-chromosome rows as `span` channels: one instance per
+ * aligned row per block, across the block's reference extent, colored by the
+ * row's rank for its source chromosome. A row the adapter named no `chr` for
+ * draws nothing. Blocks outer, rows inner, which is the paint order.
  */
-export function drawSourceChrom(
-  ctx: Ctx2D,
-  blocks: RenderBlock[],
-  regions: ReadonlyMap<number, MafRegionData>,
-  state: DrawSourceChromState,
-) {
-  const {
-    rowHeight,
-    rowProportion,
-    nRows,
-    canvasWidth,
-    canvasHeight,
-    scrollTop,
-    ranks,
-  } = state
-  if (canvasWidth <= 0 || nRows <= 0) {
-    return
-  }
-  const { h: bandH, offset: bandOffset } = rowBandGeometry(
-    rowHeight,
-    rowProportion,
-    scrollTop,
-  )
-  const { firstRow, endRow } = visibleRowRange(
-    rowHeight,
-    scrollTop,
-    canvasHeight,
-  )
-  const lastRow = Math.min(endRow, nRows)
-
-  // Scissor to each block's own columns: the fetched region is the *buffered*
-  // one, so its MAF blocks extend past the render block's screen span, and a
-  // region referenced by two render blocks would otherwise paint twice under
-  // two different mappings — smeared over the neighboring region.
-  forEachClippedBlock(
-    ctx,
-    blocks,
-    canvasWidth,
-    canvasHeight,
-    block => regions.get(block.displayedRegionIndex),
-    (region, block, clip) => {
-      const bpToX = makeBpMapper(block)
-      // The buffered region's off-screen blocks would emit a fill per row that
-      // the clip then throws away — about half of them at a typical view.
-      const { overlaps } = paintedBpRange(block, clip)
-      // Assigning `fillStyle` re-parses the CSS color string every time, and
-      // this loop is blocks × visible rows — over a million iterations per
-      // frame on the ce11 26-way shape. The palette has five entries and the
-      // *point* of ranking is that nearly every row is rank 0, so tracking the
-      // last color assigned turns almost all of those back into a plain
-      // `fillRect`. Same reasoning as the run-length fill in `drawRowIdentity`,
-      // and lossless for the same reason: the pixels painted are identical.
-      let lastFill: string | undefined
-      for (const { startBp, endBp, rows } of region.blocks) {
-        if (overlaps(startBp, endBp)) {
-          // >=1px so a block narrower than a pixel still reads as present
-          const { left: xLeft, width } = spanRect(bpToX, startBp, endBp, 1)
-          for (const row of rows) {
-            if (row.rowIndex >= firstRow && row.rowIndex < lastRow && row.chr) {
-              const rank = ranks.get(row.rowIndex)?.get(row.chr) ?? 0
-              const fill = sourceChromRankColor(rank)
-              if (fill !== lastFill) {
-                ctx.fillStyle = fill
-                lastFill = fill
-              }
-              const y = bandOffset + rowHeight * row.rowIndex
-              ctx.fillRect(xLeft, y, width, bandH)
-            }
-          }
-        }
+export function encodeSourceChromSpans(
+  blocks: readonly MafBlock[],
+  ranks: ReadonlyMap<number, ReadonlyMap<string, number>>,
+): SpanChannels {
+  let count = 0
+  for (const { rows } of blocks) {
+    for (const row of rows) {
+      if (row.chr) {
+        count++
       }
-    },
-  )
+    }
+  }
+  const x = new Uint32Array(count)
+  const x2 = new Uint32Array(count)
+  const row = new Uint32Array(count)
+  const color = new Uint32Array(count)
+  const last = RANK_ABGR.length - 1
+  let i = 0
+  for (const { startBp, endBp, rows } of blocks) {
+    for (const { rowIndex, chr } of rows) {
+      if (chr) {
+        const rank = ranks.get(rowIndex)?.get(chr) ?? 0
+        x[i] = startBp
+        x2[i] = endBp
+        row[i] = rowIndex
+        color[i] = RANK_ABGR[Math.min(rank, last)]!
+        i++
+      }
+    }
+  }
+  return { x, x2, row, color, count }
 }

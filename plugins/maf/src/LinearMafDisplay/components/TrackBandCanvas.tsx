@@ -32,7 +32,7 @@ export type BandDraw = (
  *
  * `canvasWidthPx`, not `lgv.width`: every one of these bands' painters is handed
  * `canvasWidthPx` as its `canvasWidth` and clamps to it, and the GPU rows canvas
- * this one *replaces* in the identity/source-chromosome modes is that wide too.
+ * this one *replaces* in the identity modes is that wide too.
  * Sizing the element by the view width instead left it 2px past its own
  * container (`TrackRenderingContainer` insets by the track outline under
  * `contain: strict`, so the browser clipped the overhang) with its rightmost 2px

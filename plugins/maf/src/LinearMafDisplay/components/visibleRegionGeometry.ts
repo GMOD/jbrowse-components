@@ -105,10 +105,10 @@ export function rowBandGeometry(
  *
  * **A filter bound, not an array bound.** `endRow` is where the viewport ends,
  * which can be past the last row that exists — deliberately, since it takes no
- * row count and nine of its callers have none to give: they test a `rowIndex`
+ * row count and most of its callers have none to give: they test a `rowIndex`
  * the data handed them, and a bound past the end excludes nothing that exists.
  * A caller sizing a buffer or indexing rows by it needs its own
- * `Math.min(endRow, nRows)` (`drawRowIdentity`, `drawSourceChrom`). Contrast
+ * `Math.min(endRow, nRows)` (`drawRowIdentity`). Contrast
  * `@jbrowse/core/util/virtualRange`, which clamps to a `total` because its
  * consumers size canvases from `(end - start) * cellSize`.
  */

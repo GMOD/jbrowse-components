@@ -271,18 +271,20 @@ export interface MafGpuProps {
 // the coverage half is the worker's own region, carried through by reference
 // so the shared band's passes can upload its buffers verbatim.
 /**
- * The rows band as the `span` shape's channels — the single walk both backends
- * draw from. The GPU packs them into the shape's instance buffer, the Canvas2D
- * painter and the SVG export walk them directly.
+ * The rows band as `span` channels — the single walk both backends draw from.
+ * The GPU packs them into each mark's instance buffer, the Canvas2D painter and
+ * the SVG export walk them directly.
  *
- * Its own interface because the mark reads only this much: the SVG export
- * re-encodes the cells and has no coverage buffers to hand over.
+ * Its own interface because the row marks read only this much: the SVG export
+ * re-encodes the rows and has no coverage buffers to hand over.
  */
-export interface MafCellsPayload {
+export interface MafRowsPayload {
   cells: SpanChannels
+  /** Each row's aligned blocks coloured by source-chromosome rank. */
+  sourceChrom?: SpanChannels
 }
 
-export interface MafUploadPayload extends MafCellsPayload {
+export interface MafUploadPayload extends MafRowsPayload {
   /**
    * The worker's own per-region coverage, carried by reference: the band's
    * marks pack its buffers and read its two maxima. It rides on the payload

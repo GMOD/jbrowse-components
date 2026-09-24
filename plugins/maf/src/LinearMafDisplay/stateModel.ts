@@ -56,10 +56,6 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.ts'
 import {
-  EMPTY_MAF_CELLS,
-  buildMafChannels,
-} from '../LinearMafRenderer/mafChannels.ts'
-import {
   getCodonLegendItems,
   getFrameLegendItems,
   getMafColorPalette,
@@ -93,6 +89,7 @@ import {
 import { findRowHoverAtBp } from './components/findRowHover.ts'
 import { findRowSpans } from './components/findRowSpan.ts'
 import { DEFAULTS } from './displayDefaults.ts'
+import { encodeMafRows } from './encodeMafRows.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
 import { mafLaunchMenuItems } from './launchMenuItems.ts'
 import { openInsertionWidget } from './openInsertionWidget.ts'
@@ -136,6 +133,7 @@ import type {
   LinearMafDisplayConfigModel,
 } from './configSchema.ts'
 import type { ConservationMode } from './conservationModes.ts'
+import type { MafRowsEncodeProps } from './encodeMafRows.ts'
 import type {
   RowIdentityMode,
   RowIdentityModeWithOff,
@@ -2219,16 +2217,15 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Which rendering the sibling Canvas2D rows layer paints, or undefined
-         * when it paints nothing (`bases` is the GPU canvas, `codon` is its own
-         * overlay). The on-screen canvas and SVG export both branch on this, so
-         * the two cannot diverge in how they resolve the rendering.
+         * Which identity plot the sibling Canvas2D rows layer paints, or
+         * undefined when it paints nothing (`bases` and `sourceChrom` are the
+         * rendering backend's marks, `codon` is its own overlay). The on-screen
+         * canvas and SVG export both branch on this, so the two cannot diverge
+         * in how they resolve the rendering.
          */
-        get rowsCanvas2dMode(): 'sourceChrom' | RowIdentityMode | undefined {
+        get rowsCanvas2dMode(): RowIdentityMode | undefined {
           const rendering = self.activeRowRendering
-          return rendering === 'bases' || rendering === 'codon'
-            ? undefined
-            : rendering
+          return isRowIdentityMode(rendering) ? rendering : undefined
         },
       }))
       .actions(self => ({
@@ -2416,10 +2413,8 @@ export default function stateModelFactory(
          * #getter
          * Each row's source chromosomes ranked by aligned bp (`perRowChromRanks`).
          * A memoized computed for the same reason as `locatedCodons` above: the
-         * rank walk covers every block × row of every loaded region, and it had
-         * two independent callers — the legend (already a cached computed) and
-         * `drawSourceChrom`, which recomputed it inside a draw that re-fires on
-         * every pan and zoom.
+         * rank walk covers every block × row of every loaded region, and it has
+         * two callers, the legend and the rows encode.
          *
          * Ranked over the loaded regions, exactly as `inversionConsensus` is, and
          * for both of its reasons. The colors stay put as the user scrolls within
@@ -2634,29 +2629,30 @@ export default function stateModelFactory(
         }
       })
       // #endregion
+      .views(self => ({
+        /**
+         * #method
+         * What a region's rows encode reads beyond the region. A mode flip is
+         * here rather than read inside the encode, since flipping modes has to
+         * re-encode every region and only a declared input does that.
+         */
+        rowsEncodeProps(): MafRowsEncodeProps {
+          return {
+            basesActive: self.basesRenderingActive,
+            gpu: self.gpuProps(),
+            sourceChromRanks:
+              self.activeRowRendering === 'sourceChrom'
+                ? self.sourceChromRanks.ranks
+                : undefined,
+          }
+        },
+      }))
       .views(self => {
         const encoded = createEncodeMemo(
           () => self.rpcDataMap,
-          // `basesRenderingActive` belongs in here with gpuProps, not read
-          // inside the encode: flipping modes has to re-encode every region,
-          // and only a declared input does that.
-          () => ({
-            basesActive: self.basesRenderingActive,
-            gpu: self.gpuProps(),
-          }),
-          (regionData, { basesActive, gpu }): MafUploadPayload => ({
-            // The rows mark draws nothing unless the rows area is in `bases`
-            // mode — the identity plot, codon view and color-by-chromosome all
-            // paint the rows on sibling canvases. Encoding anyway built and
-            // uploaded a buffer (tens of MB on a wide region) that never
-            // reached a pixel. Empty channels skip the encode *and* release
-            // the GPU buffer (an empty pack deletes the pass's buffer);
-            // flipping back to `bases` re-encodes immediately.
-            cells: basesActive
-              ? buildMafChannels({ blocks: regionData.blocks, ...gpu })
-              : EMPTY_MAF_CELLS,
-            // The worker's own coverage, carried through by reference: the
-            // band's marks pack its buffers and read its maxima at draw time.
+          () => self.rowsEncodeProps(),
+          (regionData, props): MafUploadPayload => ({
+            ...encodeMafRows(regionData, props),
             coverage: regionData.coverage,
           }),
         )
@@ -2723,8 +2719,8 @@ export default function stateModelFactory(
               // One call whatever the rows are doing, because this canvas now
               // carries the coverage band too. Out of `bases` mode the rows are
               // owned by a sibling canvas (the identity plot, the codon view,
-              // color-by-chromosome, or the summary bars) and the rows pass has
-              // an empty buffer, so it paints nothing — but the band above still
+              // or the summary bars) and the rows pass has an empty buffer, so
+              // it paints nothing — but the band above still
               // has to draw, and this used to pass no blocks at all to make the
               // rows canvas clear. It still counts as a real paint for
               // `canvasDrawn`: returning false instead is what left summary mode

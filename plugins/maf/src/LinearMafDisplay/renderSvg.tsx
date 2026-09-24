@@ -10,10 +10,9 @@ import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.ts'
-import { buildMafChannels } from '../LinearMafRenderer/mafChannels.ts'
 import {
   MAF_COVERAGE_MARKS,
-  MAF_ROW_MARK,
+  MAF_ROWS_MARKS,
 } from '../LinearMafRenderer/mafMarks.ts'
 import { drawMafAnnotations } from '../LinearMafRenderer/rendering/annotations.ts'
 import { drawMafCodons } from '../LinearMafRenderer/rendering/codons.ts'
@@ -35,6 +34,7 @@ import {
   drawConservation,
 } from './components/drawConservation.ts'
 import { drawMafRowsCanvas2d } from './components/drawMafRowsCanvas2d.ts'
+import { encodeMafRows } from './encodeMafRows.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -72,7 +72,6 @@ function MafSvgBody({
     conservationBandActive,
     codonConservationActive,
     conservationDisplayHeight,
-    rowsCanvas2dMode,
     basesRenderingActive,
     scrollTop,
   } = model
@@ -92,19 +91,15 @@ function MafSvgBody({
   const contrast = getContrastBaseMap(palette)
   // Re-encoded here rather than read off `encodedUpload`: the export theme is a
   // different palette, so the screen's channels carry the wrong colours.
-  const svgCells = new Map(
-    (basesRenderingActive ? [...model.rpcDataMap] : []).map(
-      ([idx, regionData]) => [
-        idx,
-        {
-          cells: buildMafChannels({
-            blocks: regionData.blocks,
-            ...model.gpuProps(),
-            palette: svgState.palette,
-          }),
-        },
-      ],
-    ),
+  const encodeProps = model.rowsEncodeProps()
+  const svgRows = new Map(
+    [...model.rpcDataMap].map(([idx, regionData]) => [
+      idx,
+      encodeMafRows(regionData, {
+        ...encodeProps,
+        gpu: { ...encodeProps.gpu, palette: svgState.palette },
+      }),
+    ]),
   )
 
   return (
@@ -175,22 +170,17 @@ function MafSvgBody({
             height={rowsHeight}
             opts={opts}
             paint={ctx => {
-              // One rows rendering at a time, and which one is the model's
-              // decision — `rowsCanvas2dMode` is what MafRowsCanvas paints from,
-              // through the same `drawMafRowsCanvas2d`, so the export can't
-              // disagree with the screen. Codon cells are drawn by drawMafCodons
-              // below, so that mode paints nothing here.
-              if (rowsCanvas2dMode !== undefined) {
-                drawMafRowsCanvas2d(ctx, model, renderBlocks, width)
-              } else if (basesRenderingActive) {
-                paintMarkBlocks(
-                  ctx,
-                  [MAF_ROW_MARK],
-                  svgCells,
-                  renderBlocks,
-                  svgState,
-                )
-              }
+              // The screen's stacking: the backend's row marks, then the
+              // identity plot's canvas over them. Only the model's active
+              // rendering encodes or paints anything.
+              paintMarkBlocks(
+                ctx,
+                MAF_ROWS_MARKS,
+                svgRows,
+                renderBlocks,
+                svgState,
+              )
+              drawMafRowsCanvas2d(ctx, model, renderBlocks, width)
               // the overlay canvases the screen stacks over the rows canvas
               if (!overlays) {
                 return
