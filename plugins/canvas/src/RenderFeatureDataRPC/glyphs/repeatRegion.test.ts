@@ -1,3 +1,5 @@
+import createJexlInstance from '@jbrowse/core/util/jexl'
+
 import { mockDisplayConfig } from '../testUtils.ts'
 import { findGlyph } from './findGlyph.ts'
 import { isRepeatRegion, layoutRepeatRegion } from './repeatRegion.ts'
@@ -100,5 +102,19 @@ describe('layoutRepeatRegion', () => {
     expect(layout.children).toHaveLength(5)
     expect(layout.children.every(c => c.y === 0)).toBe(true)
     expect(layout.height).toBe(mockDisplayConfig().featureHeight)
+  })
+
+  it('draws every subpart at the region height, whatever featureHeight says of it', () => {
+    const feature = intactLtrRetrotransposon()
+    const layout = layoutRepeatRegion({
+      feature,
+      config: mockDisplayConfig({
+        featureHeight: `jexl:get(feature,'type') == 'repeat_region' ? 12 : 30`,
+      }),
+      jexl: createJexlInstance(),
+    })
+
+    expect(layout.height).toBe(12)
+    expect(layout.children.map(c => c.height)).toEqual([12, 12, 12, 12, 12])
   })
 })

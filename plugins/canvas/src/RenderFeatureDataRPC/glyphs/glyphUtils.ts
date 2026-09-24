@@ -132,7 +132,13 @@ export function layoutContainerGlyph(
   // outgrows the row its introns are drawn on.
   const heightPx = featureHeightPx(args.feature, args)
   const children = sortByPosition(
-    subfeatures.map(child => layoutChild(child, args)),
+    subfeatures.map(child => ({
+      feature: child,
+      glyphType: 'Box' as const,
+      y: 0,
+      height: heightPx,
+      children: [],
+    })),
   )
   return {
     feature: args.feature,
