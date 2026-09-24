@@ -2680,6 +2680,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MultiGenomePAFAdapterSlots": {
       "type": "object",
       "properties": {
+        "attributeColumns": {
+          "description": "PAF tags to offer as color-by fields, by name: [\\"syri\\", \\"color\\"] offers \`syri:Z:INV\` as a field whose labels paint in the \`color:Z:\` beside them.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "assemblyNames": {
           "type": "array",
           "items": {
@@ -2736,6 +2743,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MultiGenomeIndexedPAFAdapterSlots": {
       "type": "object",
       "properties": {
+        "attributeColumns": {
+          "description": "PAF tags to offer as color-by fields, by name: [\\"syri\\", \\"color\\"] offers \`syri:Z:INV\` as a field whose labels paint in the \`color:Z:\` beside them.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "assemblyNames": {
           "type": "array",
           "items": {
@@ -2821,6 +2835,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/PlainString",
           "default": ""
         },
+        "attributeColumns": {
+          "description": "PAF tags to offer as color-by fields, by name: [\\"syri\\", \\"color\\"] offers \`syri:Z:INV\` as a field whose labels paint in the \`color:Z:\` beside them.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "pafLocation": {
           "$ref": "#/$defs/FileLocation",
           "default": {
@@ -2878,6 +2899,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Alternative to assemblyNames: the query assembly name.",
           "$ref": "#/$defs/PlainString",
           "default": ""
+        },
+        "attributeColumns": {
+          "description": "PAF tags to offer as color-by fields, by name: [\\"syri\\", \\"color\\"] offers \`syri:Z:INV\` as a field whose labels paint in the \`color:Z:\` beside them.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "pifGzLocation": {
           "description": "location of pairwise tabix indexed PAF (pif).",

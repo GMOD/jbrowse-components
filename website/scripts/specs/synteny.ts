@@ -2055,8 +2055,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
   },
 
   // Six accessions, each band the SyRI run between the two genomes it joins,
-  // the first four in plotsr's own order. The Chr4 inversion crosses under
-  // Col-0 and in no band below it.
+  // the first four in plotsr's own order. The Chr4 inversion crosses only under
+  // Col-0, and a Chr3 inversion only between Kyo and Sha.
   {
     mode: 'url',
     name: 'syri/six_accessions',
@@ -2077,7 +2077,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    viewportHeight: 1000,
+    viewportHeight: 1040,
   },
 
   // The same accessions as lanes under Col-0's own coordinates: each lane placed

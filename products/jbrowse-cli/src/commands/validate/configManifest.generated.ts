@@ -1240,6 +1240,10 @@ export const configManifest: ConfigManifest = {
           "type": "\"MultiGenomePAFAdapter\""
         },
         {
+          "name": "attributeColumns",
+          "type": "string[]"
+        },
+        {
           "name": "assemblyNames",
           "type": "string[]"
         },
@@ -1265,6 +1269,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "type",
           "type": "\"MultiGenomeIndexedPAFAdapter\""
+        },
+        {
+          "name": "attributeColumns",
+          "type": "string[]"
         },
         {
           "name": "assemblyNames",
@@ -1325,6 +1333,10 @@ export const configManifest: ConfigManifest = {
           "type": "string"
         },
         {
+          "name": "attributeColumns",
+          "type": "string[]"
+        },
+        {
           "name": "pafLocation",
           "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
@@ -1351,6 +1363,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "queryAssembly",
           "type": "string"
+        },
+        {
+          "name": "attributeColumns",
+          "type": "string[]"
         },
         {
           "name": "pifGzLocation",

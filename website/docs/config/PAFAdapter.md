@@ -54,3 +54,4 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "PAFAdapter",
 | <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second |
 | <span id="slot-targetassembly">**targetAssembly**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | Alternative to assemblyNames: the target assembly name |
 | <span id="slot-queryassembly">**queryAssembly**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | Alternative to assemblyNames: the query assembly name |
+| <span id="slot-attributecolumns">**attributeColumns**</span><br>`stringArray` = <code>[]</code> | PAF tags to offer as color-by fields, by name: ["syri", "color"] offers `syri:Z:INV` as a field whose labels paint in the `color:Z:` beside them |

@@ -200,7 +200,7 @@ genomes it joins:
 }
 ```
 
-<Figure caption="Five chromosomes of six Arabidopsis accessions, each band SyRI's comparison of the two genomes it joins, colored by type. The widest crossed ribbon is the chromosome 4 inversion in the band under Col-0, and the bands below it run straight at that position." src="/img/syri/six_accessions.png" />
+<Figure caption="Five chromosomes of six Arabidopsis accessions, each band SyRI's comparison of the two genomes it joins, colored by type. The chromosome 4 inversion crosses only in the band under Col-0, and a chromosome 3 inversion only in the band between Kyo and Sha." src="/img/syri/six_accessions.png" />
 
 ## Every accession in Columbia's coordinates
 
@@ -241,7 +241,8 @@ tabix -p bed syri_regions.bed.gz
       "rows": {
         "field": "query",
         "domain": ["Ler", "Cvi", "Eri", "Kyo", "Sha"]
-      }
+      },
+      "colorDomain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
     }
   ]
 }
