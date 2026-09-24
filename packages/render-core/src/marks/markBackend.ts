@@ -18,7 +18,12 @@ import type {
 import type { RenderBlock } from '../renderBlock.ts'
 import type { FrameDimensions } from '../renderingBackendBase.ts'
 import type { MarkPlan } from './markPlan.ts'
-import type { Mark, MarkTexture, StagedUniforms } from './types.ts'
+import type {
+  Mark,
+  MarkTexture,
+  StagedUniforms,
+  TextureBinder,
+} from './types.ts'
 
 // The passes a mark list owns a buffer for: the whole list minus those drawing
 // off another's (`bufferOf`). Uploading to a borrowed pass is silent and its
@@ -67,12 +72,23 @@ export function drawMarks<TRegion, TState extends FrameDimensions>(
   region: TRegion,
   state: TState,
   regionKey: number,
+  textures?: TextureBinder,
 ) {
   hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
   // One call is one block, which is exactly the life of a `StagedUniforms`
   const staged: StagedUniforms = { writer: undefined, params: undefined }
   for (const mark of marks) {
-    mark.drawRegion(hal, scratch, block, clip, region, state, regionKey, staged)
+    mark.drawRegion(
+      hal,
+      scratch,
+      block,
+      clip,
+      region,
+      state,
+      regionKey,
+      staged,
+      textures,
+    )
   }
 }
 
@@ -106,6 +122,37 @@ export function drawPlannedPasses(
 const INERT_RAMP = new Uint8Array(COLOR_RAMP_LUT_ENTRIES * 4)
 
 /**
+ * The texture each textured pass holds, by identity — the mirror of the one
+ * texture the HAL keeps per pass, so an unchanged ramp, strip or table costs a
+ * frame nothing and a backend rebuilt after context loss re-uploads. Per pass
+ * and per backend, never per region: a lens answering nothing for a region
+ * leaves the pass's texture where it is, and binds the inert table only while
+ * the pass has none at all, since a ring canvas draws one region per pass and
+ * a lens with no opinion on the other regions must not swap the strip out and
+ * back on every frame.
+ */
+export class MarkTextureBinder implements TextureBinder {
+  private bound = new Map<string, MarkTexture>()
+
+  constructor(private hal: GpuHal) {}
+
+  bind(passId: string, texture: MarkTexture | undefined) {
+    const bound = this.bound.get(passId)
+    const next = texture ?? bound ?? INERT_RAMP
+    if (next !== bound) {
+      if (next instanceof Uint8Array) {
+        uploadColorRampLut(this.hal, next, [passId])
+      } else if ('image' in next) {
+        this.hal.uploadTexture(passId, next.image, next.width, next.height)
+      } else {
+        this.hal.uploadTexture(passId, next.bytes, next.width, next.height)
+      }
+      this.bound.set(passId, next)
+    }
+  }
+}
+
+/**
  * The HAL-side half of `createMarkBackend`, exported so a display's mark list
  * can be driven against `MockHal`: which marks upload, which draw off another's
  * buffer, and which blocks a shape declines.
@@ -118,6 +165,8 @@ export class GpuMarkBackend<
   // passes instead of overriding `upload` with a second spelling of it.
   protected regionPasses: InstancePass<TRegion>[]
 
+  private textures: MarkTextureBinder
+
   constructor(
     hal: GpuHal,
     private marks: readonly Mark<TRegion, TState>[],
@@ -125,40 +174,11 @@ export class GpuMarkBackend<
   ) {
     super(hal)
     this.regionPasses = ownedPasses(marks)
+    this.textures = new MarkTextureBinder(hal)
   }
 
   protected override clearColor(state: TState) {
     return this.clear ? this.clear(state) : super.clearColor(state)
-  }
-
-  // The texture each textured pass holds, by identity — the mirror of the one
-  // texture the HAL keeps per pass, so an unchanged ramp or strip costs a
-  // frame nothing and a backend rebuilt after context loss re-uploads. Per
-  // pass and per backend, never per region. A lens answering nothing for a
-  // region leaves the pass's texture where it is, and binds the inert table
-  // only while the pass has none at all: a ring canvas draws one region per
-  // pass, and a lens with no opinion on the other regions must not swap the
-  // strip out and back on every frame.
-  private boundTextures = new Map<string, MarkTexture>()
-
-  private bindTexture(
-    mark: Mark<TRegion, TState>,
-    region: TRegion,
-    state: TState,
-  ) {
-    if (mark.pass.textures) {
-      const bound = this.boundTextures.get(mark.pass.id)
-      const texture = mark.texture?.(state, region) ?? bound ?? INERT_RAMP
-      if (texture !== bound) {
-        if (texture instanceof Uint8Array) {
-          uploadColorRampLut(this.hal, texture, [mark.pass.id])
-        } else {
-          const { image, width, height } = texture
-          this.hal.uploadTexture(mark.pass.id, image, width, height)
-        }
-        this.boundTextures.set(mark.pass.id, texture)
-      }
-    }
   }
 
   protected drawRegion(
@@ -168,7 +188,9 @@ export class GpuMarkBackend<
     state: TState,
   ) {
     for (const mark of this.marks) {
-      this.bindTexture(mark, region, state)
+      if (mark.pass.textures && !mark.texturedByParams) {
+        this.textures.bind(mark.pass.id, mark.texture?.(state, region))
+      }
     }
     drawMarks(
       this.hal,
@@ -179,6 +201,7 @@ export class GpuMarkBackend<
       region,
       state,
       block.displayedRegionIndex,
+      this.textures,
     )
   }
 }

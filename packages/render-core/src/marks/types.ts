@@ -77,8 +77,18 @@ export interface MarkImage {
   height: number
 }
 
-/** What a mark's pass binds: a 256-entry RGBA ramp, or a canvas. */
-export type MarkTexture = Uint8Array | MarkImage
+/**
+ * RGBA8 texels with their dimensions: a table a pass samples, such as a row
+ * table. Hand a fresh object per change: the backend uploads on identity.
+ */
+export interface MarkTexels {
+  bytes: Uint8Array
+  width: number
+  height: number
+}
+
+/** What a mark's pass binds: a 256-entry RGBA ramp, a canvas, or texels. */
+export type MarkTexture = Uint8Array | MarkImage | MarkTexels
 
 export type MarkFrame = FrameDimensions
 
@@ -145,6 +155,13 @@ export interface MarkShape<TChannels, TParams> {
    */
   paintsBlock?(block: RenderBlock, frame: MarkFrame, params: TParams): boolean
   /**
+   * The texture the pass samples, read off the params the painter and the hit
+   * test read (`span`'s row table), so the two backends cannot be handed
+   * different tables. A display's own `texture` lens wins where it declares
+   * one.
+   */
+  texture?(params: TParams): MarkTexture | undefined
+  /**
    * The rect `paintBlock` fills for instance `i`, undefined where it paints
    * nothing. `defineMark` derives `hitNearest` from it where none is declared,
    * and a highlight guide draws it. Painter-only overdraw, `span`'s seam, is
@@ -197,6 +214,16 @@ export interface StagedUniforms {
   params: unknown
 }
 
+/**
+ * Puts a texture behind a pass's sampler once per identity: a repeat of the
+ * bound one costs nothing, and undefined leaves what is bound or binds an
+ * inert table where nothing is, since a textured pass with no texture never
+ * draws on the WebGPU HAL.
+ */
+export interface TextureBinder {
+  bind(passId: string, texture: MarkTexture | undefined): void
+}
+
 /** What `hal.drawPass` takes for one mark of a frame plan. */
 export interface PlannedPass {
   readonly id: string
@@ -213,6 +240,11 @@ export interface Mark<TRegion, TState extends MarkFrame> {
   readonly bufferOf?: string
   /** What the pass samples this frame; undefined binds an inert table. */
   readonly texture?: (state: TState, region: TRegion) => MarkTexture | undefined
+  /**
+   * Whether the shape binds the pass's texture off its params as it draws,
+   * so the backend binds nothing for it ahead of the block.
+   */
+  readonly texturedByParams?: boolean
   /**
    * Whether the mark draws at all under `state`. `planMarks` asks once per
    * frame and every other consumer per block, before any lens.
@@ -232,6 +264,7 @@ export interface Mark<TRegion, TState extends MarkFrame> {
     state: TState,
     regionKey: number,
     staged?: StagedUniforms,
+    textures?: TextureBinder,
   ): void
   paintBlock(
     ctx: MarkContext2D,
@@ -296,6 +329,7 @@ export function defineMark<
   const hitNearest = shapeHitNearest(shape)
   const shapeInk = shape.ink?.bind(shape)
   const shapeValueWindow = shape.valueWindow?.bind(shape)
+  const shapeTexture = texture ? undefined : shape.texture?.bind(shape)
   const lender = spec.bufferOf?.pass
   if (
     lender &&
@@ -342,12 +376,23 @@ export function defineMark<
     },
     bufferOf,
     texture,
+    texturedByParams: shapeTexture !== undefined,
     enabled,
     planned,
     // `resolve`'s gates inline: its picks leaving as a record or through
     // closure state measured 0.80-0.86x of these locals on
     // markUniformDedupe.bench.ts.
-    drawRegion(hal, scratch, block, clip, region, state, regionKey, staged) {
+    drawRegion(
+      hal,
+      scratch,
+      block,
+      clip,
+      region,
+      state,
+      regionKey,
+      staged,
+      textures,
+    ) {
       if (enabled && !enabled(state)) {
         return
       }
@@ -361,6 +406,9 @@ export function defineMark<
       const p = params(state, region, block)
       if (shape.paintsBlock && !shape.paintsBlock(block, state, p)) {
         return
+      }
+      if (shapeTexture && textures) {
+        textures.bind(shape.pass.id, shapeTexture(p))
       }
       const scissor =
         strip && devicePxBand(strip.top, strip.height, clip.scaleY, clip.pxH)

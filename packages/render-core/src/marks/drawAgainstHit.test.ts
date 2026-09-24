@@ -8,6 +8,7 @@ import { sweepMarkAgainstHit } from './drawAgainstHit.ts'
 import { LINK_NO_REGION, linkMark } from './linkMark.ts'
 import { inkHitNearest } from './markHit.ts'
 import { pointMark } from './pointMark.ts'
+import { HIDDEN_ROW, NO_ROW_COLOR, buildRowTable } from './rowTable.ts'
 import { spanMark } from './spanMark.ts'
 import { defineMark } from './types.ts'
 
@@ -74,6 +75,37 @@ describe('span: every drawn rect answers its own hit, in both orientations', () 
         ),
       ).toEqual([])
     }
+  })
+})
+
+// The table between a key and its band: a reorder and a hidden row, swept
+// through `sliceOne` because a hidden instance paints nothing.
+describe('span through a row table: every drawn rect answers its own hit, in both orientations', () => {
+  const table = buildRowTable(
+    Uint32Array.of(2, HIDDEN_ROW, 0),
+    Uint32Array.of(NO_ROW_COLOR, NO_ROW_COLOR, 0xff00ff00),
+  )
+  const sliceSpan = (c: SpanChannels, i: number): SpanChannels => ({
+    x: c.x.subarray(i, i + 1),
+    x2: c.x2.subarray(i, i + 1),
+    row: c.row.subarray(i, i + 1),
+    color: c.color.subarray(i, i + 1),
+    count: 1,
+  })
+  test.each([false, true])('reversed %s', reversed => {
+    expect(
+      sweepMarkAgainstHit(
+        defineMark({
+          shape: spanMark,
+          channels: (c: SpanChannels) => c,
+          params: () => ({ ...spanParams, rowTable: table }),
+        }),
+        spans,
+        { ...block, reversed },
+        frame,
+        { maxDistSq: Number.MIN_VALUE, sliceOne: sliceSpan },
+      ),
+    ).toEqual([])
   })
 })
 

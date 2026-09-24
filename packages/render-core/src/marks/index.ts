@@ -10,6 +10,14 @@ export { linkMark, LINK_NO_REGION } from './linkMark.ts'
 export { ellipseDistance, ellipseNearest } from './ellipseDistance.ts'
 export { appendGlyph, pointInsetPx } from './glyphPaint.ts'
 export { abgrToCssRgba, makeAbgrFill } from './colorFill.ts'
+export {
+  HIDDEN_ROW,
+  NO_ROW_COLOR,
+  RowKeys,
+  buildRowTable,
+  rowTablePlaneHeight,
+  rowTableWidth,
+} from './rowTable.ts'
 
 export type { MarkPlan } from './markPlan.ts'
 export type { MarkInstance } from './markInk.ts'
@@ -21,6 +29,7 @@ export type {
   MarkFrame,
   MarkImage,
   MarkRamp,
+  MarkTexels,
   MarkTexture,
   MarkValueScaleType,
   InkRect,
@@ -28,6 +37,7 @@ export type {
   MarkShape,
   PlannedPass,
   StagedUniforms,
+  TextureBinder,
 } from './types.ts'
 export type { BarChannels, BarParams } from './barMark.ts'
 export type { PointChannels, PointParams } from './pointMark.ts'
@@ -38,4 +48,5 @@ export type {
   LinkRegion,
   LinkSizeScale,
 } from './linkMark.ts'
+export type { RowTable } from './rowTable.ts'
 export type { ColorChannel } from './markRamp.ts'

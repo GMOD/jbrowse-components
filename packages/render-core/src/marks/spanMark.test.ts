@@ -1,3 +1,4 @@
+import { clipBlock } from '../blockClipUtils.ts'
 import { makeBpMapper, spanLeft } from '../canvas2dUtils.ts'
 import { MULTI_ROW_MIN_CELL_PX } from '../shaders/rowRect.generated.ts'
 import {
@@ -8,6 +9,7 @@ import * as shader from '../shaders/spanMark.iface.generated.ts'
 import { abgrToCssRgba, makeAbgrFill } from './colorFill.ts'
 import { recordingContext as mockCtx } from './drawAgainstHit.ts'
 import { shapeHitNearest } from './markHit.ts'
+import { HIDDEN_ROW, NO_ROW_COLOR, buildRowTable } from './rowTable.ts'
 import { spanMark } from './spanMark.ts'
 
 import type { SpanChannels, SpanParams } from './spanMark.ts'
@@ -355,5 +357,76 @@ describe('span places each rect as the painter it retired did', () => {
         )
       })
     })
+  })
+})
+
+describe('a row table between the instance key and the band it draws on', () => {
+  // keys 0..3: key 0 drawn on slot 2, key 1 hidden, key 2 on slot 0 in an
+  // override colour, key 3 on slot 1
+  const table = buildRowTable(
+    Uint32Array.of(2, HIDDEN_ROW, 0, 1),
+    Uint32Array.of(NO_ROW_COLOR, NO_ROW_COLOR, 0xff00ff00, NO_ROW_COLOR),
+  )
+  const keyed = channels(
+    [10, 20, 30, 40],
+    [15, 25, 35, 45],
+    [0, 1, 2, 3],
+    [RED, RED, RED, BLUE],
+  )
+  const tall = { canvasWidth: 1000, canvasHeight: 60 }
+  const withTable: SpanParams = { ...params, rowTable: table }
+
+  test('paints each key on its slot, in its override, and a hidden key nowhere', () => {
+    const { ctx, calls } = mockCtx()
+    spanMark.paintBlock(ctx, keyed, block, tall, withTable)
+    expect(calls).toEqual([
+      { x: 100, y: 40, w: 50, h: 20, fillStyle: abgrToCssRgba(RED) },
+      { x: 300, y: 0, w: 50, h: 20, fillStyle: abgrToCssRgba(0xff00ff00) },
+      { x: 400, y: 20, w: 50, h: 20, fillStyle: abgrToCssRgba(BLUE) },
+    ])
+  })
+
+  test('the ink follows the slot, and a hidden key has none', () => {
+    const ink = (i: number) => spanMark.ink!(keyed, block, tall, withTable, i)
+    expect(ink(0)).toEqual({ left: 100, top: 40, width: 50, height: 20 })
+    expect(ink(1)).toBeUndefined()
+    expect(ink(2)).toEqual({ left: 300, top: 0, width: 50, height: 20 })
+  })
+
+  test('a key the table does not hold is hidden', () => {
+    const past = channels([10], [15], [table.keys], [RED])
+    const { ctx, calls } = mockCtx()
+    spanMark.paintBlock(ctx, past, block, tall, withTable)
+    expect(calls).toEqual([])
+    expect(spanMark.ink!(past, block, tall, withTable, 0)).toBeUndefined()
+  })
+
+  test('an identity table paints what no table paints', () => {
+    const identity = buildRowTable(Uint32Array.of(0, 1, 2, 3))
+    const bare = mockCtx()
+    spanMark.paintBlock(bare.ctx, keyed, block, tall, params)
+    const tabled = mockCtx()
+    spanMark.paintBlock(tabled.ctx, keyed, block, tall, {
+      ...params,
+      rowTable: identity,
+    })
+    expect(tabled.calls).toEqual(bare.calls)
+    expect(bare.calls).toHaveLength(4)
+  })
+
+  test('the pass samples the table as its texture, nearest, and the uniforms say how many keys', () => {
+    expect(spanMark.texture!(withTable)).toBe(table.texture)
+    expect(spanMark.texture!(params)).toBeUndefined()
+    expect(spanMark.pass.textures?.[0].filter).toBe('nearest')
+    const clip = clipBlock(block, tall.canvasWidth, tall.canvasHeight, {
+      x: 1,
+      y: 1,
+    })!
+    const scratch = new ArrayBuffer(shader.UNIFORMS_SIZE_BYTES)
+    const keys = new Int32Array(scratch)
+    spanMark.writeUniforms(scratch, clip, block, tall, withTable)
+    expect(keys[shader.UNIFORM_OFFSET_I32.rowTableKeys]).toBe(4)
+    spanMark.writeUniforms(scratch, clip, block, tall, params)
+    expect(keys[shader.UNIFORM_OFFSET_I32.rowTableKeys]).toBe(-1)
   })
 })
