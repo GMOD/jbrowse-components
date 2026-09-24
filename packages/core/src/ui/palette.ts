@@ -723,7 +723,9 @@ const lightStringColors: StringColors = {
 // same alpha, so the gridlines and hover shades are gentler and inverted rather
 // than reused, and the colors that would otherwise vanish are lightened.
 const darkStringColors: Partial<StringColors> = {
-  coverage: grey[500],
+  // above the L* 55-72 band the base colors occupy, so the SNP ticks drawn on
+  // it keep a lightness step; a mid grey inside that band hides them
+  coverage: '#cccccc',
   gridlineMinor: 'rgba(255,255,255,0.06)',
   gridlineMajor: 'rgba(255,255,255,0.15)',
   plotGridlineMinor: 'rgba(255,255,255,0.05)',
