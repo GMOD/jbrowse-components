@@ -53,6 +53,53 @@ test('mergeConfigInputs unions the catalogs across entries', () => {
   expect(merged.tracks).toEqual([{ trackId: 'a' }, { trackId: 'b' }])
 })
 
+test('one config opens with every field it carries', () => {
+  const hub = {
+    assemblies: [{ name: 'hg38' }],
+    tracks: [{ trackId: 'genes' }],
+    aggregateTextSearchAdapters: [
+      { type: 'TrixTextSearchAdapter', textSearchAdapterId: 'hg38-index' },
+    ],
+    connections: [{ connectionId: 'hub' }],
+    defaultSession: { name: 'hg38' },
+    configuration: { sourceConfigUrl: 'https://h/config.json' },
+    unknownToThisMerge: 'kept',
+  }
+  expect(mergeConfigInputs([hub])).toEqual({
+    ...hub,
+    internetAccounts: [],
+    plugins: [],
+  })
+})
+
+test('the search indexes and connections union across entries', () => {
+  const merged = mergeConfigInputs([
+    {
+      aggregateTextSearchAdapters: [{ textSearchAdapterId: 'hg38-index' }],
+      connections: [{ connectionId: 'a' }],
+    },
+    {
+      aggregateTextSearchAdapters: [{ textSearchAdapterId: 'hg19-index' }],
+      connections: [{ connectionId: 'b' }],
+    },
+  ])
+  expect(merged.aggregateTextSearchAdapters).toEqual([
+    { textSearchAdapterId: 'hg38-index' },
+    { textSearchAdapterId: 'hg19-index' },
+  ])
+  expect(merged.connections).toEqual([
+    { connectionId: 'a' },
+    { connectionId: 'b' },
+  ])
+})
+
+test('completeConfig dedupes connections by connectionId', () => {
+  const { connections } = completeConfig({
+    connections: [{ connectionId: 'hub' }, { connectionId: 'hub' }],
+  })
+  expect(connections).toEqual([{ connectionId: 'hub' }])
+})
+
 test('defaultSession is the first entry, never a merge of every entry', () => {
   const merged = mergeConfigInputs([
     { defaultSession: { name: 'first', views: [{ id: 'v1' }] } },

@@ -31,8 +31,9 @@ const builtinInternetAccounts: InternetAccount[] = [
 
 /**
  * Turn a config as it arrived into one the root model can be created from: the
- * three list fields an input need not carry are supplied, the built-in internet
- * accounts are added, and each list is deduped by its identity field.
+ * list fields an input need not carry are supplied, the built-in internet
+ * accounts are added, and each list is deduped by its identity field. A
+ * connection's id is an MST identifier, so a repeated one fails the root model.
  */
 export function completeConfig(input: JBrowseConfigInput): JBrowseConfig {
   return {
@@ -43,19 +44,22 @@ export function completeConfig(input: JBrowseConfigInput): JBrowseConfig {
       [...(input.internetAccounts ?? []), ...builtinInternetAccounts],
       account => account.internetAccountId,
     ),
+    connections: dedupe(
+      input.connections ?? [],
+      connection => connection.connectionId,
+    ),
   }
 }
 
 /**
- * Open several configs as one session. The catalogs union — opening two hub
- * configs together means every assembly and track from both, with
- * {@link completeConfig} deduping by id afterwards — while the two fields that
- * are not catalogs are picked rather than merged.
+ * Open several configs as one session. The first entry is the base, so one
+ * config opens exactly as it arrived. Each catalog unions across every entry,
+ * `configuration` deep-merges, and every other field, `defaultSession`
+ * included, stays the first entry's: merging sessions splices unrelated view
+ * lists into one.
  *
- * `defaultSession` is the FIRST entry's, never a merge: merging splices
- * unrelated view lists into one. createPluginManager names it, and the
- * recent-sessions row is written from the named session at the first autosave
- * rather than from this snapshot.
+ * Several entries leave no single hosted config for "export to web" to reuse,
+ * so `sourceConfigUrl` is blanked, which every reader treats as absent.
  */
 export function mergeConfigInputs(
   entries: JBrowseConfigInput[],
@@ -70,15 +74,15 @@ export function mergeConfigInputs(
       )
     : undefined
   return {
+    ...entries[0],
     assemblies: entries.flatMap(entry => entry.assemblies ?? []),
     tracks: entries.flatMap(entry => entry.tracks ?? []),
     internetAccounts: entries.flatMap(entry => entry.internetAccounts ?? []),
+    connections: entries.flatMap(entry => entry.connections ?? []),
+    aggregateTextSearchAdapters: entries.flatMap(
+      entry => entry.aggregateTextSearchAdapters ?? [],
+    ),
     plugins: entries.flatMap(entry => entry.plugins ?? []),
-    defaultSession: entries[0]?.defaultSession,
-    // A single hub config can be reused as the export base; merging several
-    // leaves no single source config, so drop the marker the entries carry.
-    // `''` reads the same as absent everywhere it is consumed (`!sourceConfigUrl`
-    // in sessionUtils, buildWebExport), and says the blanking was deliberate.
     configuration:
       entries.length > 1 && configuration
         ? { ...configuration, sourceConfigUrl: '' }

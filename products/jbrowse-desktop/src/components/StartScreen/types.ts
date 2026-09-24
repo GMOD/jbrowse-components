@@ -24,6 +24,8 @@ export interface JBrowseConfig {
   internetAccounts: InternetAccount[]
   assemblies: { name: string }[]
   tracks: { trackId: string }[]
+  connections?: { connectionId: string }[]
+  aggregateTextSearchAdapters?: Record<string, unknown>[]
   plugins?: PluginDefinition[]
   defaultSession?: { name?: string } & Record<string, unknown>
   configuration?: Record<string, unknown>
@@ -31,7 +33,7 @@ export interface JBrowseConfig {
 
 /**
  * A config as it arrives — read off disk, fetched from a hub url, or assembled
- * by one of the start screen's launchers. None of the three list fields is
+ * by one of the start screen's launchers. None of the list fields is
  * guaranteed to be there: createPluginManager is what merges in the defaults
  * and dedupes, and only its result is a {@link JBrowseConfig}.
  */
