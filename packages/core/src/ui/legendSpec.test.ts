@@ -1,4 +1,4 @@
-import { legendEntries, nonEmptyLegendSections } from './legendSpec.ts'
+import { legendEntries } from './legendSpec.ts'
 
 const READS = { id: 'reads', title: 'Read colors', items: [{ label: 'A' }] }
 const ARCS = { id: 'arcs', title: 'Arc colors', items: [{ label: 'B' }] }
@@ -29,11 +29,11 @@ test('a box title shows even as the only section', () => {
   expect(
     legendEntries({
       title: 'r² to index SNP',
-      items: [{ label: '1.0', color: 'red' }],
+      sections: [{ id: 'r2', items: [{ label: '1.0', color: 'red' }] }],
     }),
   ).toEqual([
     { key: 'legend-title', label: 'r² to index SNP' },
-    { key: 'items-0', label: '1.0', color: 'red' },
+    { key: 'r2-0', label: '1.0', color: 'red' },
   ])
 })
 
@@ -47,20 +47,18 @@ test('heading rows carry no color, so they read as headings not swatches', () =>
 // existing consumer keeps rendering it identically.
 test('only a multi-color row carries its swatches into the export', () => {
   const [one, both] = legendEntries({
-    items: [
-      { label: 'A', color: 'red' },
-      { label: 'B', swatches: [{ color: 'pink' }, { color: 'red' }] },
+    sections: [
+      {
+        id: 'reads',
+        items: [
+          { label: 'A', color: 'red' },
+          { label: 'B', swatches: [{ color: 'pink' }, { color: 'red' }] },
+        ],
+      },
     ],
   })
   expect(one!.swatches).toBeUndefined()
   expect(both!.swatches).toEqual([{ color: 'pink' }, { color: 'red' }])
-})
-
-test('nonEmptyLegendSections wraps the items shorthand', () => {
-  expect(nonEmptyLegendSections({ items: [{ label: 'A' }] })).toEqual([
-    { id: 'items', items: [{ label: 'A' }] },
-  ])
-  expect(nonEmptyLegendSections({})).toEqual([])
 })
 
 // A display with two vocabularies usually has only one that toggles. Carrying

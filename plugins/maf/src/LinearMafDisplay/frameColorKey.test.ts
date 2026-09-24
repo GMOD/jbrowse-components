@@ -69,7 +69,7 @@ describe('frameColorIndex is the one place the palette layout is known', () => {
 // nothing anywhere saying they mean reading frame.
 describe('the CDS strip keys itself', () => {
   const keyLabels = (display: LinearMafDisplayModel) =>
-    display.legendSpec.sections!.flatMap(s => s.items.map(i => i.label))
+    display.legendSpec.sections.flatMap(s => s.items.map(i => i.label))
   const framesEnv = () =>
     createMafTestEnvironment({ annotationAdapter: { type: 'BigBedAdapter' } })
 

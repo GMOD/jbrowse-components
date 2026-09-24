@@ -305,7 +305,9 @@ test('a drag on legend text selects it instead of panning', () => {
   const model = fakeView()
   const { getByText } = render(
     <Harness model={model}>
-      <FloatingLegend items={[{ color: '#f00', label: 'deletion' }]} />
+      <FloatingLegend
+        sections={[{ id: 'sv', items: [{ color: '#f00', label: 'deletion' }] }]}
+      />
     </Harness>,
   )
 

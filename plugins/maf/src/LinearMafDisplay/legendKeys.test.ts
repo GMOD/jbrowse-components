@@ -131,7 +131,7 @@ describe('the color key is dismissible, like every other row display', () => {
   it('the heatmap key is one scale named for the rendering', () => {
     const display = heatmapDisplay()
     expect(display.colorScales.map(s => s.id)).toEqual(['heatmap'])
-    expect(display.legendSpec.sections![0]!.items.map(i => i.label)).toEqual(
+    expect(display.legendSpec.sections[0]!.items.map(i => i.label)).toEqual(
       identityLegendItems('heatmap').map(i => i.label),
     )
   })

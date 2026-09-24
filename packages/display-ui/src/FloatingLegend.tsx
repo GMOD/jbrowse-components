@@ -156,6 +156,10 @@ const useStyles = makeStyles()(theme => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
+  hiddenItem: {
+    opacity: 0.4,
+    textDecoration: 'line-through',
+  },
   gradientRow: {
     marginBottom: 1,
   },
@@ -272,14 +276,13 @@ const LegendItemList = observer(function LegendItemList({
 }) {
   const { classes } = useStyles()
   const [expanded, setExpanded] = useState(false)
-  const collapsible = items.length > maxItems
+  // A toggle revealing one row costs the row it saves.
+  const collapsible = items.length > maxItems + 1
   const shown = collapsible && !expanded ? items.slice(0, maxItems) : items
   const hiddenCount = items.length - maxItems
-  // Every row reserves the widest row's swatch column, so labels stay in one
-  // vertical line whether a row draws one box or two — and so a color-less
-  // heading row indents like the swatches it heads, as the fixed-size box it
-  // replaces used to.
-  const columns = Math.max(1, ...shown.map(i => legendSwatches(i).length))
+  // Every row reserves the widest row's swatch column, collapsed or not, so
+  // labels stay in one vertical line and do not shift on expanding.
+  const columns = Math.max(1, ...items.map(i => legendSwatches(i).length))
   return (
     <>
       {shown.map((item, i) => {
@@ -308,12 +311,13 @@ const LegendItemList = observer(function LegendItemList({
             <span className={classes.label}>{item.label}</span>
           </>
         )
+        const itemClass = cx(classes.item, item.hidden && classes.hiddenItem)
         return onItemClick ? (
           <button
             // eslint-disable-next-line @eslint-react/no-array-index-key
             key={`${item.label}-${i}`}
             type="button"
-            className={cx(classes.item, classes.itemButton)}
+            className={cx(itemClass, classes.itemButton)}
             title="Show only these rows"
             onClick={() => {
               onItemClick(item)
@@ -323,7 +327,7 @@ const LegendItemList = observer(function LegendItemList({
           </button>
         ) : (
           // eslint-disable-next-line @eslint-react/no-array-index-key
-          <div key={`${item.label}-${i}`} className={classes.item}>
+          <div key={`${item.label}-${i}`} className={itemClass}>
             {row}
           </div>
         )
@@ -343,18 +347,16 @@ const LegendItemList = observer(function LegendItemList({
   )
 })
 
-// Floating color-key overlay. Pass a flat `items` list for a single scheme, or
-// `sections` to show several titled, individually-closable panels in one box
-// (e.g. genotype colors vs. sample-grouping colors on the multi-sample variant
-// display). Section titles + per-section close buttons only appear when there
-// is more than one section, so a single-scheme legend looks unchanged. `title`
-// is a heading for the whole box, shown regardless of section count.
+// Floating color-key overlay: one panel per section (e.g. genotype colors vs.
+// sample-grouping colors on the multi-sample variant display). Section titles
+// and per-section close buttons only appear when there is more than one
+// section, so a single-scheme legend is just its rows. `title` is a heading
+// for the whole box, shown regardless of section count.
 //
 // `onItemClick` makes the rows of a section declaring `focusesRows` act —
 // clicking an entry focuses the rows it names. A section coloring features or
 // cells stays inert text beside it.
 const FloatingLegend = observer(function FloatingLegend({
-  items,
   sections,
   title,
   onDismiss,
@@ -364,8 +366,7 @@ const FloatingLegend = observer(function FloatingLegend({
   maxWidth = DEFAULT_MAX_WIDTH,
   top = FLOATING_LEGEND_TOP_PX,
 }: {
-  items?: LegendItem[]
-  sections?: LegendSection[]
+  sections: readonly LegendSection[]
   title?: string
   onDismiss?: () => void
   onDismissSection?: (id: string) => void
@@ -385,7 +386,7 @@ const FloatingLegend = observer(function FloatingLegend({
 }) {
   const { classes } = useStyles()
 
-  const nonEmpty = nonEmptyLegendSections({ items, sections })
+  const nonEmpty = nonEmptyLegendSections(sections)
   if (nonEmpty.length === 0) {
     return null
   }

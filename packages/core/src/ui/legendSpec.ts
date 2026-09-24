@@ -88,17 +88,13 @@ export interface LegendSection {
 export interface LegendSpec {
   // heading for the whole box, shown regardless of section count
   title?: string
-  // shorthand for a single untitled section
-  items?: LegendItem[]
-  sections?: LegendSection[]
+  sections: LegendSection[]
 }
 
 // Drop sections with nothing in them, so a heading can never end up with no
 // swatches under it.
-export function nonEmptyLegendSections({ items, sections }: LegendSpec) {
-  return (sections ?? (items ? [{ id: 'items', items }] : [])).filter(
-    s => s.items.length > 0,
-  )
+export function nonEmptyLegendSections(sections: readonly LegendSection[]) {
+  return sections.filter(s => s.items.length > 0)
 }
 
 // Flatten a legend spec into `SvgColorLegend` rows: a color-less row reads as a
@@ -108,7 +104,7 @@ export function nonEmptyLegendSections({ items, sections }: LegendSpec) {
 // agree about when headings show. A box-level `title` is unconditional, like its
 // on-screen counterpart.
 export function legendEntries(spec: LegendSpec): ColorLegendEntry[] {
-  const sections = nonEmptyLegendSections(spec)
+  const sections = nonEmptyLegendSections(spec.sections)
   const titled = sections.length > 1
   return [
     ...(spec.title === undefined

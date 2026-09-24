@@ -135,13 +135,15 @@ function sectionOf(scale: ColorScale, lone: boolean): LegendSection {
  *
  * A lone scale names itself: section titles draw only beside other sections,
  * so a lone categorical scale's title becomes the box's (Manhattan's field
- * name over its values) and a lone ramp's goes on its row.
+ * name over its values) and a lone ramp's goes on its row. Empty scales are
+ * dropped first, so one waiting for data does not leave its sibling untitled.
  */
 export function legendSpecOf(scales: ColorScale[]): LegendSpec {
-  const lone = scales.length === 1 ? scales[0] : undefined
+  const drawn = scales.filter(scale => !colorScaleIsEmpty(scale))
+  const lone = drawn.length === 1 ? drawn[0] : undefined
   return {
     title: lone?.kind === 'categorical' ? lone.title : undefined,
-    sections: scales.map(scale => sectionOf(scale, scales.length === 1)),
+    sections: drawn.map(scale => sectionOf(scale, lone !== undefined)),
   }
 }
 

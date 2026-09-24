@@ -30,9 +30,6 @@ const GRADIENT_ROW_HEIGHT = GRADIENT_BAR_HEIGHT + 4 + LEGEND_ROW_HEIGHT
  */
 export const LEGEND_SVG_GUTTER_WIDTH = GRADIENT_BAR_WIDTH + 40
 
-// narrow right-side gutter reserved for the small dismiss "×"
-const DISMISS_GUTTER = 11
-
 // A row's swatches, with the flat `color` shorthand read as the single
 // square it has always drawn.
 function entrySwatches(entry: ColorLegendEntry): LegendSwatch[] {
@@ -42,6 +39,11 @@ function entrySwatches(entry: ColorLegendEntry): LegendSwatch[] {
   )
 }
 
+// A row keying a color, as opposed to a title or note over such rows.
+function keysAColor(entry: ColorLegendEntry) {
+  return entry.gradient !== undefined || entrySwatches(entry).length > 0
+}
+
 // A ramp row is the bar and its labels, captioned when the entry has a label.
 function rowHeight(entry: ColorLegendEntry) {
   return entry.gradient
@@ -49,8 +51,9 @@ function rowHeight(entry: ColorLegendEntry) {
     : LEGEND_ROW_HEIGHT
 }
 
-// The rows that fit `maxHeight`, with the last fitting row given over to a
-// "+N more" summary when they do not all fit.
+// The rows that fit `maxHeight`, leaving room for a "+N more" summary when
+// they do not all fit. A heading the cut separated from every row under it is
+// dropped with them.
 function fitEntries(entries: ColorLegendEntry[], maxHeight: number) {
   let used = 0
   const shown: ColorLegendEntry[] = []
@@ -62,6 +65,13 @@ function fitEntries(entries: ColorLegendEntry[], maxHeight: number) {
     }
     used += rowHeight(entry)
     shown.push(entry)
+  }
+  while (
+    shown.length > 1 &&
+    shown.length < entries.length &&
+    !keysAColor(shown.at(-1)!)
+  ) {
+    shown.pop()
   }
   return shown
 }
@@ -135,17 +145,11 @@ function GradientRow({
 // `maxHeight` (the display height) caps the box: entries past what fits
 // collapse into a trailing "+N more" summary row, so the legend never overflows
 // its display — the full list stays reachable via the track menu.
-//
-// `onDismiss` adds a clickable "×" in the top-right corner (with its own
-// pointer-events so it works under a pointer-events:none overlay). Pass it only
-// on interactive paths where the legend can be re-shown — never on the SVG
-// export, which has no way to click it.
 export default function SvgColorLegend({
   entries,
   canvasWidth,
   x,
   maxHeight,
-  onDismiss,
   testid,
   idPrefix,
 }: {
@@ -153,7 +157,6 @@ export default function SvgColorLegend({
   canvasWidth: number
   x?: number
   maxHeight?: number
-  onDismiss?: () => void
   // What a gradient's `<linearGradient id>` is minted from. An export passes
   // the display's `svgNodeId`, so two exports of one unchanged view are the
   // same bytes; on screen the React id is unique and enough.
@@ -168,10 +171,8 @@ export default function SvgColorLegend({
   const legendId = idPrefix ?? reactId
   const shown =
     maxHeight === undefined ? entries : fitEntries(entries, maxHeight)
-  const overflowLabel =
-    entries.length > shown.length
-      ? `+${entries.length - shown.length} more`
-      : undefined
+  const cutRows = entries.slice(shown.length).filter(keysAColor).length
+  const overflowLabel = cutRows > 0 ? `+${cutRows} more` : undefined
 
   // Labels line up across rows, so the swatch column is sized by the row with
   // the most swatches — otherwise a two-box row shoves its own label out of the
@@ -199,7 +200,7 @@ export default function SvgColorLegend({
       textLeft + measureLegendText(overflowLabel, FONT_SIZE),
     )
   }
-  const totalWidth = contentRight + 6 + (onDismiss ? DISMISS_GUTTER : 0)
+  const totalWidth = contentRight + 6
   const left = x ?? Math.max(0, canvasWidth - totalWidth - 4)
   const rowTops: number[] = []
   let y = 0
@@ -265,39 +266,6 @@ export default function SvgColorLegend({
           />
           <text x={textLeft} y={11} fontSize={FONT_SIZE} fill="#555">
             {overflowLabel}
-          </text>
-        </g>
-      )}
-      {onDismiss === undefined ? null : (
-        <g
-          transform={`translate(${totalWidth - DISMISS_GUTTER} 0)`}
-          style={{ cursor: 'pointer', pointerEvents: 'auto' }}
-          // The one part of this legend that takes pointer events, so it is the
-          // one part that has to claim the press: without it a press on the "×"
-          // that drifts a pixel pans the view under the legend. Only rendered on
-          // the interactive path, so the exported SVG never carries it.
-          data-gesture-owner="true"
-          onClick={() => {
-            onDismiss()
-          }}
-        >
-          <title>Hide legend</title>
-          {/* transparent hit target spanning the gutter */}
-          <rect
-            x={0}
-            y={0}
-            width={DISMISS_GUTTER}
-            height={LEGEND_ROW_HEIGHT}
-            fill="transparent"
-          />
-          <text
-            x={DISMISS_GUTTER / 2}
-            y={9}
-            fontSize={9}
-            fill="#777"
-            textAnchor="middle"
-          >
-            ×
           </text>
         </g>
       )}

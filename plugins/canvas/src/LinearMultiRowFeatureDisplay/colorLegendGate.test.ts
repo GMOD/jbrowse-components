@@ -82,7 +82,7 @@ describe('the color key waits for a painting to key', () => {
     }).createDisplay()
     display.setRpcData(0, painted(), ctgA)
 
-    expect(display.legendSpec.sections![0]!.items.map(i => i.label)).toEqual([
+    expect(display.legendSpec.sections[0]!.items.map(i => i.label)).toEqual([
       'SAS',
       'AFR',
       'EUR',

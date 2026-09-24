@@ -54,9 +54,7 @@ test('a density ring shows its ramp under the track name', () => {
       },
     ]),
   )
-  expect(spec.sections?.[0]?.items).toEqual([
-    { label: 'gene density', gradient },
-  ])
+  expect(spec.sections[0]?.items).toEqual([{ label: 'gene density', gradient }])
 })
 
 test('a track with no single color, such as a jexl stroke, is left out', () => {

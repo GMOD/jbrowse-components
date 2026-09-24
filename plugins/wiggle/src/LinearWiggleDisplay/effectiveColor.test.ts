@@ -218,7 +218,7 @@ test.each(['xyplot', 'scatter'])(
     display.setColor(viridis)
     expect(display.domain).toBeDefined()
     expect(scoreKey(display)?.kind).toBe('ramp')
-    expect(display.legendSpec.sections?.map(s => s.id)).toContain('score')
+    expect(display.legendSpec.sections.map(s => s.id)).toContain('score')
     expect(display.valueScales).toHaveLength(1)
     expect(display.notices).toEqual([])
   },

@@ -33,7 +33,7 @@ test('the unlabeled group is the rows with no value', () => {
 // scale's rows act: a genotype swatch names a color, not a set of rows.
 test('a legend click on the group scale focuses it, on the genotype scale nothing', () => {
   const d = display()
-  const group = d.legendSpec.sections!.find(s => s.id === 'group')!
+  const group = d.legendSpec.sections.find(s => s.id === 'group')!
   expect(group.items.find(i => i.label === UNLABELED_GROUP)!.value).toBe('')
   d.focusLegendEntry('genotypes', 'ref')
   expect(d.rowFocus).toBeUndefined()

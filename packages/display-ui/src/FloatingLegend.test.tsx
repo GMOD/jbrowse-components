@@ -11,19 +11,49 @@ function items(n: number): LegendItem[] {
   }))
 }
 
+function one(list: LegendItem[]) {
+  return [{ id: 'items', items: list }]
+}
+
 describe('FloatingLegend', () => {
   it('renders nothing when empty', () => {
-    const { container } = render(<FloatingLegend items={[]} />)
+    const { container } = render(<FloatingLegend sections={one([])} />)
     expect(container.firstChild).toBeNull()
   })
 
   it('shows every item and no toggle when at or under the limit', () => {
     const { queryByText, getByText } = render(
-      <FloatingLegend items={items(12)} maxItems={12} />,
+      <FloatingLegend sections={one(items(12))} maxItems={12} />,
     )
     expect(getByText('item0')).toBeTruthy()
     expect(getByText('item11')).toBeTruthy()
     expect(queryByText(/Show .* more/)).toBeNull()
+  })
+
+  it('shows one row past the limit rather than a toggle taking its place', () => {
+    const { queryByText, getByText } = render(
+      <FloatingLegend sections={one(items(13))} maxItems={12} />,
+    )
+    expect(getByText('item12')).toBeTruthy()
+    expect(queryByText(/Show .* more/)).toBeNull()
+  })
+
+  // The export draws a toggled-off category this way, and the screen has to
+  // agree, or the key names a color the plot no longer shows.
+  it('dims and strikes through a hidden row', () => {
+    const { getByText } = render(
+      <FloatingLegend
+        sections={one([
+          { color: 'red', label: 'gene' },
+          { color: 'blue', label: 'exon', hidden: true },
+        ])}
+      />,
+    )
+    const style = (label: string) =>
+      getComputedStyle(getByText(label).parentElement!)
+    expect(style('exon').textDecoration).toBe('line-through')
+    expect(style('exon').opacity).toBe('0.4')
+    expect(style('gene').textDecoration).not.toBe('line-through')
   })
 
   it("draws a section's note above its rows, where a collapse cannot hide it", () => {
@@ -45,7 +75,7 @@ describe('FloatingLegend', () => {
 
   it('collapses past the limit and toggles on click', () => {
     const { getByText, queryByText } = render(
-      <FloatingLegend items={items(32)} maxItems={12} />,
+      <FloatingLegend sections={one(items(32))} maxItems={12} />,
     )
     // first 12 shown, the rest hidden behind a "Show N more" toggle
     expect(getByText('item11')).toBeTruthy()
@@ -63,14 +93,14 @@ describe('FloatingLegend', () => {
   it('draws one box per color, both of them when a row has two', () => {
     const { container } = render(
       <FloatingLegend
-        items={[
+        sections={one([
           { color: '#aaa', label: 'LR - Normal pair orientation' },
           { color: '#f00', label: 'Long insert' },
           {
             label: 'Short insert',
             swatches: [{ color: '#ffc0cb' }, { color: '#ff3a8c' }],
           },
-        ]}
+        ])}
       />,
     )
     expect(container.querySelectorAll('rect')).toHaveLength(4)
@@ -104,9 +134,9 @@ describe('FloatingLegend', () => {
     expect(queryByText('Genotypes')).toBeNull()
   })
 
-  it('shows a top-level title with a single item list', () => {
+  it('shows a top-level title over a single section', () => {
     const { getByText } = render(
-      <FloatingLegend title="r² to index" items={items(2)} />,
+      <FloatingLegend title="r² to index" sections={one(items(2))} />,
     )
     expect(getByText('r² to index')).toBeTruthy()
     expect(getByText('item0')).toBeTruthy()

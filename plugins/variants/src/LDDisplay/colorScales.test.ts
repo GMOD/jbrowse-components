@@ -22,7 +22,7 @@ test('the scale is the loaded metric, read out of the painting LUT', () => {
   expect(last!.color).toBe(
     `rgb(${lut[lut.length - 4]},${lut[lut.length - 3]},${lut[lut.length - 2]})`,
   )
-  expect(display.legendSpec.sections![0]!.items[0]).toMatchObject({
+  expect(display.legendSpec.sections[0]!.items[0]).toMatchObject({
     label: 'R²',
     gradient: { minLabel: '0', maxLabel: '1' },
   })

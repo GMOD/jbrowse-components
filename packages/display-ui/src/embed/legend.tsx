@@ -44,14 +44,8 @@ function Row({ item }: { item: LegendItem }) {
         textDecoration: hidden ? 'line-through' : undefined,
       }}
     >
-      {legendSwatches(item).map((swatch, i) => (
-        <svg
-          // eslint-disable-next-line @eslint-react/no-array-index-key -- two swatches of one row may share a color
-          key={i}
-          aria-hidden
-          width={SWATCH}
-          height={SWATCH}
-        >
+      {legendSwatches(item).map(swatch => (
+        <svg key={swatch.color} aria-hidden width={SWATCH} height={SWATCH}>
           <LegendSwatchGlyph swatch={swatch} size={SWATCH} />
         </svg>
       ))}
@@ -68,7 +62,7 @@ export const Legend = observer(function Legend({
   style?: React.CSSProperties
 }) {
   const { legendSpec } = display
-  const sections = nonEmptyLegendSections(legendSpec)
+  const sections = nonEmptyLegendSections(legendSpec.sections)
   return sections.length ? (
     <div
       data-testid="embed-legend"

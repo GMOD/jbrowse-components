@@ -32,7 +32,7 @@ describe('declared color legend', () => {
         ],
       },
     ])
-    expect(display.legendSpec.sections![0]!.items).toEqual([
+    expect(display.legendSpec.sections[0]!.items).toEqual([
       { value: 'SINE', label: 'SINE', color: '#e41a1c' },
       { value: 'LINE', label: 'LINE', color: '#377eb8' },
     ])
@@ -134,7 +134,7 @@ describe('derived color key', () => {
   }
 
   const keyValues = (display: ReturnType<typeof coloredDisplay>) =>
-    display.legendSpec.sections?.[0]?.items.map(i => i.value)
+    display.legendSpec.sections[0]?.items.map(i => i.value)
 
   it('keeps the no-value row last under a declared domain', () => {
     const display = coloredDisplay({ field: 'biotype', domain: ['snoRNA'] })
@@ -202,7 +202,7 @@ describe('derived color key', () => {
       }),
       ctgA,
     )
-    expect(display.legendSpec.sections?.[0]?.items.map(i => i.label)).toEqual([
+    expect(display.legendSpec.sections[0]?.items.map(i => i.label)).toEqual([
       'Forward strand',
       'Reverse strand',
     ])
@@ -283,9 +283,10 @@ describe('derived color key', () => {
         }),
         ctgA,
       )
-      expect(display.legendSpec.sections?.[0]?.items.map(i => i.label)).toEqual(
-        ['lncRNA, protein_coding', 'snoRNA'],
-      )
+      expect(display.legendSpec.sections[0]?.items.map(i => i.label)).toEqual([
+        'lncRNA, protein_coding',
+        'snoRNA',
+      ])
       pinRow(display)!.onClick()
       expect(display.colorSettings.domain).toEqual([
         'lncRNA',

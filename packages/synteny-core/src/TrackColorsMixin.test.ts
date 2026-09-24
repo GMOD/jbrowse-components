@@ -151,9 +151,12 @@ describe('a categorical column', () => {
       group: { labels: ['B1', 'A1a', 'C1'], colors: {} },
     })
     view.setColorDomain(['C1'])
-    expect(view.legendSpec.sections![0]!.items.map(item => item.label)).toEqual(
-      ['C1', 'A1a', 'B1', NO_VALUE_LABEL],
-    )
+    expect(view.legendSpec.sections[0]!.items.map(item => item.label)).toEqual([
+      'C1',
+      'A1a',
+      'B1',
+      NO_VALUE_LABEL,
+    ])
 
     view.setColorBy('track')
     expect(view.colorScales[0]!.kind === 'categorical').toBe(true)

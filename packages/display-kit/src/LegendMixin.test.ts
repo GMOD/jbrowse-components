@@ -130,7 +130,7 @@ describe('the key derives from the scales', () => {
       colorScales: [genotypes, groups],
     })
     expect(display.hasLegendKey).toBe(true)
-    expect(display.legendSpec.sections!.map(s => s.id)).toEqual([
+    expect(display.legendSpec.sections.map(s => s.id)).toEqual([
       'genotypes',
       'group',
     ])
@@ -152,11 +152,11 @@ describe('the key derives from the scales', () => {
       colorScales: [genotypes, groups],
     })
     display.dismissLegendSection('group')
-    expect(display.legendSpec.sections!.map(s => s.id)).toEqual(['genotypes'])
+    expect(display.legendSpec.sections.map(s => s.id)).toEqual(['genotypes'])
     display.setShowLegend(false)
     expect(display.dismissedLegendSections).toEqual(['group'])
     display.setShowLegend(true)
-    expect(display.legendSpec.sections!.map(s => s.id)).toEqual([
+    expect(display.legendSpec.sections.map(s => s.id)).toEqual([
       'genotypes',
       'group',
     ])

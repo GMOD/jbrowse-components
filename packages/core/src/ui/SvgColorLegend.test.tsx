@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render } from '@testing-library/react'
+import { cleanup, render } from '@testing-library/react'
 
 import SvgColorLegend from './SvgColorLegend.tsx'
 
@@ -116,27 +116,24 @@ test('maxHeight collapses overflow into a "+N more" row and never exceeds it', (
   expect(container.querySelectorAll('text')).toHaveLength(4)
 })
 
-test('onDismiss adds an "×" button that fires on click', () => {
-  const onDismiss = jest.fn()
-  const { getByText } = renderSvg(
-    <SvgColorLegend
-      canvasWidth={500}
-      entries={[{ key: 'a', label: 'TssA', color: 'red' }]}
-      onDismiss={onDismiss}
-    />,
+test('"+N more" counts the colors cut, and no heading is left over none', () => {
+  const entries = [
+    { key: 'a-0', label: 'DEL', color: 'red' },
+    { key: 'a-1', label: 'DUP', color: 'blue' },
+    { key: 'b-title', label: 'Population' },
+    { key: 'b-note', label: 'from the samples file' },
+    { key: 'b-0', label: 'AFR', color: 'green' },
+    { key: 'b-1', label: 'EUR', color: 'orange' },
+  ]
+  // room for 4 rows: the two SV rows, then the cut lands inside the second
+  // section, whose title and note would otherwise hang over nothing
+  const { getByText, queryByText } = renderSvg(
+    <SvgColorLegend canvasWidth={500} maxHeight={56} entries={entries} />,
   )
-  fireEvent.click(getByText('×'))
-  expect(onDismiss).toHaveBeenCalledTimes(1)
-})
-
-test('no dismiss button without onDismiss (e.g. the SVG export)', () => {
-  const { queryByText } = renderSvg(
-    <SvgColorLegend
-      canvasWidth={500}
-      entries={[{ key: 'a', label: 'TssA', color: 'red' }]}
-    />,
-  )
-  expect(queryByText('×')).toBeNull()
+  expect(getByText('DUP')).toBeTruthy()
+  expect(queryByText('Population')).toBeNull()
+  expect(queryByText('from the samples file')).toBeNull()
+  expect(getByText('+2 more')).toBeTruthy()
 })
 
 test('draws nothing with no entries', () => {
