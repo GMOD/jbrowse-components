@@ -152,7 +152,7 @@ green. Five getters across three plugins were found doing it; two were worth
 holding.
 
 The fix is an `autorunOnReadyView` reading them bare, named `*HitIndexes`
-(`CanvasHitIndexes`, `LaneHitIndexes`, `ManhattanHitIndexes`) so the set is
+(`CanvasHitIndexes`, `LaneHitIndexes`) so the set is
 greppable; multi-row's is `MultiRowEncodedChannels`, its hit index being a
 byproduct of the encode memo the autorun holds. Where the read goes through a
 structural `self`, **type it with the getters' real types**, not `unknown`: a
