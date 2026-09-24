@@ -1,5 +1,6 @@
 import { waitFor } from '@testing-library/react'
 
+import { ConfigurationSchema } from '../configuration/index.ts'
 import {
   doAnalytics,
   writeAWSAnalytics,
@@ -118,7 +119,14 @@ test('doAnalytics pings only once the app reports ready', async () => {
   marker.dataset.appPhase = 'loading'
   document.body.append(marker)
 
-  doAnalytics(rootModel, Date.now(), undefined)
+  const configuration = ConfigurationSchema('AnalyticsTest', {
+    disableAnalytics: { type: 'boolean', defaultValue: false },
+  }).create()
+  doAnalytics(
+    { ...rootModel, jbrowse: { ...rootModel.jbrowse, configuration } },
+    Date.now(),
+    undefined,
+  )
   await new Promise(resolve => setTimeout(resolve, 100))
   expect(fetchMock).not.toHaveBeenCalled()
 
