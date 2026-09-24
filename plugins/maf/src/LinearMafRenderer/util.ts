@@ -104,7 +104,7 @@ export function getFrameLegendItems(palette: JBrowsePalette): LegendItem[] {
   const colors = getFrameColors(palette)
   const color = (frame: number) => colors[frameColorIndex(frame, 1)]
   return [
-    { label: 'CDS frame: 1st codon base', color: color(0) },
+    { label: '1st codon base', color: color(0) },
     { label: '2nd codon base', color: color(1) },
     { label: '3rd codon base', color: color(2) },
   ]

@@ -5,14 +5,17 @@ import {
   getCodonColors,
   getCodonLegendItems,
 } from '../LinearMafRenderer/util.ts'
-import { identityLegendItems } from './components/drawRowIdentity.ts'
+import {
+  identityColorScale,
+  identityRgb,
+} from './components/drawRowIdentity.ts'
 import {
   SOURCE_CHROM_PALETTE,
   sourceChromLegendItems,
 } from './components/drawSourceChrom.ts'
 import { createMafTestEnvironment } from './testEnv.ts'
 
-import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
+import type { MenuItem } from '@jbrowse/core/ui'
 
 // The color key is the only decoder an exported figure ships with, so each of
 // these is built by the module that paints the rendering, out of the colors it
@@ -20,30 +23,32 @@ import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 // three ways the keys had drifted from the screen while they were written out in
 // the model instead.
 describe('each row rendering keys itself from what it paints', () => {
-  const colored = (items: LegendItem[]) => items.filter(i => i.color)
-
   describe('per-row identity', () => {
-    // The heatmap reads off the ramp, so its key shows both ends of it.
-    it('keys the heatmap with the two ends of the ramp it shades with', () => {
-      const items = identityLegendItems('heatmap')
-      const swatches = colored(items)
-      expect(swatches).toHaveLength(2)
-      expect(swatches[0]!.color).not.toBe(swatches[1]!.color)
-      // the color-less row names the metric the ramp measures
-      expect(items).toHaveLength(3)
+    // Each pixel is the mean identity of the bases under it, so every step of
+    // the ramp is on screen; two end swatches left the grey middle unkeyed.
+    it('keys the heatmap with the ramp it shades with, 0% to 100%', () => {
+      const scale = identityColorScale('heatmap')
+      expect(scale.kind).toBe('ramp')
+      if (scale.kind === 'ramp') {
+        expect(scale.stops.map(s => s.color)).toEqual(
+          [0, 0.5, 1].map(identityRgb),
+        )
+        expect(scale.format!(0)).toBe('0%')
+        expect(scale.format!(1)).toBe('100%')
+      }
     })
 
     // The X-Y plot paints every bar the conserved end of that ramp and puts the
     // identity in the bar's HEIGHT. Handed the heatmap's key it advertised a
     // "Divergent" red against a plot that never draws one.
     it('keys the X-Y plot with the one color it paints, not the ramp', () => {
-      const swatches = colored(identityLegendItems('xyplot'))
-      expect(swatches).toHaveLength(1)
-      // and that one color is the conserved end, which is what it fills with
-      expect(swatches[0]!.color).toBe(
-        colored(identityLegendItems('heatmap'))[0]!.color,
-      )
-      expect(swatches[0]!.label).toMatch(/height/i)
+      const scale = identityColorScale('xyplot')
+      expect(scale.kind).toBe('categorical')
+      if (scale.kind === 'categorical') {
+        expect(scale.entries).toHaveLength(1)
+        expect(scale.entries[0]!.color).toBe(identityRgb(1))
+        expect(scale.entries[0]!.label).toMatch(/height/i)
+      }
     })
   })
 
@@ -126,13 +131,10 @@ describe('the color key is dismissible, like every other row display', () => {
     expect(rows(display.trackMenuItems())).not.toContain('Show legend')
   })
 
-  // One scale, keyed by the rendering: the frame strip's rows ride at its end
-  // in paint order rather than as a section of their own.
   it('the heatmap key is one scale named for the rendering', () => {
     const display = heatmapDisplay()
-    expect(display.colorScales.map(s => s.id)).toEqual(['heatmap'])
-    expect(display.legendSpec.sections[0]!.items.map(i => i.label)).toEqual(
-      identityLegendItems('heatmap').map(i => i.label),
-    )
+    expect(display.colorScales).toMatchObject([
+      { kind: 'ramp', id: 'heatmap', title: 'Per-base identity to reference' },
+    ])
   })
 })

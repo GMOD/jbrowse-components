@@ -14,7 +14,7 @@ import {
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { RowIdentityMode } from '../rowIdentityModes.ts'
 import type { CellPxRange } from './visibleRegionGeometry.ts'
-import type { LegendItem } from '@jbrowse/core/ui'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -72,29 +72,37 @@ const XYPLOT_BAR_COLOR = IDENTITY_RAMP[100]!
  * The color key for whichever identity plot is drawing, built here rather than
  * in the model so it can't describe something this file stopped painting.
  *
- * The two modes encode identity differently and so need different keys: the
- * heatmap really does read off the ramp, but the X-Y plot paints every bar the
- * conserved end of it and varies the height. Both used to get the heatmap's
- * two-swatch ramp key, so an X-Y figure shipped with a "Divergent" red swatch
- * and not one red pixel to match it.
+ * The heatmap fills each pixel with the mean identity of the bases under it,
+ * so its key is the ramp, 0% to 100%; `identityColor` is linear either side of
+ * its midpoint, so three stops are the whole ramp. The X-Y plot paints every
+ * bar the conserved end of it and varies the height.
  */
-export function identityLegendItems(mode: RowIdentityMode): LegendItem[] {
-  // The color-less row names the metric; without it either key is an
-  // uninterpreted color or height.
-  const metric = { label: 'Per-base identity to reference' }
+export function identityColorScale(mode: RowIdentityMode): ColorScale {
+  const title = 'Per-base identity to reference'
   return mode === 'xyplot'
-    ? [
-        metric,
-        {
-          label: 'Bar height: full = conserved, flat = divergent',
-          color: XYPLOT_BAR_COLOR,
-        },
-      ]
-    : [
-        metric,
-        { label: 'Conserved (base matches)', color: identityRgb(1) },
-        { label: 'Divergent (base differs)', color: identityRgb(0) },
-      ]
+    ? {
+        kind: 'categorical',
+        id: mode,
+        title,
+        entries: [
+          {
+            value: 'bar',
+            label: 'Bar height: full = conserved, flat = divergent',
+            color: XYPLOT_BAR_COLOR,
+          },
+        ],
+      }
+    : {
+        kind: 'ramp',
+        id: mode,
+        title,
+        domain: [0, 1],
+        stops: [0, 0.5, 1].map(offset => ({
+          offset,
+          color: identityRgb(offset),
+        })),
+        format: v => `${Math.round(v * 100)}%`,
+      }
 }
 
 /**

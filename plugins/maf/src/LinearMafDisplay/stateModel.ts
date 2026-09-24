@@ -85,7 +85,7 @@ import {
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { computeVisibleSummaryBars } from './components/computeVisibleSummaryBars.ts'
 import { conservationTicks } from './components/drawConservation.ts'
-import { identityLegendItems } from './components/drawRowIdentity.ts'
+import { identityColorScale } from './components/drawRowIdentity.ts'
 import {
   perRowChromRanks,
   sourceChromLegendItems,
@@ -209,6 +209,19 @@ function unionSources(
     byName.set(source.name, source)
   }
   return [...byName.values()]
+}
+
+function categoricalScale(
+  id: string,
+  title: string,
+  items: { label: string; color?: string }[],
+): ColorScale {
+  return {
+    kind: 'categorical',
+    id,
+    title,
+    entries: items.map(({ label, color }) => ({ value: label, label, color })),
+  }
 }
 
 /**
@@ -2501,7 +2514,7 @@ export default function stateModelFactory(
          * #getter
          * `LegendMixin`'s hook: the key for whatever `activeRowRendering` is
          * painting, or none where the rendering needs no key (plain bases),
-         * as one categorical scale.
+         * then the CDS frame key while the strip is drawn.
          *
          * A dispatch, not a description: each key is built by the module that
          * paints the rendering, out of the colors it paints with. Written out
@@ -2518,40 +2531,42 @@ export default function stateModelFactory(
           }
           const { palette } = getSession(self)
           const rendering = self.activeRowRendering
-          const rows =
+          const rendered =
             rendering === 'codon'
-              ? getCodonLegendItems(palette)
+              ? [
+                  categoricalScale(
+                    'codon',
+                    'Codon change',
+                    getCodonLegendItems(palette),
+                  ),
+                ]
               : rendering === 'sourceChrom'
-                ? // Colored by each row's per-row chromosome RANK, not by
-                  // chromosome name, so the key is this short fixed scheme
-                  // rather than a per-scaffold rainbow.
-                  sourceChromLegendItems(self.sourceChromRanks.maxRank)
+                ? [
+                    // Colored by each row's per-row chromosome RANK, not by
+                    // chromosome name, so the key is this short fixed scheme
+                    // rather than a per-scaffold rainbow.
+                    categoricalScale(
+                      'sourceChrom',
+                      'Source chromosome',
+                      sourceChromLegendItems(self.sourceChromRanks.maxRank),
+                    ),
+                  ]
                 : isRowIdentityMode(rendering)
-                  ? identityLegendItems(rendering)
+                  ? [identityColorScale(rendering)]
                   : []
-          // The CDS strip is not one of the alternatives above — it draws *over*
-          // whichever of them won — so it is appended rather than dispatched to,
-          // and this is why it had no key at all: a dispatch on
-          // `activeRowRendering` has no branch that is ever the strip. Last, so
-          // the key reads in paint order, and so the rendering's own swatches
-          // stay where a reader of the other modes already expects them.
-          const items =
-            self.visibleFrames.length > 0
-              ? [...rows, ...getFrameLegendItems(palette)]
-              : rows
-          return items.length
+          // The CDS strip draws *over* whichever rendering won, so it is its
+          // own section rather than a branch of the dispatch, and last, in
+          // paint order.
+          return self.visibleFrames.length > 0
             ? [
-                {
-                  kind: 'categorical',
-                  id: rendering,
-                  entries: items.map(({ label, color }) => ({
-                    value: label,
-                    label,
-                    color,
-                  })),
-                },
+                ...rendered,
+                categoricalScale(
+                  'cdsFrame',
+                  'CDS frame',
+                  getFrameLegendItems(palette),
+                ),
               ]
-            : []
+            : rendered
         },
         /**
          * #getter

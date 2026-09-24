@@ -123,16 +123,16 @@ describe('the CDS strip keys itself', () => {
 
     seed(display, true)
     expect(display.visibleFrames.length).toBeGreaterThan(0)
+    expect(display.legendSpec.title).toBe('CDS frame')
     expect(keyLabels(display)).toEqual([
-      'CDS frame: 1st codon base',
+      '1st codon base',
       '2nd codon base',
       '3rd codon base',
     ])
   })
 
-  // It is appended, not dispatched to, because the strip draws over whichever
-  // rendering won — so both keys are on screen at once and the rendering's own
-  // swatches stay where a reader of the other modes expects them.
+  // Its own section, last, because the strip draws over whichever rendering
+  // won — so both keys are on screen at once, each under its own title.
   it('rides alongside the active rendering key rather than replacing it', () => {
     const { display } = framesEnv().createDisplay()
     seed(display, true)
@@ -141,10 +141,10 @@ describe('the CDS strip keys itself', () => {
     display.setRowIdentityAutoZoom(false)
     expect(display.activeRowRendering).toBe('heatmap')
 
-    const labels = keyLabels(display)
-    expect(labels).toContain('CDS frame: 1st codon base')
-    expect(labels.at(-1)).toBe('3rd codon base')
-    expect(labels.length).toBeGreaterThan(3)
+    expect(display.legendSpec.sections.map(s => s.title)).toEqual([
+      'Per-base identity to reference',
+      'CDS frame',
+    ])
   })
 
   // The key decodes what is on screen. Panning off the CDS takes the strip with
