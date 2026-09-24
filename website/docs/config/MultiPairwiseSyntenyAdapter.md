@@ -47,6 +47,13 @@ The anchor is inferred as the one assembly every child names, so it is never
 written twice. Each child is any pairwise synteny adapter config with its own
 `assemblyNames` (PairwiseIndexedPAFAdapter, PAFAdapter, ChainAdapter, ...).
 
+Every mate is a lane the multiway display's picker offers, and the display
+reads only the children for the lanes it draws: the track's own
+`assemblyNames` beside the anchor until the reader picks others. So a star
+over every liftOver file a genome has costs a window only the reads of the
+lanes on screen, and the track's `assemblyNames` is where its default lanes
+are chosen.
+
 ## Related links
 
 - **Track:** [SyntenyTrack](../syntenytrack)
@@ -65,3 +72,4 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "MultiPairwis
 | --- | --- |
 | <span id="slot-adapters">**adapters**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | the pairwise adapter configs, each naming its own pair in `assemblyNames` (or `queryAssembly`/`targetAssembly`); exactly one assembly must be common to all of them |
 | <span id="slot-coarsebpperpxthreshold">**coarseBpPerPxThreshold**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>10000</code> | bpPerPx threshold at which a view on "Level of detail: automatic" switches the children from their fine tier to their coarse tier. The coarse tier is offered only when every child carries one, and the threshold is raised to the largest `--coarse` bound any child's `#pif` header states.<br>_advanced_ |
+| <span id="slot-lanes">**lanes**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | what the lane picker calls each mate and the heading it sits under, `[{ name, label, group }]` by assembly name; a mate not listed is offered under its name. A genome the session holds is named the way the session names it |

@@ -1394,6 +1394,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "coarseBpPerPxThreshold",
           "type": "number"
+        },
+        {
+          "name": "lanes",
+          "type": "frozen"
         }
       ],
       "shorthandKeys": []
@@ -4120,6 +4124,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "drawCurves",
           "type": "boolean"
+        },
+        {
+          "name": "laneGeneTracks",
+          "type": "string[]"
         },
         {
           "name": "bridgeSkippedLanes",

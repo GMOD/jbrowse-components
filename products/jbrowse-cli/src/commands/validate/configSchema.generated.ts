@@ -2941,6 +2941,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "coarseBpPerPxThreshold": {
           "type": "number",
           "default": 10000
+        },
+        "lanes": {
+          "description": "per mate assembly, the label and group the multiway lane picker offers it under. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "not": {
+            "$ref": "#/$defs/JexlString"
+          }
         }
       }
     },
@@ -5419,6 +5425,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "draw the ribbons as bezier curves rather than straight chords. A plain per-track slot: this display does not share the linear synteny view's view-level \`drawCurves\` override. Straight is the default in both places: a chord's slant reads directly as the offset between two lanes drawn in different coordinate frames, which is exactly what a curve hides.",
           "type": "boolean",
           "default": false
+        },
+        "laneGeneTracks": {
+          "description": "the trackId of the gene track each lane draws, one per genome. A lane whose genome no entry names draws the session's best-ranked annotation track for it, which on a config holding several gene sets per genome is whichever is declared first.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "bridgeSkippedLanes": {
           "description": "join a group across a lane that places nothing for it, to the next lane down that does. A ribbon otherwise joins adjacent lanes only, so a sparse lane mid-stack cuts every chain running through it.",
@@ -11820,6 +11833,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "drawCurves": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/drawCurves"
+            },
+            "laneGeneTracks": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/laneGeneTracks"
             },
             "bridgeSkippedLanes": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/bridgeSkippedLanes"
