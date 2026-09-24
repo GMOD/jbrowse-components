@@ -128,7 +128,7 @@ export type AsyncViewStateOptions =
 async function resolveJBrowseHub(
   opts: AsyncViewStateOptions,
 ): Promise<ViewStateOptions> {
-  if (!('jbrowseHub' in opts)) {
+  if (opts.jbrowseHub === undefined) {
     return opts
   }
   if ('assembly' in opts) {

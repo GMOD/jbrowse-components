@@ -16,8 +16,6 @@ import type { EmbeddedSessionParent } from '@jbrowse/embedded-core'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { AssertExtends, AssertSessionModel } from '@jbrowse/product-core'
 
-// This product's root carries one prop beyond the shared shadow, so the slice
-// this session reaches for is that shadow plus the one field.
 interface SessionModelParent extends EmbeddedSessionParent {
   disableAddTracks: boolean
   effectiveHeight: string | undefined

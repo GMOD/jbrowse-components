@@ -152,7 +152,7 @@ export type AsyncViewStateOptions =
 async function resolveJBrowseHub(
   opts: AsyncViewStateOptions,
 ): Promise<ViewStateOptions> {
-  if (!('jbrowseHub' in opts)) {
+  if (opts.jbrowseHub === undefined) {
     return opts
   }
   if ('assembly' in opts) {
@@ -173,14 +173,15 @@ async function resolveJBrowseHub(
 }
 
 export default function createViewState(opts: ViewStateOptions): ViewModel {
-  if ('jbrowseHub' in opts) {
+  if ('jbrowseHub' in opts && opts.jbrowseHub !== undefined) {
     throw new Error(
       'jbrowseHub is fetched, so it needs useCreateViewState or createViewStateAsync',
     )
   }
-  const { plugins = [], makeWorkerInstance } = opts
-  const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
-  return finishCreateViewState(opts, model, pluginManager)
+  return finishCreateViewState(
+    opts,
+    createModel(opts.plugins ?? [], opts.makeWorkerInstance),
+  )
 }
 
 /**
@@ -190,19 +191,17 @@ export default function createViewState(opts: ViewStateOptions): ViewModel {
  */
 export async function createViewStateAsync(input: AsyncViewStateOptions) {
   const opts = await resolveJBrowseHub(input)
-  const { plugins = [], makeWorkerInstance } = opts
-  const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
+  const engine = createModel(opts.plugins ?? [], opts.makeWorkerInstance)
   // both: the tree is created from `defaultSession` and a restored `session`
   // is applied afterwards
-  await pluginManager.preloadSessionTypes(opts.defaultSession)
-  await pluginManager.preloadSessionTypes(opts.session)
-  return finishCreateViewState(opts, model, pluginManager)
+  await engine.pluginManager.preloadSessionTypes(opts.defaultSession)
+  await engine.pluginManager.preloadSessionTypes(opts.session)
+  return finishCreateViewState(opts, engine)
 }
 
 function finishCreateViewState(
   opts: ViewStateOptions,
-  model: ReturnType<typeof createModel>['model'],
-  pluginManager: ReturnType<typeof createModel>['pluginManager'],
+  { model, pluginManager }: ReturnType<typeof createModel>,
 ): ViewModel {
   const {
     assembly,
@@ -213,13 +212,13 @@ function finishCreateViewState(
     view,
     location,
     highlight,
-    disableAddTracks = false,
-    menuBar = false,
+    disableAddTracks,
+    menuBar,
     defaultSession,
     session,
     localFiles,
     height,
-    drawerViewHeight = '100vh',
+    drawerViewHeight,
   } = opts
   if (view && defaultSession) {
     throw new Error(

@@ -21,15 +21,15 @@ import '@fontsource/roboto'
 
 import {
   JBrowseLinearGenomeView,
-  createViewState,
+  useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
 function View() {
-  const state = createViewState({
+  const state = useCreateViewState({
     assembly: {/* assembly */},
     tracks: [/* tracks */],
   })
-  return <JBrowseLinearGenomeView viewState={state} />
+  return state ? <JBrowseLinearGenomeView viewState={state} /> : null
 }
 ```
 

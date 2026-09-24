@@ -9,7 +9,7 @@ The embedded components are **React components** on npm: one JSX element puts a
 genome browser in your page. They are the same views the full app is built from,
 so a track config that works there works here.
 
-React 18 or newer is the only peer dependency. For a page that isn't a React
+React 19 or newer is the only peer dependency. For a page that isn't a React
 app, a `<script>` bundle carries its own React; see
 [non-React hosts](#non-react-hosts).
 

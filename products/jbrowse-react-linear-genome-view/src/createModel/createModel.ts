@@ -19,7 +19,7 @@ import type { AssertNotAny, PluginInput } from '@jbrowse/product-core'
  * #stateModel JBrowseReactLinearGenomeViewRootModel
  * #category root
  * Composes the shared {@link EmbeddedRootModel} with a LinearGenomeView session
- * plus the LGV-only `disableAddTracks`/`height` props.
+ * and this product's own props.
  */
 export default function createModel(
   runtimePlugins: PluginInput[],
@@ -67,17 +67,6 @@ export default function createModel(
     })
     .views(self => ({
       /**
-       * #getter
-       * The height in force: `height` when a host gave one, `drawerViewHeight`
-       * while a drawer is open, and nothing otherwise -- the view is
-       * content-height and the host's own box is what bounds it.
-       *
-       * One definition with two readers, and the second is why it is here
-       * rather than in the component: a bounded view is exactly the case where
-       * pinning the header means something, so the session's
-       * `stickyViewHeaders` reads this too.
-       */
-      /**
        * #method
        * One `File` menu, and only the two items an embed can honour: it can
        * open a track or a connection into the session it was handed. The app's
@@ -101,6 +90,13 @@ export default function createModel(
             ]
           : []
       },
+      /**
+       * #getter
+       * The height in force: `height` when a host gave one, `drawerViewHeight`
+       * while a drawer is open, and nothing otherwise -- the view is
+       * content-height and the host's own box is what bounds it. The session's
+       * `stickyViewHeaders` reads it too.
+       */
       get effectiveHeight() {
         const { visibleWidget, minimized } = self.session
         return (

@@ -88,8 +88,8 @@
     "@jbrowse/display-test-utils": "workspace:^"
   },
   "peerDependencies": {
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0"
   },
   "publishConfig": {
     "access": "public",

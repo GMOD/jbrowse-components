@@ -72,10 +72,11 @@ test("jbrowseHub brings the hub's assembly, catalog and search index, and the ho
   }
 })
 
-test('an assembly config asks no hub', async () => {
+test('an assembly config asks no hub, even beside an unset jbrowseHub', async () => {
   jest.mocked(fetchHub).mockClear()
   const state = await createViewStateAsync({
     assembly: hub.assemblies[0]!,
+    jbrowseHub: undefined,
   })
   try {
     expect(fetchHub).not.toHaveBeenCalled()
