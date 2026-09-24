@@ -1,6 +1,6 @@
 import configSchemaF from './configSchema.ts'
-import { routeRetiredShorthand } from './displayDefaults.ts'
 import stateModelFactory from './model.ts'
+import { routeRetiredShorthand } from './retiredSettings.ts'
 
 const configSchema = configSchemaF()
 const stateModel = stateModelFactory(configSchema)

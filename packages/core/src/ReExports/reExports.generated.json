@@ -4326,6 +4326,13 @@
         "react-dom"
       ]
     },
+    "@jbrowse/display-kit/retiredSettings": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "retiredSettings"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/rowArrangementConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [

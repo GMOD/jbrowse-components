@@ -441,6 +441,7 @@ export default [
   '@jbrowse/display-kit/RegionTooLargeMixin',
   '@jbrowse/display-kit/regionTooLargeUtils',
   '@jbrowse/display-kit/renderDisplaySvg',
+  '@jbrowse/display-kit/retiredSettings',
   '@jbrowse/display-kit/rowArrangementConfigSchema',
   '@jbrowse/display-kit/rowColorConfigSchema',
   '@jbrowse/display-kit/rowsConfigSchema',
