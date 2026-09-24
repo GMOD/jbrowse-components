@@ -53,8 +53,9 @@ export async function launchFromLink(
       ? await fetchConfig(parsed.configUrl)
       : undefined
     const pluginManager = await createPluginManager(config)
+    const { spec, sessionName } = parsed
     await loadSessionSpec(
-      { ...parsed.spec, sessionName: parsed.sessionName },
+      sessionName ? { ...spec, sessionName } : spec,
       pluginManager,
     )
     return pluginManager

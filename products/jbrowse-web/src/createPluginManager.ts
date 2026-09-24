@@ -187,7 +187,9 @@ function initSession(
       void loadSessionSpec(
         // @ts-expect-error spec is dynamic JSON (Record<string,unknown>); the
         // required shape is validated at runtime inside loadSessionSpec
-        { ...sessionSource.spec, sessionName },
+        sessionName
+          ? { ...sessionSource.spec, sessionName }
+          : sessionSource.spec,
         pluginManager,
       )
     } else {

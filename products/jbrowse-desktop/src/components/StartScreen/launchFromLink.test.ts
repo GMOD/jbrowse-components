@@ -82,10 +82,7 @@ test('a spec carrying its own assemblies needs no config fetch', async () => {
 
   expect(fetchConfig).not.toHaveBeenCalled()
   expect(createPluginManager).toHaveBeenCalledWith(undefined)
-  expect(mockLoadSessionSpec).toHaveBeenCalledWith(
-    { ...selfContained, sessionName: undefined },
-    pluginManager,
-  )
+  expect(mockLoadSessionSpec).toHaveBeenCalledWith(selfContained, pluginManager)
 })
 
 test('a link only its own instance can open fails before anything is built', async () => {
@@ -131,10 +128,7 @@ test('a spec on a .json url is still read as the spec link it is', async () => {
   )
 
   expect(fetchConfig).not.toHaveBeenCalled()
-  expect(mockLoadSessionSpec).toHaveBeenCalledWith(
-    { ...spec, sessionName: undefined },
-    pluginManager,
-  )
+  expect(mockLoadSessionSpec).toHaveBeenCalledWith(spec, pluginManager)
 })
 
 test('a link naming neither a config nor a view still reports why', async () => {
