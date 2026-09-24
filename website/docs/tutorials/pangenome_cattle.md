@@ -60,9 +60,8 @@ and OMIA supplies the curated causal variants:
 what each of the graph files holds and how a graph produces them.
 
 [staging.genomes.jbrowse.org/pangenomes/bovine](https://staging.genomes.jbrowse.org/pangenomes/bovine)
-opens the same files without any setup (staging, until the graph plugin's
-JBrowse 5 host ships). It launches any chromosome and lists the graph's most
-variable loci.
+(staging, until the graph plugin's JBrowse 5 host ships) lists the graph's most
+variable loci, ranked off the coarse tier, each with a launch into the graph.
 
 ## Where the graph and the callset show different things
 
