@@ -75,16 +75,3 @@ export const arcColorSchema = ConfigurationSchema(
   },
   colorChannelOptions('color'),
 )
-
-/** The `showLegend` slot the two arc displays declare beside their colour. */
-export const arcLegendConfigSchemaFields = {
-  /**
-   * #slot showLegend
-   * Draw the colour key where `color` binds a field. Defaults to on.
-   */
-  showLegend: {
-    type: 'boolean',
-    defaultValue: true,
-    description: 'draw the colour key',
-  },
-} as const

@@ -7,14 +7,17 @@ import {
   colorFieldOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { arcColorSchema } from './arcColorConfigSchema.ts'
+import type { pairedArcColorSchema } from './pairedArcColorConfigSchema.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
-import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /** An arc display's `color` object as a config node. */
-export type ArcColorNode = AnyConfigurationModel & ColorSetting
+export type ArcColorNode =
+  | Instance<typeof arcColorSchema>
+  | Instance<typeof pairedArcColorSchema>
 
 /**
  * How one arc is coloured: the CSS colour, and where a scale painted it, the
@@ -39,7 +42,7 @@ export function arcColorPainter(
   const field = colorFieldOf(encoding)
   if (typeof encoding === 'string' || !field) {
     return (feature, alt) => ({
-      color: readConfObject(color, 'value', { feature, alt }) as string,
+      color: readConfObject(color, 'value', { feature, alt }),
     })
   }
   const read = fieldReader(field.field, jexl)
@@ -61,20 +64,20 @@ export function arcColorScales(
   if (!field) {
     return []
   }
+  const painted = new Map<string, string>()
+  for (const { key, color: css } of paints) {
+    if (key !== undefined && !painted.has(key)) {
+      painted.set(key, css)
+    }
+  }
   return derivedColorScale(
-    [paints],
-    list => ({
-      candidates: list.flatMap(paint =>
-        paint.key === undefined
-          ? []
-          : [
-              {
-                rowIndex: 0,
-                value: paint.key,
-                color: cssColorToABGR(paint.color),
-              },
-            ],
-      ),
+    [painted],
+    keys => ({
+      candidates: [...keys].map(([value, css]) => ({
+        rowIndex: 0,
+        value,
+        color: cssColorToABGR(css),
+      })),
       rowPaintsCandidateColor: () => true,
     }),
     { id: 'arc-color', field },

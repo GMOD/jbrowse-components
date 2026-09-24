@@ -115,23 +115,81 @@ interface SlotFieldFactory {
 // name -> the factory, or null on a conflict
 const slotFieldFactoryIndex = new Map<string, SlotFieldFactory | null>()
 
-// One entry of a slot table's source: either a slot of its own, or another slot
-// table it spreads in.
-type SlotPart = { pair: [string, string] } | { spread: string }
+// One entry of a slot table's source: a slot of its own, another slot table it
+// spreads in by name, or a slot-table factory it spreads in as a call.
+type SlotPart =
+  | { pair: [string, string] }
+  | { spread: string }
+  | { call: string; args: Map<string, string> }
+
+/**
+ * The spread a schema or a slot table writes: a table by name
+ * (`...wiggleConfigSchemaFields`) or a factory call with at most one
+ * object-literal argument (`...trackHeightConfigSchemaFields({ … })`), the
+ * single destructured parameter the factory index accepts. Anything else is
+ * undefined rather than a half-read part.
+ *
+ * No argument at all is one of those shapes, not a rejection: a factory whose
+ * every parameter has a default is spread as a bare
+ * `...rowHeightConfigSchemaFields()`, and substitution then falls back to those
+ * defaults exactly as it does for a parameter one call omits and another
+ * passes. Rejecting it dropped the slot from the page of every display taking
+ * the defaults, which the manifest gap check then reported as a missing `#slot`
+ * tag on a file that has one.
+ */
+export function slotSpreadPart(
+  expr: ts.Expression,
+  sf: ts.SourceFile,
+): SlotPart | undefined {
+  if (ts.isIdentifier(expr)) {
+    return { spread: expr.text }
+  }
+  if (!ts.isCallExpression(expr) || !ts.isIdentifier(expr.expression)) {
+    return undefined
+  }
+  const [arg, ...rest] = expr.arguments
+  if (rest.length || (arg && !ts.isObjectLiteralExpression(arg))) {
+    return undefined
+  }
+  const args = new Map<string, string>()
+  for (const p of arg?.properties ?? []) {
+    if (ts.isPropertyAssignment(p) && ts.isIdentifier(p.name)) {
+      args.set(p.name.text, p.initializer.getText(sf))
+    }
+  }
+  return { call: expr.expression.text, args }
+}
+
+/**
+ * The `slotName: { ... }` source pairs one part contributes, or undefined where
+ * it spreads a name or calls a factory that is unknown or ambiguous.
+ */
+export function slotSpreadPairs(
+  part: SlotPart,
+): [string, string][] | undefined {
+  if ('pair' in part) {
+    return [part.pair]
+  }
+  if ('spread' in part) {
+    return slotFieldConstantPairs(part.spread)
+  }
+  return slotFieldFactoryPairs(part.call, part.args)
+}
 
 // Slot-shaped object literal: every property is either `name: { ... }` with a
-// `type` slot property, or a spread of another slot table by name. Required so
-// an ordinary constant that happens to be spread somewhere isn't mistaken for a
-// slot table.
+// `type` slot property, or a spread of another slot table by name or by factory
+// call. Required so an ordinary constant that happens to be spread somewhere
+// isn't mistaken for a slot table.
 //
 // A slot table may itself spread one, and that is not a corner case: it is how
 // `wiggleConfigSchemaFields` is built out of `scoreAxisConfigSchemaFields`, so
-// a Manhattan plot can declare the score axis without the palette. Treating the
-// spread as "not slot-shaped" rejected the whole outer table, which took every
-// wiggle slot off the config pages while the schema still declared them — the
-// same silent gap this index exists to close, one level down. Resolved in
-// buildEnumConstantIndex's second pass, since the inner table may be declared
-// after the outer one.
+// a Manhattan plot can declare the score axis without the palette, and how the
+// arc displays' `ARC_COLOR_FIELD_SLOTS` is built out of display-kit's colour
+// slot factories. Treating the spread as "not slot-shaped" rejected the whole
+// outer table, which took every wiggle slot off the config pages while the
+// schema still declared them — the same silent gap this index exists to close,
+// one level down. Resolved in buildEnumConstantIndex's second pass, since the
+// inner table may be declared after the outer one.
 //
 // `sf` is passed to getText explicitly rather than left to walk up parent
 // pointers: a program's trees only get those once the checker binds the file,
@@ -144,8 +202,8 @@ function slotFieldParts(
     return undefined
   }
   const parts = node.properties.map((p): SlotPart | undefined => {
-    if (ts.isSpreadAssignment(p) && ts.isIdentifier(p.expression)) {
-      return { spread: p.expression.text }
+    if (ts.isSpreadAssignment(p)) {
+      return slotSpreadPart(p.expression, sf)
     }
     return ts.isPropertyAssignment(p) &&
       ts.isIdentifier(p.name) &&
@@ -159,32 +217,27 @@ function slotFieldParts(
       ? { pair: [p.name.text, p.initializer.getText(sf)] }
       : undefined
   })
-  // A table of nothing but spreads is not evidence of a slot table — every
-  // property has to be recognized, and at least one has to be a slot.
+  // A table of nothing but spreads by name is not evidence of a slot table —
+  // every property has to be recognized, and at least one has to be a slot or
+  // a factory call, which resolves only against a factory this index knows.
   return parts.every(part => part !== undefined) &&
-    parts.some(part => 'pair' in part)
+    parts.some(part => !('spread' in part))
     ? parts
     : undefined
 }
 
-// Flatten a table's parts against the resolved tables, in source order so a
-// spread contributes where it is written. Undefined if any spread is unknown or
-// ambiguous — the same "drop rather than guess" rule as everything else here.
-function resolveSlotParts(
-  parts: SlotPart[],
-  resolved: Map<string, [string, string][] | null>,
-): [string, string][] | undefined {
+// Flatten a table's parts against the resolved tables and factories, in source
+// order so a spread contributes where it is written. Undefined if any spread is
+// unknown or ambiguous — the same "drop rather than guess" rule as everything
+// else here.
+function resolveSlotParts(parts: SlotPart[]): [string, string][] | undefined {
   const out: [string, string][] = []
   for (const part of parts) {
-    if ('pair' in part) {
-      out.push(part.pair)
-      continue
-    }
-    const inner = resolved.get(part.spread)
-    if (!inner) {
+    const pairs = slotSpreadPairs(part)
+    if (!pairs) {
       return undefined
     }
-    out.push(...inner)
+    out.push(...pairs)
   }
   // Object-spread semantics: a repeated name keeps its first position and takes
   // its last value, which is how a schema overrides one slot of a table it
@@ -631,7 +684,7 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
     resolvedCount = slotFieldsIndex.size
     for (const [name, parts] of slotParts) {
       if (parts && !slotFieldsIndex.has(name)) {
-        const pairs = resolveSlotParts(parts, slotFieldsIndex)
+        const pairs = resolveSlotParts(parts)
         if (pairs) {
           recordSlotFields(name, pairs)
         }
@@ -702,7 +755,7 @@ export function slotFieldFactoryPairs(
   if (!factory) {
     return undefined
   }
-  const pairs = resolveSlotParts(factory.parts, slotFieldsIndex)
+  const pairs = resolveSlotParts(factory.parts)
   return pairs?.map(([slot, source]) => [
     slot,
     substituteParams(source, factory.params, args),

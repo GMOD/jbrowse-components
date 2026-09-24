@@ -3,10 +3,8 @@ import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionToo
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import {
-  arcColorSchema,
-  arcLegendConfigSchemaFields,
-} from '../shared/arcColorConfigSchema.ts'
+import { arcColorSchema } from '../shared/arcColorConfigSchema.ts'
+import { arcLegendConfigSchemaFields } from '../shared/arcLegendConfigSchemaFields.ts'
 import { scoreFilterConfigSchemaFields } from '../shared/scoreFilter.ts'
 import { ARC_DISPLAY_MODES } from './displayModes.ts'
 import { migrateLegacyArcRendererConfig } from './migrate.ts'

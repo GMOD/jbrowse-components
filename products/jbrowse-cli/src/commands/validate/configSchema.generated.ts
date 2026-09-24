@@ -7165,7 +7165,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/ArcColor"
         },
         "showLegend": {
-          "description": "draw the colour key.",
+          "description": "draw the colour key where color binds a field.",
           "type": "boolean",
           "default": true
         },
@@ -7319,7 +7319,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/PairedArcColor"
         },
         "showLegend": {
-          "description": "draw the colour key.",
+          "description": "draw the colour key where color binds a field.",
           "type": "boolean",
           "default": true
         },

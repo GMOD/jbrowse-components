@@ -1,6 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { render, screen } from '@testing-library/react'
+import { when } from 'mobx'
 
 import LinearArcReactComponent from '../LinearArcDisplay/components/ReactComponent.tsx'
 import {
@@ -83,7 +84,7 @@ test('a field paints each arc by its value, and the key lists the values painted
   ).toBe(true)
 })
 
-test('a threshold over a number paints each interval, and the key lists every interval', () => {
+test('a threshold over a number paints each interval, and the key lists every interval, painted or not', () => {
   const { display } = createTestEnvironment({
     color: {
       field: 'score',
@@ -93,18 +94,29 @@ test('a threshold over a number paints each interval, and the key lists every in
     },
     thickness: 2,
   }).createDisplay()
-  display.setFeatures([
-    feat('a', 2000, { score: 5 }),
-    feat('b', 3000, { score: 50 }),
-  ])
-  expect(display.arcStyles!.map(s => s.paint.color)).toEqual([
-    '#aaaaaa',
-    '#bbbbbb',
-  ])
+  display.setFeatures([feat('b', 3000, { score: 50 })])
+  expect(display.arcStyles!.map(s => s.paint.color)).toEqual(['#bbbbbb'])
   const [key] = display.colorScales
   expect(key!.kind === 'categorical' && key!.entries.map(e => e.label)).toEqual(
     ['< 10', '≥ 10'],
   )
+})
+
+test('scale none beside a field paints value and offers no key', () => {
+  const { display } = createTestEnvironment({
+    color: { value: 'green', field: 'strand', scale: 'none' },
+    thickness: 2,
+  }).createDisplay()
+  display.setFeatures([
+    feat('a', 2000, { strand: 1 }),
+    feat('b', 3000, { strand: -1 }),
+  ])
+  expect(display.arcStyles!.map(s => s.paint)).toEqual([
+    { color: 'green' },
+    { color: 'green' },
+  ])
+  expect(display.colorScales).toEqual([])
+  expect(display.hasLegendKey).toBe(false)
 })
 
 test('a legacy renderer colour hoists into the object and paints', () => {
@@ -117,17 +129,18 @@ test('a legacy renderer colour hoists into the object and paints', () => {
   expect(display.arcStyles![0]!.paint).toEqual({ color: 'green' })
 })
 
+// Two ends apart, since two records over one pair of ends are one arc.
+const sv = (id: string, svtype: string, end: number) =>
+  new SimpleFeature({
+    uniqueId: id,
+    refName: 'ctgA',
+    start: 1000,
+    end,
+    ALT: [`<${svtype}>`],
+    INFO: { SVTYPE: svtype },
+  })
+
 test('the paired display colours by SV type unless a field is bound, which reads the record', () => {
-  // two ends apart, since two records over one pair of ends are one arc
-  const sv = (id: string, svtype: string, end: number) =>
-    new SimpleFeature({
-      uniqueId: id,
-      refName: 'ctgA',
-      start: 1000,
-      end,
-      ALT: [`<${svtype}>`],
-      INFO: { SVTYPE: svtype },
-    })
   const { display } = createPairedTestEnvironment().createDisplay()
   display.setFeatures([sv('a', 'DEL', 5000), sv('b', 'DUP', 7000)])
   const [del, dup] = display.arcStyles!.map(s => s.paint)
@@ -146,6 +159,18 @@ test('the paired display colours by SV type unless a field is bound, which reads
   )
 })
 
+test('the paired display takes the jexl string shorthand, whose callback sees alt', () => {
+  const { display } = createPairedTestEnvironment({
+    color: "jexl:alt=='<DEL>'?'red':'blue'",
+  }).createDisplay()
+  display.setFeatures([sv('a', 'DEL', 5000), sv('b', 'DUP', 7000)])
+  expect(display.arcStyles!.map(s => s.paint)).toEqual([
+    { color: 'red' },
+    { color: 'blue' },
+  ])
+  expect(display.colorScales).toEqual([])
+})
+
 test('the status chrome places the key, and Show legend takes it away', () => {
   const { display } = createTestEnvironment({
     color: { field: 'strand' },
@@ -160,4 +185,38 @@ test('the status chrome places the key, and Show legend takes it away', () => {
   display.setShowLegend(false)
   rerender(<LinearArcReactComponent model={display} />)
   expect(screen.queryByTestId('floating-legend')).toBeNull()
+})
+
+test('showLegend false in config holds the key back until Show legend', () => {
+  const { display } = createTestEnvironment({
+    color: { field: 'strand' },
+    showLegend: false,
+    thickness: 2,
+  }).createDisplay()
+  display.setFeatures([
+    feat('a', 2000, { strand: 1 }),
+    feat('b', 3000, { strand: -1 }),
+  ])
+  expect(display.hasLegendKey).toBe(true)
+  const { rerender } = render(<LinearArcReactComponent model={display} />)
+  expect(screen.queryByTestId('floating-legend')).toBeNull()
+  display.setShowLegend(true)
+  rerender(<LinearArcReactComponent model={display} />)
+  expect(screen.getByTestId('floating-legend')).toBeTruthy()
+})
+
+test('the export carries the key beside the arcs', async () => {
+  const { display } = createTestEnvironment({
+    color: { field: 'strand' },
+    thickness: 2,
+  }).createDisplay()
+  // the harness's fetch answers no features; let it land before the test's
+  await when(() => display.features !== undefined, { timeout: 5000 })
+  display.setFeatures([
+    feat('a', 2000, { strand: 1 }),
+    feat('b', 3000, { strand: -1 }),
+  ])
+  const { container } = render(<svg>{await display.renderSvg()}</svg>)
+  expect(container.querySelectorAll('path').length).toBeGreaterThan(0)
+  expect(container.querySelector('[data-testid="color-legend"]')).toBeTruthy()
 })

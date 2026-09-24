@@ -223,6 +223,47 @@ describe('slotFieldConstantPairs', () => {
     ])
     expect(slotFieldConstantPairs('AMBIG_FIELDS_T8')).toBeUndefined()
   })
+
+  // The arc displays' colour object shares its field slots as a table of
+  // display-kit factory calls, so the table has no literal slot of its own.
+  test('a table of factory calls resolves through them, with the call arguments substituted', () => {
+    buildEnumConstantIndex([
+      sourceFile(
+        'call-table.ts',
+        `export function fieldSlot_T16({ field }: { field: string }) {
+           return { field: { type: 'string', description: field } } as const
+         }
+         export function rangeSlot_T16({
+           range = 'the default sentence',
+         }: {
+           range?: string
+         }) {
+           return { range: { type: 'colorArray', description: range } } as const
+         }
+         export const COLOR_FIELDS_T16 = {
+           ...fieldSlot_T16({ field: 'the field that paints' }),
+           ...rangeSlot_T16({}),
+         } as const`,
+      ),
+    ])
+    const pairs = slotFieldConstantPairs('COLOR_FIELDS_T16')
+    expect(pairs?.map(([name]) => name)).toEqual(['field', 'range'])
+    expect(pairs?.[0]?.[1]).toContain(`description: 'the field that paints'`)
+    expect(pairs?.[1]?.[1]).toContain(`description: 'the default sentence'`)
+  })
+
+  test('a table calling something that is not a slot factory is left alone', () => {
+    buildEnumConstantIndex([
+      sourceFile(
+        'call-not-table.ts',
+        `function opts_T17({ mode }: { mode: string }) {
+           return { mode }
+         }
+         export const RENDER_T17 = { ...opts_T17({ mode: 'fast' }) } as const`,
+      ),
+    ])
+    expect(slotFieldConstantPairs('RENDER_T17')).toBeUndefined()
+  })
 })
 
 describe('numericConstantValue', () => {

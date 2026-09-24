@@ -19,8 +19,8 @@ import {
   enumConstantValues,
   numericConstantValue,
   scalarConstantValue,
-  slotFieldConstantPairs,
-  slotFieldFactoryPairs,
+  slotSpreadPairs,
+  slotSpreadPart,
 } from './enumConstants.ts'
 import { writePage } from './format.ts'
 import {
@@ -123,39 +123,12 @@ interface ConfigIndex {
 // nine tabix adapters wrote before the table was shared — without the prefix
 // they would each have grown two slots at the wrong level, which reads as a
 // schema change rather than as a docs bug.
-// The two ways a schema names a shared slot table: `...tabixIndexFields` (a
-// const) and `...heightModeConfigSchemaFields({ … })` (a factory taking the
-// per-display prose). Only the first was recognized, so every factory's slots
-// were absent from the pages of every schema spreading one.
+//
+// A schema's spread, a const or a factory call, reads the way a slot table's
+// own does (`slotSpreadPart`), so the two never disagree on a shape.
 function spreadPairs(expr: ts.Expression, sf: ts.SourceFile) {
-  if (ts.isIdentifier(expr)) {
-    return slotFieldConstantPairs(expr.text)
-  }
-  if (!ts.isCallExpression(expr) || !ts.isIdentifier(expr.expression)) {
-    return undefined
-  }
-  // At most one object-literal argument, matching the single destructured
-  // parameter the factory index accepts. Anything else is not a shape this can
-  // substitute into, and gets no entry rather than a half-substituted one.
-  //
-  // **No argument at all is one of those shapes**, not a rejection: a factory
-  // whose every parameter has a default is spread as a bare
-  // `...rowHeightConfigSchemaFields()`, and substitution then falls back to
-  // those defaults exactly as it does for a parameter one call omits and
-  // another passes. Rejecting it dropped the slot from the page of every
-  // display taking the defaults, which the manifest gap check then reported as
-  // a missing `#slot` tag on a file that has one.
-  const [arg, ...rest] = expr.arguments
-  if (rest.length || (arg && !ts.isObjectLiteralExpression(arg))) {
-    return undefined
-  }
-  const args = new Map<string, string>()
-  for (const p of arg?.properties ?? []) {
-    if (ts.isPropertyAssignment(p) && ts.isIdentifier(p.name)) {
-      args.set(p.name.text, p.initializer.getText(sf))
-    }
-  }
-  return slotFieldFactoryPairs(expr.expression.text, args)
+  const part = slotSpreadPart(expr, sf)
+  return part && slotSpreadPairs(part)
 }
 
 function spreadSlots(configNode: string): Item[] {

@@ -6743,7 +6743,7 @@
           "$ref": "#/$defs/ArcColor"
         },
         "showLegend": {
-          "description": "draw the colour key.",
+          "description": "draw the colour key where color binds a field.",
           "type": "boolean",
           "default": true
         },
@@ -6888,7 +6888,7 @@
           "$ref": "#/$defs/PairedArcColor"
         },
         "showLegend": {
-          "description": "draw the colour key.",
+          "description": "draw the colour key where color binds a field.",
           "type": "boolean",
           "default": true
         },

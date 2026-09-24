@@ -7,7 +7,11 @@ summary: "A display declares the colour scales it paints with — `colorScales`,
 
 ## Status
 
-Accepted (2026-09-09), both passes landed the same day. Extends
+Accepted (2026-09-09), both passes landed the same day. Amended 2026-09-24
+([ADR-153](adr-153-every-display-resolves-its-colour-through-one-function.md)):
+`DisplayStatusChromeBase` mounts `ChromeLegend`, not `DisplayChromeBase`, so
+the arc displays, which render the status chrome without a rendering backend,
+get the key by composing `LegendMixin`. Extends
 [ADR-094](adr-094-colour-cardinality-is-one-channel-not-four-shapes.md): the
 four cardinalities of the colour channel resolve, for a legend, to two scales.
 `LegendMixin`'s docstring and

@@ -2,7 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 
-import { arcLegendConfigSchemaFields } from '../shared/arcColorConfigSchema.ts'
+import { arcLegendConfigSchemaFields } from '../shared/arcLegendConfigSchemaFields.ts'
 import { pairedArcColorSchema } from '../shared/pairedArcColorConfigSchema.ts'
 import { scoreFilterConfigSchemaFields } from '../shared/scoreFilter.ts'
 
