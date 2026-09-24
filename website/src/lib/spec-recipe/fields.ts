@@ -487,7 +487,7 @@ function hicColorStep(color: Record<string, unknown>): FieldStep | undefined {
     return schemeStep ? { path: schemeStep } : undefined
   }
   return {
-    path: `${TRACK_MENU} → Show... → Log scale (${color.scale === 'log' ? 'checked' : 'unchecked'})`,
+    path: `${TRACK_MENU} → Color scheme → Log scale (${color.scale === 'log' ? 'checked' : 'unchecked'})`,
     note: schemeStep ? `Then ${schemeStep}.` : undefined,
   }
 }
@@ -1017,7 +1017,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   jexlFiltersSetting: filterStep,
   // These two are declared by LinearHicDisplay alone, so as with the
   // alignments-only fields the name settles the display and an unresolved entry
-  // can still be answered. Both are checkboxes in its Show submenu.
+  // can still be answered.
   showResolutionControls: (value, { displayType }) =>
     typeof value === 'boolean' && isHicOnlyField(displayType)
       ? {
@@ -1028,7 +1028,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   useColorPercentile: (value, { displayType }) =>
     typeof value === 'boolean' && isHicOnlyField(displayType)
       ? {
-          path: `${TRACK_MENU} → Show... → Show faint contacts (95th percentile) (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Color scheme → Emphasize faint contacts (95th percentile) (${value ? 'checked' : 'unchecked'})`,
           note: 'Saturates the color scale at the 95th percentile instead of the maximum, so faint off-diagonal contacts read more strongly.',
         }
       : undefined,

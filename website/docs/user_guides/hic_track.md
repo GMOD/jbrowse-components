@@ -61,15 +61,15 @@ and cividis light to dark, setting
 every colour scale in JBrowse names, so a config spells one as
 [`color.scheme`](/docs/config/hiccolor/#slot-scheme).
 
-**Show → Show faint contacts (95th percentile)** decides what the ramp spans.
-Off, the diagonal owns the scale and everything below it washes out; on (the
-default) the scale saturates at the 95th percentile of counts and TAD structure
-separates from background.
+**Color scheme → Emphasize faint contacts (95th percentile)** decides what the
+ramp spans. Off, the diagonal owns the scale and everything below it washes out;
+on (the default) the scale saturates at the 95th percentile of counts and TAD
+structure separates from background.
 
-<Figure caption="4.2 Mb of hg19 chr8 with Show faint contacts off and on, each frame labeled with its setting. Only the saturation point of the color scale differs; the contact data is identical." src="/img/hic/faint_contacts.png" links="Show faint contacts off=hic/percentile_off,Show faint contacts on=hic/percentile_on" />
+<Figure caption="4.2 Mb of hg19 chr8 with Emphasize faint contacts off and on, each frame labeled with its setting. Only the saturation point of the color scale differs; the contact data is identical." src="/img/hic/faint_contacts.png" links="Emphasize faint contacts off=hic/percentile_off,Emphasize faint contacts on=hic/percentile_on" />
 
-**Show → Log scale** maps counts to color on a log2 scale, compressing the
-diagonal further still.
+**Color scheme → Log scale** maps counts to color on a log2 scale, compressing
+the diagonal further still.
 
 ## Normalization
 

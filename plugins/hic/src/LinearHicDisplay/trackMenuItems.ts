@@ -108,11 +108,16 @@ function showMenuItems(self: HicMenuSelf): MenuItem[] {
         ]
       : []),
     squashToHeightCheckboxItem(self),
+  ]
+}
+
+function colorScaleMenuItems(self: HicMenuSelf): MenuItem[] {
+  return [
     toggleItem('Log scale', self.colorScale === 'log', log => {
       self.setColorScale(log ? 'log' : 'linear')
     }),
     toggleItem(
-      'Show faint contacts (95th percentile)',
+      'Emphasize faint contacts (95th percentile)',
       self.useColorPercentile,
       self.setUseColorPercentile,
       {
@@ -173,6 +178,7 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
         self.setColorScheme(scheme)
       },
       options: COLOR_SCHEME_OPTIONS,
+      extraItems: colorScaleMenuItems(self),
     }),
     ...normalizationMenuItems(self),
   ]

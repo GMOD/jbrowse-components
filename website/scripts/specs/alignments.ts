@@ -1101,8 +1101,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // one the stack needs the caption to say which frame is which.
   ...(
     [
-      ['hic/percentile_off', false, 'Show faint contacts OFF'],
-      ['hic/percentile_on', true, 'Show faint contacts ON (the default)'],
+      ['hic/percentile_off', false, 'Emphasize faint contacts OFF'],
+      ['hic/percentile_on', true, 'Emphasize faint contacts ON (the default)'],
     ] as const
   ).map(([name, useColorPercentile, label]) => ({
     mode: 'url' as const,
