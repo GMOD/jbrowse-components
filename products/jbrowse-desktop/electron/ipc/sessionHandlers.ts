@@ -132,20 +132,27 @@ function upsertRecentSession(sessions: RecentSession[], entry: RecentSession) {
   return sessions
 }
 
+// Runs each job after the one before it has settled. A failing job does not
+// block the ones behind it; its rejection reaches its own caller only.
+function createQueue() {
+  let tail: Promise<unknown> = Promise.resolve()
+  return function enqueue<T>(fn: () => Promise<T>): Promise<T> {
+    const run = tail.then(fn)
+    tail = run.catch(() => {})
+    return run
+  }
+}
+
 // recent_sessions.json is rewritten whole on every change with no file locking.
 // The 1s autosave autorun can interleave with a delete/rename at an await point
 // and clobber it (or a reader can observe a half-written file). Funnel every
 // access through one promise chain so each read-modify-write stays atomic.
-let recentSessionsQueue: Promise<unknown> = Promise.resolve()
+const serializeRecentSessions = createQueue()
 
-function serializeRecentSessions<T>(fn: () => Promise<T>): Promise<T> {
-  // recentSessionsQueue is always catch-guarded below, so it never rejects and
-  // fn always runs — a failing entry must not block the ones behind it. fn's
-  // own rejection propagates to this caller only.
-  const run = recentSessionsQueue.then(fn)
-  recentSessionsQueue = run.catch(() => {})
-  return run
-}
+// Session files land in the order their saves arrived. Two in flight at once
+// (the close flush behind an autosave) otherwise raced to the rename, and the
+// older snapshot could land last.
+const serializeSessionWrites = createQueue()
 
 function updateRecentSessions(
   recentSessionsPath: string,
@@ -279,7 +286,9 @@ export function registerSessionHandlers(
         : undefined,
       unchanged
         ? undefined
-        : writeFileAtomic(sessionPath, serialized).catch((e: unknown) => {
+        : serializeSessionWrites(() =>
+            writeFileAtomic(sessionPath, serialized),
+          ).catch((e: unknown) => {
             // the file is not what the slot now claims, so the next save has to
             // write rather than read this back as already-on-disk
             forgetSessionWrites([sessionPath])

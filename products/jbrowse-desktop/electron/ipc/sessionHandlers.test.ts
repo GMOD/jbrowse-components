@@ -10,6 +10,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { getLegacyThumbnailPath, getThumbnailPath } from '../paths.ts'
+import { writeFileAtomic } from '../writeFileAtomic.ts'
 import { registerSessionHandlers } from './sessionHandlers.ts'
 import { captureHandlers, makeTestPaths } from './testUtil.ts'
 
@@ -25,6 +26,12 @@ jest.mock('electron', () => ({
     fromPartition: () => ({ clearStorageData: mockClearStorageData }),
   },
 }))
+jest.mock('../writeFileAtomic.ts', () => {
+  const actual = jest.requireActual<{
+    writeFileAtomic: typeof writeFileAtomic
+  }>('../writeFileAtomic.ts')
+  return { writeFileAtomic: jest.fn(actual.writeFileAtomic) }
+})
 
 let dir: string
 let paths: AppPaths
@@ -484,6 +491,41 @@ test('re-saving identical bytes does not rewrite the session file', async () => 
   await invoke('saveSession', sessionPath, snap)
 
   expect(fs.statSync(sessionPath).mtimeMs).toBe(first)
+})
+
+// The close flush can arrive while an autosave is still writing; whichever
+// rename landed last used to win, and that could be the older snapshot.
+test('two saves in flight land in the order they arrived', async () => {
+  const sessionPath = path.join(dir, 'ordered.jbrowse')
+  const actual = jest.requireActual<{
+    writeFileAtomic: typeof writeFileAtomic
+  }>('../writeFileAtomic.ts').writeFileAtomic
+  let release = () => {}
+  const held = new Promise<void>(resolve => {
+    release = resolve
+  })
+  let heldOnce = false
+  jest.mocked(writeFileAtomic).mockImplementation(async (file, data) => {
+    if (file === sessionPath && !heldOnce) {
+      heldOnce = true
+      await held
+    }
+    return actual(file, data)
+  })
+  const snap = (name: string): SessionSnap => ({
+    assemblies: [],
+    defaultSession: { name },
+  })
+
+  const older = invoke('saveSession', sessionPath, snap('autosave'))
+  const newer = invoke('saveSession', sessionPath, snap('flush'))
+  await new Promise(resolve => setTimeout(resolve, 20))
+  release()
+  await Promise.all([older, newer])
+
+  const onDisk = JSON.parse(fs.readFileSync(sessionPath, 'utf8')) as SessionSnap
+  expect(onDisk.defaultSession?.name).toBe('flush')
+  jest.mocked(writeFileAtomic).mockImplementation(actual)
 })
 
 test('a changed session is still written', async () => {
