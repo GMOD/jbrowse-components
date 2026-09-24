@@ -125,7 +125,7 @@ Apache 2.4 with `mod_headers`, in the virtual host or an `.htaccess` next to
 
 Caddy:
 
-```caddy
+```text
 @static path /static/*
 header @static Cache-Control "public, max-age=31536000, immutable"
 @entry path / /index.html /config.json

@@ -17,13 +17,13 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-interface Props {
+export interface ClassicViewsContainerProps {
   session: SessionWithFocusedViewAndDrawerWidgets
 }
 
 const ClassicViewsContainer = observer(function ClassicViewsContainer({
   session,
-}: Props) {
+}: ClassicViewsContainerProps) {
   const { classes } = useStyles()
   const { views } = session
   const ref = useScrollPortHeightVar()
