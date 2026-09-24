@@ -172,8 +172,10 @@ expansion recolours nothing. `setRowColorField` writes the object through
 `scale: 'none'` keeping the attribute. A dialog tint set under the palette turns
 every row's colour into a `name` pair, since one object holds one field's
 values; a reset returns `rowColor` only where its `name` pairs differ from the
-config's, so Color by survives it and a mode switch. The flip ADR-160 names puts
-the row's own colour ahead of the palette here too.
+config's, so over a config setting no row colour Color by survives it and a mode
+switch; a tint set under a Color by the reader picked leaves nothing to return
+to, and a reset then clears every colour. The flip ADR-160 names puts the row's
+own colour ahead of the palette here too.
 
 **The `facet` band yields while a cluster tree describes the rows**
 (`treeDescribesRows`), the mechanism `LinearMultiRowFeatureDisplay` uses for its

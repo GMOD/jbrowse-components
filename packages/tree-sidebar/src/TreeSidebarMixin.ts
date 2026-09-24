@@ -413,7 +413,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * #getter
        * Whether `rowColor` sets a row a colour the config does not, so "Reset
        * row order" is offered for a recolour too. A colour by attribute sets
-       * none row by row, so picking one is not a custom arrangement.
+       * none row by row, so over a config setting none, picking one is not a
+       * custom arrangement.
        */
       get rowStylingIsCustom(): boolean {
         return !compareStructural(

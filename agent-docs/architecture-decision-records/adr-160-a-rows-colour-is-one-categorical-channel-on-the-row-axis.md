@@ -90,9 +90,10 @@ precedence, with the palette choice below.
 **"Reset row order" counts the colours set row by row.** `rowStylingIsCustom`
 compares the `name` pairs of the live object and the base's (an object painting
 by an attribute sets none), and `resetRowStyling` writes the base's whole
-object back where they differ. So a Color by alone is not a custom arrangement
-and survives a reset and a rendering-mode switch, and pairs a recolour
-materialised from an attribute return to that attribute.
+object back where they differ. So over a config that sets no row colour, a
+Color by alone is not a custom arrangement and survives a reset and a
+rendering-mode switch, and pairs a recolour materialised from a configured
+attribute return to that attribute.
 
 **The target stays a display fact**: `identityChannel`, as ADR-157 landed it.
 
@@ -112,6 +113,12 @@ calls for `freezeAnimations`; production pays one property read at load.
   `test_data` file writes pairs with no field, or a bare field.
 - Color by → an attribute drops the pairs a reader set, and Color by → none
   does not bring them back.
+- Over a config that sets row colours, a Color by hides them and so counts as
+  custom: a reset or a rendering-mode switch returns the pairs and drops the
+  Color by. No shipped config sets pairs on a variant display.
+- A dialog tint under a Color by the reader picked leaves no attribute to
+  return to: the menu reads None while the materialised pairs paint, and a
+  reset or a rendering-mode switch clears every row's colour.
 - A dialog recolour under an attribute palette shows at once; before, it was
   stored and the palette beat it until Color by → none.
 - Past the palette's end the variant displays and the dialog's "Color by

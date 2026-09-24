@@ -146,7 +146,7 @@ hook's name throws at `create`:
   change to the rows: by default `rowColor.field`'s values over the base
   arrangement, so no reorder, focus or relabel recolours a row. Wiggle,
   multi-row and variants hand in the order and palette they dealt before
-  ADR-160; MAF deals none.
+  ADR-160; MAF and the mark display deal none.
 
 MAF also overrides `clusterableSources`, since on a track that discovers its
 species a focus applies as given, as the worker's does. `focusLegendEntry` stays
@@ -165,7 +165,8 @@ What else the mixin owns:
   base, with `rowStylingIsCustom` for the `name` pairs, and leaves `rows.kept`
   out, since the focus has a clear of its own; a reset still clears it.
   `resetRowStyling` writes the base's whole `rowColor` back only where the
-  `name` pairs differ, so a Color by alone survives a reset and a mode switch.
+  `name` pairs differ, so over a config setting no row colour a Color by alone
+  survives a reset and a mode switch.
 - **The dialog's submit is `applyRowEdits`**, and `rowEdits` is its rule: an
   entry the config holds stands unless the reader changed that row, so an entry
   repeating the adapter's value survives an unchanged submit; a value changed
