@@ -1,28 +1,8 @@
 import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
+import { isTextEntryFocused } from '@jbrowse/core/util/isTextEntryFocused'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { asRoot } from '@jbrowse/product-core'
 import { autorun } from 'mobx'
-
-/**
- * Whether the user is typing into something with an undo stack of its own.
- *
- * Session undo must not steal the text editor's. The keydown listener below is
- * on `document`, so it sees ctrl+z no matter what has focus — including the
- * multiline TextFields the config editor, the jexl/JSON monospace field, and
- * the paste-config workflows are built from. Those render a `<textarea>`, not
- * an `<input>`, so an INPUT-only check let a keystroke meant to undo typing
- * roll back the whole session instead.
- */
-export function isTextEntryFocused() {
-  const el = document.activeElement
-  if (!(el instanceof HTMLElement)) {
-    return false
-  }
-  const tag = el.tagName.toUpperCase()
-  // coerced: isContentEditable is declared boolean but is undefined in jsdom,
-  // so the raw expression returns undefined for an ordinary focused element
-  return tag === 'INPUT' || tag === 'TEXTAREA' || !!el.isContentEditable
-}
 
 /**
  * #stateModel HistoryManagementMixin

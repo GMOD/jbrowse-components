@@ -14,6 +14,7 @@ import {
   withRegionMoved,
   withRegionRemoved,
   withRegionReversed,
+  withRegionsKept,
 } from '../util.ts'
 import { scalebarRefLabelProps } from './util.ts'
 
@@ -218,7 +219,10 @@ const RefNameMenu = observer(function RefNameMenu({
                   ? 'Show only this region'
                   : `Show only ${refName}`,
                 onClick: () => {
-                  setDisplayedRegionsKeepingCenter(model, labeled)
+                  setDisplayedRegionsKeepingCenter(
+                    model,
+                    withRegionsKept(displayedRegions, idx, lastIdx),
+                  )
                 },
               },
             ]
@@ -275,7 +279,8 @@ const RefNameMenu = observer(function RefNameMenu({
                   {
                     label: 'Reverse region',
                     onClick: () => {
-                      model.setDisplayedRegions(
+                      setDisplayedRegionsKeepingCenter(
+                        model,
                         withRegionReversed(displayedRegions, idx),
                       )
                     },
@@ -284,7 +289,8 @@ const RefNameMenu = observer(function RefNameMenu({
                     ({ label, to }) => ({
                       label,
                       onClick: () => {
-                        model.setDisplayedRegions(
+                        setDisplayedRegionsKeepingCenter(
+                          model,
                           withRegionMoved(displayedRegions, idx, to),
                         )
                       },

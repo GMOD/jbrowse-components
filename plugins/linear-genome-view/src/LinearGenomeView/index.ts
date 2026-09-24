@@ -58,23 +58,10 @@ export default function LinearGenomeViewF(pluginManager: PluginManager) {
 }
 
 export { stateModelFactory } from './model.ts'
-export { lgvLaunchKeys } from './launchKeys.ts'
 export type {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
 } from './model.ts'
-export type {
-  BpOffset,
-  ExportSvgOptions,
-  HighlightInput,
-  HighlightType,
-  InitState,
-  LinearGenomeViewLaunchProps,
-  NavLocation,
-  TrackLabelMode,
-  ViewTrackLabelMode,
-  VolatileGuide,
-} from './types.ts'
 export { installLinkedViewSync } from './linkedViewSync.ts'
 export { default as HighlightBand } from './components/HighlightBand.tsx'
 export { default as HighlightChip } from './components/HighlightChip.tsx'

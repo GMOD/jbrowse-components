@@ -15,6 +15,7 @@ import {
   withRegionMoved,
   withRegionRemoved,
   withRegionReversed,
+  withRegionsKept,
 } from './util.ts'
 
 import type { BlockRun, RegionsOrientation } from './util.ts'
@@ -220,7 +221,7 @@ describe('tick calculation', () => {
       // it emits no minors, so a span in bp costs an iteration per ~15px of it:
       // 100Mb at 0.05bp/px walked 100M of them for the two majors read below,
       // and this suite spent 25 of its 27 seconds there.
-      const majors = makeTicks(0, bpPerPx * 5000, bpPerPx, true, false)
+      const majors = makeTicks(0, bpPerPx * 5000, bpPerPx, false)
         .map(t => t.base + 1)
         .filter(base => base > 0)
       const pitch = majors[1]! - majors[0]!
@@ -242,8 +243,8 @@ describe('makeBlockTicks', () => {
     const result = makeBlockTicks({ start: 0, end: 50, reversed: true }, 1)
     expect(result.map(t => t.x)).toEqual([71, 51, 31, 11, -9, -29])
   })
-  test('emitMinor=false keeps only major ticks', () => {
-    const result = makeBlockTicks({ start: 0, end: 50 }, 1, true, false)
+  test('includeMinor=false keeps only major ticks', () => {
+    const result = makeBlockTicks({ start: 0, end: 50 }, 1, false)
     expect(result.map(t => t.type)).toEqual(['major'])
   })
 })
@@ -282,6 +283,7 @@ describe('groupContiguousBlocks', () => {
         reversed: false,
         refName: 'ctgA',
         isLeftEndOfDisplayedRegion: false,
+        labeled: true,
       },
     ])
   })
@@ -311,6 +313,7 @@ describe('groupContiguousBlocks', () => {
         reversed: false,
         refName: 'ctgA',
         isLeftEndOfDisplayedRegion: false,
+        labeled: true,
       },
       {
         offsetPx: 800,
@@ -320,6 +323,7 @@ describe('groupContiguousBlocks', () => {
         reversed: false,
         refName: 'ctgA',
         isLeftEndOfDisplayedRegion: false,
+        labeled: false,
       },
     ])
   })
@@ -337,6 +341,23 @@ describe('groupContiguousBlocks', () => {
     ])
     expect(runs).toHaveLength(2)
   })
+
+  // the scalebar names the same refName again on the far side of an elided
+  // block, and names a reversed run of it separately, so the numbers have to
+  // stay clear of both labels
+  test('a run after a gap or an orientation change starts a new label', () => {
+    const afterGap = groupContiguousBlocks([
+      block(0, 0, 800, 0),
+      { type: 'ElidedBlock', key: 'e', widthPx: 2, offsetPx: 800 },
+      block(2, 0, 800, 802),
+    ] as BaseBlock[])
+    expect(afterGap.map(r => r.labeled)).toEqual([true, true])
+    const flipped = groupContiguousBlocks([
+      block(0, 0, 800, 0),
+      block(1, 0, 800, 800, true),
+    ])
+    expect(flipped.map(r => r.labeled)).toEqual([true, true])
+  })
 })
 
 describe('runRefNameLabelPx', () => {
@@ -344,6 +365,7 @@ describe('runRefNameLabelPx', () => {
     refName: string,
     isLeftEndOfDisplayedRegion: boolean,
     reversed = false,
+    labeled = true,
   ): BlockRun => ({
     offsetPx: 0,
     widthPx: 800,
@@ -352,6 +374,7 @@ describe('runRefNameLabelPx', () => {
     reversed,
     refName,
     isLeftEndOfDisplayedRegion,
+    labeled,
   })
 
   test('reserves the padding plus the measured bold name', () => {
@@ -371,7 +394,7 @@ describe('runRefNameLabelPx', () => {
     // that run gives up the space
     const px = runRefNameLabelPx([
       run('ctgA', true),
-      run('ctgA', true),
+      run('ctgA', true, false, false),
       run('ctgB', true),
     ])
     expect(px[0]).toBeGreaterThan(0)
@@ -1193,33 +1216,56 @@ describe('region list transforms', () => {
     assemblyName: 'volvox',
   }))
 
+  const refNames = ({ regions }: { regions: { refName: string }[] }) =>
+    regions.map(r => r.refName)
+
+  // every old index lands where its region now is
+  function expectIndexMapFollows(
+    before: { refName: string }[],
+    edit: ReturnType<typeof withRegionMoved>,
+  ) {
+    for (const [i, region] of before.entries()) {
+      const j = edit.newIndexOf(i)
+      if (j !== -1) {
+        expect(edit.regions[j]).toBe(region)
+      }
+    }
+  }
+
   test('withRegionMoved rotates one region into its new slot', () => {
-    expect(withRegionMoved(regions, 2, 0).map(r => r.refName)).toEqual([
-      'c',
-      'a',
-      'b',
-    ])
-    expect(withRegionMoved(regions, 0, 1).map(r => r.refName)).toEqual([
-      'b',
-      'a',
-      'c',
-    ])
+    expect(refNames(withRegionMoved(regions, 2, 0))).toEqual(['c', 'a', 'b'])
+    expect(refNames(withRegionMoved(regions, 0, 1))).toEqual(['b', 'a', 'c'])
+    for (const [from, to] of [
+      [2, 0],
+      [0, 2],
+      [0, 1],
+      [1, 0],
+    ] as const) {
+      expectIndexMapFollows(regions, withRegionMoved(regions, from, to))
+    }
     // the source list is never mutated: the menu reads model.displayedRegions
     expect(regions.map(r => r.refName)).toEqual(['a', 'b', 'c'])
   })
 
   test('withRegionRemoved drops just that index', () => {
-    expect(withRegionRemoved(regions, 1).map(r => r.refName)).toEqual([
-      'a',
-      'c',
-    ])
+    const edit = withRegionRemoved(regions, 1)
+    expect(refNames(edit)).toEqual(['a', 'c'])
+    expect(edit.newIndexOf(1)).toBe(-1)
+    expectIndexMapFollows(regions, edit)
+  })
+
+  test('withRegionsKept keeps a slice', () => {
+    const edit = withRegionsKept(regions, 1, 2)
+    expect(refNames(edit)).toEqual(['b', 'c'])
+    expect(edit.newIndexOf(0)).toBe(-1)
+    expectIndexMapFollows(regions, edit)
   })
 
   test('withRegionReversed flips one region and leaves the rest alone', () => {
-    const flipped = withRegionReversed(regions, 1)
+    const flipped = withRegionReversed(regions, 1).regions
     expect(flipped.map(r => r.reversed)).toEqual([undefined, true, undefined])
     // flipping twice returns to forward, not to `undefined`
-    expect(withRegionReversed(flipped, 1)[1]!.reversed).toBe(false)
+    expect(withRegionReversed(flipped, 1).regions[1]!.reversed).toBe(false)
   })
 })
 
@@ -1257,6 +1303,15 @@ describe('parseLocStrings', () => {
   test('a triplet whose coordinates are not bp quantities still throws', () => {
     expect(() => {
       parseLocStrings('chr1 foo bar', 'hg38', isValidRefName)
+    }).toThrow()
+  })
+
+  test('a triplet with words after it throws rather than dropping them', () => {
+    expect(() => {
+      parseLocStrings('chr1 100 200 chr2', 'hg38', isValidRefName)
+    }).toThrow()
+    expect(() => {
+      parseLocStrings('chr1 100 200 300', 'hg38', isValidRefName)
     }).toThrow()
   })
 

@@ -2300,12 +2300,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           for (const [i, run] of runs.entries()) {
             const runLeft = run.offsetPx - firstBlockOffset
             const runLabels = []
-            for (const { base, x } of makeBlockTicks(
-              run,
-              bpPerPx,
-              true,
-              false,
-            )) {
+            for (const { base, x } of makeBlockTicks(run, bpPerPx, false)) {
               const label = getTickDisplayStr(base + 1, bpPerPx)
               const w = tickLabelWidth(label)
               // the bold refName label pinned at the run's left edge takes

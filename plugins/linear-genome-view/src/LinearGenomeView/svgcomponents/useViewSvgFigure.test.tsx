@@ -22,7 +22,8 @@ import { stateModelFactory } from '../index.ts'
 import volvoxDisplayedRegions from '../volvoxDisplayedRegions.json' with { type: 'json' }
 import { useViewSvgFigure } from './useViewSvgFigure.tsx'
 
-import type { HighlightType, LinearGenomeViewModel } from '../index.ts'
+import type { LinearGenomeViewModel } from '../index.ts'
+import type { HighlightType } from '../types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 // A stub session and two display types — one that can render SVG and one that

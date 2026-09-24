@@ -310,6 +310,7 @@ export default [
   '@jbrowse/core/util/io',
   '@jbrowse/core/util/io/RemoteFileWithRangeCache',
   '@jbrowse/core/util/isDataCurrent',
+  '@jbrowse/core/util/isTextEntryFocused',
   '@jbrowse/core/util/jexl',
   '@jbrowse/core/util/jexlFilters',
   '@jbrowse/core/util/jexlStrings',

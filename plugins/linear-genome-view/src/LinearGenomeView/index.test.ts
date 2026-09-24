@@ -27,7 +27,12 @@ import { autorun } from 'mobx'
 import { getTrackOrderSubMenu } from './components/trackLabelMenuItems.ts'
 import hg38Regions from './hg38DisplayedRegions.json' with { type: 'json' }
 import { stateModelFactory } from './index.ts'
-import { setDisplayedRegionsKeepingCenter } from './util.ts'
+import {
+  setDisplayedRegionsKeepingCenter,
+  withRegionRemoved,
+  withRegionReversed,
+  withRegionsKept,
+} from './util.ts'
 import volvoxDisplayedRegions from './volvoxDisplayedRegions.json' with { type: 'json' }
 
 import type { LinearGenomeViewModel } from './index.ts'
@@ -3744,7 +3749,10 @@ describe('shortening the region list keeps the viewport', () => {
     const before = model.pxToBp(model.width / 2)
     expect(before.refName).toBe('ctgB')
 
-    setDisplayedRegionsKeepingCenter(model, [ctgB])
+    setDisplayedRegionsKeepingCenter(
+      model,
+      withRegionsKept(model.displayedRegions, 1, 1),
+    )
 
     const after = model.pxToBp(model.width / 2)
     expect(after.refName).toBe('ctgB')
@@ -3757,10 +3765,39 @@ describe('shortening the region list keeps the viewport', () => {
   // one being removed
   test('a region set without the centered region falls back to the clamp', () => {
     const model = makeView()
-    setDisplayedRegionsKeepingCenter(model, [
-      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
-    ])
+    setDisplayedRegionsKeepingCenter(
+      model,
+      withRegionsKept(model.displayedRegions, 0, 0),
+    )
     expect(model.pxToBp(model.width / 2).refName).toBe('ctgA')
+  })
+
+  test('a region displayed twice keeps the copy that was centred', () => {
+    const model = makeView()
+    const ctgA = model.displayedRegions[0]!
+    model.setDisplayedRegions([ctgA, ctgB, ctgA])
+    model.centerAt(5000, 'ctgA', 2)
+    setDisplayedRegionsKeepingCenter(
+      model,
+      withRegionRemoved(model.displayedRegions, 1),
+    )
+    const after = model.pxToBp(model.width / 2)
+    expect(after.index).toBe(1)
+    expect(Math.abs(after.coord0 - 5000)).toBeLessThanOrEqual(model.bpPerPx)
+  })
+
+  test('reversing the region in view keeps its centred base', () => {
+    const model = makeView()
+    const before = model.pxToBp(model.width / 2)
+    setDisplayedRegionsKeepingCenter(
+      model,
+      withRegionReversed(model.displayedRegions, before.index),
+    )
+    const after = model.pxToBp(model.width / 2)
+    expect(after.refName).toBe(before.refName)
+    expect(Math.abs(after.coord0 - before.coord0)).toBeLessThanOrEqual(
+      model.bpPerPx,
+    )
   })
 })
 

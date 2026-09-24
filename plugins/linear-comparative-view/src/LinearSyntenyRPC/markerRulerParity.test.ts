@@ -22,7 +22,7 @@ const WIDTH_PX = 1400
 // already in the frame the marker grid works in: the scalebar labels a tick
 // `base + 1`, so a gridline sits on the LEFT EDGE of the base it names.
 function rulerMajorBases(bpPerPx: number, end: number) {
-  return makeTicks(0, end, bpPerPx, true, false)
+  return makeTicks(0, end, bpPerPx, false)
     .map(t => t.base)
     .filter(base => base >= 0 && base < end)
 }

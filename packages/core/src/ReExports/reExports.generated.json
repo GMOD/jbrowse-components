@@ -2983,6 +2983,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/isTextEntryFocused": {
+      "package": "@jbrowse/core",
+      "names": [
+        "isTextEntryFocused"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/jexl": {
       "package": "@jbrowse/core",
       "names": [

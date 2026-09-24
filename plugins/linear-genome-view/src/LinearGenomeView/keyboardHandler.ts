@@ -1,4 +1,5 @@
 import { getSession } from '@jbrowse/core/util'
+import { isTextEntryFocused } from '@jbrowse/core/util/isTextEntryFocused'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 
 import type { LinearGenomeViewModel } from './model.ts'
@@ -18,7 +19,11 @@ export function setupKeyboardHandler(self: LinearGenomeViewModel) {
   }
   function handler(e: KeyboardEvent) {
     const session = getSession(self)
-    if (session.focusedViewId === self.id && (e.ctrlKey || e.metaKey)) {
+    if (
+      session.focusedViewId === self.id &&
+      (e.ctrlKey || e.metaKey) &&
+      !isTextEntryFocused()
+    ) {
       if (e.code === 'ArrowLeft') {
         e.preventDefault()
         self.slide(-0.9)

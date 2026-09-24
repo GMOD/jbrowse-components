@@ -48,6 +48,14 @@ describe('notifySkippedSvgTracks', () => {
     expect(notifications[0]!.message).toContain('Their display types do not')
   })
 
+  it('names a track shown in several rows once, in the singular', () => {
+    const { session, notifications } = mockSession()
+    notifySkippedSvgTracks(session, [track('one'), track('one')])
+    expect(notifications[0]!.message).toBe(
+      'Not included in the SVG: one. Its display type does not support SVG export.',
+    )
+  })
+
   it('says why when the reason is not a missing renderSvg', () => {
     const { session, notifications } = mockSession()
     notifySkippedSvgTracks(session, [track('ring')], 'No decoder here.')

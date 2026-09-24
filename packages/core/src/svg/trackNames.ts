@@ -25,6 +25,8 @@ export function svgTrackName(
  * export, after the renders — the stacked views flatten every row's
  * `skippedTracks` into one call rather than notifying per row.
  *
+ * A track shown in several rows is named once.
+ *
  * Skipping is deliberate (see `SvgExportTrack.renderSvg`), so this is
  * informational rather than an error. But it is not silent: a figure that is
  * quietly short a track is worse than one whose author was told why, and the
@@ -33,11 +35,16 @@ export function svgTrackName(
 export function notifySkippedSvgTracks(
   session: NotificationSink & TrackCatalog,
   skipped: { configuration: AnyConfigurationModel }[],
-  reason = `${skipped.length === 1 ? 'Its display type does' : 'Their display types do'} not support SVG export.`,
+  reason?: string,
 ) {
-  if (skipped.length === 0) {
-    return
+  const names = [...new Set(skipped.map(t => svgTrackName(t, session)))]
+  if (names.length > 0) {
+    const why =
+      reason ??
+      `${names.length === 1 ? 'Its display type does' : 'Their display types do'} not support SVG export.`
+    session.notify(
+      `Not included in the SVG: ${names.join(', ')}. ${why}`,
+      'info',
+    )
   }
-  const names = skipped.map(t => svgTrackName(t, session)).join(', ')
-  session.notify(`Not included in the SVG: ${names}. ${reason}`, 'info')
 }

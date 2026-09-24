@@ -1,4 +1,5 @@
 import type { LinearGenomeViewStateModel } from './model.ts'
+import type { BpOffset as CoreBpOffset } from '@jbrowse/core/util/Base1DUtils'
 import type {
   HighlightInput,
   HighlightType,
@@ -6,12 +7,7 @@ import type {
 import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
-export interface BpOffset {
-  refName?: string
-  index: number
-  offset: number
-  start?: number
-  end?: number
+export interface BpOffset extends CoreBpOffset {
   coord?: number
   reversed?: boolean
   assemblyName?: string

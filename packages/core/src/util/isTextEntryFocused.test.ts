@@ -1,4 +1,4 @@
-import { isTextEntryFocused } from './index.ts'
+import { isTextEntryFocused } from './isTextEntryFocused.ts'
 
 // The undo/redo keydown listener sits on `document`, so it competes with every
 // text field in the app for ctrl+z. Anything with its own undo stack has to win.

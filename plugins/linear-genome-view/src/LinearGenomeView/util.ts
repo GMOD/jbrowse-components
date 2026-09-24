@@ -138,8 +138,7 @@ export function makeTicks(
   start: number,
   end: number,
   bpPerPx: number,
-  emitMajor = true,
-  emitMinor = true,
+  includeMinor = true,
 ): Tick[] {
   // Ask for the ~200px spacing this ruler actually wants, and mark majors at
   // that pitch. This used to ask for 60px and then mark majors every *two*
@@ -163,10 +162,10 @@ export function makeTicks(
     base < Math.ceil(maxBase / iterPitch) * iterPitch + 1;
     base += iterPitch
   ) {
-    if (emitMinor && base % majorPitch) {
-      ticks.push({ type: 'minor', base: base - 1 })
-    } else if (emitMajor && !(base % majorPitch)) {
+    if (!(base % majorPitch)) {
       ticks.push({ type: 'major', base: base - 1 })
+    } else if (includeMinor) {
+      ticks.push({ type: 'minor', base: base - 1 })
     }
   }
   return ticks
@@ -467,50 +466,82 @@ export function regionMoveActions(idx: number, numRegions: number) {
 }
 
 /**
- * The region reorderings offered by the refName-label menu, as pure list
- * transforms feeding setDisplayedRegions (which re-clamps bpPerPx/offsetPx for
- * the new region set).
+ * A new region list, and where each old index went in it (-1 for a region it
+ * dropped). The index map is what lets a region displayed twice be followed.
  */
-export function withRegionMoved(regions: Region[], from: number, to: number) {
+export interface RegionEdit {
+  regions: Region[]
+  newIndexOf: (oldIndex: number) => number
+}
+
+export function withRegionMoved(
+  regions: Region[],
+  from: number,
+  to: number,
+): RegionEdit {
   const out = [...regions]
   const [moved] = out.splice(from, 1)
   out.splice(to, 0, moved!)
-  return out
+  return {
+    regions: out,
+    newIndexOf: i =>
+      i === from
+        ? to
+        : i - (i > from && i <= to ? 1 : 0) + (i >= to && i < from ? 1 : 0),
+  }
+}
+
+export function withRegionRemoved(
+  regions: Region[],
+  index: number,
+): RegionEdit {
+  return {
+    regions: regions.filter((_, i) => i !== index),
+    newIndexOf: i => (i === index ? -1 : i > index ? i - 1 : i),
+  }
+}
+
+export function withRegionsKept(
+  regions: Region[],
+  first: number,
+  last: number,
+): RegionEdit {
+  return {
+    regions: regions.slice(first, last + 1),
+    newIndexOf: i => (i >= first && i <= last ? i - first : -1),
+  }
+}
+
+export function withRegionReversed(
+  regions: Region[],
+  index: number,
+): RegionEdit {
+  return {
+    regions: regions.map((region, i) =>
+      i === index ? { ...region, reversed: !region.reversed } : region,
+    ),
+    newIndexOf: i => i,
+  }
 }
 
 /**
- * Replace the region list and keep looking at whatever was under the middle of
- * the viewport, when that region is in the new list.
- *
- * `setDisplayedRegions` carries `offsetPx` across and clamps it, which is a
- * linear position in a coordinate space the write just redefined: dropping the
- * regions to the left of the one on screen strands the view at the end of what
- * remains, on blank space. Where the centred region is gone the clamp is still
- * the only answer, so this falls back to it.
+ * Apply a region edit and keep the base under the middle of the viewport
+ * there, where the edit kept its region. `setDisplayedRegions` alone carries
+ * `offsetPx` into a coordinate space the edit redefined, which lands on
+ * whatever region now sits at that offset.
  */
 export function setDisplayedRegionsKeepingCenter(
   model: CenterKeepingView,
-  regions: Region[],
+  { regions, newIndexOf }: RegionEdit,
 ) {
   const center = model.displayedRegions.length
     ? model.pxToBp(model.width / 2)
     : undefined
   model.setDisplayedRegions(regions)
-  const index = center
-    ? regions.findIndex(
-        r =>
-          r.refName === center.refName &&
-          r.start === center.start &&
-          r.end === center.end,
-      )
-    : -1
+  const index = center ? newIndexOf(center.index) : -1
   if (center && index !== -1) {
     model.centerAt(center.coord0, center.refName, index)
   }
-}
-
-export function withRegionRemoved(regions: Region[], index: number) {
-  return regions.filter((_, i) => i !== index)
 }
 
 /**
@@ -541,12 +572,6 @@ export function regionRunBounds(
     last++
   }
   return { first, last }
-}
-
-export function withRegionReversed(regions: Region[], index: number) {
-  return regions.map((region, i) =>
-    i === index ? { ...region, reversed: !region.reversed } : region,
-  )
 }
 
 /**
@@ -667,6 +692,9 @@ export interface BlockRun {
   // drawn at this run's left edge (see runRefNameLabelPx)
   refName: string
   isLeftEndOfDisplayedRegion: boolean
+  // whether this run starts one of getScalebarRefNameLabels' refName runs:
+  // after a nameless block, or where the name or orientation changes
+  labeled: boolean
 }
 
 export function groupContiguousBlocks(blocks: BaseBlock[]) {
@@ -683,14 +711,17 @@ export function groupContiguousBlocks(blocks: BaseBlock[]) {
         current.start = Math.min(current.start, block.start)
         current.end = Math.max(current.end, block.end)
       } else {
+        const reversed = !!block.reversed
         current = {
           offsetPx: block.offsetPx,
           widthPx: block.widthPx,
           start: block.start,
           end: block.end,
-          reversed: !!block.reversed,
+          reversed,
           refName: block.refName,
           isLeftEndOfDisplayedRegion: !!block.isLeftEndOfDisplayedRegion,
+          labeled:
+            current?.refName !== block.refName || current.reversed !== reversed,
         }
         currentRegionIndex = block.displayedRegionIndex
         runs.push(current)
@@ -731,9 +762,8 @@ export function runRefNameLabelPx(
   runs: BlockRun[],
   orientation: RegionsOrientation = 'forward',
 ) {
-  const isRunStart = showRefNameLabels(runs, run => run.refName)
-  return runs.map((run, i) =>
-    isRunStart[i] && run.isLeftEndOfDisplayedRegion
+  return runs.map(run =>
+    run.labeled && run.isLeftEndOfDisplayedRegion
       ? REF_NAME_LABEL_PADDING_PX +
         refNameLabelWidth(
           orientation === 'mixed' && run.reversed
@@ -756,12 +786,11 @@ export function makeBlockTicks(
     reversed = false,
   }: { start: number; end: number; reversed?: boolean },
   bpPerPx: number,
-  emitMajor = true,
-  emitMinor = true,
+  includeMinor = true,
 ) {
-  return makeTicks(start, end, bpPerPx, emitMajor, emitMinor).map(tick => ({
+  return makeTicks(start, end, bpPerPx, includeMinor).map(tick => ({
     ...tick,
-    x: (reversed ? end - tick.base : tick.base - start) / bpPerPx,
+    x: bpOffsetInRegion({ start, end, reversed }, tick.base) / bpPerPx,
   }))
 }
 
@@ -870,6 +899,7 @@ export function parseLocStrings(
     const [refName, start = '', end = ''] = inputs
     if (
       e instanceof UnknownRefNameError &&
+      inputs.length === 3 &&
       parseBpString(start) !== undefined &&
       parseBpString(end) !== undefined
     ) {
