@@ -97,6 +97,18 @@ const suite: TestSuite = {
       config,
       snapshotSelector: withChrome,
     }),
+    // The same files under `rows`, which labels each row where the facet
+    // chipped it. The labels are portalled above the track, so the capture
+    // waits on them rather than on the display's paint.
+    lgvSnapshotTest({
+      name: 'bars one row per source over a MultiBigWig, each row labelled',
+      snapshot: 'mark-rows',
+      loc: 'ctgA:1-4000',
+      tracks: ['marks_rows'],
+      config,
+      snapshotSelector: withChrome,
+      readySelector: '[data-testid="mark-row-labels"]',
+    }),
     // The chips are the chrome's overlay, so the display's paint does not gate
     // them — the capture waits on a chip.
     lgvSnapshotTest({
