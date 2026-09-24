@@ -1,3 +1,5 @@
+import path from 'node:path'
+
 import { autoUpdater as nativeAutoUpdater, app, dialog } from 'electron'
 import debug from 'electron-debug'
 import pkg from 'electron-updater'
@@ -285,8 +287,19 @@ function runApp() {
   // An installed app is already registered by its packaging — Info.plist on
   // macOS (scripts/packaging/packager.ts), the NSIS installer on Windows, the
   // .desktop file on Linux — so this mainly covers a dev run, and re-asserts
-  // the claim if another install took the scheme over.
-  app.setAsDefaultProtocolClient(JBROWSE_PROTOCOL)
+  // the claim if another install took the scheme over. A dev run is the bare
+  // Electron binary, which without the app's path as its argument registered
+  // an Electron that opened its own welcome page for every link.
+  if (process.defaultApp) {
+    const appPath = process.argv[1]
+    if (appPath) {
+      app.setAsDefaultProtocolClient(JBROWSE_PROTOCOL, process.execPath, [
+        path.resolve(appPath),
+      ])
+    }
+  } else {
+    app.setAsDefaultProtocolClient(JBROWSE_PROTOCOL)
+  }
 
   // Chromium stops rendering a window another window fully covers: the
   // document reads hidden, ResizeObserver never delivers, and a view a spec
