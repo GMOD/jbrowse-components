@@ -23,8 +23,8 @@ const session = {
 beforeEach(() => {
   jest
     .mocked(invokeIpc)
-    .mockImplementation(async channel =>
-      channel === 'listSessions' ? [session] : undefined,
+    .mockImplementation(async (...args) =>
+      args[0] === 'listSessions' ? [session] : undefined,
     )
 })
 
