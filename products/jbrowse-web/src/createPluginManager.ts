@@ -162,16 +162,20 @@ function preloadSessionAssemblies(
     defaultSessionViewInit,
   }: PluginManagerSource,
 ) {
+  const viewsOf = (snapshot: unknown) =>
+    typeof snapshot === 'object' && snapshot !== null && 'views' in snapshot
+      ? snapshot.views
+      : undefined
   const source =
     sessionSource?.type === 'snapshot'
-      ? sessionSource.snapshot
+      ? viewsOf(sessionSource.snapshot)
       : sessionSource?.type === 'spec'
-        ? sessionSource.spec
+        ? viewsOf(sessionSource.spec)
         : sessionSource?.type === 'hub'
           ? undefined
           : defaultSessionViewInit?.assembly
             ? defaultSessionViewInit
-            : configSnapshot?.defaultSession
+            : viewsOf(configSnapshot?.defaultSession)
   const { assemblyManager } = rootModel
   for (const name of assemblyNamesIn(source)) {
     if (assemblyManager.has(name)) {
