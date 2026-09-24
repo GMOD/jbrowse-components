@@ -4453,8 +4453,35 @@ export const configManifest: ConfigManifest = {
           "type": "RenderingMode"
         },
         {
-          "name": "featureColor",
-          "type": "(JexlString | string)"
+          "name": "color",
+          "type": "VariantCellColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "value",
+              "type": "(JexlString | (CssColor | undefined))"
+            },
+            {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "scale",
+              "type": "(VariantCellColorScale | undefined)"
+            },
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "range",
+              "type": "CssColorEntry[]"
+            }
+          ],
+          "shorthand": "value",
+          "fieldScale": {
+            "*": "categorical"
+          }
         },
         {
           "name": "shadeByDosage",
@@ -4641,8 +4668,35 @@ export const configManifest: ConfigManifest = {
           "type": "RenderingMode"
         },
         {
-          "name": "featureColor",
-          "type": "(JexlString | string)"
+          "name": "color",
+          "type": "VariantCellColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "value",
+              "type": "(JexlString | (CssColor | undefined))"
+            },
+            {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "scale",
+              "type": "(VariantCellColorScale | undefined)"
+            },
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "range",
+              "type": "CssColorEntry[]"
+            }
+          ],
+          "shorthand": "value",
+          "fieldScale": {
+            "*": "categorical"
+          }
         },
         {
           "name": "shadeByDosage",

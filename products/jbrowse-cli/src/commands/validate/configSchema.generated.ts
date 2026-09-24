@@ -5778,6 +5778,69 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "VariantCellColor": {
+      "title": "VariantCellColor",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "type": "string"
+        },
+        {
+          "title": "VariantCellColor",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "value": {
+              "description": "CSS colour or jexl callback for every alt cell.",
+              "$ref": "#/$defs/CssColorOrJexl"
+            },
+            "field": {
+              "description": "impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; phaseSet, the FORMAT PS block in phased mode; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range colour with a key. A record with no value keeps the default alt colour.",
+              "$ref": "#/$defs/FeatureField",
+              "default": ""
+            },
+            "scale": {
+              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field.",
+              "enum": [
+                "none",
+                "categorical",
+                "threshold"
+              ]
+            },
+            "domain": {
+              "description": "the values that take the range first, in order; under threshold, the ascending cut points, a value on a cut taking the interval above it.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "range": {
+              "description": "CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/CssColor"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "LinearMultiSampleVariantDisplaySlots": {
       "type": "object",
       "properties": {
@@ -5858,9 +5921,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ],
           "default": "alleleCount"
         },
-        "featureColor": {
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
+        "color": {
+          "$ref": "#/$defs/VariantCellColor"
         },
         "shadeByDosage": {
           "description": "shade each alt cell by the fraction of its called alleles that are non-reference, so a homozygote is darker than a heterozygote; off paints every alt cell the mode's flat hue.",
@@ -6030,9 +6092,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ],
           "default": "alleleCount"
         },
-        "featureColor": {
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
+        "color": {
+          "$ref": "#/$defs/VariantCellColor"
         },
         "shadeByDosage": {
           "description": "shade each alt cell by the fraction of its called alleles that are non-reference, so a homozygote is darker than a heterozygote; off paints every alt cell the mode's flat hue.",
@@ -9918,6 +9979,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color"
                 },
                 {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/color"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/color"
+                },
+                {
                   "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/color"
                 }
               ]
@@ -10074,16 +10141,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/renderingMode"
-                }
-              ]
-            },
-            "featureColor": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/featureColor"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/featureColor"
                 }
               ]
             },
