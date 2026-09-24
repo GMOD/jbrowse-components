@@ -4062,7 +4062,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "the row attribute whose values take the colours: name, the row itself, or on the multi-sample variant displays a column of the adapter's samplesTsvLocation, e.g. population.",
+              "description": "the row attribute whose values take the colours: name, the row itself, or an attribute the rows carry, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group.",
               "$ref": "#/$defs/PlainString",
               "default": "name"
             },
