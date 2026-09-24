@@ -1172,6 +1172,7 @@
       "package": "@jbrowse/core",
       "names": [
         "default",
+        "preloadUMDBundles",
         "workerScriptLoadMessage"
       ],
       "worker": "real"
