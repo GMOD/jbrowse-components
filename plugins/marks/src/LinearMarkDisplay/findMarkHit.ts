@@ -1,3 +1,5 @@
+import { clamp } from '@jbrowse/core/util/numericUtils'
+import { bpAtPx } from '@jbrowse/render-core/canvas2dUtils'
 import { nearestMarkHit } from '@jbrowse/render-core/marks'
 
 import type {
@@ -16,6 +18,8 @@ export interface MarkHitInfo {
   refName: string
   start: number
   end: number
+  /** The base under the cursor, inside the instance's span. */
+  bp: number
   /** The plotted value, or undefined for a mark with no `y`. */
   y: number | undefined
   /** The packed colour the worker resolved for this instance, if its mark reads one. */
@@ -71,14 +75,17 @@ export function findMarkHit(
   const { markIndex } = marks[hit.mark]!
   const layer = hit.region.layers[markIndex]!
   const regionIndex = hit.block.displayedRegionIndex
+  const start = layer.x[hit.index]!
+  const end = layer.x2[hit.index]!
   return {
     markIndex,
     regionIndex,
     instance: hit.index,
     featureIndex: layer.featureIndex[hit.index]!,
     refName: displayedRegions[regionIndex]!.refName,
-    start: layer.x[hit.index]!,
-    end: layer.x2[hit.index]!,
+    start,
+    end,
+    bp: clamp(bpAtPx(mouseX, hit.block), start, Math.max(start, end - 1)),
     y: layer.y?.[hit.index],
     color: layer.color?.[hit.index],
     colorValue: layer.colorValue?.[hit.index],

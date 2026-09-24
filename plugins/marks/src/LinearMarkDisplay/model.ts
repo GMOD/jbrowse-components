@@ -1568,7 +1568,7 @@ export function stateModelFactory(
                       label: 'Sort rows by value here',
                       rowCount: self.editableSources.length,
                       onClick: () => {
-                        self.sortRowsByValueAt(hit.refName, hit.start)
+                        self.sortRowsByValueAt(hit.refName, hit.bp)
                       },
                     }),
                     ...resetRowOrderMenuItems(self),

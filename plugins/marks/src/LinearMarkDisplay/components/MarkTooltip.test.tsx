@@ -26,6 +26,7 @@ const HIT: MarkHitInfo = {
   refName: 'ctgA',
   start: 100,
   end: 150,
+  bp: 100,
   y: undefined,
   color: undefined,
   colorValue: undefined,

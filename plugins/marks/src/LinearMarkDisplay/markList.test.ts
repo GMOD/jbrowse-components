@@ -136,7 +136,17 @@ test('a text mark takes no place in the list, and the marks after it keep their 
     state,
     REGIONS,
   )
-  expect(hit).toMatchObject({ markIndex: 0, start: 500 })
+  expect(hit).toMatchObject({ markIndex: 0, start: 500, bp: 502 })
+  const pastEnd = findMarkHit(
+    412,
+    300,
+    [block],
+    new Map([[0, data]]),
+    marks,
+    state,
+    REGIONS,
+  )
+  expect(pastEnd).toMatchObject({ markIndex: 0, start: 500, bp: 509 })
   const spanHit = findMarkHit(
     641,
     200,

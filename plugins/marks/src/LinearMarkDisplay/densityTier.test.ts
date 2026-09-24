@@ -213,6 +213,7 @@ test('past the budget a bin opens nothing, and the notice says what is drawn', (
     refName: 'ctgA',
     start: 1000,
     end: 2000,
+    bp: 1000,
     y: 17,
     color: undefined,
     colorValue: undefined,

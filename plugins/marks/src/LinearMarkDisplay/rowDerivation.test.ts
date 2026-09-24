@@ -186,6 +186,39 @@ test('sort at a column orders the rows by the value each stands at there', () =>
   )
 })
 
+test('Sort rows by value here sorts at the base right-clicked, not at the start of the bar under it', () => {
+  const display = loaded({ rows: 'source' })
+  display.openContextMenu({
+    clientX: 0,
+    clientY: 0,
+    hit: {
+      markIndex: 0,
+      regionIndex: 0,
+      instance: 3,
+      featureIndex: 3,
+      refName: 'ctgA',
+      start: 200,
+      end: 800,
+      bp: 650,
+      y: 9,
+      color: undefined,
+      colorValue: undefined,
+      glyph: undefined,
+      row: 0,
+      screenX: 0,
+      screenY: 0,
+    },
+  })
+  const item = display
+    .contextMenuItems()
+    .find(i => 'label' in i && i.label === 'Sort rows by value here')
+  if (!item || !('onClick' in item)) {
+    throw new Error('no Sort rows by value here item')
+  }
+  item.onClick()
+  expect(display.rowDomain).toEqual(['dad', 's10', 'mom', 's2'])
+})
+
 test('a region arriving with a new value adds its row, and the arranged rows keep their places', () => {
   const display = loaded({ rows: 'source' })
   const [dad, mom, s2, s10] = display.editableSources
