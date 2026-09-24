@@ -4,11 +4,11 @@ import { fireEvent, render, screen } from '@testing-library/react'
 
 import GroupByDialog from './GroupByDialog.tsx'
 
-import type { GroupByScan } from './attributeGroupingVerdict.ts'
+import type { AttributeScan } from './attributeVerdict.ts'
 
 const SPEC = { facet: null }
 
-const SCAN: GroupByScan = [
+const SCAN: AttributeScan = [
   {
     field: 'biotype',
     values: ['lncRNA', 'protein_coding'],
@@ -22,7 +22,7 @@ function setup(
   field: string | undefined,
   color?: string,
   colorField = '',
-  scan: GroupByScan = [],
+  scan: AttributeScan = [],
 ) {
   const applyGroupBy = jest.fn()
   const groupByChannelSpec = jest.fn(() => SPEC)

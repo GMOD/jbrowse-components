@@ -1,16 +1,20 @@
 import { useState } from 'react'
 
 import { SubmitDialog } from '@jbrowse/core/ui'
-import { Button, TextField, Typography } from '@mui/material'
+import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import AttributeFieldInput from './AttributeFieldInput.tsx'
+import { COLORING } from './attributeVerdict.ts'
+
+import type { AttributeScanModel } from './AttributeFieldInput.tsx'
 import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
 
 const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
   model,
   handleClose,
 }: {
-  model: {
+  model: AttributeScanModel & {
     colorByAttribute: string
     colorByField: (field: string) => void
     openChannelSpecDialog: (seed?: ChannelSpec) => void
@@ -50,17 +54,15 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
     >
       <Typography variant="body2" gutterBottom>
         Each value of the attribute paints one palette color, and the track
-        draws a key saying which. Common attributes: type, source, biotype,
-        gene_biotype.
+        draws a key saying which.
       </Typography>
-      <TextField
-        label="Attribute name"
+      <AttributeFieldInput
+        model={model}
         value={attribute}
-        onChange={event => {
-          setAttribute(event.target.value)
-        }}
+        onChange={setAttribute}
+        use={COLORING}
+        testid="color-by-attribute"
         placeholder="e.g. gene_biotype"
-        fullWidth
       />
     </SubmitDialog>
   )
