@@ -106,6 +106,53 @@ test('the first landing that counts is the one covering a mate lane', () => {
   expect(display.laneGenesCoverMatesFor).toBe(display.anchorAssemblyName)
 })
 
+// The genes wait again on a new anchor, and a re-anchor frames other pairs, so
+// the links do too
+test('a re-anchor waits for its lane links again', () => {
+  const { display } = createDisplayWithSession({
+    trackAssemblyNames: ['volvox', 'volvox_random', 'volvox_ins'],
+    geneTracks: [],
+  })
+  const onto = (anchor: string, mates: [string, string]) => {
+    display.lgv.setDisplayedRegions([
+      { refName: 'ctgA', start: 0, end: 1000, assemblyName: anchor },
+    ])
+    display.setFeatures(
+      mates.map(
+        mate =>
+          new SimpleFeature({
+            uniqueId: `${anchor}-${mate}`,
+            refName: 'ctgA',
+            start: 100,
+            end: 300,
+            strand: 1,
+            mate: { assemblyName: mate, refName: 'ctgB', start: 100, end: 300 },
+          }),
+      ),
+      anchor,
+    )
+    display.setLaneFrames(
+      0,
+      new Map(mates.map(mate => [mate, decisionOn('ctgB', 200)])),
+    )
+    expect(display.laneLinksFetchSpecs).toHaveLength(1)
+  }
+  const land = () => {
+    const [spec] = display.laneLinksFetchSpecs
+    display.setLaneLinks(new Map([[spec!.lane, { key: spec!.key, links: [] }]]))
+  }
+
+  onto('volvox', ['volvox_random', 'volvox_ins'])
+  expect(display.awaitingDependentData).toBe(true)
+  land()
+  expect(display.awaitingDependentData).toBe(false)
+
+  onto('volvox_random', ['volvox', 'volvox_ins'])
+  expect(display.awaitingDependentData).toBe(true)
+  land()
+  expect(display.awaitingDependentData).toBe(false)
+})
+
 // An all-vs-all file carries samples the config never declared, and those draw
 // as lanes off the anchor fetch. The per-pair link fetch renames its region
 // through the assembly manager, which refuses an assembly the session does not

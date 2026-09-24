@@ -291,6 +291,13 @@ export function stateModelFactory(
       laneLinks: undefined as Map<string, HeldLaneLinks> | undefined,
       /**
        * #volatile
+       * the anchor assembly under which lane links last landed, so a
+       * re-anchor onto another genome waits for its pairs again, as
+       * `laneGenesCoverMatesFor` does for the genes
+       */
+      laneLinksLandedFor: undefined as string | undefined,
+      /**
+       * #volatile
        * the lanes the source's header declares, read once with the tier info;
        * undefined until the header lands or when the adapter is one whose
        * header is never asked for
@@ -419,13 +426,17 @@ export function stateModelFactory(
         /**
          * #action
          */
-        setLaneLinks(fetched: Map<string, HeldLaneLinks>) {
+        setLaneLinks(
+          fetched: Map<string, HeldLaneLinks>,
+          anchor: string = containingLgv(self).assemblyNames[0]!,
+        ) {
           const held = new Map(self.laneLinks)
           for (const [pair, links] of fetched) {
             held.set(pair, links)
             observeRibbonFeatures(links.links)
           }
           self.laneLinks = held
+          self.laneLinksLandedFor = anchor
         },
         /**
          * #action
@@ -2283,7 +2294,8 @@ export function stateModelFactory(
       /**
        * #getter
        * `FetchMixin`'s hook: the dependent fetches are part of loading until
-       * they FIRST land, so an export or a capture never lands between the
+       * they FIRST land on this anchor, so an export or a capture never lands
+       * between the
        * ortholog fetch and the gene models that fill the lanes. Not for later
        * refetches: those run over lanes that are already drawn, and holding the
        * phase at loading puts the striped scrim over them. A failed lane fetch
@@ -2302,7 +2314,8 @@ export function stateModelFactory(
           (self.laneGenes === undefined && genes.length > 0) ||
           (self.laneGenesCoverMatesFor !== self.anchorAssemblyName &&
             specsCoverMate(genes, self.anchorAssemblyName)) ||
-          (self.laneLinks === undefined && self.laneLinksFetchSpecs.length > 0)
+          (self.laneLinksLandedFor !== self.anchorAssemblyName &&
+            self.laneLinksFetchSpecs.length > 0)
         )
       },
       /**
