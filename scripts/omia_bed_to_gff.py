@@ -1,4 +1,4 @@
-"""Join OMIA's parsed variant attributes onto their canFam4 coordinates.
+"""Join OMIA's parsed variant attributes onto their coordinates.
 
 Input is the two BEDs from omia_sql_to_bed.py (one native, one lifted) plus the
 attribute table they share an id with; output is sorted GFF3 ready for bgzip.
@@ -93,10 +93,13 @@ def main():
                 # chain. A lifted record can be right about the locus and wrong
                 # about the base.
                 ('reported_on', rec['reported_on']),
-                ('coordinates', 'as published' if source == 'native' else 'liftOver from CanFam3.1'),
-                # OMIA writes its ids zero-padded to six digits everywhere it
-                # publishes them; the dump stores the integer.
-                ('omia', 'OMIA:%06d-9615' % int(rec['omia_id'] or 0)),
+                (
+                    'coordinates',
+                    'as published'
+                    if source == 'native'
+                    else 'liftOver from ' + rec['reported_on'],
+                ),
+                ('omia', rec['omia_id']),
             ]
             col9 = ';'.join(
                 '%s=%s' % (k, escape(v)) for k, v in attrs if v not in ('', None)

@@ -47,7 +47,7 @@ fi
 
 # Dump -> two BEDs: one already on canFam4, one on canFam3 to be lifted. The
 # name column is a row id, so the lift can be joined back onto the record.
-python3 "$HERE/omia_sql_to_bed.py" omia.sql.gz native.bed canFam3.bed variants.tsv
+python3 "$HERE/omia_sql_to_bed.py" dog omia.sql.gz native.bed canFam3.bed variants.tsv
 
 ./liftOver canFam3.bed canFam3ToCanFam4.over.chain.gz lifted.bed unmapped.bed
 echo "liftOver: $(wc -l < lifted.bed) of $(wc -l < canFam3.bed) CanFam3.1 records reached canFam4"

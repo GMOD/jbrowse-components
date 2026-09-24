@@ -1,18 +1,20 @@
-"""Pull OMIA's dog causal variants out of its mysqldump.
+"""Pull one species' OMIA causal variants out of its mysqldump.
 
 OMIA publishes no coordinate API; the nightly mysqldump is the only form that
 carries them. This reads the dump without a mysql server (the tables it needs
 are one INSERT per table), resolves each variant's phenotype, gene, inheritance
 and variant type, parses a position out of the HGVS `g.` string, and writes:
 
-  native.bed    records already on UU_Cfam_GSD_1.0 (canFam4)
-  canFam3.bed   records on CanFam3.1, for liftOver
+  native.bed    records already on the tutorial's assembly
+  lift.bed      records on an older assembly, for liftOver (dog: CanFam3.1)
   variants.tsv  every record's attributes, keyed by the id in the BED name column
 
-Records on ROS_Cfam_1.0 and Dog10K_Boxer_Tasha are counted and dropped: there are
-a handful, and placing them would need two more chains.
+Records on any other assembly are counted and dropped. For dog those are a
+handful on ROS_Cfam_1.0 and Dog10K_Boxer_Tasha, which would need two more chains.
+Cattle needs no lift: ARS-UCD1.3 carries every ARS-UCD1.2 chromosome under the
+same accession, version and length, so both are native to bosTau9.
 
-Usage: python3 omia_sql_to_bed.py omia.sql.gz native.bed canFam3.bed variants.tsv
+Usage: python3 omia_sql_to_bed.py dog|cattle omia.sql.gz native.bed lift.bed variants.tsv
 """
 
 import gzip
@@ -20,9 +22,10 @@ import re
 import sys
 from collections import Counter
 
-DOG_SPECIES_ID = 9615
-CANFAM4 = 'UU_Cfam_GSD_1.0'
-CANFAM3 = 'CanFam3.1'
+SPECIES = {
+    'dog': {'taxon': 9615, 'native': ('UU_Cfam_GSD_1.0',), 'lift': ('CanFam3.1',)},
+    'cattle': {'taxon': 9913, 'native': ('ARS-UCD1.2', 'ARS-UCD1.3'), 'lift': ()},
+}
 
 
 def parse_values(body):
@@ -108,7 +111,10 @@ def genomic_span(hgvs):
 
 
 def main():
-    dump, native_path, cf3_path, tsv_path = sys.argv[1:5]
+    species, dump, native_path, lift_path, tsv_path = sys.argv[1:6]
+    taxon = SPECIES[species]['taxon']
+    native_assemblies = SPECIES[species]['native']
+    lift_assemblies = SPECIES[species]['lift']
 
     phenes = {r[0]: r for r in rows_for(dump, 'Phene')}
     variant_phene = {r[1]: r[2] for r in rows_for(dump, 'Variant_Phene')}
@@ -119,7 +125,7 @@ def main():
 
     counts = Counter()
     native = []
-    cf3 = []
+    lift = []
     attrs = []
 
     for v in rows_for(dump, 'Variant'):
@@ -148,9 +154,9 @@ def main():
         # The species gate is the phene rather than the gene: gene_info in the
         # dump is a 2016 snapshot, so a variant in a gene added since then has no
         # tax_id to filter on and would be dropped.
-        if phene is None or phene[21] != str(DOG_SPECIES_ID):
+        if phene is None or phene[21] != str(taxon):
             continue
-        if assembly not in (CANFAM4, CANFAM3):
+        if assembly not in native_assemblies + lift_assemblies:
             counts[assembly or '(no assembly)'] += 1
             continue
         span = genomic_span(g_or_m)
@@ -161,12 +167,12 @@ def main():
         start, end = span
         seqid = 'chr' + chrom.strip()
         row = f'{seqid}\t{start}\t{end}\tv{variant_id}\n'
-        if assembly == CANFAM4:
+        if assembly in native_assemblies:
             native.append(row)
-            counts['native canFam4'] += 1
+            counts['native ' + assembly] += 1
         else:
-            cf3.append(row)
-            counts['CanFam3.1 to lift'] += 1
+            lift.append(row)
+            counts[assembly + ' to lift'] += 1
 
         attrs.append(
             '\t'.join(
@@ -184,7 +190,7 @@ def main():
                     allele,
                     rsid,
                     assembly,
-                    phene[20],
+                    'OMIA:%06d-%d' % (int(phene[20] or 0), taxon),
                 ]
             )
             + '\n'
@@ -192,8 +198,8 @@ def main():
 
     with open(native_path, 'w') as fh:
         fh.writelines(native)
-    with open(cf3_path, 'w') as fh:
-        fh.writelines(cf3)
+    with open(lift_path, 'w') as fh:
+        fh.writelines(lift)
     with open(tsv_path, 'w') as fh:
         fh.writelines(attrs)
 
