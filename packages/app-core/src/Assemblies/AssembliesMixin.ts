@@ -101,10 +101,10 @@ export function AssembliesMixin(
          * #action
          */
         removeAssembly(name: string) {
-          if (self.adminMode) {
-            self.jbrowse.removeAssemblyConf(name)
-          } else {
+          if (self.sessionAssemblies.some(a => a.name === name)) {
             this.removeSessionAssembly(name)
+          } else if (self.adminMode) {
+            self.jbrowse.removeAssemblyConf(name)
           }
         },
 

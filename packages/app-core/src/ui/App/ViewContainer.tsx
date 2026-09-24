@@ -16,23 +16,6 @@ import type {
   SessionWithFocusedViewAndDrawerWidgets,
 } from '@jbrowse/core/util'
 
-// Intended to keep views mounted within ~1.5 viewport-heights of the visible
-// band. **It does nothing, and making it work was measured as a regression.**
-//
-// An observer clips the target against every scrolling ancestor before applying
-// the margin, which expands only the root's box — and both view containers are
-// `overflow-y: auto`, so through one of them `150% 0px` qualifies exactly the
-// views a `0px` margin would. Rooting the observer at the scroll port instead
-// (`scrollPortOf`) does restore the band, and it came out a wash on scroll cost
-// while holding 9-13 live GPU canvases instead of 6. The mount band trades
-// pipeline rebuilds for live contexts, and with the ceiling at 16 live WebGL2
-// contexts the contexts are the tighter constraint.
-// See agent-docs/reference/GPU_CONTEXT_BUDGET.md.
-//
-// So don't tune this number expecting an effect, and don't make it live without
-// first cutting contexts per display.
-const VIEW_VISIBILITY_ROOT_MARGIN = '150% 0px'
-
 // Scroll-space reserved for a view that has never been measured yet, so a fresh
 // load spreads views down the page instead of stacking them all in the viewport
 // (which would mark them all visible and defeat the lazy mount).
@@ -121,11 +104,7 @@ const ViewContainer = observer(function ViewContainer({
 }) {
   const ref = useWidthSetter(view)
   const { classes } = useStyles()
-  const {
-    ref: bodyRef,
-    visible,
-    measuredHeight,
-  } = useViewVisibility(VIEW_VISIBILITY_ROOT_MARGIN)
+  const { ref: bodyRef, visible, measuredHeight } = useViewVisibility()
 
   useFocusOnInteraction(ref, () => {
     session.setFocusedViewId(view.id)

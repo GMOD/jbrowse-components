@@ -5,7 +5,8 @@ import {
 } from './lgvUrlInit.ts'
 
 import type { LgvUrlInit } from './lgvUrlInit.ts'
-import type { LayoutNode, ViewSpec } from './types.ts'
+import type { SessionSpec } from './loadSessionSpec.ts'
+import type { ViewSpec } from './types.ts'
 
 // Reads a JBrowse Web URL (the kind the website's figure links and the share
 // button hand out) back into the config it loads and the session spec it
@@ -33,13 +34,7 @@ export interface ParsedSessionSpec {
   // instance the link points at (resolved against it here, so the caller gets
   // something fetchable)
   configUrl?: string
-  spec: {
-    views: ViewSpec[]
-    sessionAssemblies?: Record<string, unknown>[]
-    sessionConnections?: Record<string, unknown>[]
-    sessionTracks?: Record<string, unknown>[]
-    layout?: LayoutNode
-  }
+  spec: Omit<SessionSpec, 'sessionName'>
   sessionName?: string
 }
 

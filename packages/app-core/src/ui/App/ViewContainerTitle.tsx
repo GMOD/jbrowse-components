@@ -1,10 +1,10 @@
 import EditableTypography from '@jbrowse/core/ui/EditableTypography'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Tooltip } from '@mui/material'
+import { Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { viewTitle } from './viewTitle.ts'
+import { viewName, viewTitle } from './viewTitle.ts'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
 
@@ -31,6 +31,9 @@ const useStyles = makeStyles()(theme => ({
     borderColor: theme.palette.primary.main,
     backgroundColor: theme.palette.secondary.light,
   },
+  minimized: {
+    color: theme.palette.secondary.contrastText,
+  },
 }))
 const ViewContainerTitle = observer(function ViewContainerTitle({
   view,
@@ -39,23 +42,33 @@ const ViewContainerTitle = observer(function ViewContainerTitle({
 }) {
   const { classes } = useStyles()
   const { assemblyManager } = getSession(view)
-  const title = viewTitle(view, r => assemblyManager.getDisplayName(r))
+  const getDisplayName = (r: string) => assemblyManager.getDisplayName(r)
   return (
-    <Tooltip title={`${title} (click to rename)`} arrow>
-      <EditableTypography
-        value={title}
-        setValue={val => {
-          view.setDisplayName(val)
-        }}
-        variant="body2"
-        classes={{
-          input: classes.input,
-          inputBase: classes.inputBase,
-          inputRoot: classes.inputRoot,
-          inputFocused: classes.inputFocused,
-        }}
-      />
-    </Tooltip>
+    <>
+      <Tooltip
+        title={`${viewTitle(view, getDisplayName)} (click to rename)`}
+        arrow
+      >
+        <EditableTypography
+          value={viewName(view, getDisplayName)}
+          setValue={val => {
+            view.setDisplayName(val)
+          }}
+          variant="body2"
+          classes={{
+            input: classes.input,
+            inputBase: classes.inputBase,
+            inputRoot: classes.inputRoot,
+            inputFocused: classes.inputFocused,
+          }}
+        />
+      </Tooltip>
+      {view.minimized ? (
+        <Typography variant="body2" className={classes.minimized}>
+          (minimized)
+        </Typography>
+      ) : null}
+    </>
   )
 })
 

@@ -1,4 +1,4 @@
-import { shortHubLabel, splitHighlights } from './lgvUrlInit.ts'
+import { buildLgvInit, shortHubLabel, splitHighlights } from './lgvUrlInit.ts'
 
 test('splits plain loc strings on spaces', () => {
   expect(splitHighlights('chr1:100-200 chr2:300-400')).toEqual([
@@ -39,4 +39,16 @@ describe('shortHubLabel', () => {
   it('falls back to the raw string if it is not a valid URL', () => {
     expect(shortHubLabel('not a url')).toBe('not a url')
   })
+})
+
+test('tracks drops empty entries', () => {
+  expect(buildLgvInit({ tracks: 'a,b,' }).tracks).toEqual(['a', 'b'])
+  expect(buildLgvInit({ tracks: 'a,,b' }).tracks).toEqual(['a', 'b'])
+})
+
+// a present key merges over the default session's view init, so an empty one
+// would erase its tracks
+test('a tracks param naming nothing leaves the key off', () => {
+  expect('tracks' in buildLgvInit({ tracks: '' })).toBe(false)
+  expect('tracks' in buildLgvInit({ tracks: ',' })).toBe(false)
 })

@@ -103,8 +103,11 @@ export function buildLgvInit(args: {
   if (assembly !== undefined) {
     init.assembly = assembly
   }
-  if (tracks !== undefined) {
-    init.tracks = tracks.split(',')
+  // empty entries dropped, like `regions`: `&tracks=a,` asked for no track
+  // named ''
+  const trackIds = tracks?.split(',').filter(Boolean)
+  if (trackIds?.length) {
+    init.tracks = trackIds
   }
   if (tracklist !== undefined) {
     init.tracklist = tracklist

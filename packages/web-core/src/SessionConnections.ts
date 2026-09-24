@@ -10,6 +10,7 @@ import type {
   AnyConfiguration,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
+import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 
 export interface WebSessionWithConnections {
   sessionConnections: AnyConfigurationModel[]
@@ -48,6 +49,18 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
         ),
       }),
     )
+    .views(self => ({
+      /**
+       * #getter
+       * list of config connections and session connections
+       */
+      get connections(): BaseConnectionConfigModel[] {
+        return [
+          ...asSession(self).jbrowse.connections,
+          ...self.sessionConnections,
+        ]
+      },
+    }))
     .actions(s => {
       const self = asSession(s)
       const superDeleteConnection = self.deleteConnection

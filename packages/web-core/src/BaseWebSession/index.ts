@@ -36,7 +36,6 @@ import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { AnyConfiguration } from '@jbrowse/core/configuration'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
-import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { TrackActionView } from '@jbrowse/core/util/types'
@@ -96,13 +95,6 @@ export function BaseWebSessionModel({
       get root(): AbstractWebRootModel {
         return getParent<AbstractWebRootModel>(self)
       },
-      /**
-       * #getter
-       * list of config connections and session connections
-       */
-      get connections(): BaseConnectionConfigModel[] {
-        return [...self.jbrowse.connections, ...self.sessionConnections]
-      },
     }))
 
     .views(self => ({
@@ -160,13 +152,6 @@ export function BaseWebSessionModel({
           self.sessionPlugins.filter(p => p.name !== pluginDefinition.name),
         )
         self.root.setPluginsUpdated()
-      },
-
-      /**
-       * #action
-       */
-      setDefaultSession() {
-        self.root.setDefaultSession()
       },
 
       /**
@@ -240,9 +225,11 @@ export function BaseWebSessionModel({
       restorePendingFileHandles: flow(function* restorePendingFileHandles() {
         const results: Awaited<ReturnType<typeof restoreFileHandles>> =
           yield restoreFileHandles(self.pendingFileHandleIds, true)
-        self.setPendingFileHandleIds(
-          results.filter(r => !r.success).map(r => r.handleId),
-        )
+        if (isAlive(self)) {
+          self.setPendingFileHandleIds(
+            results.filter(r => !r.success).map(r => r.handleId),
+          )
+        }
       }),
     }))
 }

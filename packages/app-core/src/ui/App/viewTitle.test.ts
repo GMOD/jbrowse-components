@@ -40,9 +40,18 @@ describe('viewTitle', () => {
     ).toBe('volvox display (minimized)')
   })
 
-  it('does not annotate a minimized view that has a displayName', () => {
+  it('annotates a minimized view that has a displayName', () => {
     expect(
       viewTitle({ displayName: 'my view', minimized: true }, getDisplayName),
-    ).toBe('my view')
+    ).toBe('my view (minimized)')
+  })
+
+  it('treats an emptied displayName as unset', () => {
+    expect(
+      viewTitle(
+        { displayName: '', assemblyNames: ['volvox'], minimized: false },
+        getDisplayName,
+      ),
+    ).toBe('volvox display')
   })
 })

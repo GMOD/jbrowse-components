@@ -1141,3 +1141,40 @@ describe('layout size that cannot be applied', () => {
     expect(session.notify).not.toHaveBeenCalled()
   })
 })
+
+test('an invalid session assembly is reported and the rest of the spec loads', async () => {
+  const { session, pluginManager } = setup({
+    'LaunchView-LinearGenomeView': async s => {
+      s.views.push(stubView('lgv'))
+    },
+  })
+  const added: unknown[] = []
+  Object.assign(session, {
+    rpcManager: {},
+    configuration: {},
+    addSessionAssembly: (conf: { name: string }) => {
+      if (conf.name === 'bad') {
+        throw new Error('No type is applicable for the union')
+      }
+      added.push(conf.name)
+    },
+  })
+  // the rejected config is console.errored as well as notified; expected here
+  const error = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+  await loadSessionSpec(
+    {
+      sessionAssemblies: [{ name: 'bad' }, { name: 'good' }],
+      views: [{ type: 'LinearGenomeView', assembly: 'good' }],
+    },
+    pluginManager,
+  )
+
+  expect(session.notifyError).toHaveBeenCalledWith(
+    expect.stringContaining('Assembly "bad" has an invalid configuration'),
+    expect.anything(),
+  )
+  expect(added).toEqual(['good'])
+  expect(session.views).toHaveLength(1)
+  error.mockRestore()
+})

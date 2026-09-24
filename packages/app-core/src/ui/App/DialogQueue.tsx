@@ -28,8 +28,8 @@ function dismissActiveDialog(session: AbstractSessionModel) {
  * jbrowse-web's fatal-error dialog, which takes every view the user had open.
  * ADR-069, and `cancer_sv/multihop_split_view` is the figure it took.
  *
- * Keyed on the component so the queue advancing to a different dialog clears a
- * banner belonging to the one before it.
+ * Reset on the queue entry, so the queue advancing clears a banner belonging to
+ * the dialog before it, including one of the same component.
  */
 const DialogQueue = observer(function DialogQueue({
   session,
@@ -39,7 +39,7 @@ const DialogQueue = observer(function DialogQueue({
   const { DialogComponent, DialogProps } = session
   return DialogComponent ? (
     <ErrorBoundary
-      resetKeys={[DialogComponent]}
+      resetKeys={[DialogComponent, DialogProps]}
       FallbackComponent={({ error }) => (
         <Dialog
           open

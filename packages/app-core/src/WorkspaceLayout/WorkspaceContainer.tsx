@@ -5,6 +5,7 @@ import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import ViewStack from '../ui/App/ViewStack.tsx'
+import { lazyChunk } from '../ui/App/lazyChunk.ts'
 import { LayoutRenderer } from './LayoutRenderer.tsx'
 import { WorkspacePanelActions } from './WorkspacePanelActions.tsx'
 import { WorkspaceTab } from './WorkspaceTab.tsx'
@@ -14,7 +15,9 @@ import type { WorkspaceSessionType } from '../ui/App/types.ts'
 import type { WorkspaceLayout } from './model.ts'
 import type { PanelChrome } from './panelChrome.ts'
 
-const ViewLauncher = lazy(() => import('../ui/App/ViewLauncher.tsx'))
+const ViewLauncher = lazy(
+  lazyChunk('ViewLauncher', () => import('../ui/App/ViewLauncher.tsx')),
+)
 
 const useStyles = makeStyles()(theme => ({
   container: {

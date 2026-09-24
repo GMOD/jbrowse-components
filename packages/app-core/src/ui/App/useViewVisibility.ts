@@ -14,9 +14,8 @@ interface Visibility {
 }
 
 /**
- * View-level lazy mounting. A view only mounts its (GPU-heavy) body when it is
- * within `rootMargin` of the viewport, and collapses to a height-preserving
- * spacer once scrolled far away. This bounds the number of simultaneously-live
+ * View-level lazy mounting. A view only mounts its (GPU-heavy) body while it is
+ * on screen, and collapses to a height-preserving spacer once scrolled away. This bounds the number of simultaneously-live
  * GPU canvases/contexts — the root cause of the "workspaces freeze" with many
  * stacked views (one WebGL context per display canvas blows past the browser's
  * per-page cap; see agent-docs/reference/ARCHITECTURAL_LIMITS.md, "One WebGL2
@@ -25,10 +24,10 @@ interface Visibility {
  * `root: null` (viewport) is container-agnostic: it reports on-screen-ness the
  * same way whether the views scroll inside the classic container or a workspace
  * panel, so neither container needs to know about windowing. It also means
- * **`rootMargin` has no effect** — an observer clips the target against each
- * scrolling ancestor before intersecting with the root box that the margin
- * expands, and both containers are `overflow-y: auto`. So this is a hard
- * window with no hysteresis: a view is torn down the moment it leaves its
+ * **a `rootMargin` would have no effect** — an observer clips the target
+ * against each scrolling ancestor before intersecting with the root box that
+ * the margin expands, and both containers are `overflow-y: auto`. So this is a
+ * hard window with no hysteresis: a view is torn down the moment it leaves its
  * container and rebuilt when it returns, which on a GPU backend costs a fresh
  * WebGL2 context and a full shader recompile per display.
  *
@@ -42,7 +41,7 @@ interface Visibility {
  * Starts hidden so a cold load with N crammed views doesn't mount them all at
  * once; the observer's first callback mounts only what's near the viewport.
  */
-export function useViewVisibility(rootMargin: string) {
+export function useViewVisibility() {
   const ref = useRef<HTMLDivElement>(null)
   const [state, setState] = useState<Visibility>(() => ({
     visible: !intersectionObserverAvailable(),
@@ -61,35 +60,32 @@ export function useViewVisibility(rootMargin: string) {
   useEffect(() => {
     const node = ref.current
     if (node && intersectionObserverAvailable()) {
-      const io = new IntersectionObserver(
-        entries => {
-          const entry = entries.at(-1)
-          if (entry) {
-            const { isIntersecting } = entry
-            setState(prev => {
-              if (prev.visible === isIntersecting) {
-                return prev
-              }
-              return {
-                visible: isIntersecting,
-                // a minimized view measures 0 here (it renders no body at
-                // all), which must not become its remembered height
-                height: isIntersecting
-                  ? prev.height
-                  : entry.boundingClientRect.height || prev.height,
-              }
-            })
-          }
-        },
-        { rootMargin },
-      )
+      const io = new IntersectionObserver(entries => {
+        const entry = entries.at(-1)
+        if (entry) {
+          const { isIntersecting } = entry
+          setState(prev => {
+            if (prev.visible === isIntersecting) {
+              return prev
+            }
+            return {
+              visible: isIntersecting,
+              // a minimized view measures 0 here (it renders no body at
+              // all), which must not become its remembered height
+              height: isIntersecting
+                ? prev.height
+                : entry.boundingClientRect.height || prev.height,
+            }
+          })
+        }
+      })
       io.observe(node)
       return () => {
         io.disconnect()
       }
     }
     return undefined
-  }, [rootMargin])
+  }, [])
 
   // `measuredHeight` is undefined until the body has been seen at least once.
   // The caller supplies the estimate, and supplies it lazily. See ViewContainer

@@ -59,9 +59,6 @@ interface LayoutHostSelf extends IStateTreeNode {
 function sessionViewIds(self: LayoutHostSelf) {
   return self.views?.map(v => v.id)
 }
-function layoutHost(self: LayoutHostSelf) {
-  return self
-}
 
 /**
  * A caller-supplied view list narrowed to the views the session actually has.
@@ -686,7 +683,7 @@ export function WorkspaceLayoutMixin() {
          * session spec's `layout` and an agent's live re-layout both call it.
          */
         layoutViews(spec: LayoutSpecNode) {
-          const host = layoutHost(self)
+          const host: LayoutHostSelf = self
           if (!host.setUseWorkspaces || !host.orderViews) {
             throw new Error(
               'This session has no view list to arrange: layoutViews needs a host composed with MultipleViewsSessionMixin',

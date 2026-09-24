@@ -1,4 +1,4 @@
-import { AppReadyMarker } from '@jbrowse/app-core'
+import { AppReadyMarker } from '@jbrowse/product-core'
 import { render, waitFor } from '@testing-library/react'
 import { autorun } from 'mobx'
 

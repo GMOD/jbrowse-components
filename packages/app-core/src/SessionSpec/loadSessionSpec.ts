@@ -15,23 +15,16 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-// A spec `layout` needs both session mixins that own workspaces state:
-// WorkspaceLayoutMixin's `applyLayoutSpec` and MultipleViewsSessionMixin's
-// `setUseWorkspaces` and `orderViews`. A session without them (an embedded
-// product) can't honor a layout, which is worth saying rather than throwing
-// mid-load.
-//
-// The members named here have to move with their mixins. They are looked up at
-// runtime behind the `in` guard below, so renaming the action without renaming
-// it here does not fail to compile and does not throw — the guard just goes
-// false and every spec layout is silently declined. That is exactly how
-// `setPendingMove` broke once already; see app-core/src/WorkspaceLayout/CLAUDE.md.
-interface SessionWithWorkspaceLayout {
-  layoutViews: (spec: LayoutSpecNode) => string[]
-}
-function isSessionWithWorkspaceLayout(
+// A spec `layout` needs `layoutViews`, which a session composing
+// WorkspaceLayoutMixin and MultipleViewsSessionMixin has and an embedded
+// product's does not. It is looked up behind an `in` guard, so renaming it
+// without renaming it here makes every spec layout silently decline rather than
+// fail to compile; see app-core/src/WorkspaceLayout/CLAUDE.md.
+function hasLayoutViews(
   session: AbstractSessionModel,
-): session is AbstractSessionModel & SessionWithWorkspaceLayout {
+): session is AbstractSessionModel & {
+  layoutViews: (spec: LayoutSpecNode) => string[]
+} {
   return 'layoutViews' in session
 }
 
@@ -253,11 +246,11 @@ function flattenedTabsContainers(layout: LayoutNode): boolean {
   return nestedTabsChild || children.some(flattenedTabsContainers)
 }
 
-export function unknownViewTypesMessage(types: string[]) {
+function unknownViewTypesMessage(types: string[]) {
   return `Unknown view type(s) in session spec: ${types.join(', ')}. The plugin providing the view may be missing, or the type may be misspelled.`
 }
 
-export function noLauncherMessage(types: string[]) {
+function noLauncherMessage(types: string[]) {
   return `View type(s) ${types.join(', ')} cannot be launched from a session spec: no LaunchView extension point is registered for them.`
 }
 
@@ -459,8 +452,20 @@ export async function loadSessionSpec(
     // name, so a self-contained spec (novel assemblies + their tracks, no
     // hosted config) resolves only if the assemblies exist before either runs.
     if (isSessionWithAddAssembly(session)) {
+      // Per-assembly, like connections and tracks below: an invalid config
+      // fails the array's MST type check and would otherwise cost the spec
+      // everything after it
       for (const assembly of sessionAssemblies) {
-        session.addSessionAssembly(assembly)
+        try {
+          session.addSessionAssembly(assembly)
+        } catch (e) {
+          console.error(e)
+          const label = typeof assembly.name === 'string' ? assembly.name : '?'
+          session.notifyError(
+            `Assembly "${label}" has an invalid configuration: ${e}`,
+            e,
+          )
+        }
       }
     }
     // Connections after the assemblies (a connection config may name one the
@@ -612,7 +617,7 @@ export async function loadSessionSpec(
           'info',
         )
       }
-      if (isSessionWithWorkspaceLayout(session)) {
+      if (hasLayoutViews(session)) {
         // Its own try/catch, the same reasoning as the per-view one above: the
         // resolver throws for a layout it will not arrange, and this is the
         // LAST thing the spec does — so an unarrangeable layout used to take

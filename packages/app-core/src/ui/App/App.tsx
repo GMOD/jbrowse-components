@@ -96,7 +96,7 @@ const App = observer(function App(props: Props) {
         >
           <AppToolbar {...props} />
         </AppBar>
-        <ViewsContainer {...props} />
+        <ViewsContainer session={session} />
       </div>
       <AppFab session={session} />
       <AppReadyMarker session={session} />

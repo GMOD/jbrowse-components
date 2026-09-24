@@ -2,12 +2,10 @@ import { Suspense, lazy, useCallback } from 'react'
 
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { DrawerWidgetSelector } from '@jbrowse/product-core'
+import { DrawerControls, DrawerWidgetSelector } from '@jbrowse/product-core'
 import LaunchIcon from '@mui/icons-material/Launch'
 import { AppBar, IconButton, Toolbar, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-
-import DrawerControls from './DrawerControls.tsx'
 
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util/types'
 
@@ -68,7 +66,7 @@ const DrawerHeader = observer(function DrawerHeader({
     <AppBar
       position="sticky"
       className={
-        focusedViewId === viewWidgetId
+        viewWidgetId !== undefined && focusedViewId === viewWidgetId
           ? classes.headerFocused
           : classes.headerUnfocused
       }

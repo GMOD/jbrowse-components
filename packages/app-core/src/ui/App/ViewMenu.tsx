@@ -88,11 +88,7 @@ const ViewMenu = observer(function ViewMenu({
                 onClick: () => {
                   session.addView(
                     model.type,
-                    renameIds(
-                      structuredClone(
-                        getSnapshot(model) as Record<string, unknown>,
-                      ),
-                    ),
+                    renameIds(getSnapshot(model) as Record<string, unknown>),
                   )
                 },
               },

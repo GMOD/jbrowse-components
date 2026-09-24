@@ -20,13 +20,11 @@ const useStyles = makeStyles()({
   },
 })
 
-interface Props {
-  HeaderButtons?: React.ReactElement
+const ViewsContainer = observer(function ViewsContainer({
+  session,
+}: {
   session: AppSession
-}
-
-const ViewsContainer = observer(function ViewsContainer(props: Props) {
-  const { session } = props
+}) {
   const { views, effectiveUseWorkspaces } = session
   const { classes } = useStyles()
 

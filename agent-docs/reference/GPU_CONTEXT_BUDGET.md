@@ -59,8 +59,9 @@ Three things the lazy mount did **not** fix:
   every panel is on screen.
 - **The mount band has no hysteresis**, so every display's pipeline is rebuilt
   once per scroll pass — contexts climb by exactly views x tracks per pass while
-  a handful of canvases are live. `VIEW_VISIBILITY_ROOT_MARGIN` is inert and
-  making it live is a measured regression; `ViewContainer.tsx` carries the why.
+  a handful of canvases are live. A `rootMargin` on the observer is inert, and
+  making one live is a measured regression; `useViewVisibility.ts` carries the
+  why.
 
 ## Cost is the driver's, and the ladder now steps around it
 

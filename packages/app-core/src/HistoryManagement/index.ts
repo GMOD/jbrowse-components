@@ -4,6 +4,30 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { asRoot } from '@jbrowse/product-core'
 import { autorun } from 'mobx'
 
+type ShortcutKeys = Pick<
+  KeyboardEvent,
+  'key' | 'code' | 'ctrlKey' | 'metaKey' | 'shiftKey'
+>
+
+// `key` follows the layout, so undo is wherever the user's Z is (QWERTZ reports
+// it as `code: 'KeyY'`, AZERTY as `KeyW`); a non-Latin layout has no letter
+// there, and the physical key stands in
+function shortcutLetter(e: ShortcutKeys) {
+  const key = e.key.toLowerCase()
+  return /^[a-z]$/.test(key) ? key : e.code.replace(/^Key/, '').toLowerCase()
+}
+
+export function historyShortcut(e: ShortcutKeys) {
+  const letter = shortcutLetter(e)
+  if ((e.ctrlKey || e.metaKey) && letter === 'z') {
+    return e.shiftKey ? 'redo' : 'undo'
+  }
+  if (e.ctrlKey && !e.shiftKey && letter === 'y') {
+    return 'redo'
+  }
+  return undefined
+}
+
 /**
  * #stateModel HistoryManagementMixin
  * #category root
@@ -22,22 +46,10 @@ export function HistoryManagementMixin() {
         if (isTextEntryFocused()) {
           return
         }
-        if (
-          self.history.canRedo &&
-          // ctrl+shift+z or cmd+shift+z
-          (((e.ctrlKey || e.metaKey) && e.shiftKey && e.code === 'KeyZ') ||
-            // ctrl+y
-            (e.ctrlKey && !e.shiftKey && e.code === 'KeyY'))
-        ) {
+        const shortcut = historyShortcut(e)
+        if (shortcut === 'redo' && self.history.canRedo) {
           self.history.redo()
-        }
-        if (
-          self.history.canUndo &&
-          // ctrl+z or cmd+z
-          (e.ctrlKey || e.metaKey) &&
-          !e.shiftKey &&
-          e.code === 'KeyZ'
-        ) {
+        } else if (shortcut === 'undo' && self.history.canUndo) {
           self.history.undo()
         }
       }

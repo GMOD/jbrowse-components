@@ -60,7 +60,6 @@ export interface AbstractWebRootModel extends AppRootModel {
   readonly adminMode: boolean
   readonly textSearchManager: TextSearchManager
   setPluginsUpdated(): void
-  setDefaultSession(): void
   setSession(snapshot: Record<string, unknown>): void
 }
 

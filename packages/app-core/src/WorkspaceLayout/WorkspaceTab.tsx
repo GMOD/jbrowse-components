@@ -5,6 +5,7 @@ import { InputBase, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import JBrowseTabMenu from '../ui/App/JBrowseTabMenu.tsx'
+import { viewName } from '../ui/App/viewTitle.ts'
 
 import type { WorkspaceSessionType } from '../ui/App/types.ts'
 import type { WorkspaceLayout } from './model.ts'
@@ -64,14 +65,7 @@ export function tabDisplayName(
     return 'Empty'
   }
   if (views.length === 1) {
-    const view = views[0]!
-    return (
-      view.displayName ||
-      view.assemblyNames
-        ?.map(r => session.assemblyManager.getDisplayName(r))
-        .join(',') ||
-      'View'
-    )
+    return viewName(views[0]!, r => session.assemblyManager.getDisplayName(r))
   }
   return `${views.length} views`
 }

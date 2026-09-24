@@ -70,11 +70,6 @@ export function createEmbeddedRootModel<
         /**
          * #volatile
          */
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-        error: undefined as unknown,
-        /**
-         * #volatile
-         */
         adminMode: false,
         /**
          * #volatile
@@ -132,12 +127,6 @@ export function createEmbeddedRootModel<
          */
         renameCurrentSession(sessionName: string) {
           self.session.setName(sessionName)
-        },
-        /**
-         * #action
-         */
-        setError(error: unknown) {
-          self.error = error
         },
       }))
       .views(self => ({

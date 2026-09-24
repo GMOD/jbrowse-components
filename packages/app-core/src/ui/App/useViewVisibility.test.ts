@@ -42,7 +42,7 @@ describe('useViewVisibility', () => {
     // the test suite and SSR keep the pre-lazy-mount behavior.
     // @ts-expect-error deliberately removing the global for this case
     delete globalThis.IntersectionObserver
-    const { result } = renderHook(() => useViewVisibility('150% 0px'))
+    const { result } = renderHook(() => useViewVisibility())
     expect(result.current.visible).toBe(true)
   })
 
@@ -51,7 +51,7 @@ describe('useViewVisibility', () => {
 
     const seen: { visible: boolean; measuredHeight?: number }[] = []
     function Probe() {
-      const { ref, visible, measuredHeight } = useViewVisibility('150% 0px')
+      const { ref, visible, measuredHeight } = useViewVisibility()
       seen.push({ visible, measuredHeight })
       return createElement('div', { ref })
     }
@@ -77,7 +77,7 @@ describe('useViewVisibility', () => {
   it('reports nothing measured when the body has zero height on the way out', () => {
     installFakeObserver()
 
-    const { result } = renderHook(() => useViewVisibility('150% 0px'))
+    const { result } = renderHook(() => useViewVisibility())
     act(() => {
       cb?.([entry(true)])
     })
@@ -95,7 +95,7 @@ describe('useViewVisibility', () => {
     let renders = 0
     function Probe() {
       renders++
-      const { ref } = useViewVisibility('150% 0px')
+      const { ref } = useViewVisibility()
       return createElement('div', { ref })
     }
     render(createElement(Probe))
