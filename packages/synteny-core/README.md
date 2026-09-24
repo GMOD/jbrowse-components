@@ -111,18 +111,19 @@ of two or more levels, since below that it degenerates to query or target.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorByMenuTarget.ts)
 
-### colorByScale
+### colorByScales
 
-The active mode's key as one color scale — what a view's `colorScales` lists,
-and so what `ChromeLegend` and `SvgLegend` draw. A ramp keeps its own end labels
-(identity's `0%` and `100%`, dN/dS's `≥2`) through `format`; chips are blended
-over the band's ground by the view's alpha, so the key matches the on-screen
-composited ribbon colors, subject to `legendChipColor`'s legibility floor; a
-mode with no fixed key (a color per sequence name) is a note row saying so.
+The active mode's key as color scales — what a view's `colorScales` lists, and
+so what `ChromeLegend` and `SvgLegend` draw. A ramp keeps its own end labels
+(identity's `0%` and `100%`, dN/dS's `≥2`) through `format`, and is followed by
+a no-value row once a row carried no value; chips are blended over the band's
+ground by the view's alpha, so the key matches the on-screen composited ribbon
+colors, subject to `legendChipColor`'s legibility floor; a mode with no fixed
+key (a color per sequence name) is a note row saying so.
 
 ```js
 // type signature
-(field: string, {…}?: {…} & { ...; }) => ColorScale
+(field: string, {…}?: {…} & { ...; }) => ColorScale[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorLegend.ts)

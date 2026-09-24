@@ -377,14 +377,14 @@ get channelSpecExamples() {
 },
 /**
  * #getter
- * `LegendMixin`'s hook: the scale of whichever preset coloring is active
+ * The key while features draw: the scale of whichever preset coloring is active
  * (impact tiers or SV classes), or else the key a color by a field
  * derives. SV-type shows the fixed class key and the grey everything
  * else takes; a copy-number state's rainbow color is the one thing it
  * paints and cannot list, the pure jexl having no present-set to
  * enumerate.
  */
-get colorScales(): ColorScale[] {
+get featureColorScales(): ColorScale[] {
   if (this.colorsByConsequenceImpact) {
     return [
       {
