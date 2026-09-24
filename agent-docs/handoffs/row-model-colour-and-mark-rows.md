@@ -1,6 +1,6 @@
 ---
 name: row-model-colour-and-mark-rows
-description: State of the row-model thread on 2026-09-24. Step 4's first half (ADR-160, one rowColor channel and one dealer) and rows on the mark display (ADR-157's fifth display) are on main, each probed by two review rounds whose defects are fixed, the third finding an undo that blanked a variant display for good; the colour half's zero-image-diff browser run was never recorded; eleven calls are Colin's, each answered by a page not yet made, and no visible flip lands before them. Read before touching a row display's colour, bands, the mark display's rows or the palette.
+description: State of the row-model thread on 2026-09-24. Step 4's first half (ADR-160, one rowColor channel and one dealer) and rows on the mark display (ADR-157's fifth display) are on main, each probed by two review rounds whose defects are fixed, the third finding an undo that blanked a variant display for good; the colour half's zero-image-diff browser run was never recorded; nine calls are Colin's, each answered by a page not yet made, and no visible flip lands before them; call 5 became the dialog redesign of ADR-163 and call 11 was answered as leave it. Read before touching a row display's colour, bands, the mark display's rows or the palette.
 ---
 
 # Row model: colour and mark rows
@@ -73,8 +73,6 @@ parity everywhere except the deviations ADR-160 already lists.
 2. Label boxes always tinted on multi-row and rows-layout wiggle (on/off pair).
 3. Variants' value order: first-seen versus count-ranked (the legend both ways).
 4. A field mapping versus a samplesTsv colour column (no fixture has one).
-5. The hand recolour under a field turning every row's colour into `name`
-   pairs, and what that costs a Color by (ADR-160's Consequences).
 6. Band chips on the row displays (the 1000 Genomes matrix by population; four
    figures move).
 7. A band field set over a clustered cohort: bands with an empty gutter and a
@@ -83,25 +81,12 @@ parity everywhere except the deviations ADR-160 already lists.
 9. `pile` or `stack` for the pileup channel replacing `encoding.row`; and
    whether hiding a band is config or stays volatile.
 10. One row per source as the mark display's default over a multi-BigWig.
-11. Rows past the pixels: `rows` on a field with thousands of values
-    (`rows: 'name'` on a gene track) draws sub-pixel rows and swatch-only
-    labels, with nothing on screen saying why. `facet` caps at forty with an
-    overflow band; `rows` has no cap and no notice. The Fable review's answer:
-    a notice, not a cap, since 127 Roadmap epigenomes as rows is a legitimate
-    track. Past one device pixel a row, draw the rows that fit and an overflow
-    band saying how many of how many.
 
-**On call 5, a recommendation.** While `rowColor` paints by an attribute, a
-dialog recolour could set that value's colour, an entry under the attribute,
-rather than turning every row into a `name` pair. That keeps one keyspace, the
-Color by and its legend, and needs no materialisation, which loses the
-Color by on the next reset (writing it costs 75–160 ms at 5,000 phased rows in
-a session). A per-sample tint would then be Color by → None, a plain rule the
-menu already shows. The dialog would need to show the painted colour under an
-attribute; today it lists `editableSources`, which carry none of the palette.
-The Fable review reached the same answer, and adds that the dialog's
-palettizer (`RowPalettizer`, per-row colours by an attribute) is the same
-operation spelled a second way, to retire into the Color by menu.
+**Answered 2026-09-24.** Call 5 (a recolour under a Color by) became a redesign
+of the arrangement dialog around the `rowColor` object, ADR-163. Call 11 (rows
+past the pixels): leave them as drawn, with no cap or runtime notice, since a
+dense stack such as 2,504 samples in 400 px is the picture a reader asked for;
+at most a hint where the setting is chosen.
 
 ## Next steps, in order
 

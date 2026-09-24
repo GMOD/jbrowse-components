@@ -47,10 +47,11 @@ axis.
 Color by → an attribute writes the object through `colorForField` and starts
 with no entries, and Color by → none is `scale: 'none'` keeping the field for
 the way back (ADR-135, ADR-154). Where `rowColor` paints by an attribute, a
-dialog recolour writes `field: 'name'` and every row's current colour as pairs,
-so the rows the reader left alone keep theirs: about 60 KB for 2,500 rows,
+dialog recolour wrote `field: 'name'` and every row's current colour as pairs,
+so the rows the reader left alone kept theirs: about 60 KB for 2,500 rows,
 twice that for phased haplotypes, and 75-160 ms to write the 5,000 phased
-pairs into a session.
+pairs into a session. ADR-163 replaced that: the dialog edits a value's colour
+under an attribute and reads a row's swatch only under `name`.
 
 **One dealer.** `dealRowColors(order, { domain, range }, palette)`, beside
 `pairedColorsOf`: a value `domain` lists takes its `range` entry, and every
@@ -122,14 +123,10 @@ calls for `freezeAnimations`; production pays one property read at load.
 - Over a config that sets row colours, a Color by hides them and so counts as
   custom: a reset or a rendering-mode switch returns the pairs and drops the
   Color by. No shipped config sets pairs on a variant display.
-- A dialog tint under a Color by the reader picked leaves no attribute to
-  return to: the menu reads None while the materialised pairs paint, and a
-  reset or a rendering-mode switch clears every row's colour.
-- A dialog recolour under an attribute palette shows at once; before, it was
-  stored and the palette beat it until Color by → none.
-- Past the palette's end the variant displays and the dialog's "Color by
-  attribute" wrap rather than draw `randomColor`, which only a track with more
-  than 40 distinct values reaches.
+- A dialog tint under a Color by the reader picked left no attribute to
+  return to, until ADR-163 made the dialog edit the attribute's values instead.
+- Past the palette's end the variant displays wrap rather than draw
+  `randomColor`, which only a track with more than 40 distinct values reaches.
 - On wiggle, under a colour per source, a subtrack named like a group takes
   that group's colour.
 
