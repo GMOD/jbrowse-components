@@ -2913,6 +2913,7 @@
         "useLocalStorage",
         "useScrollPortHeightVar",
         "useScrollPortOverflow",
+        "useStalled",
         "useWidthSetter"
       ],
       "worker": "real"
