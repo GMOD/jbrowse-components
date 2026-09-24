@@ -31,7 +31,7 @@ test('a numeric column reports its span, missing as -1', () => {
     { dn: 2 },
   ])
   expect(Array.from(attributes.dn!)).toEqual([0.5, -1, 2])
-  expect(attributeRanges.dn).toEqual({ min: 0.5, max: 2 })
+  expect(attributeRanges.dn).toEqual({ min: 0.5, max: 2, missing: true })
 })
 
 // The label list is the fetch's own dictionary: a feature's channel value
@@ -48,7 +48,7 @@ test('a text column interns labels in first-seen order and keeps the file color'
   expect(attributeRanges.group).toEqual({
     labels: ['B1', 'A1a'],
     colors: { B1: '#2F54E3', A1a: '#4DB5E3' },
-    unlabelled: true,
+    missing: true,
   })
 })
 
@@ -72,6 +72,6 @@ test('numbers seen before the first label become labels of their own', () => {
   expect(attributeRanges.group).toEqual({
     labels: ['7', 'x', '3'],
     colors: {},
-    unlabelled: true,
+    missing: true,
   })
 })

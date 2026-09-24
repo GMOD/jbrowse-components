@@ -3,7 +3,7 @@ import {
   derivedColorScale,
 } from '@jbrowse/core/util/legendCandidates'
 import {
-  colorByScale,
+  colorByScales,
   colorByShortLabel,
   colorSchemes,
   getColorBySwatch,
@@ -94,13 +94,15 @@ export function laneFieldKey(
  * What the ribbons' own colors mean as rows: a fixed pair in `strand` mode,
  * whose names are lane-relative and so this display's own; a text column's
  * mode through the one categorical swatch builder the synteny key reads,
- * including the row naming its unlabelled grey; and nothing otherwise, since
- * `default` paints one color and a measurement a ramp (`ribbonColorScale`).
+ * including the row naming the slot color its unlabelled pairs paint; and
+ * nothing otherwise, since `default` paints one color and a measurement a
+ * ramp (`ribbonColorScales`).
  */
 export function ribbonColorKey(
   field: string,
   attributeRanges: Record<string, AttributeRange> = {},
   hideUnlabelled = false,
+  slotColor?: string,
 ): CategoricalEntry[] {
   if (field === 'strand') {
     return [
@@ -119,7 +121,11 @@ export function ribbonColorKey(
   if (!resolveCategoricalMode(field, attributeRanges)) {
     return []
   }
-  const swatch = getColorBySwatch(field, { attributeRanges, hideUnlabelled })
+  const swatch = getColorBySwatch(field, {
+    attributeRanges,
+    hideUnlabelled,
+    missingColor: slotColor,
+  })
   return swatch?.kind === 'chips'
     ? swatch.chips.map(({ color, label, values, missing }) => ({
         value: color === undefined ? '' : (values?.[0] ?? label),
@@ -134,31 +140,47 @@ export function ribbonColorKey(
 /**
  * The ribbons' key in its own titled section, so a reader can tell a ribbon's
  * color from a glyph's: the synteny view's ramp where some ribbon carries the
- * value it paints, else `ribbonColorKey`'s rows
+ * value it paints, with the slot color a pair carrying none paints, else
+ * `ribbonColorKey`'s rows
  */
-export function ribbonColorScale(
+export function ribbonColorScales(
   field: string,
   attributeRanges: Record<string, AttributeRange>,
   domain?: string[],
   hideUnlabelled = false,
-): ColorScale {
+  slotColor?: string,
+): ColorScale[] {
   const continuous = resolveContinuousMode(field, attributeRanges)
   if (continuous && continuous.attribute in attributeRanges) {
     const label = colorByShortLabel(field)
-    return {
-      ...colorByScale(field, { attributeRanges }),
-      id: 'ribbons',
-      title: `Ribbon ${label[0]!.toLowerCase()}${label.slice(1)}`,
-    }
+    const [ramp, ...noValue] = colorByScales(field, {
+      attributeRanges,
+      missingColor: slotColor,
+    })
+    return [
+      {
+        ...ramp!,
+        id: 'ribbons',
+        title: `Ribbon ${label[0]!.toLowerCase()}${label.slice(1)}`,
+      },
+      ...noValue,
+    ]
   }
   const labels = resolveCategoricalMode(field, attributeRanges)
-  return {
-    kind: 'categorical',
-    id: 'ribbons',
-    title: 'Ribbon colors',
-    entries: ribbonColorKey(field, attributeRanges, hideUnlabelled),
-    // strand's pair is fixed and means what it is drawn in, so only the
-    // label rows take a declared order
-    domain: labels ? domain : undefined,
-  }
+  return [
+    {
+      kind: 'categorical',
+      id: 'ribbons',
+      title: 'Ribbon colors',
+      entries: ribbonColorKey(
+        field,
+        attributeRanges,
+        hideUnlabelled,
+        slotColor,
+      ),
+      // strand's pair is fixed and means what it is drawn in, so only the
+      // label rows take a declared order
+      domain: labels ? domain : undefined,
+    },
+  ]
 }

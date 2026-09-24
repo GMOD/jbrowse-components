@@ -210,7 +210,8 @@ export {
   NO_CIGAR_OPS,
   colorByFallbackNote,
   colorByShortLabel,
-  colorByScale,
+  colorByScales,
+  noValueScale,
   getColorBySwatch,
 } from './colorLegend.ts'
 export type {

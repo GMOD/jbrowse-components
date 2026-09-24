@@ -157,7 +157,7 @@ describe('a categorical column', () => {
 
     // a later fetch meeting an unlabelled row adds the grey it paints
     view.observeAttributeRanges({
-      group: { labels: ['B1'], colors: {}, unlabelled: true },
+      group: { labels: ['B1'], colors: {}, missing: true },
     })
     expect(labels()).toEqual(['C1', 'A1a', 'B1', NO_VALUE_LABEL])
 

@@ -190,16 +190,13 @@ export function createAttributeChannels(
       for (const { name, array, min, max, labels, labelColors } of list) {
         const kept = array.subarray(0, validCount)
         attributes[name] = kept
+        const missing = kept.some(v => v < 0) ? { missing: true } : {}
         if (labels.length > 0) {
-          attributeRanges[name] = {
-            labels,
-            colors: labelColors,
-            ...(kept.some(v => v < 0) ? { unlabelled: true } : {}),
-          }
+          attributeRanges[name] = { labels, colors: labelColors, ...missing }
         } else if (Number.isFinite(min)) {
           // an attribute nothing carried has no range to report, and reporting
           // [Infinity, -Infinity] would make a legend label nonsense
-          attributeRanges[name] = { min, max }
+          attributeRanges[name] = { min, max, ...missing }
         }
       }
       return { attributes, attributeRanges }

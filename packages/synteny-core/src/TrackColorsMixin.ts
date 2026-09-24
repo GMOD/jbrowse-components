@@ -4,7 +4,7 @@ import { coarseStripHTML } from '@jbrowse/core/util'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
-import { colorByScale } from './colorLegend.ts'
+import { colorByScales } from './colorLegend.ts'
 import { isAttributeLabels, presetRamp } from './colorRamps.ts'
 import { paintedField, syntenyColorFor } from './syntenyColorBy.ts'
 import {
@@ -31,7 +31,7 @@ function isColumnField(field: string) {
 }
 
 // A label list only ever gains labels, in the order they were first seen, and
-// a label's file color is whichever was seen first; an unlabelled row, once
+// a label's file color is whichever was seen first; a row with no value, once
 // seen, stays in the key the same way. A text column meeting a span from an
 // earlier fetch takes over: the column is categorical.
 function widenOne(prev: AttributeRange, range: AttributeRange) {
@@ -42,11 +42,11 @@ function widenOne(prev: AttributeRange, range: AttributeRange) {
     const newColors = Object.entries(range.colors).filter(
       ([l]) => prevLabels?.colors[l] === undefined,
     )
-    const unlabelled = !!(prevLabels?.unlabelled || range.unlabelled)
+    const missing = !!(prevLabels?.missing || range.missing)
     return prevLabels &&
       added.length === 0 &&
       newColors.length === 0 &&
-      unlabelled === !!prevLabels.unlabelled
+      missing === !!prevLabels.missing
       ? undefined
       : {
           labels: [...(prevLabels?.labels ?? []), ...added],
@@ -54,17 +54,22 @@ function widenOne(prev: AttributeRange, range: AttributeRange) {
             ...prevLabels?.colors,
             ...Object.fromEntries(newColors),
           },
-          ...(unlabelled ? { unlabelled } : {}),
+          ...(missing ? { missing } : {}),
         }
   }
-  return isAttributeLabels(prev)
-    ? undefined
-    : range.min < prev.min || range.max > prev.max
-      ? {
-          min: Math.min(prev.min, range.min),
-          max: Math.max(prev.max, range.max),
-        }
-      : undefined
+  if (isAttributeLabels(prev)) {
+    return undefined
+  }
+  const missing = !!(prev.missing || range.missing)
+  return range.min < prev.min ||
+    range.max > prev.max ||
+    missing !== !!prev.missing
+    ? {
+        min: Math.min(prev.min, range.min),
+        max: Math.max(prev.max, range.max),
+        ...(missing ? { missing } : {}),
+      }
+    : undefined
 }
 
 // Widen `into` by `ranges`, returning `into` ITSELF when nothing moved: this is
@@ -396,29 +401,31 @@ export function TrackColorsMixin() {
     .views(self => ({
       /**
        * #getter
-       * The active mode's key as its one color scale, or none for a mode
-       * without one. View-wide rather than per display because the key is one
-       * box for the whole view, and the ramp domain it labels is the view's.
+       * The active mode's key, or none for a mode without one. View-wide
+       * rather than per display because the key is one box for the whole
+       * view, and the ramp domain it labels is the view's.
        */
       get colorScales(): ColorScale[] {
         if (!self.hasLegendKey) {
           return []
         }
-        const scale = colorByScale(self.colorByField, {
+        const field = self.colorByField
+        // only a text column's rows are the reader's to order; a track
+        // palette and a ramp key what they key
+        return colorByScales(field, {
           pointBased: self.legendPointBased(),
           cigarOps: self.legendCigarOps(),
           trackChips: self.colorLegendChips,
           attributeRanges: self.attributeRanges,
           alpha: self.legendAlpha(),
           hideUnlabelled: self.hideUnlabelled,
-        })
-        // only a text column's rows are the reader's to order; a track
-        // palette and a ramp key what they key
-        return [
-          scale.kind === 'categorical' && isColumnField(self.colorByField)
+        }).map(scale =>
+          scale.kind === 'categorical' &&
+          scale.id === field &&
+          isColumnField(field)
             ? { ...scale, domain: [...self.colorDomain] }
             : scale,
-        ]
+        )
       },
     }))
     .views(self => ({

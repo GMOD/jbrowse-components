@@ -20,35 +20,12 @@ export interface GradientStop {
 }
 
 // Sample a ramp at 9 stops, drawn from the exact same toRgb the renderer uses
-// so the two can't disagree. Consumed as a CSS gradient (HTML legend) and as
-// SVG <stop>s (export legend).
+// so the two can't disagree.
 function rampStops(toRgb: (norm: number) => Rgb): GradientStop[] {
   return Array.from({ length: 9 }, (_, i) => ({
     offset: i / 8,
     color: rgbCss(toRgb(i / 8)),
   }))
-}
-
-function gradientCss(stops: GradientStop[]) {
-  const list = stops.map(s => `${s.color} ${Math.round(s.offset * 100)}%`)
-  return `linear-gradient(to right, ${list.join(',')})`
-}
-
-function ramp(
-  toRgb: (norm: number) => Rgb,
-  domain: [number, number],
-  minLabel: string,
-  maxLabel: string,
-): ColorBySwatchSpec {
-  const stops = rampStops(toRgb)
-  return {
-    kind: 'ramp',
-    background: gradientCss(stops),
-    stops,
-    domain,
-    minLabel,
-    maxLabel,
-  }
 }
 
 export interface ColorChip {
@@ -109,13 +86,12 @@ const DEFAULT_CIGAR_OPS: CigarOpMask = CIGAR_OP_I | CIGAR_OP_D
 export type ColorBySwatchSpec =
   | {
       kind: 'ramp'
-      background: string
       stops: GradientStop[]
       domain: [number, number]
-      // required: `ramp()` is the only producer and always names both ends, so a
-      // labelless ramp is not a state either legend has to render
       minLabel: string
       maxLabel: string
+      // the color a row with no value paints, present once a row had none
+      missingColor?: string
     }
   | { kind: 'chips'; chips: ColorChip[] }
 
@@ -187,6 +163,7 @@ export function getColorBySwatch(
     trackChips,
     attributeRanges,
     hideUnlabelled = false,
+    missingColor,
   }: {
     pointBased?: boolean
     cigarOps?: CigarOpMask
@@ -199,6 +176,10 @@ export function getColorBySwatch(
     attributeRanges?: Record<string, AttributeRange>
     // the unlabelled rows draw at zero alpha, so the key names no grey
     hideUnlabelled?: boolean
+    // what a row with no value paints, where the painter uses one color for
+    // both kinds of mode; by default a ramp's is the match red and a text
+    // column's the no-category grey, as `colorFunctions` paints them
+    missingColor?: string
   } = {},
 ): ColorBySwatchSpec | undefined {
   // dotplot paints flat points and never draws CIGAR ops
@@ -241,12 +222,16 @@ export function getColorBySwatch(
   // which is what the end labels alone cannot say.
   const continuous = resolveContinuousMode(field, attributeRanges)
   if (continuous) {
-    return ramp(
-      continuous.toRgb,
-      [continuous.minValue ?? 0, continuous.maxValue],
-      continuous.minLabel,
-      continuous.maxLabel,
-    )
+    return {
+      kind: 'ramp',
+      stops: rampStops(continuous.toRgb),
+      domain: [continuous.minValue ?? 0, continuous.maxValue],
+      minLabel: continuous.minLabel,
+      maxLabel: continuous.maxLabel,
+      ...(attributeRanges?.[continuous.attribute]?.missing
+        ? { missingColor: missingColor ?? defaultCigar.M }
+        : {}),
+    }
   }
   const categorical = resolveCategoricalMode(field, attributeRanges)
   if (!categorical) {
@@ -263,11 +248,11 @@ export function getColorBySwatch(
       // The grey the column's unlabelled rows paint, once any fetch has met
       // one, as a label is listed once any fetch has met it. The mode that
       // hides those rows draws no grey.
-      ...(hideUnlabelled || !categorical.unlabelled
+      ...(hideUnlabelled || !categorical.missing
         ? []
         : [
             {
-              color: NO_CATEGORY_COLOR,
+              color: missingColor ?? NO_CATEGORY_COLOR,
               label: NO_VALUE_LABEL,
               missing: true,
             },
@@ -278,50 +263,65 @@ export function getColorBySwatch(
 
 /**
  * #api
- * The active mode's key as one color scale — what a view's `colorScales`
- * lists, and so what `ChromeLegend` and `SvgLegend` draw. A ramp keeps its
- * own end labels (identity's `0%` and `100%`, dN/dS's `≥2`) through `format`;
- * chips are blended over the band's ground by the view's alpha, so the key
- * matches the on-screen composited ribbon colors, subject to
- * `legendChipColor`'s legibility floor; a mode with no fixed key (a color per
- * sequence name) is a note row saying so.
+ * The active mode's key as color scales — what a view's `colorScales` lists,
+ * and so what `ChromeLegend` and `SvgLegend` draw. A ramp keeps its own end
+ * labels (identity's `0%` and `100%`, dN/dS's `≥2`) through `format`, and is
+ * followed by a no-value row once a row carried no value; chips are blended
+ * over the band's ground by the view's alpha, so the key matches the
+ * on-screen composited ribbon colors, subject to `legendChipColor`'s
+ * legibility floor; a mode with no fixed key (a color per sequence name) is a
+ * note row saying so.
  */
-export function colorByScale(
+export function colorByScales(
   field: string,
   {
     alpha = 1,
     ...opts
   }: Parameters<typeof getColorBySwatch>[1] & { alpha?: number } = {},
-): ColorScale {
+): ColorScale[] {
   const swatch = getColorBySwatch(field, opts)
   const title = colorByShortLabel(field)
-  if (swatch?.kind === 'ramp') {
-    const { domain, minLabel, maxLabel, stops } = swatch
-    return {
-      kind: 'ramp',
-      id: field,
-      title,
-      domain,
-      stops,
-      format: v => (v === domain[0] ? minLabel : maxLabel),
-    }
-  }
   const ground = bandGroundColor()
+  const chipColor = (color: string) => legendChipColor(color, alpha, ground)
+  if (swatch?.kind === 'ramp') {
+    const { domain, minLabel, maxLabel, stops, missingColor } = swatch
+    return [
+      {
+        kind: 'ramp',
+        id: field,
+        title,
+        domain,
+        stops,
+        format: v => (v === domain[0] ? minLabel : maxLabel),
+      },
+      ...(missingColor === undefined
+        ? []
+        : [noValueScale(chipColor(missingColor))]),
+    ]
+  }
+  return [
+    {
+      kind: 'categorical',
+      id: field || 'default',
+      title,
+      entries: swatch
+        ? swatch.chips.map(({ color, label, values, missing }) => ({
+            value: values?.[0] ?? label,
+            ...(values ? { values } : {}),
+            label,
+            color: color === undefined ? undefined : chipColor(color),
+            ...(missing ? { missing } : {}),
+          }))
+        : [{ value: 'note', label: colorByFallbackNote(field) }],
+    },
+  ]
+}
+
+/** The row naming the color a ramp's value-less rows paint, beside the ramp. */
+export function noValueScale(color: string): ColorScale {
   return {
     kind: 'categorical',
-    id: field || 'default',
-    title,
-    entries: swatch
-      ? swatch.chips.map(({ color, label, values, missing }) => ({
-          value: values?.[0] ?? label,
-          ...(values ? { values } : {}),
-          label,
-          color:
-            color === undefined
-              ? undefined
-              : legendChipColor(color, alpha, ground),
-          ...(missing ? { missing } : {}),
-        }))
-      : [{ value: 'note', label: colorByFallbackNote(field) }],
+    id: 'noValue',
+    entries: [{ value: '', label: NO_VALUE_LABEL, color, missing: true }],
   }
 }

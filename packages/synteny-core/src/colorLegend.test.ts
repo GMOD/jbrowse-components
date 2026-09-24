@@ -7,9 +7,10 @@ import {
   CIGAR_OP_N,
   NO_CIGAR_OPS,
   colorByFallbackNote,
-  colorByScale,
+  colorByScales,
   getColorBySwatch,
 } from './colorLegend.ts'
+import { colorSchemes } from './colorUtils.ts'
 
 test('continuous modes get a gradient ramp with bounded domain labels', () => {
   const identity = getColorBySwatch('identity')
@@ -17,7 +18,7 @@ test('continuous modes get a gradient ramp with bounded domain labels', () => {
   if (identity?.kind === 'ramp') {
     expect(identity.minLabel).toBe('0%')
     expect(identity.maxLabel).toBe('100%')
-    expect(identity.background).toMatch(/^linear-gradient/)
+    expect(identity.stops.length).toBeGreaterThan(2)
   }
 
   const mapq = getColorBySwatch('mappingQual')
@@ -122,7 +123,7 @@ test('a categorical attribute lists a chip per label', () => {
       group: {
         labels: ['B1', 'A1a'],
         colors: { A1a: '#4DB5E3' },
-        unlabelled: true,
+        missing: true,
       },
     },
   })
@@ -152,7 +153,7 @@ test('a categorical attribute lists a chip per label', () => {
             `#${(i + 1).toString(16).padStart(6, '0')}`,
           ]),
         ),
-        unlabelled: true,
+        missing: true,
       },
     },
   })
@@ -186,13 +187,13 @@ test('labels sharing a color are one chip naming each', () => {
     DUP: '#00bbff',
     INVDP: '#00bbff',
   }
-  const scale = colorByScale('type', {
+  const [scale] = colorByScales('type', {
     attributeRanges: {
       type: { labels: ['SYN', 'INVDP', 'TRANS', 'DUP', 'INVTR'], colors },
     },
     hideUnlabelled: true,
   })
-  expect(scale.kind === 'categorical' && scale.entries).toEqual([
+  expect(scale!.kind === 'categorical' && scale!.entries).toEqual([
     expect.objectContaining({ value: 'SYN', label: 'SYN' }),
     expect.objectContaining({
       value: 'DUP',
@@ -210,28 +211,47 @@ test('labels sharing a color are one chip naming each', () => {
 // The scale is the swatch spec in the vocabulary the shared key draws: a ramp
 // keeps its own end labels through `format`, chips become entries composited
 // by the view's alpha, and a mode with no fixed key is one note row.
-test('colorByScale carries a ramp with its own end labels', () => {
-  const scale = colorByScale('identity')
-  expect(scale.kind).toBe('ramp')
-  if (scale.kind === 'ramp') {
-    expect(scale.title).toBe('Identity')
-    expect(scale.domain).toEqual([0, 1])
-    expect(scale.format!(0)).toBe('0%')
-    expect(scale.format!(1)).toBe('100%')
-    expect(scale.stops.length).toBeGreaterThan(2)
+test('colorByScales carries a ramp with its own end labels', () => {
+  const scales = colorByScales('identity')
+  expect(scales).toHaveLength(1)
+  const [scale] = scales
+  expect(scale!.kind).toBe('ramp')
+  if (scale!.kind === 'ramp') {
+    expect(scale!.title).toBe('Identity')
+    expect(scale!.domain).toEqual([0, 1])
+    expect(scale!.format!(0)).toBe('0%')
+    expect(scale!.format!(1)).toBe('100%')
+    expect(scale!.stops.length).toBeGreaterThan(2)
   }
 })
 
-test('colorByScale composites chips by alpha and notes the keyless modes', () => {
-  const chips = colorByScale('', { pointBased: true, alpha: 0.5 })
-  expect(chips.kind).toBe('categorical')
-  if (chips.kind === 'categorical') {
-    expect(chips.entries.map(e => e.label)).toEqual(['alignment'])
-    expect(chips.entries[0]!.color).toMatch(/^rgb\(/)
+// A pair with no dN/dS paints the match red, which the ramp's top sits close
+// to, so the key names it beside the ramp once some pair had none.
+test('a ramp over rows with no value keys the color they paint', () => {
+  const [, noValue] = colorByScales('dnds', {
+    attributeRanges: { dnds: { min: 0.1, max: 3, missing: true } },
+  })
+  expect(noValue).toMatchObject({
+    kind: 'categorical',
+    entries: [
+      { label: NO_VALUE_LABEL, color: colorSchemes.default.cigarColors.M },
+    ],
+  })
+  expect(
+    colorByScales('dnds', { attributeRanges: { dnds: { min: 0.1, max: 3 } } }),
+  ).toHaveLength(1)
+})
+
+test('colorByScales composites chips by alpha and notes the keyless modes', () => {
+  const [chips] = colorByScales('', { pointBased: true, alpha: 0.5 })
+  expect(chips!.kind).toBe('categorical')
+  if (chips!.kind === 'categorical') {
+    expect(chips!.entries.map(e => e.label)).toEqual(['alignment'])
+    expect(chips!.entries[0]!.color).toMatch(/^rgb\(/)
   }
-  const query = colorByScale('query')
-  if (query.kind === 'categorical') {
-    expect(query.entries).toEqual([
+  const [query] = colorByScales('query')
+  if (query!.kind === 'categorical') {
+    expect(query!.entries).toEqual([
       { value: 'note', label: colorByFallbackNote('query') },
     ])
   }

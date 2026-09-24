@@ -10,7 +10,7 @@ import {
   laneColorKey,
   laneFieldKey,
   ribbonColorKey,
-  ribbonColorScale,
+  ribbonColorScales,
 } from './legend.ts'
 
 import type { GlyphHit } from './multiwayRenderTypes.ts'
@@ -128,19 +128,46 @@ test('the other two ribbon modes key no rows', () => {
 // A ramp mode keys the synteny view's ramp under the ribbons' own title, and
 // keys nothing where no loaded pair carries the value it paints
 test('a measurement keys the ramp it paints, and nothing where no ribbon carries one', () => {
-  const scale = ribbonColorScale('identity', { identity: { min: 0.5, max: 1 } })
-  expect(scale.kind).toBe('ramp')
-  expect(scale.id).toBe('ribbons')
-  expect(scale.title).toBe('Ribbon identity')
-  expect(ribbonColorScale('dnds', { dnds: { min: 0, max: 3 } }).title).toBe(
-    'Ribbon dN/dS',
-  )
-  expect(ribbonColorScale('identity', {})).toEqual({
-    kind: 'categorical',
-    id: 'ribbons',
-    title: 'Ribbon colors',
-    entries: [],
+  const [scale] = ribbonColorScales('identity', {
+    identity: { min: 0.5, max: 1 },
   })
+  expect(scale!.kind).toBe('ramp')
+  expect(scale!.id).toBe('ribbons')
+  expect(scale!.title).toBe('Ribbon identity')
+  expect(
+    ribbonColorScales('dnds', { dnds: { min: 0, max: 3 } })[0]!.title,
+  ).toBe('Ribbon dN/dS')
+  expect(ribbonColorScales('identity', {})).toEqual([
+    {
+      kind: 'categorical',
+      id: 'ribbons',
+      title: 'Ribbon colors',
+      entries: [],
+    },
+  ])
+})
+
+// A pair with no value keeps the slot color, so that is the color its row
+// names, beside the ramp or among the labels
+test('a pair with no value is keyed in the slot color it paints', () => {
+  const slot = 'rgba(130,130,130,0.3)'
+  const [, noValue] = ribbonColorScales(
+    'identity',
+    { identity: { min: 0.5, max: 1, missing: true } },
+    undefined,
+    false,
+    slot,
+  )
+  expect(noValue).toMatchObject({
+    entries: [{ label: NO_VALUE_LABEL, color: slot }],
+  })
+  const rows = ribbonColorKey(
+    'group',
+    { group: { labels: ['B1'], colors: {}, missing: true } },
+    false,
+    slot,
+  )
+  expect(rows.at(-1)!.color).toBe(slot)
 })
 
 // A text column keys one row per label, with the file color where the file
@@ -151,7 +178,7 @@ test('an attribute ribbon mode keys a row per label', () => {
     group: {
       labels: ['B1', 'A1a'],
       colors: { A1a: '#4DB5E3' },
-      unlabelled: true,
+      missing: true,
     },
   })
   expect(rows.map(r => r.label)).toEqual(['B1', 'A1a', NO_VALUE_LABEL])
@@ -170,7 +197,7 @@ test('an attribute ribbon mode keys a row per label', () => {
       colors: Object.fromEntries(
         labels.map((l, i) => [l, `#${(i + 1).toString(16).padStart(6, '0')}`]),
       ),
-      unlabelled: true,
+      missing: true,
     },
   })
   expect(many.length).toBe(32)
@@ -180,7 +207,7 @@ test('an attribute ribbon mode keys a row per label', () => {
 // The mode that draws the unlabelled rows at zero alpha names no grey: there
 // is none on screen for the row to point at.
 test('hiding the unlabelled rows drops the no-value row', () => {
-  const ranges = { group: { labels: ['B1'], colors: {}, unlabelled: true } }
+  const ranges = { group: { labels: ['B1'], colors: {}, missing: true } }
   expect(ribbonColorKey('group', ranges, true).map(r => r.label)).toEqual([
     'B1',
   ])

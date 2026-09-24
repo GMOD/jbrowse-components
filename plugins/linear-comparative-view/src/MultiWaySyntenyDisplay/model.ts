@@ -96,7 +96,7 @@ import {
   rowAssembliesOf,
   tickIntervalFor,
 } from './layoutMultiWay.ts'
-import { laneColorKey, laneFieldKey, ribbonColorScale } from './legend.ts'
+import { laneColorKey, laneFieldKey, ribbonColorScales } from './legend.ts'
 import { multiWayTrackMenuItems } from './menus.ts'
 import {
   BANDS_KEY,
@@ -2006,11 +2006,12 @@ export function stateModelFactory(
       get colorScales(): ColorScale[] {
         const scales: ColorScale[] = [
           ...self.geneColorScales,
-          ribbonColorScale(
+          ...ribbonColorScales(
             self.ribbonColorField,
             self.ribbonAttributeRanges,
             self.ribbonColorDomain,
             self.hideUnlabelled,
+            self.ribbonColor,
           ),
         ]
         return scales.filter(scale => !colorScaleIsEmpty(scale))
