@@ -187,8 +187,9 @@ function aliasColumn(display: { rowAlias?: unknown }): CensusColumn {
 
 /**
  * Runs of the named reactions (`namedAutorun`) recorded on any of `owners`,
- * by name. Other reactions — the view's, React's, the census's own — are left
- * out.
+ * told apart by name alone: a display outside `owners` running a reaction of
+ * the same name counts too, and the view's, React's and the census's own do
+ * not.
  */
 export function reactionColumn(owners: readonly object[]): CensusColumn {
   const runs = new Map<string, number>()

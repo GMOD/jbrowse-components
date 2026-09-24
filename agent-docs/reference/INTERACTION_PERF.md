@@ -557,9 +557,10 @@ nothing, and every count is an integer on a fake clock. The census cannot see
 cost inside one run beyond the alias calls: the phased variant display's 1.7×
 arrangement regression moved an arranged arrival's `alias` from 20 to 32 while
 `arrange` stayed 1, and a memoized alias counts the same as one that re-parses.
-It sees no React render, no GPU upload or draw (jsdom installs no render
-autoruns) and no millisecond, and it tells reactions apart by name alone. The
-render census and `probe-zoom-churn.ts` above remain the instruments for those.
+It sees no React render, no upload or draw (the two render autoruns install
+when a backend attaches, which no test environment does) and no millisecond,
+and it tells reactions apart by name alone. The render census and
+`probe-zoom-churn.ts` above remain the instruments for those.
 
 ## The stop-token probe, for whoever finds it in a trace next
 
