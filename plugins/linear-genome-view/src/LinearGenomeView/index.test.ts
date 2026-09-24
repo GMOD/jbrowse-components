@@ -13,6 +13,7 @@ import {
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { resolveSubMenu } from '@jbrowse/core/ui'
 import {
+  SimpleFeature,
   getSession,
   statusFraction,
   statusMessageText,
@@ -39,7 +40,7 @@ import type { LinearGenomeViewModel } from './index.ts'
 import type { HighlightType, InitState } from './types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { RpcStatus } from '@jbrowse/core/util'
+import type { Feature, RpcStatus } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel
 
@@ -123,6 +124,7 @@ function initialize() {
       statusMessage: undefined as string | undefined,
       statusProgress: undefined as number | undefined,
       statusSource: undefined as string | undefined,
+      cytobands: undefined as Feature[] | undefined,
     }))
     .views(() => ({
       // mirrors the real model: resolves an alias or any casing to the
@@ -152,6 +154,9 @@ function initialize() {
     }))
     .actions(self => ({
       async load() {},
+      setCytobands(cytobands: Feature[]) {
+        self.cytobands = cytobands
+      },
       setStatus(status?: RpcStatus) {
         self.statusMessage = statusMessageText(status)
         self.statusProgress = statusFraction(status)
@@ -3280,6 +3285,31 @@ describe('showsWholeChromosome', () => {
 
   test('false for multiple regions', () => {
     expect(makeView(volvoxDisplayedRegions).showsWholeChromosome).toBe(false)
+  })
+
+  test('cytobands show only on a chromosome the file has bands for', () => {
+    const { Session, LinearGenomeModel } = initialize()
+    const session = Session.create({ configuration: {} })
+    const model = session.setView(
+      LinearGenomeModel.create({ type: 'LinearGenomeView' }),
+    )
+    model.setWidth(800)
+    model.setDisplayedRegions([volvoxDisplayedRegions[0]!])
+    session.assemblyManager.get('volvox')!.setCytobands([
+      new SimpleFeature({
+        uniqueId: 'band',
+        refName: 'ctgB',
+        start: 0,
+        end: 6079,
+        gieStain: 'gneg',
+      }),
+    ])
+    model.setShowCytobands(true)
+    expect(model.canShowCytobands).toBe(false)
+    expect(model.cytobandOffset).toBe(0)
+    model.setDisplayedRegions([volvoxDisplayedRegions[1]!])
+    expect(model.canShowCytobands).toBe(true)
+    expect(model.cytobandOffset).toBeGreaterThan(0)
   })
 })
 

@@ -63,7 +63,7 @@ import { observable, when } from 'mobx'
 
 import { handleSelectedRegion, navToOption } from '../searchUtils.ts'
 import { doAfterAttach } from './afterAttach.ts'
-import { shouldSwapTracks } from './components/util.ts'
+import { getCytobands, shouldSwapTracks } from './components/util.ts'
 import {
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
@@ -1959,31 +1959,32 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        * an ideogram only reads correctly against an entire chromosome: on a
        * sub-region it is a meaningless slice of bands, and the centromere shows
-       * up as a lone half-triangle
+       * up as a lone half-triangle. The chromosome needs bands of its own too:
+       * a cytoband file often lists only the main chromosomes, not chrM or the
+       * unplaced scaffolds
        */
       get canShowCytobands() {
-        return this.showsWholeChromosome && this.anyCytobandsExist
+        const region = self.displayedRegions[0]
+        return (
+          this.showsWholeChromosome &&
+          !!region &&
+          getCytobands(
+            getSession(self).assemblyManager.get(region.assemblyName),
+            region.refName,
+          ).length > 0
+        )
       },
       /**
        * #getter
        * the `showCytobands` setting gated by whether cytobands can be shown at
-       * all (whole chromosome + data present) and by the header overview they
-       * draw in being on, which the SVG export follows too
+       * all (whole chromosome with bands of its own) and by the header
+       * overview they draw in being on, which the SVG export follows too
        */
       get effectiveShowCytobands() {
         return (
           this.canShowCytobands &&
           self.showCytobands &&
           !self.hideHeaderOverview
-        )
-      },
-      /**
-       * #getter
-       */
-      get anyCytobandsExist() {
-        const { assemblyManager } = getSession(self)
-        return self.assemblyNames.some(
-          a => assemblyManager.get(a)?.cytobands?.length,
         )
       },
       /**
