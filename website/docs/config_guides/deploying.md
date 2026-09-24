@@ -1,8 +1,8 @@
 ---
 title: Deploying JBrowse Web
 description:
-  Serving JBrowse Web as a static site, and scripting its config in a CI/CD
-  pipeline
+  Serving JBrowse Web as a static site, the server settings that make it load
+  fast, and scripting its config in a CI/CD pipeline
 guide_category: Deployment
 ---
 
@@ -65,11 +65,137 @@ inputs, as the script above does from the assembly and sample name. Changing or
 deleting an id breaks any saved session that references it, and the whole
 session fails to load.
 
+## Server settings that make JBrowse load faster
+
+JBrowse Web loads as dozens of small script files fetched in several rounds, and
+the load time goes mostly to waiting on the server between rounds. Two server
+settings cut most of those waits: letting browsers keep the scripts, and serving
+over HTTP/2.
+
+### Let browsers keep the scripts
+
+Every file under `static/` carries a hash of its contents in its name
+(`static/js/7889.f7e060b7.chunk.js`), so a name never comes to mean different
+bytes. Browsers can keep those files for a year without asking again. The two
+files that do change in place, `index.html` and `config.json`, should be checked
+on every visit, so a new release or a config edit shows up at once:
+
+| Path                        | `Cache-Control`                       |
+| --------------------------- | ------------------------------------- |
+| `static/*`                  | `public, max-age=31536000, immutable` |
+| `index.html`, `config.json` | `no-cache`                            |
+
+Without a `Cache-Control` header the browser guesses how long each file stays
+fresh from how old it is. Right after a deploy the guess is short, so every
+visit asks the server about every script again, one round trip each, and the
+data worker asks again for files the page has just fetched.
+
+`no-cache` also replaces the
+[cache-buster](/docs/config_guides/avoiding_stale_config) for a server that
+caches `config.json` too long. The cache-buster also adds a random query string
+to every runtime plugin loaded without an integrity hash, so each visit
+downloads those plugins again, where `no-cache` costs one short request that the
+server answers with `304 Not Modified`.
+
+Nginx, for JBrowse at the site root:
+
+```nginx
+location /static/ {
+    add_header Cache-Control "public, max-age=31536000, immutable";
+}
+location ~ (^/$|index\.html$|config\.json$) {
+    add_header Cache-Control "no-cache";
+}
+```
+
+An `add_header` inside a `location` replaces every `add_header` from the
+enclosing `server` block, so repeat any CORS headers there.
+
+Apache 2.4 with `mod_headers`, in the virtual host or an `.htaccess` next to
+`index.html`:
+
+```apache
+<If "%{REQUEST_URI} =~ m#/static/#">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+</If>
+<FilesMatch "^(index\.html|config\.json)$">
+    Header set Cache-Control "no-cache"
+</FilesMatch>
+```
+
+Caddy:
+
+```caddy
+@static path /static/*
+header @static Cache-Control "public, max-age=31536000, immutable"
+@entry path / /index.html /config.json
+header @entry Cache-Control "no-cache"
+```
+
+S3, with or without CloudFront in front. Upload `index.html` last, so no visitor
+gets a page naming scripts that are not there yet:
+
+```bash
+aws s3 sync static s3://my-bucket/jbrowse/static \
+  --cache-control "public, max-age=31536000, immutable"
+aws s3 sync . s3://my-bucket/jbrowse \
+  --exclude "static/*" --exclude index.html --exclude config.json
+aws s3 cp config.json s3://my-bucket/jbrowse/ --cache-control no-cache
+aws s3 cp index.html s3://my-bucket/jbrowse/ --cache-control no-cache
+```
+
+Netlify and Cloudflare Pages read a `_headers` file at the site root:
+
+```text
+/static/*
+  Cache-Control: public, max-age=31536000, immutable
+/
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/config.json
+  Cache-Control: no-cache
+```
+
+GitHub Pages sends `max-age=600` on everything and does not let a site change
+it.
+
+To check, reload the page with dev tools' Network tab open: the scripts should
+show "(memory cache)" or "(disk cache)" and `index.html` a `304`.
+
+### Serve over HTTP/2
+
+Over HTTP/1.1 a browser opens at most six connections to a host, so a round of
+dozens of scripts waits in line. HTTP/2 sends them together over one connection.
+CDNs and managed hosts use it already. Browsers only speak HTTP/2 over HTTPS, so
+it needs a certificate. Nginx 1.25.1 and later:
+
+```nginx
+listen 443 ssl;
+http2 on;
+```
+
+Older Nginx takes `listen 443 ssl http2;`. Apache needs `mod_http2` and:
+
+```apache
+Protocols h2 http/1.1
+```
+
+### Compress the app, never the data
+
+The
+[gzip settings](/docs/config_guides/serving_data#configure-gzip-for-text-never-for-bgzf)
+for text apply to the app's scripts too. Brotli, where the server or CDN offers
+it, is smaller still for JavaScript; on CloudFront it is a checkbox in the cache
+policy. Keep both off BGZF data files, for the reasons on that page.
+
 ## Cache-busting in index.html
 
-`config.json` is fetched before it can configure anything, so the
+On a host that cannot set `Cache-Control` on `config.json`, the
 [cache-buster](/docs/config_guides/avoiding_stale_config) is a one-line
-`<script>` in `index.html` for a build script to inject.
+`<script>` in `index.html` for a build script to inject. `config.json` is
+fetched before it can configure anything, so the setting has to live in
+`index.html`.
 
 ## See also
 

@@ -15,6 +15,12 @@ request, bypassing the browser cache:
 </script>
 ```
 
+The flag also adds a random query string to every runtime plugin loaded without
+an integrity hash, so each visit downloads those plugins again. Where the server
+can set headers, `Cache-Control: no-cache` on `config.json` keeps it fresh
+without that cost
+([cache headers](/docs/config_guides/deploying#let-browsers-keep-the-scripts)).
+
 ## Loading config.json from another path
 
 A `<head>` script like the one above moves the config JBrowse loads by default,
