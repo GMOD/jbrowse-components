@@ -175,8 +175,9 @@
       },
       "displays": [
         {
-          "type": "LinearMultiSampleVariantMatrixDisplay",
-          "displayId": "RSV-A-genotypes-LinearMultiSampleVariantMatrixDisplay",
+          "type": "LinearMultiSampleVariantDisplay",
+          "variantLayout": "columns",
+          "displayId": "RSV-A-genotypes-LinearMultiSampleVariantDisplay",
           "height": 400,
           "rowColor": "region"
         }
@@ -215,8 +216,8 @@
           "configuration": "RSV-A-genotypes",
           "displays": [
             {
-              "type": "LinearMultiSampleVariantMatrixDisplay",
-              "configuration": "RSV-A-genotypes-LinearMultiSampleVariantMatrixDisplay"
+              "type": "LinearMultiSampleVariantDisplay",
+              "configuration": "RSV-A-genotypes-LinearMultiSampleVariantDisplay"
             }
           ]
         },

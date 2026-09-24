@@ -2,8 +2,6 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import regularConfigFactory from '../LinearMultiSampleVariantDisplay/configSchema.ts'
 import regularStateModelFactory from '../LinearMultiSampleVariantDisplay/model.ts'
-import matrixConfigFactory from '../LinearMultiSampleVariantMatrixDisplay/configSchema.ts'
-import matrixStateModelFactory from '../LinearMultiSampleVariantMatrixDisplay/model.ts'
 import {
   DEFAULT_VARIANT_LANE_HEIGHT,
   MAX_VARIANT_LANE_HEIGHT,
@@ -21,11 +19,15 @@ function regularDisplay() {
 }
 
 function matrixDisplay() {
-  const type = 'LinearMultiSampleVariantMatrixDisplay'
-  const configSchema = matrixConfigFactory()
-  return matrixStateModelFactory(configSchema).create({
+  const type = 'LinearMultiSampleVariantDisplay'
+  const configSchema = regularConfigFactory()
+  return regularStateModelFactory(configSchema).create({
     type,
-    configuration: configSchema.create({ type, displayId: 'test-matrix' }),
+    configuration: configSchema.create({
+      type,
+      displayId: 'test-matrix',
+      variantLayout: 'columns',
+    }),
   })
 }
 

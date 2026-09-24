@@ -267,7 +267,7 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
 - **The pangenome tutorial teaches four linear projections** of a pggb graph,
   because JBrowse has no graph-native adapter: synteny (wfmash PAF → `make-pif`
   → `MultiGenomeIndexedPAFAdapter`), variants (`pggb -V` VCF →
-  `LinearMultiSampleVariantMatrixDisplay`), MAF (`pggb -M` → re-root →
+  `LinearMultiSampleVariantDisplay` in columns), MAF (`pggb -M` → re-root →
   `BgzipTaffyAdapter`), and depth/PAV bigWigs.
 - **73% of pggb `-M` MAF rows violate the MAF spec** — smoothxg (v0.8.2,
   `poa-length-target 700,1100`) pads each POA block's rows past the declared

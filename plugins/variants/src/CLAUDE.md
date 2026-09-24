@@ -119,12 +119,10 @@ the anchored haplotype sort.
   override, and `activeFilters()` is the only thing anything reads. The property
   used to be called `jexlFilters` and shadowed the slot, so a config declaring
   filters on one of these tracks did nothing and said nothing.
-- **The tier is per display, not per setting**: `referenceDrawingMode` is a
-  fetch input for regular and a render input for the matrix, so the base carries
-  only what both send.
+- **The tier is per layout, not per setting**: `referenceDrawingMode` is a fetch
+  input at genomic positions and a render input in columns, so `rpcProps` sends
+  it only in the first.
 - A drag-resized dimension goes on a config slot; the node outlives the display.
-- **Matrix mode is zoom-cache-strict** and fetches visible-only; regular is
-  neither.
 
 ## The arrangement is `rows` and `rowColor`, by row name
 
@@ -189,11 +187,24 @@ display snapshot, or a `domain` in its config, fails the load**, naming `rows`:
 MST drops an undeclared key in silence, and the track would otherwise open
 unarranged.
 
-## Which display: the matrix is for genotype PATTERN, not spans
+## One display, two layouts: `variantLayout`
 
-The matrix lays columns out by feature **index** at equal widths. **SVs go in
-the regular display**, whose `showVariantLane` and `showInsertionGlyphs` give an
-insertion the length its reference span cannot express.
+The x position is a setting of the one display, `'genomic'` or `'columns'`, the
+choice the LD display makes under the same slot, not a second display type. At
+genomic positions the worker ships cells per displayed region
+(`cellData.mode: 'regular'`); in columns it ships one matrix over the visible
+regions, laid out by feature **index** at equal widths (`'matrix'`), fetched
+visible-only and zoom-strict. The layout is a fetch input (`rpcProps().mode`).
+
+Each layout mounts its own `DisplayChrome` and mark backend (`matrix/` holds the
+columns' body, marks and export). **The upload lifecycle installs once per
+model**, so `startRenderingBackend` tags which backend is attached
+(`backendDrawsColumns`) and the one spec sends each backend only the payload it
+draws; across a switch the old backend is sent an empty map until the other
+chrome's backend arrives.
+
+Columns are for genotype PATTERN, not spans: the lane, the insertion markers and
+the reference toggle are genomic-position features and answer off in columns.
 
 ## Bands above the rows
 
@@ -204,8 +215,8 @@ the painter filling it read that one function**.
   connector zone alone, not an offset.
 - **A band comes out of `availableHeight`, never `height`.**
 - **Off spends 0 px, not a clamped minimum**, or every committed figure moves.
-- **The slots live on the display that can paint the band**, not the shared
-  schema.
+- **A band a layout cannot paint answers 0 there** (`lineZoneHeight` at genomic
+  positions, the lane in columns), whatever the config says.
 - A drag-resized height goes on a config slot, clamped via `clampBandHeight`
   (`@jbrowse/core/util/bandHeight`, shared with the alignments and MAF bands).
   `boundBandHeight` is its read-time twin: a _stated_ height — config, menu,

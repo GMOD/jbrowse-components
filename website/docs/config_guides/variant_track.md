@@ -75,11 +75,11 @@ preprocessing:
 
 ## MultiVariant display configuration
 
-`LinearMultiSampleVariantDisplay` and `LinearMultiSampleVariantMatrixDisplay`
-draw a multi-sample VCF as a genotype heatmap, one row per sample. Neither is
-the track's default display, so preset their slots in a `displays` array, one
-block per display type. The slots both share are on
-[](/docs/config/sharedvariantdisplay).
+`LinearMultiSampleVariantDisplay` draws a multi-sample VCF as a genotype
+heatmap, one row per sample, each variant at its genomic position or, with
+`variantLayout: 'columns'`, in equal-width columns. It is not the track's
+default display, so preset its slots in a `displays` array; they are listed on
+[](/docs/config/linearmultisamplevariantdisplay).
 
 ### Configuring default display settings
 
@@ -100,9 +100,6 @@ block per display type. The slots both share are on
       "minorAlleleFrequencyFilter": 0.05,
       "showRowLabels": true,
       "renderingMode": "alleleCount"
-    },
-    {
-      "type": "LinearMultiSampleVariantMatrixDisplay"
     }
   ]
 }

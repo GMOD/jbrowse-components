@@ -39,7 +39,6 @@ single combined VCF (useful for large call sets split by chromosome)
 - **Display:** [ChordVariantDisplay](../chordvariantdisplay)
 - **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 - **Display:** [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
-- **Display:** [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
 - **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
 - **Display:** [LinearVariantDisplay](../linearvariantdisplay)
 

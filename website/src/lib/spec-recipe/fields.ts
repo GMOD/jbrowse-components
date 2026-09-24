@@ -350,14 +350,12 @@ function syntenyColorLabel(field: string | undefined) {
     : (SYNTENY_COLOR_MODES[field] ?? `${VALUE_MODES_LABEL} → ${field}`)
 }
 
-// The two multi-sample variant displays share one base model, so one path
-// serves both. Unlike every other colorBy here the value is not an enum — it is
-// whichever sample-metadata attribute the track carries, offered under a
-// 'Samples' subheader, so the recipe names the figure's attribute rather than
-// looking it up. capitalizeFirst is the menu's own label transform, imported.
+// Unlike every other colorBy here the value is not an enum — it is whichever
+// sample-metadata attribute the track carries, offered under a 'Samples'
+// subheader, so the recipe names the figure's attribute rather than looking it
+// up. capitalizeFirst is the menu's own label transform, imported.
 const MULTI_SAMPLE_VARIANT_DISPLAYS = new Set([
   'LinearMultiSampleVariantDisplay',
-  'LinearMultiSampleVariantMatrixDisplay',
 ])
 
 // Mirrors the canvas display's own `colorByMode` getter (colorViews.ts), which
@@ -669,7 +667,6 @@ const TREE_SIDEBAR_DISPLAYS = new Set([
   'LinearMafDisplay',
   'LinearMultiRowFeatureDisplay',
   'LinearMultiSampleVariantDisplay',
-  'LinearMultiSampleVariantMatrixDisplay',
   'LinearWiggleDisplay',
 ])
 
@@ -715,7 +712,6 @@ const ROW_ARRANGEMENT_EDITORS: Record<string, string> = {
   LinearMafDisplay: 'Edit row arrangement...',
   LinearMultiRowFeatureDisplay: 'Edit colors/arrangement...',
   LinearMultiSampleVariantDisplay: 'Edit colors/arrangement...',
-  LinearMultiSampleVariantMatrixDisplay: 'Edit colors/arrangement...',
   // The quantitative display reaches the same dialog from the same item. Its
   // own `Edit color...` row is a different dialog: that one edits the channel,
   // this one the adapter row metadata under the rows.
@@ -816,7 +812,6 @@ const FILTER_MENU_DISPLAYS = new Set([
   'LinearAlignmentsDisplay',
   'LGVSyntenyDisplay',
   'LinearMultiSampleVariantDisplay',
-  'LinearMultiSampleVariantMatrixDisplay',
 ])
 
 function filterStep(

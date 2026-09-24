@@ -2,7 +2,7 @@ import { autorun } from 'mobx'
 
 import { createTestEnvironment } from './testEnv.ts'
 
-import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
+import type { CellDataResult } from '../../VariantRPC/executeVariantCellData.ts'
 
 // The matrix lays columns out by feature index, so only the positional fields of
 // the payload matter here; the cell buffers stay empty (nothing is painted).
@@ -165,7 +165,7 @@ test('no data means no columns and no connectors', () => {
   expect(display.connectorLineAtScreenX(400)).toBeUndefined()
 })
 
-// The matrix body sizes its canvas off `canvasWidth`, and it is an observer, so
+// The matrix body sizes its canvas off `matrixWidth`, and it is an observer, so
 // what it reads is what re-renders it. Reading the width out of `renderState`
 // instead looks equivalent — the field holds this same number — but that getter
 // also carries `scrollTop`, so every wheel frame over the rows invalidated the
@@ -179,7 +179,7 @@ test('scrolling the rows does not invalidate the width the canvas is sized by', 
 
   let widthReads = 0
   const stop = autorun(() => {
-    void display.canvasWidth
+    void display.matrixWidth
     widthReads++
   })
   display.setScrollTop(50)

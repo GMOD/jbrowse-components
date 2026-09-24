@@ -26,7 +26,7 @@ function makeSelf(overrides: Partial<LDMenuSelf> = {}) {
     setShowLabels: jest.fn(),
     setShowVerticalGuides: jest.fn(),
     setSquashToHeight: jest.fn(),
-    setUseGenomicPositions: jest.fn(),
+    setVariantLayout: jest.fn(),
     ...overrides,
   }
   return stub as unknown as LDMenuSelf

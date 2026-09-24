@@ -87,7 +87,9 @@
       },
       "displays": [
         {
-          "type": "LinearMultiSampleVariantMatrixDisplay"
+          "type": "LinearMultiSampleVariantDisplay",
+          "variantLayout": "columns",
+          "height": 250
         }
       ]
     },

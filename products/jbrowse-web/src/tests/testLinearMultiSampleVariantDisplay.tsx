@@ -9,33 +9,24 @@ import {
 } from './util.tsx'
 
 import type { Results } from './util.tsx'
-import type {
-  LinearMultiSampleVariantDisplayModel,
-  LinearMultiSampleVariantMatrixDisplayModel,
-} from '@jbrowse/plugin-variants'
-
-type MultiSampleVariantDisplayModel =
-  | LinearMultiSampleVariantDisplayModel
-  | LinearMultiSampleVariantMatrixDisplayModel
+import type { LinearMultiSampleVariantDisplayModel } from '@jbrowse/plugin-variants'
 
 type DisplayType = 'matrix' | 'regular'
 
 export const multiSampleVariantDisplayInfo = {
   matrix: {
-    displayText: 'Multi-sample variant display (matrix)',
     displayTestId: 'variant-matrix-display',
     canvasTestId: 'variant_matrix_canvas',
   },
   regular: {
-    displayText: 'Multi-sample variant display (regular)',
     displayTestId: 'variant-display',
     canvasTestId: 'variant_canvas',
   },
 } as const
 
 /**
- * Open the volvox multi-sample VCF track and switch it to the given display
- * type (without waiting for render). Returns the render result plus the
+ * Open the volvox multi-sample VCF track on the multi-sample display, in the
+ * given layout (without waiting for render). Returns the render result plus the
  * display-type ids so callers can wait for completion however they need.
  */
 export async function openMultiSampleVariantDisplay({
@@ -57,7 +48,12 @@ export async function openMultiSampleVariantDisplay({
 
   fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Display types', ...opts))
-  fireEvent.click(await findByText(info.displayText, ...opts))
+  fireEvent.click(await findByText('Multi-sample variant display', ...opts))
+  if (displayType === 'matrix') {
+    fireEvent.click(await findByTestId('track_menu_icon', ...opts))
+    fireEvent.click(await findByText('Variant layout', ...opts))
+    fireEvent.click(await findByText('Equal-width columns', ...opts))
+  }
 
   return { ...result, info }
 }
@@ -85,7 +81,8 @@ export async function testLinearMultiSampleVariantDisplay({
     // captured allele-count mode. The bare label only exists once the row is
     // enabled, so matching it exactly waits for the scan.
     fireEvent.click(await findByText('Phased', ...opts))
-    const display: MultiSampleVariantDisplayModel = view.tracks[0].displays[0]
+    const display: LinearMultiSampleVariantDisplayModel =
+      view.tracks[0].displays[0]
     expect(display.renderingMode).toBe('phased')
   }
 

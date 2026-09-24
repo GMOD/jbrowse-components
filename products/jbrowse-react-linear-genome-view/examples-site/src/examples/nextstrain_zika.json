@@ -207,8 +207,9 @@
       },
       "displays": [
         {
-          "type": "LinearMultiSampleVariantMatrixDisplay",
-          "displayId": "Zika-genotypes-LinearMultiSampleVariantMatrixDisplay",
+          "type": "LinearMultiSampleVariantDisplay",
+          "variantLayout": "columns",
+          "displayId": "Zika-genotypes-LinearMultiSampleVariantDisplay",
           "height": 400,
           "rowColor": "region"
         }
@@ -269,8 +270,8 @@
           "configuration": "Zika-genotypes",
           "displays": [
             {
-              "type": "LinearMultiSampleVariantMatrixDisplay",
-              "configuration": "Zika-genotypes-LinearMultiSampleVariantMatrixDisplay"
+              "type": "LinearMultiSampleVariantDisplay",
+              "configuration": "Zika-genotypes-LinearMultiSampleVariantDisplay"
             }
           ]
         },

@@ -2,15 +2,9 @@ import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 
 export const GENOTYPE_SPLITTER = /[/|]/
 
-// The two displays over the multi-sample base model, by the `type` a snapshot
-// of either carries. A track's `displays` union probes every member's
-// preprocessor with every entry while it works out which display an entry is,
-// so a refusal that did not ask whose snapshot it had would fire on a MAF or
-// multi-row display's.
-export const VARIANT_DISPLAY_TYPES: ReadonlySet<string> = new Set([
-  'LinearMultiSampleVariantDisplay',
-  'LinearMultiSampleVariantMatrixDisplay',
-])
+// A track's `displays` union probes every member's preprocessor with every
+// entry, so a refusal checks the snapshot is this display's before it fires.
+export const MULTI_SAMPLE_VARIANT_DISPLAY = 'LinearMultiSampleVariantDisplay'
 
 export const f2 = 0.3
 
@@ -22,8 +16,8 @@ export const VARIANT_FEATURE_WIDGET = {
   id: 'variantFeature',
 }
 
-// Both displays' connector-line zone is drag-resizable, and both clamp the drag
-// through the shared band rule (`clampBandHeight`) — the floor keeps the resize
+// The connector-line zone is drag-resizable, clamped through the shared band
+// rule (`clampBandHeight`) — the floor keeps the resize
 // handle, drawn at lineZoneHeight - 4, reachable. A config or snapshot may still
 // declare 0 to turn the zone off entirely; only a *drag* comes through here,
 // which is also why this is the resize form and takes the current height: a zone

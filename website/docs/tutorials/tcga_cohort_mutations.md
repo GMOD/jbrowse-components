@@ -117,7 +117,8 @@ with the matrix display on top of it:
   },
   "displays": [
     {
-      "type": "LinearMultiSampleVariantMatrixDisplay",
+      "type": "LinearMultiSampleVariantDisplay",
+      "variantLayout": "columns",
       "height": 1010,
       "color": { "field": "impact" }
     }
@@ -127,28 +128,27 @@ with the matrix display on top of it:
 
 Three settings there:
 
-- The
-  [matrix display](/docs/user_guides/multivariant_track#matrix-best-for-snpindel-patterns)
+- [`variantLayout: 'columns'`](/docs/user_guides/multivariant_track#matrix-best-for-snpindel-patterns)
   lays columns out by feature index, so a gene's mutations pack together however
   far apart they sit, with a connector band from each column to its position
-- [`color`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-color) set
+- [`color`](/docs/config/linearmultisamplevariantdisplay/#slot-color) set
   to the `impact` field colors each cell by its VEP impact tier from `CSQ`, the
   same as **Color by... → Consequence impact** in the track menu
 - [`samplesTsvLocation`](/docs/config/vcftabixadapter/#slot-samplestsvlocation)
   makes the clinical columns available to group and color rows by
 
 Rows auto-fit by dividing
-[`height`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-height). A
-row goes below a pixel, so a band's mutation density reads as how dark it is.
+[`height`](/docs/config/linearmultisamplevariantdisplay/#slot-height). A row
+goes below a pixel, so a band's mutation density reads as how dark it is.
 
 ## Group the rows by clinical annotation
 
-[`facet`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-facet) names
-a column of the samples TSV and makes each of its values a contiguous band of
+[`facet`](/docs/config/linearmultisamplevariantdisplay/#slot-facet) names a
+column of the samples TSV and makes each of its values a contiguous band of
 rows, sorted; its `domain` pins the bands you want first.
-[`rowColor`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-rowcolor)
-puts the matching color strip in the gutter. Both have a track-menu row too:
-**Group by...** and **Color by... → Samples**.
+[`rowColor`](/docs/config/linearmultisamplevariantdisplay/#slot-rowcolor) puts
+the matching color strip in the gutter. Both have a track-menu row too: **Group
+by...** and **Color by... → Samples**.
 
 ```json addtrack
 {
@@ -166,7 +166,8 @@ puts the matching color strip in the gutter. Both have a track-menu row too:
   },
   "displays": [
     {
-      "type": "LinearMultiSampleVariantMatrixDisplay",
+      "type": "LinearMultiSampleVariantDisplay",
+      "variantLayout": "columns",
       "height": 450,
       "lineZoneHeight": 130,
       "color": { "field": "impact" },
@@ -192,7 +193,7 @@ introns**, and **Replace current view** (see [](/docs/user_guides/gene_track)):
 
 Two more things in that figure travel to any gene-scale matrix:
 
-- [`lineZoneHeight`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-linezoneheight)
+- [`lineZoneHeight`](/docs/config/linearmultisamplevariantdisplay/#slot-linezoneheight)
   (or the handle under the band) opens the connector band, which shows where in
   the transcript a gene's calls fall. _CDH1_'s fan lands in exon after exon, as
   a tumor suppressor's truncating calls do
@@ -280,7 +281,7 @@ bands while on.
 ## Thin the matrix down to recurrent mutations
 
 **Filter by... → Minor allele frequency** in the track menu (or the
-[`minorAlleleFrequencyFilter`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-minorallelefrequencyfilter)
+[`minorAlleleFrequencyFilter`](/docs/config/linearmultisamplevariantdisplay/#slot-minorallelefrequencyfilter)
 slot) drops low-frequency columns, which on somatic data keeps only recurrent
 mutations: at _PIK3CA_ the hotspots survive and the private columns go. See
 [filtering by allele frequency and missingness](/docs/user_guides/multivariant_track#filtering-by-allele-frequency-and-missingness).

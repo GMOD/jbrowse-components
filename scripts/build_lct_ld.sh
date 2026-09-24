@@ -351,7 +351,7 @@ def ld_track(track_id, name, uri):
             # already filtered, so neither the byte gate nor a frequency floor
             # has anything left to act on here. The floor that WAS applied is
             # the one ld_table used, printed above.
-            'useGenomicPositions': True,
+            'variantLayout': 'genomic',
             'height': 330,
         }],
     }
@@ -391,8 +391,9 @@ cfg['tracks'] += [
             },
         },
         'displays': [{
-            'type': 'LinearMultiSampleVariantMatrixDisplay',
-            'displayId': 'kgp_lct_haplotypes-LinearMultiSampleVariantMatrixDisplay',
+            'type': 'LinearMultiSampleVariantDisplay',
+            'variantLayout': 'columns',
+            'displayId': 'kgp_lct_haplotypes-LinearMultiSampleVariantDisplay',
             'renderingMode': 'phased',
             'colorBy': 'population',
             # This lane still reads genotypes, so unlike the LD tracks above

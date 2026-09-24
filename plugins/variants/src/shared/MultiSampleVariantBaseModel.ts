@@ -8,7 +8,6 @@ import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/rendere
 import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import {
   canonicalizeViewRefName,
-  getContainingTrack,
   getNotificationSink,
   openFeatureWidget,
   SimpleFeature,
@@ -54,7 +53,7 @@ import { cellHueField } from './cellHue.ts'
 import {
   HIDDEN_ROW,
   INTERNAL_SOURCE_KEYS,
-  VARIANT_DISPLAY_TYPES,
+  MULTI_SAMPLE_VARIANT_DISPLAY,
   VARIANT_FEATURE_WIDGET,
 } from './constants.ts'
 import { buildSampleIndex } from './genotypeCodec.ts'
@@ -70,13 +69,10 @@ import {
   variantTrackMenuItems,
 } from './multiSampleVariantMenuItems.ts'
 import { getVariantColorScales } from './variantLegend.ts'
-import {
-  DEFAULT_VARIANT_LANE_HEIGHT,
-  variantTopBandsGeometry,
-} from './variantTopBands.ts'
+import { variantTopBandsGeometry } from './variantTopBands.ts'
 
+import type { LinearMultiSampleVariantDisplayConfigModel } from '../LinearMultiSampleVariantDisplay/configSchema.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
-import type { SharedVariantConfigModel } from './SharedVariantConfigSchema.ts'
 import type { ProcessedSource, Source } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
@@ -93,6 +89,8 @@ import type {
   RowAlias,
   RowColorDeal,
 } from '@jbrowse/tree-sidebar'
+
+type CellDataMode = CellDataResult['mode']
 
 type VariantHoverFields = Record<string, unknown> & {
   genotype: string
@@ -158,8 +156,6 @@ function warnMissingAttribute(
   }
 }
 
-type SetSlotFn = (slotName: string, value: unknown) => void
-
 /**
  * What a right-click on a genotype cell or a lane mark resolved to: the record
  * under it, already a `Feature`, plus where the menu opens.
@@ -167,39 +163,6 @@ type SetSlotFn = (slotName: string, value: unknown) => void
 export interface VariantContextMenuInfo extends ContextMenuAnchor {
   feature: Feature
 }
-
-// Config slots ported onto the *other* variant display's config when the
-// user switches display type via the track menu (see getPortableSettings).
-//
-// `height` and `rowHeight` are config slots too (TrackHeightMixin,
-// RowHeightMixin), so they are ported here and not through the instance
-// snapshot: `height` used to ride in that snapshot, where MST drops a key no
-// prop declares, so a drag-resized track came back at the other display's
-// default on every switch.
-const PORTABLE_CONFIG_KEYS = [
-  'height',
-  'rowHeight',
-  'renderingMode',
-  'minorAlleleFrequencyFilter',
-  'maxMissingnessFilter',
-  'showRowLabels',
-  'showRowSeparators',
-  'showTooltips',
-  'showLegend',
-  'showTree',
-  'showBranchLength',
-  'referenceDrawingMode',
-  'shadeByDosage',
-  // the sidebar width is a drag on a config slot, like `height`: returned in
-  // the instance snapshot instead, MST would drop it and a display-type switch
-  // would silently reset the gutter
-  'treeAreaWidth',
-] as const
-
-// The config objects that travel whole: the arrangement with them, since
-// `rows` holds the order, labels, tree and focus. An object reads back as its
-// snapshot, so a `jexl:` colour travels unevaluated.
-const PORTABLE_CONFIG_OBJECTS = ['facet', 'rows', 'rowColor', 'color'] as const
 
 // The display-state arrangement these displays kept before `rows`. Named on
 // the way in because MST drops an undeclared key in silence, and a session
@@ -303,7 +266,7 @@ function warnUnknownArrangementAttributes(
 // lines to off-screen genomic positions — use the visible regions only.
 function fetchRegionsForMode(
   view: RegionHost,
-  mode: 'regular' | 'matrix',
+  mode: CellDataMode,
 ): IndexedRegion[] {
   if (mode === 'matrix') {
     return view.visibleRegions.map(vr => ({
@@ -331,14 +294,14 @@ function fetchRegionsForMode(
  *
  * #example
  * `renderingMode`, `rowColor`, `rows` and `minorAlleleFrequencyFilter` are
- * config (see `SharedVariantConfigSchema`), read at runtime through `getConf`
+ * config (see the display's config schema), read at runtime through `getConf`
  * and written as session edits to the track's config — they are NOT plain MST
  * properties. Set them in a track's `displays` array to change the default:
  * ```js
  * displays: [
  *   {
- *     type: 'LinearMultiSampleVariantMatrixDisplay',
- *     displayId: 'my-matrix',
+ *     type: 'LinearMultiSampleVariantDisplay',
+ *     displayId: 'my-cohort',
  *     renderingMode: 'phased',
  *     rowColor: 'population',
  *     rows: { domain: ['NA12878', 'NA12891'] },
@@ -390,21 +353,12 @@ function fetchRegionsForMode(
  * write the `facet` slot — a session spec setting both keeps both.
  */
 export default function MultiSampleVariantBaseModelF(
-  configSchema: SharedVariantConfigModel,
-  cellDataMode: 'regular' | 'matrix',
+  configSchema: LinearMultiSampleVariantDisplayConfigModel,
 ) {
   return (
     types
       .compose(
-        // Abstract base shared by both LinearMultiSampleVariantDisplay and
-        // LinearMultiSampleVariantMatrixDisplay. The name below is borrowed from the
-        // matrix subclass for historical reasons. `type` is `types.string`
-        // (not a literal) because the base is never registered or instantiated
-        // directly — the concrete subclass that composes this always overrides
-        // `type` with its own literal, and a plain string keeps those subclass
-        // models assignable to this base type. Don't rename the subclass `type`
-        // literals — they appear in stored session snapshots.
-        'LinearMultiSampleVariantMatrixDisplay',
+        'MultiSampleVariantBaseModel',
         BaseDisplay,
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
@@ -454,9 +408,10 @@ export default function MultiSampleVariantBaseModelF(
       // dropped is silent. Prefixed on the way in, since the property stores the
       // runtime form and the old one stored whatever the dialog was handed.
       .preProcessSnapshot((snap: Record<string, unknown>) => {
-        const retired = VARIANT_DISPLAY_TYPES.has(String(snap.type))
-          ? RETIRED_ARRANGEMENT_PROPS.filter(key => key in snap)
-          : []
+        const retired =
+          snap.type === MULTI_SAMPLE_VARIANT_DISPLAY
+            ? RETIRED_ARRANGEMENT_PROPS.filter(key => key in snap)
+            : []
         if (retired.length) {
           throw new Error(
             `${retired.join(', ')} on a ${String(snap.type)}: the row arrangement is the display config's \`rows\` object (domain, labels, tree, treeProvenance, kept) and its colours \`rowColor\`, written by the arrangement dialog, a clustering run or a session spec's \`rows\``,
@@ -681,56 +636,62 @@ export default function MultiSampleVariantBaseModelF(
         get renderingMode(): string {
           return getConf(self, 'renderingMode')
         },
+        /**
+         * #getter
+         * Whether each variant draws at its genomic span, or as one of a row
+         * of equal-width columns tied to its position by a connector line.
+         */
+        get variantLayout(): 'genomic' | 'columns' {
+          return getConf(self, 'variantLayout')
+        },
+        /**
+         * #getter
+         */
+        get atGenomicPositions(): boolean {
+          return this.variantLayout === 'genomic'
+        },
+        /**
+         * #getter
+         * The payload shape the worker builds for `atGenomicPositions`: cells
+         * per displayed region at their spans, or one matrix of columns over
+         * the visible regions.
+         */
+        get cellDataMode(): CellDataMode {
+          return this.atGenomicPositions ? 'regular' : 'matrix'
+        },
 
         /**
          * #getter
-         * Height of the connector-line zone above the rows; 0 for a display that
-         * draws variants at their genomic positions and needs no connectors. On
-         * the config rather than a bespoke property for the same reason `height`
-         * is (see TrackHeightMixin): a drag-resize outlives the display
-         * instance, so unticking and reticking the track keeps the zone the user
-         * set. LD declares the same slot and the same clamped `setConf` setter.
+         * Height of the connector-line zone above the columns; 0 at genomic
+         * positions, where nothing needs connecting.
          */
         get lineZoneHeight(): number {
-          return getConf(self, 'lineZoneHeight')
+          return this.atGenomicPositions ? 0 : getConf(self, 'lineZoneHeight')
         },
-
         /**
          * #getter
-         * Whether the variant lane — a `LinearVariantDisplay`-style strip of the
-         * records themselves, above the genotype rows — is drawn.
-         *
-         * False here, and overridden by the display that paints one. The band
-         * geometry (`topBands`) is shared because every display's rows sit below
-         * whatever is stacked on them, but the *slots* live on the subclass that
-         * honors them: a display reserving a band it never fills would take the
-         * height from its rows and draw nothing there.
+         * Whether the variant lane, a strip of the records themselves above the
+         * genotype rows, is drawn: at genomic positions only, where it lines
+         * up with the cells under it.
          */
         get showVariantLane(): boolean {
-          return false
+          return this.atGenomicPositions && getConf(self, 'showVariantLane')
         },
-
         /**
          * #getter
-         * Configured height of the variant lane. Raw: it is spent only while
-         * `showVariantLane` is on, and the resolved value every consumer reads
-         * is `topBands.laneHeight`. Overridden alongside `showVariantLane`, off
-         * a config slot — a drag outlives the display instance, same as
-         * `lineZoneHeight`.
+         * Configured height of the variant lane. Raw: what the band spends is
+         * `topBands.laneHeight`.
          */
         get variantLaneHeight(): number {
-          return DEFAULT_VARIANT_LANE_HEIGHT
+          return getConf(self, 'variantLaneHeight')
         },
-
         /**
          * #getter
-         * Which label kinds the variant lane asks for. Overridden alongside the
-         * two above by the display that paints one; whether the band has ROOM
-         * for them is plugin-canvas's fit ladder's answer, not this slot's —
-         * `laneRenderedLabels` is what actually gets drawn.
+         * Which label kinds the variant lane asks for; what it draws is
+         * `laneRenderedLabels`.
          */
         get variantLaneLabels(): ShowLabelsMode {
-          return 'none'
+          return getConf(self, 'variantLaneLabels')
         },
 
         /**
@@ -1054,7 +1015,7 @@ export default function MultiSampleVariantBaseModelF(
          * and overrides this to false.
          */
         get showsReferenceToggle(): boolean {
-          return true
+          return self.atGenomicPositions
         },
 
         /**
@@ -1269,6 +1230,7 @@ export default function MultiSampleVariantBaseModelF(
         // instead.
         rpcProps() {
           return {
+            mode: self.cellDataMode,
             sampleFilter: self.sampleFilter,
             minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
             maxMissingnessFilter: self.maxMissingnessFilter,
@@ -1637,35 +1599,6 @@ export default function MultiSampleVariantBaseModelF(
         get scrollViewportHeight() {
           return self.availableHeight
         },
-        /**
-         * #method
-         * Called by BaseTrackModel.replaceDisplay on a display-type switch.
-         * The settings, the arrangement included, live on each display's own
-         * config node, so porting them means writing into the *target*
-         * display's config. Only the other multi-sample display has those
-         * slots; a switch to any other type ports nothing.
-         */
-        getPortableSettings(newDisplayId?: string) {
-          const displays = getContainingTrack(self).configuration.displays as {
-            type: string
-            displayId: string
-            setSlot: SetSlotFn
-            setSubschema: SetSlotFn
-          }[]
-          const target = displays.find(d => d.displayId === newDisplayId)
-          if (!target || !VARIANT_DISPLAY_TYPES.has(target.type)) {
-            return {}
-          }
-          for (const key of PORTABLE_CONFIG_KEYS) {
-            target.setSlot(key, getConf(self, key))
-          }
-          for (const key of PORTABLE_CONFIG_OBJECTS) {
-            target.setSubschema(key, getConf(self, key))
-          }
-          return {
-            jexlFiltersSetting: self.jexlFiltersSetting,
-          }
-        },
       }))
       .views(() => ({
         /**
@@ -1772,7 +1705,8 @@ export default function MultiSampleVariantBaseModelF(
             return
           }
           const view = self.host
-          const regions = fetchRegionsForMode(view, cellDataMode)
+          const mode = self.cellDataMode
+          const regions = fetchRegionsForMode(view, mode)
           if (regions.length === 0) {
             return
           }
@@ -1780,7 +1714,7 @@ export default function MultiSampleVariantBaseModelF(
           // `fetchNeeded` is about to mark loaded — no second view read across
           // the async boundary.
           const args = rpcArgs(self)
-          const fetchedAt = cellDataMode === 'matrix' ? view.bpPerPx : undefined
+          const fetchedAt = mode === 'matrix' ? view.bpPerPx : undefined
           // One RPC serves every region, so the whole batch is held or none of
           // it is, and `fetchRegionsBatched` marks them loaded together.
           await fetchRegionsBatched(self, regions, {
@@ -1789,8 +1723,6 @@ export default function MultiSampleVariantBaseModelF(
                 ...args,
                 regions: batch.map(r => r.region),
                 displayedRegionIndices: batch.map(r => r.displayedRegionIndex),
-                // bound at factory call time, per subclass
-                mode: cellDataMode,
               }),
             commit: result => {
               self.setCellData(

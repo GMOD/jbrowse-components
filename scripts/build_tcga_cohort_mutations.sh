@@ -168,8 +168,9 @@ cfg['tracks'].append({
         'samplesTsvLocation': {'uri': clinical},
     },
     'displays': [{
-        'type': 'LinearMultiSampleVariantMatrixDisplay',
-        'displayId': f'{out}_track-LinearMultiSampleVariantMatrixDisplay',
+        'type': 'LinearMultiSampleVariantDisplay',
+        'variantLayout': 'columns',
+        'displayId': f'{out}_track-LinearMultiSampleVariantDisplay',
         'height': 1010,
         # each mutation's VEP impact tier out of the CSQ field, so truncating
         # and missense cells are told apart without a per-figure color table

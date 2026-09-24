@@ -61,13 +61,13 @@ describe('effectiveUseGenomicPositions follows the loaded matrix', () => {
   it('falls back to the slot before anything has loaded', () => {
     const { display } = createTestEnvironment().createDisplay()
     expect(display.effectiveUseGenomicPositions).toBe(false)
-    display.setUseGenomicPositions(true)
+    display.setVariantLayout('genomic')
     expect(display.effectiveUseGenomicPositions).toBe(true)
   })
 
   it('reads the loaded layout, not the request', () => {
     const { display } = loadedDisplay()
-    display.setUseGenomicPositions(true)
+    display.setVariantLayout('genomic')
 
     // the request stands — it is what the next fetch sends
     expect(display.useGenomicPositions).toBe(true)

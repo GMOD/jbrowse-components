@@ -2,7 +2,7 @@ import { act } from 'react'
 
 import { fireEvent, render } from '@testing-library/react'
 
-import { createTestEnvironment } from '../LinearMultiSampleVariantMatrixDisplay/testEnv.ts'
+import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/matrix/testEnv.ts'
 import { ConnectorLineOverlay } from './ConnectorLines.tsx'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'

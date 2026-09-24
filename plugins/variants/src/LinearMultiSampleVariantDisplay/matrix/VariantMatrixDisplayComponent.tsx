@@ -18,11 +18,13 @@ import VariantMatrixBody, {
 } from './VariantMatrixComponent.tsx'
 import { VARIANT_MATRIX_MARKS } from './variantMatrixMarks.ts'
 
-import type { LinearMultiSampleVariantMatrixDisplayModel } from '../model.ts'
+import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
 import type { ReactNode } from 'react'
 
-function createVariantMatrixBackend(canvas: HTMLCanvasElement) {
-  return createMarkBackend(canvas, VARIANT_MATRIX_MARKS)
+async function createVariantMatrixBackend(canvas: HTMLCanvasElement) {
+  return Object.assign(await createMarkBackend(canvas, VARIANT_MATRIX_MARKS), {
+    columns: true as const,
+  })
 }
 
 // The matrix's own box, offset past the bands above the rows and clamped to the
@@ -44,7 +46,7 @@ const MatrixBodyOffset = observer(function MatrixBodyOffset({
   top,
   children,
 }: {
-  model: LinearMultiSampleVariantMatrixDisplayModel
+  model: LinearMultiSampleVariantDisplayModel
   top: number
   children: ReactNode
 }) {
@@ -63,7 +65,7 @@ const MatrixBodyOffset = observer(function MatrixBodyOffset({
 
 const VariantMatrixDisplayComponent = observer(
   function VariantMatrixDisplayComponent(props: {
-    model: LinearMultiSampleVariantMatrixDisplayModel
+    model: LinearMultiSampleVariantDisplayModel
   }) {
     const { model } = props
     const { rowsTopOffset, height } = model
@@ -131,7 +133,7 @@ const VariantMatrixDisplayComponent = observer(
                 position: 'absolute',
                 top: rowsTopOffset,
                 left: 0,
-                width: model.canvasWidth,
+                width: model.matrixWidth,
                 height: model.availableHeight,
               }}
             >

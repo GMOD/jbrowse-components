@@ -16,9 +16,9 @@ export default function LinearMultiSampleVariantDisplayF(
     const configSchema = configSchemaFactory()
     return new DisplayType({
       name: 'LinearMultiSampleVariantDisplay',
-      displayName: 'Multi-sample variant display (regular)',
+      displayName: 'Multi-sample variant display',
       helpText:
-        'GPU accelerated multi-sample variant display. Draws variants at their actual base pair coordinates with GPU-accelerated rendering for smooth scrolling.',
+        'One row per sample (or haplotype), each variant drawn at its genomic position or as one of a row of equal-width columns',
       configSchema,
       // lazily loaded: the multi-sample base model and its genotype machinery
       // are fetched when a variant track picks this display or a session names
@@ -29,7 +29,11 @@ export default function LinearMultiSampleVariantDisplayF(
       ReactComponent: VariantDisplayComponent,
       // renamed from MultiLinearVariantDisplay; alias remaps old track configs
       // (active display instances are remapped in model.ts preProcessSnapshot)
-      aliases: ['MultiLinearVariantDisplay'],
+      aliases: [
+        'MultiLinearVariantDisplay',
+        'LinearMultiSampleVariantMatrixDisplay',
+        'LinearVariantMatrixDisplay',
+      ],
     })
   })
 }

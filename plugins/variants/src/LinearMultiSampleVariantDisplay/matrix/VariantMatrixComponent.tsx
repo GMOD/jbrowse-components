@@ -12,7 +12,7 @@ import { matrixCellAt } from './matrixHitTest.ts'
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
 import type { VariantFeatureInfo } from '../../shared/types.ts'
 import type { VariantSurface } from '../../shared/variantSurface.ts'
-import type { LinearMultiSampleVariantMatrixDisplayModel } from '../model.ts'
+import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
 
 interface MatrixHit {
   fields: VariantTooltipFields
@@ -30,7 +30,7 @@ export interface MatrixHoveredCell {
 // walk below) and lit by its ink, and a no-call decodes to a genotype no cell
 // was drawn for.
 function drawnCellAt(
-  model: LinearMultiSampleVariantMatrixDisplayModel,
+  model: LinearMultiSampleVariantDisplayModel,
   featureIdx: number,
   rowIdx: number,
 ): MatrixHoveredCell | undefined {
@@ -47,7 +47,7 @@ function drawnCellAt(
 // `columnGeometry.left` / `rowsTopOffset` inside the display — the caller has
 // already subtracted both.
 function getHoveredMatrixCell(
-  model: LinearMultiSampleVariantMatrixDisplayModel,
+  model: LinearMultiSampleVariantDisplayModel,
   mouseX: number,
   mouseY: number,
 ): MatrixHit | undefined {
@@ -126,7 +126,7 @@ function getHoveredMatrixCell(
  * through `getHoveredMatrixCell`.
  */
 export function variantMatrixSurface(
-  model: LinearMultiSampleVariantMatrixDisplayModel,
+  model: LinearMultiSampleVariantDisplayModel,
 ): VariantSurface<MatrixHit> {
   return {
     getHit: (x, y) => getHoveredMatrixCell(model, x, y),
@@ -138,7 +138,7 @@ export function variantMatrixSurface(
         : undefined
     },
     onHover: hit => {
-      model.setHoveredCell(hit?.cell)
+      model.setHoveredMatrixCell(hit?.cell)
     },
   }
 }
@@ -156,17 +156,17 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
   canvasRef,
   canvasId,
 }: {
-  model: LinearMultiSampleVariantMatrixDisplayModel
+  model: LinearMultiSampleVariantDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
   canvasId: string
 }) {
-  // `model.canvasWidth`, the getter `renderState` and `columnGeometry` are both
+  // `model.matrixWidth`, the getter `renderState` and `columnGeometry` are both
   // built from: the width the cells were mapped into, rather than a second
   // spelling of it off the view. NOT `model.renderState` itself, which also
   // carries `scrollTop` — a scroll would then re-render this body, and the
   // canvas element plus the hit-test wiring below it, once per wheel frame for
   // a width that never moved.
-  const width = model.canvasWidth
+  const width = model.matrixWidth
   const height = model.availableHeight
 
   return (

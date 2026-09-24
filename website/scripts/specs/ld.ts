@@ -81,7 +81,7 @@ const lctTrack = (name: string, height = 510) => ({
       // the frame while spanning about a quarter of the bp, which is why it
       // read as running off the left edge no matter how far the window zoomed
       // out. On, its edges land under the coordinates they are at.
-      useGenomicPositions: true,
+      variantLayout: 'genomic',
       // The triangle is the whole figure here. The haploblock figure stacks it
       // over an 800px matrix and passes less.
       height,
@@ -207,7 +207,7 @@ const agLdTrack = (
       ldMetric: 'r2',
       // lay SNPs out at their real coordinates, not evenly spaced, so the
       // block's edges land where the inversion's edges are
-      useGenomicPositions: true,
+      variantLayout: 'genomic',
       showLegend: true,
       // THE HEIGHT ARITHMETIC, because two rounds of review have now been about
       // it. An unsquashed LD panel draws its triangle at natural aspect -- apex
@@ -485,7 +485,7 @@ const lctPanelTrack = (trackId: string, name: string, file: string) => ({
       // lines existed to say which column each SNP was, which is only a question
       // when x is SNP index. On genomic positions the SNP IS its column, so the
       // fan is gone and nothing is reserved above the triangle.
-      useGenomicPositions: true,
+      variantLayout: 'genomic',
     },
   ],
 })
@@ -1165,7 +1165,8 @@ export const ldSpecs: ScreenshotSpec[] = [
             { trackId: 'kgp_lct_ld', type: 'LDTrackDisplay' },
             {
               trackId: 'kgp_lct_haplotypes',
-              type: 'LinearMultiSampleVariantMatrixDisplay',
+              type: 'LinearMultiSampleVariantDisplay',
+              variantLayout: 'columns',
               // 520, down from 700 (review: "reducing height of the
               // multisamplevariantdisplay"). 300 haplotype rows is 1.73 px a
               // row, and what the lane is read for survives that: the readout

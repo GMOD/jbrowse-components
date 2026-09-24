@@ -190,7 +190,7 @@ The seams, named honestly:
   says `startEnd` and `row`; canvas's rect
   (`plugins/canvas/src/LinearBasicDisplay/marks/featureGlyphShapes.ts`) says
   `startEnd`, `y`, `height`; the variant matrix's cell
-  (`plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/components/matrixCellMark.ts`)
+  (`plugins/variants/src/LinearMultiSampleVariantDisplay/matrix/matrixCellMark.ts`)
   says `featureIndex`, `row`, `color`, its x a column index over equal
   columns rather than a bp. Converging the first two is not the small move it
   looks: ADR-106 §Consequences measured the `startEnd` split and parked it,

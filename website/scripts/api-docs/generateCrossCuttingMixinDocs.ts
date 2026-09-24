@@ -66,12 +66,9 @@ interface CrossCuttingMixin {
 // `#stateModel` tag above it, falling back to the compose call's own string
 // literal.
 //
-// Not just the literal, because one model deliberately composes under a
-// borrowed name — `MultiSampleVariantBaseModel` passes
-// `'LinearMultiSampleVariantMatrixDisplay'` for snapshot-compatibility reasons
-// its own comment explains. Taking the literal would file the shared base under
-// one of its two subclasses and silently drop the other, which is the same
-// under-reporting this table exists to prevent.
+// Not just the literal: a model may compose under a name other than its
+// documented one, and taking the literal would file it under the wrong model,
+// the under-reporting this table exists to prevent.
 function modelNameAt(models: { name: string; pos: number }[], pos: number) {
   let best: string | undefined
   for (const model of models) {

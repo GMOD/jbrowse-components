@@ -5,9 +5,9 @@ description: Genotype-quality masking, pedigree awareness, and haplotype-block c
 
 # Multi-sample variant display
 
-Ideas from an analysis of `LinearMultiSampleVariantDisplay` /
-`LinearMultiSampleVariantMatrixDisplay` (both share
-`plugins/variants/src/shared/MultiSampleVariantBaseModel.ts`). Read
+Ideas from an analysis of `LinearMultiSampleVariantDisplay` in both its
+layouts (`plugins/variants/src/shared/MultiSampleVariantBaseModel.ts` holds
+most of it). Read
 `plugins/variants/src/CLAUDE.md` first — hot-loop rules and the fetch/layout/render
 invalidation tiers constrain all of these.
 
@@ -105,7 +105,7 @@ every line with `pointToSegmentDist` on each mousemove. Enrich the tooltip
 (position / ref / alt) and add click-through to feature detail.
 
 **Matrix ref/no-call cells are silently non-interactive.** Hover requires a decoded
-genotype (`LinearMultiSampleVariantMatrixDisplay/components/VariantMatrixComponent.tsx:86`),
+genotype (`LinearMultiSampleVariantDisplay/matrix/VariantMatrixComponent.tsx`),
 so blank grid regions give no tooltip — reads as "the UI is dead here." Small fix.
 
 **jb2export population coloring (`samplesTsv:` modifier).** The multi-sample variant

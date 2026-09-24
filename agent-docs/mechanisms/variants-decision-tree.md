@@ -22,19 +22,18 @@ that bite while editing are `plugins/variants/src/CLAUDE.md`.
 - **`LinearVariantDisplay`** draws the records themselves, one layout row each,
   coloured through the standard `color` jexl slot.
 - **`LinearMultiSampleVariantDisplay`** draws one row per sample — or per
-  haplotype in phased mode — with each record's cells at its genomic span. It is
-  the display with the variant lane and the insertion glyphs.
-- **`LinearMultiSampleVariantMatrixDisplay`** draws the same rows but lays
-  columns out by feature *index* at equal widths, and ties each column back to
-  its locus with a connector line.
+  haplotype in phased mode. Under `variantLayout: 'genomic'` each record's cells
+  sit at its genomic span, with the variant lane and the insertion glyphs; under
+  `'columns'` the records are laid out by feature *index* at equal widths, each
+  column tied back to its locus with a connector line.
 - **`LDTrackDisplay`** (on an `LDTrack`, reading a plink file) is a different
   subject: a cell is a pair of sites, coloured by r² or D' through a 256-entry
   ramp.
 
-The matrix answers "what is the genotype pattern"; the regular display answers
-"where are these variants and how long are they". So SVs go in the regular one,
-whose lane and insertion glyphs give an insertion the length its reference span
-cannot express.
+Columns answer "what is the genotype pattern"; genomic positions answer "where
+are these variants and how long are they". So SVs go at genomic positions,
+where the lane and insertion glyphs give an insertion the length its reference
+span cannot express.
 
 ## What "Color by" resolves to
 

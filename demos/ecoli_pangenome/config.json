@@ -645,8 +645,10 @@
       },
       "displays": [
         {
-          "type": "LinearMultiSampleVariantMatrixDisplay",
-          "displayId": "ecoli_cactus_variants-matrix"
+          "type": "LinearMultiSampleVariantDisplay",
+          "variantLayout": "columns",
+          "displayId": "ecoli_cactus_variants-matrix",
+          "height": 250
         }
       ]
     },

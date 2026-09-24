@@ -1,12 +1,9 @@
 import { getTestSession } from './util.tsx'
 
 // A track config may declare several display configs, each with its own
-// displayId (the HPRC2 pangenome VCF declares the matrix display and the regular
-// one). So "open this track with display type X" has to attach X's own config
-// node: taking the first *supported* display's node instead gave the opened
-// display another schema's defaults — the regular multi-sample variant display
-// inherited the matrix display's 20px connector-line zone, which offset its
-// clustering tree from the rows it labels.
+// displayId. So "open this track with display type X" has to attach X's own
+// config node: taking the first *supported* display's node instead gave the
+// opened display another schema's defaults.
 function twoDisplayTrackConf(trackId: string) {
   return {
     type: 'VariantTrack',
@@ -20,12 +17,12 @@ function twoDisplayTrackConf(trackId: string) {
     },
     displays: [
       {
-        type: 'LinearMultiSampleVariantMatrixDisplay',
-        displayId: `${trackId}_matrix`,
+        type: 'LinearVariantDisplay',
+        displayId: `${trackId}_single`,
       },
       {
         type: 'LinearMultiSampleVariantDisplay',
-        displayId: `${trackId}_regular`,
+        displayId: `${trackId}_multi`,
       },
     ],
   }
@@ -49,10 +46,7 @@ test('showTrack with an explicit display type attaches that display’s config',
     .displays[0]!
   expect(display.type).toBe('LinearMultiSampleVariantDisplay')
   expect(display.configuration.type).toBe('LinearMultiSampleVariantDisplay')
-  expect(display.configuration.displayId).toBe('two_displays_regular')
-  // the matrix schema raises this slot's default to 20; the regular display's
-  // own default is 0, i.e. no connector-line zone
-  expect(display.lineZoneHeight).toBe(0)
+  expect(display.configuration.displayId).toBe('two_displays_multi')
 })
 
 test('showTrack with no display type takes the track’s first declared display', async () => {
@@ -65,6 +59,6 @@ test('showTrack with no display type takes the track’s first declared display'
   await view.launchTrack(added.trackId)
   const display = view.tracks.find(t => t.trackId === added.trackId)!
     .displays[0]!
-  expect(display.type).toBe('LinearMultiSampleVariantMatrixDisplay')
-  expect(display.configuration.displayId).toBe('two_displays2_matrix')
+  expect(display.type).toBe('LinearVariantDisplay')
+  expect(display.configuration.displayId).toBe('two_displays2_single')
 })

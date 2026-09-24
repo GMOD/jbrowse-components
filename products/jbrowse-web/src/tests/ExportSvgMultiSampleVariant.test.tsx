@@ -11,10 +11,7 @@ import {
 
 // `view.tracks[0].displays[0]` is untyped; annotating it makes a getter that
 // doesn't exist on the model a typecheck error rather than a silent undefined.
-import type {
-  LinearMultiSampleVariantDisplayModel,
-  LinearMultiSampleVariantMatrixDisplayModel,
-} from '@jbrowse/plugin-variants'
+import type { LinearMultiSampleVariantDisplayModel } from '@jbrowse/plugin-variants'
 
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
@@ -70,7 +67,7 @@ test('the matrix export spreads rows in fit mode, below the connector lines', as
     displayType: 'matrix',
   })
   await findDisplayPainted(info.displayTestId, { timeout: 40000 })
-  const display: LinearMultiSampleVariantMatrixDisplayModel =
+  const display: LinearMultiSampleVariantDisplayModel =
     view.tracks[0].displays[0]
   const { lineZoneHeight } = display
 

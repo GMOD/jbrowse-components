@@ -624,12 +624,11 @@ model is a dynamic import until something shows it, and `replaceDisplay` is sync
 and asserts it is loaded. This is `launchTrack` against `showTrack` one level
 down.
 
-Against volvox this answers with the three linear displays a `VariantTrack`
-carries — `LinearVariantDisplay`, `LinearMultiSampleVariantDisplay`,
-`LinearMultiSampleVariantMatrixDisplay`. Do not read `configuration.displays`
-for this: it also holds the `ChordVariantDisplay` a circular view would draw,
-and handing that id to a linear view's track is the one way to make
-`replaceDisplay` fail.
+Against volvox this answers with the linear displays a `VariantTrack` carries —
+`LinearVariantDisplay` and `LinearMultiSampleVariantDisplay`, among them. Do not
+read `configuration.displays` for this: it also holds the `ChordVariantDisplay`
+a circular view would draw, and handing that id to a linear view's track is the
+one way to make `replaceDisplay` fail.
 
 **Read arcs, the read cloud and coverage are settings on the alignments
 display.** An alignments track has one `LinearAlignmentsDisplay`, so arcs are

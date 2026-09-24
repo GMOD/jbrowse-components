@@ -3,18 +3,18 @@ import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
-import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
-import { REFERENCE_COLOR } from '../shared/constants.ts'
-import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
-import { VARIANT_MATRIX_MARKS } from './components/variantMatrixMarks.ts'
+import SvgVariantOverlay from '../../shared/components/SvgVariantOverlay.tsx'
+import { REFERENCE_COLOR } from '../../shared/constants.ts'
+import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
+import { VARIANT_MATRIX_MARKS } from './variantMatrixMarks.ts'
 
-import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
-import type { MatrixConnectorLinesModel } from './components/LinesConnectingMatrixToGenomicPosition.tsx'
+import type { RenderSvgBaseModel } from '../../shared/renderSvgUtils.ts'
+import type { MatrixConnectorLinesModel } from './LinesConnectingMatrixToGenomicPosition.tsx'
 import type {
   MatrixRenderState,
   VariantMatrixRenderBlock,
   VariantMatrixUploadData,
-} from './components/variantMatrixRenderingBackendTypes.ts'
+} from './variantMatrixRenderingBackendTypes.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 

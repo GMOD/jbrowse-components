@@ -111,7 +111,7 @@ metric columns:
     {
       "type": "LDTrackDisplay",
       "ldMetric": "r2",
-      "useGenomicPositions": true,
+      "variantLayout": "genomic",
       "showLegend": true,
       "height": 340
     }

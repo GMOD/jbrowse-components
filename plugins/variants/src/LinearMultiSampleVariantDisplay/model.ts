@@ -1,8 +1,4 @@
-import {
-  ConfigurationReference,
-  getConf,
-  setConf,
-} from '@jbrowse/core/configuration'
+import { getConf, setConf } from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import { radioItems } from '@jbrowse/core/ui/menuItems'
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
@@ -27,10 +23,15 @@ import {
   pxPerBpOf,
   spanRect,
 } from '@jbrowse/render-core/canvas2dUtils'
-import { installUpload } from '@jbrowse/render-core/installUpload'
+import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
 import { inkOfInstances } from '@jbrowse/render-core/marks'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
+import {
+  MULTI_SAMPLE_VARIANT_DISPLAY,
+  clampLineZoneHeight,
+} from '../shared/constants.ts'
+import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { placeVariantRows } from '../shared/placeVariantRows.ts'
 import {
   DEFAULT_VARIANT_LANE_HEIGHT,
@@ -45,12 +46,20 @@ import { variantCellSpanPx } from './components/variantCellSpan.ts'
 import { VARIANT_MARKS } from './components/variantMarks.ts'
 import { laneDisplayConfig } from './laneDisplayConfig.ts'
 import { buildLaneRenderData } from './laneRenderData.ts'
+import { VARIANT_MATRIX_MARKS } from './matrix/variantMatrixMarks.ts'
 
 import type { ShippedRegionData } from '../VariantRPC/executeVariantCellData.ts'
+import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
 import type { Placed } from '../shared/placeVariantRows.ts'
 import type { HoveredCell } from './components/VariantComponent.tsx'
 import type { VariantRenderingBackend } from './components/variantRenderingBackendTypes.ts'
 import type { LinearMultiSampleVariantDisplayConfigModel } from './configSchema.ts'
+import type { MatrixHoveredCell } from './matrix/VariantMatrixComponent.tsx'
+import type {
+  VariantMatrixRenderBlock,
+  VariantMatrixRenderingBackend,
+  VariantMatrixUploadData,
+} from './matrix/variantMatrixRenderingBackendTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
@@ -91,6 +100,41 @@ const LANE_DISPLAY_MODE = 'compact' as const
 /** No pins in a band: the feature there is the display's, not the lane's. */
 const NO_PINNED_FEATURES: ReadonlySet<string> = new Set()
 
+const VARIANT_LAYOUT_OPTIONS = [
+  {
+    value: 'genomic' as const,
+    label: 'At genomic positions',
+    helpText:
+      'Draw each variant across the bases it covers, so a deletion reads as long as it is and variants a few bases apart share pixels when zoomed out',
+  },
+  {
+    value: 'columns' as const,
+    label: 'Equal-width columns',
+    helpText:
+      'Draw one equal-width column per variant in view, with a line tying each column to its position. Keeps the genotype pattern across dense variants readable at any zoom, at the cost of their lengths',
+  },
+]
+
+// Display types this one answers to in a stored session: the matrix used to be
+// a display type of its own
+const RETIRED_TYPES = new Set([
+  'MultiLinearVariantDisplay',
+  'LinearMultiSampleVariantMatrixDisplay',
+  'LinearVariantMatrixDisplay',
+])
+
+type PlacedMatrixData = Placed<
+  VariantMatrixUploadData & { refCellCount: number }
+>
+
+/**
+ * The GPU program each layout draws with, tagged so the one upload lifecycle
+ * sends each payload to the backend that can draw it.
+ */
+export type VariantLayoutBackend =
+  | (VariantRenderingBackend & { columns: false })
+  | (VariantMatrixRenderingBackend & { columns: true })
+
 /**
  * #stateModel LinearMultiSampleVariantDisplay
  * Multi-sample variant display drawing one genotype row per sample, with a
@@ -102,28 +146,32 @@ export function stateModelFactory(
   return (
     types
       .compose(
-        'LinearMultiSampleVariantDisplay',
-        MultiSampleVariantBaseModelF(configSchema, 'regular'),
+        MULTI_SAMPLE_VARIANT_DISPLAY,
+        MultiSampleVariantBaseModelF(configSchema),
         types.model({
-          type: types.literal('LinearMultiSampleVariantDisplay'),
-          // Same node the base already holds — the base declares
-          // `configuration` off a param typed to the *shared* schema, so a slot
-          // this display owns alone (showInsertionGlyphs) would be invisible to
-          // `getConf`. Redeclaring here overrides the prop's type with the
-          // concrete schema (`types.compose` overrides props, it does not
-          // intersect them), so own-slot reads narrow. Runtime value is
-          // identical: `configSchema` is this display's schema either way.
-          configuration: ConfigurationReference(configSchema),
+          type: types.literal(MULTI_SAMPLE_VARIANT_DISPLAY),
         }),
       )
-      // Remap the old type literal on active (view-level) display instances. The
-      // DisplayType `aliases` only covers the track *config*; the view's display
-      // union dispatches on the raw `type`, so it needs this rewrite too.
-      .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>
-        snap?.type === 'MultiLinearVariantDisplay'
-          ? { ...snap, type: 'LinearMultiSampleVariantDisplay' }
-          : snap,
-      )
+      // The DisplayType `aliases` rename the track config's entry; the view's
+      // display union dispatches on the instance's raw `type`, so a stored
+      // instance is renamed here, along with the stub display id it points at.
+      .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
+        const oldType = snap?.type
+        if (typeof oldType !== 'string' || !RETIRED_TYPES.has(oldType)) {
+          return snap
+        }
+        const { configuration } = snap!
+        return {
+          ...snap,
+          type: MULTI_SAMPLE_VARIANT_DISPLAY,
+          ...(typeof configuration === 'string' &&
+          configuration.endsWith(`-${oldType}`)
+            ? {
+                configuration: `${configuration.slice(0, -oldType.length)}${MULTI_SAMPLE_VARIANT_DISPLAY}`,
+              }
+            : {}),
+        }
+      })
       .volatile(() => ({
         /**
          * #volatile
@@ -139,6 +187,17 @@ export function stateModelFactory(
          * `hoverInk` lands on the box the lane painted.
          */
         hoveredLaneMark: undefined as HitFeatureResult | undefined,
+        /**
+         * #volatile
+         * The matrix cell under the pointer, in the equal-width column layout.
+         */
+        hoveredMatrixCell: undefined as MatrixHoveredCell | undefined,
+        /**
+         * #volatile
+         * Whether the attached backend draws columns, so the upload sends it
+         * the payload it can draw across the swap a layout change makes.
+         */
+        backendDrawsColumns: false,
       }))
       .actions(self => {
         const { clearHoveredFeature: superClearHoveredFeature } = self
@@ -157,12 +216,19 @@ export function stateModelFactory(
           },
           /**
            * #action
+           */
+          setHoveredMatrixCell(cell?: MatrixHoveredCell) {
+            self.hoveredMatrixCell = cell
+          },
+          /**
+           * #action
            * The base clears the tooltip; the two highlight boxes go with it.
            */
           clearHoveredFeature() {
             superClearHoveredFeature()
             self.hoveredCell = undefined
             self.hoveredLaneMark = undefined
+            self.hoveredMatrixCell = undefined
           },
         }
       })
@@ -195,79 +261,108 @@ export function stateModelFactory(
         setVariantLaneLabels(arg: ShowLabelsMode) {
           setConf(self, 'variantLaneLabels', arg)
         },
+        /**
+         * #action
+         */
+        setVariantLayout(arg: 'genomic' | 'columns') {
+          setConf(self, 'variantLayout', arg)
+        },
+        /**
+         * #action
+         */
+        setLineZoneHeight(n: number) {
+          setConf(
+            self,
+            'lineZoneHeight',
+            clampLineZoneHeight(self.lineZoneHeight, n),
+          )
+        },
+        /**
+         * #action
+         */
+        setBackendDrawsColumns(arg: boolean) {
+          self.backendDrawsColumns = arg
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * Whether an insertion is drawn wider than the reference span it
+         * consumes — a marker sized by the inserted bp — or at the 2px floor
+         * like a SNP.
+         *
+         * A getter and not three `getConf` calls, because it is the answer
+         * *three* separate pieces of geometry need and they must give the same
+         * one: the marker overlay, the cells' hover highlight, and their click
+         * target. All three read it through `variantCellSpanPx`, which is where
+         * the invariant is written down.
+         *
+         * It used to be four — the variant lane's marks were the fourth. They
+         * are plugin-canvas boxes now, and a box there is its reference span,
+         * so the band does not widen an insertion at all; the length lives in
+         * the rows' markers alone.
+         */
+        get showInsertionGlyphs(): boolean {
+          return getConf(self, 'showInsertionGlyphs')
+        },
+        get visibleRegions() {
+          const view = self.host
+          return view.visibleRegions
+        },
+        /**
+         * #getter
+         * The width the columns are laid out in: the rounded **content**
+         * width, so they still fill the drawn matrix when the genome doesn't
+         * reach across the viewport. Not `canvasWidthPx`, the viewport box a
+         * span maps bp into — the LD display's triangle takes the same width
+         * for the same reason.
+         */
+        get matrixWidth() {
+          return self.view.totalWidthPxWithoutBorders
+        },
       }))
       .views(self => {
-        const {
-          showSubmenuItems: superShowSubmenuItems,
-          trackMenuItems: superTrackMenuItems,
-          rpcProps: superRpcProps,
-        } = self
-
+        const { trackMenuItems: superTrackMenuItems, rpcProps: superRpcProps } =
+          self
         return {
-          // The base declares these `false`/default and this display overrides
-          // them, because the slots are on *this* schema: the band geometry is
-          // shared (every display's rows sit under whatever is stacked on them)
-          // but a display that reserved a lane it cannot paint would take the
-          // height from its rows and leave it blank. See the slot docs.
-          get showVariantLane(): boolean {
-            return getConf(self, 'showVariantLane')
-          },
-          get variantLaneHeight(): number {
-            return getConf(self, 'variantLaneHeight')
-          },
-          get variantLaneLabels(): ShowLabelsMode {
-            return getConf(self, 'variantLaneLabels')
-          },
-          /**
-           * #getter
-           * Whether an insertion is drawn wider than the reference span it
-           * consumes — a marker sized by the inserted bp — or at the 2px floor
-           * like a SNP.
-           *
-           * A getter and not three `getConf` calls, because it is the answer
-           * *three* separate pieces of geometry need and they must give the same
-           * one: the marker overlay, the cells' hover highlight, and their click
-           * target. All three read it through `variantCellSpanPx`, which is where
-           * the invariant is written down.
-           *
-           * It used to be four — the variant lane's marks were the fourth. They
-           * are plugin-canvas boxes now, and a box there is its reference span,
-           * so the band does not widen an insertion at all; the length lives in
-           * the rows' markers alone.
-           */
-          get showInsertionGlyphs(): boolean {
-            return getConf(self, 'showInsertionGlyphs')
-          },
-          get visibleRegions() {
-            const view = self.host
-            return view.visibleRegions
-          },
           // Resolved geometry, never undefined. "The view isn't measured yet" is
-          // the mixin-wide `canRender` gate, and "no regular-mode payload" falls
-          // out of an empty perRegionCellMap — neither is a nullable state.
+          // the mixin-wide `canRender` gate, and "no payload" falls out of an
+          // empty cell map — neither is a nullable state.
           get renderState() {
             return {
-              canvasWidth: self.canvasWidthPx,
+              canvasWidth: self.atGenomicPositions
+                ? self.canvasWidthPx
+                : self.matrixWidth,
               canvasHeight: self.availableHeight,
               rowHeight: self.effectiveRowHeight,
               scrollTop: self.scrollTop,
             }
           },
-          // referenceDrawingMode is a fetch input here and only here:
-          // computeVariantCells omits reference cells entirely when it is
-          // 'skip', so the shipped payload differs. The matrix keeps it out of
-          // rpcProps because it always computes ref cells and greys the
-          // background in CSS — listing it there refetched identical bytes
-          // whenever PORTABLE_CONFIG_KEYS carried the slot across a
-          // display-type switch.
+          // A fetch input at genomic positions only, where the worker leaves
+          // reference cells out under 'skip'. Columns always carry them and
+          // grey the background instead, so a toggle there refetches nothing.
           rpcProps() {
             return {
               ...superRpcProps(),
-              referenceDrawingMode: self.referenceDrawingMode,
+              referenceDrawingMode: self.atGenomicPositions
+                ? self.referenceDrawingMode
+                : undefined,
             }
           },
           trackMenuItems(): MenuItem[] {
-            const items = superTrackMenuItems()
+            const items = [
+              ...superTrackMenuItems(),
+              {
+                label: 'Variant layout',
+                subMenu: radioItems(
+                  VARIANT_LAYOUT_OPTIONS,
+                  self.variantLayout,
+                  layout => {
+                    self.setVariantLayout(layout)
+                  },
+                ),
+              },
+            ]
             // Only offered while the lane is on: a slider that silently does
             // nothing is worse than an absent one, and the checkbox that turns
             // it on is in the "Show..." submenu at the head of the same menu.
@@ -298,7 +393,15 @@ export function stateModelFactory(
                 ]
               : items
           },
+        }
+      })
+      .views(self => {
+        const { showSubmenuItems: superShowSubmenuItems } = self
+        return {
           showSubmenuItems() {
+            if (!self.atGenomicPositions) {
+              return superShowSubmenuItems()
+            }
             return [
               ...superShowSubmenuItems(),
               {
@@ -376,6 +479,116 @@ export function stateModelFactory(
           return out
         },
       }))
+      .views(self => ({
+        /**
+         * #getter
+         * The column layout's payload with its rows placed on screen, the
+         * counterpart of `perRegionCellMap`.
+         */
+        get placedMatrixData(): PlacedMatrixData | undefined {
+          const { cellData, rowRemap } = self
+          return cellData?.mode === 'matrix' && rowRemap
+            ? placeVariantRows(cellData, rowRemap)
+            : undefined
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The columns as the mark backend's region map: one payload under key
+         * 0, left out while it has no cells so the backend answers "nothing
+         * drawn" and the loading scrim stays over a blank canvas.
+         */
+        get matrixRegions(): ReadonlyMap<number, VariantMatrixUploadData> {
+          const data = self.placedMatrixData
+          return oneCell(0, data?.numCells ? data : undefined)
+        },
+        /**
+         * #getter
+         * The one block the column layout draws: the whole canvas, spanning
+         * the column indices, the payload's `numFeatures` carrying the pitch.
+         */
+        get matrixBlocks(): VariantMatrixRenderBlock[] {
+          return [
+            {
+              displayedRegionIndex: 0,
+              start: 0,
+              end: self.placedMatrixData?.numFeatures ?? 0,
+              screenStartPx: 0,
+              screenEndPx: self.matrixWidth,
+              reversed: false,
+            },
+          ]
+        },
+        /**
+         * #getter
+         * Column pitch and origin in viewport pixels: `left` is where the
+         * content starts when it doesn't reach the left viewport edge. The
+         * connector lines, their hit test and the crosshair column all key off
+         * this, so columns, lines and clicks stay pixel-aligned.
+         */
+        get columnGeometry() {
+          const n = self.cellData?.simplifiedFeatures.length ?? 0
+          return {
+            n,
+            columnWidth: n ? self.matrixWidth / n : 0,
+            left: Math.max(0, -self.host.offsetPx),
+          }
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * One connector per column, **by column**, in viewport pixels: `mx`
+         * the column centre, `gx` the variant's position on the ruler,
+         * `label` what the hover tooltip shows. `undefined` where the variant's
+         * refName has left the view. Indexed rather than filtered, so the
+         * crosshair can ask of one column what the drawn field asks of all.
+         * Column and data index are one number: the worker ships the variants
+         * in screen order.
+         */
+        get connectorCoordsByColumn(): (ConnectorCoord | undefined)[] {
+          const features = self.cellData?.simplifiedFeatures
+          if (!features) {
+            return []
+          }
+          const locusX = locusViewportXFor(self)
+          const { columnWidth, left } = self.columnGeometry
+          return features.map(({ data }, i) => {
+            const gx = locusX(String(data.refName), Number(data.start))
+            return gx === undefined
+              ? undefined
+              : {
+                  mx: left + (i + 0.5) * columnWidth,
+                  gx,
+                  label: data.name as string | undefined,
+                }
+          })
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The connector lines that draw: those with a genomic x.
+         */
+        get connectorLineCoords(): ConnectorCoord[] {
+          return self.connectorCoordsByColumn.filter(
+            coord => coord !== undefined,
+          )
+        },
+        /**
+         * #method
+         * The connector for the column under `screenX` (the crosshair), or
+         * undefined off the ends and over a column with no genomic x.
+         */
+        connectorLineAtScreenX(screenX: number): ConnectorCoord | undefined {
+          const { n, columnWidth, left } = self.columnGeometry
+          const screenCol = Math.floor((screenX - left) / columnWidth)
+          return screenCol >= 0 && screenCol < n
+            ? self.connectorCoordsByColumn[screenCol]
+            : undefined
+        },
+      }))
       // separate block so these see perRegionCellMap
       .views(self => ({
         /**
@@ -387,7 +600,22 @@ export function stateModelFactory(
          * plugin-canvas laid out and painted, in the lane at the top.
          */
         get hoverInk(): HighlightRect[] {
-          const { hoveredCell: cell, hoveredLaneMark: lane } = self
+          const {
+            hoveredCell: cell,
+            hoveredLaneMark: lane,
+            hoveredMatrixCell: matrixCell,
+          } = self
+          if (matrixCell) {
+            const { left } = self.columnGeometry
+            const top = self.rowsTopOffset
+            return inkOfInstances(
+              VARIANT_MATRIX_MARKS,
+              self.matrixBlocks,
+              index => self.matrixRegions.get(index),
+              self.renderState,
+              () => [{ mark: 0, index: matrixCell.cellIndex }],
+            ).map(r => ({ ...r, left: r.left + left, top: r.top + top }))
+          }
           if (cell) {
             const region = self.renderBlocks.find(
               b => b.displayedRegionIndex === cell.displayedRegionIndex,
@@ -490,7 +718,7 @@ export function stateModelFactory(
          * strictly narrower than either approximation above.
          */
         get drawsInsertionMarkers(): boolean {
-          if (!self.showInsertionGlyphs) {
+          if (!self.showInsertionGlyphs || !self.atGenomicPositions) {
             return false
           }
           // `effectiveRowHeight` read directly, never through `renderState`:
@@ -834,23 +1062,46 @@ export function stateModelFactory(
       // and insertionGlyphRegions
       .views(self => ({
         async renderSvg(opts?: ExportSvgDisplayOptions) {
-          const { renderSvg } = await import('./renderSvg.tsx')
+          if (self.atGenomicPositions) {
+            const { renderSvg } = await import('./renderSvg.tsx')
+            return renderSvg(self, opts)
+          }
+          const { renderSvg } = await import('./matrix/renderMatrixSvg.tsx')
           return renderSvg(self, opts)
         },
       }))
       .actions(self => ({
-        startRenderingBackend(backend: VariantRenderingBackend) {
-          // `perRegionCellMap` is one MobX computed and its entries are the
-          // upload payload, so the encode is the identity and there is nothing
-          // to declare `inputs` for.
-          installUpload(self, backend, {
-            cells: () => self.perRegionCellMap,
+        /**
+         * #action
+         * The layout's chrome hands over its backend; a layout switch mounts
+         * the other chrome, whose backend replaces this one. The upload
+         * lifecycle is installed once, so its cells and its render follow the
+         * backend attached rather than the setting: until the other chrome's
+         * backend arrives, the old one is sent nothing it cannot draw.
+         */
+        startRenderingBackend(backend: VariantLayoutBackend) {
+          self.setBackendDrawsColumns(backend.columns)
+          installUpload<
+            number,
+            Placed<ShippedRegionData> | VariantMatrixUploadData,
+            VariantLayoutBackend
+          >(self, backend, {
+            cells: () =>
+              self.backendDrawsColumns
+                ? self.matrixRegions
+                : self.perRegionCellMap,
             render: b =>
-              b.renderBlocks(
-                self.renderBlocks,
-                self.perRegionCellMap,
-                self.renderState,
-              ),
+              b.columns
+                ? b.renderBlocks(
+                    self.matrixBlocks,
+                    self.matrixRegions,
+                    self.renderState,
+                  )
+                : b.renderBlocks(
+                    self.renderBlocks,
+                    self.perRegionCellMap,
+                    self.renderState,
+                  ),
           })
         },
       }))

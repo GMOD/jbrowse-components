@@ -67,11 +67,10 @@ which opens your own VCF and BAM files from disk.
 
 ## Genotypes across the cohort
 
-Switch the track to the **Multi-sample variant display (regular)** from the
-track menu. Each sample becomes a row drawn at the variant's genomic span, so
-the deletion is a wide block. Clicking it opens the feature details panel, whose
-**SAMPLES** section lists every sample's genotype, read depth and other
-per-sample fields.
+Switch the track to the **Multi-sample variant display** from the track menu.
+Each sample becomes a row drawn at the variant's genomic span, so the deletion
+is a wide block. Clicking it opens the feature details panel, whose **SAMPLES**
+section lists every sample's genotype, read depth and other per-sample fields.
 
 Rows start in the callset's order. Right-click the deletion and pick **Sort by
 genotype** to order rows by genotype at that call, then by how far each keeps

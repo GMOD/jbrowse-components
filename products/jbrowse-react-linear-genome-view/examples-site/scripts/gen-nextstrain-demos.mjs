@@ -642,8 +642,9 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
         },
         displays: [
           {
-            type: 'LinearMultiSampleVariantMatrixDisplay',
-            displayId: `${assembly}-genotypes-LinearMultiSampleVariantMatrixDisplay`,
+            type: 'LinearMultiSampleVariantDisplay',
+            variantLayout: 'columns',
+            displayId: `${assembly}-genotypes-LinearMultiSampleVariantDisplay`,
             height: 400,
             rowColor: 'region',
           },
@@ -687,8 +688,8 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
             configuration: `${assembly}-genotypes`,
             displays: [
               {
-                type: 'LinearMultiSampleVariantMatrixDisplay',
-                configuration: `${assembly}-genotypes-LinearMultiSampleVariantMatrixDisplay`,
+                type: 'LinearMultiSampleVariantDisplay',
+                configuration: `${assembly}-genotypes-LinearMultiSampleVariantDisplay`,
               },
             ],
           },

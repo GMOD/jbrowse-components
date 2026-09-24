@@ -3,8 +3,6 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { createTestEnvironment } from '../LDDisplay/testEnv.ts'
 import regularConfigFactory from '../LinearMultiSampleVariantDisplay/configSchema.ts'
 import regularStateModelFactory from '../LinearMultiSampleVariantDisplay/model.ts'
-import matrixConfigFactory from '../LinearMultiSampleVariantMatrixDisplay/configSchema.ts'
-import matrixStateModelFactory from '../LinearMultiSampleVariantMatrixDisplay/model.ts'
 
 // The connector-line zone is one contract across every display that draws it: a
 // `lineZoneHeight` **config slot** (so a drag survives the track being unticked
@@ -13,11 +11,15 @@ import matrixStateModelFactory from '../LinearMultiSampleVariantMatrixDisplay/mo
 // families used to disagree — LD on a slot, the matrix on a bespoke instance
 // property with its own clamp — which is how their setters drifted.
 function matrixDisplay() {
-  const type = 'LinearMultiSampleVariantMatrixDisplay'
-  const configSchema = matrixConfigFactory()
-  return matrixStateModelFactory(configSchema).create({
+  const type = 'LinearMultiSampleVariantDisplay'
+  const configSchema = regularConfigFactory()
+  return regularStateModelFactory(configSchema).create({
     type,
-    configuration: configSchema.create({ type, displayId: 'test-matrix' }),
+    configuration: configSchema.create({
+      type,
+      displayId: 'test-matrix',
+      variantLayout: 'columns',
+    }),
   })
 }
 
@@ -45,7 +47,7 @@ test('only the index-laid-out displays reserve a zone', () => {
 // switched on. Labels used to get nothing at all and rendered over the triangle.
 test('LD reserves the genomic-positions zone for whatever is switched on', () => {
   const { display } = createTestEnvironment().createDisplay()
-  display.setUseGenomicPositions(true)
+  display.setVariantLayout('genomic')
 
   expect(display.effectiveLineZoneHeight).toBe(0)
 

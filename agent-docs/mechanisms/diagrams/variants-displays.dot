@@ -15,8 +15,8 @@ digraph variant_displays {
   pattern -> matrix  [label=" yes"]
   pattern -> regular [label=" no"]
 
-  regular [label="LinearMultiSampleVariantDisplay\nrow = sample or haplotype\ncolumn = the record's genomic span\nvariant lane, insertion glyphs"]
-  matrix  [label="LinearMultiSampleVariantMatrixDisplay\nrow = sample or haplotype\ncolumn = one variant, equal width\nconnector lines to the genome"]
+  regular [label="LinearMultiSampleVariantDisplay\nvariantLayout: 'genomic'\nrow = sample or haplotype\ncolumn = the record's genomic span\nvariant lane, insertion glyphs"]
+  matrix  [label="LinearMultiSampleVariantDisplay\nvariantLayout: 'columns'\nrow = sample or haplotype\ncolumn = one variant, equal width\nconnector lines to the genome"]
 
   ld [label="LDDisplay\ncell = a site PAIR\nr² or D' through a 256-entry ramp"]
   vcf -> ld [label=" pairwise LD"]

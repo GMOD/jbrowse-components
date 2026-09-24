@@ -1,9 +1,9 @@
-import { f2 } from '../shared/constants.ts'
-import { findCellIndex } from '../shared/variantCellLookup.ts'
-import { variantMatrixSurface } from './components/VariantMatrixComponent.tsx'
+import { f2 } from '../../shared/constants.ts'
+import { findCellIndex } from '../../shared/variantCellLookup.ts'
+import { variantMatrixSurface } from './VariantMatrixComponent.tsx'
 import { createTestEnvironment } from './testEnv.ts'
 
-import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
+import type { CellDataResult } from '../../VariantRPC/executeVariantCellData.ts'
 
 type MatrixCellDataResult = Extract<CellDataResult, { mode: 'matrix' }>
 
@@ -80,7 +80,7 @@ test('the hovered cell lights the box its instance painted, in the chrome', () =
   expect(display.hoverInk).toEqual([])
 
   // S1's cell at site 1: worker row 1, drawn on screen row 0
-  display.setHoveredCell({ cellIndex: 3 })
+  display.setHoveredMatrixCell({ cellIndex: 3 })
   const { rowsTopOffset } = display
   expect(display.columnGeometry).toEqual({ n: 2, columnWidth: 400, left: 0 })
   expect(display.hoverInk).toHaveLength(1)
@@ -106,11 +106,11 @@ test('the hit names the drawn cell the tooltip reports, and the hover lights it'
   expect(hit.cell!.cellIndex).toBe(1)
 
   surface.onHover!(hit)
-  expect(display.hoveredCell).toEqual({ cellIndex: 1 })
+  expect(display.hoveredMatrixCell).toEqual({ cellIndex: 1 })
   expect(display.hoverInk[0]!.top).toBeCloseTo(display.rowsTopOffset + 20 - f2)
 
   display.clearHoveredFeature()
-  expect(display.hoveredCell).toBeUndefined()
+  expect(display.hoveredMatrixCell).toBeUndefined()
   expect(display.hoverInk).toEqual([])
 })
 

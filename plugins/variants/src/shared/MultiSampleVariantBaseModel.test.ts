@@ -1,25 +1,25 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { rowColorScale } from '@jbrowse/tree-sidebar'
 
+import configSchemaFactory from '../LinearMultiSampleVariantDisplay/configSchema.ts'
 import {
   applyAttributeColors,
   attributeColorDeal,
   maybeApplyFacet,
   sortSourcesByAttribute,
 } from './MultiSampleVariantBaseModel.ts'
-import sharedVariantConfigFactory from './SharedVariantConfigSchema.ts'
 
 import type { Source } from './types.ts'
 
-describe('SharedVariantConfigSchema', () => {
-  const configSchema = sharedVariantConfigFactory()
+describe('the display config schema', () => {
+  const configSchema = configSchemaFactory()
 
   // `showReferenceAlleles` was a second boolean whose only job was seeding this
   // one; it is gone, and this slot is the whole setting.
   describe('referenceDrawingMode config slot', () => {
     it("defaults to 'skip'", () => {
       const config = configSchema.create({
-        type: 'SharedVariantDisplay',
+        type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-1',
       })
       expect(readConfObject(config, 'referenceDrawingMode')).toBe('skip')
@@ -27,7 +27,7 @@ describe('SharedVariantConfigSchema', () => {
 
     it("can be set to 'draw'", () => {
       const config = configSchema.create({
-        type: 'SharedVariantDisplay',
+        type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-2',
         referenceDrawingMode: 'draw',
       })
@@ -36,7 +36,7 @@ describe('SharedVariantConfigSchema', () => {
 
     it('no longer declares showReferenceAlleles', () => {
       const config = configSchema.create({
-        type: 'SharedVariantDisplay',
+        type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-2b',
         showReferenceAlleles: true,
       })
@@ -47,7 +47,7 @@ describe('SharedVariantConfigSchema', () => {
   describe('showRowLabels config slot', () => {
     it('has default value of true', () => {
       const config = configSchema.create({
-        type: 'SharedVariantDisplay',
+        type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-3',
       })
       expect(readConfObject(config, 'showRowLabels')).toBe(true)
@@ -55,7 +55,7 @@ describe('SharedVariantConfigSchema', () => {
 
     it('can be set to false', () => {
       const config = configSchema.create({
-        type: 'SharedVariantDisplay',
+        type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-4',
         showRowLabels: false,
       })
@@ -66,7 +66,7 @@ describe('SharedVariantConfigSchema', () => {
   describe('showTree config slot', () => {
     it('has default value of true', () => {
       const config = configSchema.create({
-        type: 'SharedVariantDisplay',
+        type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-5',
       })
       expect(readConfObject(config, 'showTree')).toBe(true)
@@ -74,7 +74,7 @@ describe('SharedVariantConfigSchema', () => {
 
     it('can be set to false', () => {
       const config = configSchema.create({
-        type: 'SharedVariantDisplay',
+        type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-6',
         showTree: false,
       })
@@ -85,7 +85,7 @@ describe('SharedVariantConfigSchema', () => {
   describe('renderingMode config slot', () => {
     it('has default value of alleleCount', () => {
       const config = configSchema.create({
-        type: 'SharedVariantDisplay',
+        type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-7',
       })
       expect(readConfObject(config, 'renderingMode')).toBe('alleleCount')
@@ -93,7 +93,7 @@ describe('SharedVariantConfigSchema', () => {
 
     it('can be set to phased', () => {
       const config = configSchema.create({
-        type: 'SharedVariantDisplay',
+        type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-8',
         renderingMode: 'phased',
       })
@@ -104,7 +104,7 @@ describe('SharedVariantConfigSchema', () => {
   describe('minorAlleleFrequencyFilter config slot', () => {
     it('has default value of 0', () => {
       const config = configSchema.create({
-        type: 'SharedVariantDisplay',
+        type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-9',
       })
       expect(readConfObject(config, 'minorAlleleFrequencyFilter')).toBe(0)
@@ -112,7 +112,7 @@ describe('SharedVariantConfigSchema', () => {
 
     it('can be set to a custom value', () => {
       const config = configSchema.create({
-        type: 'SharedVariantDisplay',
+        type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-10',
         minorAlleleFrequencyFilter: 0.05,
       })
@@ -123,7 +123,7 @@ describe('SharedVariantConfigSchema', () => {
   describe('maxMissingnessFilter config slot', () => {
     it('defaults to 1 (keep every variant)', () => {
       const config = configSchema.create({
-        type: 'SharedVariantDisplay',
+        type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-missingness-default',
       })
       expect(readConfObject(config, 'maxMissingnessFilter')).toBe(1)
@@ -131,7 +131,7 @@ describe('SharedVariantConfigSchema', () => {
 
     it('can be set to a custom value', () => {
       const config = configSchema.create({
-        type: 'SharedVariantDisplay',
+        type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-missingness-custom',
         maxMissingnessFilter: 0.2,
       })
@@ -141,11 +141,11 @@ describe('SharedVariantConfigSchema', () => {
 })
 
 describe('rowColor config object', () => {
-  const configSchema = sharedVariantConfigFactory()
+  const configSchema = configSchemaFactory()
 
   it('colours by the rows themselves by default', () => {
     const config = configSchema.create({
-      type: 'SharedVariantDisplay',
+      type: 'LinearMultiSampleVariantDisplay',
       displayId: 'test-colorby-1',
     })
     expect(readConfObject(config, ['rowColor', 'field'])).toBe('name')
@@ -153,7 +153,7 @@ describe('rowColor config object', () => {
 
   it('can be set to a metadata attribute name', () => {
     const config = configSchema.create({
-      type: 'SharedVariantDisplay',
+      type: 'LinearMultiSampleVariantDisplay',
       displayId: 'test-colorby-2',
       rowColor: 'population',
     })

@@ -4,26 +4,26 @@ description: Population-level variant views
 guide_category: Track types
 ---
 
-A VCF can carry genotypes for many samples. JBrowse shows them with one of two
-displays, switchable from the track menu:
+A VCF can carry genotypes for many samples. The multi-sample variant display
+draws one row per sample, and the track menu's **Variant layout** chooses how
+the variants run across it:
 
-- Multi-sample variant display (regular) - variants drawn at their true genomic
-  positions, one row per sample
-- Multi-sample variant display (matrix) - variants laid out as a heatmap, one
-  row per sample and one column per variant
+- **At genomic positions**, the default: each variant drawn across the bases it
+  covers
+- **Equal-width columns**: one column per variant in view, like a heatmap
 
-## Regular display: structural variants at their real span {#regular-best-for-full-sv-detail}
+## At genomic positions: structural variants at their real span {#regular-best-for-full-sv-detail}
 
-Each variant is drawn at its real genomic position. This is the only
-multi-sample display that renders structural variants at the right scale, and
-overlapping calls use slight transparency so you can still tell them apart.
+Each variant is drawn at its real genomic position. This is the layout that
+renders structural variants at the right scale, and overlapping calls use slight
+transparency so you can still tell them apart.
 
 If overlaps overwhelm the view, use "Edit filters" in the track menu to hide
 variants by size, name, or any Jexl expression.
 
 <Figure caption="1000 Genomes SV ensemble callset (3202 samples) across 5 Mb of chr19, one row per sample, sorted by genotype at a 1.1 Mb inversion. Each call is drawn at its real span, so the sort collects the inversion's carriers into a block against the rest of the cohort." src="/img/multisv.png" />
 
-## Matrix display: SNP and indel patterns {#matrix-best-for-snpindel-patterns}
+## Equal-width columns: SNP and indel patterns {#matrix-best-for-snpindel-patterns}
 
 Each visible variant gets one column and each sample gets one row, regardless of
 how far apart the variants are on the genome. A thin black line connects each
@@ -33,7 +33,7 @@ Sparse small variants that would be only 1–2px wide at their true positions ea
 get a full readable column. Patterns like shared haplotypes, runs of
 homozygosity, and population structure become visible at a glance.
 
-<Figure caption="A phased trio as a matrix display: one column per variant, one row per haplotype, each cell shaded reference against alt. Inherited haplotype blocks read as contiguous vertical bands shared across parent and child rows." src="/img/trio-matrix-phased-clean.png" />
+<Figure caption="A phased trio in equal-width columns: one column per variant, one row per haplotype, each cell shaded reference against alt. Inherited haplotype blocks read as contiguous vertical bands shared across parent and child rows." src="/img/trio-matrix-phased-clean.png" />
 
 ## Filtering by allele frequency and missingness
 
@@ -46,26 +46,25 @@ you release the slider:
   common, population-informative variants remain.
 - **Missingness** hides variants whose fraction of no-call genotypes rises above
   the threshold. Its
-  [default](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-maxmissingnessfilter)
+  [default](/docs/config/linearmultisamplevariantdisplay/#slot-maxmissingnessfilter)
   keeps every variant; lowering it drops the poorly-genotyped columns that are
   mostly missing data.
 
-Missingness is especially useful on a matrix display, where each variant takes a
-full column no matter how many of its genotypes are no-calls.
+Missingness is especially useful in equal-width columns, where each variant
+takes a full column no matter how many of its genotypes are no-calls.
 
 <Figure src="/img/variants/potato_missingness.png" caption="One tetraploid potato multi-sample VCF opened twice in the same view as a genotype matrix, on one ruler. Top: the default missingness ceiling keeps every variant, and no-call columns dominate. Bottom: a 0.1 ceiling leaves the well-genotyped sites." />
 
 Either filter can be preset so the track loads already filtered, with the
-[`minorAlleleFrequencyFilter`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-minorallelefrequencyfilter)
+[`minorAlleleFrequencyFilter`](/docs/config/linearmultisamplevariantdisplay/#slot-minorallelefrequencyfilter)
 and
-[`maxMissingnessFilter`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-maxmissingnessfilter)
+[`maxMissingnessFilter`](/docs/config/linearmultisamplevariantdisplay/#slot-maxmissingnessfilter)
 display slots. See
 [configuring default display settings](/docs/config_guides/variant_track#configuring-default-display-settings).
 
 ## Genotype coloring: allele dosage vs phased
 
-Both the regular and matrix displays color each genotype cell, and how they
-color it is set by the
+Both layouts color each genotype cell, and how they color it is set by the
 [`renderingMode`](/docs/config/linearmultisamplevariantdisplay/#slot-renderingmode)
 display option.
 

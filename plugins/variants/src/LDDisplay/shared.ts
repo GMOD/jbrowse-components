@@ -131,8 +131,8 @@ export default function sharedModelFactory(
       setShowLabels(show: boolean) {
         setConf(self, 'showLabels', show)
       },
-      setUseGenomicPositions(value: boolean) {
-        setConf(self, 'useGenomicPositions', value)
+      setVariantLayout(value: 'genomic' | 'columns') {
+        setConf(self, 'variantLayout', value)
       },
     }))
     .views(self => ({
@@ -169,9 +169,12 @@ export default function sharedModelFactory(
       get tickHeight() {
         return getConf(self, 'tickHeight')
       },
-      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST getter named after config slot
+      get variantLayout(): 'genomic' | 'columns' {
+        return getConf(self, 'variantLayout')
+      },
+      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST getter, not a hook
       get useGenomicPositions() {
-        return getConf(self, 'useGenomicPositions')
+        return getConf(self, 'variantLayout') === 'genomic'
       },
       /**
        * #getter
@@ -265,7 +268,10 @@ export default function sharedModelFactory(
        * request.
        */
       get effectiveUseGenomicPositions(): boolean {
-        return self.rpcData?.genomicMode ?? getConf(self, 'useGenomicPositions')
+        return (
+          self.rpcData?.genomicMode ??
+          getConf(self, 'variantLayout') === 'genomic'
+        )
       },
       /**
        * #getter

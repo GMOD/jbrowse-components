@@ -85,17 +85,32 @@ function forceLoadTest({
   displayType,
   displayTestId,
   canvasTestId,
+  displayConfig,
 }: {
   name: string
   displayType: string
   displayTestId: string
   canvasTestId: string
+  displayConfig?: Record<string, unknown>
 }): TestCase {
   return {
     name,
     fn: async (page: Page) => {
       const spec = encodeSessionSpec({
-        sessionTracks: [gatedTrack],
+        sessionTracks: [
+          displayConfig
+            ? {
+                ...gatedTrack,
+                displays: [
+                  {
+                    type: displayType,
+                    displayId: `${TRACK_ID}-${displayType}`,
+                    ...displayConfig,
+                  },
+                ],
+              }
+            : gatedTrack,
+        ],
         views: [
           {
             type: 'LinearGenomeView',
@@ -141,8 +156,9 @@ const suite: TestSuite = {
       canvasTestId: 'variant_canvas',
     }),
     forceLoadTest({
-      name: 'variant matrix force-load re-renders canvas',
-      displayType: 'LinearMultiSampleVariantMatrixDisplay',
+      name: 'variant columns force-load re-renders canvas',
+      displayType: 'LinearMultiSampleVariantDisplay',
+      displayConfig: { variantLayout: 'columns' },
       displayTestId: 'variant-matrix-display',
       canvasTestId: 'variant_matrix_canvas',
     }),

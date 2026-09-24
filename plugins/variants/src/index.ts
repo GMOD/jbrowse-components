@@ -3,7 +3,6 @@ import Plugin from '@jbrowse/core/Plugin'
 import LDDisplayF from './LDDisplay/index.ts'
 import LDTrackF from './LDTrack/index.ts'
 import LinearMultiSampleVariantDisplayF from './LinearMultiSampleVariantDisplay/index.ts'
-import LinearMultiSampleVariantMatrixDisplayF from './LinearMultiSampleVariantMatrixDisplay/index.ts'
 import LinearVariantDisplayF from './LinearVariantDisplay/index.ts'
 import PlinkLDAdapterF from './PlinkLDAdapter/index.ts'
 import LDDataRPCMethodsF from './RenderLDDataRPC/index.ts'
@@ -51,7 +50,6 @@ export default class VariantsPlugin extends Plugin {
     LDTrackF(pluginManager)
     LinearVariantDisplayF(pluginManager)
     LinearMultiSampleVariantDisplayF(pluginManager)
-    LinearMultiSampleVariantMatrixDisplayF(pluginManager)
     LDDisplayF(pluginManager)
     LDDataRPCMethodsF(pluginManager)
 
@@ -126,4 +124,3 @@ export {
 
 export type { LinearVariantDisplayModel } from './LinearVariantDisplay/model.ts'
 export type { LinearMultiSampleVariantDisplayModel } from './LinearMultiSampleVariantDisplay/model.ts'
-export type { LinearMultiSampleVariantMatrixDisplayModel } from './LinearMultiSampleVariantMatrixDisplay/model.ts'

@@ -401,7 +401,8 @@ export const dog10kVideoFixtures = {
         },
         {
           trackId: 'dog10k_igf1_haplotype',
-          type: 'LinearMultiSampleVariantMatrixDisplay',
+          type: 'LinearMultiSampleVariantDisplay',
+          variantLayout: 'columns',
           height: 620,
           lineZoneHeight: 34,
           rowColor: 'size',
@@ -1760,7 +1761,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         },
         {
           trackId: 'dog10k_igf1_haplotype',
-          type: 'LinearMultiSampleVariantMatrixDisplay',
+          type: 'LinearMultiSampleVariantDisplay',
+          variantLayout: 'columns',
           height: 620,
           lineZoneHeight: 34,
           runClustering: true,

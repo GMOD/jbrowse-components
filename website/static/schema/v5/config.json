@@ -5551,7 +5551,7 @@
           "default": false
         },
         "height": {
-          "description": "Starting height in pixels for the genotype rows; drag-resizable, and the rows divide it while row height is on auto-fit.",
+          "description": "Starting height in pixels for the whole display, including any band above the rows; drag-resizable, and the rows divide what is left while row height is on auto-fit.",
           "type": "number",
           "default": 200
         },
@@ -5560,162 +5560,10 @@
           "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
-        "lineZoneHeight": {
-          "type": "number",
-          "default": 0
-        },
-        "jexlFilters": {
-          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "rowHeight": {
-          "description": "per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them.",
-          "type": "number",
-          "default": 0
-        },
-        "showTree": {
-          "description": "Show the sample clustering tree in the sidebar.",
-          "type": "boolean",
-          "default": true
-        },
-        "showBranchLength": {
-          "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "type": "boolean",
-          "default": true
-        },
-        "showRowLabels": {
-          "description": "Show the per-sample row labels in the sidebar.",
-          "type": "boolean",
-          "default": true
-        },
-        "treeAreaWidth": {
-          "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "type": "number",
-          "default": 80
-        },
-        "rows": {
-          "$ref": "#/$defs/RowArrangement"
-        },
-        "showRowSeparators": {
-          "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
-          "type": "boolean",
-          "default": false
-        },
-        "showTooltips": {
-          "description": "show the hover tooltip over the genotype rows; the crosshairs and the hover highlight stay either way.",
-          "type": "boolean",
-          "default": true
-        },
-        "renderingMode": {
-          "description": "'alleleCount' draws one row per sample colored by allele dosage; 'phased' draws one row per haplotype.",
-          "enum": ["alleleCount", "phased"],
-          "default": "alleleCount"
-        },
-        "color": {
-          "$ref": "#/$defs/VariantCellColor"
-        },
-        "shadeByDosage": {
-          "description": "shade each alt cell by the fraction of its called alleles that are non-reference, so a homozygote is darker than a heterozygote; off paints every alt cell the mode's flat hue.",
-          "type": "boolean",
-          "default": true
-        },
-        "minorAlleleFrequencyFilter": {
-          "description": "Hide variants whose minor allele frequency is below this threshold.",
-          "type": "number",
-          "default": 0
-        },
-        "maxMissingnessFilter": {
-          "description": "Hide variants whose fraction of no-call (missing) genotypes is above this threshold; 1 keeps every variant.",
-          "type": "number",
-          "default": 1
-        },
-        "showLegend": {
-          "description": "Whether to show the floating legend over the display; turn it off to size a short lane to its rows rather than to its key. Defaults to on.",
-          "type": "boolean",
-          "default": true
-        },
-        "rowColor": {
-          "$ref": "#/$defs/RowColor"
-        },
-        "facet": {
-          "$ref": "#/$defs/Facet"
-        },
-        "referenceDrawingMode": {
-          "description": "whether to paint reference alleles: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype.",
-          "enum": ["draw", "skip"],
-          "default": "skip"
-        },
-        "showInsertionGlyphs": {
-          "description": "widen insertion cells to a marker sized by the inserted bp, instead of drawing them at the 2px floor like a SNP.",
-          "type": "boolean",
-          "default": true
-        },
-        "showVariantLane": {
-          "description": "draw a lane of the variants themselves above the genotype rows, at their genomic positions.",
-          "type": "boolean",
-          "default": false
-        },
-        "variantLaneHeight": {
-          "type": "number",
-          "default": 40
-        },
-        "variantLaneLabels": {
-          "description": "which label text the variant lane draws beside each mark: the record's ID and/or its description, in plugin-canvas's own vocabulary. 'auto' admits both — the lane has no density thresholds of its own, so adaptivity is its collision cull.",
-          "enum": ["auto", "nameAndDescription", "name", "description", "none"],
-          "default": "auto"
-        }
-      }
-    },
-    "LinearMultiSampleVariantDisplay": {
-      "title": "LinearMultiSampleVariantDisplay",
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots"
-        }
-      ],
-      "properties": {
-        "type": {
-          "enum": [
-            "LinearMultiSampleVariantDisplay",
-            "MultiLinearVariantDisplay"
-          ]
-        },
-        "displayId": {
-          "type": "string"
-        }
-      },
-      "required": ["type"],
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "unevaluatedProperties": false
-    },
-    "LinearMultiSampleVariantMatrixDisplaySlots": {
-      "type": "object",
-      "properties": {
-        "fetchSizeLimit": {
-          "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "type": "number",
-          "default": 1000000
-        },
-        "forceLoad": {
-          "description": "Declarative equivalent of the \"Force load\" button on the \"too much data\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "type": "boolean",
-          "default": false
-        },
-        "height": {
-          "description": "Starting height in pixels for the whole display, including the lineZoneHeight band above the rows; drag-resizable, and the rows divide what is left over while row height is on auto-fit.",
-          "type": "number",
-          "default": 250
-        },
-        "mouseover": {
-          "description": "text to display when the cursor hovers over a feature.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
+        "variantLayout": {
+          "description": "'genomic' draws each variant at its span; 'columns' draws one equal-width column per variant, tied to its position by a connector line.",
+          "enum": ["genomic", "columns"],
+          "default": "genomic"
         },
         "lineZoneHeight": {
           "type": "number",
@@ -5790,7 +5638,7 @@
           "default": 1
         },
         "showLegend": {
-          "description": "Whether to show the floating legend over the display; turn it off to size a short lane to its rows rather than to its key. Defaults to on.",
+          "description": "Whether to show the floating legend over the display; turn it off to size a short display to its rows rather than to its key. Defaults to on.",
           "type": "boolean",
           "default": true
         },
@@ -5804,20 +5652,41 @@
           "description": "whether to paint reference alleles: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype.",
           "enum": ["draw", "skip"],
           "default": "skip"
+        },
+        "showInsertionGlyphs": {
+          "description": "widen insertion cells to a marker sized by the inserted bp, instead of drawing them at the 2px floor like a SNP.",
+          "type": "boolean",
+          "default": true
+        },
+        "showVariantLane": {
+          "description": "draw a lane of the variants themselves above the genotype rows, at their genomic positions.",
+          "type": "boolean",
+          "default": false
+        },
+        "variantLaneHeight": {
+          "type": "number",
+          "default": 40
+        },
+        "variantLaneLabels": {
+          "description": "which label text the variant lane draws beside each mark: the record's ID and/or its description, in plugin-canvas's own vocabulary. 'auto' admits both — the lane has no density thresholds of its own, so adaptivity is its collision cull.",
+          "enum": ["auto", "nameAndDescription", "name", "description", "none"],
+          "default": "auto"
         }
       }
     },
-    "LinearMultiSampleVariantMatrixDisplay": {
-      "title": "LinearMultiSampleVariantMatrixDisplay",
+    "LinearMultiSampleVariantDisplay": {
+      "title": "LinearMultiSampleVariantDisplay",
       "type": "object",
       "allOf": [
         {
-          "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots"
+          "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots"
         }
       ],
       "properties": {
         "type": {
           "enum": [
+            "LinearMultiSampleVariantDisplay",
+            "MultiLinearVariantDisplay",
             "LinearMultiSampleVariantMatrixDisplay",
             "LinearVariantMatrixDisplay"
           ]
@@ -5891,9 +5760,9 @@
           "type": "number",
           "default": 6
         },
-        "useGenomicPositions": {
-          "type": "boolean",
-          "default": false
+        "variantLayout": {
+          "enum": ["genomic", "columns"],
+          "default": "columns"
         }
       }
     },
@@ -9309,9 +9178,6 @@
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/fetchSizeLimit"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/fetchSizeLimit"
-                },
-                {
                   "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/fetchSizeLimit"
                 },
                 {
@@ -9326,9 +9192,6 @@
                 },
                 {
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/forceLoad"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/forceLoad"
                 },
                 {
                   "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/forceLoad"
@@ -9347,9 +9210,6 @@
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/height"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/height"
-                },
-                {
                   "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/height"
                 },
                 {
@@ -9364,9 +9224,6 @@
                 },
                 {
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/mouseover"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/mouseover"
                 }
               ]
             },
@@ -9405,9 +9262,6 @@
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/jexlFilters"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/jexlFilters"
-                },
-                {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
                 }
               ]
@@ -9422,9 +9276,6 @@
                 },
                 {
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showLegend"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/showLegend"
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showLegend"
@@ -9449,9 +9300,6 @@
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/color"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/color"
-                },
-                {
                   "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/color"
                 }
               ]
@@ -9474,9 +9322,6 @@
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/facet"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/facet"
-                },
-                {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
                 }
               ]
@@ -9496,33 +9341,19 @@
             "outline": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/outline"
             },
+            "variantLayout": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/variantLayout"
+            },
             "lineZoneHeight": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/lineZoneHeight"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/lineZoneHeight"
-                }
-              ]
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/lineZoneHeight"
             },
             "rowHeight": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/rowHeight"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/rowHeight"
-                }
-              ]
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/rowHeight"
             },
             "showTree": {
               "anyOf": [
                 {
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showTree"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/showTree"
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showTree"
@@ -9535,9 +9366,6 @@
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showBranchLength"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/showBranchLength"
-                },
-                {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showBranchLength"
                 }
               ]
@@ -9546,9 +9374,6 @@
               "anyOf": [
                 {
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showRowLabels"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/showRowLabels"
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showRowLabels"
@@ -9561,9 +9386,6 @@
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/treeAreaWidth"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/treeAreaWidth"
-                },
-                {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/treeAreaWidth"
                 }
               ]
@@ -9574,72 +9396,27 @@
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/rows"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/rows"
-                },
-                {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rows"
                 }
               ]
             },
             "showRowSeparators": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showRowSeparators"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/showRowSeparators"
-                }
-              ]
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showRowSeparators"
             },
             "showTooltips": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showTooltips"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/showTooltips"
-                }
-              ]
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showTooltips"
             },
             "renderingMode": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/renderingMode"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/renderingMode"
-                }
-              ]
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/renderingMode"
             },
             "shadeByDosage": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/shadeByDosage"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/shadeByDosage"
-                }
-              ]
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/shadeByDosage"
             },
             "minorAlleleFrequencyFilter": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/minorAlleleFrequencyFilter"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/minorAlleleFrequencyFilter"
-                }
-              ]
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/minorAlleleFrequencyFilter"
             },
             "maxMissingnessFilter": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/maxMissingnessFilter"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/maxMissingnessFilter"
-                }
-              ]
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/maxMissingnessFilter"
             },
             "rowColor": {
               "anyOf": [
@@ -9647,22 +9424,12 @@
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/rowColor"
                 },
                 {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/rowColor"
-                },
-                {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
                 }
               ]
             },
             "referenceDrawingMode": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/referenceDrawingMode"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots/properties/referenceDrawingMode"
-                }
-              ]
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/referenceDrawingMode"
             },
             "showInsertionGlyphs": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showInsertionGlyphs"
@@ -9845,8 +9612,8 @@
             "tickHeight": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/tickHeight"
             },
-            "useGenomicPositions": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/useGenomicPositions"
+            "variantLayout": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/variantLayout"
             }
           },
           "patternProperties": {
@@ -12864,7 +12631,6 @@
                 "LinearReferenceSequenceDisplay",
                 "LinearVariantDisplay",
                 "LinearMultiSampleVariantDisplay",
-                "LinearMultiSampleVariantMatrixDisplay",
                 "LDTrackDisplay",
                 "LinearWiggleDisplay",
                 "LinearGCContentDisplay",
@@ -13052,22 +12818,7 @@
               "type": {
                 "enum": [
                   "LinearMultiSampleVariantDisplay",
-                  "MultiLinearVariantDisplay"
-                ]
-              }
-            },
-            "required": ["type"]
-          },
-          "then": {
-            "$ref": "#/$defs/LinearMultiSampleVariantDisplay"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "enum": [
+                  "MultiLinearVariantDisplay",
                   "LinearMultiSampleVariantMatrixDisplay",
                   "LinearVariantMatrixDisplay"
                 ]
@@ -13076,7 +12827,7 @@
             "required": ["type"]
           },
           "then": {
-            "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplay"
+            "$ref": "#/$defs/LinearMultiSampleVariantDisplay"
           }
         },
         {
@@ -14610,67 +14361,7 @@
         "type": {
           "enum": [
             "LinearMultiSampleVariantDisplay",
-            "MultiLinearVariantDisplay"
-          ]
-        },
-        "id": {
-          "type": "string"
-        },
-        "configuration": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplay"
-            }
-          ]
-        }
-      },
-      "required": ["type"],
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "unevaluatedProperties": false
-    },
-    "LinearMultiSampleVariantMatrixDisplayState": {
-      "type": "object",
-      "properties": {
-        "runClustering": {
-          "type": "boolean"
-        },
-        "clusterRegion": {
-          "type": "string"
-        },
-        "sortRowsBy": {},
-        "jexlFiltersSetting": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "heightPreConfig": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
-        },
-        "jexlFilters": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
-        }
-      }
-    },
-    "LinearMultiSampleVariantMatrixDisplaySnapshot": {
-      "title": "LinearMultiSampleVariantMatrixDisplaySnapshot",
-      "description": "A LinearMultiSampleVariantMatrixDisplay node inside a saved session: the state model's own properties. A config slot does not belong here; it goes on the track's `displays` entry.",
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplayState"
-        }
-      ],
-      "properties": {
-        "type": {
-          "enum": [
+            "MultiLinearVariantDisplay",
             "LinearMultiSampleVariantMatrixDisplay",
             "LinearVariantMatrixDisplay"
           ]
@@ -14684,7 +14375,7 @@
               "type": "string"
             },
             {
-              "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplay"
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplay"
             }
           ]
         }
@@ -15664,7 +15355,6 @@
                 "LinearReferenceSequenceDisplay",
                 "LinearVariantDisplay",
                 "LinearMultiSampleVariantDisplay",
-                "LinearMultiSampleVariantMatrixDisplay",
                 "LDTrackDisplay",
                 "LinearWiggleDisplay",
                 "LinearGCContentDisplay",
@@ -15852,22 +15542,7 @@
               "type": {
                 "enum": [
                   "LinearMultiSampleVariantDisplay",
-                  "MultiLinearVariantDisplay"
-                ]
-              }
-            },
-            "required": ["type"]
-          },
-          "then": {
-            "$ref": "#/$defs/LinearMultiSampleVariantDisplaySnapshot"
-          }
-        },
-        {
-          "if": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "enum": [
+                  "MultiLinearVariantDisplay",
                   "LinearMultiSampleVariantMatrixDisplay",
                   "LinearVariantMatrixDisplay"
                 ]
@@ -15876,7 +15551,7 @@
             "required": ["type"]
           },
           "then": {
-            "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySnapshot"
+            "$ref": "#/$defs/LinearMultiSampleVariantDisplaySnapshot"
           }
         },
         {
@@ -16495,40 +16170,6 @@
             },
             "type": {
               "const": "LinearMultiSampleVariantDisplay",
-              "description": "The display to open the track with, when the track offers several for this view."
-            },
-            "trackSnapshot": {
-              "type": "object",
-              "description": "Keys applied to the track config node."
-            },
-            "displaySnapshot": {
-              "type": "object",
-              "description": "Keys applied to the display node explicitly."
-            }
-          },
-          "required": ["trackId"],
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "unevaluatedProperties": false
-        },
-        {
-          "type": "object",
-          "title": "LinearMultiSampleVariantMatrixDisplayTrackEntry",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots"
-            },
-            {
-              "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplayState"
-            }
-          ],
-          "properties": {
-            "trackId": {
-              "type": "string"
-            },
-            "type": {
-              "const": "LinearMultiSampleVariantMatrixDisplay",
               "description": "The display to open the track with, when the track offers several for this view."
             },
             "trackSnapshot": {
@@ -17409,40 +17050,6 @@
             },
             "type": {
               "const": "LinearMultiSampleVariantDisplay",
-              "description": "The display to open the track with, when the track offers several for this view."
-            },
-            "trackSnapshot": {
-              "type": "object",
-              "description": "Keys applied to the track config node."
-            },
-            "displaySnapshot": {
-              "type": "object",
-              "description": "Keys applied to the display node explicitly."
-            }
-          },
-          "required": ["trackId"],
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "unevaluatedProperties": false
-        },
-        {
-          "type": "object",
-          "title": "LinearMultiSampleVariantMatrixDisplayTrackEntry",
-          "allOf": [
-            {
-              "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots"
-            },
-            {
-              "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplayState"
-            }
-          ],
-          "properties": {
-            "trackId": {
-              "type": "string"
-            },
-            "type": {
-              "const": "LinearMultiSampleVariantMatrixDisplay",
               "description": "The display to open the track with, when the track offers several for this view."
             },
             "trackSnapshot": {

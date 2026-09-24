@@ -558,11 +558,12 @@ describe('display type selection', () => {
     ).toBe('LinearMultiSampleVariantDisplay')
   })
 
-  test('display:multivariantmatrix aliases to the matrix display', () => {
-    expect(
-      buildDisplaySnapshot('variant', ['display:multivariantmatrix'])
-        .displayType,
-    ).toBe('LinearMultiSampleVariantMatrixDisplay')
+  test('display:multivariantmatrix is the multi-sample display in columns', () => {
+    const { displayType, snap } = buildDisplaySnapshot('variant', [
+      'display:multivariantmatrix',
+    ])
+    expect(displayType).toBe('LinearMultiSampleVariantDisplay')
+    expect(snap.variantLayout).toBe('columns')
   })
 
   test('an unknown display value passes through verbatim', () => {

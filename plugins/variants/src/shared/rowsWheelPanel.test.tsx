@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react'
 
 import VariantDisplayComponent from '../LinearMultiSampleVariantDisplay/components/VariantDisplayComponent.tsx'
+import VariantMatrixDisplayComponent from '../LinearMultiSampleVariantDisplay/matrix/VariantMatrixDisplayComponent.tsx'
+import { createTestEnvironment as createMatrixTestEnvironment } from '../LinearMultiSampleVariantDisplay/matrix/testEnv.ts'
 import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEnv.ts'
-import VariantMatrixDisplayComponent from '../LinearMultiSampleVariantMatrixDisplay/components/VariantMatrixDisplayComponent.tsx'
-import { createTestEnvironment as createMatrixTestEnvironment } from '../LinearMultiSampleVariantMatrixDisplay/testEnv.ts'
 
 // `useVirtualScrollWheel` is bound to a panel rather than to the `<canvas>`,
 // and says why: a canvas holds no DOM children, so everything a row display

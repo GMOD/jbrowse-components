@@ -1,6 +1,6 @@
-import { createTestEnvironment } from '../testEnv.ts'
 import { variantMatrixSurface } from './VariantMatrixComponent.tsx'
 import { matrixCellAt } from './matrixHitTest.ts'
+import { createTestEnvironment } from './testEnv.ts'
 
 import type { CellDataResult } from '../../VariantRPC/executeVariantCellData.ts'
 

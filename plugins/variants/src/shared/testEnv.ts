@@ -6,7 +6,7 @@ import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
 
 // The shared display harness wired for the variant display family. Each display
 // wraps this with its own factories and instance type (LDDisplay/testEnv.ts,
-// LinearMultiSampleVariantMatrixDisplay/testEnv.ts) — the geometry getters they
+// LinearMultiSampleVariantDisplay/matrix/testEnv.ts) — the geometry getters they
 // test (viewTransform, connectorLineCoords, columnGeometry) all read the
 // containing view, so a bare `stateModel.create()` can't reach them.
 //

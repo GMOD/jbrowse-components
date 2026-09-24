@@ -588,8 +588,8 @@ does it right — and those limits went with it. What remains is the layout, and
 the file decides how many pairs there are to lay out.
 
 **Genomic mode costs 5x this.** `buildGenomicCellBuffers` allocates `positions`
-and `cellSizes`, two more `Float32Array(numCells * 2)`, so `useGenomicPositions`
-is 20 bytes/cell against `ldValues`' 4.
+and `cellSizes`, two more `Float32Array(numCells * 2)`, so `variantLayout:
+'genomic'` is 20 bytes/cell against `ldValues`' 4.
 
 **The mitigation is `maxVariantSeparation`** (`LDTrackDisplay`), plink's
 `--ld-window`: pairs separated by more than `k` variants are not computed and

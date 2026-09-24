@@ -18,13 +18,10 @@ or SV type with one click, or colors by any INFO field via a jexl expression
 In a linear genome view, the track menu's **Display types** switches between:
 
 - **Variant display**, the default, covered on this page
-- **Multi-sample variant display (regular)** draws one row per sample at each
-  variant's genomic position, the only multi-sample display that renders
-  structural variants at scale
-- **Multi-sample variant display (matrix)** gives every visible variant a full
-  column regardless of spacing, so shared haplotypes and runs of homozygosity
-  show. Both are in the
-  [multi-sample variant guide](/docs/user_guides/multivariant_track)
+- **Multi-sample variant display** draws one row per sample, each variant at its
+  genomic position, or, from its **Variant layout** menu, in equal-width columns
+  so shared haplotypes and runs of homozygosity show whatever the spacing. See
+  the [multi-sample variant guide](/docs/user_guides/multivariant_track)
 - **LD heatmap display** computes pairwise r² from phased genotypes live. See
   the [linkage disequilibrium tutorial](/docs/tutorials/ld_human)
 - **Paired arc display** joins the two ends of each breakend record with an arc

@@ -41,7 +41,6 @@ intended for SVs in a single assembly
 - **Display:** [ChordVariantDisplay](../chordvariantdisplay)
 - **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 - **Display:** [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
-- **Display:** [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
 - **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
 - **Display:** [LinearVariantDisplay](../linearvariantdisplay)
 

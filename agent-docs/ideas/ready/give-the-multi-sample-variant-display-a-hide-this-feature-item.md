@@ -22,6 +22,6 @@ feature can on a basic display.
 Nothing under `plugins/variants` mentions it.
 
 The tooltip toggle it used to be taken with is done:
-`shared/SharedVariantConfigSchema.ts` declares the slot, the base model gates
+`LinearMultiSampleVariantDisplay/configSchema.ts` declares the slot, the base model gates
 `hoveredTooltipSource` on it, and `variantShowSubmenuItems` carries the
 checkbox — the same three places a "hide this feature" item would land.

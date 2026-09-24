@@ -79,7 +79,7 @@ To draw one, point an [`LDTrack`](/docs/config/ldtrack) at the r² table
   "displays": [
     {
       "type": "LDTrackDisplay",
-      "useGenomicPositions": true,
+      "variantLayout": "genomic",
       "showLegend": true,
       "height": 360
     }
@@ -89,9 +89,8 @@ To draw one, point an [`LDTrack`](/docs/config/ldtrack) at the r² table
 
 What each setting does:
 
-- [`useGenomicPositions`](/docs/config/ldtrackdisplay/#slot-usegenomicpositions)
-  sizes each cell by genomic distance, so the block's edges land under their
-  coordinates
+- [`variantLayout`](/docs/config/ldtrackdisplay/#slot-variantlayout) sizes each
+  cell by genomic distance, so the block's edges land under their coordinates
 - [`ldMetric`](/docs/config/ldtrackdisplay/#slot-ldmetric) picks which of the
   file's columns to draw. This table has both r² and D', so either reads; a file
   without a `DP` column disables the D' row rather than drawing zeros
@@ -218,12 +217,12 @@ The lower frame is all block, so the lanes around it carry the comparison:
 ## The haplotypes behind the triangle
 
 The six-population VCF draws the haplotypes one lane below the triangle: a
-[`LinearMultiSampleVariantMatrixDisplay`](/docs/config/linearmultisamplevariantmatrixdisplay/)
-in
-[`renderingMode: 'phased'`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-renderingmode)
+[`LinearMultiSampleVariantDisplay`](/docs/config/linearmultisamplevariantdisplay/)
+in equal-width columns and
+[`renderingMode: 'phased'`](/docs/config/linearmultisamplevariantdisplay/#slot-renderingmode)
 gives one row per chromosome and one column per variant, and
-[`rowColor`](/docs/config/sharedvariantdisplay/#slot-rowcolor) puts population
-in the sidebar stripe.
+[`rowColor`](/docs/config/linearmultisamplevariantdisplay/#slot-rowcolor) puts
+population in the sidebar stripe.
 
 ```json addtrack
 {
@@ -240,7 +239,8 @@ in the sidebar stripe.
   },
   "displays": [
     {
-      "type": "LinearMultiSampleVariantMatrixDisplay",
+      "type": "LinearMultiSampleVariantDisplay",
+      "variantLayout": "columns",
       "renderingMode": "phased",
       "rowColor": "population",
       "minorAlleleFrequencyFilter": 0.35,

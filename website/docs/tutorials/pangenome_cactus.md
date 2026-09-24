@@ -253,13 +253,15 @@ matrix display, one column per variant and one row per sample:
     "type": "VcfTabixAdapter",
     "uri": "mc/ecoli.vcf.gz"
   },
-  "displays": [{ "type": "LinearMultiSampleVariantMatrixDisplay" }]
+  "displays": [
+    { "type": "LinearMultiSampleVariantDisplay", "variantLayout": "columns" }
+  ]
 }
 ```
 
 The [multi-sample variant track guide](/docs/user_guides/multivariant_track)
-covers the matrix versus the per-position display, the genotype colors, and
-clustering samples by genotype.
+covers columns versus genomic positions, the genotype colors, and clustering
+samples by genotype.
 
 `vg deconstruct` emits a snarl **tree**, one record per snarl at every level, so
 wide records paint over the fine layer under them. `cactus-pangenome` pops that

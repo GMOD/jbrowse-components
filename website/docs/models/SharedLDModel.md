@@ -63,6 +63,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-showverticalguides">**showVerticalGuides**</span><br><code>boolean</code> |  | SharedLDModel |
 | <span id="getter-showlabels">**showLabels**</span><br><code>boolean</code> |  | SharedLDModel |
 | <span id="getter-tickheight">**tickHeight**</span><br><code>number</code> |  | SharedLDModel |
+| <span id="getter-variantlayout">**variantLayout**</span><br><code>"columns" &#124; "genomic"</code> |  | SharedLDModel |
 | <span id="getter-usegenomicpositions">**useGenomicPositions**</span><br><code>boolean</code> |  | SharedLDModel |
 | <span id="getter-snps">**snps**</span><br><code>LDSnp[]</code> | The loaded matrix's SNPs, in the order they are drawn along the column axis (the worker puts them in screen order — see `RenderLDDataRPC/reversedRegions.ts`). Empty until data arrives. | SharedLDModel |
 | <span id="getter-cellwidth">**cellWidth**</span><br><code>number</code> | Fetch-time width of one column in the un-rotated frame (`uniformW`). Read through `columnX`, which rescales it to the live viewport. | SharedLDModel |
@@ -174,7 +175,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="action-setsquashtoheight">**setSquashToHeight**</span><br><code>(value: boolean) =&gt; void</code> |  | SharedLDModel |
 | <span id="action-setshowverticalguides">**setShowVerticalGuides**</span><br><code>(show: boolean) =&gt; void</code> |  | SharedLDModel |
 | <span id="action-setshowlabels">**setShowLabels**</span><br><code>(show: boolean) =&gt; void</code> |  | SharedLDModel |
-| <span id="action-setusegenomicpositions">**setUseGenomicPositions**</span><br><code>(value: boolean) =&gt; void</code> |  | SharedLDModel |
+| <span id="action-setvariantlayout">**setVariantLayout**</span><br><code>(value: "columns" &#124; "genomic") =&gt; void</code> |  | SharedLDModel |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: LDRenderingBackend) =&gt; void</code> | Starts the upload/render autorun. | SharedLDModel |
 | <span id="action-setstatusmessage">**setStatusMessage**</span><br><code>(status?: RpcStatus &#124; undefined) =&gt; void</code> |  | [BaseDisplay](../basedisplay#action-setstatusmessage) |
 | <span id="action-seterror">**setError**</span><br><code>(error?: unknown) =&gt; void</code> |  | [BaseDisplay](../basedisplay#action-seterror) |

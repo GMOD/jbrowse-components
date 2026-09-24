@@ -13,7 +13,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // Tetraploid potato multi-sample VCF (jbrowse.org/genomes/potato) rendered as a
 // genotype matrix — one column per variant, one row per sample. Loaded against
 // the local build (bare ?config=, prefixed with localhost by the generator) so
-// the current LinearMultiSampleVariantMatrixDisplay code runs, not the older
+// the current multi-sample variant display code runs, not the older
 // released one the remote config was authored against. `maxMissingnessFilter`
 // is the no-call ceiling config slot (1 = keep every variant).
 //
@@ -224,7 +224,8 @@ export const variantsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'volvox_test_vcf',
-          type: 'LinearMultiSampleVariantMatrixDisplay',
+          type: 'LinearMultiSampleVariantDisplay',
+          variantLayout: 'columns',
           height: 400,
         },
       ],
@@ -277,13 +278,15 @@ export const variantsSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'potato_missingness_1',
-              type: 'LinearMultiSampleVariantMatrixDisplay',
+              type: 'LinearMultiSampleVariantDisplay',
+              variantLayout: 'columns',
               height: 300,
               maxMissingnessFilter: 1,
             },
             {
               trackId: 'potato_missingness_01',
-              type: 'LinearMultiSampleVariantMatrixDisplay',
+              type: 'LinearMultiSampleVariantDisplay',
+              variantLayout: 'columns',
               height: 300,
               maxMissingnessFilter: 0.1,
             },

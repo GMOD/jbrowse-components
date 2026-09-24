@@ -498,7 +498,7 @@ for trackId, name in names.items():
             # table. D' is brighter inside the span but also tints the
             # background, so r2 delineates the block far more sharply.
             'ldMetric': 'r2',
-            'useGenomicPositions': True,
+            'variantLayout': 'genomic',
             'showLegend': True,
             'height': 360,
         }],

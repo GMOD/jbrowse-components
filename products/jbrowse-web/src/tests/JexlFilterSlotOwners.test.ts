@@ -43,7 +43,6 @@ test('only the displays that read jexlFilters publish it', () => {
     'LinearBasicDisplay',
     'LinearMarkDisplay',
     'LinearMultiSampleVariantDisplay',
-    'LinearMultiSampleVariantMatrixDisplay',
     'LinearVariantDisplay',
   ])
 })

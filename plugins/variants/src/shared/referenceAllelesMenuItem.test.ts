@@ -1,7 +1,7 @@
 import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 
+import { createTestEnvironment as createMatrixTestEnvironment } from '../LinearMultiSampleVariantDisplay/matrix/testEnv.ts'
 import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEnv.ts'
-import { createTestEnvironment as createMatrixTestEnvironment } from '../LinearMultiSampleVariantMatrixDisplay/testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 

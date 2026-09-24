@@ -3,8 +3,6 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import configFactory from '../LinearMultiSampleVariantDisplay/configSchema.ts'
 import stateModelFactory from '../LinearMultiSampleVariantDisplay/model.ts'
-import matrixConfigFactory from '../LinearMultiSampleVariantMatrixDisplay/configSchema.ts'
-import matrixStateModelFactory from '../LinearMultiSampleVariantMatrixDisplay/model.ts'
 
 // The raw `rowHeight` setting holds px, or 0 for fit-to-display-height; the
 // resolved value is the `effectiveRowHeight` getter (0 -> availableHeight/nrow).
@@ -93,12 +91,13 @@ describe('row height resolution', () => {
   // effectiveRowHeight floors the resulting 0-height row to 1 rather than
   // propagating a NaN/Infinity divide-by-zero downstream.
   it('floors availableHeight/effectiveRowHeight when lineZoneHeight swallows the display', () => {
-    const configSchema = matrixConfigFactory()
-    const m = matrixStateModelFactory(configSchema).create({
-      type: 'LinearMultiSampleVariantMatrixDisplay',
+    const configSchema = configFactory()
+    const m = stateModelFactory(configSchema).create({
+      type: 'LinearMultiSampleVariantDisplay',
       configuration: configSchema.create({
-        type: 'LinearMultiSampleVariantMatrixDisplay',
+        type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-matrix-degenerate',
+        variantLayout: 'columns',
       }),
     })
     m.setHeight(20)
@@ -145,12 +144,13 @@ describe('row height resolution', () => {
   // zone, so rows live in `availableHeight = height - lineZoneHeight`. A pinned
   // height is unaffected by either; only the row count that fits changes.
   it('resizeHeight leaves a pinned rowHeight alone (matrix)', () => {
-    const configSchema = matrixConfigFactory()
-    const m = matrixStateModelFactory(configSchema).create({
-      type: 'LinearMultiSampleVariantMatrixDisplay',
+    const configSchema = configFactory()
+    const m = stateModelFactory(configSchema).create({
+      type: 'LinearMultiSampleVariantDisplay',
       configuration: configSchema.create({
-        type: 'LinearMultiSampleVariantMatrixDisplay',
+        type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-matrix',
+        variantLayout: 'columns',
       }),
     })
     m.setRowHeight(10)
@@ -165,12 +165,13 @@ describe('row height resolution', () => {
   // survive the trip down -- landing it on 0 would silently flip the display
   // into fit mode -- and come back unchanged.
   it('resizeHeight keeps a pinned rowHeight through a zero-room shrink (matrix)', () => {
-    const configSchema = matrixConfigFactory()
-    const m = matrixStateModelFactory(configSchema).create({
-      type: 'LinearMultiSampleVariantMatrixDisplay',
+    const configSchema = configFactory()
+    const m = stateModelFactory(configSchema).create({
+      type: 'LinearMultiSampleVariantDisplay',
       configuration: configSchema.create({
-        type: 'LinearMultiSampleVariantMatrixDisplay',
+        type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-matrix-shrink',
+        variantLayout: 'columns',
       }),
     })
     m.setRowHeight(10)

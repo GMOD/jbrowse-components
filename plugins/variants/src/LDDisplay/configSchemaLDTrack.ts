@@ -125,12 +125,14 @@ export default function ldTrackDisplayConfigSchema() {
       },
       /**
        * #slot
-       * When true, draw cells sized according to genomic distance between SNPs
-       * rather than uniform squares
+       * `'columns'` draws every SNP one uniform square wide; `'genomic'` sizes
+       * the cells by the genomic distance between SNPs. The multi-sample
+       * variant display takes the same slot for the same choice.
        */
-      useGenomicPositions: {
-        type: 'boolean',
-        defaultValue: false,
+      variantLayout: {
+        type: 'stringEnum',
+        model: types.enumeration('VariantLayout', ['genomic', 'columns']),
+        defaultValue: 'columns',
         advanced: true,
       },
       /**

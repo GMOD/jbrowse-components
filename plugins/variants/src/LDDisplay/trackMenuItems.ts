@@ -30,7 +30,7 @@ export interface LDMenuSelf extends IStateTreeNode {
   setShowLabels: (arg: boolean) => void
   setShowVerticalGuides: (arg: boolean) => void
   setSquashToHeight: (arg: boolean) => void
-  setUseGenomicPositions: (arg: boolean) => void
+  setVariantLayout: (arg: 'genomic' | 'columns') => void
 }
 
 // The radios pick which of the file's columns to draw, and a file that lacks
@@ -82,7 +82,9 @@ function showMenuItems(self: LDMenuSelf): MenuItem[] {
     toggleItem(
       'Show cells with genome proportions',
       self.useGenomicPositions,
-      self.setUseGenomicPositions,
+      on => {
+        self.setVariantLayout(on ? 'genomic' : 'columns')
+      },
       {
         helpText:
           'By default each cell is equal width (one column per variant). Enable to size cells proportional to the genomic distance between variants.',

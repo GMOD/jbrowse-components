@@ -342,12 +342,13 @@ function mutationTrack({
     },
     displays: [
       {
-        type: 'LinearMultiSampleVariantMatrixDisplay',
-        // The matrix display, not the regular one: a cohort's somatic mutations
-        // are sparse and spread over a whole gene, so laying columns out at
-        // their genomic positions puts most of the figure in empty space. By
-        // feature index they pack, and the lineZone above still ties each
-        // column back to the position it came from.
+        type: 'LinearMultiSampleVariantDisplay',
+        variantLayout: 'columns',
+        // Columns, not genomic positions: a cohort's somatic mutations are
+        // sparse and spread over a whole gene, so drawing them at their
+        // positions puts most of the figure in empty space. As columns they
+        // pack, and the lineZone above still ties each column back to the
+        // position it came from.
         //
         // 1010px so the 979 rows clear 1px each. Auto-fit here allows sub-pixel
         // rows (unlike the multi-row feature display, whose effectiveRowHeight
@@ -507,7 +508,8 @@ function mutationFigure({
           ...(clinvar ? [CLINVAR_TRACK] : []),
           {
             trackId: 'tcga_brca_mutations',
-            type: 'LinearMultiSampleVariantMatrixDisplay',
+            type: 'LinearMultiSampleVariantDisplay',
+            variantLayout: 'columns',
           },
         ],
       },

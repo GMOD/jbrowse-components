@@ -249,8 +249,8 @@ export const trioSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
   },
 
-  // Multi-sample variant display (matrix view), with the track menu open on the
-  // Display types submenu showing the "(matrix)" option highlighted.
+  // The multi-sample variant display in equal-width columns, with the track
+  // menu open on the "Variant layout" submenu that chooses them.
   {
     mode: 'url',
     name: 'trio-matrix',
@@ -260,7 +260,9 @@ export const trioSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
-          type: 'LinearMultiSampleVariantMatrixDisplay',
+          type: 'LinearMultiSampleVariantDisplay',
+          variantLayout: 'columns',
+          height: 250,
         },
       ],
     }),
@@ -268,15 +270,12 @@ export const trioSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade([
-        'Display types',
-        'Multi-sample variant display (matrix)',
-      ]),
+      ...menuCascade(['Variant layout', 'Equal-width columns']),
     ],
     annotations: [
       {
         type: 'box',
-        anchor: { text: 'Multi-sample variant display (matrix)' },
+        anchor: { text: 'Equal-width columns' },
       },
     ],
   },
@@ -291,7 +290,9 @@ export const trioSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
-          type: 'LinearMultiSampleVariantMatrixDisplay',
+          type: 'LinearMultiSampleVariantDisplay',
+          variantLayout: 'columns',
+          height: 250,
           renderingMode: 'phased',
         },
       ],
@@ -318,7 +319,9 @@ export const trioSpecs: ScreenshotSpec[] = [
         TRIO_GENE_LANE,
         {
           trackId: TRIO_VCF_TRACK,
-          type: 'LinearMultiSampleVariantMatrixDisplay',
+          type: 'LinearMultiSampleVariantDisplay',
+          variantLayout: 'columns',
+          height: 250,
           renderingMode: 'phased',
         },
       ],

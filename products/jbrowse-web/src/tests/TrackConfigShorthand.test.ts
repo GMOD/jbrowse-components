@@ -85,7 +85,6 @@ test('a variant colour preset field reaches every variant display', () => {
   for (const type of [
     'LinearVariantDisplay',
     'LinearMultiSampleVariantDisplay',
-    'LinearMultiSampleVariantMatrixDisplay',
   ]) {
     expect(colorOf(conf, type)).toEqual({ field: 'impact' })
   }

@@ -12,6 +12,7 @@ import { observer } from 'mobx-react'
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
 import VariantOverlay from '../../shared/components/MultiSampleVariantOverlay.tsx'
 import { hoverVariantSurface } from '../../shared/variantSurface.ts'
+import VariantMatrixDisplayComponent from '../matrix/VariantMatrixDisplayComponent.tsx'
 import VariantBody, { variantRowsSurface } from './VariantComponent.tsx'
 import VariantLaneOverlay, {
   variantLaneSurface,
@@ -20,12 +21,14 @@ import { VARIANT_MARKS } from './variantMarks.ts'
 
 import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
 
-function createVariantBackend(canvas: HTMLCanvasElement) {
-  return createMarkBackend(canvas, VARIANT_MARKS)
+async function createVariantBackend(canvas: HTMLCanvasElement) {
+  return Object.assign(await createMarkBackend(canvas, VARIANT_MARKS), {
+    columns: false as const,
+  })
 }
 
-const VariantDisplayComponent = observer(
-  function VariantDisplayComponent(props: {
+const GenomicPositionsDisplay = observer(
+  function GenomicPositionsDisplay(props: {
     model: LinearMultiSampleVariantDisplayModel
   }) {
     const { model } = props
@@ -133,5 +136,18 @@ const VariantDisplayComponent = observer(
     )
   },
 )
+
+// Each layout mounts its own chrome, so a switch swaps the GPU program too.
+const VariantDisplayComponent = observer(function VariantDisplayComponent({
+  model,
+}: {
+  model: LinearMultiSampleVariantDisplayModel
+}) {
+  return model.atGenomicPositions ? (
+    <GenomicPositionsDisplay model={model} />
+  ) : (
+    <VariantMatrixDisplayComponent model={model} />
+  )
+})
 
 export default VariantDisplayComponent

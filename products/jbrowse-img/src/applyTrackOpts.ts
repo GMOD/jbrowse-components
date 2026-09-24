@@ -22,7 +22,10 @@ import type {
 import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
 import type { LinearHicDisplayModel } from '@jbrowse/plugin-hic'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { LinearVariantDisplayModel } from '@jbrowse/plugin-variants'
+import type {
+  LinearMultiSampleVariantDisplayModel,
+  LinearVariantDisplayModel,
+} from '@jbrowse/plugin-variants'
 import type linearWiggleDisplayModelFactory from '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel'
 
 // The filter half of an alignments display's state, as the CLI may state it.
@@ -277,6 +280,8 @@ interface DisplaySnapshot {
   displayCrossHatches?: boolean
   defaultRendering?: string
   resolution?: number
+  // multi-sample variants: equal-width columns rather than genomic spans
+  variantLayout?: 'genomic' | 'columns'
 }
 
 // Compile-time guard that every DisplaySnapshot key actually exists on one of
@@ -306,6 +311,7 @@ type DisplayKeys =
   | keyof LinearAlignmentsDisplayModel
   | keyof LinearBasicDisplayModel
   | keyof LinearVariantDisplayModel
+  | keyof LinearMultiSampleVariantDisplayModel
   | keyof LinearHicDisplayModel
   | keyof WiggleDisplayModel
   | WiggleConfigSlotKey
@@ -333,11 +339,17 @@ function valueScaleOf(r: BuildResult) {
 }
 
 // Friendly aliases for the displays a track type has beyond its default, so the
-// CLI doesn't require the full state-model name. `display:<anything-else>` is
-// passed through verbatim.
-const displayTypeAliases: Record<string, string> = {
-  multivariant: 'LinearMultiSampleVariantDisplay',
-  multivariantmatrix: 'LinearMultiSampleVariantMatrixDisplay',
+// CLI doesn't require the full state-model name, with any settings the alias
+// implies. `display:<anything-else>` is passed through verbatim.
+const displayTypeAliases: Record<
+  string,
+  { type: string; settings?: DisplaySnapshot }
+> = {
+  multivariant: { type: 'LinearMultiSampleVariantDisplay' },
+  multivariantmatrix: {
+    type: 'LinearMultiSampleVariantDisplay',
+    settings: { variantLayout: 'columns' },
+  },
 }
 
 // The pileup sort types the layout recognizes (`sortLayout.ts`). `base` is the
@@ -526,7 +538,9 @@ const modifiers: Record<string, Modifier> = {
     on: ALL,
     apply: (r, v) => {
       const name = parseStr('display', v, 'display name')
-      r.displayType = lookup(displayTypeAliases, name) ?? name
+      const alias = lookup(displayTypeAliases, name)
+      r.displayType = alias?.type ?? name
+      Object.assign(r.snap, alias?.settings)
     },
   },
   // `index:` (the .bai/.csi/.tbi location) and `name:` (the display name) are

@@ -61,11 +61,12 @@ covered in the [variant track guide](/docs/config_guides/variant_track).
 ## Enabling the matrix view
 
 Switch the track to the
-[Multi-sample variant display (matrix)](/docs/user_guides/multivariant_track).
-Each sample becomes a row and each variant a column, with black lines tying the
-columns back to their genomic positions.
+[multi-sample variant display](/docs/user_guides/multivariant_track), and pick
+**Variant layout → Equal-width columns** from its track menu. Each sample
+becomes a row and each variant a column, with black lines tying the columns back
+to their genomic positions.
 
-<Figure caption="Multi-sample variant display (matrix). One row per sample, one column per variant, black lines connecting columns to their genome positions." src="/img/trio-matrix.png"/>
+<Figure caption="The multi-sample variant display in equal-width columns. One row per sample, one column per variant, black lines connecting columns to their genome positions." src="/img/trio-matrix.png"/>
 
 ## Enabling the phased mode
 
