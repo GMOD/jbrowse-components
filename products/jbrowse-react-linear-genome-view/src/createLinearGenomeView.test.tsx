@@ -5,6 +5,7 @@ import {
   hydrateTrackConfig,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { extendViewType } from '@jbrowse/core/pluggableElementTypes'
 import TextSearchAdapterType from '@jbrowse/core/pluggableElementTypes/TextSearchAdapterType'
 import { resolveUriLocation } from '@jbrowse/core/util/io'
 import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
@@ -18,10 +19,11 @@ import { waitFor } from '@testing-library/react'
 
 import { createLinearGenomeView } from './index.ts'
 
+import type { LinearGenomeViewController, ViewModel } from './index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { UriLocation } from '@jbrowse/core/util'
-import type { ControllerSession, TrackInput } from '@jbrowse/product-core'
+import type { TrackInput } from '@jbrowse/product-core'
 
 jest.mock('./makeWorkerInstance', () => () => {})
 // Every assembly below is a config, so nothing here resolves a hub — this keeps
@@ -230,7 +232,7 @@ test('assemblyNames is stamped onto full configs arriving after mount', async ()
 
 // A worker started from a blob: URL has no base to resolve a relative path
 // against, so the location has to arrive carrying the page's
-function resolvedUri(session: ControllerSession, trackId: string) {
+function resolvedUri(session: ViewModel['session'], trackId: string) {
   const { pluginManager } = getEnv<{ pluginManager: PluginManager }>(session)
   const conf = session.getTrackById(trackId)
   const snapshot = isStateTreeNode(conf) ? getSnapshot(conf) : conf
@@ -440,6 +442,38 @@ test('destroy is idempotent, and works before the first build settles', async ()
     controller.destroy()
   }).not.toThrow()
   await controller.whenReady()
+})
+
+test('destroy while the first tracks open leaves no engine behind', async () => {
+  const onError = jest.fn()
+  let controller: LinearGenomeViewController | undefined
+  class DestroyOnLaunch extends Plugin {
+    name = 'DestroyOnLaunch'
+    install(pluginManager: PluginManager) {
+      extendViewType(pluginManager, 'LinearGenomeView', stateModel =>
+        stateModel.actions(self => {
+          const launchTrack = self.launchTrack
+          return {
+            launchTrack(trackId: string) {
+              controller?.destroy()
+              return launchTrack(trackId)
+            },
+          }
+        }),
+      )
+    }
+  }
+  controller = createLinearGenomeView(document.createElement('div'), {
+    assembly,
+    tracks: [featureTrack('t1')],
+    plugins: [DestroyOnLaunch],
+    onError,
+  })
+
+  const state = await controller.whenReady()
+
+  expect(isAlive(state)).toBe(false)
+  expect(onError).not.toHaveBeenCalled()
 })
 
 // A host swapping genomes now destroys the controller and creates another,

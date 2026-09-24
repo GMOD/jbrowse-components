@@ -1,22 +1,10 @@
-import { createElement } from 'react'
-
 import {
-  isLooseTrack,
-  mergeLocalFiles,
-  observeSession,
-  reconcileTracks,
-  registerLocalFiles,
-  resolveAssembly,
-  resolveLocalFileUris,
-  resolveTracks,
-  withAssemblyName,
+  createEmbeddedController,
   withHostOverrides,
 } from '@jbrowse/product-core'
-import { createRoot } from 'react-dom/client'
 
 import JBrowseLinearGenomeView from './JBrowseLinearGenomeView/index.ts'
 import { createViewStateAsync } from './createViewState.ts'
-import { destroyViewState } from './destroyViewState.ts'
 
 import type { ViewModel } from './createModel/createModel.ts'
 import type { ViewStateOptions } from './createViewState.ts'
@@ -24,18 +12,12 @@ import type {
   AssemblyInput,
   LocalFileInput,
   SessionObservers,
-  TrackConf,
   TrackInput,
 } from '@jbrowse/product-core'
 
 type SearchAdapters = ViewStateOptions['aggregateTextSearchAdapters']
-// What the controller accepts as a session. This API's audience is hosts that
-// don't write TypeScript (anywidget, htmlwidgets, plain JS), and what they hand
-// over — a decodeSession result, a snapshot they stored — is runtime-shaped by
-// construction. So it takes the open form and routes it through
-// createViewState's `session` door, which validates as MST applies it; the
-// compiler-checked `defaultSession` slot could not accept a decoded session at
-// all, which is what `decodeSession`'s own docs used to point hosts at.
+// the open form: what a host hands over is runtime-shaped, so it goes through
+// createViewState's validating `session` door
 type SessionSnapshot = ViewStateOptions['session']
 
 /**
@@ -157,205 +139,49 @@ export function createLinearGenomeView(
   el: HTMLElement,
   opts: CreateLinearGenomeViewOptions,
 ): LinearGenomeViewController {
-  const {
-    onLocationChange,
-    onFeatureSelect,
-    onSessionChange,
-    onError = (e: unknown) => {
-      console.error(e)
-    },
-  } = opts
-
-  // The wanted state, held as the mutable twin of what `update` takes. Held
-  // rather than read back off the model because a build in flight has no model
-  // yet: an `update` before `whenReady()` records here and is applied when the
-  // engine arrives, instead of being lost.
-  let tracks: TrackInput[] = opts.tracks ?? []
-  let location = opts.location
-  // the resolved assembly name, stamped onto tracks guessed from a bare URL
-  let assemblyName: string | undefined
-  // each registration pushes a File into core's process-global blobMap, so this
-  // only ever grows, by names it has not seen
-  let localFiles = registerLocalFiles(opts.localFiles ?? {})
-
-  const root = createRoot(el)
-  let disposers: (() => void)[] = []
-  let current: ViewModel | undefined
-  let destroyed = false
-
-  function teardown() {
-    for (const dispose of disposers) {
-      dispose()
-    }
-    disposers = []
-  }
-
-  // Runs exactly once: nothing here swaps the engine out from under a mounted
-  // tree. The genome and the session are what the engine is BUILT from, so
-  // changing one is a new browser — the host destroys this controller and
-  // creates another. That is what retired the generation counter and the
-  // mounted-versus-current split this function used to need: two builds could
-  // be in flight at once, finishing in whatever order their fetches did rather
-  // than the order they were asked for.
-  async function build() {
-    const resolved = await resolveAssembly(opts.assembly)
-    // local until this build is known to have won: `assemblyName` is what a
-    // later `update` stamps onto bare configs, so a superseded build promoting
-    // its own would misname every track added afterwards
-    const name =
-      typeof resolved.assembly.name === 'string'
-        ? resolved.assembly.name
-        : undefined
-    const hasSession = opts.session !== undefined
-    // the async twin: a restored session carries whatever displays were open
-    // when it was saved, and their state models may still be a dynamic import
-    // away. This function is already async, so the only cost is the await.
-    const viewState = await createViewStateAsync({
-      assembly: resolved.assembly,
-      // forwarded so the *assembly* gets the same substitution — its sequence
-      // adapter is a location like any other, and only createViewState has the
-      // pluginManager that expands a `{ type, uri }` shorthand into one.
-      // Registration is keyed on the bytes, so registering the same input in
-      // both places mints one blob rather than two.
-      localFiles: opts.localFiles,
-      // the hub's catalog and the host's full configs seed the config catalog;
-      // loose specs need the pluginManager the build creates, so they are
-      // resolved just below. The hub's are kept because its search index names
-      // hits by their trackIds, and the host's win a collision.
-      tracks: withHostOverrides(
-        resolved.tracks,
-        tracks
-          .filter((track): track is TrackConf => !isLooseTrack(track))
-          .map(track =>
-            resolveLocalFileUris(withAssemblyName(track, name), localFiles),
-          ),
-        'trackId',
-      ),
-      aggregateTextSearchAdapters: withHostOverrides(
-        resolved.aggregateTextSearchAdapters,
-        opts.aggregateTextSearchAdapters,
-        'textSearchAdapterId',
-      ),
-      internetAccounts: opts.internetAccounts,
-      plugins: opts.plugins,
-      makeWorkerInstance: opts.makeWorkerInstance,
-      configuration: opts.configuration,
-      session: opts.session,
-      // a session already positions the view; only route location
-      // through createViewState's launch flow (spinner while loading) otherwise
-      location: hasSession ? undefined : location,
-      // a host with its own tracks opens them below, so a gene-name location
-      // must not add the track its name was found in beside them
-      view:
-        hasSession || location === undefined
-          ? undefined
-          : { showHitTrack: tracks.length === 0 },
-    })
-    // Nothing will ever reach this engine, so it dies here rather than leaking
-    // a worker pool. `destroyed` is reachable from React StrictMode, which runs
-    // a ref callback's cleanup right after setup — i.e. before any build can
-    // finish. Checked before the autoruns below are registered, so a dead
-    // engine never gets one pointed at it.
-    if (destroyed) {
-      destroyViewState(viewState)
-      return viewState
-    }
-    assemblyName = name
-    // a restored session owns the initial track layout; without one, open the
-    // wanted tracks so they actually display
-    if (!hasSession) {
-      await reconcileTracks(
-        viewState.session,
-        resolveTracks(tracks, viewState.session, assemblyName, localFiles),
-      )
-    }
-    // The read-backs are product-core's, the same ones createApp wires, rather
-    // than a second pair written here: this product has exactly one view, so
-    // its single-string `onLocationChange` is that view's entry of the list.
-    disposers.push(
-      observeSession(viewState, {
-        onFeatureSelect,
-        onSessionChange,
-        onLocationChange: onLocationChange
-          ? ([loc]) => {
-              // an unpositioned view reports undefined; a single-view product's
-              // location is only ever the plain string
-              if (typeof loc === 'string') {
-                onLocationChange(loc)
-              }
+  const { onLocationChange } = opts
+  return createEmbeddedController(el, {
+    assembly: opts.assembly,
+    session: opts.session,
+    state: opts,
+    onError: opts.onError,
+    Component: JBrowseLinearGenomeView,
+    observers: {
+      onFeatureSelect: opts.onFeatureSelect,
+      onSessionChange: opts.onSessionChange,
+      onLocationChange: onLocationChange
+        ? ([loc]) => {
+            if (typeof loc === 'string') {
+              onLocationChange(loc)
             }
-          : undefined,
+          }
+        : undefined,
+    },
+    // a gene-name hit opens the track it was found in only for a host that
+    // opens none of its own
+    launchFor: (
+      stated: LinearGenomeViewState,
+      { location, tracks }: LinearGenomeViewState,
+    ) =>
+      stated.location !== undefined && location
+        ? { loc: location, showHitTrack: !tracks?.length }
+        : undefined,
+    build: ({ resolved, tracks, view }) =>
+      createViewStateAsync({
+        assembly: resolved.assembly,
+        tracks,
+        aggregateTextSearchAdapters: withHostOverrides(
+          resolved.aggregateTextSearchAdapters,
+          opts.aggregateTextSearchAdapters,
+          'textSearchAdapterId',
+        ),
+        localFiles: opts.localFiles,
+        internetAccounts: opts.internetAccounts,
+        plugins: opts.plugins,
+        makeWorkerInstance: opts.makeWorkerInstance,
+        configuration: opts.configuration,
+        session: opts.session,
+        view,
       }),
-    )
-    current = viewState
-    root.render(createElement(JBrowseLinearGenomeView, { viewState }))
-    return viewState
-  }
-
-  const ready = build()
-  ready.catch(onError)
-
-  // Reconcile the live view to the wanted state, touching only the fields the
-  // caller just stated: re-navigating on a tracks-only update would yank a user
-  // who had panned since, and re-reconciling tracks on a location-only update
-  // is work with nothing to show for it.
-  async function apply(state: LinearGenomeViewState) {
-    if (!current) {
-      return
-    }
-    if (state.tracks) {
-      await reconcileTracks(
-        current.session,
-        resolveTracks(tracks, current.session, assemblyName, localFiles),
-      )
-    }
-    if (state.location !== undefined && location && assemblyName) {
-      // Stated through the view's own `launch` rather than called as
-      // navToLocString: the engine being built is not the assembly being
-      // loaded, and a host that sets a location as soon as it has a widget —
-      // which is when a notebook cell or a Shiny observer fires — hits a bare
-      // navToLocString before there are refNames to resolve against, as an
-      // unhandled rejection. The launch autorun waits for `initialized` and runs
-      // the same navToLocString, gene-name search included, then reports a
-      // locstring that matched nothing as a snackbar rather than a throw.
-      current.session.view.setLaunch({
-        assembly: assemblyName,
-        loc: location,
-        showHitTrack: tracks.length === 0,
-      })
-    }
-  }
-
-  return {
-    whenReady() {
-      return ready
-    },
-    async update(state) {
-      // recorded before the await, so an update landing mid-build is what
-      // build() itself reconciles from rather than something applied twice by
-      // halves. localFiles first: a track in the same update may name one
-      if (state.localFiles) {
-        localFiles = mergeLocalFiles(localFiles, state.localFiles)
-      }
-      if (state.tracks) {
-        tracks = state.tracks
-      }
-      if (state.location !== undefined) {
-        location = state.location
-      }
-      await ready
-      await apply(state)
-    },
-    destroy() {
-      // set first: a build still in flight reads it and destroys the engine it
-      // is about to hand back, rather than leaking that one's worker pool
-      destroyed = true
-      teardown()
-      root.unmount()
-      if (current) {
-        destroyViewState(current)
-      }
-      current = undefined
-    },
-  }
+  })
 }

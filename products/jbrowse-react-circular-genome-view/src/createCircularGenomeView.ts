@@ -1,22 +1,10 @@
-import { createElement } from 'react'
-
 import {
-  isLooseTrack,
-  mergeLocalFiles,
-  observeSession,
-  reconcileTracks,
-  registerLocalFiles,
-  resolveAssembly,
-  resolveLocalFileUris,
-  resolveTracks,
-  withAssemblyName,
+  createEmbeddedController,
   withHostOverrides,
 } from '@jbrowse/product-core'
-import { createRoot } from 'react-dom/client'
 
 import JBrowseCircularGenomeView from './JBrowseCircularGenomeView/index.ts'
 import createViewState from './createViewState.ts'
-import { destroyViewState } from './destroyViewState.ts'
 
 import type { ViewModel } from './createModel/createModel.ts'
 import type { ViewStateOptions } from './createViewState.ts'
@@ -24,16 +12,12 @@ import type {
   AssemblyInput,
   LocalFileInput,
   SessionObservers,
-  TrackConf,
   TrackInput,
 } from '@jbrowse/product-core'
 
 type SearchAdapters = ViewStateOptions['aggregateTextSearchAdapters']
-// What the controller accepts as a session. This API's audience is hosts that
-// don't write TypeScript (anywidget, htmlwidgets, plain JS), and what they hand
-// over — a decodeSession result, a snapshot they stored — is runtime-shaped by
-// construction. So it takes the open form and routes it through
-// createViewState's `session` door, which validates as MST applies it.
+// the open form: what a host hands over is runtime-shaped, so it goes through
+// createViewState's validating `session` door
 type SessionSnapshot = ViewStateOptions['session']
 
 /**
@@ -168,174 +152,43 @@ export function createCircularGenomeView(
   el: HTMLElement,
   opts: CreateCircularGenomeViewOptions,
 ): CircularGenomeViewController {
-  const {
-    onFeatureSelect,
-    onSessionChange,
-    onError = (e: unknown) => {
-      console.error(e)
+  return createEmbeddedController(el, {
+    assembly: opts.assembly,
+    session: opts.session,
+    state: opts,
+    onError: opts.onError,
+    Component: JBrowseCircularGenomeView,
+    observers: {
+      onFeatureSelect: opts.onFeatureSelect,
+      onSessionChange: opts.onSessionChange,
     },
-  } = opts
-
-  // The wanted state, held as the mutable twin of what `update` takes. Held
-  // rather than read back off the model because a build in flight has no model
-  // yet: an `update` before `whenReady()` records here and is applied when the
-  // engine arrives, instead of being lost.
-  let tracks: TrackInput[] = opts.tracks ?? []
-  let displayedRegionNames = opts.displayedRegionNames
-  // the resolved assembly name, stamped onto tracks guessed from a bare URL and
-  // named by every launch this controller writes
-  let assemblyName: string | undefined
-  // each registration pushes a File into core's process-global blobMap, so this
-  // only ever grows, by names it has not seen
-  let localFiles = registerLocalFiles(opts.localFiles ?? {})
-
-  const root = createRoot(el)
-  let disposers: (() => void)[] = []
-  let current: ViewModel | undefined
-  let destroyed = false
-
-  function teardown() {
-    for (const dispose of disposers) {
-      dispose()
-    }
-    disposers = []
-  }
-
-  // Runs exactly once: nothing here swaps the engine out from under a mounted
-  // tree. The genome and the session are what the engine is BUILT from, so
-  // changing one is a new browser — the host destroys this controller and
-  // creates another.
-  async function build() {
-    const resolved = await resolveAssembly(opts.assembly)
-    // local until this build is known to have won: `assemblyName` is what a
-    // later `update` stamps onto bare configs, so a superseded build promoting
-    // its own would misname every track added afterwards
-    const name =
-      typeof resolved.assembly.name === 'string'
-        ? resolved.assembly.name
-        : undefined
-    const hasSession = opts.session !== undefined
-    const viewState = await createViewState({
-      assembly: resolved.assembly,
-      // forwarded so the *assembly* gets the same substitution — its sequence
-      // adapter is a location like any other, and only createViewState has the
-      // pluginManager that expands a `{ type, uri }` shorthand into one.
-      // Registration is keyed on the bytes, so registering the same input in
-      // both places mints one blob rather than two.
-      localFiles: opts.localFiles,
-      // the hub's catalog and the host's full configs seed the config catalog;
-      // loose specs need the pluginManager the build creates, so they are
-      // resolved just below
-      tracks: withHostOverrides(
-        resolved.tracks,
-        tracks
-          .filter((track): track is TrackConf => !isLooseTrack(track))
-          .map(track =>
-            resolveLocalFileUris(withAssemblyName(track, name), localFiles),
-          ),
-        'trackId',
-      ),
-      aggregateTextSearchAdapters: withHostOverrides(
-        resolved.aggregateTextSearchAdapters,
-        opts.aggregateTextSearchAdapters,
-        'textSearchAdapterId',
-      ),
-      internetAccounts: opts.internetAccounts,
-      plugins: opts.plugins,
-      makeWorkerInstance: opts.makeWorkerInstance,
-      configuration: opts.configuration,
-      session: opts.session,
-      // a session already positions the ring; only route the region names
-      // through createViewState's launch flow otherwise
-      displayedRegionNames: hasSession ? undefined : displayedRegionNames,
-    })
-    // Nothing will ever reach this engine, so it dies here rather than leaking
-    // a worker pool. `destroyed` is reachable from React StrictMode, which runs
-    // a ref callback's cleanup right after setup — i.e. before any build can
-    // finish. Checked before the autoruns below are registered, so a dead
-    // engine never gets one pointed at it.
-    if (destroyed) {
-      destroyViewState(viewState)
-      return viewState
-    }
-    assemblyName = name
-    // a restored session owns the initial track layout; without one, open the
-    // wanted tracks so they actually display
-    if (!hasSession) {
-      await reconcileTracks(
-        viewState.session,
-        resolveTracks(tracks, viewState.session, assemblyName, localFiles),
-      )
-    }
-    disposers.push(
-      observeSession(viewState, { onFeatureSelect, onSessionChange }),
-    )
-    current = viewState
-    root.render(createElement(JBrowseCircularGenomeView, { viewState }))
-    return viewState
-  }
-
-  const ready = build()
-  ready.catch(onError)
-
-  // Reconcile the live view to the wanted state, touching only the fields the
-  // caller just stated: rebuilding the ring on a tracks-only update would redo
-  // the region resolution for nothing.
-  async function apply(state: CircularGenomeViewState) {
-    if (!current) {
-      return
-    }
-    if (state.tracks) {
-      await reconcileTracks(
-        current.session,
-        resolveTracks(tracks, current.session, assemblyName, localFiles),
-      )
-    }
-    if (state.displayedRegionNames && assemblyName) {
-      // Re-driven through the view's own `launch` rather than by resolving
-      // the names here and calling setDisplayedRegions: the launch autorun
-      // re-fires on every setLaunch and owns the resolution — aliases, globs, and
-      // the warning when a name matches nothing. A second implementation here
-      // would be the one that drops the ring to its import form on a typo.
-      current.session.view.setLaunch({
-        assembly: assemblyName,
-        displayedRegionNames: displayedRegionNames?.length
-          ? displayedRegionNames
-          : undefined,
-      })
-    }
-  }
-
-  return {
-    whenReady() {
-      return ready
-    },
-    async update(state) {
-      // recorded before the await, so an update landing mid-build is what
-      // build() itself reconciles from rather than something applied twice by
-      // halves. localFiles first: a track in the same update may name one
-      if (state.localFiles) {
-        localFiles = mergeLocalFiles(localFiles, state.localFiles)
-      }
-      if (state.tracks) {
-        tracks = state.tracks
-      }
-      if (state.displayedRegionNames) {
-        displayedRegionNames = state.displayedRegionNames
-      }
-      await ready
-      await apply(state)
-    },
-    destroy() {
-      // set first: a build still in flight reads it and destroys the engine it
-      // is about to hand back, rather than leaking that one's worker pool
-      destroyed = true
-      teardown()
-      root.unmount()
-      if (current) {
-        destroyViewState(current)
-      }
-      current = undefined
-    },
-  }
+    launchFor: (
+      stated: CircularGenomeViewState,
+      { displayedRegionNames }: CircularGenomeViewState,
+    ) =>
+      stated.displayedRegionNames && displayedRegionNames
+        ? {
+            displayedRegionNames: displayedRegionNames.length
+              ? displayedRegionNames
+              : undefined,
+          }
+        : undefined,
+    build: ({ resolved, tracks, view }) =>
+      createViewState({
+        assembly: resolved.assembly,
+        tracks,
+        aggregateTextSearchAdapters: withHostOverrides(
+          resolved.aggregateTextSearchAdapters,
+          opts.aggregateTextSearchAdapters,
+          'textSearchAdapterId',
+        ),
+        localFiles: opts.localFiles,
+        internetAccounts: opts.internetAccounts,
+        plugins: opts.plugins,
+        makeWorkerInstance: opts.makeWorkerInstance,
+        configuration: opts.configuration,
+        session: opts.session,
+        view,
+      }),
+  })
 }

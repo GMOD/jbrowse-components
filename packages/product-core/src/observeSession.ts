@@ -28,7 +28,7 @@ interface ObservedView {
   levels?: { tracks: OpenTracks }[]
 }
 
-interface ObservedSession {
+export interface ObservedSession {
   name: string
   views: ObservedView[]
   selection?: unknown
