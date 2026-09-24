@@ -1486,6 +1486,7 @@ function warmTrackAdapterCode(self: GenericView, trackId: string) {
     >
     const sessionId = adapterConfigCacheKey(adapterConfig)
     session.rpcManager
+      // eslint-disable-next-line no-restricted-syntax -- a code download the track's first request would make anyway: nothing to show, and nothing a user can move on from
       .call(sessionId, 'CoreLoadAdapterCode', {
         adapterTypes: [...adapterTypesIn(adapterConfig, pluginManager)],
       })
