@@ -141,3 +141,30 @@ test('an assembly with no regions reports it instead of dropping the launch', as
   expect(view.showImportForm).toBe(true)
   expect(view.pendingAutoDiagonalize).toBe(false)
 })
+
+// the next launch may be another genome, which the last one's tracks do not
+// cover
+test('returning to the import form drops the tracks and the error', async () => {
+  const session = createTestSession()
+  addAssemblyConf(session, 'volvox', ['ctgA', 'ctgB'])
+  session.addSessionTrackConf({
+    trackId: 'sv',
+    type: 'VariantTrack',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  const view = (await session.launchView('CircularView', {
+    assembly: 'volvox',
+    tracks: ['sv'],
+  })) as CircularViewModel
+  view.setWidth(800)
+  await when(() => view.tracks.length > 0)
+  view.setError(new Error('stale'))
+
+  view.clearView()
+
+  expect(view.tracks).toHaveLength(0)
+  expect(view.displayedRegions).toHaveLength(0)
+  expect(view.error).toBeUndefined()
+  expect(view.showImportForm).toBe(true)
+})

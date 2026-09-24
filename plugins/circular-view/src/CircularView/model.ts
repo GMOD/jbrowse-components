@@ -103,6 +103,9 @@ const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 const ReorderChromosomesDialog = lazy(
   () => import('./components/ReorderChromosomesDialog.tsx'),
 )
+const ReturnToImportFormDialog = lazy(
+  () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
+)
 
 export type ExportSvgOptions = ViewExportSvgOptions
 
@@ -1078,6 +1081,19 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       * back to the import form: no regions, no tracks, no pending launch and
+       * no error from the one before
+       */
+      clearView() {
+        self.displayedRegions = cast([])
+        self.tracks.clear()
+        self.launch = undefined
+        self.volatileError = undefined
+        self.cancelAutoDiagonalize()
+      },
+
+      /**
+       * #action
        */
       showTrack(
         trackId: string,
@@ -1278,8 +1294,10 @@ function stateModelFactory(pluginManager: PluginManager) {
           {
             label: 'Return to import form',
             onClick: () => {
-              self.setDisplayedRegions([])
-              self.cancelAutoDiagonalize()
+              getDialogHost(self).queueDialog(handleClose => [
+                ReturnToImportFormDialog,
+                { model: self, handleClose },
+              ])
             },
             icon: FolderOpenIcon,
           },
