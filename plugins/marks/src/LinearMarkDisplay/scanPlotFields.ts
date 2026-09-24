@@ -29,6 +29,8 @@ const FACET_FIELD = 'source'
 /** The plottable fields the scanned features carry, split by what they hold. */
 export interface PlotFields {
   numeric: string[]
+  /** Numeric fields fewer than half the scanned features carry. */
+  sparse?: string[]
   /** Text fields few enough values apart that a colour key can name them. */
   categorical: string[]
   /** `source`, where a multi-source adapter's features carry more than one. */
@@ -72,7 +74,7 @@ function isNumericDatum(v: unknown) {
 
 /**
  * The fields a sample of features carry, each numeric only where every value
- * seen for it read as a finite number, and a text field only where a colour
+ * seen for it read as a finite number and sparse where most features lack it, and a text field only where a colour
  * key could name its values. `source` is a facet only on a multi-source
  * adapter's features, since a GFF3 record's `source` column is not a file.
  * Enumerated through `toJSON`, not `tags()`: `tags` is `SimpleFeature`'s, and
@@ -84,6 +86,7 @@ export function scanPlotFields(
   { multiSource }: { multiSource: boolean },
 ): PlotFields {
   const numeric = new Map<string, boolean>()
+  const carried = new Map<string, number>()
   const values = new Map<string, Set<unknown>>()
   const sources = new Set<unknown>()
   const n = Math.min(features.length, PLOT_FIELD_SAMPLE)
@@ -99,6 +102,7 @@ export function scanPlotFields(
       }
       const num = !ALWAYS_CATEGORICAL.has(field) && isNumericDatum(v)
       numeric.set(field, (numeric.get(field) ?? true) && num)
+      carried.set(field, (carried.get(field) ?? 0) + 1)
       const seen = values.get(field) ?? new Set()
       if (seen.size <= MAX_LEGEND_ITEMS) {
         seen.add(v)
@@ -107,8 +111,11 @@ export function scanPlotFields(
     }
   }
   const fields = [...numeric.keys()].sort()
+  const numericFields = fields.filter(f => numeric.get(f)!)
+  const sparse = numericFields.filter(f => carried.get(f)! * 2 < n)
   return {
-    numeric: fields.filter(f => numeric.get(f)!),
+    numeric: numericFields,
+    ...(sparse.length > 0 ? { sparse } : {}),
     categorical: fields.filter(
       f => !numeric.get(f)! && values.get(f)!.size <= MAX_LEGEND_ITEMS,
     ),

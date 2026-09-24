@@ -72,6 +72,16 @@ test("a multi-source adapter's features from more than one source name source as
   ])
 })
 
+test('a score most features lack is offered but draws no default plot', () => {
+  const fields = scanPlotFields(
+    features([{ score: 5 }, { name: 'a' }, { name: 'b' }]),
+    { multiSource: false },
+  )
+  expect(fields.numeric).toEqual(['score'])
+  expect(fields.sparse).toEqual(['score'])
+  expect(defaultPlotMarks(fields)).toBeUndefined()
+})
+
 test("a GFF3 record's source column is a colour field, not a facet", () => {
   const fields = scanPlotFields(
     features([

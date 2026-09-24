@@ -100,12 +100,14 @@ export const DEFAULT_PLOT_FIELD = 'score'
 
 /**
  * What a display picked from the Display types menu draws with nothing
- * declared: bars of `score` where the features carry a numeric one. Nothing
+ * declared: bars of `score` where most features carry a numeric one. Nothing
  * where they do not — there is no second column every format agrees on, and
- * guessing one would draw a picture the user did not ask for.
+ * guessing one would draw a picture the user did not ask for, as a score on
+ * one feature in a hundred would.
  */
 export function defaultPlotMarks(fields: PlotFields) {
-  return fields.numeric.includes(DEFAULT_PLOT_FIELD)
+  return fields.numeric.includes(DEFAULT_PLOT_FIELD) &&
+    !fields.sparse?.includes(DEFAULT_PLOT_FIELD)
     ? plotMarks({ ...EMPTY_PLOT_SPEC, field: DEFAULT_PLOT_FIELD }, fields)
     : undefined
 }
