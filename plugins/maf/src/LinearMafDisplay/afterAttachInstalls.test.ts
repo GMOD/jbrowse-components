@@ -9,17 +9,19 @@ import { createMafTestEnvironment } from './testEnv.ts'
 // observes re-places every region on every read.
 test('the placed-rows observer tracks the store and the row order', () => {
   const { display } = createMafTestEnvironment().createDisplay()
-  expect(reactionDependencies(display, 'Maf:placedRows')).toEqual(
+  const placedRows = () => reactionDependencies(display, 'Maf:placedRows')
+  expect(placedRows()).toEqual(
     expect.arrayContaining([
       'RowArrangementConfigurationSchema.domain',
       'LinearMafDisplay.sourcesVolatile',
       'RowArrangementConfigurationSchema.kept',
-      // Both halves of "hide the reference row": which row it is, and whether
-      // it is hidden. Rows move when either changes, so the placement has to
-      // see both.
-      'LinearMafDisplay.refSampleIdVolatile',
       'LinearMafDisplayConfigurationSchema.showReferenceRow',
       'LinearMafDisplay.loadedRegions',
     ]),
   )
+  // Which row is the reference moves rows only while it is hidden, so the
+  // placement sees it then and only then.
+  expect(placedRows()).not.toContain('LinearMafDisplay.refSampleIdVolatile')
+  display.setShowReferenceRow(false)
+  expect(placedRows()).toContain('LinearMafDisplay.refSampleIdVolatile')
 })

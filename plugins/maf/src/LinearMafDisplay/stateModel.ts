@@ -894,10 +894,11 @@ export default function stateModelFactory(
          */
         get sources(): MafSource[] {
           const rows = self.clusterableSources
+          if (self.showReferenceRow) {
+            return rows
+          }
           const refSrc = self.referenceSampleId
-          return self.showReferenceRow
-            ? rows
-            : rows.filter(s => s.name !== refSrc)
+          return rows.filter(s => s.name !== refSrc)
         },
 
         /**
