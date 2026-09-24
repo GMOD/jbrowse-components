@@ -1285,8 +1285,10 @@ export function stateModelFactory(
        * domain goes with it, and the facet's steps stay.
        */
       setFacetField(field: string) {
-        setConf(self.conf, ['facet', 'field'], field)
-        setConf(self.conf, ['facet', 'domain'], [])
+        if (self.facet?.field !== field) {
+          setConf(self.conf, ['facet', 'field'], field)
+          setConf(self.conf, ['facet', 'domain'], [])
+        }
       },
       /**
        * #action
