@@ -4,28 +4,9 @@ import { getFileName, makeIndexType } from '@jbrowse/core/util/tracks'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 
-// Path-ish name of a location, used only to sniff the .gz extension so we can
-// pick the tabix vs plain PLINK .ld adapter.
-export function locationName(loc: FileLocation): string {
-  if (isUriLocation(loc)) {
-    return loc.uri
-  }
-  if ('localPath' in loc) {
-    return loc.localPath
-  }
-  if ('name' in loc) {
-    return loc.name
-  }
-  return ''
-}
-
-// bgzip-compressed (tabix) vs plain file, sniffed from the extension — picks the
-// tabix adapter and, for tabix files, means an index is needed. `.bgz` counts:
-// it is the same file under the name htslib's own tools give it, and the `.ld`
-// adapter guesser matches `\.ld\.b?gz$`, so sniffing only `.gz` sent a
-// bgzip-spelled file to the in-memory adapter this form's own guess rejects.
+// `.bgz` is the name htslib's own tools give a bgzipped file
 export function isTabixLocation(loc: FileLocation): boolean {
-  return /\.b?gz$/.test(locationName(loc))
+  return /\.b?gz$/.test(getFileName(loc))
 }
 
 // Sibling `.tbi` for a location we can derive one for — a URL or a localPath.

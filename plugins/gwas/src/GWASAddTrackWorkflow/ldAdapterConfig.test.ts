@@ -26,6 +26,15 @@ test('.bgz URL → tabix adapter, same as .gz', () => {
   })
 })
 
+test('a presigned .gz URL → tabix adapter, its query string ignored', () => {
+  const signed =
+    'https://bucket.s3.amazonaws.com/plink.ld.gz?X-Amz-Signature=ab'
+  expect(buildLdAdapterConfig(uri(signed))).toEqual({
+    type: 'PlinkLDTabixAdapter',
+    uri: signed,
+  })
+})
+
 test('explicit .csi index location wins and is typed CSI', () => {
   const ld = uri('http://host/plink.ld.gz')
   const idx = uri('http://host/custom.csi')
