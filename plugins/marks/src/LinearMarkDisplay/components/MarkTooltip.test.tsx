@@ -1,6 +1,8 @@
+import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { SHAPE_CODES } from '@jbrowse/core/util/shapeNames'
 import { render, screen } from '@testing-library/react'
 
+import { rowsLayout } from '../facet.ts'
 import MarkTooltip from './MarkTooltip.tsx'
 
 import type { FacetLayout } from '../facet.ts'
@@ -42,6 +44,7 @@ async function tooltip(model: Partial<MarkTooltipModel>) {
         markTypes: ['bar'],
         legendSections: [],
         facetLayout: NO_FACET,
+        sources: [],
         coarseTierStandsIn: false,
         ...model,
       }}
@@ -175,4 +178,26 @@ test('a jexl channel prints its value under the label jexl', async () => {
   })
   expect(box.textContent).toContain('jexl: 14')
   expect(box.textContent).not.toContain('get(feature')
+})
+
+test("under rows the band reads as the row's label, the reader's where one is written", async () => {
+  const sources = [{ name: 'mom', label: 'Mother' }, { name: 'dad' }]
+  const facetLayout = rowsLayout(sources, categoricalField('source'))
+  const relabelled = await tooltip({
+    hoveredFeature: { ...HIT, row: 0 },
+    facetLayout,
+    sources,
+  })
+  expect(relabelled.textContent).toContain('Mother')
+  expect(relabelled.textContent).not.toContain('source: mom')
+})
+
+test('under rows a row no one labelled reads as its value', async () => {
+  const sources = [{ name: 'mom', label: 'Mother' }, { name: 'dad' }]
+  const box = await tooltip({
+    hoveredFeature: { ...HIT, row: 1 },
+    facetLayout: rowsLayout(sources, categoricalField('source')),
+    sources,
+  })
+  expect(box.textContent).toContain('source: dad')
 })

@@ -28,6 +28,7 @@ export interface MarkTooltipModel {
   markTypes: MarkType[]
   legendSections: MarkLegendSection[]
   facetLayout: FacetLayout
+  sources: readonly { label?: string }[]
   coarseTierStandsIn: boolean
 }
 
@@ -114,6 +115,7 @@ function rowRow(
   hit: MarkHitInfo,
   encoding: MarkEncoding | undefined,
   facetLayout: FacetLayout,
+  sources: readonly { label?: string }[],
 ): ChannelRow | undefined {
   const { row } = hit
   if (row === undefined) {
@@ -123,7 +125,11 @@ function rowRow(
     s => row >= s.firstRow && row < s.firstRow + s.rowCount,
   )
   if (section) {
-    return { channel: 'row', value: section.label }
+    return {
+      channel: 'row',
+      value:
+        (facetLayout.rows ? sources[row]?.label : undefined) ?? section.label,
+    }
   }
   return encoding?.row === undefined
     ? undefined
@@ -142,6 +148,7 @@ function markTooltipRows(
   encoding: MarkEncoding | undefined,
   sections: MarkLegendSection[],
   facetLayout: FacetLayout,
+  sources: readonly { label?: string }[],
   sidecar: boolean,
 ): ChannelRow[] {
   const { y } = hit
@@ -155,7 +162,7 @@ function markTooltipRows(
       : undefined,
     colorRow(hit, encoding, sections),
     shapeRow(hit, encoding, sections),
-    rowRow(hit, encoding, facetLayout),
+    rowRow(hit, encoding, facetLayout, sources),
   ].filter(row => row !== undefined)
 }
 
@@ -177,6 +184,7 @@ const MarkTooltip = observer(function MarkTooltip({
             encodings[hit.markIndex],
             legendSections,
             model.facetLayout,
+            model.sources,
             model.coarseTierStandsIn,
           ).map(({ channel, field, value, swatch }) => (
             <div key={channel}>

@@ -59,6 +59,7 @@ export type {
 } from '@jbrowse/display-ui'
 
 export { computeYTicks } from './computeYTicks.ts'
+export { rowLabelOffset } from './rowLabelOffset.ts'
 
 export { resolveRenderState } from './resolveRenderState.ts'
 

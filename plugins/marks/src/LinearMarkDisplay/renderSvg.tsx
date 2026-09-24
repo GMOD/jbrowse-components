@@ -3,10 +3,14 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { axisPlotBox } from '@jbrowse/display-ui'
-import { SvgRowLabels, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
+import {
+  SvgRowLabels,
+  SvgTreeSidebar,
+  treeSidebarOffset,
+} from '@jbrowse/tree-sidebar'
+import { rowLabelOffset } from '@jbrowse/wiggle-core'
 import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
-import { rowLabelOffset } from './components/MarkRows.tsx'
 import { markRowHeightPx } from './markList.ts'
 
 import type { MarkDisplayModel } from './components/markDisplayTypes.ts'
@@ -58,7 +62,11 @@ function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
             <SvgRowLabels
               sources={model.sources}
               rowHeight={model.effectiveRowHeight}
-              labelOffset={rowLabelOffset(model, Math.max(-view.offsetPx, 0))}
+              labelOffset={rowLabelOffset(
+                model.axes,
+                treeSidebarOffset(model),
+                Math.max(-view.offsetPx, 0),
+              )}
               availableHeight={plotHeight}
             />
           ) : null}

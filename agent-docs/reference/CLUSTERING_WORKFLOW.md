@@ -26,6 +26,7 @@ Dialog (Auto / Manual)
   ↓  Auto path
 RPC call (main → worker)
   ├─ wiggle:   MultiWiggleClusterScoreMatrix
+  ├─ marks:    MarkClusterRows
   └─ variants: MultiSampleVariantClusterGenotypeMatrix
 Worker
   1. Build matrix (one row per source/sample, one column per position/variant)
@@ -56,12 +57,13 @@ Re-render
 
 Every visible region contributes a segment and they concatenate, so a
 whole-genome or collapsed-intron view clusters on all of them —
-`buildSegments`. Reading only the first block was a real bug, not a
-simplification.
+`columnSegments`. Reading only the first block was a real bug, not a
+simplification. The binning is tree-sidebar's `binColumns`, which the mark
+display's `MarkClusterRows` bins its bars and points through as well.
 
 A column averages rather than takes the last writer, because several features
-routinely land in one: `addSpan`'s own case is hundreds of a bedMethyl's CpGs at
-10 kb/px, and whole-genome is tens of thousands.
+routinely land in one: hundreds of a bedMethyl's CpGs at 10 kb/px, and
+whole-genome is tens of thousands.
 
 **The accumulator is `Float64Array` and the row it lands in is `Float32Array`,
 and the split is deliberate.** Summing that many f32s into an f32 is naive

@@ -96,8 +96,8 @@ same drift-only hint in the export (`SvgClusterProvenanceHint`), and
 
 `TreeSidebarMixin` keeps a display's arrangement in its `rows` config object and
 its row colours in the `rowColor` pairs — the quantitative display's,
-`MultiSampleVariantBaseModel`'s, the multi-row feature display's and MAF's
-(ADR-157) — and derives the rows from them.
+`MultiSampleVariantBaseModel`'s, the multi-row feature display's, MAF's and the
+mark display's (ADR-157) — and derives the rows from them.
 
 **`rows` comes in two schemas, and the mixin reads either.** display-kit's
 `RowArrangement` is the five members alone, for a display whose rows are
@@ -114,8 +114,8 @@ code reads the mixin's API, never a config member behind it**: `rowDomain`,
 only the stages downstream of it:
 
 1. `discoveredRows`, the display's: a stable-identity getter over region
-   payloads (wiggle, multi-row) or over a volatile a header fetch fills
-   (variants, MAF).
+   payloads (wiggle, multi-row, marks) or over a volatile a header fetch fills
+   (variants, MAF, and marks' listed sources).
 2. `expandedRows`, through `expandRows`: variants' phased haplotypes, the rows
    themselves elsewhere. Variants' `sourcesBase`, the focused samples the fetch
    asks for, is a stage of the display's beside this one and never reads it,
@@ -136,9 +136,10 @@ hook's name throws at `create`:
 - `rowAlias` — variants: the sample a haplotype row answers to, so an order, a
   label, a tint and a focus written against a sample reach its haplotypes, and
   the edit diff falls back to the sample's entry.
-- `identityChannel` — `color` by default; wiggle's follows the mode, variants
-  and MAF tint the label.
-- `unlistedRowsSort` — `source` by default; multi-row's discovered values sort.
+- `identityChannel` — `color` by default; wiggle's follows the mode, variants,
+  MAF and marks tint the label.
+- `unlistedRowsSort` — `source` by default; multi-row's and marks' discovered
+  values sort.
 - `rowOrder` — `rows.domain` by default; MAF leads with a drawn tree's leaves.
 
 MAF also overrides `clusterableSources`, since on a track that discovers its
