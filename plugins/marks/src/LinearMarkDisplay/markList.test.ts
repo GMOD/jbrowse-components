@@ -276,8 +276,7 @@ test('a symlog y scale writes its type and resolved constant into both marks', (
     const hal = new MockHal([marks[i]!.pass])
     const scratch = new ArrayBuffer(marks[i]!.pass.uniformByteSize)
     marks[i]!.drawRegion(hal, scratch, block, clip, data, symlog, 0)
-    const f32 = hal.getLastUniformsF32()!
-    return { f32, i32: new Int32Array(f32.buffer) }
+    return { f32: hal.getLastUniformsF32()!, i32: hal.getLastUniformsI32()! }
   }
   const bar = uniformsOf(0)
   expect(bar.i32[barShader.UNIFORM_OFFSET_I32.valueScaleType]).toBe(
