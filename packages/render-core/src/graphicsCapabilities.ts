@@ -1,7 +1,9 @@
 import {
   getBuiltRenderer,
+  getGpuDevice,
   getGpuOverride,
   isGpuRenderingDisabled,
+  requestFirstAdapter,
 } from './gpuDevice.ts'
 
 export interface GraphicsCapabilities {
@@ -75,7 +77,7 @@ async function probeWebgpu() {
   try {
     // navigator.gpu is typed non-nullable but is undefined without WebGPU
     // support, so the try/catch guards that access as well as adapter failures
-    const adapter = await navigator.gpu.requestAdapter()
+    const adapter = await requestFirstAdapter()
     return adapter
       ? {
           webgpu: true,
@@ -160,6 +162,23 @@ export function getGraphicsCapabilities(): Promise<GraphicsCapabilities> {
     gpu.webgpu ? gpu : { ...gpu, ...probeWebgl2() },
   )
   return capabilities
+}
+
+/**
+ * Take the renderer ladder's device and capability steps now, before a display
+ * asks. On a real GPU the adapter and device requests took half a second, and a
+ * first display that starts them on mount paints that much after its data.
+ */
+export function prewarmGraphics() {
+  if (isGpuRenderingDisabled()) {
+    return
+  }
+  const override = getGpuOverride()
+  void getGpuDevice().then(device => {
+    if (!device && override === null) {
+      void getGraphicsCapabilities()
+    }
+  })
 }
 
 /**

@@ -6,6 +6,7 @@ import { localStorageGetItem } from '@jbrowse/core/util'
 import { nanoid } from '@jbrowse/core/util/nanoid'
 import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import { setGpuOverride } from '@jbrowse/render-core/gpuDevice'
+import { prewarmGraphics } from '@jbrowse/render-core/graphicsCapabilities'
 import { CssBaseline, LinearProgress, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -33,6 +34,7 @@ import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 setGpuOverride(new URLSearchParams(window.location.search).get('renderer'))
+prewarmGraphics()
 
 // The session UI — @jbrowse/app-core's App, and with it dockview, the drawer
 // widgets and their Material chrome — is what the start screen exists to get you

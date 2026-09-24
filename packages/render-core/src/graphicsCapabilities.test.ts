@@ -327,3 +327,53 @@ test('effectiveRenderer reports the rung createGpuHal built once one exists', as
   expect(hal).toBeInstanceOf(WebGL2Hal)
   expect(fresh(caps)).toBe('WebGL2')
 })
+
+function installGpuWithoutAdapter() {
+  const requestAdapter = jest.fn(() => Promise.resolve(null))
+  Object.defineProperty(navigator, 'gpu', {
+    configurable: true,
+    value: { requestAdapter },
+  })
+  return requestAdapter
+}
+
+const settle = () =>
+  new Promise(resolve => {
+    setTimeout(resolve, 0)
+  })
+
+test('the device and the capability probe share one adapter request', async () => {
+  const requestAdapter = installGpuWithoutAdapter()
+  mockWebgl2(true)
+  const { getGraphicsCapabilities } = await loadFreshModule()
+  const { getGpuDevice } = await import('./gpuDevice.ts')
+
+  expect(await getGpuDevice()).toBeNull()
+  expect((await getGraphicsCapabilities()).webgpu).toBe(false)
+  expect(requestAdapter).toHaveBeenCalledTimes(1)
+})
+
+test('prewarmGraphics asks for the device and probes WebGL2 before a display does', async () => {
+  const requestAdapter = installGpuWithoutAdapter()
+  const getContext = mockWebgl2(true)
+  const { prewarmGraphics } = await loadFreshModule()
+
+  prewarmGraphics()
+  await settle()
+
+  expect(requestAdapter).toHaveBeenCalledTimes(1)
+  expect(getContext).toHaveBeenCalledWith('webgl2')
+})
+
+test('prewarmGraphics leaves a disabled GPU alone', async () => {
+  const requestAdapter = installGpuWithoutAdapter()
+  const getContext = mockWebgl2(true)
+  const { prewarmGraphics } = await loadFreshModule()
+  setGpuOverride('canvas2d')
+
+  prewarmGraphics()
+  await settle()
+
+  expect(requestAdapter).not.toHaveBeenCalled()
+  expect(getContext).not.toHaveBeenCalled()
+})

@@ -41,6 +41,13 @@ interface GpuDeviceCell {
    * older copy built has none, and "nothing built yet" is a real state there.
    */
   builtRenderer?: RendererName
+  /**
+   * The page's first `requestAdapter`, which device acquisition and the
+   * capability probe share: on a machine without WebGPU each ask takes a few
+   * hundred milliseconds to decline. Optional for the same reason as
+   * `builtRenderer`.
+   */
+  firstAdapter?: Promise<GPUAdapter | null>
 }
 
 declare global {
@@ -147,8 +154,16 @@ function logGpuCapabilities(adapter: GPUAdapter, device: GPUDevice) {
   )
 }
 
+/** The page's first adapter request; see `GpuDeviceCell.firstAdapter` */
+export function requestFirstAdapter() {
+  cell.firstAdapter ??= navigator.gpu.requestAdapter()
+  return cell.firstAdapter
+}
+
 async function acquire() {
-  const adapter = await navigator.gpu.requestAdapter()
+  const adapter = await (cell.hadDevice
+    ? navigator.gpu.requestAdapter()
+    : requestFirstAdapter())
   if (!adapter) {
     console.warn(
       '[GPU] No compatible GPU adapter available. This may indicate WebGPU is disabled, unsupported hardware, or a system limitation. Falling back to WebGL2.',
@@ -331,6 +346,7 @@ export function resetGpuDeviceForTests() {
   cell.device = null
   cell.devicePromise = null
   cell.hadDevice = false
+  cell.firstAdapter = undefined
   cell.deviceLostListeners.clear()
   cell.builtRenderer = undefined
 }
