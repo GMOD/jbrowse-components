@@ -77,5 +77,5 @@ it lives here rather than being copied into both models.
 | <span id="action-setcolordomain">**setColorDomain**</span><br><code>(domain: string[]) =&gt; void</code> | Declare the order a text column's labels take. The labels listed lead, the rest follow sorted; an empty list gives back the order the fetches found them in. |
 | <span id="action-settrackcolor">**setTrackColor**</span><br><code>(trackId: string, value: string &#124; undefined) =&gt; void</code> | Pin one track's color under `colorBy: { field: 'track' }`, or release it back to an automatic palette slot. |
 | <span id="action-cleartrackcolors">**clearTrackColors**</span><br><code>() =&gt; void</code> |  |
-| <span id="action-setshowlegend">**setShowLegend**</span><br><code>(show: boolean) =&gt; void</code> | Close the legend for the mode in use. The legend host's setter: closing the key hides it for this mode only, so picking another mode brings its key up. |
+| <span id="action-setshowlegend">**setShowLegend**</span><br><code>(show: boolean) =&gt; void</code> | The legend host's setter: closing the key hides it for this mode only, so picking another mode brings its key up. |
 | <span id="action-dismisslegendsection">**dismissLegendSection**</span><br><code>() =&gt; void</code> | One section is the whole key here. |
