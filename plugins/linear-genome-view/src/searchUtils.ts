@@ -143,12 +143,10 @@ function trackRank(
   }
 }
 
-// The pick is a stable minimum, so a linear scan rather than a sort: only the
-// best rung is taken, and keeping the first strictly-lowest one is what leaves
-// an agreeing group with nothing to choose between in the order the ranking
-// handed it. Ranked once per hit for the reason `destinations` above it is:
-// `trackRank` reaches `session.getTrackById`, and a comparator asks O(n log n)
-// times for an answer that does not vary.
+// The pick is a stable minimum, so a linear scan rather than a sort: keeping
+// the first strictly-lowest rung leaves a group with nothing to choose between
+// in the order the ranking handed it. A comparator would ask `trackRank`, and
+// through it `session.getTrackById`, O(n log n) times.
 function bestRanked(
   results: BaseResult[],
   model: LinearGenomeViewModel,
@@ -166,12 +164,11 @@ function bestRanked(
   return best
 }
 
-// The picker exists to disambiguate, and hits that name one feature at one
-// place are not ambiguous — they are several indexes having found it. An
-// instance carrying a handful of gene tracks turns every gene search into a
-// table whose only varying column is Track, which is issues #4302 and #5068.
-// When the hits agree there is nothing to ask, so navigate instead.
-export function unanimousResult({
+// One hit per place, in the order the ranking first reached each. Hits that
+// name one feature at one place are several indexes having found it, not a
+// choice to put to the user: a handful of gene tracks turned every gene search
+// into a picker whose only varying column was Track (issues #4302 and #5068).
+export function distinctDestinations({
   results,
   model,
   session,
@@ -182,18 +179,22 @@ export function unanimousResult({
   session: TrackCatalog
   assembly?: Assembly
 }) {
-  // computed once per hit rather than once per comparison: a broad query can
-  // carry a hundred results, and each one costs a locstring parse
-  const destinations = results.map(r => destination(r, assembly))
-  const agree =
-    destinations[0] !== undefined &&
-    destinations.every(d => d === destinations[0])
-  return agree ? bestRanked(results, model, session) : undefined
+  const groups = new Map<string | number, BaseResult[]>()
+  for (const [i, result] of results.entries()) {
+    const key = destination(result, assembly) ?? i
+    const group = groups.get(key)
+    if (group) {
+      group.push(result)
+    } else {
+      groups.set(key, [result])
+    }
+  }
+  return [...groups.values()].map(group => bestRanked(group, model, session))
 }
 
 // Every multi-hit result set reaches the picker through here, so the two
-// search surfaces cannot disagree about when one is worth raising. Returns
-// whether the view moved.
+// search surfaces cannot disagree about when one is worth raising: only when
+// the hits name more than one place. Returns whether the view moved.
 export async function showSearchResults({
   results,
   query,
@@ -210,25 +211,19 @@ export async function showSearchResults({
   showHitTrack?: boolean
 }) {
   const session = getSession(model)
-  const unanimous = unanimousResult({
+  const places = distinctDestinations({
     results,
     model,
     session,
     assembly: session.assemblyManager.get(assemblyName),
   })
-  if (unanimous) {
-    await navToOption({
-      option: unanimous,
-      model,
-      assemblyName,
-      grow,
-      showHitTrack,
-    })
+  const land = (option: BaseResult) =>
+    navToOption({ option, model, assemblyName, grow, showHitTrack })
+  if (places.length === 1) {
+    await land(places[0]!)
     return true
   } else {
-    model.setSearchResults(results, query, assemblyName, result =>
-      navToOption({ option: result, model, assemblyName, grow, showHitTrack }),
-    )
+    model.setSearchResults(places, query, assemblyName, land)
     return false
   }
 }

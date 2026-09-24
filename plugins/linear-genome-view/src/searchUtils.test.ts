@@ -3,10 +3,10 @@ import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import {
   SearchResultsNotFoundError,
   checkRef,
+  distinctDestinations,
   fetchResults,
   nameNotFound,
   splitLast,
-  unanimousResult,
 } from './searchUtils.ts'
 
 import type { LinearGenomeViewModel } from './index.ts'
@@ -196,8 +196,8 @@ describe('splitLast', () => {
   })
 })
 
-describe('unanimousResult', () => {
-  // only the two members unanimousResult reads
+describe('distinctDestinations', () => {
+  // only the members distinctDestinations reads
   const loadedAssembly = {
     initialized: true,
     isValidRefName: (refName: string) => isRef(refName),
@@ -224,12 +224,19 @@ describe('unanimousResult', () => {
   const hit = (locString: string, trackId?: string) =>
     new BaseResult({ label: 'EDEN.1', locString, trackId })
 
-  const pick = (results: BaseResult[], openTrackIds: string[] = []) =>
-    unanimousResult({
+  const places = (results: BaseResult[], openTrackIds: string[] = []) =>
+    distinctDestinations({
       results,
       assembly: loadedAssembly,
       ...viewWith(openTrackIds),
     })
+
+  // the hit to navigate through when every hit names one place, else undefined
+  // for the picker
+  const pick = (results: BaseResult[], openTrackIds: string[] = []) => {
+    const distinct = places(results, openTrackIds)
+    return distinct.length === 1 ? distinct[0] : undefined
+  }
 
   it('collapses hits that name one feature in one place', () => {
     const results = [
@@ -295,7 +302,7 @@ describe('unanimousResult', () => {
   // destinations and the picker asks — an unprovable match must not merge
   it('keeps the picker when the assembly cannot resolve the names', () => {
     expect(
-      unanimousResult({
+      distinctDestinations({
         results: [
           hit('ctgA:1049-9000', 'genes'),
           hit('ctga:1,049..9,000', 'other_genes'),
@@ -303,7 +310,18 @@ describe('unanimousResult', () => {
         assembly: undefined,
         ...viewWith([]),
       }),
-    ).toBeUndefined()
+    ).toHaveLength(2)
+  })
+
+  // two indexes finding the X copy of a PAR gene and one the Y copy is a
+  // choice between two places, not three rows
+  it('lists each place once when only some hits agree', () => {
+    const results = [
+      hit('ctgA:1049..9000', 'genes'),
+      hit('ctgB:1049..9000', 'genes'),
+      hit('ctgA:1049..9000', 'other_genes'),
+    ]
+    expect(places(results, ['other_genes'])).toEqual([results[2], results[1]])
   })
 
   it('keeps the picker for hits carrying no location', () => {
