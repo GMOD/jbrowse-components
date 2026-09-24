@@ -91,10 +91,10 @@ Reading:
 - `jb.waitReady(timeoutMs?)` resolves when views and tracks finish loading and
   drawing (default 30000). Its result carries `notifications` (the session's
   error toasts), `notReady` (views that failed or are still `initializing`, and
-  tracks whose display settled without drawing, each with a `phase`),
-  `offscreen` (views taller than the window) and the `drawer` and `dialog`
-  above. None raises a toast and all look plausible in a screenshot, so check
-  this report instead.
+  tracks that settled without drawing (a `phase`) or drew around config
+  (`notices`)), `offscreen` (views taller than the window) and the `drawer` and
+  `dialog` above. None raises a toast and all look plausible in a screenshot, so
+  check this report instead.
 
 The foundations:
 
