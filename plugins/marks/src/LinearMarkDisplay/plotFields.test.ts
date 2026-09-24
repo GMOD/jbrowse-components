@@ -31,7 +31,7 @@ test('a field is numeric only where every value it carries reads as a number', (
       { score: 5, milliDiv: '120', repClass: 'Alu', strand: 1 },
       { score: 7, milliDiv: 'n/a', repClass: 'L1', strand: -1 },
     ]),
-    { multiSource: false },
+    { listedSources: 0 },
   )
   expect(fields.numeric).toEqual(['score'])
   // milliDiv reads as text in one row, and strand is a code
@@ -47,13 +47,13 @@ test('the default is a bar of score, and nothing where the features carry none',
   ).toBeUndefined()
 })
 
-test("a multi-source adapter's features from more than one source name source as the facet field", () => {
+test('an adapter listing more than one source names source as the facet field, whatever the sample holds', () => {
   const multi = scanPlotFields(
     features([
       { score: 5, source: 'k1' },
-      { score: 7, source: 'k2' },
+      { score: 7, source: 'k1' },
     ]),
-    { multiSource: true },
+    { listedSources: 2 },
   )
   expect(multi.facet).toBe('source')
   expect(defaultPlotMarks(multi)).toEqual([
@@ -64,7 +64,7 @@ test("a multi-source adapter's features from more than one source name source as
       { score: 5, source: 'k1' },
       { score: 7, source: 'k1' },
     ]),
-    { multiSource: true },
+    { listedSources: 1 },
   )
   expect(single.facet).toBeUndefined()
   expect(defaultPlotMarks(single)).toEqual([
@@ -75,7 +75,7 @@ test("a multi-source adapter's features from more than one source name source as
 test('a score most features lack is offered but draws no default plot', () => {
   const fields = scanPlotFields(
     features([{ score: 5 }, { name: 'a' }, { name: 'b' }]),
-    { multiSource: false },
+    { listedSources: 0 },
   )
   expect(fields.numeric).toEqual(['score'])
   expect(fields.sparse).toEqual(['score'])
@@ -88,7 +88,7 @@ test("a GFF3 record's source column is a colour field, not a facet", () => {
       { score: 5, source: 'est' },
       { score: 7, source: 'exonerate' },
     ]),
-    { multiSource: false },
+    { listedSources: 0 },
   )
   expect(fields.facet).toBeUndefined()
   expect(fields.categorical).toEqual(['source'])
@@ -108,7 +108,7 @@ test('a structured field offers its members by the path a channel reads', () => 
         samples: { HG00096: { GT: ['1|1'] } },
       },
     ]),
-    { multiSource: false },
+    { listedSources: 0 },
   )
   expect(fields.numeric).toEqual(['INFO.DP', 'QUAL'])
   expect(fields.categorical).toEqual(['INFO.IMPRECISE', 'INFO.SVTYPE'])
@@ -123,7 +123,7 @@ test('a text field with more values than a colour key names is no colour choice'
         tags: { RG: i % 2 ? 'lib1' : 'lib2', MD: `${i}A` },
       })),
     ),
-    { multiSource: false },
+    { listedSources: 0 },
   )
   expect(fields.categorical).toEqual(['tags.RG'])
 })

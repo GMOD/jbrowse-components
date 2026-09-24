@@ -36,6 +36,9 @@ export default class MarkScanPlotFields extends RpcMethodTypeWithRenameRegions<'
       signal,
       statusCallback,
     })
-    return scanPlotFields(features, { multiSource: listsSources(adapter) })
+    const listedSources = listsSources(adapter)
+      ? (await adapter.getSources(regions, { signal })).length
+      : 0
+    return scanPlotFields(features, { listedSources })
   }
 }

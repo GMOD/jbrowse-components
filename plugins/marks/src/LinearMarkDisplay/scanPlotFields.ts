@@ -75,26 +75,24 @@ function isNumericDatum(v: unknown) {
 /**
  * The fields a sample of features carry, each numeric only where every value
  * seen for it read as a finite number and sparse where most features lack it, and a text field only where a colour
- * key could name its values. `source` is a facet only on a multi-source
- * adapter's features, since a GFF3 record's `source` column is not a file.
+ * key could name its values. `source` is a facet only where the adapter lists
+ * more than one source, since a GFF3 record's `source` column is not a file,
+ * and a multi-BigWig answers each file's features in one run, so a sample
+ * would see the first file alone.
  * Enumerated through `toJSON`, not `tags()`: `tags` is `SimpleFeature`'s, and
  * the `Feature` interface an adapter may implement carries only the
  * serializer.
  */
 export function scanPlotFields(
   features: readonly Feature[],
-  { multiSource }: { multiSource: boolean },
+  { listedSources }: { listedSources: number },
 ): PlotFields {
   const numeric = new Map<string, boolean>()
   const carried = new Map<string, number>()
   const values = new Map<string, Set<unknown>>()
-  const sources = new Set<unknown>()
   const n = Math.min(features.length, PLOT_FIELD_SAMPLE)
   for (let i = 0; i < n; i++) {
     const record = features[i]!.toJSON()
-    if (multiSource) {
-      sources.add(record[FACET_FIELD])
-    }
     for (const [field, value] of fieldEntries(record)) {
       const v = datumOf(value)
       if (v === undefined) {
@@ -119,6 +117,6 @@ export function scanPlotFields(
     categorical: fields.filter(
       f => !numeric.get(f)! && values.get(f)!.size <= MAX_LEGEND_ITEMS,
     ),
-    ...(sources.size > 1 ? { facet: FACET_FIELD } : {}),
+    ...(listedSources > 1 ? { facet: FACET_FIELD } : {}),
   }
 }

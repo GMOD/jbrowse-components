@@ -39,10 +39,33 @@ test("a GFF3 track's source column facets nothing", async () => {
   })
 })
 
-test("a multi-BigWig's sources facet the plot", async () => {
-  expect(await scan({ getMultiSourceFeatureArraysMulti: jest.fn() })).toEqual({
+test("a multi-BigWig's listed files facet the plot, though its first features are all one file's", async () => {
+  expect(
+    await scan({
+      getMultiSourceFeatureArraysMulti: jest.fn(),
+      getFeaturesInMultipleRegionsArray: () =>
+        Promise.resolve(
+          features.map(
+            f => new SimpleFeature({ ...f.toJSON(), source: 'est' }),
+          ),
+        ),
+      getSources: () => Promise.resolve([{ name: 'est' }, { name: 'bw2' }]),
+    }),
+  ).toEqual({
     numeric: ['score'],
     categorical: ['source'],
     facet: 'source',
+  })
+})
+
+test('a multi-BigWig of one file facets nothing', async () => {
+  expect(
+    await scan({
+      getMultiSourceFeatureArraysMulti: jest.fn(),
+      getSources: () => Promise.resolve([{ name: 'est' }]),
+    }),
+  ).toEqual({
+    numeric: ['score'],
+    categorical: ['source'],
   })
 })
