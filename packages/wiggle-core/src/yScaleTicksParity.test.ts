@@ -3,11 +3,14 @@ import {
   clampStrokeInsideAxis,
   scoreToAxisY,
 } from '@jbrowse/display-ui'
+import { barMark, pointMark } from '@jbrowse/render-core/marks'
 import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
 import { computeYTicks } from './computeYTicks.ts'
 import { makeScoreNormalizer, resolveSymlogConstant } from './normalize.ts'
 import { getNiceDomain } from './scale.ts'
+
+import type { MarkValueScaleType } from '@jbrowse/render-core/marks'
 
 // The invariant `YScaleTicks` documents, over the pair that broke it: the axis
 // (`computeYTicks`, d3 through `getScale`) and the renderer (`axisPlotBox` +
@@ -30,7 +33,15 @@ function niced(scaleType: string, domain: [number, number]) {
   return getNiceDomain({ scaleType, domain, bounds: noBounds })
 }
 
-const CASES = [
+interface TickCase {
+  name: string
+  scaleType: MarkValueScaleType
+  raw: [number, number]
+  height: number
+  symlogConstant?: number
+}
+
+const CASES: TickCase[] = [
   { name: 'linear', scaleType: 'linear', raw: [0, 1000], height: 200 },
   {
     name: 'linear, negative scores',
@@ -74,6 +85,13 @@ const CASES = [
     raw: [0, 0.05],
     height: 200,
   },
+  {
+    name: 'symlog with a configured constant',
+    scaleType: 'symlog',
+    raw: [-40, 60],
+    height: 200,
+    symlogConstant: 5,
+  },
   // short track: computeYTicks falls back to the domain endpoints
   { name: 'short track', scaleType: 'linear', raw: [0, 30], height: 60 },
   // A window whose scores are all one value autoscales to a domain of no
@@ -93,10 +111,15 @@ const CASES = [
     raw: [0, 0],
     height: 200,
   },
-] as const
+]
 
-describe.each(CASES)('$name', ({ scaleType, raw, height }) => {
-  const domain = niced(scaleType, raw as unknown as [number, number])
+describe.each(CASES)('$name', ({ scaleType, raw, height, symlogConstant }) => {
+  const domain = niced(scaleType, raw)
+  const resolvedConstant = resolveSymlogConstant(
+    domain[0],
+    domain[1],
+    symlogConstant ?? 0,
+  )
 
   // 5 is the single-wiggle/manhattan label gutter; 0 is multi-wiggle, whose
   // rows stack edge to edge with no inset
@@ -107,13 +130,14 @@ describe.each(CASES)('$name', ({ scaleType, raw, height }) => {
       scaleType,
       minimalTicks: false,
       offset,
+      symlogConstant,
     })!
     const box = axisPlotBox(height, offset)
     const normalize = makeScoreNormalizer(
       domain[0],
       domain[1],
       scaleTypeCode(scaleType),
-      resolveSymlogConstant(domain[0], domain[1], 0),
+      resolvedConstant,
     )
     expect(ticks.items.length).toBeGreaterThan(0)
     expect(ticks.yTop).toBe(box.yTop)
@@ -122,6 +146,54 @@ describe.each(CASES)('$name', ({ scaleType, raw, height }) => {
       expect(y).toBeCloseTo(scoreToAxisY(normalize(value), box), 9)
     }
   })
+
+  // The bar and point marks draw on a canvas `plotHeight` tall at `yTop`,
+  // through the constant a display resolves the way `computeYTicks` does.
+  test.each([5, 0])(
+    'a bar and a point stand on every tick (offset %i)',
+    offset => {
+      const ticks = computeYTicks({
+        height,
+        domain,
+        scaleType,
+        minimalTicks: false,
+        offset,
+        symlogConstant,
+      })!
+      const box = axisPlotBox(height, offset)
+      const frame = { canvasWidth: 100, canvasHeight: box.plotHeight }
+      const block = {
+        displayedRegionIndex: 0,
+        start: 0,
+        end: 1000,
+        screenStartPx: 0,
+        screenEndPx: 100,
+        reversed: false,
+      }
+      const values = ticks.items.map(t => t.value)
+      const count = values.length
+      const channels = {
+        x: Uint32Array.from(values.map((_, i) => i * 10)),
+        x2: Uint32Array.from(values.map((_, i) => i * 10 + 1)),
+        y: Float32Array.from(values),
+        color: new Uint32Array(count),
+        glyph: new Uint8Array(count),
+        count,
+      }
+      const scale = { domain, scaleType, symlogConstant: resolvedConstant }
+      const barParams = { ...scale, origin: 0, minWidthPx: 0, seamPx: 0 }
+      const pointParams = { ...scale, diameterPx: 6 }
+      ticks.items.forEach(({ value, y }, i) => {
+        const bar = barMark.ink!(channels, block, frame, barParams, i)
+        if (bar) {
+          const valueEnd = value > 0 ? bar.top : bar.top + bar.height
+          expect(box.yTop + valueEnd).toBeCloseTo(y, 3)
+        }
+        const point = pointMark.ink!(channels, block, frame, pointParams, i)!
+        expect(box.yTop + point.top + point.height / 2).toBeCloseTo(y, 3)
+      })
+    },
+  )
 
   // A domain of no width has nothing to span, and the normalizer says so by
   // collapsing to `() => 0` — which is the answer the case above pins the axis
@@ -132,7 +204,7 @@ describe.each(CASES)('$name', ({ scaleType, raw, height }) => {
       domain[0],
       domain[1],
       scaleTypeCode(scaleType),
-      resolveSymlogConstant(domain[0], domain[1], 0),
+      resolvedConstant,
     )
     // the shape of the sub-1 log bug: normalize collapsed to `() => 0`, so
     // every score pinned to the baseline under a fully populated axis

@@ -172,6 +172,18 @@ describe('valueWindow', () => {
     expect(hi).toBeCloseTo(2 ** 5.5, 9)
   })
 
+  test('reads symlog back through the constant it was placed by', () => {
+    const c = 0.5
+    const tMax = Math.log1p(1000 / c)
+    const [lo, hi] = valueWindow(50, 5, frame, {
+      domain: [0, 1000],
+      scaleType: 'symlog',
+      symlogConstant: c,
+    })
+    expect(lo).toBeCloseTo(c * Math.expm1(0.45 * tMax), 9)
+    expect(hi).toBeCloseTo(c * Math.expm1(0.55 * tMax), 9)
+  })
+
   test('an end within reach of a plot edge opens, where values clamp', () => {
     expect(valueWindow(3, 5, frame, { domain: [0, 10] })[1]).toBe(Infinity)
     expect(valueWindow(97, 5, frame, { domain: [0, 10] })[0]).toBe(-Infinity)

@@ -1,3 +1,9 @@
+import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
+import {
+  pointYPx,
+  valueToYPxScaled,
+} from '@jbrowse/render-core/shaders/pointMark'
+
 import {
   type ScaleSpec,
   niceDomain,
@@ -1453,3 +1459,43 @@ test.each(CASES)(
     expect(probes.map(x => scaleValue(niced, x))).toEqual(atNiced)
   },
 )
+
+// The bar and point marks place a value through `valueScale.slang`'s twins,
+// which on a screen range `[h, 0]` is d3's answer, symlog's constant included.
+// Only an ascending domain, positive for log, reaches them through
+// `getNiceDomain`, and they clamp where d3 extrapolates.
+const PLACED = CASES.filter(
+  ({ spec: { kind, domain, range } }) =>
+    domain[0] < domain[1] &&
+    (kind !== 'log' || domain[0] > 0) &&
+    range[0] > 0 &&
+    range[1] === 0,
+)
+
+test.each(PLACED)(
+  'the marks place $spec.kind $spec.domain where d3 does',
+  ({ spec, probes, at }) => {
+    const [min, max] = spec.domain
+    const h = spec.range[0]
+    const code = scaleTypeCode(spec.kind)
+    const c = spec.constant ?? 1
+    const inset = 4
+    probes.forEach((probe, i) => {
+      if (probe >= min && probe <= max) {
+        expect(valueToYPxScaled(probe, min, max, h, code, c)).toBeCloseTo(
+          at[i]!,
+          6,
+        )
+        expect(
+          pointYPx(probe, min, max, h + 2 * inset, code, inset, c) - inset,
+        ).toBeCloseTo(at[i]!, 6)
+      }
+    })
+  },
+)
+
+test('the placed cases hold symlog constants other than 1', () => {
+  expect(
+    PLACED.filter(({ spec }) => spec.kind === 'symlog' && spec.constant !== 1),
+  ).not.toHaveLength(0)
+})

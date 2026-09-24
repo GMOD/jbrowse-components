@@ -164,14 +164,21 @@ const points: PointChannels = {
 
 const pointParams: PointParams = { domain: [0, 1], diameterPx: 6 }
 
-test('point: every drawn bar answers its own hit, in both orientations', () => {
+// A constant far from d3's default 1, so a painter and a hit test reading two
+// different ones place the same value pixels apart.
+const SYMLOG = { scaleType: 'symlog', symlogConstant: 0.05 } as const
+
+test.each<[string, Partial<PointParams>]>([
+  ['linear', {}],
+  ['symlog', SYMLOG],
+])('point: every drawn bar answers its own hit, %s', (_label, scale) => {
   for (const reversed of [false, true]) {
     expect(
       sweepMarkAgainstHit(
         defineMark({
           shape: pointMark,
           channels: (c: PointChannels) => c,
-          params: () => pointParams,
+          params: () => ({ ...pointParams, ...scale }),
         }),
         points,
         { ...block, reversed },
@@ -215,14 +222,18 @@ const slicePoint = (c: PointChannels, i: number): PointChannels => ({
 })
 
 describe('point: a glyph hit lands on the glyph the painter drew', () => {
-  test.each([2, 6])('diameter %i', diameterPx => {
+  test.each<[number, Partial<PointParams>]>([
+    [2, {}],
+    [6, {}],
+    [6, SYMLOG],
+  ])('diameter %i, scale %j', (diameterPx, scale) => {
     for (const reversed of [false, true]) {
       expect(
         sweepMarkAgainstHit(
           defineMark({
             shape: pointMark,
             channels: (c: PointChannels) => c,
-            params: () => ({ domain: [0, 1], diameterPx }),
+            params: () => ({ domain: [0, 1], diameterPx, ...scale }),
           }),
           glyphs,
           { ...block, reversed },
@@ -276,6 +287,16 @@ describe('bar: every drawn rect answers its own hit, in both orientations', () =
       'clamped domain',
       { domain: [-0.5, 0.5], origin: 0, minWidthPx: 2, seamPx: 0 },
       barsInside,
+    ],
+    [
+      'symlog',
+      { domain: [-1, 1], origin: 0, minWidthPx: 2, seamPx: 0, ...SYMLOG },
+      bars,
+    ],
+    [
+      'symlog, origin inside the linear region',
+      { domain: [-1, 1], origin: 0.02, minWidthPx: 2, seamPx: 0, ...SYMLOG },
+      bars,
     ],
   ])('%s', (_label, params, channels) => {
     for (const reversed of [false, true]) {

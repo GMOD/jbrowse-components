@@ -1,3 +1,7 @@
+import {
+  pointYPx,
+  valueToYPxScaled,
+} from '@jbrowse/render-core/shaders/pointMark'
 import { normalizeScore } from '@jbrowse/render-core/shaders/scoreScale'
 import {
   SCALE_TYPE_LINEAR,
@@ -107,6 +111,21 @@ describe.each(SYMLOG_DOMAINS)('symlog domain %j', (min, max) => {
       normalize(score),
       6,
     )
+  })
+
+  // The bar and point marks' twins, which place through the same constant
+  // once the display hands them the one it resolved.
+  test.each(samples([min, max]))('a mark places score %p there', score => {
+    const h = 200
+    const inset = 4
+    const y = (1 - normalize(score)) * h
+    expect(
+      valueToYPxScaled(score, min, max, h, SCALE_TYPE_SYMLOG, c),
+    ).toBeCloseTo(y, 6)
+    expect(
+      pointYPx(score, min, max, h + 2 * inset, SCALE_TYPE_SYMLOG, inset, c) -
+        inset,
+    ).toBeCloseTo(y, 6)
   })
 
   test('zero is a real position, not the floor', () => {
