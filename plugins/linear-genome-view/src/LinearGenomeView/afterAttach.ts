@@ -256,24 +256,32 @@ async function applyInit(
 
 /**
  * The init autorun below waits for the view's width, which exists only once its
- * component has rendered, and then launches the tracks one at a time. The
- * display code each pending track needs can start loading now, all at once.
+ * component has rendered, and then loads the assembly and launches the tracks
+ * one at a time. The assembly and the display code each pending track needs can
+ * start loading now, all at once.
  */
-function setupInitTrackWarmup(self: LinearGenomeViewModel) {
+function setupInitWarmup(self: LinearGenomeViewModel) {
   addDisposer(
     self,
     autorun(
-      function initTrackWarmupAutorun() {
-        const tracks = asArray(self.pendingLaunch?.tracks)
-        // eslint-disable-next-line no-restricted-syntax -- EFFECT INPUT: the track configs only feed the loads started here; the pending track list is the key
+      function initWarmupAutorun() {
+        const pending = self.pendingLaunch
+        const tracks = asArray(pending?.tracks)
+        // eslint-disable-next-line no-restricted-syntax -- EFFECT INPUT: the assembly and track configs only feed the loads started here; the pending launch is the key
         untracked(() => {
+          const assembly = pending?.assembly ?? self.launchAssemblyName
+          if (pending && assembly) {
+            getSession(self)
+              .assemblyManager.waitForAssembly(assembly)
+              .catch(() => {})
+          }
           for (const t of tracks) {
             const { trackId, displaySnapshot } = normalizeTrackInit(t)
             warmTrackDisplayGeneric(self, trackId, displaySnapshot)
           }
         })
       },
-      { name: 'LGVInitTrackWarmup' },
+      { name: 'LGVInitWarmup' },
     ),
   )
 }
@@ -359,7 +367,7 @@ function setupLocalStorageAutorun(self: LinearGenomeViewModel) {
  * Sets up all afterAttach autoruns for the LinearGenomeView
  */
 export function doAfterAttach(self: LinearGenomeViewModel) {
-  setupInitTrackWarmup(self)
+  setupInitWarmup(self)
   setupInitAutorun(self)
   setupCoarseDynamicBlocksAutorun(self)
   setupLocalStorageAutorun(self)
