@@ -218,7 +218,7 @@ drift this module exists to prevent — see the header.
 
 ```js
 // type signature
-(refName: string, nameOrder: readonly string[] | undefined) => string
+(refName: string, namePosition: RefNamePosition | undefined) => string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorFunctions.ts)

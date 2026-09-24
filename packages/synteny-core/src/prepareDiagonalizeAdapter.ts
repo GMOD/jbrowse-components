@@ -20,7 +20,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  *
  * `referenceRegions`/`currentRegions` are the caller's canonical regions.
  */
-export async function prepareDiagonalizeAdapter({
+async function prepareDiagonalizeAdapter({
   assemblyManager,
   sessionId,
   adapterConfig,
