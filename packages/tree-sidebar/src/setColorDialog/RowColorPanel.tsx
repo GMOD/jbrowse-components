@@ -71,6 +71,7 @@ export default function RowColorPanel({
         <ToggleButtonGroup
           exclusive
           size="small"
+          sx={{ '& .MuiToggleButton-root': { textTransform: 'none' } }}
           value={choice}
           onChange={(_event, value: string | null) => {
             if (value !== null) {
@@ -100,6 +101,7 @@ export default function RowColorPanel({
             <TextField
               select
               size="small"
+              variant="outlined"
               label="Start from"
               value=""
               sx={{ minWidth: 200 }}
