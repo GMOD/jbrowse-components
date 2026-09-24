@@ -495,14 +495,11 @@ export function stateModelFactory(
          * Fills MultiRegionDisplayMixin's supersession hook, and is the
          * auto-pick's trigger: the loaded data was colored under an index SNP
          * other than the top hit, so adopting it — an `rpcProps` write — will
-         * clear the data and refetch. Keyed on the `ld` scale rather than
-         * `ldColoringActive`, because the auto-pick writes whether or not an
-         * `ldAdapter` is configured, and an export sampling `svgReady` must
-         * not capture the load that write discards.
+         * clear the data and refetch.
          */
         get dataSuperseded(): boolean {
           return (
-            isLdColoring(self.color) &&
+            self.ldColoringActive &&
             !self.indexSnpPinned &&
             this.topSnp !== undefined &&
             this.topSnp !== self.indexSnp

@@ -169,11 +169,9 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     expect(atGate).toEqual({ indexSnp: TOP_SNP, regions: 2 })
   })
 
-  // The same gate, for the `ld` field with no ldAdapter configured. LD coloring
-  // is inert there, but the auto-pick still writes indexSnp and the write is
-  // what clears the load, so gating supersession on the adapter exported the
-  // empty lane anyway.
-  it('opens the gate on adopted-index data with no ldAdapter configured', async () => {
+  // With no ldAdapter the `ld` field is read off the features like any other
+  // threshold field, and no join reads an index, so none is adopted.
+  it('adopts no index and fetches once with no ldAdapter configured', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
       color: { field: 'ld' },
       ldAdapter: false,
@@ -198,6 +196,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     disposer()
 
     expect(display.ldColoringActive).toBe(false)
-    expect(atGate).toEqual({ indexSnp: TOP_SNP, regions: 2 })
+    expect(atGate).toEqual({ indexSnp: undefined, regions: 2 })
+    expect(mockRpcCall).toHaveBeenCalledTimes(2)
   })
 })
