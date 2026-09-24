@@ -2,7 +2,7 @@ import AppLogo from '@jbrowse/core/ui/AppLogo'
 import DropDownMenu from '@jbrowse/core/ui/DropDownMenu'
 import EditableTypography from '@jbrowse/core/ui/EditableTypography'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Toolbar, Tooltip } from '@mui/material'
+import { Toolbar, Tooltip, useMediaQuery, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { AppSession } from './types.ts'
@@ -33,9 +33,6 @@ const useStyles = makeStyles()(theme => ({
     backgroundColor: theme.palette.primary.light,
   },
   logo: {
-    [theme.breakpoints.down('sm')]: {
-      display: 'none',
-    },
     // stretch to the toolbar height so the logo's height follows the bar
     // rather than a hardcoded pixel value
     alignSelf: 'stretch',
@@ -61,6 +58,10 @@ const AppToolbar = observer(function AppToolbar({
 }) {
   const { classes } = useStyles()
   const { name, menus } = session
+  // a phone needs the logo's 150px for the menus and Share
+  const narrow = useMediaQuery(useTheme().breakpoints.down('sm'), {
+    noSsr: true,
+  })
 
   return (
     <Toolbar>
@@ -98,9 +99,11 @@ const AppToolbar = observer(function AppToolbar({
       </Tooltip>
       {HeaderButtons}
       <div className={classes.grow} />
-      <div className={classes.logo}>
-        <AppLogo session={session} />
-      </div>
+      {narrow ? null : (
+        <div className={classes.logo}>
+          <AppLogo session={session} />
+        </div>
+      )}
     </Toolbar>
   )
 })
