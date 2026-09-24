@@ -26,6 +26,8 @@ const useStyles = makeStyles()({
   tracksContainer: {
     position: 'relative',
     contain: 'layout style',
+    // horizontal drags are the pan's; vertical scroll and pinch stay the page's
+    touchAction: 'pan-y pinch-zoom',
   },
   scalebarHighlights: {
     position: 'absolute',
@@ -50,7 +52,7 @@ const TracksContainer = observer(function TracksContainer({
 }) {
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
-  const { mouseDown: sideScrollMouseDown, mouseUp } = useSideScroll(model)
+  const sideScroll = useSideScroll(model)
   const { showGridlines, showCenterLine } = model
   const ref = useRef<HTMLDivElement>(null)
   // shift-drag range select over the whole tracks area. This is intentionally
@@ -63,17 +65,14 @@ const TracksContainer = observer(function TracksContainer({
       ref={ref}
       data-testid="tracksContainer"
       className={classes.tracksContainer}
-      onMouseDown={event => {
-        sideScrollMouseDown(event)
-        range.mouseDown(event)
-      }}
+      onPointerDown={sideScroll.pointerDown}
+      onMouseDown={range.mouseDown}
       onMouseMove={event => {
         range.mouseMove(event)
       }}
       onMouseLeave={() => {
         range.mouseOut()
       }}
-      onMouseUp={mouseUp}
     >
       {showGridlines ? (
         <>

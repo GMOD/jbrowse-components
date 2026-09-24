@@ -11,6 +11,10 @@ import { useSideScroll } from './useSideScroll.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
+afterEach(() => {
+  jest.restoreAllMocks()
+})
+
 // The hook only ever calls `horizontalScroll`, so the view is that one method.
 function fakeView() {
   return { horizontalScroll: jest.fn() } as unknown as LinearGenomeViewModel & {
@@ -18,18 +22,20 @@ function fakeView() {
   }
 }
 
+function pointer(type: string, init: PointerEventInit) {
+  act(() => {
+    window.dispatchEvent(new PointerEvent(type, init))
+  })
+}
+
 // press, move, release. The release flushes whatever frame the move queued, so
 // the scroll (if any) has landed by the time this returns.
-function dragFrom(el: Element) {
+function dragFrom(el: Element, init: PointerEventInit = {}) {
   act(() => {
-    fireEvent.mouseDown(el, { button: 0, clientX: 100 })
+    fireEvent.pointerDown(el, { button: 0, clientX: 100, ...init })
   })
-  act(() => {
-    window.dispatchEvent(new MouseEvent('mousemove', { clientX: 60 }))
-  })
-  act(() => {
-    window.dispatchEvent(new MouseEvent('mouseup', { clientX: 60 }))
-  })
+  pointer('pointermove', { clientX: 60, ...init })
+  pointer('pointerup', { clientX: 60, ...init })
 }
 
 // TracksContainer in miniature: the pan handler on the container, with a canvas
@@ -41,9 +47,9 @@ function Harness({
   model: LinearGenomeViewModel
   children?: React.ReactNode
 }) {
-  const { mouseDown, mouseUp } = useSideScroll(model)
+  const { pointerDown } = useSideScroll(model)
   return (
-    <div onMouseDown={mouseDown} onMouseUp={mouseUp}>
+    <div onPointerDown={pointerDown}>
       <div data-testid="canvas">canvas</div>
       {children}
     </div>
@@ -60,9 +66,98 @@ test('a drag on the track pans the view', () => {
   expect(model.horizontalScroll.mock.calls).toEqual([[40]])
 })
 
+test('a finger drag pans the view', () => {
+  const model = fakeView()
+  const { getByTestId } = render(<Harness model={model} />)
+
+  dragFrom(getByTestId('canvas'), { pointerType: 'touch', pointerId: 7 })
+
+  expect(model.horizontalScroll.mock.calls).toEqual([[40]])
+})
+
+// The browser cancels a touch it takes over as a vertical page scroll. The
+// movement so far lands, and the pan lets go rather than staying latched onto
+// every later move.
+test('a cancelled touch ends the pan', () => {
+  const model = fakeView()
+  const { getByTestId } = render(<Harness model={model} />)
+  const canvas = getByTestId('canvas')
+  const touch = { pointerType: 'touch', pointerId: 7 }
+
+  act(() => {
+    fireEvent.pointerDown(canvas, { button: 0, clientX: 100, ...touch })
+  })
+  pointer('pointermove', { clientX: 90, ...touch })
+  pointer('pointercancel', { clientX: 90, ...touch })
+  expect(Object.hasOwn(canvas.parentElement!.dataset, 'panDragging')).toBe(
+    false,
+  )
+  pointer('pointermove', { clientX: 20, ...touch })
+
+  expect(model.horizontalScroll.mock.calls).toEqual([[10]])
+})
+
+// A second finger is its own pointer: its press starts nothing, and its moves
+// are not the pan's, so it neither re-anchors the drag nor jerks the view by the
+// distance between the two fingers.
+test('a second finger neither starts a pan nor moves the first', () => {
+  // each move gets its own frame, or the first finger's move would overwrite a
+  // stray one before any frame applied it
+  const frames: FrameRequestCallback[] = []
+  jest.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => {
+    frames.push(cb)
+    return frames.length
+  })
+  const runFrames = () => {
+    act(() => {
+      for (const cb of frames.splice(0)) {
+        cb(0)
+      }
+    })
+  }
+  const model = fakeView()
+  const { getByTestId } = render(<Harness model={model} />)
+  const canvas = getByTestId('canvas')
+  const first = { pointerType: 'touch', pointerId: 1 }
+  const second = { pointerType: 'touch', pointerId: 2, isPrimary: false }
+
+  act(() => {
+    fireEvent.pointerDown(canvas, { button: 0, clientX: 100, ...first })
+  })
+  act(() => {
+    fireEvent.pointerDown(canvas, { button: 0, clientX: 300, ...second })
+  })
+  pointer('pointermove', { clientX: 200, ...second })
+  runFrames()
+  pointer('pointermove', { clientX: 80, ...first })
+  runFrames()
+  pointer('pointerup', { clientX: 200, ...second })
+  pointer('pointerup', { clientX: 80, ...first })
+
+  expect(model.horizontalScroll.mock.calls).toEqual([[20]])
+})
+
+// Dragging across DOM text inside a track would otherwise select it.
+test('a pan selects no text, and text is selectable again after', () => {
+  const model = fakeView()
+  const { getByTestId } = render(<Harness model={model} />)
+  const selectStart = () => {
+    const event = new Event('selectstart', { cancelable: true })
+    document.body.dispatchEvent(event)
+    return event.defaultPrevented
+  }
+
+  act(() => {
+    fireEvent.pointerDown(getByTestId('canvas'), { button: 0, clientX: 100 })
+  })
+  expect(selectStart()).toBe(true)
+  pointer('pointerup', { clientX: 100 })
+  expect(selectStart()).toBe(false)
+})
+
 // A track's own pointer handlers read the pan off the container: no hover
 // while the button is down, and no click for a press that travelled. The
-// moved marker outlives the mouseup, since the click it answers for fires
+// moved marker outlives the release, since the click it answers for fires
 // after it, and the next press clears it.
 test('the container says while a pan runs, and whether the press travelled', () => {
   const model = fakeView()
@@ -71,26 +166,20 @@ test('the container says while a pan runs, and whether the press travelled', () 
   const container = canvas.parentElement!
 
   act(() => {
-    fireEvent.mouseDown(canvas, { button: 0, clientX: 100 })
+    fireEvent.pointerDown(canvas, { button: 0, clientX: 100 })
   })
   expect(Object.hasOwn(container.dataset, 'panDragging')).toBe(true)
   expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(false)
-  act(() => {
-    window.dispatchEvent(new MouseEvent('mousemove', { clientX: 98 }))
-  })
+  pointer('pointermove', { clientX: 98 })
   expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(false)
-  act(() => {
-    window.dispatchEvent(new MouseEvent('mousemove', { clientX: 60 }))
-  })
+  pointer('pointermove', { clientX: 60 })
   expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(true)
-  act(() => {
-    window.dispatchEvent(new MouseEvent('mouseup', { clientX: 60 }))
-  })
+  pointer('pointerup', { clientX: 60 })
   expect(Object.hasOwn(container.dataset, 'panDragging')).toBe(false)
   expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(true)
 
   act(() => {
-    fireEvent.mouseDown(canvas, { button: 0, clientX: 60 })
+    fireEvent.pointerDown(canvas, { button: 0, clientX: 60 })
   })
   expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(false)
 })
@@ -112,7 +201,7 @@ test.each([
   expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(true)
 
   act(() => {
-    fireEvent.mouseDown(canvas, { clientX: 60, ...press })
+    fireEvent.pointerDown(canvas, { clientX: 60, ...press })
   })
   expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(false)
 })
@@ -132,7 +221,7 @@ test('a press on a button clears it too', () => {
   expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(true)
 
   act(() => {
-    fireEvent.mouseDown(getByTestId('chip-menu'), { button: 0, clientX: 60 })
+    fireEvent.pointerDown(getByTestId('chip-menu'), { button: 0, clientX: 60 })
   })
   expect(Object.hasOwn(container.dataset, 'panMoved')).toBe(false)
 })

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type React from 'react'
@@ -10,108 +10,54 @@ const PAN_CLICK_THRESHOLD_PX = 4
 // The pan publishes its state as attributes on the element the press landed in
 // (TracksContainer), so a track's own pointer handlers read it with `closest`
 // and nothing has to hand them a ref or a model field — the same marker shape
-// as `data-gesture-owner`. `data-pan-dragging` is present from mousedown to
-// mouseup; `data-pan-moved` is set once the press travels past the threshold
+// as `data-gesture-owner`. `data-pan-dragging` is present from press to
+// release; `data-pan-moved` is set once the press travels past the threshold
 // and cleared by the next press, so it still answers for the click that
-// follows mouseup.
+// follows the release.
 const PAN_DRAGGING_ATTR = 'data-pan-dragging'
 const PAN_MOVED_ATTR = 'data-pan-moved'
 
+function preventDefault(event: Event) {
+  event.preventDefault()
+}
+
+/**
+ * Click-drag and touch-drag panning, on pointer events so a finger pans the
+ * same as a mouse. The host sets `touch-action` to leave the browser only the
+ * gestures the pan does not want (TracksContainer keeps vertical scroll and
+ * page pinch); without it a touch drag is a page scroll and no pointer stream
+ * arrives.
+ *
+ * The window listeners go on in the press handler itself rather than in an
+ * effect, so a release that lands before React commits still finds them.
+ */
 export function useSideScroll(model: LinearGenomeViewModel) {
-  const [mouseDragging, setMouseDragging] = useState(false)
-  const scheduledRef = useRef(false)
-  const rafRef = useRef<number | null>(null)
+  const endPanRef = useRef<(() => void) | undefined>(undefined)
 
-  const startXRef = useRef(0)
-  const prevXRef = useRef(0)
-  const currXRef = useRef(0)
-  const hostRef = useRef<Element | null>(null)
+  useEffect(
+    () => () => {
+      endPanRef.current?.()
+    },
+    [],
+  )
 
-  useEffect(() => {
-    // apply the movement accumulated since the previous frame, then advance the
-    // baseline. shared by the rAF tick and the mouseup flush
-    function flushScroll() {
-      const distance = currXRef.current - prevXRef.current
-      if (distance) {
-        model.horizontalScroll(-distance)
-        prevXRef.current = currXRef.current
-      }
-    }
-
-    function globalMouseMove(event: MouseEvent) {
-      event.preventDefault()
-      currXRef.current = event.clientX
-      if (
-        Math.abs(currXRef.current - startXRef.current) > PAN_CLICK_THRESHOLD_PX
-      ) {
-        hostRef.current?.setAttribute(PAN_MOVED_ATTR, '')
-      }
-      const distance = currXRef.current - prevXRef.current
-      // use rAF to make it so multiple event handlers aren't fired per-frame
-      // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
-      if (distance && !scheduledRef.current) {
-        scheduledRef.current = true
-        rafRef.current = window.requestAnimationFrame(() => {
-          rafRef.current = null
-          scheduledRef.current = false
-          flushScroll()
-        })
-      }
-    }
-
-    function globalMouseUp() {
-      // flush any movement still queued for the next frame before ending the
-      // drag; otherwise a quick flick (mousedown/move/up within one frame) or
-      // the cleanup below would cancel it and drop the scroll
-      if (rafRef.current !== null) {
-        window.cancelAnimationFrame(rafRef.current)
-        rafRef.current = null
-        scheduledRef.current = false
-        flushScroll()
-      }
-      prevXRef.current = 0
-      hostRef.current?.removeAttribute(PAN_DRAGGING_ATTR)
-      if (mouseDragging) {
-        setMouseDragging(false)
-      }
-    }
-
-    if (mouseDragging) {
-      window.addEventListener('mousemove', globalMouseMove, true)
-      window.addEventListener('mouseup', globalMouseUp, true)
-      return () => {
-        window.removeEventListener('mousemove', globalMouseMove, true)
-        window.removeEventListener('mouseup', globalMouseUp, true)
-        // drop a frame queued mid-drag so it can't fire a stray scroll after
-        // unmount (matches `useVirtualScrollWheel`'s cleanup)
-        if (rafRef.current !== null) {
-          window.cancelAnimationFrame(rafRef.current)
-          rafRef.current = null
-        }
-        scheduledRef.current = false
-      }
-    }
-    return undefined
-  }, [model, mouseDragging])
-
-  function mouseDown(event: React.MouseEvent) {
-    // Cleared for EVERY press, ahead of the returns below, because the marker
-    // outlives the gesture that set it: a pan, then a shift-press or a press on
-    // a button, used to leave `data-pan-moved` standing on the container. The
-    // one reader today re-enters through a press that reaches the bottom of
-    // this function, so nothing was wrong — but these attributes are a DOM
-    // contract other displays read with `closest`, and a stale true is what the
-    // next reader would inherit.
-    event.currentTarget.removeAttribute(PAN_MOVED_ATTR)
-    if (event.shiftKey) {
+  function pointerDown(event: React.PointerEvent) {
+    const host = event.currentTarget
+    // Cleared for EVERY press, ahead of the returns below: the marker outlives
+    // the gesture that set it, and a stale true is what the next reader of
+    // this DOM contract would inherit.
+    host.removeAttribute(PAN_MOVED_ATTR)
+    if (
+      event.shiftKey ||
+      event.button !== 0 ||
+      !event.isPrimary ||
+      endPanRef.current
+    ) {
       return
     }
-    // skip the click-drag pan when pressing an interactive control: a
-    // draggable element, a control that claimed the press (resize handles, the
-    // scalebar), or a button (e.g. the menu button on a highlight
-    // chip, whose actual target is the icon inside it). All three are matched
-    // with `closest`, since the press usually lands on a child of the control
-    // rather than the control itself.
+    // a draggable element, a control that claimed the press (resize handles,
+    // the scalebar, a legend), or a button: `closest`, since the press usually
+    // lands on a child of the control
     const target = event.target as HTMLElement
     if (
       target.draggable ||
@@ -121,23 +67,69 @@ export function useSideScroll(model: LinearGenomeViewModel) {
       return
     }
 
-    // otherwise do click and drag scroll
-    if (event.button === 0) {
-      hostRef.current = event.currentTarget
-      event.currentTarget.setAttribute(PAN_DRAGGING_ATTR, '')
-      startXRef.current = event.clientX
-      prevXRef.current = event.clientX
-      currXRef.current = event.clientX
-      setMouseDragging(true)
+    const { pointerId } = event
+    const startX = event.clientX
+    let prevX = startX
+    let currX = startX
+    let frame: number | undefined
+
+    function flush() {
+      frame = undefined
+      const distance = currX - prevX
+      if (distance) {
+        model.horizontalScroll(-distance)
+        prevX = currX
+      }
+    }
+
+    function move(e: PointerEvent) {
+      if (e.pointerId !== pointerId) {
+        return
+      }
+      currX = e.clientX
+      if (Math.abs(currX - startX) > PAN_CLICK_THRESHOLD_PX) {
+        host.setAttribute(PAN_MOVED_ATTR, '')
+      }
+      if (currX !== prevX && frame === undefined) {
+        frame = window.requestAnimationFrame(flush)
+      }
+    }
+
+    // A release applies the movement still queued for the next frame, so a
+    // flick that starts and ends within one frame still pans. Unmount drops it
+    // instead, so no stray scroll lands on a view that is going away.
+    function end(applyQueued: boolean) {
+      if (frame !== undefined) {
+        window.cancelAnimationFrame(frame)
+        if (applyQueued) {
+          flush()
+        }
+      }
+      host.removeAttribute(PAN_DRAGGING_ATTR)
+      window.removeEventListener('pointermove', move, true)
+      window.removeEventListener('pointerup', release, true)
+      window.removeEventListener('pointercancel', release, true)
+      window.removeEventListener('selectstart', preventDefault, true)
+      endPanRef.current = undefined
+    }
+
+    // pointercancel as well as pointerup: the browser cancels a touch it takes
+    // over as a vertical scroll, and the pan would otherwise stay latched
+    function release(e: PointerEvent) {
+      if (e.pointerId === pointerId) {
+        end(true)
+      }
+    }
+
+    host.setAttribute(PAN_DRAGGING_ATTR, '')
+    window.addEventListener('pointermove', move, true)
+    window.addEventListener('pointerup', release, true)
+    window.addEventListener('pointercancel', release, true)
+    window.addEventListener('selectstart', preventDefault, true)
+    endPanRef.current = () => {
+      end(false)
     }
   }
 
-  // this local mouseup is used in addition to the global because sometimes
-  // the global add/remove are not called in time, resulting in issue #533
-  function mouseUp(event: React.MouseEvent) {
-    event.preventDefault()
-    hostRef.current?.removeAttribute(PAN_DRAGGING_ATTR)
-    setMouseDragging(false)
-  }
-  return { mouseDown, mouseUp }
+  return { pointerDown }
 }

@@ -405,13 +405,11 @@ const FloatingLegend = observer(function FloatingLegend({
         // appeared — see `ultraminimal`'s unearned zero in that file.
         data-testid="floating-legend"
         // Claims the press, so a drag that starts on the key isn't the LGV's
-        // click-drag pan (`useSideScroll` tests `closest('[data-gesture-owner]')`).
-        // Without it, dragging across a label panned the view under the legend
-        // and the `preventDefault` on each pan frame also meant the label text
-        // could not be selected. The marker, not `stopPropagation`: the pan
-        // reads `event.target` off a bubbling mousedown, and stopping that one
-        // would also cost focus-on-click, whose document-level listener
-        // (`useFocusOnInteraction`) React's stopPropagation does block.
+        // pan (`useSideScroll` tests `closest('[data-gesture-owner]')`), which
+        // would move the view under the legend and block selecting its text.
+        // The marker, not `stopPropagation`: the pan reads `event.target` off
+        // a bubbling pointerdown, and stopping that would also cost
+        // focus-on-click (`useFocusOnInteraction`).
         data-gesture-owner="true"
       >
         {onDismiss ? (

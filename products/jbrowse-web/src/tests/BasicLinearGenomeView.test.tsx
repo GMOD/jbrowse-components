@@ -48,9 +48,9 @@ test('click and drag to move sideways', async () => {
   await findAllByText('ctgA', ...opts)
   const start = view.offsetPx
   const track = await findByTestId('tracksContainer', ...opts)
-  fireEvent.mouseDown(track, { clientX: 250, clientY: 20 })
-  fireEvent.mouseMove(track, { clientX: 100, clientY: 20 })
-  fireEvent.mouseUp(track, { clientX: 100, clientY: 20 })
+  fireEvent.pointerDown(track, { clientX: 250, clientY: 20 })
+  fireEvent.pointerMove(track, { clientX: 100, clientY: 20 })
+  fireEvent.pointerUp(track, { clientX: 100, clientY: 20 })
   await waitFor(() => {
     expect(view.offsetPx - start).toEqual(150)
   }, delay)
