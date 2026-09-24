@@ -6,6 +6,7 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { darkAtLowEnd, rampLutOf } from '@jbrowse/core/util/colorRamp'
 import { installPrerequisiteFetch } from '@jbrowse/core/util/installPrerequisiteFetch'
+import { formatScore } from '@jbrowse/core/util/numericUtils'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin, {
   svgLegendGutterWidth,
@@ -296,7 +297,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * positive saturation point — the single place the `colorMaxScore` "0
        * means nothing to show" sentinel is interpreted. The stops are read
        * out of the ramp bytes the GPU uploads, so the key and the heatmap are
-       * one table; the title says which scale the domain is read on.
+       * one table; the title says which scale the domain is read on, and a
+       * top below the largest count is marked `≥`.
        * `svgLegendWidth()` deliberately does not gate on the data — see its
        * note.
        */
@@ -306,13 +308,21 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           return []
         }
         const useLogScale = self.colorScale === 'log'
+        const domain = hicScaleDomain(score, useLogScale)
+        const saturates = self.useColorPercentile || !useLogScale
         return [
           {
             kind: 'ramp',
             id: 'contacts',
             title: useLogScale ? 'Contacts (log)' : 'Contacts',
-            domain: hicScaleDomain(score, useLogScale),
+            domain,
             stops: legendStops(self.colorRamp),
+            ...(saturates
+              ? {
+                  format: (v: number) =>
+                    v === domain[1] ? `≥${formatScore(v)}` : formatScore(v),
+                }
+              : {}),
           },
         ]
       },

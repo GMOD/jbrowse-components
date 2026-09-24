@@ -23,8 +23,7 @@ export interface ColorLegendEntry {
   label: string
   // CSS color for the default square swatch
   color?: string
-  // several colors on one row. Takes precedence over `color`; `legendEntries`
-  // sets it only for rows that need it.
+  // several colors or a shape on one row; takes precedence over `color`
   swatches?: LegendSwatch[]
   // toggled-off entries render dimmed and struck through
   hidden?: boolean
@@ -121,20 +120,12 @@ export function legendEntries(spec: LegendSpec): ColorLegendEntry[] {
         key: `${section.id}-${idx}`,
         label: item.label,
         color: item.color,
-        swatches: exportSwatches(item),
+        swatches: item.swatches,
         hidden: item.hidden,
         gradient: item.gradient,
       })),
     ]),
   ]
-}
-
-// A single swatch is what `color` alone already draws, so only a row showing
-// several colors carries the list into the export. Keeps the common entry the
-// three fields it has always been.
-function exportSwatches(item: LegendItem) {
-  const swatches = legendSwatches(item)
-  return swatches.length > 1 ? swatches : undefined
 }
 
 /**

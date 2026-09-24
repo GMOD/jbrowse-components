@@ -68,6 +68,8 @@ test('the dismiss control is a plain × that turns the legend off', () => {
   expect(display.showLegend).toBe(false)
 })
 
+// The ramp saturates at the 95th percentile, so its top is a floor on every
+// count painted there, not the largest count.
 test('the gradient bar is a row of the box, captioned and labelled', () => {
   const { getByTestId, getByText } = renderLegend()
   const bar = getByTestId('floating-legend').querySelector<HTMLElement>(
@@ -76,5 +78,5 @@ test('the gradient bar is a row of the box, captioned and labelled', () => {
   expect(bar).toBeTruthy()
   getByText('Contacts')
   getByText('0')
-  getByText('20')
+  getByText('≥20')
 })

@@ -42,10 +42,7 @@ test('heading rows carry no color, so they read as headings not swatches', () =>
   expect(heading!.color).toBeUndefined()
 })
 
-// The export carries a swatch list only for a row showing more than one color,
-// so an ordinary entry stays the three fields it has always been and every
-// existing consumer keeps rendering it identically.
-test('only a multi-color row carries its swatches into the export', () => {
+test('a row keeps the swatches or the flat color it was given', () => {
   const [one, both] = legendEntries({
     sections: [
       {
@@ -59,6 +56,22 @@ test('only a multi-color row carries its swatches into the export', () => {
   })
   expect(one!.swatches).toBeUndefined()
   expect(both!.swatches).toEqual([{ color: 'pink' }, { color: 'red' }])
+})
+
+// A point key's row is one swatch carrying its shape and no flat color, so
+// dropping a one-swatch list left the exported row with no swatch at all.
+test('a lone shaped swatch reaches the export', () => {
+  const [row] = legendEntries({
+    sections: [
+      {
+        id: 'shape',
+        items: [
+          { label: 'INS', swatches: [{ color: 'red', shape: 'diamond' }] },
+        ],
+      },
+    ],
+  })
+  expect(row!.swatches).toEqual([{ color: 'red', shape: 'diamond' }])
 })
 
 // A display with two vocabularies usually has only one that toggles. Carrying
