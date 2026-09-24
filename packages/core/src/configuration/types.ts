@@ -413,6 +413,15 @@ export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType> &
   Record<string, any>
 
 /**
+ * A node of a pluggable element union — a track's, a display's, an adapter's —
+ * whichever member it is, naming its `type`. An interface rather than an
+ * intersection so a generated doc prints the name.
+ */
+export interface PluggableConfigNode extends AnyConfigurationModel {
+  type: string
+}
+
+/**
  * The `XConfigModel` for a **field table** — a `*ConfigSchemaFields` export —
  * rather than for a whole assembled schema. What it is for is the cast a
  * cross-cutting mixin uses to reach the `configuration` its composing display

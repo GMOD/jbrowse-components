@@ -26,10 +26,19 @@ node not the snapshot, forwarding a callback slot raw, reference resolution.
   one by one, so a `null` among them resets that member at any depth. ADR-146.
 - **`setConf` classifies a member off the schema's definition**, not off what
   the node holds there: an optional sub-schema nobody has written holds nothing,
-  and a `stringArray` slot holds an array.
+  and a `stringArray` slot holds an array. A config node has two write actions
+  under it, `setSlot` and `setSubschema` (single or a collection, whole), and
+  `no-restricted-syntax` sends a direct call of either to `setConf`.
+- **A settings bag goes through `applyConfSettings`**: a session spec's track
+  entry, a share link, an agent's `applyDisplaySettings`. Each key is one
+  `setConf`, except that a namespace's object names members inside it, written
+  one by one so the rest keep their values, and each level runs its schema's own
+  lift first. It reports the keys the config does not declare rather than
+  writing them, which is what the display's setter fallback reads.
 - **A worker payload is `fullConfSnapshot`, not `getSnapshot`.** `stripDefault`
   omits a slot sitting at its default, and a worker has no schema to fill it
-  back in.
+  back in. It recurses into a list or map of sub-schemas too, and a typed schema
+  carries its `type`, which is how a union list's entries stay apart.
 - **An arg-less read of a `jexl:` slot still evaluates**, against a context
   where every name is `undefined`, and returns the fallout as the setting.
   Skipping evaluation when `args` is empty was built, measured and backed out.
@@ -60,8 +69,8 @@ node not the snapshot, forwarding a callback slot raw, reference resolution.
   pins each **enum slot's vocabulary** — dropping a member is a silent
   compatibility break, since a saved session holding it fails MST validation and
   the track then fails to hydrate rather than falling back.
-- `actions` / `views` / `extend` / `preProcessSnapshot` **compose** rather than
-  replace; override one by redeclaring its name.
+- `actions` / `views` / `extend` / `preProcessSnapshot` / `requires` **compose**
+  rather than replace; override a hook member by redeclaring its name.
   `ReferenceSequenceTrack/configSchema.ts` hand-rolls a copy for a different
   reason — it wants a subset, and `baseConfiguration` only adds.
 - **A list whose entries are one of several schemas is

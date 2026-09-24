@@ -13,7 +13,7 @@ import { expandLooseTrackConfig } from './util/tracks.ts'
 
 import type Plugin from './Plugin.ts'
 import type { PluginConstructor } from './Plugin.ts'
-import type { AnyConfigurationModel } from './configuration/index.ts'
+import type { PluggableConfigNode } from './configuration/index.ts'
 import type AdapterType from './pluggableElementTypes/AdapterType.ts'
 import type AddTrackWorkflowType from './pluggableElementTypes/AddTrackWorkflowType.ts'
 import type ConnectionType from './pluggableElementTypes/ConnectionType.ts'
@@ -69,11 +69,7 @@ import type { ComponentType, ReactNode } from 'react'
  * at runtime, read as a config node carrying the `type` every member names
  * itself by; a member's other slots read through `getConf`.
  */
-export type PluggableConfigSchemaType = IType<
-  any,
-  any,
-  AnyConfigurationModel & { type: string }
->
+export type PluggableConfigSchemaType = IType<any, any, PluggableConfigNode>
 
 /**
  * Every pluggable element group, in the order `elementCreationSchedule` builds
