@@ -1,13 +1,34 @@
-import { ListItemText } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { getTrackName } from '../../util/tracks.ts'
+import { makeStyles } from '../../util/tss-react/index.ts'
 import { optionDetail } from './util.ts'
 
 import type { Assembly } from '../../assemblyManager/assembly.ts'
 import type { TrackCatalog } from '../../util/index.ts'
 import type { Option } from './util.ts'
 import type { HTMLAttributes, Key } from 'react'
+
+const useStyles = makeStyles()(theme => ({
+  row: {
+    display: 'flex',
+    alignItems: 'baseline',
+    gap: theme.spacing(2),
+  },
+  label: {
+    flexShrink: 0,
+    whiteSpace: 'nowrap',
+  },
+  detail: {
+    marginLeft: 'auto',
+    minWidth: 0,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    fontSize: '0.8em',
+    color: theme.palette.text.secondary,
+  },
+}))
 
 const SearchOption = observer(function SearchOption({
   props,
@@ -20,7 +41,8 @@ const SearchOption = observer(function SearchOption({
   session: TrackCatalog
   assembly?: Assembly
 }) {
-  const { key, ...rest } = props
+  const { classes, cx } = useStyles()
+  const { key, className, ...rest } = props
   const { result } = option
   const detail = optionDetail(result, {
     trackNameOf: trackId => {
@@ -35,15 +57,9 @@ const SearchOption = observer(function SearchOption({
     },
   })
   return (
-    <li key={key} {...rest}>
-      <ListItemText
-        primary={result.getDisplayString()}
-        secondary={detail}
-        slotProps={{
-          primary: { noWrap: true },
-          secondary: { noWrap: true },
-        }}
-      />
+    <li key={key} className={cx(className, classes.row)} {...rest}>
+      <span className={classes.label}>{result.getDisplayString()}</span>
+      {detail ? <span className={classes.detail}>{detail}</span> : null}
     </li>
   )
 })
