@@ -22,6 +22,7 @@
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./binColumns": "./src/binColumns.ts",
     "./clusterMatrix": "./src/clusterMatrix.ts",
     "./clusterProvenance": "./src/clusterProvenance.ts",
     "./clusterUtils": "./src/clusterUtils.ts",
@@ -67,6 +68,7 @@
     "types": "esm/index.d.ts",
     "exports": {
       ".": "./esm/index.js",
+      "./binColumns": "./esm/binColumns.js",
       "./clusterMatrix": "./esm/clusterMatrix.js",
       "./clusterProvenance": "./esm/clusterProvenance.js",
       "./clusterUtils": "./esm/clusterUtils.js",

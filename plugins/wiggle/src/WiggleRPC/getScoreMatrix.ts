@@ -1,6 +1,11 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createStatusFanOut } from '@jbrowse/core/util'
 import { createAbortBreakpoint } from '@jbrowse/core/util/aborting'
+import {
+  binSpan,
+  columnMeans,
+  columnSegments,
+} from '@jbrowse/tree-sidebar/binColumns'
 
 import { isMultiSource } from '../multiSourceAdapter.ts'
 import { groupFeaturesBySource } from '../util.ts'
@@ -11,67 +16,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RpcCallContext } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature, Region } from '@jbrowse/core/util'
-
-// One region's slice of the concatenated row: the column it starts at, how many
-// columns it gets, and the base its first column begins at. Every visible block
-// contributes one, so a multi-region (e.g. whole-genome) view clusters on the
-// full visible data instead of silently only the first block.
-interface Segment {
-  colOffset: number
-  width: number
-  regionStart: number
-}
-
-function buildSegments(regions: Region[], invBpPerPx: number) {
-  const segments: Segment[] = []
-  let totalWidth = 0
-  for (const r of regions) {
-    const width = Math.max(0, Math.floor((r.end - r.start) * invBpPerPx))
-    segments.push({ colOffset: totalWidth, width, regionStart: r.start })
-    totalWidth += width
-  }
-  return { segments, totalWidth }
-}
-
-// Add one feature's score to every column of `seg` it covers.
-//
-// Summed with a per-column count rather than assigned, because several features
-// commonly land in one column: at 10kb/px a column holds hundreds of a
-// bedMethyl's CpGs, and taking whichever the adapter happened to emit last
-// sampled one of them at random. Averaging is also what makes the two fetch
-// paths measure the same thing — a BigWig zoom bin already *is* a mean, so a
-// column that averages agrees with one that read a summary bin rather than
-// differing by however the file was ordered. Where features tile without
-// overlapping (every BigWig bin, a well-formed bedGraph) the count is 1 and this
-// is exactly the value that was already stored.
-//
-// The column math lives here, once, for both walkers below. Both edges truncate,
-// so a feature narrower than a column is floored to the one it starts in:
-// without that a subtrack whose features are *all* sub-column — the same
-// base-resolution bedGraph/bedMethyl case — contributed an all-zero row, and the
-// clusterer had nothing to tell the rows apart by.
-function addSpan(
-  sums: Float64Array,
-  counts: Int32Array,
-  seg: Segment,
-  invBpPerPx: number,
-  fstart: number,
-  fend: number,
-  score: number,
-) {
-  const { colOffset, width, regionStart } = seg
-  if (fend <= regionStart) {
-    return
-  }
-  const startX = Math.max(0, ((fstart - regionStart) * invBpPerPx) | 0)
-  const rawEndX = ((fend - regionStart) * invBpPerPx) | 0
-  const endX = Math.min(width, Math.max(rawEndX, startX + 1))
-  for (let x = startX; x < endX; x++) {
-    const col = colOffset + x
-    sums[col] = sums[col]! + score
-    counts[col] = counts[col]! + 1
-  }
-}
+import type { ColumnSegment } from '@jbrowse/tree-sidebar/binColumns'
 
 // What one source has in one region, in whichever form its adapter serves it:
 // typed arrays from a multi-source adapter, plain features from one carrying
@@ -83,15 +28,16 @@ type RegionValues = RawFeatureArrays | Feature[]
 function addValues(
   sums: Float64Array,
   counts: Int32Array,
-  seg: Segment,
+  seg: ColumnSegment,
   invBpPerPx: number,
   values: RegionValues,
 ) {
   if (Array.isArray(values)) {
     for (const feat of values) {
-      addSpan(
+      binSpan(
         sums,
         counts,
+        0,
         seg,
         invBpPerPx,
         feat.get('start'),
@@ -102,7 +48,16 @@ function addValues(
   } else {
     const { starts, ends, scores, count } = values
     for (let i = 0; i < count; i++) {
-      addSpan(sums, counts, seg, invBpPerPx, starts[i]!, ends[i]!, scores[i]!)
+      binSpan(
+        sums,
+        counts,
+        0,
+        seg,
+        invBpPerPx,
+        starts[i]!,
+        ends[i]!,
+        scores[i]!,
+      )
     }
   }
 }
@@ -178,8 +133,7 @@ export async function getScoreMatrix({
     adapterConfig,
   })
 
-  const invBpPerPx = 1 / bpPerPx
-  const { segments, totalWidth } = buildSegments(regions, invBpPerPx)
+  const { segments, width, invBpPerPx } = columnSegments(regions, bpPerPx)
 
   // Keyed in `sources` order and kept that way: the cluster `order` comes back
   // as indices into this map and buildClusteredLayout maps them into the
@@ -189,7 +143,7 @@ export async function getScoreMatrix({
   // here is what lets the RPC method transfer them without a cast.
   const rows = new Map<string, Float32Array<ArrayBuffer>>()
   for (const { name } of sources) {
-    rows.set(name, new Float32Array(totalWidth))
+    rows.set(name, new Float32Array(width))
   }
 
   const valuesBySource = await fetchMatrixData(dataAdapter, regions, args)
@@ -200,9 +154,9 @@ export async function getScoreMatrix({
   // interruptible.
   //
   // The accumulator is f64 while the row it lands in stays f32. A column sums
-  // every feature covering it, which `addSpan` says is hundreds of a bedMethyl's
-  // CpGs at 10 kb/px and is tens of thousands at whole-genome, and summing that
-  // many f32s into an f32 is naive summation with no compensation — the
+  // every feature covering it, hundreds of a bedMethyl's CpGs at 10 kb/px and
+  // tens of thousands at whole-genome, and summing that many f32s into an f32
+  // is naive summation with no compensation — the
   // clusterer's own distance build promotes to f64 every 16 elements and this
   // had no counterpart. Measured at 20,000 features per column it cost 3.3e-5
   // relative on the column mean, which widening drops to the 4e-8 floor of
@@ -212,8 +166,8 @@ export async function getScoreMatrix({
   // scores are f32 in the file, and no cluster order moved across the two arms
   // at any depth measured. So this buys a correct column mean, not a different
   // tree. measurements/wiggle-bin-accumulator-width.json.
-  const sums = new Float64Array(totalWidth)
-  const counts = new Int32Array(totalWidth)
+  const sums = new Float64Array(width)
+  const counts = new Int32Array(width)
   const breakpoint = createAbortBreakpoint(signal)
   for (const { name } of sources) {
     const row = rows.get(name)!
@@ -226,11 +180,7 @@ export async function getScoreMatrix({
         addValues(sums, counts, seg, invBpPerPx, values)
       }
     }
-    // A column nothing covered stays 0 rather than becoming NaN.
-    for (let x = 0; x < totalWidth; x++) {
-      const n = counts[x]!
-      row[x] = n > 1 ? sums[x]! / n : sums[x]!
-    }
+    columnMeans(sums, counts, 0, row)
     if (breakpoint.due()) {
       await breakpoint.yield()
     }

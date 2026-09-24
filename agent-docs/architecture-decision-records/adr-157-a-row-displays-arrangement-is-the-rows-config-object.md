@@ -222,7 +222,9 @@ unchanged, so `rows: 'source'` draws what `facet: 'source'` drew
 section tables name, sorted as sections are; `identityChannel` is
 `labelColor`, since each mark paints the plot in its own colour; and a
 clustering run compares the values the first drawing bar or point stands at,
-binned over the window in the worker (`MarkClusterRows`). Beside a `facet`
+binned in the worker by the quantitative display's rule, a column per pixel
+averaging every instance over it and a narrower one counted in the column it
+starts in (`binSpan`, `MarkClusterRows`). Beside a `facet`
 the facet draws: on the same field that is the whole picture, and on another
 it asks for bands of rows, which step 5 draws, so until then a notice says so.
 A pileup or `row` field under `rows` is reported, its packed rows sharing their
