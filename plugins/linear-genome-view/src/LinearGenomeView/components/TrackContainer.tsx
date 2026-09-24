@@ -68,7 +68,6 @@ const useStyles = makeStyles()({
   // spends the other 4 on clearance.
   trackLabelOffset: {
     position: 'relative',
-    display: 'inline-block',
     marginBottom: 8,
   },
   trackLabelOverlap: {
