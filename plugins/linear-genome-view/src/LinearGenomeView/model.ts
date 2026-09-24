@@ -1798,13 +1798,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       */
-      setLastTrackDragY(y: number) {
-        self.lastTrackDragY = y
-      },
-
-      /**
-       * #action
        * called while dragging a track over the track at `targetId`; reorders
        * once the cursor has moved far enough (see shouldSwapTracks) to avoid
        * jitter when a short track is dragged over a tall one
