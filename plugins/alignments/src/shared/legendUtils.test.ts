@@ -779,12 +779,24 @@ describe('getArcLegendItems', () => {
       getArcLegendItems(
         new Set<ReadColorCategory>(['splitInversion', 'longInsert']),
         makeTestPalette(),
+        false,
       ).map(i => i.label),
       // …and in the overlay's own words, not the read fills': a curve is drawn
       // for a split junction whether or not the read is paired, so it must not
       // inherit "paired-end read" from CATEGORY_LEGEND.
     ).toEqual(['Long insert', 'Split alignment (inverted)'])
-    expect(getArcLegendItems(new Set(), makeTestPalette())).toEqual([])
+    expect(getArcLegendItems(new Set(), makeTestPalette(), false)).toEqual([])
+  })
+
+  test('names interchromosomal marks a split alignment only when every one is', () => {
+    const labels = (fromMatePair: boolean) =>
+      getArcLegendItems(
+        new Set<ReadColorCategory>(['interchrom']),
+        makeTestPalette(),
+        fromMatePair,
+      ).map(i => i.label)
+    expect(labels(false)).toEqual(['Split alignment (interchromosomal)'])
+    expect(labels(true)).toEqual(['Inter-chromosomal'])
   })
 
   // Short insert used to be the one bucket the reads and the arcs painted in
@@ -797,6 +809,7 @@ describe('getArcLegendItems', () => {
       getArcLegendItems(
         new Set<ReadColorCategory>(['shortInsert']),
         makeTestPalette({ colorShortInsert: [1, 0, 0.5] }),
+        false,
       ).map(i => i.color),
     ).toEqual(['rgb(255,0,128)'])
   })
@@ -807,6 +820,7 @@ describe('getArcLegendItems', () => {
       getArcLegendItems(
         new Set<ReadColorCategory>(['longInsert']),
         makeTestPalette(),
+        false,
       ),
     ).toEqual([{ color: expect.any(String), label: 'Long insert' }])
   })
@@ -817,6 +831,7 @@ describe('getArcLegendItems', () => {
       getArcLegendItems(
         new Set<ReadColorCategory>(['fwdStrand', 'revStrand']),
         makeTestPalette(),
+        false,
       ).map(i => i.label),
     ).toEqual(['Forward strand', 'Reverse strand'])
   })

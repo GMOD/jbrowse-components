@@ -278,8 +278,14 @@ function resolveArcs(
   // share.
   const byLineKey = new Map<
     string,
-    { line: ComputedLine; clusters: Set<number>; exempt: boolean }
+    {
+      line: ComputedLine
+      clusters: Set<number>
+      exempt: boolean
+      fromMatePair: boolean
+    }
   >()
+  let interchromFromMatePair = false
 
   // The window is the LIBRARY's, not a constant: how far a supporting read can
   // sit from the breakpoint is one fragment length, and `stats.upper` is the
@@ -384,6 +390,7 @@ function resolveArcs(
         seen.line.support += clusterSupport
         seen.line.partnerLoci.push(locus)
         seen.exempt ||= exempt
+        seen.fromMatePair ||= !exempt
       }
       if (!seen.line.partnerRefNames.includes(partnerRef)) {
         seen.line.partnerRefNames.push(partnerRef)
@@ -399,6 +406,7 @@ function resolveArcs(
       },
       clusters: new Set([cluster]),
       exempt,
+      fromMatePair: !exempt,
     })
   }
 
@@ -572,6 +580,7 @@ function resolveArcs(
         // cannot say that — its number is a sum — so its gate is applied after
         // the summing instead.
         if (clearsInterchromFloor(exempt, support, minInterchromSupport)) {
+          interchromFromMatePair ||= !exempt
           pushArc(
             {
               p1: { refName: p1Ref, bp: p1Bp },
@@ -765,11 +774,11 @@ function resolveArcs(
   // THE TICKS' FLOOR, taken here rather than per contributing cluster — see
   // `pushLine`. This is where the tick family's gate and its drawn number become
   // one number, which is what the arc arm already had by construction.
-  const lines = [...byLineKey.values()]
-    .filter(e =>
-      clearsInterchromFloor(e.exempt, e.line.support, minInterchromSupport),
-    )
-    .map(e => e.line)
+  const kept = [...byLineKey.values()].filter(e =>
+    clearsInterchromFloor(e.exempt, e.line.support, minInterchromSupport),
+  )
+  const lines = kept.map(e => e.line)
+  interchromFromMatePair ||= kept.some(e => e.fromMatePair)
 
   // The same ordering, for the same reason, over the ticks. They are opaque
   // full-band verticals, so two within a stroke width of each other resolve by
@@ -792,7 +801,7 @@ function resolveArcs(
     )
   }
 
-  return { arcs, crossRegion, lines }
+  return { arcs, crossRegion, lines, interchromFromMatePair }
 }
 
 /**
@@ -851,6 +860,9 @@ export interface ArcsByGroupResult {
   // through `arcColorLegendCategory`, which needs a setting this pass doesn't
   // have, so the slots stay raw here.
   colorSlots: Set<number>
+  // Whether any interchromosomal mark stands on a mate pair rather than only
+  // on split reads — what the legend's interchromosomal row may claim.
+  interchromFromMatePair: boolean
   // The largest reported flat-arc span, which is the read cloud's Y domain: its
   // axis autoscales to this and the insert-size axis labels its top tick
   // with it. 0 when nothing flat is drawn.
@@ -895,14 +907,16 @@ export function computeArcsByGroup(
   const crossRegionByGroup = new Map<string, CrossRegionArc[]>()
   const inkGroupKeys = new Set<string>()
   const colorSlots = new Set<number>()
+  let interchromFromMatePair = false
   let maxFlatArcSpanBp = 0
   for (const key of rawDataByGroup.keys()) {
-    const { arcs, crossRegion, lines } = resolveArcs(
+    const { arcs, crossRegion, lines, ...resolved } = resolveArcs(
       arcsByLane.get(key) ?? [],
       scale,
       settings,
       regions,
     )
+    interchromFromMatePair ||= resolved.interchromFromMatePair
     // The per-region feed is keyed on the LOADED list, unchanged: it is what a
     // block draws from, and a displayed region whose fetch has not landed has
     // no block to draw.
@@ -954,6 +968,7 @@ export function computeArcsByGroup(
     crossRegionByGroup,
     inkGroupKeys,
     colorSlots,
+    interchromFromMatePair,
     maxFlatArcSpanBp,
   }
 }

@@ -657,10 +657,8 @@ function getOverlapLegendItem(
 export const SPLIT_JUNCTION_LABELS: Partial<Record<SwatchCategory, string>> = {
   splitInversion: 'Split alignment (inverted)',
   splitDeletion: 'Split alignment (same strand)',
-  // The one category CATEGORY_LEGEND names for reads and arcs alike, and the
-  // bare "Inter-chromosomal" it carries there is a property of the pair rather
-  // than of the mark. On a curve the mark IS the split alignment, so it takes
-  // the same noun as the two above and the parenthetical carries the finding.
+  // Only while every interchromosomal mark is a split read; one standing on a
+  // mate pair keeps CATEGORY_LEGEND's "Inter-chromosomal" (`getArcLegendItems`).
   interchrom: 'Split alignment (interchromosomal)',
 }
 
@@ -736,8 +734,15 @@ export function arcKeyFoldsIntoReadKey({
 export function getArcLegendItems(
   presentCategories: ReadonlySet<ReadColorCategory>,
   palette: ColorPalette,
+  interchromFromMatePair: boolean,
 ): LegendItem[] {
-  return bucketItems(presentCategories, palette, SPLIT_JUNCTION_LABELS)
+  return bucketItems(
+    presentCategories,
+    palette,
+    interchromFromMatePair
+      ? { ...SPLIT_JUNCTION_LABELS, interchrom: undefined }
+      : SPLIT_JUNCTION_LABELS,
+  )
 }
 
 // The modification family's own key: the methylation views (fill-unmarked and

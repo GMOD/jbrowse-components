@@ -328,6 +328,7 @@ describe('computeArcsFromPileupData', () => {
       expect(run(data, 2).lines.map(l => l.support)).toEqual([
         5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
       ])
+      expect(run(data, 2).interchromFromMatePair).toBe(true)
     })
 
     // Half a junction can be reached by more than one, which is the case a
@@ -915,7 +916,7 @@ describe('computeArcsFromPileupData', () => {
       readClipAtStart: new Uint32Array([0]),
       readSuppAlignments: ['chr2,9000,+,500S500M,60,0;'],
     })
-    const { arcs, lines } = computeArcsFromPileupData(
+    const { arcs, lines, interchromFromMatePair } = computeArcsFromPileupData(
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 1000, end: 20000, displayedRegionIndex: 0 }],
       {
@@ -927,6 +928,7 @@ describe('computeArcsFromPileupData', () => {
 
     expect(arcs).toEqual([])
     expect(lines.map(l => l.x.refName)).toEqual(['chr1', 'chr2'])
+    expect(interchromFromMatePair).toBe(false)
   })
 
   // ONE DONOR, TWO ACCEPTORS — K562's BCR-ABL1 in miniature, which is one donor

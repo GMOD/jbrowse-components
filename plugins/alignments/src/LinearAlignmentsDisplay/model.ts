@@ -1273,7 +1273,11 @@ export default function stateModelFactory(
           arcLegendItems() {
             return this.arcColorsMatchReads
               ? []
-              : getArcLegendItems(this.arcLegendCategories, this.colorPalette)
+              : getArcLegendItems(
+                  this.arcLegendCategories,
+                  this.colorPalette,
+                  this.arcsResult.interchromFromMatePair,
+                )
           },
 
           /**
@@ -1851,6 +1855,7 @@ export default function stateModelFactory(
                 crossRegionByGroup: new Map(),
                 inkGroupKeys: new Set(),
                 colorSlots: new Set(),
+                interchromFromMatePair: false,
                 maxFlatArcSpanBp: 0,
               }
             }
