@@ -844,7 +844,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   },
 
   // The same chr19 inversion window with the display colored by SV type
-  // (`featureColor: 'svType'`): every alt-carrying cell takes its variant's
+  // (`color: { field: 'svType' }`): every alt-carrying cell takes its variant's
   // structural-variant class color and the legend names each class present,
   // including the callset's complex (CPX) events. Sorted the same way, so the
   // inversion band is the same band as in `multisv` and only the palette
@@ -864,7 +864,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               type: 'LinearMultiSampleVariantDisplay',
               forceLoad: true,
               height: 400,
-              featureColor: 'svType',
+              color: { field: 'svType' },
             },
             {
               trackId: 'ncbi_refseq_109_hg38',

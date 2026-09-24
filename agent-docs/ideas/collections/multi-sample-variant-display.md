@@ -1,6 +1,6 @@
 ---
 name: multi-sample-variant-display
-description: Genotype-quality masking, pedigree awareness, `featureColor` presets, and haplotype-block coloring for the multi-sample variant displays.
+description: Genotype-quality masking, pedigree awareness, and haplotype-block coloring for the multi-sample variant displays.
 ---
 
 # Multi-sample variant display
@@ -20,7 +20,7 @@ slot (default `0` = off = today's path unchanged); when set, a genotype with
 `GQ < threshold` renders as no-call grey instead of its allele color — masking
 chosen over continuous dimming because it reuses the existing no-call rendering
 end-to-end (no shader/legend work). Bake the decision into the existing
-`cellColors` `Uint32Array` worker-side (same place `featureColor` already
+`cellColors` `Uint32Array` worker-side (same place the `color` hue already
 applies) — no new per-cell arrays, no shader change, no bigger payload. It's a
 **fetch input** (belongs in `rpcProps()`), threaded through
 `VariantRPC/executeVariantCellData.ts` into both `computeVariantCells.ts` and
@@ -29,8 +29,7 @@ dialog) cloned from `createMAFFilterMenuItem` under the "Filter by" submenu.
 Open question: whether masking should also feed the MAF filter (a masked het
 shouldn't count toward AF) — couples to `minorAlleleFrequencyUtils.ts`, defer
 past the independent MVP. Same plumbing then unlocks **VAF coloring from AD**
-(color het cells by allelic fraction — a somatic/mosaic cohort view) and the
-`featureColor` presets below (cheaper still, no new RPC field). `sampleInfo`
+(color het cells by allelic fraction — a somatic/mosaic cohort view). `sampleInfo`
 (per-sample `maxPloidy`/`isPhased`) is already computed and shipped but only
 used internally for haplotype expansion — never surfaced to the user.
 
@@ -43,19 +42,7 @@ hets**, and **Mendelian-error sites**. Aligns with the existing trio-crossover w
 Large but high-value; start by defining the pedigree metadata shape (columns in
 `samplesTsv`, or a dedicated pedigree file) and a worker-side per-site classification
 that bakes a highlight color into the existing `cellColors` array (same
-bake-into-color discipline as `featureColor`), rather than a new render pass.
-
-**More `featureColor` presets (cheapest wins — no new RPC field).** `featureColor`
-already supports arbitrary jexl plus one built-in preset (consequence impact,
-`shared/variantConsequence.ts`, surfaced in the "Color cells by" menu). These read
-`INFO` fields the feature already carries, so they are near-clones of the consequence
-preset with zero worker-plumbing changes:
-- **gnomAD / AF rarity** — color by `INFO/AF` or `AF_popmax` so ultra-rare variants pop
-  (the classic cohort-filtering read).
-- **ClinVar significance** — `INFO/CLNSIG` → pathogenic/benign tiers.
-- **Specific SO consequence** — missense vs synonymous vs LOF, not just the 4 impact
-  tiers `getVariantImpact` currently collapses to.
-Each is a new entry alongside `CONSEQUENCE_IMPACT_JEXL` plus a legend key.
+bake-into-color discipline as the `color` hue), rather than a new render pass.
 
 **Per-site summary strip.** Carrier count / allele frequency / call-rate per
 site, as a band above the rows. Designed in
@@ -80,7 +67,7 @@ identical over a window around that column and paint it with a stable hash color
 staying in whatever order they are in — a crossover then reads as a color change
 mid-row. The plumbing already exists: `computeVariantCells.ts` ships a per-cell
 `cellColors: Uint32Array`, so this is a worker-side computation plus a color mode, not
-new render infrastructure (same bake-into-color discipline as `featureColor`).
+new render infrastructure (same bake-into-color discipline as the `color` hue).
 
 Three things separate this from HaploBlocker, whose equivalent plot reads as confetti:
 carry colors across columns (greedily match each column's partition to the previous

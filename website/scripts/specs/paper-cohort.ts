@@ -62,7 +62,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
               trackId: SV_TRACK,
               type: 'LinearMultiSampleVariantDisplay',
               forceLoad: true,
-              featureColor: 'svType',
+              color: { field: 'svType' },
               height: 360,
             },
           ],

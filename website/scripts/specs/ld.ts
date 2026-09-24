@@ -364,7 +364,7 @@ const agKaryotypeTrack = (
       // the per-row gaps broke that field into a striped rectangle that read as
       // a texture rather than as background.
       referenceDrawingMode: 'skip',
-      // No featureColor. The default alt shade is keyed to allele dosage
+      // No color. The default alt shade is keyed to allele dosage
       // (`getAltColorForDosage`), so a heterozygote paints lighter than a
       // homozygote and the three classes read apart; an override flattens het and
       // hom-alt to one flat color, which is what the first cut of this figure did

@@ -4,7 +4,7 @@ Real human structural variants (deletions/insertions from long-read phased
 assemblies) with real SnpEff-predicted consequences — the SV analog of
 `test_data/1000g_snpeff_chr1` (which does SNVs). Same feature under test:
 `plugins/variants` multi-sample "color cells by consequence impact"
-(`jexl:impactColor(feature)`), but exercising SnpEff's SV-specific consequence
+(`color: { field: impact }`), but exercising SnpEff's SV-specific consequence
 terms (`exon_loss_variant`, `transcript_ablation`, `frameshift_variant`,
 `gene_fusion`) instead of the SNV ones.
 
@@ -67,6 +67,5 @@ expected to flag.
 ## Demo track
 
 `test_data/config_demo.json` → `hgsvc_sv_chr1_snpeff_consequence` (hg38,
-`LinearMultiSampleVariantDisplay`, `featureColor: jexl:impactColor(feature)`).
-Screenshot spec: `variants/consequence_impact_sv` in
-`website/scripts/screenshot-specs.ts`.
+`LinearMultiSampleVariantDisplay`, `color: { field: impact }`). Screenshot spec:
+`variants/consequence_impact_sv` in `website/scripts/screenshot-specs.ts`.

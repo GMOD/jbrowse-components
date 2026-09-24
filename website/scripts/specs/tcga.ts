@@ -363,7 +363,7 @@ function mutationTrack({
         // CSQ the MAF's own Consequence/IMPACT columns are re-encoded into. On
         // somatic data this separates truncating (HIGH) from missense
         // (MODERATE) without a per-figure color table.
-        featureColor: 'jexl:impactColor(feature)',
+        color: { field: 'impact' },
         ...(facetField
           ? { facet: { field: facetField, domain: facetDomain } }
           : {}),

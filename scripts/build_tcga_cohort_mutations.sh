@@ -173,7 +173,7 @@ cfg['tracks'].append({
         'height': 1010,
         # each mutation's VEP impact tier out of the CSQ field, so truncating
         # and missense cells are told apart without a per-figure color table
-        'featureColor': 'jexl:impactColor(feature)',
+        'color': {'field': 'impact'},
     }],
 })
 

@@ -2,7 +2,7 @@
 
 Real human variant calls with real SnpEff-predicted consequences, for the
 multi-sample variant "color cells by consequence impact" feature
-(`plugins/variants`, `jexl:impactColor(feature)`). Unlike the volvox demo data
+(`plugins/variants`, `color: { field: impact }`). Unlike the volvox demo data
 (synthetic `ANN` values injected by `test_data/volvox/annotate_variants.mjs`),
 every annotation here comes from actually running SnpEff on real genotypes — no
 hand-crafted impact tiers.
@@ -54,6 +54,5 @@ transcript-level ANN entries): 44 HIGH, 744 MODERATE, 532 LOW, 22,738 MODIFIER.
 ## Demo track
 
 `test_data/config_demo.json` → `1000g_chr1_snpeff_consequence` (hg19,
-`LinearMultiSampleVariantDisplay`, `featureColor: jexl:impactColor(feature)`).
-Screenshot spec: `variants/consequence_impact_1000g` in
-`website/scripts/screenshot-specs.ts`.
+`LinearMultiSampleVariantDisplay`, `color: { field: impact }`). Screenshot spec:
+`variants/consequence_impact_1000g` in `website/scripts/screenshot-specs.ts`.

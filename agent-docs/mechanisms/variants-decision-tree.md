@@ -38,13 +38,14 @@ cannot express.
 
 ## What "Color by" resolves to
 
-![How the featureColor slot resolves](diagrams/variants-colour-by.svg)
+![How the color object resolves](diagrams/variants-colour-by.svg)
 
-One slot holds every answer, resolved **once per record** in the worker. Two of
-its values are marker strings rather than expressions: SV type, because the
-palette is assigned from the types actually present in the window, and phase
-set, because the colour is per (record, sample) and only the cell loops can read
-it. The override never reaches a reference or no-call cell, and it paints flat.
+One colour object holds every answer, resolved **once per record** in the
+worker (`shared/cellHue.ts`). Three of its fields are presets the record does
+not carry as such: impact, SV type, whose palette is dealt over the types
+present in the window, and phase set, whose colour is per (record, sample) so
+only the cell loops can read it. Any other field is read off the record. The hue
+never reaches a reference or no-call cell.
 
 ## What colour a cell takes
 

@@ -4931,7 +4931,7 @@
         {
           "type": "LinearMultiSampleVariantDisplay",
           "displayId": "1000g_chr1_snpeff_consequence-LinearMultiSampleVariantDisplay",
-          "featureColor": "jexl:impactColor(feature)"
+          "color": { "field": "impact" }
         }
       ],
       "assemblyNames": ["hg19"]
@@ -5333,7 +5333,7 @@
         {
           "type": "LinearMultiSampleVariantDisplay",
           "displayId": "hgsvc_sv_chr1_snpeff_consequence-LinearMultiSampleVariantDisplay",
-          "featureColor": "jexl:impactColor(feature)"
+          "color": { "field": "impact" }
         }
       ],
       "assemblyNames": ["hg38"]

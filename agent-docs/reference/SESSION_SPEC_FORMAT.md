@@ -171,8 +171,9 @@ same tail with an extra level of nesting.
 
 Two pairs that look like drift are not: `jexlFilters` is the config slot and
 `jexlFiltersSetting` the display's session override (`core/util/jexlFilters.ts`
-says which wins), and `color` versus `featureColor` on the multi-sample variant
-display is a real distinction (row color versus the per-variant override).
+says which wins), and `color` versus `rowColor` on the multi-sample variant
+display is a real distinction (the cells' hue versus the tint beside each row's
+label).
 `sortedBy` and `sortRowsBy` read as a third such pair and are two unrelated
 mechanisms: `sortedBy` is a config slot naming a genomic column, and the layout
 pass ranks each pileup section's reads by what sits in that column, on every

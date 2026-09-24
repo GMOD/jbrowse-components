@@ -114,8 +114,8 @@ HIGH the same way a stop-gained SNV does.
 
 <Figure caption="1000 Genomes phase 3 chr1 genotypes colored by consequence impact from SnpEff annotations: red is stop-gained or splice-site, orange missense, yellow synonymous, and grey the intronic and intergenic majority." src="/img/variants/consequence_impact_1000g.png" />
 
-To have the track load already colored this way, preset the display's
-`featureColor` slot: see
+To have the track load already colored this way, set the display's `color` to
+`{ "field": "impact" }`: see
 [coloring cells by the variant](/docs/config_guides/variant_track#coloring-cells-by-the-variant).
 
 ## Coloring by SV type
@@ -144,9 +144,26 @@ falling back to `INFO/SVTYPE` when the ALT is a plain sequence.
 
 <Figure caption="1000 Genomes SV ensemble callset on chr19 colored by SV type, each alt-carrying cell taking its variant's class color, pale for a het and full for a hom. The legend names every class present, including the callset's complex (CPX) events, with both shades beside each." src="/img/multisv_svtype.png" />
 
-This preset also has a
-[`featureColor` value](/docs/config_guides/variant_track#coloring-cells-by-the-variant)
-so a track can load already colored by SV type.
+A track loads already colored by SV type with `color` set to
+`{ "field": "svType" }`: see
+[coloring cells by the variant](/docs/config_guides/variant_track#coloring-cells-by-the-variant).
+
+## Coloring by any field
+
+**Color by... → Field...** colors each alt-carrying cell by a field of its
+record. The dialog lists the file's columns (QUAL, FILTER, ID, ALT), every INFO
+field its header declares, with the header's description, and the computed
+values such as `maf` and `missingness`; any other field name or a `jexl:`
+expression can be typed in.
+
+- Left as it is, each value of the field takes its own color, as `INFO.CLNSIG`
+  gives Pathogenic, Benign and Uncertain_significance one each.
+- **Cut points** turn a number into ranges: `0.001, 0.01` over `INFO.AF` makes
+  ultra-rare, rare and common bands.
+
+The legend names the field and lists each value or range, and a variant with no
+value for the field keeps the default alt color. A het cell draws paler than a
+hom, as in every other coloring.
 
 ## Coloring and grouping by sample metadata
 

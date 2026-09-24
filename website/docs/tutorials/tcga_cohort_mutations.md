@@ -119,7 +119,7 @@ with the matrix display on top of it:
     {
       "type": "LinearMultiSampleVariantMatrixDisplay",
       "height": 1010,
-      "featureColor": "jexl:impactColor(feature)"
+      "color": { "field": "impact" }
     }
   ]
 }
@@ -131,9 +131,9 @@ Three settings there:
   [matrix display](/docs/user_guides/multivariant_track#matrix-best-for-snpindel-patterns)
   lays columns out by feature index, so a gene's mutations pack together however
   far apart they sit, with a connector band from each column to its position
-- [`featureColor`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-featurecolor)
-  with the `impactColor` helper colors each cell by its VEP impact tier from
-  `CSQ`, the same as **Color by... → Consequence impact** in the track menu
+- [`color`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-color) set
+  to the `impact` field colors each cell by its VEP impact tier from `CSQ`, the
+  same as **Color by... → Consequence impact** in the track menu
 - [`samplesTsvLocation`](/docs/config/vcftabixadapter/#slot-samplestsvlocation)
   makes the clinical columns available to group and color rows by
 
@@ -169,7 +169,7 @@ puts the matching color strip in the gutter. Both have a track-menu row too:
       "type": "LinearMultiSampleVariantMatrixDisplay",
       "height": 450,
       "lineZoneHeight": 130,
-      "featureColor": "jexl:impactColor(feature)",
+      "color": { "field": "impact" },
       "facet": { "field": "histology", "domain": ["ductal", "lobular"] },
       "rowColor": "histology"
     }

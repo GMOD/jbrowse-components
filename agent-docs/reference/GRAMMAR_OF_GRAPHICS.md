@@ -227,7 +227,8 @@ The seams, named honestly:
   grammar has no equivalent. Every display with a meaning the encoding cannot
   say will look like this.
 - **The colour objects are one shape, and a preset is a field.** FeatureColor,
-  ManhattanColor, RibbonColor, MarkColor and AlignmentsColor are each
+  ManhattanColor, RibbonColor, MarkColor, AlignmentsColor and VariantCellColor
+  are each
   `{ value, field, scale, domain, domainMin, domainMax, domainMid, range,
   scheme, reverse }`, spelt as Vega-Lite spells a scale and as `scales.y`
   already did, from display-kit's pieces (`colorChannelSlots`,
@@ -257,6 +258,11 @@ The seams, named honestly:
   nor keys a second cut
   ([ADR-144](../architecture-decision-records/adr-144-one-colour-object-on-the-quantitative-display.md)
   §"Rejected alternatives").
+  The variant displays' `impact` and `svType`, and the multi-sample cells'
+  `phaseSet`, are preset fields too (`plugins/variants/src/shared/cellHue.ts`):
+  the single-variant display resolves the first two to the jexl colours that
+  compute them in `colorEncoding`, and the cells paint any other record field
+  through the same categorical or threshold field the canvas worker reads.
   The ribbon's `strand`, `identity`,
   `mappingQual` and `dnds` are fields with a vocabulary or ramp of their own,
   as synteny-core's `continuousRampConfig` keys them

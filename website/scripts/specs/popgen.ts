@@ -176,10 +176,10 @@ const IN2LT_SV_TRACK = {
       rowColor: 'karyotype',
       // The carrier block has to out-contrast the hom-ref field, and by default
       // it doesn't: hom-ref genotypes paint #CCCCCC, the same gray as an empty
-      // canvas, so the figure read as a blank track. featureColor repaints only
+      // canvas, so the figure read as a blank track. color repaints only
       // the alt-carrying cells, leaving ref/no-call alone — exactly the "who
       // carries it" contrast this figure exists for.
-      featureColor: '#d95f02',
+      color: '#d95f02',
       // Pinned rather than fit-to-height: 19 carriers out of 180 lines is ~10%
       // of the display whatever its height, and at the old 300px that was 30px
       // holding 19 rows — 0.33px each, which aliased into a smear instead of

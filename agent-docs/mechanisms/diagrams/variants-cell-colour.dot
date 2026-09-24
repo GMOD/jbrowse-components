@@ -40,7 +40,7 @@ digraph variant_cell_colour {
   allref -> refcol   [label=" yes"]
   allref -> override [label=" no"]
 
-  override [label="a featureColor override\nresolved for this record"]
+  override [label="a color hue\nresolved for this record"]
   override -> ovcol [label=" yes"]
   override -> other [label=" no"]
   ovcol [label="the override, flat"]

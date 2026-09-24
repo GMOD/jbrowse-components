@@ -118,14 +118,16 @@ block per display type. The slots both share are on
 
 ### Coloring cells by the variant
 
-`featureColor` overrides the per-genotype shading, painting every alt-carrying
-cell by the variant itself. It takes any per-feature jexl expression, the
-[helper functions](#helper-functions-for-jexl-color-expressions) included, and
-two values match the track menu's **Color by...** presets:
-`"jexl:impactColor(feature)"` for
-[consequence impact](/docs/user_guides/multivariant_track#coloring-by-consequence-impact-snpeffvep-annotations)
-and the literal `"svType"` for
-[SV type](/docs/user_guides/multivariant_track#coloring-by-sv-type).
+`color` paints every alt-carrying cell by the variant itself. A CSS colour or a
+jexl expression paints every alt cell of a variant, the
+[helper functions](#helper-functions-for-jexl-color-expressions) included. A
+`field` gives each of its values a colour, with a key. Three fields are the
+track menu's **Color by...** presets: `impact` for
+[consequence impact](/docs/user_guides/multivariant_track#coloring-by-consequence-impact-snpeffvep-annotations),
+`svType` for [SV type](/docs/user_guides/multivariant_track#coloring-by-sv-type)
+and `phaseSet` for the phase set in phased mode. Any other field is read off the
+record, such as `INFO.CLNSIG` or `QUAL`, and a variant with no value keeps the
+default alt colour.
 
 ```json addtrack
 {
@@ -140,9 +142,25 @@ and the literal `"svType"` for
   "displays": [
     {
       "type": "LinearMultiSampleVariantDisplay",
-      "featureColor": "jexl:impactColor(feature)"
+      "color": { "field": "impact" }
     }
   ]
+}
+```
+
+A number cuts into ranges with a `threshold` scale: `domain` lists the cut
+points and `range` one colour per range, one more than the cuts. Allele
+frequency split into ultra-rare, rare, low-frequency and common:
+
+```json
+{
+  "type": "LinearMultiSampleVariantDisplay",
+  "color": {
+    "field": "INFO.AF",
+    "scale": "threshold",
+    "domain": ["0.001", "0.01", "0.05"],
+    "range": ["#b2182b", "#ef8a62", "#67a9cf", "#2166ac"]
+  }
 }
 ```
 

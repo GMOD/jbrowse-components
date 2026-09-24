@@ -48,6 +48,7 @@ exports[`every registered schema slot default 1`] = `
     "mafGzLocation": "fileLocation = {"uri":"/path/to/my.maf.gz","locationType":"UriLocation"}",
     "nhLocation": "maybeFileLocation = undefined",
     "samples": "frozen = []",
+    "samplesTsvLocation": "maybeFileLocation = undefined",
     "summaryAdapter": "maybeFrozen = undefined",
     "taiLocation": "fileLocation = {"uri":"/path/to/my.maf.gz.tai","locationType":"UriLocation"}",
   },
@@ -55,6 +56,7 @@ exports[`every registered schema slot default 1`] = `
     "annotationAdapter": "maybeFrozen = undefined",
     "nhLocation": "maybeFileLocation = undefined",
     "samples": "frozen = []",
+    "samplesTsvLocation": "maybeFileLocation = undefined",
     "summaryAdapter": "maybeFrozen = undefined",
     "tafGzLocation": "fileLocation = {"uri":"/path/to/my.taf.gz","locationType":"UriLocation"}",
     "taiLocation": "fileLocation = {"uri":"/path/to/my.taf.gz.tai","locationType":"UriLocation"}",
@@ -71,6 +73,7 @@ exports[`every registered schema slot default 1`] = `
     "bigBedLocation": "fileLocation = {"uri":"/path/to/my.bb","locationType":"UriLocation"}",
     "nhLocation": "maybeFileLocation = undefined",
     "samples": "frozen = []",
+    "samplesTsvLocation": "maybeFileLocation = undefined",
     "summaryAdapter": "maybeFrozen = undefined",
   },
   "adapter: BigWigAdapter": {
@@ -207,6 +210,7 @@ exports[`every registered schema slot default 1`] = `
     "nhLocation": "maybeFileLocation = undefined",
     "refAssemblyName": "string = """,
     "samples": "frozen = []",
+    "samplesTsvLocation": "maybeFileLocation = undefined",
     "summaryAdapter": "maybeFrozen = undefined",
   },
   "adapter: MashMapAdapter": {
@@ -239,6 +243,7 @@ exports[`every registered schema slot default 1`] = `
   "adapter: MultiWiggleAdapter": {
     "baseUri": "string = """,
     "bigWigs": "frozen = []",
+    "samplesTsvLocation": "maybeFileLocation = undefined",
     "subadapters": "frozen = []",
   },
   "adapter: NCListAdapter": {
@@ -641,7 +646,6 @@ exports[`every registered schema slot default 1`] = `
     "treeAreaWidth": "number = 80",
   },
   "display: LinearMultiSampleVariantDisplay": {
-    "featureColor": "string = """,
     "fetchSizeLimit": "number = 1000000",
     "forceLoad": "boolean = false",
     "height": "number = 200",
@@ -667,7 +671,6 @@ exports[`every registered schema slot default 1`] = `
     "variantLaneLabels": "stringEnum = "auto" of ["auto","nameAndDescription","name","description","none"]",
   },
   "display: LinearMultiSampleVariantMatrixDisplay": {
-    "featureColor": "string = """,
     "fetchSizeLimit": "number = 1000000",
     "forceLoad": "boolean = false",
     "height": "number = 250",
@@ -706,23 +709,15 @@ exports[`every registered schema slot default 1`] = `
   },
   "display: LinearSyntenyDisplay": {},
   "display: LinearVariantDisplay": {
-    "canonicalTranscriptField": "string = "tag"",
-    "canonicalTranscriptTags": "stringArray = ["MANE Select","MANE_Select","RefSeq Select","Ensembl_canonical","MANE Plus Clinical","MANE_Plus_Clinical"]",
-    "connectorColor": "maybeColor = undefined",
-    "containerTypes": "stringArray = ["proteoform_orf"]",
     "densityTier": "stringEnum = "auto" of ["auto","features","density"]",
     "densityTierBpPerPx": "number = 0",
-    "displayDirectionalChevrons": "boolean = true",
     "displayMode": "stringEnum = "normal" of ["normal","compact","superCompact","collapsed"]",
     "featureHeight": "number = 10",
     "fetchSizeLimit": "number = 1000000",
     "forceLoad": "boolean = false",
-    "geneGlyphMode": "stringEnum = "auto" of ["auto","all","longestCoding"]",
     "growMaxHeight": "number = 800",
     "height": "number = 100",
     "heightMode": "stringEnum = "fit" of ["fixed","grow","fit"]",
-    "hideSourceFeatures": "boolean = true",
-    "impliedUTRs": "boolean = true",
     "jexlFilters": "stringArray = []",
     "maxDescriptionFeatureDensity": "number = 0.1",
     "maxFeatureScreenDensity": "number = 1",
@@ -731,10 +726,6 @@ exports[`every registered schema slot default 1`] = `
     "outlineColor": "color = """,
     "showLabels": "stringEnum = "auto" of ["auto","nameAndDescription","name","description","none"]",
     "showLegend": "boolean = true",
-    "subParts": "string = "CDS,UTR,five_prime_UTR,three_prime_UTR"",
-    "subfeatureLabels": "stringEnum = "none" of ["none","below","overlay"]",
-    "transcriptTypes": "stringArray = ["mRNA","transcript","primary_transcript","V_gene_segment","C_gene_segment","D_gene_segment","J_gene_segment"]",
-    "utrColor": "maybeColor = undefined",
   },
   "display: LinearWiggleDisplay": {
     "defaultRendering": "stringEnum = "xyplot" of ["xyplot","density","line","linecenter","scatter"]",
@@ -769,6 +760,12 @@ exports[`every registered schema slot default 1`] = `
     "showLegend": "boolean = true",
     "splitStrands": "boolean = false",
     "utrColor": "color = "#357089"",
+  },
+  "text search adapter: BigBedTextSearchAdapter": {
+    "assemblyNames": "stringArray = []",
+    "bigBedLocation": "fileLocation = {"uri":"/path/to/my.bb","locationType":"UriLocation"}",
+    "ixFilePath": "fileLocation = {"uri":"","locationType":"UriLocation"}",
+    "ixxFilePath": "fileLocation = {"uri":"","locationType":"UriLocation"}",
   },
   "text search adapter: JBrowse1TextSearchAdapter": {
     "assemblyNames": "stringArray = []",

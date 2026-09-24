@@ -57,6 +57,38 @@ test('display settings route by slot name across a track’s displays', () => {
   expect(
     readConfObject(display(conf, 'ChordVariantDisplay'), 'strokeColor'),
   ).toBe('#e31a1c')
+  // the multi-sample displays' cell colour is a colour object too, so a
+  // track-wide colour paints their alt cells
+  expect(
+    readConfObject(display(conf, 'LinearMultiSampleVariantDisplay'), [
+      'color',
+      'value',
+    ]),
+  ).toBe('#1f78b4')
+})
+
+// Both variant displays read the impact preset as a field of their colour, so
+// one track-wide setting colours the single-variant marks and the genotype
+// cells alike.
+test('a variant colour preset field reaches every variant display', () => {
+  const pluginManager = makePluginManager()
+  const conf = pluginManager.getTrackType('VariantTrack').configSchema.create(
+    {
+      trackId: 'routed_vcf',
+      type: 'VariantTrack',
+      assemblyNames: ['volvox'],
+      adapter: { type: 'VcfAdapter', uri: 'volvox.filtered.vcf' },
+      displayDefaults: { color: { field: 'impact' } },
+    },
+    { pluginManager },
+  ) as AnyConfigurationModel & { displays: AnyConfigurationModel[] }
+  for (const type of [
+    'LinearVariantDisplay',
+    'LinearMultiSampleVariantDisplay',
+    'LinearMultiSampleVariantMatrixDisplay',
+  ]) {
+    expect(colorOf(conf, type)).toEqual({ field: 'impact' })
+  }
 })
 
 // A FeatureTrack offers five displays, three of which declare `color` in

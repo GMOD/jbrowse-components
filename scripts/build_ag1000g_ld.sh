@@ -534,7 +534,7 @@ for pop, (trackId, name) in karyo.items():
             # the call's span for those rows, so every mosquito shows a block over
             # the inversion and its shade is its karyotype.
             'referenceDrawingMode': 'draw',
-            # No featureColor. The default alt shade is keyed to allele dosage, so
+            # No color. The default alt shade is keyed to allele dosage, so
             # a heterozygote paints lighter than a homozygote and the three
             # classes read apart; an override flattens het and hom-alt to one flat
             # color and throws that away.

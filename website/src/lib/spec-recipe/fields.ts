@@ -387,6 +387,18 @@ const VARIANT_COLOR_PRESETS: Record<string, string> = {
   'jexl:impactColor(feature)': 'Consequence impact',
 }
 
+// The same two presets as the fields both variant displays' `color` names
+// them by (IMPACT_FIELD, SV_TYPE_FIELD), and the phase set the multi-sample
+// displays add (PHASE_SET_FIELD).
+const VARIANT_PRESET_FIELDS: Record<string, string> = {
+  svType: 'SV type',
+  impact: 'Consequence impact',
+}
+const VARIANT_CELL_PRESET_FIELDS: Record<string, string> = {
+  ...VARIANT_PRESET_FIELDS,
+  phaseSet: 'Phase set',
+}
+
 /**
  * The displays composing the canvas base display, which is where the two
  * channel objects and the dialogs that write them live: `color` under Color
@@ -450,6 +462,9 @@ function colorStep(
     return alignmentsColorStep(value)
   }
   const scale = asRecord(value)
+  if (displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)) {
+    return scale ? variantCellColorStep(scale) : undefined
+  }
   if (scale && displayType === 'LinearManhattanDisplay') {
     return manhattanColorStep(scale)
   }
@@ -468,6 +483,13 @@ function colorStep(
       return undefined
     }
     const colorBy = `${TRACK_MENU} → Color by...`
+    const preset =
+      displayType === 'LinearVariantDisplay'
+        ? VARIANT_PRESET_FIELDS[field]
+        : undefined
+    if (preset) {
+      return { path: `${colorBy} → ${preset}` }
+    }
     if (asList(scale.domain) || asList(scale.range)) {
       return { path: `${colorBy} → Attribute... → Edit as JSON...` }
     }
@@ -476,6 +498,28 @@ function colorStep(
       : { path: `${colorBy} → Attribute... → ${field}` }
   }
   return constantColorStep(value, context)
+}
+
+// The multi-sample variant displays' cell `color`: a preset field has its own
+// row under Cells, and any other field is typed into Field..., its cut points
+// beside it.
+function variantCellColorStep(
+  color: Record<string, unknown>,
+): FieldStep | undefined {
+  const field = color.scale === 'none' ? undefined : asString(color.field)
+  if (!field) {
+    return undefined
+  }
+  const cells = `${TRACK_MENU} → Color by... → Cells`
+  const preset = VARIANT_CELL_PRESET_FIELDS[field]
+  if (preset) {
+    return { path: `${cells} → ${preset}` }
+  }
+  const cuts = color.scale === 'threshold' ? asList(color.domain) : undefined
+  return {
+    path: `${cells} → Field... → ${field}`,
+    note: cuts ? `Cut points: ${cuts.join(', ')}.` : undefined,
+  }
 }
 
 function hicColorStep(color: Record<string, unknown>): FieldStep | undefined {
@@ -1078,15 +1122,6 @@ export const trackFields: Record<string, FieldRecipe> = {
             value === 'phased'
               ? 'Splits each sample into one row per haplotype. The item stays disabled until phased variants are found in the file.'
               : undefined,
-        }
-      : undefined,
-  featureColor: (value, { displayType }) =>
-    value === 'svType' &&
-    displayType &&
-    MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
-      ? {
-          path: `${TRACK_MENU} → Color by... → Cells → SV type`,
-          note: 'Sits in the Cells section of that submenu, above the Samples one the sample palette comes from.',
         }
       : undefined,
   clusterRegion: (value, { displayType }) =>
