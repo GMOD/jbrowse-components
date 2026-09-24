@@ -18,19 +18,19 @@ export default function SVGTracks({
   model,
   textHeight,
   fontSize,
-  trackLabels = 'offset',
-  trackLabelOffset = 0,
-  leftBuffer = 0,
-  legendWidth = 0,
+  trackLabels,
+  trackLabelOffset,
+  leftBuffer,
+  legendWidth,
 }: {
   displayResults: SvgDisplayResult[]
   model: LGV
   textHeight: number
   fontSize: number
-  trackLabels?: TrackLabelMode
-  trackLabelOffset?: number
-  leftBuffer?: number
-  legendWidth?: number
+  trackLabels: TrackLabelMode
+  trackLabelOffset: number
+  leftBuffer: number
+  legendWidth: number
 }) {
   const session = getSession(model)
   const x = Math.max(-model.offsetPx, 0)

@@ -24,7 +24,7 @@ export default function SVGView({
   contentTop,
   tracksHeight,
   showGridlines,
-  leftBuffer = 0,
+  leftBuffer,
   legendWidth = 0,
 }: {
   view: LinearGenomeViewModel
@@ -51,7 +51,7 @@ export default function SVGView({
   // Left gutter the per-track clip should extend into, so left-of-zero content
   // (a wiggle Y-scalebar) isn't clipped. Callers that translate the whole view
   // by a margin pass that margin here.
-  leftBuffer?: number
+  leftBuffer: number
   // Right gutter the caller widened its canvas by for legends, so the per-track
   // clip reaches them. 0 for a stacked export, which has no room to give and
   // whose displays float their legends over the plot instead.

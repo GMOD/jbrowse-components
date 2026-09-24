@@ -86,12 +86,9 @@ export type {
   TrackControlProps,
 } from '@jbrowse/display-ui'
 export {
-  HighlightBand,
   HighlightChip,
   type LinearGenomeViewModel,
   type LinearGenomeViewStateModel,
-  OverviewHighlightBand,
-  SVGHighlightBand,
   installLinkedViewSync,
   stateModelFactory as linearGenomeViewStateModelFactory,
 } from './LinearGenomeView/index.ts'
@@ -105,7 +102,6 @@ export { default as SearchBox } from './LinearGenomeView/components/SearchBox.ts
 // visibility/orientation choice and `searchBoxMenuItems` the rows that set it —
 // shared rather than copied, since the copies had already drifted on what to
 // call `sideBySide: false`. Only the storage prefix stays with each container.
-export { default as HeaderSearchBoxes } from './LinearGenomeView/components/HeaderSearchBoxes.tsx'
 export { default as HeaderSearchBoxRow } from './LinearGenomeView/components/HeaderSearchBoxRow.tsx'
 export {
   searchBoxMenuItems,
@@ -167,15 +163,12 @@ export type {
   ViewSvgFigureOptions,
   ViewSvgFigureResult,
 } from './LinearGenomeView/svgcomponents/useViewSvgFigure.tsx'
-export { default as SVGTracks } from './LinearGenomeView/svgcomponents/SVGTracks.tsx'
 export { default as SVGView } from './LinearGenomeView/svgcomponents/SVGView.tsx'
 export { default as SVGRowHeader } from './LinearGenomeView/svgcomponents/SVGRowHeader.tsx'
-export { default as SVGHighlights } from './LinearGenomeView/svgcomponents/SVGHighlights.tsx'
-export { default as SVGHighlightsOverlay } from './LinearGenomeView/svgcomponents/SVGHighlightsOverlay.tsx'
 export { default as ExportSvgDialog } from './LinearGenomeView/components/ExportSvgDialog.tsx'
 export { GetSequenceDialog } from './LinearGenomeView/lazyDialogs.ts'
 export { default as ConnectedHoverHighlight } from './LinearGenomeView/components/ConnectedHoverHighlight.tsx'
-export { default as HoverPositionHighlight } from './LinearGenomeView/components/HoverPositionHighlight.tsx'
+export type { HoverHighlightPosition } from './LinearGenomeView/components/HoverPositionHighlight.tsx'
 // The overlay layer lives in `@jbrowse/display-ui` — a package rather than this
 // plugin, because `packages/tree-sidebar` needed it and had to depend on a
 // *plugin* to get it. Re-exported here, since every display already names it
@@ -192,7 +185,6 @@ export {
   TrackOverlayPortal,
   TrackOverlaySlot,
 } from '@jbrowse/display-ui'
-export type { HoverHighlightPosition } from './LinearGenomeView/components/HoverPositionHighlight.tsx'
 export { SvgChrome, SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 // for a display that hand-rolls a <clipPath> instead of using SvgClipRect (an
 // inset or non-rect clip); ids built from a trackId/refName need it
@@ -207,7 +199,6 @@ export {
   totalHeight,
   trackBoxHeight,
   trackBoxOffsets,
-  trackLabelMode,
   trackLabelLeftOffset,
 } from './LinearGenomeView/svgcomponents/util.ts'
 // Re-exported from core, where it moved so the circular view — which depends
