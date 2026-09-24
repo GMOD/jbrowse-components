@@ -41,6 +41,45 @@ test('a call with no channel gets no statusCallback at all', async () => {
   expect(seen).toEqual({ sessionId: 's' })
 })
 
+test('a plugin hint starts the downloads before the configuration arrives', async () => {
+  const scope = globalThis as unknown as Record<string, unknown>
+  const original = globalThis.postMessage
+  globalThis.postMessage = (() => {}) as typeof globalThis.postMessage
+  scope.WorkerGlobalScope = class {}
+  const fetched: string[] = []
+  const fetchSpy = jest
+    .spyOn(globalThis, 'fetch')
+    .mockImplementation(async url => {
+      fetched.push(String(url))
+      return { arrayBuffer: async () => new ArrayBuffer(0) } as Response
+    })
+  const reExports = jest.fn(() => new Promise<never>(() => {}))
+  const send = (data: unknown) => {
+    self.dispatchEvent(new MessageEvent('message', { data }))
+  }
+  try {
+    const booted = initializeWorker([], { reExports })
+    send({
+      message: 'preloadPlugins',
+      hint: {
+        plugins: [{ name: 'Hinted', url: 'https://example.com/hinted.js' }],
+        windowHref: 'https://example.com',
+      },
+    })
+    expect(reExports).toHaveBeenCalledTimes(1)
+    expect(fetched).toEqual(['https://example.com/hinted.js'])
+    send({
+      message: 'config',
+      config: { plugins: [], windowHref: 'https://example.com' },
+    })
+    await booted
+  } finally {
+    globalThis.postMessage = original
+    fetchSpy.mockRestore()
+    delete scope.WorkerGlobalScope
+  }
+})
+
 // initializeWorker's catch sends the boot handshake's LAST frame, so a throw
 // inside it settles nothing: it runs floating, the rejection is only logged, and
 // no ErrorEvent follows because a rejected promise is not a script error. The

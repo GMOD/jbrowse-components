@@ -1,4 +1,4 @@
-import PluginLoader from '@jbrowse/core/PluginLoader'
+import PluginLoader, { preloadUMDBundles } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { setNumberGrouping, throttleStatusEmits } from '@jbrowse/core/util'
 import { RpcServer, serializeError } from '@jbrowse/core/util/librpc'
@@ -37,16 +37,44 @@ interface WorkerConfiguration {
   numberGrouping: boolean
 }
 
+interface PluginHint {
+  plugins: PluginDefinition[]
+  windowHref: string
+}
+
+/**
+ * Start downloading what a boot configuration naming these plugins will load.
+ * A page that started this worker early sends the hint once it has resolved
+ * its plugins, which is well before it can send the configuration: that waits
+ * for the page to evaluate them and build its session. The configuration is
+ * still what the worker loads.
+ */
+function preloadHintedPlugins(
+  { plugins, windowHref }: PluginHint,
+  opts: WorkerOptions,
+) {
+  if (plugins.length) {
+    opts.reExports().catch(() => {})
+    preloadUMDBundles(plugins, windowHref)
+  }
+}
+
 // waits for a message from the main thread containing our configuration, which
 // must be sent on boot
-function receiveConfiguration() {
+function receiveConfiguration(opts: WorkerOptions) {
   const configurationP = new Promise<WorkerConfiguration>(resolve => {
     function listener(
-      e: MessageEvent<{ message?: string; config?: WorkerConfiguration }>,
+      e: MessageEvent<{
+        message?: string
+        config?: WorkerConfiguration
+        hint?: PluginHint
+      }>,
     ) {
       if (e.data.message === 'config' && e.data.config) {
         resolve(e.data.config)
         removeEventListener('message', listener)
+      } else if (e.data.message === 'preloadPlugins' && e.data.hint) {
+        preloadHintedPlugins(e.data.hint, opts)
       }
     }
     self.addEventListener('message', listener)
@@ -59,7 +87,7 @@ async function getPluginManager(
   corePlugins: PluginConstructor[],
   opts: WorkerOptions,
 ) {
-  const config = await receiveConfiguration()
+  const config = await receiveConfiguration(opts)
   // this realm formats its own strings — a jexl `mouseover` slot renders a
   // tooltip against the full feature here rather than shipping it back — so it
   // needs the main thread's display preference before any RPC method runs

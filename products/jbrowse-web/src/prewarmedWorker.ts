@@ -1,5 +1,7 @@
 import makeWorkerInstance from './makeWorkerInstance.ts'
 
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
+
 let early:
   | { worker: Worker; failed: boolean; stop: AbortController }
   | undefined
@@ -22,6 +24,18 @@ export function prewarmWorker() {
     { signal: stop.signal },
   )
   early = entry
+}
+
+/**
+ * Name the plugins this page is about to load to the early worker, which
+ * downloads them and its re-export registry while the page evaluates them and
+ * builds the session. Its boot configuration is sent only after that.
+ */
+export function hintPrewarmedWorker(plugins: PluginDefinition[]) {
+  early?.worker.postMessage({
+    message: 'preloadPlugins',
+    hint: { plugins, windowHref: window.location.href },
+  })
 }
 
 /** The pool's worker factory: the early worker first, if it loaded */

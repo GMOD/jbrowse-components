@@ -7,6 +7,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import packageJSON from '../package.json' with { type: 'json' }
 import { openSessionDB } from './openSessionDB.ts'
 import { takePrefetchedConfig } from './prefetchConfig.ts'
+import { hintPrewarmedWorker } from './prewarmedWorker.ts'
 import { configBaseUri } from './resolveConfigPath.ts'
 import { upsertSessionRows } from './sessionDbOps.ts'
 import { addRelativeUris } from './util.ts'
@@ -43,6 +44,9 @@ export async function loadPluginRecords(defs: PluginDefinition[]) {
     packageJSON.version,
   )
   const toLoad = dropVendoredPlugins(definitions)
+  if (toLoad.length) {
+    hintPrewarmedWorker(toLoad)
+  }
   // No definitions, no loader — see `initializeWorker` for what a loader costs
   const loaded = toLoad.length
     ? await new PluginLoader(toLoad, {
