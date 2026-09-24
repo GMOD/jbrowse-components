@@ -5,13 +5,12 @@ import {
   HeaderSearchBoxRow,
   useSearchBoxPrefs,
 } from '@jbrowse/plugin-linear-genome-view'
-import { ColorBySelector } from '@jbrowse/synteny-core'
+import { ColorBySelector, TrackWarningsButton } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import { showsHeaderLabels } from '../headerLabels.ts'
 import FollowSyntenyToggle from './FollowSyntenyToggle.tsx'
 import SyntenySettingsMenu from './SyntenySettingsMenu.tsx'
-import SyntenyWarnings from './SyntenyWarnings.tsx'
 import TrackSelectorMenuButton from './TrackSelectorMenuButton.tsx'
 import ViewOptionsMenuButton from './ViewOptionsMenuButton.tsx'
 
@@ -23,6 +22,9 @@ const useStyles = makeStyles()({
     alignItems: 'center',
     gap: 4,
     minHeight: 48,
+  },
+  endOfBar: {
+    marginLeft: 'auto',
   },
 })
 
@@ -64,7 +66,12 @@ const Header = observer(function Header({
         <HeaderSearchBoxRow views={model.views} sideBySide={prefs.sideBySide} />
       ) : null}
 
-      <SyntenyWarnings model={model} />
+      <TrackWarningsButton
+        model={model}
+        noun="synteny"
+        title="Synteny warnings"
+        className={classes.endOfBar}
+      />
     </div>
   )
 })

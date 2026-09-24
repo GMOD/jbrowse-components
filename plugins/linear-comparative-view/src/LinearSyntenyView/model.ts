@@ -80,7 +80,6 @@ import type {
   AttributeRange,
   CigarOpMask,
   ComparativeTrackModel,
-  ComparativeWarning,
   LodMode,
 } from '@jbrowse/synteny-core'
 
@@ -433,16 +432,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * Data-quality warnings raised by every synteny display, e.g. a reversed
-       * assembly row order. What the header's warning button counts.
-       */
-      get syntenyWarnings(): ComparativeWarning[] {
-        return this.allSyntenyDisplays.flatMap(d => d.warnings)
-      },
-      /**
-       * #getter
-       * The same warnings grouped under the track that raised each, which is
-       * what the dialog reports.
+       * Every synteny display's data-quality warnings (e.g. a reversed assembly
+       * row order), grouped under the track that raised each: what the
+       * header's warning button counts and its dialog reports.
        */
       get trackWarnings() {
         return collectTrackWarnings(this.allSyntenyDisplays)

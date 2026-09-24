@@ -1,10 +1,10 @@
 import { getBpDisplayStr } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Typography } from '@mui/material'
+import { TrackWarningsButton } from '@jbrowse/synteny-core'
+import { DialogContentText, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import DotplotControls from './DotplotControls.tsx'
-import DotplotWarnings from './DotplotWarnings.tsx'
 
 import type { DotplotViewModel } from '../model.ts'
 import type { DotplotInteraction } from './useDotplotInteraction.ts'
@@ -53,7 +53,18 @@ const DotplotHeader = observer(function DotplotHeader({
         </Typography>
       ) : null}
       <div className={classes.spacer} />
-      <DotplotWarnings model={model} />
+      <TrackWarningsButton
+        model={model}
+        noun="dotplot"
+        title="Dotplot rendered with warnings"
+      >
+        <DialogContentText>
+          Found warnings while rendering the dotplot. This is often due to
+          out-of-bound features that may indicate the wrong assemblies are being
+          used. Check that the query and target are configured correctly, and
+          that the right assemblies are being compared.
+        </DialogContentText>
+      </TrackWarningsButton>
     </div>
   )
 })
