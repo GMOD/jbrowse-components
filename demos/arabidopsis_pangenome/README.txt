@@ -6,9 +6,10 @@ Two views of the same 27 genomes, built here from the 1001 Genomes Plus Phase 1
 release: SyRI's classification of every accession against TAIR10 (syntenic,
 inverted, translocated, duplicated regions), loaded as multi-genome lanes, and
 a minigraph pangenome of the 27 with the tabix projections JBrowse queries a
-locus from. The accessions' own gene, transposon, methylation and histone
-tracks are not rehosted: config.json points at the 1001 Genomes data centre,
-which serves them with CORS and Range support.
+locus from. The SyRI lanes are live; the graph is still building and its files
+are not uploaded yet. The accessions' own gene, transposon, methylation and
+histone tracks are not rehosted: config.json points at the 1001 Genomes data
+centre, which serves them with CORS and Range support.
 
 Assemblies
 ----------
@@ -115,8 +116,8 @@ How the SyRI lanes were built
   arrangement are Col-0's own assembly and KBS-Mac-74 (Michigan, USA). The
   reference carries the rare arrangement in this panel.
 
-How the graph was built
------------------------
+How the graph is built (not uploaded yet)
+-----------------------------------------
 
   minigraph 0.21-r606, reference first, then the accessions in lane order:
 
@@ -125,10 +126,6 @@ How the graph was built
   minigraph emits rGFA natively, so SN/SO/SR tags are read from the graph. Two
   audits ran on the result: every S line's SN tag matches <genome>#1#Chr[1-5],
   and the rank-0 thread is TAIR10's.
-
-  gfatools stat (gfatools 0.5-r292):
-
-    GRAPH_STATS_TBD
 
   Projections, each tabix-indexed:
 

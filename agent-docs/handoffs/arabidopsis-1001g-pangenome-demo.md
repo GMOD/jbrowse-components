@@ -22,7 +22,7 @@ laptop, so step 2 below can ship the SyRI half without the graph.
   copy jb2hubs hosts.
 - `demos/arabidopsis_pangenome/README.txt` (uncommitted): provenance, tool
   versions, the per-accession SyRI table and the knob-inversion finding.
-  `GRAPH_STATS_TBD` still has to be replaced with `gfatools stat` output.
+  The SyRI-only deploy dropped the graph's `gfatools stat` block and marks the graph "not uploaded yet"; restore both once the graph ships.
 - The actual run lives on `ssh ada`, `~/1001g/`: all 26 `TAIR10_<name>.{paf,regions.bed,syri.out}`,
   `<name>.{chrom.sizes,aliases.txt}`, `graph/` with the 27 PanSN FASTAs,
   `build_graph.sh` (minigraph -cxggs, was running at 07:31 ada time, about 3

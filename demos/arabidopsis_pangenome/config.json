@@ -1,0 +1,1778 @@
+{
+  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
+  "plugins": [
+    {
+      "name": "GraphGenomeView",
+      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js"
+    }
+  ],
+  "assemblies": [
+    {
+      "name": "TAIR10",
+      "displayName": "TAIR10 (Col-0 reference)",
+      "aliases": ["GCF_000001735.4", "tair10"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "TAIR10-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "TAIR10.fa.gz"
+        }
+      },
+      "refNameAliases": {
+        "uri": "TAIR10.aliases.txt"
+      }
+    },
+    {
+      "name": "Col-0.6909",
+      "displayName": "Col-0.6909 (6909, USA)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Col-0.6909-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Col-0.6909.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "Col-0.6909.aliases.txt"
+      }
+    },
+    {
+      "name": "KBS-Mac-74",
+      "displayName": "KBS-Mac-74 (1741, USA)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "KBS-Mac-74-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "KBS-Mac-74.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "KBS-Mac-74.aliases.txt"
+      }
+    },
+    {
+      "name": "Sq-1",
+      "displayName": "Sq-1 (6966, UK)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Sq-1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Sq-1.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "Sq-1.aliases.txt"
+      }
+    },
+    {
+      "name": "TueWa1-2",
+      "displayName": "TueWa1-2 (10002, GER)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "TueWa1-2-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "TueWa1-2.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "TueWa1-2.aliases.txt"
+      }
+    },
+    {
+      "name": "HSm",
+      "displayName": "HSm (8236, CZE)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HSm-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "HSm.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "HSm.aliases.txt"
+      }
+    },
+    {
+      "name": "Stiav-1",
+      "displayName": "Stiav-1 (9728, SVK)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Stiav-1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Stiav-1.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "Stiav-1.aliases.txt"
+      }
+    },
+    {
+      "name": "Fly2-2",
+      "displayName": "Fly2-2 (6024, SWE)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Fly2-2-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Fly2-2.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "Fly2-2.aliases.txt"
+      }
+    },
+    {
+      "name": "T690",
+      "displayName": "T690 (6124, SWE)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "T690-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "T690.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "T690.aliases.txt"
+      }
+    },
+    {
+      "name": "Nyl-7",
+      "displayName": "Nyl-7 (6069, SWE)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Nyl-7-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Nyl-7.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "Nyl-7.aliases.txt"
+      }
+    },
+    {
+      "name": "TRA-01",
+      "displayName": "TRA-01 (6244, SWE)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "TRA-01-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "TRA-01.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "TRA-01.aliases.txt"
+      }
+    },
+    {
+      "name": "Angit-1",
+      "displayName": "Angit-1 (9981, ITA)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Angit-1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Angit-1.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "Angit-1.aliases.txt"
+      }
+    },
+    {
+      "name": "Lerik1-4",
+      "displayName": "Lerik1-4 (9075, AZE)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Lerik1-4-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Lerik1-4.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "Lerik1-4.aliases.txt"
+      }
+    },
+    {
+      "name": "IP-Cum-1",
+      "displayName": "IP-Cum-1 (9537, ESP)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "IP-Cum-1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "IP-Cum-1.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "IP-Cum-1.aliases.txt"
+      }
+    },
+    {
+      "name": "IP-Pva-1",
+      "displayName": "IP-Pva-1 (9888, ESP)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "IP-Pva-1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "IP-Pva-1.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "IP-Pva-1.aliases.txt"
+      }
+    },
+    {
+      "name": "IP-Gra-0",
+      "displayName": "IP-Gra-0 (9543, ESP)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "IP-Gra-0-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "IP-Gra-0.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "IP-Gra-0.aliases.txt"
+      }
+    },
+    {
+      "name": "IP-Ven-0",
+      "displayName": "IP-Ven-0 (9905, ESP)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "IP-Ven-0-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "IP-Ven-0.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "IP-Ven-0.aliases.txt"
+      }
+    },
+    {
+      "name": "Qar-8a",
+      "displayName": "Qar-8a (9764, LBN)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Qar-8a-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Qar-8a.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "Qar-8a.aliases.txt"
+      }
+    },
+    {
+      "name": "Noveg-3",
+      "displayName": "Noveg-3 (9638, RUS)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Noveg-3-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Noveg-3.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "Noveg-3.aliases.txt"
+      }
+    },
+    {
+      "name": "35-1",
+      "displayName": "35-1 (22002, Morocco)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "35-1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "35-1.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "35-1.aliases.txt"
+      }
+    },
+    {
+      "name": "85-3",
+      "displayName": "85-3 (22001, Morocco)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "85-3-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "85-3.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "85-3.aliases.txt"
+      }
+    },
+    {
+      "name": "Areeiro-1",
+      "displayName": "Areeiro-1 (22006, Madeira)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Areeiro-1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Areeiro-1.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "Areeiro-1.aliases.txt"
+      }
+    },
+    {
+      "name": "ET-86.4",
+      "displayName": "ET-86.4 (22007, Ethiopia)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "ET-86.4-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "ET-86.4.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "ET-86.4.aliases.txt"
+      }
+    },
+    {
+      "name": "Elh-2",
+      "displayName": "Elh-2 (22004, Morocco)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Elh-2-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Elh-2.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "Elh-2.aliases.txt"
+      }
+    },
+    {
+      "name": "Rabacal-1",
+      "displayName": "Rabacal-1 (22005, Madeira)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Rabacal-1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Rabacal-1.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "Rabacal-1.aliases.txt"
+      }
+    },
+    {
+      "name": "Taz-0",
+      "displayName": "Taz-0 (22003, Morocco)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Taz-0-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Taz-0.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "Taz-0.aliases.txt"
+      }
+    },
+    {
+      "name": "Tnz-1",
+      "displayName": "Tnz-1 (10024, Tanzania)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Tnz-1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "Tnz-1.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "uri": "Tnz-1.aliases.txt"
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "TAIR10_genes",
+      "name": "TAIR10 genes (NCBI RefSeq)",
+      "assemblyNames": ["TAIR10"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "TAIR10.genes.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "TAIR10_rmsk",
+      "name": "TAIR10 RepeatMasker (UCSC GenArk)",
+      "assemblyNames": ["TAIR10"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/bbi/GCF_000001735.4_TAIR10.1.rmsk.bb"
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "fst_1135",
+      "name": "Fst between admixture groups, 1135 accessions (10 kb windows)",
+      "assemblyNames": ["TAIR10"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "uri": "fst.bw"
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "omega_1135",
+      "name": "OmegaPlus selective sweep scan, 1135 accessions (10 kb windows)",
+      "assemblyNames": ["TAIR10"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "uri": "omega.bw"
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "snps_1135",
+      "name": "1001 Genomes SNPs and short indels, 1135 accessions (SnpEff, EVA PRJNA273563)",
+      "assemblyNames": ["TAIR10"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "https://ftp.ebi.ac.uk/pub/databases/eva/PRJNA273563/1001genomes_snp-short-indel_only_ACGTN_v3.1.snpeff.garys.final.vcf.gz"
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "insertions_1001Ara",
+      "name": "Insertion SVs across 1001 Genomes accessions (INSSV, EVA PRJEB58052)",
+      "assemblyNames": ["TAIR10"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp.ebi.ac.uk/pub/databases/eva/PRJEB58052/INSSV-1001Ara_merged.vcf.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://ftp.ebi.ac.uk/pub/databases/eva/PRJEB58052/INSSV-1001Ara_merged.vcf.csi"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "syri_regions_on_TAIR10",
+      "name": "SyRI regions on TAIR10, one row per accession",
+      "assemblyNames": ["TAIR10"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "syri_regions.bed.gz",
+        "disableGeneHeuristic": true
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "syri_regions_on_TAIR10-LinearMultiRowFeatureDisplay",
+          "rows": {
+            "field": "query",
+            "domain": [
+              "Col-0.6909",
+              "KBS-Mac-74",
+              "Sq-1",
+              "TueWa1-2",
+              "HSm",
+              "Stiav-1",
+              "Fly2-2",
+              "T690",
+              "Nyl-7",
+              "TRA-01",
+              "Angit-1",
+              "Lerik1-4",
+              "IP-Cum-1",
+              "IP-Pva-1",
+              "IP-Gra-0",
+              "IP-Ven-0",
+              "Qar-8a",
+              "Noveg-3",
+              "35-1",
+              "85-3",
+              "Areeiro-1",
+              "ET-86.4",
+              "Elh-2",
+              "Rabacal-1",
+              "Taz-0",
+              "Tnz-1"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "syri_1001g",
+      "name": "SyRI regions, 1001G+ accessions vs TAIR10",
+      "assemblyNames": [
+        "TAIR10",
+        "Col-0.6909",
+        "KBS-Mac-74",
+        "Sq-1",
+        "TueWa1-2",
+        "HSm",
+        "Stiav-1",
+        "Fly2-2",
+        "T690",
+        "Nyl-7",
+        "TRA-01",
+        "Angit-1",
+        "Lerik1-4",
+        "IP-Cum-1",
+        "IP-Pva-1",
+        "IP-Gra-0",
+        "IP-Ven-0",
+        "Qar-8a",
+        "Noveg-3",
+        "35-1",
+        "85-3",
+        "Areeiro-1",
+        "ET-86.4",
+        "Elh-2",
+        "Rabacal-1",
+        "Taz-0",
+        "Tnz-1"
+      ],
+      "adapter": {
+        "type": "MultiGenomePAFAdapter",
+        "uri": "syri_1001g.paf",
+        "attributeColumns": ["syri", "color"]
+      },
+      "displays": [
+        {
+          "type": "MultiWaySyntenyDisplay",
+          "displayId": "syri_1001g-MultiWaySyntenyDisplay",
+          "domain": [
+            "Col-0.6909",
+            "KBS-Mac-74",
+            "Sq-1",
+            "TueWa1-2",
+            "HSm",
+            "Stiav-1",
+            "Fly2-2",
+            "T690",
+            "Nyl-7",
+            "TRA-01",
+            "Angit-1",
+            "Lerik1-4",
+            "IP-Cum-1",
+            "IP-Pva-1",
+            "IP-Gra-0",
+            "IP-Ven-0",
+            "Qar-8a",
+            "Noveg-3",
+            "35-1",
+            "85-3",
+            "Areeiro-1",
+            "ET-86.4",
+            "Elh-2",
+            "Rabacal-1",
+            "Taz-0",
+            "Tnz-1"
+          ],
+          "ribbonColor": {
+            "field": "syri",
+            "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
+          }
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Col-0.6909_genes",
+      "name": "Col-0.6909 (6909) genes",
+      "assemblyNames": ["Col-0.6909"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_6909.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Col-0.6909_TEs",
+      "name": "Col-0.6909 (6909) transposable elements (EDTA)",
+      "assemblyNames": ["Col-0.6909"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/6909.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "Col-0.6909_methylation",
+      "name": "Col-0.6909 (6909) methylation (CG, CHG, CHH)",
+      "assemblyNames": ["Col-0.6909"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "CG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/6909.CGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/6909.CHGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHH",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/6909.CHHmeth.bw"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "Col-0.6909_chipseq",
+      "name": "Col-0.6909 (6909) histone ChIP-seq, log2 over input (rep1)",
+      "assemblyNames": ["Col-0.6909"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K4me3",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/6909.rep1.H3K4me3.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K36me3",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/6909.rep1.H3K36me3.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K27me3",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/6909.rep1.H3K27me3.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K9me2",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/6909.rep1.H3K9me2.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H1",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/6909.rep1.H1.log2.input_norm.bw"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "KBS-Mac-74_genes",
+      "name": "KBS-Mac-74 (1741) genes",
+      "assemblyNames": ["KBS-Mac-74"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_1741.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "KBS-Mac-74_TEs",
+      "name": "KBS-Mac-74 (1741) transposable elements (EDTA)",
+      "assemblyNames": ["KBS-Mac-74"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/1741.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "KBS-Mac-74_chipseq",
+      "name": "KBS-Mac-74 (1741) histone ChIP-seq, log2 over input (rep1)",
+      "assemblyNames": ["KBS-Mac-74"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K4me3",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/1741.rep1.H3K4me3.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K36me3",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/1741.rep1.H3K36me3.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K27me3",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/1741.rep1.H3K27me3.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K9me2",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/1741.rep1.H3K9me2.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H1",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/1741.rep1.H1.log2.input_norm.bw"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Sq-1_genes",
+      "name": "Sq-1 (6966) genes",
+      "assemblyNames": ["Sq-1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_6966.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Sq-1_TEs",
+      "name": "Sq-1 (6966) transposable elements (EDTA)",
+      "assemblyNames": ["Sq-1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/6966.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "Sq-1_methylation",
+      "name": "Sq-1 (6966) methylation (CG, CHG, CHH)",
+      "assemblyNames": ["Sq-1"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "CG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/6966.CGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/6966.CHGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHH",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/6966.CHHmeth.bw"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "Sq-1_chipseq",
+      "name": "Sq-1 (6966) histone ChIP-seq, log2 over input (rep1)",
+      "assemblyNames": ["Sq-1"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K4me3",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/6966.rep1.H3K4me3.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K36me3",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/6966.rep1.H3K36me3.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K27me3",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/6966.rep1.H3K27me3.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K9me2",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/6966.rep1.H3K9me2.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H1",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/6966.rep1.H1.log2.input_norm.bw"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "TueWa1-2_genes",
+      "name": "TueWa1-2 (10002) genes",
+      "assemblyNames": ["TueWa1-2"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_10002.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "TueWa1-2_TEs",
+      "name": "TueWa1-2 (10002) transposable elements (EDTA)",
+      "assemblyNames": ["TueWa1-2"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/10002.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "TueWa1-2_methylation",
+      "name": "TueWa1-2 (10002) methylation (CG, CHG, CHH)",
+      "assemblyNames": ["TueWa1-2"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "CG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/10002.CGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/10002.CHGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHH",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/10002.CHHmeth.bw"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "HSm_genes",
+      "name": "HSm (8236) genes",
+      "assemblyNames": ["HSm"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_8236.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "HSm_TEs",
+      "name": "HSm (8236) transposable elements (EDTA)",
+      "assemblyNames": ["HSm"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/8236.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "HSm_methylation",
+      "name": "HSm (8236) methylation (CG, CHG, CHH)",
+      "assemblyNames": ["HSm"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "CG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/8236.CGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/8236.CHGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHH",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/8236.CHHmeth.bw"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Stiav-1_genes",
+      "name": "Stiav-1 (9728) genes",
+      "assemblyNames": ["Stiav-1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_9728.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Stiav-1_TEs",
+      "name": "Stiav-1 (9728) transposable elements (EDTA)",
+      "assemblyNames": ["Stiav-1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/9728.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "Stiav-1_methylation",
+      "name": "Stiav-1 (9728) methylation (CG, CHG, CHH)",
+      "assemblyNames": ["Stiav-1"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "CG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/9728.CGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/9728.CHGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHH",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/9728.CHHmeth.bw"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Fly2-2_genes",
+      "name": "Fly2-2 (6024) genes",
+      "assemblyNames": ["Fly2-2"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_6024.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Fly2-2_TEs",
+      "name": "Fly2-2 (6024) transposable elements (EDTA)",
+      "assemblyNames": ["Fly2-2"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/6024.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "Fly2-2_methylation",
+      "name": "Fly2-2 (6024) methylation (CG, CHG, CHH)",
+      "assemblyNames": ["Fly2-2"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "CG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/6024.CGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/6024.CHGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHH",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/6024.CHHmeth.bw"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "Fly2-2_chipseq",
+      "name": "Fly2-2 (6024) histone ChIP-seq, log2 over input (rep1)",
+      "assemblyNames": ["Fly2-2"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K4me3",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/6024.rep1.H3K4me3.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K36me3",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/6024.rep1.H3K36me3.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K27me3",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/6024.rep1.H3K27me3.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K9me2",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/6024.rep1.H3K9me2.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H1",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/6024.rep1.H1.log2.input_norm.bw"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "T690_genes",
+      "name": "T690 (6124) genes",
+      "assemblyNames": ["T690"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_6124.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "T690_TEs",
+      "name": "T690 (6124) transposable elements (EDTA)",
+      "assemblyNames": ["T690"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/6124.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Nyl-7_genes",
+      "name": "Nyl-7 (6069) genes",
+      "assemblyNames": ["Nyl-7"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_6069.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Nyl-7_TEs",
+      "name": "Nyl-7 (6069) transposable elements (EDTA)",
+      "assemblyNames": ["Nyl-7"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/6069.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "TRA-01_genes",
+      "name": "TRA-01 (6244) genes",
+      "assemblyNames": ["TRA-01"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_6244.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "TRA-01_TEs",
+      "name": "TRA-01 (6244) transposable elements (EDTA)",
+      "assemblyNames": ["TRA-01"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/6244.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Angit-1_genes",
+      "name": "Angit-1 (9981) genes",
+      "assemblyNames": ["Angit-1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_9981.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Angit-1_TEs",
+      "name": "Angit-1 (9981) transposable elements (EDTA)",
+      "assemblyNames": ["Angit-1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/9981.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Lerik1-4_genes",
+      "name": "Lerik1-4 (9075) genes",
+      "assemblyNames": ["Lerik1-4"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_9075.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Lerik1-4_TEs",
+      "name": "Lerik1-4 (9075) transposable elements (EDTA)",
+      "assemblyNames": ["Lerik1-4"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/9075.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "Lerik1-4_methylation",
+      "name": "Lerik1-4 (9075) methylation (CG, CHG, CHH)",
+      "assemblyNames": ["Lerik1-4"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "CG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/9075.CGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/9075.CHGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHH",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/9075.CHHmeth.bw"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "IP-Cum-1_genes",
+      "name": "IP-Cum-1 (9537) genes",
+      "assemblyNames": ["IP-Cum-1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_9537.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "IP-Cum-1_TEs",
+      "name": "IP-Cum-1 (9537) transposable elements (EDTA)",
+      "assemblyNames": ["IP-Cum-1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/9537.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "IP-Cum-1_methylation",
+      "name": "IP-Cum-1 (9537) methylation (CG, CHG, CHH)",
+      "assemblyNames": ["IP-Cum-1"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "CG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/9537.CGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/9537.CHGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHH",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/9537.CHHmeth.bw"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "IP-Pva-1_genes",
+      "name": "IP-Pva-1 (9888) genes",
+      "assemblyNames": ["IP-Pva-1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_9888.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "IP-Pva-1_TEs",
+      "name": "IP-Pva-1 (9888) transposable elements (EDTA)",
+      "assemblyNames": ["IP-Pva-1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/9888.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "IP-Pva-1_methylation",
+      "name": "IP-Pva-1 (9888) methylation (CG, CHG, CHH)",
+      "assemblyNames": ["IP-Pva-1"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "CG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/9888.CGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/9888.CHGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHH",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/9888.CHHmeth.bw"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "IP-Pva-1_chipseq",
+      "name": "IP-Pva-1 (9888) histone ChIP-seq, log2 over input (rep1)",
+      "assemblyNames": ["IP-Pva-1"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K4me3",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/9888.rep1.H3K4me3.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K36me3",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/9888.rep1.H3K36me3.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K27me3",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/9888.rep1.H3K27me3.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K9me2",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/9888.rep1.H3K9me2.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H1",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/9888.rep1.H1.log2.input_norm.bw"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "IP-Gra-0_genes",
+      "name": "IP-Gra-0 (9543) genes",
+      "assemblyNames": ["IP-Gra-0"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_9543.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "IP-Gra-0_TEs",
+      "name": "IP-Gra-0 (9543) transposable elements (EDTA)",
+      "assemblyNames": ["IP-Gra-0"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/9543.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "IP-Gra-0_methylation",
+      "name": "IP-Gra-0 (9543) methylation (CG, CHG, CHH)",
+      "assemblyNames": ["IP-Gra-0"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "CG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/9543.CGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/9543.CHGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHH",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/9543.CHHmeth.bw"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "IP-Ven-0_genes",
+      "name": "IP-Ven-0 (9905) genes",
+      "assemblyNames": ["IP-Ven-0"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_9905.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "IP-Ven-0_TEs",
+      "name": "IP-Ven-0 (9905) transposable elements (EDTA)",
+      "assemblyNames": ["IP-Ven-0"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/9905.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "IP-Ven-0_methylation",
+      "name": "IP-Ven-0 (9905) methylation (CG, CHG, CHH)",
+      "assemblyNames": ["IP-Ven-0"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "CG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/9905.CGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHG",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/9905.CHGmeth.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHH",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/methylation/9905.CHHmeth.bw"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "IP-Ven-0_chipseq",
+      "name": "IP-Ven-0 (9905) histone ChIP-seq, log2 over input (rep1)",
+      "assemblyNames": ["IP-Ven-0"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K4me3",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/9905.rep1.H3K4me3.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K36me3",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/9905.rep1.H3K36me3.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K27me3",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/9905.rep1.H3K27me3.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H3K9me2",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/9905.rep1.H3K9me2.log2.input_norm.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "H1",
+            "bigWigLocation": {
+              "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/chip-seq/9905.rep1.H1.log2.input_norm.bw"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Qar-8a_genes",
+      "name": "Qar-8a (9764) genes",
+      "assemblyNames": ["Qar-8a"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_9764.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Qar-8a_TEs",
+      "name": "Qar-8a (9764) transposable elements (EDTA)",
+      "assemblyNames": ["Qar-8a"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/9764.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Noveg-3_genes",
+      "name": "Noveg-3 (9638) genes",
+      "assemblyNames": ["Noveg-3"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_9638.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Noveg-3_TEs",
+      "name": "Noveg-3 (9638) transposable elements (EDTA)",
+      "assemblyNames": ["Noveg-3"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/9638.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "35-1_genes",
+      "name": "35-1 (22002) genes",
+      "assemblyNames": ["35-1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_22002.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "35-1_TEs",
+      "name": "35-1 (22002) transposable elements (EDTA)",
+      "assemblyNames": ["35-1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/22002.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "85-3_genes",
+      "name": "85-3 (22001) genes",
+      "assemblyNames": ["85-3"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_22001f.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Areeiro-1_genes",
+      "name": "Areeiro-1 (22006) genes",
+      "assemblyNames": ["Areeiro-1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_22006.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Areeiro-1_TEs",
+      "name": "Areeiro-1 (22006) transposable elements (EDTA)",
+      "assemblyNames": ["Areeiro-1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/22006.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ET-86.4_genes",
+      "name": "ET-86.4 (22007) genes",
+      "assemblyNames": ["ET-86.4"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_22007.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ET-86.4_TEs",
+      "name": "ET-86.4 (22007) transposable elements (EDTA)",
+      "assemblyNames": ["ET-86.4"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/22007.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Elh-2_genes",
+      "name": "Elh-2 (22004) genes",
+      "assemblyNames": ["Elh-2"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_22004.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Elh-2_TEs",
+      "name": "Elh-2 (22004) transposable elements (EDTA)",
+      "assemblyNames": ["Elh-2"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/22004.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Rabacal-1_genes",
+      "name": "Rabacal-1 (22005) genes",
+      "assemblyNames": ["Rabacal-1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_22005.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Rabacal-1_TEs",
+      "name": "Rabacal-1 (22005) transposable elements (EDTA)",
+      "assemblyNames": ["Rabacal-1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/22005.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Taz-0_genes",
+      "name": "Taz-0 (22003) genes",
+      "assemblyNames": ["Taz-0"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_22003.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Taz-0_TEs",
+      "name": "Taz-0 (22003) transposable elements (EDTA)",
+      "assemblyNames": ["Taz-0"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/22003.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Tnz-1_genes",
+      "name": "Tnz-1 (10024) genes",
+      "assemblyNames": ["Tnz-1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/annotations/genes_v05_10024.gff.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "Tnz-1_TEs",
+      "name": "Tnz-1 (10024) transposable elements (EDTA)",
+      "assemblyNames": ["Tnz-1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://1001genomes.org/data/1001Gp/27genomes/releases/current/TEs/10024.scaffolds_corrected.with_unplaced.v2.1.fasta.mod.EDTA.TEanno.gff3.gz"
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "1001G+ accessions vs TAIR10, chromosome 4 knob inversion",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "assembly": "TAIR10",
+        "loc": "Chr4:1,200,000-3,200,000",
+        "tracks": [
+          "TAIR10_genes",
+          {
+            "trackId": "fst_1135",
+            "type": "LinearWiggleDisplay",
+            "height": 60
+          },
+          {
+            "trackId": "syri_regions_on_TAIR10",
+            "type": "LinearMultiRowFeatureDisplay",
+            "height": 644
+          },
+          {
+            "trackId": "syri_1001g",
+            "type": "MultiWaySyntenyDisplay",
+            "height": 1120
+          }
+        ]
+      }
+    ]
+  }
+}
