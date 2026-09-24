@@ -4,6 +4,8 @@ import { setNumberGrouping, throttleStatusEmits } from '@jbrowse/core/util'
 import { RpcServer, serializeError } from '@jbrowse/core/util/librpc'
 import { setStackTraceLimit } from '@jbrowse/core/util/setStackTraceLimit'
 
+import { parallelizeWorkerChunkLoading } from './parallelChunkLoading.ts'
+
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type {
   LoadedPlugin,
@@ -140,6 +142,7 @@ export async function initializeWorker(
   // a worker error's stack is captured here, not on the main thread, so the
   // frame limit has to be raised in this scope to deepen it
   setStackTraceLimit()
+  parallelizeWorkerChunkLoading()
 
   // Workers fetch data; rendering happens on the main thread, and no RPC method
   // renders React. Kept as a guard: if plugin code ever pulls an observer into
