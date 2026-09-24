@@ -879,16 +879,13 @@ describe('a same-strand junction across segments nothing fetched', () => {
 // The key is built from the palette and labels the overlay itself draws with,
 // so a color the reader met on screen is keyed by that same color.
 describe('bezierConnectionLegendItems', () => {
-  // Slot 7 was the fallback and worded 'Read pair'. It carries a meaning now,
-  // and on a CURVE that meaning is the overlay's own: SPLIT_JUNCTION_LABELS
-  // overrides CATEGORY_LEGEND's bare 'Inter-chromosomal', which is a property of
-  // the pair rather than of the mark. The two rows beside it are split
-  // alignments, so this one is too, and the parenthetical carries the finding.
-  it('names the inter-chromosomal slot as the split alignment it draws', () => {
+  // classifyPair gives slot 7 to mate links only, so it takes the read fill's
+  // wording for a mate on another chromosome, not the split-alignment wording.
+  it('names the inter-chromosomal slot as the mate link it draws', () => {
     expect(
       bezierConnectionLegendItems([LINKED_READ_COLOR_INTERCHROM], PALETTE)[0]!
         .label,
-    ).toBe('Split alignment (interchromosomal)')
+    ).toBe('Inter-chromosomal')
   })
 
   it('keys the connection colors in view, sorted, in the arcs own words', () => {

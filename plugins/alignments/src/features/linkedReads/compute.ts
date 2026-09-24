@@ -62,29 +62,23 @@ export const LINKED_READ_COLOR_INTERCHROM = LINKED_READ_COLOR_PAIR_LL + 3
 // comment saying they must match word for word. They are the same strings now
 // because they are the same strings.
 //
-// The two split labels deliberately do NOT use the read fills' wording, which
-// says "paired-end read": a connector is drawn between the segments of any split
-// read regardless of pairing, so that claim would be false for every long read
-// on screen. `SPLIT_JUNCTION_LABELS` is that override, and the arc overlay reads
-// the identical table.
+// The two split slots take `SPLIT_JUNCTION_LABELS` rather than the read fills'
+// "paired-end read", which would be false for every long read on screen.
+// `LINKED_READ_COLOR_INTERCHROM` is a mate link, never a split junction
+// (`classifyPair`), so it keeps the read fill's wording and the key shows one
+// row for that colour.
 //
-// Neither split label names a variant class. `splitJunctionKind` reads the two
-// strands and nothing else, and "deletion" — which this said until it was
-// noticed in a legend beside its own synonym — is one of several rearrangements
-// a same-strand junction is evidence for.
+// Slot 0 takes LR's swatch, but calling it LR would assert an orientation
+// nothing measured, so it keeps the neutral wording, as does anything off the
+// end of the table.
 export function connectionLabel(colorType: number) {
   const category = LINKED_READ_SLOT_CATEGORY[colorType]
-  // Slot 0 is the unknown baseline. It takes LR's swatch, but calling it LR
-  // would assert an orientation nothing measured, so it keeps the neutral
-  // wording — as does anything off the end of the table, which `linkedReadColorSlot`
-  // clamps into the last slot.
-  //
-  // The bound used to be `>= length - 1`, holding slot 7 out as a second
-  // fallback. It is `interchrom` now and carries a meaning of its own, so the
-  // table's last entry is a row like any other.
   return category === undefined || colorType === LINKED_READ_COLOR_PAIR_UNKNOWN
     ? 'Read pair'
-    : (SPLIT_JUNCTION_LABELS[category] ?? readColorCategoryLabel(category)!)
+    : colorType === LINKED_READ_COLOR_SPLIT_NORMAL ||
+        colorType === LINKED_READ_COLOR_SPLIT_INV
+      ? SPLIT_JUNCTION_LABELS[category]!
+      : readColorCategoryLabel(category)!
 }
 
 // No refName, unlike the arc path's entry: every comparison this path makes is
