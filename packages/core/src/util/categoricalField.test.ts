@@ -35,6 +35,15 @@ test('strand names its values and paints red and blue, and yields each to one wr
   expect(repainted.domain).toEqual(['1', '-1', '0'])
 })
 
+test("a declared order leaves strand's colours on their own values", () => {
+  for (const domain of [['-1'], ['-1', '1'], ['0', '-1', '1']]) {
+    const strand = categoricalField('strand', { domain })
+    expect(strand.color('1')).toBe('tomato')
+    expect(strand.color('-1')).toBe('cornflowerblue')
+    expect(strand.color('0')).toBe('goldenrod')
+  }
+})
+
 test('any other field names a key as itself in a legend and field: key on a chip', () => {
   const hp = categoricalField('HP')
   expect(hp.label('2')).toBe('2')

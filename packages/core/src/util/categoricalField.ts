@@ -71,7 +71,10 @@ export function categoricalField(
 ): CategoricalField {
   const vocabulary = VOCABULARIES[field]
   const order = domain.length > 0 ? domain : (vocabulary?.domain ?? [])
-  const colors = range.length > 0 ? range : (vocabulary?.range ?? [])
+  const [paired, colors] =
+    range.length > 0 || !vocabulary
+      ? [order, range]
+      : [vocabulary.domain, vocabulary.range]
   const named = (key: string) => vocabulary?.labels[key]
   let colorOf: ((key: string) => string) | undefined
   return {
@@ -88,7 +91,7 @@ export function categoricalField(
       if (key === '') {
         return NO_CATEGORY_COLOR
       }
-      colorOf ??= categoricalColorScale(order, colors)
+      colorOf ??= categoricalColorScale(paired, colors)
       return colorOf(key)
     },
   }
