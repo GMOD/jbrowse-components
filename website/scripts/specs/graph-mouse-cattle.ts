@@ -235,7 +235,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
     'pangenome/bovine_polled',
     'chr1:2,424,000-2,436,000',
     [bovineOmia, bovineVariantLane(220)],
-    480,
+    540,
   ),
   bovineLocusSpec(
     'pangenome/bovine_kit',
@@ -282,7 +282,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
           height: 90,
         },
       ],
-      720,
+      690,
     ),
     annotations: [
       {
