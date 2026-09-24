@@ -64,6 +64,10 @@ interface LabelInfo {
   hasName: boolean
   hasDescription: boolean
   widths: LabelWidths
+  // The bp a part's label reaches from the part's own edge, as the label is
+  // drawn there rather than at the feature's: `high` past its end, `low`
+  // before its start in a flipped region.
+  partLabelReach?: { high: number; low: number }
 }
 
 export interface PackPrep {
@@ -87,6 +91,7 @@ function gatherLabelInfo(
   showDescriptions: boolean,
   labelFontPx: number,
   featureIds: ReadonlySet<string> | undefined,
+  bpPerPx: number,
 ) {
   const labelInfoByFeatureId = new Map<string, LabelInfo>()
   for (const [, data] of regions) {
@@ -95,24 +100,39 @@ function gatherLabelInfo(
       if (featureIds && !featureIds.has(targetId)) {
         continue
       }
-      const widths = renderedLabelWidths(
+      const rendered = renderedLabelWidths(
         labelData,
         showLabels,
         showDescriptions,
         labelFontPx,
       )
-      const existing = labelInfoByFeatureId.get(targetId)
-      if (existing) {
-        existing.hasName ||= !!labelData.nameLabel
-        existing.hasDescription ||= !!labelData.descriptionLabel
-        existing.widths = widerLabelWidths(existing.widths, widths)
-      } else {
-        labelInfoByFeatureId.set(targetId, {
-          hasName: !!labelData.nameLabel,
-          hasDescription: !!labelData.descriptionLabel,
-          widths,
-        })
+      const isPart = labelData.parentFeatureId !== undefined
+      const widths = isPart ? { ...rendered, subfeature: 0 } : rendered
+      const info = labelInfoByFeatureId.get(targetId) ?? {
+        hasName: false,
+        hasDescription: false,
+        widths,
       }
+      info.hasName ||= !!labelData.nameLabel
+      info.hasDescription ||= !!labelData.descriptionLabel
+      info.widths = widerLabelWidths(info.widths, widths)
+      if (isPart && rendered.subfeature > 0) {
+        const reachBp = rendered.subfeature * bpPerPx
+        const { minX, maxX } = labelData
+        info.partLabelReach = {
+          high: Math.max(
+            info.partLabelReach?.high ?? -Infinity,
+            maxX,
+            minX + reachBp,
+          ),
+          low: Math.min(
+            info.partLabelReach?.low ?? Infinity,
+            minX,
+            maxX - reachBp,
+          ),
+        }
+      }
+      labelInfoByFeatureId.set(targetId, info)
     }
   }
   return labelInfoByFeatureId
@@ -186,6 +206,7 @@ export function prepareRefPack(
     showDescriptions,
     metrics.labelFontPx,
     featureIds,
+    bpPerPx,
   )
   const features = gatherFeatureGeometry(
     regions,
@@ -196,7 +217,7 @@ export function prepareRefPack(
 
   const labeledFeatureIds = new Set<string>()
   for (const [id, info] of labelInfoByFeatureId) {
-    if (anyLabelRenders(info.widths)) {
+    if (anyLabelRenders(info.widths) || info.partLabelReach) {
       labeledFeatureIds.add(id)
     }
   }
@@ -372,8 +393,17 @@ function decideLabelReservations(
           keepDescription,
         )
       : 0
+    const span = overhangWidenedSpan(startBp, endBp, overhangPx * bpPerPx, geom)
+    const reach = labelInfo?.partLabelReach
     packed.set(id, {
-      ...overhangWidenedSpan(startBp, endBp, overhangPx * bpPerPx, geom),
+      layoutStartBp:
+        reach && geom.hasReversed
+          ? Math.min(span.layoutStartBp, reach.low)
+          : span.layoutStartBp,
+      layoutEndBp:
+        reach && geom.hasNonReversed
+          ? Math.max(span.layoutEndBp, reach.high)
+          : span.layoutEndBp,
       height: bodyHeightPx + rowPadding + labelLines * labelFontPx,
     })
   }

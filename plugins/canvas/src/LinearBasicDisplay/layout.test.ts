@@ -982,6 +982,73 @@ describe('subfeature-label overhang is reserved even with no name line', () => {
   })
 })
 
+// The label draws from the part's own start, so a transcript starting late in
+// its gene reaches past the gene's end where a reservation from the gene's
+// start would not.
+describe("a part's label is reserved from the part, not the feature", () => {
+  function data() {
+    const base = makeFeatureData({
+      features: [
+        { featureId: 'gene', startBp: 0, endBp: 200, height: 10 },
+        { featureId: 'next', startBp: 210, endBp: 300, height: 10 },
+      ],
+    })
+    const floatingLabelsData: FloatingLabelsDataMap = labelsMap({
+      'gene-late': {
+        featureId: 'gene-late',
+        minX: 150,
+        maxX: 200,
+        topY: 0,
+        featureHeight: 10,
+        parentFeatureId: 'gene',
+        subfeatureLabel: {
+          text: 'gene-late',
+          relativeY: 0,
+          textWidth: 100,
+          isOverlay: false,
+        },
+      },
+    })
+    return { ...base, floatingLabelsData }
+  }
+
+  it('past the end in a forward region', () => {
+    const [gene, next] = layout(new Map([[0, data()]]), 1).get(0)!.flatbushItems
+    expect(gene!.topPx).not.toBe(next!.topPx)
+  })
+
+  it('before the start in a flipped one', () => {
+    const base = data()
+    const flipped = {
+      ...base,
+      floatingLabelsData: labelsMap({
+        'next-early': {
+          featureId: 'next-early',
+          minX: 210,
+          maxX: 240,
+          topY: 0,
+          featureHeight: 10,
+          parentFeatureId: 'next',
+          subfeatureLabel: {
+            text: 'next-early',
+            relativeY: 0,
+            textWidth: 100,
+            isOverlay: false,
+          },
+        },
+      }),
+    }
+    const [gene, next] = layout(
+      new Map([[0, flipped]]),
+      1,
+      true,
+      true,
+      new Set([0]),
+    ).get(0)!.flatbushItems
+    expect(gene!.topPx).not.toBe(next!.topPx)
+  })
+})
+
 // A stable empty set: the incremental memo compares the pinned set by
 // reference, so a fresh set per call would bust the cache.
 const NO_PINNED: ReadonlySet<string> = new Set<string>()
