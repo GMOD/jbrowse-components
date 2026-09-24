@@ -1,13 +1,6 @@
 import fs from 'node:fs'
 
-// Chrome flags both harnesses launch with. Backend-specific flags
-// (--disable-gpu, --enable-unsafe-swiftshader, --disable-popup-blocking) are
-// appended by each caller.
-export const BASE_CHROME_ARGS = [
-  '--no-sandbox',
-  '--disable-setuid-sandbox',
-  '--disable-web-security',
-]
+export const BASE_CHROME_ARGS = ['--no-sandbox', '--disable-setuid-sandbox']
 
 const CHROME_PATHS = [
   '/usr/bin/google-chrome',
@@ -39,6 +32,7 @@ const NOISE_NEEDLES = [
   '[GPU] No compatible GPU adapter',
   '[GPU] WebGPU initialization failed',
   '[GPU] WebGL2 unavailable',
+  '[GPU] WebGL2 here is software-rendered',
   '[GPU] WebGPU device creation failed',
   'GroupMarkerNotSet',
   'Automatic fallback to software WebGL',

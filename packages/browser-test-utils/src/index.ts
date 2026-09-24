@@ -5,7 +5,6 @@
 // reaches the figure generator, the browser tests and the outside world at once.
 // See website/docs/agents_capture.md.
 export {
-  BASE_CHROME_ARGS,
   PENDING_DISPLAYS,
   assemblyFromSession,
   delay,
@@ -31,6 +30,7 @@ export {
   waitForViewPhases,
 } from '@jbrowse/capture'
 
+export { BASE_CHROME_ARGS } from './chromeArgs.ts'
 export { createSecureTestServer, createTestServer } from './server.ts'
 export { DESKTOP_VIEWPORT, smokeExamplesSite } from './examplesSmoke.ts'
 export { measureDemoHeights } from './examplesDemoHeights.ts'

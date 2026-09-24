@@ -39,7 +39,7 @@ export interface OpenOptions extends JBrowseUrlOptions, ReadyOptions {
   executablePath?: string
   /** Extra Chrome flags, appended to the defaults. */
   args?: string[]
-  /** Called with each page console message that is not known GPU noise. */
+  /** Called with each page console message that is not known GPU noise, and each uncaught page error. */
   onConsole?: (text: string) => void
 }
 
@@ -99,6 +99,9 @@ export async function openJBrowse(
         if (!isBrowserConsoleNoise(text)) {
           onConsole(text)
         }
+      })
+      page.on('pageerror', error => {
+        onConsole(`uncaught ${error instanceof Error ? error.stack : error}`)
       })
     }
     // domcontentloaded, not networkidle2: an app that streams track data may

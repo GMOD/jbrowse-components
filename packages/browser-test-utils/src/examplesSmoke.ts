@@ -1,12 +1,10 @@
 import http from 'node:http'
 
-import {
-  BASE_CHROME_ARGS,
-  findChromeExecutable,
-  isBrowserConsoleNoise,
-} from '@jbrowse/capture'
+import { findChromeExecutable, isBrowserConsoleNoise } from '@jbrowse/capture'
 import puppeteer from 'puppeteer'
 import handler from 'serve-handler'
+
+import { BASE_CHROME_ARGS } from './chromeArgs.ts'
 
 import type { Page } from 'puppeteer'
 

@@ -47,7 +47,8 @@ WAITING
 
 OTHER
   --headed              run with a visible browser window
-  --verbose             print browser console output (GPU noise filtered)
+  --verbose             print browser console output and uncaught errors
+                        (GPU noise filtered)
   --version, -v         the package version
   --help, -h            this text
 

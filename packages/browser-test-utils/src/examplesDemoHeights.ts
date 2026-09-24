@@ -1,9 +1,10 @@
 import http from 'node:http'
 
-import { BASE_CHROME_ARGS, findChromeExecutable } from '@jbrowse/capture'
+import { findChromeExecutable } from '@jbrowse/capture'
 import puppeteer from 'puppeteer'
 import handler from 'serve-handler'
 
+import { BASE_CHROME_ARGS } from './chromeArgs.ts'
 import { DESKTOP_VIEWPORT } from './examplesSmoke.ts'
 
 // Measure the height every demo on an examples-site settles at, so those figures
