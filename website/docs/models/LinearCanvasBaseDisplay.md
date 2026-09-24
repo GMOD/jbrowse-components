@@ -331,7 +331,8 @@ Members a composed model contributes are listed here too, so these tables are th
 | --- | --- | --- |
 | <span id="action-beginymorph">**beginYMorph**</span><br><code>(fromTops: Map&lt;string, number&gt;, fromMaxY: number) =&gt; void</code> |  | LinearCanvasBaseDisplay |
 | <span id="action-setmorphprogress">**setMorphProgress**</span><br><code>(t: number) =&gt; void</code> |  | LinearCanvasBaseDisplay |
-| <span id="action-endymorph">**endYMorph**</span><br><code>() =&gt; void</code> |  | LinearCanvasBaseDisplay |
+| <span id="action-advanceanimation">**advanceAnimation**</span><br><code>(nowMs: number) =&gt; void</code> | the chrome's frame clock | LinearCanvasBaseDisplay |
+| <span id="action-endanimation">**endAnimation**</span><br><code>() =&gt; void</code> |  | LinearCanvasBaseDisplay |
 | <span id="action-setrpcdata">**setRpcData**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(displayedRegionIndex: number, data: FeatureDataResult, region:…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(displayedRegionIndex: number, data: FeatureDataResult, region: Region) =&gt; void</code></pre></dialog></span> | Stage a region as fetched — the store's raw write with this display's payload shape, so a test stands up a loaded display in one call. | LinearCanvasBaseDisplay |
 | <span id="action-prunedensitystatstovisible">**pruneDensityStatsToVisible**</span><br><code>(visibleDisplayedRegionIndices: Set&lt;number&gt;) =&gt; void</code> | The gate's own measurements, which are keyed by region and are not fetch payloads, so the store's bound does not reach them. | LinearCanvasBaseDisplay |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: CanvasFeatureRenderingBackend) =&gt; void</code> |  | LinearCanvasBaseDisplay |
