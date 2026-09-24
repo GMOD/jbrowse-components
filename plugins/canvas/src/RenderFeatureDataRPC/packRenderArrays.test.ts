@@ -101,3 +101,20 @@ test('zero-width rects keep both endpoints, like arrows', () => {
     100, 100, 150, 150, 200, 200,
   ])
 })
+
+// A gene with more labelled transcripts than a byte holds, each part a row
+// below the last: past 255 a Uint8 lane wrapped and lifted the late isoforms
+// onto the first ones.
+test('label rows past 255 survive the pack', () => {
+  const packed = packRenderArrays(
+    [0, 256, 300].map(labelRowsAbove => ({
+      ...rect(0, 10),
+      labelRowsAbove,
+    })),
+    [],
+    [],
+    0,
+    100,
+  )
+  expect(Array.from(packed.rectLabelRows)).toEqual([0, 256, 300])
+})

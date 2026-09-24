@@ -58,13 +58,13 @@ function spanInWindow(
 }
 
 // Length zero tells the main thread the pass is off, without a parallel boolean
-// that could disagree with the array it gates. Uint8 because the count is
-// transcripts within one gene.
+// that could disagree with the array it gates. Uint16 because the count is
+// labelled transcripts within one gene, which runs past 255.
 function labelRowArray(items: { labelRowsAbove: number }[]) {
   if (!items.some(i => i.labelRowsAbove > 0)) {
-    return new Uint8Array(0)
+    return new Uint16Array(0)
   }
-  const out = new Uint8Array(items.length)
+  const out = new Uint16Array(items.length)
   for (const [i, item] of items.entries()) {
     out[i] = item.labelRowsAbove
   }

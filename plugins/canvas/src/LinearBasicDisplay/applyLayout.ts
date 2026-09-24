@@ -20,7 +20,7 @@ function scaleFloat32(arr: Float32Array, multiplier: number) {
 // separately.
 function scaleYWithLabelRows(
   ys: Float32Array,
-  rows: Uint8Array,
+  rows: Uint16Array,
   multiplier: number,
   labelFontPx: number,
 ) {

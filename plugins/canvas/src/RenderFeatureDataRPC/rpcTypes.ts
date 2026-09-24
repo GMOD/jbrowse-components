@@ -117,7 +117,7 @@ export interface FeatureDataResult {
   // LENGTH ZERO when this region emits no `below` subfeature labels. The main
   // thread adds `count × labelFontPx` after the compact scale, because the row
   // height is the mode's label font size and the worker is mode-agnostic.
-  rectLabelRows: Uint8Array
+  rectLabelRows: Uint16Array
   // LENGTH ZERO when this region stacks no gene. `ROOT_CHILD_ORDINAL` marks the
   // root feature's own primitives, which no trim may drop.
   rectChildOrdinals: Uint16Array
@@ -130,7 +130,7 @@ export interface FeatureDataResult {
   lineColors: Uint32Array
   lineDirections: Int8Array
   lineColorClasses: Uint8Array
-  lineLabelRows: Uint8Array
+  lineLabelRows: Uint16Array
   lineChildOrdinals: Uint16Array
 
   arrowXs: Uint32Array
@@ -144,7 +144,7 @@ export interface FeatureDataResult {
   arrowDirections: Int8Array
   arrowColors: Uint32Array
   arrowColorClasses: Uint8Array
-  arrowLabelRows: Uint8Array
+  arrowLabelRows: Uint16Array
   arrowChildOrdinals: Uint16Array
 
   flatbushItems: FlatbushItem[]
