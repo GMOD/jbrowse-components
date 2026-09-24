@@ -11,6 +11,7 @@ import {
   documentRect,
   isMeasured,
   isRect,
+  mergeSettles,
   overflowOf,
   pngSize,
   requestedScale,
@@ -114,5 +115,38 @@ describe('overflowOf', () => {
   it('is zero when the settle reported no overflow', () => {
     expect(overflowOf({ result: { settled: true } })).toBe(0)
     expect(overflowOf({ error: 'timed out' })).toBe(0)
+  })
+})
+
+// A full-page capture settles twice, the second time after growing the
+// viewport; dropping that one lost what it drained and kept the pre-grow
+// offscreen report, which invited another attempt.
+describe('mergeSettles', () => {
+  const first = {
+    result: {
+      settled: true,
+      offscreen: { pageHeight: 1800, windowHeight: 800 },
+      notifications: ['one'],
+      pageErrors: ['early'],
+    },
+  }
+
+  it('takes the grown state and joins what each settle delivered once', () => {
+    expect(
+      mergeSettles(first, {
+        result: { settled: true, notifications: ['two'] },
+      }),
+    ).toEqual({
+      result: {
+        settled: true,
+        notifications: ['one', 'two'],
+        pageErrors: ['early'],
+      },
+    })
+  })
+
+  it('keeps the first when the second failed or never ran', () => {
+    expect(mergeSettles(first, { error: 'timed out' })).toBe(first)
+    expect(mergeSettles(first, undefined)).toBe(first)
   })
 })

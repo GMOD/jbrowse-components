@@ -139,6 +139,39 @@ interface CapturedImage {
   rect?: Rectangle
   page?: { width: number; height: number }
   warning?: string
+  // the settle taken after the viewport grew to the document
+  settle?: BridgeToolResult
+}
+
+// Each list is handed over once, so the settle a full-page capture takes after
+// growing the viewport drains what arrived since the first one.
+const DELIVERED_ONCE = ['notifications', 'pageErrors']
+
+/**
+ * The settle a full-page capture reports: the one taken after the viewport grew
+ * describes the page as captured, so its state replaces the first's (an
+ * `offscreen` the grown page no longer has included), and the lists each
+ * settle delivers only once are joined from both.
+ */
+export function mergeSettles(
+  first: BridgeToolResult,
+  grown: BridgeToolResult | undefined,
+): BridgeToolResult {
+  if (!grown || grown.error !== undefined) {
+    return first
+  }
+  if (first.error !== undefined) {
+    return grown
+  }
+  const before = resultFields(first.result)
+  const after = resultFields(grown.result)
+  const joined = DELIVERED_ONCE.flatMap(key => {
+    const list = [before[key], after[key]].flatMap(v =>
+      Array.isArray(v) ? v : [],
+    )
+    return list.length ? [[key, list] as const] : []
+  })
+  return { result: { ...after, ...Object.fromEntries(joined) } }
 }
 
 // capturePage sees the viewport and nothing past it, and a session taller than
@@ -167,6 +200,7 @@ async function captureFullPage(
     }
   }
   let grown = false
+  let settle: BridgeToolResult | undefined
   try {
     if (grow > 0) {
       const { cssLayoutViewport } = (await dbg.sendCommand(
@@ -179,7 +213,7 @@ async function captureFullPage(
         mobile: false,
       })
       grown = true
-      await relay(
+      settle = await relay(
         'wait_ready',
         { timeoutMs: SCREENSHOT_WAIT_MS },
         relayBudget(SCREENSHOT_WAIT_MS),
@@ -206,6 +240,7 @@ async function captureFullPage(
       rect: crop.rect,
       page: content,
       data: atScale(Buffer.from(shot.data, 'base64'), clip.width, scale),
+      settle,
     }
   } finally {
     if (grown) {
@@ -311,6 +346,7 @@ export function createScreenshotTool({
     if ('error' in captured) {
       return captured
     }
+    const settle = mergeSettles(settled, captured.settle)
     const paint = (painted.result ?? {}) as {
       hidden?: boolean
       painted?: boolean
@@ -320,7 +356,7 @@ export function createScreenshotTool({
         ? `the window is hidden and produced no new frame before the capture, so the image may be stale — bring JBrowse Desktop to the front (${painted.error ?? 'paint timed out'})`
         : undefined
     const warnings = [
-      settled.error,
+      settle.error,
       stale,
       devtools
         ? 'fullPage needs the devtools protocol, which DevTools itself is holding — this is the viewport instead; close DevTools for the whole document'
@@ -328,7 +364,7 @@ export function createScreenshotTool({
     ].filter(w => w !== undefined)
     return {
       result: {
-        ...(settled.error ? {} : resultFields(settled.result)),
+        ...(settle.error ? {} : resultFields(settle.result)),
         ...(warnings.length ? { warning: warnings.join('; ') } : {}),
         ...(captured.rect ? { cropped: captured.rect } : {}),
         ...(captured.page ? { page: captured.page } : {}),
