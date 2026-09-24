@@ -8,14 +8,7 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import {
-  assembleLocString,
-  getDialogHost,
-  getSession,
-  openFeatureWidget,
-  pluralize,
-  withFeatureDetails,
-} from '@jbrowse/core/util'
+import { assembleLocString, getDialogHost, pluralize } from '@jbrowse/core/util'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
@@ -35,8 +28,7 @@ import {
   DEFAULT_MARK_COLOR,
   withHitIndex,
 } from '@jbrowse/core/util/markEncoding'
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { selectEncodedFeature } from '@jbrowse/core/util/selectEncodedFeature'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
 import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
@@ -1243,45 +1235,20 @@ export function stateModelFactory(
     .actions(self => ({
       /**
        * #action
-       * Open the feature widget for a hit. The worker shipped channels, not
-       * records, so it is asked again with the request the hit's region was
-       * fetched under and answers the feature the instance's `featureIndex`
-       * names: the read, the bin or the run as drawn, inside its facet section.
-       * A bin of the density sidecar opens nothing, its region holding no
-       * request — the read-back is the download the gate refused.
+       * Open the feature widget on the read, the bin or the run a hit drew,
+       * inside its facet section, through `selectEncodedFeature`. A bin of the
+       * density sidecar opens nothing, its region holding no request — the
+       * read-back is the download the gate refused.
        */
       selectFeature(hit: MarkHitInfo) {
         const request = self.featurePayloads.get(hit.regionIndex)?.request
-        if (!request) {
-          return
+        if (request) {
+          selectEncodedFeature(self, self.detailsRotation, {
+            ...request,
+            layer: hit.markIndex,
+            featureIndex: hit.featureIndex,
+          })
         }
-        const fetch = self.detailsRotation.begin()
-        void withFeatureDetails(
-          self,
-          async () => {
-            try {
-              const feature = await getSession(self).rpcManager.call(
-                getRpcSessionId(self),
-                'CoreGetEncodedFeature',
-                {
-                  ...request,
-                  layer: hit.markIndex,
-                  featureIndex: hit.featureIndex,
-                  signal: fetch.signal,
-                  statusCallback: fetch.statusCallback,
-                },
-              )
-              return feature && fetch.isCurrent()
-                ? new SimpleFeature(feature)
-                : undefined
-            } finally {
-              fetch.end()
-            }
-          },
-          feature => {
-            openFeatureWidget(self, feature.toJSON(), { feature })
-          },
-        )
       },
       /**
        * #action
