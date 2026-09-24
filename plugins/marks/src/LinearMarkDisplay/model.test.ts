@@ -2170,6 +2170,27 @@ test('the dialog submit writes the plot and its binned count into config', () =>
   expect(display.plotSpecReplaces).toBe(0)
 })
 
+test('a dialog submit over a display already faceted by source keeps its section order', () => {
+  const { createDisplay } = createTestEnvironment(
+    [{ mark: 'bar', encoding: { y: 'score' } }],
+    REGION,
+    'BedAdapter',
+    { facet: { field: 'source', domain: ['tumor', 'normal'] } },
+  )
+  const { display } = createDisplay()
+  display.setPlotFields({
+    numeric: ['score'],
+    categorical: [],
+    facet: 'source',
+  })
+  display.setPlotMarks({ ...display.plotSpec, mark: 'point' })
+  expect(display.markTypes).toEqual(['point'])
+  expect(display.facet).toEqual({
+    field: 'source',
+    domain: ['tumor', 'normal'],
+  })
+})
+
 // A config the dialog cannot read back is one a save would replace, and the
 // dialog says so before it does.
 test('a declared list the dialog cannot read counts as what a save replaces', () => {
