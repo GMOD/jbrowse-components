@@ -1,4 +1,4 @@
-import type { Page } from 'puppeteer'
+import type { CDPSession, Page } from 'puppeteer'
 
 export interface WireRequest {
   // absolute request url, or '' if the response event was never seen
@@ -31,6 +31,70 @@ export async function collectWireRequests(page: Page) {
     })
   })
   return requests
+}
+
+export interface TimedRequest {
+  url: string
+  // ms after the page's first request
+  start: number
+  end?: number
+  inWorker: boolean
+}
+
+// Every request the page and its web workers make, with `latencyMs` added to
+// each. A worker's requests are only visible on its own target, so each worker
+// is attached to as it starts; its first fetch comes after its entry script
+// has crossed the emulated latency, which is time enough to switch the network
+// domain on.
+export async function collectTimedRequests(page: Page, latencyMs: number) {
+  const client = await page.createCDPSession()
+  const requests = new Map<string, TimedRequest>()
+  const conditions = {
+    offline: false,
+    latency: latencyMs,
+    downloadThroughput: -1,
+    uploadThroughput: -1,
+  }
+  let t0: number | undefined
+  function track(session: CDPSession, scope: string) {
+    session.on('Network.requestWillBeSent', e => {
+      t0 ??= e.timestamp
+      requests.set(`${scope}:${e.requestId}`, {
+        url: e.request.url,
+        start: (e.timestamp - t0) * 1000,
+        inWorker: scope !== 'page',
+      })
+    })
+    const finish = (e: { requestId: string; timestamp: number }) => {
+      const r = requests.get(`${scope}:${e.requestId}`)
+      if (r && t0 !== undefined) {
+        r.end = (e.timestamp - t0) * 1000
+      }
+    }
+    session.on('Network.loadingFinished', finish)
+    session.on('Network.loadingFailed', finish)
+  }
+  track(client, 'page')
+  await client.send('Network.enable')
+  await client.send('Network.emulateNetworkConditions', conditions)
+  client.on('Target.attachedToTarget', e => {
+    const session = client.connection()?.session(e.sessionId)
+    if (session && e.targetInfo.type === 'worker') {
+      track(session, e.sessionId)
+      void session
+        .send('Network.enable')
+        .then(() =>
+          session.send('Network.emulateNetworkConditions', conditions),
+        )
+        .catch(() => {})
+    }
+  })
+  await client.send('Target.setAutoAttach', {
+    autoAttach: true,
+    waitForDebuggerOnStart: false,
+    flatten: true,
+  })
+  return () => [...requests.values()].sort((a, b) => a.start - b.start)
 }
 
 // A script chunk, by url. Anchored on the extension so a `.json` config or a

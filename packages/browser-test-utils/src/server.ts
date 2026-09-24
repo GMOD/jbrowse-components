@@ -10,6 +10,17 @@ const corsHeaders = [
   },
 ]
 
+// what the deploy sends for the content-hashed half of a build
+const buildHeaders = [
+  ...corsHeaders,
+  {
+    source: 'static/**',
+    headers: [
+      { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+    ],
+  },
+]
+
 export interface TestServerOptions {
   // products/jbrowse-web: its `build/` is served as the app, and `/test_data/*`
   // requests are served from here (so they resolve to test_data/ within it)
@@ -66,7 +77,7 @@ export function createTestServer(
       } else if (proxyPort !== undefined) {
         proxyToPort(req, res, proxyPort)
       } else {
-        void handler(req, res, { public: buildPath, headers: corsHeaders })
+        void handler(req, res, { public: buildPath, headers: buildHeaders })
       }
     })
     server.on('error', reject)
