@@ -43,7 +43,9 @@ test('a timeout names each unpainted display and its own phase', async () => {
          data-display-phase="ready"></div>`
 
   await expect(
-    waitForSelectorAttributed(fakePage(), '[data-testid="maf-display"]', 100),
+    waitForSelectorAttributed(fakePage(), '[data-testid="maf-display"]', {
+      timeout: 100,
+    }),
   ).rejects.toThrow(
     '2 display(s) had not painted: pileup-display (reads-x) is loading; maf-display is ready',
   )
@@ -53,7 +55,9 @@ test('a timeout names each unpainted display and its own phase', async () => {
 // commonest cause, it does not replace what was being waited for.
 test('the message keeps the selector and the timeout', async () => {
   await expect(
-    waitForSelectorAttributed(fakePage(), '[data-testid="pileup"]', 100),
+    waitForSelectorAttributed(fakePage(), '[data-testid="pileup"]', {
+      timeout: 100,
+    }),
   ).rejects.toThrow('[data-testid="pileup"] did not appear within 100ms')
 })
 
@@ -61,7 +65,9 @@ test('a page with nothing pending says the selector was not a display', async ()
   document.body.innerHTML =
     '<div data-testid="pileup-display" data-display-drawn="true"></div>'
   await expect(
-    waitForSelectorAttributed(fakePage(), '[data-testid="dialog"]', 100),
+    waitForSelectorAttributed(fakePage(), '[data-testid="dialog"]', {
+      timeout: 100,
+    }),
   ).rejects.toThrow('no display reported itself unpainted')
 })
 
@@ -74,7 +80,7 @@ test('a display showing "too much data" is named in the timeout', async () => {
     waitForSelectorAttributed(
       fakePage(),
       '[data-testid="pileup-display"][data-display-drawn="true"]',
-      100,
+      { timeout: 100 },
     ),
   ).rejects.toThrow(
     '1 display(s) show "too much data" in place of their features: pileup-1 is tooLarge',
@@ -88,7 +94,7 @@ test('a page that cannot be queried still reports the timeout', async () => {
     waitForSelectorAttributed(
       fakePage({ queryable: false }),
       '[data-testid="pileup"]',
-      100,
+      { timeout: 100 },
     ),
   ).rejects.toThrow('the page could not be queried afterwards (context gone)')
 })
@@ -100,7 +106,7 @@ test('the puppeteer error survives as the cause', async () => {
   const error = await waitForSelectorAttributed(
     fakePage(),
     '[data-testid="pileup"]',
-    100,
+    { timeout: 100 },
   ).catch((e: unknown) => e)
   expect(((error as Error).cause as Error).message).toContain('100ms exceeded')
 })
@@ -110,7 +116,7 @@ test('a selector that resolves hands back its handle', async () => {
     waitForSelectorAttributed(
       fakePage({ appears: true }),
       '[data-testid="pileup"]',
-      100,
+      { timeout: 100 },
     ),
   ).resolves.toEqual({ handle: true })
 })

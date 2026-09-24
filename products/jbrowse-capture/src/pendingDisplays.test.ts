@@ -1,7 +1,4 @@
-import {
-  describePendingDisplays,
-  pendingDisplayStatesInPage,
-} from './sessionGate.ts'
+import { describeDisplays, displayCensusInPage } from './sessionGate.ts'
 
 afterEach(() => {
   document.body.replaceChildren()
@@ -16,7 +13,7 @@ test('an unpainted display is reported with its phase and instance id', () => {
   document.body.innerHTML = `
     <div data-testid="pileup" data-display-id="reads-x"
          data-display-drawn="false" data-display-phase="loading"></div>`
-  expect(pendingDisplayStatesInPage()).toEqual([
+  expect(displayCensusInPage().pending).toEqual([
     { name: 'pileup', id: 'reads-x', phase: 'loading' },
   ])
 })
@@ -25,7 +22,7 @@ test('a painted display is not in the census', () => {
   document.body.innerHTML = `
     <div data-testid="pileup" data-display-drawn="true"
          data-display-phase="ready"></div>`
-  expect(pendingDisplayStatesInPage()).toEqual([])
+  expect(displayCensusInPage().pending).toEqual([])
 })
 
 // The comparative canvases publish both attributes now. Before they published
@@ -35,7 +32,7 @@ test('a shared canvas reports the phase beside its paint flag', () => {
   document.body.innerHTML = `
     <canvas data-testid="synteny_canvas" data-display-drawn="false"
             data-display-phase="error"></canvas>`
-  expect(pendingDisplayStatesInPage()).toEqual([
+  expect(displayCensusInPage().pending).toEqual([
     { name: 'synteny_canvas', id: undefined, phase: 'error' },
   ])
 })
@@ -46,7 +43,7 @@ test('a canceled display is in the census even once painted', () => {
   document.body.innerHTML = `
     <div data-testid="pileup" data-display-id="reads-x"
          data-display-drawn="true" data-display-phase="canceled"></div>`
-  expect(pendingDisplayStatesInPage()).toEqual([
+  expect(displayCensusInPage().pending).toEqual([
     { name: 'pileup', id: 'reads-x', phase: 'canceled' },
   ])
 })
@@ -56,7 +53,7 @@ test('a canceled display is in the census even once painted', () => {
 test('a display publishing no phase is reported as unpublished', () => {
   document.body.innerHTML =
     '<div data-testid="old" data-display-drawn="false"></div>'
-  expect(describePendingDisplays(pendingDisplayStatesInPage())).toBe(
+  expect(describeDisplays(displayCensusInPage().pending)).toBe(
     'old is in an unpublished phase',
   )
 })
@@ -70,7 +67,7 @@ test('a ready-but-unpainted display is named as such', () => {
          data-display-phase="ready"></div>
     <div data-testid="pileup" data-display-drawn="false"
          data-display-phase="loading"></div>`
-  expect(describePendingDisplays(pendingDisplayStatesInPage())).toBe(
+  expect(describeDisplays(displayCensusInPage().pending)).toBe(
     'dotplot_webgl_canvas is ready; pileup is loading',
   )
 })

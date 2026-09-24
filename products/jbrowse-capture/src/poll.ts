@@ -1,3 +1,6 @@
+/** The budget each stage of the ready chain gets unless told otherwise. */
+export const DEFAULT_TIMEOUT = 60000
+
 export const delay = (ms: number) =>
   new Promise<void>(resolve => {
     setTimeout(resolve, ms)
@@ -6,9 +9,8 @@ export const delay = (ms: number) =>
 /**
  * Poll `read` until it has answered true for `holdMs` without a break, or
  * `timeout` runs out. A `read` that throws ends the wait with its error.
- *
- * Polled from Node rather than in the page: chrome throttles in-page timers and
- * rAF once a tab is not visible, which is the state a headless capture sits in.
+ * Polled from Node because Chrome throttles in-page timers in a background
+ * tab, which is what a headless page is.
  */
 export async function holdTrue(
   read: () => Promise<boolean>,

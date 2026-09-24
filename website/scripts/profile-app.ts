@@ -224,9 +224,9 @@ async function loadApp(page: Page, url: string) {
   // zoom_in is part of the LGV header, so it appears as soon as the view mounts
   await page.waitForSelector('[data-testid="zoom_in"]', { timeout: 45000 })
   const tView = Date.now() - t0
-  await waitForLoadingComplete(page, { timeout: 45000, waitForDownloads: true })
-  await waitForDisplayPhases(page, 120000)
-  await waitForDisplaysDone(page, 120000)
+  await waitForLoadingComplete(page, { timeout: 45000 })
+  await waitForDisplayPhases(page, { timeout: 120000 })
+  await waitForDisplaysDone(page, { timeout: 120000 })
   await waitForQuiescent(page, { timeout: 45000 })
   return { toViewMs: tView, toSettledMs: Date.now() - t0 }
 }

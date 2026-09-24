@@ -188,10 +188,10 @@ async function loadUltradeep(page: Page) {
     },
     ULTRADEEP,
   )
-  await waitForViewPhases(page, 120000)
+  await waitForViewPhases(page, { timeout: 120000 })
   await page.waitForSelector('[data-display-phase]', { timeout: 120000 })
   await waitForNoLoadingDisplay(page)
-  await waitForDisplaysDone(page, 120000)
+  await waitForDisplaysDone(page, { timeout: 120000 })
   const phases = await displayPhases(page)
   if (!phases.includes('ready')) {
     throw new Error(

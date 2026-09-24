@@ -89,7 +89,7 @@ await withHarness(
       timeout: 60000,
     })
     await waitForVisible(page, textSelector('ctgA'))
-    await waitForLoadingComplete(page, { waitForDownloads: true })
+    await waitForLoadingComplete(page)
     await waitForQuiescent(page)
     await delay(1500)
 

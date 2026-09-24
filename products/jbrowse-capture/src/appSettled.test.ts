@@ -1,4 +1,4 @@
-import { waitForAppSettled, waitForQuietPeriod } from './waits.ts'
+import { waitForAppSettled, waitForQuiescent } from './waits.ts'
 
 import type { Page } from 'puppeteer'
 
@@ -106,7 +106,7 @@ test('the quiet period restarts when the page goes busy again', async () => {
   }, 200)
   const start = Date.now()
   await expect(
-    waitForQuietPeriod(jsdomPage(), {
+    waitForQuiescent(jsdomPage(), {
       quietMs: 300,
       pollMs: 10,
       timeout: 3000,

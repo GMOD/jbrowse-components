@@ -1,9 +1,9 @@
 import {
   BASE_CHROME_ARGS,
   createTestServer,
+  displayCensusInPage,
   encodeSessionSpec,
   findChromeExecutable,
-  pendingDisplayStatesInPage,
 } from '@jbrowse/browser-test-utils'
 import puppeteer from 'puppeteer'
 
@@ -153,7 +153,7 @@ async function main() {
   let painted = false
   while (!painted && Date.now() - t0 < budgetMs) {
     await new Promise(resolve => setTimeout(resolve, 2000))
-    const pending = await page.evaluate(pendingDisplayStatesInPage)
+    const { pending } = await page.evaluate(displayCensusInPage)
     const state = await displayState(page)
     console.log(
       `t=${((Date.now() - t0) / 1000).toFixed(0)}s pending=${JSON.stringify(pending)} ${JSON.stringify(state)}`,

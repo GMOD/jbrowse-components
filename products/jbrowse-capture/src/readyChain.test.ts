@@ -108,7 +108,9 @@ test('a pending display that has errored ends the paint wait at once', async () 
     <div data-testid="pileup" data-display-drawn="false"
          data-display-phase="error"></div>`
   const start = Date.now()
-  await expect(waitForDisplaysDone(fakePage(), 2000)).resolves.toBe(true)
+  await expect(
+    waitForDisplaysDone(fakePage(), { timeout: 2000 }),
+  ).resolves.toBe(true)
   expect(Date.now() - start).toBeLessThan(500)
 })
 
@@ -118,7 +120,9 @@ test.each([
 ])('a pending display %s keeps the paint wait going', async (_name, attr) => {
   document.body.innerHTML = `
     <div data-testid="pileup" data-display-drawn="false" ${attr}></div>`
-  await expect(waitForDisplaysDone(fakePage(), 100)).resolves.toBe(false)
+  await expect(waitForDisplaysDone(fakePage(), { timeout: 100 })).resolves.toBe(
+    false,
+  )
 })
 
 // ...and the census the early return is traded for: the chain still fails, with

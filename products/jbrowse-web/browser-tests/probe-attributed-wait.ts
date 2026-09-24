@@ -57,7 +57,7 @@ async function main() {
   const attributed = await waitForSelectorAttributed(
     page,
     '[data-testid="maf-display"]',
-    1000,
+    { timeout: 1000 },
   ).catch((e: unknown) => e as Error)
   console.log('census:', (attributed as Error).message)
 
@@ -65,14 +65,14 @@ async function main() {
   const nothingPending = await waitForSelectorAttributed(
     page,
     '[data-testid="dialog"]',
-    1000,
+    { timeout: 1000 },
   ).catch((e: unknown) => e as Error)
   console.log('empty :', (nothingPending as Error).message)
 
   const found = await waitForSelectorAttributed(
     page,
     '[data-testid="pileup-display"]',
-    1000,
+    { timeout: 1000 },
   )
   console.log('found :', !!found)
 

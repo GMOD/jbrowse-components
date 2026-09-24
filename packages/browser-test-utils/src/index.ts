@@ -1,20 +1,17 @@
-// The readiness waits, the session-spec encoding and the Chrome launch flags are
-// not internal to this repo: an agent driving a hosted JBrowse from its own
-// script needs exactly them, so they live in the published @jbrowse/capture and
-// are re-exported here. One home, so a change to what "finished rendering" means
-// reaches the figure generator, the browser tests and the outside world at once.
-// See website/docs/agents_capture.md.
+// Re-exported from the published @jbrowse/capture, so the figure generator,
+// the browser tests and outside scripts share one meaning of "finished
+// rendering". See website/docs/agents_capture.md.
 export {
   PENDING_DISPLAYS,
   assemblyFromSession,
   delay,
-  describePendingDisplays,
+  describeDisplays,
+  displayCensusInPage,
   displayPainted,
   displaySettled,
   encodeSessionSpec,
   findChromeExecutable,
   isBrowserConsoleNoise,
-  pendingDisplayStatesInPage,
   sessionSpecQuery,
   trackIdsFromSession,
   waitForAppReady,

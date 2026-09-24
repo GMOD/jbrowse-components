@@ -240,12 +240,9 @@ await withHarness(
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 })
     await page.waitForSelector('[data-testid="zoom_in"]', { timeout: 60000 })
     const toView = Date.now() - t0
-    await waitForLoadingComplete(page, {
-      timeout: 60000,
-      waitForDownloads: true,
-    })
-    await waitForDisplayPhases(page, 60000)
-    await waitForDisplaysDone(page, 60000)
+    await waitForLoadingComplete(page, { timeout: 60000 })
+    await waitForDisplayPhases(page, { timeout: 60000 })
+    await waitForDisplaysDone(page, { timeout: 60000 })
     await waitForQuiescent(page, { timeout: 60000 })
     await delay(500)
     const probe = await page.evaluate(

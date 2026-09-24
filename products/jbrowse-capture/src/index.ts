@@ -2,8 +2,8 @@ export { captureJBrowse, openJBrowse } from './capture.ts'
 export { delay } from './poll.ts'
 export { waitForFrame, waitForJBrowseReady } from './ready.ts'
 export {
-  describePendingDisplays,
-  pendingDisplayStatesInPage,
+  describeDisplays,
+  displayCensusInPage,
   waitForSession,
 } from './sessionGate.ts'
 export { jbrowseUrl } from './url.ts'
@@ -40,5 +40,5 @@ export type {
   OpenResult,
 } from './capture.ts'
 export type { ReadyOptions, ReadyReport } from './ready.ts'
-export type { PendingDisplay, SessionExpectations } from './sessionGate.ts'
+export type { DisplayState, SessionExpectations } from './sessionGate.ts'
 export type { JBrowseUrlOptions } from './url.ts'

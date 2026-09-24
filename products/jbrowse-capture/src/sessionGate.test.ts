@@ -1,8 +1,4 @@
-import {
-  readLoadFailureInPage,
-  readSessionSummaryInPage,
-  waitForSession,
-} from './sessionGate.ts'
+import { readSessionInPage, waitForSession } from './sessionGate.ts'
 
 import type { Page } from 'puppeteer'
 
@@ -26,7 +22,7 @@ afterEach(() => {
 })
 
 test('no census on the page reports undefined', () => {
-  expect(readSessionSummaryInPage()).toBeUndefined()
+  expect(readSessionInPage().census).toBeUndefined()
 })
 
 // One element answers the whole summary. Each view declares what it holds and
@@ -35,7 +31,7 @@ test('no census on the page reports undefined', () => {
 // that did went with the builds that had no census.
 test('the census answers the summary', () => {
   census(2, ['hg38', 'mm39'], ['genes', 'synteny'])
-  expect(readSessionSummaryInPage()).toEqual({
+  expect(readSessionInPage().census).toEqual({
     views: 2,
     assemblies: ['hg38', 'mm39'],
     trackIds: ['genes', 'synteny'],
@@ -45,13 +41,13 @@ test('the census answers the summary', () => {
 test('a malformed census reports undefined rather than throwing', () => {
   document.body.innerHTML =
     '<span data-app-tracks="not json" data-app-assemblies="[]"></span>'
-  expect(readSessionSummaryInPage()).toBeUndefined()
+  expect(readSessionInPage().census).toBeUndefined()
 })
 
 test('a census with no view count reads as no views', () => {
   document.body.innerHTML =
     '<span data-app-tracks=\'["genes"]\' data-app-assemblies=\'["hg38"]\'></span>'
-  expect(readSessionSummaryInPage()?.views).toBe(0)
+  expect(readSessionInPage().census?.views).toBe(0)
 })
 
 test('the gate passes once the census holds what was asked for', async () => {
@@ -102,7 +98,7 @@ test('a load failure fails the gate at once, with the app message', async () => 
 
 test('no load failure reads as undefined', () => {
   census(1, ['hg38'], [])
-  expect(readLoadFailureInPage()).toBeUndefined()
+  expect(readSessionInPage().failure).toBeUndefined()
 })
 
 test('no census at all is reported as such', async () => {

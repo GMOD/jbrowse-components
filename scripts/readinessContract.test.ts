@@ -65,13 +65,13 @@ describe('the readiness contract', () => {
   it('the census attributes are published and read under the same names', () => {
     const marker = read('packages/product-core/src/ui/AppReadyMarker.tsx')
     const gate = read('products/jbrowse-capture/src/sessionGate.ts')
-    for (const attr of [
-      'data-app-views',
-      'data-app-assemblies',
-      'data-app-tracks',
+    for (const [attr, key] of [
+      ['data-app-views', 'appViews'],
+      ['data-app-assemblies', 'appAssemblies'],
+      ['data-app-tracks', 'appTracks'],
     ]) {
       expect(marker).toContain(attr)
-      expect(gate).toContain(attr)
+      expect(gate).toContain(`dataset.${key}`)
     }
     expect(gate).toContain(`querySelector<HTMLElement>('[data-app-tracks]')`)
   })

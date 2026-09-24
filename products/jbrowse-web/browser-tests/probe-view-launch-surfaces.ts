@@ -353,10 +353,10 @@ async function settle(page: Page, c: ViewCase) {
     trackIds: c.trackIds,
     timeout: TIMEOUT,
   })
-  await waitForViewPhases(page, TIMEOUT)
+  await waitForViewPhases(page, { timeout: TIMEOUT })
   await page.waitForSelector(c.contentSelector, { timeout: TIMEOUT })
-  const phases = await waitForDisplayPhases(page, TIMEOUT)
-  const drawn = await waitForDisplaysDone(page, TIMEOUT)
+  const phases = await waitForDisplayPhases(page, { timeout: TIMEOUT })
+  const drawn = await waitForDisplaysDone(page, { timeout: TIMEOUT })
   const held = await waitForAppSettled(page, { timeout: TIMEOUT })
   return { ms: Date.now() - t0, phases, drawn, held }
 }

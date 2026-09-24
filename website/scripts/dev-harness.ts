@@ -135,7 +135,7 @@ export async function openSpec(
     waitUntil: 'domcontentloaded',
     timeout,
   })
-  await waitForViewPhases(page, timeout)
+  await waitForViewPhases(page, { timeout })
   await awaitReadySelector(page, spec, timeout)
   console.log(`total wall ${((Date.now() - t0) / 1000).toFixed(1)}s`)
 }

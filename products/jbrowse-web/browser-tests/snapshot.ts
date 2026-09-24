@@ -3,8 +3,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import {
-  describePendingDisplays,
-  pendingDisplayStatesInPage,
+  describeDisplays,
+  displayCensusInPage,
   waitForDisplayPhases,
   waitForDisplaysDone,
   waitForSelectorAttributed,
@@ -260,8 +260,8 @@ async function waitForLoadingOverlayGone(page: Page, timeout: number) {
 // reported as one.
 async function waitForCaptureSettled(page: Page) {
   await waitForLoadingOverlayGone(page, 30000)
-  await waitForDisplayPhases(page, 30000)
-  await waitForDisplaysDone(page, 30000)
+  await waitForDisplayPhases(page, { timeout: 30000 })
+  await waitForDisplaysDone(page, { timeout: 30000 })
   await waitForMorphIdle(page)
 
   // Report-only, and re-read from the DOM here rather than off handles the waits
@@ -269,7 +269,8 @@ async function waitForCaptureSettled(page: Page) {
   // timeout attribution into nine `Node is detached from document` errors and got
   // it reverted (28c6ee6d90).
   const pending = await page
-    .evaluate(pendingDisplayStatesInPage)
+    .evaluate(displayCensusInPage)
+    .then(census => census.pending)
     .catch(() => [])
   return page
     .evaluate(() => {
@@ -288,7 +289,7 @@ async function waitForCaptureSettled(page: Page) {
             ...unsettled,
             // the phase is what separates a slow fetch from a display that says
             // it finished without painting, which no longer timeout will fix
-            `${pending.length} display(s) never reported done: ${describePendingDisplays(pending)}`,
+            `${pending.length} display(s) never reported done: ${describeDisplays(pending)}`,
           ]
         : unsettled,
     )
@@ -584,7 +585,7 @@ export async function canvasSnapshot(
   // so before the census that call site reports: a display that never paints
   // used to die here on puppeteer's `TimeoutError`, naming the selector and
   // nothing else. See `waitForSelectorAttributed`.
-  const el = await waitForSelectorAttributed(page, selector, 60000)
+  const el = await waitForSelectorAttributed(page, selector, { timeout: 60000 })
   const unsettled = await waitForCaptureSettled(page)
 
   // A display can reach `data-display-drawn` before the page has given its
