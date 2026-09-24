@@ -10,8 +10,11 @@ import {
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
 import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
+import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
+import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
+import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { markColorSchema } from './markColorConfigSchema.ts'
@@ -381,12 +384,44 @@ export function configSchemaFactory() {
       transform: types.array(markTransformStep),
       /**
        * #slot facet
-       * One band of rows per value of a field, split after `transform` and
-       * before any mark's own steps: `"HP"`, or `{ field, domain, transform }`
-       * with the order the bands stack in and the steps each section runs
-       * before any mark's, a per-section `pileup` among them.
+       * Labelled sections, one per value of a field, each as tall as its
+       * steps pack it: `"HP"`, or `{ field, domain, transform }` with the
+       * order the sections stack in and the steps each runs before any mark's,
+       * a per-section `pileup` among them. A chip names each section and hides
+       * it, and past forty values the tail merges into one. Split after
+       * `transform` and before any mark's own steps.
        */
       facet: markFacetSchema,
+      /**
+       * #slot rows
+       * One row per value of a field, for bar and point marks: `"source"` over
+       * a multi-BigWig is one xyplot per file. The worker splits the features
+       * on the field as it does for `facet`, and the rows take the tree
+       * sidebar, the row labels, clustering and the arrangement dialog, whose
+       * order, labels, tree and focus this object holds. `facet` and `rows` on
+       * one display, bands of rows, is not drawn yet: the facet draws and a
+       * notice says so.
+       *
+       * #example
+       * ```js
+       * { rows: 'source' }
+       * ```
+       * ```js
+       * { rows: { field: 'source', domain: ['tumor', 'normal'] } }
+       * ```
+       */
+      rows: rowsConfigSchema,
+      /**
+       * #slot rowColor
+       * A tint per row, by value, as `domain`/`range` pairs, drawn beside the
+       * row's label; the marks keep their own colour. The arrangement dialog
+       * writes it.
+       */
+      rowColor: rowColorConfigSchema,
+      ...treeSidebarConfigSchemaFields({
+        tree: 'show the cluster tree beside the rows',
+        rowLabels: 'draw the row value over the left of each row',
+      }),
       /**
        * #slot scales
        * The scales the marks are read through, owned by the display rather

@@ -502,11 +502,12 @@ function checkMarkDisplay(
   if (!slots || !isRecord(lifted)) {
     return
   }
-  const { facet } = lifted
+  const { facet, rows } = lifted
   for (const { level, rule, mark, slot, message } of markProblems(
     declaredEntries<MarkSnapshot>(lifted, display, 'marks'),
     isRecord(facet) ? facet : undefined,
     declaredEntries<StepSnapshot>(lifted, display, 'transform'),
+    isRecord(rows) ? rows : undefined,
   )) {
     report.problems.push({
       level,

@@ -21,7 +21,7 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
+import { compareGroupKeys, groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import {
   activeJexlFilters,
   configuredJexlFilters,
@@ -55,6 +55,21 @@ import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { inkOfInstances, pointInsetPx } from '@jbrowse/render-core/marks'
 import {
+  TreeSidebarMixin,
+  buildSpatialIndex,
+  clusteringMenuItem,
+  computeClusterHierarchy,
+  orderRowsByValueAt,
+  resetRowOrderMenuItems,
+  rowArrangementMenuItem,
+  setupTreeSidebarAutoruns,
+  showRowLabelsMenuItem,
+  sortRowsAtColumn,
+  sortRowsHereMenuItem,
+  treeSidebarOffset,
+  treeSidebarShowMenuItems,
+} from '@jbrowse/tree-sidebar'
+import {
   ScoreScaleMixin,
   autoscaleDomainFromSpans,
   axisPlotBox,
@@ -75,7 +90,7 @@ import {
   markRequirementProblems,
 } from './configSchema.ts'
 import { densityRegionData } from './densityLayer.ts'
-import { facetLayout, facetRegion } from './facet.ts'
+import { facetLayout, facetRegion, rowsLayout } from './facet.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
 import { sameMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend, colorSection, markColorScales } from './legend.ts'
@@ -83,6 +98,7 @@ import {
   buildMarkList,
   markDrawsAt,
   markRowHeightPx,
+  rowValuesAt,
   zoomInRange,
 } from './markList.ts'
 import { markProblems, problemText } from './markProblems.ts'
@@ -121,6 +137,7 @@ import type {
   FacetSnapshot,
   MarkProblem,
   MarkSnapshot,
+  RowsSnapshot,
   StepSnapshot,
 } from './markProblems.ts'
 import type { PlotFields, PlotSpec } from './plotFields.ts'
@@ -143,6 +160,11 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { MarkRamp } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+import type {
+  IdentityChannel,
+  RowSource,
+  UnlistedRowsSort,
+} from '@jbrowse/tree-sidebar'
 import type { ScoreSpan, ValueScale, VisibleEntry } from '@jbrowse/wiggle-core'
 
 export type MarkRenderingBackend = PerRegionRenderingBackend<
@@ -152,6 +174,12 @@ export type MarkRenderingBackend = PerRegionRenderingBackend<
 
 const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
 const PlotFieldDialog = lazy(() => import('./components/PlotFieldDialog.tsx'))
+const MarkRowArrangementDialog = lazy(
+  () => import('./components/MarkRowArrangementDialog.tsx'),
+)
+const MarkClusterDialog = lazy(
+  () => import('./components/MarkClusterDialog.tsx'),
+)
 
 const NO_REGIONS: ReadonlyMap<number, MarkRegionData> = new Map()
 
@@ -252,7 +280,12 @@ export function stateModelFactory(
       'LinearMarkDisplay',
       // Nested so the parts stay under `types.compose`'s nine, the ceiling
       // whose tenth part erases every prop instead of failing.
-      types.compose(BaseDisplay, TrackHeightMixin(), MultiRegionDisplayMixin()),
+      types.compose(
+        BaseDisplay,
+        TrackHeightMixin(),
+        MultiRegionDisplayMixin(),
+        TreeSidebarMixin(),
+      ),
       // Where the byte gate refuses the features, a mark declaring
       // `source: 'density'` draws the adapter's sidecar in the banner's place
       // — see `densityPayloads`.
@@ -498,6 +531,51 @@ export function stateModelFactory(
       get configuredFilters() {
         return () => configuredJexlFilters(self)
       },
+      /**
+       * #getter
+       * `rows.field` as written: the field each value of which takes a row.
+       */
+      get rowsField(): string {
+        return getConf(self, ['rows', 'field'])
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Whether the display draws one row per value: a `rows` field and no
+       * `facet`, which draws in its place until bands of rows land.
+       */
+      get drawsRows(): boolean {
+        return self.rowsField !== '' && !self.facet
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The field the worker splits the features on: the facet's, else the
+       * rows'. One split serves both, so `rows` sends it as `facet`.
+       */
+      get splitField(): string | undefined {
+        return (
+          self.facet?.field ?? (self.drawsRows ? self.rowsField : undefined)
+        )
+      },
+      /**
+       * #getter
+       * `TreeSidebarMixin`'s hook: values discovered in features sort, digits
+       * by magnitude, as the facet's sections do.
+       */
+      get unlistedRowsSort(): UnlistedRowsSort {
+        return 'sorted'
+      },
+      /**
+       * #getter
+       * `TreeSidebarMixin`'s hook: a `rowColor` entry tints the label, since
+       * each mark's own `color` paints the plot.
+       */
+      get identityChannel(): IdentityChannel {
+        return 'labelColor'
+      },
     }))
     .views(self => ({
       /**
@@ -557,7 +635,49 @@ export function stateModelFactory(
       },
     }))
     .views(self => {
+      // Identity-stable, since the layout below keys the upload on it and a
+      // region arriving with the same values discovers nothing new.
+      const discoveredRows = stableIdentityComputed(() => {
+        if (!self.drawsRows) {
+          return []
+        }
+        const field = categoricalField(self.rowsField)
+        const keys = new Set<string>()
+        for (const { facet } of self.featurePayloads.values()) {
+          for (const { key } of facet ?? []) {
+            keys.add(key)
+          }
+        }
+        return [...keys].sort(compareGroupKeys).map((name): RowSource => {
+          const label = field.label(name)
+          return label === name ? { name } : { name, label }
+        })
+      })
+      return {
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: the values the worker split the loaded
+         * regions on, sorted.
+         */
+        get discoveredRows(): RowSource[] {
+          return discoveredRows.get()
+        },
+      }
+    })
+    .views(self => ({
+      /**
+       * #getter
+       * The rows drawn, top to bottom: the arrangement narrowed to the focus.
+       */
+      get sources(): RowSource[] {
+        return self.clusterableSources
+      },
+    }))
+    .views(self => {
       const layout = stableIdentityComputed(() => {
+        if (self.drawsRows) {
+          return rowsLayout(self.sources, categoricalField(self.rowsField))
+        }
         const { field = '', domain = [] } = self.facet ?? {}
         return facetLayout(
           self.featurePayloads.values(),
@@ -566,7 +686,8 @@ export function stateModelFactory(
         )
       })
       const faceted = createEncodeMemo(
-        () => (self.facet ? self.featurePayloads : NO_REGIONS),
+        () =>
+          self.splitField === undefined ? NO_REGIONS : self.featurePayloads,
         () => layout.get(),
         facetRegion,
       )
@@ -574,21 +695,22 @@ export function stateModelFactory(
         /**
          * #getter
          * The sections drawn over every loaded region, in the domain's order
-         * and less the hidden ones, and where each key's rows start.
+         * and less the hidden ones, and where each key's rows start; under
+         * `rows`, one row per value in the rows' order and no sections.
          */
         get facetLayout(): FacetLayout {
           return layout.get()
         },
         /**
          * #getter
-         * The layers the display draws: faceted, every region's rows offset
-         * onto the one layout, so a chip and the band under it agree
-         * whichever region a span came from. A region is offset again only
-         * when it or the layout moves, which is what the upload re-packs.
+         * The layers the display draws: split, every region's rows offset
+         * onto the one layout, so a chip or a label and the band beside it
+         * agree whichever region a span came from. A region is offset again
+         * only when it or the layout moves, which is what the upload re-packs.
          */
         get rpcDataMap(): ReadonlyMap<number, MarkRegionData> {
           const drawn = faceted()
-          return self.facet ? drawn : self.featurePayloads
+          return self.splitField === undefined ? self.featurePayloads : drawn
         },
       }
     })
@@ -734,6 +856,7 @@ export function stateModelFactory(
             domain: self.domain,
             scaleType: self.scaleType,
             ...band,
+            left: treeSidebarOffset(self),
             minimalTicks,
             caption: this.axisTitle,
             rules: self.scoreRules,
@@ -751,6 +874,7 @@ export function stateModelFactory(
         transform: TransformStep[]
         facet?: FacetSpec
       } {
+        const field = self.splitField
         return {
           layers: self.layerRequests,
           transform: [
@@ -761,16 +885,16 @@ export function stateModelFactory(
             ...stepsOf(self.conf.transform, self.host.bpPerPx),
             ...(self.facet ? [] : self.facetSteps),
           ],
-          ...(self.facet
-            ? {
+          ...(field === undefined
+            ? {}
+            : {
                 facet: {
-                  field: self.facet.field,
-                  ...(self.facetSteps.length > 0
+                  field,
+                  ...(self.facet && self.facetSteps.length > 0
                     ? { transform: self.facetSteps }
                     : {}),
                 },
-              }
-            : {}),
+              }),
         }
       },
       /**
@@ -866,6 +990,7 @@ export function stateModelFactory(
             marks,
             getSnapshot(self.conf.facet) as FacetSnapshot,
             transform,
+            getSnapshot(self.conf.rows) as RowsSnapshot,
           ),
         ]
       },
@@ -957,8 +1082,67 @@ export function stateModelFactory(
           this.legendSections,
           self.facet
             ? categoricalField(self.facet.field, { domain: self.facet.domain })
-            : undefined,
+            : self.drawsRows
+              ? categoricalField(self.rowsField, {
+                  domain: self.editableSources.map(row => row.name),
+                })
+              : undefined,
         )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The px each row is drawn in, the band every shape gets.
+       */
+      get effectiveRowHeight(): number {
+        return markRowHeightPx(
+          axisPlotBox(self.height).plotHeight,
+          self.rowCount,
+        )
+      },
+      /**
+       * #getter
+       * Where the rows start, below the plot's top inset.
+       */
+      get rowsTopOffset(): number {
+        return axisPlotBox(self.height).yTop
+      },
+      /**
+       * #getter
+       * The first mark drawing at this zoom that stands at a value: what a
+       * row's value at a column is read from, and what clustering compares.
+       * -1 where none does.
+       */
+      get valueMarkIndex(): number {
+        return (
+          self.drawingMarkIndices.find(i => readsValue(self.markTypes[i]!)) ??
+          -1
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The dendrogram positioned against the rows drawn, or undefined where
+       * it no longer names them.
+       */
+      get hierarchy() {
+        return computeClusterHierarchy(
+          self.root,
+          self.sources,
+          self.sources.length * self.effectiveRowHeight,
+          self.treeAreaWidth,
+          self.showBranchLength,
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get spatialIndex() {
+        return buildSpatialIndex(self.hierarchy)
       },
     }))
     .volatile(self => ({
@@ -1066,6 +1250,39 @@ export function stateModelFactory(
       },
       /**
        * #action
+       * One row per value of `field`. The arrangement stays: a name keyed on
+       * another field matches nothing and comes back with the field.
+       */
+      setRowsField(field: string) {
+        setConf(self.conf, ['rows', 'field'], field)
+      },
+      /**
+       * #action
+       * Order the rows by the value each stands at over (refName, pos),
+       * highest first, off the loaded regions with no refetch; false where no
+       * loaded region covers the column.
+       */
+      sortRowsByValueAt(refName: string, pos: number) {
+        const mark = self.valueMarkIndex
+        return sortRowsAtColumn(
+          self,
+          refName,
+          pos,
+          index => (mark === -1 ? undefined : self.rpcDataMap.get(index)),
+          (rows, region) => {
+            const byName = new Map<string, number>()
+            for (const [row, value] of rowValuesAt(region, mark, pos)) {
+              const name = self.sources[row]?.name
+              if (name !== undefined) {
+                byName.set(name, value)
+              }
+            }
+            return orderRowsByValueAt(rows, byName, (a, b) => b - a)
+          },
+        )
+      },
+      /**
+       * #action
        */
       setJexlFilters(filters?: string[]) {
         self.jexlFiltersSetting = cast(filters)
@@ -1152,8 +1369,9 @@ export function stateModelFactory(
       setPlotMarks(spec: PlotSpec) {
         const fields = self.plotFields ?? { numeric: [], categorical: [] }
         self.conf.setSubschemaArray('marks', plotMarks(spec, fields))
-        if (fields.facet) {
-          self.setFacetField(fields.facet)
+        if (fields.rows) {
+          self.setFacetField('')
+          self.setRowsField(fields.rows)
         }
       },
       /**
@@ -1222,7 +1440,7 @@ export function stateModelFactory(
             },
           }),
           ...sectionOrderMenuItems({
-            sections: self.facetLayout.sections,
+            sections: self.facetLayout.rows ? [] : self.facetLayout.sections,
             domain: self.facet?.domain ?? [],
             setDomain: domain => {
               self.setFacetDomain(domain)
@@ -1231,12 +1449,46 @@ export function stateModelFactory(
               self.hideGroup(key)
             },
           }),
+          ...(self.drawsRows ? rowsMenuItems() : []),
           ...densityTierMenuItems(self),
           ...makeShowSubMenu([
+            ...(self.drawsRows
+              ? [...treeSidebarShowMenuItems(self), showRowLabelsMenuItem(self)]
+              : []),
             makeCrossHatchItem(self),
             legendCheckboxItem(self),
           ]),
         ]
+
+        function rowsMenuItems(): MenuItem[] {
+          return [
+            rowArrangementMenuItem({
+              ready: self.editableSources.length > 0,
+              onOpen: () => {
+                getDialogHost(self).queueDialog(handleClose => [
+                  MarkRowArrangementDialog,
+                  { model: self, handleClose },
+                ])
+              },
+            }),
+            ...resetRowOrderMenuItems(self),
+            clusteringMenuItem(
+              self,
+              {
+                label: 'Cluster rows by similarity...',
+                disabled: self.valueMarkIndex === -1,
+                disabledHelpText: 'No bar or point mark draws at this zoom',
+                onClick: () => {
+                  getDialogHost(self).queueDialog(handleClose => [
+                    MarkClusterDialog,
+                    { model: self, handleClose },
+                  ])
+                },
+              },
+              self.clusterableSources.length,
+            ),
+          ]
+        }
       },
       /**
        * #method
@@ -1254,6 +1506,18 @@ export function stateModelFactory(
                   self.selectFeature(hit)
                 },
               },
+              ...(self.drawsRows
+                ? [
+                    sortRowsHereMenuItem({
+                      label: 'Sort rows by value here',
+                      rowCount: self.editableSources.length,
+                      onClick: () => {
+                        self.sortRowsByValueAt(hit.refName, hit.start)
+                      },
+                    }),
+                    ...resetRowOrderMenuItems(self),
+                  ]
+                : []),
             ]
           : []
       },
@@ -1313,6 +1577,19 @@ export function stateModelFactory(
     }))
     .actions(self => ({
       afterAttach() {
+        setupTreeSidebarAutoruns(self, {
+          name: 'Mark',
+          sortRows: (refName, pos) => self.sortRowsByValueAt(refName, pos),
+          clustering: {
+            ready: () =>
+              self.clusterableSources.length > 1 && self.valueMarkIndex !== -1,
+            run: async args => {
+              const { runMarkClustering } =
+                await import('./runMarkClustering.ts')
+              await runMarkClustering({ model: self, ...args })
+            },
+          },
+        })
         // Nothing declared draws nothing, and the Display types menu offers
         // this display on every feature, alignments and variant track. So the
         // first time it is shown with an empty `marks`, the features decide:
@@ -1335,8 +1612,9 @@ export function stateModelFactory(
             const marks = defaultPlotMarks(fields)
             if (marks) {
               self.conf.setSubschemaArray('marks', marks)
-              if (fields.facet) {
-                self.setFacetField(fields.facet)
+              if (fields.rows) {
+                self.setFacetField('')
+                self.setRowsField(fields.rows)
               }
             } else {
               self.openPlotFieldDialog()

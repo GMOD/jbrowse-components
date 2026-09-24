@@ -19,8 +19,8 @@ const MarkFacetChips = observer(function MarkFacetChips({
   model: MarkDisplayModel
   plotHeight: number
 }) {
-  const { sections, rowCount } = model.facetLayout
-  if (sections.length === 0) {
+  const { sections, rowCount, rows } = model.facetLayout
+  if (rows || sections.length === 0) {
     return null
   }
   const rowHeight = markRowHeightPx(plotHeight, rowCount)

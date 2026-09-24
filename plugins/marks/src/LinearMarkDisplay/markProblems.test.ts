@@ -9,6 +9,7 @@ import type {
   FacetSnapshot,
   MarkProblem,
   MarkSnapshot,
+  RowsSnapshot,
   StepSnapshot,
 } from './markProblems.ts'
 
@@ -20,23 +21,26 @@ function problemsOf(
   marks: unknown[],
   facet?: unknown,
   transform?: unknown[],
+  rows?: unknown,
 ): MarkProblem[] {
   const snap: {
     marks?: MarkSnapshot[]
     facet?: FacetSnapshot
     transform?: StepSnapshot[]
+    rows?: RowsSnapshot
   } = getSnapshot(
     schema.create({
       displayId: 'd',
       marks,
       ...(facet ? { facet } : {}),
       ...(transform ? { transform } : {}),
+      ...(rows ? { rows } : {}),
     }),
   )
   const lifted = snap.marks ?? []
   const problems = [
     ...markRequirementProblems(lifted),
-    ...markProblems(lifted, snap.facet, snap.transform),
+    ...markProblems(lifted, snap.facet, snap.transform, snap.rows),
   ]
   for (const { rule } of problems) {
     reached.add(rule)
@@ -44,8 +48,13 @@ function problemsOf(
   return problems
 }
 
-function found(marks: unknown[], facet?: unknown, transform?: unknown[]) {
-  return problemsOf(marks, facet, transform).map(
+function found(
+  marks: unknown[],
+  facet?: unknown,
+  transform?: unknown[],
+  rows?: unknown,
+) {
+  return problemsOf(marks, facet, transform, rows).map(
     p => `${p.level} ${p.rule} mark ${p.mark} ${p.slot}`,
   )
 }
@@ -531,6 +540,40 @@ test('a density source on a span, or on a second mark, waits unread', () => {
   expect(found([{ mark: 'span', source: 'density' }])).toEqual([
     'warning span-density-source mark 0 source',
   ])
+})
+
+test('rows beside a facet is named as not drawn yet, and the facet draws', () => {
+  const BAR = { shape: 'bar', encoding: { y: 'score' } }
+  expect(found([BAR], undefined, undefined, 'source')).toEqual([])
+  expect(
+    problemsOf([BAR], 'tissue', undefined, 'source').map(problemText),
+  ).toEqual([
+    'rows.field: facet stacks a labelled section per value and rows one row per value; bands of rows, the two at once, are not drawn yet, so the facet draws alone',
+  ])
+})
+
+test("a pileup under rows is told its packed rows share their value's row", () => {
+  const BAR = { shape: 'bar', encoding: { y: 'score' } }
+  expect(
+    found(
+      [BAR, PILEUP, { shape: 'span', encoding: { row: 'lane' } }],
+      { transform: [{ type: 'pileup' }] },
+      [{ type: 'pileup' }],
+      'source',
+    ),
+  ).toEqual([
+    'warning packing-under-rows mark undefined transform.0',
+    'warning packing-under-rows mark undefined facet.transform.0',
+    'warning packing-under-rows mark 1 transform.0',
+    'warning packing-under-rows mark 2 encoding.row',
+    'warning two-packings mark 1 transform',
+  ])
+  expect(found([BAR, PILEUP], 'HP', undefined, 'source')).toContain(
+    'warning rows-beside-facet mark undefined rows.field',
+  )
+  expect(found([BAR, PILEUP], 'HP', undefined, 'source')).not.toContain(
+    'warning packing-under-rows mark 1 transform.0',
+  )
 })
 
 test('every rule of the list is reached by a case above', () => {

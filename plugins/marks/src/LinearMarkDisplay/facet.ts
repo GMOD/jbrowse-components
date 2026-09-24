@@ -28,6 +28,11 @@ export interface FacetLayout {
   rowCount: number
   /** Where each drawn key's rows start, a merged key's inside the overflow band. */
   firstRowOf: ReadonlyMap<string, number>
+  /**
+   * One row per value, which `rows` draws: every row a region packed a key
+   * into lands on the key's one row, and row labels name them, not chips.
+   */
+  rows: boolean
 }
 
 /**
@@ -80,7 +85,28 @@ export function facetLayout(
       rowCount: next - firstRow,
     })
   }
-  return { sections, rowCount: next, firstRowOf }
+  return { sections, rowCount: next, firstRowOf, rows: false }
+}
+
+/**
+ * One row per value, in the order `rows` lists them: a value `rows` leaves
+ * out is hidden the way a hidden section is.
+ */
+export function rowsLayout(
+  rows: readonly { name: string }[],
+  field: CategoricalField,
+): FacetLayout {
+  return {
+    sections: rows.map((row, i) => ({
+      key: row.name,
+      label: field.sectionLabel(row.name),
+      firstRow: i,
+      rowCount: 1,
+    })),
+    rowCount: rows.length,
+    firstRowOf: new Map(rows.map((row, i) => [row.name, i])),
+    rows: true,
+  }
 }
 
 const HIDDEN = 0xffffffff
@@ -93,7 +119,7 @@ function rowRemap(region: MarkRegionData, layout: FacetLayout) {
     const to = layout.firstRowOf.get(key)
     if (to !== undefined) {
       for (let i = 0; i < rowCount; i++) {
-        remap[firstRow + i] = to + i
+        remap[firstRow + i] = layout.rows ? to : to + i
       }
     }
   }

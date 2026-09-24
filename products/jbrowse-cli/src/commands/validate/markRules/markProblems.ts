@@ -57,6 +57,8 @@ export const MARK_RULES = {
   'two-packings': 'warning',
   'cross-section-packing': 'warning',
   'second-density-mark': 'warning',
+  'rows-beside-facet': 'warning',
+  'packing-under-rows': 'warning',
 } as const satisfies Record<string, MarkProblemLevel>
 
 export type MarkRuleId = keyof typeof MARK_RULES
@@ -112,6 +114,11 @@ interface ColorSnapshot {
 export interface FacetSnapshot {
   field?: unknown
   transform?: StepSnapshot[]
+}
+
+/** The display's `rows` as a config snapshot holds it: the field alone. */
+export interface RowsSnapshot {
+  field?: unknown
 }
 
 /**
@@ -221,6 +228,41 @@ function pileupSurvives(steps: readonly StepSnapshot[]) {
         s.type === 'pileup' || s.type === 'aggregate' || s.type === 'coverage',
     )?.type === 'pileup'
   )
+}
+
+function named(field: unknown) {
+  return typeof field === 'string' && field !== ''
+}
+
+const ONE_ROW_PER_VALUE =
+  "rows draws one row per value, so the rows a pileup packs share their value's row; a facet gives each value a section as deep as its pileup"
+
+// Where a display drawing one row per value packs more than one.
+function packingsUnderRows(
+  marks: readonly (MarkSnapshot | undefined)[],
+  transform: Steps,
+  section: Steps,
+): MarkProblem[] {
+  const pileups = (steps: Steps, list: string) =>
+    steps.flatMap((step, i) =>
+      step?.type === 'pileup'
+        ? [found('packing-under-rows', `${list}.${i}`, ONE_ROW_PER_VALUE)]
+        : [],
+    )
+  return [
+    ...pileups(transform, 'transform'),
+    ...pileups(section, 'facet.transform'),
+    ...marks.flatMap((mark, i) =>
+      mark
+        ? [
+            ...pileups(stepsOf(mark), 'transform'),
+            ...(mark.encoding?.row
+              ? [found('packing-under-rows', 'encoding.row', ONE_ROW_PER_VALUE)]
+              : []),
+          ].map(p => ({ mark: i, ...p }))
+        : [],
+    ),
+  ]
 }
 
 function banded(mark: MarkSnapshot, shared: readonly StepSnapshot[]) {
@@ -436,18 +478,21 @@ function ownProblems(
  * field its sections stack by and the steps each section runs; under one, a
  * rowless mark stands on each section's first row by design. `transform` is
  * the display's own steps. Both lists are checked as a mark's are and reported
- * with no mark, under `transform` and `facet.transform`. An `undefined` mark
- * or step is one the caller could not read, such as one a file's schema
- * refuses: it keeps its index, so the others are reported where they are, and
- * is checked for nothing. A file's own spelling goes through the schema's lift
- * first, which `jbrowse validate` does from the generated manifest.
+ * with no mark, under `transform` and `facet.transform`. `rows` is the field
+ * each value of which takes one row. An `undefined` mark or step is one the
+ * caller could not read, such as one a file's schema refuses: it keeps its
+ * index, so the others are reported where they are, and is checked for
+ * nothing. A file's own spelling goes through the schema's lift first, which
+ * `jbrowse validate` does from the generated manifest.
  */
 export function markProblems(
   marks: readonly (MarkSnapshot | undefined)[],
   facet?: FacetSnapshot,
   transform: Steps = [],
+  rows?: RowsSnapshot,
 ): MarkProblem[] {
-  const faceted = typeof facet?.field === 'string' && facet.field !== ''
+  const faceted = named(facet?.field)
+  const drawsRows = named(rows?.field) && !faceted
   const section = readable(facet?.transform ?? [])
   const display = readable(transform)
   const shared = [...display, ...section]
@@ -467,6 +512,16 @@ export function markProblems(
             : [],
         )
       : []),
+    ...(faceted && named(rows?.field)
+      ? [
+          found(
+            'rows-beside-facet',
+            'rows.field',
+            'facet stacks a labelled section per value and rows one row per value; bands of rows, the two at once, are not drawn yet, so the facet draws alone',
+          ),
+        ]
+      : []),
+    ...(drawsRows ? packingsUnderRows(marks, transform, section) : []),
     ...marks.flatMap((mark, i) =>
       mark
         ? ownProblems(mark, display, section).map(p => ({ mark: i, ...p }))
@@ -480,6 +535,7 @@ export function markProblems(
       }
       if (
         !faceted &&
+        !drawsRows &&
         markTypeOf(mark) !== 'span' &&
         !banded(mark, shared) &&
         banded(other, shared)

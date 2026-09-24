@@ -11,7 +11,12 @@ import type { MarkRenderingBackend } from '../model.ts'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
+import type {
+  ClusterProvenance,
+  RowSource,
+  TreeSidebarModel,
+} from '@jbrowse/tree-sidebar'
+import type { WiggleGpuDisplayModel, YAxis } from '@jbrowse/wiggle-core'
 
 export type MarkDisplayContextMenuInfo = ContextMenuAnchor & {
   hit: MarkHitInfo
@@ -20,10 +25,10 @@ export type MarkDisplayContextMenuInfo = ContextMenuAnchor & {
 // The slice of the model the component and the SVG export read. Hand-rolled
 // for the reason Manhattan's is: `renderSvg.tsx` is imported from an action of
 // the model, so naming the inferred model type there closes a type cycle.
-export interface MarkDisplayModel extends WiggleGpuDisplayModel<
-  MarkRenderingBackend,
-  MarkRegionData
-> {
+export interface MarkDisplayModel
+  extends
+    WiggleGpuDisplayModel<MarkRenderingBackend, MarkRegionData>,
+    TreeSidebarModel {
   configuration: { displayId: string }
   renderBlocks: RenderBlock[]
   markList: DisplayMark[]
@@ -35,6 +40,13 @@ export interface MarkDisplayModel extends WiggleGpuDisplayModel<
   densityStandInNotice: string | undefined
   notices: string[]
   facetLayout: FacetLayout
+  axes: YAxis[]
+  drawsRows: boolean
+  sources: RowSource[]
+  effectiveRowHeight: number
+  rowsTopOffset: number
+  showRowLabels: boolean
+  rowTreeProvenance?: ClusterProvenance
   hiddenGroups: { size: number }
   hideGroup: (key: string) => void
   showAllGroups: () => void

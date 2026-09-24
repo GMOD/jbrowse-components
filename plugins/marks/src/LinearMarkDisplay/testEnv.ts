@@ -45,7 +45,9 @@ export function createTestEnvironment(
   })
 }
 
-export function features(records: Record<string, unknown>[]): Feature[] {
+export function features(
+  records: ({ start: number; end: number } & Record<string, unknown>)[],
+): Feature[] {
   return records.map(
     (data, i) =>
       new SimpleFeature({ uniqueId: `f${i}`, refName: 'ctgA', ...data }),

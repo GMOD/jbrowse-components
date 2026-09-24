@@ -3,8 +3,10 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { axisPlotBox } from '@jbrowse/display-ui'
+import { SvgRowLabels, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
+import { rowLabelOffset } from './components/MarkRows.tsx'
 import { markRowHeightPx } from './markList.ts'
 
 import type { MarkDisplayModel } from './components/markDisplayTypes.ts'
@@ -23,9 +25,9 @@ export async function renderSvg(
 }
 
 function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
-  const { model, canvasWidth, height, overlays, opts } = props
+  const { model, view, canvasWidth, height, overlays, opts } = props
   const { yTop, plotHeight } = axisPlotBox(height)
-  const { sections, rowCount } = model.facetLayout
+  const { sections, rowCount, rows } = model.facetLayout
   const rowHeight = markRowHeightPx(plotHeight, rowCount)
   return (
     <ScorePlotSvgFrame
@@ -34,7 +36,7 @@ function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
       regions={model.rpcDataMap}
       renderState={model.renderState}
     >
-      {overlays && sections.length > 0 ? (
+      {overlays && !rows && sections.length > 0 ? (
         <g transform={`translate(0,${yTop})`}>
           <GroupLabelBoxes
             sections={sections.map(section => ({
@@ -47,6 +49,28 @@ function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
             width={canvasWidth}
             canvasHeight={plotHeight}
             theme={createJBrowseTheme(opts?.theme)}
+          />
+        </g>
+      ) : null}
+      {overlays && model.drawsRows ? (
+        <g transform={`translate(0,${yTop})`}>
+          {model.showRowLabels ? (
+            <SvgRowLabels
+              sources={model.sources}
+              rowHeight={model.effectiveRowHeight}
+              labelOffset={rowLabelOffset(model, Math.max(-view.offsetPx, 0))}
+              availableHeight={plotHeight}
+            />
+          ) : null}
+          <SvgTreeSidebar
+            showTree={model.showTree}
+            showLabels={false}
+            hierarchy={model.hierarchy}
+            sources={[]}
+            rowHeight={model.effectiveRowHeight}
+            treeAreaWidth={model.treeAreaWidth}
+            clusterProvenance={model.rowTreeProvenance}
+            contentBlocks={view.dynamicBlocks.contentBlocks}
           />
         </g>
       ) : null}

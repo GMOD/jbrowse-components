@@ -105,6 +105,31 @@ export interface MarkEntry {
 }
 
 /**
+ * The value mark `mark`'s instances stand at over `pos`, by the row each is
+ * drawn in, the highest where two in one row cover it.
+ */
+export function rowValuesAt(
+  region: MarkRegionData,
+  mark: number,
+  pos: number,
+): Map<number, number> {
+  const values = new Map<number, number>()
+  const layer = region.layers[mark]
+  const { y, row } = layer ?? {}
+  if (layer && y && row) {
+    for (let i = 0; i < layer.count; i++) {
+      if (layer.x[i]! <= pos && pos < layer.x2[i]!) {
+        const had = values.get(row[i]!)
+        if (had === undefined || y[i]! > had) {
+          values.set(row[i]!, y[i]!)
+        }
+      }
+    }
+  }
+  return values
+}
+
+/**
  * The px each row band gets: the plot split by the row count, in whole px
  * while every row has one, and a fraction of one past that, so the rows
  * squash to fit the plot rather than run off its foot.

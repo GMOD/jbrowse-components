@@ -35,10 +35,10 @@ export interface PlotFields {
   numeric: string[]
   categorical: string[]
   /** The `source` field where the features carry more than one, a row each. */
-  facet?: string
+  rows?: string
 }
 
-const FACET_FIELD = 'source'
+const ROWS_FIELD = 'source'
 
 function isNumericValue(v: unknown) {
   return typeof v === 'number'
@@ -58,7 +58,7 @@ export function scanPlotFields(features: Feature[]): PlotFields {
   const n = Math.min(features.length, PLOT_FIELD_SAMPLE)
   for (let i = 0; i < n; i++) {
     for (const [field, value] of Object.entries(features[i]!.toJSON())) {
-      if (field === FACET_FIELD) {
+      if (field === ROWS_FIELD) {
         sources.add(value)
       }
       if (
@@ -77,7 +77,7 @@ export function scanPlotFields(features: Feature[]): PlotFields {
   return {
     numeric: fields.filter(f => numeric.get(f)!),
     categorical: fields.filter(f => !numeric.get(f)!),
-    ...(sources.size > 1 ? { facet: FACET_FIELD } : {}),
+    ...(sources.size > 1 ? { rows: ROWS_FIELD } : {}),
   }
 }
 

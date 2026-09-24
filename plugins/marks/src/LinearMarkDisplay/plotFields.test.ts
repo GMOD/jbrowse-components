@@ -46,14 +46,14 @@ test('the default is a bar of score, and nothing where the features carry none',
   ).toBeUndefined()
 })
 
-test('features from more than one source name source as the facet field', () => {
+test('features from more than one source name source as the rows field', () => {
   const multi = scanPlotFields(
     features([
       { score: 5, source: 'k1' },
       { score: 7, source: 'k2' },
     ]),
   )
-  expect(multi.facet).toBe('source')
+  expect(multi.rows).toBe('source')
   expect(defaultPlotMarks(multi)).toEqual([
     { mark: 'bar', encoding: { y: 'score' } },
   ])
@@ -63,7 +63,7 @@ test('features from more than one source name source as the facet field', () => 
       { score: 7, source: 'k1' },
     ]),
   )
-  expect(single.facet).toBeUndefined()
+  expect(single.rows).toBeUndefined()
   expect(defaultPlotMarks(single)).toEqual([
     { mark: 'bar', encoding: { y: 'score' } },
   ])

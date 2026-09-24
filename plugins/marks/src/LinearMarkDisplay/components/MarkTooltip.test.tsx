@@ -13,6 +13,7 @@ const NO_FACET: FacetLayout = {
   sections: [],
   rowCount: 0,
   firstRowOf: new Map(),
+  rows: false,
 }
 
 const HIT: MarkHitInfo = {
@@ -118,6 +119,7 @@ test('a mark in an implicit pileup names its section', async () => {
         ['DEL', 0],
         ['DUP', 2],
       ]),
+      rows: false,
     },
   })
   expect(box.textContent).toContain('svtype: DUP')
@@ -147,6 +149,7 @@ test('under a facet the band reads as the section chip rather than an index', as
         ['DEL', 0],
         ['DUP', 2],
       ]),
+      rows: false,
     },
   })
   expect(box.textContent).toContain('svtype: DUP')

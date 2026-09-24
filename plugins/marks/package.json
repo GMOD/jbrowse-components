@@ -36,6 +36,7 @@
     "@jbrowse/mobx-state-tree": "^6.6.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/render-core": "workspace:^",
+    "@jbrowse/tree-sidebar": "workspace:^",
     "@jbrowse/wiggle-core": "workspace:^",
     "@mui/icons-material": "^9.4.0",
     "@mui/material": "^9.4.0",

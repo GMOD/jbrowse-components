@@ -1711,6 +1711,9 @@ importers:
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
+      '@jbrowse/tree-sidebar':
+        specifier: workspace:^
+        version: link:../../packages/tree-sidebar
       '@jbrowse/wiggle-core':
         specifier: workspace:^
         version: link:../../packages/wiggle-core
