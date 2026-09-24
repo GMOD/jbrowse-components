@@ -13,7 +13,7 @@ const gff = path.join(__dirname, '../../test_data/volvox/volvox.sort.gff3.gz')
 // one the track's requests use boots and warms a worker the track never asks.
 // A config.json track is frozen, and its raw adapter snapshot hashes to another
 // id than the one its config node reads.
-test('a pending track loads its adapter code under the id its requests use', async () => {
+test('a pending track loads its adapter code and reads its index under the id its requests use', async () => {
   const call = jest.spyOn(RpcManager.prototype, 'call')
   await createTestSessionAsync({
     jbrowseConfig: {
@@ -72,5 +72,15 @@ test('a pending track loads its adapter code under the id its requests use', asy
     idOf('RenderFeatureData'),
     'CoreLoadAdapterCode',
     { adapterTypes: ['Gff3TabixAdapter'] },
+  ])
+  expect(call.mock.calls[1]).toEqual([
+    idOf('RenderFeatureData'),
+    'CoreGetRefNames',
+    expect.objectContaining({
+      assemblyName: 'volvox',
+      sequenceAdapter: expect.objectContaining({
+        type: 'FromConfigSequenceAdapter',
+      }),
+    }),
   ])
 })

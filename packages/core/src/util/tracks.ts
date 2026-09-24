@@ -21,6 +21,7 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { observable, runInAction, untracked } from 'mobx'
 
+import { getSequenceAdapterConfigByName } from '../assemblyManager/getSequenceAdapterConfig.ts'
 import { readConfObject } from '../configuration/index.ts'
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import {
@@ -1438,7 +1439,7 @@ export function warmTrackDisplayGeneric(
       .resolveDisplayTypeRecord(picked.type)
       ?.loadStateModel()
       .catch(() => {})
-    warmTrackAdapterCode(self, trackId)
+    warmTrackAdapter(self, trackId)
   } catch {
     // the launch reports an unresolvable track
   }
@@ -1462,12 +1463,15 @@ function adapterTypesIn(
 }
 
 /**
+ * Load the track's adapter code and read its index in the worker, beside the
+ * assembly load the track's first request waits for.
+ *
  * Sent under the id the track's own requests will use, so it reaches, and
  * boots, the worker that serves them. That id hashes the adapter config as the
  * track's config node reads it, so a frozen config.json entry is read through a
  * node of its type: its raw adapter snapshot hashes to another worker.
  */
-function warmTrackAdapterCode(self: GenericView, trackId: string) {
+function warmTrackAdapter(self: GenericView, trackId: string) {
   const { pluginManager } = getEnv(self)
   const session = getSession(self)
   const raw: AnyConfigurationModel | Record<string, unknown> | undefined =
@@ -1491,6 +1495,21 @@ function warmTrackAdapterCode(self: GenericView, trackId: string) {
         adapterTypes: [...adapterTypesIn(adapterConfig, pluginManager)],
       })
       .catch(() => {})
+    const [assemblyName] = readConfObject(conf, 'assemblyNames') as string[]
+    const sequenceAdapter = assemblyName
+      ? getSequenceAdapterConfigByName(session.assemblyManager, assemblyName)
+      : undefined
+    if (sequenceAdapter) {
+      session.rpcManager
+        // eslint-disable-next-line no-restricted-syntax -- an index read the track's first request would make anyway: nothing to show, and nothing a user can move on from
+        .call(sessionId, 'CoreGetRefNames', {
+          adapterConfig,
+          assemblyName,
+          sequenceAdapter,
+          signal: undefined,
+        })
+        .catch(() => {})
+    }
   }
 }
 
