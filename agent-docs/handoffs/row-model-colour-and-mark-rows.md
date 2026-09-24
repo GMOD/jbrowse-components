@@ -60,6 +60,20 @@ required a browser run against pulled goldens on canvas2d and webgl). Next:
 rebase, run the brief's gates, then the review routine (a fresh reviewer with a
 diff cut from the merge base, then a fix round), then land.
 
+**A multi-row row changes colour on a pan, on main and on this branch.** The
+palette is dealt over the rows loaded now (`discoveredRows` on main,
+`expandedRows` in `rowColorDeal` here), so panning to where an early-sorting
+value such as rmsk's `RC` appears or goes recolours every row after it. Left
+unfixed on main on 2026-09-23 because the fix is the dealer's order and a
+visible palette change, which is call 1 below.
+
+**Deferred until both branches land:** the retired-settings refusal and the
+shorthand router are copied across multi-row (`retiredSettings.ts`,
+`displayDefaults.ts`), MAF and `MultiSampleVariantBaseModel`, plus the
+`MultiQuantitativeTrack` router `mark-rows` rewrites — one helper in
+`tree-sidebar` taking the display type is about −50 lines. Multi-row's
+`MultiRowSource` is `RowSource` field for field.
+
 ## Open branch 2: `mark-rows` (worktree `.claude/worktrees/mark-rows`)
 
 Thirteen commits on `5fb2af80ad`, HEAD `c896d69cc0`, tree clean, **reviewed,
