@@ -1,3 +1,4 @@
+import { adapterConfigCacheKey } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import {
@@ -75,16 +76,23 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
       signal,
       statusCallback,
     ) =>
-      session.rpcManager.call('MafSequenceWidget', 'MafGetSequences', {
-        adapterConfig,
-        samples,
-        showAllLetters,
-        includeInsertions,
-        regions,
-        byteLimit,
-        signal,
-        statusCallback,
-      }),
+      // The launching display's session, so the read lands on the worker that
+      // already holds this adapter and its index rather than building a
+      // second under a session nothing ever frees.
+      session.rpcManager.call(
+        adapterConfigCacheKey(adapterConfig),
+        'MafGetSequences',
+        {
+          adapterConfig,
+          samples,
+          showAllLetters,
+          includeInsertions,
+          regions,
+          byteLimit,
+          signal,
+          statusCallback,
+        },
+      ),
   )
   const loading = !data && !error
   // The worker measures the alignment index before it reads, and answers this
