@@ -212,6 +212,33 @@ test('reset returns a maybeBoolean to its unset default', () => {
   expect(readConfObject(target, 'maybeBoolTest')).toBeUndefined()
 })
 
+// The URL field writes `{ uri: '' }` when cleared, which a maybeFileLocation
+// slot reads as unset, so clearing it is the same as never having filled it.
+test('a maybeFileLocation slot starts unset and a cleared URL returns it there', () => {
+  const TestSchema = ConfigurationSchema('TestThing', {
+    sidecar: { type: 'maybeFileLocation' },
+  })
+  const target = TestSchema.create(undefined, { pluginManager })
+
+  const { getByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <ConfigurationEditor model={{ target }} />
+    </ThemeProvider>,
+  )
+
+  const input = getByTestId('urlInput') as HTMLInputElement
+  expect(input.value).toBe('')
+
+  fireEvent.change(input, { target: { value: 'https://x.org/samples.tsv' } })
+  expect(readConfObject(target, 'sidecar')).toEqual({
+    uri: 'https://x.org/samples.tsv',
+    locationType: 'UriLocation',
+  })
+
+  fireEvent.change(input, { target: { value: '' } })
+  expect(readConfObject(target, 'sidecar')).toBeUndefined()
+})
+
 test('filters slots by name', () => {
   const TestSchema = ConfigurationSchema('TestThing', {
     fooColor: {
