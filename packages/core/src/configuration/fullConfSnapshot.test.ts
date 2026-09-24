@@ -2,6 +2,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
+import { ConfigurationSchemaUnion } from './configurationSchemaUnion.ts'
 import { fullConfSnapshot } from './fullConfSnapshot.ts'
 import { readConfObject, readConfigValue } from './readConfObject.ts'
 
@@ -122,18 +123,17 @@ describe('fullConfSnapshot', () => {
     expect(labels.name).toBe("jexl:get(feature,'name')")
   })
 
-  it('drops arrays/maps of sub-schemas and string/number constants', () => {
-    // Only scalars + direct sub-configs survive. An array/map of sub-schemas
-    // would otherwise recurse to a meaningless `{}` (its MST node reports as a
-    // config model but the array/map type has no slot table); constants are
-    // editor metadata, not config the worker reads.
+  it('recurses into arrays and maps of sub-schemas and drops constants', () => {
     const schema = ConfigurationSchema('WithCollections', {
       scalar: { type: 'number', defaultValue: 7 },
       sub: ConfigurationSchema('Sub', {
         x: { type: 'number', defaultValue: 1 },
       }),
       arr: types.array(
-        ConfigurationSchema('Arr', { y: { type: 'number', defaultValue: 2 } }),
+        ConfigurationSchema('Arr', {
+          y: { type: 'number', defaultValue: 2 },
+          w: { type: 'number', defaultValue: 0 },
+        }),
       ),
       mp: types.map(
         ConfigurationSchema('Mp', { z: { type: 'number', defaultValue: 3 } }),
@@ -145,7 +145,41 @@ describe('fullConfSnapshot', () => {
       { pluginManager: pm },
     )
 
-    expect(fullConfSnapshot(node)).toEqual({ scalar: 7, sub: { x: 1 } })
+    expect(fullConfSnapshot(node)).toEqual({
+      scalar: 7,
+      sub: { x: 1 },
+      arr: [{ y: 9, w: 0 }],
+      mp: { k: { z: 4 } },
+    })
+  })
+
+  it("names each union entry's type, and an explicitly typed schema its own", () => {
+    const filter = ConfigurationSchema(
+      'filter',
+      { expr: { type: 'string', defaultValue: '' } },
+      { explicitlyTyped: true, closed: true },
+    )
+    const bin = ConfigurationSchema(
+      'bin',
+      { step: { type: 'number', defaultValue: 1 } },
+      { explicitlyTyped: true, closed: true },
+    )
+    const schema = ConfigurationSchema(
+      'TypedHost',
+      { steps: types.array(ConfigurationSchemaUnion('Step', { filter, bin })) },
+      { explicitlyTyped: true },
+    )
+    const node = schema.create(
+      { steps: [{ type: 'filter', expr: 'x' }, { type: 'bin' }] },
+      { pluginManager: pm },
+    )
+    expect(fullConfSnapshot(node)).toEqual({
+      type: 'TypedHost',
+      steps: [
+        { type: 'filter', expr: 'x' },
+        { type: 'bin', step: 1 },
+      ],
+    })
   })
 })
 

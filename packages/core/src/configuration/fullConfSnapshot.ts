@@ -1,18 +1,37 @@
 import {
   getSnapshot,
+  getType,
   isArrayType,
   isMapType,
   isStateTreeNode,
 } from '@jbrowse/mobx-state-tree'
 
-import { getConfigurationSchemaDefinition } from './schemaRegistry.ts'
+import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import {
-  isConfigurationModel,
   isConfigurationSchemaType,
   isSlotDefinitionEntry,
 } from './schemaTypes.ts'
 
 import type { AnyConfigurationModel } from './types.ts'
+
+// a sub-schema member: one node, or an array or map of them, entry by entry
+function subConfSnapshot(member: unknown): unknown {
+  if (!isStateTreeNode(member)) {
+    return member
+  }
+  const type = getType(member)
+  if (isArrayType(type)) {
+    return (member as AnyConfigurationModel[]).map(fullConfSnapshot)
+  }
+  if (isMapType(type)) {
+    return Object.fromEntries(
+      [...(member as Map<string, AnyConfigurationModel>).entries()].map(
+        ([key, node]) => [key, fullConfSnapshot(node)],
+      ),
+    )
+  }
+  return fullConfSnapshot(member as AnyConfigurationModel)
+}
 
 /**
  * Plain-object snapshot of a configuration model including ALL values, even
@@ -20,32 +39,24 @@ import type { AnyConfigurationModel } from './types.ts'
  * via `types.stripDefault`, this returns every slot's current value, so the
  * result is a self-contained config object an RPC worker can read with no
  * schema. JEXL callback slots keep their raw `"jexl:..."` string for the worker
- * to evaluate per-feature.
- *
- * Note: only handles slots and direct sub-configuration models. Arrays or maps
- * of sub-schemas are silently dropped — nothing has needed them.
+ * to evaluate per-feature. A sub-schema recurses, and so does each entry of an
+ * array or map of them; an explicitly typed schema carries its `type`, which
+ * is what tells the entries of a union list apart. Constants are the editor's
+ * and are left out.
  */
-export function fullConfSnapshot(confObject: AnyConfigurationModel) {
-  const result: Record<string, unknown> = {}
-  const table = getConfigurationSchemaDefinition(confObject)
-  for (const [key, def] of Object.entries(table ?? {})) {
-    const v = confObject[key]
+export function fullConfSnapshot(
+  confObject: AnyConfigurationModel,
+): Record<string, unknown> {
+  const meta = getConfigurationSchemaMetadata(getType(confObject))
+  const result: Record<string, unknown> = meta?.options.explicitlyTyped
+    ? { type: confObject.type }
+    : {}
+  for (const [key, def] of Object.entries(meta?.definition ?? {})) {
+    const member = confObject[key]
     if (isSlotDefinitionEntry(def)) {
-      // jexl callback strings pass through raw for per-feature evaluation in
-      // the worker.
-      result[key] = isStateTreeNode(v) ? getSnapshot(v) : v
-    } else if (
-      isConfigurationSchemaType(def) &&
-      !isArrayType(def) &&
-      !isMapType(def) &&
-      isConfigurationModel(v)
-    ) {
-      // a direct sub-configuration recurses. Arrays/maps of sub-schemas are
-      // dropped: their MST node also reports as a config model, but the
-      // array/map type carries no registered slot table, so recursing would
-      // emit a meaningless `{}` (a type-confusion hazard for a consumer
-      // expecting the array). Constants are skipped entirely.
-      result[key] = fullConfSnapshot(v)
+      result[key] = isStateTreeNode(member) ? getSnapshot(member) : member
+    } else if (isConfigurationSchemaType(def) && member !== undefined) {
+      result[key] = subConfSnapshot(member)
     }
   }
   return result
