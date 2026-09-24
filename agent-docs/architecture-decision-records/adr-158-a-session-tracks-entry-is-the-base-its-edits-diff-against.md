@@ -52,20 +52,25 @@ entry when an id is in both, so what a track shows and what its edit diffs
 against stay one config.
 
 **An edit re-resolves one track.** `getTrackById`'s per-id computed lays the
-track's delta over its base (`withTrackEdits`), so a delta write re-evaluates
-the per-id computeds something observes, each in constant time, and rebuilds
-no index over the catalog. `tracks` is held beside the indexes, so a reader
-outside any reaction — the search box's adapter list on every keystroke, the jb
-API's track list — reads it as it stands, as on main. An edit copies the list
-of bases, 5 µs at 10,000 tracks, and lays each delta at its track's position,
-so past that copy an edit costs the count of edited tracks. `getTracksById`, deprecated and read by no
-in-tree code, is kept against the two lists it was built from and rebuilt on
-its first read after a change. `getEditableTrackConfig` is a per-id computed on the
-working copy, so a display's config reads depend on which node its track
-resolves to and not on the config that node mirrors: persisting the copy they
-read recomputes none of them, where main recomputed every one on each
-config-track persist. A persist handing in the working copy's own snapshot
-skips re-hydrating it, since it is already in the schema's form.
+track's delta over its base (`withTrackEdits`) and reads that delta through a
+per-id computed of its own. A write replaces the whole `trackConfigDeltas`
+object but keeps every other track's delta by identity, so MobX stops at each
+unchanged one: the write re-runs the edited track's resolution alone and
+rebuilds no index over the catalog. `getTrackConfigChanges` reads the delta the
+same way, so an open track's edited badge re-diffs only on its own edit.
+`trackWorkCensus.test.ts` counts the resolutions per step. `tracks` is held
+beside the indexes, so a reader outside any reaction — the search box's adapter
+list on every keystroke, the jb API's track list — reads it as it stands, as on
+main. An edit copies the list of bases, 5 µs at 10,000 tracks, and lays each
+delta at its track's position, so past that copy an edit costs the count of
+edited tracks. `getTracksById`, deprecated and read by no in-tree code, is kept
+against the two lists it was built from and rebuilt on its first read after a
+change. `getEditableTrackConfig` is a per-id computed on the working copy, so a
+display's config reads depend on which node its track resolves to and not on the
+config that node mirrors: persisting the copy they read recomputes none of them,
+where main recomputed every one on each config-track persist. A persist handing
+in the working copy's own snapshot skips re-hydrating it, since it is already in
+the schema's form.
 
 **A working copy is stamped with the resolved config it mirrors**, not the
 delta. A session entry can be replaced while its delta stays the same: a track
