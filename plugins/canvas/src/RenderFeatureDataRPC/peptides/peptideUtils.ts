@@ -7,10 +7,7 @@ import {
 import { firstValueFrom, toArray } from 'rxjs'
 
 import { hasCDSSubfeature } from '../glyphs/glyphUtils.ts'
-import {
-  collectPolyproteinCDS,
-  hasMatureProteinChildren,
-} from '../glyphs/matureProteinRegion.ts'
+import { collectPolyproteinCDS } from '../glyphs/matureProteinRegion.ts'
 import { getSubfeatures, isCDS } from '../util.ts'
 
 import type { PeptideData } from '../types.ts'
@@ -133,9 +130,10 @@ export function findTranscriptsWithCDS(
   const transcripts: Feature[] = []
 
   for (const feature of features.values()) {
-    // A standalone polyprotein CDS is itself the coding unit, and its
-    // cleavage-product children satisfy none of the CDS-child heuristics below.
-    if (isCDS(feature) && hasMatureProteinChildren(feature)) {
+    // A top-level CDS with no CDS rows under it is itself the coding unit: the
+    // childless one a prokaryote gene caller emits, and a polyprotein whose
+    // cleavage products satisfy none of the heuristics below.
+    if (isCDS(feature) && !hasCDSSubfeature(feature)) {
       transcripts.push(feature)
       continue
     }

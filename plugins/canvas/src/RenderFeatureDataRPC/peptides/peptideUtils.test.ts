@@ -303,13 +303,13 @@ describe('findTranscriptsWithCDS', () => {
     expect(result.map(f => f.id())).toEqual(['cds-1'])
   })
 
-  it('ignores a bare CDS with no children', () => {
+  it('translates a bare top-level CDS as its own coding unit', () => {
     const cds = createMockFeature({ id: 'cds-1', type: 'CDS', subfeatures: [] })
 
     const features = new Map([['cds-1', cds]])
     const result = findTranscriptsWithCDS(features)
 
-    expect(result).toHaveLength(0)
+    expect(result.map(f => f.id())).toEqual(['cds-1'])
   })
 
   it('descends into a structural container (children are containers) for a custom type', () => {

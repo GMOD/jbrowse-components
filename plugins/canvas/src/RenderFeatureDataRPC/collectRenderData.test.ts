@@ -92,6 +92,21 @@ function twoExonTranscript() {
 }
 
 describe('collectRenderData peptide overlay', () => {
+  it('paints the codons of a bare top-level CDS drawn as a box', () => {
+    const cds = mockFeature({ type: 'CDS', id: 'cds1', start: 100, end: 109 })
+    const result = collect(boxLayout(cds), {
+      peptideDataMap: new Map([['cds1', { protein: 'MFK' }]]),
+    })
+
+    expect(
+      result.aminoAcidOverlay!.map(a => [a.aminoAcid, a.startBp, a.endBp]),
+    ).toEqual([
+      ['M', 100, 103],
+      ['F', 103, 106],
+      ['K', 106, 109],
+    ])
+  })
+
   it('maps the protein onto CDS exons, splitting a codon at the exon boundary', () => {
     const { layout } = twoExonTranscript()
     const result = collect(layout, {

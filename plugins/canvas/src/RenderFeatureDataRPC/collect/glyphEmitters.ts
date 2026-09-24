@@ -554,11 +554,28 @@ function emitBox(
   const { baseTopPx, flatbushIdx, isRoot, parentFeature, labelRowsAbove } =
     place
   const { feature, height } = layout
-  pushBoxRect(
-    { feature, topPx: baseTopPx, height, flatbushIdx, labelRowsAbove },
-    ctx,
-    collector,
-  )
+  const bySegment = aminoAcidsByFeature(feature, ctx)
+  const aminoAcids = bySegment && [...bySegment.values()].flat()
+  if (aminoAcids?.length) {
+    emitCodonRects(
+      {
+        aminoAcids,
+        baseColor: boxColor(feature, ctx, collector.colorKey),
+        topPx: baseTopPx,
+        height,
+        strand: feature.get('strand') ?? 0,
+        flatbushIdx,
+        labelRowsAbove,
+      },
+      collector,
+    )
+  } else {
+    pushBoxRect(
+      { feature, topPx: baseTopPx, height, flatbushIdx, labelRowsAbove },
+      ctx,
+      collector,
+    )
+  }
   if (isRoot) {
     emitTopLevelStrandArrow(layout, place, ctx, collector)
   } else {
