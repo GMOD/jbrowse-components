@@ -223,13 +223,27 @@ lands before React re-renders.
 
 The named ramps a continuous colour scale's `scheme` takes, each one a stop
 table in `colorRamp.ts` that every ramp baker reads, so no display can name a
-scheme nothing bakes. `juicebox` fades from transparent to red, as Juicebox
-paints contacts; `fall` runs white through yellow and red to black, as HiGlass
-does; `reds` and `blues` run from white.
+scheme nothing bakes. `viridis`, `magma`, `inferno` and `cividis` are
+matplotlib's perceptual ramps, dark at the low end; `juicebox` fades from
+transparent to red, as Juicebox paints contacts; `fall` runs white through
+yellow and red to black, as HiGlass does; `reds` and `blues` are ColorBrewer's,
+from white; `redblue` and `purpleorange` diverge through white, ColorBrewer's
+RdBu and PuOr.
 
 ```js
 // type signature
-readonly[('viridis', 'juicebox', 'fall', 'reds', 'blues')]
+readonly[
+  ('viridis',
+  'magma',
+  'inferno',
+  'cividis',
+  'juicebox',
+  'fall',
+  'reds',
+  'blues',
+  'redblue',
+  'purpleorange')
+]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)
@@ -316,6 +330,18 @@ stretches nothing overlaps left out.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+### darkAtLowEnd
+
+Whether a named ramp runs dark at its low end, drawn over white: viridis and its
+siblings do, juicebox, fall, reds and blues do not.
+
+```js
+// type signature
+(scheme: "blues" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "reds" | "viridis") => boolean
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
+
 ### DEFAULT_COLOR_SCHEME
 
 The ramp a continuous scale samples while it names no `range` and no `scheme`,
@@ -323,7 +349,16 @@ so a declaration spelling it out and one leaving it unset resolve alike.
 
 ```js
 // type signature
-;'blues' | 'fall' | 'juicebox' | 'reds' | 'viridis'
+;'blues' |
+  'cividis' |
+  'fall' |
+  'inferno' |
+  'juicebox' |
+  'magma' |
+  'purpleorange' |
+  'redblue' |
+  'reds' |
+  'viridis'
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)

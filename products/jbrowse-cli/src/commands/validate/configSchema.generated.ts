@@ -4296,10 +4296,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
               "enum": [
                 "viridis",
+                "magma",
+                "inferno",
+                "cividis",
                 "juicebox",
                 "fall",
                 "reds",
-                "blues"
+                "blues",
+                "redblue",
+                "purpleorange"
               ]
             },
             "reverse": {
@@ -4966,10 +4971,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
               "enum": [
                 "viridis",
+                "magma",
+                "inferno",
+                "cividis",
                 "juicebox",
                 "fall",
                 "reds",
-                "blues"
+                "blues",
+                "redblue",
+                "purpleorange"
               ]
             },
             "reverse": {
@@ -6399,10 +6409,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
               "enum": [
                 "viridis",
+                "magma",
+                "inferno",
+                "cividis",
                 "juicebox",
                 "fall",
                 "reds",
-                "blues"
+                "blues",
+                "redblue",
+                "purpleorange"
               ]
             },
             "reverse": {
@@ -7163,10 +7178,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "the named ramp counts run across.",
           "enum": [
             "viridis",
+            "magma",
+            "inferno",
+            "cividis",
             "juicebox",
             "fall",
             "reds",
-            "blues"
+            "blues",
+            "redblue",
+            "purpleorange"
           ],
           "default": "juicebox"
         },
@@ -7638,10 +7658,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
               "enum": [
                 "viridis",
+                "magma",
+                "inferno",
+                "cividis",
                 "juicebox",
                 "fall",
                 "reds",
-                "blues"
+                "blues",
+                "redblue",
+                "purpleorange"
               ]
             },
             "reverse": {

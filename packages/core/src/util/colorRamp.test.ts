@@ -1,5 +1,6 @@
 import {
   buildColorRampLut,
+  darkAtLowEnd,
   sampleColorRamp,
   stopsFromRampLut,
 } from './colorRamp.ts'
@@ -100,4 +101,12 @@ test('domainMid moves the stop list midpoint to that fraction of the table', () 
   expect(at(1)).toEqual([255, 0, 0])
   expect(at(0.125)).toEqual(sampleColorRamp(stops, 0.25).slice(0, 3))
   expect(at(0.625)).toEqual(sampleColorRamp(stops, 0.75).slice(0, 3))
+})
+
+test('a ramp is dark at its low end when its first stop is darker over white', () => {
+  expect(darkAtLowEnd('viridis')).toBe(true)
+  expect(darkAtLowEnd('cividis')).toBe(true)
+  expect(darkAtLowEnd('juicebox')).toBe(false)
+  expect(darkAtLowEnd('fall')).toBe(false)
+  expect(darkAtLowEnd('blues')).toBe(false)
 })

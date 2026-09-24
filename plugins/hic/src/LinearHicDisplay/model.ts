@@ -4,7 +4,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { rampLutOf } from '@jbrowse/core/util/colorRamp'
+import { darkAtLowEnd, rampLutOf } from '@jbrowse/core/util/colorRamp'
 import { installPrerequisiteFetch } from '@jbrowse/core/util/installPrerequisiteFetch'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin, {
@@ -588,9 +588,12 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #action
+       * Picks a ramp and runs it light at few contacts, reversing one that is
+       * dark at its low end, since an unpainted bin is the page behind it.
        */
       setColorScheme(scheme: ColorSchemeName) {
         setConf(self, ['color', 'scheme'], scheme)
+        setConf(self, ['color', 'reverse'], darkAtLowEnd(scheme))
       },
       /**
        * #action

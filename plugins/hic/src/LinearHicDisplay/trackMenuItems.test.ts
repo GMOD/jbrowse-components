@@ -68,9 +68,9 @@ describe('hic track menu shape', () => {
       ...subMenuOf(items, 'Normalization'),
     ].filter(i => i.type === 'radio' || i.type === 'checkbox')
 
-    // 5 visibility checkboxes + 5 schemes + 3 normalizations, so the assertion
-    // below can't pass by finding no rows at all
-    expect(rows.length).toBe(13)
+    // 5 visibility checkboxes + 10 schemes + 3 normalizations, so the
+    // assertion below can't pass by finding no rows at all
+    expect(rows.length).toBe(18)
     expect(rows.map(i => [labelOf(i), staysOpenOnClick(i)])).toEqual(
       rows.map(i => [labelOf(i), true]),
     )
@@ -85,10 +85,15 @@ describe('hic track menu shape', () => {
       ]),
     ).toEqual([
       ['Viridis', true],
+      ['Magma', false],
+      ['Inferno', false],
+      ['Cividis', false],
       ['Juicebox', false],
       ['Fall', false],
       ['Reds', false],
       ['Blues', false],
+      ['Redblue', false],
+      ['Purpleorange', false],
     ])
   })
 

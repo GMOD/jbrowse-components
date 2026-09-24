@@ -80,7 +80,7 @@ const ALU_SIDECAR_TRACK = {
 }
 
 // The Alu track with ONE declared mark, which is what the Plot field dialog
-// reopens prefilled from: the value field and the shape it finds are the
+// reopens prefilled from: the value field and the mark type it finds are the
 // milliDiv bar below rather than an empty form.
 const ALU_PLOT_FIELD_TRACK = {
   ...ALU_MARKS_TRACK,
@@ -219,7 +219,7 @@ export const marksSpecs: ScreenshotSpec[] = [
   },
 
   // The Plot field dialog over the Alu track, reopened on the one mark that
-  // track declares: the numeric fields the scan found, the shape, the colour
+  // track declares: the numeric fields the scan found, the mark type, the colour
   // field and the count-per-bin box.
   {
     mode: 'url',

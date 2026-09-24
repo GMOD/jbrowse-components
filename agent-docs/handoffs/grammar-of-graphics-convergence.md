@@ -1,6 +1,6 @@
 ---
 name: grammar-of-graphics-convergence
-description: The grammar thread as of 2026-09-23. Four rules for how far to take it (the parser's output is the data, one object per concept, generality resolves before the loop, a track stays its format and the grammar supplies its parts), a census of the copies between each gmod parser and its GPU buffer, Colin's calls of 2026-09-23 (Vega-Lite's mark/shape naming, a DOM text layer, colour stays per mark), and the work left — which ramps to add, y scales shared across tracks, the rename, a text layer, one row scale, the copies. y2 waits on a picture. Read before proposing a grammar feature, or converging a display's colour ramp, rows or labels.
+description: The grammar thread as of 2026-09-23. Four rules for how far to take it (the parser's output is the data, one object per concept, generality resolves before the loop, a track stays its format and the grammar supplies its parts), a census of the copies between each gmod parser and its GPU buffer, Colin's calls of 2026-09-23 (Vega-Lite's mark/shape naming, a DOM text layer, colour stays per mark), and the work left — y scales shared across tracks, a text layer, one row scale, the copies. y2 was declined on captures. Read before proposing a grammar feature, or converging a display's colour ramp, rows or labels.
 ---
 
 # Grammar of graphics: the convergence thread
@@ -53,6 +53,10 @@ Colin's answers to the calls a Fable review of the mark display left open:
 - **Vega-Lite's names.** A mark's kind is `mark` and the point symbol is
   `encoding.shape`, landed as
   [ADR-159](../architecture-decision-records/adr-159-a-mark-is-spelt-as-vega-lite-spells-one.md).
+  The hosted `jbrowse.org/demos/read_marks/config.json` still spells `shape`:
+  run `scripts/deploy-demo.sh demos/read_marks/config.json` when main next
+  deploys,
+  or the tutorial's live links fail to load.
 - **The text layer draws DOM text on screen**, for accessibility. A label
   layer is sparse once overlaps are culled, so DOM costs little there; dense
   per-base text (sequence letters, MAF bases) stays on canvas and outside the
@@ -63,8 +67,11 @@ Colin's answers to the calls a Fable review of the mark display left open:
   scale and a key. Only two open-ended ramps unioning one domain is missing,
   and nothing in the tree asks for it. A display-level `scales.color` would
   be a second spelling.
-- **`y2` needs a picture first**: the mark display's BigWig min and max as two
-  point sets beside the range bar `y2` would draw, and wiggle's whisker band.
+- **No `y2`.** Captured on the COLO829 tumour coverage over 1 Mb of hg19
+  chr17, a range bar from each bin's `minScore` to its `maxScore` read worse
+  to Colin than both of today's pictures: the mark display's mean bars with
+  the min and max as point marks, and wiggle's whisker band. `origin` stays
+  the display's slot.
 
 ## Withdrawn on 2026-09-23
 
@@ -116,22 +123,20 @@ two copies deep.
 ### 1. One ramp table
 
 Landed: every named ramp is a stop table in `packages/core/src/util/colorRamp.ts`
-under a name in `COLOR_SCHEMES` — `viridis`, `juicebox`, `fall`, `reds`,
-`blues` — and `rampLutOf` there bakes a declaration's LUT once, bounded, as
+under a name in `COLOR_SCHEMES`, and `rampLutOf` there bakes a declaration's LUT once, bounded, as
 `rampOverExtent` does for a ramp over a loaded extent. Hi-C's colour
 is the `HicColor` object (`scale: linear | log`, `scheme`, `reverse`), which
 retired `colorScheme` and `useLogScale`; its menu lists every scheme. LD paints
-R² through `reds` and D′ through `blues`, bytes unchanged, and declares no
-colour slot, since nothing asks to pick an LD ramp. Hi-C's percentile domain
+R² through `reds` and D′ through `blues` and declares no colour slot, since nothing asks to pick an LD ramp. Hi-C's percentile domain
 is a domain rule of its own and stays the `useColorPercentile` slot.
 
-What is left is which ramps to add. The perceptual ramps (magma, inferno,
-plasma, cividis) and one or two diverging ones cost a stop table each and no
-new shader: ADR-095's named-ramp gauge is one uniform flag and a 1024-byte LUT.
-Choosing is a visual call: capture the candidates side by side on a Hi-C locus
-and a wiggle density track before asking. Whether `reds` and `blues` should
-become ColorBrewer's (Vega's) stops rather than LD's hand-picked ones is part
-of the same capture.
+The ramps to add were picked from captures on a Hi-C locus and a compartment
+eigenvector (2026-09-23): `magma`, `inferno` and `cividis` beside viridis,
+the diverging `redblue` and `purpleorange` (ColorBrewer's RdBu and PuOr), and
+ColorBrewer's own stops under `reds` and `blues`. Plasma read as magma's
+sibling and turbo is not perceptually uniform, so neither is in. A ramp dark
+at its low end paints every sparse Hi-C bin a dark speck on the page, so the
+Hi-C menu writes `reverse` for one (`darkAtLowEnd`).
 
 ### 2. y scales shared across tracks
 
@@ -194,16 +199,11 @@ per row, is the rule-1 form of ADR-152's column encoder, and ADR-152's two lane
 fixes (no `featureIndex` when nothing reorders, a constant colour as a scalar)
 still gate wiggle itself.
 
-### 6. A `y2` channel — needs a picture for Colin
+### 6. A `y2` channel — declined
 
-`y2` is a second value position. A bar with only `y` stands from the baseline
-to `y`; a bar with `y` and `y2` stands from `y` to `y2`, so it can draw a range:
-a BigWig bin's min to its max, an error bar, a confidence interval. Wiggle's
-whiskers rendering already draws exactly that by hand, a translucent band from
-each bin's min to its max with the mean over it
-(`plugins/wiggle/src/shared/wiggleMarks.ts:315`). The mark display reads a
-BigWig's `minScore` and `maxScore` (ADR-123) but can draw them only as two sets
-of points. Wiggle's whiskers band would be the second consumer.
+Declined on 2026-09-23 (above): the range bar it would draw read worse than
+the point marks and the whisker band that already exist. It reopens on a
+config whose picture two point marks cannot give.
 
 ### 7. Colours still spelt outside the colour object
 
@@ -219,5 +219,5 @@ ADR-135.
 The row model (§4) is under way, ahead of the rest: it converges code that
 exists, which rule 2 ranks first. The ramp table and the `mark`/`shape`
 rename have landed. Next shared y, one mixin and a real tutorial step it
-removes, then the text layer. The ramps to add and `y2` each wait on a capture
-put to Colin. The copies run beside any of them, one bench each.
+removes, then the text layer. The copies run beside any of them, one bench
+each.

@@ -4103,7 +4103,18 @@
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "enum": ["viridis", "juicebox", "fall", "reds", "blues"]
+              "enum": [
+                "viridis",
+                "magma",
+                "inferno",
+                "cividis",
+                "juicebox",
+                "fall",
+                "reds",
+                "blues",
+                "redblue",
+                "purpleorange"
+              ]
             },
             "reverse": {
               "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
@@ -4708,7 +4719,18 @@
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "enum": ["viridis", "juicebox", "fall", "reds", "blues"]
+              "enum": [
+                "viridis",
+                "magma",
+                "inferno",
+                "cividis",
+                "juicebox",
+                "fall",
+                "reds",
+                "blues",
+                "redblue",
+                "purpleorange"
+              ]
             },
             "reverse": {
               "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
@@ -6029,7 +6051,18 @@
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "enum": ["viridis", "juicebox", "fall", "reds", "blues"]
+              "enum": [
+                "viridis",
+                "magma",
+                "inferno",
+                "cividis",
+                "juicebox",
+                "fall",
+                "reds",
+                "blues",
+                "redblue",
+                "purpleorange"
+              ]
             },
             "reverse": {
               "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
@@ -6722,7 +6755,18 @@
         },
         "scheme": {
           "description": "the named ramp counts run across.",
-          "enum": ["viridis", "juicebox", "fall", "reds", "blues"],
+          "enum": [
+            "viridis",
+            "magma",
+            "inferno",
+            "cividis",
+            "juicebox",
+            "fall",
+            "reds",
+            "blues",
+            "redblue",
+            "purpleorange"
+          ],
           "default": "juicebox"
         },
         "reverse": {
@@ -7170,7 +7214,18 @@
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "enum": ["viridis", "juicebox", "fall", "reds", "blues"]
+              "enum": [
+                "viridis",
+                "magma",
+                "inferno",
+                "cividis",
+                "juicebox",
+                "fall",
+                "reds",
+                "blues",
+                "redblue",
+                "purpleorange"
+              ]
             },
             "reverse": {
               "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",

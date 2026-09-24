@@ -638,7 +638,7 @@ test('an encoding channel refuses a key it does not declare', () => {
 
 // Each of these loaded and painted something else: a scheme name inside a
 // list of colour stops painted the invalid-colour sentinel, and a shape range
-// or value naming no shape drew a disc under a key saying otherwise, or made
+// or value naming no shape drew a circle under a key saying otherwise, or made
 // the worker throw for every mark.
 test.each([
   [
@@ -647,7 +647,7 @@ test.each([
     '"magma" is not a color',
   ],
   [
-    { field: 'score', scale: 'linear', scheme: 'magma' },
+    { field: 'score', scale: 'linear', scheme: 'rainbow' },
     undefined,
     '(ColorScheme | undefined)',
   ],

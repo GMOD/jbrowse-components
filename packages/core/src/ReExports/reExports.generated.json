@@ -2661,6 +2661,7 @@
         "VIRIDIS_STOPS",
         "buildColorRampLut",
         "colorRampStops",
+        "darkAtLowEnd",
         "rampDomain",
         "rampLutOf",
         "sampleColorRamp",

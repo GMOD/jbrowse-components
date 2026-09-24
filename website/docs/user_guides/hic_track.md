@@ -47,14 +47,19 @@ auto-selected level, so resolution still tracks your zoom, just shifted.
 
 Pick the ramp from the track menu's **Color scheme**:
 
-- **Viridis** - perceptually uniform, and the safer choice for readers with
-  color vision deficiency
 - **Juicebox** - transparent to red, the default
 - **Fall** - white through yellow and red to black
 - **Reds** and **Blues** - white to red, and white to blue
+- **Viridis**, **Magma**, **Inferno** and **Cividis** - perceptually uniform;
+  cividis is the safest choice for readers with color vision deficiency
 
-These are the ramps every colour scale in JBrowse names, so the config spells
-one as [`color.scheme`](/docs/config/hiccolor/#slot-scheme).
+A bin with no contacts is left unpainted, so the page shows through it, and a
+ramp that is dark at its low end would scatter dark specks across the sparse
+long-range half of the matrix. The menu therefore runs viridis, magma, inferno
+and cividis light to dark, setting
+[`color.reverse`](/docs/config/hiccolor/#slot-reverse). These are the ramps
+every colour scale in JBrowse names, so a config spells one as
+[`color.scheme`](/docs/config/hiccolor/#slot-scheme).
 
 **Show → Show faint contacts (95th percentile)** decides what the ramp spans.
 Off, the diagonal owns the scale and everything below it washes out; on (the
