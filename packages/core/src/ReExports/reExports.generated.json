@@ -6,9 +6,6 @@
       "applyAction",
       "applyPatch",
       "applySnapshot",
-      "asArrayType",
-      "asMapType",
-      "asModelType",
       "cannotDetermineSubtype",
       "cast",
       "castFlowReturn",
@@ -40,7 +37,6 @@
       "getSnapshot",
       "getType",
       "getUnionSubtypes",
-      "getWrappedType",
       "hasParent",
       "hasParentOfType",
       "isActionContextChildOf",
@@ -86,7 +82,6 @@
       "types",
       "unescapeJsonPath",
       "unprotect",
-      "unwrapType",
       "walk"
     ],
     "@mui/material": [
@@ -532,9 +527,6 @@
       "applyAction",
       "applyPatch",
       "applySnapshot",
-      "asArrayType",
-      "asMapType",
-      "asModelType",
       "cannotDetermineSubtype",
       "cast",
       "castFlowReturn",
@@ -566,7 +558,6 @@
       "getSnapshot",
       "getType",
       "getUnionSubtypes",
-      "getWrappedType",
       "hasParent",
       "hasParentOfType",
       "isActionContextChildOf",
@@ -612,7 +603,6 @@
       "types",
       "unescapeJsonPath",
       "unprotect",
-      "unwrapType",
       "walk"
     ],
     "react": [
