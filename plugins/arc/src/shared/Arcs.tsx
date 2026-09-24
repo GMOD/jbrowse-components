@@ -1,20 +1,15 @@
 import { Suspense, lazy, useCallback } from 'react'
 
 import { useMouseTracking } from '@jbrowse/core/ui'
+import { useStyleTheme } from '@jbrowse/core/ui/PaletteContext'
 import { getStrokeProps } from '@jbrowse/core/util'
 import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { hitTestArcs } from './arcHitTest.ts'
 import { arcLabelBaselineY } from './arcLayout.ts'
 import { arcMidX, arcPathD } from './arcShape.ts'
-import {
-  LABEL_COLOR,
-  LABEL_HALO_COLOR,
-  LABEL_HALO_EM,
-  drawArcs,
-} from './drawArcs.ts'
+import { LABEL_HALO_EM, drawArcs } from './drawArcs.ts'
 
 import type { ArcDisplayModel } from './ArcDisplayModel.ts'
 import type { LaidOutArc } from './arcLayout.ts'
@@ -28,14 +23,15 @@ const ArcTooltip = lazy(() => import('../ArcTooltip.tsx'))
 // `plugins/arc/CLAUDE.md` for why the split is that way round.
 
 const Arcs = observer(function Arcs({ model }: { model: ArcDisplayModel }) {
-  const theme = useTheme()
+  const { palette, typography } = useStyleTheme()
   const { laidOutArcs, hoveredFeature, hoveredArcKey, canvasWidth, height } =
     model
-  // contrasts against the track background in either theme
-  const hoverColor = theme.palette.text.primary
+  const hoverColor = palette.text.primary
+  const labelColor = palette.text.primary
+  const haloColor = palette.background.paper
   // the size and family the `<text>` elements used to inherit through the
   // cascade, which a canvas does not
-  const font = `${theme.typography.fontSize}px ${theme.typography.fontFamily}`
+  const font = `${typography.fontSize}px ${typography.fontFamily}`
 
   const hitTest = useCallback(
     (state?: MouseState) => {
@@ -56,9 +52,19 @@ const Arcs = observer(function Arcs({ model }: { model: ArcDisplayModel }) {
         hoverColor,
         viewWidth: canvasWidth,
         font,
+        labelColor,
+        haloColor,
       })
     },
-    [laidOutArcs, hoveredFeature, hoverColor, canvasWidth, font],
+    [
+      laidOutArcs,
+      hoveredFeature,
+      hoverColor,
+      canvasWidth,
+      font,
+      labelColor,
+      haloColor,
+    ],
   )
 
   return (
@@ -143,8 +149,8 @@ export function ArcsSvg({ arcs }: { arcs: readonly LaidOutArc[] }) {
   })
 }
 
-// Two stacked `<text>`s, the white one first: SVG paints stroke over fill, so a
-// thick white stroke under the real glyphs is the halo. `drawArcs` spells it
+// Two stacked `<text>`s, the halo first: SVG paints stroke over fill, so a
+// thick background-colored stroke under the real glyphs is the halo. `drawArcs` spells it
 // strokeText-then-fillText.
 //
 // Both carry an explicit size and family. A `<text>` with neither takes SVG's
@@ -152,12 +158,12 @@ export function ArcsSvg({ arcs }: { arcs: readonly LaidOutArc[] }) {
 // canvas pins the theme's — and `arcLabelBaselineY` places a baseline for
 // glyphs of one size, so the two paths have to agree on which.
 function ArcLabel({ arc }: { arc: LaidOutArc }) {
-  const theme = useTheme()
+  const { palette, typography } = useStyleTheme()
   const x = arcMidX(arc.shape)
   const y = arcLabelBaselineY(arc)
   const font = {
-    fontSize: theme.typography.fontSize,
-    fontFamily: theme.typography.fontFamily,
+    fontSize: typography.fontSize,
+    fontFamily: typography.fontFamily,
   }
   return (
     <>
@@ -165,12 +171,12 @@ function ArcLabel({ arc }: { arc: LaidOutArc }) {
         {...font}
         x={x}
         y={y}
-        stroke={LABEL_HALO_COLOR}
+        stroke={palette.background.paper}
         strokeWidth={`${LABEL_HALO_EM}em`}
       >
         {arc.label}
       </text>
-      <text {...font} x={x} y={y} fill={LABEL_COLOR}>
+      <text {...font} x={x} y={y} fill={palette.text.primary}>
         {arc.label}
       </text>
     </>

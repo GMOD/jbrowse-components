@@ -473,7 +473,7 @@ exports[`every registered schema slot default 1`] = `
   "display: LinearArcDisplay": {
     "arcHeight": "number = "jexl:log10(get(feature,'end')-get(feature,'start'))*50"",
     "caption": "string = "jexl:get(feature,'name')"",
-    "color": "color = "darkblue"",
+    "color": "color = "#1976d2"",
     "displayMode": "stringEnum = "arcs" of ["arcs","semicircles"]",
     "fetchSizeLimit": "number = 1000000",
     "forceLoad": "boolean = false",

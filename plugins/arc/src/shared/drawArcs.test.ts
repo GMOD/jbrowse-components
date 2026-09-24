@@ -69,7 +69,13 @@ const dome = (left: number, right: number): ArcShape => ({
   height: 40,
 })
 
-const OPTS = { hoverColor: 'white', viewWidth: 800, font: '12px sans-serif' }
+const OPTS = {
+  hoverColor: 'white',
+  viewWidth: 800,
+  font: '12px sans-serif',
+  labelColor: '#fff',
+  haloColor: '#121212',
+}
 
 test('the arc under the cursor takes the hover color, and gives it back', () => {
   const a = arc('a', dome(0, 400))
@@ -135,10 +141,10 @@ test('every curve is painted before any label', () => {
   expect(calls).toEqual([
     'stroke darkblue @2',
     'stroke darkblue @2',
-    'halo one white @7.2',
-    'label one black',
-    'halo two white @7.2',
-    'label two black',
+    'halo one #121212 @7.2',
+    'label one #fff',
+    'halo two #121212 @7.2',
+    'label two #fff',
   ])
 })
 
@@ -146,7 +152,7 @@ test('the halo scales with the font, the way 0.6em did', () => {
   const a = arc('a', dome(0, 400), { label: 'x' })
   const { ctx, calls } = recorder()
   drawArcs(ctx, [a], { ...OPTS, font: 'bold 20px Roboto, sans-serif' })
-  expect(calls).toContain('halo x white @12')
+  expect(calls).toContain('halo x #121212 @12')
 })
 
 test('a selected arc labels in red too', () => {

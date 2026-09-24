@@ -1,6 +1,6 @@
-import { createJBrowseTheme } from '@jbrowse/core/ui/theme'
+import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { SimpleFeature } from '@jbrowse/core/util'
-import { ThemeProvider } from '@mui/material'
 import { act, render } from '@testing-library/react'
 
 import Arcs, { ArcsSvg } from './Arcs.tsx'
@@ -32,11 +32,18 @@ const { createDisplay: createPairedDisplay } = createPairedTestEnvironment()
 // renderArcSvg's SvgClipRect). Bare `<path>`s outside one render, but React
 // warns about every element in them, so the assertion that `Arcs` opens no
 // second `<svg>` is written as "there is exactly this one".
-function exportShell(model: Parameters<typeof Arcs>[0]['model']) {
+function exportShell(
+  model: Parameters<typeof Arcs>[0]['model'],
+  mode: 'light' | 'dark' = 'light',
+) {
   return (
-    <svg data-testid="shell">
-      <ArcsSvg arcs={model.laidOutArcs} />
-    </svg>
+    <PaletteProvider
+      palette={resolvePalette({ configTheme: { palette: { mode } } })}
+    >
+      <svg data-testid="shell">
+        <ArcsSvg arcs={model.laidOutArcs} />
+      </svg>
+    </PaletteProvider>
   )
 }
 
@@ -83,27 +90,36 @@ test('on the export path it is a path per arc, and no <svg> or <canvas>', () => 
   )
 })
 
-test('the export carries the label, its halo and the arc color', () => {
-  const { display } = oneArc()
-  const { container } = render(exportShell(display))
-  const texts = [...container.querySelectorAll('text')]
-  expect(texts.map(t => t.textContent)).toEqual(['lbl', 'lbl'])
-  // the white one first: SVG paints stroke over fill, so the thick white stroke
-  // under the real glyphs is what makes the halo. The glyph itself is a FILL,
-  // which is what `drawArcs` paints with `fillText` — as a stroke it would come
-  // out hollow on the canvas's side of the same label.
-  expect(texts.map(t => t.getAttribute('stroke'))).toEqual(['white', null])
-  expect(texts.map(t => t.getAttribute('fill'))).toEqual([null, 'black'])
-  // and both carry a size, or a serialized figure renders them at SVG's 16px
-  // default under a baseline placed for the theme's
-  for (const t of texts) {
-    expect(Number(t.getAttribute('font-size'))).toBeGreaterThan(0)
-  }
-  // getStrokeProps normalizes, so the config's `darkblue` arrives as its hex
-  expect(container.querySelector('path')!.getAttribute('stroke')).toBe(
-    '#00008b',
-  )
-})
+test.each(['light', 'dark'] as const)(
+  'the export carries the label, its halo and the arc color (%s)',
+  mode => {
+    const { display } = oneArc()
+    const { container } = render(exportShell(display, mode))
+    const palette = resolvePalette({ configTheme: { palette: { mode } } })
+    const texts = [...container.querySelectorAll('text')]
+    expect(texts.map(t => t.textContent)).toEqual(['lbl', 'lbl'])
+    // the halo first: SVG paints stroke over fill, so the thick stroke under
+    // the real glyphs is what makes the halo. The glyph itself is a FILL, which
+    // is what `drawArcs` paints with `fillText` — as a stroke it would come out
+    // hollow on the canvas's side of the same label.
+    expect(texts.map(t => t.getAttribute('stroke'))).toEqual([
+      palette.background.paper,
+      null,
+    ])
+    expect(texts.map(t => t.getAttribute('fill'))).toEqual([
+      null,
+      palette.text.primary,
+    ])
+    // and both carry a size, or a serialized figure renders them at SVG's 16px
+    // default under a baseline placed for the theme's
+    for (const t of texts) {
+      expect(Number(t.getAttribute('font-size'))).toBeGreaterThan(0)
+    }
+    expect(container.querySelector('path')!.getAttribute('stroke')).toBe(
+      '#1976d2',
+    )
+  },
+)
 
 // Both painters place a label from `arcMidX` and `arcLabelBaselineY`, and
 // nothing compared them: the canvas recorder in `drawArcs.test.ts` discards the
@@ -142,15 +158,9 @@ test("the paired display's direction ticks export as lines", () => {
 
 test('the hover color is the theme text color, resolved once', () => {
   const { display } = oneArc()
-  const theme = createJBrowseTheme()
-  const { container } = render(
-    <ThemeProvider theme={theme}>
-      <Arcs model={display} />
-    </ThemeProvider>,
-  )
+  const { container } = render(<Arcs model={display} />)
   // nothing per arc subscribes to the theme any more — one canvas, one read
   expect(container.querySelectorAll('canvas')).toHaveLength(1)
-  expect(theme.palette.text.primary).toBeTruthy()
 })
 
 // The one check that runs the WHOLE chain — laidOutArcs → OverlayCanvas →
@@ -208,12 +218,7 @@ test('the arcs reach the canvas as pixels', () => {
 // green with the highlight entirely dead. This is the pixel.
 test('hovering an arc repaints it in the hover color', () => {
   const { display } = oneArc()
-  const theme = createJBrowseTheme()
-  const { container } = render(
-    <ThemeProvider theme={theme}>
-      <Arcs model={display} />
-    </ThemeProvider>,
-  )
+  const { container } = render(<Arcs model={display} />)
   const arc = display.laidOutArcs[0]!
   const shape = arc.shape as { left: number; right: number; height: number }
   const { x, y } = onCurve(shape, 0.25)
@@ -287,11 +292,9 @@ test('the export draws a selected arc in its own colour', () => {
   const { display } = oneArc()
   const [arc] = display.laidOutArcs
   const { container } = render(
-    <ThemeProvider theme={createJBrowseTheme()}>
-      <svg>
-        <ArcsSvg arcs={[{ ...arc!, selected: true }]} />
-      </svg>
-    </ThemeProvider>,
+    <svg>
+      <ArcsSvg arcs={[{ ...arc!, selected: true }]} />
+    </svg>,
   )
   const strokes = [...container.querySelectorAll('path')].map(p =>
     p.getAttribute('stroke'),

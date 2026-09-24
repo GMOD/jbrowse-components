@@ -7,8 +7,6 @@ import type { Feature } from '@jbrowse/core/util'
 // Exported because the export path paints the same labels as `<text>`: one
 // definition, so screen and figure cannot drift apart on a color or a halo.
 export const SELECTED_COLOR = 'red'
-export const LABEL_COLOR = 'black'
-export const LABEL_HALO_COLOR = 'white'
 // The halo width as a fraction of the font size — SVG's `stroke-width: 0.6em`.
 export const LABEL_HALO_EM = 0.6
 
@@ -24,6 +22,9 @@ export interface ArcDrawOpts {
    * nothing, so the caller resolves it from the theme.
    */
   font: string
+  labelColor: string
+  /** The surface behind the track, stroked under each label */
+  haloColor: string
 }
 
 export function drawArcs(
@@ -77,7 +78,7 @@ function strokeFor(
 function drawLabels(
   ctx: CanvasRenderingContext2D,
   arcs: readonly LaidOutArc[],
-  { font }: ArcDrawOpts,
+  { font, labelColor, haloColor }: ArcDrawOpts,
 ) {
   const labelled = arcs.filter(arc => arc.label)
   if (labelled.length === 0) {
@@ -88,12 +89,12 @@ function drawLabels(
   ctx.textBaseline = 'alphabetic'
   ctx.lineJoin = 'round'
   ctx.lineWidth = LABEL_HALO_EM * fontSizePx(font)
-  ctx.strokeStyle = LABEL_HALO_COLOR
+  ctx.strokeStyle = haloColor
   for (const arc of labelled) {
     const x = arcMidX(arc.shape)
     const y = arcLabelBaselineY(arc)
     ctx.strokeText(arc.label!, x, y)
-    ctx.fillStyle = arc.selected ? SELECTED_COLOR : LABEL_COLOR
+    ctx.fillStyle = arc.selected ? SELECTED_COLOR : labelColor
     ctx.fillText(arc.label!, x, y)
   }
 }

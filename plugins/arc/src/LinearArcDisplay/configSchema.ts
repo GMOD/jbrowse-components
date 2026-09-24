@@ -53,7 +53,7 @@ export function configSchemaFactory() {
       color: {
         type: 'color',
         description: 'the color of the arcs',
-        defaultValue: 'darkblue',
+        defaultValue: '#1976d2',
         contextVariable: ['feature'],
       },
       // #endregion

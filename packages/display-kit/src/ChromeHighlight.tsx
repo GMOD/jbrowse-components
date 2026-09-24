@@ -19,7 +19,10 @@ function hoverStyle(
     case 'box':
       return hoverBoxStyle
     case 'ring':
-      return { border: '1.5px solid black', borderRadius: '50%' }
+      return {
+        border: `1.5px solid ${palette.text.primary}`,
+        borderRadius: '50%',
+      }
     default:
       return {
         background: strong ? palette.featureHoverStrong : palette.featureHover,
