@@ -61,12 +61,12 @@ what each of the graph files holds and how a graph produces them.
 
 ## Where the graph and the callset show different things
 
-ARS-UCD1.2 lacks an 11 kb segment beside _HSPA1A_ that carries a second copy of
-the heat shock gene, _HSPA1B_. Leonard et al. (2022) recovered it in every
-assembly they built. The **graph** holds that segment as alleles in the allele
-inventory, and it attributes them only by convention. These graphs record no
-construction rank, so `firstSeenIn` in the allele file names the first assembly
-in a fixed list, and that assembly need not carry the sequence.
+ARS-UCD1.2 lacks an 11 kb segment beside the heat shock gene _HSPA1A_ that
+carries _HSPA1B_, its near-identical copy. Leonard et al. (2022) recovered it in
+every assembly they built. The **graph** holds that segment as alleles in the
+allele inventory, and it attributes them only by convention. These graphs record
+no construction rank, so `firstSeenIn` in the allele file names the first
+assembly in a fixed list, and that assembly need not carry the sequence.
 
 The **callset** attributes each allele. One `vg deconstruct` call per chromosome
 over the same graph gives a genotype per assembly:
@@ -187,7 +187,7 @@ OMIA curates as OMIA 000483-9913. Add OMIA's cattle records as a lane:
 
 Then open `chr1:2,424,000-2,436,000`.
 
-<Figure caption="The POLLED locus on ARS-UCD1.2: RefSeq genes, OMIA's record of the Celtic polled allele, and the callset. Only the Angus row carries the insertion under the record." src="/img/pangenome/bovine_polled.png" />
+<Figure caption="The POLLED locus on ARS-UCD1.2: OMIA's record of the Celtic polled allele, and the callset. Only the Angus row carries the insertion under the record." src="/img/pangenome/bovine_polled.png" />
 
 OMIA also records the Friesian polled allele, an 80 kb duplication 200 kb
 further along, which Holstein cattle carry. The panel has no Holstein, and the

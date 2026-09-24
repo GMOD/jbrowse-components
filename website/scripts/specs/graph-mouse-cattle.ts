@@ -234,8 +234,8 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
   bovineLocusSpec(
     'pangenome/bovine_polled',
     'chr1:2,424,000-2,436,000',
-    [bovineGenes, bovineOmia, bovineVariantLane(220)],
-    620,
+    [bovineOmia, bovineVariantLane(220)],
+    480,
   ),
   bovineLocusSpec(
     'pangenome/bovine_kit',
@@ -243,12 +243,29 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
     [bovineGenes, bovineVariantLane(220)],
     560,
   ),
-  bovineLocusSpec(
-    'pangenome/bovine_tas2r46',
-    'chr5:98,575,000-98,615,000',
-    [bovineGenes, bovineVariantLane(220)],
-    560,
-  ),
+  {
+    ...bovineLocusSpec(
+      'pangenome/bovine_tas2r46',
+      'chr5:98,575,000-98,615,000',
+      [bovineGenes, bovineVariantLane(220)],
+      560,
+    ),
+    annotations: [
+      {
+        type: 'text',
+        text: 'deleted in gaur',
+        fontSize: 18,
+        leader: true,
+        anchor: {
+          track: 'bovine_pangenome_vcf',
+          locus: 'chr5:98,600,000',
+          fracY: 0.78,
+        },
+        dx: 60,
+        dy: -120,
+      },
+    ],
+  },
   // The graph lanes against the callset at one published insertion: the
   // allele inventory holds the HSPA1B segment as alleles with no carriers, and
   // the callset says every assembly bar the yak has one.
@@ -265,7 +282,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
           height: 90,
         },
       ],
-      660,
+      720,
     ),
     annotations: [
       {
@@ -278,8 +295,8 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
           locus: 'chr23:27,521,000',
           fracY: 0.45,
         },
-        dx: 60,
-        dy: 30,
+        dx: 80,
+        dy: -10,
       },
     ],
   },
