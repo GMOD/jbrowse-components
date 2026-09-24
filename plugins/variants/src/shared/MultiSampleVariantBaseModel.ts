@@ -1586,37 +1586,32 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #method
-         * Called by BaseTrackModel.replaceDisplay when switching between the
-         * regular and matrix variant displays. The settings, the arrangement
-         * included, live on each display's own config node, so porting them
-         * means writing into the *target* display's config — hence the
-         * `newDisplayId` param. Only genuine display-instance state is
-         * returned for the instance-snapshot spread.
+         * Called by BaseTrackModel.replaceDisplay on a display-type switch.
+         * The settings, the arrangement included, live on each display's own
+         * config node, so porting them means writing into the *target*
+         * display's config. Only the other multi-sample display has those
+         * slots; a switch to any other type ports nothing.
          */
         getPortableSettings(newDisplayId?: string) {
-          if (newDisplayId) {
-            const displays = getContainingTrack(self).configuration
-              .displays as {
-              displayId: string
-              setSlot: SetSlotFn
-              setSubschema: SetSlotFn
-            }[]
-            const target = displays.find(d => d.displayId === newDisplayId)
-            if (target) {
-              for (const key of PORTABLE_CONFIG_KEYS) {
-                target.setSlot(key, getConf(self, key))
-              }
-              for (const key of PORTABLE_CONFIG_OBJECTS) {
-                target.setSubschema(key, getConf(self, key))
-              }
-              // Raw, never through getConf: featureColor can hold a `jexl:...`
-              // string, and getConf evaluates one on read with no `feature`
-              // bound — so the consequence-impact preset
-              // (`jexl:impactColor(feature)`) threw out of the display-type
-              // switch instead of carrying the expression across.
-              target.setSlot('featureColor', self.featureColor)
-            }
+          const displays = getContainingTrack(self).configuration.displays as {
+            type: string
+            displayId: string
+            setSlot: SetSlotFn
+            setSubschema: SetSlotFn
+          }[]
+          const target = displays.find(d => d.displayId === newDisplayId)
+          if (!target || !VARIANT_DISPLAY_TYPES.has(target.type)) {
+            return {}
           }
+          for (const key of PORTABLE_CONFIG_KEYS) {
+            target.setSlot(key, getConf(self, key))
+          }
+          for (const key of PORTABLE_CONFIG_OBJECTS) {
+            target.setSubschema(key, getConf(self, key))
+          }
+          // Raw, never through getConf: featureColor can hold a `jexl:...`
+          // string, and getConf evaluates one on read with no `feature` bound
+          target.setSlot('featureColor', self.featureColor)
           return {
             jexlFiltersSetting: self.jexlFiltersSetting,
           }

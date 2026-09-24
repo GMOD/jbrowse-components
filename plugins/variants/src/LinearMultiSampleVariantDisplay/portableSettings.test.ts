@@ -1,5 +1,12 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  ConfigurationSchema,
+  readConfObject,
+} from '@jbrowse/core/configuration'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingTrack } from '@jbrowse/core/util'
+import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import matrixConfigSchemaFactory from '../LinearMultiSampleVariantMatrixDisplay/configSchema.ts'
 import matrixStateModelFactory from '../LinearMultiSampleVariantMatrixDisplay/model.ts'
@@ -9,10 +16,30 @@ import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
 import type { LinearMultiSampleVariantDisplayModel } from './model.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type {
+  AnyConfigurationModel,
+  AnyConfigurationSchemaType,
+} from '@jbrowse/core/configuration'
 
 const configSchema = configSchemaFactory()
 const matrixConfigSchema = matrixConfigSchemaFactory()
+// the single-sample display a VariantTrack also offers, reduced to a config
+// node with none of the multi-sample slots
+const bareConfigSchema = ConfigurationSchema(
+  'LinearVariantDisplay',
+  {},
+  { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },
+)
+function bareStateModel(schema: AnyConfigurationSchemaType) {
+  return types.compose(
+    'LinearVariantDisplay',
+    BaseDisplay,
+    types.model({
+      type: types.literal('LinearVariantDisplay'),
+      configuration: ConfigurationReference(schema),
+    }),
+  )
+}
 const { createDisplay } = createDisplayTestEnvironment<
   LinearMultiSampleVariantDisplayModel & {
     getPortableSettings: (id?: string) => Record<string, unknown>
@@ -29,6 +56,11 @@ const { createDisplay } = createDisplayTestEnvironment<
       displayName: 'LinearMultiSampleVariantMatrixDisplay',
       configSchema: matrixConfigSchema,
       stateModel: matrixStateModelFactory(matrixConfigSchema),
+    },
+    {
+      displayName: 'LinearVariantDisplay',
+      configSchema: bareConfigSchema,
+      stateModel: bareStateModel(bareConfigSchema),
     },
   ],
 })
@@ -160,5 +192,15 @@ describe('getPortableSettings', () => {
       treeProvenance: provenance,
       kept: ['a'],
     })
+  })
+
+  // The track's other display types have none of these slots, and writing one
+  // threw out of the Display types menu, leaving the track where it was
+  it('ports nothing onto a display that is not multi-sample', () => {
+    const { display } = createDisplay()
+    const displays = getContainingTrack(display).configuration
+      .displays as AnyConfigurationModel[]
+    const target = displays.find(d => d.type === 'LinearVariantDisplay')!
+    expect(display.getPortableSettings(target.displayId as string)).toEqual({})
   })
 })
