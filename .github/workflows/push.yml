@@ -598,11 +598,22 @@ jobs:
       # The sync carries all of test_data, unlike the zip above: the docs' and
       # gallery's live links are `<code base>?config=test_data/…`, so they
       # resolve out of what lands here.
+      #
+      # static/ is content-hashed, so browsers may keep it without re-checking;
+      # with no Cache-Control they revalidate every chunk on every visit.
+      # index.html goes up after the chunks it names, and old chunks are deleted
+      # only after that.
       - name: Deploy to S3
         run: |
           cd products/jbrowse-web/build
           cp test_data/config.json config.json
-          aws s3 sync --delete --exclude="*.map" . s3://jbrowse.org/code/jb2/${REF_NAME}
+          DEST=s3://jbrowse.org/code/jb2/${REF_NAME}
+          IMMUTABLE="public, max-age=31536000, immutable"
+          aws s3 sync --exclude="*.map" --cache-control "$IMMUTABLE" static $DEST/static
+          aws s3 sync --delete --exclude="*.map" --exclude="static/*" --exclude=index.html --exclude=config.json . $DEST
+          aws s3 cp --cache-control no-cache config.json $DEST/config.json
+          aws s3 cp --cache-control no-cache index.html $DEST/index.html
+          aws s3 sync --delete --exclude="*.map" --cache-control "$IMMUTABLE" static $DEST/static
           aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/code/jb2/${REF_NAME}/*"
 
       # The Astro examples-sites replace the old per-package Storybooks at the
@@ -627,7 +638,9 @@ jobs:
             "byo-examples-site:jbrowse-build-your-own:byo"; do
             IFS=: read -r filter dir prefix <<<"$entry"
             pnpm --filter "$filter" build
-            aws s3 sync "products/$dir/examples-site/dist" "s3://jbrowse.org/storybook/$prefix"
+            aws s3 sync --cache-control "public, max-age=31536000, immutable" \
+              "products/$dir/examples-site/dist/_astro" "s3://jbrowse.org/storybook/$prefix/_astro"
+            aws s3 sync --exclude="_astro/*" "products/$dir/examples-site/dist" "s3://jbrowse.org/storybook/$prefix"
           done
           aws cloudfront create-invalidation \
             --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \

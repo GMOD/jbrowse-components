@@ -383,9 +383,15 @@ jobs:
           filename: jbrowse-web-latest.zip
       # The sync carries all of test_data, unlike the zip above: the docs' and
       # gallery's live links are `<code base>?config=test_data/…`, so they
-      # resolve out of what lands here.
+      # resolve out of what lands here. Cache headers and upload order as in
+      # push.yml's deploy.
       - name: Copy branch build to S3
         run: |
-          cp products/jbrowse-web/build/test_data/config.json products/jbrowse-web/build/config.json
-          aws s3 sync products/jbrowse-web/build s3://jbrowse.org/code/jb2/latest/
+          cd products/jbrowse-web/build
+          cp test_data/config.json config.json
+          DEST=s3://jbrowse.org/code/jb2/latest
+          aws s3 sync --cache-control "public, max-age=31536000, immutable" static $DEST/static
+          aws s3 sync --exclude="static/*" --exclude=index.html --exclude=config.json . $DEST
+          aws s3 cp --cache-control no-cache config.json $DEST/config.json
+          aws s3 cp --cache-control no-cache index.html $DEST/index.html
           aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/code/jb2/latest/*"
