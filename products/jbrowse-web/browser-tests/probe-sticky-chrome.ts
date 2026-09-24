@@ -2,9 +2,9 @@
 //
 // Three sticky siblings — the view title, the LGV header, the scalebar — and
 // each one's `top` is arithmetic over the heights of the ones above it
-// (`rubberbandTop`, `pinnedTracksTop`). That arithmetic is only true while every
-// box actually renders at the constant it is summed from, and nothing in a diff,
-// a typecheck or a jsdom test can see it break: jsdom computes no layout.
+// (`stickyChromeTops`). That arithmetic is only true while every box actually
+// renders at the constant it is summed from, and nothing in a diff, a typecheck
+// or a jsdom test can see it break: jsdom computes no layout.
 //
 // Two ways it has broken, both pinned here:
 //

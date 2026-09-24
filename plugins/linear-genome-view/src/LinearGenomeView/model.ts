@@ -3,7 +3,6 @@ import { lazy } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
-import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import {
   assembleLocString,
   clamp,
@@ -1028,28 +1027,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         } else {
           return HEADER_BAR_HEIGHT + HEADER_OVERVIEW_HEIGHT
         }
-      },
-
-      /**
-       * #getter
-       * Where the scalebar pins when the view's chrome is sticky: everything
-       * stacked above it, which is the view's own title bar, where the session
-       * draws one, plus this view's header. Expressed from `headerHeight`
-       * rather than re-summing its constants — the two are the same box, and a
-       * second spelling of the sum is free to drift from the first while both
-       * typecheck.
-       */
-      get rubberbandTop() {
-        const titleBar =
-          getSession(self).viewTitleBars === false ? 0 : VIEW_HEADER_HEIGHT
-        return self.stickyViewHeaders ? titleBar + this.headerHeight : 0
-      },
-
-      /**
-       * #getter
-       */
-      get pinnedTracksTop() {
-        return this.rubberbandTop + this.scalebarHeight
       },
 
       /**

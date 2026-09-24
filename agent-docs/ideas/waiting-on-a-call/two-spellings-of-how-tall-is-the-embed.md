@@ -45,8 +45,8 @@ no such notion "should read as don't pin" — which describes what an absent
 property *does*, not what anyone decided. It was wrong, and it nearly closed
 #4526 with the opposite of the requested behavior. The sticky machinery was
 already complete in the LGV component (`LinearGenomeViewContainer.tsx` pins the
-header, `rubberbandTop` offsets the overlays); the embedded session simply never
-opted in.
+header, `stickyChromeTops` offsets the overlays); the embedded session simply
+never opted in.
 
 Unpinned in every product: the *unbounded* path's real layout. The host box works
 because the chain of `height: 100%` stops at the MUI `ScopedCssBaseline` the

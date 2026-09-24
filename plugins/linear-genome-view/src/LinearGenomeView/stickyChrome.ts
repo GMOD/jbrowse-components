@@ -8,15 +8,11 @@ import { SCALE_BAR_HEIGHT } from './consts.ts'
 
 /**
  * Where the sticky boxes below the view's chrome pin, as CSS rather than as a
- * pixel sum.
- *
- * The model's `rubberbandTop` / `pinnedTracksTop` answer the same question in
- * numbers, and still have to — `height`, `getTrackYOffset` and the SVG export
- * have no DOM to read. But the numbers are nominal. Both boxes above are now
- * minimum-height, since pinning them to their constants clipped their content
- * at a larger root font size, and one of them is briefly absent during a slow
- * load. Anything positioning against them in the DOM reads what they publish
- * and keeps the constant only as the fallback for the first frame.
+ * pixel sum. Both boxes above are minimum-height, since pinning them to their
+ * constants clipped their content at a larger root font size, and one of them
+ * is briefly absent during a slow load, so a sum of their constants is only
+ * nominal. Anything positioning against them reads what they publish and keeps
+ * the constant only as the fallback for the first frame.
  */
 export function stickyChromeTops({
   stickyViewHeaders,

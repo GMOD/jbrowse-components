@@ -72,9 +72,9 @@ external plugin may override, and a second `lazy()` was taken to get the same
 bytes without the bet. **That second `lazy()` was reverted on 2026-08-23**, and
 the reasons are worth keeping, because the shape recurs.
 
-**It shipped a visible defect.** The header is above the tracks, and
-`rubberbandTop` / `pinnedTracksTop` are arithmetic that assumes it is mounted, so
-with `fallback={null}` the box measured 0 for as long as the chunk was in flight
+**It shipped a visible defect.** The header is above the tracks, and the sticky
+scalebar pinned by arithmetic that assumed it was mounted, so with
+`fallback={null}` the box measured 0 for as long as the chunk was in flight
 while the sticky scalebar still pinned at 96 — detached, floating 66px down over
 the first track, then snapping back. Measured on jbrowse-web at 4x CPU and
 200 KB/s: the view container and the first track mount in the **same frame**, and

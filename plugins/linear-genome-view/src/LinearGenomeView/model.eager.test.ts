@@ -12,8 +12,8 @@ import path from 'node:path'
 // hideHeader. 3e66ae532f fixed the bytes by putting the header behind a second
 // lazy() *inside* the already-lazy view component, with `fallback={null}` — and
 // that made the header arrive a round trip after the tracks it sits above, so
-// the sticky scalebar (top: rubberbandTop, arithmetic that assumes the header is
-// mounted) detached and floated over the first track for ~500ms on every load.
+// the sticky scalebar, pinned by arithmetic that assumed the header was mounted,
+// detached and floated over the first track for ~500ms on every load.
 // Measured: container and first track mount in the same frame, header +513ms.
 //
 // Both halves are fixed by the same rule, which is what this pins: the eager
