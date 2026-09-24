@@ -204,14 +204,13 @@ export function configSchemaFactory() {
     {
       ...trackHeightConfigSchemaFields(),
       /**
-       * #slot
+       * #slot color
+       * The arcs' colour: a CSS colour, a jexl callback over `feature` and
+       * `alt`, or a field bound to a categorical or threshold scale, which
+       * the key describes.
        */
-      color: {
-        type: 'color',
-        description: 'the color of the arcs',
-        defaultValue: 'jexl:defaultPairedArcColor(feature,alt)',
-        contextVariable: ['feature', 'alt'],
-      },
+      color: pairedArcColorSchema,
+      ...arcLegendConfigSchemaFields,
       /**
        * #slot
        */
@@ -459,21 +458,23 @@ it.)
 
 A slot takes a callback in place of a plain value where it declares
 `contextVariable`, the arguments the callback reads; the calling code supplies
-them as the third argument to `readConfObject`:
+them as the third argument to `readConfObject`. The arc display's colour object
+declares one on its `value`:
 
-<!-- include: plugins/arc/src/LinearArcDisplay/configSchema.ts#contextVariableSlot -->
+<!-- include: plugins/arc/src/shared/arcColorConfigSchema.ts#contextVariableSlot -->
 
 ```ts
-color: {
+value: {
   type: 'color',
-  description: 'the color of the arcs',
   defaultValue: '#1976d2',
+  description: 'CSS colour or jexl callback',
   contextVariable: ['feature'],
 },
 ```
 
-`LinearArcDisplay` reads all five of its per-feature slots that way, in one
-getter kept out of the render loop:
+`LinearArcDisplay` reads its per-feature slots that way, in one getter kept out
+of the render loop; the colour goes through `arcColorPainter`, which reads
+`value` the same way where the object binds no field:
 
 <!-- include: plugins/arc/src/LinearArcDisplay/model.ts#contextVariableRead -->
 
@@ -483,12 +484,16 @@ get arcStyles() {
   // returns) a number — a jexl default over an attribute the feature
   // lacks still evaluates to NaN; `layOutArcs` is where it is made
   // paintable.
-  // color/label/caption are string slots read through the typed self.conf.
+  // label/caption are string slots read through the typed self.conf.
   const kept =
     self.features && filterByScore(self.features, self.minScore)
+  const paint = arcColorPainter(
+    self.conf.color,
+    getEnv<{ pluginManager: PluginManager }>(self).pluginManager.jexl,
+  )
   return kept?.map(feature => ({
     feature,
-    color: readConfObject(self.conf, 'color', { feature }),
+    paint: paint(feature),
     thickness: getConf(self, 'thickness', { feature }),
     label: readConfObject(self.conf, 'label', { feature }),
     caption: readConfObject(self.conf, 'caption', { feature }),

@@ -5,7 +5,9 @@ import {
   TrackOverlayPortal,
 } from '@jbrowse/display-ui'
 
+import ChromeLegend from './ChromeLegend.tsx'
 import ReplacedDisplay from './ReplacedDisplay.tsx'
+import { isLegendHost } from './legendHost.ts'
 
 import type { DisplayBackgroundProgressModel } from './DisplayBackgroundProgress.tsx'
 import type { DisplayErrorBarModel } from './DisplayErrorBar.tsx'
@@ -290,6 +292,10 @@ export default function DisplayStatusChromeBase({
           <BackgroundProgress model={model} visible={phase === 'ready'} />
         </div>
       </TrackOverlayPortal>
+      {/* The legend, detected structurally like the GPU chrome's other guides,
+          placed here so a display with no backend gets its key by composing
+          LegendMixin and nothing else. */}
+      {isLegendHost(model) ? <ChromeLegend model={model} /> : null}
     </div>
   )
 }

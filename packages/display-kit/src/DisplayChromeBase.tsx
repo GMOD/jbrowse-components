@@ -10,13 +10,11 @@ import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { observer } from 'mobx-react'
 
 import ChromeHighlight from './ChromeHighlight.tsx'
-import ChromeLegend from './ChromeLegend.tsx'
 import ChromeYAxis from './ChromeYAxis.tsx'
 import DisplayStatusChromeBase from './DisplayStatusChromeBase.tsx'
 import ReplacedDisplay from './ReplacedDisplay.tsx'
 import { isAxisHost } from './axisHost.ts'
 import { isHighlightHost } from './highlightHost.ts'
-import { isLegendHost } from './legendHost.ts'
 import { useAnimationFrames } from './useAnimationFrames.ts'
 
 import type { StatusChromeModel } from './DisplayStatusChromeBase.tsx'
@@ -288,13 +286,13 @@ function DisplayChromeBaseInner<B extends RenderingBackend>({
           {children({ canvasRef, canvas, mouseTracker })}
         </Fragment>
       </ClearTrackedPointerProvider>
-      {/* The guides — highlight, axis, legend — detected structurally so a
-          display gets each by answering its host members and nothing else.
-          Outside the canvas key: a backend re-init has nothing to say to
-          them. */}
+      {/* The highlight and the axis, detected structurally so a display gets
+          each by answering its host members and nothing else. Outside the
+          canvas key: a backend re-init has nothing to say to them. The legend
+          is placed the same way by the status chrome, which a display with no
+          backend renders directly. */}
       {isHighlightHost(model) ? <ChromeHighlight model={model} /> : null}
       {isAxisHost(model) ? <ChromeYAxis model={model} /> : null}
-      {isLegendHost(model) ? <ChromeLegend model={model} /> : null}
     </DisplayStatusChromeBase>
   )
 }

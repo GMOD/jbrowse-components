@@ -2,6 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 
+import { arcLegendConfigSchemaFields } from '../shared/arcColorConfigSchema.ts'
+import { pairedArcColorSchema } from '../shared/pairedArcColorConfigSchema.ts'
 import { scoreFilterConfigSchemaFields } from '../shared/scoreFilter.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -16,7 +18,9 @@ const defaultArcLineWidth = 3
  * from its position to its mate breakend (parsed from the VCF `ALT`), connecting
  * the two loci even when the mate is on another chromosome / displayed region.
  * Short ticks mark each breakend's mate direction; clicking an arc opens the
- * variant details. `color` is jexl-evaluated per `(feature, alt)`:
+ * variant details. `color` defaults to a colour per SV type read off the ALT,
+ * and takes a field with a scale and a key, `{ field: 'INFO.SVTYPE' }`
+ * ([PairedArcColor](../pairedarccolor)):
  * ```js
  * {
  *   type: 'VariantTrack',
@@ -43,14 +47,13 @@ export function configSchemaFactory() {
     {
       ...trackHeightConfigSchemaFields(),
       /**
-       * #slot
+       * #slot color
+       * The arcs' colour: a CSS colour, a jexl callback over `feature` and
+       * `alt`, or a field bound to a categorical or threshold scale, which
+       * the key describes.
        */
-      color: {
-        type: 'color',
-        description: 'the color of the arcs',
-        defaultValue: 'jexl:defaultPairedArcColor(feature,alt)',
-        contextVariable: ['feature', 'alt'],
-      },
+      color: pairedArcColorSchema,
+      ...arcLegendConfigSchemaFields,
       /**
        * #slot
        */

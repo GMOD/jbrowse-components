@@ -7,10 +7,14 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { makeRadioSubMenu } from '@jbrowse/core/ui/menuItems'
 import { openFeatureWidget } from '@jbrowse/core/util'
+import LegendMixin, {
+  legendCheckboxItem,
+} from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getEnv, types } from '@jbrowse/mobx-state-tree'
 
 import { ArcFetchModel } from '../shared/ArcFetchModel.ts'
+import { arcColorPainter, arcColorScales } from '../shared/arcColor.ts'
 import { layOutArcs } from '../shared/arcLayout.ts'
 import { filterByScore } from '../shared/scoreFilter.ts'
 import { ARC_DISPLAY_MODE_OPTIONS } from './displayModes.ts'
@@ -21,6 +25,8 @@ import type {
   LinearArcDisplayConfigModel,
 } from './configSchema.ts'
 import type { ArcDisplayMode } from './displayModes.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -68,6 +74,7 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       BaseDisplay,
       TrackHeightMixin(),
       ArcFetchModel(() => import('../shared/renderArcSvg.tsx')),
+      LegendMixin(),
       types.model({
         /**
          * #property
@@ -111,12 +118,16 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
         // returns) a number — a jexl default over an attribute the feature
         // lacks still evaluates to NaN; `layOutArcs` is where it is made
         // paintable.
-        // color/label/caption are string slots read through the typed self.conf.
+        // label/caption are string slots read through the typed self.conf.
         const kept =
           self.features && filterByScore(self.features, self.minScore)
+        const paint = arcColorPainter(
+          self.conf.color,
+          getEnv<{ pluginManager: PluginManager }>(self).pluginManager.jexl,
+        )
         return kept?.map(feature => ({
           feature,
-          color: readConfObject(self.conf, 'color', { feature }),
+          paint: paint(feature),
           thickness: getConf(self, 'thickness', { feature }),
           label: readConfObject(self.conf, 'label', { feature }),
           caption: readConfObject(self.conf, 'caption', { feature }),
@@ -131,6 +142,19 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
     .views(self => ({
       /**
        * #getter
+       * `LegendMixin`'s hook: the key the arcs' colours derive, where `color`
+       * binds a field.
+       */
+      get colorScales(): ColorScale[] {
+        return arcColorScales(
+          self.conf.color,
+          self.arcStyles?.map(s => s.paint) ?? [],
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * every arc placed in screen px by `layOutArcs`, which both displays
        * share. A computed rather than a component body, so MobX caches it
        * against the viewport and a hover redraws without re-placing anything.
@@ -138,7 +162,7 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       get laidOutArcs(): LaidOutArc[] {
         const semicircle = self.displayMode === 'semicircles'
         return layOutArcs(self, self.arcStyles, (style, place) => {
-          const { feature, color, thickness, label, caption, arcHeight } = style
+          const { feature, paint, thickness, label, caption, arcHeight } = style
           const refName = feature.get('refName')
           const l = place(refName, feature.get('start'))
           const r = place(refName, feature.get('end'))
@@ -150,7 +174,7 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
               shape: semicircle
                 ? { kind: 'semicircle', left: l.x, right: r.x }
                 : { kind: 'bezier', left: l.x, right: r.x, height: arcHeight },
-              color,
+              color: paint.color,
               strokeWidth: thickness,
               label,
               caption,
@@ -191,6 +215,7 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
               options: ARC_DISPLAY_MODE_OPTIONS,
             }),
             ...self.scoreFilterMenuItems(),
+            ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
           ]
         },
       }

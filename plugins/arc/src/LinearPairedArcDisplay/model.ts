@@ -1,16 +1,19 @@
 import {
   ConfigurationReference,
   getConf,
-  readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { dedupe, openFeatureWidget } from '@jbrowse/core/util'
+import LegendMixin, {
+  legendCheckboxItem,
+} from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getEnv, types } from '@jbrowse/mobx-state-tree'
 import { breakendTickPx, makeFeaturePair } from '@jbrowse/sv-core'
 
 import { ArcFetchModel } from '../shared/ArcFetchModel.ts'
+import { arcColorPainter, arcColorScales } from '../shared/arcColor.ts'
 import { layOutArcs } from '../shared/arcLayout.ts'
 import { filterByScore } from '../shared/scoreFilter.ts'
 import { makeSummary, pairKey } from './components/util.ts'
@@ -21,6 +24,8 @@ import type {
   LinearPairedArcDisplayConfig,
   LinearPairedArcDisplayConfigModel,
 } from './configSchema.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -89,6 +94,7 @@ export function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       ArcFetchModel(() => import('../shared/renderArcSvg.tsx')),
+      LegendMixin(),
       // #region configRef
       types.model({
         /**
@@ -140,6 +146,10 @@ export function stateModelFactory(
       get arcStyles() {
         const kept =
           self.features && filterByScore(self.features, self.minScore)
+        const paint = arcColorPainter(
+          self.conf.color,
+          getEnv<{ pluginManager: PluginManager }>(self).pluginManager.jexl,
+        )
         const styles = kept?.flatMap(feature => {
           const alts = feature.get('ALT') as string[] | undefined
           const make = (alt: string | undefined) => {
@@ -147,7 +157,7 @@ export function stateModelFactory(
             return {
               feature,
               alt,
-              color: readConfObject(self.conf, 'color', { feature, alt }),
+              paint: paint(feature, alt),
               caption: makeSummary(feature, alt, pair),
               ...pair,
             }
@@ -160,6 +170,19 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * `LegendMixin`'s hook: the key the arcs' colours derive, where `color`
+       * binds a field.
+       */
+      get colorScales(): ColorScale[] {
+        return arcColorScales(
+          self.conf.color,
+          self.arcStyles?.map(s => s.paint) ?? [],
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * every arc placed in screen px by `layOutArcs` — see the twin on
        * `LinearArcDisplay`. The two ends resolve through their OWN displayed
        * region, which `ArcPoint` carries for `mateTick`.
@@ -167,7 +190,8 @@ export function stateModelFactory(
       get laidOutArcs(): LaidOutArc[] {
         const { lineWidth, height } = self
         return layOutArcs(self, self.arcStyles, (style, place) => {
-          const { feature, alt, color, caption, k1, k2 } = style
+          const { feature, alt, paint, caption, k1, k2 } = style
+          const color = paint.color
           const p1 = place(k1.refName, k1.start)
           const p2 = place(k2.refName, k2.start)
           const absrad = p1 && p2 ? Math.abs((p2.x - p1.x) / 2) : 0
@@ -249,6 +273,7 @@ export function stateModelFactory(
             ...superMenuItems(),
             makeLineWidthMenuItem(self),
             ...self.scoreFilterMenuItems(),
+            ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
           ]
         },
       }

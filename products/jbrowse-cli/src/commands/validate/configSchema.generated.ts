@@ -7088,6 +7088,71 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "ArcColor": {
+      "title": "ArcColor",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "default": "#1976d2",
+          "type": "string"
+        },
+        {
+          "title": "ArcColor",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "value": {
+              "description": "CSS colour or jexl callback.",
+              "$ref": "#/$defs/CssColorOrJexl",
+              "default": "#1976d2"
+            },
+            "field": {
+              "description": "a feature field, or a jexl expression over feature, whose values each paint one range colour with a key; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise.",
+              "$ref": "#/$defs/FeatureField",
+              "default": ""
+            },
+            "scale": {
+              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field.",
+              "enum": [
+                "none",
+                "categorical",
+                "threshold"
+              ]
+            },
+            "domain": {
+              "description": "the values that take the range first, in order; a value left out keeps a colour derived from itself that no listed value paints. Under threshold, the ascending cut points, a value on a cut taking the interval above it.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "range": {
+              "description": "CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/CssColor"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "LinearArcDisplaySlots": {
       "type": "object",
       "properties": {
@@ -7097,9 +7162,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 100
         },
         "color": {
-          "description": "the color of the arcs.",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "#1976d2"
+          "$ref": "#/$defs/ArcColor"
+        },
+        "showLegend": {
+          "description": "draw the colour key.",
+          "type": "boolean",
+          "default": true
         },
         "thickness": {
           "description": "the thickness of the arcs, in pixels; an arc given 0 or less is not drawn at all.",
@@ -7174,6 +7242,71 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "PairedArcColor": {
+      "title": "PairedArcColor",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "$ref": "#/$defs/CssColorOrJexl",
+          "default": "jexl:defaultPairedArcColor(feature,alt)",
+          "type": "string"
+        },
+        {
+          "title": "PairedArcColor",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "value": {
+              "description": "CSS colour or jexl callback over feature and alt.",
+              "$ref": "#/$defs/CssColorOrJexl",
+              "default": "jexl:defaultPairedArcColor(feature,alt)"
+            },
+            "field": {
+              "description": "a feature field, or a jexl expression over feature, whose values each paint one range colour with a key; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise.",
+              "$ref": "#/$defs/FeatureField",
+              "default": ""
+            },
+            "scale": {
+              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field.",
+              "enum": [
+                "none",
+                "categorical",
+                "threshold"
+              ]
+            },
+            "domain": {
+              "description": "the values that take the range first, in order; a value left out keeps a colour derived from itself that no listed value paints. Under threshold, the ascending cut points, a value on a cut taking the interval above it.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "range": {
+              "description": "CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/CssColor"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "LinearPairedArcDisplaySlots": {
       "type": "object",
       "properties": {
@@ -7183,9 +7316,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 100
         },
         "color": {
-          "description": "the color of the arcs.",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "jexl:defaultPairedArcColor(feature,alt)"
+          "$ref": "#/$defs/PairedArcColor"
+        },
+        "showLegend": {
+          "description": "draw the colour key.",
+          "type": "boolean",
+          "default": true
         },
         "lineWidth": {
           "description": "the stroke width of the arcs, in pixels.",
@@ -8805,6 +8941,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/showLegend"
                 },
                 {
+                  "$ref": "#/$defs/LinearArcDisplaySlots/properties/showLegend"
+                },
+                {
                   "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showLegend"
                 },
                 {
@@ -9876,6 +10015,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showLegend"
+                },
+                {
+                  "$ref": "#/$defs/LinearPairedArcDisplaySlots/properties/showLegend"
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/showLegend"

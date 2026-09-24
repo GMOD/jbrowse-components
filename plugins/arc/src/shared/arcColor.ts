@@ -1,0 +1,82 @@
+import { readConfObject } from '@jbrowse/core/configuration'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { fieldReader } from '@jbrowse/core/util/fieldReader'
+import { derivedColorScale } from '@jbrowse/core/util/legendCandidates'
+import {
+  colorEncodingOf,
+  colorFieldOf,
+} from '@jbrowse/display-kit/colorConfigSchema'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { Feature } from '@jbrowse/core/util'
+import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
+import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
+
+/** An arc display's `color` object as a config node. */
+export type ArcColorNode = AnyConfigurationModel & ColorSetting
+
+/**
+ * How one arc is coloured: the CSS colour, and where a scale painted it, the
+ * key its field value filed under, which the legend derives its rows from.
+ */
+export interface ArcPaint {
+  color: string
+  key?: string
+}
+
+/**
+ * What the `color` object paints for each feature: `value`, a `jexl:`
+ * callback included, while it names no field or sits under `none`, else the
+ * field's value filed and coloured the way every categorical or threshold
+ * channel does it. `alt` reaches the callback on the paired display.
+ */
+export function arcColorPainter(
+  color: ArcColorNode,
+  jexl: JexlInstance,
+): (feature: Feature, alt?: string) => ArcPaint {
+  const encoding = colorEncodingOf(color, 'categorical')
+  const field = colorFieldOf(encoding)
+  if (typeof encoding === 'string' || !field) {
+    return (feature, alt) => ({
+      color: readConfObject(color, 'value', { feature, alt }) as string,
+    })
+  }
+  const read = fieldReader(field.field, jexl)
+  return feature => {
+    const key = field.key(read(feature))
+    return { key, color: field.color(key) }
+  }
+}
+
+/**
+ * The key the painted arcs derive: one row per colour, naming every value
+ * painted in it, and nothing where `color` binds no field.
+ */
+export function arcColorScales(
+  color: ArcColorNode,
+  paints: readonly ArcPaint[],
+): ColorScale[] {
+  const field = colorFieldOf(colorEncodingOf(color, 'categorical'))
+  if (!field) {
+    return []
+  }
+  return derivedColorScale(
+    [paints],
+    list => ({
+      candidates: list.flatMap(paint =>
+        paint.key === undefined
+          ? []
+          : [
+              {
+                rowIndex: 0,
+                value: paint.key,
+                color: cssColorToABGR(paint.color),
+              },
+            ],
+      ),
+      rowPaintsCandidateColor: () => true,
+    }),
+    { id: 'arc-color', field },
+  )
+}

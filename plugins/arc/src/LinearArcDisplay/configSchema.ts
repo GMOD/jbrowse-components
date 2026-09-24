@@ -3,6 +3,10 @@ import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionToo
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import {
+  arcColorSchema,
+  arcLegendConfigSchemaFields,
+} from '../shared/arcColorConfigSchema.ts'
 import { scoreFilterConfigSchemaFields } from '../shared/scoreFilter.ts'
 import { ARC_DISPLAY_MODES } from './displayModes.ts'
 import { migrateLegacyArcRendererConfig } from './migrate.ts'
@@ -17,7 +21,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * to its end. `displayMode` is `arcs` (bezier) or `semicircles`. The
  * `thickness` and `label` slots default to expressions over the feature
  * `score`, so override them (plus `color` / `arcHeight`) for data without a
- * score. All style slots are jexl-evaluated per feature:
+ * score. The style slots are jexl-evaluated per feature, and `color` also
+ * takes a field with a scale and a key, `{ field: 'strand' }`
+ * ([ArcColor](../arccolor)):
  * ```js
  * {
  *   type: 'FeatureTrack',
@@ -47,16 +53,13 @@ export function configSchemaFactory() {
     {
       ...trackHeightConfigSchemaFields(),
       /**
-       * #slot
+       * #slot color
+       * The arcs' colour: a CSS colour, a jexl callback over `feature`, or a
+       * field bound to a categorical or threshold scale, which the key
+       * describes.
        */
-      // #region contextVariableSlot
-      color: {
-        type: 'color',
-        description: 'the color of the arcs',
-        defaultValue: '#1976d2',
-        contextVariable: ['feature'],
-      },
-      // #endregion
+      color: arcColorSchema,
+      ...arcLegendConfigSchemaFields,
       /**
        * #slot
        */

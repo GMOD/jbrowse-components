@@ -12,7 +12,9 @@ Selected on a `FeatureTrack`; each feature is drawn as one arc from its start
 to its end. `displayMode` is `arcs` (bezier) or `semicircles`. The
 `thickness` and `label` slots default to expressions over the feature
 `score`, so override them (plus `color` / `arcHeight`) for data without a
-score. All style slots are jexl-evaluated per feature:
+score. The style slots are jexl-evaluated per feature, and `color` also
+takes a field with a scale and a key, `{ field: 'strand' }`
+([ArcColor](../arccolor)):
 
 ```js
 {
@@ -68,13 +70,14 @@ These slots go on a display entry: `"displays": [{ "type": "LinearArcDisplay", .
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-color">**color**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#1976d2'</code> | the color of the arcs<br>_callback args:_ `feature` |
+| <span id="slot-color">**color**</span><br>[ArcColor](../arccolor) | The arcs' colour: a CSS colour, a jexl callback over `feature`, or a field bound to a categorical or threshold scale, which the key describes. |
 | <span id="slot-thickness">**thickness**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>'jexl:logThickness(feature,'score')'</code> | the thickness of the arcs, in pixels; an arc given 0 or less is not drawn at all<br>_callback args:_ `feature` |
 | <span id="slot-label">**label**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'jexl:get(feature,'score')'</code> | the label to appear at the apex of the arcs<br>_callback args:_ `feature` |
 | <span id="slot-archeight">**arcHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>'jexl:log10(get(feature,'end')-get(feature,'start'))*50'</code> | the height of the arcs<br>_callback args:_ `feature` |
 | <span id="slot-caption">**caption**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'jexl:get(feature,'name')'</code> | the caption to appear when hovering over any point on the arcs<br>_callback args:_ `feature` |
 | <span id="slot-displaymode">**displayMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (arcs, semicircles) = <code>'arcs'</code> | render semi-circles instead of arcs |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | default height for the track |
+| <span id="slot-showlegend">**showLegend**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the colour key |
 | <span id="slot-minscore">**minScore**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | hide arcs whose feature score is below this; features with no score are always drawn |
 | <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1_000_000</code> | maximum data to attempt to download for a given track, used if adapter doesn't specify one<br>_advanced_ |
 | <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.<br>_advanced_ |

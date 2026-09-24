@@ -5723,7 +5723,38 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "color",
-          "type": "(JexlString | CssColor)"
+          "type": "ArcColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "value",
+              "type": "(JexlString | CssColor)"
+            },
+            {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "scale",
+              "type": "(ArcColorScale | undefined)"
+            },
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "range",
+              "type": "CssColorEntry[]"
+            }
+          ],
+          "shorthand": "value",
+          "fieldScale": {
+            "*": "categorical"
+          }
+        },
+        {
+          "name": "showLegend",
+          "type": "boolean"
         },
         {
           "name": "thickness",
@@ -5783,7 +5814,38 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "color",
-          "type": "(JexlString | CssColor)"
+          "type": "PairedArcColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "value",
+              "type": "(JexlString | CssColor)"
+            },
+            {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "scale",
+              "type": "(ArcColorScale | undefined)"
+            },
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "range",
+              "type": "CssColorEntry[]"
+            }
+          ],
+          "shorthand": "value",
+          "fieldScale": {
+            "*": "categorical"
+          }
+        },
+        {
+          "name": "showLegend",
+          "type": "boolean"
         },
         {
           "name": "lineWidth",

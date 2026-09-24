@@ -7,7 +7,14 @@ summary: "Every display turns its colour object into what it paints through disp
 
 ## Status
 
-Accepted (2026-09-21). Extends
+Accepted (2026-09-21). Amended 2026-09-24: the two arc displays' `color` is
+the object too, `ArcColor` and `PairedArcColor` (`none | categorical |
+threshold`, the paired `value` a callback over `feature` and `alt`), resolved
+through `colorEncodingOf` in `arcStyles` and painted per feature by
+`arcColorPainter`; both compose `LegendMixin`, and `DisplayStatusChromeBase`
+places the key, which `DisplayChromeBase` had placed for the GPU displays
+alone, so a display with no rendering backend gets its legend by composing the
+mixin. Extends
 [ADR-151](adr-151-a-channels-scale-is-spelt-as-scales-y-spells-one.md)'s one
 bridge from two displays to every display holding a colour object. Narrows the
 quantitative display's `field` from
