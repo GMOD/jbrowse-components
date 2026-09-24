@@ -1244,13 +1244,22 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #action
-         * zooms into clicked and dragged region
+         * zooms into clicked and dragged region. Under `lockAspectRatio` both
+         * axes take the larger of the two fits, so the whole box stays in view
+         * on the axis whose plot dimension is shorter.
          */
         zoomInToMouseCoords(mousedown: Coord, mouseup: Coord) {
           const result = self.getCoords(mousedown, mouseup)
           if (result) {
-            self.hview.moveTo(result.x1, result.x2)
-            self.vview.moveTo(result.y2, result.y1)
+            const { hview, vview } = self
+            const floor = self.lockAspectRatio
+              ? Math.max(
+                  computeMoveToLayout(hview, result.x1, result.x2).bpPerPx,
+                  computeMoveToLayout(vview, result.y2, result.y1).bpPerPx,
+                )
+              : 0
+            hview.moveTo(result.x1, result.x2, floor)
+            vview.moveTo(result.y2, result.y1, floor)
           }
         },
         /**

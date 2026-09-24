@@ -270,9 +270,10 @@ const Base1DView = types
      *
      * @param start - object as `{start, end, offset, index}`
      * @param end - object as `{start, end, offset, index}`
+     * @param minBpPerPx - zoom no further in than this, centering the span
      */
-    moveTo(start?: BpOffset, end?: BpOffset) {
-      moveTo(self, start, end)
+    moveTo(start?: BpOffset, end?: BpOffset, minBpPerPx?: number) {
+      moveTo(self, start, end, minBpPerPx)
     },
   }))
 

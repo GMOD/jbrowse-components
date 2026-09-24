@@ -391,6 +391,26 @@ test('an unlocked plot still stops each axis at its own fit', async () => {
   expect(model.vview.bpPerPx).toBe(model.vview.fitBpPerPx)
 })
 
+// The plot is wider than it is tall, so fitting the same bp span to each axis'
+// own length gives two zooms, and the lock then averaged them: the shorter axis
+// came out cropped to part of the box the user drew.
+test('a box zoom on a locked plot keeps the whole box on both axes', async () => {
+  const model = await setup()
+  model.setWidth(800)
+  model.setLockAspectRatio(true)
+  const { viewHeight } = model
+  expect(model.viewWidth).not.toBe(viewHeight)
+
+  model.zoomInToMouseCoords([100, viewHeight - 100], [300, viewHeight - 300])
+
+  const { hview, vview } = model
+  expect(hview.bpPerPx).toBe(vview.bpPerPx)
+  expect(hview.pxToBp(0).coord0).toBeLessThanOrEqual(100)
+  expect(hview.pxToBp(model.viewWidth).coord0).toBeGreaterThanOrEqual(299)
+  expect(vview.pxToBp(0).coord0).toBeLessThanOrEqual(100)
+  expect(vview.pxToBp(viewHeight).coord0).toBeGreaterThanOrEqual(299)
+})
+
 test('a drag under the 3px threshold adds no highlight', async () => {
   const model = await setup()
   model.addHighlightFromMouseCoords([100, 100], [102, 102])
