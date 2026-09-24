@@ -172,6 +172,17 @@ describe('a marks list in a config file', () => {
     ])
   })
 
+  it('says rows beside a facet is not drawn yet, and a pileup under rows shares its row', () => {
+    const BAR = { mark: 'bar', encoding: { y: 'score' } }
+    expect(found([BAR], { rows: 'source' })).toEqual([])
+    expect(found([BAR], { rows: 'source', facet: 'tissue' })).toEqual([
+      `warning rows-beside-facet ${DISPLAY}.rows.field`,
+    ])
+    expect(found([BAR, PILEUP], { rows: { field: 'source' } })).toEqual([
+      `warning packing-under-rows ${DISPLAY}.marks[1].transform[0]`,
+    ])
+  })
+
   it('names the fields the steps leave where y reads another', () => {
     expect(
       problemsOf(
