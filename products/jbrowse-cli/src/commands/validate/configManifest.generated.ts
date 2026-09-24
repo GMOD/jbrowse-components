@@ -3432,6 +3432,10 @@ export const configManifest: ConfigManifest = {
                   "type": "(number | undefined)"
                 },
                 {
+                  "name": "autoscaleGroup",
+                  "type": "(string | undefined)"
+                },
+                {
                   "name": "symlogConstant",
                   "type": "number"
                 },
@@ -3868,6 +3872,10 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "domainMax",
                   "type": "(number | undefined)"
+                },
+                {
+                  "name": "autoscaleGroup",
+                  "type": "(string | undefined)"
                 },
                 {
                   "name": "symlogConstant",
@@ -4827,6 +4835,10 @@ export const configManifest: ConfigManifest = {
                   "type": "(number | undefined)"
                 },
                 {
+                  "name": "autoscaleGroup",
+                  "type": "(string | undefined)"
+                },
+                {
                   "name": "symlogConstant",
                   "type": "number"
                 },
@@ -5073,6 +5085,10 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "domainMax",
                   "type": "(number | undefined)"
+                },
+                {
+                  "name": "autoscaleGroup",
+                  "type": "(string | undefined)"
                 },
                 {
                   "name": "symlogConstant",
@@ -5333,6 +5349,10 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "domainMax",
                   "type": "(number | undefined)"
+                },
+                {
+                  "name": "autoscaleGroup",
+                  "type": "(string | undefined)"
                 },
                 {
                   "name": "symlogConstant",
@@ -5842,6 +5862,10 @@ export const configManifest: ConfigManifest = {
                   "type": "(number | undefined)"
                 },
                 {
+                  "name": "autoscaleGroup",
+                  "type": "(string | undefined)"
+                },
+                {
                   "name": "rules",
                   "type": "ValueScaleRuleConfigurationSchema[]",
                   "subSlots": [
@@ -6170,6 +6194,10 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "domainMax",
                   "type": "(number | undefined)"
+                },
+                {
+                  "name": "autoscaleGroup",
+                  "type": "(string | undefined)"
                 },
                 {
                   "name": "autoscale",

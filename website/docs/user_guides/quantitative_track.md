@@ -58,6 +58,11 @@ A narrow peak fades out across a whole chromosome when averaged over a wide bin.
 - Scale type - linear or log Y axis
 - Resolution - overrides the resolution chosen from the view width
 - Set min/max score - pins the Y axis, for comparison across samples
+- Autoscale with other tracks - ticks the other tracks in the view that share
+  this one's Y axis, which then autoscales over all of their data as you pan and
+  zoom
+  ([`scales.y.autoscaleGroup`](/docs/config/valuescale/#slot-scalesyautoscalegroup)).
+  A coverage band, a mark display and a Manhattan plot take the same group
 - Reference lines - a dashed line across the plot at each value you name, each
   with an optional label and colour
 

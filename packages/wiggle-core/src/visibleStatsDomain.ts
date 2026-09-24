@@ -38,7 +38,7 @@ export interface SettledBlocksView {
  * are in scope, how those pieces reduce to stats, and what an autoscale mode
  * makes of the stats.
  */
-export interface VisibleStatsDomainSpec<Payload, Item, Stats> {
+export interface VisibleStatsRangeSpec<Payload, Item, Stats> {
   /** false when the band this domain scales is not drawn: nothing is walked */
   active: boolean
   view: SettledBlocksView
@@ -48,6 +48,14 @@ export interface VisibleStatsDomainSpec<Payload, Item, Stats> {
   accumulate: (entries: VisibleEntry<Item>[]) => Stats | undefined
   /** stats to a raw `[min, max]`, before bounds and nice-rounding */
   range: (stats: Stats, entries: VisibleEntry<Item>[]) => [number, number]
+}
+
+/** {@link VisibleStatsRangeSpec} and what nice-rounds its range into a domain. */
+export interface VisibleStatsDomainSpec<
+  Payload,
+  Item,
+  Stats,
+> extends VisibleStatsRangeSpec<Payload, Item, Stats> {
   /** `ScoreScaleMixin`'s resolved bounds; `undefined` autoscales that end */
   bounds: readonly [number | undefined, number | undefined]
   scaleType: string
@@ -55,43 +63,49 @@ export interface VisibleStatsDomainSpec<Payload, Item, Stats> {
 
 /**
  * #api
- * The visible score domain four displays derive identically: walk the settled
- * blocks, accumulate the stats of what each one shows, and nice-round the
- * autoscaled range inside the configured bounds. `undefined` while there is
- * nothing to scale against — no data, a hidden band, or a view that has not
- * initialized — which every caller distinguishes from a domain.
+ * The raw autoscaled range the displays with a value scale derive
+ * identically: walk the settled blocks, accumulate the stats of what each one
+ * shows, and reduce them to `[min, max]` before any bound or nice-rounding.
+ * `undefined` while there is nothing to scale against — no data, a hidden
+ * band, or a view that has not initialized — which every caller distinguishes
+ * from a range.
  */
-export function visibleStatsDomain<Payload, Item, Stats>({
+export function visibleStatsRange<Payload, Item, Stats>({
   active,
   view,
   payloadFor,
   itemsFor,
   accumulate,
   range,
+}: VisibleStatsRangeSpec<Payload, Item, Stats>): [number, number] | undefined {
+  if (!active || !view.initialized) {
+    return undefined
+  }
+  const entries = view.settledDynamicBlocks.flatMap(block => {
+    const payload =
+      block.displayedRegionIndex === undefined
+        ? undefined
+        : payloadFor(block.displayedRegionIndex)
+    const visStart = Math.floor(block.start)
+    const visEnd = Math.ceil(block.end)
+    return payload
+      ? itemsFor(payload).map(data => ({ visStart, visEnd, data }))
+      : []
+  })
+  const stats = accumulate(entries)
+  return stats ? range(stats, entries) : undefined
+}
+
+/**
+ * #api
+ * {@link visibleStatsRange} nice-rounded inside the configured bounds: the
+ * domain of a display whose range is its own alone.
+ */
+export function visibleStatsDomain<Payload, Item, Stats>({
   bounds,
   scaleType,
+  ...spec
 }: VisibleStatsDomainSpec<Payload, Item, Stats>) {
-  let domain: [number, number] | undefined
-  if (active && view.initialized) {
-    const entries = view.settledDynamicBlocks.flatMap(block => {
-      const payload =
-        block.displayedRegionIndex === undefined
-          ? undefined
-          : payloadFor(block.displayedRegionIndex)
-      const visStart = Math.floor(block.start)
-      const visEnd = Math.ceil(block.end)
-      return payload
-        ? itemsFor(payload).map(data => ({ visStart, visEnd, data }))
-        : []
-    })
-    const stats = accumulate(entries)
-    if (stats) {
-      domain = getNiceDomain({
-        domain: range(stats, entries),
-        bounds,
-        scaleType,
-      })
-    }
-  }
-  return domain
+  const range = visibleStatsRange(spec)
+  return range ? getNiceDomain({ domain: range, bounds, scaleType }) : undefined
 }

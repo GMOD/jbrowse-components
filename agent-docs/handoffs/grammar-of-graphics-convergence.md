@@ -1,6 +1,6 @@
 ---
 name: grammar-of-graphics-convergence
-description: The grammar thread as of 2026-09-23. Four rules for how far to take it (the parser's output is the data, one object per concept, generality resolves before the loop, a track stays its format and the grammar supplies its parts), a census of the copies between each gmod parser and its GPU buffer, Colin's calls of 2026-09-23 (Vega-Lite's mark/shape naming, a DOM text layer, colour stays per mark), and the work left — y scales shared across tracks, a text layer, one row scale, the copies. y2 was declined on captures. Read before proposing a grammar feature, or converging a display's colour ramp, rows or labels.
+description: The grammar thread as of 2026-09-23. Four rules for how far to take it (the parser's output is the data, one object per concept, generality resolves before the loop, a track stays its format and the grammar supplies its parts), a census of the copies between each gmod parser and its GPU buffer, Colin's calls of 2026-09-23 (Vega-Lite's mark/shape naming, a DOM text layer, colour stays per mark), and the work left — a text layer, one row scale, the copies; shared y landed as scales.y.autoscaleGroup. y2 was declined on captures. Read before proposing a grammar feature, or converging a display's colour ramp, rows or labels.
 ---
 
 # Grammar of graphics: the convergence thread
@@ -140,16 +140,10 @@ Hi-C menu writes `reverse` for one (`darkAtLowEnd`).
 
 ### 2. y scales shared across tracks
 
-The `sv_multisamples` tutorial tells the reader to pin each of three coverage
-lanes by hand "so the three lanes share one scale"
-(`website/docs/tutorials/sv_multisamples.md:120`). Every quantitative display
-resolves its autoscale in `ScoreAxisMixin`
-(`packages/wiggle-core/src/ScoreAxisMixin.ts`), whose `minScoreBound` and
-`maxScoreBound` fall back to autoscale where no bound is set. A group name on
-`scales.y` would make that fallback the union of the data extents across the
-view's displays naming the same group, which is ADR-113's union across regions
-taken one level up. It unions extents rather than resolved domains, so no
-display reads another's domain.
+Landed as `scales.y.autoscaleGroup` and the score menu's **Autoscale with other
+tracks...** (GRAMMAR_OF_GRAPHICS.md §"Scale resolution across tracks"). No
+tutorial step moved onto it yet: each pins a figure's scale on purpose, and
+swapping one is a capture comparison first.
 
 ### 3. A text layer
 
@@ -218,6 +212,5 @@ ADR-135.
 
 The row model (§4) is under way, ahead of the rest: it converges code that
 exists, which rule 2 ranks first. The ramp table and the `mark`/`shape`
-rename have landed. Next shared y, one mixin and a real tutorial step it
-removes, then the text layer. The copies run beside any of them, one bench
+rename have landed, and so has shared y. The text layer is next. The copies run beside any of them, one bench
 each.

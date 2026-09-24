@@ -6,11 +6,14 @@ import EqualizerIcon from '@mui/icons-material/Equalizer'
 import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule'
 
 import { DEFAULT_AUTOSCALE_OPTIONS } from './autoscale.ts'
+import { autoscaleGroupMembers, autoscalePeers } from './autoscaleGroup.ts'
 
+import type { AutoscalePeer } from './autoscaleGroup.ts'
 import type { MenuItem, NormalMenuItem } from '@jbrowse/core/ui'
 import type { ValueScaleRule } from '@jbrowse/display-ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
+const AutoscaleGroupDialog = lazy(() => import('./AutoscaleGroupDialog.tsx'))
 const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog.tsx'))
 const SetScoreRulesDialog = lazy(() => import('./SetScoreRulesDialog.tsx'))
 
@@ -192,6 +195,38 @@ export interface ScoreSubMenuOptions {
   disabledHelpText?: string
 }
 
+// The count of the other tracks in the group is in the label, as the min/max
+// row carries its bounds: an axis that moves when another track pans is
+// something the reader has to be able to find the cause of.
+export function makeAutoscaleGroupItem(
+  self: IStateTreeNode & AutoscalePeer,
+): MenuItem {
+  const { autoscaleGroup } = self
+  const others =
+    autoscaleGroup === undefined
+      ? 0
+      : autoscaleGroupMembers(self, autoscaleGroup).length - 1
+  return {
+    label:
+      others > 0
+        ? `Autoscale with other tracks (${others})...`
+        : 'Autoscale with other tracks...',
+    onClick: () => {
+      getDialogHost(self).queueDialog(handleClose => [
+        AutoscaleGroupDialog,
+        { model: self, handleClose },
+      ])
+    },
+  }
+}
+
+// Offered once the view holds another track with a value axis to share.
+function autoscalesInGroups<T extends IStateTreeNode>(
+  self: T & Partial<AutoscalePeer>,
+): self is T & AutoscalePeer {
+  return self.setAutoscaleGroup !== undefined && autoscalePeers(self).length > 0
+}
+
 function drawsScoreRules<T extends IStateTreeNode>(
   self: T & Partial<ScoreRulesModel>,
 ): self is T & ScoreRulesModel {
@@ -221,7 +256,10 @@ export function makeSetScoreRulesItem(
 }
 
 export function makeScoreSubMenu(
-  self: ScoreScaleModel & Partial<AutoscaleModel> & Partial<ScoreRulesModel>,
+  self: ScoreScaleModel &
+    Partial<AutoscaleModel> &
+    Partial<ScoreRulesModel> &
+    Partial<AutoscalePeer>,
   opts: ScoreSubMenuOptions = {},
 ): MenuItem {
   const {
@@ -255,6 +293,7 @@ export function makeScoreSubMenu(
       makeSetMinMaxScoreItem(self),
       ...(domain ? [makePinCurrentRangeItem(self, domain)] : []),
       ...(self.hasManualScoreBounds ? [makeClearMinMaxScoreItem(self)] : []),
+      ...(autoscalesInGroups(self) ? [makeAutoscaleGroupItem(self)] : []),
       ...(drawsScoreRules(self) ? [makeSetScoreRulesItem(self)] : []),
       ...trailingItems,
     ],

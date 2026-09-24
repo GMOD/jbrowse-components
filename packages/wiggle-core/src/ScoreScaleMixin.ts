@@ -121,6 +121,16 @@ export function ScoreScaleMixin() {
       },
       /**
        * #getter
+       * `scales.y.autoscaleGroup`, `undefined` while it names none.
+       */
+      get autoscaleGroup(): string | undefined {
+        return (
+          getConf(confNode(self), ['scales', 'y', 'autoscaleGroup']) ||
+          undefined
+        )
+      },
+      /**
+       * #getter
        * `scales.y.title` as written, `undefined` while unset or on a display
        * whose scale declares no title.
        */
@@ -183,6 +193,12 @@ export function ScoreScaleMixin() {
        */
       setMaxScore(val?: number) {
         setConf(confNode(self), ['scales', 'y', 'domainMax'], val)
+      },
+      /**
+       * #action
+       */
+      setAutoscaleGroup(group?: string) {
+        setConf(confNode(self), ['scales', 'y', 'autoscaleGroup'], group)
       },
       /**
        * #action

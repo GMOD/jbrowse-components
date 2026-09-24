@@ -4382,6 +4382,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "pinned top of the axis; unset autoscales.",
           "type": "number"
         },
+        "autoscaleGroup": {
+          "description": "tracks naming one group autoscale together.",
+          "$ref": "#/$defs/PlainString"
+        },
         "symlogConstant": {
           "description": "width of symlog's linear region around zero.",
           "type": "number",
@@ -6278,6 +6282,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "pinned top of the axis; unset autoscales.",
           "type": "number"
         },
+        "autoscaleGroup": {
+          "description": "tracks naming one group autoscale together.",
+          "$ref": "#/$defs/PlainString"
+        },
         "symlogConstant": {
           "description": "width of symlog's linear region around zero.",
           "type": "number",
@@ -7280,6 +7288,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "pinned top of the axis; unset autoscales.",
           "type": "number"
         },
+        "autoscaleGroup": {
+          "description": "tracks naming one group autoscale together.",
+          "$ref": "#/$defs/PlainString"
+        },
         "rules": {
           "type": "array",
           "items": {
@@ -8125,6 +8137,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "domainMax": {
           "description": "pinned top of the axis; unset autoscales.",
           "type": "number"
+        },
+        "autoscaleGroup": {
+          "description": "tracks naming one group autoscale together.",
+          "$ref": "#/$defs/PlainString"
         },
         "autoscale": {
           "description": "local or localsd or localpercentile.",

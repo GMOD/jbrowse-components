@@ -110,6 +110,16 @@ export type ValueScaleRuleConfig = Instance<
  * ```
  *
  * #example
+ * Three samples' coverage on one axis that still follows the data, each
+ * track's display naming the same group:
+ * ```js
+ * {
+ *   type: 'LinearAlignmentsDisplay',
+ *   scales: { y: { autoscaleGroup: 'depth' } },
+ * }
+ * ```
+ *
+ * #example
  * A titled axis with a labelled genome-wide threshold over a plain
  * suggestive one:
  * ```js
@@ -168,6 +178,18 @@ export function valueScaleSchema({
       domainMax: {
         type: 'maybeNumber',
         description: 'pinned top of the axis; unset autoscales',
+      },
+      /**
+       * #slot scales.y.autoscaleGroup
+       * A name shared by the tracks whose axes autoscale together: each
+       * unpinned end spans the data of every track in the view naming the
+       * same group, so three coverage lanes stay comparable as the view
+       * moves. A pinned end stays this track's own. The score menu's
+       * "Autoscale with other tracks" writes it.
+       */
+      autoscaleGroup: {
+        type: 'maybeString',
+        description: 'tracks naming one group autoscale together',
       },
       ...(scaleTypes.includes('symlog')
         ? {

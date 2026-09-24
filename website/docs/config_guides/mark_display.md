@@ -115,6 +115,12 @@ Every mark drawing at the current zoom folds into that one domain, the way a
 grammar of graphics gives one scale per aesthetic. With a multiscale pair
 (below) only one mark draws, so the axis is that mark's values.
 
+`autoscaleGroup` shares the axis across tracks: every track in the view whose
+`scales.y` names the same group autoscales over all of their data, so two plots,
+or a plot and a wiggle or coverage track, stay comparable as the view moves. An
+end one track pins stays that track's own. The score menu's **Autoscale with
+other tracks...** writes it.
+
 ### Reference lines and the axis title
 
 `scales.y` also holds the two guides a reader checks a plot against: `rules`,

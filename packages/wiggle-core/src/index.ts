@@ -63,11 +63,12 @@ export { rowLabelOffset } from './rowLabelOffset.ts'
 
 export { resolveRenderState } from './resolveRenderState.ts'
 
-export { visibleStatsDomain } from './visibleStatsDomain.ts'
+export { visibleStatsDomain, visibleStatsRange } from './visibleStatsDomain.ts'
 export type {
   SettledBlocksView,
   VisibleEntry,
   VisibleStatsDomainSpec,
+  VisibleStatsRangeSpec,
 } from './visibleStatsDomain.ts'
 
 export { scoreRuleMarks, widenRangeToRules } from './scoreRuleMarks.ts'

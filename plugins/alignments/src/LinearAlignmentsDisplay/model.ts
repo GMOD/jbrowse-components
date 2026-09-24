@@ -55,7 +55,7 @@ import {
   domainFromStats,
   getNiceDomain,
   resolveSymlogConstant,
-  visibleStatsDomain,
+  visibleStatsRange,
 } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { autorun, compareStructural, observable } from 'mobx'
@@ -966,30 +966,19 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The autoscaled depth domain, spanning every SHOWN group (each block
-           * contributes one entry per group's coverage): a shared scale is what
-           * makes stacked sections visually comparable, and ungrouped is the
-           * one-group case. Hidden lanes are excluded — sizing the visible lanes'
-           * axis against a lane the user hid is exactly the comparability this
-           * scale exists to give.
-           *
-           * While the density tier stands in, the axis is the bins' own: a count
-           * of features per bin rather than a read depth, under the same min/max
-           * bounds the Coverage menu writes, undefined until some region holds
-           * one so the depth-scaled layers stay gated on the same
-           * `hasCoverageScale` question they always were.
+           * The depth every SHOWN group spans (each block contributes one entry
+           * per group's coverage): a shared scale is what makes stacked
+           * sections visually comparable, and ungrouped is the one-group case.
+           * Hidden lanes are excluded — sizing the visible lanes' axis against
+           * a lane the user hid is exactly the comparability this scale exists
+           * to give. Undefined while the density tier stands in, whose count
+           * per bin is no depth a group could share.
            */
-          get coverageDomain(): [number, number] | undefined {
+          get autoscaleRange(): [number, number] | undefined {
             const hidden = self.hiddenGroupKeys
             return this.coarseTierStandsIn
-              ? this.densityDepthMax > 0
-                ? getNiceDomain({
-                    domain: [0, this.densityDepthMax],
-                    bounds: [self.minScoreBound, self.maxScoreBound],
-                    scaleType: self.scaleType,
-                  })
-                : undefined
-              : visibleStatsDomain({
+              ? undefined
+              : visibleStatsRange({
                   active: self.showCoverage,
                   view: self.view,
                   payloadFor: index => self.rpcDataMap.get(index),
@@ -1000,9 +989,28 @@ export default function stateModelFactory(
                   accumulate: entries => computeVisibleCoverageStats(entries),
                   range: stats =>
                     domainFromStats(stats, self.autoscaleType, self.numStdDev),
-                  bounds: [self.minScoreBound, self.maxScoreBound],
-                  scaleType: self.scaleType,
                 })
+          },
+
+          /**
+           * #getter
+           * The autoscaled depth domain. While the density tier stands in, the
+           * axis is the bins' own: a count of features per bin rather than a
+           * read depth, under the same min/max bounds the Coverage menu
+           * writes, undefined until some region holds one so the depth-scaled
+           * layers stay gated on the same `hasCoverageScale` question they
+           * always were.
+           */
+          get coverageDomain(): [number, number] | undefined {
+            return this.coarseTierStandsIn
+              ? this.densityDepthMax > 0
+                ? getNiceDomain({
+                    domain: [0, this.densityDepthMax],
+                    bounds: [self.minScoreBound, self.maxScoreBound],
+                    scaleType: self.scaleType,
+                  })
+                : undefined
+              : self.autoscaledDomain
           },
 
           /**

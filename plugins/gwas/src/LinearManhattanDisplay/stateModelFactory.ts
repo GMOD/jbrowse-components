@@ -44,7 +44,7 @@ import {
   makeCrossHatchItem,
   makeScoreSubMenu,
   resolveRenderState,
-  visibleStatsDomain,
+  visibleStatsRange,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 import {
@@ -292,8 +292,8 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * nice-rounded [min, max] -log10 p domain across the visible regions,
-         * or undefined before any data loads. The only walker of the four that
+         * [min, max] -log10 p across the visible regions, or undefined before
+         * any data loads. The only walker of the four that
          * reads shipped per-region extremes rather than scanning scores: the
          * worker already reduced them, so a block contributes its whole
          * region's extremes rather than the part it shows.
@@ -305,9 +305,9 @@ export function stateModelFactory(
          * reader nothing to read the plot against. `widenRangeToRules` applies
          * to the raw range, so an explicit `scales.y` bound still wins.
          */
-        get domain() {
+        get autoscaleRange() {
           const rules = self.scoreRules
-          return visibleStatsDomain({
+          return visibleStatsRange({
             active: true,
             view: self.host,
             payloadFor: index => self.rpcDataMap.get(index),
@@ -318,9 +318,15 @@ export function stateModelFactory(
                 [scoreMin, scoreMax],
                 rules.map(rule => rule.value),
               ),
-            bounds: [self.minScoreBound, self.maxScoreBound],
-            scaleType: self.scaleType,
           })
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         */
+        get domain() {
+          return self.autoscaledDomain
         },
       }))
       .views(self => ({

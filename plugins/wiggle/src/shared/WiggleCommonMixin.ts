@@ -4,7 +4,7 @@ import {
   ScoreFieldConfigMixin,
   autoscaleDomainFromStats,
   computeScoreStats,
-  visibleStatsDomain,
+  visibleStatsRange,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 
@@ -194,13 +194,14 @@ export function WiggleCommonMixin() {
     .views(self => ({
       /**
        * #getter
-       * The autoscaled domain over the sources visible in the settled blocks.
-       * `undefined` until the view and the data are ready, which is not the
-       * `[0, 1]` a caller falls back to — see `visibleStatsDomain`.
+       * What the sources visible in the settled blocks span, under the
+       * autoscale mode. `undefined` until the view and the data are ready,
+       * which is not the `[0, 1]` a caller falls back to — see
+       * `visibleStatsRange`.
        */
-      get domain() {
+      get autoscaleRange() {
         const names = self.autoscaleSourceNames
-        return visibleStatsDomain({
+        return visibleStatsRange({
           active: true,
           view: regionHost(self),
           payloadFor: index => self.rpcDataMap.get(index),
@@ -222,9 +223,15 @@ export function WiggleCommonMixin() {
               }),
               self.scoreRuleValues,
             ),
-          bounds: [self.minScoreBound, self.maxScoreBound],
-          scaleType: self.scaleType,
         })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get domain() {
+        return self.autoscaledDomain
       },
     }))
     .actions(self => ({

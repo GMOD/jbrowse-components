@@ -1,8 +1,10 @@
 import { types } from '@jbrowse/mobx-state-tree'
 import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
+import { autoscaleGroupMembers, unionRanges } from './autoscaleGroup.ts'
 import { computeYTicks } from './computeYTicks.ts'
 import { makeScoreNormalizer, resolveSymlogConstant } from './normalize.ts'
+import { getNiceDomain } from './scale.ts'
 import { scoreRuleMarks } from './scoreRuleMarks.ts'
 
 import type { ValueScale, YAxis } from '@jbrowse/display-ui'
@@ -87,8 +89,52 @@ export function ScoreAxisMixin() {
       get valueScales(): ValueScale[] {
         return []
       },
+      /**
+       * #getter
+       * Overridable: the group this display's unpinned ends autoscale in,
+       * beside every display in its view naming the same one.
+       */
+      get autoscaleGroup(): string | undefined {
+        return undefined
+      },
+      /**
+       * #getter
+       * Overridable: what this display's own data spans, before any bound,
+       * nice-rounding or group widens it; what a group unions.
+       */
+      get autoscaleRange(): [number, number] | undefined {
+        return undefined
+      },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * The domain an autoscaled axis draws: `autoscaleRange`, widened to
+       * every range its `autoscaleGroup` holds, nice-rounded inside this
+       * display's own bounds. Each member unions the others' own ranges and
+       * never their domains, so a pinned end stays the display's that pinned
+       * it. `undefined` while this display has nothing of its own to scale.
+       */
+      get autoscaledDomain(): [number, number] | undefined {
+        const own = self.autoscaleRange
+        const group = self.autoscaleGroup
+        const range =
+          own && group
+            ? unionRanges([
+                own,
+                ...autoscaleGroupMembers(self, group).map(
+                  m => m.autoscaleRange,
+                ),
+              ])
+            : own
+        return range
+          ? getNiceDomain({
+              domain: range,
+              bounds: [this.minScoreBound, this.maxScoreBound],
+              scaleType: self.scaleType,
+            })
+          : undefined
+      },
       /**
        * #getter
        * Resolved lower bound; `undefined` means autoscale this end.

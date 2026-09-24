@@ -78,7 +78,7 @@ import {
   makeCrossHatchItem,
   makeScoreSubMenu,
   resolveRenderState,
-  visibleStatsDomain,
+  visibleStatsRange,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 import { makePointSizeSubMenu } from '@jbrowse/wiggle-core/chrome'
@@ -800,12 +800,12 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * nice-rounded [min, max] over the `y` of every mark drawing at this
-       * zoom, through the autoscale mode `scales.y` names, widened to every
-       * rule the scale declares and to the origin whenever a bar mark draws,
-       * or undefined before any valued mark loads
+       * [min, max] over the `y` of every mark drawing at this zoom, through
+       * the autoscale mode `scales.y` names, widened to every rule the scale
+       * declares and to the origin whenever a bar mark draws, or undefined
+       * before any valued mark loads
        */
-      get domain() {
+      get autoscaleRange() {
         const indices = self.drawingMarkIndices
         const folded = new Set(indices)
         const types = indices.map(i => self.markTypes[i]!)
@@ -814,7 +814,7 @@ export function stateModelFactory(
           ...self.scoreRules.map(rule => rule.value),
           ...(types.includes('bar') ? [origin] : []),
         ]
-        return visibleStatsDomain({
+        return visibleStatsRange({
           active: types.some(readsValue),
           view: self.host,
           payloadFor: index => self.rpcDataMap.get(index),
@@ -834,9 +834,15 @@ export function stateModelFactory(
               }),
               reached,
             ),
-          bounds: [self.minScoreBound, self.maxScoreBound],
-          scaleType: self.scaleType,
         })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get domain() {
+        return self.autoscaledDomain
       },
     }))
     .views(self => ({

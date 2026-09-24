@@ -27,6 +27,16 @@ displays start on:
 }
 ```
 
+Three samples' coverage on one axis that still follows the data, each
+track's display naming the same group:
+
+```js
+{
+  type: 'LinearAlignmentsDisplay',
+  scales: { y: { autoscaleGroup: 'depth' } },
+}
+```
+
 A titled axis with a labelled genome-wide threshold over a plain
 suggestive one:
 
@@ -77,6 +87,7 @@ These slots go on a display entry: `"displays": [{ "type": "ValueScale", ... }]`
 | <span id="slot-scalesytype">**scales.y.type**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) = <code>'linear'</code> | How the axis reads its domain — the ticks, the cross-hatches and the renderer's placement all come from it. `log` cannot represent 0 or negative values and floors the domain above them; `symlog` is log-like away from zero and linear through it, so a track whose values touch or cross 0 keeps them. Which of the three a display offers is which of them its renderer places. |
 | <span id="slot-scalesydomainmin">**scales.y.domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | The bottom of the axis, pinning what would otherwise autoscale to the loaded regions. Unset autoscales that end. The score menu's "Set min/max" writes here. |
 | <span id="slot-scalesydomainmax">**scales.y.domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | The top of the axis. Unset autoscales that end. |
+| <span id="slot-scalesyautoscalegroup">**scales.y.autoscaleGroup**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | A name shared by the tracks whose axes autoscale together: each unpinned end spans the data of every track in the view naming the same group, so three coverage lanes stay comparable as the view moves. A pinned end stays this track's own. The score menu's "Autoscale with other tracks" writes it. |
 | <span id="slot-scalesysymlogconstant">**scales.y.symlogConstant**</span><br>[`number`](/docs/config_guides/slot_types#number) = per display | Width of symlog's linear region around zero. `0` derives it from the domain, a thousandth of its largest magnitude — right for a wiggle track, whose units are its own. The coverage band starts at `1` instead, which makes symlog exactly `log(depth+1)` and puts the knee at one read.<br>_advanced_ |
 | <span id="slot-scalesyautoscale">**scales.y.autoscale**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) = per display | What an unpinned end scales to: `local` takes the extremes of the visible region, `localsd` the mean ± `numStdDev` standard deviations, `localpercentile` the `numQuantile`-th percentile of each sign, which is robust to a peaky distribution. |
 | <span id="slot-scalesynumstddev">**scales.y.numStdDev**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>3</code> | Standard deviations either side of the mean the `localsd` autoscale reaches.<br>_advanced_ |

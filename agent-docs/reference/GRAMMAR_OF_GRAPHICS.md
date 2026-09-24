@@ -518,6 +518,18 @@ the row axis in the vocabulary above, and none is a new channel.
   bp per bin, snapped up — so a zoom inside a rung refetches nothing and a
   1,600x sweep in 64 steps costs 11 refetches. GenomeSpy's `multiscale`
   spells the same idea with `stops`.
+- **Scale resolution across tracks is a group, and unions ranges.** Every
+  display with a value scale (the wiggle family, the coverage band, Manhattan,
+  the mark display) names a group in `scales.y.autoscaleGroup`, and
+  `ScoreAxisMixin.autoscaledDomain` widens its own `autoscaleRange` to every
+  range the view's displays naming that group hold
+  (`packages/wiggle-core/src/autoscaleGroup.ts`). It unions the raw ranges,
+  never the domains, so a pinned end stays the display's that pinned it and
+  no display reads another's resolved scale; the density tier's count per bin
+  answers no range, since it is no depth a group could share. The tutorials
+  that pin a shared scale by hand (`dtu`, `hic_structural_variants`,
+  `sv_multisamples`) still do: the RHD figure pins 0–70 to clip spikes an
+  autoscale would reach.
 - **Scale resolution across layers: y never resolves independently, a
   categorical colour shares by construction, a ramp does not share.** The
   display owns one y scale and every drawing mark folds into it, which is
@@ -580,7 +592,7 @@ vocabulary; its lead is the browser around it and scaling past the fetch budget.
 | y scales | linear, log | 13 kinds, incl. symlog and sqrt | none on y |
 | Named colour ramps | viridis only | the d3 set | — |
 | Transforms | 7 | ~27, incl. window, lookup, stack, regexExtract | ~10 |
-| y shared across tracks | no | yes, `resolve.scale.y: "shared"` | same `domain` pinned by hand |
+| y shared across tracks | yes, `scales.y.autoscaleGroup` | yes, `resolve.scale.y: "shared"` | same `domain` pinned by hand |
 | Selections, conditional colour | no | yes, compiled to shaders | hover/select styles only |
 | Legend title / axis title | yes / yes | yes / yes | yes / no |
 
@@ -594,23 +606,18 @@ holds each shape's painter, shader and hit test to each other
 
 The gaps a user meets first, in order:
 
-1. **No shared y across tracks.** `dtu`, `hic_structural_variants` and
-   `sv_multisamples` fake one by pinning the same ends by hand, and withdrawing
-   the second axis (ADR-141) sends two-quantity plots to two tracks. The fix sits
-   above the display: tracks naming one scale group autoscale together, which
-   wiggle and coverage would use too.
-2. **No `y2` channel**, declined on captures: a BigWig tier's min-to-max range
+1. **No `y2` channel**, declined on captures: a BigWig tier's min-to-max range
    bar read worse than the same `minScore`/`maxScore` (ADR-123) as two point
    marks over the mean, and than wiggle's whisker band
    ([the handoff's call](../handoffs/grammar-of-graphics-convergence.md)).
-3. **No text mark**, for labelling a peak, an SV or a gene on a plot.
-4. **No symlog mark scale.** The shared scale object and wiggle have symlog,
+2. **No text mark**, for labelling a peak, an SV or a gene on a plot.
+3. **No symlog mark scale.** The shared scale object and wiggle have symlog,
    and the mark display's `valueToYPxScaled` does not place it. The named
    ramps are one table (`COLOR_SCHEMES` in
    `packages/core/src/util/colorSchemes.ts`): the perceptual viridis, magma,
    inferno and cividis, the Hi-C ramps juicebox and fall, ColorBrewer's reds
    and blues, and the diverging redblue and purpleorange.
-5. **In-app authoring stops at one mark.** **Plot field...** writes one mark and
+4. **In-app authoring stops at one mark.** **Plot field...** writes one mark and
    an optional count per bin, the config editor edits transform steps but not
    marks (`db4ef2f82a`), and the track menu has no facet or colour picker.
 
