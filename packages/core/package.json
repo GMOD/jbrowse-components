@@ -312,7 +312,7 @@
     "dompurify": "^3.4.15",
     "generic-filehandle2": "^2.4.0",
     "idb": "^8.0.3",
-    "mobx": "^7.0.3",
+    "mobx": "^7.0.4",
     "mobx-react": "^10.0.2",
     "pako-esm2": "^2.0.2",
     "rxjs": "^7.8.2",

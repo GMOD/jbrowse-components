@@ -93,7 +93,7 @@
   },
   "dependencies": {
     "@jbrowse/mobx-state-tree": "^6.6.0",
-    "mobx": "^7.0.3"
+    "mobx": "^7.0.4"
   },
   "peerDependencies": {
     "react": ">=19.0.0"
