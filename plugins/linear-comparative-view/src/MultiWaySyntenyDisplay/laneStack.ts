@@ -99,6 +99,8 @@ export function laneGeometry(
  */
 export interface Lane {
   assemblyName: string
+  /** what the reader calls the lane: see the model's `laneLabel` */
+  label: string
   /** the top lane, drawn on the view's own axis rather than a frame of its own */
   isAnchor: boolean
   /**
@@ -211,6 +213,7 @@ export interface BuildLanesOpts {
   splitStrands?: boolean
   /** the moving lanes past their midpoint, which draw their new rows */
   pastHalfway?: ReadonlySet<string>
+  labelOf?: (assemblyName: string) => string
 }
 
 function clipSpan([a, b]: Span, [lo, hi]: Span): Span[] {
@@ -244,6 +247,7 @@ export function buildLanes({
   height,
   splitStrands = false,
   pastHalfway = new Set(),
+  labelOf = assemblyName => assemblyName,
 }: BuildLanesOpts): LaneStack {
   const { glyphHeight, bandHeight, rows } = laneGeometry(
     height,
@@ -302,6 +306,7 @@ export function buildLanes({
 
       return {
         assemblyName,
+        label: labelOf(assemblyName),
         isAnchor,
         frame,
         hasAnnotation: laneGeneAdapters.has(assemblyName),

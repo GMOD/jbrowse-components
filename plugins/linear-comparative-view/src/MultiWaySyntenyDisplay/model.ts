@@ -1060,6 +1060,19 @@ export function stateModelFactory(
         return getSession(self).assemblyManager.has(assemblyName)
       },
       /**
+       * #method
+       * what a lane is called on screen: the display name the session gives
+       * its genome, the way the assembly selector names it, else the name the
+       * placements carry
+       */
+      laneLabel(assemblyName: string) {
+        return (
+          (this.holdsAssembly(assemblyName) &&
+            getSession(self).assemblyManager.get(assemblyName)?.displayName) ||
+          assemblyName
+        )
+      },
+      /**
        * #getter
        * every lane the picker can offer: the header's declared lanes in the
        * source's order, then the genomes the track config names, then any
@@ -1081,8 +1094,10 @@ export function stateModelFactory(
         const offer = (lane: DeclaredLane) => {
           const key = self.laneKey(lane.name)
           if (key !== anchor && !out.has(key)) {
+            const label = lane.label ?? this.laneLabel(lane.name)
             out.set(key, {
               ...lane,
+              ...(label === lane.name ? {} : { label }),
               placed: placed.has(key),
               drawn:
                 (chosen === undefined || chosen.has(key)) && !hidden.has(key),
@@ -1682,6 +1697,7 @@ export function stateModelFactory(
           height: self.height,
           splitStrands: self.splitStrands,
           pastHalfway: self.laneMotionHalfway,
+          labelOf: assemblyName => self.laneLabel(assemblyName),
         })
       },
     }))

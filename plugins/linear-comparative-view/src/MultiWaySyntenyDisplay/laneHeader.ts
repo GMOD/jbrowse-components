@@ -104,7 +104,7 @@ export function laneHeaderRows(
     return {
       assemblyName: lane.assemblyName,
       label: [
-        lane.assemblyName,
+        lane.label,
         where,
         alsoOn,
         lane.hasAnnotation ? undefined : '· no annotation',

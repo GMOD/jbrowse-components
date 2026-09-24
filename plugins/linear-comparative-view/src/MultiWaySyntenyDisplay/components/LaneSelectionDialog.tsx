@@ -36,12 +36,12 @@ export function laneRuns(lanes: LaneChoice[]) {
   return runs
 }
 
-function laneCaption(lane: LaneChoice) {
-  const alias =
-    lane.label !== undefined && lane.label !== lane.name
-      ? ` (${lane.label})`
-      : ''
-  return `${lane.name}${alias}`
+export function laneCaption({ name, label }: LaneChoice) {
+  return label === undefined || label === name
+    ? name
+    : label.includes(name)
+      ? label
+      : `${name} (${label})`
 }
 
 /**

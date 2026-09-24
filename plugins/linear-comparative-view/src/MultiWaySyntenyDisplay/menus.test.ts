@@ -32,6 +32,7 @@ const disabledOf = (items: MenuItem[]) =>
 
 const peach = {
   assemblyName: 'peach',
+  label: 'peach',
   isAnchor: false,
   frame: {
     refName: 'pp1',
@@ -48,6 +49,7 @@ const peach = {
 
 const grape: HeaderLane = {
   assemblyName: 'grape',
+  label: 'grape',
   isAnchor: true,
   frame: undefined,
   canon: ref => ref,

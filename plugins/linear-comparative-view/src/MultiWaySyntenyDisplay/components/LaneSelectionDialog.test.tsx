@@ -4,7 +4,10 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, screen } from '@testing-library/react'
 
-import LaneSelectionDialog, { laneRuns } from './LaneSelectionDialog.tsx'
+import LaneSelectionDialog, {
+  laneCaption,
+  laneRuns,
+} from './LaneSelectionDialog.tsx'
 
 import type { LaneChoice } from '../laneSelection.ts'
 
@@ -89,4 +92,15 @@ test('the filter narrows what the bulk buttons touch', () => {
   fireEvent.click(screen.getByText('Untick shown'))
   fireEvent.click(screen.getByText('Draw these lanes'))
   expect(chosen).toEqual([['HG2#1', 'extra']])
+})
+
+test('a caption names the lane once when its label already does', () => {
+  const lane = { placed: true, drawn: true }
+  expect(laneCaption({ ...lane, name: 'panTro6' })).toBe('panTro6')
+  expect(
+    laneCaption({ ...lane, name: 'panTro6', label: 'Chimp (panTro6)' }),
+  ).toBe('Chimp (panTro6)')
+  expect(laneCaption({ ...lane, name: 'HG1.1', label: 'HG1#1' })).toBe(
+    'HG1.1 (HG1#1)',
+  )
 })

@@ -27,7 +27,7 @@ import type { AttributeRange } from '@jbrowse/synteny-core'
 
 export type HeaderLane = Pick<
   Lane,
-  'assemblyName' | 'isAnchor' | 'frame' | 'canon'
+  'assemblyName' | 'label' | 'isAnchor' | 'frame' | 'canon'
 >
 
 export interface LaneHeaderModel {
@@ -95,7 +95,7 @@ export function laneHeaderMenuItems(
   if (lane.isAnchor) {
     return [
       {
-        label: `Open ${name} in a new view`,
+        label: `Open ${lane.label} in a new view`,
         onClick: () => {
           model.openInNewView(name, model.anchorLocString)
         },
@@ -118,7 +118,7 @@ export function laneHeaderMenuItems(
       'lane',
     ),
     {
-      label: openMateLabel(name),
+      label: openMateLabel(lane.label),
       disabled: loc === undefined || !held,
       onClick: () => {
         model.openInNewView(name, loc!)
@@ -127,7 +127,7 @@ export function laneHeaderMenuItems(
     ...(model.canReanchor
       ? [
           {
-            label: `Re-anchor on ${name}`,
+            label: `Re-anchor on ${lane.label}`,
             disabled: loc === undefined || !held,
             onClick: () => {
               model.reanchor(name, loc!)
@@ -336,7 +336,7 @@ export function lanesMenuItem(model: MultiWayMenuModel) {
     ...withSubHeader(
       'Lane menus',
       model.laneStack.lanes.map(lane => ({
-        label: lane.assemblyName,
+        label: lane.label,
         subMenu: laneHeaderMenuItems(model, lane),
       })),
     ),

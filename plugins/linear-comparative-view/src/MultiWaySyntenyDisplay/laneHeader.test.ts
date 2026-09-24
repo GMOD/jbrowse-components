@@ -20,6 +20,7 @@ function mateLane(
   const { frame: frameOverrides, ...rest } = overrides
   return {
     assemblyName: 'peach',
+    label: 'peach',
     isAnchor: false,
     hasAnnotation: true,
     glyphTop: 40,
@@ -34,6 +35,7 @@ function mateLane(
 
 const anchorLane = {
   assemblyName: 'grape',
+  label: 'grape',
   isAnchor: true,
   hasAnnotation: true,
   glyphTop: 12,
@@ -66,6 +68,12 @@ describe('the label', () => {
     )
     expect(row.label).toBe('peach  chr1:1,234,568..1,236,567')
     expect(row.isAnchor).toBe(false)
+  })
+
+  test('names the genome the way the session does', () => {
+    expect(rowOf(mateLane({ label: 'Peach (prunus)' })).label).toBe(
+      'Peach (prunus)  Pp1:1..1,960',
+    )
   })
 
   test('says [rev] on a lane drawn flipped', () => {
