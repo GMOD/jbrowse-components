@@ -243,9 +243,9 @@ export default function GCContentExtraTrackMenuItemsF(
       ? {
           label: 'Add GC content track',
           onClick: () => {
-            const gcDisplay = (
-              config.displays as AnyConfigurationModel[] | undefined
-            )?.find(d => d.type === 'LinearGCContentDisplay')
+            const gcDisplay = (config.displays as AnyConfigurationModel[]).find(
+              d => d.type === 'LinearGCContentDisplay',
+            )
             const conf = makeGCContentTrackConf({
               assemblyNames: getConfAssemblyNames(config),
               sequenceAdapter: readConfObject(config, 'adapter'),

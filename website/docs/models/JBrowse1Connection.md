@@ -45,6 +45,6 @@ Members a composed model contributes are listed here too, so these tables are th
 | --- | --- | --- |
 | <span id="action-connect">**connect**</span><br><code>() =&gt; Promise&lt;void&gt;</code> |  | JBrowse1Connection |
 | <span id="action-setloading">**setLoading**</span><br><code>(loading: boolean) =&gt; void</code> |  | [BaseConnectionModel](../baseconnectionmodel#action-setloading) |
-| <span id="action-addtrackconf">**addTrackConf**</span><br><code>(trackConf: TrackConf) =&gt; any</code> |  | [BaseConnectionModel](../baseconnectionmodel#action-addtrackconf) |
+| <span id="action-addtrackconf">**addTrackConf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackConf: TrackConf) =&gt; PluggableConfigNode &amp; IStateTreeNode&lt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackConf: TrackConf) =&gt; PluggableConfigNode &amp; IStateTreeNode&lt;PluggableConfigSchemaType&gt;</code></pre></dialog></span> |  | [BaseConnectionModel](../baseconnectionmodel#action-addtrackconf) |
 | <span id="action-addtrackconfs">**addTrackConfs**</span><br><code>(trackConfs: TrackConf[]) =&gt; void</code> |  | [BaseConnectionModel](../baseconnectionmodel#action-addtrackconfs) |
 | <span id="action-settrackconfs">**setTrackConfs**</span><br><code>(trackConfs: TrackConf[]) =&gt; void</code> |  | [BaseConnectionModel](../baseconnectionmodel#action-settrackconfs) |

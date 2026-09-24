@@ -7,6 +7,25 @@ Auto-generated from exported functions tagged `#api` in the source. See
 [imports and re-exports](/docs/developer_guides/imports_and_reexports) for how to
 import these from a plugin.
 
+## applyConfSettings
+
+Write a settings bag — a session spec's track entry, a share link, an agent
+call — onto a config. Each key names a member: a slot or a channel is written
+whole, as `setConf` writes it, so `null` resets it (ADR-146); a namespace's
+object names members inside it, at any depth, and the ones it leaves out
+keep their values. The config's own lift and checks run over the bag first,
+and each namespace's over its part, so a shorthand or a legacy key reads the
+same here as in `config.json`. A key the config does not declare is reported
+for the caller to route or refuse, and a declared key whose write throws
+costs that key alone.
+
+```js
+// type signature
+(target: AnyConfigurationModel | { configuration: AnyConfigurationModel; }, settings: Record<string, unknown>) => ConfSettingsReport
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
+
 ## arraySlotUnion
 
 The `ConfigurationSchemaUnion` an array slot's entries answer to, read off

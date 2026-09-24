@@ -216,6 +216,17 @@ const NAME_GROUPS: NameGroup[] = [
     label: 'the config models that were flattened',
     names: ['isConfigurationSlotType'],
   },
+  {
+    label:
+      'MST reflection `@jbrowse/mobx-state-tree` answers itself: `getWrappedType` and `unwrapType` see through an optional, a refinement, a snapshotProcessor or a resolved late, `asArrayType`/`asMapType` reach a collection, `getUnionSubtypes` a union through any of those',
+    names: [
+      'getDefaultValue',
+      'getPropertyType',
+      'getSubType',
+      'getUnionSubTypes',
+      'resolveLateType',
+    ],
+  },
 ]
 
 /** Subpath (without the `@jbrowse/core` prefix) -> what to do instead. */

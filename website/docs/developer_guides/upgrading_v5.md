@@ -140,7 +140,7 @@ instead:
 
 <!-- BEGIN GENERATED ABI_REMOVED_NAMES -->
 
-83 names over 98 entries, since 15 of them were served from two modules each.
+88 names over 103 entries, since 15 of them were served from two modules each.
 
 <!-- prettier-ignore -->
 | What went | Names |
@@ -160,6 +160,7 @@ instead:
 | palettes, still served as members of `paletteColors` | `dark2` → `paletteColors.dark2`, `ggplot2Colors3` → `paletteColors.ggplot2Colors3`, `ggplot2Colors4` → `paletteColors.ggplot2Colors4`, `ggplot2Colors5` → `paletteColors.ggplot2Colors5`, `ggplot2Colors6` → `paletteColors.ggplot2Colors6`, `set2` → `paletteColors.set2`, `tableau10` → `paletteColors.tableau10` |
 | block classes, now interfaces discriminated by `type`, so a block is an object literal | `BaseBlock`, `ContentBlock`, `ElidedBlock`, `InterRegionPaddingBlock` |
 | the config models that were flattened | `isConfigurationSlotType` |
+| MST reflection `@jbrowse/mobx-state-tree` answers itself: `getWrappedType` and `unwrapType` see through an optional, a refinement, a snapshotProcessor or a resolved late, `asArrayType`/`asMapType` reach a collection, `getUnionSubtypes` a union through any of those | `getDefaultValue`, `getPropertyType`, `getSubType`, `getUnionSubTypes`, `resolveLateType` |
 
 <!-- END GENERATED ABI_REMOVED_NAMES -->
 
