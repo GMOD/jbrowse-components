@@ -280,9 +280,15 @@ export function stateModelFactory(
       /**
        * #volatile
        * the lanes already put to `Core-describeAssemblies`, answered or not,
-       * so each is asked once
+       * so each is asked once until a reload
        */
       describedLanes: new Set<string>(),
+      /**
+       * #volatile
+       * the lanes whose `Core-describeAssemblies` answer is still out, which
+       * holds readiness the way an outstanding lane fetch does
+       */
+      lanesBeingDescribed: new Set<string>(),
       /**
        * #volatile
        * the anchor assembly under which a lane-gene commit has covered a MATE
@@ -408,17 +414,45 @@ export function stateModelFactory(
         /**
          * #action
          */
-        markLanesDescribed(names: string[]) {
+        beginDescribingLanes(names: string[]) {
           self.describedLanes = new Set([...self.describedLanes, ...names])
+          self.lanesBeingDescribed = new Set([
+            ...self.lanesBeingDescribed,
+            ...names,
+          ])
         },
         /**
          * #action
+         * also what the deadline calls, with no descriptions, for a plugin
+         * that has not answered; a late answer still lands
          */
-        addLaneDescriptions(descriptions: Record<string, AssemblyDescription>) {
-          self.laneDescriptions = new Map([
-            ...self.laneDescriptions,
-            ...Object.entries(descriptions),
-          ])
+        endDescribingLanes(
+          names: string[],
+          descriptions: Record<string, AssemblyDescription>,
+        ) {
+          const ended = new Set(names)
+          self.lanesBeingDescribed = new Set(
+            [...self.lanesBeingDescribed].filter(name => !ended.has(name)),
+          )
+          if (Object.keys(descriptions).length > 0) {
+            self.laneDescriptions = new Map([
+              ...self.laneDescriptions,
+              ...Object.entries(descriptions),
+            ])
+          }
+        },
+        /**
+         * #action
+         * lets a reload ask again about the lanes that got no description
+         */
+        forgetUndescribedLanes() {
+          self.describedLanes = new Set(
+            [...self.describedLanes].filter(
+              name =>
+                self.laneDescriptions.has(name) ||
+                self.lanesBeingDescribed.has(name),
+            ),
+          )
         },
         /**
          * #action
@@ -1119,9 +1153,9 @@ export function stateModelFactory(
       laneLabel(assemblyName: string) {
         return this.holdsAssembly(assemblyName)
           ? getSession(self).assemblyManager.getDisplayName(assemblyName)
-          : (self.laneDescriptions.get(assemblyName)?.displayName ??
-              this.declaredLaneLabels.get(self.laneKey(assemblyName)) ??
-              assemblyName)
+          : self.laneDescriptions.get(assemblyName)?.displayName ||
+              (this.declaredLaneLabels.get(self.laneKey(assemblyName)) ??
+                assemblyName)
       },
       /**
        * #getter
@@ -1648,7 +1682,7 @@ export function stateModelFactory(
           const track = tracks.get(lane)
           const source = track
             ? (readConfObject(track, 'trackId') as string)
-            : `described:${lane}`
+            : `${self.holdsAssembly(lane) ? 'held' : 'described'}:${lane}`
           return `${source}@${regions.map(regionKey).join(',')}`
         }
         if (view.initialized) {
@@ -2462,7 +2496,9 @@ export function stateModelFactory(
           (self.laneGenesCoverMatesFor !== self.anchorAssemblyName &&
             specsCoverMate(genes, self.anchorAssemblyName)) ||
           (self.laneLinksLandedFor !== self.anchorAssemblyName &&
-            self.laneLinksFetchSpecs.length > 0)
+            self.laneLinksFetchSpecs.length > 0) ||
+          (self.laneGenesCoverMatesFor !== self.anchorAssemblyName &&
+            self.lanesBeingDescribed.size > 0)
         )
       },
       /**
@@ -2479,6 +2515,7 @@ export function stateModelFactory(
         return (
           staleLaneSpecs(self.laneGenesFetchSpecs, self.laneGenes).length > 0 ||
           staleLaneSpecs(self.laneLinksFetchSpecs, self.laneLinks).length > 0 ||
+          self.lanesBeingDescribed.size > 0 ||
           self.lodTier !== self.liveLodTier ||
           this.animating
         )

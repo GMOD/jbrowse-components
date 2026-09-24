@@ -41,6 +41,8 @@ interface MultiWayFetchArgs {
 
 const DEPENDENT_FETCH_DELAY = 500
 
+const DESCRIBE_DEADLINE_MS = 20_000
+
 /**
  * The indel size at which a clipped record is cut into separate placements.
  * The display draws a placement as one straight ribbon and keeps no alignment
@@ -162,7 +164,10 @@ function describedLaneRegions(self: MultiWaySyntenyDisplayModel) {
     }
     const [fileRefNames, aliases] = await Promise.all([
       ctx.callRpc('CoreGetRefNames', { adapterConfig: spec.adapterConfig }),
-      aliasRows(spec.refNameAliases.adapter),
+      aliasRows(spec.refNameAliases.adapter).catch((error: unknown) => {
+        console.error(error)
+        return []
+      }),
     ])
     const fileRefName = fileRefNameOf(fileRefNames, aliases)
     return unbound.map(region => ({
@@ -342,27 +347,42 @@ function installLaneFrameDecision(self: MultiWaySyntenyDisplayModel) {
 
 /**
  * Puts the drawn lanes the session lacks to `Core-describeAssemblies`, each
- * lane once, in one batch per change to the drawn set
+ * lane once, in one batch per change to the drawn set. A reload asks again
+ * about the lanes that got no description
  */
 function installLaneDescriptions(self: MultiWaySyntenyDisplayModel) {
   const { pluginManager } = getEnv<{ pluginManager: PluginManager }>(self)
+  let reloads = self.reloadCounter
   addDisposer(
     self,
     autorun(
       () => {
+        if (self.reloadCounter !== reloads) {
+          reloads = self.reloadCounter
+          self.forgetUndescribedLanes()
+        }
         const names = self.lanesToDescribe
         if (names.length > 0) {
-          self.markLanesDescribed(names)
-          pluginManager
-            /** #extensionPoint Core-describeAssemblies | async | Describe, in one batch, assemblies the session does not hold, without adding them. Each callback adds to the descriptions the one before it returned */
-            .evaluateAsyncExtensionPoint(
-              'Core-describeAssemblies',
-              {},
-              { assemblyNames: names, session: getSession(self) },
-            )
+          self.beginDescribingLanes(names)
+          const deadline = setTimeout(() => {
+            if (isAlive(self)) {
+              self.endDescribingLanes(names, {})
+            }
+          }, DESCRIBE_DEADLINE_MS)
+          // eslint-disable-next-line no-restricted-syntax -- EFFECT INPUT: a plugin's reads before its first await belong to its answer, and the lanes to ask about are the trigger
+          untracked(() =>
+            pluginManager
+              /** #extensionPoint Core-describeAssemblies | async | Describe, in one batch, assemblies the session does not hold, without adding them. Each callback adds to the descriptions the one before it returned */
+              .evaluateAsyncExtensionPoint(
+                'Core-describeAssemblies',
+                {},
+                { assemblyNames: names, session: getSession(self) },
+              ),
+          )
             .then(descriptions => {
+              clearTimeout(deadline)
               if (isAlive(self)) {
-                self.addLaneDescriptions(descriptions)
+                self.endDescribingLanes(names, descriptions)
               }
             })
             .catch((error: unknown) => {

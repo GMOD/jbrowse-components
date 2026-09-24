@@ -219,14 +219,19 @@ them the source's spelling goes as is. Per-lane gene adapters written into the
 star config were declined for this point, which also serves stars no builder
 wrote.
 
+An answer still out holds readiness as an outstanding lane fetch does, until
+it lands or `DESCRIBE_DEADLINE_MS` passes; a later answer still labels the
+lane. A reload asks again about lanes that got no description.
+
 Every demo star holds all its lanes, so nothing there reaches the point; hub
 stars and a lane picked past a GBZ's held haplotypes do. The Hubs plugin
-(external) does not answer it yet. It can, from each mate's `minimal.json`
-(12-300 KB, one request per newly drawn lane, no connection): the assembly's
-`displayName` and `refNameAliases`, and the default session's gene track,
-`<db>-ncbiRefSeq`, which spells chromosomes as the liftOver chains do (`chr1`;
-the hub's NCBI GFF says `NC_…`). Its adapter URIs are relative to that
-config.
+(jbrowse-plugin-hubs `describeAssemblies.ts`) answers from each genome's
+hosted config, `minimal.json` for a UCSC db and `config.json` for GenArk, with
+no connection: the assembly's `displayName` and `refNameAliases`, and the gene
+track jb2hubs' `defaultGeneTrackId` picks, its URIs made absolute. On hg38's
+UCSC mates that track spells chromosomes as the liftOver chains do (`chr1`); a
+GenArk-backed db such as rn8 picks the GenArk `.bb`, spelled `NC_…`, which
+draws only through the aliases.
 
 **Lane links.** For a source whose features carry no `name` and whose header
 names no `anchorAssemblyName`, one `CoreGetFeatures` per *adjacent* lane pair

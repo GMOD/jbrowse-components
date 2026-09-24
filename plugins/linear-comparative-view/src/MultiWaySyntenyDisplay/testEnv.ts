@@ -86,15 +86,17 @@ export function createDisplayWithSession({
   animationMode?: AnimationMode
   describeAssemblies?: (
     assemblyNames: string[],
-  ) => Record<string, AssemblyDescription>
+  ) =>
+    | Record<string, AssemblyDescription>
+    | Promise<Record<string, AssemblyDescription>>
 } = {}) {
   const pluginManager = new PluginManager()
   if (describeAssemblies) {
     pluginManager.addToExtensionPoint(
       'Core-describeAssemblies',
-      (described, { assemblyNames }) => ({
+      async (described, { assemblyNames }) => ({
         ...described,
-        ...describeAssemblies(assemblyNames),
+        ...(await describeAssemblies(assemblyNames)),
       }),
     )
   }

@@ -16,6 +16,7 @@ import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
 import type { BuildLanesOpts } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
+import type { AssemblyDescription } from '@jbrowse/core/PluginManager'
 import type { TestAssembly } from '@jbrowse/display-test-utils'
 
 const WIDTH = 800
@@ -351,6 +352,44 @@ describe('the baseline', () => {
       ])
       expect(batches).toEqual([['hg002']])
       expect(asked).not.toContain('hg002')
+    })
+
+    test('a description still out holds readiness, and one that lands after the deadline still labels the lane', async () => {
+      let answer: (
+        value: Record<string, AssemblyDescription>,
+      ) => void = () => {}
+      const { display } = await framedDisplay('hg002', {
+        describeAssemblies: () =>
+          new Promise(resolve => {
+            answer = resolve
+          }),
+      })
+      await when(() => display.lanesBeingDescribed.size > 0, { timeout: 5000 })
+      expect(display.awaitingDependentData).toBe(true)
+      expect(display.dataSuperseded).toBe(true)
+      display.endDescribingLanes(['hg002'], {})
+      expect(display.awaitingDependentData).toBe(false)
+      answer({ hg002: { displayName: 'HG002' } })
+      await when(() => display.laneLabel('hg002') === 'HG002', {
+        timeout: 5000,
+      })
+    })
+
+    test('a reload asks again about a lane that got no description', async () => {
+      const batches: string[][] = []
+      const { display } = await framedDisplay('hg002', {
+        describeAssemblies: names => {
+          batches.push(names)
+          return {}
+        },
+      })
+      await when(
+        () => batches.length === 1 && display.lanesBeingDescribed.size === 0,
+        { timeout: 5000 },
+      )
+      display.reload()
+      await when(() => batches.length === 2, { timeout: 5000 })
+      expect(batches).toEqual([['hg002'], ['hg002']])
     })
 
     test("a described lane's gene fetch names each sequence as its gene file does, through the description's aliases", async () => {
