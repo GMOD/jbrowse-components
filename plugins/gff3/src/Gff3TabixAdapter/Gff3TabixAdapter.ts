@@ -35,12 +35,12 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
         ),
         chunkCacheBudget: decompressedBytesBudget,
       })
+      // the index is a whole-file read, so its byte ticks turn the
+      // "Downloading index" label into a determinate bar
+      await gff.getReferenceSequenceNames({ onProgress })
       return {
         gff,
         dontRedispatchSet: new Set(this.getConf('dontRedispatch')),
-        // the index is a whole-file read, so its byte ticks turn the
-        // "Downloading index" label into a determinate bar
-        header: await gff.getHeader({ onProgress }),
       }
     },
   })
@@ -55,8 +55,8 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
   }
 
   public async getHeader(opts: BaseOptions = {}) {
-    const { header } = await this.configure(opts)
-    return header
+    const { gff } = await this.configure(opts)
+    return gff.getHeader(opts)
   }
 
   // Index-only compressed-byte estimate (no feature download), used by the
