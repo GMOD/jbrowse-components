@@ -370,7 +370,7 @@ test('a listing that answers another adapter config lists no rows', async () => 
   const display = await listingSources({ rows: 'source' })
   expect(display.sources.map(row => row.name)).toContain('s99')
   display.setSourceListing({
-    adapterConfig: { type: 'BedAdapter' },
+    adapterConfig: { type: 'BedAdapter', uri: 'another.bed' },
     value: LISTED,
   })
   expect(display.adapterSources).toBeUndefined()

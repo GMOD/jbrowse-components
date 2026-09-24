@@ -1,4 +1,5 @@
 import { installFetch } from './installFetch.ts'
+import { isDataCurrent } from './isDataCurrent.ts'
 
 import type { StatusReporter } from './createAbortRotation.ts'
 import type { FetchContext } from './fetchContext.ts'
@@ -15,8 +16,6 @@ export interface PrerequisiteFetchHost extends FetchSkeletonHost {
   /**
    * Read in `prepare`, so it is **tracked**: an adapter edited in the config
    * editor has to re-read, and `run`'s own reads are untracked by contract.
-   * The key stamps it by reference, which is safe because nothing mutates an
-   * adapter config in place: it is a config snapshot or built fresh from one.
    */
   adapterConfig: Record<string, unknown>
   isMinimized: boolean
@@ -35,12 +34,16 @@ export interface AdapterRead<T> {
 /**
  * `read`'s value while it answers the adapter config `host` holds; undefined
  * until a read of that config commits, which a failed read never does.
+ *
+ * Equal by value, as the fetch key is: an undo rebuilds the track's config,
+ * handing back an equal adapter config the fetch declines to read again.
  */
 export function readFor<T>(
   host: { adapterConfig: Record<string, unknown> },
   read: AdapterRead<T> | undefined,
 ): T | undefined {
-  return read !== undefined && read.adapterConfig === host.adapterConfig
+  return read !== undefined &&
+    isDataCurrent(read.adapterConfig, host.adapterConfig)
     ? read.value
     : undefined
 }

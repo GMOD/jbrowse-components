@@ -87,3 +87,15 @@ test('an answer is read only while the host holds the adapter config it answers'
   host.setAdapterConfig(FIRST)
   expect(readFor(host, host.read)).toBe('first listing')
 })
+
+test('an equal adapter config, as an undo rebuilds one, keeps the answer and reads nothing', async () => {
+  const host = makeHost()
+  await flush()
+  host.runs[0]!.resolve('first listing')
+  await flush()
+
+  host.setAdapterConfig({ ...FIRST })
+  await flush()
+  expect(readFor(host, host.read)).toBe('first listing')
+  expect(host.runs).toHaveLength(1)
+})
