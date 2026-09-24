@@ -3134,7 +3134,8 @@
         "encodeFeatures",
         "encodedChannelTransferables",
         "hitIndexOf",
-        "rampOverExtent"
+        "rampOverExtent",
+        "withHitIndex"
       ],
       "worker": "real"
     },

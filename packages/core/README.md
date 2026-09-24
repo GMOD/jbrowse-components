@@ -674,6 +674,13 @@ module actually uses.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
 
+### HitIndexed
+
+An encoded payload as a display stores it: the hit index the worker built with
+hitIndexOf, wrapped once where the payload lands.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
 ### hitIndexOf
 
 The hit index over `count` instances: each a box from `x` to `x2` at its `y`, or
@@ -1306,6 +1313,17 @@ readonly ColorRampStop[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
+
+### withHitIndex
+
+HitIndexed over what the worker shipped.
+
+```js
+// type signature
+<T extends EncodedChannels>(channels: T) => HitIndexed<T>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
 ### ZoomRange
 
