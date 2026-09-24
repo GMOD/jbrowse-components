@@ -1,4 +1,4 @@
-import { isObject } from '../../util/index.ts'
+import { coarseStripHTML, isObject } from '../../util/index.ts'
 import { ellipses } from '../util.tsx'
 
 export function isEmpty(obj: Record<string, unknown>) {
@@ -6,8 +6,8 @@ export function isEmpty(obj: Record<string, unknown>) {
 }
 
 export function generateTitle(name: unknown, id: unknown, type: unknown) {
-  const label = name || id
-  return [label ? ellipses(`${label}`) : '', type ? `${type}` : '']
+  const label = coarseStripHTML(`${name || id || ''}`)
+  return [label ? ellipses(label) : '', type ? `${type}` : '']
     .filter(Boolean)
     .join(' - ')
 }

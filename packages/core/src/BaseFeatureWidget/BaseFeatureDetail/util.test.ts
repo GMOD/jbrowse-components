@@ -29,6 +29,16 @@ describe('generateTitle', () => {
     expect(generateTitle(undefined, undefined, undefined)).toBe('')
   })
 
+  test('HTML from a formatDetails callback is stripped', () => {
+    expect(
+      generateTitle(
+        '<a href=https://google.com/?q=EDEN>EDEN</a>',
+        undefined,
+        'gene',
+      ),
+    ).toBe('EDEN - gene')
+  })
+
   test('name longer than 20 chars is ellipsed', () => {
     const long = 'a'.repeat(40)
     expect(generateTitle(long, undefined, 'gene')).toContain('...')
