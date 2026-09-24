@@ -34,7 +34,7 @@ exports[`two slices 1`] = `
   Slice {
     "bpPerRadian": 3183.098861837907,
     "endRadians": 6.288185307179586,
-    "key": "[{"assemblyName":"wow","refName":"tiny1","start":0,"end":5000},{"assemblyName":"wow","refName":"tiny2","start":0,"end":5000}]",
+    "key": "{wow}tiny1:1..5,000..{wow}tiny2:1..5,000[2]",
     "region": {
       "elided": true,
       "regions": [

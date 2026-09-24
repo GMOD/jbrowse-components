@@ -47,6 +47,10 @@ export function bpToRadians(
   return region.reversed ? endRadians - offset : startRadians + offset
 }
 
+function elidedKey(regions: Region[]) {
+  return `${assembleLocString(regions[0]!)}..${assembleLocString(regions.at(-1)!)}[${regions.length}]`
+}
+
 /**
  * One wedge of the circle: a displayed region (or a run of elided ones) placed
  * at a fixed angular span. The unit of geometry every circular display draws
@@ -68,7 +72,7 @@ export class Slice {
   ) {
     const { bpPerRadian } = view
     this.key = region.elided
-      ? JSON.stringify(region.regions)
+      ? elidedKey(region.regions)
       : assembleLocString(region)
     this.bpPerRadian = bpPerRadian
     this.startRadians = offsetRadians
