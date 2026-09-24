@@ -13,6 +13,7 @@ export default function MultiPairwiseSyntenyAdapterF(
         name: 'MultiPairwiseSyntenyAdapter',
         displayName: 'Multiple pairwise synteny adapter',
         configSchema,
+        adapterCapabilities: ['headerLanes'],
         adapterMetadata: {
           category: 'Synteny adapters',
         },

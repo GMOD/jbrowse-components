@@ -205,6 +205,63 @@ describe('MultiPairwiseSyntenyAdapter', () => {
     ])
   })
 
+  it('declares every mate as a lane, in child order', async () => {
+    expect((await makeAdapter(STAR).getHeader()).lanes).toEqual([
+      { name: 'genomeB' },
+      { name: 'genomeC' },
+      { name: 'genomeD' },
+    ])
+  })
+
+  it('reads only the children for the lanes asked for', async () => {
+    const opened: string[] = []
+    const adapter = new Adapter(
+      configSchema.create({ adapters: STAR }),
+      conf => {
+        const child = new PairwiseIndexedPAFAdapter(
+          PairwiseIndexedConfigSchema.create(conf),
+        )
+        const getFeatures = child.getFeatures.bind(child)
+        child.getFeatures = (region, opts) => {
+          opened.push(JSON.stringify(conf.assemblyNames))
+          return getFeatures(region, opts)
+        }
+        return Promise.resolve({
+          dataAdapter: child as BaseFeatureDataAdapter,
+          sessionIds: new Set<string>(),
+        })
+      },
+    )
+    const features = await firstValueFrom(
+      adapter
+        .getFeatures(
+          { assemblyName: 'anchor', refName: 'ctgA', start: 0, end: 30000 },
+          { haplotypes: ['genomeD', 'genomeB'] },
+        )
+        .pipe(toArray()),
+    )
+    expect(features.map(f => mateOf(f).assemblyName)).toEqual([
+      'genomeB',
+      'genomeD',
+    ])
+    expect(opened).toEqual([
+      JSON.stringify(['genomeB', 'anchor']),
+      JSON.stringify(['genomeD', 'anchor']),
+    ])
+  })
+
+  it('keeps the anchor as a lane of a view on a mate', async () => {
+    const features = await firstValueFrom(
+      makeAdapter(STAR)
+        .getFeatures(
+          { assemblyName: 'genomeB', refName: 'bctg2', start: 0, end: 20000 },
+          { haplotypes: ['anchor', 'genomeC'] },
+        )
+        .pipe(toArray()),
+    )
+    expect(features.map(f => mateOf(f).assemblyName)).toEqual(['anchor'])
+  })
+
   it('narrows an anchor query to the target pair', async () => {
     const features = await fetch(
       makeAdapter(STAR),
@@ -303,6 +360,7 @@ describe('MultiPairwiseSyntenyAdapter', () => {
       coarseGap: 1000,
       anchorAssemblyName: 'anchor',
       assemblyNames: ['anchor', 'genomeB', 'genomeC'],
+      lanes: [{ name: 'genomeB' }, { name: 'genomeC' }],
     })
     const coarse = await firstValueFrom(
       tiered

@@ -17,6 +17,13 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * written twice. Each child is any pairwise synteny adapter config with its own
  * `assemblyNames` (PairwiseIndexedPAFAdapter, PAFAdapter, ChainAdapter, ...).
  *
+ * Every mate is a lane the multiway display's picker offers, and the display
+ * reads only the children for the lanes it draws: the track's own
+ * `assemblyNames` beside the anchor until the reader picks others. So a star
+ * over every liftOver file a genome has costs a window only the reads of the
+ * lanes on screen, and the track's `assemblyNames` is where its default lanes
+ * are chosen.
+ *
  * #example
  * ```js
  * {

@@ -32,11 +32,24 @@ export interface Star<T = BaseFeatureDataAdapter> {
 /**
  * What `CoreGetInfo` answers for the star: the tier facts the LOD resolver
  * reads, plus the anchor and the lane assemblies, which the main thread can
- * otherwise only learn by reading every child config itself.
+ * otherwise only learn by reading every child config itself. `lanes` is every
+ * mate in child order, so a multiway picker offers the whole star before a
+ * window has placed any of it.
  */
 export interface MultiPairwiseSyntenyInfo extends LodTierInfo {
   anchorAssemblyName: string
   assemblyNames: string[]
+  lanes: { name: string }[]
+}
+
+/**
+ * `haplotypes` narrows a fetch to the children aligning the anchor to the
+ * mates it lists, spelled as the children spell them; undefined is every
+ * child. The multiway display sends its lane selection under this name for
+ * any adapter declaring `headerLanes`.
+ */
+export interface MultiPairwiseSyntenyOptions extends ComparativeOptions {
+  haplotypes?: string[]
 }
 
 export class NoCommonAssemblyError extends Error {
@@ -92,6 +105,25 @@ export function childrenFor<T>(
   return targetAssemblyName === undefined
     ? named
     : named.filter(child => child.assemblyNames.includes(targetAssemblyName))
+}
+
+/**
+ * the children whose far side from the queried assembly is one of `lanes`, or
+ * all of them. The far side rather than the non-anchor side, since a view on a
+ * mate asks for the anchor as its lane
+ */
+export function childrenForLanes<T>(
+  children: StarChild<T>[],
+  queried: string | undefined,
+  lanes: string[] | undefined,
+) {
+  if (lanes === undefined) {
+    return children
+  }
+  const wanted = new Set(lanes)
+  return children.filter(child =>
+    child.assemblyNames.some(name => name !== queried && wanted.has(name)),
+  )
 }
 
 export function starAssemblyNames<T>(star: Star<T>) {
@@ -190,11 +222,13 @@ export default class MultiPairwiseSyntenyAdapter extends ComparativeAdapterBase<
     const gaps = tiers.flatMap(tier =>
       tier?.coarseGap === undefined ? [] : [tier.coarseGap],
     )
+    const assemblyNames = starAssemblyNames(star)
     const info: MultiPairwiseSyntenyInfo = {
       hasCoarseTier: tiers.every(tier => tier?.hasCoarseTier === true),
       coarseGap: gaps.length === 0 ? undefined : Math.max(...gaps),
       anchorAssemblyName: star.anchor,
-      assemblyNames: starAssemblyNames(star),
+      assemblyNames,
+      lanes: assemblyNames.slice(1).map(name => ({ name })),
     }
     return info
   }
@@ -221,13 +255,13 @@ export default class MultiPairwiseSyntenyAdapter extends ComparativeAdapterBase<
    * each mate places the window as one gap-free run. Every child still
    * subscribes at once.
    */
-  getFeatures(region: Region, opts: ComparativeOptions = {}) {
+  getFeatures(region: Region, opts: MultiPairwiseSyntenyOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const star = await this.star(opts)
-      const children = childrenFor(
-        star,
+      const children = childrenForLanes(
+        childrenFor(star, region.assemblyName, opts.targetAssemblyName),
         region.assemblyName,
-        opts.targetAssemblyName,
+        opts.haplotypes,
       )
       const slot = createStatusFanOut(opts.statusCallback)
       forkJoin(
