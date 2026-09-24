@@ -1149,12 +1149,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (this.totalBp === 0 || self.width === 0) {
           return 1
         }
-        // Floor at minBpPerPx so tiny displayed regions (totalBp small enough
-        // that the fill-scaled ratio drops below MIN_BP_PER_PX) can't produce
-        // maxBpPerPx < minBpPerPx, which would invert the zoom-slider bounds
-        // and the clamp() range in zoomTo.
+        // floored so a tiny region set cannot put maxBpPerPx under
+        // minBpPerPx, which would invert the zoom slider and zoomTo's clamp
         return Math.max(
-          MIN_BP_PER_PX,
+          this.minBpPerPx,
           this.totalBp / (self.width * SHOW_ALL_REGIONS_FILL),
         )
       },
