@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every display turns its colour object into what it paints through display-kit's `colorEncodingOf`, the bridge ADR-151 gave the mark and Manhattan displays: the quantitative, alignments, canvas feature and multi-way gene colours and synteny's `paintedField` read the `ColorEncoding` it answers, a display's `colorEncoding` getter, and keep only their own painting. Each display names a default scale per field and nothing else. The quantitative display's `field` is `score | source`, a pairing its two-sided layers cannot paint draws the misconfiguration grey, a threshold paints every cut up to eight, and a colour per source hands out its `range` in its `domain`'s order. The alignments displays' insert-size fields default to `threshold`, so their `domain` is that scale's cuts"
+summary: "Every display turns its colour object into what it paints through display-kit's `colorEncodingOf`, the bridge ADR-151 gave the mark and Manhattan displays: the quantitative, alignments, canvas feature and multi-way gene colours and synteny's `paintedField` read the `ColorEncoding` it answers, a display's `colorEncoding` getter, and keep only their own painting. Each display names a default scale per field and nothing else. The quantitative display's `field` is `score | source`, a pairing its two-sided layers cannot paint draws the misconfiguration grey, a threshold paints every cut up to eight, and a colour per source hands out its `range`, then the default palette, to the subtrack groups first and then to the ungrouped subtracks, those its `domain` lists ahead (ADR-159's row dealer). The alignments displays' insert-size fields default to `threshold`, so their `domain` is that scale's cuts"
 ---
 
 # ADR-153: Every display resolves its colour through one function
@@ -79,7 +79,8 @@ cut at each crossing, as it did at the one cut.
 **A colour per source hands out its `range`, then the default palette**, from
 the one cursor that serves the subtrack groups first and then the ungrouped
 subtracks, those its `domain` lists ahead of the rest (`sourcePalette`,
-`buildSources`).
+~~`buildSources`~~ `sourceColorDeal`, dealt by `dealRowColors` since
+[ADR-159](adr-159-a-rows-colour-is-one-categorical-channel-on-the-row-axis.md)).
 
 **An insert-size `domain` is a threshold's cuts.** The field's default scale
 is `threshold`, so `{ field: 'insertSize', domain: ['150', '600'] }` pins as it

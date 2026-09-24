@@ -142,7 +142,10 @@ before it is asked.
    `rows` replaces `layout`, `clusterTree`, `clusterProvenance` and
    `subtreeFilter`; `facet.hidden` replaces the volatile hide-set. ~~The
    changes table's array summary~~ (`86cadb9f94`). About 7–11 days.
-4. **Colour**, as above.
+4. **Colour**, as above: ~~the `rowColor` object and one dealer, each display
+   handing in its old order and palette at a zero image diff~~ (ADR-159); then
+   the palette flip after the side-by-side capture, the base arrangement on
+   wiggle and the one precedence on the variant displays.
 5. **A tree per band**, ComplexHeatmap's `row_split` with `cluster_rows`, which
    retires "a band yields to a tree".
 6. ~~**The mark display takes `rows`** for bar and point marks, whose rows are

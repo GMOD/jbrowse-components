@@ -257,7 +257,7 @@ export function sortSourcesByAttribute<S extends Record<string, unknown>>(
 }
 
 // Reorder by the facet field when the attribute is present, else leave the
-// order alone. Mirrors `colorByPalette`: an unset or unknown attribute is a
+// order alone. Mirrors `attributeColorDeal`: an unset or unknown attribute is a
 // no-op rather than an error, so a config naming a column the metadata doesn't
 // have degrades to unfaceted instead of breaking the display.
 export function maybeApplyFacet<S extends Record<string, unknown>>(

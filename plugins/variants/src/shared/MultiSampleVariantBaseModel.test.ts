@@ -357,7 +357,7 @@ describe('maybeApplyFacet', () => {
     ).toEqual(['s1', 's3', 's2'])
   })
 
-  // silent for the reason `colorByPalette`'s absent case is
+  // silent for the reason `attributeColorDeal`'s absent case is
   it('returns undefined, silently, when the attribute is absent', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     expect(

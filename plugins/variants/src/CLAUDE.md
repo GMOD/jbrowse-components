@@ -127,7 +127,9 @@ the anchored haplotype sort.
 ## The arrangement is `rows` and `rowColor`, by row name
 
 **`rows` (`RowArrangement`, no field: the rows are the samples) holds the order,
-labels, tree, provenance and focus; `rowColor` holds the tints.** Both are
+labels, tree, provenance and focus; `rowColor` holds the tints**, display-kit's
+`RowColor`: a samplesTsv attribute whose values each take a palette colour, or
+`name`, the default, whose entries are the tints set row by row. Both are
 config, written by a drag, the arrangement dialog, "Sort rows by genotype here"
 and a clustering run, and every product writes them as session deltas (ADR-157).
 Every other channel resolves when the rows are read.
@@ -156,16 +158,22 @@ settings change triggers rather than folding back to samples.
 
 **The row tint is `labelColor`**, the channel tree-sidebar's `RowLabelsOverlay`
 and `SvgRowLabels` draw — the cells are colored by genotype, so a row has no
-`color` of its own to spend. `applyColorByPalette` writes it there, the group
+`color` of its own to spend. `applyAttributeColors` writes it there, the group
 legend and the tooltip swatch read it there, and `discoveredRows` folds a
 `samplesTsv` `color` column onto it. Carrying the tint under `color` is what
 kept these displays on a label gutter of their own.
 
-**`rowColor.field` beats whatever color the row already carried** — the
-`rowColor` pairs and a `samplesTsv` column: a channel bound to a variable beats
-a per-row constant, and the palette is a pure function of the attribute, so
-"Color by… → Population" still moves on it. `setRowColorField` writes the field
-alone, and a reset returns the pairs, never the field.
+**An attribute in `rowColor.field` beats a `samplesTsv` `color` column**: a
+channel bound to a variable beats a per-row constant. The palette is dealt by
+`TreeSidebarMixin` over this display's `rowColorDeal` (`attributeColorDeal`),
+the values ranked by how many samples carry them, so a focus or the phased
+expansion recolours nothing. `setRowColorField` writes the object through
+`colorForField`: a new attribute starts with no entries, and '' is
+`scale: 'none'` keeping the attribute. A dialog tint set under the palette turns
+every row's colour into a `name` pair, since one object holds one field's
+values; a reset returns `rowColor` only where its `name` pairs differ from the
+config's, so Color by survives it and a mode switch. The flip ADR-159 names puts
+the row's own colour ahead of the palette here too.
 
 **The `facet` band yields while a cluster tree describes the rows**
 (`treeDescribesRows`), the mechanism `LinearMultiRowFeatureDisplay` uses for its
