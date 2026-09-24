@@ -97,7 +97,7 @@ export async function createPluginManager(
   // views/tracks/extension-points; safe because configure() doesn't read
   // session state
   pluginManager.setRootModel(rootModel).configure()
-  preloadAppFrame()
+  const appFrame = preloadAppFrame()
   preloadSessionAssemblies(rootModel, model)
   // the plugin list the worker gets is the trusted one, which exists from here
   if (rootModel.rpcManager.driverName === 'WebWorkerRpcDriver') {
@@ -123,6 +123,7 @@ export async function createPluginManager(
   // items and extension points, and where one that throws takes the app down
   // just as thoroughly as one that throws while its module is evaluated.
   markPermanentPluginLoadFinished()
+  await appFrame
   return pluginManager
 }
 

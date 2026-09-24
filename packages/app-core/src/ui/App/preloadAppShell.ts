@@ -12,13 +12,16 @@ import type { AppSession } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
- * Request the views container and the drawer before the session exists, while
- * the session's own view and display code downloads. Without it both land a
- * round trip after the session, and the app's first render suspends on them.
+ * Load the views container and the drawer while the session's own view code
+ * downloads, settling when both have. An app that renders after this renders
+ * its frame in one pass; otherwise the first render suspends on them and React
+ * holds the retry for 300 ms.
  */
-export function preloadAppFrame() {
-  preloadComponent(ClassicViewsContainer)
-  preloadComponent(DrawerWidget)
+export async function preloadAppFrame() {
+  await Promise.allSettled([
+    ClassicViewsContainer.preload(),
+    DrawerWidget.preload(),
+  ])
 }
 
 /**
