@@ -193,14 +193,50 @@ export function doAnalytics(
     !readConfObject(rootModel.jbrowse.configuration, 'disableAnalytics')
   ) {
     analyticsSent = true
-    // Defer off the critical load path: writeGAAnalytics injects a third-party
-    // Google Analytics script and writeAWSAnalytics probes graphics
-    // capabilities, together ~hundreds of ms of main-thread work at startup.
-    // loadTime is still measured from initialTimestamp, so the reported metric
-    // is unaffected by running these when the browser is idle.
-    rIC(() => {
-      void writeAWSAnalytics(rootModel, initialTimestamp, initialSessionQuery)
-      void writeGAAnalytics(rootModel, initialTimestamp)
+    // writeGAAnalytics injects Google's scripts and writeAWSAnalytics probes
+    // graphics capabilities, hundreds of ms of main-thread work together. Idle
+    // time alone is not late enough: a load spends most of its time idle,
+    // waiting on the network, so rIC ran them mid-boot. The writers measure
+    // loadTime up to when they run, so the start they get is moved forward by
+    // the wait, and loadTime still ends here.
+    const calledAt = Date.now()
+    afterAppReady(() => {
+      rIC(() => {
+        const start = initialTimestamp + (Date.now() - calledAt)
+        void writeAWSAnalytics(rootModel, start, initialSessionQuery)
+        void writeGAAnalytics(rootModel, start)
+      })
     })
   }
+}
+
+// `[data-app-phase="ready"]`, or a timeout for a page that never shows one
+// (Desktop's start screen)
+function afterAppReady(callback: () => void, maxWaitMs = 10_000) {
+  const isReady = () =>
+    document.querySelector('[data-app-phase="ready"]') !== null
+  if (isReady()) {
+    callback()
+    return
+  }
+  let done = false
+  const finish = () => {
+    if (!done) {
+      done = true
+      observer.disconnect()
+      clearTimeout(timer)
+      callback()
+    }
+  }
+  const observer = new MutationObserver(() => {
+    if (isReady()) {
+      finish()
+    }
+  })
+  const timer = setTimeout(finish, maxWaitMs)
+  observer.observe(document.body, {
+    subtree: true,
+    childList: true,
+    attributeFilter: ['data-app-phase'],
+  })
 }

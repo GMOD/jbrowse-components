@@ -1,4 +1,10 @@
-import { writeAWSAnalytics, writeGAAnalytics } from './analytics.ts'
+import { waitFor } from '@testing-library/react'
+
+import {
+  doAnalytics,
+  writeAWSAnalytics,
+  writeGAAnalytics,
+} from './analytics.ts'
 
 // A rejected analytics promise nobody catches trips the webpack-dev-server
 // overlay (it listens for unhandledrejection) with a full-screen error in dev,
@@ -103,4 +109,22 @@ test('writeGAAnalytics resolves when reading the model throws', async () => {
     'Failed to write analytics to GA.',
     expect.any(Error),
   )
+})
+
+test('doAnalytics pings only once the app reports ready', async () => {
+  fetchMock.resetMocks()
+  fetchMock.mockResponse('{}')
+  const marker = document.createElement('span')
+  marker.dataset.appPhase = 'loading'
+  document.body.append(marker)
+
+  doAnalytics(rootModel, Date.now(), undefined)
+  await new Promise(resolve => setTimeout(resolve, 100))
+  expect(fetchMock).not.toHaveBeenCalled()
+
+  marker.dataset.appPhase = 'ready'
+  await waitFor(() => {
+    expect(fetchMock).toHaveBeenCalled()
+  })
+  marker.remove()
 })
