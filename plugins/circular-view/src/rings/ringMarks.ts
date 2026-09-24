@@ -12,6 +12,7 @@ export const RING_PASSES = 8
 export interface RingCell {
   index: number
   display: { paintCount: number; renderNow: () => void }
+  paintCount: number
   channels: RingChannels
   strip: MarkImage | undefined
 }

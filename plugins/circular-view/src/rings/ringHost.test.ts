@@ -269,6 +269,7 @@ function cell(index: number, image: HTMLCanvasElement): RingCell {
   return {
     index,
     display: { paintCount: 0, renderNow() {} },
+    paintCount: 0,
     channels: {
       innerPx: Float32Array.of(300),
       outerPx: Float32Array.of(400),

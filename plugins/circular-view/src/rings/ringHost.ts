@@ -5,7 +5,7 @@ import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
-import { autorun, observable } from 'mobx'
+import { autorun, computed, observable } from 'mobx'
 
 import { RING_PASSES } from './ringMarks.ts'
 
@@ -18,6 +18,7 @@ import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { MarkImage } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+import type { IComputedValue } from 'mobx'
 import type { ComponentType } from 'react'
 
 const TWO_PI = 2 * Math.PI
@@ -233,6 +234,23 @@ function canvasBox(
     : { top: 0, height: Infinity }
 }
 
+/** Whether two cells would upload the same annulus and strip. */
+function sameCell(a: RingCell | undefined, b: RingCell | undefined) {
+  return (
+    a === b ||
+    (!!a &&
+      !!b &&
+      a.index === b.index &&
+      a.display === b.display &&
+      a.paintCount === b.paintCount &&
+      a.strip?.image === b.strip?.image &&
+      a.strip?.width === b.strip?.width &&
+      a.strip?.height === b.strip?.height &&
+      a.channels.innerPx[0] === b.channels.innerPx[0] &&
+      a.channels.outerPx[0] === b.channels.outerPx[0])
+  )
+}
+
 /**
  * One canvas of rings — a `RenderLifecycleMixin` node per group of
  * `RING_PASSES`, since a pass holds one texture and a canvas's passes are
@@ -259,13 +277,12 @@ export const RingPass = types
     },
     get cells(): ReadonlyMap<number, RingCell> {
       const cells = new Map<number, RingCell>()
-      const host = self.host!
       const first = self.group * RING_PASSES
-      host.ringCells.forEach((cell, i) => {
-        if (i >= first && i < first + RING_PASSES) {
-          cells.set(i - first, cell)
+      for (const cell of self.host!.ringCells) {
+        if (cell.index >= first && cell.index < first + RING_PASSES) {
+          cells.set(cell.index - first, cell)
         }
-      })
+      }
       return cells
     },
     get canRender() {
@@ -314,7 +331,10 @@ export const RingHost = types
     coarseDynamicBlocks: [] as ContentBlock[],
     passes: [] as RingPassModel[],
     stripElements: observable.map<string, HTMLElement>(),
-    cellCache: new Map<string, { key: string; cell: RingCell }>(),
+    cellsByDisplay: observable.map<
+      string,
+      IComputedValue<RingCell | undefined>
+    >(undefined, { deep: false }),
   }))
   .views(self => ({
     get id() {
@@ -525,52 +545,49 @@ export const RingHost = types
       const last = this.rings.at(-1)
       return last ? last.innerPx - RING_GAP_PX : self.view.radiusPx
     },
-    get ringCells(): RingCell[] {
-      const live = new Set<string>()
-      const cells = this.rings.map((ring, index) => {
-        const { display } = ring
-        live.add(display.id)
-        const el = self.stripElements.get(display.id)
-        const canvas = el?.querySelector('canvas')
-        const strip: MarkImage | undefined =
-          canvas && canvas.width > 0 && canvas.height > 0
-            ? { image: canvas, width: canvas.width, height: canvas.height }
-            : undefined
-        const box = canvasBox(el, canvas)
-        const scale = stripPerRingPx(ring)
-        const outerPx = ring.outerPx - box.top / scale
-        const innerPx = Math.max(ring.innerPx, outerPx - box.height / scale)
-        const key = [
-          index,
-          innerPx,
-          outerPx,
-          display.paintCount,
-          strip?.width,
-          strip?.height,
-        ].join(':')
-        const cached = self.cellCache.get(display.id)
-        if (cached?.key === key && cached.cell.strip?.image === canvas) {
-          return cached.cell
-        }
-        const cell: RingCell = {
-          index,
-          display,
-          channels: {
-            innerPx: new Float32Array([innerPx]),
-            outerPx: new Float32Array([outerPx]),
-            count: 1,
-          },
-          strip,
-        }
-        self.cellCache.set(display.id, { key, cell })
-        return cell
-      })
-      for (const id of self.cellCache.keys()) {
-        if (!live.has(id)) {
-          self.cellCache.delete(id)
-        }
+    /**
+     * One ring's upload payload: its annulus, trimmed to where the display's
+     * canvas sits in its strip, and the strip canvas it samples.
+     */
+    ringCell(displayId: string): RingCell | undefined {
+      const index = this.rings.findIndex(r => r.display.id === displayId)
+      const ring = this.rings[index]
+      if (!ring) {
+        return undefined
       }
-      return cells
+      const { display } = ring
+      const el = self.stripElements.get(displayId)
+      const canvas = el?.querySelector('canvas')
+      const strip: MarkImage | undefined =
+        canvas && canvas.width > 0 && canvas.height > 0
+          ? { image: canvas, width: canvas.width, height: canvas.height }
+          : undefined
+      const box = canvasBox(el, canvas)
+      const scale = stripPerRingPx(ring)
+      const outerPx = ring.outerPx - box.top / scale
+      const innerPx = Math.max(ring.innerPx, outerPx - box.height / scale)
+      return {
+        index,
+        display,
+        paintCount: display.paintCount,
+        channels: {
+          innerPx: new Float32Array([innerPx]),
+          outerPx: new Float32Array([outerPx]),
+          count: 1,
+        },
+        strip,
+      }
+    },
+    /**
+     * Every ring's cell, each the same object until its own annulus or strip
+     * changes: the upload diffs by reference, and a moved cell is a texture
+     * copy.
+     */
+    get ringCells(): RingCell[] {
+      return this.rings.flatMap(({ display }) => {
+        const cell = self.cellsByDisplay.get(display.id)?.get()
+        return cell ? [cell] : []
+      })
     },
     /**
      * The ring under a point, with the strip coordinates the display's own
@@ -614,8 +631,21 @@ export const RingHost = types
         self.coarseBpPerPx = bpPerPx
       }
     },
-    syncPasses(ringCount: number) {
-      const wanted = Math.ceil(ringCount / RING_PASSES)
+    syncRings(displayIds: string[]) {
+      for (const id of [...self.cellsByDisplay.keys()]) {
+        if (!displayIds.includes(id)) {
+          self.cellsByDisplay.delete(id)
+        }
+      }
+      for (const id of displayIds) {
+        if (!self.cellsByDisplay.has(id)) {
+          self.cellsByDisplay.set(
+            id,
+            computed(() => self.ringCell(id), { equals: sameCell }),
+          )
+        }
+      }
+      const wanted = Math.ceil(displayIds.length / RING_PASSES)
       while (self.passes.length < wanted) {
         const pass = RingPass.create({})
         pass.setGroup(self as RingHostModel, self.passes.length)
@@ -652,7 +682,7 @@ export const RingHost = types
         self,
         autorun(() => {
           if (view.initialized) {
-            self.syncPasses(self.rings.length)
+            self.syncRings(self.rings.map(r => r.display.id))
           }
         }),
       )

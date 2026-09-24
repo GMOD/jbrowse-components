@@ -251,8 +251,9 @@ test('a point on the wiggle ring unwarps to the strip column of its base', async
 }, 30000)
 
 // the upload diffs cells by reference, so a cell that moved is a texture copy:
-// one ring repainting must not re-copy its neighbour's strip
-test("a ring repainting leaves the other ring's cell as it was", async () => {
+// neither a neighbour's repaint nor a relayout that leaves this ring's annulus
+// where it was may re-copy its strip
+test("a ring repainting or resizing leaves the other ring's cell as it was", async () => {
   const { session, view, display } = await wiggleSession()
   session.addSessionTrackConf({
     trackId: 'ring2',
@@ -268,8 +269,10 @@ test("a ring repainting leaves the other ring's cell as it was", async () => {
   const host = view.ringHost
   const second = view.tracks[1]!.displays[0] as RingDisplay & {
     markCanvasDrawn: () => void
+    setHeight: (height: number) => void
   }
-  for (const d of [display, second]) {
+  for (const d of [display, second] as (typeof second)[]) {
+    d.setHeight(20)
     host.setStripElement(
       d.id,
       fakeStrip(Math.round(host.width), d.height).strip,
@@ -285,9 +288,15 @@ test("a ring repainting leaves the other ring's cell as it was", async () => {
   second.markCanvasDrawn()
 
   const [firstAfter, otherAfter] = cells.at(-1)!
-  expect(firstAfter).toBe(first)
-  expect(otherAfter).not.toBe(other)
-  expect(otherAfter!.strip?.image).toBe(other!.strip?.image)
+  expect(firstAfter === first).toBe(true)
+  expect(otherAfter === other).toBe(false)
+  expect(otherAfter!.strip?.image === other!.strip?.image).toBe(true)
+
+  second.setHeight(30)
+
+  const [firstResized, otherResized] = cells.at(-1)!
+  expect(firstResized === first).toBe(true)
+  expect(otherResized === otherAfter).toBe(false)
   dispose()
 }, 30000)
 
