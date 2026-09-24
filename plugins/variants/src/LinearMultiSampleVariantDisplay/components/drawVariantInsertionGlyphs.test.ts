@@ -25,6 +25,7 @@ interface FillRectCall {
 function mockCtx() {
   const calls: FillRectCall[] = []
   const texts: { text: string; x: number; y: number }[] = []
+  const strokes: { w: number; h: number }[] = []
   const ctx = {
     fillStyle: '',
     font: '',
@@ -41,7 +42,9 @@ function mockCtx() {
     clip() {},
     strokeStyle: '',
     lineWidth: 0,
-    strokeRect() {},
+    strokeRect(_x: number, _y: number, w: number, h: number) {
+      strokes.push({ w, h })
+    },
     fillRect(x: number, y: number, w: number, h: number) {
       calls.push({ x, y, w, h, fillStyle: this.fillStyle })
     },
@@ -49,7 +52,7 @@ function mockCtx() {
       texts.push({ text, x, y })
     },
   }
-  return { ctx: ctx as unknown as Ctx2D, calls, texts }
+  return { ctx: ctx as unknown as Ctx2D, calls, texts, strokes }
 }
 
 // 100bp over 1000px => 10px/bp.
@@ -104,12 +107,12 @@ function draw(
   region: VariantInsertionGlyphData,
   overrides?: Partial<VariantRenderState>,
 ) {
-  const { ctx, calls, texts } = mockCtx()
+  const { ctx, calls, texts, strokes } = mockCtx()
   drawVariantInsertionGlyphs(ctx, new Map([[0, region]]), [block], {
     ...state,
     ...overrides,
   })
-  return { calls, texts }
+  return { calls, texts, strokes }
 }
 
 const BAR = insertionBarWidth(INSERTED, 10, 20)
@@ -191,6 +194,13 @@ test('widens without a label on rows too short for letters', () => {
   expect(calls[0]!.w).toBeGreaterThan(2)
   expect(calls[0]!.w).toBe(insertionBarWidth(INSERTED, 1000 / 200000, 2))
   expect(texts).toEqual([])
+})
+
+// Inset half a pixel a side, a stroke on a 2-3px row covers the whole marker,
+// which then reads as the outline's near-black rather than its genotype.
+test('outlines a marker only where an interior survives the stroke', () => {
+  expect(draw(data()).strokes).toEqual([{ w: BAR - 1, h: 19 }])
+  expect(draw(data(), { rowHeight: 3 }).strokes).toEqual([])
 })
 
 test('skips a cell already wider than the bar', () => {

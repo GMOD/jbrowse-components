@@ -460,10 +460,11 @@ export function stateModelFactory(
         /**
          * #getter
          * Per-region cell data for the insertion-glyph overlay, or undefined
-         * when the slot is off.
+         * when no marker can draw in this window, which unmounts the overlay
+         * rather than repainting it empty on every pan frame.
          */
         get insertionGlyphRegions() {
-          return self.showInsertionGlyphs ? self.perRegionCellMap : undefined
+          return this.drawsInsertionMarkers ? self.perRegionCellMap : undefined
         },
         /**
          * #getter

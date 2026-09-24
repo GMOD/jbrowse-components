@@ -22,6 +22,10 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 const FONT = '10px sans-serif'
 const MARKER_OUTLINE = 'rgba(0,0,0,0.6)'
+// The outline is inset half a pixel on every side, so below this a stroke
+// leaves no interior and the marker paints the outline colour instead of its
+// own.
+const MIN_OUTLINED_PX = 5
 
 /**
  * The per-region fields this pass reads, declared structurally rather than as
@@ -152,10 +156,9 @@ export function anyMarkerPossibleForBlock(
  * The marker is the cell's own color, widened: hue and shade keep meaning
  * exactly what they mean on the cell (the genotype, or the `featureColor`
  * override), and "this is an insertion" is carried by the mark's shape and
- * width alone. A 1px outline separates the bar from the neighbouring cells it
- * reaches across, which are often the same color. It used to take the theme's
- * insertion purple, which made a variant read as an insertion only at the zooms
- * where the marker outgrew its cell.
+ * width alone. Where the bar is big enough to keep an interior, a 1px outline
+ * separates it from the neighbouring cells it reaches across, which are often
+ * the same color.
  *
  * Shared by the on-screen overlay and the SVG export.
  */
@@ -170,9 +173,12 @@ export function drawVariantInsertionGlyphs(
   // cannot be sized against a different band than the cell it widens.
   const drawnRowHeight = drawnCellHeightPx(rowHeight)
   const labelFits = drawnRowHeight >= MIN_HEIGHT_FOR_TEXT
-  ctx.font = FONT
-  ctx.textBaseline = 'middle'
-  ctx.textAlign = 'center'
+  const outlineFits = drawnRowHeight >= MIN_OUTLINED_PX
+  if (labelFits) {
+    ctx.font = FONT
+    ctx.textBaseline = 'middle'
+    ctx.textAlign = 'center'
+  }
   ctx.strokeStyle = MARKER_OUTLINE
   ctx.lineWidth = 1
 
@@ -213,12 +219,14 @@ export function drawVariantInsertionGlyphs(
                 pxPerBp,
               )
               const w = insertionBarWidth(inserted, pxPerBp, drawnRowHeight)
-              ctx.strokeRect(
-                xCenter - w / 2 + 0.5,
-                y + 0.5,
-                w - 1,
-                drawnRowHeight - 1,
-              )
+              if (outlineFits && w >= MIN_OUTLINED_PX) {
+                ctx.strokeRect(
+                  xCenter - w / 2 + 0.5,
+                  y + 0.5,
+                  w - 1,
+                  drawnRowHeight - 1,
+                )
+              }
               if (
                 getInsertionType(inserted, pxPerBp) === 'large' &&
                 labelFits
