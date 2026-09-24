@@ -13,6 +13,7 @@ import {
   colorForValue,
   colorRampSlots,
   colorRangeSlot,
+  dealRowColors,
 } from './colorConfigSchema.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
@@ -172,5 +173,39 @@ describe('colorForValue', () => {
     expect(colorForValue({ value: 'red', field: '' }, undefined)).toEqual({
       field: '',
     })
+  })
+})
+
+describe('dealRowColors', () => {
+  const PALETTE = ['p0', 'p1', 'p2']
+  const deal = (
+    order: string[],
+    entries: { domain: string[]; range: string[] },
+  ) => Object.fromEntries(dealRowColors(order, entries, PALETTE))
+
+  it('deals the palette in first-seen order and wraps it', () => {
+    expect(deal(['a', 'b', 'a', 'c', 'd'], { domain: [], range: [] })).toEqual({
+      a: 'p0',
+      b: 'p1',
+      c: 'p2',
+      d: 'p0',
+    })
+  })
+
+  it('pairs a listed value with its range colour, which takes no turn', () => {
+    expect(deal(['a', 'b', 'c'], { domain: ['b'], range: ['#00f'] })).toEqual({
+      a: 'p0',
+      b: '#00f',
+      c: 'p1',
+    })
+  })
+
+  it('spends the range past the domain before the palette, wrapping only the palette', () => {
+    expect(
+      deal(['a', 'b', 'c', 'd', 'e'], { domain: [], range: ['r0', 'r1'] }),
+    ).toEqual({ a: 'r0', b: 'r1', c: 'p0', d: 'p1', e: 'p2' })
+    expect(
+      deal(['a', 'b', 'c', 'd', 'e', 'f'], { domain: [], range: ['r0'] }),
+    ).toEqual({ a: 'r0', b: 'p0', c: 'p1', d: 'p2', e: 'p0', f: 'p1' })
   })
 })

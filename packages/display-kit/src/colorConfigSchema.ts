@@ -4,6 +4,7 @@ import {
   getSlotDefinition,
   slotChoices,
 } from '@jbrowse/core/configuration'
+import { paletteFromSpec } from '@jbrowse/core/ui/colors'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { thresholdField } from '@jbrowse/core/util/thresholdScale'
@@ -81,18 +82,20 @@ export function colorChannelSlots<
   scaleName,
   field,
   fieldType,
+  fieldDefault = '',
   scale = 'how field paints; unset follows field, none paints value',
 }: {
   scales: readonly S[]
   scaleName: string
   field: string
   fieldType: F
+  fieldDefault?: string
   scale?: string
 }) {
   return {
     field: {
       type: fieldType,
-      defaultValue: '',
+      defaultValue: fieldDefault,
       description: field,
     },
     scale: {
@@ -148,6 +151,44 @@ export function pairedColorsOf({
       colors.set(name, color)
     }
   })
+  return colors
+}
+
+// A capture run sets `window.jbrowseRowPalette` before the app loads, to a
+// palette name or a comma-separated colour list, and every row palette deals
+// from it in place of the display's own.
+const dealtPaletteOverride = paletteFromSpec(
+  (globalThis as { jbrowseRowPalette?: unknown }).jbrowseRowPalette,
+)
+
+/**
+ * A colour for every value in `order`: a value `domain` lists takes its
+ * `range` entry, and every other value, first seen first, takes the next entry
+ * of one cursor over the `range` entries past the domain and then `palette`,
+ * which wraps.
+ */
+export function dealRowColors(
+  order: Iterable<string>,
+  entries: { domain: readonly string[]; range: readonly string[] },
+  palette: readonly string[],
+): ReadonlyMap<string, string> {
+  const colors = new Map(pairedColorsOf(entries))
+  const spare = entries.range.slice(entries.domain.length)
+  const deck = dealtPaletteOverride ?? palette
+  let next = 0
+  for (const value of order) {
+    if (!colors.has(value)) {
+      const color =
+        next < spare.length
+          ? spare[next]
+          : deck[(next - spare.length) % deck.length]
+      if (color === undefined) {
+        break
+      }
+      colors.set(value, color)
+      next++
+    }
+  }
   return colors
 }
 
