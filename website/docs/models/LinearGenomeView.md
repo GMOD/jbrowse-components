@@ -157,7 +157,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-trackmap">**trackMap**</span><br><code>Map&lt;string, any&gt;</code> |  | LinearGenomeView |
 | <span id="getter-showswholechromosome">**showsWholeChromosome**</span><br><code>boolean</code> |  | LinearGenomeView |
 | <span id="getter-canshowcytobands">**canShowCytobands**</span><br><code>boolean</code> | an ideogram only reads correctly against an entire chromosome: on a sub-region it is a meaningless slice of bands, and the centromere shows up as a lone half-triangle | LinearGenomeView |
-| <span id="getter-effectiveshowcytobands">**effectiveShowCytobands**</span><br><code>boolean</code> | the `showCytobands` setting gated by whether cytobands can be shown at all (whole chromosome + data present) — i.e. actually on screen | LinearGenomeView |
+| <span id="getter-effectiveshowcytobands">**effectiveShowCytobands**</span><br><code>boolean</code> | the `showCytobands` setting gated by whether cytobands can be shown at all (whole chromosome + data present) and by the header overview they draw in being on, which the SVG export follows too | LinearGenomeView |
 | <span id="getter-anycytobandsexist">**anyCytobandsExist**</span><br><code>boolean</code> |  | LinearGenomeView |
 | <span id="getter-cytobandoffset">**cytobandOffset**</span><br><code>number</code> | the cytoband is displayed to the right of the chromosome name, and that offset is calculated manually with this method | LinearGenomeView |
 | <span id="getter-istrackselectoropen">**isTrackSelectorOpen**</span><br><code>boolean</code> |  | LinearGenomeView |
