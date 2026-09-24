@@ -1,7 +1,12 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { Slice } from '../CircularView/slices.ts'
-import { chordControlRadius, chordPath, getEndpoint } from './chordGeometry.ts'
+import {
+  chordControlPoint,
+  chordControlRadius,
+  chordPath,
+  getEndpoint,
+} from './chordGeometry.ts'
 
 function block(refName: string) {
   return new Slice(
@@ -88,15 +93,33 @@ describe('chordControlRadius', () => {
     ).toBeCloseTo(bezierRadius)
   })
 
-  test('a chord wider than half the circle does not bow back out', () => {
-    expect(
-      chordControlRadius({
-        startRadians: 0,
-        endRadians: 1.9 * Math.PI,
-        radius,
-        bezierRadius,
-      }),
-    ).toBeCloseTo(bezierRadius)
+  // the mirrored second genome ends where the first begins, so its chr1 band
+  // crosses the circle's first angle
+  test('ends either side of the first angle bow by their short arc', () => {
+    const across = chordControlRadius({
+      startRadians: 0.05 * Math.PI,
+      endRadians: 1.95 * Math.PI,
+      radius,
+      bezierRadius,
+    })
+    const within = chordControlRadius({
+      startRadians: 0.05 * Math.PI,
+      endRadians: 0.15 * Math.PI,
+      radius,
+      bezierRadius,
+    })
+    expect(across).toBeCloseTo(within)
+  })
+
+  test('the control point sits on the bisector of the short arc', () => {
+    const [x, y] = chordControlPoint({
+      startRadians: 0.05 * Math.PI,
+      endRadians: 1.95 * Math.PI,
+      radius,
+      bezierRadius,
+    })
+    expect(Math.atan2(y, x)).toBeCloseTo(0)
+    expect(x).toBeGreaterThan(radius / 2)
   })
 
   test('a quarter-circle chord bows partway', () => {

@@ -6,6 +6,16 @@ import { bpToRadians } from '../CircularView/slices.ts'
 import type { Slice } from '../CircularView/slices.ts'
 import type { Feature } from '@jbrowse/core/util'
 
+/** The signed turn from `from` to `to` the short way round, in [-π, π]. */
+function shortTurn(from: number, to: number) {
+  const turn = (to - from) % (2 * Math.PI)
+  return turn > Math.PI
+    ? turn - 2 * Math.PI
+    : turn < -Math.PI
+      ? turn + 2 * Math.PI
+      : turn
+}
+
 /**
  * How far from the center a chord's Bezier control point sits, which sets how
  * deeply the chord bows inward.
@@ -20,10 +30,10 @@ import type { Feature } from '@jbrowse/core/util'
  *
  * `sin(sweep/2)` is the endpoints' straight-line distance over the diameter, so
  * the depth follows the chord the curve is actually drawn across: an antipodal
- * chord keeps the full `bezierRadius` bow it has always had, a local event
- * collapses to a point at the rim instead of a spoke, and the range between
- * them bows in proportion. Past half the circle the separation stops growing,
- * hence the clamp.
+ * chord keeps the full `bezierRadius` bow, a local event collapses to a point
+ * at the rim instead of a spoke, and the range between them bows in
+ * proportion. The sweep is the short way round, so two ends either side of the
+ * circle's first angle are as close as they look.
  */
 export function chordControlRadius({
   startRadians,
@@ -36,8 +46,22 @@ export function chordControlRadius({
   radius: number
   bezierRadius: number
 }) {
-  const sweep = Math.min(Math.abs(endRadians - startRadians), Math.PI)
+  const sweep = Math.abs(shortTurn(startRadians, endRadians))
   return radius - (radius - bezierRadius) * Math.sin(sweep / 2)
+}
+
+/** A chord's Bezier control point, on the bisector of its short arc. */
+export function chordControlPoint(opts: {
+  startRadians: number
+  endRadians: number
+  radius: number
+  bezierRadius: number
+}) {
+  const { startRadians, endRadians } = opts
+  return polarToCartesian(
+    chordControlRadius(opts),
+    startRadians + shortTurn(startRadians, endRadians) / 2,
+  )
 }
 
 /**
@@ -84,14 +108,16 @@ export function chordPath({
   }
   const startRadians = bpToRadians(startBlock, feature.get('start'))
   const endRadians = bpToRadians(endBlock, endPosition)
-  if (Math.abs(endRadians - startRadians) * radius < 1) {
+  if (Math.abs(shortTurn(startRadians, endRadians)) * radius < 1) {
     return undefined
   }
   const [x1, y1] = polarToCartesian(radius, startRadians)
   const [x2, y2] = polarToCartesian(radius, endRadians)
-  const [cx, cy] = polarToCartesian(
-    chordControlRadius({ startRadians, endRadians, radius, bezierRadius }),
-    (endRadians + startRadians) / 2,
-  )
+  const [cx, cy] = chordControlPoint({
+    startRadians,
+    endRadians,
+    radius,
+    bezierRadius,
+  })
   return `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`
 }

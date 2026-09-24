@@ -1,7 +1,7 @@
 import { polarToCartesian } from '@jbrowse/core/util'
 
 import { bpToRadians } from '../CircularView/slices.ts'
-import { chordControlRadius } from './chordGeometry.ts'
+import { chordControlPoint } from './chordGeometry.ts'
 
 import type { Slice } from '../CircularView/slices.ts'
 
@@ -97,13 +97,13 @@ function curveTo(
   radius: number,
   bezierRadius: number,
 ) {
-  const control = chordControlRadius({
+  const [cx, cy] = chordControlPoint({
     startRadians: from,
     endRadians: to,
     radius,
     bezierRadius,
   })
-  return `Q ${point(control, (from + to) / 2)} ${point(radius, to)}`
+  return `Q ${cx} ${cy} ${point(radius, to)}`
 }
 
 /**

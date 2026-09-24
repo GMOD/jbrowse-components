@@ -1,5 +1,5 @@
 import { Slice } from '../CircularView/slices.ts'
-import { ribbonAngles, ribbonEndRadians } from './ribbonGeometry.ts'
+import { ribbonAngles, ribbonEndRadians, ribbonPath } from './ribbonGeometry.ts'
 
 function block(refName: string, offsetRadians = 0) {
   return new Slice(
@@ -146,4 +146,41 @@ describe('a mirrored mate arc', () => {
     })
     expect(m1).toBeGreaterThan(m2)
   })
+})
+
+// the diagonalized layout's chr1 band: the first genome starts at the circle's
+// first angle and the mirrored second genome ends there
+test('a ribbon across the first angle stays near the rim', () => {
+  const slice = (assemblyName: string, offset: number, reversed: boolean) =>
+    new Slice(
+      { bpPerRadian: 100_000 },
+      {
+        elided: false,
+        widthBp: 10000,
+        start: 0,
+        end: 10000,
+        refName: 'chr1',
+        assemblyName,
+        reversed,
+      },
+      offset,
+    )
+  const d = ribbonPath({
+    anchor: { block: slice('a', 0, false), start: 0, end: 5000 },
+    mate: {
+      block: slice('b', 2 * Math.PI - 0.1, true),
+      start: 0,
+      end: 5000,
+    },
+    strand: 1,
+    radius,
+    bezierRadius: 100,
+  })
+  const controls = [...d.matchAll(/Q (\S+) (\S+)/g)].map(([, x, y]) =>
+    Math.hypot(Number(x), Number(y)),
+  )
+  expect(controls).toHaveLength(2)
+  for (const r of controls) {
+    expect(r).toBeGreaterThan(radius * 0.9)
+  }
 })
