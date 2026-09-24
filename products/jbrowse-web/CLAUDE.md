@@ -7,6 +7,12 @@ Measure **JS bytes over the wire on the initial load**, not total bundle size â€
 payload unchanged, so it was reverted. `browser-tests/measure-load.ts` and
 `worker-smoke.ts` are the harnesses (run after a build).
 
+Bytes are not what a cold load waits on: a warm-cache reload of the hg38 hub
+took as long as a cold one. `browser-tests/measure-load-latency.ts` emulates a
+round trip per request and reports what serializes a load: when the worker
+starts, when its first data request goes out, and how many fetches waited on the
+one before.
+
 ## Browser (e2e) tests
 
 Always build first â€” the tests load `build/`, and a stale one gives false
