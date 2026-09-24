@@ -164,6 +164,7 @@ import type { MarkRamp } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type {
   IdentityChannel,
+  RowColorDeal,
   RowSource,
   UnlistedRowsSort,
 } from '@jbrowse/tree-sidebar'
@@ -577,6 +578,14 @@ export function stateModelFactory(
        */
       get identityChannel(): IdentityChannel {
         return 'labelColor'
+      },
+      /**
+       * #getter
+       * `TreeSidebarMixin`'s hook: no row palette, since a row's tint is its
+       * `rowColor` entry or its adapter's colour.
+       */
+      get rowColorDeal(): RowColorDeal<RowSource> | undefined {
+        return undefined
       },
     }))
     .views(self => ({

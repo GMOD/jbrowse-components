@@ -413,9 +413,9 @@ export function configSchemaFactory() {
       rows: rowsConfigSchema,
       /**
        * #slot rowColor
-       * A tint per row, by value, as `domain`/`range` pairs, drawn beside the
-       * row's label; the marks keep their own colour. The arrangement dialog
-       * writes it.
+       * The tint beside each row's label, the marks keeping their own colour:
+       * under the default field `name`, a row's value paired with a colour in
+       * `domain`/`range`, which the arrangement dialog writes.
        */
       rowColor: rowColorConfigSchema,
       ...treeSidebarConfigSchemaFields({

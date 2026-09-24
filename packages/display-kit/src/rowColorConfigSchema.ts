@@ -21,7 +21,8 @@ import {
  * feature display's blocks; the multi-sample variant displays' label tint,
  * where `field` may also name a samplesTsv column whose values each take a
  * palette colour; the MAF display's label tint, over the adapter's
- * `samples[].color`. A string is the field.
+ * `samples[].color`; the mark display's label tint, over a listed source's
+ * colour. A string is the field.
  *
  * #example
  * ```js
