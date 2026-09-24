@@ -23,11 +23,8 @@ import {
 
 import type { CircularViewModel } from '../model.ts'
 import type { AssemblyArc } from '../rulerLabels.ts'
-import type {
-  Slice,
-  SliceElidedRegion,
-  SliceNonElidedRegion,
-} from '../slices.ts'
+import type { Slice, SliceNonElidedRegion } from '../slices.ts'
+import type { Theme } from '@mui/material/styles'
 
 // the slice's own angular span as an SVG arc. A slice covers its region
 // exactly, so this is equally the arc from its first base to its last
@@ -140,115 +137,18 @@ const RulerLabel = observer(function RulerLabel({
   )
 })
 
-// the arc and its label, the two things every slice draws whether it stands for
-// one region or a run of elided ones
-const RulerArc = observer(function RulerArc({
-  model,
-  slice,
-  alongArc,
-  text,
-  title,
-  labelColor,
-  strokeColor,
-  dashed,
-}: {
-  model: CircularViewModel
-  slice: Slice
-  alongArc: boolean
-  text: string
-  title?: string
-  labelColor: string
-  strokeColor: string
-  dashed?: boolean
-}) {
-  const { radiusPx, offsetRadians } = model
-  const { endRadians, startRadians } = slice
-  return (
-    <>
-      <RulerLabel
-        text={text}
-        title={title}
-        alongArc={alongArc}
-        offsetRadians={offsetRadians}
-        maxWidthPx={(endRadians - startRadians) * radiusPx}
-        radians={(endRadians + startRadians) / 2}
-        radiusPx={radiusPx}
-        color={labelColor}
-      />
-      <path
-        d={sliceArcPath(slice, radiusPx + 1)}
-        stroke={stripAlpha(strokeColor)}
-        strokeWidth={2}
-        strokeDasharray={dashed ? '2,2' : undefined}
-        fill="none"
-      />
-    </>
-  )
-})
-
-const ElisionRulerArc = observer(function ElisionRulerArc({
-  model,
-  slice,
-  alongArc,
-  region,
-}: {
-  model: CircularViewModel
-  slice: Slice
-  alongArc: boolean
-  region: SliceElidedRegion
-}) {
-  const theme = useTheme()
-  return (
-    <RulerArc
-      model={model}
-      slice={slice}
-      alongArc={alongArc}
-      // the label is bracketed ("[24]") to read as a count rather than as a
-      // refName; the hover text is a sentence, so it takes the bare number
-      text={sliceLabelText(slice)}
-      title={`${toLocale(region.regions.length)} regions too small to show`}
-      labelColor={theme.palette.text.primary}
-      strokeColor={theme.palette.text.secondary}
-      dashed
-    />
-  )
-})
-
-const RegionRulerArc = observer(function RegionRulerArc({
-  model,
-  slice,
-  alongArc,
-  region,
-}: {
-  model: CircularViewModel
-  slice: Slice
-  alongArc: boolean
-  region: SliceNonElidedRegion
-}) {
-  const theme = useTheme()
-  const session = getSession(model)
-  const assembly = session.assemblyManager.get(region.assemblyName)
-  const refNameColor = assembly?.getRefNameColor(region.refName)
-  let color: string
-  try {
-    color = refNameColor
-      ? makeContrasting(refNameColor, theme.palette.background.paper)
-      : theme.palette.text.primary
-  } catch {
-    color = theme.palette.text.primary
-  }
-
-  return (
-    <RulerArc
-      model={model}
-      slice={slice}
-      alongArc={alongArc}
-      text={sliceLabelText(slice)}
-      labelColor={color}
-      strokeColor={color}
-    />
-  )
-})
+function regionColor(
+  model: CircularViewModel,
+  { assemblyName, refName }: SliceNonElidedRegion,
+  theme: Theme,
+) {
+  const refNameColor = getSession(model)
+    .assemblyManager.get(assemblyName)
+    ?.getRefNameColor(refName)
+  return refNameColor
+    ? makeContrasting(refNameColor, theme.palette.background.paper)
+    : theme.palette.text.primary
+}
 
 const Ruler = observer(function Ruler({
   model,
@@ -259,20 +159,34 @@ const Ruler = observer(function Ruler({
   slice: Slice
   alongArc: boolean
 }) {
-  return slice.region.elided ? (
-    <ElisionRulerArc
-      region={slice.region}
-      model={model}
-      slice={slice}
-      alongArc={alongArc}
-    />
-  ) : (
-    <RegionRulerArc
-      region={slice.region}
-      model={model}
-      slice={slice}
-      alongArc={alongArc}
-    />
+  const theme = useTheme()
+  const { radiusPx, offsetRadians } = model
+  const { region, endRadians, startRadians } = slice
+  const color = region.elided ? undefined : regionColor(model, region, theme)
+  return (
+    <>
+      <RulerLabel
+        text={sliceLabelText(slice)}
+        title={
+          region.elided
+            ? `${toLocale(region.regions.length)} regions too small to show`
+            : undefined
+        }
+        alongArc={alongArc}
+        offsetRadians={offsetRadians}
+        maxWidthPx={(endRadians - startRadians) * radiusPx}
+        radians={(endRadians + startRadians) / 2}
+        radiusPx={radiusPx}
+        color={color ?? theme.palette.text.primary}
+      />
+      <path
+        d={sliceArcPath(slice, radiusPx + 1)}
+        stroke={stripAlpha(color ?? theme.palette.text.secondary)}
+        strokeWidth={2}
+        strokeDasharray={region.elided ? '2,2' : undefined}
+        fill="none"
+      />
+    </>
   )
 })
 
