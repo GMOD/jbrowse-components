@@ -60,19 +60,19 @@ const CONTINUOUS = {
   setWindowFrame: 'setWindow per animation frame, for flyTo',
 }
 
-function bodyFrom(source: string, open: number) {
+function matching(source: string, open: number, [left, right]: string) {
   let depth = 0
   for (let i = open; i < source.length; i++) {
-    if (source[i] === '{') {
+    if (source[i] === left) {
       depth++
-    } else if (source[i] === '}') {
+    } else if (source[i] === right) {
       depth--
       if (depth === 0) {
-        return source.slice(open, i + 1)
+        return i
       }
     }
   }
-  throw new Error('unbalanced braces')
+  throw new Error(`unbalanced ${left}${right}`)
 }
 
 function withoutComments(body: string) {
@@ -92,11 +92,13 @@ function members() {
   for (const match of model.matchAll(
     /^ {6}(?:async )?(?:function )?(\w+)\(/gm,
   )) {
-    const open = model.indexOf('{', match.index + match[0].length)
+    // past the parameter list, whose destructuring braces are not the body
+    const params = matching(model, match.index + match[0].length - 1, '()')
+    const open = model.indexOf('{', params)
     found.push({
       name: match[1]!,
       line: model.slice(0, match.index).split('\n').length,
-      body: withoutComments(bodyFrom(model, open)),
+      body: withoutComments(model.slice(open, matching(model, open, '{}') + 1)),
     })
   }
   return found
@@ -125,6 +127,11 @@ test('the scan finds the placers it is about', () => {
   ]) {
     expect(names).toContain(expected)
   }
+})
+
+test('a destructured parameter list is not taken for the body', () => {
+  const [bpToPx] = members().filter(m => m.name === 'bpToPx')
+  expect(bpToPx!.body).toContain('return bpToPx(')
 })
 
 test.each(Object.entries(CONTINUOUS))(
