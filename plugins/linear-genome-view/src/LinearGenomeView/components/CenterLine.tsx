@@ -1,3 +1,5 @@
+import { clamp } from '@jbrowse/core/util'
+import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import { IconButton, Tooltip } from '@mui/material'
@@ -22,6 +24,7 @@ const useStyles = makeStyles()(theme => ({
   centerLineText: {
     position: 'absolute',
     left: 0,
+    bottom: 0,
     display: 'flex',
     alignItems: 'center',
     gap: 2,
@@ -36,7 +39,7 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 const CenterLine = observer(function CenterLine({ model }: { model: LGV }) {
-  const { bpPerPx, centerLineInfo, trackHeights, tracks, width } = model
+  const { bpPerPx, centerLineInfo, tracks, width } = model
   const { classes } = useStyles()
   const startingPosition = width / 2
 
@@ -52,20 +55,21 @@ const CenterLine = observer(function CenterLine({ model }: { model: LGV }) {
     >
       {centerLineInfo && (
         <div
-          // text that indicates what bp is center, positioned
-          // at the bottom right of the center line
           data-testid="centerline_text"
           className={classes.centerLineText}
           role="presentation"
           style={{
             transform: `translateX(${Math.max(1 / bpPerPx, 1) + 5}px)`,
-            top: trackHeights,
           }}
         >
           {centerLineInfo.refName}:{' '}
-          {Math.max(Math.round(centerLineInfo.offset) + 1, 0).toLocaleString(
-            'en-US',
-          )}
+          {(
+            clamp(
+              basePaintedAt(centerLineInfo, centerLineInfo.offset),
+              centerLineInfo.start,
+              centerLineInfo.end - 1,
+            ) + 1
+          ).toLocaleString('en-US')}
           <Tooltip title="Hide center line">
             <IconButton
               className={classes.dismiss}

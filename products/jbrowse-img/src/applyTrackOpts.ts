@@ -1,4 +1,5 @@
 import { samFlagNames } from '@jbrowse/cigar-utils'
+import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
@@ -1011,10 +1012,10 @@ export async function applyDisplayOpts(
   // dropped rather than render an unsorted pileup that looks like a sort bug.
   if (sort) {
     const center = view.centerLineInfo
-    if (center && center.offset >= 0) {
+    if (center && !center.oob) {
       snap.sortedBy = {
         type: sort.type,
-        pos: Math.round(center.offset),
+        pos: basePaintedAt(center, center.offset),
         refName: center.refName,
         assemblyName: center.assemblyName,
         tag: sort.tag,
