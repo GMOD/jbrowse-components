@@ -41,7 +41,9 @@ answers a window over HTTP.
   [part 3 of the HPRC tutorial](/docs/tutorials/pangenome_hprc_part3#the-lanes-from-the-database)
   builds:
   https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db
-- the assembly index, one row per haplotype with its FASTA:
+- the assembly index, one row per haplotype with its FASTA, which the
+  [HPRC hub on genomes.jbrowse.org](https://genomes.jbrowse.org/hubs/HPRC/)
+  lists as genomes to open:
   https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/assemblies_release2_v1.0.index.csv
 - HG01361 haplotype 1:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/working/HPRC/HG01361/assemblies/release2/HG01361_pat_hprc_r2_v1.0.1.fa.gz
@@ -59,7 +61,9 @@ answers a window over HTTP.
 - eight of those haplotypes aligned to GRCh38, which the
   [pangenome graph synteny tutorial](/docs/tutorials/hprc_multiway_synteny)
   builds: https://jbrowse.org/demos/hprc_multiway/config.json
-- hg38's RefSeq genes, rehosted: https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
+- hg38's RefSeq genes, from
+  [genomes.jbrowse.org's hg38](https://genomes.jbrowse.org/ucsc/hg38/):
+  https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
 
 ## The locus under GRCh38 alone
 

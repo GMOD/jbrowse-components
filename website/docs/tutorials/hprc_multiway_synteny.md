@@ -42,7 +42,9 @@ assembly.
 - GRCh38's chromosome lengths, which bound each chromosome's read of that
   projection:
   https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes
-- hg38's RefSeq genes, rehosted: https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
+- hg38's RefSeq genes, from
+  [genomes.jbrowse.org's hg38](https://genomes.jbrowse.org/ucsc/hg38/):
+  https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
 - the finished index, chromosome lengths, annotations and config, rehosted so
   the lanes load without rerunning the pipeline:
   https://jbrowse.org/demos/hprc_multiway/config.json, with the build recorded

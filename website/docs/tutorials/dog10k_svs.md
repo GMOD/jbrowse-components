@@ -52,8 +52,10 @@ supporting UCSC and OMIA tracks and two sequenced retrocopies from GenBank.
   either callset: https://omia.org/static/omia.sql.gz
 - the canFam3-to-canFam4 chain that lifts OMIA's coordinates:
   https://hgdownload.soe.ucsc.edu/goldenPath/canFam3/liftOver/canFam3ToCanFam4.over.chain.gz
-- the `UU_Cfam_GSD_1.0` gene annotation, checking the _FGF4_ records against the
-  gene's introns and drawing the parent-gene track in the synteny figure:
+- the `UU_Cfam_GSD_1.0` gene annotation from
+  [genomes.jbrowse.org's canFam4](https://genomes.jbrowse.org/ucsc/canFam4/),
+  checking the _FGF4_ records against the gene's introns and drawing the
+  parent-gene track in the synteny figure:
   https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz
 - the CFA18 retrocopy, MF040222, fetched from GenBank:
   https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=MF040222&rettype=fasta&retmode=text

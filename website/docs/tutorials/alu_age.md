@@ -31,7 +31,9 @@ is experimental, and its config shape may change.
 
 ## Where the data comes from
 
-UCSC's hg38 RepeatMasker table, rehosted with the Alu rows cut out:
+UCSC's hg38 RepeatMasker table, rehosted by
+[genomes.jbrowse.org's hg38](https://genomes.jbrowse.org/ucsc/hg38/) with the
+Alu rows cut out:
 
 - RepeatMasker, UCSC's `rmsk` table as BED with a column header:
   https://jbrowse.org/ucsc/hg38/rmsk.bed.gz

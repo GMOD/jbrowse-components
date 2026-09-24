@@ -32,7 +32,8 @@ moment they fit.
 
 ## Where the data comes from
 
-The figures read UCSC's hg38 annotation tables, rehosted on jbrowse.org with a
+The figures read UCSC's hg38 annotation tables, rehosted by
+[genomes.jbrowse.org's hg38](https://genomes.jbrowse.org/ucsc/hg38/) with a
 density sidecar beside each file.
 
 - RefSeq curated genes, UCSC's `ncbiRefSeqCurated` table as GFF3:

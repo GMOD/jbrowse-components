@@ -40,7 +40,9 @@ graph one chromosome to a file.
 - the population of each 1000 Genomes sample, which most of the release's donors
   are:
   https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/20130606_g1k_3202_samples_ped_population.txt
-- hg38's RefSeq genes, rehosted: https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
+- hg38's RefSeq genes, from
+  [genomes.jbrowse.org's hg38](https://genomes.jbrowse.org/ucsc/hg38/):
+  https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
 
 ## The graph plugin
 

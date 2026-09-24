@@ -37,14 +37,17 @@ the CIGAR intact.
 ## Where the data comes from
 
 UCSC's hg38-to-mm39 liftOver chain (Kent et al. 2003), the RefSeq curated gene
-sets of both genomes from jbrowse.org's copies of the UCSC hubs, and the files
-the build script makes of them, rehosted so the figures open without the build.
+sets of both genomes from genomes.jbrowse.org's copies of the UCSC hubs, and the
+files the build script makes of them, rehosted so the figures open without the
+build.
 
 - the chain:
   https://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToMm39.over.chain.gz
 - the same chain as an indexed PAF, every row, which the last section queries:
   https://jbrowse.org/ucsc/hg38/liftOver/hg38ToMm39.over.pif.gz
-- the hub configs the two assemblies are taken from:
+- the hub configs the two assemblies are taken from, those of the
+  [hg38](https://genomes.jbrowse.org/ucsc/hg38/) and
+  [mm39](https://genomes.jbrowse.org/ucsc/mm39/) pages:
   https://jbrowse.org/ucsc/hg38/config.json and
   https://jbrowse.org/ucsc/mm39/config.json
 - RefSeq curated genes, hg38:
