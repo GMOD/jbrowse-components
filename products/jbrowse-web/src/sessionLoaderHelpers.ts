@@ -1,7 +1,4 @@
-import {
-  buildLgvInit as buildSharedLgvInit,
-  splitHighlights,
-} from '@jbrowse/app-core'
+import { buildLgvInit as buildSharedLgvInit } from '@jbrowse/app-core'
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import { dropVendoredPlugins } from '@jbrowse/core/pluginDefinitions'
 import { indexedDBAvailable, resolveStorePluginRefs } from '@jbrowse/core/util'
@@ -146,8 +143,6 @@ export async function fetchRemoteConfig(configPath: string) {
   addRelativeUris(config, configUri)
   return { config, configUri }
 }
-
-export { splitHighlights }
 
 // The loc/tracks/assembly/... shorthand normalizer, which now lives in app-core
 // next to parseSessionSpecUrl: Desktop resolves the same links, and a second

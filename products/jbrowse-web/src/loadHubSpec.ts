@@ -1,8 +1,4 @@
-import {
-  addSessionTracks,
-  hubConnectionSpec,
-  shortHubLabel,
-} from '@jbrowse/app-core'
+import { addSessionTracks, hubConnectionSpec } from '@jbrowse/app-core'
 import { isSessionModelWithConnections } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { isBaseSession } from '@jbrowse/product-core'
@@ -26,13 +22,6 @@ export function parseHubShortLabel(hubTxt: string) {
     ?.replace('shortLabel', '')
     .trim()
 }
-
-// a short, readable placeholder for a hub connection's name/category label
-// before parseHubShortLabel resolves (or if hub.txt has no shortLabel line);
-// avoids showing the full hub.txt URL in the track selector category header.
-// Shared with parseSessionSpecUrl, which builds the same connection config for
-// a hub link opened outside jbrowse-web
-export { shortHubLabel }
 
 // A hub's assemblies are added by its connection's `connect()`, so launching a
 // view the moment the connection is made leaves the LGV reporting "Assembly X

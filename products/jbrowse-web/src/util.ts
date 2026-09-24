@@ -1,10 +1,8 @@
 export { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 export {
-  b64PadSuffix,
   fromUrlSafeB64,
   readSessionFromDynamo,
   shareEndpoint,
-  toUrlSafeB64,
 } from '@jbrowse/core/util'
 export { checkPlugins } from '@jbrowse/core/checkPlugins'
 

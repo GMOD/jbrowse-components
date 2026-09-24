@@ -2,11 +2,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import corePlugins from './corePlugins.ts'
-import {
-  loadHubSpec,
-  parseHubShortLabel,
-  shortHubLabel,
-} from './loadHubSpec.ts'
+import { loadHubSpec, parseHubShortLabel } from './loadHubSpec.ts'
 import rootModelFactory from './rootModel/rootModel.ts'
 import sessionModelFactory from './sessionModel/index.ts'
 
@@ -62,20 +58,6 @@ describe('parseHubShortLabel', () => {
 
   it('returns undefined when there is no shortLabel line', () => {
     expect(parseHubShortLabel('hub myHub\nlongLabel x')).toBeUndefined()
-  })
-})
-
-describe('shortHubLabel', () => {
-  it('uses the second-to-last path segment', () => {
-    expect(
-      shortHubLabel(
-        'https://hgdownload.soe.ucsc.edu/hubs/GCF/019/202/715/GCF_019202715.1/hub.txt',
-      ),
-    ).toBe('GCF_019202715.1')
-  })
-
-  it('falls back to the raw string if it is not a valid URL', () => {
-    expect(shortHubLabel('not a url')).toBe('not a url')
   })
 })
 

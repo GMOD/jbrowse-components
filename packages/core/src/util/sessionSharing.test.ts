@@ -1,5 +1,11 @@
 import { aesDecrypt } from './crypto.ts'
-import { readSessionFromDynamo, shareEndpoint } from './sessionSharing.ts'
+import {
+  b64PadSuffix,
+  fromUrlSafeB64,
+  readSessionFromDynamo,
+  shareEndpoint,
+  toUrlSafeB64,
+} from './sessionSharing.ts'
 
 jest.mock('./crypto.ts', () => ({
   aesDecrypt: jest.fn().mockResolvedValue('decrypted-session-data'),
@@ -127,5 +133,49 @@ describe('readSessionFromDynamo', () => {
         readSessionFromDynamo('https://api.example.com/', 'share-xyz', 'pass'),
       ).rejects.toThrow('Internal Server Error')
     })
+  })
+})
+
+describe('b64PadSuffix', () => {
+  it('adds no padding when length % 4 === 0', () => {
+    expect(b64PadSuffix('abcd')).toBe('abcd')
+    expect(b64PadSuffix('abcdabcd')).toBe('abcdabcd')
+  })
+
+  it('adds one = when length % 4 === 3', () => {
+    expect(b64PadSuffix('abc')).toBe('abc=')
+    expect(b64PadSuffix('abcdefg')).toBe('abcdefg=')
+  })
+
+  it('adds two == when length % 4 === 2', () => {
+    expect(b64PadSuffix('ab')).toBe('ab==')
+    expect(b64PadSuffix('abcdab')).toBe('abcdab==')
+  })
+
+  it('throws for length % 4 === 1', () => {
+    expect(() => b64PadSuffix('a')).toThrow('Illegal base64url string!')
+    expect(() => b64PadSuffix('abcda')).toThrow('Illegal base64url string!')
+  })
+})
+
+describe('toUrlSafeB64 / fromUrlSafeB64 roundtrip', () => {
+  it('encodes and decodes a simple string', async () => {
+    const input = 'hello world'
+    const encoded = await toUrlSafeB64(input)
+    expect(await fromUrlSafeB64(encoded)).toBe(input)
+  })
+
+  it('encodes and decodes JSON', async () => {
+    const input = JSON.stringify({
+      id: 'abc',
+      views: [{ type: 'LinearGenomeView' }],
+    })
+    const encoded = await toUrlSafeB64(input)
+    expect(await fromUrlSafeB64(encoded)).toBe(input)
+  })
+
+  it('produces URL-safe output (no + or / or =)', async () => {
+    const encoded = await toUrlSafeB64('test data for encoding')
+    expect(encoded).not.toMatch(/[+/=]/)
   })
 })
