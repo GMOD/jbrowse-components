@@ -102,8 +102,8 @@ function union(current: ScaleTable, next: ScaleTable) {
       break
     case 'threshold':
       if (next.kind === 'threshold') {
-        current.missing = current.missing ?? next.missing
-        current.notNumber = current.notNumber ?? next.notNumber
+        current.missing = current.missing || next.missing
+        current.notNumber = current.notNumber || next.notNumber
       }
       break
     case 'ramp':
