@@ -3,10 +3,7 @@ import { pathToFileURL } from 'node:url'
 
 import { BrowserWindow, Menu, app, clipboard, dialog, shell } from 'electron'
 
-import {
-  checkForUpdatesInBackground,
-  checkForUpdatesManually,
-} from './autoUpdater.ts'
+import { checkForUpdatesManually } from './autoUpdater.ts'
 import { BLAT_PARTITION } from './blatSession.ts'
 import {
   claudeCodeAddCommand,
@@ -105,6 +102,21 @@ export async function showConnectAgentDialog() {
   }
 }
 
+// A native menu on macOS alone; the other platforms use the renderer's menu bar.
+export function installAppMenu(autoUpdater: Updater) {
+  if (process.platform === 'darwin') {
+    app.setAboutPanelOptions({
+      applicationName: 'JBrowse 2',
+      applicationVersion: app.getVersion(),
+      copyright: 'Apache License 2.0',
+      website: 'https://jbrowse.org',
+    })
+    Menu.setApplicationMenu(createMenu(autoUpdater))
+  } else {
+    Menu.setApplicationMenu(null)
+  }
+}
+
 function createMenu(autoUpdater: Updater) {
   return Menu.buildFromTemplate([
     { role: 'appMenu' },
@@ -156,7 +168,6 @@ function createMenu(autoUpdater: Updater) {
 }
 
 export async function createMainWindow(
-  autoUpdater: Updater,
   devServerUrl: string | undefined,
   initialTarget: LaunchTarget | undefined,
   renderer: string | undefined,
@@ -183,17 +194,11 @@ export async function createMainWindow(
 
   mainWindowState.manage(mainWindow)
 
-  // Attached before the loadURL below, or the event has already fired. Deferred
-  // to ready-to-show so the check does not compete with the first page load.
-  mainWindow.once('ready-to-show', () => {
-    checkForUpdatesInBackground(autoUpdater)
-  })
-
   const appUrl = buildAppUrl(devServerUrl, initialTarget, renderer)
 
-  // Attached before loadURL, like the ready-to-show handler above: a page that
-  // calls window.open while still loading would otherwise get Chromium's
-  // default behavior (a real BrowserWindow) instead of the external browser.
+  // Attached before loadURL: a page that calls window.open while still loading
+  // would otherwise get Chromium's default behavior (a real BrowserWindow)
+  // instead of the external browser.
   mainWindow.webContents.setWindowOpenHandler(edata => {
     openExternal(edata.url)
     return { action: 'deny' }
@@ -216,18 +221,6 @@ export async function createMainWindow(
   })
 
   await mainWindow.loadURL(appUrl.href)
-
-  if (process.platform === 'darwin') {
-    app.setAboutPanelOptions({
-      applicationName: 'JBrowse 2',
-      applicationVersion: app.getVersion(),
-      copyright: 'Apache License 2.0',
-      website: 'https://jbrowse.org',
-    })
-    Menu.setApplicationMenu(createMenu(autoUpdater))
-  } else {
-    Menu.setApplicationMenu(null)
-  }
 
   return mainWindow
 }

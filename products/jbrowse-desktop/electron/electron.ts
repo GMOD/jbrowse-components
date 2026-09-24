@@ -2,7 +2,7 @@ import { autoUpdater as nativeAutoUpdater, app, dialog } from 'electron'
 import debug from 'electron-debug'
 import pkg from 'electron-updater'
 
-import { setupAutoUpdater } from './autoUpdater.ts'
+import { checkForUpdatesInBackground, setupAutoUpdater } from './autoUpdater.ts'
 import { createCloseGuard, subscribeQuitSignals } from './closeGuard.ts'
 import { registerContextMenu } from './contextMenu.ts'
 import { registerDownloadHandler } from './downloads.ts'
@@ -30,6 +30,7 @@ import { logError } from './util.ts'
 import {
   buildAppUrl,
   createMainWindow,
+  installAppMenu,
   showConnectAgentDialog,
 } from './window.ts'
 
@@ -144,6 +145,12 @@ async function confirmOpenLink(url: string, parent: BrowserWindow | null) {
       : 'Open a new session from this link?',
     detail: `${displayUrl}\n\nThis replaces the session you have open.`,
   }
+  // a macOS sheet on a minimized window, or a Windows dialog its minimized
+  // owner hides, would ask a question nobody can see
+  if (parent?.isMinimized()) {
+    parent.restore()
+  }
+  parent?.focus()
   const { response } = await (parent
     ? dialog.showMessageBox(parent, options)
     : dialog.showMessageBox(options))
@@ -156,16 +163,23 @@ async function confirmOpenLink(url: string, parent: BrowserWindow | null) {
 function createWindowManager(closeGuard: CloseGuard) {
   let mainWindow: BrowserWindow | null = null
   let creating: Promise<BrowserWindow> | null = null
+  let checkedForUpdates = false
 
   async function startCreate(target: LaunchTarget | undefined) {
     try {
       const win = await createMainWindow(
-        autoUpdater,
         DEV_SERVER_URL,
         target,
         RENDERER_OVERRIDE,
       )
       mainWindow = win
+      // Once per launch, after the first page has loaded so it does not compete
+      // with it. A macOS Dock reopen builds another window, and a check per
+      // window asked again about an update the user had just declined.
+      if (!checkedForUpdates) {
+        checkedForUpdates = true
+        checkForUpdatesInBackground(autoUpdater)
+      }
       // before the 'closed' handler below, so a close still gets held for the
       // session flush rather than racing the bookkeeping here
       closeGuard.register(win)
@@ -313,6 +327,7 @@ function runApp() {
         logPath: paths.updateLogPath,
         getProgressBar: () => wm.current,
       })
+      installAppMenu(autoUpdater)
       // Register app-level event handlers before any await so a second-instance
       // launch or macOS open-file/open-url that fires during filesystem init is
       // not dropped for lack of a listener
