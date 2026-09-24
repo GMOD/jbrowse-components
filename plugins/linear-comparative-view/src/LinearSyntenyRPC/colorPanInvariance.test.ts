@@ -13,6 +13,14 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
 import type { AttributeRange } from '@jbrowse/synteny-core'
 
+// what `Assembly.getRefNamePosition` answers, for a fixed chromosome order
+function positionIn(order: readonly string[]) {
+  return (refName: string) => {
+    const i = order.indexOf(refName)
+    return i < 0 ? undefined : i
+  }
+}
+
 jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter')
 
 // A ribbon's color must not depend on where the view happens to be scrolled to.
@@ -159,7 +167,9 @@ function colorsById(
     featureData,
     field: colorBy,
     trackColor: '#f00',
-    nameOrder: colorBy === 'target' ? TARGET_CONTIGS : QUERY_CONTIGS,
+    namePosition: positionIn(
+      colorBy === 'target' ? TARGET_CONTIGS : QUERY_CONTIGS,
+    ),
     attributeRanges,
   })
   const out = new Map<string, number>()

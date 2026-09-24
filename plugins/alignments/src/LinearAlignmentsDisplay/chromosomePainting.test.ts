@@ -22,8 +22,9 @@ import type { GroupedAlignmentsResult } from '../RenderAlignmentDataRPC/types.ts
 
 const ASSEMBLY_REFNAMES = ['chr1', 'chr12']
 
-// `1` in the file is `chr1` to the assembly. `getCanonicalRefName2` is the one
-// the display is required to go through; an alias table is what it reads.
+// `1` in the file is `chr1` to the assembly. The display asks the assembly's
+// `getRefNamePosition`, which canonicalizes (pinned against a real assembly in
+// dotplot-view's chromosomePainting.test.ts); this stands in for it.
 const CANONICAL: Record<string, string> = { '1': 'chr1', '12': 'chr12' }
 
 const packed = (color: string) => {
@@ -45,6 +46,10 @@ function createDisplay() {
     refNameToIndex: new Map(ASSEMBLY_REFNAMES.map((n, i) => [n, i])),
     getCanonicalRefName: (refName: string) => CANONICAL[refName] ?? refName,
     getCanonicalRefName2: (refName: string) => CANONICAL[refName] ?? refName,
+    getRefNamePosition: (refName: string) => {
+      const i = ASSEMBLY_REFNAMES.indexOf(CANONICAL[refName] ?? refName)
+      return i < 0 ? undefined : i
+    },
   }
   // Two reads on the region's own contig, whose mates sit on the two
   // chromosomes the OLD hash put on one colour.

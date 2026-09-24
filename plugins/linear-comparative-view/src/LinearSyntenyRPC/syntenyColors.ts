@@ -16,7 +16,11 @@ import {
   KIND_MARKER,
 } from '../LinearSyntenyDisplay/shaders/syntenyTypes.generated.ts'
 
-import type { AttributeRange, ColorFunctionInputs } from '@jbrowse/synteny-core'
+import type {
+  AttributeRange,
+  ColorFunctionInputs,
+  RefNamePosition,
+} from '@jbrowse/synteny-core'
 
 // Per-instance kind tag. Determines how the color for an instance is derived
 // from the parent feature's strand/refName/featureIdx and the current colorBy
@@ -105,7 +109,7 @@ export function computeSyntenyColors({
   opacityByIdentity,
   drawLocationMarkers,
   groundColor,
-  nameOrder,
+  namePosition,
   attributeRanges,
   hideUnlabelled,
 }: {
@@ -126,11 +130,8 @@ export function computeSyntenyColors({
   // The band the ticks are drawn onto, which is what they have to contrast
   // against — see `bandGroundColor`.
   groundColor: string
-  // Chromosome order of the assembly the chromosome-painting modes key on, so a
-  // ribbon's color can be that chromosome's position rather than a hash bucket.
-  // Only the display knows it — the assembly's refName list is a session fact,
-  // not something in the feature data — so it is passed in rather than derived.
-  nameOrder?: readonly string[]
+  // See `createComparativeColorFunction`
+  namePosition?: RefNamePosition
   // The domain a column's ramp scales to — the view's accumulated
   // one, not this fetch's. See `createComparativeColorFunction`.
   attributeRanges: Record<string, AttributeRange>
@@ -141,7 +142,7 @@ export function computeSyntenyColors({
     field,
     data: featureData,
     trackColor,
-    nameOrder,
+    namePosition,
     attributeRanges,
     hideUnlabelled,
     defaultColor:

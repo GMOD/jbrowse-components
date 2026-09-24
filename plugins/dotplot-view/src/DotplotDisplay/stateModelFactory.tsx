@@ -32,7 +32,11 @@ import type { DotplotHoverHighlight, DotplotRpcData } from './types.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
-import type { ComparativeWarning, LodTier } from '@jbrowse/synteny-core'
+import type {
+  ComparativeWarning,
+  LodTier,
+  RefNamePosition,
+} from '@jbrowse/synteny-core'
 import type { ThemeOptions } from '@mui/material'
 
 // Path coordinates to a tenth of a pixel. Full float precision makes the `d`
@@ -168,7 +172,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
               field: this.colorByField,
               trackColor: this.trackColor,
               valueColor: this.view.colorByValue,
-              nameOrder: this.paintedChromosomeOrder,
+              namePosition: this.paintedRefNamePosition,
               attributeRanges: this.view.attributeRanges,
               hideUnlabelled: this.view.hideUnlabelled,
             })
@@ -176,22 +180,23 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
       },
       /**
        * #getter
-       * The chromosome order the chromosome-painting modes color by: the
-       * refNames of whichever axis' assembly `colorBy` names, in the assembly's
-       * own order. Undefined for every other mode, and while the assembly is
-       * still loading — the color function falls back to its hash there.
+       * Where a refName sits in whichever axis' assembly `colorBy` names —
+       * `Assembly.getRefNamePosition`, alias-aware — which the
+       * chromosome-painting modes hand the palette out by. Undefined for every
+       * other mode, and while the assembly is still loading — the color
+       * function falls back to its hash there.
        *
        * It has to come from the assembly rather than from the features, because
        * a color must not change with which chromosomes happen to be in view.
        *
-       * The dotplot twin of `LinearSyntenyDisplay.paintedChromosomeOrder`, off
+       * The dotplot twin of `LinearSyntenyDisplay.paintedRefNamePosition`, off
        * the two axes instead of two stacked levels: 'query' is the horizontal
        * axis (the feature's own refName lane) and 'target' the vertical (the
        * mate's). 'reference' is a stacked-view mode with no dotplot meaning, and
-       * the shared color function falls it back to query — with no order, since
+       * the shared color function falls it back to query — with no position, since
        * naming an axis for it would be inventing an answer.
        */
-      get paintedChromosomeOrder(): readonly string[] | undefined {
+      get paintedRefNamePosition(): RefNamePosition | undefined {
         const field = this.colorByField
         if (field !== 'query' && field !== 'target') {
           return undefined
@@ -199,7 +204,8 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
         const assemblyName = this.view.assemblyNames[field === 'query' ? 0 : 1]
         return assemblyName === undefined
           ? undefined
-          : getSession(self).assemblyManager.get(assemblyName)?.refNames
+          : getSession(self).assemblyManager.get(assemblyName)
+              ?.getRefNamePosition
       },
       /**
        * #getter

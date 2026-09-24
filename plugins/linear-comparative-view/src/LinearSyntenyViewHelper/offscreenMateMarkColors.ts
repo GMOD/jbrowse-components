@@ -4,11 +4,12 @@ import { nameColorCss } from '@jbrowse/synteny-core'
 import { MARK_ALPHA } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 
 import type { OffscreenMateSide } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
+import type { RefNamePosition } from '@jbrowse/synteny-core'
 
 export interface MarkColorDisplay {
   // the field this display paints by, 'reference' already resolved
   paintedField?: string
-  paintedChromosomeOrder?: readonly string[]
+  paintedRefNamePosition?: RefNamePosition
 }
 
 // a top-strip mark sits on the query row and names a target contig
@@ -25,14 +26,14 @@ export function offscreenMateMarkColorFor(
   const axis = NAMED_AXIS[side]
   const keyed =
     displays.length > 0 && displays.every(d => d.paintedField === axis)
-  // asked once per mark, and `nameColorCss` scans the assembly's refName list
+  // asked once per mark
   const cache = new Map<string, string>()
-  const nameOrder = displays[0]?.paintedChromosomeOrder
+  const namePosition = displays[0]?.paintedRefNamePosition
   return keyed
     ? (refName: string) => {
         const hit = cache.get(refName)
         if (hit === undefined) {
-          const color = alpha(nameColorCss(refName, nameOrder), MARK_ALPHA)
+          const color = alpha(nameColorCss(refName, namePosition), MARK_ALPHA)
           cache.set(refName, color)
           return color
         }

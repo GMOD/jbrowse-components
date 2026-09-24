@@ -633,6 +633,18 @@ export default function assemblyFactory(
     .views(self => ({
       /**
        * #method
+       * Where a refName — canonical or any alias — sits in this assembly's own
+       * order, which is what chromosome painting hands its palette out by.
+       * Canonicalized first because a name off a feature can be the FILE's
+       * spelling (`1` against a canonical `chr1`), and a missed probe is silent:
+       * the painter falls back to a hash color. Undefined before the regions
+       * load and for a name the assembly lacks.
+       */
+      getRefNamePosition(refName: string) {
+        return self.refNameToIndex?.get(self.getCanonicalRefName2(refName))
+      },
+      /**
+       * #method
        * The other names this assembly has for the same sequence as `refName` —
        * its aliases, whether the name handed in is an alias or the canonical
        * name. `chr1`, `1` and `NC_000001.11` each answer with the other two.

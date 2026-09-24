@@ -44,6 +44,7 @@ import type {
   AttributeRange,
   CigarOpMask,
   LodTier,
+  RefNamePosition,
   SyntenyFeatureLanes,
 } from '@jbrowse/synteny-core'
 
@@ -569,7 +570,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           opacityByIdentity,
           drawLocationMarkers: this.view.drawLocationMarkers,
           groundColor: this.groundColor,
-          nameOrder: this.paintedChromosomeOrder,
+          namePosition: this.paintedRefNamePosition,
           attributeRanges: this.view.attributeRanges,
           hideUnlabelled: this.view.hideUnlabelled,
         })
@@ -586,16 +587,16 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * The chromosome order the chromosome-painting modes color by: the
-       * refNames of whichever of this level's two assemblies `paintedField`
-       * resolved to, in the assembly's own order. Undefined for every other
-       * mode, and while the assembly is still loading — the color function
-       * falls back to its hash there.
+       * Where a refName sits in whichever of this level's two assemblies
+       * `paintedField` resolved to — `Assembly.getRefNamePosition`,
+       * alias-aware — which the chromosome-painting modes hand the palette out
+       * by. Undefined for every other mode, and while the assembly is still
+       * loading — the color function falls back to its hash there.
        *
        * It has to come from the assembly rather than from the features, because
        * a color must not change with which chromosomes happen to be in view.
        */
-      get paintedChromosomeOrder(): readonly string[] | undefined {
+      get paintedRefNamePosition(): RefNamePosition | undefined {
         const field = this.paintedField
         if (field !== 'query' && field !== 'target') {
           return undefined
@@ -605,7 +606,8 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         const assemblyName = row?.assemblyNames[0]
         return assemblyName === undefined
           ? undefined
-          : getSession(self).assemblyManager.get(assemblyName)?.refNames
+          : getSession(self).assemblyManager.get(assemblyName)
+              ?.getRefNamePosition
       },
       /**
        * #getter

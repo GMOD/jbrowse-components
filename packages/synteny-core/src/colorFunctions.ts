@@ -73,10 +73,17 @@ export function paletteColorAt(position: number) {
 }
 
 /**
+ * Where a refName sits in an assembly's own order, alias-aware:
+ * `Assembly.getRefNamePosition`. Undefined for a name the assembly lacks.
+ */
+export type RefNamePosition = (refName: string) => number | undefined
+
+/**
  * Chromosome painting against a dictionary-encoded refName lane.
  *
- * BY POSITION IN THE ASSEMBLY when the caller knows the chromosome order, which
- * both displays do — they read the relevant axis' assembly refName list. So the
+ * BY POSITION IN THE ASSEMBLY when the caller can ask it, which both displays
+ * can — through the relevant axis' assembly, alias-aware, since the dictionary
+ * holds the FILE's spelling (`1` against a canonical `chr1`). So the
  * palette is handed out rather than hashed into, and a genome cannot paint two
  * of its chromosomes the same color the way a hash does. `refNameColor` is that
  * rule and its fallback; see it for what the hash costs.
@@ -89,13 +96,10 @@ export function paletteColorAt(position: number) {
 export function makeNameColorFunction(
   dict: readonly string[],
   ids: Uint32Array,
-  nameOrder?: readonly string[],
+  namePosition?: RefNamePosition,
 ) {
-  const orderOf = nameOrder?.length
-    ? new Map(nameOrder.map((n, i) => [n, i]))
-    : undefined
   const lut = Uint32Array.from(dict, name =>
-    cssColorToABGR(refNameColor(name, orderOf?.get(name))),
+    cssColorToABGR(refNameColor(name, namePosition?.(name))),
   )
   return (index: number) => lut[ids[index]!]!
 }
@@ -115,13 +119,9 @@ export function makeNameColorFunction(
  */
 export function nameColorCss(
   refName: string,
-  nameOrder: readonly string[] | undefined,
+  namePosition: RefNamePosition | undefined,
 ) {
-  const position = nameOrder?.indexOf(refName)
-  return refNameColor(
-    refName,
-    position === undefined || position < 0 ? undefined : position,
-  )
+  return refNameColor(refName, namePosition?.(refName))
 }
 
 function buildLut(toRgb: (norm: number) => Rgb) {
@@ -241,7 +241,7 @@ export function createComparativeColorFunction({
   data,
   trackColor,
   defaultColor,
-  nameOrder,
+  namePosition,
   attributeRanges,
   hideUnlabelled = false,
 }: {
@@ -250,13 +250,13 @@ export function createComparativeColorFunction({
   // the display's slot in the view's track palette; only read under 'track'
   trackColor: string
   defaultColor: number
-  // Chromosome order of the assembly the chromosome-painting modes key on, so a
-  // feature's color can be that chromosome's position rather than a hash bucket.
-  // Only the display knows it — the assembly's refName list is a session fact,
-  // not something in the feature data — so it is passed in rather than derived.
-  nameOrder?: readonly string[]
+  // Where a refName sits in the assembly the chromosome-painting modes key on,
+  // so a feature's color can be that chromosome's position rather than a hash
+  // bucket. Only the display knows it — the assembly is a session fact, not
+  // something in the feature data — so it is passed in rather than derived.
+  namePosition?: RefNamePosition
   // The domain a column's ramp scales to. A VIEW-level input, like
-  // `nameOrder` and for the same reason: a fetch's payload knows only the span
+  // `namePosition` and for the same reason: a fetch's payload knows only the span
   // of the slice it holds, and painting from that re-maps every feature onto
   // the ramp each time the window rolls over — a ribbon in the middle of the
   // ramp turns into one at the bottom while the reader is scrolling, without
@@ -281,12 +281,16 @@ export function createComparativeColorFunction({
       return index => (data.strands[index] === -1 ? STRAND_NEG : STRAND_POS)
     case 'query':
     case 'reference':
-      return makeNameColorFunction(data.refNameDict, data.refNameIds, nameOrder)
+      return makeNameColorFunction(
+        data.refNameDict,
+        data.refNameIds,
+        namePosition,
+      )
     case 'target':
       return makeNameColorFunction(
         data.mateRefNameDict,
         data.mateRefNameIds,
-        nameOrder,
+        namePosition,
       )
   }
   // Every ramp in one arm, preset or column, so the switch above does not

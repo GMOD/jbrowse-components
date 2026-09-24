@@ -12,6 +12,14 @@ import {
   computeSyntenyColors,
 } from './syntenyColors.ts'
 
+// what `Assembly.getRefNamePosition` answers, for a fixed chromosome order
+function positionIn(order: readonly string[]) {
+  return (refName: string) => {
+    const i = order.indexOf(refName)
+    return i < 0 ? undefined : i
+  }
+}
+
 const TRACK_COLOR = '#4e79a7'
 
 // One feature per refName, with the attribute channels this suite is about
@@ -252,7 +260,7 @@ describe('the location-marker toggle', () => {
 // the assembly's own chromosome order there is a color per chromosome.
 describe('chromosome painting', () => {
   const chromosomes = Array.from({ length: 12 }, (_, i) => `chr${i + 1}`)
-  const colorsFor = (nameOrder?: readonly string[]) =>
+  const colorsFor = (order?: readonly string[]) =>
     chromosomes.map(
       name =>
         computeSyntenyColors({
@@ -265,7 +273,7 @@ describe('chromosome painting', () => {
           featureData: features([{ refName: name, mateRefName: name }]),
           field: 'query',
           trackColor: '#000',
-          nameOrder,
+          namePosition: order && positionIn(order),
           attributeRanges: {},
         })[0]!,
     )
@@ -332,7 +340,7 @@ test('scaffolds after the chromosomes do not compress the palette', () => {
         featureData: features([{ refName: name, mateRefName: name }]),
         field: 'query',
         trackColor: '#000',
-        nameOrder: withScaffolds,
+        namePosition: positionIn(withScaffolds),
         attributeRanges: {},
       })[0]!,
   )

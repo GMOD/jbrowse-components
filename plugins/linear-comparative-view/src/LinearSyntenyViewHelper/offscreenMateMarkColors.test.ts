@@ -3,12 +3,20 @@ import { paletteColorAt } from '@jbrowse/synteny-core'
 
 import { offscreenMateMarkColorFor } from './offscreenMateMarkColors.ts'
 
+// what `Assembly.getRefNamePosition` answers, for a fixed chromosome order
+function positionIn(order: readonly string[]) {
+  return (refName: string) => {
+    const i = order.indexOf(refName)
+    return i < 0 ? undefined : i
+  }
+}
+
 const ORDER = ['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7']
 
 function level(...fields: string[]) {
   return fields.map(paintedField => ({
     paintedField,
-    paintedChromosomeOrder: ORDER,
+    paintedRefNamePosition: positionIn(ORDER),
   }))
 }
 

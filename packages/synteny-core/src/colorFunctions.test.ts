@@ -11,6 +11,14 @@ import {
 
 import type { ColorFunctionInputs } from './colorFunctions.ts'
 
+// what `Assembly.getRefNamePosition` answers, for a fixed chromosome order
+function positionIn(order: readonly string[]) {
+  return (refName: string) => {
+    const i = order.indexOf(refName)
+    return i < 0 ? undefined : i
+  }
+}
+
 function inputs(over: Partial<ColorFunctionInputs> = {}): ColorFunctionInputs {
   return {
     strands: new Int8Array([1]),
@@ -33,7 +41,7 @@ describe('chromosome painting', () => {
 
   test('distinct colors well past nine, where a nine-bucket hash collides', () => {
     const ids = new Uint32Array(karyotype.map((_, i) => i))
-    const fn = makeNameColorFunction(karyotype, ids, karyotype)
+    const fn = makeNameColorFunction(karyotype, ids, positionIn(karyotype))
     const colors = new Set(karyotype.map((_, i) => fn(i)))
     expect(colors.size).toBe(karyotype.length)
   })
@@ -45,7 +53,7 @@ describe('chromosome painting', () => {
     const fn = makeNameColorFunction(
       rice,
       new Uint32Array(rice.map((_, i) => i)),
-      rice,
+      positionIn(rice),
     )
     expect(new Set(rice.map((_, i) => fn(i))).size).toBe(12)
   })
@@ -65,12 +73,16 @@ describe('chromosome painting', () => {
     const dict = ['chr1', 'scaffold_77']
     const ids = new Uint32Array([0, 1])
     const hashed = makeNameColorFunction(dict, ids)
-    const partial = makeNameColorFunction(dict, ids, ['chr1'])
+    const partial = makeNameColorFunction(dict, ids, positionIn(['chr1']))
     // chr1 is in the order, so it takes its POSITION's palette color — asserted
     // against a moved position, since chr1's hash bucket happens to be 0 too and
     // position 0 alone would pass either way
     expect(partial(0)).toBe(paletteColorAt(0))
-    const moved = makeNameColorFunction(dict, ids, ['a', 'b', 'c', 'd', 'chr1'])
+    const moved = makeNameColorFunction(
+      dict,
+      ids,
+      positionIn(['a', 'b', 'c', 'd', 'chr1']),
+    )
     expect(moved(0)).toBe(paletteColorAt(4))
     expect(moved(0)).not.toBe(hashed(0))
     // the scaffold is in neither order, so all three answer with the same hash

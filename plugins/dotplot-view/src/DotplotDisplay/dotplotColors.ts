@@ -6,7 +6,7 @@ import {
 
 import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
-import type { AttributeRange } from '@jbrowse/synteny-core'
+import type { AttributeRange, RefNamePosition } from '@jbrowse/synteny-core'
 
 // The color function itself is `createComparativeColorFunction` in
 // synteny-core — the palette, the chromosome-order laps, the ramp LUTs and the
@@ -28,7 +28,7 @@ export function createDotplotColorFunction(
   data: DotplotRpcData,
   trackColor: string,
   attributeRanges: Record<string, AttributeRange>,
-  nameOrder?: readonly string[],
+  namePosition?: RefNamePosition,
   hideUnlabelled?: boolean,
   valueColor?: string,
 ) {
@@ -36,7 +36,7 @@ export function createDotplotColorFunction(
     field,
     data,
     trackColor,
-    nameOrder,
+    namePosition,
     attributeRanges,
     hideUnlabelled,
     defaultColor:
@@ -56,7 +56,7 @@ export function computeDotplotColors({
   field,
   trackColor,
   valueColor,
-  nameOrder,
+  namePosition,
   attributeRanges,
   hideUnlabelled,
 }: {
@@ -68,9 +68,9 @@ export function computeDotplotColors({
   // the view's `colorBy.value`: what the points paint under the default mode
   // in place of black, when set
   valueColor?: string
-  // Chromosome order of the axis assembly the painting mode keys on; see
-  // `DotplotDisplay.paintedChromosomeOrder`.
-  nameOrder?: readonly string[]
+  // Where a refName sits in the axis assembly the painting mode keys on; see
+  // `DotplotDisplay.paintedRefNamePosition`.
+  namePosition?: RefNamePosition
   // The domain an `attribute:<name>` ramp scales to — the view's accumulated
   // one, not this fetch's. See `createComparativeColorFunction`.
   attributeRanges: Record<string, AttributeRange>
@@ -82,7 +82,7 @@ export function computeDotplotColors({
     rpcData,
     trackColor,
     attributeRanges,
-    nameOrder,
+    namePosition,
     hideUnlabelled,
     valueColor,
   )

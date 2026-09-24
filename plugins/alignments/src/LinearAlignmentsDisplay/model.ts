@@ -1663,19 +1663,11 @@ export default function stateModelFactory(
           /**
            * #getter
            * Where a mate's reference sits in this assembly's own chromosome order,
-           * for chromosome painting — the alignments twin of
-           * `LinearSyntenyDisplay.paintedChromosomeOrder`, and the thing that lets
-           * the palette be handed out rather than hashed into (`refNameColor`).
-           *
-           * It has to come from the ASSEMBLY rather than from the reads on screen,
-           * or a chromosome's color would change with what else was in view.
-           *
-           * Canonicalizing first is not optional: a mate reference is `next_ref`,
-           * which names a location this fetch did not ask for and so arrives in the
-           * FILE's spelling (`1` against an assembly whose canonical name is
-           * `chr1`) — see REFNAME_NAMESPACES.md. An uncanonicalized probe misses,
-           * and a miss is SILENT: it falls back to the hash and paints a plausible
-           * wrong color rather than raising anything.
+           * for chromosome painting — the same `Assembly.getRefNamePosition` the
+           * comparative displays paint by, so a contig takes one color in a
+           * pileup and in a synteny view beside it. From the ASSEMBLY rather than
+           * the reads on screen, or a color would change with what else was in
+           * view.
            *
            * Undefined under every other scheme and until the assembly initializes,
            * where the fallback is the right answer rather than a failure.
@@ -1685,12 +1677,7 @@ export default function stateModelFactory(
               self.colorBy.type === 'mateRefName'
                 ? self.loadedAssembly
                 : undefined
-            return assembly
-              ? (refName: string) =>
-                  assembly.refNameToIndex?.get(
-                    assembly.getCanonicalRefName2(refName),
-                  )
-              : undefined
+            return assembly?.getRefNamePosition
           },
 
           /**
