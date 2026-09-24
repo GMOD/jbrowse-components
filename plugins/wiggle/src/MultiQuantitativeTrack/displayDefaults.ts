@@ -14,6 +14,8 @@ const DEFAULTS: Record<string, unknown> = {
   height: 200,
 }
 
+const WIGGLE_ENTRY_KEYS = ['facet', 'rows']
+
 const QUANTITATIVE_TRACK_TYPES = new Set([
   'QuantitativeTrack',
   'MultiQuantitativeTrack',
@@ -47,32 +49,39 @@ export function seedDisplayDefaults(snap: Record<string, unknown>) {
 }
 
 /**
- * `displayDefaults.facet` on a quantitative track is the spelling `rows`
- * replaced. The shorthand router sends a key to every display declaring it,
- * and the mark display still declares `facet`, so left alone the key would
- * land there in silence and make the mark display the track's first. Moved
- * onto an explicit quantitative-display entry instead, it meets that display's
- * own refusal, which names `rows`.
+ * `displayDefaults.facet` and `.rows` on a quantitative track go onto its
+ * quantitative-display entry, which keeps any it spells. The shorthand router
+ * would send either to every display declaring it, the mark display among
+ * them: a `facet`, the spelling `rows` replaced, would make the mark display
+ * the track's first in silence rather than meet the quantitative display's
+ * refusal, and the seeded `rows: 'source'` would give a mark display rows no
+ * config wrote for it.
  */
-export function refuseFacetShorthand(snap: Record<string, unknown>) {
+export function wiggleEntryShorthand(snap: Record<string, unknown>) {
   const written = snap.displayDefaults as Record<string, unknown> | undefined
-  if (!written || written.facet === undefined) {
+  const moved = Object.fromEntries(
+    WIGGLE_ENTRY_KEYS.flatMap(key =>
+      written?.[key] === undefined ? [] : [[key, written[key]]],
+    ),
+  )
+  if (!written || Object.keys(moved).length === 0) {
     return snap
   }
-  const { facet, ...rest } = written
   const displays = wiggleDisplays(snap)
   const wiggle = displays.find(d => d.type === 'LinearWiggleDisplay')
   return {
     ...snap,
-    displayDefaults: rest,
+    displayDefaults: Object.fromEntries(
+      Object.entries(written).filter(([key]) => !(key in moved)),
+    ),
     displays: wiggle
-      ? displays.map(d => (d === wiggle ? { ...d, facet } : d))
+      ? displays.map(d => (d === wiggle ? { ...moved, ...d } : d))
       : [
           ...displays,
           {
             type: 'LinearWiggleDisplay',
             displayId: `${snap.trackId}-LinearWiggleDisplay`,
-            facet,
+            ...moved,
           },
         ],
   }
@@ -85,9 +94,8 @@ export default function MultiQuantitativeTrackDefaultsF(
     if (!QUANTITATIVE_TRACK_TYPES.has(snap.type as string)) {
       return snap
     }
-    const checked = refuseFacetShorthand(snap)
-    return snap.type === 'MultiQuantitativeTrack'
-      ? seedDisplayDefaults(checked)
-      : checked
+    return wiggleEntryShorthand(
+      snap.type === 'MultiQuantitativeTrack' ? seedDisplayDefaults(snap) : snap,
+    )
   })
 }

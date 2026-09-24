@@ -226,10 +226,16 @@ binned over the window in the worker (`MarkClusterRows`). Beside a `facet`
 the facet draws: on the same field that is the whole picture, and on another
 it asks for bands of rows, which step 5 draws, so until then a notice says so.
 A pileup or `row` field under `rows` is reported, its packed rows sharing their
-value's row. A `MultiQuantitativeTrack` seeds `rows: 'source'` into its
-`displayDefaults`, which ADR-134 routes to every display taking the value, so a
-mark display over one draws a row per source unless it names a facet, and one
-spelled `facet: 'source'` draws as it did with nothing to report.
+value's row. An explicit `rows` on a mark display is one row per value, and
+the display honours no other: a quantitative track's preprocessor writes
+`displayDefaults.rows`, the `MultiQuantitativeTrack` seed `rows: 'source'`
+included, onto the quantitative display's entry alone, as it does
+`displayDefaults.facet`, so ADR-134 never routes either to the mark display.
+Over a multi-BigWig the mark display therefore draws as before, every source
+overlaid in one band or, under the Plot field default `facet: 'source'`, a
+chip section per source, and a `displayDefaults.rows` on another field fails
+the load with the quantitative display's reason. One row per source as the
+mark display's default is a visual call for Colin and has not landed.
 
 **Edit as JSON speaks `rows`.** `ChannelSpec` takes
 `rows: field | { field, domain }` beside `facet`, `color` and `filter`, and
@@ -298,9 +304,6 @@ one-shot trigger that clears itself.
   that lists its species; on one that discovers them from the blocks it applies
   as given, on the worker and in `sources` alike, since such a track lists no
   species before it reads, so a focus naming none the blocks hold draws no rows.
-- The mark display's Plot field default for a multi-source track writes
-  `rows: 'source'` where it wrote `facet: 'source'`, so it opens with row
-  labels where it had chips. A config spelling `facet: 'source'` keeps them.
 - A clustered tree lives in the track's config now, where it was display
   state. The session snapshot already carried display state into every
   autosave and share link, so the size is not new, only now in config. hclust

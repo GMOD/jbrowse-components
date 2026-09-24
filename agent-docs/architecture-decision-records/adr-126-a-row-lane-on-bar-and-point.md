@@ -54,17 +54,16 @@ rows; with one row it answers the plot box it always did. The facet chips
 label the bands as they label a pileup's.
 
 **`MultiQuantitativeTrack` joins the display's track types**, and a display
-opened on it with nothing declared plots bars of `score`, one row per
-`source`, where the features carry more than one source (`scanPlotFields`),
-which is the multi-row xyplot a user picking the display from the menu
-expects.
+opened on it with nothing declared plots bars of `score` faceted by `source`
+where the features carry more than one source (`scanPlotFields`), which is
+the multi-row xyplot a user picking the display from the menu expects.
 
 ## Consequences
 
-- `rows: 'source'` beside `{ mark: 'bar', encoding: { y: 'score' } }` over a
+- `{ shape: 'bar', facet: 'source', encoding: { y: 'score' } }` over a
   `MultiWiggleAdapter` is the multi-row xyplot; `point` gives the same rows as
-  a scatter. This record spelled it `facet: 'source'`, which still draws the
-  same bands under chips; ADR-157 gave one row per value its own object. `mark-display.ts` carries the scene, and no golden: the Mark
+  a scatter, and `rows: 'source'` the same rows labelled, with the tree
+  sidebar (ADR-157). `mark-display.ts` carries the scene, and no golden: the Mark
   Display suite has none in `snapshots.lock`, where the wiggle suite's
   `bigwig-multibigwig-multirowxy` has six, and CI runs `--gate-only`, so a
   golden is never read. What stands behind the scene is the cross-backend

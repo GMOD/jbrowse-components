@@ -399,9 +399,9 @@ share link reach it.
 value gets: a facet section is as deep as its packing and wears a chip, where a
 row is one row. Beside a facet the facet draws: on the same field that is the
 whole picture, and on another it asks for bands of rows, which are not drawn
-yet, so the track says so. A `MultiQuantitativeTrack` asks every display it has
-for `rows: "source"`, so a mark display over one draws a row per file unless it
-names a facet.
+yet, so the track says so. A mark display picked from the track menu over a
+multi-BigWig opens faceted by `source`; a row per file takes `rows` written on
+the display itself.
 
 ## Transforms
 

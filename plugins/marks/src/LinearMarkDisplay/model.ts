@@ -1250,14 +1250,6 @@ export function stateModelFactory(
       },
       /**
        * #action
-       * One row per value of `field`. The arrangement stays: a name keyed on
-       * another field matches nothing and comes back with the field.
-       */
-      setRowsField(field: string) {
-        setConf(self.conf, ['rows', 'field'], field)
-      },
-      /**
-       * #action
        * Order the rows by the value each stands at over (refName, pos),
        * highest first, off the loaded regions with no refetch; false where no
        * loaded region covers the column.
@@ -1369,9 +1361,8 @@ export function stateModelFactory(
       setPlotMarks(spec: PlotSpec) {
         const fields = self.plotFields ?? { numeric: [], categorical: [] }
         self.conf.setSubschemaArray('marks', plotMarks(spec, fields))
-        if (fields.rows) {
-          self.setFacetField('')
-          self.setRowsField(fields.rows)
+        if (fields.facet) {
+          self.setFacetField(fields.facet)
         }
       },
       /**
@@ -1612,9 +1603,8 @@ export function stateModelFactory(
             const marks = defaultPlotMarks(fields)
             if (marks) {
               self.conf.setSubschemaArray('marks', marks)
-              if (fields.rows) {
-                self.setFacetField('')
-                self.setRowsField(fields.rows)
+              if (fields.facet) {
+                self.setFacetField(fields.facet)
               }
             } else {
               self.openPlotFieldDialog()

@@ -194,8 +194,6 @@ test('a reset returns the order, labels, tree and focus to the config', async ()
   expect(drawn(display)).toEqual(drawn(loaded(seed)))
 })
 
-// A MultiQuantitativeTrack seeds `rows: 'source'` for every display taking
-// it, so a mark display there faceted by source carries both.
 test('rows beside a facet leave the facet drawing, and say so on another field', () => {
   const same = loaded({ facet: 'source', rows: 'source' })
   expect(drawn(same)).toEqual(drawn(loaded({ facet: 'source' })))
