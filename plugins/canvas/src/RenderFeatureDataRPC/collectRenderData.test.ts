@@ -1,4 +1,7 @@
-import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
+import {
+  MISCONFIGURED_COLOR,
+  NO_CATEGORY_COLOR,
+} from '@jbrowse/core/util/color'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
@@ -742,13 +745,15 @@ describe('collectRenderData collapsed-gene label + hit-box anchor', () => {
 
 describe('collectRenderData color-slot robustness', () => {
   // A throwing per-feature color jexl must not fail the whole track render.
-  it('degrades to magenta when a per-feature color jexl throws', () => {
+  it('degrades to the misconfiguration grey when a per-feature color jexl throws', () => {
     const feature = mockFeature({ type: 'gene', id: 'g1', start: 0, end: 50 })
     const cfg = mockDisplayConfig({
       color: `jexl:qvcolor(get(feature,'missing'))`,
     })
     const result = collect(boxLayout(feature), { config: cfg })
-    expect([...result.rectColors]).toEqual([cssColorToABGR('magenta')])
+    expect([...result.rectColors]).toEqual([
+      cssColorToABGR(MISCONFIGURED_COLOR),
+    ])
   })
 })
 

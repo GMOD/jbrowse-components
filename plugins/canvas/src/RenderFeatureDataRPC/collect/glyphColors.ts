@@ -1,6 +1,7 @@
 import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { getFrame } from '@jbrowse/core/util'
+import { MISCONFIGURED_COLOR } from '@jbrowse/core/util/color'
 import {
   cssColorToABGR as colorToUint32,
   featureBedColor,
@@ -72,9 +73,10 @@ export function isRetrotransposonBody(type: string) {
 // still read as flanking caps.
 export const REPEAT_BODY_HEIGHT_FRACTION = 0.65
 
-// A throwing per-feature color expression degrades one box to magenta rather
-// than failing the whole track render, and the bad slot stays visually obvious.
-const INVALID_COLOR = 'magenta'
+// A per-feature color expression that throws or answers nothing paints its
+// box the misconfiguration grey, as the mark encoder paints one, rather than
+// failing the whole track render.
+const INVALID_COLOR = MISCONFIGURED_COLOR
 
 // A BED's color rides on the top-level feature, but the gene glyph draws one
 // box per subfeature, which carry none — hence the walk up the parent chain.

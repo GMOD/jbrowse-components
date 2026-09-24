@@ -2,6 +2,7 @@ import { categoricalColor } from '@jbrowse/core/ui/colors'
 import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
+import { MISCONFIGURED_COLOR } from '@jbrowse/core/util/color'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { mockDisplayConfig } from '../testUtils.ts'
@@ -122,7 +123,7 @@ describe('boxColor (a per-transcript attribute read from the box)', () => {
   })
 
   // Member access on a nullish subject is undefined in the jexl fork, not a
-  // throw, so only an undefined RESULT falls back to magenta.
+  // throw, so only an undefined RESULT falls back to the misconfiguration grey.
   it('a rootless feature takes the default branch, not the invalid-color fallback', () => {
     const orphan = new SimpleFeature({
       uniqueId: 'o1',
@@ -134,7 +135,7 @@ describe('boxColor (a per-transcript attribute read from the box)', () => {
     expect(fill(orphan, config)).toBe('#b2b1ac')
     expect(
       fill(orphan, mockDisplayConfig({ color: 'jexl:feature.parent.dtu' })),
-    ).toBe('magenta')
+    ).toBe(MISCONFIGURED_COLOR)
   })
 })
 
