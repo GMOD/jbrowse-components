@@ -420,7 +420,8 @@ export function stateModelFactory(
         return {
           visible,
           densityMark: marks.findIndex(
-            (m, i) => visible[i] && m.source === 'density',
+            (m, i) =>
+              visible[i] && m.source === 'density' && readsValue(m.mark),
           ),
         }
       },

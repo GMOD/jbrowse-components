@@ -163,6 +163,10 @@ function rampColor(mark: MarkSnapshot) {
   return painted === 'linear' || painted === 'log' ? color : undefined
 }
 
+function drawsDensity(mark: MarkSnapshot) {
+  return mark.source === 'density' && readsValue(markTypeOf(mark))
+}
+
 function drawTogether(a: MarkSnapshot, b: MarkSnapshot) {
   const upper = (m: MarkSnapshot) => m.maxBpPerPx || Infinity
   const lower = (m: MarkSnapshot) => m.minBpPerPx ?? 0
@@ -559,7 +563,7 @@ export function markProblems(
           ),
         })
       }
-      if (i > j && mark.source === 'density' && other.source === 'density') {
+      if (i > j && drawsDensity(mark) && drawsDensity(other)) {
         problems.push({
           mark: i,
           ...found(
