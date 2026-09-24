@@ -32,8 +32,7 @@ const builtinInternetAccounts: InternetAccount[] = [
 /**
  * Turn a config as it arrived into one the root model can be created from: the
  * list fields an input need not carry are supplied, the built-in internet
- * accounts are added, and each list is deduped by its identity field. A
- * connection's id is an MST identifier, so a repeated one fails the root model.
+ * accounts are added, and each list is deduped by its identity field.
  */
 export function completeConfig(input: JBrowseConfigInput): JBrowseConfig {
   return {
