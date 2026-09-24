@@ -23,7 +23,7 @@ Finds features by the names a BigBed was built to look up, its
 `bedToBigBed -extraIndex` columns, which a UCSC hub declares with
 `searchIndex`. The hub's `searchTrix` index, when given, adds prefix and
 case-insensitive matching. A UCSC track hub connection configures one for
-every track that declares a `searchIndex`.
+its first gene track declaring a `searchIndex`, GenArk's `ncbiRefSeq`.
 
 ## Config slots
 

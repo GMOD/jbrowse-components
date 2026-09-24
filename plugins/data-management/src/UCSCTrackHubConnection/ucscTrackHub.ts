@@ -48,10 +48,11 @@ export function generateTracks({
   // a track's `html` description page, like its `bigDataUrl`, is relative to the
   // trackDb file, so both resolve against the same base
   const trackDbBaseUrl = hubBaseUrl(trackDbLoc)
-  return Object.entries(trackDb.data)
-    .filter(
-      ([, track]) => !Object.keys(track.data).some(k => parentTrackKeys.has(k)),
-    )
+  const leaves = Object.entries(trackDb.data).filter(
+    ([, track]) => !Object.keys(track.data).some(k => parentTrackKeys.has(k)),
+  )
+  const searchedTrack = searchedTrackName(trackDb, leaves)
+  return leaves
     .map(([trackName, track]) => ({
       metadata: {
         ...track.data,
@@ -76,6 +77,7 @@ export function generateTracks({
         track,
         trackDbLoc,
         resolvedType: trackDb.settings(trackName).type || '',
+        searched: trackName === searchedTrack,
       }),
     }))
     .map(r => {
@@ -101,6 +103,21 @@ function geneAggregateField(data: Record<string, string>) {
   const field = (data.defaultLabelFields ?? data.labelFields)?.split(',')[0]
   // `none` is UCSC's opt-out of labeling, not a column name
   return field === 'none' ? undefined : field
+}
+
+// A hub searches one track: its first gene track declaring `searchIndex`,
+// GenArk's ncbiRefSeq or, without one, xenoRefGene. Searching every such track
+// repeats each gene a few bases apart across RefSeq's subsets, reaches
+// paralogs through other species' mRNAs, and waits on the slowest; GenArk's
+// mouse hub has 11, and a two-letter prefix took 8.5s across them
+function searchedTrackName(trackDb: TrackDbFile, leaves: [string, RaStanza][]) {
+  return leaves.find(([trackName, track]) => {
+    const settings = trackDb.settings(trackName)
+    return (
+      !!track.data.searchIndex &&
+      (settings.type ?? '').split(' ')[0] === 'bigGenePred'
+    )
+  })?.[0]
 }
 
 // A track declaring `searchIndex` was built with those columns extra-indexed,
@@ -138,6 +155,7 @@ function trackTypeAndAdapter({
   location,
   indexLocation,
   hubLocation,
+  searched,
 }: {
   baseType: string
   data: Record<string, string>
@@ -145,6 +163,7 @@ function trackTypeAndAdapter({
   location: HubLocation
   indexLocation: (fallback: string) => HubLocation
   hubLocation: (path: string) => HubLocation
+  searched: boolean
 }) {
   if (baseType === 'bam') {
     return {
@@ -197,7 +216,7 @@ function trackTypeAndAdapter({
           ? { disableGeneHeuristic: true }
           : {}),
       },
-      ...(data.searchIndex
+      ...(searched
         ? {
             textSearching: {
               textSearchAdapter: bigBedSearch(data, location, hubLocation),
@@ -216,10 +235,12 @@ function makeTrackConfig({
   track,
   trackDbLoc,
   resolvedType,
+  searched,
 }: {
   track: RaStanza
   trackDbLoc: HubLocation
   resolvedType: string
+  searched: boolean
 }) {
   const { data } = track
   const bigDataUrl = data.bigDataUrl || ''
@@ -239,6 +260,7 @@ function makeTrackConfig({
     location: makeLoc(bigDataUrl, trackDbLoc),
     indexLocation: fallback => makeLoc(bigDataIdx, trackDbLoc, fallback),
     hubLocation: path => makeLoc(path, trackDbLoc),
+    searched,
   })
   return config
     ? { name, description: data.longLabel, ...config }

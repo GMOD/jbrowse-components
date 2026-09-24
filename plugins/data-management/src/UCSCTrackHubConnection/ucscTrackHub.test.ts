@@ -221,7 +221,7 @@ searchTrix ixIxx/refSeq.ix
 
 test('generateTracks searches a searchIndex without a searchTrix exactly', () => {
   const geneDb = new TrackDbFile(`track genes
-type bigBed 6
+type bigGenePred
 shortLabel Genes
 longLabel Genes
 bigDataUrl genes.bb
@@ -241,6 +241,50 @@ searchIndex name
     },
   })
   expect(track).not.toHaveProperty('textSearching.textSearchAdapter.ixFilePath')
+})
+
+// GenArk's GCF hubs declare searchIndex on the assembly's sequence names, a
+// handful of RefSeq subsets and variant tracks alike
+test('generateTracks searches only the first gene track declaring searchIndex', () => {
+  const hubDb = new TrackDbFile(`track assembly
+type bigBed 6
+shortLabel Assembly
+bigDataUrl bbi/assembly.bb
+searchIndex name
+
+track refSeqComposite
+compositeTrack on
+type bigGenePred
+shortLabel RefSeq
+
+track ncbiRefSeq
+parent refSeqComposite
+shortLabel RefSeq All
+bigDataUrl bbi/ncbiRefSeq.bb
+searchIndex name
+searchTrix ixIxx/ncbiRefSeq.ix
+
+track ncbiRefSeqCurated
+parent refSeqComposite
+shortLabel RefSeq Curated
+bigDataUrl bbi/ncbiRefSeqCurated.bb
+searchIndex name
+searchTrix ixIxx/ncbiRefSeqCurated.ix
+
+track evaSnp
+type bigBed 9 +
+shortLabel Variants
+bigDataUrl bbi/evaSnp.bb
+searchIndex name
+`)
+  const searched = generateTracks({
+    trackDb: hubDb,
+    trackDbLoc: uri('https://x.org/volvox/hub.txt'),
+    assemblyName: 'volvox',
+  })
+    .filter(t => 'textSearching' in t)
+    .map(t => t.name)
+  expect(searched).toEqual(['RefSeq All'])
 })
 
 test('generateTracks leaves a track without searchIndex unsearched', () => {

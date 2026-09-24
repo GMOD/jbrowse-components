@@ -10,7 +10,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * `bedToBigBed -extraIndex` columns, which a UCSC hub declares with
  * `searchIndex`. The hub's `searchTrix` index, when given, adds prefix and
  * case-insensitive matching. A UCSC track hub connection configures one for
- * every track that declares a `searchIndex`.
+ * its first gene track declaring a `searchIndex`, GenArk's `ncbiRefSeq`.
  *
  * #example
  * ```js
