@@ -8,10 +8,11 @@ import {
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { takeSnackbarAction } from '@jbrowse/display-test-utils'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { declaredLanesOf } from '@jbrowse/synteny-core'
 import { autorun, when } from 'mobx'
 
 import { LaneGene } from './geneGlyph.ts'
-import { declaredLanesOf, specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
+import { specsCoverMate, staleLaneSpecs } from './laneFetch.ts'
 import { laneResetLabel } from './laneSelection.ts'
 import { MIN_LANE_PITCH } from './laneStack.ts'
 import { lanesMenuItem } from './menus.ts'

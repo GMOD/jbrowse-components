@@ -213,6 +213,24 @@ describe('MultiPairwiseSyntenyAdapter', () => {
     ])
   })
 
+  it('declares a lane with the label and group its config gives it', async () => {
+    const adapter = new Adapter(
+      configSchema.create({
+        adapters: STAR,
+        lanes: [
+          { name: 'genomeC', label: 'Species C', group: 'Clade 1' },
+          { name: 'elsewhere', label: 'not a mate' },
+        ],
+      }),
+      makeAdapter(STAR).getSubAdapter,
+    )
+    expect((await adapter.getHeader()).lanes).toEqual([
+      { name: 'genomeB' },
+      { name: 'genomeC', label: 'Species C', group: 'Clade 1' },
+      { name: 'genomeD' },
+    ])
+  })
+
   it('reads only the children for the lanes asked for', async () => {
     const opened: string[] = []
     const adapter = new Adapter(

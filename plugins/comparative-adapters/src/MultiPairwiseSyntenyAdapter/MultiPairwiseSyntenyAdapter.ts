@@ -4,7 +4,11 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { createStatusFanOut } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { adapterAssemblyNames, readLodTierInfo } from '@jbrowse/synteny-core'
+import {
+  adapterAssemblyNames,
+  declaredLanes,
+  readLodTierInfo,
+} from '@jbrowse/synteny-core'
 import { forkJoin } from 'rxjs'
 import { map, mergeMap, toArray } from 'rxjs/operators'
 
@@ -16,7 +20,11 @@ import type { MultiPairwiseSyntenyAdapterConfig } from './configSchema.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
-import type { ComparativeOptions, LodTierInfo } from '@jbrowse/synteny-core'
+import type {
+  ComparativeOptions,
+  DeclaredLane,
+  LodTierInfo,
+} from '@jbrowse/synteny-core'
 
 export interface StarChild<T = BaseFeatureDataAdapter> {
   index: number
@@ -39,7 +47,7 @@ export interface Star<T = BaseFeatureDataAdapter> {
 export interface MultiPairwiseSyntenyInfo extends LodTierInfo {
   anchorAssemblyName: string
   assemblyNames: string[]
-  lanes: { name: string }[]
+  lanes: DeclaredLane[]
 }
 
 /**
@@ -223,12 +231,17 @@ export default class MultiPairwiseSyntenyAdapter extends ComparativeAdapterBase<
       tier?.coarseGap === undefined ? [] : [tier.coarseGap],
     )
     const assemblyNames = starAssemblyNames(star)
+    const described = new Map(
+      declaredLanes(this.getConf('lanes')).map(lane => [lane.name, lane]),
+    )
     const info: MultiPairwiseSyntenyInfo = {
       hasCoarseTier: tiers.every(tier => tier?.hasCoarseTier === true),
       coarseGap: gaps.length === 0 ? undefined : Math.max(...gaps),
       anchorAssemblyName: star.anchor,
       assemblyNames,
-      lanes: assemblyNames.slice(1).map(name => ({ name })),
+      lanes: assemblyNames
+        .slice(1)
+        .map(name => described.get(name) ?? { name }),
     }
     return info
   }

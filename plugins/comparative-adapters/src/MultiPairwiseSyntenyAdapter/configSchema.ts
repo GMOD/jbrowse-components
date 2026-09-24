@@ -72,6 +72,19 @@ const MultiPairwiseSyntenyAdapter = ConfigurationSchema(
       defaultValue: 10000,
       advanced: true,
     },
+    /**
+     * #slot
+     * what the lane picker calls each mate and the heading it sits under,
+     * `[{ name, label, group }]` by assembly name; a mate not listed is
+     * offered under its name. A genome the session holds is named the way the
+     * session names it
+     */
+    lanes: {
+      type: 'frozen',
+      defaultValue: [],
+      description:
+        'per mate assembly, the label and group the multiway lane picker offers it under',
+    },
   },
   { explicitlyTyped: true },
 )

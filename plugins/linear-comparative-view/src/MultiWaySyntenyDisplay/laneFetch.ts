@@ -71,50 +71,6 @@ export function starAnchorOf(header: unknown) {
     : undefined
 }
 
-export interface DeclaredLane {
-  name: string
-  label?: string
-  group?: string
-}
-
-function optionalString(value: unknown) {
-  return typeof value === 'string' ? value : undefined
-}
-
-/**
- * The lanes an adapter declares in its `CoreGetInfo` header (`lanes`, each
- * with the assembly name its features' mates carry, and optionally the
- * source's own label and a grouping key); an empty list for a header that
- * declares none. A source that knows its lane universe up front, the way a
- * pangenome graph names every haplotype it holds, lets the picker offer the
- * whole of it before a fetch has placed any lane.
- */
-export function declaredLanesOf(header: unknown): DeclaredLane[] {
-  const lanes =
-    typeof header === 'object' &&
-    header !== null &&
-    'lanes' in header &&
-    Array.isArray(header.lanes)
-      ? (header.lanes as unknown[])
-      : []
-  const out: DeclaredLane[] = []
-  for (const lane of lanes) {
-    if (
-      typeof lane === 'object' &&
-      lane !== null &&
-      'name' in lane &&
-      typeof lane.name === 'string'
-    ) {
-      out.push({
-        name: lane.name,
-        label: 'label' in lane ? optionalString(lane.label) : undefined,
-        group: 'group' in lane ? optionalString(lane.group) : undefined,
-      })
-    }
-  }
-  return out
-}
-
 /** the specs whose lane holds nothing fetched under their key */
 export function staleLaneSpecs<Spec extends LaneFetchSpec>(
   specs: Spec[],

@@ -128,7 +128,6 @@ import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
 import type { GeneColorSettings, GeneColors } from './geneColor.ts'
 import type { AnchorCoord, LaneDecision, LaneFlipPin } from './laneDecision.ts'
 import type {
-  DeclaredLane,
   HeldLaneGenes,
   HeldLaneLinks,
   LaneGenesFetchSpec,
@@ -162,6 +161,7 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   AttributeRange,
+  DeclaredLane,
   LodMode,
   SyntenyColorSnapshot,
 } from '@jbrowse/synteny-core'
@@ -1059,15 +1059,29 @@ export function stateModelFactory(
         return getSession(self).assemblyManager.has(assemblyName)
       },
       /**
+       * #getter
+       * the labels the source's header gives its lanes, by lane key
+       */
+      get declaredLaneLabels() {
+        const out = new Map<string, string>()
+        for (const { name, label } of self.declaredLanes ?? []) {
+          if (label !== undefined) {
+            out.set(self.laneKey(name), label)
+          }
+        }
+        return out
+      },
+      /**
        * #method
-       * what a lane is called on screen: the display name the session gives
-       * its genome, the way the assembly selector names it, else the name the
-       * placements carry
+       * what a lane is called on screen: the display name the session gives a
+       * genome it holds, the way the assembly selector names it, else the
+       * label the source declares, else the name the placements carry
        */
       laneLabel(assemblyName: string) {
         return (
-          (this.holdsAssembly(assemblyName) &&
-            getSession(self).assemblyManager.get(assemblyName)?.displayName) ||
+          (this.holdsAssembly(assemblyName)
+            ? getSession(self).assemblyManager.get(assemblyName)?.displayName
+            : this.declaredLaneLabels.get(self.laneKey(assemblyName))) ||
           assemblyName
         )
       },

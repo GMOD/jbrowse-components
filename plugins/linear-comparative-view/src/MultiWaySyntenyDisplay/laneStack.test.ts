@@ -275,11 +275,13 @@ describe('the baseline', () => {
       ).toBe('Volvox (random)')
     })
 
-    test('a genome the session does not hold keeps its assembly name', async () => {
+    test('a genome the session does not hold takes the label its source declares', async () => {
       const { display } = await framedDisplay('hg002', {
         assemblyOf: () => testAssembly({ displayName: 'someone else' }),
       })
       expect(display.laneStack.lanes[1]!.label).toBe('hg002')
+      display.setDeclaredLanes([{ name: 'hg002', label: 'HG002 (son)' }])
+      expect(display.laneStack.lanes[1]!.label).toBe('HG002 (son)')
     })
 
     test('a held genome draws its lane to the contig end', async () => {

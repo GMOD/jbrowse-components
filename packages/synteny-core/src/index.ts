@@ -20,6 +20,8 @@ export {
   syntenyTypes,
 } from './syntenyTypes.ts'
 export { clampBlockToRegions } from './clampBlockToRegions.ts'
+export { declaredLanes, declaredLanesOf } from './declaredLanes.ts'
+export type { DeclaredLane } from './declaredLanes.ts'
 export {
   clipLargeBlockToWindow,
   clipSyntenyFeature,
