@@ -9,8 +9,8 @@ import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
 import { MIN_RECT_WIDTH_PX } from './sharedRendererConstants.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { FeatureRenderBlock } from './canvasFeatureRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 const EMPTY = {
   rectPositions: new Uint32Array(),
@@ -57,7 +57,7 @@ function drawnRect(startBp: number, endBp: number, reversed = false) {
   } as unknown as Ctx2D
 
   // 800px showing bp 0..800, so bp N lands on x=N forward.
-  const block: FeatureRenderBlock = {
+  const block: RenderBlock = {
     displayedRegionIndex: 0,
     start: 0,
     end: 800,

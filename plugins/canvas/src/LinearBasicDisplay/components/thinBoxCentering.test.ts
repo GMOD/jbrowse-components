@@ -7,8 +7,8 @@ import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { FeatureRenderBlock } from './canvasFeatureRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 const EMPTY = {
   rectPositions: new Uint32Array(),
@@ -58,7 +58,7 @@ function drawTranscript(heightPx: number, topY: number) {
     lineWidth: 1,
   } as unknown as Ctx2D
 
-  const block: FeatureRenderBlock = {
+  const block: RenderBlock = {
     displayedRegionIndex: 0,
     start: 0,
     end: 800,

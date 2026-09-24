@@ -89,7 +89,6 @@ const config: DisplayConfig = {
 
 const track = buildFeatureRenderData({
   features: [gene],
-  featureCount: 1,
   config,
   jexl: createJexlInstance(),
   regionStart: 0,

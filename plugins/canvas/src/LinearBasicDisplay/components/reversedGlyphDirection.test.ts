@@ -7,8 +7,8 @@ import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { FeatureRenderBlock } from './canvasFeatureRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 interface Pt {
   x: number
@@ -73,7 +73,7 @@ const EMPTY: RegionRenderData = {
 // opposite way on screen.
 function draw(region: RegionRenderData, reversed: boolean) {
   const { ctx, triangles } = recordingCtx()
-  const block: FeatureRenderBlock = {
+  const block: RenderBlock = {
     displayedRegionIndex: 0,
     start: 50,
     end: 150,

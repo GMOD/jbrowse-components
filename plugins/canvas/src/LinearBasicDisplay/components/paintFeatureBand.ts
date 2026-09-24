@@ -7,10 +7,10 @@ import { paintLabels } from './paintLabels.ts'
 import { resolveMapColors } from './resolveRegionColors.ts'
 
 import type { FeatureDataResult } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { FeatureRenderBlock } from './canvasFeatureRenderingBackendTypes.ts'
 import type { RegionWithData } from './labelPositioning.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export interface FeatureBandPaint {
   canvasWidth: number
@@ -27,7 +27,7 @@ export interface FeatureBandPaint {
 export function paintFeatureBand(
   ctx: Ctx2D,
   dataMap: ReadonlyMap<number, FeatureDataResult>,
-  blocks: FeatureRenderBlock[],
+  blocks: RenderBlock[],
   regions: RegionWithData[],
   {
     canvasWidth,

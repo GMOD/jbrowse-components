@@ -53,7 +53,7 @@ export type {
 // Types in the inferred shape of the exported display models: unreachable from
 // this entry, tsc names them by source path in consumers' .d.ts.
 export type { GeneGlyphNotice } from './LinearBasicDisplay/baseModel.ts'
-export type { RegionDensityStats } from './shared/regionDensity.ts'
+export type { RegionDensityStats } from './shared/CanvasFeatureGateMixin.ts'
 export type { CanvasFeatureRenderingBackend } from './LinearBasicDisplay/components/canvasFeatureRenderingBackendTypes.ts'
 export type {
   FeatureItemEntry,
@@ -105,7 +105,6 @@ export {
   UTR_HEIGHT_FRACTION,
   centerShrink,
 } from './RenderFeatureDataRPC/collect/emitPrimitives.ts'
-export { STEM_LENGTH_PX as STRAND_ARROW_LENGTH_PX } from './LinearBasicDisplay/passes/shaders/arrow.consts.generated.ts'
 export {
   featureType,
   getSubfeatures,

@@ -7,8 +7,8 @@ import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
 import { ARROW_MIN_FEATURE_WIDTH_PX } from './sharedRendererConstants.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { FeatureRenderBlock } from './canvasFeatureRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 const EMPTY = {
   rectPositions: new Uint32Array(),
@@ -64,7 +64,7 @@ function countArrowheads(region: RegionRenderData, reversed: boolean) {
   } as unknown as Ctx2D
 
   // 100px showing bp 50..150, so a feature's bp length is its px width.
-  const block: FeatureRenderBlock = {
+  const block: RenderBlock = {
     displayedRegionIndex: 0,
     start: 50,
     end: 150,

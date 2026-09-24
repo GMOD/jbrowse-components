@@ -86,7 +86,6 @@ export function buildLaneRenderData({
   return {
     ...buildFeatureRenderData({
       features,
-      featureCount: features.length,
       config,
       jexl,
       regionStart: region.start,

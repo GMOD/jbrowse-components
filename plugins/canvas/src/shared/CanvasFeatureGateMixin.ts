@@ -5,13 +5,19 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 
-import { overDensityBudget } from '../RenderFeatureDataRPC/densityGate.ts'
-import { screenDensity } from './regionDensity.ts'
+import {
+  featuresPerPx,
+  overDensityBudget,
+} from '../RenderFeatureDataRPC/densityGate.ts'
 
 import type { LinearCanvasBaseDisplayConfigModel } from '../LinearBasicDisplay/baseConfigSchema.ts'
-import type { RegionDensityStats } from './regionDensity.ts'
 import type { GateFetchState } from '@jbrowse/display-kit/regionTooLargeUtils'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+export interface RegionDensityStats {
+  featureCount: number
+  regionWidthBp: number
+}
 
 export interface GateHost {
   configuration: Instance<LinearCanvasBaseDisplayConfigModel>
@@ -67,7 +73,9 @@ export default function CanvasFeatureGateMixin() {
           0,
           ...containingLgv(self).visibleRegions.map(r => {
             const ds = self.densityStatsPerRegion.get(r.displayedRegionIndex)
-            return ds ? screenDensity(ds, bpPerPx) : 0
+            return ds
+              ? featuresPerPx(ds.featureCount, ds.regionWidthBp, bpPerPx)
+              : 0
           }),
         )
       },

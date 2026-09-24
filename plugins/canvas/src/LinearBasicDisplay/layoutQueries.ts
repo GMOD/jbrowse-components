@@ -1,3 +1,4 @@
+import { layoutRegionKey } from './layoutInputs.ts'
 import { isPlacedRow } from './rowPlacement.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -112,7 +113,7 @@ export function featureIdsTouchingBlocks(
 ): ReadonlySet<string> {
   const rangesByKey = new Map<string, [number, number][]>()
   for (const block of blocks) {
-    const key = `${block.assemblyName}:${block.refName}`
+    const key = layoutRegionKey(block)
     let ranges = rangesByKey.get(key)
     if (!ranges) {
       ranges = []

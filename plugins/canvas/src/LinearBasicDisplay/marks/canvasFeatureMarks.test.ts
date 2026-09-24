@@ -4,10 +4,8 @@ import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { CANVAS_FEATURE_MARKS } from './canvasFeatureMarks.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type {
-  FeatureRenderBlock,
-  RenderState,
-} from '../components/canvasFeatureRenderingBackendTypes.ts'
+import type { RenderState } from '../components/canvasFeatureRenderingBackendTypes.ts'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // The parity and snapshot tests exercise the Canvas2D path, so an extra upload or
 // a pass pointed at the wrong buffer shows up nowhere but as garbage glyphs on a
@@ -53,7 +51,7 @@ const STATE: RenderState = {
 
 // Fills the canvas, so both edges are canvas edges and the continuation pass
 // draws; a block inset from them is the interior case asserted below.
-function block(over: Partial<FeatureRenderBlock> = {}): FeatureRenderBlock {
+function block(over: Partial<RenderBlock> = {}): RenderBlock {
   return {
     displayedRegionIndex: REGION,
     start: 0,

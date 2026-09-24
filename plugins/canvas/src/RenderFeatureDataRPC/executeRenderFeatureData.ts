@@ -159,7 +159,6 @@ export async function executeRenderFeatureData({
     report =>
       buildFeatureRenderData({
         features: features.values(),
-        featureCount: features.size,
         config,
         jexl: pluginManager.jexl,
         regionStart: region.start,

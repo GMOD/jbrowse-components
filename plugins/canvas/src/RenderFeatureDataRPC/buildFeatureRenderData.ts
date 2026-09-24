@@ -19,7 +19,6 @@ import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
  */
 export function buildFeatureRenderData({
   features,
-  featureCount,
   config,
   jexl,
   regionStart,
@@ -30,8 +29,6 @@ export function buildFeatureRenderData({
   report,
 }: {
   features: Iterable<Feature>
-  // Stated rather than counted off `features`, which is only an iterable.
-  featureCount: number
   config: DisplayConfig
   jexl: JexlInstance
   regionStart: number
@@ -67,7 +64,7 @@ export function buildFeatureRenderData({
   })
   return {
     ...packed,
-    featureCount,
+    featureCount: layouts.length,
     hasMultiIsoformGenes: layouts.some(layout => layout.hasMultipleIsoforms),
     isoformPicks: summarizeIsoformPicks(layouts),
   }
