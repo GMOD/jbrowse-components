@@ -228,3 +228,14 @@ test.each([
 function round(n: number) {
   return Math.round(n * 10) / 10
 }
+
+// 'reference' is the horizontal axis, the one diagonalize orders the vertical
+// against. It used to reach the colour function unresolved, which hashed the
+// names where 'query' placed them by the assembly's own order.
+test('a reference colour paints the horizontal axis, as query does', async () => {
+  const { view, a } = await setup()
+  view.setColorBy('query')
+  const query = [...a.computedColors!]
+  view.setColorBy('reference')
+  expect([...a.computedColors!]).toEqual(query)
+}, 20000)

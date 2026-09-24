@@ -232,9 +232,8 @@ export interface ColorFunctionInputs {
  * `defaultColor` is the one thing the two views legitimately disagree on: a
  * synteny ribbon's unpainted state is the red match block, a dotplot point's is
  * plain black (`colorSchemes.default.pointColor`, its conventional line color).
- * Everything above it is shared, including 'reference' — a stacked-view field
- * that each synteny level resolves to query/target before it gets here, and
- * that a two-genome dotplot has no anchor for, so both fall back to query.
+ * Everything above it is shared. 'reference' never arrives: each display
+ * resolves it to query or target first (its `paintedField`).
  */
 export function createComparativeColorFunction({
   field,
@@ -280,7 +279,6 @@ export function createComparativeColorFunction({
     case 'strand':
       return index => (data.strands[index] === -1 ? STRAND_NEG : STRAND_POS)
     case 'query':
-    case 'reference':
       return makeNameColorFunction(
         data.refNameDict,
         data.refNameIds,

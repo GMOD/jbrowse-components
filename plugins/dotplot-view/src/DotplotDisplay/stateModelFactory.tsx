@@ -169,7 +169,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
           ? computeDotplotColors({
               instanceData,
               rpcData,
-              field: this.colorByField,
+              field: this.paintedField,
               trackColor: this.trackColor,
               valueColor: this.view.colorByValue,
               namePosition: this.paintedRefNamePosition,
@@ -192,12 +192,10 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * The dotplot twin of `LinearSyntenyDisplay.paintedRefNamePosition`, off
        * the two axes instead of two stacked levels: 'query' is the horizontal
        * axis (the feature's own refName lane) and 'target' the vertical (the
-       * mate's). 'reference' is a stacked-view mode with no dotplot meaning, and
-       * the shared color function falls it back to query — with no position, since
-       * naming an axis for it would be inventing an answer.
+       * mate's).
        */
       get paintedRefNamePosition(): RefNamePosition | undefined {
-        const field = this.colorByField
+        const field = this.paintedField
         if (field !== 'query' && field !== 'target') {
           return undefined
         }
@@ -209,10 +207,14 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
       },
       /**
        * #getter
-       * The field the plot paints by.
+       * The view's `colorByField` as this plot paints it. 'reference' is the
+       * horizontal axis, the one diagonalize orders the vertical against, so it
+       * paints as 'query' — the dotplot twin of `LinearSyntenyDisplay.paintedField`,
+       * which resolves it per level.
        */
-      get colorByField(): string {
-        return this.view.colorByField
+      get paintedField(): string {
+        const field = this.view.colorByField
+        return field === 'reference' ? 'query' : field
       },
       /**
        * #getter

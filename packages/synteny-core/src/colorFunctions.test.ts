@@ -207,24 +207,6 @@ describe('createComparativeColorFunction', () => {
       at({ goc: { min: 0, max: 50 } }),
     )
   })
-
-  // 'reference' is a stacked-view mode each synteny level resolves before it
-  // gets here, and a two-genome dotplot has no anchor for it at all.
-  test('reference falls back to query on both sides', () => {
-    const data = inputs({
-      refNameDict: ['chrA'],
-      mateRefNameDict: ['chrB'],
-    })
-    const args = {
-      data,
-      trackColor: '#123456',
-      defaultColor: 0,
-      attributeRanges: {},
-    }
-    expect(
-      createComparativeColorFunction({ ...args, field: 'reference' })(0),
-    ).toBe(createComparativeColorFunction({ ...args, field: 'query' })(0))
-  })
 })
 
 // A text column paints one color per label: the file's own where the row put
