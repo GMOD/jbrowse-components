@@ -10,20 +10,15 @@ the methylation cytosine-context views (CpG / CHG / CHH / all).
 - `config.json` — opens zoomed into `NC_003070.9:2,000-5,000` in the CHH
   context.
 
-## Bisulfite / EM-seq demo (hosted)
+## Bisulfite WGBS demo (hosted)
 
-`config_emseq_bisulfite.json` loads a real _Arabidopsis_ EM-seq track for the
-`bisulfite` color mode (read-vs-reference C→T, no MM/ML tags). The data is
-hosted rather than committed (the BAM is region-rich at ~20×):
-
-- `https://jbrowse.org/demos/arabidopsis/arabidopsis_emseq.bam` (+ `.bai`) —
-  ~22k EM-seq reads over `NC_003070.9:1-150000`, ~20× even coverage,
-  coordinate-sorted. Real chr1 coordinates (full-length reference).
-- `https://jbrowse.org/demos/arabidopsis/arabidopsis_chr1.fa` (+ `.fai`).
-
-Opens at `NC_003070.9:50,000-53,000` in the CHH context; switch CpG/CHG/CHH from
-the track menu. Source file:
-`Analysis/emseq_bam/plants/Arabidopsis/Arabidopsis.deduplicated.bam`.
+`config_emseq_bisulfite.json` is the config behind the
+[bisulfite tutorial](../../website/docs/tutorials/bisulfite.md). Its TAIR10
+assembly and NCBI RefSeq gene track are the genomes.jbrowse.org hub's for
+`GCF_000001735.4`, verbatim, with `arabidopsis` as an assembly alias. The WGBS
+CRAM and MethylDackel bigWigs come from the pipeline in
+`scripts/build_arabidopsis_wgbs.sh` and live under
+`jbrowse.org/demos/bisulfite/`; the RepeatMasker lane is UCSC's bigBed.
 
 ## Source / attribution
 

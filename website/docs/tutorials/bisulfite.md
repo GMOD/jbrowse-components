@@ -20,7 +20,6 @@ CHH each selectable. The route needs no MM/ML tags and no methylation caller.
   (with cutadapt)
 - [bwameth](https://github.com/brentp/bwa-meth)
 - [samtools](http://www.htslib.org/)
-- htslib (`bgzip`, `tabix`)
 - `node`, for the [JBrowse CLI](/docs/cli)
 - [MethylDackel](https://github.com/dpryan79/MethylDackel), for the
   [conversion-rate check](#check-the-conversion-rate) and the optional aggregate
@@ -32,9 +31,12 @@ CHH each selectable. The route needs no MM/ML tags and no methylation caller.
 TAIR10 (RefSeq `GCF_000001735.4`) and one wild-type Col-0 WGBS run from the
 European Nucleotide Archive, `DRR029742` (paired-end 150 bp).
 
-- the TAIR10 reference and its gene models, fetched by accession with the
+- the TAIR10 reference the reads align to, fetched by accession with the
   `datasets` CLI:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/735/GCF_000001735.4_TAIR10.1/
+- TAIR10's genome hub config on genomes.jbrowse.org, whose assembly entry and
+  NCBI RefSeq gene track the view takes verbatim:
+  https://jbrowse.org/hubs/genark/GCF/000/001/735/GCF_000001735.4/config.json
 - the WGBS run's paired-end reads:
   https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR029/DRR029742/
 
@@ -132,7 +134,7 @@ mechanism of the
   "type": "MultiQuantitativeTrack",
   "trackId": "arabidopsis_wgbs_methyldackel",
   "name": "Aggregate methylation (MethylDackel)",
-  "assemblyNames": ["tair10"],
+  "assemblyNames": ["GCF_000001735.4"],
   "adapter": {
     "type": "MultiWiggleAdapter",
     "subadapters": [
@@ -161,25 +163,55 @@ mechanism of the
 
 ## Load the tracks
 
-The figures use the TAIR10 assembly, its gene models, and the
-`arabidopsis_wgbs.bam` produced above. The CLI indexes and bgzips the reference
-itself:
-
-<!-- from: scripts/build_arabidopsis_wgbs.sh -->
+TAIR10 is a genome hub on [genomes.jbrowse.org](https://genomes.jbrowse.org),
+and a hub's `config.json` holds a whole JBrowse assembly: the 2bit sequence, an
+alias table, and the NCBI RefSeq genes. The view loads its assembly and gene
+track from there, so JBrowse reads only the BAM and the optional bigWigs from
+the pipeline:
 
 ```bash
-jbrowse add-assembly tair10.fa --name tair10 --load copy
+# a GenArk hub's path is its accession cut into threes
+curl -fO https://jbrowse.org/hubs/genark/GCF/000/001/735/GCF_000001735.4/config.json
 ```
 
-The gene models come with the reference
-(`datasets download genome accession GCF_000001735.4 --include gff3`):
+The [reproduce script](#reproduce-it-end-to-end) keeps the hub's assembly entry
+as written, adding `tair10` as an alias so a session can still name it that way:
+
+```json
+{
+  "name": "GCF_000001735.4",
+  "aliases": ["tair10"],
+  "sequence": {
+    "type": "ReferenceSequenceTrack",
+    "trackId": "GCF_000001735.4-ReferenceSequenceTrack",
+    "adapter": {
+      "type": "TwoBitAdapter",
+      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/GCF_000001735.4.2bit",
+      "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/GCF_000001735.4.chrom.sizes.txt"
+    }
+  },
+  "refNameAliases": {
+    "adapter": {
+      "type": "RefNameAliasAdapter",
+      "refNameColumnHeaderName": "ucsc",
+      "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/GCF_000001735.4.chromAlias.txt"
+    }
+  }
+}
+```
+
+The 2bit is the same TAIR10.1 sequence the reads were aligned to, and JBrowse
+reads each cytosine's context off it. The alias table maps `NC_003070.9`, `1`,
+`Chr1` and `chr1` to one chromosome, so the BAM keeps the RefSeq names bwameth
+wrote, and `refNameColumnHeaderName` makes `chr1` the name the view shows.
+
+The BAM goes in beside the hub assembly:
 
 <!-- from: scripts/build_arabidopsis_wgbs.sh -->
 
 ```bash
-jbrowse sort-gff genomic.gff | bgzip > tair10.gff.gz
-tabix -p gff tair10.gff.gz
-jbrowse add-track tair10.gff.gz --name "TAIR10 genes" --load copy
+jbrowse add-track arabidopsis_wgbs.bam --assemblyNames GCF_000001735.4 \
+  --name "Arabidopsis WGBS (bwameth)" --load copy
 ```
 
 The alignments track's `displayDefaults` decides which context it opens on, and
@@ -190,7 +222,7 @@ the track menu switches it afterwards:
   "type": "AlignmentsTrack",
   "trackId": "arabidopsis_wgbs",
   "name": "Arabidopsis WGBS (bwameth)",
-  "assemblyNames": ["tair10"],
+  "assemblyNames": ["GCF_000001735.4"],
   "adapter": {
     "type": "BamAdapter",
     "uri": "arabidopsis_wgbs.bam"
@@ -203,12 +235,10 @@ the track menu switches it afterwards:
 ```
 
 [`cytosineContext`](/docs/config/linearalignmentsdisplay/#slot-modifications)
-takes `CG`, `CHG`, `CHH` or `all`. See the
-[assemblies configuration guide](/docs/config_guides/assemblies) for the
-equivalent assembly JSON.
+takes `CG`, `CHG`, `CHH` or `all`.
 
-[JBrowse Desktop](/docs/quickstart_desktop) opens `tair10.fa`, the BAM and the
-bigWigs straight from local disk.
+[JBrowse Desktop](/docs/quickstart_desktop) opens the BAM and the bigWigs
+straight from local disk.
 
 ## Color the reads
 
@@ -232,20 +262,20 @@ distinguish them:
 Red in the CpG row alone is gene body methylation, and red in all three rows is
 silencing.
 
-Type `NC_003070.9:4,398,000-4,412,000` into the location box for a window on
-chromosome 1 carrying one of each: the expressed gene AT1G12930 on the left, and
-a transposon on the right. The [reproduce script](#reproduce-it-end-to-end)
-prints the fraction per context for both regions.
+Type `chr1:4,398,000-4,412,000` into the location box for a window carrying one
+of each: the expressed gene AT1G12930 on the left, and a transposon on the
+right. The [reproduce script](#reproduce-it-end-to-end) prints the fraction per
+context for both regions.
 
 The RepeatMasker lane names the element: `META1_LTR#LTR/Copia`, an LTR
 retrotransposon, `AT1TE14315` in TAIR10's own transposable-element annotation.
-The gene track annotates a pseudogene, `AT1G12935`, over the same interval. The
-lane comes from UCSC's GenArk hub for TAIR10, whose sequence names are the
-RefSeq accessions this assembly uses, so it loads with no aliasing.
+The RefSeq gene track has no transcript over it. The lane is the RepeatMasker
+bigBed from UCSC's GenArk hub for the first TAIR10 release, and the hub
+assembly's alias table resolves its `NC_003070.9`.
 
-<Figure caption="TAIR10 genes, the RepeatMasker lane, the aggregate MethylDackel track, and three copies of the same WGBS pileup colored by CpG, CHG and CHH. AT1G12930 is red in CpG only; the LTR/Copia element on the right is red in all three." src="/img/methylation/arabidopsis_wgbs_contexts.png" />
+<Figure caption="RefSeq genes, the RepeatMasker lane, the aggregate MethylDackel track, and three copies of the same WGBS pileup colored by CpG, CHG and CHH. AT1G12930 is red in CpG only; the LTR/Copia element on the right is red in all three." src="/img/methylation/arabidopsis_wgbs_contexts.png" />
 
-<Video src="/media/epigenomics/bisulfite_contexts.mp4" caption="One WGBS pileup recolored CpG, then CHG, then CHH from the track menu, under the TAIR10 genes, the RepeatMasker lane and the aggregate MethylDackel rows: the LTR element stays red in all three contexts, and the gene body is red only in CpG." />
+<Video src="/media/epigenomics/bisulfite_contexts.mp4" caption="One WGBS pileup recolored CpG, then CHG, then CHH from the track menu, under the RefSeq genes, the RepeatMasker lane and the aggregate MethylDackel rows: the LTR element stays red in all three contexts, and the gene body is red only in CpG." />
 
 ## Reproduce it end to end
 
@@ -260,12 +290,12 @@ npx --yes serve arabidopsis_wgbs_build/jbrowse2 # then open the printed URL
 
 The script downloads the TAIR10 reference and the DRR029742 WGBS run, trims and
 aligns them with bwameth, downloads JBrowse, and writes a `config.json` with the
-assembly, the gene models, and the pileup pre-colored Bisulfite / CpG, opening
-on the window above. With MethylDackel on `PATH` it also prints the conversion
-rate and the per-context fractions; the aggregate bigWig track is left out
-either way.
+hub's TAIR10 assembly and RefSeq genes and the pileup pre-colored Bisulfite /
+CpG, opening on the window above. With MethylDackel on `PATH` it also prints the
+conversion rate and the per-context fractions; the aggregate bigWig track is
+left out either way.
 
-On Debian/Ubuntu, `apt install wget samtools tabix` covers several
+On Debian/Ubuntu, `apt install wget curl samtools` covers several
 [prerequisites](#prerequisites). bwameth, Trim Galore and the NCBI `datasets`
 CLI install from their own instructions, and `node` from
 [nodejs.org](https://nodejs.org/). The alignment step downloads a full WGBS run,

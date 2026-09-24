@@ -3,19 +3,20 @@
 # Reproducibly build the Arabidopsis WGBS bisulfite view shown in
 # website/docs/tutorials/bisulfite.md, then wire up a runnable JBrowse.
 #
-# It downloads the TAIR10 reference + gene annotation (NCBI datasets) and one
-# wild-type Col-0 WGBS run (DRR029742, from ENA), trims adapters, bisulfite-
-# aligns with bwameth, downloads JBrowse, and writes a config.json with the
-# tair10 assembly, the gene track, and the per-read WGBS pileup pre-colored
-# Bisulfite / CpG, opening on the AT1G12930 / AT1G12935 window from the tutorial.
+# It downloads the TAIR10 reference (NCBI datasets) and one wild-type Col-0
+# WGBS run (DRR029742, from ENA), trims adapters, bisulfite-aligns with bwameth,
+# downloads JBrowse, and writes a config.json whose assembly and gene track are
+# TAIR10's genome hub on genomes.jbrowse.org, taken verbatim, beside the per-read
+# WGBS pileup pre-colored Bisulfite / CpG, opening on the AT1G12930 window from
+# the tutorial.
 #
 # Everything is pinned (fixed RefSeq accession, fixed SRA run), so re-running
 # reproduces the same view. The alignment step downloads a full WGBS run and can
 # take hours; it's the same pipeline the tutorial documents step by step.
 #
-# Requires: the NCBI `datasets` CLI, wget, Trim Galore, bwameth, samtools,
-#           bgzip/tabix (htslib), and node (JBrowse CLI, fetched via npx unless
-#           `jbrowse` is on PATH).
+# Requires: the NCBI `datasets` CLI, wget, curl, Trim Galore, bwameth, samtools,
+#           python3, and node (JBrowse CLI, fetched via npx unless `jbrowse` is
+#           on PATH).
 # Usage:    bash scripts/build_arabidopsis_wgbs.sh [outdir]
 #
 set -euo pipefail
@@ -28,12 +29,11 @@ cd "$OUTDIR"
 FQ=https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR029/DRR029742/DRR029742
 PLASTID=NC_000932.1  # TAIR10 chloroplast, the unmethylated conversion control
 
-# ── Reference + annotation (TAIR10, via the NCBI datasets CLI) ────────────────
+# ── Reference to align against (TAIR10, via the NCBI datasets CLI) ───────────
 if [ ! -f tair10.fa ]; then
-  datasets download genome accession GCF_000001735.4 --include genome,gff3 --filename tair10.zip
+  datasets download genome accession GCF_000001735.4 --include genome --filename tair10.zip
   unzip -o tair10.zip -d tair10_ncbi >/dev/null
   cp tair10_ncbi/ncbi_dataset/data/*/*.fna tair10.fa
-  cp tair10_ncbi/ncbi_dataset/data/*/genomic.gff genomic.gff
 fi
 
 # ── Reads, trim, bisulfite-align (bwameth keeps original seqs, C->T preserved) ─
@@ -93,13 +93,38 @@ else
 fi
 [ -f jbrowse2/index.html ] || jb create jbrowse2
 
-jb add-assembly tair10.fa --name tair10 --load copy --force --out jbrowse2
-jb sort-gff genomic.gff | bgzip > tair10.gff.gz
-tabix -f -p gff tair10.gff.gz
-jb add-track tair10.gff.gz --name "TAIR10 genes" --trackId tair10_genes \
-  --load copy --force --out jbrowse2
+HUB=https://jbrowse.org/hubs/genark/GCF/000/001/735/GCF_000001735.4
+[ -s hub_config.json ] || curl -fsS -o hub_config.json "$HUB/config.json"
+
+# The hub's assembly entry and NCBI RefSeq gene track, verbatim, with `tair10`
+# as an alias so a session can still name the assembly that way.
+python3 - jbrowse2/config.json hub_config.json "$HUB" <<'PY'
+import json, os, sys
+path, hub_path, base = sys.argv[1:]
+HUB = 'GCF_000001735.4'
+uri_keys = {'uri', 'chromSizes'}
+
+def absolutize(node):
+    if isinstance(node, dict):
+        return {
+            k: f'{base}/{v}' if k in uri_keys and isinstance(v, str) and '://' not in v
+            else v if k == 'metadata' else absolutize(v)
+            for k, v in node.items()
+        }
+    return [absolutize(x) for x in node] if isinstance(node, list) else node
+
+hub = json.load(open(hub_path))
+assembly = next(a for a in hub['assemblies'] if a['name'] == HUB)
+by_id = {t['trackId']: t for t in hub['tracks']}
+gene = next(by_id[f'{HUB}-{k}'] for k in ['ncbiRefSeq', 'ncbiRefSeqCurated'] if f'{HUB}-{k}' in by_id)
+cfg = json.load(open(path)) if os.path.exists(path) else {}
+cfg['assemblies'] = [{**absolutize(assembly), 'aliases': ['tair10']}]
+cfg['tracks'] = [absolutize(gene)] + [t for t in cfg.get('tracks', []) if t['trackId'] != gene['trackId']]
+json.dump(cfg, open(path, 'w'), indent=2)
+PY
 jb add-track arabidopsis_wgbs.bam --name "Arabidopsis WGBS (bwameth)" \
-  --trackId arabidopsis_wgbs --load copy --force --out jbrowse2
+  --trackId arabidopsis_wgbs --assemblyNames GCF_000001735.4 \
+  --load copy --force --out jbrowse2
 
 # ── Pre-color the pileup Bisulfite/CpG and set a default session ──────────────
 # (the CLI can't set a display's color field or a default session, so patch the JSON)
@@ -120,17 +145,17 @@ cfg["defaultSession"] = {
     "views": [{
         "id": "wgbs_lgv",
         "type": "LinearGenomeView",
-          "assembly": "tair10",
-          "loc": "NC_003070.9:4,398,000-4,412,000",
-          "tracks": ["tair10_genes", "arabidopsis_wgbs"],
+        "assembly": "GCF_000001735.4",
+        "loc": "chr1:4,398,000-4,412,000",
+        "tracks": ["GCF_000001735.4-ncbiRefSeq", "arabidopsis_wgbs"],
     }],
 }
 json.dump(cfg, open(path, "w"), indent=2)
 PY
 
 echo
-echo "Built $OUTDIR/jbrowse2/config.json. It opens on NC_003070.9:4,398,000-4,412,000:"
-echo "the gene body AT1G12930 (CpG-only) beside the silenced AT1G12935 (all three"
+echo "Built $OUTDIR/jbrowse2/config.json. It opens on chr1:4,398,000-4,412,000:"
+echo "the gene body AT1G12930 (CpG-only) beside a silenced LTR element (all three"
 echo "contexts). The pileup is pre-colored Bisulfite / CpG; re-color it CpG / CHG /"
 echo "CHH via Color by -> Bisulfite to see each context. Serve it, e.g.:"
 echo "  npx --yes serve $(pwd)/jbrowse2"

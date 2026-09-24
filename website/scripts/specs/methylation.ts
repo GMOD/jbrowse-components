@@ -26,6 +26,8 @@ const HG38_GENE_LANE = {
 
 const ARABIDOPSIS_WGBS_CONFIG =
   'test_data/arabidopsis_methylation/config_emseq_bisulfite.json'
+const TAIR10 = 'GCF_000001735.4'
+const TAIR10_GENES = `${TAIR10}-ncbiRefSeq`
 
 // three copies of the one WGBS CRAM, each colored by a different cytosine
 // context, so the per-read pileup demonstrates the three MethylDackel contexts
@@ -44,7 +46,7 @@ function wgbsContextTrack(
       type: 'AlignmentsTrack',
       trackId: `arabidopsis_wgbs_${context.toLowerCase()}`,
       name: `Per-read WGBS — ${label} context`,
-      assemblyNames: ['arabidopsis'],
+      assemblyNames: [TAIR10],
       adapter: WGBS_CRAM_ADAPTER,
     },
     display: {
@@ -120,16 +122,14 @@ const SNRPN_MODKIT_MULTI_TRACK = {
 // MethylDackel fractions. One copy, so the film cannot document a route
 // through an app the figure beside it is not showing.
 const ARABIDOPSIS_CONTEXT_LANES = [
-  { trackId: 'arabidopsis_genes' },
-  // THE TRANSPOSON, DRAWN RATHER THAN ASSERTED. The gene GFF above
-  // carries only a pseudogene over the silenced half, so the label
-  // below was the figure's only evidence for the word "transposon".
+  { trackId: TAIR10_GENES },
+  // THE TRANSPOSON, DRAWN RATHER THAN ASSERTED. The RefSeq genes above
+  // carry nothing over the silenced half, so without this lane the label
+  // below would be the figure's only evidence for the word "transposon".
   // This lane is UCSC's GenArk RepeatMasker bigBed for TAIR10
-  // (GCF_000001735.3), which needs no hosting of ours and is already
-  // on this config's refNames — its chroms ARE NC_003070.9 and the
-  // rest, so nothing has to be aliased. Over this window it returns
-  // `META1_LTR#LTR/Copia` at 4,406,005-4,411,120, the same element
-  // and family TAIR10_Transposable_Elements.txt calls AT1TE14315.
+  // (GCF_000001735.3); the hub's chromAlias resolves its NC_ names. Over
+  // this window it returns `META1_LTR#LTR/Copia` at 4,406,005-4,411,120,
+  // the element TAIR10_Transposable_Elements.txt calls AT1TE14315.
   //
   // Filtered by length rather than partitioned into rows by repeat
   // class. The class route USED to be blocked by a display defect and
@@ -182,11 +182,10 @@ const ARABIDOPSIS_CONTEXT_LANES = [
 ]
 
 // Arabidopsis WGBS (Col-0 DRR029742, bwameth-aligned) over
-// NC_003070.9:4,398,000-4,412,000, a window that pairs two methylation regimes:
-// the expressed ARM-repeat gene AT1G12930 (~4.398-4.406 Mb) carries gene-body
-// CpG methylation only, while the silenced element to its right (pseudogene
-// AT1G12935 + a repeat, ~4.406-4.410 Mb) is methylated in all three plant
-// contexts. The contexts figure below shows this at two levels: the aggregate
+// chr1:4,398,000-4,412,000, a window that pairs two methylation regimes: the
+// expressed ARM-repeat gene AT1G12930 (~4.398-4.406 Mb) carries gene-body CpG
+// methylation only, while the LTR element to its right (~4.406-4.411 Mb) is
+// methylated in all three plant contexts. The contexts figure below shows this at two levels: the aggregate
 // MethylDackel fractions (one row per context) AND the same per-read pileup
 // colored three ways (one copy per context), so the tri-context contrast reads
 // both quantitatively and per-molecule. The per-read copies use one-color mode:
@@ -239,8 +238,8 @@ export const methylationVideoFixtures = {
 export const bisulfiteVideoFixtures = {
   wgbsTrackId: 'arabidopsis_wgbs',
   cpgPileup: lgvSession(ARABIDOPSIS_WGBS_CONFIG, {
-    assembly: 'arabidopsis',
-    loc: 'NC_003070.9:4,398,000-4,412,000',
+    assembly: TAIR10,
+    loc: 'chr1:4,398,000-4,412,000',
     tracks: [
       ...ARABIDOPSIS_CONTEXT_LANES,
       {
@@ -273,8 +272,8 @@ export const methylationSpecs: ScreenshotSpec[] = [
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'arabidopsis',
-          loc: 'NC_003070.9:4,398,000-4,412,000',
+          assembly: TAIR10,
+          loc: 'chr1:4,398,000-4,412,000',
           tracks: [
             ...ARABIDOPSIS_CONTEXT_LANES,
             ...WGBS_CONTEXT_COPIES.map(c => c.display),
@@ -283,7 +282,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'MethylDackel',
-    // remote CRAM (x3 copies, one adapter) + gene GFF + three bigWigs
+    // remote CRAM (x3 copies, one adapter) + gene bigBed + three bigWigs
     readyTimeout: 90000,
     // genes + the repeat lane + aggregate(3 rows) + 3 compact pileups +
     // headers/ruler/overview
@@ -299,9 +298,8 @@ export const methylationSpecs: ScreenshotSpec[] = [
       // WHAT EACH HALF IS DOING, which the row labels never said (review: "can
       // potentially add 'chh silencing of transposon' ... and cpg enhancing of
       // gene body ... (if that is what it is doing)"). It is, and the right
-      // half was worth checking rather than assuming: the gene GFF this figure
-      // draws carries only a pseudogene there (AT1G12935, 4,406,318-4,406,746),
-      // which is not the same claim.
+      // half was worth checking rather than assuming: the RefSeq gene lane
+      // this figure draws has nothing there.
       //
       // TAIR10's own transposable-element table is what settles it —
       // TAIR10_Transposable_Elements.txt from arabidopsis.org, one row per
@@ -326,9 +324,9 @@ export const methylationSpecs: ScreenshotSpec[] = [
         text: 'expressed gene body: CpG only',
         fontSize: 20,
         anchor: {
-          track: 'arabidopsis_genes',
-          // AT1G12930's own span, from the same GFF the lane draws
-          locus: 'NC_003070.9:4,398,322-4,405,669',
+          track: TAIR10_GENES,
+          // AT1G12930's own span, from the gene lane's NM_101164.5
+          locus: 'chr1:4,398,322-4,405,669',
           fracY: 1,
           dy: -16,
         },
@@ -339,8 +337,8 @@ export const methylationSpecs: ScreenshotSpec[] = [
         fontSize: 20,
         maxWidth: 300,
         anchor: {
-          track: 'arabidopsis_genes',
-          locus: 'NC_003070.9:4,405,996-4,411,119',
+          track: TAIR10_GENES,
+          locus: 'chr1:4,405,996-4,411,119',
           fracY: 1,
           dy: -16,
         },

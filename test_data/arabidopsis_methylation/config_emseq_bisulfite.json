@@ -1,27 +1,93 @@
 {
   "assemblies": [
     {
-      "name": "arabidopsis",
+      "name": "GCF_000001735.4",
+      "displayName": "thale cress (tair10.1 Columbia 2018)",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "arabidopsis-ReferenceSequenceTrack",
+        "metadata": {
+          "blatDb": "GCF_000001735.4",
+          "ucsc": {
+            "genome": "GCF_000001735.4",
+            "taxId": "3702",
+            "groups": "groups.txt",
+            "description": "thale cress (tair10.1 Columbia 2018)",
+            "twoBitPath": "GCF_000001735.4.2bit",
+            "twoBitBptUrl": "GCF_000001735.4.2bit.bpt",
+            "chromSizes": "GCF_000001735.4.chrom.sizes.txt",
+            "chromAliasBb": "GCF_000001735.4.chromAlias.bb",
+            "chromAuthority": "ucsc",
+            "organism": "TAIR10.1 Mar. 2018",
+            "defaultPos": "NC_003070.9:10142557-10152557",
+            "scientificName": "Arabidopsis thaliana",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/html/GCF_000001735.4_TAIR10.1.description.html\">html/GCF_000001735.4_TAIR10.1.description.html</a>",
+            "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/000/001/735/GCF_000001735.4",
+            "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/000/001/735/GCF_000001735.4",
+            "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/000/001/735/GCF_000001735.4"
+          }
+        },
+        "trackId": "GCF_000001735.4-ReferenceSequenceTrack",
         "adapter": {
-          "type": "IndexedFastaAdapter",
-          "uri": "https://jbrowse.org/demos/bisulfite/arabidopsis_chr1.fa"
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/GCF_000001735.4.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/GCF_000001735.4.chrom.sizes.txt"
         }
-      }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "refNameColumnHeaderName": "ucsc",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/GCF_000001735.4.chromAlias.txt"
+        }
+      },
+      "geneticCodes": {
+        "NC_000932.1": 11
+      },
+      "aliases": ["arabidopsis"]
     }
   ],
   "tracks": [
     {
-      "type": "FeatureTrack",
-      "trackId": "arabidopsis_genes",
-      "name": "Genes (TAIR10 / RefSeq)",
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "uri": "https://jbrowse.org/demos/bisulfite/arabidopsis_chr1_genes.gff.gz"
+      "metadata": {
+        "ucsc": {
+          "track": "ncbiRefSeq",
+          "parent": "refSeqComposite on",
+          "color": "12,12,120",
+          "shortLabel": "RefSeq All",
+          "type": "bigGenePred",
+          "urls": "name2=\"https://www.ncbi.nlm.nih.gov/gene/?term=$$\" geneName=\"https://www.ncbi.nlm.nih.gov/gene/$$\" geneName2=\"https://www.ncbi.nlm.nih.gov/nuccore/$$\"",
+          "labelFields": "name2,geneName,geneName2",
+          "defaultLabelFields": "name2",
+          "searchIndex": "name",
+          "searchTrix": "ixIxx/GCF_000001735.4_TAIR10.1.ncbiRefSeq.ix",
+          "bigDataUrl": "bbi/GCF_000001735.4_TAIR10.1.ncbiRefSeq.bb",
+          "longLabel": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "baseColorUseCds": "given",
+          "baseColorDefault": "genomicCodons",
+          "priority": "1"
+        }
       },
-      "assemblyNames": ["arabidopsis"]
+      "category": ["Genes and Gene Predictions"],
+      "trackId": "GCF_000001735.4-ncbiRefSeq",
+      "description": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+      "assemblyNames": ["GCF_000001735.4"],
+      "name": "NCBI RefSeq - RefSeq All",
+      "type": "FeatureTrack",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/bbi/GCF_000001735.4_TAIR10.1.ncbiRefSeq.bb",
+        "aggregateField": "name2"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "GCF_000001735.4-ncbiRefSeq-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:get(feature,'name')"
+          }
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -34,7 +100,7 @@
           "locationType": "UriLocation"
         }
       },
-      "assemblyNames": ["arabidopsis"]
+      "assemblyNames": ["GCF_000001735.4"]
     },
     {
       "type": "MultiQuantitativeTrack",
@@ -69,7 +135,7 @@
           }
         ]
       },
-      "assemblyNames": ["arabidopsis"]
+      "assemblyNames": ["GCF_000001735.4"]
     },
     {
       "type": "AlignmentsTrack",
@@ -79,7 +145,7 @@
         "type": "CramAdapter",
         "uri": "https://jbrowse.org/demos/bisulfite/arabidopsis_wgbs_bisulfite.cram"
       },
-      "assemblyNames": ["arabidopsis"]
+      "assemblyNames": ["GCF_000001735.4"]
     }
   ],
   "defaultSession": {
@@ -87,11 +153,11 @@
     "views": [
       {
         "type": "LinearGenomeView",
-        "assembly": "arabidopsis",
-        "loc": "NC_003070.9:4,398,000-4,412,000",
+        "assembly": "GCF_000001735.4",
+        "loc": "chr1:4,398,000-4,412,000",
         "tracks": [
           {
-            "trackId": "arabidopsis_genes"
+            "trackId": "GCF_000001735.4-ncbiRefSeq"
           },
           {
             "trackId": "arabidopsis_methyldackel"
