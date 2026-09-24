@@ -1724,7 +1724,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
+              "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -1829,7 +1829,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
+              "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -1985,7 +1985,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
+              "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -2091,7 +2091,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
+              "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -2192,7 +2192,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
+              "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -2294,7 +2294,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
+              "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -2396,7 +2396,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
+              "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -2497,7 +2497,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
+              "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -2598,7 +2598,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
+              "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -2699,7 +2699,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
+              "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -2804,7 +2804,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
+              "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -6370,6 +6370,35 @@ export const configManifest: ConfigManifest = {
     }
   },
   "textSearchAdapters": {
+    "BigBedTextSearchAdapter": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"BigBedTextSearchAdapter\""
+        },
+        {
+          "name": "textSearchAdapterId",
+          "type": "identifier"
+        },
+        {
+          "name": "bigBedLocation",
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+        },
+        {
+          "name": "ixFilePath",
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+        },
+        {
+          "name": "ixxFilePath",
+          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+        },
+        {
+          "name": "assemblyNames",
+          "type": "string[]"
+        }
+      ],
+      "shorthandKeys": []
+    },
     "JBrowse1TextSearchAdapter": {
       "slots": [
         {

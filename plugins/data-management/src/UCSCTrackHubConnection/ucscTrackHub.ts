@@ -97,6 +97,27 @@ function geneAggregateField(data: Record<string, string>) {
   return field === 'none' ? undefined : field
 }
 
+// A track declaring `searchIndex` was built with those columns extra-indexed,
+// so its names resolve with no index of ours; `searchTrix` adds UCSC's
+// case-insensitive word index over them
+function bigBedSearch(
+  data: Record<string, string>,
+  bigBedLocation: HubLocation,
+  hubLocation: (path: string) => HubLocation,
+) {
+  const { searchTrix } = data
+  return {
+    type: 'BigBedTextSearchAdapter',
+    bigBedLocation,
+    ...(searchTrix
+      ? {
+          ixFilePath: hubLocation(searchTrix),
+          ixxFilePath: hubLocation(`${searchTrix}x`),
+        }
+      : {}),
+  }
+}
+
 // UCSC's BED12-as-gene heuristic misfires on these: they use blocks and thick
 // start/end for shapes that are not transcripts, so splitting them into
 // CDS/UTR subfeatures invents structure that isn't there.
@@ -110,12 +131,14 @@ function trackTypeAndAdapter({
   bigDataUrl,
   location,
   indexLocation,
+  hubLocation,
 }: {
   baseType: string
   data: Record<string, string>
   bigDataUrl: string
   location: HubLocation
   indexLocation: (fallback: string) => HubLocation
+  hubLocation: (path: string) => HubLocation
 }) {
   if (baseType === 'bam') {
     return {
@@ -168,6 +191,13 @@ function trackTypeAndAdapter({
           ? { disableGeneHeuristic: true }
           : {}),
       },
+      ...(data.searchIndex
+        ? {
+            textSearching: {
+              textSearchAdapter: bigBedSearch(data, location, hubLocation),
+            },
+          }
+        : {}),
     }
   } else {
     // unsupported: peptideMapping, gvf, ld2, narrowPeak, wig, wigMaf, halSnake,
@@ -202,6 +232,7 @@ function makeTrackConfig({
     bigDataUrl,
     location: makeLoc(bigDataUrl, trackDbLoc),
     indexLocation: fallback => makeLoc(bigDataIdx, trackDbLoc, fallback),
+    hubLocation: path => makeLoc(path, trackDbLoc),
   })
   return config
     ? { name, description: data.longLabel, ...config }

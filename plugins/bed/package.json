@@ -33,6 +33,7 @@
     "@gmod/bbi": "^11.3.0",
     "@gmod/bed": "^2.3.0",
     "@gmod/tabix": "^3.8.3",
+    "@gmod/trix": "^3.0.22",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.6.0",
     "mobx": "^7.0.4",

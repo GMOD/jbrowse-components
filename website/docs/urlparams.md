@@ -71,7 +71,9 @@ One linear genome view, from a handful of parameters:
 
 - A coordinate takes a `k`, `M` or `G` suffix, optionally followed by `b` or
   `bp`, and is expanded to whole base pairs on load.
-- A gene name needs a text index built with `jbrowse text-index`.
+- A gene name needs a text index: one built with `jbrowse text-index`, or a hub
+  track's own `searchIndex`
+  ([track hubs](/docs/config_guides/text_searching#track-hubs)).
 - Several whitespace-separated locstrings (`%20` in a URL) open a discontinuous
   view showing each region in turn: a gene and its fusion partner, an allele
   beside the sequences it derives from. The location box displays the same form

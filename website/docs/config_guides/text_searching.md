@@ -82,6 +82,17 @@ A names index from JBrowse 1's `generate-names.pl` still works through
 see
 [creating a text search adapter](/docs/developer_guides/creating_text_search_adapter).
 
+## Track hubs
+
+A UCSC track hub needs no index of your own. A hub track that declares
+`searchIndex` was built with those columns extra-indexed in its BigBed, and the
+[connection](/docs/user_guides/connections) searches it through a
+[`BigBedTextSearchAdapter`](/docs/config/bigbedtextsearchadapter). A track that
+also declares `searchTrix`, as the gene tracks of UCSC's GenArk hubs do, gains
+prefix and case-insensitive matching. Without `searchTrix`, a name matches only
+as the hub spells it. Transcripts that share a gene name and overlap are found
+as the one gene.
+
 ## Troubleshooting
 
 - **No results after running text-index.** Usually stale 0-byte `.ix`/`.ixx`

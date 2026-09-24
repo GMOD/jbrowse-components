@@ -174,6 +174,66 @@ defaultLabelFields name2
   })
 })
 
+// GenArk's gene tracks ship both; searching them needs no index of our own
+test('generateTracks searches a track by its searchIndex and searchTrix', () => {
+  const geneDb = new TrackDbFile(`track ncbiRefSeq
+type bigGenePred
+shortLabel RefSeq All
+longLabel NCBI RefSeq genes
+bigDataUrl bbi/refSeq.bb
+searchIndex name
+searchTrix ixIxx/refSeq.ix
+`)
+  const [track] = generateTracks({
+    trackDb: geneDb,
+    trackDbLoc: uri('https://x.org/volvox/trackDb.txt'),
+    assemblyName: 'volvox',
+  })
+  expect(track).toMatchObject({
+    textSearching: {
+      textSearchAdapter: {
+        type: 'BigBedTextSearchAdapter',
+        bigBedLocation: uri('https://x.org/volvox/bbi/refSeq.bb'),
+        ixFilePath: uri('https://x.org/volvox/ixIxx/refSeq.ix'),
+        ixxFilePath: uri('https://x.org/volvox/ixIxx/refSeq.ixx'),
+      },
+    },
+  })
+})
+
+test('generateTracks searches a searchIndex without a searchTrix exactly', () => {
+  const geneDb = new TrackDbFile(`track genes
+type bigBed 6
+shortLabel Genes
+longLabel Genes
+bigDataUrl genes.bb
+searchIndex name
+`)
+  const [track] = generateTracks({
+    trackDb: geneDb,
+    trackDbLoc: uri('https://x.org/volvox/trackDb.txt'),
+    assemblyName: 'volvox',
+  })
+  expect(track).toMatchObject({
+    textSearching: {
+      textSearchAdapter: {
+        type: 'BigBedTextSearchAdapter',
+        bigBedLocation: uri('https://x.org/volvox/genes.bb'),
+      },
+    },
+  })
+  expect(track).not.toHaveProperty('textSearching.textSearchAdapter.ixFilePath')
+})
+
+test('generateTracks leaves a track without searchIndex unsearched', () => {
+  const [track] = generateTracks({
+    trackDb,
+    trackDbLoc: uri('https://x.org/volvox/trackDb.txt'),
+    assemblyName: 'volvox',
+  })
+  expect(track).not.toHaveProperty('textSearching')
+})
+
 test('generateTracks falls back to the first labelFields entry', () => {
   const geneDb = new TrackDbFile(`track ncbiRefSeq
 type bigGenePred

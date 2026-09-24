@@ -8368,6 +8368,63 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "BigBedTextSearchAdapterSlots": {
+      "type": "object",
+      "properties": {
+        "bigBedLocation": {
+          "$ref": "#/$defs/FileLocation",
+          "default": {
+            "uri": "/path/to/my.bb",
+            "locationType": "UriLocation"
+          }
+        },
+        "ixFilePath": {
+          "$ref": "#/$defs/FileLocation",
+          "default": {
+            "uri": "",
+            "locationType": "UriLocation"
+          }
+        },
+        "ixxFilePath": {
+          "$ref": "#/$defs/FileLocation",
+          "default": {
+            "uri": "",
+            "locationType": "UriLocation"
+          }
+        },
+        "assemblyNames": {
+          "description": "List of assemblies covered by text search adapter.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "BigBedTextSearchAdapter": {
+      "title": "BigBedTextSearchAdapter",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/BigBedTextSearchAdapterSlots"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "BigBedTextSearchAdapter"
+        },
+        "textSearchAdapterId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "unevaluatedProperties": false
+    },
     "JBrowse1TextSearchAdapterSlots": {
       "type": "object",
       "properties": {
@@ -13954,6 +14011,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "anyOf": [
             {
               "enum": [
+                "BigBedTextSearchAdapter",
                 "JBrowse1TextSearchAdapter",
                 "TrixTextSearchAdapter"
               ]
@@ -13966,6 +14024,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "required": [],
       "allOf": [
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "BigBedTextSearchAdapter"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/BigBedTextSearchAdapter"
+          }
+        },
         {
           "if": {
             "type": "object",

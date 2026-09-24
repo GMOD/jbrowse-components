@@ -178,6 +178,7 @@ explicit location slot, and derive the index location from it.
 
 ## Text search adapters
 
+- [BigBedTextSearchAdapter](https://jbrowse.org/jb2/docs/config/bigbedtextsearchadapter.md)
 - [JBrowse1TextSearchAdapter](https://jbrowse.org/jb2/docs/config/jbrowse1textsearchadapter.md)
 - [TrixTextSearchAdapter](https://jbrowse.org/jb2/docs/config/trixtextsearchadapter.md)
 

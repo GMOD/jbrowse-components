@@ -959,6 +959,9 @@ importers:
       '@gmod/tabix':
         specifier: ^3.8.3
         version: 3.8.3
+      '@gmod/trix':
+        specifier: ^3.0.22
+        version: 3.0.22
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
