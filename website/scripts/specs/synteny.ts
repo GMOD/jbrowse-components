@@ -1624,6 +1624,15 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 180000,
     viewportHeight: 820,
+    hideTooltip: true,
+    actions: [
+      { type: 'click', selector: '[aria-label="Hide Gene cluster"]' },
+      {
+        type: 'waitForSelector',
+        selector: '[aria-label="Hide Gene cluster"]',
+        hidden: true,
+      },
+    ],
   },
 
   // Four megabases of chr17 where the strand color separates two things a

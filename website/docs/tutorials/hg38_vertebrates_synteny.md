@@ -196,22 +196,22 @@ densest first, by how much of the window each places.
 
 Eight megabases toward the centromere the same stack looks different. No chain
 runs the window through: the region is a segmental-duplication hotspot, every
-genome places it as several blocks, and most of those blocks run the other way
-against their neighbours, so five of the eight lanes show `[rev]` in their
-headers. The crossings are a separate fact from the marker. A mirrored lane
-draws its inversions straight; a ribbon crosses where one block runs against its
-neighbour inside a lane. The marmoset lane is the clearest case: its chain
-covers the left of the window forwards and then stops, and a reversed block
-further along the same chromosome places the rest of the window. The gorilla
-lane names chr17 in its header beside the chr5 frame it drew. chr17 is the
-homologous chromosome, and some of this window aligns there too, so the chr5
-frame does not show everything the alignment places. **Show … in this lane** on
-that lane's header menu pins it onto the other contig. Where a lane's blocks
-split about evenly between the two readings, **Flip lane** on its header menu
-turns it the other way while it draws the same contig, and **Let the lane choose
-its orientation** hands the choice back.
+genome places it as several blocks, and many of those blocks run the other way
+against their neighbours. A lane whose blocks run backwards along hg38 on
+balance shows `[rev]` in its header. The crossings are a separate fact from the
+marker. A mirrored lane draws its inversions straight; a ribbon crosses where
+one block runs against its neighbour inside a lane. The marmoset lane is the
+clearest case: its chain covers the left of the window forwards and then stops,
+and a reversed block further along the same chromosome places the rest of the
+window. The gorilla lane names chr17 in its header beside the chr5 frame it
+drew. chr17 is the homologous chromosome, and some of this window aligns there
+too, so the chr5 frame does not show everything the alignment places. **Show …
+in this lane** on that lane's header menu pins it onto the other contig. Where a
+lane's blocks split about evenly between the two readings, **Flip lane** on its
+header menu turns it the other way while it draws the same contig, and **Let the
+lane choose its orientation** hands the choice back.
 
-<Figure caption="hg38 chr17 near the PMP22 segmental duplications over the same eight lanes. Every genome places the window as several blocks and most run against their neighbours: five lanes show a reversed marker in their headers, the crossed ribbons are where a block runs against its neighbour inside a lane, and the gorilla lane names a second chromosome that also places the window." src="/img/multiway_synteny/hg38_vertebrates_17p_break.png" />
+<Figure caption="hg38 chr17 near the PMP22 segmental duplications over the same eight lanes. Every genome places the window as several blocks and many run against their neighbours: a lane running backwards along hg38 shows a reversed marker in its header, the crossed ribbons are where a block runs against its neighbour inside a lane, and the gorilla lane names a second chromosome that also places the window." src="/img/multiway_synteny/hg38_vertebrates_17p_break.png" />
 
 **Color by... → Strand**, under **Ribbons** on the track menu, colors each
 ribbon by the record's strand: the alignment's own strand between the anchor and
