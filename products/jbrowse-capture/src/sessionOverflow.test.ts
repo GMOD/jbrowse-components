@@ -49,3 +49,18 @@ test('a session that fits has no overflow', () => {
   stage({ scrollHeight: 400, clientHeight: 400 })
   expect(sessionOverflowInPage()).toBe(0)
 })
+
+test('side-by-side panels answer with the tallest one', () => {
+  document.body.innerHTML = `
+    <div id="left" style="overflow-y: auto"><div data-testid="view-container-a"></div></div>
+    <div id="right" style="overflow-y: auto"><div data-testid="view-container-b"></div></div>`
+  Object.defineProperties(document.getElementById('left')!, {
+    scrollHeight: { value: 400 },
+    clientHeight: { value: 400 },
+  })
+  Object.defineProperties(document.getElementById('right')!, {
+    scrollHeight: { value: 1000 },
+    clientHeight: { value: 400 },
+  })
+  expect(sessionOverflowInPage()).toBe(600)
+})

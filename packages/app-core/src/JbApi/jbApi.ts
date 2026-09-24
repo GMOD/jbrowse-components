@@ -583,10 +583,9 @@ function offscreenViews(session: AbstractSessionModel, root: ParentNode) {
 // Neither app scrolls the document: a column inside the app scrolls, so the
 // document's scrollHeight equals the window's height with a view running 700
 // px past it. The overflow is the scrolling ancestor's, when one exists.
-function scrollerOf(root: ParentNode) {
-  const container = root.querySelector('[data-testid^="view-container-"]')
-  const win = root.ownerDocument?.defaultView ?? window
-  for (let el = container?.parentElement; el; el = el.parentElement) {
+function scrollerOf(container: Element) {
+  const win = container.ownerDocument.defaultView ?? window
+  for (let el = container.parentElement; el; el = el.parentElement) {
     const { overflowY } = win.getComputedStyle(el)
     if (
       (overflowY === 'auto' || overflowY === 'scroll') &&
@@ -596,6 +595,23 @@ function scrollerOf(root: ParentNode) {
     }
   }
   return undefined
+}
+
+// The view ids each scrolling box holds, `undefined` keying the document. A
+// workspace scrolls every panel on its own, so one panel fitting says nothing
+// about the one beside it, and a view in a tab nobody is showing has no
+// container and nothing to fit.
+function scrollPorts(root: ParentNode) {
+  const ports = new Map<Element | undefined, Set<string>>()
+  for (const el of root.querySelectorAll<HTMLElement>(
+    '[data-testid^="view-container-"]',
+  )) {
+    const scroller = scrollerOf(el)
+    const ids = ports.get(scroller) ?? new Set<string>()
+    ids.add(el.dataset.testid!.slice('view-container-'.length))
+    ports.set(scroller, ids)
+  }
+  return ports
 }
 
 // The trailing overscroll ViewStack renders below the last view, which exists so
@@ -608,8 +624,12 @@ function overscrollHeight(scroller: Element) {
   return spacer ? Math.round(spacer.getBoundingClientRect().height) : 0
 }
 
-function overflow(root: ParentNode) {
-  const scroller = scrollerOf(root)
+interface Measured {
+  pageHeight: number
+  windowHeight: number
+}
+
+function overflowOf(root: ParentNode, scroller: Element | undefined): Measured {
   if (scroller) {
     return {
       pageHeight: scroller.scrollHeight - overscrollHeight(scroller),
@@ -621,6 +641,20 @@ function overflow(root: ParentNode) {
     pageHeight: win.document.documentElement.scrollHeight,
     windowHeight: win.innerHeight,
   }
+}
+
+function excessOf(measured: Measured) {
+  return measured.pageHeight - measured.windowHeight
+}
+
+// The port that overflows most, which is what a single answer reports
+function overflow(root: ParentNode) {
+  return [...scrollPorts(root).keys()]
+    .map(scroller => overflowOf(root, scroller))
+    .reduce(
+      (worst, m) => (excessOf(m) > excessOf(worst) ? m : worst),
+      overflowOf(root, undefined),
+    )
 }
 
 // What a shrink can leave a display, a synteny band or a dotplot at: enough to
@@ -644,8 +678,8 @@ interface HeightSelf {
 // display, each synteny band, and a view whose height is a declared property
 // rather than the sum of its tracks (a dotplot). A linear view's `height` is a
 // getter over its tracks, so shrinking it is shrinking them.
-function shrinkables(session: AbstractSessionModel): Shrinkable[] {
-  return openViews(session).flatMap(view => {
+function shrinkables(views: AbstractViewModel[]): Shrinkable[] {
+  return views.flatMap(viewAndNested).flatMap(view => {
     const v = view as unknown as HeightSelf
     const declared =
       isStateTreeNode(view) &&
@@ -700,26 +734,47 @@ async function fitToWindow(
   root: ParentNode = document,
 ) {
   const before = overflow(root)
-  const excess = before.pageHeight - before.windowHeight
+  const excess = excessOf(before)
   if (excess <= 0) {
     return { fits: true, ...before }
   }
-  const items = shrinkables(session)
-  const headroom = items.map(i => Math.max(0, i.height - MIN_HEIGHT_PX))
-  const available = headroom.reduce((a, b) => a + b, 0)
-  const cut = Math.min(excess, available)
-  const shrunk = items.flatMap((item, i) => {
-    const share = available ? Math.round((cut * headroom[i]!) / available) : 0
-    if (share <= 0) {
-      return []
+  // each port spends only its own overflow, on its own views; a host that
+  // renders no view containers is one port, the document
+  const ports = scrollPorts(root)
+  const groups = ports.size
+    ? [...ports].map(([scroller, ids]) => ({
+        scroller,
+        views: session.views.filter(v => ids.has(v.id)),
+      }))
+    : [{ scroller: undefined, views: session.views }]
+  const cuts = groups.map(({ scroller, views }) => {
+    const portExcess = excessOf(overflowOf(root, scroller))
+    if (portExcess <= 0) {
+      return { atFloor: false, shrunk: [] }
     }
-    const to = item.height - share
-    item.setHeight(to)
-    return [{ what: item.what, from: item.height, to }]
+    const items = shrinkables(views)
+    const headroom = items.map(i => Math.max(0, i.height - MIN_HEIGHT_PX))
+    const available = headroom.reduce((a, b) => a + b, 0)
+    const cut = Math.min(portExcess, available)
+    return {
+      atFloor: available < portExcess,
+      shrunk: items.flatMap((item, i) => {
+        const share = available
+          ? Math.round((cut * headroom[i]!) / available)
+          : 0
+        if (share <= 0) {
+          return []
+        }
+        const to = item.height - share
+        item.setHeight(to)
+        return [{ what: item.what, from: item.height, to }]
+      }),
+    }
   })
+  const shrunk = cuts.flatMap(c => c.shrunk)
+  const atFloor = cuts.some(c => c.atFloor)
   const settle = await waitReady(settleMs, session, root)
-  const after = overflow(root)
-  const left = after.pageHeight - after.windowHeight
+  const left = excessOf(overflow(root))
   return {
     fits: left <= 0,
     overflowBefore: excess,
@@ -727,10 +782,9 @@ async function fitToWindow(
     shrunk,
     ...(left > 0
       ? {
-          note:
-            available < excess
-              ? `everything shrinkable is at its ${MIN_HEIGHT_PX} px floor — hide a track or a view, or screenshot with fullPage: true`
-              : 'still taller than the window after the settle — call jb.fitToWindow() again',
+          note: atFloor
+            ? `everything shrinkable is at its ${MIN_HEIGHT_PX} px floor — hide a track or a view, or screenshot with fullPage: true`
+            : 'still taller than the window after the settle — call jb.fitToWindow() again',
         }
       : {}),
     ...settle,

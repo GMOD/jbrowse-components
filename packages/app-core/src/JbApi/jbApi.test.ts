@@ -1362,6 +1362,55 @@ describe('fitToWindow', () => {
     })
   })
 
+  // A workspace scrolls each panel on its own. Measuring only the first view's
+  // column read a tall second panel as fitting and shrank nothing, and read a
+  // tall first panel as licence to shrink the second one too.
+  it('fits each panel on its own and leaves hidden tabs alone', async () => {
+    document.body.innerHTML = `<div data-app-phase="ready"></div>
+      <div id="left" style="overflow-y: auto"><div data-testid="view-container-a"></div></div>
+      <div id="right" style="overflow-y: auto"><div data-testid="view-container-b"></div></div>`
+    const inLeft = sized(300)
+    const inRight = sized(900)
+    const inHiddenTab = sized(900)
+    const panel = (id: string, part: { height: number }) => {
+      Object.defineProperties(document.getElementById(id)!, {
+        scrollHeight: { configurable: true, get: () => 100 + part.height },
+        clientHeight: { configurable: true, value: 700 },
+      })
+    }
+    panel('left', inLeft)
+    panel('right', inRight)
+    page(0, [])
+    const view = (id: string, display: ReturnType<typeof sized>) => ({
+      id,
+      type: 'LinearGenomeView',
+      ownViews: [],
+      ownTracks: [{ configuration: { trackId: id }, activeDisplay: display }],
+    })
+    const jb = createJbApi({
+      rootModel: {
+        session: {
+          views: [
+            view('a', inLeft),
+            view('b', inRight),
+            view('c', inHiddenTab),
+          ],
+          snackbarMessages: [],
+        },
+      },
+    } as unknown as PluginManager)
+
+    expect(await jb.fitToWindow(5000)).toEqual({
+      fits: true,
+      overflowBefore: 300,
+      overflowAfter: 0,
+      shrunk: [{ what: 'b', from: 900, to: 600 }],
+      settled: true,
+    })
+    expect(inLeft.height).toBe(300)
+    expect(inHiddenTab.height).toBe(900)
+  })
+
   it('says when the floors are what is left', async () => {
     document.body.innerHTML = '<div data-app-phase="ready"></div>'
     const nearFloor = sized(50)
