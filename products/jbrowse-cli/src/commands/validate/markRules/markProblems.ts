@@ -38,26 +38,47 @@ export type MarkProblemLevel = 'error' | 'warning'
  * the mark schema's `requires` and is not restated here.
  */
 export const MARK_RULES = {
+  /** A channel the mark's type does not read, such as `y` on a `span`. */
   'unread-channel': 'warning',
+  /** A `size` on a mark that draws no point. */
   'unread-size': 'warning',
+  /** `source: "density"` on a `span`, which cannot draw the sidecar's bins. */
   'span-density-source': 'warning',
+  /** Threshold cuts that repeat, leaving an interval no value falls in. */
   'threshold-cuts': 'warning',
+  /** A threshold `range` not one colour longer than its cuts. */
   'threshold-range': 'warning',
+  /** A `domain` on a linear or log colour, whose ends are `domainMin` and `domainMax`. */
   'ramp-domain': 'warning',
+  /** A colour ramp's `domainMax` below its `domainMin`. */
   'ramp-ends': 'warning',
+  /** A span's colour ramp with an open end, whose colours then differ from one region to the next. */
   'unpinned-span-ramp': 'warning',
+  /** A `minBpPerPx` not below the mark's `maxBpPerPx`, so the mark never draws. */
   'empty-zoom-range': 'error',
+  /** A `filter` or `formula` whose `expr` is not a `jexl:` expression. */
   'step-expression': 'error',
+  /** A `bin` whose `step` is neither `"auto"` nor a positive width. */
   'bin-width': 'error',
+  /** A `bin`'s `as` or a `pileup`'s `fields` naming other than two fields, so the step reads its defaults. */
   'step-pair': 'warning',
+  /** A `sum`, `mean`, `min` or `max` naming no `field`. */
   'op-field': 'error',
+  /** A step's field written as a `jexl:` expression, where a step reads a name or a dotted path. */
   'step-field-expression': 'error',
+  /** A `y` naming a field that no `aggregate` or `coverage` step before it writes. */
   'unwritten-y': 'error',
+  /** A bar or point drawn with a stacked `span`, standing in the first of its rows. */
   'value-beside-rows': 'warning',
+  /** Two `pileup` steps packing one plot, whose rows share numbers. */
   'two-packings': 'warning',
+  /** A `pileup` in the display's `transform` under a `facet`, packing across every section. */
   'cross-section-packing': 'warning',
+  /** A second mark standing in for the density sidecar at a zoom where one already does. */
   'second-density-mark': 'warning',
+  /** `rows` beside a `facet` on another field, where the facet draws alone. */
   'rows-beside-facet': 'warning',
+  /** A `pileup` or a `row` field under `rows`, whose packed rows share their value's one row. */
   'packing-under-rows': 'warning',
 } as const satisfies Record<string, MarkProblemLevel>
 

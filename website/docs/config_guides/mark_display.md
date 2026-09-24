@@ -602,33 +602,45 @@ unchanged.
 
 A `marks` list loads whenever its keys and value types are right, and the
 display draws what it can. Where two slots disagree, the track shows a warning
-chip in its corner naming the slot, and the mark when the slot is a mark's:
+chip in its corner naming the slot, and the mark when the slot is a mark's. A
+`bar` or `point` naming no `y` draws nothing, and the rest are these, each
+reported under its id:
 
-- a `bar` or `point` naming no `y`, which draws nothing;
-- a channel the mark does not read, such as `y` on a `span`;
-- a `y` naming a field that no `aggregate` or `coverage` step before it, the
-  display's or the mark's own, writes, with the fields those steps leave;
-- a `bar` or `point` drawn together with a stacked `span`, which stands in the
-  first of the span's rows;
-- two marks each running their own `pileup`, which share row numbers, where one
-  `pileup` in the display's `transform`, or the facet's under a `facet`, packs
-  them together;
-- a `pileup` in the display's `transform` under a `facet`, which packs across
-  every section where the facet's own `transform` packs per section;
-- `rows` beside a `facet` on another field, where the facet draws alone until
-  bands of rows land;
-- a `pileup` or a `row` field under `rows`, whose packed rows share their
-  value's one row;
-- a zoom range whose `minBpPerPx` is not below its `maxBpPerPx`, which never
-  draws.
+<!-- MARK_RULES START -->
+
+<!-- prettier-ignore -->
+| Rule | Level | Reports |
+| --- | --- | --- |
+| `empty-zoom-range` | error | A `minBpPerPx` not below the mark's `maxBpPerPx`, so the mark never draws. |
+| `step-expression` | error | A `filter` or `formula` whose `expr` is not a `jexl:` expression. |
+| `bin-width` | error | A `bin` whose `step` is neither `"auto"` nor a positive width. |
+| `op-field` | error | A `sum`, `mean`, `min` or `max` naming no `field`. |
+| `step-field-expression` | error | A step's field written as a `jexl:` expression, where a step reads a name or a dotted path. |
+| `unwritten-y` | error | A `y` naming a field that no `aggregate` or `coverage` step before it writes. |
+| `unread-channel` | warning | A channel the mark's type does not read, such as `y` on a `span`. |
+| `unread-size` | warning | A `size` on a mark that draws no point. |
+| `span-density-source` | warning | `source: "density"` on a `span`, which cannot draw the sidecar's bins. |
+| `threshold-cuts` | warning | Threshold cuts that repeat, leaving an interval no value falls in. |
+| `threshold-range` | warning | A threshold `range` not one colour longer than its cuts. |
+| `ramp-domain` | warning | A `domain` on a linear or log colour, whose ends are `domainMin` and `domainMax`. |
+| `ramp-ends` | warning | A colour ramp's `domainMax` below its `domainMin`. |
+| `unpinned-span-ramp` | warning | A span's colour ramp with an open end, whose colours then differ from one region to the next. |
+| `step-pair` | warning | A `bin`'s `as` or a `pileup`'s `fields` naming other than two fields, so the step reads its defaults. |
+| `value-beside-rows` | warning | A bar or point drawn with a stacked `span`, standing in the first of its rows. |
+| `two-packings` | warning | Two `pileup` steps packing one plot, whose rows share numbers. |
+| `cross-section-packing` | warning | A `pileup` in the display's `transform` under a `facet`, packing across every section. |
+| `second-density-mark` | warning | A second mark standing in for the density sidecar at a zoom where one already does. |
+| `rows-beside-facet` | warning | `rows` beside a `facet` on another field, where the facet draws alone. |
+| `packing-under-rows` | warning | A `pileup` or a `row` field under `rows`, whose packed rows share their value's one row. |
+
+<!-- MARK_RULES END -->
 
 `jbrowse validate` reports the same list over a config file, which has none of
-the half-written states an editor passes through: a mark that draws nothing,
-never draws, or names a step that cannot run is an error, and a slot left unread
-— a channel the mark ignores, a `source` a second mark already stands in for —
-is a warning. The display's own `transform` steps are checked the way a mark's
-are. Each finding names the slot, and the mark when the slot is a mark's, and
-`--json` carries the rule's id beside it.
+the half-written states an editor passes through, at the level the table gives:
+an error is a mark that draws nothing, never draws, or names a step that cannot
+run. The display's own `transform` steps are checked the way a mark's are. Each
+finding names the slot, and the mark when the slot is a mark's, and `--json`
+carries the rule's id beside it.
 
 ## What the track menu offers
 

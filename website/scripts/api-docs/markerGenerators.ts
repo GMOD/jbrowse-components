@@ -13,6 +13,7 @@ import { writeGraphPluginDocs } from './generateGraphPluginDocs.ts'
 import { writeHelperPackageDocs } from './generateHelperPackageDocs.ts'
 import { writeJexlDocs } from './generateJexlDocs.ts'
 import { writeLaunchViewDocs } from './generateLaunchViewDocs.ts'
+import { writeMarkRuleDocs } from './generateMarkRuleDocs.ts'
 import { writeMarkerIndexDocs } from './generateMarkerIndex.ts'
 import { writeMenuDocs } from './generateMenuDocs.ts'
 import { writeOrthofinderSetDocs } from './generateOrthofinderSetDocs.ts'
@@ -147,6 +148,10 @@ export const MARKER_GENERATORS: MarkerGenerator[] = [
     // and the configs serving it are tracked in this repo.
     label: 'Graph plugin config fence',
     write: (_corpus, opts) => writeGraphPluginDocs(opts),
+  },
+  {
+    label: 'Mark rule table',
+    write: (_corpus, opts) => writeMarkRuleDocs(opts),
   },
   {
     // The index of every other entry in this list, and of the marker blocks the
