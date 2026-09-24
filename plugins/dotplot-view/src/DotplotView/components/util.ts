@@ -183,7 +183,7 @@ const LABEL_PX = 12
 // pass, with the nearest LABEL_PX crossing 1.43x away in zoom.
 //
 // `labels` is the very map the axis component draws from
-// (model.h/vRefNameLabels), passed in rather than rebuilt here: a margin sized
+// (the axis' `refNameLabels`), passed in rather than rebuilt here: a margin sized
 // off a different string than the one drawn is a clipped label, and the elide
 // decision is taken over EVERY displayed region — not just the ones wide enough
 // to be measured below — because it is a property of the axis, so a zoom that
@@ -205,22 +205,6 @@ export function axisBorderPx(
     0,
   )
   return Math.max(labelWidth + BORDER_CHROME, MIN_BORDER)
-}
-
-// Slide each tick's axis position into the viewport. Negative or out-of-range
-// results are kept so the caller can clip in one place. Shared between
-// HorizontalAxis and VerticalAxis to keep their tick math identical.
-//
-// The whole of the per-pan tick cost is this subtraction: `makeTicks` resolved
-// the axis position once, against the block, when it built the tick.
-export function computeTickPositions(
-  view: Dotplot1DViewModel,
-  ticks: Tick[],
-): PositionedTick[] {
-  const { offsetPx } = view
-  return ticks.flatMap(tick =>
-    tick.px === undefined ? [] : [{ tick, alongPx: tick.px - offsetPx }],
-  )
 }
 
 // Minimum on-screen spacing between two kept tick marks, and between two kept

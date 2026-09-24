@@ -24,7 +24,7 @@ function region(refName: string, end: number, start = 0) {
 }
 
 // the model hands axisBorderPx the same label map its axis component draws from
-// (h/vRefNameLabels); pair the two here so a test can't measure the margin
+// (the axis' `refNameLabels`); pair the two here so a test can't measure the margin
 // against a string the axis would never print
 function border(
   regions: { refName: string; start: number; end: number }[],

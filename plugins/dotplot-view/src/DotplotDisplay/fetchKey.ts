@@ -7,9 +7,9 @@ import type { LodTier } from '@jbrowse/synteny-core'
 // order and orientation. The signature arrives precomputed rather than being
 // derived here from the axis' regions, because this key also depends on zoom —
 // built in one place it rebuilt a string over every displayed region, for every
-// display, on every wheel step. The view computes each axis' signature once
-// (`hRegionSignature`/`vRegionSignature`), where it recomputes only when the
-// regions actually change.
+// display, on every wheel step. Each axis computes its own once
+// (`Dotplot1DView.regionSignature`), which recomputes only when the regions
+// actually change.
 interface AxisFetchInputs {
   bpPerPx: number
   regionSignature: string

@@ -369,14 +369,8 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
         const { view } = this
         return dotplotFetchKey(
           this.lodTier,
-          {
-            bpPerPx: view.hview.bpPerPx,
-            regionSignature: view.hRegionSignature,
-          },
-          {
-            bpPerPx: view.vview.bpPerPx,
-            regionSignature: view.vRegionSignature,
-          },
+          view.hview,
+          view.vview,
           this.fetchRegions,
         )
       },

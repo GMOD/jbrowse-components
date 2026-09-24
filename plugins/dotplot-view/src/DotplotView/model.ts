@@ -46,7 +46,6 @@ import {
   comparativeSurfacePhase,
   colorableColumns,
   comparativeSurfaceSettled,
-  regionSignature,
   releaseTemporaryAssemblies,
   trackHasLodTiers,
 } from '@jbrowse/synteny-core'
@@ -57,16 +56,6 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { pickDotplotFeature } from '../DotplotDisplay/dotplotPickEngine.ts'
 import { DotplotHView, DotplotVView } from './1dview.ts'
 import { doAfterAttach } from './afterAttach.ts'
-import {
-  axisBorderPx,
-  computeTickPositions,
-  getBlockLabelKeysToHide,
-  makeTicks,
-  regionBoundaryLines,
-  thinTickPositions,
-  tickLines,
-  truncateRefNames,
-} from './components/util.ts'
 import { dotplotLaunchKeys } from './launchKeys.ts'
 import { DRAG_THRESHOLD_PX, HOVER_SLACK_PX, LS_CURSOR_MODE } from './types.ts'
 
@@ -102,23 +91,6 @@ const ReturnToImportFormDialog = lazy(
   () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
 )
 type CursorMode = 'crosshair' | 'move'
-
-// Ticks for one axis. There used to be a cutoff here — more than five visible
-// blocks and the axis got no ticks at all — because at high chromosome counts
-// the labels overlap illegibly. It cost the lines too, and without them the
-// region-boundary grid is the only structure a whole-genome plot has left.
-//
-// It was also load-bearing in a way its comment didn't say: positioning a tick
-// meant a `bpToPx` scan of `displayedRegions`, so ticks x regions per pan, and
-// these axes carry one region per refName. The cutoff was the only thing
-// keeping that off a fragmented assembly. Both halves are now handled where
-// they belong — `makeTicks` resolves position from the block in O(1) and skips
-// sub-tick-width blocks, and `thinTickPositions` drops marks and labels that
-// would collide — so the axis can just always have ticks.
-function axisTicks(view: Dotplot1DViewModel) {
-  const { staticBlocks, bpPerPx } = view
-  return makeTicks(staticBlocks.contentBlocks, bpPerPx)
-}
 
 // Resolve a highlight region against ONE axis of the plot, or reject
 // it as belonging to the other one. Two things happen here that the pixel
@@ -414,24 +386,6 @@ export default function stateModelFactory(pm: PluginManager) {
           }
           return self.volatileWidth
         },
-        // refName -> the string the axis actually prints for it. Off
-        // displayedRegions rather than off the visible blocks so panning and
-        // zooming can't change a label, and declared here — ahead of the borders
-        // — so `axisBorderPx` is HANDED the map it sizes the margin against
-        // instead of deriving its own copy from the same input. The two agreeing
-        // is what keeps a label from being clipped by a margin measured off a
-        // different string, and it is now one computation rather than an
-        // invariant between two.
-        get hRefNameLabels() {
-          return truncateRefNames(
-            self.hview.displayedRegions.map(r => r.refName),
-          )
-        },
-        get vRefNameLabels() {
-          return truncateRefNames(
-            self.vview.displayedRegions.map(r => r.refName),
-          )
-        },
         /**
          * #getter
          * Left margin: fits the vertical (vview) axis labels. Derived purely
@@ -439,22 +393,14 @@ export default function stateModelFactory(pm: PluginManager) {
          * feed back through viewWidth = width - borderX into a render loop.
          */
         get borderX() {
-          return axisBorderPx(
-            self.vview.displayedRegions,
-            self.vview.bpPerPx,
-            this.vRefNameLabels,
-          )
+          return self.vview.labelMarginPx
         },
         /**
          * #getter
          * Bottom margin: fits the horizontal (hview) axis labels. See borderX.
          */
         get borderY() {
-          return axisBorderPx(
-            self.hview.displayedRegions,
-            self.hview.bpPerPx,
-            this.hRefNameLabels,
-          )
+          return self.hview.labelMarginPx
         },
       }))
       .views(self => ({
@@ -548,30 +494,6 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #getter
          */
-        get hticks() {
-          return axisTicks(self.hview)
-        },
-        /**
-         * #getter
-         */
-        get vticks() {
-          return axisTicks(self.vview)
-        },
-        /**
-         * #getter
-         */
-        get hTickPositions() {
-          return computeTickPositions(self.hview, this.hticks)
-        },
-        /**
-         * #getter
-         */
-        get vTickPositions() {
-          return computeTickPositions(self.vview, this.vticks)
-        },
-        /**
-         * #getter
-         */
         get hasSomethingToShow() {
           return self.assemblyNames.length > 0 || !!self.pendingLaunch
         },
@@ -661,110 +583,6 @@ export default function stateModelFactory(pm: PluginManager) {
         get viewHeight() {
           return Math.max(self.height - self.borderY, 0)
         },
-        // Block-label keys whose tick labels would overlap and are hidden.
-        // Cached as a view so the horizontal and vertical axis components share
-        // one computation per axis instead of recomputing it independently.
-        get hblockLabelKeysToHide() {
-          return getBlockLabelKeysToHide(
-            self.hview.dynamicBlocks.contentBlocks,
-            this.viewWidth,
-            self.hview.offsetPx,
-          )
-        },
-        get vblockLabelKeysToHide() {
-          return getBlockLabelKeysToHide(
-            self.vview.dynamicBlocks.contentBlocks,
-            this.viewHeight,
-            self.vview.offsetPx,
-          )
-        },
-        /**
-         * #getter
-         * The h ticks that land on the drawn axis, thinned to what can be read
-         * and flagged for labelling. `hTickPositions` comes from staticBlocks,
-         * which extend a screen past the viewport in both directions; clipping
-         * here rather than per element in the axis component keeps the SVG
-         * export from carrying a group per invisible tick, and is cached for
-         * the same reason hblockLabelKeysToHide is.
-         *
-         * Clip before thinning: spacing is a question about what is on screen,
-         * and offscreen ticks would otherwise claim slots from visible ones.
-         */
-        get visibleHTickPositions() {
-          return thinTickPositions(
-            this.hTickPositions.filter(
-              t => t.alongPx > 0 && t.alongPx < this.viewWidth,
-            ),
-          )
-        },
-        /**
-         * #getter
-         * The v ticks that land on the drawn axis. See visibleHTickPositions.
-         */
-        get visibleVTickPositions() {
-          return thinTickPositions(
-            this.vTickPositions.filter(
-              t => t.alongPx > 0 && t.alongPx < this.viewHeight,
-            ),
-          )
-        },
-        /**
-         * #getter
-         * Region-boundary lines for the horizontal axis, in plot px. Computed
-         * here rather than in the grid component so the screen and the SVG
-         * export cannot drift apart, and so the gridlines below can see which
-         * pixels a boundary already owns.
-         */
-        get hRegionLines() {
-          const { offsetPx, displayedRegionsTotalPx } = self.hview
-          return regionBoundaryLines(
-            self.hview.dynamicBlocks.contentBlocks,
-            b => b.offsetPx - offsetPx,
-            displayedRegionsTotalPx - offsetPx,
-            this.viewWidth,
-          )
-        },
-        /**
-         * #getter
-         * See hRegionLines. The vertical axis lays out bottom-up, so its block
-         * offsets are mirrored into screen y here — the same mirror its ticks
-         * and labels take.
-         */
-        get vRegionLines() {
-          const { offsetPx, displayedRegionsTotalPx } = self.vview
-          return regionBoundaryLines(
-            self.vview.dynamicBlocks.contentBlocks,
-            b => this.viewHeight - (b.offsetPx - offsetPx),
-            this.viewHeight - (displayedRegionsTotalPx - offsetPx),
-            this.viewHeight,
-          )
-        },
-        /**
-         * #getter
-         * The faint coordinate lines the horizontal ruler casts across the
-         * plot, in its two weights. Empty when the setting is off, and empty
-         * with it on whenever this axis could not number itself anywhere —
-         * which at whole-genome zoom is the usual case. All or nothing per
-         * axis, never per chromosome; see `tickLines`.
-         */
-        get hGridlines() {
-          return self.showGridlines
-            ? tickLines(this.visibleHTickPositions, px => px, this.hRegionLines)
-            : []
-        },
-        /**
-         * #getter
-         * See hGridlines.
-         */
-        get vGridlines() {
-          return self.showGridlines
-            ? tickLines(
-                this.visibleVTickPositions,
-                px => this.viewHeight - px,
-                this.vRegionLines,
-              )
-            : []
-        },
         /**
          * #getter
          * The setting is on and neither axis has a ruler to cast — a ticked
@@ -774,8 +592,8 @@ export default function stateModelFactory(pm: PluginManager) {
         get gridlinesEmpty() {
           return (
             self.showGridlines &&
-            this.hGridlines.length === 0 &&
-            this.vGridlines.length === 0
+            self.hview.gridlines.length === 0 &&
+            self.vview.gridlines.length === 0
           )
         },
         /**
@@ -806,27 +624,6 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         get sharedFitBpPerPx() {
           return Math.max(self.hview.fitBpPerPx, self.vview.fitBpPerPx)
-        },
-        /**
-         * #getter
-         * Signature of the horizontal axis' displayed-region order and
-         * orientation, which a diagonalize reorder/flip changes and a zoom or
-         * pan does not. Computed here, once for the view, because every
-         * display's `currentFetchKey` needs it alongside the zoom: derived
-         * inside that key it was rebuilt — a template literal per displayed
-         * region, so thousands on a fragmented assembly — per display on every
-         * wheel step. As its own primitive-valued computed it notifies only when
-         * the regions really change.
-         */
-        get hRegionSignature() {
-          return regionSignature(self.hview.displayedRegions)
-        },
-        /**
-         * #getter
-         * The vertical axis' displayed-region signature. See hRegionSignature.
-         */
-        get vRegionSignature() {
-          return regionSignature(self.vview.displayedRegions)
         },
 
         /**

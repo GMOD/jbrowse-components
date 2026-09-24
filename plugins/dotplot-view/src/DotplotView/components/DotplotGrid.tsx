@@ -63,7 +63,8 @@ const RegionGrid = observer(function RegionGrid({
   // component, and the gridlines have to be able to see which pixels a boundary
   // already owns. Gridlines first, so a boundary wins any pixel they still end
   // up sharing.
-  const { hRegionLines, vRegionLines, hGridlines, vGridlines } = model
+  const { regionLines: hRegionLines, gridlines: hGridlines } = hview
+  const { regionLines: vRegionLines, gridlines: vGridlines } = vview
   const minorD = gridPath(hGridlines, vGridlines, false, viewWidth, viewHeight)
   const majorD = gridPath(hGridlines, vGridlines, true, viewWidth, viewHeight)
 

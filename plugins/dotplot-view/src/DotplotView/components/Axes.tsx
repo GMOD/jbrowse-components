@@ -99,13 +99,18 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
 }: {
   model: DotplotViewModel
 }) {
-  const { viewWidth, borderY, hview, visibleHTickPositions: ticks } = model
+  const { viewWidth, borderY, hview } = model
   // Horizontal-axis labels are drawn vertically (rotated -90° about their anchor).
   const rotate = -90
-  const { offsetPx, dynamicBlocks, bpPerPx } = hview
+  const {
+    offsetPx,
+    dynamicBlocks,
+    bpPerPx,
+    visibleTickPositions: ticks,
+    blockLabelKeysToHide: hide,
+    refNameLabels: labels,
+  } = hview
   const blocks = dynamicBlocks.contentBlocks
-  const hide = model.hblockLabelKeysToHide
-  const labels = model.hRefNameLabels
   const color = useAxisColor()
 
   return (
@@ -189,11 +194,16 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
 }: {
   model: DotplotViewModel
 }) {
-  const { viewHeight, borderX, vview, visibleVTickPositions: ticks } = model
-  const { offsetPx, dynamicBlocks, bpPerPx } = vview
+  const { viewHeight, borderX, vview } = model
+  const {
+    offsetPx,
+    dynamicBlocks,
+    bpPerPx,
+    visibleTickPositions: ticks,
+    blockLabelKeysToHide: hide,
+    refNameLabels: labels,
+  } = vview
   const blocks = dynamicBlocks.contentBlocks
-  const hide = model.vblockLabelKeysToHide
-  const labels = model.vRefNameLabels
   const color = useAxisColor()
 
   // Vertical axis is flipped: block offsetPx grows upward visually, so we map
