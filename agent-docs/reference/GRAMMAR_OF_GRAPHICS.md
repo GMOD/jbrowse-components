@@ -507,6 +507,17 @@ the row axis in the vocabulary above, and none is a new channel.
 
 ## Gaps against the grammar
 
+- **`stack` is absent, and so are `median` and a weighted `coverage`.** A
+  stacked histogram by category (ggplot2's `position_stack`, GenomeSpy's
+  `stack` writing `y0`/`y1`) needs a bar drawn between two values, which is
+  the `y2` channel declined on captures for the range bar
+  ([the handoff's call](../handoffs/grammar-of-graphics-convergence.md)); a
+  bar mark per category drawn from the origin gives the overlay the Alu
+  tutorial draws. `aggregate` takes `count`, `sum`, `mean`, `min` and `max`
+  where Vega-Lite and GenomeSpy add `median` and the quartiles, and
+  `coverage` counts features where GenomeSpy's takes a `weight` field. Each
+  is an arm in `runTransforms` and a slot on its step, and each waits on a
+  `marks` config that wants it, as ADR-112 left `window` and `sample`.
 - **`window` and `sample` are absent**, and a BigWig's summary tiers are the
   adapter's: the mark display reads them at the view's zoom and a config
   names `score`, `minScore` or `maxScore` off what comes back

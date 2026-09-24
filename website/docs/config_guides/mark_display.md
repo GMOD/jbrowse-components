@@ -63,6 +63,54 @@ Listing the display first under `displays` makes it the one the track opens
 with. Every other slot has a default: `x` is `start`, `x2` is `end`, bars grow
 from an `origin` of 0, and the y-axis autoscales to the values on screen.
 
+## The vocabulary, for a ggplot2 or Vega-Lite reader
+
+A reader who knows ggplot2 or Vega-Lite can read a `marks` config through the
+names those libraries use. Each row is one idea; the last column is where this
+display spells it, and the sections below take each in turn. GenomeSpy shares
+Vega-Lite's names and adds the genomic transforms, so it appears where it adds
+one.
+
+<!-- prettier-ignore -->
+| Idea | ggplot2 | Vega-Lite, GenomeSpy | `LinearMarkDisplay` |
+| --- | --- | --- | --- |
+| a bar from a baseline to a value | `geom_col()` | `"mark": "bar"` | `"mark": "bar"`, the display's `origin` as the baseline |
+| a point at a value | `geom_point(size)` | `"mark": "point"`, `"size"` on the mark | `"mark": "point"`, `size` on the mark |
+| a band across the plot, with no value | `geom_rect()` with no y | `"mark": "rect"` over `x` and `x2` alone | `"mark": "span"` |
+| the field a mark plots | `aes(y = score)` | `"y": {"field": "score"}` | `"encoding": {"y": "score"}` |
+| a value computed on the way in | `mutate()` before the plot | `{"calculate": …, "as": …}` | `{"type": "formula", "expr": …, "as": …}` |
+| a colour per category | `aes(fill = strand)` | `"color": {"field": "strand", "type": "nominal"}` | `"color": {"field": "strand", "scale": "categorical"}` |
+| which colours, in which order | `scale_fill_manual(values, breaks)` | `"scale": {"domain": […], "range": […]}` | `domain` and `range` on the colour |
+| a colour ramp over a number | `scale_fill_viridis_c()`, `scale_fill_gradientn(colours)` | `"type": "quantitative"`, `"scale": {"scheme"}` | `"scale": "linear"` with `scheme` or `range` |
+| the ramp's middle stop at a value | `scale_fill_gradient2(midpoint)` | `"scale": {"domainMid"}` | `domainMid` on the colour |
+| a colour per interval of a number | `scale_fill_stepsn(breaks, colours)` | `"scale": {"type": "threshold", "domain", "range"}` | `"scale": "threshold"`, `domain` holding the cuts |
+| a shape per category | `aes(shape = svtype)` | `"shape": {"field": "svtype"}` | `"shape": {"field": "svtype", "scale": "categorical"}` |
+| a log axis | `scale_y_log10()` | `"y": {"scale": {"type": "log"}}` | `"scales": {"y": {"type": "log"}}` |
+| fixed axis ends | `coord_cartesian(ylim)` | `"scale": {"domain": [lo, hi]}` | `domainMin` and `domainMax` on `scales.y` |
+| one axis over several plots | `facet_*(scales = "fixed")` | `"resolve": {"scale": {"y": "shared"}}` | `scales.y.autoscaleGroup`, across tracks |
+| an axis caption | `labs(y = "…")` | `"axis": {"title"}` | `scales.y.title` |
+| a key heading | `labs(fill = "…")` | `"legend": {"title"}` | `title` on the colour |
+| a horizontal line at a value | `geom_hline(yintercept)` | `"mark": "rule"` with a `datum` | `scales.y.rules` |
+| a histogram | `geom_histogram(binwidth)` | `{"bin": {"step"}}` then `{"aggregate": [{"op": "count"}]}` | `{"type": "bin", "step"}` then `{"type": "aggregate", "ops": [{"op": "count"}]}` |
+| a summary per bin | `stat_summary_bin(fun = mean)` | `bin` then `aggregate` with `"op": "mean"` | `bin` then `aggregate` with `"op": "mean"` |
+| keep some of the rows | `filter()` before the plot | `{"filter": …}` | `{"type": "filter", "expr": …}`, or the display's `jexlFilters` |
+| one row per element of a list field | `tidyr::unnest()` | `{"flatten": [field]}` | `{"type": "flatten", "field"}` |
+| how many features overlap each position | | GenomeSpy `{"type": "coverage"}` | `{"type": "coverage"}` |
+| overlapping features stacked into rows | | GenomeSpy `{"type": "pileup", "as": "lane"}` | `{"type": "pileup"}`, read by the mark's `row` |
+| a band of the plot per category | `facet_grid(rows = vars(sample))` | `"row": {"field": "sample"}` | `"facet": "sample"`, or `"rows": "sample"` for one row each |
+| layers drawn in order | `+ geom_…()` | `"layer": […]` | `marks`, in list order |
+| a layer that draws at some zooms only | | GenomeSpy `multiscale` with `stops` | `minBpPerPx` and `maxBpPerPx` on the mark |
+| a polar plot | `coord_polar()` | | the circular view, over the same config |
+
+Two names mean something else here. Vega-Lite's `row` is a facet channel; on
+this display `encoding.row` is the band a feature stands in, the integer a
+`pileup` step writes, and the facet is the display's own `facet`. And a
+positional channel is a bare field where Vega-Lite's carries a scale, because
+the y scale is the display's `scales.y` and every mark reads one axis. Text,
+stacked bars and a `size` or `opacity` channel have no row: the display draws no
+text, a bar stands on its own from the baseline, and a point's diameter is its
+mark's `size`.
+
 ## The encoding
 
 Each mark's `encoding` maps feature fields to the channels its type reads:
@@ -422,15 +470,15 @@ Each step names its `type` and takes that step's own settings, which the
 [MarkTransform config reference](/docs/config/marktransform) lists; a key
 belonging to another step is refused where the config is read:
 
-| Step        | What it does                                                                                                                                                                                                                                                                |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `filter`    | keeps the features a jexl `expr` admits                                                                                                                                                                                                                                     |
-| `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                                                                                                                                            |
-| `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges to the two fields `as` names (`start`, `end`)                                                                                                                               |
-| `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field; an empty `groupby` takes the edges the last `bin` before it wrote, in this mark's `transform` or the display's |
-| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                                                                                                            |
-| `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`), each reading its parent for what it lacks, with its position in the field `index` names; `keepEmpty` holds on to a feature whose array is empty                                             |
-| `pileup`    | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row                                                                                          |
+| Step        | What it does                                                                                                                                                                                                                                                                             |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `filter`    | keeps the features a jexl `expr` admits                                                                                                                                                                                                                                                  |
+| `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                                                                                                                                                         |
+| `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges to the two fields `as` names (`start`, `end`)                                                                                                                                            |
+| `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field; an empty `groupby` takes the edges the last `bin` before it wrote, in this mark's `transform`, the facet's or the display's |
+| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                                                                                                                         |
+| `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`), each reading its parent for what it lacks, with its position in the field `index` names; `keepEmpty` holds on to a feature whose array is empty                                                          |
+| `pileup`    | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row                                                                                                       |
 
 A field a step reads is a name or a dotted path into a structured field, so a
 VCF's `INFO.DP` is the `field` of a `mean` and `INFO.SVTYPE` a `groupby`; a

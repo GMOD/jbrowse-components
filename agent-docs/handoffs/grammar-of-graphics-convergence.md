@@ -206,7 +206,12 @@ displays resolve colour through `colorEncodingOf`. Hi-C's is the `HicColor` obje
 now, LD's is named per metric, and the variant and multi-row row colours go
 with the row scale. MAF's
 `colorByChromosome` and the arc displays' `color` are what remains, through
-ADR-135.
+ADR-135. Sized on 2026-09-24: the arc displays paint a main-thread Canvas2D
+under `DisplayStatusChrome`, which places no legend, so a colour object there
+is the schema and `colorEncodingOf` in `arcStyles` plus a legend surface the
+arc chrome does not have; and the paired display evaluates `color` over
+`(feature, alt)`, a context no field can name, so its `value` stays the jexl
+arm.
 
 ## Order
 
