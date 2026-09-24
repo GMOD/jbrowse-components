@@ -528,6 +528,40 @@ test('two saves in flight land in the order they arrived', async () => {
   jest.mocked(writeFileAtomic).mockImplementation(actual)
 })
 
+// The close flush usually finds the autosave already wrote its bytes, and used
+// to return at once while that write was still queued: the window closed, the
+// app quit, and the file kept what it held before.
+test('a save of bytes still being written waits for that write', async () => {
+  const sessionPath = path.join(dir, 'joined.jbrowse')
+  const actual = jest.requireActual<{
+    writeFileAtomic: typeof writeFileAtomic
+  }>('../writeFileAtomic.ts').writeFileAtomic
+  let release = () => {}
+  const held = new Promise<void>(resolve => {
+    release = resolve
+  })
+  jest.mocked(writeFileAtomic).mockImplementation(async (file, data) => {
+    if (file === sessionPath) {
+      await held
+    }
+    return actual(file, data)
+  })
+  const snap: SessionSnap = { assemblies: [], defaultSession: { name: 'x' } }
+
+  void invoke('saveSession', sessionPath, snap)
+  let flushed = false
+  const flush = invoke('saveSession', sessionPath, snap).then(() => {
+    flushed = true
+  })
+  await new Promise(resolve => setTimeout(resolve, 20))
+  expect(flushed).toBe(false)
+
+  release()
+  await flush
+  expect(fs.existsSync(sessionPath)).toBe(true)
+  jest.mocked(writeFileAtomic).mockImplementation(actual)
+})
+
 test('a changed session is still written', async () => {
   const sessionPath = path.join(dir, 'changed.jbrowse')
   await invoke('saveSession', sessionPath, {

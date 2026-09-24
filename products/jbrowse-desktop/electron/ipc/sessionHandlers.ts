@@ -180,7 +180,13 @@ const RECENT_SESSION_TOUCH_MS = 30_000
 // needs: only one session is open at a time, so every save it can help with is a
 // save of the same path as the one before it. Same shape as `lastThumbnail`.
 let lastSave:
-  | { path: string; data: string; row: RecentSession | undefined }
+  | {
+      path: string
+      data: string
+      row: RecentSession | undefined
+      // settles once `data` is on disk
+      written: Promise<void>
+    }
   | undefined
 
 // Whether this save has to reach recent_sessions.json. The first save of a path
@@ -265,17 +271,29 @@ export function registerSessionHandlers(
     // thumbnail ahead of the session bytes put that at the back of the queue.
     const thumbnail = captureThumbnail(getMainWindow(), sessionPath)
     const serialized = stringifySession(paths, sessionPath, snap)
-    const samePath = lastSave?.path === sessionPath
-    const unchanged = samePath && lastSave?.data === serialized
+    const previous = lastSave?.path === sessionPath ? lastSave : undefined
     const touchRecents = needsRecentSessionTouch(entry)
+    // A save of bytes already written or being written joins that write rather
+    // than skipping it: returning at once told the close flush its bytes were
+    // on disk while the write carrying them was still queued, and the app quit.
+    const written =
+      previous?.data === serialized
+        ? previous.written
+        : serializeSessionWrites(() =>
+            writeFileAtomic(sessionPath, serialized),
+          ).catch((e: unknown) => {
+            // the file is not what the slot now claims, so the next save has to
+            // write rather than read this back as already-on-disk
+            forgetSessionWrites([sessionPath])
+            throw e
+          })
     // Recorded before the awaits, so two saves racing (the quit flush behind the
-    // autosave) can't both decide they are the one that has to write. A rejected
-    // write clears it below rather than leaving the file described by bytes that
-    // never landed.
+    // autosave) can't both decide they are the one that has to write.
     lastSave = {
       path: sessionPath,
       data: serialized,
-      row: touchRecents ? entry : samePath ? lastSave?.row : undefined,
+      row: touchRecents ? entry : previous?.row,
+      written,
     }
 
     await Promise.all([
@@ -284,16 +302,7 @@ export function registerSessionHandlers(
             upsertRecentSession(rows, entry),
           )
         : undefined,
-      unchanged
-        ? undefined
-        : serializeSessionWrites(() =>
-            writeFileAtomic(sessionPath, serialized),
-          ).catch((e: unknown) => {
-            // the file is not what the slot now claims, so the next save has to
-            // write rather than read this back as already-on-disk
-            forgetSessionWrites([sessionPath])
-            throw e
-          }),
+      written,
       // Thumbnail is cosmetic like the capturePage that produced it: a failed
       // write (e.g. an over-long path on Windows) must not reject the session
       // save. Still awaited as part of this handler, so a quit that waits for
