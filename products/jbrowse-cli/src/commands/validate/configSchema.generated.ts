@@ -3658,13 +3658,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
         "heightMode": {
-          "description": "Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the \\"Track sizing\\" menu). \`fixed\` (the default) keeps a scrollable fixed height, \`grow\` expands the track to show all features, \`fit\` squeezes features to fill the current height. Orthogonal to the per-feature size set by \`displayMode\`. Unifies the former \`autoHeight\` (grow) + \`squeezeToDisplayHeight\` (fit) settings.",
+          "description": "Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the \\"Track sizing\\" menu). \`fit\` (the default) keeps the track height and gives up descriptions, then isoforms, then names, then squeezes boxes down to 2px, and scrolls only what still overflows; \`fixed\` keeps a scrollable fixed height; \`grow\` expands the track to show all features. Orthogonal to the per-feature size set by \`displayMode\`, which fit never enlarges.",
           "enum": [
             "fixed",
             "grow",
             "fit"
           ],
-          "default": "fixed"
+          "default": "fit"
         },
         "growMaxHeight": {
           "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes.",
@@ -5525,13 +5525,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
         "heightMode": {
-          "description": "Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the \\"Track sizing\\" menu). \`fixed\` (the default) keeps a scrollable fixed height, \`grow\` expands the track to show all features, \`fit\` squeezes features to fill the current height. Orthogonal to the per-feature size set by \`displayMode\`. Unifies the former \`autoHeight\` (grow) + \`squeezeToDisplayHeight\` (fit) settings.",
+          "description": "Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the \\"Track sizing\\" menu). \`fit\` (the default) keeps the track height and gives up descriptions, then isoforms, then names, then squeezes boxes down to 2px, and scrolls only what still overflows; \`fixed\` keeps a scrollable fixed height; \`grow\` expands the track to show all features. Orthogonal to the per-feature size set by \`displayMode\`, which fit never enlarges.",
           "enum": [
             "fixed",
             "grow",
             "fit"
           ],
-          "default": "fixed"
+          "default": "fit"
         },
         "growMaxHeight": {
           "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes.",
