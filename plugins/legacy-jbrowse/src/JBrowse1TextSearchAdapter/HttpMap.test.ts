@@ -59,6 +59,26 @@ test('get bucket contents', async () => {
   expect(spy).toHaveBeenLastCalledWith(`${rootTemplate}/f.json`)
 })
 
+test('a bucket generate-names.pl never wrote is empty, not an error', async () => {
+  jest
+    .spyOn(global, 'fetch')
+    .mockImplementation(async url =>
+      `${url}`.includes('meta.json')
+        ? new Response(JSON.stringify(meta))
+        : new Response('', { status: 404 }),
+    )
+  const hashMap = new HttpMap({ url: rootTemplate })
+  expect(await hashMap.getBucket('nonexistent')).toEqual({})
+})
+
+test('a missing meta.json is still an error', async () => {
+  jest
+    .spyOn(global, 'fetch')
+    .mockImplementation(async () => new Response('', { status: 404 }))
+  const hashMap = new HttpMap({ url: rootTemplate })
+  await expect(hashMap.getTrackNames()).rejects.toThrow('HTTP 404')
+})
+
 test('url always has trailing slash', () => {
   const withSlash = new HttpMap({ url: 'https://example.com/names/' })
   const withoutSlash = new HttpMap({ url: 'https://example.com/names' })

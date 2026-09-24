@@ -347,10 +347,10 @@ describe('nameNotFound', () => {
     ).toBe('No results found for "BRCA1": hg38 has no text search index')
   })
 
-  it('reports a failed index as a failure, not a miss', () => {
+  it('reports a search no index could answer as a failure', () => {
     const cause = new Error('HTTP 404 fetching hg38.ixx')
     const e = nameNotFound('BRCA1', 'hg38', {
-      indexCount: 2,
+      indexCount: 1,
       failures: [cause],
     })
     expect(e).not.toBeInstanceOf(SearchResultsNotFoundError)
@@ -358,5 +358,18 @@ describe('nameNotFound', () => {
       'Searching for "BRCA1" failed: Error: HTTP 404 fetching hg38.ixx',
     )
     expect(e.cause).toBe(cause)
+  })
+
+  // one stale per-track index must not turn every misspelling into an error
+  it('keeps a miss other indexes answered a miss, naming what failed', () => {
+    const cause = new Error('HTTP 404 fetching genes.ixx')
+    const e = nameNotFound('BRCA1', 'hg38', {
+      indexCount: 2,
+      failures: [cause],
+    })
+    expect(e).toBeInstanceOf(SearchResultsNotFoundError)
+    expect(e.message).toBe(
+      'No results found for "BRCA1" (a search index failed: Error: HTTP 404 fetching genes.ixx)',
+    )
   })
 })

@@ -1575,6 +1575,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       * Raise the picker over search results that name more than one place.
        * @param onPick - where a picked result lands; by default it navigates
        * there and shows the track its index came from
        */

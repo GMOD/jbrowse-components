@@ -77,17 +77,22 @@ export default class HttpMap {
   async getBucket(key: string) {
     const bucketIdent = this.hash(key)
     const hexToDirPath = await this.hexToDirPath(bucketIdent)
-    return this.loadFile(hexToDirPath)
+    // generate-names.pl writes only the buckets that hold a name, so a missing
+    // one is an empty bucket, as JBrowse 1's own Store/Hash reads it
+    return this.loadFile(hexToDirPath, {})
   }
 
   /**
    * Loads a file using the url and provided id.
    * Returns response object with contents of the file
    * @param id - string
+   * @param ifMissing - the contents a 404 stands for, if it is not an error
    */
-  async loadFile(id: string) {
+  async loadFile(id: string, ifMissing?: object) {
     const response = await fetch(`${this.url}${id}`)
-    if (!response.ok) {
+    if (response.status === 404 && ifMissing) {
+      return ifMissing
+    } else if (!response.ok) {
       throw new Error(`HTTP ${response.status} ${response.statusText}`)
     }
     return response.json()

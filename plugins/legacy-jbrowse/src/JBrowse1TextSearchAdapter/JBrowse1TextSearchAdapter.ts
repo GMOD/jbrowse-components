@@ -27,8 +27,6 @@ export default class JBrowse1TextSearchAdapter
 {
   httpMap: HttpMap
 
-  tracksNames?: string[]
-
   constructor(
     config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
@@ -53,7 +51,7 @@ export default class JBrowse1TextSearchAdapter
 
   async searchIndex(args: BaseTextSearchArgs) {
     const { searchType, queryString } = args
-    const tracks = this.tracksNames ?? (await this.httpMap.getTrackNames())
+    const tracks = await this.httpMap.getTrackNames()
     const str = queryString.toLowerCase()
     const entries = await this.loadIndexFile(str)
     const results = entries[str]

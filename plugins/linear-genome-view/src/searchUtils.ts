@@ -517,23 +517,27 @@ export async function fetchResults(args: SearchArgs) {
   return (await searchNames(args)).results
 }
 
-// A broken index, or none at all, says so rather than reporting the name as
-// absent
+// A miss says when an index could not answer: with none answering it is a
+// failure, and with some answering it is still a miss, naming what failed
 export function nameNotFound(
   input: string,
   assemblyName: string,
   { indexCount, failures }: { indexCount: number; failures: unknown[] },
 ) {
   const [failure] = failures
-  return failure !== undefined
-    ? new Error(`Searching for "${input}" failed: ${failure}`, {
-        cause: failure,
-      })
-    : new SearchResultsNotFoundError(
-        indexCount
-          ? `No results found for "${input}"`
-          : `No results found for "${input}": ${assemblyName} has no text search index`,
+  const miss = `No results found for "${input}"`
+  return failure === undefined
+    ? new SearchResultsNotFoundError(
+        indexCount ? miss : `${miss}: ${assemblyName} has no text search index`,
       )
+    : failures.length === indexCount
+      ? new Error(`Searching for "${input}" failed: ${failure}`, {
+          cause: failure,
+        })
+      : new SearchResultsNotFoundError(
+          `${miss} (a search index failed: ${failure})`,
+          { cause: failure },
+        )
 }
 
 // Scan assembly refnames for query matches, resolving aliases (e.g. 'contigB')

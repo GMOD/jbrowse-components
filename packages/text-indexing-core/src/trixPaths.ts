@@ -21,11 +21,8 @@ export function sanitizeForFilename(name: string) {
  * The three files an index called `name` writes, sanitized once.
  *
  * Everything that writes a trix artifact or points a config at one derives its
- * paths from here. They used to sanitize independently and one of them didn't:
- * the CLI wrote `.ix`/`.ixx` under the raw name while `generateMeta` and
- * `createTrixAdapter` sanitized, so a trackId holding a `/` aimed the write at
- * a `trix/` subdirectory that does not exist, and the rest of the
- * Windows-invalid set wrote a file no search would look for.
+ * paths from here, so a trackId holding a `/` or another Windows-invalid
+ * character names the same file for the writer as for the search reading it.
  */
 export function trixFileNames(name: string) {
   const safeName = sanitizeForFilename(name)
