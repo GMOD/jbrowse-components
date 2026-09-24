@@ -235,7 +235,10 @@ is gated on the filter alone.
 - **Escaping row names is hclust's job** (`toNewick` quotes from 4.0.3) —
   **don't escape here as well**. `clusterMatrix.test.ts` asserts the
   dependency's half. Bare, a parenthesis makes a leaf parse as an internal node
-  and a comma splits one leaf into two.
+  and a comma splits one leaf into two. The one gap is the empty name, the
+  multi-row display's no-value row: hclust writes it bare, which reads back as
+  an unnamed leaf, so `clusterMatrix` names that leaf and `writeNewick` quotes
+  it as `''`. Once hclust's `quoteName` quotes `''`, the fix-up goes.
 - `parseNewick` is the reading half and must agree exactly. It stays ours
   regardless (maf's `.nh` guide trees are hand-written and may quote), and a
   quoted post-paren token is a name whatever it looks like.
