@@ -1,4 +1,5 @@
 import { createTestSession } from '@jbrowse/web/testUtils'
+import { when } from 'mobx'
 
 import {
   buildRubberBandMenuItems,
@@ -113,6 +114,33 @@ test('"Zoom to base level" centers the base that was clicked', () => {
   clickItem(clickAt(view, 500), 'Zoom to base level')
   expect(view.pxToBp(view.width / 2).coord).toBe(clicked)
 })
+
+test('"Zoom to base level" settles the coarse blocks at base level', async () => {
+  const { view } = setup()
+  await when(() => view.initialized)
+  view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+  clickItem(clickAt(view, 500), 'Zoom to base level')
+  expect(view.bpPerPx).toBe(view.minBpPerPx)
+  expect(view.coarseBpPerPx).toBe(view.bpPerPx)
+  expect(view.coarseDynamicBlocks.map(b => b.key)).toEqual(
+    view.dynamicBlocks.contentBlocks.map(b => b.key),
+  )
+})
+
+test.each(['Center view here', 'Zoom to base level'])(
+  '"%s" on a chromosome shown twice centers the copy that was clicked',
+  label => {
+    const { view } = setup([WHOLE_CONTIG[0]!, WHOLE_CONTIG[0]!])
+    view.scrollTo(10_000)
+    const clicked = view.pxToBp(500)
+    expect(clicked.index).toBe(1)
+    clickItem(clickAt(view, 500), label)
+    expect(view.pxToBp(view.width / 2)).toMatchObject({
+      index: 1,
+      coord: clicked.coord,
+    })
+  },
+)
 
 test('"Copy range" names the first and last selected bases', () => {
   const { view } = setup()

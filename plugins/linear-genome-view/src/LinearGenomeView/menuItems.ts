@@ -438,7 +438,7 @@ export function buildRubberbandClickMenuItems(
   self: LinearGenomeViewModel,
   clickOffset: BpOffset,
 ): MenuItem[] {
-  const { refName, start, end, reversed, offset } = clickOffset
+  const { refName, start, end, reversed, offset, index } = clickOffset
   if (refName === undefined || start === undefined || end === undefined) {
     return []
   }
@@ -456,15 +456,15 @@ export function buildRubberbandClickMenuItems(
       label: 'Center view here',
       icon: CenterFocusStrongIcon,
       onClick: () => {
-        self.centerAt(coord0, refName)
+        self.centerAt(coord0, refName, index)
       },
     },
     {
       label: 'Zoom to base level',
       icon: ZoomInIcon,
       onClick: () => {
-        self.centerAt(coord0, refName)
         self.zoomTo(self.minBpPerPx)
+        self.centerAt(coord0, refName, index)
       },
     },
     {
