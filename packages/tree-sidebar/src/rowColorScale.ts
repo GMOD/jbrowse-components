@@ -66,12 +66,3 @@ export function valuesByCount(values: readonly string[]) {
   }
   return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([v]) => v)
 }
-
-/**
- * The `name` pairs a recolour starts from where `rowColor` paints by another
- * field: every row's colour as the channel paints it now, so the rows the
- * reader left alone keep theirs once the field is `name`.
- */
-export function materializedRowColors(scale: ReadonlyMap<string, string>) {
-  return new Map(scale)
-}

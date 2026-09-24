@@ -10,12 +10,7 @@ import { compareStructural } from 'mobx'
 import { arrangeRows, orderRowsByDomain } from './arrangeRows.ts'
 import { applySubtreeFilter, buildTree, keptRows } from './clusterUtils.ts'
 import { maxNodeHeight } from './hierarchy.ts'
-import {
-  colorsByRow,
-  dealtColors,
-  materializedRowColors,
-  rowFieldValue,
-} from './rowColorScale.ts'
+import { colorsByRow, dealtColors, rowFieldValue } from './rowColorScale.ts'
 import { rowEdits } from './rowEdits.ts'
 
 import type {
@@ -710,9 +705,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         applyRowEdits(rows: readonly S[]) {
           const setting = self.rowColorSetting
           const byName = paintsNamePairs(setting)
-          const colors = byName
-            ? self.rowColors
-            : materializedRowColors(self.rowColorScale)
+          const colors = byName ? self.rowColors : self.rowColorScale
           const { labels, rowColor } = rowEdits({
             rows,
             shown: self.editableSources,

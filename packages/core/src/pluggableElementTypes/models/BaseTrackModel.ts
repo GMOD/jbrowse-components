@@ -222,20 +222,6 @@ export function createBaseTrackModel(
       get compatibleDisplays() {
         return getCompatibleDisplays(self)
       },
-
-      /**
-       * #getter
-       */
-      get canConfigure() {
-        const session = getSession(self)
-        const { sessionTracks, trackConfigDeltas, adminMode } = session
-        return (
-          isSessionModelWithConfigEditing(session) &&
-          (adminMode ||
-            !!sessionTracks?.find(t => t.trackId === this.trackId) ||
-            this.trackId in (trackConfigDeltas ?? {}))
-        )
-      },
     }))
     .views(self => ({
       /**
