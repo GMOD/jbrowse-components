@@ -11,8 +11,17 @@ const useStyles = makeStyles()(theme => ({
   grow: {
     flexGrow: 1,
   },
+  // a long session name ellipsizes rather than pushing Share off a phone
+  sessionName: {
+    minWidth: 0,
+  },
   inputBase: {
     color: theme.palette.primary.contrastText,
+    maxWidth: '100%',
+  },
+  input: {
+    maxWidth: '100%',
+    textOverflow: 'ellipsis',
   },
   inputRoot: {
     '&:hover': {
@@ -24,6 +33,9 @@ const useStyles = makeStyles()(theme => ({
     backgroundColor: theme.palette.primary.light,
   },
   logo: {
+    [theme.breakpoints.down('sm')]: {
+      display: 'none',
+    },
     // stretch to the toolbar height so the logo's height follows the bar
     // rather than a hardcoded pixel value
     alignSelf: 'stretch',
@@ -68,18 +80,21 @@ const AppToolbar = observer(function AppToolbar({
       ))}
       <div className={classes.grow} />
       <Tooltip title="Rename session" arrow>
-        <EditableTypography
-          value={name}
-          variant="body1"
-          classes={{
-            inputBase: classes.inputBase,
-            inputRoot: classes.inputRoot,
-            inputFocused: classes.inputFocused,
-          }}
-          setValue={newName => {
-            session.renameCurrentSession(newName)
-          }}
-        />
+        <div className={classes.sessionName}>
+          <EditableTypography
+            value={name}
+            variant="body1"
+            classes={{
+              input: classes.input,
+              inputBase: classes.inputBase,
+              inputRoot: classes.inputRoot,
+              inputFocused: classes.inputFocused,
+            }}
+            setValue={newName => {
+              session.renameCurrentSession(newName)
+            }}
+          />
+        </div>
       </Tooltip>
       {HeaderButtons}
       <div className={classes.grow} />
