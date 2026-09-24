@@ -9,6 +9,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { ANALYTICS_OPT_OUT_FILE } from '../analyticsOptOut.ts'
+import { getFileStream } from '../fileStream.ts'
 import { getFaiPath } from '../paths.ts'
 import { registerFileHandlers } from './fileHandlers.ts'
 import { captureHandlers, makeTestPaths } from './testUtil.ts'
@@ -20,6 +21,13 @@ jest.mock('electron', () => ({
   app: { getPath: jest.fn(), quit: jest.fn() },
   dialog: { showOpenDialog: jest.fn(), showSaveDialog: jest.fn() },
 }))
+jest.mock('../fileStream.ts', () => {
+  const actual = jest.requireActual<{
+    getFileStream: typeof getFileStream
+  }>('../fileStream.ts')
+  return { getFileStream: jest.fn(actual.getFileStream) }
+})
+const mockGetFileStream = jest.mocked(getFileStream)
 
 const VOLVOX = path.join(__dirname, '../../../../test_data/volvox')
 
@@ -104,6 +112,40 @@ test('a cancelled index rejects and leaves no .fai behind', async () => {
   invoke('cancelIndexFasta', 'job1')
 
   await expect(pending).rejects.toThrow(/cancel/i)
+  expect(fs.readdirSync(paths.faiDir)).toEqual([])
+})
+
+// A FASTA that never ends stands in for a multi-gigabyte one: a cancel that
+// does not reach the read never settles at all. Each pull waits a macrotask, as
+// a disk read does; a synchronous one would pipe on microtasks forever and
+// starve every timer, jest's timeout included.
+test('cancelling mid-read stops reading the FASTA', async () => {
+  const encoder = new TextEncoder()
+  let pulls = 0
+  let cancelled = false
+  mockGetFileStream.mockResolvedValueOnce(
+    new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode('>chr1\n'))
+      },
+      async pull(controller) {
+        await new Promise(resolve => setImmediate(resolve))
+        pulls++
+        controller.enqueue(encoder.encode('ACGTACGTAC\n'))
+      },
+      cancel() {
+        cancelled = true
+      },
+    }),
+  )
+  const pending = invoke('indexFasta', { localPath: '/endless.fa' }, 'job1')
+  while (pulls < 3) {
+    await new Promise(resolve => setImmediate(resolve))
+  }
+  invoke('cancelIndexFasta', 'job1')
+
+  await expect(pending).rejects.toThrow(/cancel/i)
+  expect(cancelled).toBe(true)
   expect(fs.readdirSync(paths.faiDir)).toEqual([])
 })
 

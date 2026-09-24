@@ -10,9 +10,7 @@ import { openAsBlob } from 'node:fs'
 // reading it in, and a fetch body already is one.
 export async function getFileStream(
   location: { uri: string } | { localPath: string },
-  // aborts the request itself, which is what stops a download the caller has
-  // stopped waiting for. Cancelling the returned stream ends the read either
-  // way, so the local branch needs nothing.
+  // aborts a download; a local read is stopped by cancelling the stream
   signal?: AbortSignal,
 ): Promise<ReadableStream<Uint8Array>> {
   if ('localPath' in location) {
