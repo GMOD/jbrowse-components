@@ -9,7 +9,7 @@ import {
 import { filterTracks, offeredTracks } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import { autorun, observable } from 'mobx'
+import { autorun, compareShallow, computed, observable } from 'mobx'
 
 import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
 import { normalizeSearchQuery } from '../shared/searchText.ts'
@@ -45,9 +45,7 @@ const sortCategoriesK = 'sortCategories'
 // the group holding the config's own tracks, as opposed to a connection's
 const mainGroupId = 'Tracks'
 
-interface CategoryModes {
-  get(key: string): CategoryMode | undefined
-}
+type CategoryModes = ReadonlyMap<string, CategoryMode>
 
 function recentlyUsedK(assemblyNames: string[]) {
   return configScopedKey('recentlyUsedTracks', assemblyNames)
@@ -63,8 +61,6 @@ function scopedK(name: string, assemblyNames: string[], viewType: string) {
   return [name, keyConfigPostFix(), assemblyNames.join(','), viewType].join('-')
 }
 
-// top-level hierarchy category id for a connection; expanding it lazily loads
-// the connection (see toggleCategory)
 function connectionCategoryId(connectionId: string) {
   return `connection-${connectionId}`
 }
@@ -206,12 +202,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       recentlyUsed: [] as string[],
       /**
        * #volatile
-       * the shopping cart, by trackId — like favorites, recentlyUsed and
-       * shownTrackIds, and unlike the config objects it used to hold. A config
-       * is not a stable identity: a non-admin's edit to an admin track resolves
-       * through a fresh merged object (ADR-032), so a selection holding the old
-       * one kept counting in the cart while the row it belonged to went back to
-       * looking unselected. Read `selection` for the configs.
+       * the shopping cart, by trackId; `selection` resolves the configs
        */
       selectedTrackIds: [] as string[],
       /**
@@ -261,34 +252,42 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           : view?.trackContainerFor?.(trackContainerId)
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get shownTrackIds() {
-        return new Set<string>(
-          self.trackContainer?.tracks.map(t => t.configuration.trackId),
-        )
-      },
-      /**
-       * #getter
-       */
-      get favoritesSet() {
-        return new Set(self.favorites)
-      },
-      /**
-       * #getter
-       */
-      get recentlyUsedSet() {
-        return new Set(self.recentlyUsed)
-      },
-      /**
-       * #getter
-       */
-      get assemblyNames(): string[] {
-        return self.trackContainer?.assemblyNames ?? []
-      },
-    }))
+    .views(self => {
+      // a view hands back a new array of the same names whenever its displayed
+      // regions change, and every track list below is derived from this one
+      const assemblyNames = computed(
+        () => self.trackContainer?.assemblyNames ?? [],
+        { equals: compareShallow },
+      )
+      return {
+        /**
+         * #getter
+         */
+        get shownTrackIds() {
+          return new Set<string>(
+            self.trackContainer?.tracks.map(t => t.configuration.trackId),
+          )
+        },
+        /**
+         * #getter
+         */
+        get favoritesSet() {
+          return new Set(self.favorites)
+        },
+        /**
+         * #getter
+         */
+        get recentlyUsedSet() {
+          return new Set(self.recentlyUsed)
+        },
+        /**
+         * #getter
+         */
+        get assemblyNames(): string[] {
+          return assemblyNames.get()
+        },
+      }
+    })
     .actions(self => ({
       /**
        * #action
@@ -470,33 +469,13 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           }
         }
       },
-    }))
-    .actions(self => ({
       /**
        * #action
+       * shows or hides a track, recording one it showed as recently used
        */
-      toggleCategory(id: string) {
-        const session = getSession(self)
-        const conn = session.connections.find(
-          c => connectionCategoryId(c.connectionId) === id,
-        )
-        const isLive = conn
-          ? (session.connectionInstances ?? []).some(
-              c => c.connectionId === conn.connectionId,
-            )
-          : false
-        const mode = self.categoryMode.get(id)
-        // account for defaultCollapsed (dormant connections) so the first click
-        // on one expands (and loads) it rather than toggling a phantom state
-        const wasCollapsed = mode ? mode === 'collapsed' : !!conn && !isLive
-        if (conn && wasCollapsed) {
-          // expanding a connection = load it (no separate "turn on" step). Clear
-          // any explicit collapse so the category follows liveness via
-          // defaultCollapsed and never persists as expanded-but-unloaded
-          self.setCategoryMode(id, undefined)
-          session.hydrateConnection?.(conn.connectionId)
-        } else {
-          self.setCategoryCollapsed(id, !wasCollapsed)
+      async toggleTrack(trackId: string) {
+        if (await self.trackContainer?.launchToggleTrack(trackId)) {
+          self.addToRecentlyUsed(trackId)
         }
       },
     }))
@@ -543,62 +522,20 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       get configAndSessionTrackConfigurations() {
         return offeredTracks(getSession(self).tracks, self)
       },
+
       /**
        * #getter
-       * one group per connection *config* (not just live instances), so a
-       * connection shows in the tree before it's loaded; expanding it hydrates
-       * the connection (see toggleCategory). Tracks are empty until then.
-       *
-       * Each track is resolved to a TrackNodeSource and sorted here rather than
-       * in generateHierarchy, so a filterText keystroke reads no configs and
-       * re-sorts nothing (filtering preserves order)
+       * a non-admin's added/copied tracks, which the tree groups under a
+       * "Session tracks" category. Membership is the session's own list — the
+       * source of truth — not a suffix baked into the trackId
        */
-      get allTracks() {
+      get sessionTrackIds() {
         const session = getSession(self)
-        const { connectionInstances = [], connections } = session
-        const liveByConnectionId = new Map(
-          connectionInstances.map(c => [c.connectionId, c]),
+        return new Set(
+          isSessionWithSessionTracks(session)
+            ? session.sessionTracks.map(t => t.trackId)
+            : [],
         )
-        // a connection's tracks are never the session's own, so only the main
-        // group can put a track under the session-tracks pseudo-category
-        const { sessionTrackIds } = this
-        const resolve = (
-          tracks: AnyConfigurationModel[],
-          sessionTracks = false,
-        ) =>
-          sortSources(
-            tracks.map(t =>
-              trackNodeSourceFor(t, {
-                session,
-                isSessionTrack: sessionTracks && sessionTrackIds.has(t.trackId),
-              }),
-            ),
-            this.activeSortTrackNames,
-            this.activeSortCategories,
-          )
-        return [
-          {
-            group: mainGroupId,
-            id: mainGroupId,
-            tracks: resolve(this.configAndSessionTrackConfigurations, true),
-            defaultCollapsed: false,
-            loading: false,
-          },
-          ...connections.map(conf => {
-            const live = liveByConnectionId.get(conf.connectionId)
-            return {
-              group: readConfObject(conf, 'name') as string,
-              id: connectionCategoryId(conf.connectionId),
-              tracks: live ? resolve(filterTracks(live.tracks, self)) : [],
-              // dormant connections collapse by default so expanding loads them;
-              // a loaded one shows its tracks
-              defaultCollapsed: !live,
-              // show a spinner while the connection is fetching. A failed connect
-              // breaks the instance (no longer live), so this clears too
-              loading: live?.loading ?? false,
-            }
-          }),
-        ]
       },
 
       /**
@@ -618,68 +555,95 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       get filterActive() {
         return this.filterQuery !== ''
       },
-
-      /**
-       * #getter
-       * tracks matching filterText. An empty query matches everything, since
-       * ''.includes is always true, so there is no unfiltered special case
-       */
-      get filteredTrackSet() {
-        const query = this.filterQuery
-        const result = new Set<AnyConfigurationModel>()
-        for (const group of this.allTracks) {
-          for (const source of group.tracks) {
-            if (source.searchText.includes(query)) {
-              result.add(source.conf)
-            }
-          }
-        }
-        return result
-      },
-
-      /**
-       * #getter
-       * a non-admin's added/copied tracks, which the tree groups under a
-       * "Session tracks" category. Membership is the session's own list — the
-       * source of truth — not a suffix baked into the trackId
-       */
-      get sessionTrackIds() {
-        const session = getSession(self)
-        return new Set(
-          isSessionWithSessionTracks(session)
-            ? session.sessionTracks.map(t => t.trackId)
-            : [],
-        )
-      },
-
-      /**
-       * #getter
-       * every track the current view can display, tree order. Derived from
-       * allTracks so there is exactly one filterTracks() pass, shared with the
-       * tree: the faceted selector, favorites and recently-used then can't
-       * offer a track the view has no way to open. Connection tracks used to
-       * reach the faceted selector unfiltered, which listed a connection's
-       * other-assembly tracks next to the config's filtered ones
-       */
-      get allTrackConfigurations() {
-        return this.allTracks.flatMap(g => g.tracks).map(s => s.conf)
-      },
-      /**
-       * #getter
-       */
-      get allTrackConfigurationMap() {
-        return new Map(this.allTrackConfigurations.map(t => [t.trackId, t]))
-      },
     }))
+    .views(self => {
+      // Resolved and sorted here rather than in generateHierarchy, so a
+      // filterText keystroke reads no configs and re-sorts nothing
+      function resolve(
+        tracks: AnyConfigurationModel[],
+        sessionTrackIds = new Set<string>(),
+      ) {
+        const session = getSession(self)
+        return sortSources(
+          tracks.map(t =>
+            trackNodeSourceFor(t, {
+              session,
+              isSessionTrack: sessionTrackIds.has(t.trackId),
+            }),
+          ),
+          self.activeSortTrackNames,
+          self.activeSortCategories,
+        )
+      }
+      return {
+        /**
+         * #getter
+         * the config's own and the session's tracks, resolved and sorted. Its
+         * own getter, so a connection loading re-reads none of them
+         */
+        get mainGroupTracks() {
+          return resolve(
+            self.configAndSessionTrackConfigurations,
+            self.sessionTrackIds,
+          )
+        },
+        /**
+         * #getter
+         * the main group, then one group per connection config whether or not
+         * it is loaded. A dormant connection has no tracks and defaults
+         * collapsed; expanding it loads it (see toggleCategory)
+         */
+        get allTracks() {
+          const { connectionInstances = [], connections } = getSession(self)
+          const liveByConnectionId = new Map(
+            connectionInstances.map(c => [c.connectionId, c]),
+          )
+          return [
+            {
+              group: mainGroupId,
+              id: mainGroupId,
+              connectionId: undefined,
+              tracks: this.mainGroupTracks,
+              defaultCollapsed: false,
+              loading: false,
+            },
+            ...connections.map(conf => {
+              const { connectionId } = conf
+              const live = liveByConnectionId.get(connectionId)
+              return {
+                group: readConfObject(conf, 'name') as string,
+                id: connectionCategoryId(connectionId),
+                connectionId,
+                tracks: live ? resolve(filterTracks(live.tracks, self)) : [],
+                defaultCollapsed: !live,
+                // a failed connect breaks the instance, which clears this too
+                loading: live?.loading ?? false,
+              }
+            }),
+          ]
+        },
+
+        /**
+         * #getter
+         * every track the view can display, in tree order: what the faceted
+         * selector, favorites and recently-used resolve against
+         */
+        get allTrackConfigurations() {
+          return this.allTracks.flatMap(g => g.tracks.map(s => s.conf))
+        },
+        /**
+         * #getter
+         */
+        get allTrackConfigurationMap() {
+          return new Map(this.allTrackConfigurations.map(t => [t.trackId, t]))
+        },
+      }
+    })
     .views(self => ({
       /**
        * #getter
-       * The selected track configs, resolved from `selectedTrackIds` on read
-       * exactly as favorites and recently-used are. Every delete path (the
-       * cart's "Delete tracks", a single track's menu) reads it. A track that
-       * has been removed no longer resolves, so nothing has to clear it from
-       * the selection, and an edited track stays selected, since the id
-       * outlives the config object an edit replaces.
+       * the selected track configs, resolved from `selectedTrackIds` on read,
+       * so a deleted track drops out and an edited one stays selected
        */
       get selection(): AnyConfigurationModel[] {
         return self.selectedTrackIds
@@ -688,9 +652,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * the selected trackIds that still resolve to a track — `selection`'s
-       * ids, so a row can ask whether it is selected without the config
-       * identity comparison that used to answer it
+       * the selected trackIds that still resolve to a track
        */
       get selectionSet() {
         return new Set(this.selection.map(t => t.trackId as string))
@@ -728,7 +690,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * empty connection still shows in the tree
        */
       get hierarchy() {
-        const { filteredTrackSet } = self
+        const { filterQuery } = self
         return {
           name: 'Root',
           id: 'Root',
@@ -740,11 +702,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             nestingLevel: 0,
             defaultCollapsed: s.defaultCollapsed,
             loading: s.loading,
-            children: generateHierarchy({
-              trackSources: s.tracks,
-              filteredTrackSet,
-              groupId: s.id,
-            }),
+            children: generateHierarchy(
+              s.tracks.filter(t => t.searchText.includes(filterQuery)),
+              s.id,
+            ),
           })),
         }
       },
@@ -833,6 +794,21 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           }
         }
       },
+      /**
+       * #action
+       * expanding a dormant connection's category loads the connection
+       */
+      toggleCategory(id: string) {
+        const mode = self.categoryMode.get(id)
+        const group = self.allTracks.find(g => g.id === id)
+        const collapsed = mode
+          ? mode === 'collapsed'
+          : !!group?.defaultCollapsed
+        self.setCategoryCollapsed(id, !collapsed)
+        if (collapsed && group?.connectionId !== undefined) {
+          getSession(self).hydrateConnection?.(group.connectionId)
+        }
+      },
     }))
     .views(self => ({
       /**
@@ -845,17 +821,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => {
-      // categoryMode/recentlyUsed keys are scoped to the assembly (+ view
-      // type), which isn't known until the view resolves, so they load lazily.
-      // `loadedScope` = the scope now in the model; persist writes only for
-      // that scope, so load/persist order never matters and an assembly switch
-      // can't write the old scope's state under the new key.
+      // recentlyUsed and the category modes are scoped to the assemblies and
+      // view type, known only once the view resolves. They save only into the
+      // scope now loaded, so an assembly switch can't write one scope's state
+      // under another's key, whichever autorun runs first
       let loadedScope: string | undefined
 
-      function scopeKey(
-        assemblyNames: string[],
-        view: { type: string } | undefined,
-      ) {
+      function currentScope() {
+        const { assemblyNames, view } = self
         return view ? `${assemblyNames.join(',')}|${view.type}` : ''
       }
 
@@ -908,39 +881,13 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         if (view) {
           loadCategoryModes(assemblyNames, view.type)
         }
-        loadedScope = scopeKey(assemblyNames, view)
+        loadedScope = currentScope()
       }
 
-      function persistToLocalStorage() {
-        const {
-          sortTrackNames,
-          sortCategories,
-          favorites,
-          recentlyUsed,
-          assemblyNames,
-          view,
-        } = self
-        const modes = [...self.categoryMode]
-        // skip until load has populated this scope (guards against writing empty
-        // defaults or a previous scope's state)
-        if (scopeKey(assemblyNames, view) === loadedScope) {
-          localStorageSetJSON(recentlyUsedK(assemblyNames), recentlyUsed)
-          localStorageSetJSON(favoritesK(), favorites)
-          localStorageSetJSON(sortTrackNamesK, sortTrackNames)
-          localStorageSetJSON(sortCategoriesK, sortCategories)
-          if (view) {
-            localStorageSetJSON(
-              scopedK('collapsedCategories', assemblyNames, view.type),
-              modes
-                .filter(([, m]) => m === 'collapsed')
-                .map(([id]) => [id, true]),
-            )
-            localStorageSetJSON(
-              scopedK('folderCategories', assemblyNames, view.type),
-              modes.filter(([, m]) => m === 'folder').map(([id]) => id),
-            )
-          }
-        }
+      // one autorun per key, so another tab's stale copy of one setting is
+      // only written back when that setting changes here
+      function persist(write: () => void) {
+        addDisposer(self, autorun(write))
       }
 
       return {
@@ -949,10 +896,37 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             self,
             autorun(loadFromLocalStorage, { name: 'TrackSelectorInit' }),
           )
-          addDisposer(
-            self,
-            autorun(persistToLocalStorage, { name: 'TrackSelectorPersist' }),
-          )
+          persist(() => {
+            localStorageSetJSON(favoritesK(), self.favorites)
+          })
+          persist(() => {
+            localStorageSetJSON(sortTrackNamesK, self.sortTrackNames)
+          })
+          persist(() => {
+            localStorageSetJSON(sortCategoriesK, self.sortCategories)
+          })
+          persist(() => {
+            const { recentlyUsed, assemblyNames } = self
+            if (currentScope() === loadedScope) {
+              localStorageSetJSON(recentlyUsedK(assemblyNames), recentlyUsed)
+            }
+          })
+          persist(() => {
+            const { assemblyNames, view } = self
+            const modes = [...self.categoryMode]
+            if (view && currentScope() === loadedScope) {
+              localStorageSetJSON(
+                scopedK('collapsedCategories', assemblyNames, view.type),
+                modes
+                  .filter(([, m]) => m === 'collapsed')
+                  .map(([id]) => [id, true]),
+              )
+              localStorageSetJSON(
+                scopedK('folderCategories', assemblyNames, view.type),
+                modes.filter(([, m]) => m === 'folder').map(([id]) => id),
+              )
+            }
+          })
         },
       }
     })

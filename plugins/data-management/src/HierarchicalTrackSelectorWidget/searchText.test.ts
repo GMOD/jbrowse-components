@@ -52,7 +52,9 @@ function setup() {
 
 function treeMatches(model: HierarchicalTrackSelectorModel, query: string) {
   model.setFilterText(query)
-  return [...model.filteredTrackSet].map(c => `${c.trackId}`).toSorted()
+  return model.rows
+    .flatMap(({ item }) => (item.type === 'track' ? [item.trackId] : []))
+    .toSorted()
 }
 
 // the description is on screen as the row's tooltip, so a query for text the

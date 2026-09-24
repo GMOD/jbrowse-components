@@ -4,6 +4,7 @@ import { destroy, isAlive } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, waitFor } from '@testing-library/react'
+import { autorun } from 'mobx'
 
 import conf from '../../../../../test_data/test_order/config.json' with { type: 'json' }
 import { getRowStr } from '../../FacetedSelector/components/util.ts'
@@ -1789,6 +1790,75 @@ test('category modes persist as the collapsed and folder lists', async () => {
       localStorage.getItem('folderCategories-/-volMyt1-LinearGenomeView')!,
     ),
   ).toEqual(['Tracks-Epigenomics,Histone Marks'])
+})
+
+// a locus jump hands the selector a new array of the same assembly names
+test('navigating within an assembly rebuilds no track list', () => {
+  const session = addTestData(createTestSession())
+  const view = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  view.setWidth(800)
+  const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
+  const builds: unknown[] = []
+  const dispose = autorun(() => {
+    builds.push(model.allTracks)
+  })
+  view.setDisplayedRegions([
+    { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 500 },
+  ])
+  dispose()
+  expect(builds.length).toBe(1)
+})
+
+// another tab may have saved favorites since this one loaded them
+test('a change to one setting rewrites only its own key', () => {
+  const session = addTestData(createTestSession())
+  const view = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
+  localStorage.setItem('favoriteTracks-/}', JSON.stringify(['otherTab']))
+  model.addToRecentlyUsed('fooC')
+  expect(JSON.parse(localStorage.getItem('favoriteTracks-/}')!)).toEqual([
+    'otherTab',
+  ])
+})
+
+// a row virtualized away under the pointer gets no mouseout, so the next row
+// entered has to clear the tooltip
+test('entering a row without a description hides the tooltip', async () => {
+  const session = addTestAssembly(createTestSession({ adminMode: true }))
+  session.publishTrackConf({
+    trackId: 'described',
+    name: 'described',
+    description: 'a description',
+    category: ['Cat'],
+    assemblyNames: ['volMyt1'],
+    type: 'FeatureTrack',
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  const view = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
+  const { findByTestId, findByText, getByTestId, queryByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
+    </ThemeProvider>,
+  )
+  fireEvent.mouseOver(await findByTestId('htsTrackLabel-Tracks,described'))
+  expect(await findByText('a description')).toBeTruthy()
+  fireEvent.mouseOver(getByTestId('htsCategory-Cat'))
+  await waitFor(() => {
+    expect(queryByText('a description')).toBeNull()
+  })
 })
 
 // the exemption from the filter's forced-open is for groups that are shut

@@ -1,27 +1,20 @@
 import { categoryId } from './util.ts'
 
 import type { TrackNodeSource, TreeNode } from './types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 interface NodeWithChildren {
   children: TreeNode[]
 }
 
-export function generateHierarchy({
-  trackSources,
-  filteredTrackSet,
-  groupId,
-}: {
-  trackSources: TrackNodeSource[]
-  filteredTrackSet: Set<AnyConfigurationModel>
-  groupId: string
-}): TreeNode[] {
+// trackSources arrive resolved, sorted and filtered (see model.hierarchy)
+export function generateHierarchy(
+  trackSources: TrackNodeSource[],
+  groupId: string,
+): TreeNode[] {
   const root: NodeWithChildren = { children: [] }
   const categoryMaps = new Map<NodeWithChildren, Map<string, TreeNode>>()
 
-  // trackSources arrive resolved and sorted (see model.allTracks), so nothing
-  // here reads a config or sorts; filtering preserves the order
-  for (const source of trackSources.filter(s => filteredTrackSet.has(s.conf))) {
+  for (const source of trackSources) {
     const { conf, categories } = source
     const { trackId } = conf
 

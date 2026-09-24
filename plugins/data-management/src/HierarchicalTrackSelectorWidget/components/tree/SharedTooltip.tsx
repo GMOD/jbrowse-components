@@ -29,17 +29,17 @@ const SharedTooltip = observer(function SharedTooltip({
       const target = (e.target as HTMLElement).closest<HTMLElement>(
         '[data-tooltip]',
       )
-      if (target) {
-        // mouseover fires again for every descendant crossed, and a track row
-        // is a label wrapping a checkbox, an svg and a couple of spans — so
-        // keep the existing state when the row hasn't changed, rather than
-        // re-rendering on each micro-move within one row
-        setState(prev =>
-          prev?.anchorEl === target
-            ? prev
-            : { anchorEl: target, text: target.dataset.tooltip ?? '' },
-        )
-      }
+      // mouseover fires again for every descendant crossed, so keep the state
+      // while the row is unchanged. A row virtualized away under the pointer
+      // gets no mouseout, so landing anywhere without a tooltip clears it
+      setState(prev => {
+        if (!target) {
+          return null
+        }
+        return prev?.anchorEl === target
+          ? prev
+          : { anchorEl: target, text: target.dataset.tooltip ?? '' }
+      })
     }
 
     const handleOut = (e: MouseEvent) => {
