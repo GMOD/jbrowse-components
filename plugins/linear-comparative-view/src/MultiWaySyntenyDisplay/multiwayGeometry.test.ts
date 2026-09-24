@@ -178,7 +178,7 @@ describe('the ribbons', () => {
     // one target per group is shared by every gutter, so the label names the
     // group's identity rather than a lane pair: the key and where the anchor
     // puts it. A bare key gave the reader nothing to locate it by
-    expect(targets[0]!.label).toBe('g1\ngrape chr1:100-200')
+    expect(targets[0]!.label).toBe('g1\ngrape chr1:101..200')
     expect([...data.instanceFeatureIdx]).toEqual([
       groupTarget.get('g1'),
       groupTarget.get('g2'),
@@ -557,9 +557,9 @@ describe('the ribbons', () => {
     })
     const target = targets.find(t => t.feature === composed)
     expect(target!.label.split('\n')).toEqual([
-      'peach Pp1:1,500-1,600',
-      'cacao Tc1:1,500-1,600',
-      'composed through grape chr1:100-200, not aligned directly',
+      'peach Pp1:1,501..1,600',
+      'cacao Tc1:1,501..1,600',
+      'composed through grape chr1:101..200, not aligned directly',
     ])
   })
 })

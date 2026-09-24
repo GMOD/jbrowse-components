@@ -1,4 +1,4 @@
-import { toLocale } from '@jbrowse/core/util'
+import { assembleLocString } from '@jbrowse/core/util'
 import { cssColorToABGR, withAbgrAlpha } from '@jbrowse/core/util/colorBits'
 import { UTR_HEIGHT_FRACTION, centerShrink } from '@jbrowse/plugin-canvas'
 import {
@@ -74,8 +74,12 @@ function magnification(lane: Lane) {
   return lane.frame ? frameMagnification(lane.frame) : 1
 }
 
-function fmt(n: number) {
-  return toLocale(Math.round(n))
+function locOn(lane: Lane, refName: string, start: number, end: number) {
+  return `${lane.assemblyName} ${assembleLocString({
+    refName: lane.canon(refName),
+    start: Math.round(start),
+    end: Math.round(end),
+  })}`
 }
 
 function* lanePairs(lanes: Lane[], glyphHeight: number) {
@@ -287,9 +291,7 @@ export function buildRibbonGeometry({
       targets.push({
         feature: group.feature,
         groupKey: key,
-        label: anchor
-          ? `${key}\n${anchor.assemblyName} ${anchor.canon(refName)}:${fmt(start)}-${fmt(end)}`
-          : key,
+        label: anchor ? `${key}\n${locOn(anchor, refName, start, end)}` : key,
       })
       groupTarget.set(key, idx)
     }
@@ -355,11 +357,16 @@ export function buildRibbonGeometry({
           feature: link,
           linkId: link.id(),
           label: [
-            `${upper.assemblyName} ${upper.canon(link.get('refName'))}:${fmt(link.get('start'))}-${fmt(link.get('end'))}`,
-            `${lower.assemblyName} ${lower.canon(mate.refName)}:${fmt(mate.start)}-${fmt(mate.end)}`,
+            locOn(
+              upper,
+              link.get('refName'),
+              link.get('start'),
+              link.get('end'),
+            ),
+            locOn(lower, mate.refName, mate.start, mate.end),
             ...(via && anchor
               ? [
-                  `composed through ${anchor.assemblyName} ${anchor.canon(via.refName)}:${fmt(via.start)}-${fmt(via.end)}, not aligned directly`,
+                  `composed through ${locOn(anchor, via.refName, via.start, via.end)}, not aligned directly`,
                 ]
               : []),
           ].join('\n'),
