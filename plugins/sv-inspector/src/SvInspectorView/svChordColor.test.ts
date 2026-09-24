@@ -32,8 +32,7 @@ test('the class decides the color, not the record', () => {
   )
 })
 
-// the legend has counted its classes and no longer holds a record of each, so
-// it paints from the class alone — and has to land on the same color
+// the legend paints from the class alone
 test('a class alone gets the color its records get', () => {
   expect(chordColorForType('DEL')).toBe(
     svChordColor(new SimpleFeature(del('a'))),

@@ -1,8 +1,8 @@
 import { SimpleFeature } from '@jbrowse/core/util'
-import { createTestSession } from '@jbrowse/web/testUtils'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { when } from 'mobx'
 
-import type { SvInspectorViewModel } from './model.ts'
+import { openInspector } from './testUtils.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -13,24 +13,6 @@ function bnd(uniqueId: string, start: number, alt: string, event?: string) {
   }
 }
 
-const assembly = {
-  name: 'volvox',
-  sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: 'volvox_refseq',
-    adapter: {
-      type: 'FromConfigSequenceAdapter',
-      features: ['ctgA', 'ctgB'].map(refName => ({
-        refName,
-        uniqueId: refName,
-        start: 0,
-        end: 10_000,
-        seq: 'a'.repeat(10_000),
-      })),
-    },
-  },
-}
-
 const rows = [
   bnd('a', 100, 'C]ctgB:900]', 'cluster_1'),
   bnd('b', 5000, 'C]ctgB:70]', 'cluster_1'),
@@ -38,12 +20,7 @@ const rows = [
 ]
 
 async function inspectorWithRows() {
-  const session = createTestSession()
-  session.addAssemblyConf(assembly)
-  const view = (await session.launchView(
-    'SvInspectorView',
-    {},
-  )) as SvInspectorViewModel
+  const { session, view } = await openInspector()
   await session.assemblyManager.waitForAssembly('volvox')
   view.spreadsheetView.displaySpreadsheet({
     assemblyName: 'volvox',
@@ -90,4 +67,25 @@ test('a filter narrows what the chord display draws, on the same track', async (
 
   view.spreadsheetView.spreadsheet!.setSvEventFilter(undefined)
   expect(display.visibleFeatureIds).toBeUndefined()
+})
+
+test('the snapshot drops the generated chord track but keeps a second one', async () => {
+  const { session, view } = await inspectorWithRows()
+  session.addSessionTrackConf({
+    type: 'VariantTrack',
+    trackId: 'normal',
+    name: 'normal',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  await when(() => view.circularView.tracks.length > 0)
+  await view.circularView.launchTrack('normal')
+  expect(view.circularView.tracks).toHaveLength(2)
+
+  const snap = getSnapshot(view) as {
+    circularView: { tracks?: { configuration: unknown }[] }
+  }
+  expect(snap.circularView.tracks?.map(t => t.configuration)).toEqual([
+    'normal',
+  ])
 })

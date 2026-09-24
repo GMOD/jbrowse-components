@@ -450,11 +450,11 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               const { highlightedChordIds, visibleChordIds, variantTrackId } =
                 self
               const track = self.circularView.tracks.find(
-                t => trackConfId(t.configuration) === variantTrackId,
+                t => t.configuration.trackId === variantTrackId,
               )
               for (const display of track?.displays ?? []) {
-                display.setHighlightedFeatureIds?.(highlightedChordIds)
-                display.setVisibleFeatureIds?.(visibleChordIds)
+                display.setHighlightedFeatureIds(highlightedChordIds)
+                display.setVisibleFeatureIds(visibleChordIds)
               }
             },
             { name: 'SvInspectorView chord display state binding' },

@@ -23,8 +23,7 @@ async function open(snap: Record<string, unknown>) {
   )) as SvInspectorViewModel
 }
 
-// No uri, so the forward seeds the sheet's wizard and stops there: what is
-// asserted is the partition and the hand-off, not the load.
+// no uri, so nothing loads
 test('a launch key written on the view object reaches the child sheet', async () => {
   const view = await open({ assembly: 'volvox', fileType: 'BEDPE' })
   const { importWizard } = view.spreadsheetView
@@ -67,9 +66,6 @@ test('the callset track opens ahead of the drilldownTracks', async () => {
   expect(view.spreadsheetView.drilldownTrackIds).toEqual(['calls', 'tumor'])
 })
 
-// Nothing in this view's launch path mentions either name: v4's `init` was
-// forwarded whole to the sheet, so a declared property written beside it
-// reached nothing.
 test('a declared property lands natively, named nowhere in the launch path', async () => {
   const view = await open({
     assembly: 'volvox',
@@ -82,8 +78,6 @@ test('a declared property lands natively, named nowhere in the launch path', asy
   expect(view.onlyDisplayRelevantRegionsInCircularView).toBe(true)
 })
 
-// The two halves are declared properties, so a saved session's persisted pan
-// and zoom stays state rather than sorting as a launch key or a typo.
 test('a persisted child view stays on its property', async () => {
   const view = await open({
     circularView: { type: 'CircularView', bpPerPx: 42, autoFit: false },
@@ -124,9 +118,6 @@ test('an unknown key is reported once', async () => {
   expect(warnings()).toHaveLength(1)
 })
 
-// Read as work to do, the whole blob is forwarded to the sheet, which then
-// seeds its wizard with an assembly nobody named and skips its cached-file
-// reload.
 test('a typo alone leaves nothing pending', async () => {
   const view = await open({ fileTypes: 'BEDPE' })
   expect(view.launch).toEqual({ unknown: { fileTypes: 'BEDPE' } })
@@ -134,8 +125,6 @@ test('a typo alone leaves nothing pending', async () => {
   expect(view.spreadsheetView.importWizard.selectedAssemblyName).toBeUndefined()
 })
 
-// Forwarded synchronously, and the sheet caches the file location just as
-// synchronously, so this node's copy has nothing left to reconstruct.
 test('the launch state is never persisted', async () => {
   const snap = getSnapshot(await open({ assembly: 'volvox' })) as {
     launch?: unknown

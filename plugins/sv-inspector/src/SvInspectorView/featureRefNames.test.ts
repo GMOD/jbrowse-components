@@ -1,13 +1,5 @@
 import { featureRefNames } from './featureRefNames.ts'
 
-// Regression: the relevant-regions toggle narrows the circular view to the
-// refNames these return. Anything missed here is a chord whose endpoint block
-// gets filtered away, so the chord silently stops being drawn.
-//
-// Two entries, the record's own refName and its mate's — the same `svMateLocus`
-// the chord's far end is drawn at, so the two cannot disagree about which
-// chromosomes a callset touches.
-
 test('a BND mate refName comes from the ALT breakend string', () => {
   // pbsv.BND.1:10002-11:176164, from the shipped HG002 subset
   expect(

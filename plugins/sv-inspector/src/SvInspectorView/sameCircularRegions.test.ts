@@ -31,9 +31,6 @@ test('a reordered list is a different list', () => {
   ).toBe(false)
 })
 
-// Regression: the check used to compare refNames only, so switching the sheet
-// between two assemblies that share a refName list left the circle drawn on the
-// old one's coordinates
 test('the same refNames at different lengths is a different list', () => {
   expect(
     sameCircularRegions(
