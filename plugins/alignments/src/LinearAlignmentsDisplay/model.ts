@@ -2061,8 +2061,8 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Whether `searchFeatureByID` has a pileup to search. Same name and
-         * meaning as the canvas display's; see MultiRegionDisplayMixin.
+         * Whether a pileup is laid out for an overlay to read — see
+         * `readArraysByGroup`.
          */
         get layoutReady() {
           // the too-large term isn't redundant: clearAllRpcData deliberately
@@ -2460,31 +2460,6 @@ export default function stateModelFactory(
 
         /**
          * #method
-         * Layout rect of a read, for cross-view overlays (BreakpointSplitView's
-         * connection curves). Y is relative to the pileup's own top — the caller
-         * adds the display's `coverageDisplayHeight` itself (see `computeOverlayY`)
-         * — so a grouped read only needs its section's extra stacking offset on
-         * top of its row. Without that offset every read outside the first section
-         * anchored as if it were in the first one.
-         */
-        searchFeatureByID(
-          featureId: string,
-        ): [number, number, number, number] | undefined {
-          const hit = self.findFeatureInRpcData(featureId)
-          if (!hit) {
-            return undefined
-          }
-          const { rpcData, idx, start, end, groupKey } = hit
-          const yRow = rpcData.readYs[idx]
-          if (yRow === undefined) {
-            return undefined
-          }
-          const top = this.groupPileupOffset(groupKey) + yRow * self.rowHeight
-          return [start, top, end, top + self.featureHeight]
-        },
-
-        /**
-         * #method
          * Read ids sharing a chain with the read at `index` in `rpcData` — the
          * read's own included, since it is a member of its chain. Empty when the
          * read isn't part of a chain. Shared by hover-highlight and click-select
@@ -2543,6 +2518,47 @@ export default function stateModelFactory(
             self.framesChainStrand,
           )
           return (c: ReadColorCategory) => readColorCategoryLabel(c, overrides)
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The reads a view overlaying this display may connect — the
+         * BreakpointSplitView's curves — by lane and region index, with hidden
+         * lanes dropped. Empty while no pileup is laid out, so an overlay draws
+         * no read this display does not.
+         */
+        get readArraysByGroup(): ReadonlyMap<
+          string,
+          ReadonlyMap<number, WorkerPileupData>
+        > {
+          return self.layoutReady ? self.rawDataByGroup : new Map()
+        },
+
+        /**
+         * #method
+         * Layout rect of one read of `readArraysByGroup`. Y is relative to the
+         * pileup's own top, since the caller adds `coverageDisplayHeight`
+         * itself, so a grouped read only needs its section's stacking offset on
+         * top of its row. A read past the row cap sits on the cap's overflow
+         * row.
+         */
+        readLayoutRecord(
+          groupKey: string,
+          displayedRegionIndex: number,
+          idx: number,
+        ): [number, number, number, number] | undefined {
+          const data = self.laidOutByGroup
+            .get(groupKey)
+            ?.get(displayedRegionIndex)
+          const yRow = data?.readYs[idx]
+          const start = data?.readPositions[idx * 2]
+          const end = data?.readPositions[idx * 2 + 1]
+          if (yRow === undefined || start === undefined || end === undefined) {
+            return undefined
+          }
+          const top = self.groupPileupOffset(groupKey) + yRow * self.rowHeight
+          return [start, top, end, top + self.featureHeight]
         },
       }))
       .views(self => {

@@ -1,6 +1,6 @@
 ---
 name: sa-hops-in-the-bezier-overlay
-description: Drawing the split-read hops whose far end nothing fetched — the bezier connector overlay has no mark for them, while the arc band answers the same question twice depending on whether the hop crosses chromosomes. Plus the shared `Chain` type that lost the caller it was proposed for, and why no allele is built in-app.
+description: Drawing the split-read hops whose far end nothing fetched — the bezier connector overlay has no mark for them, while the arc band answers the same question twice depending on whether the hop crosses chromosomes. Plus why no allele is built in-app.
 ---
 
 # SA hops in the bezier overlay
@@ -12,7 +12,7 @@ phases shipped in August 2026 as the derivative-allele picker and were removed
 on 2026-09-18
 ([ADR-137](../../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)).
 What is parked here is the additive half of the remainder — the marks nobody
-draws — plus a deflated refactor.
+draws.
 
 **The correctness half is not here, and it shipped.** `68eab1e8c7` stopped the
 overlay drawing a solid junction across segments it never fetched: it walks the
@@ -20,8 +20,9 @@ SA tags of the segments it did fetch, dashes a junction spanning one it did not,
 and names the hidden loci in the hover. It did NOT go through
 `unpairedReadChain`, as this file and the backlog both once proposed — `SegAln`
 carries no route back to the `ReadEntry`, and the overlay needs the entry at
-both ends for its `readYs` row and `displayedRegionIndex`, so it copied
-`markHiddenSegments`' clip window instead. The same-strand case, which
+both ends for its `readYs` row and `displayedRegionIndex`, so it takes its
+own clip window (`hiddenSegments`, `readGroupConnections.ts`), which the
+breakpoint split view now reads too. The same-strand case, which
 `isNormal` routed to the straight-line pass, is fixed too: that pass leaves any
 pair with hidden segments to the overlay (`isGpuLinkedReadLine`).
 
@@ -166,46 +167,6 @@ not plumbing:
   a read feature, so an arc needs its own item source) or a modified click.
   Decide that before the plumbing, since it fixes where the region list is
   built.
-
----
-
-## The shared `Chain` type lost its caller
-
-The chain walk is still written three times:
-
-| Where | Builder | Element | Input |
-| --- | --- | --- | --- |
-| `alignments/features/arcs/arcChains.ts` | `unpairedReadChain` → `unpairedChainArcs` | `SegAln` (`{refName, start, end, strand, clipAtStart, onScreen}`) | worker TypedArrays |
-| `alignments-core/src/readGroupConnections.ts` | `splitJunctions` in `readGroupConnections` | `ReadConnection<ReadEntry>` | worker TypedArrays |
-| `breakpoint-split-view/…/featureMatching.ts` | `readChainSegments` → `markHiddenSegments` | `ChainSegment` (`{clip, refName, start, end}`) | `Feature` objects |
-
-There is no `renderChainPaths` emitter over the shared `bezierConnectorPath`
-either. But the extraction was proposed as the *enabling* refactor for the two
-phases that shipped, and they shipped without it, so what is left is a refactor
-for its own sake — and it is harder than the type table makes it look:
-
-- The three chains **are not the same chain**. `unpairedReadChain` is the complete
-  walk, on-screen entries merged with SA segments and deduped by locus
-  (`segLocusKey`), on-screen record winning. `readChainSegments` is the
-  SA-declared segments *only*, deduped by clip — its on-screen half arrives
-  separately as `LayoutMatch`. `splitJunctions` is the on-screen segments only,
-  which is the bug the TODO entry fixes.
-- They read **different input universes**: two walk worker TypedArrays through
-  `MinEntry`, one walks `Feature` objects through `getTag`. The shared layer that
-  could hold a common type is `@jbrowse/cigar-utils`, which already hosts what
-  they genuinely share — `featurizeSAEntries`, `splitSA`, `getClip`,
-  `connectionEndpointBps`.
-- There is a **measured precedent going the other way**. The layer directly
-  underneath — one shared `groupReadsByName` — was extracted, priced at 1.4–1.9x
-  over 200k reads, and declined. The per-entry accessors are what did share, and that is
-  the shape to aim at: share the layer with no per-read allocation in it.
-
-The honest version is therefore narrow: **make `ChainSegment` and `SegAln` one
-type** (the former is the latter minus `strand` and `onScreen`, with `clip`
-renamed), lift it beside `featurizeSAEntries`, and leave the three walks alone.
-That is a type-level change with no per-read cost. Anyone proposing more owes a
-reason the full version lands differently from the `groupReadsByName`
-measurement.
 
 ---
 

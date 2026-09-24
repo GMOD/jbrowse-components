@@ -54,7 +54,9 @@ test('pairs the two halves of an interchromosomal bedpe record', async () => {
     'ctgB:1,500..2,500',
   ])
   const match = await waitForMatches(view, 'volvox_bedpe')
-  expect(match.kind).toBe('variant')
+  if (match.kind !== 'variant') {
+    throw new Error(`expected a variant match, got ${match.kind}`)
+  }
 
   const pair = match.layoutMatches.find(chunk =>
     chunk.some(m => m.feature.get('start') === 21681),
@@ -76,7 +78,9 @@ test('pairs the two halves of an interchromosomal STAR-Fusion record', async () 
     'ctgB:1,500..2,500',
   ])
   const match = await waitForMatches(view, 'volvox_star_fusion')
-  expect(match.kind).toBe('variant')
+  if (match.kind !== 'variant') {
+    throw new Error(`expected a variant match, got ${match.kind}`)
+  }
 
   const pair = match.layoutMatches.find(chunk =>
     chunk.some(m => m.feature.get('name') === 'EDEN--IPKMT2'),

@@ -2,6 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { activeJexlFilters } from '@jbrowse/core/util/jexlFilters'
 
+import type { ReadSource } from './readChains.ts'
 import type { LayoutRecord, OverlayKind } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -30,7 +31,7 @@ export interface RefNameCanonicalizer {
 // array is an MST pluggable union, which TS widens to `any`, so naming the
 // shape here is what makes these field reads checked at all — see the
 // OverlayTrack annotation on getMatchedTracks.
-interface OverlayDisplayBase {
+interface OverlayDisplayBase extends Partial<ReadSource> {
   height: number
   scrollTop?: number
   regionTooLarge?: boolean
@@ -49,6 +50,10 @@ interface OverlayDisplayBase {
   /** the "Filter by..." contract, `JexlFilterSource`, on displays that have one */
   configuredFilters?: () => string[]
   jexlFiltersSetting?: readonly string[]
+  withFeatureById?: (
+    featureId: string,
+    onFeat: (feat: Feature) => void,
+  ) => Promise<void>
 }
 
 // The filters the display applies, so the overlay draws no connector for a
@@ -69,7 +74,7 @@ interface SearchableOverlayDisplay extends OverlayDisplayBase {
   layoutReady: boolean
 }
 
-/** A display that keeps no feature layout at all (the paired/arc displays). */
+/** A display that keeps no feature layout at all, or lays out reads instead. */
 interface OpaqueOverlayDisplay extends OverlayDisplayBase {
   searchFeatureByID?: undefined
   layoutReady?: undefined
@@ -91,6 +96,15 @@ export interface OverlayTrack extends IStateTreeNode {
   minimized: boolean
   displays: OverlayDisplay[]
   configuration: AnyConfigurationModel
+}
+
+export function readSourceOf(
+  display: OverlayDisplay | undefined,
+): ReadSource | undefined {
+  const { readArraysByGroup, loadedRegions, readLayoutRecord } = display ?? {}
+  return readArraysByGroup && loadedRegions && readLayoutRecord
+    ? { readArraysByGroup, loadedRegions, readLayoutRecord }
+    : undefined
 }
 
 // Height of the bar between stacked views; also the CSS height of viewDivider in

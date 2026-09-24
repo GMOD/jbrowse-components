@@ -27,9 +27,8 @@ function simulateLoaded(
 // stales a region it has loaded — see reference/ZOOM_FETCH_KEYS.md
 // §"Per-region zoom-staleness". These pin the consequence: a zoom that stays
 // inside the fetched buffer must not drop into the loading phase.
-// BreakpointSplitView's overlays depend on it — a cleared `rpcDataMap` makes
-// every `searchFeatureByID` miss, which is what collapses its connection curves
-// onto the track's bottom edge.
+// BreakpointSplitView's overlays depend on it — a cleared `rpcDataMap` empties
+// `readArraysByGroup`, and every connection curve with it.
 describe('alignments zoom does not invalidate loaded data', () => {
   it('stays ready through a small zoom in', () => {
     const { display, view } = createTestEnvironment().createDisplay()

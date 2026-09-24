@@ -1,21 +1,28 @@
-import { connectionEndpointBps } from '@jbrowse/cigar-utils'
-import { bezierConnectorPath } from '@jbrowse/core/util'
+import { connectionEndpoints } from '@jbrowse/alignments-core'
+import { assembleLocString, bezierConnectorPath } from '@jbrowse/core/util'
 import { HIDDEN_SEGMENT_DASH, hiddenSegmentsNote } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
+import { readIdOf, readNameOf, readSpanOf } from '../readChains.ts'
 import { useConnectionStyle } from './connectionStyle.ts'
-import { computeOverlayX } from './overlayGeometry.ts'
 import {
-  LEFT,
   OverlayPaths,
-  RIGHT,
   alignmentWidgetOpener,
   buildPairTooltip,
   chainHighlightRects,
   drawnConnections,
+  readTooltipLabel,
 } from './overlayUtils.tsx'
 
+import type { ReadEntry } from '../readChains.ts'
 import type { OverlayProps, PathSpec } from './overlayUtils.tsx'
+
+function entryLabel(e: ReadEntry) {
+  return readTooltipLabel(
+    readNameOf(e),
+    assembleLocString({ refName: e.refName, ...readSpanOf(e) }),
+  )
+}
 
 const AlignmentConnections = observer(function AlignmentConnections(
   props: OverlayProps,
@@ -29,125 +36,74 @@ const AlignmentConnections = observer(function AlignmentConnections(
       strokeWidth={1}
       hoverStrokeWidth={5}
       render={ctx => {
-        const {
-          session,
-          match,
-          assemblies,
-          tracks,
-          levels,
-          layouts,
-          getX,
-          getY,
-        } = ctx
-        const { layoutMatches, hasPairedReads: hasPaired } = match
+        const { session, match, tracks, levels, layouts, getX, getY } = ctx
+        if (match.kind !== 'alignment') {
+          return []
+        }
+        const { chains, layouts: entryLayouts } = match
         return [
           ...drawnConnections({
-            match,
-            assemblies,
+            chains,
+            entryLayouts,
             tracks,
             levels,
             showIntraviewLinks,
           }),
-        ].flatMap<PathSpec>(
-          ({
-            f1,
-            f2,
-            chunkIndex,
-            level1,
-            level2,
-            c1,
-            c2,
-            f1ref,
-            f2ref,
-            hiddenSegmentsBetween,
-            kind,
-          }) => {
-            const s1 = f1.get('strand')!
-            const s2 = f2.get('strand')!
-            const {
-              abnormal: isAbnormal,
-              color,
-              label: colorReason,
-            } = connectionStyle(kind, !hasPaired)
-            // First endpoint: this segment's read-trailing (3') edge. Second:
-            // the mate's 3' edge for a pair, or the next segment's read-leading
-            // (5') edge for a split junction (shared rule — see
-            // @jbrowse/cigar-utils).
-            const { bp1: p1, bp2: p2 } = connectionEndpointBps({
-              s1,
-              start1: c1[LEFT],
-              end1: c1[RIGHT],
-              s2,
-              start2: c2[LEFT],
-              end2: c2[RIGHT],
-              isSplit: !hasPaired,
-            })
-            const end1 = getX(level1, f1ref, p1)
-            const end2 = getX(level2, f2ref, p2)
-            if (!end1 || !end2) {
-              return []
-            }
-            // An off-display segment's endpoint is clamped into its panel so the
-            // bottom-edge terminus getY gives it is actually on screen — see
-            // computeOverlayX.
-            const x1 = computeOverlayX(end1.x, layouts[level1]!.width, c1)
-            const x2 = computeOverlayX(end2.x, layouts[level2]!.width, c2)
-            const y1 = getY(level1, c1)
-            const y2 = getY(level2, c2)
-            // Endpoint 1 is read1's 3' edge; endpoint 2 is the next segment's 5'
-            // leading edge for a split junction, or the mate's 3' edge for a
-            // pair. Same shared curve as the alignments overlay. A discordant
-            // connection within one view dips below the reads; across views the
-            // curve already spans the divider, so the shape is free to read as a
-            // plain connector.
-            const path = bezierConnectorPath({
-              x1,
-              y1,
-              x2,
-              y2,
-              s1,
-              s2,
-              leadingEnd2: !hasPaired,
-              reversed1: end1.reversed,
-              reversed2: end2.reversed,
-              dip: level1 === level2 && isAbnormal,
-            })
-            const hiddenNote = hiddenSegmentsBetween?.length
-              ? hiddenSegmentsNote(hiddenSegmentsBetween)
-              : undefined
-            return [
-              {
-                id: `${f1.id()}-${f2.id()}`,
-                path,
-                // the chunk is the read chain, so hovering any one of its
-                // junctions emphasizes all of them and boxes every segment
-                emphasisGroup: `chunk-${chunkIndex}`,
-                stroke: color,
-                strokeDasharray: hiddenNote ? HIDDEN_SEGMENT_DASH : undefined,
-                tooltip: () =>
-                  buildPairTooltip(
-                    f1,
-                    f2,
-                    hiddenNote
-                      ? `${colorReason}<br/>${hiddenNote}`
-                      : colorReason,
-                  ),
-                // The whole chunk rather than the hovered junction's two ends: a
-                // multi-hop rearrangement routinely runs across three or four
-                // panels, and the chain is what the hover is asking about.
-                highlights: () =>
-                  chainHighlightRects({
-                    chunk: layoutMatches[chunkIndex]!,
-                    assemblies,
-                    tracks,
-                    levels,
-                    layouts,
-                  }),
-                openWidget: alignmentWidgetOpener(session, f1, f2),
-              },
-            ]
-          },
-        )
+        ].flatMap<PathSpec>(({ connection, chainIndex, c1, c2, kind }) => {
+          const { e1, e2, isSplit, hiddenSegmentsBetween } = connection
+          const { bp1, s1, bp2, s2 } = connectionEndpoints(connection)
+          const end1 = getX(e1.level, e1.refName, bp1)
+          const end2 = getX(e2.level, e2.refName, bp2)
+          if (!end1 || !end2) {
+            return []
+          }
+          const { abnormal, color, label } = connectionStyle(kind, isSplit)
+          // Endpoint 1 is read1's 3' edge; endpoint 2 is the next segment's 5'
+          // leading edge for a split junction, or the mate's 3' edge for a
+          // pair. A discordant connection within one view dips below the
+          // reads; across views the curve already spans the divider.
+          const path = bezierConnectorPath({
+            x1: end1.x,
+            y1: getY(e1.level, c1),
+            x2: end2.x,
+            y2: getY(e2.level, c2),
+            s1,
+            s2,
+            leadingEnd2: isSplit,
+            reversed1: end1.reversed,
+            reversed2: end2.reversed,
+            dip: e1.level === e2.level && abnormal,
+          })
+          const hiddenNote = hiddenSegmentsBetween?.length
+            ? hiddenSegmentsNote(hiddenSegmentsBetween)
+            : undefined
+          return [
+            {
+              id: `${readIdOf(e1)}-${readIdOf(e2)}`,
+              path,
+              // hovering any junction of a read chain emphasizes all of them
+              // and boxes every segment, across every panel it visits
+              emphasisGroup: `chain-${chainIndex}`,
+              stroke: color,
+              strokeDasharray: hiddenNote ? HIDDEN_SEGMENT_DASH : undefined,
+              tooltip: () =>
+                buildPairTooltip(
+                  entryLabel(e1),
+                  entryLabel(e2),
+                  hiddenNote ? `${label}<br/>${hiddenNote}` : label,
+                ),
+              highlights: () =>
+                chainHighlightRects({
+                  entries: chains[chainIndex]!.entries,
+                  entryLayouts,
+                  tracks,
+                  levels,
+                  layouts,
+                }),
+              openWidget: alignmentWidgetOpener(session, tracks, e1, e2),
+            },
+          ]
+        })
       }}
     />
   )

@@ -51,8 +51,11 @@ export function variantPaths(
   }: OverlayContext,
   showIntraviewLinks: boolean,
 ) {
-  // per ROW, for the reason getCanonicalRefPair gives: the rows are
-  // independently assembly-picked
+  if (match.kind !== 'variant') {
+    return []
+  }
+  // per ROW: the rows are independently assembly-picked, so one shared
+  // resolver would drop every contig of the rows it does not answer for
   const canon = (level: number, refName: string) =>
     assemblies[level]?.getCanonicalRefName2(refName) ?? refName
   const place = (end: JunctionEnd, level: number, layout: LayoutRecord) => {

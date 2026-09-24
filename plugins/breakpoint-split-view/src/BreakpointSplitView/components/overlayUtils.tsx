@@ -1,6 +1,11 @@
 import { Fragment } from 'react'
 
-import { CONNECTION_LABELS, pairDirection } from '@jbrowse/alignments-core'
+import {
+  CONNECTION_LABELS,
+  connectionEndpoints,
+  pairDirectionOfNum,
+  pairFieldEntry,
+} from '@jbrowse/alignments-core'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import {
   assembleLocString,
@@ -10,25 +15,19 @@ import {
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import { readIdOf } from '../readChains.ts'
 import BreakpointTooltip from './BreakpointTooltip.tsx'
 import { connectionKind, connectionLabel } from './connectionStyle.ts'
-import { computeOverlayRect, isOffscreenLayout } from './overlayGeometry.ts'
+import { computeOverlayRect } from './overlayGeometry.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
-import type {
-  LayoutMatch,
-  LayoutRecord,
-  OverlayLevel,
-  OverlayMatch,
-} from '../types.ts'
+import type { ReadChain, ReadEntry } from '../readChains.ts'
+import type { LayoutRecord, OverlayLevel, OverlayMatch } from '../types.ts'
 import type { OverlayTrack } from '../util.ts'
-import type { ConnectionKind } from '@jbrowse/alignments-core'
+import type { ConnectionKind, ReadConnection } from '@jbrowse/alignments-core'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
-
-export const LEFT = 0
-export const RIGHT = 2
 
 type MinimizableTrack = Pick<OverlayTrack, 'minimized'>
 
@@ -69,48 +68,29 @@ export function variantWidgetOpener(
   }
 }
 
+// The overlay holds a read's arrays, not its record, so a click fetches both
+// full reads from their own rows' displays.
 export function alignmentWidgetOpener(
   session: ReturnType<typeof getSession>,
-  f1: Feature,
-  f2: Feature,
+  tracks: Pick<OverlayTrack, 'displays'>[],
+  e1: ReadEntry,
+  e2: ReadEntry,
 ) {
   return () => {
-    openFeatureWidget(
-      session,
-      'BreakpointAlignmentsWidget',
-      'breakpointAlignments',
-      { feature1: f1.toJSON(), feature2: f2.toJSON() },
-    )
+    void tracks[e1.level]?.displays[0]?.withFeatureById?.(readIdOf(e1), f1 => {
+      void tracks[e2.level]?.displays[0]?.withFeatureById?.(
+        readIdOf(e2),
+        f2 => {
+          openFeatureWidget(
+            session,
+            'BreakpointAlignmentsWidget',
+            'breakpointAlignments',
+            { feature1: f1.toJSON(), feature2: f2.toJSON() },
+          )
+        },
+      )
+    })
   }
-}
-
-// A junction whose endpoints share one view level is already drawn by that
-// level's pileup when the track links its own reads (view-as-pairs / link
-// supplementary alignments): chain layout has its own connecting-line pass (see
-// LinearAlignmentsDisplay's showLinkedReadLines). Redrawing it as an overlay
-// curve just doubles it up.
-//
-// It only holds for segments the pileup actually laid out. An off-display one
-// (see makeOffscreenLayout) gets no connecting line, so the overlay keeps its
-// curve to the track's bottom edge as the only sign the segment exists. A
-// segment whose position is merely unknown (no layout yet) never reaches here —
-// it's dropped upstream, see layoutUnknown.
-export function isDrawnByPileup({
-  level,
-  levels,
-  c1,
-  c2,
-}: {
-  level: number
-  levels: Pick<OverlayLevel, 'linksReads'>[]
-  c1: LayoutRecord
-  c2: LayoutRecord
-}) {
-  return (
-    !!levels[level]?.linksReads &&
-    !isOffscreenLayout(c1) &&
-    !isOffscreenLayout(c2)
-  )
 }
 
 export function getTestId(trackId: string, hasMatches: boolean) {
@@ -123,31 +103,6 @@ export function getTestId(trackId: string, hasMatches: boolean) {
  * features the same way an unresolvable refName does.
  */
 export type RowAssemblies = (Assembly | undefined)[]
-
-// Each endpoint resolves against the assembly of the ROW IT IS DRAWN ON, not
-// against one assembly for the view: the rows are independently assembly-picked
-// and a cross-assembly view resolved every endpoint through row 0, which
-// answered undefined for every contig of every other row and left the overlay
-// with no connectors at all.
-//
-// The strict resolver rather than getCanonicalRefName2, because a name the
-// assembly does not know means drop the connection rather than draw it
-// somewhere. Its throw is out of reach here: the refNames come off fetched
-// features, and there are none until the assembly has loaded.
-export function getCanonicalRefPair(
-  assemblies: RowAssemblies,
-  level1: number,
-  f1RefName: string,
-  level2: number,
-  f2RefName: string,
-) {
-  const f1ref = assemblies[level1]?.getCanonicalRefName(f1RefName)
-  const f2ref = assemblies[level2]?.getCanonicalRefName(f2RefName)
-  if (!f1ref || !f2ref) {
-    return undefined
-  }
-  return { f1ref, f2ref }
-}
 
 // Flat (y1===y2) connections render as a quadratic arc bowed upward, keeping
 // same-row links visible; otherwise a straight line.
@@ -173,19 +128,25 @@ function featureTooltipLabel(feature: Feature) {
     start: feature.get('start'),
     end: feature.get('end'),
   })
+  return readTooltipLabel(name ?? '', loc)
+}
+
+function endpointLabel(end: Feature | string) {
+  return typeof end === 'string' ? end : featureTooltipLabel(end)
+}
+
+export function readTooltipLabel(name: string, loc: string) {
   return name ? `${truncateMiddle(name)} (${loc})` : loc
 }
 
 // shared by every overlay type's hover tooltip: two endpoint labels plus an
 // optional reason (e.g. why the connecting curve is colored a certain way)
 export function buildPairTooltip(
-  f1: Feature,
-  target: Feature | string,
+  from: Feature | string,
+  to: Feature | string,
   reason?: string,
 ) {
-  const f2Label =
-    typeof target === 'string' ? target : featureTooltipLabel(target)
-  const base = `${featureTooltipLabel(f1)} → ${f2Label}`
+  const base = `${endpointLabel(from)} → ${endpointLabel(to)}`
   return reason ? `${base}<br/>${reason}` : base
 }
 
@@ -276,7 +237,11 @@ export const OverlayPaths = observer(function OverlayPaths({
       stroke={stroke}
       strokeWidth={strokeWidth}
       fill="none"
-      data-testid={getTestId(trackId, match.layoutMatches.length > 0)}
+      data-testid={getTestId(
+        trackId,
+        (match.kind === 'variant' ? match.layoutMatches : match.chains).length >
+          0,
+      )}
     >
       {hovered?.highlights?.().map(({ key, ...rect }) => (
         <rect
@@ -331,112 +296,62 @@ export function isLevelPairMinimized(
   return !!(tracks[level1]?.minimized || tracks[level2]?.minimized)
 }
 
-export interface ResolvedPair {
-  f1: Feature
-  f2: Feature
-  /**
-   * which layoutMatches chunk the two endpoints came from — for an alignments
-   * track that is the read chain, so a hover on any one connection can name
-   * every other connection and every segment of the same read
-   */
-  chunkIndex: number
-  level1: number
-  level2: number
+export interface DrawnConnection {
+  connection: ReadConnection<ReadEntry>
+  /** the read chain it belongs to, so a hover can emphasize the whole route */
+  chainIndex: number
   c1: LayoutRecord
   c2: LayoutRecord
-  f1ref: string
-  f2ref: string
-  // split-read connectors only: loc strings of this read's segments that map
-  // between f1 and f2 but aren't shown in any view, so the connector spans them
-  hiddenSegmentsBetween: string[] | undefined
+  kind: ConnectionKind
 }
 
-// Walks each layoutMatch chunk's adjacent feature pairs, skipping minimized
-// level pairs and unresolvable canonical refs. Yields the feature/layout/ref
-// data so callers can pick their own endpoint (variant overlays use the LEFT
-// edge; AlignmentConnections uses the strand-aware 3'/5' read edges), rather
-// than duplicating the walk.
-export function* resolvedPairs({
-  match,
-  assemblies,
-  tracks,
-}: {
-  match: Pick<OverlayMatch, 'layoutMatches'>
-  assemblies: RowAssemblies
-  tracks: MinimizableTrack[]
-}): Generator<ResolvedPair> {
-  for (const [chunkIndex, chunk] of match.layoutMatches.entries()) {
-    for (let i = 0; i < chunk.length - 1; i++) {
-      const { layout: c1, feature: f1, level: level1 } = chunk[i]!
-      const {
-        layout: c2,
-        feature: f2,
-        level: level2,
-        hiddenSegmentsBefore,
-      } = chunk[i + 1]!
-      if (isLevelPairMinimized(tracks, level1, level2)) {
-        continue
-      }
-      const refs = getCanonicalRefPair(
-        assemblies,
-        level1,
-        f1.get('refName'),
-        level2,
-        f2.get('refName'),
-      )
-      if (refs) {
-        yield {
-          f1,
-          f2,
-          chunkIndex,
-          level1,
-          level2,
-          c1,
-          c2,
-          hiddenSegmentsBetween: hiddenSegmentsBefore,
-          ...refs,
-        }
-      }
-    }
-  }
-}
-
-// The alignment connectors the overlay draws, each with its kind: the pileup
-// links an intra-view junction itself, and showIntraviewLinks off drops the rest
-// of them.
+// The alignment connectors the overlay draws, each with its kind: a read laid
+// out in no row draws nothing, the pileup links an intra-view junction itself,
+// and showIntraviewLinks off drops the rest of them.
 export function* drawnConnections({
-  match,
-  assemblies,
+  chains,
+  entryLayouts,
   tracks,
   levels,
   showIntraviewLinks,
 }: {
-  match: Pick<OverlayMatch, 'layoutMatches' | 'hasPairedReads'>
-  assemblies: RowAssemblies
+  chains: ReadChain[]
+  entryLayouts: ReadonlyMap<ReadEntry, LayoutRecord>
   tracks: MinimizableTrack[]
   levels: Pick<OverlayLevel, 'linksReads'>[]
   showIntraviewLinks: boolean
-}): Generator<ResolvedPair & { kind: ConnectionKind }> {
-  for (const pair of resolvedPairs({ match, assemblies, tracks })) {
-    const { f1, f2, level1, level2, c1, c2, f1ref, f2ref } = pair
-    if (
-      level1 === level2 &&
-      (!showIntraviewLinks ||
-        isDrawnByPileup({ level: level1, levels, c1, c2 }))
-    ) {
-      continue
-    }
-    yield {
-      ...pair,
-      kind: connectionKind({
-        isSplit: !match.hasPairedReads,
-        interchrom: f1ref !== f2ref,
-        pairDirection: pairDirection(
-          f1.get('pair_orientation') as string | undefined,
-        ),
-        s1: f1.get('strand')!,
-        s2: f2.get('strand')!,
-      }),
+}): Generator<DrawnConnection> {
+  for (const [chainIndex, { connections }] of chains.entries()) {
+    for (const connection of connections) {
+      const { e1, e2, isSplit } = connection
+      const c1 = entryLayouts.get(e1)
+      const c2 = entryLayouts.get(e2)
+      if (
+        !c1 ||
+        !c2 ||
+        isLevelPairMinimized(tracks, e1.level, e2.level) ||
+        (e1.level === e2.level &&
+          (!showIntraviewLinks || levels[e1.level]?.linksReads))
+      ) {
+        continue
+      }
+      const { s1, s2 } = connectionEndpoints(connection)
+      const src = pairFieldEntry(e1, e2)
+      yield {
+        connection,
+        chainIndex,
+        c1,
+        c2,
+        kind: connectionKind({
+          isSplit,
+          interchrom: e1.refName !== e2.refName,
+          pairDirection: pairDirectionOfNum(
+            src.data.readPairOrientations[src.readIdx]!,
+          ),
+          s1,
+          s2,
+        }),
+      }
     }
   }
 }
@@ -449,7 +364,7 @@ export function connectionKeyEntries(
   model: BreakpointViewModel,
   trackIds = model.overlayTracks.map(t => t.configuration.trackId),
 ) {
-  const { assemblies, overlayMatches, showIntraviewLinks } = model
+  const { overlayMatches, showIntraviewLinks } = model
   const entries = new Map<string, { kind: ConnectionKind; isSplit: boolean }>()
   for (const trackId of trackIds) {
     const match = overlayMatches.get(trackId)
@@ -460,14 +375,14 @@ export function connectionKeyEntries(
     ) {
       continue
     }
-    const isSplit = !match.hasPairedReads
-    for (const { kind } of drawnConnections({
-      match,
-      assemblies,
+    for (const { kind, connection } of drawnConnections({
+      chains: match.chains,
+      entryLayouts: match.layouts,
       tracks,
       levels: model.overlayLinksReads(trackId),
       showIntraviewLinks,
     })) {
+      const { isSplit } = connection
       entries.set(connectionLabel(kind, isSplit), { kind, isSplit })
     }
   }
@@ -492,39 +407,34 @@ export interface HighlightRect {
 // rearrangement opens one panel per segment of the route, so a chain routinely
 // runs across three or four of them and the chain is what the hover is asking
 // about. It also picks up the segments no connector is drawn for — an intra-view
-// junction the pileup links itself (isDrawnByPileup), or one dropped with
+// junction the pileup links itself (`linksReads`), or one dropped with
 // showIntraviewLinks off — which would otherwise leave a visible gap in the
 // middle of the highlighted read.
 export function chainHighlightRects({
-  chunk,
-  assemblies,
+  entries,
+  entryLayouts,
   tracks,
   levels,
   layouts,
 }: {
-  chunk: LayoutMatch[]
-  assemblies: RowAssemblies
+  entries: ReadEntry[]
+  entryLayouts: ReadonlyMap<ReadEntry, LayoutRecord>
   tracks: MinimizableTrack[]
   levels: OverlayLevel[]
   layouts: ViewLayout[]
 }) {
   const rects: HighlightRect[] = []
-  for (const { feature, layout, level } of chunk) {
-    // that row's own assembly, and the strict resolver for the reason
-    // getCanonicalRefPair gives: a name the assembly does not know means draw
-    // nothing rather than draw it somewhere
-    const refName = assemblies[level]?.getCanonicalRefName(
-      feature.get('refName'),
-    )
-    if (refName && !tracks[level]?.minimized) {
+  for (const e of entries) {
+    const layout = entryLayouts.get(e)
+    if (layout && !tracks[e.level]?.minimized) {
       const rect = computeOverlayRect({
-        level: levels[level]!,
+        level: levels[e.level]!,
         layout,
-        refName,
-        viewLayout: layouts[level]!,
+        refName: e.refName,
+        viewLayout: layouts[e.level]!,
       })
       if (rect) {
-        rects.push({ key: `${level}-${feature.id()}`, ...rect })
+        rects.push({ key: `${e.level}-${readIdOf(e)}`, ...rect })
       }
     }
   }

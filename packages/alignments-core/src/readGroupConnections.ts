@@ -54,9 +54,8 @@ export interface ReadConnection<E> {
   // Loc strings of the read's OWN segments that lie between these two in read
   // order and that no fetched entry carries — the junction joins two segments
   // that are read-adjacent on screen and not on the molecule. Absent when the
-  // two really are consecutive, and on every mate link. Same statement
-  // `hiddenSegmentsBefore` makes in the breakpoint split view
-  // (`markHiddenSegments`), which is what the renderer dashes.
+  // two really are consecutive, and on every mate link. The bezier overlay and
+  // the breakpoint split view both dash such a junction.
   hiddenSegmentsBetween?: string[]
 }
 
@@ -185,8 +184,7 @@ interface HiddenSegment {
 // absent and none of this runs.
 //
 // The records are also deduped, by clip: each segment's tag lists all the OTHERS,
-// so a read with n segments states each one n-1 times. Same rule and same reason
-// as `readChainSegments` in the breakpoint split view.
+// so a read with n segments states each one n-1 times.
 //
 // A truncated or placeholder SA record parses to a zero-length or NaN span and
 // would name a junk locus in a tooltip, so it is dropped — the filter

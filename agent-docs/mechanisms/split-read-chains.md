@@ -66,11 +66,11 @@ were put in — `buildReadVsRefFeatures` calls `getClip(cigar, 1)` and not
 drops the primary into the wrong place along the read and mis-sorts the
 segments.
 
-**A missing clip is not a clip of zero.** `getClipLengthAtStartOfRead`
-(`plugins/breakpoint-split-view/src/BreakpointSplitView/featureMatching.ts`)
-derives the offset from the CIGAR when the adapter did not supply it, because
-otherwise every segment collapses to 0 and the read-order sort silently becomes
-a no-op — a pipeline that still runs, over an unordered chain.
+**A missing clip is not a clip of zero.** `extractFeatureArrays`
+(`plugins/alignments/src/shared/extractFeatureArrays.ts`) derives the offset
+from the CIGAR when the record does not carry it, because otherwise every
+segment collapses to 0 and the read-order sort silently becomes a no-op — a
+pipeline that still runs, over an unordered chain.
 
 ## 3. The SA tags repeat, and the dedup happens before the CIGAR parse
 
@@ -78,15 +78,15 @@ Each segment's SA tag lists the read's *other* alignments, so an n-segment read
 describes each of its alignments n−1 times and a naive walk parses the same text
 O(n²) times. The fix is to dedupe the entries **as text**: `splitSA` yields the
 raw `;`-delimited records, the caller drops the ones it has already seen, and
-`featurizeSAEntries` parses what survives. `readChainSegments`
-(`featureMatching.ts`) does that and pays O(n) CIGAR parses; `featurizeSAEntries`
-exists as a separate export from `featurizeSA` only because a filter cannot be
-applied behind a single-string parameter.
+`featurizeSAEntries` parses what survives. `hiddenSegments`
+(`packages/alignments-core/src/readGroupConnections.ts`) does that, keyed on the
+cheap head-or-tail clip, and pays the full parse only for the records that
+survive; `featurizeSAEntries` exists as a separate export from `featurizeSA`
+only because a filter cannot be applied behind a single-string parameter.
 
-Same rule one level up, and it is why both walks spell it this way:
-`getTag(feature, 'SA')`, never `feature.get('tags')`, which decodes every tag on
-the read to answer one presence check — per segment, of every chained read on
-screen.
+Same rule one level up: the worker reads the tag with `getTag(feature, 'SA')`,
+never `feature.get('tags')`, which decodes every tag on the read to answer one
+presence check (`extractFeatureArrays`).
 
 ## 4. A segment's identity within a read is its locus AND its read position
 
@@ -128,17 +128,17 @@ Fixed in `68eab1e8c7`.
 There are two right answers and the choice is per consumer:
 
 - **A connector draws the junction and marks it.** `splitJunctions`
-  (`readGroupConnections.ts`) and `markHiddenSegments` (`featureMatching.ts`)
-  each emit the junction, count the read's own segments lying strictly between
-  the two on-screen ones, and pass the loci up — which the overlay draws dashed
-  and names in its hover. A reader following one molecule loses the thread if
-  the connector disappears.
+  (`readGroupConnections.ts`) emits the junction, counts the read's own segments
+  lying strictly between the two on-screen ones, and passes the loci up — which
+  the bezier overlay and the breakpoint split view both draw dashed and name in
+  their hover. A reader following one molecule loses the thread if the
+  connector disappears.
 - **An aggregate emits nothing.** `unpairedChainArcs` withholds the junction,
   because in a band whose marks are being counted a wrong junction becomes
   evidence.
 
-Either way the gap is carried as a field (`hiddenSegmentsBetween`,
-`hiddenSegmentsBefore`) rather than being the silence left by a `continue`. A
+Either way the gap is carried as a field (`hiddenSegmentsBetween`) rather
+than being the silence left by a `continue`. A
 same-strand junction reaches the overlay too, though the straight-line pass
 would otherwise own it: that pass leaves any pair with hidden segments alone
 (`isGpuLinkedReadLine`), and where both ends share a row, as a chain's do, the
@@ -187,7 +187,9 @@ Where the join is a mutual pointer rather than a list — a VCF breakend naming
 its mate position, a bedpe or STAR-Fusion record arriving as two halves each
 carrying `mate` — the key has to come out identical computed from either side.
 It is one line, the unordered pair sorted and joined, and it is what
-`getVariantJunctions` (`featureMatching.ts`) buckets on. Both forms go through
+`getVariantJunctions`
+(`plugins/breakpoint-split-view/src/BreakpointSplitView/variantJunctions.ts`)
+buckets on. Both forms go through
 the one key because both ends come from `junctionEnds`, so what is compared is
 the junction rather than the record's own spelling of it.
 
@@ -197,19 +199,18 @@ the index counts within that refName's bucket, so the two halves of one record
 disagree on *both* fields — stripping the `-r1`/`-r2` suffix neither rejoins a
 real pair nor keeps unrelated ones apart. Rule 1 again, one level down.
 
-The smaller version sits in the same file: `getBadlyPairedAlignments` keys its
-"already seen at this position" set on read name *and* span. On span alone it
-also dropped unrelated reads that happened to share a span, silently losing
+The smaller version is `dedupeByReadId` (`readGroupConnections.ts`), which
+collapses one read fetched by two regions on its record id. A key on span alone
+would also drop unrelated reads that happen to share a span, silently losing
 their mate's connection and making the result depend on iteration order.
 
 ## The four joins, side by side
 
-`featureMatching.ts` holds all four, which is what makes them legible as one
-thing rather than four coincidences:
+Seen together they are one thing rather than four coincidences:
 
 | what is being rejoined | how a feature names its other half | rejoined by |
 | --- | --- | --- |
-| a split read | `SA`, the read's other alignments | `unpairedReadChain`, `readChainSegments` |
+| a split read | `SA`, the read's other alignments | `unpairedReadChain`, `splitJunctions` |
 | a read pair | the mate's placement in the read's own flags | `resolveReadGroup`'s mate partition |
 | a VCF adjacency | the mate position inside the breakend `ALT` | `getVariantJunctions` |
 | a bedpe / fusion record | a `mate` on each half | `getVariantJunctions` |

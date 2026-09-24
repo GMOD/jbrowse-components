@@ -655,14 +655,12 @@ const renderBreakpoint: ModeRenderer = async ctx => {
   })
   return {
     svg,
-    links: [...view.overlayMatches.values()]
-      .filter(({ kind }) => kind === 'alignment')
-      .map(
-        ({ layoutMatches }) =>
-          layoutMatches.filter(
-            pieces => new Set(pieces.map(piece => piece.level)).size > 1,
-          ).length,
-      ),
+    links: [...view.readChainsByTrack.values()].map(
+      chains =>
+        chains.filter(
+          ({ entries }) => new Set(entries.map(e => e.level)).size > 1,
+        ).length,
+    ),
   }
 }
 

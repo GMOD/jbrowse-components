@@ -1,3 +1,4 @@
+import type { ReadChain, ReadEntry } from './readChains.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type { ExportSvgOptions as LgvExportSvgOptions } from '@jbrowse/plugin-linear-genome-view'
@@ -68,12 +69,6 @@ export interface LayoutMatch {
   feature: Feature
   layout: LayoutRecord
   level: number
-  clipLengthAtStartOfRead: number
-  // For split-read chains (clip-sorted): loc strings of any alignment segments
-  // the read has between this entry and the previous one that aren't present in
-  // any loaded view, so the connector to it spans hidden segments. Undefined
-  // when the two are truly consecutive.
-  hiddenSegmentsBefore?: string[]
 }
 
 /**
@@ -91,28 +86,12 @@ export interface OverlayHover {
 // The discriminant Overlay.tsx dispatches on, from the track's type.
 export type OverlayKind = 'alignment' | 'variant'
 
-export interface OverlayMatch {
-  kind: OverlayKind
-  layoutMatches: LayoutMatch[][]
-  hasPairedReads?: boolean
-}
-
-// One alignment of a split read, on the read's 5' axis (see readChainSegments).
-export interface ChainSegment {
-  clip: number
-  refName: string
-  start: number
-  end: number
-}
-
-// A track's features paired into chunks, plus each split-read chunk's SA-derived
-// chain — everything overlayMatches needs that depends on features alone and not
-// on any track's layout.
-export interface MatchedChunks {
-  kind: OverlayKind
-  matched: Feature[][]
-  hasPairedReads?: boolean
-  chains?: ChainSegment[][]
-}
+export type OverlayMatch =
+  | { kind: 'variant'; layoutMatches: LayoutMatch[][] }
+  | {
+      kind: 'alignment'
+      chains: ReadChain[]
+      layouts: ReadonlyMap<ReadEntry, LayoutRecord>
+    }
 
 export { type TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'

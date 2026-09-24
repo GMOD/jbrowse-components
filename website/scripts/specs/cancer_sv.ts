@@ -196,8 +196,8 @@ const FLOW_NUMBER = (n: number, extra?: { view: [number, number] }) =>
 // third report on this figure ("it uses dotted lines which means, in effect, we
 // dont have the full picture here. we might want to fully resolve the 3 level
 // derived breakpoint split"). The dashes are not a style: AlignmentConnections
-// draws `strokeDasharray="4 3"` exactly when `hiddenSegmentsBefore` is set,
-// which markHiddenSegments fills with the read's own SA-chain segments that
+// draws `strokeDasharray="4 3"` exactly when `hiddenSegmentsBetween` is set,
+// which readGroupConnections fills with the read's own SA-chain segments that
 // fall between two drawn ones and are shown in NO panel. der(3) is a four-hop
 // chain -- chr3 32.7 kb, chr10 199 bp, chr12 183 bp inverted, chr3 6.4 kb
 // inverted -- so with chr3 and chr10 on screen every connector from the chr10

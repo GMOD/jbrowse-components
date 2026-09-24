@@ -30,16 +30,8 @@ import CropFreeIcon from '@mui/icons-material/CropFree'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import { autorun } from 'mobx'
 
-import {
-  getBadlyPairedAlignments,
-  getClipLengthAtStartOfRead,
-  getMatchedAlignmentFeatures,
-  getVariantJunctions,
-  hasPairedReads,
-  markHiddenSegments,
-  readChainSegments,
-} from './featureMatching.ts'
 import { breakpointSplitLaunchKeys } from './launchKeys.ts'
+import { buildReadChains, layoutReadChains } from './readChains.ts'
 import {
   VIEW_DIVIDER_HEIGHT,
   calc,
@@ -53,14 +45,16 @@ import {
   overlayJexlFilters,
   overlayKind,
   placeOnRow,
+  readSourceOf,
 } from './util.ts'
+import { getVariantJunctions } from './variantJunctions.ts'
 
+import type { ReadChain } from './readChains.ts'
 import type {
   BreakpointSplitViewCommands,
   BreakpointSplitViewInitView,
   ExportSvgOptions,
   LayoutRecord,
-  MatchedChunks,
   OverlayLevel,
   OverlayHover,
   OverlayMatch,
@@ -363,7 +357,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * The matched tracks the overlay draws for — alignments and variants.
-       * The overlay fetch asks for these alone.
        */
       get overlayTracks(): OverlayTrack[] {
         return this.matchedTracks.filter(
@@ -373,13 +366,24 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * The overlay tracks the overlay fetch asks for: the variant tracks. An
+       * alignments track's reads come off its own display instead.
+       */
+      get fetchedTracks(): OverlayTrack[] {
+        return this.overlayTracks.filter(
+          track => overlayKind(track.type) === 'variant',
+        )
+      },
+
+      /**
+       * #getter
        * Same name and same meaning as `FetchMixin.fetchInert`, on a view rather
-       * than a display: with no overlay track matched across the rows there is
+       * than a display: with no variant track matched across the rows there is
        * nothing for the overlay fetch to ask for, so `prepare` declines instead
        * of running an empty fetch and commit on every pan.
        */
       get fetchInert(): boolean {
-        return this.overlayTracks.length === 0
+        return this.fetchedTracks.length === 0
       },
 
       /**
@@ -526,25 +530,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return features.map(c =>
           c
             .map(feature => {
-              const clipLengthAtStartOfRead =
-                getClipLengthAtStartOfRead(feature)
               for (const [level, track] of tracks.entries()) {
                 const layout = calc(track, feature)
                 if (layout) {
-                  return { feature, layout, level, clipLengthAtStartOfRead }
+                  return { feature, layout, level }
                 }
               }
-              // No row in any track's layout: the display keeps none (paired/arc
-              // displays), or the worker dropped the read (filterBy and friends).
-              // Synthesize an off-display record so the connection still draws to
-              // the bottom edge. NOT the maxHeight case — see makeOffscreenLayout.
+              // No row in any track's layout: the display keeps none, so an
+              // off-display record lets the connection still draw to the bottom
+              // edge. bpToPx matches displayedRegions by exact refName, so the
+              // adapter's refName is canonicalized against each row's own
+              // assembly, or an aliased one (bedpe 'A' vs the view's 'ctgA')
+              // resolves to no level.
               const start = feature.get('start')
-              // bpToPx matches displayedRegions by exact refName, so the raw
-              // adapter refName is canonicalized per level — against that row's
-              // own assembly — or an aliased one (bedpe 'A' vs the view's
-              // 'ctgA') resolves to no level and the feature is dropped. The
-              // drawing side canonicalizes the same way, via
-              // getCanonicalRefPair.
               const level = findFeatureViewLevel(
                 views,
                 self.assemblies,
@@ -557,7 +555,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     feature,
                     layout: makeOffscreenLayout(start, feature.get('end')),
                     level,
-                    clipLengthAtStartOfRead,
                   }
             })
             .filter(notEmpty),
@@ -566,49 +563,45 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * Classifies each matched track and pairs its features, keyed by trackId.
-       * Everything here is a function of the fetched features alone, so it is
-       * deliberately kept out of `overlayMatches`, which additionally reads each
-       * track's layout: the layout reads invalidate on a track resize or a
-       * compactness change, and fusing the two would re-run this whole pass —
-       * including the SA-chain parse, the expensive part — on every drag frame.
+       * Each fetched variant track's records paired into junctions, keyed by
+       * trackId. A function of the fetched features alone, kept apart from
+       * `overlayMatches` so a track resize re-runs only the layout half.
        */
-      get matchedTrackChunks(): Map<string, MatchedChunks> {
-        const result = new Map<string, MatchedChunks>()
-        for (const track of this.overlayTracks) {
-          const trackId = track.configuration.trackId
-          const featureArrays = self.matchedTrackFeatures[trackId]
-          if (!featureArrays) {
-            continue
-          }
-          const allFeatures = new Map(
-            featureArrays.flat().map(f => [f.id(), f] as const),
+      get variantJunctionsByTrack(): Map<string, Feature[][]> {
+        const result = new Map<string, Feature[][]>()
+        for (const [trackId, featureArrays] of Object.entries(
+          self.matchedTrackFeatures,
+        )) {
+          result.set(
+            trackId,
+            getVariantJunctions(
+              new Map(featureArrays.flat().map(f => [f.id(), f] as const)),
+            ),
           )
-          const kind = overlayKind(track.type)
-          if (kind === 'alignment') {
-            // Paired-vs-split is decided per track-match here (any PAIRED flag
-            // ⇒ treat the whole match as paired). Consequence: a paired read
-            // that is ALSO SA-split has its split junctions drawn with the
-            // paired endpoint rule (both 3' edges, no 5'-leading foldback) in
-            // AlignmentConnections. The alignments-track linked-read overlay
-            // resolves this per-connection instead (readGroupConnections emits
-            // both the split junctions and the mate link). Unifying would mean
-            // porting sub-read chaining into this match resolution.
-            const paired = hasPairedReads(allFeatures)
-            const matched = paired
-              ? getBadlyPairedAlignments(allFeatures)
-              : getMatchedAlignmentFeatures(allFeatures)
-            result.set(trackId, {
-              kind: 'alignment',
-              matched,
-              hasPairedReads: paired,
-              chains: paired ? undefined : matched.map(readChainSegments),
-            })
-          } else if (kind === 'variant') {
-            result.set(trackId, {
-              kind: 'variant',
-              matched: getVariantJunctions(allFeatures),
-            })
+        }
+        return result
+      },
+
+      /**
+       * #getter
+       * Each alignments track's split reads and discordant pairs, read off the
+       * displays in every row and resolved into connections, keyed by trackId.
+       * Reads no row, so a resize or a scroll leaves it alone.
+       */
+      get readChainsByTrack(): Map<string, ReadChain[]> {
+        const result = new Map<string, ReadChain[]>()
+        for (const track of this.overlayTracks) {
+          if (overlayKind(track.type) === 'alignment') {
+            const trackId = track.configuration.trackId
+            result.set(
+              trackId,
+              buildReadChains(
+                this.getMatchedTracks(trackId).map(t =>
+                  readSourceOf(t.displays[0]),
+                ),
+                self.assemblies,
+              ),
+            )
           }
         }
         return result
@@ -616,32 +609,28 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * Zero-arg cached getter: resolves each matched chunk's features to layout
-       * rectangles, returning a Map keyed by trackId. Mobx caches this across
-       * renders and only invalidates when the underlying feature or layout reads
-       * change — so scrolling within already-loaded data does NOT trigger a
-       * re-lookup.
+       * Every overlay track's connections with their layout rects, keyed by
+       * trackId. Cached, so scrolling within loaded data does not look a row
+       * up again.
        */
       get overlayMatches(): Map<string, OverlayMatch> {
         const result = new Map<string, OverlayMatch>()
-        for (const [trackId, chunk] of this.matchedTrackChunks) {
-          const { kind, matched, hasPairedReads, chains } = chunk
-          const layoutMatches = this.getMatchedFeaturesInLayout(
-            trackId,
-            matched,
-          )
-          if (chains) {
-            for (const [i, m] of layoutMatches.entries()) {
-              m.sort(
-                (a, b) => a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead,
-              )
-              markHiddenSegments(m, chains[i]!)
-            }
-          }
+        for (const [trackId, matched] of this.variantJunctionsByTrack) {
           result.set(trackId, {
-            kind,
-            layoutMatches,
-            hasPairedReads,
+            kind: 'variant',
+            layoutMatches: this.getMatchedFeaturesInLayout(trackId, matched),
+          })
+        }
+        for (const [trackId, chains] of this.readChainsByTrack) {
+          result.set(trackId, {
+            kind: 'alignment',
+            chains,
+            layouts: layoutReadChains(
+              chains,
+              this.getMatchedTracks(trackId).map(t =>
+                readSourceOf(t.displays[0]),
+              ),
+            ),
           })
         }
         return result
@@ -817,7 +806,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             // says nothing about the other matched tracks, and dropping the key
             // also clears any features left from before the track went over its
             // limit.
-            const tracks = self.overlayTracks.filter(
+            const tracks = self.fetchedTracks.filter(
               track => !track.displays[0]!.regionTooLarge,
             )
             // THE READ THAT MAKES A PAN REFETCH, and it belongs here rather

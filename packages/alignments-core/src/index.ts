@@ -40,6 +40,7 @@ export {
   isAbnormalPairDirection,
   isConcordantPairRead,
   pairDirection,
+  pairDirectionOfNum,
   pairOrientationToNum,
   splitInversion,
   splitJunctionKind,

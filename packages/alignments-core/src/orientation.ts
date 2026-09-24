@@ -68,6 +68,16 @@ export function pairOrientationToNum(pairOrientation: string | undefined) {
   return dir ? PAIR_DIRECTION_NUM[dir] : 0
 }
 
+const PAIR_DIRECTIONS = ['LR', 'RL', 'RR', 'LL'] as const
+
+export function pairDirectionOfNum(
+  pairOrientationNum: number,
+): PairDirection | undefined {
+  return PAIR_DIRECTIONS.find(
+    dir => PAIR_DIRECTION_NUM[dir] === pairOrientationNum,
+  )
+}
+
 /**
  * The ordinary pair: the aligner flagged it properly paired, it is not a
  * chimeric segment, and its mates face each other. The one definition of
