@@ -1,10 +1,10 @@
 import { useEffect } from 'react'
 
-import { useCreateOnceAsync } from '@jbrowse/core/util/hooks'
 import { getSnapshot, onSnapshot } from '@jbrowse/mobx-state-tree'
 import {
   JBrowseLinearGenomeView,
   createViewStateAsync,
+  useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
 const STORAGE_KEY = 'jbrowse-lgv-example-session'
@@ -58,7 +58,7 @@ async function build() {
 }
 
 export default function WithSessionPersistence() {
-  const state = useCreateOnceAsync(build)
+  const state = useCreateViewState(build)
 
   useEffect(() => {
     if (state) {

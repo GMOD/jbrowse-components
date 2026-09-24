@@ -1,16 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import {
   JBrowseLinearGenomeView,
   createViewStateAsync,
   decodeSession,
-  destroyViewState,
   encodeSession,
-} from '@jbrowse/react-linear-genome-view2'
-
-import type {
-  SessionSnapshot,
-  ViewModel,
+  useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
@@ -54,62 +49,29 @@ function writeSessionParam(value: string) {
   window.history.replaceState(null, '', `#${params.toString()}`)
 }
 
-function build(session?: SessionSnapshot) {
+async function build(report: (status: string) => void) {
+  const param = readSessionParam()
+  if (param) {
+    try {
+      const session = await decodeSession(param)
+      const engine = await createViewStateAsync({ assembly, tracks, session })
+      report(`restored "${session.name}" from the URL`)
+      return engine
+    } catch (e) {
+      console.error(e)
+      report(`could not restore the session in the URL: ${e}`)
+    }
+  }
   return createViewStateAsync({
     assembly,
     tracks,
-    session,
-    defaultSession: session ? undefined : freshSession,
+    defaultSession: freshSession,
   })
 }
 
 export default function SessionInUrl() {
-  const [state, setState] = useState<ViewModel | undefined>(undefined)
   const [status, setStatus] = useState('')
-
-  useEffect(() => {
-    const mount = {
-      unmounted: false,
-      engine: undefined as ViewModel | undefined,
-    }
-    const open = (session?: SessionSnapshot) =>
-      build(session).then(
-        engine => {
-          if (mount.unmounted) {
-            destroyViewState(engine)
-          } else {
-            mount.engine = engine
-            setState(engine)
-          }
-        },
-        (e: unknown) => {
-          console.error(e)
-          setStatus(`could not open the view: ${e}`)
-        },
-      )
-    const param = readSessionParam()
-    if (param) {
-      decodeSession(param)
-        .then(session =>
-          open(session).then(() => {
-            setStatus(`restored "${session.name}" from the URL`)
-          }),
-        )
-        .catch((e: unknown) => {
-          console.error(e)
-          void open()
-          setStatus(`could not restore the session in the URL: ${e}`)
-        })
-    } else {
-      void open()
-    }
-    return () => {
-      mount.unmounted = true
-      if (mount.engine) {
-        destroyViewState(mount.engine)
-      }
-    }
-  }, [])
+  const state = useCreateViewState(() => build(setStatus))
 
   return state ? (
     <div>

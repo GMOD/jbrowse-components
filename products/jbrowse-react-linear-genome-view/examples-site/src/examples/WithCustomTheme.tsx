@@ -21,6 +21,10 @@ export default function WithCustomTheme() {
         },
       },
     ],
+    view: {
+      loc: 'ctgA:1105..1221',
+      tracks: ['volvox-ReferenceSequenceTrack', 'volvox_gff3'],
+    },
     configuration: {
       theme: {
         palette: {

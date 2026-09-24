@@ -29,7 +29,7 @@ import path from 'node:path'
 // first version of this check reported all three files it had just been written
 // to clear, which is the most confusing way for a new check to fail.
 const BUILDERS = /\b(?:createViewState|createLinearGenomeView)\s*\(/
-const IN_INITIALIZER = /\buse(?:State|Memo)\s*\(\s*\(\s*\)\s*=>/
+const IN_INITIALIZER = /\buse(?:State|Memo)\s*(?:<[^;]*?>)?\s*\(\s*\(\s*\)\s*=>/
 
 // blanked rather than dropped, so a reported line number still points at the
 // line the reader will find
@@ -65,11 +65,15 @@ export function findEnginesBuiltInInitializers(
       const raw = fs.readFileSync(file, 'utf8').split('\n')
       const code = withoutComments(raw)
       code.forEach((line, i) => {
-        // the two on one line is the plain form; the multi-line form opens the
-        // initializer and calls the builder within the next few lines, which is
-        // what the lookahead covers
-        const window = code.slice(i, i + 4).join('\n')
-        if (IN_INITIALIZER.test(line) && BUILDERS.test(window)) {
+        // the initializer opens on this line, possibly behind a type argument
+        // and a line break, and calls the builder within the next few lines
+        const window = code.slice(i, i + 8).join('\n')
+        const opened = IN_INITIALIZER.exec(window)
+        if (
+          opened &&
+          opened.index < line.length &&
+          BUILDERS.test(window.slice(opened.index))
+        ) {
           out.push({ file, line: i + 1, text: raw[i]!.trim() })
         }
       })

@@ -19,6 +19,7 @@ export default function DisableAddTrack() {
           },
         },
       ]}
+      view={{ loc: 'ctgA:1105..1221', tracks: ['volvox_gff3'] }}
       disableAddTracks
     />
   )

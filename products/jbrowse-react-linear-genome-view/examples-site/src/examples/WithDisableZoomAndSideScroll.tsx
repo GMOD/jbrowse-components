@@ -51,9 +51,15 @@ export default function WithDisableZoomAndSideScroll() {
         id: 'linearGenomeView',
         type: 'LinearGenomeView',
         hideHeader: true,
+        displayedRegions: [
+          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50001 },
+        ],
+        windowStartBp: 1000,
+        windowWidthBp: 8000,
+        assembly: 'volvox',
+        tracks: ['volvox_gff3'],
       },
     },
-    location: 'ctgA:1105..1221',
   })
   return state ? <JBrowseLinearGenomeView viewState={state} /> : null
 }

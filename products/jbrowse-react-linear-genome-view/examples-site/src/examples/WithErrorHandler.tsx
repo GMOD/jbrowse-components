@@ -1,6 +1,5 @@
-import { useState } from 'react'
-
 import { ErrorBanner } from '@jbrowse/core/ui'
+import { useCreateOnce } from '@jbrowse/core/util/hooks'
 import {
   JBrowseLinearGenomeView,
   createViewState,
@@ -9,7 +8,7 @@ import {
 import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
 export default function WithErrorHandler() {
-  const [result] = useState<{ viewState: ViewModel } | { error: unknown }>(
+  const result = useCreateOnce<{ viewState: ViewModel } | { error: unknown }>(
     () => {
       try {
         return {

@@ -209,7 +209,7 @@ export const pages: ExamplePage[] = [
       {
         slug: 'with-multi-sample-variant-display',
         title: 'Multi-sample variant display',
-        description: 'One row per sample, grouped by a samples TSV column.',
+        description: 'One row per sample, colored by a samples TSV column.',
       },
     ],
   },
@@ -262,7 +262,7 @@ export const pages: ExamplePage[] = [
       {
         slug: 'with-session-persistence',
         title: 'Persist & restore the session',
-        description: 'onSnapshot out, defaultSession back in.',
+        description: 'onSnapshot out, session back in.',
       },
       {
         slug: 'session-in-url',
