@@ -68,7 +68,7 @@ import {
 } from './ldBins.ts'
 import { ldJoinResolver } from './ldJoinResolver.ts'
 import {
-  hasLdPartner,
+  hasLdRole,
   manhattanChannels,
   manhattanLayer,
 } from './manhattanLayer.ts'
@@ -477,17 +477,17 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * True when LD coloring is active with data loaded but no loaded point
-         * is a partner of the index SNP, so every other point is grey: the
-         * index is absent from the LD file, named differently there, or on a
-         * contig no loaded region is.
+         * True when a loaded region holds the index SNP but no loaded point
+         * is its partner, so every other point is grey: the LD file lacks the
+         * index or names it differently. An index outside the loaded regions
+         * is not missing.
          */
         get indexSnpMissing(): boolean {
+          const loaded = [...self.rpcDataMap.values()]
           return (
             self.ldColoringActive &&
-            self.indexSnp !== undefined &&
-            self.rpcDataMap.size > 0 &&
-            ![...self.rpcDataMap.values()].some(hasLdPartner)
+            loaded.some(d => hasLdRole(d, 'index')) &&
+            !loaded.some(d => hasLdRole(d, 'partner'))
           )
         },
         /**

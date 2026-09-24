@@ -139,9 +139,9 @@ describe('LinearManhattanDisplay field coloring', () => {
     ).toEqual(ldLegend({}).map(sw => sw.label))
   })
 
-  // Without it an export where nothing matched the index SNP is an all-grey
-  // plot under a full r² key that implies the colors mean something. The index
-  // itself keeps its diamond, so the note says every OTHER point.
+  // Without the note an export where nothing matched the index SNP is an
+  // all-grey plot under a full r² key. An index no loaded region holds, as
+  // after pinning one and navigating to another contig, is not missing.
   it('a missing index SNP notes why every other point is grey', () => {
     const ld = createTestEnvironment({ color: { field: 'ld' } }).createDisplay()
       .display
@@ -155,10 +155,10 @@ describe('LinearManhattanDisplay field coloring', () => {
         entries: values.map(value => ({ value, shape: 'circle' as const })),
       },
     })
-    const ctgB = { ...REGION, refName: 'ctgB' }
-    ld.setRpcData(1, roles(['partner', '']), ctgB)
+    ld.setRpcData(1, roles(['']), { ...REGION, refName: 'ctgB' })
     expect(ld.indexSnpMissing).toBe(false)
-    ld.setRpcData(1, roles(['']), ctgB)
+    ld.setRpcData(0, roles(['index', 'partner', '']), REGION)
+    expect(ld.indexSnpMissing).toBe(false)
     ld.setRpcData(0, roles(['index', '']), REGION)
     expect(ld.indexSnpMissing).toBe(true)
     const [scale] = ld.colorScales

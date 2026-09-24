@@ -68,13 +68,13 @@ export function manhattanChannels(
   return { ...layer, y, color, glyph }
 }
 
-/**
- * Whether any point in a region is a partner of the index SNP, which is the
- * LD data naming the index at all.
- */
-export function hasLdPartner({ shapeScale }: EncodedChannels) {
+/** Whether any point in a region plays this part in the LD join. */
+export function hasLdRole(
+  { shapeScale }: EncodedChannels,
+  role: 'index' | 'partner',
+) {
   return (
     shapeScale?.field === LD_ROLE_FIELD &&
-    shapeScale.entries.some(e => e.value === 'partner')
+    shapeScale.entries.some(e => e.value === role)
   )
 }
