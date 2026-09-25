@@ -68,6 +68,19 @@ test('a freehand query is replayed as a search, not parsed as a locstring', () =
   expect(navigated[0]!.getLabel()).toBe('BRCA')
 })
 
+test('two loci sharing a display string stay two rows', () => {
+  // the list dedupes on the location, so the same name at two loci survives as
+  // two rows — which the menu keys on `id`, since the labels are identical
+  const { items } = replay([
+    { label: 'trnA (matched alias)', loc: 'ctgA:100..200' },
+    { label: 'trnA (matched alias)', loc: 'ctgB:100..200' },
+  ])
+  expect((rows(items) as unknown as { id: string }[]).map(r => r.id)).toEqual([
+    'ctgA:100..200',
+    'ctgB:100..200',
+  ])
+})
+
 test('replaying a row records the same row, so the label does not decay', () => {
   const recorded = recentLocationOf(
     new BaseResult({

@@ -31,6 +31,12 @@ export function recentLocationsMenu({
           label: 'Recent',
           subMenu: [
             ...recentLocations.map(({ label, loc }) => ({
+              // the list dedupes on the location, so two rows can share a
+              // display string — two features of the same name at different
+              // loci, or two snippets ellipsized to the same text. `id` is what
+              // keeps them separate rows to React, which otherwise keys both on
+              // that one label
+              id: loc ?? label,
               label,
               onClick: () => {
                 // a row that recorded a location navigates straight to it; one
