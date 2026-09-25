@@ -194,9 +194,9 @@ breakends to hg38 and adds both as tracks:
 ```
 
 Open chr9 from _ABL1_ to past _NUP214_ with the copy-number track under both
-call tracks, each switched to **Display types → Structural variant arc
-display**. A call whose partner is on another chromosome draws a stem at its
-breakpoint with a tick toward the sequence it keeps.
+call tracks, each on a [mark display](/docs/config_guides/mark_display#links)
+with a `link` mark over a `mate` step. A call whose partner is on another
+chromosome draws a stem at its breakpoint.
 
 <Figure caption="chr9 from ABL1 to past NUP214: STAR-Fusion junctions from RNA-seq, 10X DNA breakends and DepMap copy number, with the three DNA breaks banded. Copy number steps at the outer two breaks. The BCR-ABL1 junction sits well right of its break, the NUP214-XKR3 junction on top of its break, and the right-hand break reaches chr13, where nothing is transcribed." src="/img/cancer_sv/k562_amplicon_dna.png" />
 

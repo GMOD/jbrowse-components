@@ -247,10 +247,9 @@ The seams, named honestly:
   the mark display and the canvas feature, multi-way and synteny colours answer
   `categorical`, Manhattan `threshold` over `field: 'ld'`, the quantitative
   display `categorical` over `source` and `threshold` over `score`, the
-  alignments displays `threshold` over the two insert-size fields, and the two
-  arc displays `categorical` and `threshold` over any feature field
-  (`ArcColor`, `PairedArcColor`), with the key `DisplayStatusChromeBase`
-  places for every display that composes `LegendMixin`.
+  alignments displays `threshold` over the two insert-size fields, with the key
+  `DisplayStatusChromeBase` places for every display that composes
+  `LegendMixin`.
   `range` is one output word for every kind, a palette, a threshold's colours
   or a ramp's stops, and `scheme` a named ramp from one table every baker
   reads. `threshold` is ggplot2's `scale_colour_steps`: ascending cut points in

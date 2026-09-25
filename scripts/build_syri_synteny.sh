@@ -158,7 +158,7 @@ config = {
                     'displayId': f'syri_regions_on_{reference}-LinearMultiRowFeatureDisplay',
                     'rows': {'field': 'query', 'domain': names[1:]},
                     # the key in plotsr's order; the blocks keep their itemRgb
-                    'colorDomain': ['SYN', 'INV', 'TRANS', 'INVTR', 'DUP', 'INVDP'],
+                    'color': {'domain': ['SYN', 'INV', 'TRANS', 'INVTR', 'DUP', 'INVDP']},
                 }
             ],
         },

@@ -242,7 +242,7 @@ tabix -p bed syri_regions.bed.gz
         "field": "query",
         "domain": ["Ler", "Cvi", "Eri", "Kyo", "Sha"]
       },
-      "colorDomain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
+      "color": { "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"] }
     }
   ]
 }

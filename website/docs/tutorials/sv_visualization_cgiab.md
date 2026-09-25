@@ -297,13 +297,30 @@ paired-end counts:
   "adapter": {
     "type": "BedpeAdapter",
     "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NYGC-somatic-pipeline_20240412/GRCh38-GIABv3/HG008-T--HG008-N.sv.annotated.v7.somatic.high_confidence.final.bedpe"
-  }
+  },
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "hg008t_nygc_sv-LinearMarkDisplay",
+      "marks": [
+        {
+          "mark": "link",
+          "size": 2,
+          "encoding": {
+            "x2": { "chrom": "mate.refName", "pos": "mate.start" }
+          },
+          "transform": [{ "type": "mate" }]
+        }
+      ]
+    }
+  ]
 }
 ```
 
 Each record holds both ends, so the whole callset reads as arcs at chromosome
-scale: **Display types → Structural variant arc display** on the track menu
-draws one arc per record between its two breakends.
+scale: the `link` mark of the
+[mark display](/docs/config_guides/mark_display#links) draws one arc per record
+between its two breakends.
 
 ## Copy number from the published callsets
 
