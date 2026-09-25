@@ -2,6 +2,7 @@ import {
   checkPlugins,
   checkPluginsAgainstStore,
   fetchPlugins,
+  forgetFetchedPlugins,
 } from './checkPlugins.ts'
 
 import type { PluginDefinition } from './pluginDefinitions.ts'
@@ -179,6 +180,9 @@ describe('checkPlugins with real plugin store', () => {
   // assertions below start clean.
   beforeEach(() => {
     fetchMock.resetMocks()
+    // the manifest is memoized for the life of the page, so each case has to
+    // start from an unfetched one
+    forgetFetchedPlugins()
   })
 
   it('validates mafviewer plugin from plugins.json', async () => {
@@ -285,5 +289,41 @@ describe('store refs', () => {
         store([]),
       ),
     ).toBe(false)
+  })
+})
+
+describe('fetchPlugins memoizes the manifest', () => {
+  beforeEach(() => {
+    fetchMock.resetMocks()
+    forgetFetchedPlugins()
+  })
+
+  const body = () => JSON.stringify({ plugins: [] })
+
+  // Four readers in a boot that needs it — the config's trust gate, the
+  // config's store refs, the session's gate, the session's refs — plus one per
+  // open of the store widget. The manifest is served no-cache, so the HTTP
+  // cache folds none of them and concurrent ones do not dedupe at all.
+  it('serves concurrent readers from one request', async () => {
+    fetchMock.mockResponse(body())
+    await Promise.all([fetchPlugins(), fetchPlugins(), fetchPlugins()])
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('serves a later reader from the same request', async () => {
+    fetchMock.mockResponse(body())
+    await fetchPlugins()
+    await fetchPlugins()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  // a store that was down when the config loaded is asked again when the widget
+  // opens, rather than reporting the old failure forever
+  it('forgets a failure, so the next reader retries', async () => {
+    fetchMock.mockResponseOnce('', { status: 503, statusText: 'nope' })
+    await expect(fetchPlugins()).rejects.toThrow('HTTP 503')
+    fetchMock.mockResponseOnce(body())
+    await expect(fetchPlugins()).resolves.toEqual({ plugins: [] })
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 })

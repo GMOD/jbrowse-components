@@ -1154,6 +1154,8 @@
         "dedupePlugins",
         "desktopVendoredPluginNames",
         "dropVendoredPlugins",
+        "holdsPlugin",
+        "holdsPluginVersion",
         "isESMPluginDefinition",
         "isPluginUrl",
         "isStorePluginDefinition",

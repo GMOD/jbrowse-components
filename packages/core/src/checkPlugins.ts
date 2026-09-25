@@ -17,22 +17,50 @@ import type { JBrowsePlugin } from './util/types/index.ts'
 export const TRUSTED_PLUGIN_URL_PREFIXES = ['https://jbrowse.org/plugins/']
 
 // v2 adds per-version JBrowse compatibility ranges + integrity hashes; the v1
-// plugins.json is still served for older clients. One constant, shared with the
-// hook every install surface reads (util/useFetchPlugins.ts), because the gate
-// and the list have to be looking at the same manifest — a second copy is how
-// one of them silently ends up on the unhashed v1 list, and then the gate
-// rejects a plugin the store just offered.
+// plugins.json is still served for older clients. Read only through
+// `fetchPlugins` below — the gate, the ref resolver and every install surface
+// have to be looking at the same manifest, and a second copy of the fetch is
+// how one of them silently ends up on the unhashed v1 list and then rejects a
+// plugin the store just offered.
 export const PLUGIN_STORE_URL =
   'https://jbrowse.org/plugin-store/v2/plugins.json'
 
+// One request per page, shared by every reader.
+//
+// There are four in a boot that needs them — the config's trust gate, the
+// config's store refs, the session's gate, the session's refs — plus one per
+// time the plugin store widget is opened, since `useFetch` holds no data cache.
+// The HTTP cache does not fold them: the manifest is served
+// `cache-control: no-cache, must-revalidate`, so each is at least a
+// revalidation round trip, and concurrent ones do not dedupe at all.
+//
+// Held for the life of the page rather than for a window. A manifest that
+// changes mid-session would only matter to a store listing the user is looking
+// at, and an install from a stale row still resolves against the version the
+// row named.
+let cached: Promise<{ plugins: JBrowsePlugin[] }> | undefined
+
 export async function fetchPlugins() {
-  const response = await fetch(PLUGIN_STORE_URL)
-  if (!response.ok) {
-    throw new Error(
-      `HTTP ${response.status} ${response.statusText} fetching plugins`,
-    )
-  }
-  return response.json() as Promise<{ plugins: JBrowsePlugin[] }>
+  // Rethrown to every caller and then forgotten, so a store that was down when
+  // the config loaded is retried when the widget opens.
+  cached ??= (async () => {
+    const response = await fetch(PLUGIN_STORE_URL)
+    if (!response.ok) {
+      throw new Error(
+        `HTTP ${response.status} ${response.statusText} fetching plugins`,
+      )
+    }
+    return response.json() as Promise<{ plugins: JBrowsePlugin[] }>
+  })().catch((error: unknown) => {
+    cached = undefined
+    throw error
+  })
+  return cached
+}
+
+/** Drops the cached manifest, so the next read fetches again. For tests. */
+export function forgetFetchedPlugins() {
+  cached = undefined
 }
 
 function isTrustedUrl(url: string) {
