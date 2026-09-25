@@ -70,8 +70,7 @@ test('Loader.tsx reloadPluginManagerCallback restores session correctly', async 
   await waitFor(
     () => {
       const newRootModel = window.JBrowseRootModel as WebRootModel
-      // The rootModel reference changes after reload
-      expect(newRootModel).toBeDefined()
+      expect(newRootModel).not.toBe(rootModel)
       expect(newRootModel.session).toBeDefined()
       // Session name should be preserved from the saved snapshot
       expect(newRootModel.session!.name).toBe('Modified Session For Test')

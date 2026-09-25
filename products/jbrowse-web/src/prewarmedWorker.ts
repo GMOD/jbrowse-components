@@ -1,5 +1,3 @@
-import makeWorkerInstance from './makeWorkerInstance.ts'
-
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
 let early:
@@ -12,8 +10,8 @@ let early:
  * pool adopts it through {@link takeWorker}, and the driver sends it the plugin
  * list once the root model has settled which plugins are trusted.
  */
-export function prewarmWorker() {
-  const worker = makeWorkerInstance()
+export function prewarmWorker(makeWorker: () => Worker) {
+  const worker = makeWorker()
   const stop = new AbortController()
   const entry = { worker, failed: false, stop }
   worker.addEventListener(
@@ -39,7 +37,7 @@ export function hintPrewarmedWorker(plugins: PluginDefinition[]) {
 }
 
 /** The pool's worker factory: the early worker first, if it loaded */
-export function takeWorker() {
+export function takeWorker(makeWorker: () => Worker) {
   const entry = early
   early = undefined
   entry?.stop.abort()
@@ -47,7 +45,7 @@ export function takeWorker() {
     return entry.worker
   }
   entry?.worker.terminate()
-  return makeWorkerInstance()
+  return makeWorker()
 }
 
 /** For a root model that runs RPC on the main thread */

@@ -550,6 +550,13 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
               "dad",
             ],
             "field": "sample",
+            "kept": [
+              "offspring10",
+              "dad",
+              "mom",
+              "offspring03",
+              "offspring07",
+            ],
           },
           "type": "LinearMultiRowFeatureDisplay",
         },
@@ -2839,10 +2846,31 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "arc_track_linear",
-          "type": "LinearArcDisplay",
+          "marks": [
+            {
+              "encoding": {
+                "size": {
+                  "field": "score",
+                  "range": [
+                    1,
+                    8,
+                  ],
+                  "scale": "log",
+                },
+              },
+              "mark": "link",
+            },
+            {
+              "encoding": {
+                "text": "score",
+              },
+              "mark": "text",
+            },
+          ],
+          "type": "LinearMarkDisplay",
         },
       ],
-      "name": "FromConfig Track (defaults to LinearArcDisplay)",
+      "name": "FromConfig Track (arcs as link marks)",
       "trackId": "arc_track",
       "type": "FeatureTrack",
     },
@@ -2879,12 +2907,19 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "arcHeight": "jexl:log10(feature.end-feature.start)*20",
           "displayId": "arc_track_custom_height_linear",
-          "type": "LinearArcDisplay",
+          "marks": [
+            {
+              "encoding": {
+                "y": "jexl:log10(feature.end-feature.start)",
+              },
+              "mark": "link",
+            },
+          ],
+          "type": "LinearMarkDisplay",
         },
       ],
-      "name": "Arc track (custom JEXL height)",
+      "name": "Arc track (apex at a jexl value)",
       "trackId": "arc_track_custom_height",
       "type": "FeatureTrack",
     },
@@ -3427,8 +3462,26 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "displayId": "volvox_bedpe-LinearPairedArcDisplay",
-          "type": "LinearPairedArcDisplay",
+          "displayId": "volvox_bedpe-LinearMarkDisplay",
+          "marks": [
+            {
+              "encoding": {
+                "color": "#a65628",
+                "x2": {
+                  "chrom": "mate.refName",
+                  "pos": "mate.start",
+                },
+              },
+              "mark": "link",
+              "size": 3,
+              "transform": [
+                {
+                  "type": "mate",
+                },
+              ],
+            },
+          ],
+          "type": "LinearMarkDisplay",
         },
       ],
       "name": "BEDPE arcs",
@@ -3451,8 +3504,26 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "displayId": "volvox_star_fusion-LinearPairedArcDisplay",
-          "type": "LinearPairedArcDisplay",
+          "displayId": "volvox_star_fusion-LinearMarkDisplay",
+          "marks": [
+            {
+              "encoding": {
+                "color": "#a65628",
+                "x2": {
+                  "chrom": "mate.refName",
+                  "pos": "mate.start",
+                },
+              },
+              "mark": "link",
+              "size": 3,
+              "transform": [
+                {
+                  "type": "mate",
+                },
+              ],
+            },
+          ],
+          "type": "LinearMarkDisplay",
         },
       ],
       "name": "STAR-Fusion fusions",

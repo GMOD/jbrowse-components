@@ -83,7 +83,7 @@ test('the walk finds the channel objects', () => {
       'FeatureColor',
       'ManhattanColor',
       'MarkColor',
-      'MarkGlyph',
+      'MarkShape',
       'RibbonColor',
     ]),
   )

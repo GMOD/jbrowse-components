@@ -90,10 +90,8 @@ test('a variant colour preset field reaches every variant display', () => {
   }
 })
 
-// A FeatureTrack offers five displays, three of which declare `color` in
-// different shapes: the feature and Manhattan displays' colour objects, and
-// the arc and multi-row displays' plain colour. A value goes to the displays
-// that take it.
+// A FeatureTrack's feature and multi-row displays take a FeatureColor and its
+// Manhattan display a ManhattanColor. A value goes to the displays that take it.
 function hydrateFeatureTrack(displayDefaults: Record<string, unknown>) {
   const pluginManager = makePluginManager()
   return pluginManager.getTrackType('FeatureTrack').configSchema.create(
@@ -137,7 +135,7 @@ test('a dormant field under scale none reaches both colour objects as written', 
 })
 
 test('a colour no display takes fails the load, naming every reason', () => {
-  expect(() => hydrateFeatureTrack({ color: { scale: 'linear' } })).toThrow(
+  expect(() => hydrateFeatureTrack({ color: { scale: 'ordinal' } })).toThrow(
     /no display of a FeatureTrack takes displayDefaults\.color \(LinearBasicDisplay: [\s\S]*LinearManhattanDisplay: /,
   )
 })

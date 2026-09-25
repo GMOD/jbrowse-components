@@ -31,6 +31,7 @@ import FileCopyIcon from '@mui/icons-material/FileCopy'
 import packageJSON from '../../package.json' with { type: 'json' }
 import { gitCommit } from '../buildInfo.ts'
 import jbrowseWebFactory from '../jbrowseModel.ts'
+import makeWorkerInstance from '../makeWorkerInstance.ts'
 import { takeWorker } from '../prewarmedWorker.ts'
 import {
   deleteSessionRows,
@@ -149,7 +150,7 @@ export default function RootModel({
         sessionModelType,
         assemblyConfigSchema,
         rpcManagerOptions: {
-          makeWorkerInstance: takeWorker,
+          makeWorkerInstance: () => takeWorker(makeWorkerInstance),
           defaultDriverName: 'WebWorkerRpcDriver',
         },
       }),
