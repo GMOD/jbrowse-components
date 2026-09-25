@@ -13,7 +13,7 @@
 // The oracle is `pnpm autogen`'s own output — docs/models/ for state models and
 // displays, docs/config/ for tracks and adapters — so this asks the same
 // question the reference pages answer and needs no list of its own, plus the
-// `aliases:` arrays the registrations carry. An alias is a name this build
+// `aliases` the config manifest lists. An alias is a name this build
 // still RESOLVES, for a session saved before a consolidation, so prose may name
 // one; what it is not is a type to pass to showTrack, which is what the docs
 // around them now say.
@@ -23,7 +23,7 @@
 // carries the other with its reason.
 //
 // Run: `pnpm check-agent-doc-types`, or the root `pnpm check-docs`.
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { reportProblems } from './check-utils.ts'
@@ -60,29 +60,23 @@ function documented(name: string) {
   )
 }
 
-// Every legacy spelling a registration still answers to, read off the tree so
-// this cannot disagree with what the plugins declare.
+// Every legacy spelling a registration still answers to, from the config
+// manifest the plugin manager writes (`aliases`, which a display derives from
+// its `retiredTypes`), so this cannot disagree with what the plugins declare.
 function registeredAliases() {
+  const manifest = readFileSync(
+    join(
+      repoRoot,
+      'products/jbrowse-cli/src/commands/validate/configManifest.generated.ts',
+    ),
+    'utf8',
+  )
   const names = new Set<string>()
-  const walk = (dir: string) => {
-    for (const entry of readdirSync(dir)) {
-      if (entry === 'node_modules' || entry === 'dist' || entry === 'esm') {
-        continue
-      }
-      const full = join(dir, entry)
-      if (statSync(full).isDirectory()) {
-        walk(full)
-      } else if (entry.endsWith('.ts') && !entry.endsWith('.test.ts')) {
-        const text = readFileSync(full, 'utf8')
-        for (const block of text.matchAll(/aliases:\s*\[([^\]]*)\]/g)) {
-          for (const quoted of block[1]!.matchAll(/'([A-Za-z0-9]+)'/g)) {
-            names.add(quoted[1]!)
-          }
-        }
-      }
+  for (const block of manifest.matchAll(/"aliases":\s*\[([^\]]*)\]/g)) {
+    for (const quoted of block[1]!.matchAll(/"([A-Za-z0-9]+)"/g)) {
+      names.add(quoted[1]!)
     }
   }
-  walk(join(repoRoot, 'plugins'))
   return names
 }
 
