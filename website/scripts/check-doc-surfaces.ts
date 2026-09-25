@@ -111,6 +111,9 @@ const EXEMPT = new Map([
   // superseded by fadeThinAlignmentsMode, and marked deprecated at its
   // declaration; documenting it would advertise the form we want retired
   ['fadeThinAlignments', 'deprecated in favour of fadeThinAlignmentsMode'],
+  // an older spelling of `color.domain` that the synteny view's preProcessSnapshot
+  // converts; the page teaches `color`
+  ['colorDomain', 'an older spelling of color.domain, converted on load'],
 ])
 
 function buildProgram(files: string[]) {

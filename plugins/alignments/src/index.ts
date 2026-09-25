@@ -48,6 +48,8 @@ export type {
   LinearAlignmentsDisplayModel,
 } from './LinearAlignmentsDisplay/model.ts'
 export type { ReadHit } from './LinearAlignmentsDisplay/readLookup.ts'
+export type { QualitySpan } from './LinearAlignmentsDisplay/qualitySpans.ts'
+export type { GroupConnectors } from './features/linkedReads/computeOverlay.ts'
 // The fixed read-height presets, exported so a caller that writes `featureHeight`
 // without going through the menu can use the same three numbers. @jbrowse/img
 // pins its own copy against this one's literal types, so the two cannot drift.

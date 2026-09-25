@@ -154,7 +154,7 @@ one is not answered by reading the copies, since they all read the same.
 measured and rejected.** The rule applies to all four, but only this site
 repeats *behaviour*: it is the one whose pages draw their own chrome, so a
 gesture layer or a piece of block geometry can end up hand-rolled in five files.
-What the other three repeat is assemblies, track configs and `ViewState` type
+What the other three repeat is assemblies, track configs and engine type
 aliases — bulk data by the fixture rule, and correctly copied. A `COPIED` list
 there would name those and find nothing, which is the "more entries rather than
 a better rule" failure this doctrine warns about two sections up. Re-run the
