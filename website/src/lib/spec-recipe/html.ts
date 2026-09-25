@@ -142,6 +142,22 @@ function panels(recipe: Recipe): Panel[] {
           },
         ]
       : []),
+    ...(recipe.img
+      ? [
+          {
+            label: 'Image',
+            kind: 'img',
+            body: [
+              note('<a href="/docs/jbrowse-img/">jbrowse-img</a> draws the same view as an SVG, from the command line and without a browser. Point <code>--config</code> at your own config, or swap a track for your own file with <code>--bam</code>, <code>--vcfgz</code> and the other <a href="/docs/jbrowse-img/#track-params">file flags</a>.'),
+              copyableBlock(recipe.img.command, 'spec-json'),
+              recipe.img.dropped.length
+                ? note(`It has no flag for this figure's ${recipe.img.dropped.map(f => `<code>${escapeAttr(f)}</code>`).join(', ')}, so its picture can differ there.`)
+                : '',
+              note('<code>--out figure.png</code> writes a PNG instead, through <code>rsvg-convert</code> (<code>apt install librsvg2-bin</code>, <code>brew install librsvg</code>).'),
+            ].join(''),
+          },
+        ]
+      : []),
     {
       label: 'Agent',
       kind: 'agent',

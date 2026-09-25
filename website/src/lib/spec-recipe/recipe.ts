@@ -1,6 +1,7 @@
 import { deriveAddTrack, deriveAddTrackJson } from '../derive-add-track.ts'
 import { fileKind, lookupAssembly, lookupTrack } from './configs.ts'
 import { takeArrangement } from './arrangements.ts'
+import { imgRecipe } from './img.ts'
 import { figureFrames, videoFrames } from '../liveLinks.generated.ts'
 
 import type { RawTrack, TrackInfo  } from './configs.ts'
@@ -22,6 +23,7 @@ import { toProtocolUrl } from '../../../../products/jbrowse-desktop/electron/lau
 
 import type { SessionSpec, SpecTrackEntry, SpecView } from './decode.ts'
 import type { FieldContext, FieldRecipe } from './fields.ts'
+import type { ImgRecipe } from './img.ts'
 
 // Turns a figure's session spec into an ordered "do this yourself" recipe.
 //
@@ -61,6 +63,8 @@ export interface Recipe {
   // the `npx @jbrowse/capture` invocation that rebuilds this figure, for an
   // agent asked to make one like it
   agentCommand: string
+  // the @jbrowse/img command drawing a one-view figure without a browser
+  img?: ImgRecipe
   // the figure's own tracks as jbrowse CLI commands, for a reader putting them
   // in a config.json instead of in one session. Absent when the figure adds no
   // track of its own (every track comes from the config it loads).
@@ -365,12 +369,13 @@ function openedTrackIds(view: SpecView): string[] {
   ]
 }
 
-// A config's plugins are UMD builds or relative ESM paths, and the widget loads
-// neither, so a figure needing one gets no snippet.
-function pythonSnippet(configUrl: string, config: string, spec: SessionSpec) {
+// A config's plugins are UMD builds or relative ESM paths, and neither the
+// notebook widget nor jbrowse-img loads them, so a figure needing one gets
+// neither snippet.
+function needsPlugin(config: string, spec: SessionSpec) {
   const views = spec.views ?? []
   const sessionTracks = spec.sessionTracks as RawTrack[] | undefined
-  const needsPlugin =
+  return (
     views.some(view => !view.type || !(view.type in configManifest.views)) ||
     views.flatMap(openedTrackIds).some(trackId => {
       const info = lookupTrack(config, trackId, sessionTracks)
@@ -382,9 +387,11 @@ function pythonSnippet(configUrl: string, config: string, spec: SessionSpec) {
         )
       )
     })
-  if (needsPlugin) {
-    return undefined
-  }
+  )
+}
+
+function pythonSnippet(configUrl: string, spec: SessionSpec) {
+  const views = spec.views ?? []
   const tracks = spec.sessionTracks?.length
     ? `config.get("tracks", []) + ${pythonLiteral(spec.sessionTracks, '    ')}`
     : 'config.get("tracks", [])'
@@ -588,6 +595,10 @@ export function buildRecipe(
   const desktopWebUrl = withSessionName(liveUrl, figureName)
   const specJson = JSON.stringify(spec, null, 2)
   const configUrl = new URL(config, base).href
+  const plugin = needsPlugin(config, spec)
+  const frame = figureName
+    ? (figureFrames[figureName] ?? videoFrames[figureName])
+    : undefined
   // A figure of two panes describes both, each pane's steps under the one
   // that opens it: **Add → <view>**, unless the pane already says how it
   // opened, which an import form and a launched-from-a-track graph view both
@@ -614,13 +625,9 @@ export function buildRecipe(
     specJson,
     steps,
     webSteps: forWeb(steps),
-    python: pythonSnippet(configUrl, config, spec),
-    agentCommand: agentCommandFor(
-      base,
-      configUrl,
-      specJson,
-      figureName ? (figureFrames[figureName] ?? videoFrames[figureName]) : undefined,
-    ),
+    python: plugin ? undefined : pythonSnippet(configUrl, spec),
+    agentCommand: agentCommandFor(base, configUrl, specJson, frame),
+    img: plugin ? undefined : imgRecipe(spec, configUrl, frame?.width),
     cli: deriveCliRecipe(sessionTracks),
     unmapped: [...new Set(collected.flatMap(c => c.unmapped))],
   }
