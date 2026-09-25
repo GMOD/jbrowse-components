@@ -46,9 +46,8 @@
 # not a European allele at all. YRI and CHB are two independent zeroes, so the
 # absence cannot be one population's quirk.
 #
-# EQUAL N PER POPULATION, 25 each, so the bands are one height and a reader can
-# compare the slab fractions between them by eye. Unequal N would make band
-# height mean sample count rather than nothing.
+# EQUAL N PER POPULATION, 25 each, so every population holds the same share of
+# the matrix's rows and none outweighs the rest in the clustering by count.
 #
 # Sampling is the first 25 sample ids in sorted order, not a random draw, so the
 # file is reproducible with no seed to record. n=25 costs some precision: the
@@ -119,8 +118,8 @@ echo "subsample: $(wc -l < sub.samples) samples, $(( $(wc -l < sub.samples) * 2 
 
 # ── Slice ────────────────────────────────────────────────────────────────────
 # -S never reorders: the output keeps the callset's own sample order whatever
-# order the id list is in, so the population bands come from groupBy at display
-# time and not from this file.
+# order the id list is in, so the population colours come from the samples
+# file at display time and not from this file.
 if [ ! -f "$OUT" ]; then
   bcftools view -S sub.samples --force-samples -Oz -o "$OUT" "$POOLED"
 fi

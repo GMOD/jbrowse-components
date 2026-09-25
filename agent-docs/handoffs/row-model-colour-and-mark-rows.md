@@ -100,7 +100,7 @@ at most a hint where the setting is chosen.
 3. Step 4's second half per the plan: the legend by field value, then retiring
    `colorRowLabels` and `rowGroups[].color`, then the palette flip, one commit
    per display naming its figures.
-4. ~~Step 5 per the plan: a tree per band.~~ On its branch (ADR-169); the banded
+4. ~~Step 5 per the plan: a tree per band.~~ Landed (ADR-169); the banded
    figures and the `misc-multirow-arranged` golden move with it.
 5. Harden the hook seam: static hooks become mixin factory options and dynamic
    ones getters, plus a test that no display redefines a mixin member outside

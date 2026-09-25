@@ -36,7 +36,7 @@ whose factory and field-not-scale rule this object follows.
 The grammar-of-graphics review that produced ADR-131 through ADR-136 left one
 channel spelt two ways. The multi-way synteny display's `ribbonColor` was a
 colour object — `"grey" | { value, field, scale: 'none', domain }`, where the
-field is `strand`, a measurement preset (`identity`, `mappingQual`, `dnds`)
+field is `strand`, a measurement preset (`identity`, `mapq`, `dnds`)
 or a declared column — and `ribbonColorBy.ts` beside it mapped the object onto
 the synteny runtime modes. The linear synteny view's `colorBy`, shared with
 the dotplot view through `TrackColorsMixin`, was still one of those mode
@@ -80,9 +80,9 @@ between the object and the paint: `paintedField(color)` reads the field out
 functions, the legends, the menu radios and the worker all switch on that
 string. The structural fields come first in each switch and the ramps after,
 so a preset and a declared column are the same arm — `continuousRampConfig`
-is keyed by the attribute each preset reads (`identity`, `mappingQual`,
-`dnds`), which is the field itself. `syntenyColorFor(field, current)` writes
-the object a menu pick means: `''` keeps the field and its order under
+is keyed by field, and each preset names the attribute it reads: `identity`
+and `dnds` read their own name, `mapq` reads `mappingQual`.
+`syntenyColorFor(field, current)` writes the object a menu pick means: `''` keeps the field and its order under
 `scale: 'none'`, and a field keeps its `domain` only when it is the one
 already named, as ADR-133 and the multi-way menu already did. One field is one
 radio: a column an aligner named `identity` or `strand` writes what the preset
@@ -120,7 +120,7 @@ declared column goes through `--spec`.
 
 - A session, config or spec writes `colorBy: { field: 'strand' }` where it
   wrote `colorBy: 'strand'`; `{ field: 'gene_group' }` where it wrote
-  `'attribute:gene_group'`; `{ field: 'mappingQual' }` (the attribute's name)
+  `'attribute:gene_group'`; `{ field: 'mapq' }`, the pileup's name for it,
   where it wrote `'mappingQuality'`; and the order in `colorBy.domain` where
   it had `colorDomain`. The default has no spelling: omit the key or write
   `null`. Eleven demo configs and the seven shell scripts that generate them,
