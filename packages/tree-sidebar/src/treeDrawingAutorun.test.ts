@@ -1,6 +1,10 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { buildTree, getLeafNames } from './clusterUtils.ts'
+import {
+  buildTree,
+  computeClusterHierarchy,
+  getLeafNames,
+} from './clusterUtils.ts'
 import { clusterLayout } from './hierarchy.ts'
 import { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
 
@@ -15,7 +19,7 @@ const stubCtx = {
   clearRect() {},
   translate() {},
   beginPath() {},
-  moveTo() {},
+  moveTo: jest.fn(),
   lineTo() {},
   stroke() {},
   save() {},
@@ -52,6 +56,7 @@ const Display = types
     treeAreaWidth: types.optional(types.number, 80),
     rowHeight: types.optional(types.number, 0),
     rowsTopOffset: types.optional(types.number, 0),
+    banded: types.optional(types.boolean, false),
   })
   .volatile(() => ({
     treeCanvas: null as HTMLCanvasElement | null,
@@ -72,12 +77,27 @@ const Display = types
       return [{ name: 'a' }, { name: 'b' }, { name: 'c' }, { name: 'd' }]
     },
     get hierarchy(): ClusterHierarchyNode {
-      return clusterLayout(buildTree(nwk), self.height, self.treeAreaWidth)
+      return self.banded
+        ? computeClusterHierarchy(
+            buildTree(nwk),
+            this.sources,
+            self.height,
+            self.treeAreaWidth,
+            false,
+            [
+              { key: 'x', label: 'x', start: 0, end: 2 },
+              { key: 'y', label: 'y', start: 2, end: 4 },
+            ],
+          )!
+        : clusterLayout(buildTree(nwk), self.height, self.treeAreaWidth)
     },
   }))
   .actions(self => ({
     setHeight(n: number) {
       self.height = n
+    },
+    setBanded(banded: boolean) {
+      self.banded = banded
     },
     setTreeCanvasRef(ref: HTMLCanvasElement | null) {
       self.treeCanvas = ref
@@ -246,4 +266,21 @@ test('the hover mark follows the palette, and holds up in dark mode', () => {
   const alphaOf = (color: string) =>
     Number(/([\d.]+)\)$/.exec(color)?.[1] ?? '1')
   expect(alphaOf(bandDark)).toBeGreaterThan(alphaOf(bandLight))
+})
+
+// Each band's tree hangs off a root that only joins them, so its two links
+// are the ones a whole-cohort drawing has and the band drawing does not.
+test('a band forest draws its band trees and not the root joining them', () => {
+  const { display } = createDisplay('view7').view
+  setupTreeDrawingAutorun(display)
+  const moveTo = stubCtx.moveTo as unknown as jest.Mock
+  moveTo.mockClear()
+  display.setTreeCanvasRef(document.createElement('canvas'))
+  const whole = moveTo.mock.calls.length
+  moveTo.mockClear()
+  display.setBanded(true)
+  const root = display.hierarchy
+  expect(whole).toBe(12)
+  expect(moveTo.mock.calls).toHaveLength(8)
+  expect(moveTo.mock.calls).not.toContainEqual([root.y, root.x])
 })

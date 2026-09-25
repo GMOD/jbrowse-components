@@ -7,7 +7,10 @@ import {
 } from '@gmod/newick'
 import { alpha } from '@jbrowse/core/ui/palette'
 
-import type { HierarchyNode as CoreHierarchyNode } from '@gmod/newick'
+import type {
+  HierarchyNode as CoreHierarchyNode,
+  NewickNode,
+} from '@gmod/newick'
 
 // Stroke for tree branch lines, shared by the canvas and SVG draw paths. The
 // sidebar paints a translucent `background.paper` panel behind the dendrogram,
@@ -93,6 +96,8 @@ export interface PositionedHierarchyNode<T> extends HierarchyNode<T> {
   y: number
   children: PositionedHierarchyNode<T>[] | null
   parent: PositionedHierarchyNode<T> | null
+  /** A band forest's root, which joins the band trees and draws nothing. */
+  forestRoot?: true
 }
 
 // Structural copy sharing `data` but with fresh node objects, so laying out a
@@ -120,6 +125,25 @@ function cloneHierarchy<T>(root: HierarchyNode<T>): HierarchyNode<T> {
   return copiedRoot
 }
 
+function placeLeaves<T>(
+  laid: HierarchyNode<T>,
+  firstRow: number,
+  step: number,
+) {
+  for (const [i, leaf] of leaves(laid).entries()) {
+    leaf.x = (firstRow + i + 0.5) * step
+  }
+  eachAfter(laid, node => {
+    if (node.children) {
+      let totalX = 0
+      for (const child of node.children) {
+        totalX += child.x!
+      }
+      node.x = totalX / node.children.length
+    }
+  })
+}
+
 export function clusterLayout<T extends { length?: number }>(
   root: HierarchyNode<T>,
   sizeX: number,
@@ -133,21 +157,8 @@ export function clusterLayout<T extends { length?: number }>(
   // (e.g. the hit-test spatial index froze at the row height it was first built
   // with, so hovering the tree missed after a shift+scroll row resize).
   const laid = cloneHierarchy(root)
-  const leafNodes = leaves(laid)
-  const n = leafNodes.length
-  const step = n > 0 ? sizeX / n : 0
-  for (let i = 0; i < n; i++) {
-    leafNodes[i]!.x = (i + 0.5) * step
-  }
-  eachAfter(laid, node => {
-    if (node.children) {
-      let totalX = 0
-      for (const child of node.children) {
-        totalX += child.x!
-      }
-      node.x = totalX / node.children.length
-    }
-  })
+  const n = leaves(laid).length
+  placeLeaves(laid, 0, n > 0 ? sizeX / n : 0)
   // A dendrogram with no merge heights (e.g. a topology-only tree) can't show a
   // meaningful phylogram, so fall back to the cladogram layout in that case.
   if (showBranchLength && maxNodeHeight(laid) > 0) {
@@ -156,6 +167,84 @@ export function clusterLayout<T extends { length?: number }>(
     assignDepthY(laid, sizeY)
   }
   return laid as unknown as PositionedHierarchyNode<T>
+}
+
+/**
+ * Band trees laid out each on its own rows under one root that draws nothing:
+ * leaf *i* of the clade starting at row `start` on row `start + i`. Depth is
+ * one scale shared by every clade, as ComplexHeatmap draws slice dendrograms,
+ * so branch lengths compare across bands and each band's farthest leaf meets
+ * the right edge. Undefined where no clade has a branch to draw, one-row
+ * bands being bare leaves.
+ */
+export function bandForestLayout(
+  clades: readonly { clade: HierarchyNode<NewickNode>; start: number }[],
+  rowHeight: number,
+  sizeY: number,
+  showBranchLength = false,
+): PositionedHierarchyNode<NewickNode> | undefined {
+  if (!clades.some(({ clade }) => clade.children?.length)) {
+    return undefined
+  }
+  const laid = clades.map(({ clade, start }) => {
+    const copy = cloneHierarchy(clade)
+    placeLeaves(copy, start, rowHeight)
+    return copy
+  })
+  const nodes = laid.map(c => descendants(c))
+  if (showBranchLength && laid.some(c => maxNodeHeight(c) > 0)) {
+    if (laid.some(c => hasIncrementalBranchLengths(c))) {
+      const dists = laid.map(rootDistances)
+      const spans = dists.map(dist => largest(dist.values()))
+      const max = largest(spans)
+      for (const [i, dist] of dists.entries()) {
+        for (const [n, d] of dist) {
+          n.y = insetY(max === 0 ? 1 : (max - spans[i]! + d) / max, sizeY)
+        }
+      }
+    } else {
+      const max = largest(laid.map(c => maxNodeHeight(c)))
+      for (const n of nodes.flat()) {
+        n.y = insetY(max === 0 ? 1 : 1 - (n.data.length ?? 0) / max, sizeY)
+      }
+    }
+  } else {
+    const max = largest(laid.map(c => c.height))
+    for (const n of nodes.flat()) {
+      n.y = insetY(max === 0 ? 1 : (max - n.height) / max, sizeY)
+    }
+  }
+  const root: HierarchyNode<NewickNode> & { forestRoot: true } = {
+    data: { children: laid.map(c => c.data) },
+    children: laid,
+    parent: null,
+    depth: 0,
+    height: largest(laid.map(c => c.height)) + 1,
+    x: laid.reduce((sum, c) => sum + c.x!, 0) / laid.length,
+    y: insetY(0, sizeY),
+    forestRoot: true,
+  }
+  for (const clade of laid) {
+    clade.parent = root
+  }
+  return root as PositionedHierarchyNode<NewickNode>
+}
+
+function largest(values: Iterable<number>) {
+  let max = 0
+  for (const v of values) {
+    max = Math.max(max, v)
+  }
+  return max
+}
+
+/**
+ * The links a positioned tree draws: every parent-to-child link but those out
+ * of a band forest's root.
+ */
+export function treeLinks<T>(root: PositionedHierarchyNode<T>) {
+  const all = links(root)
+  return root.forestRoot ? all.filter(link => link.source !== root) : all
 }
 
 // Assigns y positions by topological depth-to-leaf — root at 0, every leaf at
@@ -255,6 +344,16 @@ function assignCumulativeLengthY<T extends { length?: number }>(
   node: HierarchyNode<T>,
   sizeY: number,
 ) {
+  const dist = rootDistances(node)
+  const max = largest(dist.values())
+  for (const [n, d] of dist) {
+    n.y = insetY(max === 0 ? 1 : d / max, sizeY)
+  }
+}
+
+// Each node's summed branch length below `node`, whose own stem counts for
+// nothing.
+function rootDistances<T extends { length?: number }>(node: HierarchyNode<T>) {
   const dist = new Map<HierarchyNode<T>, number>()
   const stack = [{ node, acc: 0 }]
   while (stack.length > 0) {
@@ -266,13 +365,7 @@ function assignCumulativeLengthY<T extends { length?: number }>(
       }
     }
   }
-  let max = 0
-  for (const d of dist.values()) {
-    max = Math.max(max, d)
-  }
-  for (const [n, d] of dist) {
-    n.y = insetY(max === 0 ? 1 : d / max, sizeY)
-  }
+  return dist
 }
 
 // The two orthogonal segments of a parent→child dendrogram connector, in
@@ -299,7 +392,7 @@ export function treeLinkSegments<N extends { x: number; y: number }>(
 
 export function renderTreeSVG<T>(hierarchy: PositionedHierarchyNode<T>) {
   const parts: string[] = []
-  for (const { source, target } of links(hierarchy)) {
+  for (const { source, target } of treeLinks(hierarchy)) {
     for (const [[x0, y0], [x1, y1]] of treeLinkSegments(source, target)) {
       parts.push(`M${x0},${y0}L${x1},${y1}`)
     }

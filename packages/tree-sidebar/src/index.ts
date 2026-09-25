@@ -71,6 +71,8 @@ export type { RowColorDeal, RowColorEntries } from './rowColorScale.ts'
 export type {
   IdentityChannel,
   RowAlias,
+  RowBand,
+  RowBanding,
   UnlistedRowsSort,
 } from './arrangeRows.ts'
 export { applyClusterRun } from './applyClusterRun.ts'

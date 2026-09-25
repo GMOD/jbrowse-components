@@ -39,25 +39,34 @@ export const StaleTreeHint = observer(function StaleTreeHint({
   top?: number
 }) {
   const { root, sources, showTree } = model
+  const bands = model.rowBands?.length ?? 0
+  const treeless = model.treelessBandCount ?? 0
   // `hierarchy` being undefined is not enough on its own — multi-wiggle's
   // overlay modes drop it deliberately, having no row axis to align to.
   const stale =
     showTree &&
     !!root &&
     sources.length > 0 &&
-    !model.hierarchy &&
-    !treeDescribesRows(root, sources)
+    (bands
+      ? treeless > 0
+      : !model.hierarchy && !treeDescribesRows(root, sources))
   return (
     <SidebarHintChip
       top={top}
       testId="stale_tree_hint"
       hint={
         stale
-          ? {
-              title:
-                'Re-run clustering, or reset the row order, to bring the tree back. Click to dismiss.',
-              text: 'Tree hidden — rows changed since clustering',
-            }
+          ? bands
+            ? {
+                title:
+                  'Re-run clustering to draw a tree in each band, or reset the row order. Click to dismiss.',
+                text: `Tree hidden for ${treeless} of ${bands} bands — re-run clustering`,
+              }
+            : {
+                title:
+                  'Re-run clustering, or reset the row order, to bring the tree back. Click to dismiss.',
+                text: 'Tree hidden — rows changed since clustering',
+              }
           : undefined
       }
     />

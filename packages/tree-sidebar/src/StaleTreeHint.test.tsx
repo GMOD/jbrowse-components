@@ -94,4 +94,34 @@ describe('StaleTreeHint', () => {
     hint!.focus()
     expect(document.activeElement).toBe(hint)
   })
+
+  describe('over bands', () => {
+    const rowBands = [
+      { key: 'x', label: 'x', start: 0, end: 2 },
+      { key: 'y', label: 'y', start: 2, end: 3 },
+    ]
+
+    // the other band's clade still draws, so a positioned tree is no answer
+    it('counts the bands the tree draws nothing for', () => {
+      expect(
+        draw({
+          root: buildTree('((a,c),b);'),
+          hierarchy: { x: 0, y: 0 } as never,
+          rowBands,
+          treelessBandCount: 1,
+        })?.textContent,
+      ).toBe('Tree hidden for 1 of 2 bands — re-run clustering')
+    })
+
+    it('stays silent while every band draws its clade', () => {
+      expect(
+        draw({
+          root: buildTree('((a,b),c);'),
+          hierarchy: { x: 0, y: 0 } as never,
+          rowBands,
+          treelessBandCount: 0,
+        }),
+      ).toBeNull()
+    })
+  })
 })

@@ -1,7 +1,9 @@
+import { BAND_LABEL_WIDTH, SvgBandLabels } from './SvgBandLabels.tsx'
 import { SvgRowLabels } from './SvgRowLabels.tsx'
 import { SvgTreePath } from './SvgTreePath.tsx'
 import { treeIsShowing, treeSidebarOffset } from './treeSidebarGeometry.ts'
 
+import type { RowBand } from './arrangeRows.ts'
 import type { ClusterHierarchyNode, RowLabelSource } from './types.ts'
 
 // The SVG-export counterpart of the on-screen `TreeSidebar`: the left sidebar's
@@ -21,6 +23,7 @@ export function SvgTreeSidebar({
   showLabels = true,
   scrollTop,
   availableHeight,
+  bands = [],
 }: {
   showTree: boolean
   hierarchy: ClusterHierarchyNode | undefined
@@ -32,6 +35,9 @@ export function SvgTreeSidebar({
   showLabels?: boolean
   scrollTop?: number
   availableHeight?: number
+  // The bands' strip, beside the tree and ahead of the labels, drawn whatever
+  // `showLabels` says.
+  bands?: readonly RowBand[]
 }) {
   // The tree, but only if it is showing — one binding rather than a boolean
   // beside the hierarchy it is about, so the hint, the path and the label
@@ -44,11 +50,18 @@ export function SvgTreeSidebar({
   const labelOffset = treeSidebarOffset({ showTree, hierarchy, treeAreaWidth })
   return (
     <>
+      <SvgBandLabels
+        bands={bands}
+        rowHeight={rowHeight}
+        x={labelOffset}
+        scrollTop={scrollTop}
+        availableHeight={availableHeight}
+      />
       {showLabels && sources.length ? (
         <SvgRowLabels
           sources={sources}
           rowHeight={rowHeight}
-          labelOffset={labelOffset}
+          labelOffset={labelOffset + (bands.length ? BAND_LABEL_WIDTH : 0)}
           scrollTop={scrollTop}
           availableHeight={availableHeight}
         />

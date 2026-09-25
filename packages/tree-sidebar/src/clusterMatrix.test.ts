@@ -3,6 +3,7 @@ import { parseNewick } from '@gmod/newick'
 
 import { clusterMatrix } from './clusterMatrix.ts'
 import { gpuDistanceMatrix } from './gpuDistanceMatrix.ts'
+import { writeNewick } from './writeNewick.ts'
 
 import type { NewickNode } from '@gmod/newick'
 
@@ -156,4 +157,72 @@ test('an abort during the WASM run rejects it', async () => {
   await expect(
     clusterMatrix({ data, signal: AbortSignal.timeout(20) }),
   ).rejects.toMatchObject({ name: 'TimeoutError' })
+})
+
+describe('a run under bands', () => {
+  // Across the cohort a sits with d, which bands keep apart. Handed
+  // interleaved, as the arranged rows arrive before the bands stack them.
+  const data = new Map<string, number[]>([
+    ['a', [0, 0]],
+    ['d', [1, 1]],
+    ['b', [40, 40]],
+    ['e', [60, 60]],
+    ['c', [41, 41]],
+  ])
+  const partition = [
+    ['a', 'b', 'c'],
+    ['d', 'e'],
+  ]
+  const keys = [...data.keys()]
+
+  test('writes one forest, a band tree per band, and one order', async () => {
+    const { order, tree } = await clusterMatrix({ data, partition })
+    const root = parseNewick(tree)
+    expect(root.children!.map(leafNames)).toEqual([
+      ['a', 'b', 'c'],
+      ['d', 'e'],
+    ])
+    expect(leafNames(root)).toEqual(order.map(i => keys[i]))
+    expect(parseNewick(writeNewick(root))).toEqual(root)
+  })
+
+  // Every leaf at one depth, so the forest drawn whole, with no bands, is a
+  // dendrogram joined at the taller band's height.
+  test('joins the band trees at the tallest one, every leaf level', async () => {
+    const { tree } = await clusterMatrix({ data, partition })
+    const depths: number[] = []
+    const stack = [{ node: parseNewick(tree), depth: 0 }]
+    while (stack.length) {
+      const { node, depth } = stack.pop()!
+      if (node.children?.length) {
+        for (const child of node.children) {
+          stack.push({ node: child, depth: depth + (child.length ?? 0) })
+        }
+      } else {
+        depths.push(depth)
+      }
+    }
+    expect(Math.min(...depths)).toBeGreaterThan(50)
+    expect(Math.max(...depths) - Math.min(...depths)).toBeLessThan(1e-3)
+  })
+
+  test('a one-row band is a bare leaf', async () => {
+    const { order, tree } = await clusterMatrix({
+      data,
+      partition: [['a', 'b', 'c', 'e'], ['d']],
+    })
+    expect(parseNewick(tree).children![1]!).toMatchObject({ name: 'd' })
+    expect(order.map(i => keys[i]).at(-1)).toBe('d')
+  })
+
+  test('one band is a run with no bands', async () => {
+    const whole = await clusterMatrix({ data })
+    expect(await clusterMatrix({ data, partition: [keys] })).toEqual(whole)
+  })
+
+  test('a row in no band fails the run rather than dropping out', async () => {
+    await expect(
+      clusterMatrix({ data, partition: [['a', 'b', 'c'], ['d']] }),
+    ).rejects.toThrow(/5 rows, 4 in bands/)
+  })
 })

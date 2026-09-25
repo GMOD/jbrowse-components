@@ -5,9 +5,9 @@ import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
 import { autorun } from 'mobx'
 
 import {
-  links,
   treeHoverColors,
   treeLinkSegments,
+  treeLinks,
   treeStroke,
 } from './hierarchy.ts'
 import { rowRuns } from './rowRuns.ts'
@@ -53,7 +53,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         ctx.lineWidth = 1
 
         ctx.beginPath()
-        for (const { source, target } of links(hierarchy)) {
+        for (const { source, target } of treeLinks(hierarchy)) {
           for (const [[x0, y0], [x1, y1]] of treeLinkSegments(source, target)) {
             ctx.moveTo(x0, y0)
             ctx.lineTo(x1, y1)

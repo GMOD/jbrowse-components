@@ -6,16 +6,28 @@ import { ROW_ARRANGEMENT_MEMBERS } from '@jbrowse/display-kit/rowArrangementConf
 import { getSnapshot, hasParent, types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
-import { arrangeRows, orderRowsByDomain } from './arrangeRows.ts'
-import { applySubtreeFilter, buildTree, keptRows } from './clusterUtils.ts'
+import { arrangeRows, bandRows, orderRowsByDomain } from './arrangeRows.ts'
+import {
+  applySubtreeFilter,
+  buildTree,
+  keptRows,
+  matchBandClades,
+} from './clusterUtils.ts'
 import { maxNodeHeight } from './hierarchy.ts'
-import { colorsByRow, dealtColors, fieldColorDeal } from './rowColorScale.ts'
+import {
+  colorsByRow,
+  dealtColors,
+  fieldColorDeal,
+  rowFieldValue,
+} from './rowColorScale.ts'
 import { rowEdits } from './rowEdits.ts'
 import { IDENTITY_FIELDS, extraColumns } from './sourcesGridUtils.ts'
 
 import type {
   IdentityChannel,
   RowAlias,
+  RowBand,
+  RowBanding,
   UnlistedRowsSort,
 } from './arrangeRows.ts'
 import type { ClusterProvenance } from './clusterProvenance.ts'
@@ -222,10 +234,11 @@ export interface ClusterRun {
  * `discoveredRows`, then `expandedRows` (`expandRows`: a variant display's
  * haplotypes), then `editableSources`, ordered by `rowOrder`, relabelled by
  * `rows.labels` and tinted by the `rowColor` pairs on the `identityChannel`,
- * then `clusterableSources`, narrowed to the focus. The row palette is
+ * then `clusterableSources`, narrowed to the focus, then `bandedSources`,
+ * stacked in the bands `rowBanding` names. The row palette is
  * `dealtRowColors`, dealt by `rowColorDeal` once per change to the deal, and
  * `rowColorScale` hands each row its value's colour, which each display
- * paints, with its bands, over those.
+ * paints over those.
  *
  * Every arrangement write reaches the session at once rather than after the
  * track's 400 ms save, so a clustering run is one undo step and undoable the
@@ -425,6 +438,14 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         return 'source'
       },
       /**
+       * #getter
+       * Overridable hook: the attribute the rows stack in bands by and the
+       * bands listed first, or undefined, the default, for no bands.
+       */
+      get rowBanding(): RowBanding | undefined {
+        return undefined
+      },
+      /**
        * #method
        * Overridable hook: the discovered rows as the rows drawn, the rows
        * themselves by default; a variant display's phased mode expands each
@@ -432,6 +453,17 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        */
       expandRows(rows: S[]): S[] {
         return rows
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Overridable hook: the band a row stacks in while `rowBanding` is set,
+       * by default its value of the banding attribute, '' for none.
+       */
+      rowBand(row: S): string {
+        const banding = self.rowBanding
+        return banding ? rowFieldValue(row, banding.field) : ''
       },
     }))
     .views(self => ({
@@ -659,6 +691,62 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         return self.parsedTree
           ? applySubtreeFilter(self.parsedTree, self.rowFocus)
           : undefined
+      },
+      get bandedRows() {
+        const banding = self.rowBanding
+        const rows = self.clusterableSources
+        return banding
+          ? bandRows(rows, row => self.rowBand(row), banding)
+          : { rows, bands: [] }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * `clusterableSources` stacked in bands by `rowBanding`, each band's rows
+       * in their arranged order: the rows each display paints its palette
+       * over. `clusterableSources` itself while nothing bands.
+       */
+      get bandedSources(): S[] {
+        return self.bandedRows.rows
+      },
+      /**
+       * #getter
+       * Each band's value, label and the rows it spans in `bandedSources`;
+       * none while nothing bands.
+       */
+      get rowBands(): readonly RowBand[] {
+        return self.bandedRows.bands
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The names of the rows a clustering run clusters, by band, so each band
+       * clusters apart and the run writes one forest; undefined while fewer
+       * than two bands stack.
+       */
+      get clusterPartition(): string[][] | undefined {
+        const { rowBands, bandedSources } = self
+        return rowBands.length > 1
+          ? rowBands.map(({ start, end }) =>
+              bandedSources.slice(start, end).map(row => row.name),
+            )
+          : undefined
+      },
+      /**
+       * #getter
+       * How many bands the tree draws no dendrogram for, because it holds no
+       * clade whose leaves are that band's rows in order; 0 with no tree or no
+       * bands.
+       */
+      get treelessBandCount(): number {
+        const { root, rowBands } = self
+        return root && rowBands.length
+          ? matchBandClades(root, self.bandedSources, rowBands).filter(
+              clade => !clade,
+            ).length
+          : 0
       },
     }))
     .views(self => ({

@@ -1,6 +1,7 @@
 import { parseNewick } from '@gmod/newick'
 
 import {
+  bandForestLayout,
   clusterLayout,
   eachAfter,
   hasIncrementalBranchLengths,
@@ -9,7 +10,7 @@ import {
 } from './hierarchy.ts'
 import { rotateNewickByDomain } from './rotateNewickByDomain.ts'
 
-import type { RowAlias } from './arrangeRows.ts'
+import type { RowAlias, RowBand } from './arrangeRows.ts'
 import type { HierarchyNode } from './hierarchy.ts'
 import type { ClusterHierarchyNode, ClusterNodeData } from './types.ts'
 
@@ -321,16 +322,90 @@ export function treeDescribesRows(
 // one on a display that scrolls: maf passes `rowsContentHeight` and NOT
 // `rowsHeight`, and the variant displays spell the product out. Changing a
 // caller to the viewport height is the tidy-up this parameter is named to refuse.
+//
+// With `bands`, each band draws the clade whose leaves are exactly its rows in
+// order, if the tree holds one, laid out on its own rows under a root that
+// draws nothing, so a band whose rows changed loses only its own dendrogram.
 export function computeClusterHierarchy(
   root: HierarchyNode<ClusterNodeData> | undefined,
   rows: readonly { name: string }[] | undefined,
   rowsContentHeight: number,
   treeAreaWidth: number,
   showBranchLength: boolean,
+  bands: readonly RowBand[] = [],
 ): ClusterHierarchyNode | undefined {
-  return root && rows?.length && treeDescribesRows(root, rows)
+  if (!root || !rows?.length) {
+    return undefined
+  }
+  if (bands.length) {
+    const clades = matchBandClades(root, rows, bands)
+    return bandForestLayout(
+      bands.flatMap(({ start }, i) => {
+        const clade = clades[i]
+        return clade ? [{ clade, start }] : []
+      }),
+      rowsContentHeight / rows.length,
+      treeAreaWidth,
+      showBranchLength,
+    )
+  }
+  return treeDescribesRows(root, rows)
     ? clusterLayout(root, rowsContentHeight, treeAreaWidth, showBranchLength)
     : undefined
+}
+
+const NO_BAND = -1
+
+/**
+ * Each band's clade: the node whose leaves are exactly the band's rows, in
+ * order, or undefined where the tree holds none. One post-order walk labels
+ * every node with the band its leaves share and how many there are, so the
+ * whole match is linear in the tree.
+ */
+export function matchBandClades<T extends ClusterNodeData>(
+  root: HierarchyNode<T>,
+  rows: readonly { name: string }[],
+  bands: readonly RowBand[],
+): (HierarchyNode<T> | undefined)[] {
+  const bandOfRow = new Map<string, number>()
+  for (const [b, { start, end }] of bands.entries()) {
+    for (let i = start; i < end; i++) {
+      bandOfRow.set(rows[i]!.name, b)
+    }
+  }
+  const band = new Map<HierarchyNode<T>, number>()
+  const count = new Map<HierarchyNode<T>, number>()
+  const clades = bands.map((): HierarchyNode<T> | undefined => undefined)
+  eachAfter(root, (node: HierarchyNode<T>) => {
+    let b: number
+    let n: number
+    if (node.children?.length) {
+      b = band.get(node.children[0]!)!
+      n = 0
+      for (const child of node.children) {
+        n += count.get(child)!
+        if (band.get(child) !== b) {
+          b = NO_BAND
+        }
+      }
+    } else {
+      const { name } = node.data
+      b = (name === undefined ? undefined : bandOfRow.get(name)) ?? NO_BAND
+      n = 1
+    }
+    band.set(node, b)
+    count.set(node, n)
+    if (b >= 0 && n === bands[b]!.end - bands[b]!.start) {
+      clades[b] = node
+    }
+  })
+  return clades.map((clade, b) => {
+    const { start } = bands[b]!
+    return clade &&
+      leaves(clade).every((leaf, i) => leaf.data.name === rows[start + i]!.name)
+      ? clade
+      : undefined
+  })
 }
 
 // Parse pasted R hclust output (a sequence of 1-based row indices, one per

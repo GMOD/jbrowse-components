@@ -1,3 +1,4 @@
+import type { RowBand } from './arrangeRows.ts'
 import type { ClusterProvenance } from './clusterProvenance.ts'
 import type { HierarchyNode, PositionedHierarchyNode } from './hierarchy.ts'
 import type { TreeSpatialIndex } from './spatialIndex.ts'
@@ -80,6 +81,8 @@ export interface TreeSidebarModel extends IStateTreeNode {
   scrollTop?: number
   showTree: boolean
   sources: TreeSource[]
+  rowBands?: readonly RowBand[]
+  treelessBandCount?: number
   rowFocus?: readonly string[]
   hoveredTreeNode?: HoveredTreeNode
   // exactly what `buildSpatialIndex` returns, named rather than restructured:

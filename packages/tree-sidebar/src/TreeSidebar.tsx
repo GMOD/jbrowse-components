@@ -245,6 +245,7 @@ const TreeSidebar = observer(function TreeSidebar({
               height: contentHeight,
             }}
           />
+          <StaleTreeHint model={model} top={innerTop} />
           <SubtreeFilterHint model={model} top={innerTop} />
           {/* the ref callbacks are the model's own actions, which are stable per
               instance — wrapping them in useCallback([model]) bought nothing */}

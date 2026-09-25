@@ -6,7 +6,7 @@ import { clusterProgressStatus } from './clusterProgressStatus.ts'
 import { gpuDistanceMatrix } from './gpuDistanceMatrix.ts'
 import { writeNewick } from './writeNewick.ts'
 
-import type { ClusterProgress } from '@gmod/hclust'
+import type { ClusterNode, ClusterProgress } from '@gmod/hclust'
 import type { StatusCallback } from '@jbrowse/core/util'
 
 // One matrix row. Both halves of the clustering path read it and they read it
@@ -61,13 +61,19 @@ export const MIN_CLUSTER_ROWS = 2
  * they have to be escaped before they go into a newick string. `toNewick` owns
  * that from @gmod/hclust 4.0.3 — we quoted here until it did, and quoting on
  * both sides would be worse than quoting on neither.
+ *
+ * `partition` names the rows of each band, and each band clusters apart: the
+ * tree is one forest whose root joins the band trees at the tallest one's
+ * height, a one-row band a bare leaf, and `order` their leaves in turn.
  */
 export async function clusterMatrix({
   data,
+  partition,
   statusCallback,
   signal,
 }: {
   data: ClusterMatrix
+  partition?: readonly (readonly string[])[]
   statusCallback?: StatusCallback
   signal?: AbortSignal
 }) {
@@ -76,8 +82,50 @@ export async function clusterMatrix({
       `Clustering needs at least ${MIN_CLUSTER_ROWS} rows, got ${data.size}`,
     )
   }
-  // hclust takes parallel arrays, so the map is walked once into both rather
-  // than spread twice. This is the only place the two are ever separated.
+  const slices = partition ? sliceMatrix(data, partition) : [data]
+  if (slices.length === 1) {
+    const { order, tree } = await clusterRows(data, statusCallback, signal)
+    return withNamedLeaves(data, { order, tree: toNewick(tree) })
+  }
+  const index = new Map([...data.keys()].map((name, i) => [name, i]))
+  const order: number[] = []
+  const trees: ClusterNode[] = []
+  for (const [i, slice] of slices.entries()) {
+    const names = [...slice.keys()]
+    if (slice.size < MIN_CLUSTER_ROWS) {
+      trees.push({ name: names[0]!, height: 0 })
+      order.push(index.get(names[0]!)!)
+    } else {
+      const run = await clusterRows(
+        slice,
+        statusCallback,
+        signal,
+        `Band ${i + 1} of ${slices.length}: `,
+      )
+      trees.push(run.tree)
+      for (const j of run.order) {
+        order.push(index.get(names[j]!)!)
+      }
+    }
+  }
+  return withNamedLeaves(data, {
+    order,
+    tree: toNewick({
+      name: '',
+      height: Math.max(...trees.map(tree => tree.height)),
+      children: trees,
+    }),
+  })
+}
+
+// hclust takes parallel arrays, so the map is walked once into both rather
+// than spread twice. This is the only place the two are ever separated.
+async function clusterRows(
+  data: ClusterMatrix,
+  statusCallback: StatusCallback | undefined,
+  signal: AbortSignal | undefined,
+  prefix = '',
+) {
   const rows: NumericRow[] = []
   const sampleLabels: string[] = []
   for (const [name, row] of data) {
@@ -86,7 +134,7 @@ export async function clusterMatrix({
   }
   let distances: Float32Array | undefined
   try {
-    statusCallback?.('Computing distance matrix')
+    statusCallback?.(`${prefix}Computing distance matrix`)
     distances = (await gpuDistanceMatrix(rows, signal)) ?? undefined
   } catch (e) {
     if (isAbortException(e)) {
@@ -97,18 +145,50 @@ export async function clusterMatrix({
   const common = {
     sampleLabels,
     onProgress: (p: ClusterProgress) => {
-      statusCallback?.(clusterProgressStatus(p))
+      statusCallback?.(
+        clusterProgressStatus({ ...p, message: prefix + p.message }),
+      )
     },
     signal,
   }
-  const result = await (distances
+  return distances
     ? clusterData({ distances, ...common })
-    : clusterData({ data: rows, ...common }))
-  const newick = toNewick(result.tree)
-  return {
-    order: result.order,
-    tree: data.has('') ? nameTheUnnamedLeaf(newick) : newick,
+    : clusterData({ data: rows, ...common })
+}
+
+/**
+ * The matrix split into one matrix per band, each in the band's order, the
+ * bands in `partition`'s. A row no band names fails the run rather than
+ * dropping out of it.
+ */
+function sliceMatrix(
+  data: ClusterMatrix,
+  partition: readonly (readonly string[])[],
+) {
+  const slices = partition.flatMap(names => {
+    const slice: ClusterMatrix = new Map()
+    for (const name of names) {
+      const row = data.get(name)
+      if (row) {
+        slice.set(name, row)
+      }
+    }
+    return slice.size ? [slice] : []
+  })
+  const sliced = slices.reduce((sum, slice) => sum + slice.size, 0)
+  if (sliced !== data.size) {
+    throw new Error(
+      `Clustering by band needs every row in one band: ${data.size} rows, ${sliced} in bands`,
+    )
   }
+  return slices
+}
+
+function withNamedLeaves(
+  data: ClusterMatrix,
+  run: { order: number[]; tree: string },
+) {
+  return data.has('') ? { ...run, tree: nameTheUnnamedLeaf(run.tree) } : run
 }
 
 // hclust writes a row named `''` bare, which parses back as a leaf with no

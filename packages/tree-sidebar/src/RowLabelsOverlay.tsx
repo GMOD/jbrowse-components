@@ -2,8 +2,10 @@ import { memo } from 'react'
 
 import { TrackOverlayPortal } from '@jbrowse/display-ui'
 
+import { BAND_LABEL_WIDTH, SvgBandLabels } from './SvgBandLabels.tsx'
 import { SvgRowLabels } from './SvgRowLabels.tsx'
 
+import type { RowBand } from './arrangeRows.ts'
 import type { RowLabelSource } from './types.ts'
 
 /**
@@ -63,6 +65,7 @@ export const RowLabelsOverlay = memo(function RowLabelsOverlay({
   scrollTop,
   testId,
   showLabels = true,
+  bands = [],
 }: {
   // Resolved, never absent: every display's `sources` getter answers `[]`
   // before a fetch has landed, and "no rows yet" is its loading state to
@@ -85,6 +88,9 @@ export const RowLabelsOverlay = memo(function RowLabelsOverlay({
   testId?: string
   // Draw the names. False still renders the overlay element, see above.
   showLabels?: boolean
+  // The bands' strip, drawn whatever `showLabels` says, the row labels beside
+  // it.
+  bands?: readonly RowBand[]
 }) {
   return sources.length ? (
     <TrackOverlayPortal>
@@ -100,11 +106,18 @@ export const RowLabelsOverlay = memo(function RowLabelsOverlay({
           zIndex: 2,
         }}
       >
+        <SvgBandLabels
+          bands={bands}
+          rowHeight={rowHeight}
+          x={labelOffset}
+          scrollTop={scrollTop}
+          availableHeight={height}
+        />
         {showLabels ? (
           <SvgRowLabels
             sources={sources}
             rowHeight={rowHeight}
-            labelOffset={labelOffset}
+            labelOffset={labelOffset + (bands.length ? BAND_LABEL_WIDTH : 0)}
             scrollTop={scrollTop}
             availableHeight={height}
           />

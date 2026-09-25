@@ -32,14 +32,17 @@ function nodeBox(node: ClusterHierarchyNode) {
 // rather than repeating the same `hierarchy ? … : undefined` guard.
 //
 // Internal nodes only: a leaf is one row, and "show only this subtree" over a
-// single row is not an operation the menu offers.
+// single row is not an operation the menu offers. A band forest's root draws
+// nothing, so nothing points at it.
 export function buildSpatialIndex(
   hierarchy: ClusterHierarchyNode | undefined,
 ): TreeSpatialIndex | undefined {
   if (!hierarchy) {
     return undefined
   }
-  const nodes = descendants(hierarchy).filter(n => n.children?.length)
+  const nodes = descendants(hierarchy).filter(
+    n => n.children?.length && !n.forestRoot,
+  )
   if (!nodes.length) {
     return undefined
   }
