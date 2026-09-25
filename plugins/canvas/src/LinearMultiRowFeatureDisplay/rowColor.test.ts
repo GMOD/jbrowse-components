@@ -130,3 +130,15 @@ test("scale: 'none' paints no palette and no pair", () => {
     undefined,
   ])
 })
+
+// A row's group is tagged after the arrangement, so this display offers no
+// attribute and a config naming one keeps the palette per row.
+test('a rowColor field keeps the palette per row, and offers no attribute', () => {
+  const byName = loaded({})
+  const byGroup = loaded({
+    rowColor: 'group',
+    rowGroups: [{ match: '^a$', group: 'A', color: '#e41a1c' }],
+  })
+  expect(byGroup.rowColorFields).toEqual([])
+  expect(byGroup.rowColorStringsByIndex).toEqual(byName.rowColorStringsByIndex)
+})

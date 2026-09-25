@@ -118,6 +118,25 @@ function paintsNamePairs({ field, scale }: RowColorSnapshot) {
   return (field || 'name') === 'name' && scale !== 'none'
 }
 
+// The colours a `rowColor` object sets on the values of `field`, an attribute
+// it paints by: none while it paints by another field, by `name`, or under
+// `scale: 'none'`.
+function valuePairs(
+  color: RowColorSnapshot,
+  field = color.field || 'name',
+): Record<string, string> {
+  return (color.field || 'name') === field &&
+    field !== 'name' &&
+    color.scale !== 'none'
+    ? Object.fromEntries(
+        pairedColorsOf({
+          domain: color.domain ?? [],
+          range: color.range ?? [],
+        }),
+      )
+    : {}
+}
+
 function sameRowColor(a: RowColorSnapshot, b: RowColorSnapshot) {
   return (
     (a.field || 'name') === (b.field || 'name') &&
@@ -435,15 +454,17 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * Whether `rowColor` sets a row a colour the config does not, so "Reset
-       * row order" is offered for a recolour too. A colour by attribute sets
-       * none row by row, so over a config setting none, picking one is not a
-       * custom arrangement.
+       * Whether `rowColor` sets a row, or a value of the attribute it paints
+       * by, a colour the config does not, so "Reset row order" is offered for
+       * a recolour too. Picking a colour by attribute sets no colour, so over
+       * a config setting none it is not a custom arrangement.
        */
       get rowStylingIsCustom(): boolean {
-        return !compareStructural(
-          namePairs(self.rowColorSetting),
-          namePairs(self.baseRowColor),
+        const live = self.rowColorSetting
+        const base = self.baseRowColor
+        return (
+          !compareStructural(namePairs(live), namePairs(base)) ||
+          !compareStructural(valuePairs(live), valuePairs(base, live.field))
         )
       },
       /**
@@ -568,6 +589,28 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           },
           self,
         )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The rows the arrangement dialog opens on: `editableSources`, with the
+       * `name` pairs a `scale: 'none'` keeps for the way back on them, so Each
+       * row shows what a submit writes and a clear reaches them.
+       */
+      get dialogSources(): S[] {
+        const setting = self.rowColorSetting
+        return setting.scale === 'none' && setting.field === 'name'
+          ? arrangeRows(
+              self.expandedRows,
+              {
+                domain: self.rowOrder,
+                labels: self.rowLabels,
+                rowColors: pairedColorsOf(setting),
+              },
+              self,
+            )
+          : self.editableSources
       },
     }))
     .views(self => ({
@@ -707,8 +750,17 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         }
       }
       function resetRowStyling() {
-        if (self.rowStylingIsCustom) {
-          setConf(confNode(self), 'rowColor', self.baseRowColor)
+        const live = self.rowColorSetting
+        const base = self.baseRowColor
+        const values = valuePairs(base, live.field)
+        if (!compareStructural(namePairs(live), namePairs(base))) {
+          setConf(confNode(self), 'rowColor', base)
+        } else if (!compareStructural(valuePairs(live), values)) {
+          setConf(confNode(self), 'rowColor', {
+            field: live.field,
+            domain: Object.keys(values),
+            range: Object.values(values),
+          })
         }
       }
       return {
@@ -760,7 +812,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
             current.field === 'name' ? pairedColorsOf(current) : new Map()
           const edits = rowEdits({
             rows,
-            shown: self.editableSources,
+            shown: self.dialogSources,
             adapter: self.expandedRows,
             labels: self.rowLabels,
             colors: pairs,

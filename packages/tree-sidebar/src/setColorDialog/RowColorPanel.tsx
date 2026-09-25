@@ -1,6 +1,7 @@
 import { Fragment } from 'react'
 
 import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
+import { capitalizeFirst } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
@@ -83,7 +84,7 @@ export default function RowColorPanel({
           <ToggleButton value="name">Each row</ToggleButton>
           {fields.map(field => (
             <ToggleButton key={field} value={field}>
-              {field}
+              {capitalizeFirst(field)}
             </ToggleButton>
           ))}
         </ToggleButtonGroup>
@@ -111,7 +112,7 @@ export default function RowColorPanel({
             >
               {fields.map(field => (
                 <MenuItem key={field} value={field}>
-                  {field} colors
+                  {capitalizeFirst(field)} colors
                 </MenuItem>
               ))}
             </TextField>
@@ -141,7 +142,7 @@ export default function RowColorPanel({
           </div>
           <div>
             <Button size="small" onClick={onResetValues}>
-              Reset {choice} colors
+              Reset {capitalizeFirst(choice)} colors
             </Button>
           </div>
         </>

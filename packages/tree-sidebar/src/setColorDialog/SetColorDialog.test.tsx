@@ -52,6 +52,7 @@ function fakeModel(overrides: Partial<TreeLayoutModel<Src>> = {}) {
   }
   return {
     editableSources,
+    dialogSources: editableSources,
     applyRowEdits: jest.fn(),
     resetRowArrangement: jest.fn(),
     rowOrderWillDropTree: jest.fn(() => false),
@@ -160,7 +161,7 @@ test('Start from copies the attribute colors onto the active color column', () =
   )
 
   fireEvent.mouseDown(screen.getByLabelText('Start from'))
-  fireEvent.click(screen.getByRole('option', { name: 'group colors' }))
+  fireEvent.click(screen.getByRole('option', { name: 'Group colors' }))
   fireEvent.click(screen.getByText('Submit'))
 
   const [rows, rowColor] = submitted(model)
@@ -233,7 +234,7 @@ describe('colored by an attribute', () => {
     const model = byGroup()
     setup(model)
 
-    fireEvent.click(screen.getByText('Reset group colors'))
+    fireEvent.click(screen.getByText('Reset Group colors'))
     fireEvent.click(screen.getByText('Submit'))
     expect(submitted(model)[1]).toEqual({
       field: 'group',
@@ -256,6 +257,44 @@ describe('colored by an attribute', () => {
       range: ['#abcdef'],
     })
   })
+})
+
+test('None keeps the attribute last chosen in the sitting', () => {
+  const model = fakeModel({
+    editableSources: GROUPED,
+    rowColorFields: ['group'],
+  })
+  setup(model)
+
+  fireEvent.click(screen.getByRole('button', { name: 'Group' }))
+  fireEvent.click(screen.getByRole('button', { name: 'None' }))
+  fireEvent.click(screen.getByText('Submit'))
+
+  expect(submitted(model)[1]).toEqual({
+    field: 'group',
+    scale: 'none',
+    domain: [],
+    range: [],
+  })
+})
+
+test('a color by the display does not offer still shows as chosen', () => {
+  setup(
+    fakeModel({
+      editableSources: GROUPED,
+      rowColorFields: ['group'],
+      rowColorSetting: {
+        field: 'tissue',
+        scale: undefined,
+        domain: [],
+        range: [],
+      },
+    }),
+  )
+  expect(screen.getByRole('button', { name: 'Tissue' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
 })
 
 // Regression: the warning must consult the model live, not a snapshot taken at

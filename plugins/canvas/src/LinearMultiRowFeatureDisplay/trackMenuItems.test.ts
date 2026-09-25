@@ -39,6 +39,7 @@ function makeSelf(
     rowDomain: [],
     rowArrangementIsCustom: false,
     editableSources: rows,
+    dialogSources: rows,
     clusterableSources: rows,
     adapterConfig: {},
     effectiveClusterField: 'name',

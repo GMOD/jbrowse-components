@@ -150,7 +150,8 @@ hook's name throws at `create`:
   ADR-160; MAF and the mark display deal none.
 - `rowColorFields` — the row attributes offered to colour by: by default every
   attribute the rows carry but their name, label and colours; variants' are its
-  samplesTsv columns; MAF and the mark display offer none.
+  samplesTsv columns; MAF, the mark display and multi-row, whose groups are
+  tagged after the arrangement, offer none.
 
 MAF also overrides `clusterableSources`, since on a track that discovers its
 species a focus applies as given, as the worker's does. `focusLegendEntry` stays
@@ -168,20 +169,22 @@ What else the mixin owns:
   order for that reader. `rowArrangementIsCustom` compares against the same
   base, with `rowStylingIsCustom` for the `name` pairs, and leaves `rows.kept`
   out, since the focus has a clear of its own; a reset still clears it.
-  `resetRowStyling` writes the base's whole `rowColor` back only where the
-  `name` pairs differ, so over a config setting no row colour a Color by alone
-  survives a reset and a mode switch.
+  `resetRowStyling` writes the base's whole `rowColor` back where the `name`
+  pairs differ, and otherwise returns an attribute's value colours to the
+  base's, keeping the attribute, so over a config setting no row colour a Color
+  by alone survives a reset and a mode switch.
 - **The dialog shows the `rowColor` object and submits it**
   (`applyRowEdits(rows, rowColor)`, ADR-163): "Color rows by" None, Each row or
   an attribute; under an attribute a table of its values, each with its colour
   and row count, and read-only row swatches; under Each row editable swatches,
   with "Start from" copying an attribute's colours onto them once. A row's
-  swatch is read only under Each row, where `rowEdits` is the rule: an entry the
-  config holds stands unless the reader changed that row, so an entry repeating
-  the adapter's value survives an unchanged submit; a value changed back to what
-  the row shows with no entry of its own removes the entry; a row the dialog
-  never showed keeps its entry. Any other object is written as the dialog shows
-  it, so a colour set on one row never stands for its value, and nothing is
+  swatch is read only under Each row, over `dialogSources`, the rows with the
+  pairs a None keeps on them, where `rowEdits` is the rule: an entry the config
+  holds stands unless the reader changed that row, so an entry repeating the
+  adapter's value survives an unchanged submit; a value changed back to what the
+  row shows with no entry of its own removes the entry; a row the dialog never
+  showed keeps its entry. Any other object is written as the dialog shows it, so
+  a colour set on one row never stands for its value, and nothing is
   materialised. An order that moves no row is not written. The pairs are written
   with two `setConf`s, never `setSubschema`, which would drop `field` and
   `scale`.

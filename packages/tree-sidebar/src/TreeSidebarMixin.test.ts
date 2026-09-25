@@ -384,9 +384,37 @@ describe('a dialog submit of the row colours', () => {
       rowColor: { scale: 'none', domain: ['b'], range: ['#00f'] },
     })
     expect(display.rowColors.size).toBe(0)
-    display.applyRowEdits(display.editableSources, { field: 'name' })
+    display.applyRowEdits(display.dialogSources, { field: 'name' })
     expect(display.rowColorChoice).toBe('name')
     expect(Object.fromEntries(display.rowColors)).toEqual({ b: '#00f' })
+  })
+
+  it('opens on the pairs None kept, so a clear under Each row reaches them', () => {
+    const display = makeGrouped({
+      rowColor: { scale: 'none', domain: ['b'], range: ['#00f'] },
+    })
+    expect(display.dialogSources.find(r => r.name === 'b')!.color).toBe('#00f')
+    display.applyRowEdits(
+      display.dialogSources.map(r => ({ ...r, color: undefined })),
+      { field: 'name' },
+    )
+    expect(display.rowColorChoice).toBe('name')
+    expect(display.rowColors.size).toBe(0)
+  })
+
+  it('counts a value recolour as custom, and a reset keeps the color by', () => {
+    const display = makeGrouped()
+    display.applyRowEdits(display.editableSources, { field: 'group' })
+    expect(display.rowStylingIsCustom).toBe(false)
+    display.applyRowEdits(display.editableSources, {
+      field: 'group',
+      domain: ['y'],
+      range: ['#abcdef'],
+    })
+    expect(display.rowStylingIsCustom).toBe(true)
+    display.resetRowArrangement()
+    expect(display.rowColorChoice).toBe('group')
+    expect(display.rowColorScale.get('b')).toBe(categoricalPalette[1])
   })
 
   it('writes nothing on a submit that changes nothing', () => {

@@ -36,12 +36,13 @@ const useStyles = makeStyles()({
 
 // The slice of a TreeSidebarMixin display the dialog drives. Consumers pass the
 // model itself (not four separate callbacks) so every plugin shares one
-// contract. `editableSources` is the dialog-editable list (no palette
+// contract. `dialogSources` is the dialog-editable list (no palette
 // synthesis, no subtree filter). The dialog snapshots it into local state on
 // open and re-reads it after "Clear custom settings", so edits stay uncommitted
 // until Submit.
 export interface TreeLayoutModel<S extends { name: string }> {
   editableSources: S[]
+  dialogSources: S[]
   applyRowEdits: (s: S[], rowColor?: RowColorSnapshot) => void
   resetRowArrangement: () => void
   // Whether submitting `next` would invalidate a loaded cluster tree; when true
@@ -124,10 +125,11 @@ export default observer(function SetColorDialog<
   displayControls,
 }: SetColorDialogProps<S>) {
   const { classes } = useStyles()
-  const getSources = () => model.editableSources
+  const getSources = () => model.dialogSources
   const [showBulkEditor, setShowBulkEditor] = useState(false)
   const [currLayout, setCurrLayout] = useState(getSources)
   const [choice, setChoice] = useState(model.rowColorChoice)
+  const [kept, setKept] = useState(model.rowColorSetting.field)
   const [entries, setEntries] = useState(() => entriesOf(model.rowColorSetting))
   const [pendingReorderConfirm, setPendingReorderConfirm] = useState(false)
   const [activeField, setActiveField] = useState(
@@ -152,16 +154,32 @@ export default observer(function SetColorDialog<
     ? model.rowColorsFor(settingFor(byField, entries))
     : undefined
 
+  // A color by the config names that the display does not offer, a column
+  // the samples lack, still shows as chosen.
+  const current = model.rowColorChoice
+  const fields =
+    current === '' ||
+    current === 'name' ||
+    model.rowColorFields.includes(current)
+      ? model.rowColorFields
+      : [...model.rowColorFields, current]
+
   // What the submit writes: the object as the reader left it, keeping the
-  // field and its entries under None for the way back.
+  // last field chosen and its entries under None for the way back.
   const chosenRowColor = (): RowColorSnapshot => {
     const setting = model.rowColorSetting
     if (choice === '') {
+      const { domain, range } =
+        kept === 'name'
+          ? setting.field === 'name'
+            ? setting
+            : { domain: [], range: [] }
+          : settingFor(kept, entries)
       return {
-        field: setting.field,
+        field: kept,
         scale: 'none',
-        domain: [...setting.domain],
-        range: [...setting.range],
+        domain: [...domain],
+        range: [...range],
       }
     }
     if (choice === 'name') {
@@ -197,6 +215,7 @@ export default observer(function SetColorDialog<
     model.resetRowArrangement()
     setCurrLayout(getSources())
     setChoice(model.rowColorChoice)
+    setKept(model.rowColorSetting.field)
     setEntries(entriesOf(model.rowColorSetting))
   }
 
@@ -232,14 +251,19 @@ export default observer(function SetColorDialog<
             {displayControls}
 
             <RowColorPanel
-              fields={model.rowColorFields}
+              fields={fields}
               choice={choice}
               values={
                 byField && fieldColors
                   ? valueColors(currLayout, byField, fieldColors)
                   : []
               }
-              onChoice={setChoice}
+              onChoice={value => {
+                setChoice(value)
+                if (value !== '') {
+                  setKept(value)
+                }
+              }}
               onValueColor={(value, color) => {
                 if (byField) {
                   setEntries({
