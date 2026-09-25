@@ -715,6 +715,9 @@ test('mate answers one feature per breakend ALT, with the mate locus 0-based and
   expect(out[0]!.toJSON()).toMatchObject({ alt: 'N[ctgB:2000[', start: 999 })
 })
 
+// The directions are `junctionEnds`', the split view's and the launchers':
+// a deletion keeps the sequence outside it, a tandem duplication the sequence
+// inside, and a translocation says nothing without STRANDS.
 test('mate reads a symbolic allele off END and CHR2, and names its kind where INFO does not', () => {
   const out = runTransforms(
     [
@@ -725,14 +728,14 @@ test('mate reads a symbolic allele off END and CHR2, and names its kind where IN
     [{ type: 'mate' }],
   )
   expect(rows(out, 'start', 'svtype', 'mateDirection')).toEqual([
-    [100, 'DEL', 0],
+    [100, 'DEL', -1],
     [500, 'TRA', 0],
-    [700, 'DUP', 0],
+    [700, 'DUP', 1],
   ])
   expect(out.map(f => f.get('mate'))).toEqual([
-    { refName: 'ctgA', start: 399, end: 400, mateDirection: 0 },
+    { refName: 'ctgA', start: 399, end: 400, mateDirection: 1 },
     { refName: 'ctgC', start: 49, end: 50, mateDirection: 0 },
-    { refName: 'ctgA', start: 899, end: 900, mateDirection: 0 },
+    { refName: 'ctgA', start: 899, end: 900, mateDirection: -1 },
   ])
   expect(out.map(f => f.id())).toEqual(['sv100', 'sv500', 'sv700'])
 })
@@ -774,6 +777,22 @@ test('mate keeps two pairs that share only their starts', () => {
     [{ type: 'mate' }],
   )
   expect(rows(out, 'score')).toEqual([[3], [90]])
+})
+
+// A BEDPE row states no direction, and its strand names the side of the block
+// the junction is on.
+test("mate reads a paired row's directions off its strands where none is stated", () => {
+  const out = runTransforms(
+    [
+      feature(10, 20, {
+        strand: 1,
+        mate: { refName: 'ctgB', start: 30, end: 40, strand: -1 },
+      }),
+    ],
+    [{ type: 'mate' }],
+  )
+  expect(rows(out, 'mateDirection')).toEqual([[-1]])
+  expect(out[0]!.get('mate')).toMatchObject({ mateDirection: 1 })
 })
 
 test('mate answers a pair of ends once, whichever record or allele states it', () => {

@@ -4,7 +4,7 @@ import { fieldReader, isPlainFieldRef } from './fieldReader.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { numericValue } from './numericValue.ts'
 import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
-import { parseSvAlt, svTypeOfAlt } from './svAlt.ts'
+import { junctionEnds, svTypeOfAlt } from './svAlt.ts'
 
 import type { JexlInstance } from './jexlStrings.ts'
 import type {
@@ -294,12 +294,9 @@ function mates(features: readonly Feature[]) {
   for (const f of features) {
     const stated = statedMate(f)
     if (stated) {
-      const own = f.get('mateDirection')
-      admit(
-        f,
-        stated,
-        mateFields(f, undefined, stated, typeof own === 'number' ? own : 0),
-      )
+      const ends = junctionEnds(f)!
+      const mate = { ...stated, mateDirection: ends.mate.keeps }
+      admit(f, mate, mateFields(f, undefined, mate, ends.own.keeps))
       continue
     }
     const alts = f.get('ALT')
@@ -307,20 +304,20 @@ function mates(features: readonly Feature[]) {
       continue
     }
     for (const [i, alt] of (alts as string[]).entries()) {
-      const parsed = parseSvAlt(f, alt)
-      if (!parsed) {
+      const ends = junctionEnds(f, alt)
+      if (!ends) {
         continue
       }
       const mate = {
-        refName: parsed.mateRefName,
-        start: parsed.matePos - 1,
-        end: parsed.matePos,
-        mateDirection: parsed.mateDirection ?? 0,
+        refName: ends.mate.refName,
+        start: ends.mate.pos,
+        end: ends.mate.pos + 1,
+        mateDirection: ends.mate.keeps,
       }
       admit(
         f,
         mate,
-        mateFields(f, alt, mate, parsed.joinDirection ?? 0),
+        mateFields(f, alt, mate, ends.own.keeps),
         alts.length > 1 ? `${f.id()}#${i}` : undefined,
       )
     }

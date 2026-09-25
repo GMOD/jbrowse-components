@@ -146,3 +146,144 @@ export function svTypeOfAlt(alt: string | undefined) {
   }
   return safeParseBreakend(alt) ? 'BND' : undefined
 }
+
+// Read the mate destination from a VCF translocation INFO record. CHR2/END
+// give the mate ref+position; STRANDS[0] is a two-char code (e.g. "+-") where
+// the first char is this side's strand and the second is the mate's. Returns
+// undefined when CHR2/END aren't both present.
+export function readTranslocationMate(info: {
+  CHR2?: string[]
+  END?: number[]
+  STRANDS?: string[]
+}) {
+  const chr = info.CHR2?.[0]
+  const pos = info.END?.[0]
+  if (chr === undefined || pos === undefined) {
+    return undefined
+  }
+  const [myDir, mateDir] = info.STRANDS?.[0]?.split('') ?? ['.', '.']
+  // A STRANDS char names the strand the record is ON, and an end on `+` keeps
+  // the sequence to its LEFT — so the keeps-direction (`breakendKeepsDirections`,
+  // +1 = right) is its negation. Resolved here so the one consumer that draws
+  // these as ticks does not have to know that, which is how the two conventions
+  // came to sit a negation apart in the first place.
+  const sign = (s: string) => (s === '+' ? -1 : s === '-' ? 1 : 0)
+  return {
+    chr,
+    pos,
+    myDir: myDir ?? '.',
+    mateDir: mateDir ?? '.',
+    myKeepsDir: sign(myDir ?? '.'),
+    mateKeepsDir: sign(mateDir ?? '.'),
+  }
+}
+
+/**
+ * One end of a junction: the base beside the join on the side this end keeps,
+ * 0-based.
+ */
+export interface JunctionEnd {
+  refName: string
+  pos: number
+  /** which way the sequence this end keeps runs from it: 1 right, -1 left, 0 unknown */
+  keeps: number
+}
+
+function keepsOf(mateDirection: unknown, strand: unknown) {
+  if (typeof mateDirection === 'number') {
+    return mateDirection
+  }
+  // a BEDPE strand names the side of the block the junction is on: `+` its
+  // end, so the block keeps the sequence to its left
+  return strand === 1 ? -1 : strand === -1 ? 1 : 0
+}
+
+function joinBase(
+  self: { start: number; end: number; keeps: number },
+  other: { start: number; end: number },
+) {
+  const keeps =
+    self.keeps || (self.start + self.end <= other.start + other.end ? -1 : 1)
+  return keeps === -1 ? self.end - 1 : self.start
+}
+
+function symbolicKeeps(feature: Feature, alt: string) {
+  if (alt.startsWith('<DEL')) {
+    return [-1, 1] as const
+  }
+  if (alt.startsWith('<DUP')) {
+    return [1, -1] as const
+  }
+  const tra = readTranslocationMate(
+    (feature.get('INFO') as
+      | Parameters<typeof readTranslocationMate>[0]
+      | undefined) ?? {},
+  )
+  return [tra?.myKeepsDir ?? 0, tra?.mateKeepsDir ?? 0] as const
+}
+
+/**
+ * #api
+ * Where a paired record's junction is at each of its two ends, and which side
+ * of it each end keeps — the one answer every launcher, the row menu and the
+ * chain walk take, whether the record is a VCF breakend, a symbolic SV or a
+ * paired adapter's row (BEDPE, STAR-Fusion). Refnames are as the record spells
+ * them. `undefined` for a record naming no other end. A VCF record is read
+ * through `alt`, its first ALT unless the caller names another.
+ *
+ * A VCF end is its own position. A paired adapter's end is a block, and the
+ * junction is the block's edge on the side the end keeps: stated by
+ * `mateDirection` where the adapter knows it, read off a BEDPE strand
+ * otherwise, and with neither the two blocks face each other.
+ */
+export function junctionEnds(
+  feature: Feature,
+  alt = (feature.get('ALT') as string[] | undefined)?.[0],
+): { own: JunctionEnd; mate: JunctionEnd } | undefined {
+  const refName = feature.get('refName')
+  const mate = feature.get('mate') as
+    | {
+        refName?: string
+        start?: number
+        end?: number
+        mateDirection?: number
+        strand?: number
+      }
+    | undefined
+  if (mate?.refName !== undefined && mate.start !== undefined) {
+    const self = {
+      start: feature.get('start'),
+      end: feature.get('end'),
+      keeps: keepsOf(feature.get('mateDirection'), feature.get('strand')),
+    }
+    const far = {
+      start: mate.start,
+      end: mate.end ?? mate.start + 1,
+      keeps: keepsOf(mate.mateDirection, mate.strand),
+    }
+    return {
+      own: { refName, pos: joinBase(self, far), keeps: self.keeps },
+      mate: {
+        refName: mate.refName,
+        pos: joinBase(far, self),
+        keeps: far.keeps,
+      },
+    }
+  }
+  const parsed = parseSvAlt(feature, alt)
+  if (!parsed || alt === undefined) {
+    return undefined
+  }
+  const [ownKeeps, mateKeeps] =
+    parsed.joinDirection === undefined
+      ? symbolicKeeps(feature, alt)
+      : [parsed.joinDirection, parsed.mateDirection ?? 0]
+  return {
+    own: { refName, pos: feature.get('start'), keeps: ownKeeps },
+    mate: {
+      refName: parsed.mateRefName,
+      pos: parsed.matePos - 1,
+      keeps: mateKeeps,
+    },
+  }
+}
