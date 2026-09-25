@@ -4873,6 +4873,7 @@
       "package": "@jbrowse/render-core",
       "names": [
         "HIDDEN_ROW",
+        "LINK_ELSEWHERE",
         "LINK_NO_REGION",
         "NO_ROW_COLOR",
         "RAMP_NOT_A_NUMBER_COLOR",
@@ -5262,6 +5263,7 @@
       "package": "@jbrowse/render-core",
       "names": [
         "LINK_CURVE_SEGMENTS",
+        "LINK_ELSEWHERE",
         "LINK_FAR_SCREEN_WIDTHS",
         "LINK_MAX_REGIONS",
         "LINK_NO_REGION",
