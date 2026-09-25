@@ -233,7 +233,7 @@ The rest are optional:
   import forms can pull the file back out of an existing track's config.
 - **`normalizeSnapshot`** expands a shorthand config — `{ type, uri }` — to the
   location slots the schema declares. This defaults to the config schema's own
-  [`preProcessSnapshot`](/docs/developer_guides/configuration_schema#preprocesssnapshot),
+  [`preProcessSnapshot`](/docs/developer_guides/configuration_schema#defining-a-schema),
   so declaring the shorthand there is enough and the two cannot come apart. Pass
   one here only to normalize differently before MST builds the config than
   during it, which nothing in tree needs.

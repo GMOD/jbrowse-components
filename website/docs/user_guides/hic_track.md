@@ -146,15 +146,14 @@ trading square bins for seeing the whole triangle.
 
 Loop and interaction calls (HiCCUPS loops, ABC/EPIraction enhancer–gene links)
 ship as [BEDPE](/docs/config_guides/file_types/) files with two endpoints per
-line. JBrowse renders them in a paired-arc display, one arc per call, so you can
-stack the called loops directly above the matrix they came from.
+line. A [mark display](/docs/config_guides/mark_display#links) draws each call
+as a link from one end to its mate, so you can stack the called loops directly
+above the matrix they came from.
 
-Load a BEDPE file like any other track (paste its URL into "Add a track"), then
-add the `.hic` matrix as a separate track and reorder so the arcs sit above it.
-Arc thickness is adjustable from the track menu: open **Arc width** and drag the
-slider (this writes the `lineWidth` slot on the
-[paired-arc display](/docs/config/linearpairedarcdisplay), which you can also
-set in config).
+Add the BEDPE track with a `LinearMarkDisplay` whose `link` mark reads the mate
+through a `mate` step, then add the `.hic` matrix as a separate track and
+reorder so the links sit above it. A link's `size` sets its stroke width, and
+`encoding.size` scales it by the score.
 
 ## Compartments and subcompartments
 
