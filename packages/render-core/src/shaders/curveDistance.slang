@@ -3,14 +3,47 @@
 // clipped to. Shared by the alignments arc band and the link mark, which
 // draw the same half-ellipse and degenerate it to the same circle.
 //! js-export: distToWideCirclePx, wideCircleLeg
+//! js-skip: nearCircleDistancePx — a float32 remedy with no float64 caller. The hit tests' copy of this file's solve (marks/ellipseDistance.ts) holds the ellipse at every aspect, so nothing outside the shader has an approximation to want.
 
 module curveDistance;
+
+// How near a circle an ellipse has to be before `sdEllipse` stops solving and
+// measures instead: radii within ~2.5%, as |ay² - ax²| against ay². The two
+// formulas' worst errors over a 6px stroke meet here at ~0.01px — below it the
+// solve degrades with radius (0.10px at r=4000), above it the measure degrades
+// with curvature (0.01px at r=4).
+static const float ELLIPSE_CIRCLE_TOL = 0.05;
+
+// The distance to an ellipse the solve cannot reach. Every term in it divides
+// by `l = ay² - ax²`, a difference of two nearly equal squares, so float32 has
+// lost the ellipse before the quartic is assembled: at 250px radii 1e-5 apart
+// the solve is 3.6px out and 36% of the stroke's samples flip. Not a corner —
+// a clamped dome pins ry to the band while rx tracks the pair's width, so a
+// zoom walks rx through ry and through every ratio on the way.
+//
+// The implicit field |p/ab| - 1 over its own gradient instead: exact on a true
+// circle, which is why it replaces the exact-circle branch rather than sitting
+// beside it, and first-order elsewhere.
+float nearCircleDistancePx(float qx, float qy, float ax, float ay) {
+  float kx = qx / ax;
+  float ky = qy / ay;
+  float k = sqrt(kx * kx + ky * ky);
+  float gx = qx / (ax * ax);
+  float gy = qy / (ay * ay);
+  return abs(k * (k - 1.0) / max(sqrt(gx * gx + gy * gy), 1e-20));
+}
 
 // Inigo Quilez's closed-form solve of the quartic. Chosen over the iterative
 // alternatives because the arc band produces very flat ellipses (a 25px band
 // under a 1500px pair is 44:1, and it goes past 88:1): measured against an
 // fp64 reference at fp32 precision, this stays within 0.031px out to 88:1,
 // where a seeded Newton on the parametric angle runs away entirely.
+//
+// THAT MEASUREMENT IS THE FLAT END, and the solve fails at the round one, in
+// float32 alone — the same source in float64 is exact to 1e-9. It breaks the
+// picture rather than nudging it, because the stroke reads this through a
+// half-pixel ramp: a dome at 380x249px drew as scattered dots on WebGL where
+// Canvas2D drew a line. Two guards below, each where its failure arises.
 //
 // NOT `//! js-export`ed, and the hit tests carry a float64 copy of this formula
 // (render-core marks/ellipseDistance.ts) BECAUSE of that. The reasoning is
@@ -53,10 +86,9 @@ public float sdEllipse(float2 p, float2 radii) {
   float2 ab = radii;
   if (q.x > q.y) { q = q.yx; ab = ab.yx; }
   float l = ab.y * ab.y - ab.x * ab.x;
-  // Circle: `l` is the solver's divisor, so hand those back the exact answer
-  // rather than a division by ~0. Reachable — a clamped dome's ry is pinned to
-  // the band while rx tracks the pair's width, so they cross.
-  if (abs(l) < 1e-6 * ab.y * ab.y) { return abs(length(q) - ab.x); }
+  if (abs(l) < ELLIPSE_CIRCLE_TOL * ab.y * ab.y) {
+    return nearCircleDistancePx(q.x, q.y, ab.x, ab.y);
+  }
   float m = ab.x * q.x / l; float m2 = m * m;
   float n = ab.y * q.y / l; float n2 = n * n;
   float c = (m2 + n2 - 1.0) / 3.0;
@@ -74,8 +106,15 @@ public float sdEllipse(float2 p, float2 radii) {
   } else {
     float qq = c3 + m2 * n2 * 2.0;
     float h = 2.0 * m * n * sqrt(d);
-    float s = sign(qq + h) * pow(abs(qq + h), 1.0 / 3.0);
-    float t = sign(qq - h) * pow(abs(qq - h), 1.0 / 3.0);
+    // The two cube roots are of `qq + h` and `qq - h`, whose product is c3*c3
+    // identically. So the lower one comes from that quotient rather than from
+    // the subtraction, which cancels to nothing exactly where the dome lives:
+    // at 380x249px the two agree to every float32 digit they have, `qq - h`
+    // rounds to zero, and the distance lands up to 3px off the curve.
+    float w = qq + h;
+    float aw = abs(w);
+    float s = sign(w) * pow(aw, 1.0 / 3.0);
+    float t = aw > 0.0 ? sign(w) * pow(c3 * (c3 / aw), 1.0 / 3.0) : 0.0;
     float rx = -s - t - c * 4.0 + 2.0 * m2;
     float ry = (s - t) * sqrt(3.0);
     float rm = sqrt(rx * rx + ry * ry);

@@ -14,7 +14,7 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 45 shaders with entry points. 117 functions
+Scanned 45 shaders with entry points. 118 functions
 are inside the emitter's subset, of which **87 are exported**.
 
 ## Candidates
@@ -51,6 +51,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `hpSplitUint` | `(u32) -> vec2f` | the hi/lo float32 precision split exists because a GPU has no float64; the Canvas2D path just uses a number |
 | `linkIsFar` | `(f32, f32) -> bool` | reached as a private helper inside the generated linkRadiiPx, the way arc.slang's arcIsFar is, so the far decision is shared without a second way to ask it |
 | `log1pf` | `(f32) -> f32` | JS has Math.log1p, so a twin of this would be the float32 workaround spelled out where the language already answers it |
+| `nearCircleDistancePx` | `(f32, f32, f32, f32) -> f32` | a float32 remedy with no float64 caller. The hit tests' copy of this file's solve (marks/ellipseDistance.ts) holds the ellipse at every aspect, so nothing outside the shader has an approximation to want. |
 | `perpCoverage` | `(f32, f32, f32, f32, f32, f32, bool, f32) -> f32` | measures perpendicular width per fragment from each edge own foreshortening, where Canvas2D measures it once for the whole ribbon (ribbonPerpWidth). Same quantity, deliberately different estimator — only the perpW < 1 boundary is shared, and that is a comparison, not a function |
 | `pxToClipLen` | `(f32, f32) -> f32` | the length half of the same conversion; a px dimension is already in px on the Canvas2D side, so there is nothing to convert |
 | `pxToClipX` | `(f32, f32) -> f32` | the inverse of clipXToPx, same reason |
@@ -115,7 +116,7 @@ is no longer shared with anything.
 | `aaPx` | nothing |
 | `aaRamp` | nothing |
 | `arcDashCoordPx` | tests only — `arcFlatDash.test.ts` |
-| `edgeCoverage` | tests only — `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts` |
+| `edgeCoverage` | tests only — `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `sdEllipse.test.ts` |
 | `extendToMinWidthPx` | tests only — `hpmathParity.test.ts`, `rectSpanParity.test.ts` |
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |
