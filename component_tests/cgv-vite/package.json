@@ -35,6 +35,7 @@
     "@jbrowse/plugin-config": "file:./packed/jbrowse-plugin-config.tgz",
     "@jbrowse/plugin-data-management": "file:./packed/jbrowse-plugin-data-management.tgz",
     "@jbrowse/plugin-linear-genome-view": "file:./packed/jbrowse-plugin-linear-genome-view.tgz",
+    "@jbrowse/plugin-marks": "file:./packed/jbrowse-plugin-marks.tgz",
     "@jbrowse/plugin-sequence": "file:./packed/jbrowse-plugin-sequence.tgz",
     "@jbrowse/plugin-variants": "file:./packed/jbrowse-plugin-variants.tgz",
     "@jbrowse/plugin-wiggle": "file:./packed/jbrowse-plugin-wiggle.tgz",

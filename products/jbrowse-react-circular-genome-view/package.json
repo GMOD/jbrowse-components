@@ -51,6 +51,7 @@
     "@jbrowse/plugin-comparative-adapters": "workspace:^",
     "@jbrowse/plugin-config": "workspace:^",
     "@jbrowse/plugin-data-management": "workspace:^",
+    "@jbrowse/plugin-marks": "workspace:^",
     "@jbrowse/plugin-sequence": "workspace:^",
     "@jbrowse/plugin-variants": "workspace:^",
     "@jbrowse/plugin-wiggle": "workspace:^",

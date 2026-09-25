@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url'
 import {
   checkDemoAboveFold,
   checkDemoHeights,
+  checkRingsPainted,
   checkSessionUrlRoundTrip,
   checkTextContrast,
   checkTrackIsShown,
@@ -20,6 +21,7 @@ import { examples } from '../src/examples.ts'
 const here = path.dirname(fileURLToPath(import.meta.url))
 
 const checks = {
+  'gene-density-ring': checkRingsPainted,
   'session-in-url': checkSessionUrlRoundTrip,
   'show-track': checkTrackIsShown,
 }

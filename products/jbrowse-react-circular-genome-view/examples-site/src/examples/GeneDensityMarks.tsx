@@ -24,7 +24,7 @@ const assembly = [
 const tracks = [
   {
     type: 'QuantitativeTrack',
-    trackId: 'hg38ToMm39_gene_density',
+    trackId: 'hg38ToMm39_gene_density_marks',
     name: 'Genes per 100 kb',
     assemblyNames: ['hg38', 'mm39'],
     adapter: {
@@ -33,11 +33,18 @@ const tracks = [
     },
     displays: [
       {
-        type: 'LinearWiggleDisplay',
-        displayId: 'hg38ToMm39_gene_density-LinearWiggleDisplay',
-        defaultRendering: 'density',
-        summaryScoreMode: 'avg',
-        height: 40,
+        type: 'LinearMarkDisplay',
+        displayId: 'hg38ToMm39_gene_density_marks-LinearMarkDisplay',
+        height: 60,
+        marks: [
+          {
+            mark: 'bar',
+            encoding: {
+              y: 'score',
+              color: { field: 'score', scale: 'linear', scheme: 'viridis' },
+            },
+          },
+        ],
       },
     ],
   },
@@ -55,7 +62,7 @@ const tracks = [
   },
 ]
 
-export default function GeneDensityRing() {
+export default function GeneDensityMarks() {
   const state = useCreateViewState({
     assembly,
     tracks,
@@ -63,7 +70,7 @@ export default function GeneDensityRing() {
       height: 700,
       displayedRegionNames: ['chr1', 'chr2', 'chrX'],
       autoDiagonalize: true,
-      tracks: ['hg38ToMm39_gene_density', 'hg38ToMm39_blocks'],
+      tracks: ['hg38ToMm39_gene_density_marks', 'hg38ToMm39_blocks'],
     },
   })
 

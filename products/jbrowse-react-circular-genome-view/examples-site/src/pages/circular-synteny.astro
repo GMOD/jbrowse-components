@@ -1,11 +1,11 @@
 ---
 import Example from '../examples/CircularSynteny.tsx'
 import code from '../examples/CircularSynteny.tsx?raw'
-import { pages } from '../examples.ts'
+import { getPage } from '../examples.ts'
 import Layout from '../layouts/ExampleLayout.astro'
 import Section from '../layouts/ExampleSection.astro'
 
-const page = pages.find(p => p.slug === 'circular-synteny')!
+const page = getPage('circular-synteny')
 ---
 
 <Layout page={page}>

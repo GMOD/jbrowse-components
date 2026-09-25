@@ -2620,6 +2620,9 @@ importers:
       '@jbrowse/plugin-data-management':
         specifier: workspace:^
         version: link:../../plugins/data-management
+      '@jbrowse/plugin-marks':
+        specifier: workspace:^
+        version: link:../../plugins/marks
       '@jbrowse/plugin-sequence':
         specifier: workspace:^
         version: link:../../plugins/sequence

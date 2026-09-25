@@ -1,11 +1,11 @@
 import { useState } from 'react'
 
-import { useCreateOnceAsync } from '@jbrowse/core/util/hooks'
 import {
   JBrowseCircularGenomeView,
   createViewState,
   decodeSession,
   encodeSession,
+  useCreateViewState,
 } from '@jbrowse/react-circular-genome-view2'
 
 const assembly = {
@@ -32,40 +32,33 @@ const tracks = [
   },
 ]
 
-function readSessionParam() {
-  return (
-    new URLSearchParams(window.location.hash.slice(1)).get('session') ??
-    undefined
-  )
-}
-
 function writeSessionParam(value: string) {
   const params = new URLSearchParams(window.location.hash.slice(1))
   params.set('session', value)
   window.history.replaceState(null, '', `#${params.toString()}`)
 }
 
-async function build() {
-  const param = readSessionParam()
-  let session: Awaited<ReturnType<typeof decodeSession>> | undefined
-  let status = ''
+async function build(report: (status: string) => void) {
+  const param = new URLSearchParams(window.location.hash.slice(1)).get(
+    'session',
+  )
   if (param) {
     try {
-      session = await decodeSession(param)
-      status = `restored "${session.name}" from the URL`
+      const session = await decodeSession(param)
+      const engine = await createViewState({ assembly, tracks, session })
+      report(`restored "${session.name}" from the URL`)
+      return engine
     } catch (e) {
       console.error(e)
-      status = `could not restore the session in the URL: ${e}`
+      report(`could not restore the session in the URL: ${e}`)
     }
   }
-  return { state: await createViewState({ assembly, tracks, session }), status }
+  return createViewState({ assembly, tracks })
 }
 
 export default function SessionInUrl() {
-  const built = useCreateOnceAsync(build)
-  const [saved, setSaved] = useState('')
-  const state = built?.state
-  const status = saved || built?.status
+  const [status, setStatus] = useState('')
+  const state = useCreateViewState(() => build(setStatus))
 
   return state ? (
     <div>
@@ -73,13 +66,17 @@ export default function SessionInUrl() {
         <button
           type="button"
           onClick={() => {
-            void (async () => {
-              const encoded = await encodeSession(state)
-              writeSessionParam(encoded)
-              setSaved(
-                `saved to the URL (${encoded.length} chars) — copy the address bar, or reload to restore it`,
-              )
-            })()
+            void encodeSession(state)
+              .then(encoded => {
+                writeSessionParam(encoded)
+                setStatus(
+                  `saved to the URL (${encoded.length} chars) — copy the address bar, or reload to restore it`,
+                )
+              })
+              .catch((e: unknown) => {
+                console.error(e)
+                setStatus(`could not save the session to the URL: ${e}`)
+              })
           }}
         >
           Save this view to the URL

@@ -1,4 +1,4 @@
-import { flattenExamples } from './exampleModel.ts'
+import { findPage, flattenExamples } from './exampleModel.ts'
 
 import type { ExamplePage } from './exampleModel.ts'
 
@@ -59,8 +59,17 @@ export const pages: ExamplePage[] = [
     title: 'Gene density as a ring',
     description: 'A bigWig drawn as a ring inside the two-genome ideogram.',
     group: 'Real-world demos',
-    sections: [{ slug: 'gene-density-ring', title: 'Gene density as a ring' }],
+    sections: [
+      { slug: 'gene-density-ring', title: 'Gene density as a ring' },
+      {
+        slug: 'gene-density-marks',
+        title: 'The same ring, declared as marks',
+        description: 'A LinearMarkDisplay bar mark, its colour a viridis ramp.',
+      },
+    ],
   },
 ]
 
 export const examples = flattenExamples(pages)
+
+export const getPage = (slug: string) => findPage(pages, slug)
