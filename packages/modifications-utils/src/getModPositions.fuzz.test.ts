@@ -2,6 +2,8 @@ import { parseModHeader } from './consts.ts'
 import { getModPositions } from './getModPositions.ts'
 import { isSingleModType } from './getModTypes.ts'
 
+import type { ModWithPositions } from './getModPositions.ts'
+
 // A differential fuzz against an independently written reference.
 //
 // `getModPositions` accumulated three optimizations — one positions array shared
@@ -352,6 +354,83 @@ test('getModPositions shares an array exactly when the walks coincide', () => {
             `${where} shared ${i},${j} :: ${b.positions.join(',')}`,
           )
         }
+      }
+    }
+  }
+})
+
+// SAMtags says the deltas are unsigned integers, and the walk reads plain
+// digits itself; a field holding anything else still means what `+` makes of
+// it, which is what the reference reads.
+test('a delta that is not plain digits reads as + reads it', () => {
+  const fseq = 'ACGTCCAGTCACGATCCA'
+  for (const field of [' 1', '+1', '1.0', '0x1', '1e0', '', '01', '2 ']) {
+    for (const fstrand of [1, -1]) {
+      const mm = `C+m,0,${field},1;A+a,${field},0;`
+      const got = getModPositions(mm, fseq, fstrand).map(
+        ({ type, base, positions, probStart, probStride }) => ({
+          type,
+          base,
+          positions,
+          probStart,
+          probStride,
+        }),
+      )
+      expect([mm, fstrand, got]).toEqual([
+        mm,
+        fstrand,
+        reference(mm, fseq, fstrand),
+      ])
+    }
+  }
+})
+
+// Each call as `position@ML index`, the two things a consumer reads off it.
+function calls(
+  mods: ModWithPositions[],
+  fstrand: number,
+  keep: (position: number) => boolean,
+) {
+  return mods.map(({ positions, probStart, probStride }) =>
+    positions
+      .map((p, idx) => {
+        const mmOrder = fstrand === -1 ? positions.length - 1 - idx : idx
+        return keep(p) ? `${p}@${probStart + mmOrder * probStride}` : ''
+      })
+      .filter(Boolean)
+      .join(','),
+  )
+}
+
+test('a window keeps exactly the whole walk’s calls inside it', () => {
+  const rnd = mulberry32(0x3a11)
+  for (let iter = 0; iter < 4000; iter++) {
+    const { mm, fseq, fstrand } = makeCase(rnd)
+    const len = fseq.length
+    if (len === 0) {
+      continue
+    }
+    const a = Math.floor(rnd() * (len + 3)) - 1
+    const b = Math.floor(rnd() * (len + 3)) - 1
+    const lo = Math.min(a, b)
+    const hi = Math.max(a, b) + 1
+    const where = `iter ${iter}: mm="${mm}" seq="${fseq}" strand=${fstrand} window=[${lo},${hi})`
+
+    const whole = getModPositions(mm, fseq, fstrand)
+    const cut = getModPositions(mm, fseq, fstrand, lo, hi)
+    expect(`${where} :: ${cut.map(m => m.type).join(',')}`).toBe(
+      `${where} :: ${whole.map(m => m.type).join(',')}`,
+    )
+    expect(`${where} :: ${calls(cut, fstrand, () => true).join(';')}`).toBe(
+      `${where} :: ${calls(whole, fstrand, p => p >= lo && p < hi).join(';')}`,
+    )
+    for (let i = 0; i < cut.length; i++) {
+      for (let j = i + 1; j < cut.length; j++) {
+        const shared = cut[i]!.positions === cut[j]!.positions
+        const wholeShared = whole[i]!.positions === whole[j]!.positions
+        expect(`${where} shared ${i},${j} :: ${shared}`).toBe(
+          `${where} shared ${i},${j} :: ${wholeShared}`,
+        )
       }
     }
   }

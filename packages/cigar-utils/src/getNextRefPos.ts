@@ -11,6 +11,8 @@ import {
   CIGAR_X,
 } from './cigarConstants.ts'
 
+import type { CigarCursor } from './refWindowToRead.ts'
+
 /**
  * #api
  * Maps read-sequence positions to reference-sequence positions via the CIGAR,
@@ -40,21 +42,25 @@ import {
  * one behaviour that changed with the shape: a REPEATED position used to be
  * dropped and to block every position after it (the per-base loop could match at
  * most one position per base offset), and now emits once per occurrence.
+ *
+ * `from` starts the walk at a `refWindowToRead` cursor instead of the first op,
+ * for positions that all lie at or past its `readStart`.
  */
 export function getNextRefPos(
   cigarOps: ArrayLike<number>,
   positions: number[],
   callback: (ref: number, idx: number) => void,
+  from?: CigarCursor,
 ): void {
   const l2 = positions.length
   if (l2 === 0) {
     return
   }
-  let readPos = 0
-  let refPos = 0
+  let readPos = from?.opRead ?? 0
+  let refPos = from?.opRef ?? 0
   let currPos = 0
 
-  for (let i = 0, l = cigarOps.length; i < l && currPos < l2; i++) {
+  for (let i = from?.op ?? 0, l = cigarOps.length; i < l && currPos < l2; i++) {
     const packed = cigarOps[i]!
     const len = packed >>> 4
     const op = packed & 0xf

@@ -55,6 +55,10 @@
 // 46%. Removing 0.84M substring allocations is worth about a twentieth of the
 // pipeline.
 //
+// It shipped later, once the walk was cut to the fetched region and the split
+// became a bigger share of what was left, with non-digit fields handed to `+`
+// so a malformed tag reads as before: `getModPositions`, `modWindow.bench.ts`.
+//
 // **The negative result is the useful part**, because it says where the parse
 // phase's time actually is: not the split, but the delta walk's charCodeAt loop
 // stepping through 43.7 Mbp of read sequence one base at a time.

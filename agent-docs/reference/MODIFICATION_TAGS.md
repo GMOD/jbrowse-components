@@ -176,6 +176,22 @@ The regime matters much less than the strand: 52 bases between calls against 3.3
 moves the forward ratio 1.560x to 1.247x, where the strand inverts it. So there
 is no fixture-shape branch to make, only a strand one.
 
+## Only the fetched region is walked
+
+`extractModifications` maps the region onto read offsets first
+(`refWindowToRead`) and hands that window to `getModPositions`, which keeps only
+the calls inside it. The deltas count from the read's 5' end — the end of the
+stored sequence on a reverse read — so the stretch between that end and the
+window still has to be consumed, but as a count of its base, four bytes per
+step over `TextEncoder.encodeInto`'s copy, with whole deltas subtracted from the
+count. Nothing past the window's far edge is walked. Each entry's `probStart`
+moves past the calls skipped, so ML indexing is unchanged. `forEachMaxProbMod`
+and `getMethBins` then walk the CIGAR from the window's first op.
+
+On the 1 kb view of `modWindow.bench.ts` that is ~5x on the extract; over whole
+reads it is at parity. The count is still O(read), and so is the SEQ decode it
+reads, which is now the largest single cost at small windows.
+
 ## What htslib validates that we do not do at all
 
 - **`MN` is checked against `l_qseq`.** htslib errors when the MM/MN data length

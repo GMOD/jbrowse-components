@@ -13,6 +13,7 @@ import { forEachModRefPos } from './forEachModRefPos.ts'
 
 import type { CytosineContext } from './cytosineContext.ts'
 import type { ModWithPositions } from './getModPositions.ts'
+import type { ReadWindow } from '@jbrowse/cigar-utils'
 
 export interface ParsedModData {
   modifications: ModWithPositions[]
@@ -21,6 +22,8 @@ export interface ParsedModData {
   seq: string
   fstrand: -1 | 0 | 1
   flen: number
+  /** the window `modifications` was cut to, and the only one binned */
+  window?: ReadWindow
 }
 
 /**
@@ -45,7 +48,15 @@ export function isMethylationFillType(type: string) {
  * cytosines in `context` are considered (default CpG); plants also use CHG/CHH.
  */
 export function getMethBins(
-  { modifications, probabilities, cigarOps, seq, fstrand, flen }: ParsedModData,
+  {
+    modifications,
+    probabilities,
+    cigarOps,
+    seq,
+    fstrand,
+    flen,
+    window,
+  }: ParsedModData,
   context: CytosineContext = 'CG',
 ) {
   const isReverse = fstrand === -1
@@ -81,6 +92,7 @@ export function getMethBins(
         }
       }
     },
+    window,
   )
 
   // Only fill undetected sites as unmethylated when the read actually carries a
@@ -98,12 +110,18 @@ export function getMethBins(
   const fillForward = methMods.some(m => isReverse === (m.strand === '-'))
   const fillReverse = methMods.some(m => isReverse !== (m.strand === '-'))
 
-  // Scan the full read sequence for every cytosine in `context` and mark any not
-  // already detected from the MM tag as unmethylated (prob=0).
+  // Scan the window's read sequence for every cytosine in `context` and mark any
+  // not already detected from the MM tag as unmethylated (prob=0).
   if (fillUnmethylated) {
-    let readPos = 0
-    let refPos = 0
-    for (let i = 0, l = cigarOps.length; i < l; i++) {
+    const lo = Math.max(0, window?.refStart ?? 0)
+    const hi = Math.min(flen, window?.refEnd ?? flen)
+    let readPos = window?.opRead ?? 0
+    let refPos = window?.opRef ?? 0
+    for (
+      let i = window?.op ?? 0, l = cigarOps.length;
+      i < l && refPos < hi;
+      i++
+    ) {
       const packed = cigarOps[i]!
       const len = packed >>> 4
       const op = packed & 0xf
@@ -117,8 +135,8 @@ export function getMethBins(
           const rp = readPos + j
           const rf = refPos + j
           if (
-            rf >= 0 &&
-            rf < flen &&
+            rf >= lo &&
+            rf < hi &&
             !methBins[rf] &&
             ((fillForward && matchesCytosineContext(seq, rp, false, context)) ||
               (fillReverse && matchesCytosineContext(seq, rp, true, context)))

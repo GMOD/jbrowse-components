@@ -1,4 +1,4 @@
-import { CIGAR_D, CIGAR_M } from '@jbrowse/cigar-utils'
+import { CIGAR_D, CIGAR_M, refWindowToRead } from '@jbrowse/cigar-utils'
 
 import { forEachMaxProbMod } from './getMaxProbModAtEachPosition.ts'
 
@@ -31,7 +31,8 @@ function collect(
   strand: -1 | 0 | 1 = 1,
 ) {
   const out: { ref: number; type: string; base: string; prob: number }[] = []
-  forEachMaxProbMod(mods, ml, ops, strand, (ref, m, prob) => {
+  const whole = refWindowToRead(ops, 0, Number.MAX_SAFE_INTEGER)
+  forEachMaxProbMod(mods, ml, ops, strand, whole, (ref, m, prob) => {
     out.push({ ref, type: m.type, base: m.base, prob })
   })
   return out

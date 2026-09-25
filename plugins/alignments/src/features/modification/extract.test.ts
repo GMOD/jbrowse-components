@@ -377,3 +377,78 @@ describe('the fill view keeps a read’s non-cytosine modifications', () => {
     ])
   })
 })
+
+// The region is cut before the MM and CIGAR walks rather than after, so each
+// window edge below has to land exactly where the whole-read walk would have
+// cut: in the leading and trailing clips, in the two insertions, inside the
+// deletion and the skip, and past either end of the read.
+describe('an extract cut to a region matches the whole-read extract cut after', () => {
+  const CIGAR = '3S8M2I6M3D7M1I5M4N6M2S'
+  const ML = Array.from({ length: 16 }, (_, i) => (i * 67 + 13) % 256)
+  const whole = { start: 0, end: Number.MAX_SAFE_INTEGER }
+
+  function extract(
+    mm: string,
+    strand: -1 | 1,
+    region: { start: number; end: number },
+    colorBy: ColorBy,
+  ) {
+    const feature = new SimpleFeature({
+      uniqueId: 'cut',
+      refName: 'ctgA',
+      start: 100,
+      end: 139,
+      strand,
+      CIGAR,
+      seq: 'CAGTCGAT'.repeat(5),
+      tags: { MM: mm, ML },
+    })
+    const out: ModificationEntry[] = []
+    const modData = extractModifications(
+      feature,
+      0,
+      100,
+      strand,
+      region,
+      colorBy,
+      new Set<string>(),
+      new Map<string, ModificationType>(),
+      out,
+    )
+    if (colorBy.modifications?.fillUnmarked && modData) {
+      extractMethylation(
+        0,
+        100,
+        strand,
+        { refName: 'ctgA', ...region } as Region,
+        modData,
+        out,
+        colorBy.modifications,
+      )
+    }
+    return out
+  }
+
+  test.each([
+    ['C+h?,0,1,0,2,1,0;C+m?,0,1,0,2,1,0;A+a,1,0,2,0;', 1],
+    ['C+h?,0,1,0,2,1,0;C+m?,0,1,0,2,1,0;A+a,1,0,2,0;', -1],
+    ['C+mh,0,1,0,2,1,0;A+a,1,0,2,0;', 1],
+    ['C+mh,0,1,0,2,1,0;A+a,1,0,2,0;', -1],
+  ] as const)('%s on strand %d', (mm, strand) => {
+    const modes: ColorBy[] = [
+      { type: 'modifications', modifications: { threshold: 0 } },
+      { type: 'modifications', modifications: { fillUnmarked: true } },
+    ]
+    for (const colorBy of modes) {
+      const all = extract(mm, strand, whole, colorBy)
+      expect(new Set(all.map(m => m.modType)).size).toBeGreaterThan(1)
+      for (let start = 97; start < 143; start++) {
+        for (let end = start + 1; end <= 143; end++) {
+          expect(extract(mm, strand, { start, end }, colorBy)).toEqual(
+            all.filter(m => m.position >= start && m.position < end),
+          )
+        }
+      }
+    }
+  })
+})

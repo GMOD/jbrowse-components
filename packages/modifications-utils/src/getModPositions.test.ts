@@ -240,3 +240,40 @@ test('getModPositions treats N as matching every base', () => {
   ])
   expect(getModPositions('N+m,9', 'ACGT', 1)[0]!.positions).toEqual([3])
 })
+
+// The calls ahead of a window are tallied over the read's bytes in 64 KiB
+// chunks, falling back to a per-base count where a chunk is not all ASCII.
+describe('a window keeps the whole walk’s calls and ML offsets', () => {
+  function calls(seq: string, strand: number, lo = 0, hi = seq.length) {
+    const nC = seq.split(strand === -1 ? 'G' : 'C').length - 1
+    const mm = `C+m,${Array.from({ length: nC }, (_, i) => i % 3).join(',')}`
+    return getModPositions(mm, seq, strand, lo, hi).flatMap(m =>
+      m.positions.map((p, idx) => {
+        const order = strand === -1 ? m.positions.length - 1 - idx : idx
+        return [p, m.probStart + order * m.probStride]
+      }),
+    )
+  }
+
+  test.each([
+    ['spanning several chunks', 'ACGTTGCA'.repeat(20_000)],
+    ['with a non-ASCII base', 'ACGTÉGCA'.repeat(50)],
+  ])('on a read %s', (_, seq) => {
+    const len = seq.length
+    for (const strand of [1, -1]) {
+      const whole = calls(seq, strand)
+      expect(whole.length).toBeGreaterThan(10)
+      for (const [lo, hi] of [
+        [0, 7],
+        [3, len - 5],
+        [len - 70, len],
+        [65_530, 65_545],
+        [131_068, 131_080],
+      ] as const) {
+        expect(calls(seq, strand, lo, hi)).toEqual(
+          whole.filter(([p]) => p! >= lo && p! < hi),
+        )
+      }
+    }
+  })
+})

@@ -1,12 +1,6 @@
-import {
-  CIGAR_D,
-  CIGAR_EQ,
-  CIGAR_M,
-  CIGAR_N,
-  CIGAR_X,
-  getNextRefPos,
-} from '@jbrowse/cigar-utils'
+import { getNextRefPos } from '@jbrowse/cigar-utils'
 
+import type { ReadWindow } from '@jbrowse/cigar-utils'
 import type { ModWithPositions } from '@jbrowse/modifications-utils'
 
 /**
@@ -61,6 +55,10 @@ import type { ModWithPositions } from '@jbrowse/modifications-utils'
  * was declined at ~1.1x, and a loss below three distinct groups —
  * `cigarOpDensity.bench.ts` and the same-base merge's split both say the walk
  * phase is bound by per-call work rather than by traversal.
+ *
+ * **The positions must come from `getModPositions` cut to `window`**, and the
+ * walk covers that window alone: it starts at the window's first op, and its
+ * running best spans the window's reference offsets rather than the read's.
  */
 export function forEachMaxProbMod(
   modifications: readonly ModWithPositions[],
@@ -68,32 +66,18 @@ export function forEachMaxProbMod(
   mlBytes: ArrayLike<number> | undefined,
   ops: ArrayLike<number>,
   fstrand: -1 | 0 | 1,
+  window: ReadWindow,
   cb: (refPos: number, mod: ModWithPositions, prob: number) => void,
 ) {
-  if (modifications.length === 0) {
+  const { refStart } = window
+  const size = window.refEnd - refStart
+  if (modifications.length === 0 || size === 0) {
     return
   }
   const isReverse = fstrand === -1
-  // The read's reference span bounds every offset getNextRefPos can emit, so
-  // one dense array covers the read with no bounds test in the hot loop.
-  let span = 0
-  for (let i = 0, l = ops.length; i < l; i++) {
-    const packed = ops[i]!
-    const op = packed & 0xf
-    if (
-      op === CIGAR_M ||
-      op === CIGAR_D ||
-      op === CIGAR_N ||
-      op === CIGAR_EQ ||
-      op === CIGAR_X
-    ) {
-      span += packed >>> 4
-    }
-  }
-  const best = new Uint16Array(span + 1)
-  // Track the touched range so the emit loop scans the called part of the read
-  // rather than all of it — a 50 kb read with calls in one 2 kb stretch would
-  // otherwise walk 48 kb of zeroes.
+  const best = new Uint16Array(size)
+  // Track the touched range so the emit loop scans the called part of the
+  // window rather than all of it.
   let firstRef = -1
   let lastRef = -1
 
@@ -116,49 +100,61 @@ export function forEachMaxProbMod(
     if (end - m === 1) {
       const { probStart, probStride } = mod
       const tag = (m + 1) << 8
-      getNextRefPos(ops, positions, (ref, idx) => {
-        const mmOrder = isReverse ? posLen - 1 - idx : idx
-        const byte = mlBytes?.[probStart + mmOrder * probStride] ?? 0
-        const prev = best[ref]!
-        if (prev === 0 || (prev & 0xff) < byte) {
-          best[ref] = tag | byte
-          if (firstRef < 0 || ref < firstRef) {
-            firstRef = ref
+      getNextRefPos(
+        ops,
+        positions,
+        (ref, idx) => {
+          const at = ref - refStart
+          const mmOrder = isReverse ? posLen - 1 - idx : idx
+          const byte = mlBytes?.[probStart + mmOrder * probStride] ?? 0
+          const prev = best[at]!
+          if (prev === 0 || (prev & 0xff) < byte) {
+            best[at] = tag | byte
+            if (firstRef < 0 || at < firstRef) {
+              firstRef = at
+            }
+            if (at > lastRef) {
+              lastRef = at
+            }
           }
-          if (ref > lastRef) {
-            lastRef = ref
-          }
-        }
-      })
+        },
+        window,
+      )
     } else {
       const groupStart = m
       const groupEnd = end
-      getNextRefPos(ops, positions, (ref, idx) => {
-        const mmOrder = isReverse ? posLen - 1 - idx : idx
-        // First maximum wins, which is how the per-entry walks resolved a tie
-        // between two types of the same group: the later one needed a strictly
-        // greater byte to displace the earlier.
-        let bestByte = -1
-        let bestIdx = groupStart
-        for (let k = groupStart; k < groupEnd; k++) {
-          const g = modifications[k]!
-          const byte = mlBytes?.[g.probStart + mmOrder * g.probStride] ?? 0
-          if (byte > bestByte) {
-            bestByte = byte
-            bestIdx = k
+      getNextRefPos(
+        ops,
+        positions,
+        (ref, idx) => {
+          const at = ref - refStart
+          const mmOrder = isReverse ? posLen - 1 - idx : idx
+          // First maximum wins, which is how the per-entry walks resolved a tie
+          // between two types of the same group: the later one needed a
+          // strictly greater byte to displace the earlier.
+          let bestByte = -1
+          let bestIdx = groupStart
+          for (let k = groupStart; k < groupEnd; k++) {
+            const g = modifications[k]!
+            const byte = mlBytes?.[g.probStart + mmOrder * g.probStride] ?? 0
+            if (byte > bestByte) {
+              bestByte = byte
+              bestIdx = k
+            }
           }
-        }
-        const prev = best[ref]!
-        if (prev === 0 || (prev & 0xff) < bestByte) {
-          best[ref] = ((bestIdx + 1) << 8) | bestByte
-          if (firstRef < 0 || ref < firstRef) {
-            firstRef = ref
+          const prev = best[at]!
+          if (prev === 0 || (prev & 0xff) < bestByte) {
+            best[at] = ((bestIdx + 1) << 8) | bestByte
+            if (firstRef < 0 || at < firstRef) {
+              firstRef = at
+            }
+            if (at > lastRef) {
+              lastRef = at
+            }
           }
-          if (ref > lastRef) {
-            lastRef = ref
-          }
-        }
-      })
+        },
+        window,
+      )
     }
     m = end
   }
@@ -166,11 +162,15 @@ export function forEachMaxProbMod(
   if (firstRef < 0) {
     return
   }
-  for (let ref = firstRef; ref <= lastRef; ref++) {
-    const packed = best[ref]!
+  for (let at = firstRef; at <= lastRef; at++) {
+    const packed = best[at]!
     if (packed === 0) {
       continue
     }
-    cb(ref, modifications[(packed >>> 8) - 1]!, ((packed & 0xff) + 0.5) / 256)
+    cb(
+      at + refStart,
+      modifications[(packed >>> 8) - 1]!,
+      ((packed & 0xff) + 0.5) / 256,
+    )
   }
 }

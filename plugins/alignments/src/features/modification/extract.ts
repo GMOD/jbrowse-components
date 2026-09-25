@@ -7,6 +7,7 @@ import {
   CIGAR_S,
   CIGAR_X,
   SAM_FLAG_SECOND_IN_PAIR,
+  refWindowToRead,
 } from '@jbrowse/cigar-utils'
 import {
   methylated5hmC,
@@ -129,7 +130,18 @@ export function extractModifications(
   if (!seq) {
     return
   }
-  const modifications = getModPositions(mmTag, seq, strand)
+  const window = refWindowToRead(
+    cigarOps,
+    region.start - featureStart,
+    region.end - featureStart,
+  )
+  const modifications = getModPositions(
+    mmTag,
+    seq,
+    strand,
+    window.readStart,
+    window.readEnd,
+  )
   const fillUnmarked = !!colorBy.modifications?.fillUnmarked
 
   // fillUnmarked hands 5mC/5hmC to extractMethylation (the getMethBins context
@@ -160,22 +172,20 @@ export function extractModifications(
       getModProbabilityBytes(feature),
       cigarOps,
       strand,
+      window,
       (refPos, { type, base }, prob) => {
         // twoColor renders every call, painting low-confidence ones in the
         // unmethylated color (with prob = 1-prob = the unmodified confidence);
         // default mode hides calls below the threshold and always paints the mod
         // color at full prob. `isMeth` unifies both without an intermediate alloc.
-        const position = featureStart + refPos
         if (
-          position >= region.start &&
-          position < region.end &&
           isModificationTypeVisible(colorBy.modifications, type) &&
           (twoColor || prob >= modThreshold)
         ) {
           const isMeth = !twoColor || prob > 0.5
           modificationsData.push({
             readIndex,
-            position,
+            position: featureStart + refPos,
             base,
             modType: type,
             strand: modStrand,
@@ -194,6 +204,8 @@ export function extractModifications(
   // building the scaled `number[]` unconditionally allocated one per read,
   // thousands of entries on a nanopore read, and discarded it in every mode but
   // fill-unmarked.
+  //
+  // Cut to the region, so `extractMethylation` must be handed the same one.
   return {
     modifications,
     probabilities: fillUnmarked ? getModProbabilities(feature) : undefined,
@@ -201,6 +213,7 @@ export function extractModifications(
     seq,
     fstrand: strand,
     flen: feature.get('end') - feature.get('start'),
+    window,
   }
 }
 
