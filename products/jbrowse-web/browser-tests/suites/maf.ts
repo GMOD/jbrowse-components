@@ -5,6 +5,7 @@ import {
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
+import { dualSnapshot } from '../snapshot.ts'
 
 import type { TestSuite } from '../types.ts'
 import type { Page } from 'puppeteer'
@@ -52,6 +53,75 @@ const fitToHeightSpec = {
       assembly: 'volvox',
       loc: 'ctgA:1-4000',
       tracks: [{ trackId: 'volvox_maf' }],
+    },
+  ],
+}
+
+const sourceChromSpec = {
+  views: [
+    {
+      type: 'LinearGenomeView',
+      assembly: 'volvox',
+      loc: 'ctgA:1-4000',
+      tracks: [
+        {
+          trackId: 'volvox_maf',
+          displaySnapshot: {
+            type: 'LinearMafDisplay',
+            colorByChromosome: true,
+          },
+        },
+      ],
+    },
+  ],
+}
+
+// The config's volvox MAF with a zoom-out tier: one record per alignment block
+// per species, scored by identity to the reference. Root-relative uris, since
+// a spec's sessionTracks never pass through the config's `addRelativeUris`.
+const SUMMARY_TRACK = 'volvox_maf_summary'
+const summarySpec = {
+  sessionTracks: [
+    {
+      type: 'MafTrack',
+      trackId: SUMMARY_TRACK,
+      name: SUMMARY_TRACK,
+      assemblyNames: ['volvox'],
+      adapter: {
+        type: 'MafTabixAdapter',
+        bedGzLocation: {
+          uri: '/test_data/volvox/volvox.maf.bed.gz',
+          locationType: 'UriLocation',
+        },
+        index: {
+          indexType: 'TBI',
+          location: {
+            uri: '/test_data/volvox/volvox.maf.bed.gz.tbi',
+            locationType: 'UriLocation',
+          },
+        },
+        summaryAdapter: {
+          type: 'BedTabixAdapter',
+          bedGzLocation: {
+            uri: '/test_data/volvox/volvox.maf.summary.bed.gz',
+            locationType: 'UriLocation',
+          },
+          index: {
+            location: {
+              uri: '/test_data/volvox/volvox.maf.summary.bed.gz.tbi',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+      },
+    },
+  ],
+  views: [
+    {
+      type: 'LinearGenomeView',
+      assembly: 'volvox',
+      loc: 'ctgA:1-50001',
+      tracks: [{ trackId: SUMMARY_TRACK }],
     },
   ],
 }
@@ -273,6 +343,31 @@ const suite: TestSuite = {
         if (await page.$('[data-testid="vertical-scrollbar"]')) {
           throw new Error('fit-to-height rendered a scrollbar')
         }
+      },
+    },
+
+    // The rows' span marks on the backend canvas, which the cross-backend gate
+    // holds to one another.
+    {
+      name: 'source chromosome rows',
+      fn: async page => {
+        await navigateWithSessionSpec(page, sourceChromSpec)
+        await waitForDisplayDrawn(page, 'volvox_maf-LinearMafDisplay')
+        await waitForDataLoaded(page)
+        await dualSnapshot(page, 'maf-source-chrom-canvas', CANVAS)
+      },
+    },
+    {
+      name: 'summary tier bars',
+      fn: async page => {
+        await navigateWithSessionSpec(page, summarySpec)
+        await waitForDisplayDrawn(page, `${SUMMARY_TRACK}-LinearMafDisplay`)
+        await waitForDataLoaded(page)
+        await dualSnapshot(
+          page,
+          'maf-summary-canvas',
+          `[data-display-id^="${SUMMARY_TRACK}-LinearMafDisplay"] > canvas`,
+        )
       },
     },
   ],
