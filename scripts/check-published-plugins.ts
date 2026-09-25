@@ -1,5 +1,7 @@
 // Reports which plugins in the published store still work against this build of
-// the ABI, by reading the bundles rather than their source.
+// the ABI, by reading the bundles rather than their source. Also the one
+// refresher of `website/plugins.json`, the snapshot the public store page is
+// prerendered from, since this is the run that already has the manifest.
 //
 //   node --experimental-strip-types scripts/check-published-plugins.ts
 //   node --experimental-strip-types scripts/check-published-plugins.ts --json
@@ -14,7 +16,8 @@
 // the store gains an entry. So the useful signal is not "does anything break"
 // (something usually does) but "did the answer change since anyone last looked",
 // and abi-watch.yml runs `--check` weekly for exactly that. `--write` refreshes
-// the baseline; commit it with a message saying which plugin moved and why.
+// the baseline and the site snapshot; commit them with a message saying which
+// plugin moved and why.
 //
 // The baseline is also the only committed copy of a number the release
 // announcement quotes. It said "one of the fourteen breaks against this build:
