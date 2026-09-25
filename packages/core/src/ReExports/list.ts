@@ -195,6 +195,7 @@ export default [
   '@jbrowse/core/ui/AddCustomPluginDialog',
   '@jbrowse/core/ui/AddGenomePane',
   '@jbrowse/core/ui/AppLogo',
+  '@jbrowse/core/ui/AppReadyMarker',
   '@jbrowse/core/ui/BaseTooltip',
   '@jbrowse/core/ui/buildExtraTrackMenuItems',
   '@jbrowse/core/ui/CascadingMenuButton',

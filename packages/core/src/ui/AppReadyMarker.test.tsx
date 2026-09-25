@@ -2,7 +2,7 @@ import { render } from '@testing-library/react'
 
 import AppReadyMarker from './AppReadyMarker.tsx'
 
-import type { AbstractSessionModel } from '@jbrowse/core/util/types'
+import type { AbstractSessionModel } from '../util/types/index.ts'
 
 // The marker reads the census CONTRACT — each view's declared
 // `ownViews`/`ownTracks` — so what these tests pin is the reduction: the phase

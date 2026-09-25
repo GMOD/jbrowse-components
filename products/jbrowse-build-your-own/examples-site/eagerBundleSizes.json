@@ -1,15 +1,15 @@
 {
   "index": {
     "chunks": 236,
-    "gzipKb": 421
+    "gzipKb": 422
   },
   "a-plot-from-json": {
     "chunks": 239,
-    "gzipKb": 422
+    "gzipKb": 423
   },
   "a-table-of-calls": {
     "chunks": 236,
-    "gzipKb": 421
+    "gzipKb": 422
   },
   "color-and-group-by-a-field": {
     "chunks": 238,
@@ -17,59 +17,59 @@
   },
   "controlling-the-view": {
     "chunks": 240,
-    "gzipKb": 425
+    "gzipKb": 426
   },
   "gene-lanes": {
     "chunks": 316,
-    "gzipKb": 539
+    "gzipKb": 540
   },
   "genome-by-name": {
     "chunks": 236,
-    "gzipKb": 420
+    "gzipKb": 421
   },
   "highlight-a-region": {
     "chunks": 236,
-    "gzipKb": 421
+    "gzipKb": 422
   },
   "loading-and-errors": {
     "chunks": 235,
-    "gzipKb": 420
+    "gzipKb": 421
   },
   "local-files": {
     "chunks": 235,
-    "gzipKb": 420
+    "gzipKb": 421
   },
   "multiple-tracks": {
     "chunks": 227,
-    "gzipKb": 413
+    "gzipKb": 414
   },
   "removing-material-ui": {
     "chunks": 234,
-    "gzipKb": 420
+    "gzipKb": 421
   },
   "scalebar-and-labels": {
     "chunks": 237,
-    "gzipKb": 422
+    "gzipKb": 423
   },
   "search-by-name": {
     "chunks": 238,
-    "gzipKb": 423
+    "gzipKb": 424
   },
   "svg-figures": {
     "chunks": 242,
-    "gzipKb": 428
+    "gzipKb": 429
   },
   "synteny": {
     "chunks": 342,
-    "gzipKb": 576
+    "gzipKb": 577
   },
   "track-settings": {
     "chunks": 236,
-    "gzipKb": 421
+    "gzipKb": 422
   },
   "ultraminimal": {
     "chunks": 227,
-    "gzipKb": 413
+    "gzipKb": 414
   },
   "web-workers": {
     "chunks": 235,

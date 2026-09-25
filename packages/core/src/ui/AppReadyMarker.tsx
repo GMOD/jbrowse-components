@@ -1,11 +1,12 @@
-import { openTracks, openViews } from '@jbrowse/core/util/openViews'
 import { observer } from 'mobx-react'
+
+import { openTracks, openViews } from '../util/openViews.ts'
 
 import type {
   AbstractSessionModel,
   AbstractTrackModel,
   AbstractViewModel,
-} from '@jbrowse/core/util/types'
+} from '../util/types/index.ts'
 
 /**
  * The per-view flags and per-display phase the marker reads beyond the census

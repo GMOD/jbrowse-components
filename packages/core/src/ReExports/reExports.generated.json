@@ -1500,6 +1500,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/ui/AppReadyMarker": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/ui/BaseTooltip": {
       "package": "@jbrowse/core",
       "names": [

@@ -1,4 +1,4 @@
-export { default as AppReadyMarker } from './AppReadyMarker.tsx'
+export { default as AppReadyMarker } from '@jbrowse/core/ui/AppReadyMarker'
 export { default as AboutDialog } from './AboutDialog.tsx'
 export type { AboutPanelProps } from './util.ts'
 export { default as Drawer } from './Drawer.tsx'

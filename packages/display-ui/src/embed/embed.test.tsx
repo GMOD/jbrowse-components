@@ -52,8 +52,12 @@ const FakeView = types
     },
   }))
 
+const FakeSession = types
+  .model({ views: types.array(FakeView) })
+  .volatile(() => ({ rpcManager: {}, configuration: {} }))
+
 function fakeView(status: ViewStatus) {
-  const view = FakeView.create()
+  const view = FakeSession.create({ views: [{}] }).views[0]!
   view.setStatus(status)
   return view
 }
@@ -142,7 +146,14 @@ test('children draw only once the view is ready, ahead of the tracks', () => {
 
   const stack = container.firstElementChild!
   expect(stack.firstElementChild).toBe(screen.getByTestId('overlay'))
-  expect(stack.children).toHaveLength(3)
+  expect(stack.lastElementChild).toBe(screen.getByTestId('app-ready-marker'))
+  expect(stack.children).toHaveLength(4)
+})
+
+test("a stack publishes its session's readiness for capture tools to wait on", () => {
+  const view = fakeView({ type: 'ready' })
+  render(<TrackStack view={view} />)
+  expect(screen.getByTestId('app-ready-marker').dataset.appPhase).toBe('ready')
 })
 
 test('an error is an alert naming what failed', () => {

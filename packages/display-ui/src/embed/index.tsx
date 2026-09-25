@@ -1,10 +1,12 @@
 import { Fragment, Suspense } from 'react'
 
+import AppReadyMarker from '@jbrowse/core/ui/AppReadyMarker'
 import {
   useSlowLoad,
   useStalled,
   useWidthSetter,
 } from '@jbrowse/core/util/hooks'
+import { getSession } from '@jbrowse/core/util/mstUtils'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { useResizeDrag } from '@jbrowse/core/util/useResizeDrag'
 import { observer } from 'mobx-react'
@@ -231,6 +233,7 @@ export const TrackStack = observer(function TrackStack({
       ) : (
         <ViewStatus view={view} />
       )}
+      <AppReadyMarker session={getSession(view)} />
     </div>
   )
 })

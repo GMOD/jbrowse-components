@@ -38,7 +38,7 @@ const LOADING_OVERLAY = '[data-testid="loading-overlay"]'
 
 describe('the readiness contract', () => {
   it('is published by AppReadyMarker, which claims it', () => {
-    const marker = read('packages/product-core/src/ui/AppReadyMarker.tsx')
+    const marker = read('packages/core/src/ui/AppReadyMarker.tsx')
     expect(marker).toContain('data-app-phase')
     // the comment that says this component owns the contract, so a future
     // reader is not left guessing which of the three is canonical
@@ -63,7 +63,7 @@ describe('the readiness contract', () => {
   // are the contract, and a rename in one file splits the readers silently,
   // presenting as a gate that never passes rather than as a broken build.
   it('the census attributes are published and read under the same names', () => {
-    const marker = read('packages/product-core/src/ui/AppReadyMarker.tsx')
+    const marker = read('packages/core/src/ui/AppReadyMarker.tsx')
     const gate = read('products/jbrowse-capture/src/sessionGate.ts')
     for (const [attr, key] of [
       ['data-app-views', 'appViews'],
