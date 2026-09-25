@@ -108,6 +108,74 @@ test('a delegated .views() block lands on the model page, in chain position', ()
   ])
 })
 
+// A callback that CALLS the shared block — `.views(self => sharedViews(self))`,
+// `.volatile(() => createVolatileState())` — is the same delegation as naming it,
+// and is what an author writes when the block declares its own host type or takes
+// no `self`. It resolved to nothing, and an ArrowFunction is not a shape
+// `unresolvedDelegation` fires on, so the page lost members with no word said,
+// which is the outcome the fatal exists to prevent. It cost four of wiggle's
+// getters and methods and every volatile the add-track form has.
+test('a delegated block the callback APPLIES lands on the page too', () => {
+  const helper = write(
+    'hostViews.ts',
+    `export function hostViews(self: { a: number }) {
+       return {
+         /**
+          * #getter
+          */
+         get applied() {
+           return self.a
+         },
+         /**
+          * #method
+          */
+         appliedMethod() {
+           return self.a
+         },
+       }
+     }`,
+  )
+  const model = write(
+    'model.ts',
+    `import { hostViews } from './hostViews.ts'
+     ${HEADER}
+     export function WidgetModel() {
+       return types
+         .model({})
+         .views(self => hostViews(self))
+     }`,
+  )
+
+  expect(members(extract([model, helper]))).toEqual([
+    'getter applied @ model.ts',
+    'method appliedMethod @ model.ts',
+  ])
+})
+
+// The add-track form's shape, and the reason this one failed worse: a volatile
+// carries no member tag, so the structural pass is the only thing that finds it
+// and no coverage-gap line names it when nothing does. The page had no Volatiles
+// section at all.
+test('a volatile block the callback CALLS is recovered structurally', () => {
+  const model = write(
+    'model.ts',
+    `function createVolatileState() {
+       return { pending: undefined as string | undefined, count: 0 }
+     }
+     ${HEADER}
+     export function WidgetModel() {
+       return types
+         .model({})
+         .volatile(() => createVolatileState())
+     }`,
+  )
+
+  expect(members(extract([model]))).toEqual([
+    'volatile pending @ model.ts',
+    'volatile count @ model.ts',
+  ])
+})
+
 test('the extracted model documents exactly what the inline one did', () => {
   const inline = write(
     'inline.ts',

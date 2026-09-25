@@ -636,13 +636,23 @@ function delegatedBlockAt(
   return obj ? { kind, obj } : undefined
 }
 
-// The members object an argument ultimately yields. Three shapes, all of which
+// The members object an argument ultimately yields. Four shapes, all of which
 // `memberObjectLiteral` gives up on: a bare identifier naming the callback
 // (`.views(sharedViews)`), a callback that returns an identifier naming a shared
-// object (`.volatile(() => CONSTANTS)`), and a factory call returning the
-// callback (`.views(makeViews(schema))`) — the shape a block that needs an
-// argument beyond `self` takes, and the one this would otherwise make fatal
-// while encouraging people to extract blocks in the first place.
+// object (`.volatile(() => CONSTANTS)`), a factory call returning the callback
+// (`.views(makeViews(schema))`) — the shape a block that needs an argument
+// beyond `self` takes, and the one this would otherwise make fatal while
+// encouraging people to extract blocks in the first place — and a callback that
+// CALLS the shared one (`.views(self => sharedViews(self))`,
+// `.volatile(() => createVolatileState())`), which an author writes when the
+// shared block declares its own host type or takes no `self` at all.
+//
+// That last shape resolved to nothing, and an ArrowFunction is not what
+// `unresolvedDelegation` fires on, so it lost members with nothing said — the one
+// outcome the fatal check exists to prevent. It cost four of wiggle's getters and
+// methods, which at least showed up in the orphan-members coverage gap, and every
+// volatile the add-track form has, which showed up in no gap at all: they carry no
+// member tag, so the page simply had no Volatiles section.
 function delegatedMembersObject(
   checker: ts.TypeChecker,
   arg: ts.Expression,
@@ -652,8 +662,8 @@ function delegatedMembersObject(
   }
   if (ts.isArrowFunction(arg) || ts.isFunctionExpression(arg)) {
     const ret = returnedExpression(arg)
-    return ret && ts.isIdentifier(ret)
-      ? objectLiteralBehind(checker, ret)
+    return ret && (ts.isIdentifier(ret) || ts.isCallExpression(ret))
+      ? delegatedMembersObject(checker, ret)
       : undefined
   }
   return ts.isIdentifier(arg) ? objectLiteralBehind(checker, arg) : undefined
