@@ -28,9 +28,10 @@ are drawn:
 
 Merged draws the union rather than a choice: a stretch that codes in any
 transcript is full height, the rest of the exons are thin, and connector lines
-cross the gaps. So a gene takes one row without losing an exon that only a minor
-isoform carries, which is what separates it from the representative mode. It
-names no isoform and draws no **+N more** badge, since nothing is hidden.
+cross the gaps. A gene takes one row and keeps every exon, including one only a
+minor isoform carries — the representative mode drops that exon along with the
+isoform. Merged names no isoform and draws no **+N more** badge, since it hides
+nothing.
 
 The representative isoform is the one the annotation tags: `RefSeq Select` or
 `MANE Select` (NCBI), `MANE_Select` or `Ensembl_canonical` (Ensembl, GENCODE).
