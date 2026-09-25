@@ -5,6 +5,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { parseTaiIndex, queryBlockSpan } from '../BgzipTaffyAdapter/taiIndex.ts'
 
 import type { IndexData } from '../BgzipTaffyAdapter/types.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FileLocation, Region, StatusCallback } from '@jbrowse/core/util'
 
 /** A parsed `.tai` plus the size of the bgzf file it indexes. */
@@ -21,10 +22,11 @@ export interface TaiIndex {
 export async function readTaiIndex(
   taiLocation: FileLocation,
   gzLocation: FileLocation,
+  pluginManager?: PluginManager,
 ): Promise<TaiIndex> {
   const [text, { size }] = await Promise.all([
-    openLocation(taiLocation).readFile('utf8'),
-    openLocation(gzLocation).stat(),
+    openLocation(taiLocation, pluginManager).readFile('utf8'),
+    openLocation(gzLocation, pluginManager).stat(),
   ])
   return { index: parseTaiIndex(text), fileSize: size > 0 ? size : undefined }
 }
@@ -53,6 +55,7 @@ export async function readTaiSlice({
   start,
   end,
   location,
+  pluginManager,
   statusCallback,
   signal,
 }: {
@@ -62,6 +65,7 @@ export async function readTaiSlice({
   start: number
   end: number
   location: FileLocation
+  pluginManager?: PluginManager
   statusCallback?: StatusCallback
   signal?: AbortSignal
 }) {
@@ -78,7 +82,7 @@ export async function readTaiSlice({
     readLength,
   } = span
 
-  const file = openLocation(location)
+  const file = openLocation(location, pluginManager)
   const buffer = await unzip(
     await updateStatus(
       'Downloading alignments',

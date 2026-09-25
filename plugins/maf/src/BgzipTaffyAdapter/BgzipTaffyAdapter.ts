@@ -151,7 +151,11 @@ export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterC
 
   async doSetup(): Promise<SetupData> {
     const [tai, runLengthEncodeBases] = await Promise.all([
-      readTaiIndex(this.getConf('taiLocation'), this.getConf('tafGzLocation')),
+      readTaiIndex(
+        this.getConf('taiLocation'),
+        this.getConf('tafGzLocation'),
+        this.pluginManager,
+      ),
       this.readHeader(),
     ])
     return { ...tai, runLengthEncodeBases }
@@ -172,7 +176,7 @@ export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterC
    * retries.
    */
   async readHeader(): Promise<boolean> {
-    const file = openLocation(this.getConf('tafGzLocation'))
+    const file = openLocation(this.getConf('tafGzLocation'), this.pluginManager)
     // One bgzf block is at most 64KiB compressed, so this always spans a whole
     // one; `unzip` decodes the complete blocks and stops, ignoring the partial
     // tail.
@@ -188,6 +192,7 @@ export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterC
     return taiBlockFeatures({
       configure: this.configure,
       location: this.getConf('tafGzLocation'),
+      pluginManager: this.pluginManager,
       query,
       opts,
       // Streamed from a generator — no caching, immediately GC eligible.

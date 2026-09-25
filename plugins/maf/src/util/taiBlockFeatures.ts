@@ -13,6 +13,7 @@ import type {
 } from '../types.ts'
 import type { SourceResolver } from './parseAssemblyName.ts'
 import type { TaiIndex } from './taiSlice.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
 
 /**
@@ -55,12 +56,14 @@ export interface TaiBlockFeature {
 export function taiBlockFeatures<SETUP extends TaiIndex>({
   configure,
   location,
+  pluginManager,
   query,
   opts,
   parse,
 }: {
   configure: (opts?: MafAdapterOptions) => Promise<SETUP>
   location: FileLocation
+  pluginManager?: PluginManager
   query: Region
   opts: MafAdapterOptions | undefined
   parse: (
@@ -82,6 +85,7 @@ export function taiBlockFeatures<SETUP extends TaiIndex>({
       start: query.start,
       end: query.end,
       location,
+      pluginManager,
       statusCallback,
       signal,
     })

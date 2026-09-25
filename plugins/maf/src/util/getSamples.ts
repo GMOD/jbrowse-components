@@ -144,7 +144,7 @@ export async function getSamplesFromConfig(
   pluginManager?: PluginManager,
 ) {
   const treeNewick = nhLocation
-    ? await openLocation(nhLocation).readFile('utf8')
+    ? await openLocation(nhLocation, pluginManager).readFile('utf8')
     : undefined
 
   const configSamples = normalizeSamples(samplesConfig)

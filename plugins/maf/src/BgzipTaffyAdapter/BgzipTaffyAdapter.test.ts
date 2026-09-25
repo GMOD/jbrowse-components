@@ -1,3 +1,4 @@
+import * as io from '@jbrowse/core/util/io'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -719,6 +720,48 @@ describe('BgzipTaffyAdapter integration tests', () => {
     expect(first.get('start')).toBeGreaterThanOrEqual(0)
     expect(first.get('end')).toBeGreaterThan(first.get('start'))
     expect(first.get('alignments')).toBeDefined()
+  })
+
+  // Every read has to go through the plugin manager, which is what finds the
+  // internet account a login-gated file needs.
+  test('every file it reads is opened through the plugin manager', async () => {
+    const pluginManager = {} as ConstructorParameters<
+      typeof BgzipTaffyAdapter
+    >[2]
+    const open = jest.spyOn(io, 'openLocation')
+    const adapter = new BgzipTaffyAdapter(
+      configSchema.create({
+        tafGzLocation: {
+          localPath: require.resolve('../../test_data/celegans/chrI.taf.gz'),
+          locationType: 'LocalPathLocation',
+        },
+        taiLocation: {
+          localPath:
+            require.resolve('../../test_data/celegans/chrI.taf.gz.tai'),
+          locationType: 'LocalPathLocation',
+        },
+        nhLocation: {
+          localPath: require.resolve('../../test_data/celegans/ce10.7way.nh'),
+          locationType: 'LocalPathLocation',
+        },
+      }),
+      undefined,
+      pluginManager,
+    )
+    await adapter.getSamples()
+    await firstValueFrom(
+      adapter
+        .getFeatures({
+          assemblyName: 'ce10',
+          refName: 'chrI',
+          start: 3700,
+          end: 4000,
+        })
+        .pipe(toArray()),
+    )
+    expect(open.mock.calls.length).toBeGreaterThanOrEqual(5)
+    expect(open.mock.calls.filter(c => c[1] !== pluginManager)).toEqual([])
+    open.mockRestore()
   })
 
   test('adapter returns correct ref names', async () => {

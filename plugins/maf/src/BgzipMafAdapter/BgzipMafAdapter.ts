@@ -30,7 +30,11 @@ export default class BgzipMafAdapter extends MafAdapterBase<BgzipMafAdapterConfi
   private configure = cachedSetup({
     label: 'Downloading index',
     setup: () =>
-      readTaiIndex(this.getConf('taiLocation'), this.getConf('mafGzLocation')),
+      readTaiIndex(
+        this.getConf('taiLocation'),
+        this.getConf('mafGzLocation'),
+        this.pluginManager,
+      ),
   })
 
   private decoder = new TextDecoder()
@@ -44,6 +48,7 @@ export default class BgzipMafAdapter extends MafAdapterBase<BgzipMafAdapterConfi
     return taiBlockFeatures({
       configure: this.configure,
       location: this.getConf('mafGzLocation'),
+      pluginManager: this.pluginManager,
       query,
       opts,
       parse: (slice, _setup, resolve) =>
