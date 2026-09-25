@@ -2993,9 +2993,13 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "shorthand": "value",
-          "fieldScale": {
-            "score": "linear",
-            "*": "categorical"
+          "fieldPresets": {
+            "score": {
+              "scale": "linear"
+            },
+            "*": {
+              "scale": "categorical"
+            }
           }
         },
         {
@@ -3252,9 +3256,13 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "shorthand": "value",
-          "fieldScale": {
-            "score": "linear",
-            "*": "categorical"
+          "fieldPresets": {
+            "score": {
+              "scale": "linear"
+            },
+            "*": {
+              "scale": "categorical"
+            }
           }
         },
         {
@@ -3449,10 +3457,16 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "shorthand": "value",
-          "fieldScale": {
-            "insertSize": "threshold",
-            "insertSizeAndOrientation": "threshold",
-            "*": "categorical"
+          "fieldPresets": {
+            "insertSize": {
+              "scale": "threshold"
+            },
+            "insertSizeAndOrientation": {
+              "scale": "threshold"
+            },
+            "*": {
+              "scale": "categorical"
+            }
           }
         },
         {
@@ -3899,10 +3913,16 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "shorthand": "value",
-          "fieldScale": {
-            "insertSize": "threshold",
-            "insertSizeAndOrientation": "threshold",
-            "*": "categorical"
+          "fieldPresets": {
+            "insertSize": {
+              "scale": "threshold"
+            },
+            "insertSizeAndOrientation": {
+              "scale": "threshold"
+            },
+            "*": {
+              "scale": "categorical"
+            }
           }
         },
         {
@@ -4183,8 +4203,10 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "shorthand": "value",
-          "fieldScale": {
-            "*": "categorical"
+          "fieldPresets": {
+            "*": {
+              "scale": "categorical"
+            }
           }
         },
         {
@@ -4222,8 +4244,10 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "shorthand": "value",
-          "fieldScale": {
-            "*": "categorical"
+          "fieldPresets": {
+            "*": {
+              "scale": "categorical"
+            }
           }
         },
         {
@@ -4424,9 +4448,13 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "shorthand": "value",
-          "fieldScale": {
-            "score": "linear",
-            "*": "categorical"
+          "fieldPresets": {
+            "score": {
+              "scale": "linear"
+            },
+            "*": {
+              "scale": "categorical"
+            }
           }
         },
         {
@@ -4629,8 +4657,10 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "shorthand": "value",
-          "fieldScale": {
-            "*": "categorical"
+          "fieldPresets": {
+            "*": {
+              "scale": "categorical"
+            }
           }
         },
         {
@@ -4900,9 +4930,13 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "shorthand": "value",
-          "fieldScale": {
-            "source": "categorical",
-            "*": "threshold"
+          "fieldPresets": {
+            "source": {
+              "scale": "categorical"
+            },
+            "*": {
+              "scale": "threshold"
+            }
           }
         },
         {
@@ -5152,9 +5186,13 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "shorthand": "value",
-          "fieldScale": {
-            "source": "categorical",
-            "*": "threshold"
+          "fieldPresets": {
+            "source": {
+              "scale": "categorical"
+            },
+            "*": {
+              "scale": "threshold"
+            }
           }
         },
         {
@@ -5416,9 +5454,13 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "shorthand": "value",
-          "fieldScale": {
-            "source": "categorical",
-            "*": "threshold"
+          "fieldPresets": {
+            "source": {
+              "scale": "categorical"
+            },
+            "*": {
+              "scale": "threshold"
+            }
           }
         },
         {
@@ -5858,9 +5900,26 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "shorthand": "value",
-          "fieldScale": {
-            "ld": "threshold",
-            "*": "categorical"
+          "fieldPresets": {
+            "ld": {
+              "scale": "threshold",
+              "domain": [
+                "0.2",
+                "0.4",
+                "0.6",
+                "0.8"
+              ],
+              "range": [
+                "#357ebd",
+                "#46b8da",
+                "#5cb85c",
+                "#eea236",
+                "#d43f3a"
+              ]
+            },
+            "*": {
+              "scale": "categorical"
+            }
           }
         },
         {
@@ -6071,8 +6130,10 @@ export const configManifest: ConfigManifest = {
                     }
                   ],
                   "shorthand": "value",
-                  "fieldScale": {
-                    "*": "categorical"
+                  "fieldPresets": {
+                    "*": {
+                      "scale": "categorical"
+                    }
                   }
                 },
                 {
