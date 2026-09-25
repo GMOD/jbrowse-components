@@ -1152,12 +1152,13 @@ export function stateModelFactory(
         /**
          * #getter
          * Each link mark's size scale: its declared ends, the open ones the
-         * least and greatest the loaded regions met, so a value strokes at one
-         * width in every region; undefined for a mark whose size names no
-         * field.
+         * least and greatest the regions draw, so a value strokes at one width
+         * in every region; undefined for a mark whose size names no field.
+         * Over the drawn layers, as the colour ramp's domain is, so a hidden
+         * section leaves the stroke widths the way it leaves the key.
          */
         get sizeScales(): (LinkSizeScale | undefined)[] {
-          const payloads = [...self.featurePayloads.values()]
+          const payloads = [...self.rpcDataMap.values()]
           return self.conf.marks.map((_, i) => {
             let table: SizeScaleTable | undefined
             let lo = Infinity

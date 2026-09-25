@@ -2898,3 +2898,28 @@ test('a size scale unions its open end over the regions and keeps the pinned one
   ])
   expect(display.renderState.sizeScales).toEqual(display.sizeScales)
 })
+
+test('a hidden section leaves the link stroke domain the way it leaves the key', () => {
+  const { display } = createTestEnvironment([LINK], REGION, 'BedAdapter', {
+    facet: 'sample',
+  }).createDisplay()
+  display.setRpcData(
+    0,
+    {
+      layers: [
+        {
+          ...linkLayer([100, 300], [200, 400], [0, 0], ['ctgA'], [3, 50]),
+          row: Uint32Array.from([0, 1]),
+        },
+      ],
+      facet: [
+        { key: 'a', firstRow: 0, rowCount: 1 },
+        { key: 'b', firstRow: 1, rowCount: 1 },
+      ],
+    },
+    REGION,
+  )
+  expect(display.sizeScales[0]!.domain).toEqual([3, 100])
+  display.hideGroup('a')
+  expect(display.sizeScales[0]!.domain).toEqual([50, 100])
+})
