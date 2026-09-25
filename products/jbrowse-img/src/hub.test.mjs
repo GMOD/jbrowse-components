@@ -51,3 +51,46 @@ test('an unknown --track rejects with a not-found error', async () => {
     /not found in the config/,
   )
 })
+
+test("--track names the assembly's sequence track, modifiers and all", async () => {
+  for (const token of ['volvox-refseq', 'refseq']) {
+    const svg = await renderRegion({
+      config,
+      loc: 'ctgA:1-100',
+      noRasterize: true,
+      showTracks: [['track', [token, 'height:77']]],
+    })
+    assert.ok(svg.includes('volvox-refseq'), `${token} should open it`)
+  }
+})
+
+test('a bad --track fails before anything loads', async () => {
+  const unloadable = {
+    assemblies: [
+      {
+        name: 'volvox',
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'volvox-refseq',
+          adapter: {
+            type: 'IndexedFastaAdapter',
+            fastaLocation: { localPath: '/nonexistent/volvox.fa' },
+            faiLocation: { localPath: '/nonexistent/volvox.fa.fai' },
+          },
+        },
+      },
+    ],
+    tracks: [],
+  }
+  await assert.rejects(
+    renderRegion(
+      {
+        loc: 'ctgA:1-50000',
+        refseq: true,
+        showTracks: [['track', ['nonexistent']]],
+      },
+      unloadable,
+    ),
+    /--track "nonexistent" not found in the config/,
+  )
+})

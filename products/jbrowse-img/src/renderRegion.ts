@@ -349,6 +349,12 @@ function wrongViewTypeError(opts: Opts, suppliedType: string) {
   )
 }
 
+function sequenceTrackId({ name, sequence }: Config['assembly']) {
+  return typeof sequence.trackId === 'string'
+    ? sequence.trackId
+    : `${name}-ReferenceSequenceTrack`
+}
+
 // The trackIds `--track` named, each with the display modifiers that followed
 // it. The token is resolved to a real trackId (accepting the
 // assembly-name-prefix shorthand); a file flag's id was already assigned when
@@ -357,6 +363,10 @@ function resolvedShowTracks(
   showTracks: Entry[] | undefined,
   data: Config,
 ): OpenTrack[] {
+  const candidates = [
+    ...data.tracks,
+    { ...data.assembly.sequence, trackId: sequenceTrackId(data.assembly) },
+  ]
   return (showTracks ?? []).map(([, [trackInput, ...opts]]) => {
     if (!trackInput) {
       // a bare `--track` used to be skipped in silence, so the track the user
@@ -366,7 +376,7 @@ function resolvedShowTracks(
       )
     }
     return {
-      trackId: resolveTrackId(data.tracks, trackInput, data.assembly.name),
+      trackId: resolveTrackId(candidates, trackInput, data.assembly.name),
       opts,
     }
   })
@@ -427,6 +437,7 @@ const renderLinear: ModeRenderer = async ctx => {
   } = opts
 
   const { session } = model
+  const flagTracks = resolvedShowTracks(showTracks, data)
   // the view arrives with an `init` the session carried already applied, so
   // `--loc` below is read against a positioned view and wins over it
   const view = await addLaunchView<LinearGenomeViewModel, 'LinearGenomeView'>(
@@ -475,10 +486,7 @@ const renderLinear: ModeRenderer = async ctx => {
   }
 
   if (refseq) {
-    const seqTrackId = data.assembly.sequence.trackId
-    if (typeof seqTrackId === 'string') {
-      await view.launchTrack(seqTrackId)
-    }
+    await view.launchTrack(sequenceTrackId(data.assembly))
   }
 
   // Hosted trackIds from --track (present in a --hub/--config config) go first,
@@ -488,10 +496,7 @@ const renderLinear: ModeRenderer = async ctx => {
   // same path: the display category comes from the track's own type in the
   // config, so modifiers (height:, color:, …) route to the right display slots
   // whichever way the track got there.
-  const toOpen = [
-    ...resolvedShowTracks(showTracks, data),
-    ...(data.openTracks ?? []),
-  ]
+  const toOpen = [...flagTracks, ...(data.openTracks ?? [])]
   for (const { trackId, opts } of toOpen) {
     await applyDisplayOpts(
       view,
