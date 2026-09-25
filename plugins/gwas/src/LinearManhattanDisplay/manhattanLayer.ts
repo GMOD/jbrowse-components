@@ -2,7 +2,7 @@ import { LD_ROLE_FIELD } from '../GWASAdapter/ldFields.ts'
 
 import type {
   ColorEncoding,
-  CoreEncodeFeaturesArgs,
+  CoreGetEncodedLayersArgs,
   Encoded,
   EncodedChannels,
   LayerRequest,
@@ -16,7 +16,7 @@ export const MANHATTAN_LANES = ['y', 'color', 'glyph', 'index'] as const
 export type ManhattanChannels = Encoded<(typeof MANHATTAN_LANES)[number]>
 
 /** The request a region's points came back under, which a click sends again. */
-export type ManhattanRequest = Omit<CoreEncodeFeaturesArgs, 'byteLimit'>
+export type ManhattanRequest = Omit<CoreGetEncodedLayersArgs, 'byteLimit'>
 
 const SV_SHAPE: ShapeEncoding = {
   field: 'svtype',
@@ -62,7 +62,7 @@ export function manhattanChannels(
   const { y, color, glyph } = layer ?? {}
   if (!layer || !y || !color || !glyph) {
     throw new Error(
-      'CoreEncodeFeatures answered without the lanes the Manhattan layer asked for',
+      'CoreGetEncodedLayers answered without the lanes the Manhattan layer asked for',
     )
   }
   return { ...layer, y, color, glyph }

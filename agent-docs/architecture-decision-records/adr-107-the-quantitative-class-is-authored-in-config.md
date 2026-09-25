@@ -66,7 +66,7 @@ Four moves, one class:
   `range` of glyph names, resolved through the one categorical arm, and ships
   its own table for the legend (2026-09-09; the scale is a fraction of the
   jexl ternary's cost, `MARK_ENCODING.md` §"The jexl channel, measured").
-  `CoreEncodeFeatures` takes
+  `CoreGetEncodedLayers` takes
   `{ adapterConfig, region, layers[], filters?, byteLimit? }` — a layer is an
   encoding and the **lanes** its shape reads — runs `encodeFeatures` per layer
   and returns one `EncodedChannels` per mark: columnar typed arrays for the

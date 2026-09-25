@@ -1,7 +1,7 @@
 import type { FeatureDensity } from '../data_adapters/BaseAdapter/featureDensity.ts'
 import type {
-  CoreEncodeFeaturesArgs,
-  EncodedFeaturesResult,
+  CoreGetEncodedLayersArgs,
+  EncodedLayersResult,
 } from '../util/markEncodingTypes.ts'
 import type { StatusCallback } from '../util/progress.ts'
 import type { UnwrapRpcResult } from '../util/rpc.ts'
@@ -54,17 +54,17 @@ export interface RpcRegistry {
     // deserializeReturn rebuilds each of these into a SimpleFeature
     wire: SimpleFeatureSerialized[]
   }
-  CoreEncodeFeatures: {
-    args: CoreEncodeFeaturesArgs
+  CoreGetEncodedLayers: {
+    args: CoreGetEncodedLayersArgs
     // wrapped in rpcResult so postMessage transfers its channel buffers; the
     // refusal arm owns none
-    return: EncodedFeaturesResult | RegionTooLargeResult
-    transferables: EncodedFeaturesResult
+    return: EncodedLayersResult | RegionTooLargeResult
+    transferables: EncodedLayersResult
   }
   CoreGetEncodedFeature: {
     // the request whose answer holds the instance, less the byte gate it
     // already cleared
-    args: Omit<CoreEncodeFeaturesArgs, 'byteLimit'> & {
+    args: Omit<CoreGetEncodedLayersArgs, 'byteLimit'> & {
       layer: number
       featureIndex: number
     }

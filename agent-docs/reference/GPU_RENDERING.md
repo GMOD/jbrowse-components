@@ -767,7 +767,7 @@ GWAS's Manhattan does **not** compose `linearWiggleDisplayModelFactory`. It buil
 its own model — `BaseDisplay` + `TrackHeightMixin()` + `MultiRegionDisplayMixin()`
 + `ScoreFieldConfigMixin()` — and declares its own config schema over
 `scoreAxisConfigSchemaFields`, all from `@jbrowse/wiggle-core`. It fetches
-through `CoreEncodeFeatures` as the mark display does, one `point` layer of
+through `CoreGetEncodedLayers` as the mark display does, one `point` layer of
 per-feature points, implements its own `ManhattanRenderingBackend` with its own
 pass, and is zoom-independent:
 it declares no `zoomFetchArgs` and its payload carries no `zoomRange`, so no

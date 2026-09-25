@@ -773,8 +773,8 @@ to each other by a sweep test. See
 ## In-tree references
 
 - `plugins/marks/src/LinearMarkDisplay/` - the config-declared display: one
-  `CoreEncodeFeatures` call per region, a mark list built from the `marks` slot,
-  the legend off the encoder's scale tables
+  `CoreGetEncodedLayers` call per region, a mark list built from the `marks`
+  slot, the legend off the encoder's scale tables
 - `plugins/gwas/src/LinearManhattanDisplay/` - a real feature-plotting display
   (scored scatter) on the shared `pointMark`, its worker on `encodeFeatures`
   with LD's colour and r² as reader channels, plus an indexed hit test (this

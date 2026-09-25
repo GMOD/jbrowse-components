@@ -26,7 +26,7 @@ import { closure } from './moduleClosure.ts'
 //
 // `markEncodingTypes.ts` gets no headroom at all, because it is the file whose
 // own header promises this check: it exists so `RpcRegistry.ts` can name
-// CoreEncodeFeatures' wire shape without pulling render-core's graph through
+// CoreGetEncodedLayers' wire shape without pulling render-core's graph through
 // it, and every leaf that reaches the registry pays for an edge added here.
 // Its three are itself, `BaseAdapter/zoomRange.ts`, which is a module for one
 // interface for this reason — `types.ts` beside it carries the status and

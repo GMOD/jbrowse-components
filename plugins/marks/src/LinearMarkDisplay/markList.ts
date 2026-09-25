@@ -11,7 +11,7 @@ import type { MarkType } from './configSchema.ts'
 import type { LinkShape } from './markVocabulary.ts'
 import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter/zoomRange'
 import type {
-  CoreEncodeFeaturesArgs,
+  CoreGetEncodedLayersArgs,
   EncodedChannels,
   FacetSection,
   HitIndexed,
@@ -78,7 +78,7 @@ export interface MarkRegionData {
    * takes again to name the feature behind an instance. Absent on a payload no
    * worker fetch produced, the density sidecar's.
    */
-  request?: Omit<CoreEncodeFeaturesArgs, 'byteLimit'>
+  request?: Omit<CoreGetEncodedLayersArgs, 'byteLimit'>
   /** The sections a facet stacked the layers' rows into. */
   facet?: FacetSection[]
   zoomRange?: ZoomRange

@@ -22,7 +22,7 @@ import { resolve } from 'node:path'
 //               RenderWiggleData executor's work for one region
 //   control     the same, declared a second time
 //   marks       getFeaturesArray, then encodeFeatures over the bar mark's
-//               lanes — the CoreEncodeFeatures executor's work for
+//               lanes — the CoreGetEncodedLayers executor's work for
 //               `{ mark: 'bar', encoding: { y: 'score' } }`
 //   marks-mean  the same fetch through `bin: auto` and `aggregate: mean` first,
 //               which is what a density-style declaration costs on top

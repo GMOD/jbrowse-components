@@ -9,7 +9,7 @@ import { createProgressReporter } from '../../util/progress.ts'
 import { measureRegionBytes } from '../byteBudget.ts'
 import { layerFeatures } from './layerFeatures.ts'
 
-import type { EncodedFeaturesResult } from '../../util/markEncoding.ts'
+import type { EncodedLayersResult } from '../../util/markEncoding.ts'
 import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 
 /**
@@ -21,10 +21,10 @@ import type { RpcExecuteArgs } from '../RpcRegistry.ts'
  * resolved, and the main thread reads the same table for its legend that the
  * colours were drawn from.
  */
-export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'CoreEncodeFeatures'> {
-  name = 'CoreEncodeFeatures' as const
+export default class CoreGetEncodedLayers extends RpcMethodTypeWithRenameRegion<'CoreGetEncodedLayers'> {
+  name = 'CoreGetEncodedLayers' as const
 
-  async execute(args: RpcExecuteArgs<'CoreEncodeFeatures'>) {
+  async execute(args: RpcExecuteArgs<'CoreGetEncodedLayers'>) {
     const {
       region,
       layers: requested,
@@ -72,7 +72,7 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
         },
       )
     })
-    const result: EncodedFeaturesResult = {
+    const result: EncodedLayersResult = {
       layers,
       facet: sections,
       bytes,

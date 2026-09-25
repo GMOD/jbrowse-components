@@ -9,7 +9,7 @@ import { stateModelFactory } from './model.ts'
 
 import type { LinearMarkDisplayModel } from './model.ts'
 import type {
-  EncodedFeaturesResult,
+  EncodedLayersResult,
   FacetSection,
 } from '@jbrowse/core/util/markEncoding'
 
@@ -47,10 +47,7 @@ function facetedDisplay() {
 }
 
 // A region's one layer, its instances on `rows`, stacked into `sections`.
-function region(
-  rows: number[],
-  sections: FacetSection[],
-): EncodedFeaturesResult {
+function region(rows: number[], sections: FacetSection[]): EncodedLayersResult {
   const n = rows.length
   return {
     facet: sections,

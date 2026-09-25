@@ -1,7 +1,7 @@
 // The declared shape of a mark encoding and what evaluating one produces —
 // split from markEncoding.ts because that file's runtime half reaches
 // render-core's whole HAL/color-ramp graph for encodeFeatures' native scale
-// tables, and RpcRegistry.ts needs only these types for CoreEncodeFeatures'
+// tables, and RpcRegistry.ts needs only these types for CoreGetEncodedLayers'
 // wire shape. Importing them from markEncoding.ts would carry that graph into
 // every leaf that reaches the RPC registry. scripts/moduleClosure.test.ts
 // holds the ceiling.
@@ -381,7 +381,7 @@ export type Encoded<L extends LaneName> = EncodedChannels &
 
 /**
  * #api
- * One layer of a `CoreEncodeFeatures` request: the encoding to evaluate and
+ * One layer of a `CoreGetEncodedLayers` request: the encoding to evaluate and
  * the lanes the display's mark reads.
  */
 export interface LayerRequest {
@@ -393,11 +393,11 @@ export interface LayerRequest {
 
 /**
  * #api
- * What `CoreEncodeFeatures` answers for one region: `layers[i]` is the
+ * What `CoreGetEncodedLayers` answers for one region: `layers[i]` is the
  * request's `layers[i]` over the region's features, so a display's mark
  * list indexes straight into it.
  */
-export interface EncodedFeaturesResult {
+export interface EncodedLayersResult {
   layers: EncodedChannels[]
   /** The sections a facet stacked every layer's rows into. */
   facet?: FacetSection[]
@@ -538,7 +538,7 @@ export type TransformStep =
   | PileupStep
   | MateStep
 
-export type CoreEncodeFeaturesArgs = {
+export type CoreGetEncodedLayersArgs = {
   adapterConfig: Record<string, unknown>
   region: { refName: string; start: number; end: number; assemblyName: string }
   layers: LayerRequest[]

@@ -5,7 +5,7 @@ import { layerFeatures } from './layerFeatures.ts'
 import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 
 /**
- * The feature behind one instance of a `CoreEncodeFeatures` answer: the same
+ * The feature behind one instance of a `CoreGetEncodedLayers` answer: the same
  * request run again, and the entry of `layer`'s list the instance's
  * `featureIndex` names. A display holds channels and no records, and two reads
  * sharing a span, a run counted inside one facet section or a mark whose `x` is

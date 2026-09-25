@@ -14,7 +14,7 @@ import { configSchemaFactory } from './configSchema.ts'
 import { stateModelFactory } from './model.ts'
 
 import type { LinearMarkDisplayModel } from './model.ts'
-import type { EncodedFeaturesResult } from '@jbrowse/core/util/markEncoding'
+import type { EncodedLayersResult } from '@jbrowse/core/util/markEncoding'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 
 export const REGION = {
@@ -57,12 +57,12 @@ export function features(
 /**
  * What the worker answers the display's own request with over `feats`: the
  * shared steps, the facet split and each layer's encode, as
- * `CoreEncodeFeatures` runs them for a layer naming no row of its own.
+ * `CoreGetEncodedLayers` runs them for a layer naming no row of its own.
  */
 export function workerResult(
   display: LinearMarkDisplayModel,
   feats: readonly Feature[],
-): EncodedFeaturesResult {
+): EncodedLayersResult {
   const { layers, transform, facet } = display.rpcProps()
   const shared = runTransforms(feats, transform)
   const split = facet

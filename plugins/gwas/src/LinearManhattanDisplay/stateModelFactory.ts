@@ -333,7 +333,7 @@ export function stateModelFactory(
         },
         /**
          * #method
-         * The `CoreEncodeFeatures` layer, and the index SNP each region's LD
+         * The `CoreGetEncodedLayers` layer, and the index SNP each region's LD
          * join is resolved from: a change to either refetches.
          */
         rpcProps(): { layers: LayerRequest[]; indexSnp: string | undefined } {
@@ -736,7 +736,7 @@ export function stateModelFactory(
                 region,
                 ...(ld ? { opts: { ld } } : {}),
               }
-              const result = await ctx.callRpc('CoreEncodeFeatures', {
+              const result = await ctx.callRpc('CoreGetEncodedLayers', {
                 ...asked,
                 byteLimit,
               })

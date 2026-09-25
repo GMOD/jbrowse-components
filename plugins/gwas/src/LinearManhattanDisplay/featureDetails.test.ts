@@ -18,7 +18,7 @@ import { createTestEnvironment } from './testEnv.ts'
 
 import type { ManhattanRequest } from './manhattanLayer.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
-import type { EncodedFeaturesResult } from '@jbrowse/core/util/markEncoding'
+import type { EncodedLayersResult } from '@jbrowse/core/util/markEncoding'
 
 // The worker half, run as the worker runs it: the core methods out of the
 // plugin manager's registry, over the SLE summary statistics and their `.ld`.
@@ -45,8 +45,8 @@ describe('a point reads back as its whole GWAS record', () => {
   }
 
   async function drawnAt(start: number) {
-    const encoded = (await invoke('CoreEncodeFeatures', request)) as {
-      value: EncodedFeaturesResult
+    const encoded = (await invoke('CoreGetEncodedLayers', request)) as {
+      value: EncodedLayersResult
     }
     const layer = encoded.value.layers[0]!
     const i = layer.x.indexOf(start)
@@ -91,7 +91,7 @@ function callsOf(mock: jest.Mock, method: string) {
 
 function answerFetches(mock: jest.Mock, readBack?: object) {
   mock.mockImplementation((_sessionId: string, method: string) =>
-    method === 'CoreEncodeFeatures'
+    method === 'CoreGetEncodedLayers'
       ? Promise.resolve({
           layers: [manhattanFixture({ x: [100, 200], y: [3, 8] })],
         })
@@ -116,7 +116,7 @@ test('a click asks the worker for the feature under the request its region came 
   await waitFor(() => {
     expect(display.rpcDataMap.get(0)?.request).toBeDefined()
   })
-  const [, , fetched] = callsOf(mockRpcCall, 'CoreEncodeFeatures').find(
+  const [, , fetched] = callsOf(mockRpcCall, 'CoreGetEncodedLayers').find(
     ([, , args]) => args.region.refName === 'ctgA',
   )!
   display.selectFeature({
@@ -179,7 +179,7 @@ describe('the LD join a fetch asks for', () => {
       expect(display.rpcDataMap.size).toBe(2)
     })
     const optsOn = (refName: string) =>
-      callsOf(mockRpcCall, 'CoreEncodeFeatures').find(
+      callsOf(mockRpcCall, 'CoreGetEncodedLayers').find(
         ([, , args]) => args.region.refName === refName,
       )![2].opts
     return { opts: [optsOn('ctgA'), optsOn('ctgB')], names }

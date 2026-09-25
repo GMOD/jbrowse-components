@@ -9,7 +9,7 @@ import { updateStatus } from '../../util/progress.ts'
 import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import type { JexlInstance } from '../../util/jexlStrings.ts'
 import type {
-  CoreEncodeFeaturesArgs,
+  CoreGetEncodedLayersArgs,
   FieldRef,
   LayerRequest,
   TransformStep,
@@ -62,7 +62,7 @@ function layerRow(
 }
 
 /**
- * The feature list each layer of a `CoreEncodeFeatures` request encodes: the
+ * The feature list each layer of a `CoreGetEncodedLayers` request encodes: the
  * region's features through the shared steps, split by the facet where the
  * request names one, then through each layer's own steps, with each faceted
  * layer's stacked rows beside it. An instance's `featureIndex` indexes its
@@ -71,7 +71,7 @@ function layerRow(
 export async function layerFeatures(
   dataAdapter: BaseFeatureDataAdapter,
   args: Pick<
-    CoreEncodeFeaturesArgs,
+    CoreGetEncodedLayersArgs,
     'region' | 'layers' | 'transform' | 'facet' | 'bpPerPx' | 'opts'
   > & { signal?: AbortSignal; statusCallback?: StatusCallback },
   jexl: JexlInstance,

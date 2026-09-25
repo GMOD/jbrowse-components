@@ -53,7 +53,7 @@ the raw section `[0, t_0 / 2)`, the top tier unbounded — from
 ranges of the sources the fetch names and skips a source that declares none.
 
 **The payload carries it.** `WiggleDataResult.zoomRange` and
-`EncodedFeaturesResult.zoomRange`, written by the three RPC executors beside
+`EncodedLayersResult.zoomRange`, written by the three RPC executors beside
 the arrays, so the answer and the range it serves travel together.
 
 **`regionHasData` reads it.** `MultiRegionDisplayMixin`'s default answers off

@@ -1,6 +1,6 @@
 /**
  * The worker request as the config declares it: each mark's encoding and step
- * list in the wire form `CoreEncodeFeatures` takes, every slot written out so
+ * list in the wire form `CoreGetEncodedLayers` takes, every slot written out so
  * a slot left at its default and one written at it are one fetch.
  */
 import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'

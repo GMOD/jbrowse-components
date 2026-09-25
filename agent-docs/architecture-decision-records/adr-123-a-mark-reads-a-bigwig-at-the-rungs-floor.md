@@ -20,7 +20,7 @@ stands from this ADR is the value sent and what a tier's fields mean.
 
 ## Context
 
-`CoreEncodeFeatures` fetched with `{ statusCallback, signal }` and nothing
+`CoreGetEncodedLayers` fetched with `{ statusCallback, signal }` and nothing
 else. `bpPerPx` is a field of `BaseOptions`, and `BigWigAdapter` folds it with
 `resolution` into the `basesPerSpan` that picks a zoom level; `@gmod/bbi` takes
 the finest summary tier whose `reductionLevel` fits twice into a pixel and the
@@ -57,7 +57,7 @@ raw section. Wiggle resolves this with a Summary score mode submenu behind
 **The display resolves the zoom, and only for an adapter that reads it.**
 `LinearMarkDisplay.zoomFetchArgs()` answers `{ bpPerPx }` when the adapter type
 declares the `hasResolution` capability and `{}` otherwise. The display spreads
-it into the `CoreEncodeFeatures` call, and the RPC hands it to
+it into the `CoreGetEncodedLayers` call, and the RPC hands it to
 `getFeaturesArray`. `MultiRegionDisplayMixin` stamps the same object beside
 each region it loads and compares it in `isCacheValid`, so the key and the
 argument are one fact, the way `fetchInputs.ts` asks.
@@ -106,7 +106,7 @@ size the wiggle display already fetches.
   decision for every estimating adapter, and a gate on a self-summarizing
   adapter is a budget row nobody wants to own.
 - `model.test.ts` pins the hook empty over a BED adapter and at the view's
-  zoom over a BigWig, and `CoreEncodeFeatures.test.ts` pins the term reaching
+  zoom over a BigWig, and `CoreGetEncodedLayers.test.ts` pins the term reaching
   the adapter.
 
 ## Rejected alternatives

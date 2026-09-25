@@ -1,13 +1,13 @@
 import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
 import createJexlInstance from '../../util/jexl.ts'
 import SimpleFeature from '../../util/simpleFeature.ts'
-import CoreEncodeFeatures from './CoreEncodeFeatures.ts'
 import CoreGetEncodedFeature from './CoreGetEncodedFeature.ts'
+import CoreGetEncodedLayers from './CoreGetEncodedLayers.ts'
 
 import type PluginManager from '../../PluginManager.ts'
 import type {
-  CoreEncodeFeaturesArgs,
-  EncodedFeaturesResult,
+  CoreGetEncodedLayersArgs,
+  EncodedLayersResult,
 } from '../../util/markEncodingTypes.ts'
 import type { RpcResult } from '../RpcServer.ts'
 
@@ -36,7 +36,7 @@ const reads = (
 
 const pluginManager = { jexl: createJexlInstance() } as PluginManager
 
-function request(args: Partial<CoreEncodeFeaturesArgs>) {
+function request(args: Partial<CoreGetEncodedLayersArgs>) {
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getFeatures: () => {},
@@ -54,11 +54,11 @@ function request(args: Partial<CoreEncodeFeaturesArgs>) {
   }
 }
 
-async function drawnAndReadBack(args: Partial<CoreEncodeFeaturesArgs>) {
+async function drawnAndReadBack(args: Partial<CoreGetEncodedLayersArgs>) {
   const req = request(args)
-  const encoded = (await new CoreEncodeFeatures(pluginManager).invoke(
+  const encoded = (await new CoreGetEncodedLayers(pluginManager).invoke(
     req,
-  )) as RpcResult<EncodedFeaturesResult>
+  )) as RpcResult<EncodedLayersResult>
   const layer = encoded.value.layers[0]!
   const details = new CoreGetEncodedFeature(pluginManager)
   return Promise.all(

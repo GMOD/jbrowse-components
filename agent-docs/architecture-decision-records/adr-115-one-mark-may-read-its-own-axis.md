@@ -110,7 +110,7 @@ declaring two has no reading.
 `trackType` is `['FeatureTrack', 'AlignmentsTrack', 'VariantTrack']`. Every
 adapter behind those answers `getFeaturesArray` through
 `BaseFeatureDataAdapter`, and both `BamAdapter` and `VcfTabixAdapter`
-implement `getRegionByteSize`, so `CoreEncodeFeatures`' byte gate measures
+implement `getRegionByteSize`, so `CoreGetEncodedLayers`' byte gate measures
 them before it downloads exactly as it does a BED.
 
 What differs is which fields answer, and the docs say so rather than papering

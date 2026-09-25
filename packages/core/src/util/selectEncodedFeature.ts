@@ -5,13 +5,13 @@ import SimpleFeature from './simpleFeature.ts'
 import { withFeatureDetails } from './withFeatureDetails.ts'
 
 import type { createAbortRotation } from './createAbortRotation.ts'
-import type { CoreEncodeFeaturesArgs } from './markEncodingTypes.ts'
+import type { CoreGetEncodedLayersArgs } from './markEncodingTypes.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * #api
  * Open the feature widget on the feature behind one instance of a
- * `CoreEncodeFeatures` answer. A display holds channels, not records, so it
+ * `CoreGetEncodedLayers` answer. A display holds channels, not records, so it
  * sends `CoreGetEncodedFeature` the request the instance's region came back
  * under, and the worker answers the entry of `layer`'s list that the
  * instance's `featureIndex` names: the record as the adapter wrote it, or the
@@ -20,7 +20,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 export function selectEncodedFeature(
   self: IStateTreeNode,
   rotation: ReturnType<typeof createAbortRotation>,
-  args: Omit<CoreEncodeFeaturesArgs, 'byteLimit'> & {
+  args: Omit<CoreGetEncodedLayersArgs, 'byteLimit'> & {
     layer: number
     featureIndex: number
   },

@@ -14,7 +14,7 @@ one step kind, and adds the layer row's semantic zoom.
 
 ## Context
 
-`CoreEncodeFeatures` ran one transform kind, `filter`, over the fetched list
+`CoreGetEncodedLayers` ran one transform kind, `filter`, over the fetched list
 and every layer encoded the same result. "Count features per 10 kb" — the
 first thing a reader asks of any BED once the view is wider than its
 features — had no declared form: it was a BigWig computed offline, or a
@@ -97,7 +97,7 @@ render state rather than a new mechanism.
   first of two reads sharing a span, counted every facet section into a run
   drawn from one, and found nothing for a mark whose `x` is not `start`.
 - A layer's transform steps stay in the mark display's own config model;
-  `CoreEncodeFeatures` takes them from any caller.
+  `CoreGetEncodedLayers` takes them from any caller.
 - A bin summarized what the fetch admitted, and past the byte budget a region
   drew the banner rather than a density. Both halves closed in
   [ADR-117](adr-117-the-density-tier-is-a-mark-layer.md): the mark display

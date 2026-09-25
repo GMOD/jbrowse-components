@@ -42,7 +42,7 @@ import {
 import { placeTextMarks } from './textMarks.ts'
 
 import type { LinearMarkDisplayModel } from './model.ts'
-import type { EncodedFeaturesResult } from '@jbrowse/core/util/markEncoding'
+import type { EncodedLayersResult } from '@jbrowse/core/util/markEncoding'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 const REGION = {
@@ -85,7 +85,7 @@ function createTestEnvironment(
   })
 }
 
-type Layer = EncodedFeaturesResult['layers'][number]
+type Layer = EncodedLayersResult['layers'][number]
 
 function ramp(
   extent: [number, number],
@@ -120,8 +120,8 @@ function result(
     scale?: Layer['scale']
     shapeScale?: Layer['shapeScale']
   }[],
-  facet?: EncodedFeaturesResult['facet'],
-): EncodedFeaturesResult {
+  facet?: EncodedLayersResult['facet'],
+): EncodedLayersResult {
   return {
     facet,
     layers: layers.map(({ y, row, color, scale, shapeScale }) => ({
@@ -1203,7 +1203,7 @@ test('a bin hands its edges to the aggregate behind it, and a pileup leaves the 
   expect((layers[2]!.transform![0] as { groupby: string[] }).groupby).toEqual(
     [],
   )
-  // the worker reads the layer's own pileup (CoreEncodeFeatures.test.ts), so
+  // the worker reads the layer's own pileup (CoreGetEncodedLayers.test.ts), so
   // a caller of the RPC gets the same row a display does
   expect(layers.slice(3).map(l => l.encoding.row)).toEqual([
     undefined,
@@ -1777,7 +1777,7 @@ async function loadedThroughTheWorker(
   readBack: unknown,
 ) {
   mock.mockImplementation((_sessionId: string, method: string) =>
-    method === 'CoreEncodeFeatures'
+    method === 'CoreGetEncodedLayers'
       ? Promise.resolve(result([{ y: [3, 8] }, { y: [2] }]))
       : method === 'CoreGetEncodedFeature'
         ? Promise.resolve(readBack)
@@ -1824,7 +1824,7 @@ test('a click asks the worker which feature the instance is, under the request i
     count: 2,
   }
   await loadedThroughTheWorker(display, mockRpcCall, made)
-  const [, , fetched] = callsOf(mockRpcCall, 'CoreEncodeFeatures').at(-1)!
+  const [, , fetched] = callsOf(mockRpcCall, 'CoreGetEncodedLayers').at(-1)!
   display.selectFeature(hitOn(1, 1))
   await waitFor(() => {
     expect(session.openedWidgets).toHaveLength(1)

@@ -21,7 +21,7 @@ BED score column, a segment ratio, a bedGraph-shaped interval.
 | --- | --- | --- |
 | `MarkEncoding`, `encodeFeatures` | `packages/core/src/util/markEncoding.ts` | the declaration and its evaluation over the **lanes** the caller names: native `feature.get(field)` per channel, `jexl:` as the opt-in escape, a `y` that is a field, a colour that is a constant, a jexl expression, a categorical palette or a ramp over a domain, a shape that is a name, a jexl expression or a categorical scale over the shape names, an integer `row`, a `text` lane of strings for the text mark, the `y` extremes, a Flatbush over `(x, y, x2, y)` when `index` is named, and the `ScaleTable` per scaled channel |
 | `runTransforms` | `packages/core/src/util/featureTransforms.ts` | the transform stage: a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `pileup`, `mate` — run in order over a feature list, each step reading what the last answered |
-| `CoreEncodeFeatures` | `packages/core/src/rpc/methods/CoreEncodeFeatures.ts` | one region's features fetched once, the request's shared `transform` steps run (the display's `jexlFilters` as `filter` steps), then each layer of the request — its own `transform`, an encoding and its lanes — run over that list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for the request's `layers[i]`, the buffers transferred |
+| `CoreGetEncodedLayers` | `packages/core/src/rpc/methods/CoreGetEncodedLayers.ts` | one region's features fetched once, the request's shared `transform` steps run (the display's `jexlFilters` as `filter` steps), then each layer of the request — its own `transform`, an encoding and its lanes — run over that list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for the request's `layers[i]`, the buffers transferred |
 | `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ mark, encoding, transform, source, minBpPerPx, maxBpPerPx }` sub-schemas, one `defineMark` per entry with a shape reading `layers[markIndex]` through a lens that checks its type's lanes are present (`markLanes` over `MARK_SPECS`) and `enabled` inside the entry's zoom range, a `text` entry placed as DOM by `placeTextMarks` in the entry's stead, the wiggle-core score axis **resolved from the display's `scales.y`**, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over its layer's Flatbush, spans stacked on `row` into `rowCount` bands |
 
 **A positional channel is a field and the value scale is the plot's**, where
@@ -207,7 +207,7 @@ It answers a `DerivedFeature` over the input in start order, so nothing is
 copied per feature and a later `bin` or `aggregate` still reads the original
 fields.
 
-**`facet` and `rows` are one split in the worker.** `CoreEncodeFeatures`
+**`facet` and `rows` are one split in the worker.** `CoreGetEncodedLayers`
 splits the features on the request's `facet.field` after the shared steps and
 runs each layer's steps over each section alone (`facetLayers`,
 [ADR-130](../architecture-decision-records/adr-130-a-facet-is-the-displays-and-splits-before-each-layers-steps.md)).
@@ -319,7 +319,7 @@ Three packers moved onto it on 2026-09-09:
   against the PLINK adapter, until 2026-09-24. `GWASAdapter` makes that join
   now, writing `ld` and `ld_role` onto the features when a fetch's `opts.ld`
   names the index SNP, so the display declares its one layer to
-  `CoreEncodeFeatures` and keeps no worker method.
+  `CoreGetEncodedLayers` and keeps no worker method.
 - **score-example** is `encodeFeatures(features, { y: scoreColumn })` and
   nothing else; its `[0, 1]` normalisation per region went, and the display
   folds the shipped `yMax` of every loaded region into one `[0, max]` domain
@@ -354,7 +354,7 @@ knowing at this seam:
   the same per-region problem, without a texture and with colour still
   resolved in one place.
 - **A transform names its `type`.** GenomeSpy departed from Vega-Lite's
-  inferred transform shape on purpose, for extensibility. `CoreEncodeFeatures`
+  inferred transform shape on purpose, for extensibility. `CoreGetEncodedLayers`
   takes that spelling — `transform: [{ type: 'filter', expr }]`, run in order
   before the layers encode.
 - **Semantic zoom is a layer property.** Its `multiscale` composition orders

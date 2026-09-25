@@ -177,7 +177,7 @@ table says `pinned`, and a pinned ramp is every region's whatever they hold.
   `colorBits` for the GPU and `paintColors` for Canvas2D. `span` declares
   neither and keeps a required packed `color`.
 - `MarkEncoding.y`'s object form has no in-tree producer on the wire, by the
-  decision above. It stays part of `CoreEncodeFeatures`' declared shape,
+  decision above. It stays part of `CoreGetEncodedLayers`' declared shape,
   `encodeFeatures` reads either, and `valueField` is the reader.
 
 ## Rejected alternatives

@@ -47,7 +47,7 @@ async function setup(marks: unknown[]) {
       view.showAllRegions()
     },
     rpcCall: (_id, method) =>
-      method === 'CoreEncodeFeatures'
+      method === 'CoreGetEncodedLayers'
         ? Promise.resolve({ layers: [] })
         : new Promise(() => {}),
   })
@@ -66,7 +66,7 @@ async function setup(marks: unknown[]) {
 
 function fetchedRegion(mockRpcCall: jest.Mock) {
   const calls = mockRpcCall.mock.calls.filter(
-    ([, method]) => method === 'CoreEncodeFeatures',
+    ([, method]) => method === 'CoreGetEncodedLayers',
   )
   expect(calls).toHaveLength(1)
   return (calls[0]![2] as { region: unknown }).region

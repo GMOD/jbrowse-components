@@ -158,7 +158,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
 import type {
-  EncodedFeaturesResult,
+  EncodedLayersResult,
   FacetSpec,
   LayerRequest,
   MarkEncoding,
@@ -203,7 +203,7 @@ const MarkClusterDialog = lazy(
 const NO_REGIONS: ReadonlyMap<number, MarkRegionData> = new Map()
 const NO_LINK_REGIONS: readonly LinkRegion[] = []
 
-function storedRegionData(result: EncodedFeaturesResult): MarkRegionData {
+function storedRegionData(result: EncodedLayersResult): MarkRegionData {
   return {
     layers: result.layers.map(layer => withHitIndex(layer)),
     facet: result.facet,
@@ -400,7 +400,7 @@ export function stateModelFactory(
       .views(() => ({
         /**
          * #getter
-         * Opt into the byte gate: `CoreEncodeFeatures` measures the index before
+         * Opt into the byte gate: `CoreGetEncodedLayers` measures the index before
          * it downloads, so an over-budget region is refused before a feature is
          * read, and the density tier draws in place of the refused region.
          */
@@ -1516,7 +1516,7 @@ export function stateModelFactory(
          * #action
          * Stage a region as fetched, with this display's payload layout.
          */
-        setRpcData(idx: number, data: EncodedFeaturesResult, region: Region) {
+        setRpcData(idx: number, data: EncodedLayersResult, region: Region) {
           self.setLoadedRegion(idx, region, storedRegionData(data))
         },
         /**
@@ -1842,7 +1842,7 @@ export function stateModelFactory(
           const { byteLimit, ...request } = { ...rpcArgs(self), bpPerPx }
           return fetchEachRegion(self, regions, {
             call: (region, ctx) =>
-              ctx.callRpc('CoreEncodeFeatures', {
+              ctx.callRpc('CoreGetEncodedLayers', {
                 ...request,
                 byteLimit,
                 region,

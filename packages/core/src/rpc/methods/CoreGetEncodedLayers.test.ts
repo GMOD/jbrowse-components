@@ -1,12 +1,12 @@
 import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
 import createJexlInstance from '../../util/jexl.ts'
 import SimpleFeature from '../../util/simpleFeature.ts'
-import CoreEncodeFeatures from './CoreEncodeFeatures.ts'
+import CoreGetEncodedLayers from './CoreGetEncodedLayers.ts'
 
 import type PluginManager from '../../PluginManager.ts'
 import type {
-  CoreEncodeFeaturesArgs,
-  EncodedFeaturesResult,
+  CoreGetEncodedLayersArgs,
+  EncodedLayersResult,
   FacetSpec,
   LayerRequest,
 } from '../../util/markEncodingTypes.ts'
@@ -27,7 +27,7 @@ const features = [10, 40, 25, 3].map(
     }),
 )
 
-async function run(args: Partial<CoreEncodeFeaturesArgs>) {
+async function run(args: Partial<CoreGetEncodedLayersArgs>) {
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getFeatures: () => {},
@@ -36,7 +36,7 @@ async function run(args: Partial<CoreEncodeFeaturesArgs>) {
       setSequenceAdapterConfig: () => {},
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
-  const method = new CoreEncodeFeatures({
+  const method = new CoreGetEncodedLayers({
     jexl: createJexlInstance(),
   } as PluginManager)
   const result = await method.invoke({
@@ -46,7 +46,7 @@ async function run(args: Partial<CoreEncodeFeaturesArgs>) {
     layers: [{ encoding: { y: 'score' }, lanes: ['y'] }],
     ...args,
   })
-  return (result as RpcResult<EncodedFeaturesResult>).value.layers[0]!
+  return (result as RpcResult<EncodedLayersResult>).value.layers[0]!
 }
 
 test('a filter step keeps the features its expression admits, in order', async () => {
@@ -78,7 +78,7 @@ test('the zoom reaches the adapter, so one with zoom levels answers at it', asyn
       setSequenceAdapterConfig: () => {},
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
-  const method = new CoreEncodeFeatures({
+  const method = new CoreGetEncodedLayers({
     jexl: createJexlInstance(),
   } as PluginManager)
   const result = await method.invoke({
@@ -90,7 +90,7 @@ test('the zoom reaches the adapter, so one with zoom levels answers at it', asyn
   })
   expect(getFeaturesArray.mock.calls[0]![1]).toMatchObject({ bpPerPx: 500 })
   expect(getZoomRange.mock.calls[0]![0]).toMatchObject({ bpPerPx: 500 })
-  expect((result as RpcResult<EncodedFeaturesResult>).value.zoomRange).toEqual(
+  expect((result as RpcResult<EncodedLayersResult>).value.zoomRange).toEqual(
     zoomRange,
   )
 })
@@ -107,7 +107,7 @@ test("the request's adapter options reach the adapter, under the zoom and signal
       setSequenceAdapterConfig: () => {},
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
-  await new CoreEncodeFeatures({
+  await new CoreGetEncodedLayers({
     jexl: createJexlInstance(),
   } as PluginManager).invoke({
     sessionId: 's',
@@ -142,7 +142,7 @@ test('a facet runs every layer per section and stacks the sections', async () =>
       setSequenceAdapterConfig: () => {},
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
-  const method = new CoreEncodeFeatures({
+  const method = new CoreGetEncodedLayers({
     jexl: createJexlInstance(),
   } as PluginManager)
   const result = await method.invoke({
@@ -163,7 +163,7 @@ test('a facet runs every layer per section and stacks the sections', async () =>
       },
     ],
   })
-  const { layers, facet } = (result as RpcResult<EncodedFeaturesResult>).value
+  const { layers, facet } = (result as RpcResult<EncodedLayersResult>).value
   expect(facet).toEqual([
     { key: 'k1', firstRow: 0, rowCount: 1 },
     { key: 'k2', firstRow: 1, rowCount: 2 },
@@ -190,7 +190,7 @@ describe('a pileup is the row a layer stands in where its encoding names none', 
   async function rowsOf(
     layers: LayerRequest[],
     facet?: FacetSpec,
-    transform?: CoreEncodeFeaturesArgs['transform'],
+    transform?: CoreGetEncodedLayersArgs['transform'],
   ) {
     jest.mocked(getAdapter).mockResolvedValue({
       dataAdapter: {
@@ -200,7 +200,7 @@ describe('a pileup is the row a layer stands in where its encoding names none', 
         setSequenceAdapterConfig: () => {},
       },
     } as unknown as Awaited<ReturnType<typeof getAdapter>>)
-    const method = new CoreEncodeFeatures({
+    const method = new CoreGetEncodedLayers({
       jexl: createJexlInstance(),
     } as PluginManager)
     const result = await method.invoke({
@@ -211,7 +211,7 @@ describe('a pileup is the row a layer stands in where its encoding names none', 
       facet,
       transform,
     })
-    const { value } = result as RpcResult<EncodedFeaturesResult>
+    const { value } = result as RpcResult<EncodedLayersResult>
     return value.layers.map(l => [...l.row!])
   }
   const packed = (row?: string): LayerRequest => ({
@@ -220,7 +220,7 @@ describe('a pileup is the row a layer stands in where its encoding names none', 
     transform: [{ type: 'pileup', as: 'lane' }],
   })
   const unpacked: LayerRequest = { encoding: {}, lanes: ['row'] }
-  const SHARED: CoreEncodeFeaturesArgs['transform'] = [
+  const SHARED: CoreGetEncodedLayersArgs['transform'] = [
     { type: 'pileup', as: 'lane' },
   ]
 
@@ -289,7 +289,7 @@ describe("a facet's own pileup packs per section, the display's across every sec
         source,
       }),
   )
-  async function stacked(args: Partial<CoreEncodeFeaturesArgs>) {
+  async function stacked(args: Partial<CoreGetEncodedLayersArgs>) {
     jest.mocked(getAdapter).mockResolvedValue({
       dataAdapter: {
         getFeatures: () => {},
@@ -298,7 +298,7 @@ describe("a facet's own pileup packs per section, the display's across every sec
         setSequenceAdapterConfig: () => {},
       },
     } as unknown as Awaited<ReturnType<typeof getAdapter>>)
-    const method = new CoreEncodeFeatures({
+    const method = new CoreGetEncodedLayers({
       jexl: createJexlInstance(),
     } as PluginManager)
     const result = await method.invoke({
@@ -308,7 +308,7 @@ describe("a facet's own pileup packs per section, the display's across every sec
       layers: [{ encoding: {}, lanes: ['row'] }],
       ...args,
     })
-    const { value } = result as RpcResult<EncodedFeaturesResult>
+    const { value } = result as RpcResult<EncodedLayersResult>
     return { rows: [...value.layers[0]!.row!], sections: value.facet }
   }
 
@@ -351,7 +351,7 @@ test("a layer's own transform runs after the shared one, and the other layer see
       setSequenceAdapterConfig: () => {},
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
-  const method = new CoreEncodeFeatures({
+  const method = new CoreGetEncodedLayers({
     jexl: createJexlInstance(),
   } as PluginManager)
   const result = await method.invoke({
@@ -375,7 +375,7 @@ test("a layer's own transform runs after the shared one, and the other layer see
       { encoding: { y: 'score' }, lanes: ['y'] },
     ],
   })
-  const { layers } = (result as RpcResult<EncodedFeaturesResult>).value
+  const { layers } = (result as RpcResult<EncodedLayersResult>).value
   expect([...layers[0]!.x]).toEqual([0, 200])
   expect([...layers[0]!.x2]).toEqual([200, 400])
   expect([...layers[0]!.y!]).toEqual([2, 1])
