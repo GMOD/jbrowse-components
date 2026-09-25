@@ -8,7 +8,6 @@ import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 
 export interface DensityBandHost extends CoarseTierPhaseHost {
   host: RegionHost
-  coarseTierActive: boolean
   coarseTier: ReadonlyMap<number, FeatureDensity>
 }
 

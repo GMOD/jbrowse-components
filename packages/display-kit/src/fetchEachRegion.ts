@@ -1,4 +1,8 @@
-import { isRegionRefused, measuredBytes } from '@jbrowse/core/rpc/byteBudget'
+import {
+  isRegionRefused,
+  measuredBytes,
+  measurementPartial,
+} from '@jbrowse/core/rpc/byteBudget'
 import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
 import { runInAction } from 'mobx'
 
@@ -111,6 +115,10 @@ function gateBatch(
       // when some region really did not report. A refusal from the last region
       // to land, and every refusal on a single-region display, measured the
       // whole set and is ordinary evidence.
+      //
+      // This runner owns its fan-out, so it derives the claim; the two that are
+      // handed one payload read it off the result with `measurementPartial`,
+      // which is where the rest of the argument lives.
       self.commitFetchBytes([...bytes], issued, landed < size)
       onComplete?.(issued)
       if (refused) {
@@ -229,6 +237,17 @@ export async function fetchEachRegion<R>(
  * skips both the commit and the post-fetch step. `call` keeps the literal RPC
  * method name at the call site so its typed args/return survive and `R` flows
  * into `onResult` with no cast.
+ *
+ * **Its refusal granularity is the region, and it is the third of three.**
+ * {@link fetchEachRegion} stops the batch at the first refusal because N round
+ * trips are still in flight; {@link fetchRegionsBatched} refuses the one
+ * payload it asked for; this one already holds every result, so it stores the
+ * regions that fit and drops the ones that did not, with nothing left to
+ * cancel. No gated display is on it today — BigWig implements no
+ * `getRegionByteSize` — so which of the three a gated one should want is the
+ * open call in
+ * agent-docs/ideas/waiting-on-a-call/per-region-banner-for-a-mixed-region-set.md,
+ * and the answer is a property of the banner rather than of this loop.
  */
 export async function fetchAllRegions<R>(
   self: FetchEachRegionModel,
@@ -264,7 +283,11 @@ export async function fetchAllRegions<R>(
           )
         }
       })
-      self.commitFetchBytes(results.map(measuredBytes), issued)
+      self.commitFetchBytes(
+        results.map(measuredBytes),
+        issued,
+        results.some(measurementPartial),
+      )
       opts.onComplete?.(issued)
     }
   })
@@ -316,7 +339,11 @@ export async function fetchRegionsBatched<R extends RegionPayload>(
       // spans the previous batch marked loaded — an export gate did, after a
       // pan left the view inside the old span and off the new one.
       runInAction(() => {
-        self.commitFetchBytes([measuredBytes(result)], issued)
+        self.commitFetchBytes(
+          [measuredBytes(result)],
+          issued,
+          measurementPartial(result),
+        )
         // One payload covers the whole set, so a refusal refuses the set:
         // nothing is committed and nothing is marked loaded, for the reason
         // spelled out in `RegionFetchContext`.

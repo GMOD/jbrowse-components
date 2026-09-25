@@ -1,4 +1,8 @@
-import { isRegionRefused, measuredBytes } from '@jbrowse/core/rpc/byteBudget'
+import {
+  isRegionRefused,
+  measuredBytes,
+  measurementPartial,
+} from '@jbrowse/core/rpc/byteBudget'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { untracked } from 'mobx'
@@ -121,7 +125,11 @@ function globalFetchPlan<TArgs, TResult>(
       return result === undefined ? undefined : { result, issued }
     },
     commit: ({ result, issued }, { args, signature }) => {
-      self.commitFetchBytes([measuredBytes(result)], issued)
+      self.commitFetchBytes(
+        [measuredBytes(result)],
+        issued,
+        measurementPartial(result),
+      )
       if (!isRegionRefused(result)) {
         self.commitFetchResult(() => {
           commit(result, args)

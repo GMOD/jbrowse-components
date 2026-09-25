@@ -7,15 +7,18 @@ import RegionTooLargeMixin from './RegionTooLargeMixin.ts'
 // `getContainingTrack`, which throws 'no containing track found' for a host that
 // has none — so a trackless host is what exercises the invariant.
 //
-// `gateViewport` is stubbed so the only unguarded walk left is the track one;
-// the view read below it is the gate's other reach out of the display and is
-// not what these cover.
+// The gate's two view reads — `gateViewportSpanBp` and `gateViewport` — are
+// stubbed so the only unguarded walk left is the track one; the view is the
+// gate's other reach out of the display and is not what these cover.
 
 const VIEWPORT = { key: 'chr1:0-100', spanBp: 100 }
 
 function tracklessHost() {
   return RegionTooLargeMixin()
     .views(() => ({
+      get gateViewportSpanBp() {
+        return VIEWPORT.spanBp
+      },
       get gateViewport() {
         return VIEWPORT
       },

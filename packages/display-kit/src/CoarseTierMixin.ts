@@ -1,6 +1,10 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { isSubAdapterConfig } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { isRegionRefused, measuredBytes } from '@jbrowse/core/rpc/byteBudget'
+import {
+  isRegionRefused,
+  measuredBytes,
+  measurementPartial,
+} from '@jbrowse/core/rpc/byteBudget'
 import { getContainingTrack } from '@jbrowse/core/util'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
@@ -161,6 +165,23 @@ export default function CoarseTierMixin<P extends object>() {
       get coarseReadKey(): unknown {
         return ''
       },
+      /**
+       * #getter
+       * Overridable hook (default true): the display has somewhere to put the
+       * tier right now. Alignments fills it with `showCoverage`, the band its
+       * bins are drawn in, so ticking the band off puts the reads back.
+       *
+       * The view being measured is NOT this hook — it is the tier's own term
+       * below, because every display that draws one needs the geometry the
+       * draw is mapped through, and a display forced to `density` has a
+       * `coarseTierActive` that is true before the view is. Canvas and marks
+       * each carried that term as a verbatim copy of the other's
+       * `coarseTierStandsIn` override; alignments carried neither and guarded
+       * `view.initialized` again inside the getter that builds its bins.
+       */
+      get coarseTierHasSomewhereToDraw(): boolean {
+        return true
+      },
     }))
     .views(self => ({
       /**
@@ -205,14 +226,21 @@ export default function CoarseTierMixin<P extends object>() {
     .views(self => ({
       /**
        * #getter
-       * Overridable hook (default: the tier's verdict) — whether the tier is
-       * standing in for the detail on screen right now. A display whose tier
-       * needs somewhere to draw narrows it: canvas adds the view geometry the
-       * draw is mapped through, alignments the coverage band that can be
-       * hidden.
+       * Whether the tier is standing in for the detail on screen right now:
+       * the tier's verdict, a measured view, and the display's own
+       * `coarseTierHasSomewhereToDraw`.
+       *
+       * Not a hook any more. It was one, and the three displays that filled it
+       * wrote two spellings of the same conjunction between them — which is
+       * how alignments came to be the one that never checked the view. A
+       * display with a place-to-draw term states that term alone now.
        */
       get coarseTierStandsIn(): boolean {
-        return self.coarseTierActive
+        return (
+          self.coarseTierActive &&
+          view(self).initialized &&
+          self.coarseTierHasSomewhereToDraw
+        )
       },
       /**
        * #getter
@@ -374,7 +402,11 @@ export default function CoarseTierMixin<P extends object>() {
           },
           commit: ({ result, issued }, read) => {
             if (issued !== undefined) {
-              host(self).commitFetchBytes([measuredBytes(result)], issued)
+              host(self).commitFetchBytes(
+                [measuredBytes(result)],
+                issued,
+                measurementPartial(result),
+              )
             }
             if (!isRegionRefused(result)) {
               self.setCoarseTier(result.entries, read)

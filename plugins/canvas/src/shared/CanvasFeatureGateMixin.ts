@@ -1,6 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
-import { onDisplayedRegionsChange } from '@jbrowse/display-kit/displayAutoruns'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
@@ -125,6 +124,9 @@ export default function CanvasFeatureGateMixin() {
       },
       /**
        * #action
+       * `RegionTooLargeMixin`'s hook: the density axis drops its counts on the
+       * trigger that drops the byte estimate, so one gate cannot hold two
+       * measurements of two different files.
        */
       clearGateMeasurements() {
         self.densityStatsPerRegion.clear()
@@ -156,17 +158,6 @@ export default function CanvasFeatureGateMixin() {
             })
           }
         }
-      },
-    }))
-    .actions(self => ({
-      afterAttach() {
-        onDisplayedRegionsChange(
-          self,
-          () => {
-            self.clearGateMeasurements()
-          },
-          'CanvasFeatureGateClearOnNav',
-        )
       },
     }))
 }

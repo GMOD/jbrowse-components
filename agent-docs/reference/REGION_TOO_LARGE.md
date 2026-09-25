@@ -24,9 +24,10 @@ track.
 Tests: `regionTooLargeUtils.test.ts` and `nextGateState.test.ts` for the pure
 parts, `gateTruthTable.test.ts` for every getter against boundary values
 (16,800 rows collapse to 7 banner-facing states, listed at the top of its golden
-file), a `derivedRegionTooLarge.test.ts` per gated display bar arc, whose
-equivalent is `fetchArcFeatures.test.ts`, and the fetch runners' own files for
-the commit and the refusal skip.
+file), a `derivedRegionTooLarge.test.ts` on alignments, multi-row, MAF and
+multi-sample variant, `densityTier.test.ts` where the band has replaced the
+banner, `gateDeclined.test.ts` for the display that declines the gate outright,
+and the fetch runners' own files for the commit and the refusal skip.
 
 ![What one gated fetch decides, and what the first refusal does to the batch](diagrams/region-too-large-gate.svg)
 
@@ -37,8 +38,9 @@ A display opts in with two lines: override `gateEnabled` to `true`, and pass
 is the mixin's and the fetch runners'.
 
 1. **The RPC measures first.** `measureRegionBytes` is the first await that
-   touches the data in every gated feature RPC (canvas's two, alignments, arc,
-   both MAF tiers, multi-sample variant, LD — MAF's two load their samples
+   touches the data in every gated feature RPC (canvas's two, alignments, the
+   mark display's `CoreEncodeFeatures`, both MAF tiers, multi-sample variant —
+   MAF's two load their samples
    adapter, a cached Newick read, ahead of it): one index read per region, no
    features. Over budget, it answers a `RegionTooLargeResult` in place of the
    payload; under, the payload carries `bytes` too. Canvas then samples density
@@ -60,11 +62,18 @@ is the mixin's and the fetch runners'.
    it offers "zoom in".
 
 The estimate survives `clearAllRpcData()`, so a pan doesn't flicker the banner.
-One autorun on the mixin, `ClearByteEstimateOnNavOrTierSwap`, drops it when
+One autorun on the mixin, `ClearGateMeasurementsOnNavOrTierSwap`, drops it when
 the estimate stops describing the fetch the display would make: chromosome
 navigation (`displayedRegionIndex` is reused) and a tier swap
 (`byteGateAdapterConfig` changes — MAF's summary tier at 20 kb). `forceLoadTrack`
 survives both.
+
+**Both axes drop on that one trigger**, through the `clearGateMeasurements`
+hook the autorun calls beside the estimate; `CanvasFeatureGateMixin` fills it
+with its per-region counts. They used to clear on different triggers, the byte
+estimate on navigation *and* a tier swap and the density counts on navigation
+alone, so re-pointing a track's adapter dropped the bytes and left
+`densityTooLarge` speaking for the previous file until the refetch landed.
 
 **Neither budget is an RPC cache key.** `resolvedByteLimit()` and canvas's
 `maxFeatureDensity` swing at 20 kb and on force-load, so they travel as
@@ -72,15 +81,32 @@ call-site arguments, never in `rpcProps()`, where a swing would be a full
 refetch. Raising a budget releases the verdict and refetches the refused
 region; lowering one re-banners from the stored measurement with no RPC.
 
-**A refusal refuses what the fetch is granular in.** Per-region runners store
-nothing for the refused region and keep what its neighbours already stored; a
-batched fetch (variants, MAF, LD, arc) refuses the whole payload. MAF's batch is
+**A refusal refuses what the fetch is granular in**, and the three runners are
+granular in three things. `fetchEachRegion` stops the batch at the first
+refusal, because N round trips are still in flight and no sibling can change a
+display-wide verdict. `fetchRegionsBatched` refuses the one payload it asked
+for (variants, MAF's detail tier). `fetchAllRegions` already holds every
+result, so it stores the regions that fit and drops the ones that did not, with
+nothing left to cancel — no gated display is on it, and which of the three a
+gated one should want is
+[ideas/waiting-on-a-call/per-region-banner-for-a-mixed-region-set.md](../ideas/waiting-on-a-call/per-region-banner-for-a-mixed-region-set.md).
+MAF's batch is
 itself a per-region fan-out, so its first refusal aborts a signal scoped to that
 batch (`refusalScope` in `fetchMafData.ts`) and the siblings still downloading
 abort rather than land into a payload about to be discarded. The banner
 quotes the largest region's bytes labelled with the whole visible span — a
 label, never a denominator: dividing by span releases a region the worker still
 refuses.
+
+**A measurement carries whether it covers the set.** A fan-out that stopped
+early reports the max over whichever regions won the race, and `partial` is
+that fact travelling beside `bytes` so `nextByteEstimate` does not read it as
+evidence about zoom. `fetchEachRegion` derives it from its own landed count;
+the runners handed one payload read it off the result with `measurementPartial`
+(`byteBudget.ts`), which is how MAF's two tiers report it — their abort is the
+only thing in the tree that cuts a set short behind a single payload. Every
+commit site reads `measuredBytes` and `measurementPartial` as a pair, so a
+fourth runner cannot commit the number without the claim about it.
 
 **The first refusal ends the batch.** The verdict is a display-wide max on both
 axes and `tooLarge` replaces the whole subtree, so no sibling can change the
@@ -369,8 +395,9 @@ the parts:
   forced to `density` over data it already holds draws the band alone rather
   than over the features. `CoarseTierMixin.fetchSuspended` answers
   `resolveFetchSuspended` into the fetch plan: the display's stand-in term
-  (`coarseTierStandsIn` — the verdict, or on alignments the verdict plus a
-  visible coverage band) and `mode === 'always' || !gateRefusesDetail`. A
+  (`coarseTierStandsIn` — the verdict, a measured view, and the display's own
+  `coarseTierHasSomewhereToDraw`, which alignments fills with its visible
+  coverage band) and `mode === 'always' || !gateRefusesDetail`. A
   forced `density` downloads nothing whatever the gate says; `auto` under a
   refusal keeps its measurement pass, which is what the gate releases through.
   The plan reads the hook tracked, so the flip back to `features` is itself

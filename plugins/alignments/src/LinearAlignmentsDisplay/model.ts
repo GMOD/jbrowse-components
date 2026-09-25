@@ -935,15 +935,15 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * `DensityTierMixin`'s hook: whether the band stands in for the reads,
-           * the tier's verdict AND somewhere to draw it. "Show coverage" off
-           * collapses the band to nothing, so with it off the reads are fetched
-           * and drawn as they always were. The pileup, the axis and the fetch
-           * all read this one term, so the band and the reads never both go
-           * missing.
+           * `CoarseTierMixin`'s hook: the band the tier's bins are drawn in.
+           * "Show coverage" off collapses it to nothing, so with it off the
+           * reads are fetched and drawn as they always were. The pileup, the
+           * axis and the fetch all read `coarseTierStandsIn`, which conjoins
+           * this with the tier's verdict and a measured view, so the band and
+           * the reads never both go missing.
            */
-          get coarseTierStandsIn(): boolean {
-            return self.coarseTierActive && self.showCoverage
+          get coarseTierHasSomewhereToDraw(): boolean {
+            return self.showCoverage
           },
 
           /**
@@ -964,7 +964,9 @@ export default function stateModelFactory(
           > {
             const regions = new Map<number, CoverageRegionFields>()
             const { view } = self
-            if (this.coarseTierStandsIn && view.initialized) {
+            // `coarseTierStandsIn` carries the measured view, so the second
+            // check this used to make here is the mixin's now
+            if (self.coarseTierStandsIn) {
               const binSize = densityBinSize(view.coarseBpPerPx)
               for (const [displayedRegionIndex, bins] of self.coarseTier) {
                 regions.set(
@@ -1005,7 +1007,7 @@ export default function stateModelFactory(
            */
           get autoscaleRange(): [number, number] | undefined {
             const hidden = self.hiddenGroupKeys
-            return this.coarseTierStandsIn
+            return self.coarseTierStandsIn
               ? undefined
               : visibleStatsRange({
                   active: self.showCoverage,
@@ -1031,7 +1033,7 @@ export default function stateModelFactory(
            * always were.
            */
           get coverageDomain(): [number, number] | undefined {
-            return this.coarseTierStandsIn
+            return self.coarseTierStandsIn
               ? this.densityDepthMax > 0
                 ? getNiceDomain({
                     domain: [0, this.densityDepthMax],

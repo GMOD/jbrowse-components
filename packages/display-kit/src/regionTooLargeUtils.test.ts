@@ -449,6 +449,9 @@ describe('a gating display whose schema declares no budget', () => {
       get byteGateAdapterConfig() {
         return { type: 'StubAdapter' }
       },
+      get gateViewportSpanBp() {
+        return VIEWPORT.spanBp
+      },
       get gateViewport() {
         return VIEWPORT
       },

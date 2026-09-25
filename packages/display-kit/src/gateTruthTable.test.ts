@@ -21,9 +21,11 @@ import type { ByteEstimate } from './regionTooLargeUtils.ts'
 // divide the gate between them exactly there.
 //
 // The leaves every derived getter sits on are the display opt-in and its
-// density verdict, the two force-load flags, the viewport, the two limits, the
-// stored estimate and the measured-viewport key. All eight are overridden here,
-// so no view, track or config node is involved and a row costs one `create`.
+// density verdict, the two force-load flags, the viewport's span and its
+// identity, the two limits, the stored estimate and the measured-viewport key.
+// All nine are overridden here, so no view, track or config node is involved
+// and a row costs one `create`. The span and the identity are separate leaves
+// because the budget questions read only the span — see `gateViewportSpanBp`.
 
 const VIEWPORT_KEY = 'chr1:0-100'
 
@@ -58,6 +60,9 @@ const TruthTableDisplay = types
     },
     get byteGateAdapterConfig() {
       return { type: 'StubAdapter' }
+    },
+    get gateViewportSpanBp() {
+      return self.inSpanBp
     },
     get gateViewport() {
       return self.inSpanBp === undefined

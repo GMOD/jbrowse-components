@@ -44,11 +44,17 @@ function selfWith(
   loaded: number[] = [],
   bytes: (number | undefined)[][] = [],
   stored = new Map<number, unknown>(),
+  partials: boolean[] = [],
 ) {
   return {
     gateFetchState: () => ISSUED,
-    commitFetchBytes: (perRegionBytes: (number | undefined)[]) => {
+    commitFetchBytes: (
+      perRegionBytes: (number | undefined)[],
+      _issued: GateFetchState,
+      partial = false,
+    ) => {
       bytes.push(perRegionBytes)
+      partials.push(partial)
     },
     // these runners issue one call, so there is no sibling to cancel and
     // nothing here calls it — declared to satisfy the shared model shape
@@ -191,4 +197,33 @@ test('a refused batch commits nothing and marks nothing loaded, but its bytes re
   expect(committed).toEqual([])
   expect(loaded).toEqual([])
   expect(bytes).toEqual([[9e9]])
+})
+
+// The bytes and the claim about them come off the one payload together. This
+// runner cannot derive the claim — it issued one call and got one answer — so
+// a caller whose `call` is itself a fan-out (MAF, whose `refusalScope` aborts
+// the siblings at the first refusal) reports it on the result, and the runner's
+// job is only to not drop it on the floor. Dropping it is what let
+// `nextByteEstimate` read one region's bytes as evidence about zoom.
+test("carries the result's partial claim into the commit", async () => {
+  const run = async (result: unknown) => {
+    const partials: boolean[] = []
+    await fetchRegionsBatched(
+      selfWith(fresh(), [], [], new Map(), partials),
+      REGIONS,
+      {
+        call: () => Promise.resolve(result as { regionTooLarge: true }),
+        commit: () => {},
+      },
+    )
+    return partials
+  }
+  expect(
+    await run({ regionTooLarge: true, bytes: 9e9, partial: true }),
+  ).toEqual([true])
+  expect(
+    await run({ regionTooLarge: true, bytes: 9e9, partial: false }),
+  ).toEqual([false])
+  // a payload that says nothing measured the set it was asked about
+  expect(await run({ bytes: 10 })).toEqual([false])
 })

@@ -42,14 +42,6 @@ export default function DensityBandMixin() {
         /**
          * #getter
          */
-        get coarseTierStandsIn() {
-          return (
-            bandHost(self).coarseTierActive && bandHost(self).host.initialized
-          )
-        },
-        /**
-         * #getter
-         */
         get densityBandLayer() {
           return displayDensityBandLayer(bandHost(self))
         },
@@ -59,7 +51,7 @@ export default function DensityBandMixin() {
          * #getter
          */
         get densityHover(): DensityHover | undefined {
-          return self.coarseTierStandsIn
+          return bandHost(self).coarseTierStandsIn
             ? densityHoverAt(containingLgv(self), self.densityHoverPx)
             : undefined
         },
@@ -71,7 +63,9 @@ export default function DensityBandMixin() {
          * nothing here.
          */
         setDensityHoverPx(px?: number) {
-          self.densityHoverPx = self.coarseTierStandsIn ? px : undefined
+          self.densityHoverPx = bandHost(self).coarseTierStandsIn
+            ? px
+            : undefined
         },
       }))
       .views(self => ({

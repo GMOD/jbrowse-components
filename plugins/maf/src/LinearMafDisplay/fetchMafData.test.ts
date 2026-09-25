@@ -91,6 +91,8 @@ function makeSelf() {
   // what each region stored: the frames ride the detail payload
   const stored = new Map<number, { data: unknown; frames: unknown }>()
   const committedBytes: (number | undefined)[][] = []
+  // the claim about the number beside it: `false` when every region reported
+  const committedPartials: boolean[] = []
   const framesBlocked: boolean[] = []
   const refSampleIds: (string | undefined)[] = []
   return {
@@ -98,6 +100,7 @@ function makeSelf() {
     loadedIndices,
     stored,
     committedBytes,
+    committedPartials,
     framesFetched: () =>
       [...stored].flatMap(([i, p]) => (p.frames === undefined ? [] : [i])),
     framesBlocked,
@@ -111,8 +114,13 @@ function makeSelf() {
         gated: true,
         tierKey: undefined,
       }),
-      commitFetchBytes: (bytes: (number | undefined)[]) => {
+      commitFetchBytes: (
+        bytes: (number | undefined)[],
+        _issued: unknown,
+        partial = false,
+      ) => {
         committedBytes.push(bytes)
+        committedPartials.push(partial)
       },
       annotationsActive: false,
       annotationAdapterConfig: undefined as Record<string, unknown> | undefined,
@@ -250,7 +258,8 @@ describe('the byte gate rides in the tier fetch', () => {
   // the gate, which is what puts a size in the banner and releases it on a
   // later zoom.
   test('a refused region refuses the batch, and its bytes still reach the gate', async () => {
-    const { self, loadedIndices, committedBytes } = makeSelf()
+    const { self, loadedIndices, committedBytes, committedPartials } =
+      makeSelf()
     mockRpcCall.mockImplementation((_s: string, _m: string, args: any) =>
       Promise.resolve(
         args.regions[0].refName === 'ctgA'
@@ -269,13 +278,17 @@ describe('the byte gate rides in the tier fetch', () => {
 
     expect(loadedIndices).toEqual([])
     expect(committedBytes).toEqual([[9e9]])
+    // ctgB resolved too, so 9e9 is the max over the whole set and the gate may
+    // compare it against the next viewport's — see `measurementPartial`
+    expect(committedPartials).toEqual([false])
   })
 
   // The refusal stops the batch's own signal, so a sibling still downloading
   // aborts at the socket and is simply absent from what the gate is handed; the
   // fetch's signal, which the display's cancel owns, is left alone.
   test('the first refusal aborts the siblings still in flight', async () => {
-    const { self, loadedIndices, committedBytes } = makeSelf()
+    const { self, loadedIndices, committedBytes, committedPartials } =
+      makeSelf()
     const siblingTokens: AbortSignal[] = []
     mockRpcCall.mockImplementation((_s: string, _m: string, args: any) => {
       if (args.regions[0].refName === 'ctgA') {
@@ -293,6 +306,12 @@ describe('the byte gate rides in the tier fetch', () => {
 
     expect(loadedIndices).toEqual([])
     expect(committedBytes).toEqual([[9e9]])
+    // The abort is exactly what makes the number partial: ctgB never reported,
+    // so 9e9 is ctgA's alone. Committing it as whole evidence let
+    // `nextByteEstimate` compare one region's bytes at this viewport against
+    // another's at the next and clear the 90% bar on that alone, dropping the
+    // banner's "zoom in" advice where zooming in would have worked.
+    expect(committedPartials).toEqual([true])
     expect(siblingTokens).toHaveLength(1)
     expect(siblingTokens[0]).not.toBe(lastCtxSignal)
     expect(siblingTokens[0]!.aborted).toBe(true)
@@ -338,6 +357,10 @@ describe('the summary read', () => {
         },
       ],
       bytes: 10,
+      // every region reported, so the max is over the set — the claim rides
+      // beside the number on the success branch too, since `CoarseTierMixin`
+      // reads the pair off whatever this answers
+      partial: false,
     })
     expect(made.loadedIndices).toEqual([])
   })
@@ -354,6 +377,9 @@ describe('the summary read', () => {
     expect(await fetchSummary(made)).toEqual({
       regionTooLarge: true,
       bytes: 9e9,
+      // both regions answered the same stubbed refusal, so the max is over the
+      // set; `CoarseTierMixin` reads this field straight into `commitFetchBytes`
+      partial: false,
     })
   })
 })

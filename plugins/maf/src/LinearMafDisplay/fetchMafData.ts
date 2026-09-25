@@ -135,6 +135,8 @@ interface MafBatch<R> {
     frames: MafFrameRecord[] | undefined
   }[]
   bytes?: number
+  /** `bytes` is the max over the regions that reported, not over the set */
+  partial?: boolean
   /** the frames read declined a region, so no region carries frames */
   framesRefused: boolean
 }
@@ -147,7 +149,9 @@ interface MafBatch<R> {
  * this viewport has. The first refusal also aborts the siblings still in flight
  * (`refusalScope`), since their payloads would only be discarded. The largest
  * measurement among the regions that landed still goes back to the gate, which
- * is what puts a size in the banner and releases it once the user zooms.
+ * is what puts a size in the banner and releases it once the user zooms —
+ * flagged `partial` when the abort cut the set short, so the gate reads it as
+ * a size and not as evidence about zoom.
  *
  * The RPC payload carries no color/style settings — worker output is purely
  * data-dependent and the main thread encodes from it plus `gpuProps()`, so
@@ -196,8 +200,15 @@ async function callMafRegions<R extends SampleSet>(
   // The batch's own byte number, whichever way it goes: the budget is what
   // one region may cost, so the largest is what was judged and what the
   // banner quotes.
+  //
+  // `partial` is the claim about that number, and it travels with it for the
+  // reason `measurementPartial` gives: the first refusal aborts the siblings,
+  // so a refused batch's largest is the largest among whichever regions won
+  // the race. `fetchEachRegion` derives the same fact from its own landed
+  // count; a runner handed one payload can only be told.
   const perRegionBytes = results.map(r => measuredBytes(r.result))
   const bytes = largestRegionBytes(perRegionBytes)
+  const partial = results.length < regions.length
   const kept: MafBatch<R>['results'] = []
   let refused = false
   for (const { displayedRegionIndex, result } of results) {
@@ -212,8 +223,8 @@ async function callMafRegions<R extends SampleSet>(
     }
   }
   return refused
-    ? { regionTooLarge: true as const, bytes }
-    : { results: kept, bytes, framesRefused: frames.refused }
+    ? { regionTooLarge: true as const, bytes, partial }
+    : { results: kept, bytes, partial, framesRefused: frames.refused }
   // #endregion
 }
 
@@ -399,5 +410,6 @@ export async function fetchMafSummaryData(
       payload: { data: result.records, frames },
     })),
     bytes: batch.bytes,
+    partial: batch.partial,
   }
 }

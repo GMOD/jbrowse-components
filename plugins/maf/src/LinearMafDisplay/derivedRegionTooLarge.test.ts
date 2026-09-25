@@ -320,7 +320,7 @@ describe('MAF measures the tier it is about to fetch', () => {
 
   // The estimate is about a fetch, and past the swap it is about a fetch nobody
   // is making — the alignment's megabytes quoted for a summary read that would
-  // have measured ~60 kB. `RegionTooLargeMixin`'s ClearByteEstimateOnNavOrTierSwap
+  // have measured ~60 kB. `RegionTooLargeMixin`'s ClearGateMeasurementsOnNavOrTierSwap
   // autorun drops it, the same rule chromosome nav applies on the other axis.
   // The while-gated re-measure would correct it a beat later, but only after the
   // banner had already shown the wrong number against the wrong file.
@@ -360,7 +360,7 @@ describe('MAF measures the tier it is about to fetch', () => {
 
   // A fetch in flight across the swap is the tier-swap clear's blind spot: its
   // measurement was issued against the detail tier, and committing it after
-  // the swap would re-instate the very number ClearByteEstimateOnNavOrTierSwap just
+  // the swap would re-instate the very number ClearGateMeasurementsOnNavOrTierSwap just
   // dropped — the fetch autoruns skip while a fetch is in flight, so nothing
   // aborts it at the crossing. The commit is judged by the tier
   // captured at issue (`GateFetchState.tierKey`), the same rule the viewport
@@ -555,7 +555,7 @@ describe('the byte gate commit', () => {
 
   // The tier the estimate is ABOUT: a fetch still in flight across the summary
   // swap would otherwise re-instate the old tier's bytes right behind
-  // `ClearByteEstimateOnNavOrTierSwap`, and the banner would quote megabytes of
+  // `ClearGateMeasurementsOnNavOrTierSwap`, and the banner would quote megabytes of
   // alignment against a summary read.
   it('drops a measurement issued against the other tier', () => {
     const { display, view } = createMafTestEnvironment({

@@ -161,12 +161,30 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
+       * The span on screen, or undefined until the view is measured — the half
+       * of {@link gateViewport} that every budget question needs and the
+       * identity half that only a staleness compare does.
+       *
+       * Split off because the identity is a string joined over
+       * `view.visibleRegions`, which rebuilds on every frame of every gesture,
+       * and `aboveForceLoadFloor` → `gateByteLimit` → `resolvedByteLimit()` →
+       * `tooLargeStatus` is read by both fetch autoruns. Every gated display
+       * therefore rebuilt that string per frame to answer "is the span at
+       * least 20 kb". The key is built where it is compared instead, which is
+       * once per fetch and, on the banner path, only while the banner is up.
+       */
+      get gateViewportSpanBp(): number | undefined {
+        const view = containingHost(self)
+        return view.initialized ? view.visibleBp : undefined
+      },
+      /**
+       * #getter
        * What a measurement taken now would be about: the span on screen, and a
        * key for the stretch of genome it covers **and the settings it would be
-       * taken under**. Undefined until the view is measured, and the mixin's
-       * only read of the view. Captured before the fetch's round trip, never at
-       * commit, so the stamp names the settings the worker actually counted
-       * under.
+       * taken under**. Undefined until the view is measured, and with
+       * {@link gateViewportSpanBp} the mixin's only read of the view. Captured
+       * before the fetch's round trip, never at commit, so the stamp names the
+       * settings the worker actually counted under.
        *
        * The settings term is `settingsFetchInputs`, the axis every family
        * invalidates data on. It belongs in the measurement because the worker's
@@ -177,18 +195,18 @@ export default function RegionTooLargeMixin() {
        * move; the rule is one rule rather than one per axis.
        */
       get gateViewport(): GateViewport | undefined {
-        const view = containingHost(self)
-        if (!view.initialized) {
+        const spanBp = this.gateViewportSpanBp
+        if (spanBp === undefined) {
           return undefined
         }
-        const regions = view.visibleRegions
-          .map(
+        const regions = containingHost(self)
+          .visibleRegions.map(
             r =>
               `${r.displayedRegionIndex}:${r.refName}:${Math.floor(r.start)}-${Math.ceil(r.end)}`,
           )
           .join(',')
         return {
-          spanBp: view.visibleBp,
+          spanBp,
           key: { regions, settings: host(self).settingsFetchInputs },
         }
       },
@@ -200,7 +218,7 @@ export default function RegionTooLargeMixin() {
        * comparison against that constant. False on an unmeasured view.
        */
       get aboveForceLoadFloor(): boolean {
-        const spanBp = self.gateViewport?.spanBp
+        const spanBp = self.gateViewportSpanBp
         return spanBp !== undefined && spanBp >= AUTO_FORCE_LOAD_BP
       },
       /**
@@ -223,7 +241,7 @@ export default function RegionTooLargeMixin() {
        * would ask: the viewport on screen, under the settings on screen. True
        * before any measurement. The triple's third term, the adapter tier, is
        * not here — a tier swap drops the measurement outright
-       * (`ClearByteEstimateOnNavOrTierSwap`) rather than marking it stale.
+       * (`ClearGateMeasurementsOnNavOrTierSwap`) rather than marking it stale.
        */
       get gateMeasurementStale(): boolean {
         return !isDataCurrent(
@@ -255,7 +273,7 @@ export default function RegionTooLargeMixin() {
         return (
           self.gateEnabled &&
           !self.gateExempt &&
-          self.gateViewport !== undefined
+          self.gateViewportSpanBp !== undefined
         )
       },
     }))
@@ -354,6 +372,24 @@ export default function RegionTooLargeMixin() {
 
       /**
        * #action
+       * Overridable hook (no-op base): drop what the *other* axis measured,
+       * on the one trigger that invalidates this one. `CanvasFeatureGateMixin`
+       * fills it with its per-region feature counts.
+       *
+       * A hook rather than a second autorun beside it, because the two axes
+       * answer one question — `tooLargeStatus` reads bytes and then density —
+       * and a measurement of either describes one file at one viewport. They
+       * used to clear on different triggers, the byte estimate on navigation
+       * *and* a tier swap and the density counts on navigation alone, so
+       * re-pointing a track's adapter dropped the bytes and left
+       * `densityTooLarge` speaking for the previous file until the refetch
+       * landed: "Too many features" standing over a track that no longer had
+       * them.
+       */
+      clearGateMeasurements() {},
+
+      /**
+       * #action
        */
       setForceLoadTrack(flag: boolean) {
         applyGateEvent(self, { kind: 'forceLoad', approved: flag })
@@ -403,8 +439,9 @@ export default function RegionTooLargeMixin() {
             void view.displayedRegions
             void self.byteGateAdapterConfig
             self.clearByteEstimate()
+            self.clearGateMeasurements()
           },
-          { name: 'ClearByteEstimateOnNavOrTierSwap' },
+          { name: 'ClearGateMeasurementsOnNavOrTierSwap' },
         )
       },
     }))

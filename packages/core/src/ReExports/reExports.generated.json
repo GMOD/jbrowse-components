@@ -1199,6 +1199,7 @@
         "largestRegionBytes",
         "measureRegionBytes",
         "measuredBytes",
+        "measurementPartial",
         "overByteBudget"
       ],
       "worker": "real"

@@ -169,8 +169,15 @@ const [results, frames] = await Promise.all([
 // The batch's own byte number, whichever way it goes: the budget is what
 // one region may cost, so the largest is what was judged and what the
 // banner quotes.
+//
+// `partial` is the claim about that number, and it travels with it for the
+// reason `measurementPartial` gives: the first refusal aborts the siblings,
+// so a refused batch's largest is the largest among whichever regions won
+// the race. `fetchEachRegion` derives the same fact from its own landed
+// count; a runner handed one payload can only be told.
 const perRegionBytes = results.map(r => measuredBytes(r.result))
 const bytes = largestRegionBytes(perRegionBytes)
+const partial = results.length < regions.length
 const kept: MafBatch<R>['results'] = []
 let refused = false
 for (const { displayedRegionIndex, result } of results) {
@@ -185,8 +192,8 @@ for (const { displayedRegionIndex, result } of results) {
   }
 }
 return refused
-  ? { regionTooLarge: true as const, bytes }
-  : { results: kept, bytes, framesRefused: frames.refused }
+  ? { regionTooLarge: true as const, bytes, partial }
+  : { results: kept, bytes, partial, framesRefused: frames.refused }
 ```
 
 `ctx.isStale()` returns `true` if the user panned/zoomed or settings changed

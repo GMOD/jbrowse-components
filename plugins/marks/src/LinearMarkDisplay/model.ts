@@ -735,12 +735,6 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         */
-        get coarseTierStandsIn(): boolean {
-          return self.coarseTierActive && self.host.initialized
-        },
-        /**
-         * #getter
          * The tier's bins as this display's own payload: the density mark's
          * layer built from the sidecar's intervals, every other mark empty.
          * Keyed off `coarseTier`, which moves once per read.

@@ -71,9 +71,13 @@ export interface CoarseTierEntry<P> {
   payload: P
 }
 
-/** What a coarse read answers: one payload per region it covered, or a refusal. */
+/**
+ * What a coarse read answers: one payload per region it covered, or a refusal.
+ * A gated read reports `bytes` with `partial` beside it, the same pair every
+ * fetch runner commits — see `measurementPartial`.
+ */
 export type CoarseTierResult<P> =
-  | { entries: CoarseTierEntry<P>[]; bytes?: number }
+  | { entries: CoarseTierEntry<P>[]; bytes?: number; partial?: boolean }
   | RegionTooLargeResult
 
 /**

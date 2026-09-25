@@ -108,7 +108,7 @@ does not move, which is what `fetchGeneration` is and why the body never needed
 `isLoading`.
 
 The byte estimate is not dropped here. `RegionTooLargeMixin`'s own
-`ClearByteEstimateOnNavOrTierSwap` autorun drops it on the same trigger and on
+`ClearGateMeasurementsOnNavOrTierSwap` autorun drops it on the same trigger and on
 a tier swap, since both change which fetch the estimate describes — a stale one
 would quote the previous chromosome's numbers at the new region until a
 re-measure landed. `clearAllRpcData` deliberately leaves it alone, so an
@@ -223,7 +223,8 @@ declaration over) reads `reloadCounter` and `fetchCanceled` unconditionally at
 the top of its body, above every gate, and that ordering is load-bearing. MobX
 rebuilds the dependency set on every run, so a read placed inside the gate drops
 out of it on any run that decides not to fetch — and can then never wake the
-autorun again. Arc is the shape that exposed this: its `prepare` declines while
+autorun again. The arc display was the shape that exposed this — the plugin has
+since been deleted, so don't go looking: its `prepare` declined while
 `dataCurrent`, which goes true on every successful fetch, so with
 `reloadCounter` read under the gate `reload()` was silently dead. The viewport
 and the `rpcProps()` cache key (`FetchMixin.settingsFetchInputs`, for the reason
@@ -310,7 +311,7 @@ above — the autorun settles into a state nothing will wake it from.
 
 **The comparative twin, and why this is a law rather than one installer's
 quirk.** `installComparativeFetchAutorun` reads `reloadCounter` above its
-`prepare()` bail-outs for exactly the reason arc does, and it was added the same
+`prepare()` bail-outs for exactly the reason arc did, and it was added the same
 way — by finding both non-LGV views unable to recover from a fetch error,
 because after a failure every fetch input is unchanged and clearing the error
 alone refires nothing. So every fetch in the tree now carries the same pure

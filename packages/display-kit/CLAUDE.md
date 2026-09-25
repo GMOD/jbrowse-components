@@ -262,7 +262,11 @@ buys nothing: a second derivation misses the field the args gain next, latches
   banner. The two rules that makes the batch owe — commit at most once, and
   commit before cancelling — are `gateBatch`'s, not a runner's to remember;
   `refuse()` and `settle()` are the whole surface. Why each rule exists, and
-  what it cost to get wrong, is at `gateBatch` and in REGION_TOO_LARGE.md.
+  what it cost to get wrong, is at `gateBatch` and in REGION_TOO_LARGE.md. The
+  other two runners are granular in what they asked for, so their refusal is the
+  payload and the result set respectively; `fetchAllRegions` has no gated
+  display and which granularity a gated one should want is the open call in
+  `ideas/waiting-on-a-call/per-region-banner-for-a-mixed-region-set.md`.
 - **`loadedRegions` is written where the payload is stored**, through
   `ctx.commitRegion(displayedRegionIndex)` — the helpers above call it for you,
   and skip a region the worker refused for size (`isRegionRefused`). It takes an
@@ -286,6 +290,17 @@ buys nothing: a second derivation misses the field the args gain next, latches
   refused region; `installGlobalFetchAutorun`'s shared commit does the same for
   the global family. No display issues a pre-flight estimate RPC, and there is
   no display-side commit.
+- **A commit site reads `measuredBytes` and `measurementPartial` as a pair**,
+  because a fan-out that stopped at its first refusal reports the max over
+  whichever regions won the race and `nextByteEstimate` must not read that as
+  evidence about zoom. `fetchEachRegion` derives the claim from its own landed
+  count; a runner handed one payload reads it off the result, which is how MAF's
+  two tiers report their `refusalScope` abort.
+- **Both gate axes clear on one trigger.** `RegionTooLargeMixin`'s
+  `ClearGateMeasurementsOnNavOrTierSwap` drops the byte estimate and calls
+  `clearGateMeasurements`, the hook `CanvasFeatureGateMixin` fills with its
+  density counts. Two autoruns on two trigger lists is how the density axis came
+  to survive an adapter re-point the byte axis dropped.
 - The foundation's own tests come in two halves, and a change usually belongs in
   one of them rather than in a plugin's suite. `planRegionFetch.test.ts` is the
   **decision** — given these inputs, fetch this region set — and needs no tree.
