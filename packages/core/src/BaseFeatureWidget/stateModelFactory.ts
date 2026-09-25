@@ -15,7 +15,16 @@ import type {
 import type { SequenceHoverPosition } from './SequenceFeatureDetails/model.ts'
 import type { FormatDetailsTiers } from './formatDetails.ts'
 import type { Descriptors, MaybeSerializedFeat } from './types.tsx'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+
+interface TrackNode extends IStateTreeNode {
+  type: string
+  configuration: { trackId: string }
+}
+
+function isTrackNode(thing: unknown): thing is TrackNode {
+  return isStateTreeNode(thing) && 'type' in thing && 'configuration' in thing
+}
 
 /**
  * #stateModel BaseFeatureWidget
@@ -179,13 +188,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      afterAttach() {
-        const { track } = self
-        if (track) {
-          self.trackId = track.configuration.trackId
-          self.trackType = track.type
-        }
-      },
       /**
        * #action
        */
@@ -218,11 +220,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
     .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
       const { featureData, ...rest } = snap ?? {}
-      return { unformattedFeatureData: featureData, ...rest }
+      // here rather than in afterAttach: a second feature opened into the same
+      // widget id reconciles onto the existing node, which never re-attaches
+      const { track } = rest
+      return {
+        unformattedFeatureData: featureData,
+        ...(isTrackNode(track)
+          ? { trackId: track.configuration.trackId, trackType: track.type }
+          : {}),
+        ...rest,
+      }
     })
     .postProcessSnapshot(snap => {
       const { unformattedFeatureData, ...rest } = snap
-      // JSON.stringify can return empty if too large
+      // undefined when there is no feature
       const json = JSON.stringify(unformattedFeatureData)
       const tooLargeToPersist = !json || json.length > 2_000_000
       return {

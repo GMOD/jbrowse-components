@@ -74,9 +74,19 @@ function setup({
       closeTrack() {
         self.trackModels.clear()
       },
+      // what `openFeatureWidget` does, onto a widget already open under that id
+      open(featureData?: SimpleFeatureSerialized) {
+        // a live track node, as the session's untyped widget map accepts
+        self.widget = {
+          id: self.widget.id,
+          type: 'BaseFeatureWidget',
+          featureData,
+          track: self.trackModels[0],
+        } as never
+      },
     }))
 
-  return Session.create(
+  const session = Session.create(
     {
       configuration: { formatDetails: sessionFormatDetails ?? {} },
       tracks: trackFormatDetails
@@ -92,13 +102,12 @@ function setup({
       trackModels: trackFormatDetails
         ? [{ id: 'track1', type: 'TestTrack', configuration: 'testtrack' }]
         : [],
-      widget: {
-        type: 'BaseFeatureWidget',
-        ...(trackFormatDetails ? { track: 'track1' } : {}),
-      },
+      widget: { type: 'BaseFeatureWidget' },
     },
     { pluginManager },
   )
+  session.open()
+  return session
 }
 
 const feature: SimpleFeatureSerialized = {
@@ -290,6 +299,25 @@ test('closing the track keeps the track tier applied', () => {
   expect(model.widget.trackId).toBe('testtrack')
   expect(model.widget.featureData).toMatchObject({
     fromSession: 'global',
+    fromTrack: 'local',
+  })
+})
+
+// A second click reconciles onto the open widget instead of creating one, so
+// nothing that runs only when a node attaches sees it
+test('a feature opened into the same widget keeps the track tier', () => {
+  const model = setup({
+    trackFormatDetails: { feature: "jexl:{fromTrack:'local'}" },
+  })
+  model.open(feature)
+  const widget = model.widget
+  model.open({ ...feature, uniqueId: 'f2' })
+  expect(model.widget).toBe(widget)
+  expect(model.widget.trackId).toBe('testtrack')
+  expect(model.widget.trackType).toBe('TestTrack')
+  model.closeTrack()
+  expect(model.widget.featureData).toMatchObject({
+    uniqueId: 'f2',
     fromTrack: 'local',
   })
 })
