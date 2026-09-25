@@ -9,7 +9,7 @@ export interface RowGroup {
   color: string
 }
 
-interface CompiledRowGroup extends RowGroup {
+export interface CompiledRowGroup extends RowGroup {
   re: RegExp
 }
 
