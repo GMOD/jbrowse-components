@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 import { morphClockMs } from '@jbrowse/core/util'
-import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { isLiveModel } from '@jbrowse/display-ui'
 import { autorun } from 'mobx'
 
 /**
@@ -13,10 +13,6 @@ export interface AnimationHost {
   animating?: boolean
   advanceAnimation?: (nowMs: number) => void
   endAnimation?: () => void
-}
-
-function alive(model: AnimationHost) {
-  return !isStateTreeNode(model) || isAlive(model)
 }
 
 /**
@@ -38,7 +34,7 @@ export function useAnimationFrames(model: AnimationHost) {
     }
     const frame = () => {
       raf = 0
-      if (alive(model) && model.animating) {
+      if (isLiveModel(model) && model.animating) {
         model.advanceAnimation?.(morphClockMs())
         schedule()
       }
@@ -47,7 +43,7 @@ export function useAnimationFrames(model: AnimationHost) {
     return () => {
       dispose()
       cancelAnimationFrame(raf)
-      if (alive(model)) {
+      if (isLiveModel(model)) {
         model.endAnimation?.()
       }
     }
