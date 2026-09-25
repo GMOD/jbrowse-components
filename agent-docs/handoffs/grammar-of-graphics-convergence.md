@@ -1,6 +1,6 @@
 ---
 name: grammar-of-graphics-convergence
-description: The grammar thread as of 2026-09-24. Four rules for how far to take it (the parser's output is the data, one object per concept, generality resolves before the loop, a track stays its format and the grammar supplies its parts), a census of the copies between each gmod parser and its GPU buffer, Colin's calls of 2026-09-23 (Vega-Lite's mark/shape naming, a DOM text layer, colour stays per mark), and the work left — the copies, and the arc displays' colour object; shared y landed as scales.y.autoscaleGroup, the text mark as ADR-162. y2 was declined on captures. Read before proposing a grammar feature, or converging a display's colour ramp, rows or labels.
+description: The grammar thread as of 2026-09-24. Four rules for how far to take it (the parser's output is the data, one object per concept, generality resolves before the loop, a track stays its format and the grammar supplies its parts), a census of the copies between each gmod parser and its GPU buffer, Colin's calls of 2026-09-23 (Vega-Lite's mark/shape naming, a DOM text layer, colour stays per mark), and the work left — the copies; shared y landed as scales.y.autoscaleGroup, the text mark as ADR-162, and the arc displays went with ADR-163. y2 was declined on captures. Read before proposing a grammar feature, or converging a display's colour ramp, rows or labels.
 ---
 
 # Grammar of graphics: the convergence thread
@@ -56,10 +56,6 @@ Colin's answers to the calls a Fable review of the mark display left open:
 - **Vega-Lite's names.** A mark's kind is `mark` and the point symbol is
   `encoding.shape`, landed as
   [ADR-159](../architecture-decision-records/adr-159-a-mark-is-spelt-as-vega-lite-spells-one.md).
-  The hosted `jbrowse.org/demos/read_marks/config.json` still spells `shape`:
-  run `scripts/deploy-demo.sh demos/read_marks/config.json` when main next
-  deploys,
-  or the tutorial's live links fail to load.
 - **The text layer draws DOM text on screen**, for accessibility. A label
   layer is sparse once overlaps are culled, so DOM costs little there; dense
   per-base text (sequence letters, MAF bases) stays on canvas and outside the
