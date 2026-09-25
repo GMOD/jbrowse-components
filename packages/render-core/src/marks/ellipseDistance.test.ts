@@ -83,6 +83,16 @@ test('a circle is the degenerate case the branch exists for', () => {
   expect(ellipseDistance(0, 0, 2, 2)).toBeCloseTo(2, 12)
 })
 
+test('both radii zero is the point at the origin', () => {
+  // The circle branch above cannot take this one: its threshold is `ay * ay`,
+  // so at zero radii it reads `abs(l) < 0` and the solve divides by `l == 0`.
+  // `linkRadiiPx` hands it out for a pair whose two ends share a pixel.
+  expect(ellipseDistance(3, 4, 0, 0)).toBeCloseTo(5, 12)
+  expect(ellipseDistance(0, 0, 0, 0)).toBe(0)
+  expect(ellipseNearest(3, 4, 0, 0)).toEqual({ x: 0, y: 0, dist: 5 })
+  expect(ellipseNearest(-2, 0, 0, 0)).toEqual({ x: -0, y: 0, dist: 2 })
+})
+
 test('a point on the curve is at distance zero', () => {
   for (const [rx, ry] of [
     [10, 10],

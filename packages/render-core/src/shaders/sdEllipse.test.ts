@@ -36,6 +36,9 @@ function sdEllipse(px: number, py: number, radiusX: number, radiusY: number) {
     ;[qx, qy] = [qy, qx]
     ;[ax, ay] = [ay, ax]
   }
+  if (f(f(ax * ax) + f(ay * ay)) <= 0) {
+    return len(qx, qy)
+  }
   const l = f(f(ay * ay) - f(ax * ax))
   if (Math.abs(l) < f(ELLIPSE_CIRCLE_TOL * f(ay * ay))) {
     return nearCircleDistancePx(qx, qy, ax, ay)
@@ -183,6 +186,21 @@ test.each([
   // width, not a rounding away from it.
   expect(worst).toBeLessThan(0.05)
   expect(worstInk).toBeLessThan(0.1)
+})
+
+// A link pair whose two ends land on the same pixel hands `linkRadiiPx` a zero
+// half-width, and both of its shapes then take the apex to zero as well. The
+// near-circle test cannot catch that pair: its threshold is `ab.y * ab.y`, so
+// at zero radii it reads `abs(l) < 0`, and the solve divides by `l == 0`.
+test.each([
+  [3, 4, 5],
+  [0, 2, 2],
+  [-1.5, 0, 1.5],
+  [0, 0, 0],
+])('radii (0, 0) measure to the origin: (%p, %p)', (px, py, want) => {
+  const got = sdEllipse(px, py, 0, 0)
+  expect(Number.isNaN(got)).toBe(false)
+  expect(got).toBeCloseTo(want, 6)
 })
 
 test('the near-circle branch answers a true circle exactly', () => {

@@ -75,6 +75,15 @@ export function ellipseDistance(
     ;[qx, qy] = [qy, qx]
     ;[ax, ay] = [ay, ax]
   }
+  // Degenerate to the point at the origin, which the circle test below cannot
+  // catch: its threshold is `ay * ay`, so it reads `abs(l) < 0` and lets a zero
+  // divisor through. Same guard as curveDistance.slang's.
+  // Degenerate to the point at the origin, which the circle test below cannot
+  // catch: its threshold is `ay * ay`, so it reads `abs(l) < 0` and lets a zero
+  // divisor through. Same guard as curveDistance.slang's.
+  if (ax * ax + ay * ay <= 0) {
+    return Math.hypot(qx, qy)
+  }
   const l = ay * ay - ax * ax
   // Circle: `l` is the solver's divisor, so hand those back the exact answer
   // rather than a division by ~0. Reachable — a clamped dome's ry is pinned to
@@ -108,7 +117,10 @@ export function ellipseNearest(
   const l = ay * ay - ax * ax
   let nx: number
   let ny: number
-  if (Math.abs(l) < 1e-6 * ay * ay) {
+  if (ax * ax + ay * ay <= 0) {
+    nx = 0
+    ny = 0
+  } else if (Math.abs(l) < 1e-6 * ay * ay) {
     const len = Math.hypot(qx, qy)
     nx = len > 0 ? (qx / len) * ax : ax
     ny = len > 0 ? (qy / len) * ax : 0

@@ -85,6 +85,12 @@ public float sdEllipse(float2 p, float2 radii) {
   float2 q = abs(p);
   float2 ab = radii;
   if (q.x > q.y) { q = q.yx; ab = ab.yx; }
+  // Both radii zero is the one shape the near-circle test below cannot catch:
+  // its own threshold is `ab.y * ab.y`, so it reads `abs(l) < 0` and lets a
+  // zero `l` through to divide. A link pair whose two ends land on the same
+  // pixel reaches it (`linkRadiiPx` of a zero half-width), and the ellipse is
+  // then the point at the origin.
+  if (dot(ab, ab) <= 0.0) { return length(q); }
   float l = ab.y * ab.y - ab.x * ab.x;
   if (abs(l) < ELLIPSE_CIRCLE_TOL * ab.y * ab.y) {
     return nearCircleDistancePx(q.x, q.y, ab.x, ab.y);
