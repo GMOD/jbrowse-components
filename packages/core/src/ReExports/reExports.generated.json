@@ -5305,7 +5305,8 @@
       "package": "@jbrowse/render-core",
       "names": [
         "crispSquareTopLeftPx",
-        "discExpand"
+        "discExpand",
+        "glyphExpand"
       ],
       "worker": "real"
     },
