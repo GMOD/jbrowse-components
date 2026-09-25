@@ -125,6 +125,11 @@ settings do the rest:
   `segmean` onto a diverging blue-to-red scale at four cut points, since this
   BED carries no `itemRgb`, and `labels` names each bin in the key
 
+That colour block is a whole encoding channel written out: the column, the kind
+of scale, its cut points, the colours they map onto and the key those get
+labeled in. Any display taking a `color` slot takes the same five, and
+[](/docs/tutorials/alu_age) puts height and colour on one file that way.
+
 ## Cluster the stack
 
 Open the track at whole-genome zoom, then run **Clustering → Cluster rows by
@@ -334,6 +339,7 @@ shared with the [mutation cohort](/docs/tutorials/tcga_cohort_mutations).
 - [](/docs/tutorials/bxd_qtl)
 - [](/docs/tutorials/chromhmm)
 - [](/docs/tutorials/population_cnv)
+- [](/docs/tutorials/alu_age)
 - [](/docs/tutorials/sv_visualization_cgiab)
 - [](/docs/config_guides/jexl)
 
