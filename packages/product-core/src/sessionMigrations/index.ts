@@ -251,10 +251,16 @@ function migrateDisplayType(
   // gone exactly where it is needed most: a v4 session on an admin config, which
   // is the commonest way anyone has one of these displays at all. Route them the
   // way extractInstanceHeight routes its own, into the config the instance
-  // points at. A *config* display node has no `configuration` reference and
-  // keeps them inline, where they are the live slots.
-  const displayId = display.configuration
-  if (trackConfigId && typeof displayId === 'string') {
+  // points at, under the id the new type mints: the old type's id names no
+  // display a config.json track hydrates. A *config* display node has no
+  // `configuration` reference and keeps them inline, where they are the live
+  // slots.
+  const { configuration } = display
+  if (trackConfigId && typeof configuration === 'string') {
+    const displayId =
+      configuration === `${trackConfigId}-${String(display.type)}`
+        ? `${trackConfigId}-${entry.type}`
+        : configuration
     if (Object.keys(missing).length > 0) {
       collected.push({
         trackConfigId,
@@ -263,7 +269,7 @@ function migrateDisplayType(
         settings: missing,
       })
     }
-    return { ...display, type: entry.type }
+    return { ...display, type: entry.type, configuration: displayId }
   }
   return { ...display, ...missing, type: entry.type }
 }

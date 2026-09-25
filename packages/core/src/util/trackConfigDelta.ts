@@ -26,7 +26,7 @@
  * to a literal `null`; null and absent are one state.
  *
  * `displays` is merged by `displayId` so an edit to one display doesn't pin the
- * others. Nested config objects (e.g. `adapter`) recurse. Any other array (value
+ * others, and by `type` where the base has no display of that id. Nested config objects (e.g. `adapter`) recurse. Any other array (value
  * arrays like `jexlFilters`, `assemblyNames`) is replaced wholesale when changed.
  *
  * Subtlety worth not "optimizing": when the base has NO `displays` array but the
@@ -123,19 +123,37 @@ export function diffTrackConfig(
   return { ...delta, trackId }
 }
 
+// A delta display naming an id the base lacks lands on the base display of its
+// type, keeping the base's id: a track holds one display per type, and a
+// migrated session addresses the display by the id its old type minted.
 function mergeValue(base: Json, delta: Json): Json {
   if (isDisplayArray(delta)) {
     const baseDisplays = isDisplayArray(base) ? base : []
-    const deltaById = new Map(delta.map(d => [d.displayId as string, d]))
+    const baseIds = new Set(baseDisplays.map(d => d.displayId as string))
+    const deltaByBaseId = new Map<string, JsonObject>()
+    const added: JsonObject[] = []
+    for (const d of delta) {
+      const byType = baseIds.has(d.displayId as string)
+        ? undefined
+        : baseDisplays.find(b => d.type !== undefined && b.type === d.type)
+      const id = (byType?.displayId ?? d.displayId) as string
+      if (baseIds.has(id)) {
+        const onId = { ...d, displayId: id }
+        const earlier = deltaByBaseId.get(id)
+        deltaByBaseId.set(
+          id,
+          earlier ? (mergeValue(earlier, onId) as JsonObject) : onId,
+        )
+      } else {
+        added.push(d)
+      }
+    }
     const merged = baseDisplays.map(baseDisplay => {
-      const d = deltaById.get(baseDisplay.displayId as string)
+      const d = deltaByBaseId.get(baseDisplay.displayId as string)
       return d ? (mergeValue(baseDisplay, d) as JsonObject) : baseDisplay
     })
-    const baseIds = new Set(baseDisplays.map(d => d.displayId as string))
-    for (const d of delta) {
-      if (!baseIds.has(d.displayId as string)) {
-        merged.push(mergeValue(undefined, d) as JsonObject)
-      }
+    for (const d of added) {
+      merged.push(mergeValue(undefined, d) as JsonObject)
     }
     return merged
   }

@@ -398,7 +398,8 @@ describe('migrateSessionSnapshot', () => {
     expect(display.hideMismatchesSetting).toBeUndefined()
 
     const deltaDisplay = (result.trackConfigDeltas as any).track1.displays[0]
-    expect(deltaDisplay.displayId).toBe('track1-LinearReadCloudDisplay')
+    expect(deltaDisplay.displayId).toBe('track1-LinearAlignmentsDisplay')
+    expect(display.configuration).toBe('track1-LinearAlignmentsDisplay')
     // the compensation for the type collapse lands on the config, beside the
     // settings the extractor lifted
     expect(deltaDisplay.readConnections).toBe('cloud')
@@ -436,7 +437,7 @@ describe('migrateSessionSnapshot', () => {
       ],
     })
     const deltaDisplay = (result.trackConfigDeltas as any).track1.displays[0]
-    expect(deltaDisplay.displayId).toBe('track1-LinearReadArcsDisplay')
+    expect(deltaDisplay.displayId).toBe('track1-LinearAlignmentsDisplay')
     expect(deltaDisplay.type).toBe('LinearAlignmentsDisplay')
     expect(deltaDisplay.readConnections).toBe('arc')
     expect(deltaDisplay.showPileup).toBe(false)

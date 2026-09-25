@@ -302,6 +302,37 @@ test('a display added only by the user is carried whole into the delta', () => {
   expect((mergeTrackConfig(base, delta).displays as unknown[]).length).toBe(3)
 })
 
+test('a delta display under an id the base lacks lands on the base display of its type', () => {
+  const merged = mergeTrackConfig(base, {
+    trackId: 'vcf',
+    displays: [
+      { type: 'LinearVariantDisplay', displayId: 'vcf-Retired', height: 80 },
+      { displayId: 'vcf-Linear', color: 'red' },
+    ],
+  })
+  expect(merged.displays).toEqual([
+    { type: 'ChordVariantDisplay', displayId: 'vcf-Chord' },
+    {
+      type: 'LinearVariantDisplay',
+      displayId: 'vcf-Linear',
+      height: 80,
+      color: 'red',
+    },
+  ])
+})
+
+test('a delta display of a type the base does not hold is still added', () => {
+  const merged = mergeTrackConfig(base, {
+    trackId: 'vcf',
+    displays: [{ type: 'LDDisplay', displayId: 'vcf-LD', foo: 1 }],
+  })
+  expect((merged.displays as Display[]).map(d => d.displayId)).toEqual([
+    'vcf-Chord',
+    'vcf-Linear',
+    'vcf-LD',
+  ])
+})
+
 test('flatten lists a top-level scalar change as from/to', () => {
   const edited = clone(base)
   edited.name = 'renamed'
