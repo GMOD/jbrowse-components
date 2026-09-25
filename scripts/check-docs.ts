@@ -276,6 +276,12 @@ const VALIDATORS: Validator[] = [
     argv: web('check-figure-actions.ts', '--check'),
   },
   {
+    // The same rule read backwards: a display setting the page tells the reader
+    // to change, whose result no figure shows.
+    name: 'no new tutorial setting without a figure after it',
+    argv: web('check-unshown-settings.ts', '--check'),
+  },
+  {
     // Same ratchet shape, guarding what a scheduled figure sweep will fetch:
     // `--check` fails when a spec newly points at a server we do not run.
     name: 'no new third-party hosts in figure specs',
