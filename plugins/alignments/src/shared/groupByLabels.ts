@@ -20,6 +20,16 @@ export const GROUP_BY_LABELS: Record<ReadDimension, string> = {
   mateAssembly: 'Mate assembly',
 }
 
+/**
+ * The fragment strand the first mate implies, as a section chip and a colour
+ * key both name it: a reverse-mapped read1 is on the forward fragment, so the
+ * plain strand wording would read as the read's own strand.
+ */
+export const FIRST_OF_PAIR_STRAND_LABELS = {
+  forward: 'First-of-pair forward',
+  reverse: 'First-of-pair reverse',
+} as const
+
 /** The prefix a facet's `field` takes to name a read tag: `tags.HP`. */
 export const TAG_FIELD_PREFIX = 'tags.'
 

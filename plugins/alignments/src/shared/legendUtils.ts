@@ -24,6 +24,7 @@ import {
 import { OVERLAP_ALPHA } from '../shaders/slang/overlap.consts.generated.ts'
 import { colorFieldOf, isBakedScheme } from './alignmentsColor.ts'
 import { paintsModifications } from './colorSchemes.ts'
+import { FIRST_OF_PAIR_STRAND_LABELS } from './groupByLabels.ts'
 import { getModificationName, modificationData } from './modificationData.ts'
 import {
   isModificationTypeVisible,
@@ -410,14 +411,9 @@ const SPLIT_STRAND_LABELS: Partial<Record<SwatchCategory, string>> = {
   revStrand: 'Split segment (inverted)',
 }
 
-// The first-of-pair-strand scheme colors by the FRAGMENT strand inferred from
-// the first mate (read2's strand is inverted), not each read's own strand — so a
-// reverse-mapped read1 lands in the "forward" bucket. Spell that out rather than
-// reusing the plain "Forward strand" wording of the strand scheme, which would
-// read as the read's own strand.
 const FIRST_OF_PAIR_LABELS: Partial<Record<SwatchCategory, string>> = {
-  fwdStrand: 'Forward (first-in-pair)',
-  revStrand: 'Reverse (first-in-pair)',
+  fwdStrand: FIRST_OF_PAIR_STRAND_LABELS.forward,
+  revStrand: FIRST_OF_PAIR_STRAND_LABELS.reverse,
 }
 
 // Per-scheme relabeling of the shared fwd/rev-strand swatches. Every scheme but

@@ -256,8 +256,8 @@ describe('getReadDisplayLegendItems', () => {
     // The color is the strand inferred from the first mate, so a reverse-mapped
     // read1 lands in the "forward" bucket — spell that out.
     expect(labels('firstOfPairStrand', ['fwdStrand', 'revStrand'])).toEqual([
-      'Forward (first-in-pair)',
-      'Reverse (first-in-pair)',
+      'First-of-pair forward',
+      'First-of-pair reverse',
     ])
   })
 

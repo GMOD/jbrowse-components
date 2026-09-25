@@ -21,7 +21,11 @@ import {
 
 import { featureChainKey } from './chainGroupingKey.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
-import { GROUP_BY_LABELS, facetTag } from './groupByLabels.ts'
+import {
+  FIRST_OF_PAIR_STRAND_LABELS,
+  GROUP_BY_LABELS,
+  facetTag,
+} from './groupByLabels.ts'
 import { chainIsSplit, isSplitAlignment } from './splitAlignment.ts'
 import {
   MAPQ_UNAVAILABLE,
@@ -81,11 +85,11 @@ const REV_STRAND_GROUP: GroupKey = {
 }
 const FWD_FIRST_OF_PAIR_GROUP: GroupKey = {
   key: FWD_KEY,
-  label: 'First-of-pair forward',
+  label: FIRST_OF_PAIR_STRAND_LABELS.forward,
 }
 const REV_FIRST_OF_PAIR_GROUP: GroupKey = {
   key: REV_KEY,
-  label: 'First-of-pair reverse',
+  label: FIRST_OF_PAIR_STRAND_LABELS.reverse,
 }
 
 const STRAND_VALUED: ReadonlySet<string> = new Set([
