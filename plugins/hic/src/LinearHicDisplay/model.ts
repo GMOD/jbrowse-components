@@ -156,13 +156,23 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
+       * `color.reverse`, or where unset whether the scheme runs dark at its
+       * low end.
+       */
+      get colorReverse(): boolean {
+        return (
+          getConf(self, ['color', 'reverse']) ?? darkAtLowEnd(this.colorScheme)
+        )
+      },
+      /**
+       * #getter
        * The ramp's 256 entries: the GPU's texture, the Canvas2D fill and the
        * legend read this one table.
        */
       get colorRamp(): Uint8Array {
         return rampLutOf({
           scheme: this.colorScheme,
-          reverse: getConf(self, ['color', 'reverse']),
+          reverse: this.colorReverse,
         })
       },
       /**
@@ -454,12 +464,11 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #action
-       * Reverses a ramp dark at its low end, since an unpainted bin is the
-       * page behind it.
+       * The scheme, with `reverse` back to unset so it follows the scheme.
        */
       setColorScheme(scheme: ColorSchemeName) {
         setConf(self, ['color', 'scheme'], scheme)
-        setConf(self, ['color', 'reverse'], darkAtLowEnd(scheme))
+        setConf(self, ['color', 'reverse'], undefined)
       },
       /**
        * #action

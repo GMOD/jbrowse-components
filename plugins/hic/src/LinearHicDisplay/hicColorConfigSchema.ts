@@ -1,9 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
-import {
-  colorDomainEndsSlots,
-  colorReverseSlot,
-} from '@jbrowse/display-kit/colorConfigSchema'
+import { colorDomainEndsSlots } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
@@ -53,7 +50,16 @@ export const hicColorConfigSchema = ConfigurationSchema(
       description:
         'the named ramp counts run across; juicebox fades from transparent to red',
     },
-    ...colorReverseSlot,
+    /**
+     * #slot reverse
+     * Unset turns round a scheme dark at its low end, since an unpainted bin
+     * is the page behind the matrix.
+     */
+    reverse: {
+      type: 'maybeBoolean',
+      description:
+        "turns the scheme's ramp round; unset reverses a scheme dark at its low end",
+    },
     ...colorDomainEndsSlots,
   },
   { closed: true },
