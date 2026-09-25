@@ -385,21 +385,29 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * Per row, `offsetPx` and `bpPerPx`, which covers a pan or a zoom from
        * any entry point: the wheel, the header buttons, a locstring search, or
        * a `linkViews` echo of the row next to it. Per matched track and per
-       * row, the body's `scrollTop` and `height`, since a pileup scrolls and a
-       * track resizes under a pointer that never moved, plus `regionTooLarge`,
-       * whose flip swaps the body for the banner and back.
+       * row, where the track sits and the body's `scrollTop` and `height`,
+       * since a pileup scrolls and a track above it resizes under a pointer
+       * that never moved, plus `regionTooLarge`, whose flip swaps the body for
+       * the banner and back.
        *
-       * Scoped to the overlay tracks rather than every track in the view: an
-       * unrelated track finishing its first render resizes nothing the overlay
-       * draws on, and clearing the hover for it would read as a flicker.
+       * Scoped to what places the overlay tracks: a track below them growing
+       * moves nothing the overlay draws on, and clearing the hover for it
+       * would read as a flicker.
        */
       get overlayTransformKey() {
         const parts: (number | boolean)[] = []
-        for (const view of self.views) {
+        for (const [level, view] of self.views.entries()) {
           parts.push(view.offsetPx, view.bpPerPx)
+          if (level < self.views.length - 1) {
+            parts.push(view.height)
+          }
         }
         for (const { configuration } of this.overlayTracks) {
-          for (const track of this.getMatchedTracks(configuration.trackId)) {
+          const { trackId } = configuration
+          for (const view of self.views) {
+            parts.push(view.getTrackYOffset(trackId) ?? 0)
+          }
+          for (const track of this.getMatchedTracks(trackId)) {
             const d = track.displays[0]
             parts.push(
               d?.scrollTop ?? 0,

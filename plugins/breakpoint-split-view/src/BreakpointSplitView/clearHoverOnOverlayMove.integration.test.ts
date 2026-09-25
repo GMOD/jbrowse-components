@@ -91,3 +91,56 @@ test('a setting that moves nothing leaves the hover alone', async () => {
 
   expect(view.hoveredOverlay).toEqual(hit)
 })
+
+function featureTrack(trackId: string, type = 'FeatureTrack') {
+  return {
+    trackId,
+    type,
+    name: trackId,
+    assemblyNames: ['volvox'],
+    adapter: {
+      type: 'FromConfigAdapter',
+      features: [
+        { uniqueId: `${trackId}1`, refName: 'ctgA', start: 10, end: 20 },
+      ],
+    },
+  }
+}
+
+// A track above the overlay's pushes the overlay down; one below it in the last
+// row moves nothing the overlay draws on.
+test('a track above the overlay track growing clears it, one below does not', async () => {
+  const session = createTestSession()
+  session.addAssemblyConf(assembly)
+  for (const conf of [
+    featureTrack('above'),
+    featureTrack('calls', 'VariantTrack'),
+    featureTrack('below'),
+  ]) {
+    session.addSessionTrackConf(conf)
+  }
+  const view = (await session.launchView('BreakpointSplitView', {
+    views: [
+      { assembly: 'volvox', loc: 'ctgA:1-10000', tracks: ['calls'] },
+      {
+        assembly: 'volvox',
+        loc: 'ctgB:1-10000',
+        tracks: ['above', 'calls', 'below'],
+      },
+    ],
+  })) as unknown as BreakpointViewModel
+  view.setWidth(800)
+  await when(() => view.initialized && view.overlayTracks.length === 1)
+  const display = (level: number, trackId: string) =>
+    view.views[level]!.getTrack(trackId)!.displays[0]! as {
+      height: number
+      setHeight: (n: number) => void
+    }
+
+  view.setHoveredOverlay(hit)
+  display(1, 'below').setHeight(display(1, 'below').height + 50)
+  expect(view.hoveredOverlay).toEqual(hit)
+
+  display(1, 'above').setHeight(display(1, 'above').height + 50)
+  expect(view.hoveredOverlay).toBeUndefined()
+}, 30000)
