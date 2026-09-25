@@ -1,3 +1,4 @@
+import { hasGeneParts } from '../geneGlyphShape.ts'
 import { featureType, getSubfeatures, isCDS } from '../util.ts'
 import { layoutBox } from './box.ts'
 import { layoutCrisprGuide } from './crisprGuide.ts'
@@ -70,8 +71,10 @@ export function findGlyph(
     ) {
       // Only here, the gene-over-transcripts shape: the branch above is a
       // polyprotein's cleavage products, which are not isoforms of each other
-      // and merge into nonsense.
-      return config.geneGlyphMode === 'merged'
+      // and merge into nonsense. `hasGeneParts` is the second half of the
+      // same sentence — `containerTypes` admits a container of leaf genes,
+      // which has nothing to union and would merge to one bar over them.
+      return config.geneGlyphMode === 'merged' && hasGeneParts(feature)
         ? layoutMergedGene
         : layoutSubfeatures
     }

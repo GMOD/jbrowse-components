@@ -1,4 +1,5 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { buildFeatureRenderData } from '../buildFeatureRenderData.ts'
@@ -196,4 +197,80 @@ test('a non-coding gene merges its exons at full height', () => {
     [300, 400, 0, HEIGHT],
   ])
   expect(lines(data)).toEqual([[250, 300]])
+})
+
+// An NCBI GFF3 hangs a `biological_region` beside a gene's one transcript. It
+// is a decoration rather than a second isoform, so the control that offers the
+// other modes must not appear — the count goes through the same `isoformsOf`
+// rule the stacked glyph picks its rows by.
+test('a decoration beside the one transcript is not a second isoform', () => {
+  const decorated = new SimpleFeature({
+    uniqueId: 'geneA',
+    refName: 'chr1',
+    start: 100,
+    end: 300,
+    strand: 1,
+    type: 'gene',
+    subfeatures: [
+      transcript({ id: 'tA', exons: [[100, 300]], cds: [[150, 250]] }),
+      {
+        uniqueId: 'decoration',
+        refName: 'chr1',
+        start: 100,
+        end: 300,
+        type: 'biological_region',
+      },
+    ],
+  })
+  expect(render(decorated).hasMultiIsoformGenes).toBe(false)
+})
+
+// Each part carries the gene's strand, which is what draws the chevrons inside
+// a box wide enough to hold them.
+test('the merged parts carry the gene’s strand', () => {
+  for (const strand of [1, -1]) {
+    const g = gene([{ id: 'tA', exons: [[100, 300]], cds: [[150, 250]] }])
+    const data = render(new SimpleFeature({ ...g.toJSON(), strand }))
+    expect([...data.rectStrands]).toEqual(
+      Array.from({ length: data.rectStrands.length }, () => strand),
+    )
+  }
+})
+
+// The parts are synthesized, so nothing on them carries the file's own colour:
+// the `parent` handle is what lets `boxColor` walk up to the gene's itemRgb,
+// the way a real exon's box reaches its transcript's.
+test('a merged part takes the gene’s own file colour', () => {
+  const colored = new SimpleFeature({
+    uniqueId: 'geneA',
+    refName: 'chr1',
+    start: 100,
+    end: 300,
+    strand: 1,
+    type: 'gene',
+    itemRgb: '10,20,30',
+    subfeatures: [
+      transcript({ id: 'tA', exons: [[100, 300]], cds: [[150, 250]] }),
+    ],
+  })
+  const data = render(colored)
+  expect(data.rectColors.length).toBeGreaterThan(0)
+  for (const packed of data.rectColors) {
+    expect(abgrToCssRgba(packed)).toBe('rgba(10,20,30,1)')
+  }
+})
+
+// The `impliedUTRs` slot reaches the merged shape, which is the one of the two
+// gene-glyph subpart slots a union can honour — `subParts` names the file's own
+// row types, and a merged span is not one.
+test('the impliedUTRs slot reaches the merged shape', () => {
+  const g = gene([{ id: 'tA', exons: [[100, 400]], cds: [[200, 300]] }])
+  expect(boxes(render(g))).toEqual([
+    [100, 200, UTR_TOP, UTR_HEIGHT],
+    [200, 300, 0, HEIGHT],
+    [300, 400, UTR_TOP, UTR_HEIGHT],
+  ])
+  expect(boxes(render(g, { impliedUTRs: false }))).toEqual([
+    [200, 300, 0, HEIGHT],
+  ])
 })

@@ -23,7 +23,14 @@ are drawn:
   height has rows for
 - All transcripts - every transcript on its own row, whatever the zoom or track
   height. A stack taller than the track scrolls
+- Merged transcripts - one row per gene holding every transcript's exons at once
 - Representative transcript - one isoform per gene
+
+Merged draws the union rather than a choice: a stretch that codes in any
+transcript is full height, the rest of the exons are thin, and connector lines
+cross the gaps. So a gene takes one row without losing an exon that only a minor
+isoform carries, which is what separates it from the representative mode. It
+names no isoform and draws no **+N more** badge, since nothing is hidden.
 
 The representative isoform is the one the annotation tags: `RefSeq Select` or
 `MANE Select` (NCBI), `MANE_Select` or `Ensembl_canonical` (Ensembl, GENCODE).
@@ -41,7 +48,7 @@ While the display leaves transcripts out, a chip in the track's bottom-right
 corner names the rule: `Isoforms trimmed` where the track's height is the
 constraint, otherwise the tag responsible for most genes on screen
 (`RefSeq Select`, `MANE Select`, or `Longest isoform`). Its tooltip counts the
-genes under each rule. Clicking it opens the same three modes.
+genes under each rule. Clicking it opens the same four modes.
 
 ## Collapsing introns
 

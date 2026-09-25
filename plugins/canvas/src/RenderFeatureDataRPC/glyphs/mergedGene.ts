@@ -43,7 +43,9 @@ function mergedPart(gene: Feature, type: string, spans: readonly Span[]) {
  */
 export function layoutMergedGene(args: LayoutArgs): FeatureLayout {
   const { feature, config } = args
-  const { full, thin } = geneGlyphShape(feature)
+  const { full, thin } = geneGlyphShape(feature, {
+    impliedUTRs: config.impliedUTRs,
+  })
   return {
     ...layoutContainerGlyph('MergedGene', args, [
       ...mergedPart(feature, 'CDS', full),

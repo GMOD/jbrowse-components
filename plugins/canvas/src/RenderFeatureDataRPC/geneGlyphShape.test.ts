@@ -1,6 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { geneGlyphShape } from './geneGlyphShape.ts'
+import { geneGlyphShape, hasGeneParts } from './geneGlyphShape.ts'
 
 test('geneGlyphShape merges exons across transcripts and falls back to the span', () => {
   const gene = new SimpleFeature({
@@ -286,4 +286,168 @@ test('geneGlyphShape lets each transcript decide its own UTRs', () => {
       [350, 400],
     ],
   })
+})
+
+// A GENCODE gene with a coding isoform beside a retained-intron one: the
+// non-coding transcript's exons are untranslated wherever no isoform codes
+// them, so they belong in `thin`, not nowhere.
+test('geneGlyphShape draws a non-coding isoform’s exons beside a coding one', () => {
+  const gene = new SimpleFeature({
+    uniqueId: 'g',
+    refName: 'chr1',
+    start: 100,
+    end: 1000,
+    strand: 1,
+    type: 'gene',
+    subfeatures: [
+      {
+        uniqueId: 'coding',
+        refName: 'chr1',
+        start: 100,
+        end: 1000,
+        type: 'mRNA',
+        subfeatures: [
+          {
+            uniqueId: 'e1',
+            refName: 'chr1',
+            start: 100,
+            end: 300,
+            type: 'exon',
+          },
+          {
+            uniqueId: 'e2',
+            refName: 'chr1',
+            start: 800,
+            end: 1000,
+            type: 'exon',
+          },
+          {
+            uniqueId: 'c1',
+            refName: 'chr1',
+            start: 200,
+            end: 300,
+            type: 'CDS',
+          },
+          {
+            uniqueId: 'c2',
+            refName: 'chr1',
+            start: 800,
+            end: 900,
+            type: 'CDS',
+          },
+        ],
+      },
+      {
+        uniqueId: 'retained',
+        refName: 'chr1',
+        start: 100,
+        end: 800,
+        type: 'mRNA',
+        subfeatures: [
+          {
+            uniqueId: 'r1',
+            refName: 'chr1',
+            start: 300,
+            end: 800,
+            type: 'exon',
+          },
+        ],
+      },
+    ],
+  })
+  expect(geneGlyphShape(gene)).toEqual({
+    full: [
+      [200, 300],
+      [800, 900],
+    ],
+    thin: [
+      [100, 200],
+      [300, 800],
+      [900, 1000],
+    ],
+  })
+})
+
+// `impliedUTRs` is the display's slot: off, a transcript naming no UTR row
+// contributes none, and the merged glyph draws its coding spans alone.
+test('geneGlyphShape implies no UTRs when the slot is off', () => {
+  const gene = new SimpleFeature({
+    uniqueId: 'g',
+    refName: 'chr1',
+    start: 100,
+    end: 400,
+    strand: 1,
+    type: 'gene',
+    subfeatures: [
+      {
+        uniqueId: 't',
+        refName: 'chr1',
+        start: 100,
+        end: 400,
+        type: 'mRNA',
+        subfeatures: [
+          {
+            uniqueId: 'e',
+            refName: 'chr1',
+            start: 100,
+            end: 400,
+            type: 'exon',
+          },
+          { uniqueId: 'c', refName: 'chr1', start: 200, end: 300, type: 'CDS' },
+        ],
+      },
+    ],
+  })
+  expect(geneGlyphShape(gene)).toEqual({
+    full: [[200, 300]],
+    thin: [
+      [100, 200],
+      [300, 400],
+    ],
+  })
+  expect(geneGlyphShape(gene, { impliedUTRs: false })).toEqual({
+    full: [[200, 300]],
+    thin: [],
+  })
+})
+
+// The predicate `findGlyph` gates the merged mode on: a shape exists only
+// where some descendant is an exon, a CDS or a UTR.
+test('hasGeneParts separates a gene from a container of genes', () => {
+  const leafGene = {
+    uniqueId: 'inner',
+    refName: 'chr1',
+    start: 10,
+    end: 20,
+    type: 'gene',
+  }
+  const container = new SimpleFeature({
+    uniqueId: 'sc',
+    refName: 'chr1',
+    start: 0,
+    end: 1000,
+    type: 'supercontig',
+    subfeatures: [leafGene],
+  })
+  expect(hasGeneParts(container)).toBe(false)
+  const gene = new SimpleFeature({
+    uniqueId: 'g',
+    refName: 'chr1',
+    start: 10,
+    end: 20,
+    type: 'gene',
+    subfeatures: [
+      {
+        uniqueId: 't',
+        refName: 'chr1',
+        start: 10,
+        end: 20,
+        type: 'mRNA',
+        subfeatures: [
+          { uniqueId: 'e', refName: 'chr1', start: 10, end: 20, type: 'exon' },
+        ],
+      },
+    ],
+  })
+  expect(hasGeneParts(gene)).toBe(true)
 })

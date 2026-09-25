@@ -170,7 +170,34 @@ describe('the merged gene mode', () => {
 
   it('takes the gene the stacked glyph would have taken', () => {
     expect(findGlyph(geneOverTranscripts(), merged)).toBe(layoutMergedGene)
-    expect(findGlyph(geneOverTranscripts(), config)).toBe(layoutSubfeatures)
+  })
+
+  // The other three modes each stack, so naming the mode positively is what
+  // this pins: a test that only checks `all` admits `!== 'all'`, which merges
+  // under `auto` and `longestCoding` too.
+  it('leaves every other mode stacking', () => {
+    for (const geneGlyphMode of ['auto', 'all', 'longestCoding'] as const) {
+      expect(
+        findGlyph(
+          geneOverTranscripts(),
+          mockDisplayConfig({ transcriptTypes: ['mRNA'], geneGlyphMode }),
+        ),
+      ).toBe(layoutSubfeatures)
+    }
+  })
+
+  // `containerTypes` admits a container whose children are whole genes, which
+  // has no transcript structure to union: merging it paints one bar end to end
+  // over the children it should stack.
+  it('leaves a container with nothing to merge stacking', () => {
+    const supercontig = mockFeature({
+      type: 'proteoform_orf',
+      subfeatures: [
+        mockFeature({ type: 'gene' }),
+        mockFeature({ type: 'gene' }),
+      ],
+    })
+    expect(findGlyph(supercontig, merged)).toBe(layoutSubfeatures)
   })
 
   // Cleavage products are not isoforms of each other, so merging them would

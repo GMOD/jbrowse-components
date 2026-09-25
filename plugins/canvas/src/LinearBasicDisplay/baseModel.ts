@@ -1357,7 +1357,12 @@ export default function baseStateModelFactory(
         const geneGlyphMode = self.effectiveGeneGlyphMode
         return {
           geneGlyphMode,
+          // Not under `merged`, the one mode no codon draws in: the glyph's
+          // parts are a union across transcripts and the peptide map is keyed
+          // by transcript, so the sequence download and the translation would
+          // both be spent on residues nothing paints.
           peptides:
+            geneGlyphMode !== 'merged' &&
             self.showAminoAcids &&
             shouldRenderPeptideBackground(containingLgv(self).bpPerPx),
           expandedGeneIds:
