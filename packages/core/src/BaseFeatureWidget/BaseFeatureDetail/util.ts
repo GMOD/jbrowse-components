@@ -12,16 +12,9 @@ export function generateTitle(name: unknown, id: unknown, type: unknown) {
     .join(' - ')
 }
 
-// pick using a path from an object, similar to _.get from lodash with special
-// logic for Descriptions from e.g. VCF headers
-//
-// @param arr  example ['a','b'], obj = {a:{b:'hello}}
-// @returns hello (with special addition to grab description also)
-//
-// A path that runs out of objects before it runs out of elements has no
-// description: walking ['INFO','ANN'] into `{INFO: 'a string'}` used to stop at
-// the string and hand it back, so every subfield of an object-valued attribute
-// inherited its parent's description.
+// the description at `arr` in a descriptions tree: a string there, or the
+// `Description` of the object there, as a VCF header entry carries. A path
+// that runs out of objects early has none
 export function accessNested(arr: string[], obj: Record<string, unknown> = {}) {
   let obj2: unknown = obj
   for (const elt of arr) {

@@ -4,12 +4,14 @@ import FeatureDetails from './FeatureDetails.tsx'
 import FeatureDetailsFrame from './FeatureDetailsFrame.tsx'
 import ParentFeatureLine from './ParentFeatureLine.tsx'
 
+import type { BaseFeatureWidgetModel } from '../stateModelFactory.ts'
 import type { Descriptors } from '../types.tsx'
-import type { BaseInputProps } from './types.ts'
 
 const BaseFeatureDetail = observer(function BaseFeatureDetail({
   model,
-}: BaseInputProps) {
+}: {
+  model: BaseFeatureWidgetModel
+}) {
   const { featureData, unformattedFeatureData, parentFeature } = model
   // annotated to shed the MST node brand types.frozen() carries on the instance
   const descriptions: Descriptors | undefined = model.descriptions

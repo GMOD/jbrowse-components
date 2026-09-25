@@ -83,7 +83,9 @@ exports[`renders with just the required model elements 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      ctgA:177 
+                      <span>
+                        ctgA:177
+                      </span>
                     </div>
                   </div>
                   <div

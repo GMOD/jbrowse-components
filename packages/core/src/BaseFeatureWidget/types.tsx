@@ -36,18 +36,12 @@ export interface BaseProps extends BaseCardProps {
   feature: SimpleFeatureSerialized
   formatter?: FeatureFormatter
   descriptions?: Descriptors
-  model?: FeatureDetailsModel
 }
 
 export interface BaseCardProps {
   title?: string
   defaultExpanded?: boolean
   children?: React.ReactNode
-}
-
-export interface SerializedFeat {
-  [key: string]: unknown
-  subfeatures?: Record<string, unknown>[]
 }
 
 export type MaybeSerializedFeat = SimpleFeatureSerialized | undefined

@@ -6,13 +6,6 @@ export interface Feat {
   id?: string | number
   phase?: number
 }
-export interface ParentFeat extends Feat {
-  uniqueId: string
-  strand?: number
-  refName: string
-  subfeatures?: Feat[]
-  parentId?: string
-}
 export interface SeqState {
   seq: string
   upstream?: string

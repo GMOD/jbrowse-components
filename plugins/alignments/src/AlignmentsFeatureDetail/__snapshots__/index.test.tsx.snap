@@ -83,7 +83,9 @@ exports[`open up a widget 1`] = `
                     <div
                       class="css-HASH"
                     >
-                      ctgA:3..102 (+)
+                      <span>
+                        ctgA:3..102 (+)
+                      </span>
                     </div>
                   </div>
                   <div
