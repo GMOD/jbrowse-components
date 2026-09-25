@@ -1,33 +1,24 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
-import { createStatusWindow, isAbortException } from '@jbrowse/core/util'
+import { useFetch } from '@jbrowse/core/util/useFetch'
 
 import { toPanelRows } from './panelOrder.ts'
 
 import type { MateDiscovery } from './discoverMates.ts'
 import type { PanelRow } from './panelOrder.ts'
-import type { Region, RpcStatus } from '@jbrowse/core/util'
+import type { MateDiscoveryResult } from './pickMatesForRegion.ts'
+import type { Region } from '@jbrowse/core/util'
 
 /**
  * The panel list for one synteny dataset: which assemblies align to `region`,
- * seeded into state the user then owns.
- *
- * Hand-rolled rather than useFetch because of that ownership — they reorder the
- * rows and uncheck them, so this can't be re-derived from `data` every render.
- * `discoverMatesFor` is stable (queueDialog resolves the dialog's props once, at
- * the point the menu item was clicked), so this re-runs on the dataset the user
- * picks and nothing else, and the cleanup aborts the discovery for the dataset
- * they picked away from. A selection can be a whole chromosome, so that cleanup
- * matters: the same effect creates and aborts the controller, giving it the
- * fetch's lifetime.
+ * seeded into rows the user then owns — they reorder and uncheck them. An edit
+ * is kept against the discovery it was made on, so a new dataset starts from
+ * its own rows and a re-render keeps the user's.
  *
  * `rows` is `undefined` while in flight, and the caller draws a spinner for it.
  * A dataset that reached nothing gives the anchor row alone. `status` is the
- * RPC's own phase, for the caller to say more than "waiting".
- *
- * `retry` re-runs it. What fails here is a fetch over the network, and without
- * one the only way past a blip was to cancel the dialog and find the menu entry
- * again — losing the dataset, order and options chosen before it.
+ * RPC's own phase, for the caller to say more than "waiting". `retry` re-runs a
+ * failed discovery without losing the dataset and options chosen before it.
  */
 export function useMateDiscovery({
   discoverMatesFor,
@@ -38,70 +29,30 @@ export function useMateDiscovery({
   trackId: string
   region: Region
 }) {
-  const [rows, setRows] = useState<PanelRow[] | undefined>()
-  const [unconfigured, setUnconfigured] = useState<string[]>([])
-  const [error, setError] = useState<unknown>()
-  const [status, setStatus] = useState<RpcStatus | undefined>()
-  const [attempt, setAttempt] = useState(0)
-  useEffect(() => {
-    const controller = new AbortController()
-    let alive = true
-    setRows(undefined)
-    setUnconfigured([])
-    setError(undefined)
-    setStatus(undefined)
-    // guarded and throttled like every other owner of a progress stream: the
-    // RPC emits at download granularity and each write re-renders the dialog.
-    // One window per effect run, ended with it, so a trailing write cannot
-    // outlive the discovery it describes — and one stream, cleared when the
-    // discovery settles however it settles
-    const statusWindow = createStatusWindow(status => {
-      if (alive) {
-        setStatus(status)
-      }
-    })
-    const { statusCallback, clear } = statusWindow.open({
-      isCurrent: () => alive,
-    })
-    discoverMatesFor(trackId)(controller.signal, statusCallback)
-      .then(result => {
-        if (alive) {
-          setRows(toPanelRows(region.assemblyName, result.mates))
-          setUnconfigured(result.unconfigured)
-        }
-      })
-      .catch((e: unknown) => {
-        if (alive && !isAbortException(e)) {
-          setError(e)
-        }
-      })
-      // the discovery's last status describes work that is over, and nothing
-      // else drops it: the RPC reports through `getFeaturesInMultipleRegions`'s
-      // fan-out, which no longer ends on the `''` this used to clear itself with
-      // (ADR-080). Invisible while the panel gates on `loading`, and a label
-      // waiting for the next reader either way.
-      .finally(() => {
-        clear()
-      })
-    return () => {
-      alive = false
-      controller.abort()
-      // the guard already makes a queued write a no-op; the timer behind it
-      // would otherwise still stand for up to a window past unmount
-      statusWindow.reset()
-    }
-    // `region` whole rather than its assemblyName: the panels the worker
-    // resolves are cut from all four of its fields. Stable for the dialog's life
-    // for the same reason `discoverMatesFor` is; `attempt` is what retry moves
-  }, [discoverMatesFor, trackId, region, attempt])
+  const { data, error, status, mutate } = useFetch(
+    ['mateDiscovery', trackId, region] as const,
+    (_key, trackId, _region, signal, statusCallback) =>
+      discoverMatesFor(trackId)(signal, statusCallback),
+  )
+  const [edited, setEdited] = useState<{
+    from: MateDiscoveryResult
+    rows: PanelRow[]
+  }>()
+  const rows = data
+    ? edited?.from === data
+      ? edited.rows
+      : toPanelRows(region.assemblyName, data.mates)
+    : undefined
   return {
     rows,
-    setRows,
-    unconfigured,
+    setRows: (rows: PanelRow[]) => {
+      if (data) {
+        setEdited({ from: data, rows })
+      }
+    },
+    unconfigured: data?.unconfigured ?? [],
     error,
     status,
-    retry: () => {
-      setAttempt(n => n + 1)
-    },
+    retry: mutate,
   }
 }

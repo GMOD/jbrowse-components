@@ -73,12 +73,13 @@ function renderDialog(
 // A discovery that never settles, handing back the callback the RPC would
 // report its phase through — the only way to see what the dialog draws WHILE it
 // waits, which is the whole of what a status is for.
-function renderDialogReportingStatus() {
+async function renderDialogReportingStatus() {
   let report: StatusCallback | undefined
   renderDialogFor([{ trackId: 't1', name: 'all vs all' }], () => (_, cb) => {
     report = cb
     return new Promise<MateDiscoveryResult>(() => {})
   })
+  await act(async () => {})
   return (status: RpcStatus) => {
     act(() => {
       report!(status)
@@ -133,13 +134,14 @@ function replaceableSession(views: unknown[]) {
 // A selection can be a whole chromosome, and the download+parse behind the
 // discovery is what honors the signal — so dismissing the dialog has to stop it
 // rather than leave a worker parsing for a view nobody is waiting for.
-test('dismissing the dialog stops the discovery it started', () => {
+test('dismissing the dialog stops the discovery it started', async () => {
   let captured: AbortSignal | undefined
   const { unmount } = renderDialog(signal => {
     captured = signal
     // never settles: the fetch is still in flight when the dialog closes
     return new Promise<MateDiscoveryResult>(() => {})
   })
+  await act(async () => {})
 
   expect(captured).toBeDefined()
   expect(() => {
@@ -397,15 +399,15 @@ test('the discovery in flight says what it is waiting on', () => {
 // owns the guarded sink; the dialog only renders what it returns) — a seam
 // nothing else would fail on, since dropping the status leaves the fallback
 // sentence in place and every other assertion here green.
-test("the RPC's own phase replaces the fallback sentence", () => {
-  const report = renderDialogReportingStatus()
+test("the RPC's own phase replaces the fallback sentence", async () => {
+  const report = await renderDialogReportingStatus()
   report('Downloading alignments')
   expect(screen.getByText(/Downloading alignments/)).toBeTruthy()
   expect(screen.queryByText(/Finding assemblies that align/)).toBeNull()
 })
 
-test('a determinate phase draws the bar as well as the label', () => {
-  const report = renderDialogReportingStatus()
+test('a determinate phase draws the bar as well as the label', async () => {
+  const report = await renderDialogReportingStatus()
   report({ message: 'Downloading', current: 45, total: 100 })
   expect(screen.getByText(/Downloading 45%/)).toBeTruthy()
   // getAllByRole, because the spinner beside the label is a progressbar too —
