@@ -44,3 +44,10 @@ test('a missing row is no anchor: nothing falls back to the outer view', () => {
     } as unknown as SyntenyFeatureDetailModel),
   ).toBeUndefined()
 })
+
+test('a circle ribbon names no anchor: the circular view has no linear row', () => {
+  const view = { type: 'CircularView', assemblyNames: ['volvox', 'volvox2'] }
+  expect(
+    anchorRow({ view } as unknown as SyntenyFeatureDetailModel),
+  ).toBeUndefined()
+})

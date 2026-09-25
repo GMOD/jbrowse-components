@@ -31,19 +31,26 @@ function findTrack(session: TrackCatalog, trackId: string | undefined) {
   )
 }
 
+function isLinearGenomeView(view: {
+  type: string
+}): view is LinearGenomeViewModel {
+  return view.type === 'LinearGenomeView'
+}
+
 // The panel the launch is anchored on: its assembly is the anchor's, its tracks
 // carry over, and its visible window is what the dialog offers to clip to. A
 // track's own context menu hands this widget the single LGV it lives in; a
 // ribbon click hands over the outer LinearSyntenyView itself, with `level`
-// saying which row produced the feature, and names no row without one.
+// saying which row produced the feature, and names no row without one. A
+// circle's ribbon hands over a view with no linear row, so no anchor.
 export function anchorRow({
   view,
   level,
 }: SyntenyFeatureDetailModel): LinearGenomeViewModel | undefined {
-  if (!('views' in view)) {
-    return view
+  if ('views' in view) {
+    return level === undefined ? undefined : view.views[level]
   }
-  return level === undefined ? undefined : view.views[level]
+  return isLinearGenomeView(view) ? view : undefined
 }
 
 const LinkToSyntenyView = observer(function LinkToSyntenyView({
