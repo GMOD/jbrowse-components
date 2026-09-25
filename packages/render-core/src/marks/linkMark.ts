@@ -175,10 +175,15 @@ function regionPx(regions: readonly LinkRegion[], index: number, bp: number) {
   return r.anchorPx + (bp - r.anchorBp) * r.signedPxPerBp
 }
 
+function sizeOf(c: LinkChannels, i: number) {
+  const v = c.size?.[i]
+  return v !== undefined && Number.isFinite(v) ? v : LINK_NO_SIZE
+}
+
 function placeLink(c: LinkChannels, g: LinkFrame, i: number) {
   const { regions } = g
   g.strokePx = linkStrokeWidthPx(
-    c.size ? c.size[i]! : LINK_NO_SIZE,
+    sizeOf(c, i),
     g.sizeMode,
     g.sizePx,
     g.sizeDomainMin,
@@ -228,13 +233,10 @@ function placeLink(c: LinkChannels, g: LinkFrame, i: number) {
   }
 }
 
-function sizeLane(size: Float32Array | undefined, count: number) {
-  const lane = new Float32Array(count)
-  if (size) {
-    for (let i = 0; i < count; i++) {
-      const v = size[i]!
-      lane[i] = Number.isFinite(v) ? v : LINK_NO_SIZE
-    }
+function sizeLane(c: LinkChannels) {
+  const lane = new Float32Array(c.count)
+  for (let i = 0; i < c.count; i++) {
+    lane[i] = sizeOf(c, i)
   }
   return lane
 }
@@ -416,7 +418,7 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
           x2: c.x2,
           x2Region: c.x2Region,
           y: c.y ?? (c.count === 0 ? NO_VALUES : new Float32Array(c.count)),
-          size: sizeLane(c.size, c.count),
+          size: sizeLane(c),
           color: colorBits(c),
           row: rowLane(c.row, c.count),
         },
