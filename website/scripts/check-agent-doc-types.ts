@@ -26,16 +26,17 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+import { DOC_TOPICS } from '../../products/jbrowse-desktop/electron/mcp/docLimits.ts'
 import { reportProblems } from './check-utils.ts'
 import { docsDir, repoRoot } from './paths.ts'
 
-// The pages and strings an agent reads: the served docs topics, the MCP tool
-// descriptions and server instructions, `jb.help`, and the repo skill.
+// The pages and strings an agent reads: every page the `docs` tool serves — off
+// the declaration the server itself reads, so a topic added there is checked
+// without touching this list — plus the pages and strings that reach an agent by
+// another route.
 const SOURCES = [
+  ...Object.values(DOC_TOPICS).map(t => t.file),
   'website/docs/agents.md',
-  'website/docs/agents_live_model.md',
-  'website/docs/agents_recipes.md',
-  'website/docs/agents_hosted_data.md',
   'website/docs/agents_capture.md',
   'products/jbrowse-desktop/electron/mcp/toolDefinitions.ts',
   'products/jbrowse-desktop/electron/mcp/README.md',
@@ -51,6 +52,14 @@ const EXEMPT: Record<string, string> = {
   // so no generator run writes this page. Vendoring it as a devDependency was
   // declined on 2026-09-02.
   ProteinView: 'registered by the out-of-tree protein3d plugin',
+  // Same, from jbrowse-plugin-msaview. urlparams.md names both under "Plugin-
+  // provided view types", which is where it tells the reader they arrive with
+  // the plugin rather than with this build.
+  MsaView: 'registered by the out-of-tree msaview plugin',
+  // The extension point a plugin registers to make its view launchable is
+  // `LaunchView-<type>`, and the prefix ends in View like a type name does. No
+  // build registers a view called this.
+  LaunchView: 'the LaunchView-<type> extension point, not a view type',
 }
 
 function documented(name: string) {

@@ -4,13 +4,18 @@ import path from 'node:path'
 import { createJbApi } from '@jbrowse/app-core'
 
 import { CODE_TIMEOUT_DEFAULT_MS } from '../../electron/mcp/budgets.ts'
-import { OMITTED_SECTIONS, SPLIT_TOPICS } from '../../electron/mcp/docLimits.ts'
+import {
+  DOC_TOPICS,
+  OMITTED_SECTIONS,
+  SPLIT_TOPICS,
+} from '../../electron/mcp/docLimits.ts'
 import { overCap } from '../../electron/mcp/textCaps.ts'
 import {
   MCP_TOOLS,
   SERVER_INSTRUCTIONS,
 } from '../../electron/mcp/toolDefinitions.ts'
 
+import type { DocTopic } from '../../electron/mcp/docLimits.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 // The working discipline is written in several places — the server
@@ -21,33 +26,25 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 // electron/ has no DOM lib, and importing app-core from there drags the whole
 // renderer into it.
 const jb = createJbApi({ rootModel: {} } as unknown as PluginManager)
-const mcpDir = path.join(__dirname, '../../electron/mcp')
+const repoRoot = path.join(__dirname, '../../../..')
+const read = (file: string) =>
+  fs.readFileSync(path.join(repoRoot, file), 'utf8')
+
+// Every page the docs tool serves comes off DOC_TOPICS rather than a list here:
+// `session-spec` and `automating` were served and checked by nothing, and a
+// topic added there arrives in this run already.
+const served = Object.fromEntries(
+  Object.entries(DOC_TOPICS).map(([topic, t]) => [topic, read(t.file)]),
+) as Record<DocTopic, string>
+const guide = served['live-model']
+
 const copies = {
   instructions: SERVER_INSTRUCTIONS,
   toolDescriptions: MCP_TOOLS.map(t => t.description).join('\n'),
   help: jb.help,
-  guide: fs.readFileSync(
-    path.join(mcpDir, '../../../../website/docs/agents_live_model.md'),
-    'utf8',
-  ),
-  recipes: fs.readFileSync(
-    path.join(mcpDir, '../../../../website/docs/agents_recipes.md'),
-    'utf8',
-  ),
-  // served as `docs topic:"hosted-data"` and named in the instructions, so a
-  // renamed helper leaves it pointing at nothing exactly like the rest
-  hostedData: fs.readFileSync(
-    path.join(mcpDir, '../../../../website/docs/agents_hosted_data.md'),
-    'utf8',
-  ),
-  overview: fs.readFileSync(
-    path.join(mcpDir, '../../../../website/docs/agents.md'),
-    'utf8',
-  ),
-  skill: fs.readFileSync(
-    path.join(mcpDir, '../../../../.claude/skills/jbrowse-mcp/SKILL.md'),
-    'utf8',
-  ),
+  ...served,
+  overview: read('website/docs/agents.md'),
+  skill: read('.claude/skills/jbrowse-mcp/SKILL.md'),
 }
 
 const roster = new Set(Object.keys(jb))
@@ -92,7 +89,7 @@ function namesIn(text: string) {
 }
 
 it('the guide names every jb member', () => {
-  const named = namesIn(copies.guide)
+  const named = namesIn(guide)
   expect([...roster].filter(n => !named.has(n)).sort()).toEqual([])
 })
 
@@ -130,6 +127,15 @@ it('every copy stating the timeout default states the real one', () => {
   }
 })
 
+// The file each topic names is bundled by esbuild through a static import, so a
+// path that moved builds a server whose topic answers with nothing. Reading it
+// here is the check: this run resolves the same paths off the repo.
+it('every served topic names a file that is there', () => {
+  for (const [topic, text] of Object.entries(served)) {
+    expect(`${topic}: ${text.length > 0}`).toBe(`${topic}: true`)
+  }
+})
+
 // The guide is what "read docs topic live-model FIRST" asks for, and it is
 // 22 KB, so it is served as a contract plus a table of contents of the deep
 // dives rather than whole or as headings alone. The headings the split and the
@@ -137,16 +143,16 @@ it('every copy stating the timeout default states the real one', () => {
 // being served whole; docSections.test.ts holds the answer's size, where it can
 // measure the real one.
 it('the guide carries the headings the docs tool splits and omits it at', () => {
-  expect(copies.guide).toContain(`\n## ${SPLIT_TOPICS['live-model']}\n`)
+  expect(guide).toContain(`\n## ${SPLIT_TOPICS['live-model']}\n`)
   for (const heading of OMITTED_SECTIONS['live-model']!) {
-    expect(copies.guide).toContain(`\n## ${heading}\n`)
+    expect(guide).toContain(`\n## ${heading}\n`)
   }
 })
 
 // A filmed take lost five calls to the adapter probe coming back as a promise
 it('the guide awaits the adapter probe, which is async', () => {
-  expect(copies.guide).toMatch(/await getAdapter\(/)
-  expect(copies.guide).not.toMatch(/[^t] getAdapter\(/)
+  expect(guide).toMatch(/await getAdapter\(/)
+  expect(guide).not.toMatch(/[^t] getAdapter\(/)
 })
 
 // The one member whose options list has drifted twice, in the same direction
@@ -168,7 +174,7 @@ describe('getFeatures names the same options everywhere', () => {
         .filter(Boolean),
     )
   }
-  const expected = optionsIn(copies.guide)
+  const expected = optionsIn(guide)
 
   it('the guide names every option the implementation takes', () => {
     expect([...expected].sort()).toEqual([

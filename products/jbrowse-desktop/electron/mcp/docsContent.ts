@@ -7,40 +7,25 @@ import liveModelGuide from '../../../../website/docs/agents_live_model.md'
 import recipes from '../../../../website/docs/agents_recipes.md'
 import automating from '../../../../website/docs/automating.md'
 import urlparams from '../../../../website/docs/urlparams.md'
-import { OMITTED_SECTIONS, SPLIT_TOPICS } from './docLimits.ts'
+import { DOC_TOPICS, OMITTED_SECTIONS, SPLIT_TOPICS } from './docLimits.ts'
 import { searchDocs } from './docSearch.ts'
 import { readDocSection } from './docSections.ts'
 import typePages from './docs/typeDocs.generated.json'
 import { lookupTypeDoc, typeIndex } from './typeDocs.ts'
 
+import type { DocTopic } from './docLimits.ts'
 import type { BridgeToolResult } from './stdioServer.ts'
 
-const TOPICS: Record<string, { summary: string; text: string }> = {
-  'live-model': {
-    summary:
-      'Driving the live session from run_javascript: the contract to read first — every jb member, what a call answers with, when to screenshot — then deep-dive sections you ask for by name',
-    text: liveModelGuide,
-  },
-  recipes: {
-    summary:
-      'Worked run_javascript snippets, each verified against the app: finding tracks, opening a hosted genome at a gene, tabulating and joining what is on screen, derived tracks, restyling, figures per locus, adding remote data',
-    text: recipes,
-  },
-  'hosted-data': {
-    summary:
-      'The hosted genomes: the config URL for any UCSC database or GenArk accession, what a hosted config contains, and adding your own file beside its tracks',
-    text: hostedData,
-  },
-  'session-spec': {
-    summary:
-      'Full session spec / URL params reference: every view type and its launch keys, track entry fields, layout, workspaces',
-    text: urlparams,
-  },
-  automating: {
-    summary:
-      'The config and session document every front end takes, the fields a view launches with, where it comes from, and jbrowse validate',
-    text: automating,
-  },
+// The text for each topic DOC_TOPICS declares. esbuild inlines a static `.md`
+// import and nothing else, so the imports stay here and the keys are what holds
+// the two halves together: the annotation fails the build on a topic with no
+// text, and on text belonging to no topic.
+const TOPIC_TEXT: Record<DocTopic, string> = {
+  'live-model': liveModelGuide,
+  recipes,
+  'hosted-data': hostedData,
+  'session-spec': urlparams,
+  automating,
 }
 
 // Every markdown topic and every generated type page, as one flat list for the
@@ -48,7 +33,7 @@ const TOPICS: Record<string, { summary: string; text: string }> = {
 // what an agent usually means.
 function searchableDocs() {
   return [
-    ...Object.entries(TOPICS).map(([topic, t]) => ({ topic, text: t.text })),
+    ...Object.entries(TOPIC_TEXT).map(([topic, text]) => ({ topic, text })),
     ...(['models', 'configs'] as const).flatMap(kind =>
       Object.entries(typePages[kind]).map(([name, page]) => ({
         topic: `${kind === 'models' ? 'model' : 'config'}:${name}`,
@@ -68,9 +53,8 @@ export function docsToolResult(
   if (search) {
     return searchDocs(searchableDocs(), search)
   }
-  const entry = TOPICS[topic]
-  if (entry) {
-    return readDocSection(entry.text, section, {
+  if (Object.hasOwn(TOPIC_TEXT, topic)) {
+    return readDocSection(TOPIC_TEXT[topic as DocTopic], section, {
       splitAt: SPLIT_TOPICS[topic],
       omit: OMITTED_SECTIONS[topic],
     })
@@ -83,7 +67,7 @@ export function docsToolResult(
     return 'text' in typed ? readDocSection(typed.text, section) : typed
   }
   const listing = [
-    ...Object.entries(TOPICS).map(([name, t]) => `- ${name}: ${t.summary}`),
+    ...Object.entries(DOC_TOPICS).map(([name, t]) => `- ${name}: ${t.summary}`),
     '- model:<Name> / config:<Name>: one type\'s runtime API (actions, getters, properties) or config slots, generated from the running version; "types" lists every name',
   ].join('\n')
   return topic
