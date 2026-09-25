@@ -237,22 +237,35 @@ function applyExtractedSettings(
 /**
  * Returns the snapshot by identity when nothing in it is retired, which is
  * every session this build wrote.
+ *
+ * An app session holds `views`; a single-view embedded product's session holds
+ * one `view`, and a share link written by either reaches both.
  */
 export function migrateSessionSnapshot(
   snapshot: Record<string, unknown>,
   pluginManager: PluginManager,
 ): Record<string, unknown> {
-  const { views } = snapshot
-  if (!Array.isArray(views)) {
+  const { views, view } = snapshot
+  const many = Array.isArray(views)
+  if (!many && !isObject(view)) {
     return snapshot
   }
   const resolve = resolverFor(pluginManager)
   const collected: ExtractedDisplaySettings[] = []
-  const next = views.map(view =>
-    isObject(view) ? migrateView(view, resolve, collected) : view,
-  )
-  const result = next.some((v, i) => v !== views[i])
-    ? { ...snapshot, views: next }
-    : snapshot
+  let result = snapshot
+  if (many) {
+    const next = views.map(v =>
+      isObject(v) ? migrateView(v, resolve, collected) : v,
+    )
+    if (next.some((v, i) => v !== views[i])) {
+      result = { ...result, views: next }
+    }
+  }
+  if (isObject(view)) {
+    const next = migrateView(view, resolve, collected)
+    if (next !== view) {
+      result = { ...result, view: next }
+    }
+  }
   return applyExtractedSettings(result, collected, resolve)
 }
