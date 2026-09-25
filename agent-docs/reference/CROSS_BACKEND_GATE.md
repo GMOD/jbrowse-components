@@ -165,8 +165,55 @@ The durable capture-side mechanics are in
 - **`fullPage` is already fixed and is not this.** Never reintroduce it.
 - **The gate is blind to a bug both backends share.** It would have caught
   neither render bug found on 2026-07-16. Goldens are the other half, and they
-  only refresh by hand.
+  only refresh by hand. **For `Mark Display` that other half does not exist**:
+  12 of the 51 snapshot names in `CI_GATE_SUITES` are absent from
+  `snapshots.lock` — all eleven `mark-*` scenes plus `gwas-manhattan-bars` — and
+  `snapshot.ts` writes a missing golden and returns "Snapshot created", so the
+  run that fills them in passes without comparing anything. The suite setting
+  the gate's own floor (`targeted_mark-ramp`, 0.91%) is the one carrying no
+  golden.
 - **`EXCLUDED_SUBSTRINGS` is empty.** Scoping is `--ci-gate` / `--filter`.
+- **Ink-scoped drift in place of `diffFraction`: measured, REFUTED.** The
+  proposal divides differing pixels by *inked* pixels — the ones either backend
+  drew on — so that the gate stops being blind to thin geometry. It came out of
+  a float32 `sdEllipse` failure that broke an ellipse stroke into scattered dots
+  and measured 806 px of 2.5M, 0.032%, **47x under the 1.5% default**. No
+  denominator closes that gap. Ink-scoping multiplies a pair by `1/inkShare`,
+  and the antialiasing floor sits on ink too, so signal and floor rise together
+  and only the *spread* of ink share across pairs buys anything. Measured
+  offline over the 185 same-size pairs the store holds for both `canvas2d` and
+  `webgl`, at the gate's own pixelmatch settings —
+  `targeted_bigwig-multibigwig-multirowline` reads 0.619% there against the
+  0.62% in the tail above, which is what says the harness is the gate. Ink share
+  runs 31.3% median, 16.4% on that wiggle line, 9–41% across the arcs scenes,
+  so the most generous accounting — a 9%-ink scene at 11x against a floor
+  multiplier of 4.6x — buys **2.4x** against a 47x shortfall.
+
+  **What counts as ink then sets the threshold, and one near-empty scene opens
+  it.** The floor multiplier swings 4.6x on modal-background ink to 38.9x on a
+  strict `|Δ|∞ > 32` and 54.6x on luma. Under the strict rule
+  `targeted_additional-variant-colors` takes the floor at 0.92% ink and 109x
+  gain, and every other pair lands less sensitive than it is today. The gain
+  *ranking* is stable across all four definitions, so the definition moves the
+  threshold rather than the ordering.
+
+  **`includeAA: true` is the same dead knob, not a bigger one.** §"What the gate
+  cannot see" reads as though the AA classifier is worth 190x; that is a
+  suppression factor on one measurement's numerator, not recoverable
+  sensitivity. Turning it on over the fresh gate scope multiplies the median
+  pair 2.65x and the floor 2.5x. Net 1.06x.
+
+  **Topology survives a first look where a count does not.** Mean horizontal
+  ink-run length agrees across backends at median ratio 1.001 (p05–p95
+  0.76–1.31) over those 185 pairs, while a stroke breaking into dots drops its
+  run length to 1–2 — a ratio of 0.05–0.2, orders outside the band.
+  `probe-bar-top-aa.ts` already encodes the instinct. A global run statistic
+  dilutes exactly the way `diffFraction` does, so it would need scoping to the
+  display canvas before it measured anything.
+
+  Re-running the offline measurement hits one trap: `targeted_mark-ramp` sets
+  the current floor and `Mark Display` has no golden in the store, so the 185
+  pairs cannot include the pair the argument is about.
 - **A stable drift percentage does not mean a stable failure.**
   `fullpage_methylation_snapshot` came in at exactly 37.98% in two runs hours
   apart and passed under 3% in a third — a blank-vs-rendered capture is a *fixed*
