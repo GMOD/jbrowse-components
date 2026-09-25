@@ -9,7 +9,6 @@ import { legendIsReadable } from '@jbrowse/core/ui'
 import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
@@ -531,7 +530,7 @@ export default function stateModelFactory(
               self.drawnRegionData.values(),
               self.rowIndexByValue,
               self.rowColorsByIndex,
-              groupKeyComparator(self.colorDomain),
+              self.colorDomain,
             )
       },
     }))

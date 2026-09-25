@@ -36,13 +36,34 @@ const rowIndexByValue = new Map([
   ['E002', 1],
 ])
 
-test('distinct (name -> color) pairs, first-seen order', () => {
+test('distinct (name -> color) pairs, in the names order', () => {
   expect(
     buildColorLegend([region], rowIndexByValue, [undefined, undefined]),
   ).toEqual([
-    { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
     { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
+    { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
   ])
+})
+
+// The key read first-seen order off whichever region loaded first, so a pan
+// that brought a new region in ahead of the rest reordered its rows.
+test('a pan meeting the names in another order lists them in the same order', () => {
+  const panned = regionData({
+    ...region,
+    featureNames: ['Quies', 'TssA', 'Quies', 'TssA'],
+    featureColors: Uint32Array.from([
+      0xff00ff00, 0xff0000ff, 0xff00ff00, 0xff0000ff,
+    ]),
+  })
+  const labels = (regions: MultiRowRegionData[], domain?: string[]) =>
+    buildColorLegend(
+      regions,
+      rowIndexByValue,
+      [undefined, undefined],
+      domain,
+    ).map(e => e.label)
+  expect(labels([panned, region])).toEqual(labels([region, panned]))
+  expect(labels([panned, region], ['TssA'])).toEqual(['TssA', 'Quies'])
 })
 
 test('reads the packed candidates rather than the features', () => {
@@ -81,9 +102,9 @@ test('unions the candidates of every loaded region', () => {
   expect(
     buildColorLegend([region, second], rowIndexByValue, [undefined, undefined]),
   ).toEqual([
-    { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
-    { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
     { label: 'Enh', values: ['Enh'], color: 0xffabcdef },
+    { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
+    { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
   ])
   expect(
     buildColorLegend([region, region], rowIndexByValue, [undefined, undefined]),
@@ -94,8 +115,8 @@ test('rows with a per-row color override contribute nothing', () => {
   expect(
     buildColorLegend([region], rowIndexByValue, [0xff123456, undefined]),
   ).toEqual([
-    { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
     { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
+    { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
   ])
   expect(
     buildColorLegend([region], rowIndexByValue, [0xff123456, 0xff654321]),
@@ -113,8 +134,8 @@ test('a category only an overridden row carries is left out', () => {
   expect(
     buildColorLegend([withRowOnly], rowIndexByValue, [0xff123456, undefined]),
   ).toEqual([
-    { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
     { label: 'Enh', values: ['Enh'], color: 0xffabcdef },
+    { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
   ])
 })
 
@@ -154,12 +175,12 @@ test('two names sharing a color are one row naming both', () => {
   expect(
     buildColorLegend([shared], rowIndexByValue, [undefined, undefined]),
   ).toEqual([
+    { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
     {
       label: 'TssA, TssAFlnk',
       values: ['TssA', 'TssAFlnk'],
       color: 0xff0000ff,
     },
-    { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
   ])
 })
 
@@ -170,7 +191,7 @@ test('a hidden name stays hidden when another joins its color', () => {
     ...region,
     featureNames: ['TssAFlnk', 'Quies', 'TssA', 'Quies'],
   })
-  const [row] = buildColorLegend([later], rowIndexByValue, [
+  const [, row] = buildColorLegend([later], rowIndexByValue, [
     undefined,
     undefined,
   ])
@@ -193,8 +214,8 @@ test('a name reused across two colors keeps its first-seen color', () => {
   expect(
     buildColorLegend([reused], rowIndexByValue, [undefined, undefined]),
   ).toEqual([
-    { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
     { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
+    { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
   ])
 })
 
@@ -210,8 +231,8 @@ test('a second name on a color still carries it when the first is taken', () => 
   expect(
     buildColorLegend([masked], rowIndexByValue, [undefined, undefined]),
   ).toEqual([
-    { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
     { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
+    { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
   ])
 })
 
@@ -251,6 +272,29 @@ test('configured legend dedupes repeated colors first-seen', () => {
       { label: 'Untransmitted', color: 'rgb(227,26,28)' },
     ]),
   ).toEqual([{ label: 'Maternal', values: ['Maternal'], color: 0xff1c1ae3 }])
+})
+
+function statesRegion(n: number) {
+  return regionData({
+    featureStarts: Uint32Array.from({ length: n }, (_, i) => i * 10),
+    featureEnds: Uint32Array.from({ length: n }, (_, i) => i * 10 + 5),
+    featureColors: Uint32Array.from({ length: n }, (_, i) => 0xff000000 + i),
+    partitionValues: ['E001'],
+    featurePartitionIndex: new Uint32Array(n),
+    featureNames: Array.from({ length: n }, (_, i) => `state${i}`),
+    featureIds: Array.from({ length: n }, (_, i) => `f${i}`),
+    featureDeltas: new Int32Array(0),
+    usedItemRgb: false,
+    partitionCandidates: [],
+    partitionCandidateValues: [],
+    resolvedPartitionField: 'name',
+  })
+}
+
+test("a 25-state chromHMM model's key lists every state", () => {
+  expect(
+    buildColorLegend([statesRegion(25)], new Map([['E001', 0]]), [undefined]),
+  ).toHaveLength(25)
 })
 
 test('too many distinct labels is treated as non-categorical', () => {

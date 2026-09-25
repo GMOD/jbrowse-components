@@ -1,11 +1,16 @@
+import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { compareGroupKeys } from '@jbrowse/core/util/groupKeys'
-import { unionLegendCandidates } from '@jbrowse/core/util/legendCandidates'
+import {
+  MAX_LEGEND_ENTRIES,
+  derivedColorScale,
+} from '@jbrowse/core/util/legendCandidates'
 
 import { configuredLegendEntries } from '../../shared/configuredLegend.ts'
 import { resolveLocalRowIndices } from './featurePainting.ts'
 
 import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
+
+const FEATURE_NAME = 'name'
 
 // A key row: a color and every name painted in it, which `label` joins. A
 // category is hidden by name, so a name joining the color later does not
@@ -39,17 +44,17 @@ export function resolveConfiguredLegend(entries: unknown): LegendEntry[] {
 }
 
 /**
- * The categorical color key for a per-feature-colored painting. A row with a
- * per-row color override paints every block that one color, so it contributes
- * nothing here — the legend describes the `color` axis, not the row axis. One
- * color keys nothing (`legendIsReadable`), so a `color: 'steelblue'` track gets
- * no key named after its first feature.
+ * The categorical color key for a per-feature-colored painting, derived as
+ * every color channel's is (`derivedColorScale`): a row per color naming each
+ * feature name painted in it, in `domain`'s order. A row with a per-row color
+ * override paints every block that one color, so it contributes nothing here —
+ * the legend describes the `color` axis, not the row axis.
  */
 export function buildColorLegend(
   regions: Iterable<MultiRowRegionData>,
   rowIndexByValue: ReadonlyMap<string, number>,
   rowColorsByIndex: readonly (number | undefined)[],
-  compare: (a: string, b: string) => number = compareGroupKeys,
+  domain: readonly string[] = [],
 ): LegendEntry[] {
   // No region need be read when every row is overridden, which is the default
   // configuration: an unset `color` slot over features with no itemRgb gives
@@ -60,23 +65,32 @@ export function buildColorLegend(
   ) {
     return []
   }
-  const entries = unionLegendCandidates(regions, data => {
-    const rowForLocal = resolveLocalRowIndices(
-      data.partitionValues,
-      rowIndexByValue,
-    )
-    return {
-      candidates: data.legendCandidates,
-      rowPaintsCandidateColor: partitionIndex => {
-        const row = rowForLocal[partitionIndex]
-        return row !== undefined && rowColorsByIndex[row] === undefined
-      },
-    }
-  })
-  return entries.length > 1
-    ? entries.map(({ values, color }) => {
-        const sorted = values.toSorted(compare)
-        return { label: sorted.join(', '), values: sorted, color }
-      })
-    : []
+  const [key] = derivedColorScale(
+    regions,
+    data => {
+      const rowForLocal = resolveLocalRowIndices(
+        data.partitionValues,
+        rowIndexByValue,
+      )
+      return {
+        candidates: data.legendCandidates,
+        rowPaintsCandidateColor: partitionIndex => {
+          const row = rowForLocal[partitionIndex]
+          return row !== undefined && rowColorsByIndex[row] === undefined
+        },
+      }
+    },
+    {
+      id: 'features',
+      field: categoricalField(FEATURE_NAME, { domain }),
+      maxItems: MAX_LEGEND_ENTRIES,
+    },
+  )
+  return (key?.entries ?? []).map(
+    ({ label, value, values = [value], color }) => ({
+      label,
+      values,
+      color: cssColorToABGR(color!),
+    }),
+  )
 }
