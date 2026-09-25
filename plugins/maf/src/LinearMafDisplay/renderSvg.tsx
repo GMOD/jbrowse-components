@@ -13,6 +13,8 @@ import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.t
 import {
   MAF_COVERAGE_MARKS,
   MAF_ROWS_MARKS,
+  MAF_ROW_MARK,
+  MAF_SOURCE_CHROM_MARK,
 } from '../LinearMafRenderer/mafMarks.ts'
 import { drawMafAnnotations } from '../LinearMafRenderer/rendering/annotations.ts'
 import { drawMafCodons } from '../LinearMafRenderer/rendering/codons.ts'
@@ -21,7 +23,6 @@ import { drawMafEmptyLines } from '../LinearMafRenderer/rendering/emptyLines.ts'
 import { drawMafInsertions } from '../LinearMafRenderer/rendering/insertions.ts'
 import { drawInversions } from '../LinearMafRenderer/rendering/inversions.ts'
 import { drawMafLabels } from '../LinearMafRenderer/rendering/labels.ts'
-import { drawMafSummaryBars } from '../LinearMafRenderer/rendering/summaryBars.ts'
 import {
   getCodonColors,
   getContrastBaseMap,
@@ -34,7 +35,8 @@ import {
   drawConservation,
 } from './components/drawConservation.ts'
 import { drawMafRowsCanvas2d } from './components/drawMafRowsCanvas2d.ts'
-import { encodeMafRows } from './encodeMafRows.ts'
+import { visibleRowRange } from './components/visibleRegionGeometry.ts'
+import { cullMafRows, encodeMafRows } from './encodeMafRows.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -92,15 +94,26 @@ function MafSvgBody({
   // Re-encoded here rather than read off `encodedUpload`: the export theme is a
   // different palette, so the screen's channels carry the wrong colours.
   const encodeProps = model.rowsEncodeProps()
+  const shownRows = visibleRowRange(effectiveRowHeight, scrollTop, rowsHeight)
   const svgRows = new Map(
-    [...model.rpcDataMap].map(([idx, regionData]) => [
+    [...model.rowsSources].map(([idx, source]) => [
       idx,
-      encodeMafRows(regionData, {
-        ...encodeProps,
-        gpu: { ...encodeProps.gpu, palette: svgState.palette },
-      }),
+      cullMafRows(
+        encodeMafRows(source, {
+          ...encodeProps,
+          gpu: { ...encodeProps.gpu, palette: svgState.palette },
+        }),
+        renderBlocks.filter(b => b.displayedRegionIndex === idx),
+        width,
+        shownRows,
+      ),
     ]),
   )
+  // The summary bars were an overlay before they were a mark, and a
+  // `plotOnly` export still leaves them out.
+  const rowMarks = overlays
+    ? MAF_ROWS_MARKS
+    : [MAF_ROW_MARK, MAF_SOURCE_CHROM_MARK]
 
   return (
     <>
@@ -173,24 +186,13 @@ function MafSvgBody({
               // The screen's stacking: the backend's row marks, then the
               // identity plot's canvas over them. Only the model's active
               // rendering encodes or paints anything.
-              paintMarkBlocks(
-                ctx,
-                MAF_ROWS_MARKS,
-                svgRows,
-                renderBlocks,
-                svgState,
-              )
+              paintMarkBlocks(ctx, rowMarks, svgRows, renderBlocks, svgState)
               drawMafRowsCanvas2d(ctx, model, renderBlocks, width)
               // the overlay canvases the screen stacks over the rows canvas
               if (!overlays) {
                 return
               }
               drawMafEmptyLines(ctx, model.visibleEmptyLines, svgState.palette)
-              drawMafSummaryBars(
-                ctx,
-                model.visibleSummaryBars,
-                svgState.palette,
-              )
               drawMafAnnotations(
                 ctx,
                 model.visibleFrames,

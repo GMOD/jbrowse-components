@@ -79,7 +79,6 @@ import {
   consensusStrandByRowChr,
 } from './components/computeVisibleInversions.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
-import { computeVisibleSummaryBars } from './components/computeVisibleSummaryBars.ts'
 import { conservationTicks } from './components/drawConservation.ts'
 import { identityColorScale } from './components/drawRowIdentity.ts'
 import {
@@ -88,8 +87,13 @@ import {
 } from './components/drawSourceChrom.ts'
 import { findRowHoverAtBp } from './components/findRowHover.ts'
 import { findRowSpans } from './components/findRowSpan.ts'
+import { summaryAt } from './components/summarySpans.ts'
 import { DEFAULTS } from './displayDefaults.ts'
-import { encodeMafRows } from './encodeMafRows.ts'
+import {
+  EMPTY_MAF_COVERAGE,
+  createRowsSourceJoin,
+  encodeMafRows,
+} from './encodeMafRows.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
 import { mafLaunchMenuItems } from './launchMenuItems.ts'
 import { openInsertionWidget } from './openInsertionWidget.ts'
@@ -133,7 +137,7 @@ import type {
   LinearMafDisplayConfigModel,
 } from './configSchema.ts'
 import type { ConservationMode } from './conservationModes.ts'
-import type { MafRowsEncodeProps } from './encodeMafRows.ts'
+import type { MafRowsEncodeProps, MafRowsSource } from './encodeMafRows.ts'
 import type {
   RowIdentityMode,
   RowIdentityModeWithOff,
@@ -2203,8 +2207,8 @@ export default function stateModelFactory(
          * **Not simply `activeRowRendering === 'bases'`.** That getter answers
          * which of the *selectable* renderings wins, and summary mode resolves
          * to `bases` there because none of the alternatives can draw from
-         * summary rows. But the base canvas can't draw from them either: the
-         * rows the user sees are the summary overlay's. So the two questions genuinely
+         * summary rows. But the cells can't draw from them either: the rows
+         * the user sees are the summary bars. So the two questions genuinely
          * differ here, and answering this one with that one pinned the display
          * in `loading` forever — the render callback took the paint-from-
          * `rpcDataMap` branch, `renderBlocks` returned `painted: false` over an
@@ -2303,9 +2307,8 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Positioned per-species presence bars for the zoom-out summary overlay.
-         * Unmatched `src` rows drop via the `sources` index, keeping the render
-         * robust to summary files that list extra species.
+         * The summary records each region's rows draw as per-species presence
+         * bars, keyed by displayedRegionIndex.
          *
          * Drawn on the summary tier, **and as the coarse stand-in for a region
          * the detail tier hasn't landed yet** — which is the swap back in, and
@@ -2323,22 +2326,16 @@ export default function stateModelFactory(
          * keeps its rows under the tier — and the bars are what is on screen
          * there.
          */
-        get visibleSummaryBars() {
-          if (!self.rowsVisible || self.coarseTier.size === 0) {
-            return []
+        get summaryDataMap(): ReadonlyMap<number, MafSummaryRecord[]> {
+          const shown = new Map<number, MafSummaryRecord[]>()
+          if (self.rowsVisible) {
+            for (const [i, entry] of self.coarseTier) {
+              if (self.coarseTierActive || !self.rpcDataMap.has(i)) {
+                shown.set(i, entry.data)
+              }
+            }
           }
-          const summary = self.coarseTier
-          return computeVisibleSummaryBars({
-            view: self.host,
-            summaryDataMap: {
-              get: (i: number) =>
-                !self.coarseTierActive && self.rpcDataMap.has(i)
-                  ? undefined
-                  : summary.get(i)?.data,
-            },
-            rowIndexBySrc: self.rowIndexBySrc,
-            ...self.rowGeometry(),
-          })
+          return shown
         },
         /**
          * #getter
@@ -2644,16 +2641,30 @@ export default function stateModelFactory(
               self.activeRowRendering === 'sourceChrom'
                 ? self.sourceChromRanks.ranks
                 : undefined,
+            rowIndexBySrc: self.rowIndexBySrc,
           }
         },
       }))
       .views(self => {
+        const join = createRowsSourceJoin()
+        return {
+          /**
+           * #getter
+           * Each region's detail and summary tiers, paired: what its rows
+           * draw from. A pair keeps its identity while neither tier moved.
+           */
+          get rowsSources(): ReadonlyMap<number, MafRowsSource> {
+            return join(self.rpcDataMap, self.summaryDataMap)
+          },
+        }
+      })
+      .views(self => {
         const encoded = createEncodeMemo(
-          () => self.rpcDataMap,
+          () => self.rowsSources,
           () => self.rowsEncodeProps(),
-          (regionData, props): MafUploadPayload => ({
-            ...encodeMafRows(regionData, props),
-            coverage: regionData.coverage,
+          (source, props): MafUploadPayload => ({
+            ...encodeMafRows(source, props),
+            coverage: source.detail?.coverage ?? EMPTY_MAF_COVERAGE,
           }),
         )
         return {
@@ -2671,6 +2682,22 @@ export default function stateModelFactory(
           },
         }
       })
+      .views(self => ({
+        /**
+         * #method
+         * The summary record whose bar is drawn at canvas x `x` on display row
+         * `rowIndex`, or undefined: the hover on the summary tier.
+         */
+        summaryHoverInfo(rowIndex: number, x: number) {
+          return summaryAt(
+            self.encodedUpload,
+            self.renderBlocks,
+            self.renderState,
+            rowIndex,
+            x,
+          )
+        },
+      }))
       .actions(self => ({
         /**
          * #action
@@ -2716,19 +2743,12 @@ export default function stateModelFactory(
                 self.sourcesKnown ||
                 self.hasRegionData ||
                 self.coarseTierRead !== undefined
-              // One call whatever the rows are doing, because this canvas now
-              // carries the coverage band too. Out of `bases` mode the rows are
-              // owned by a sibling canvas (the identity plot, the codon view,
-              // or the summary bars) and the rows pass has an empty buffer, so
-              // it paints nothing — but the band above still
-              // has to draw, and this used to pass no blocks at all to make the
-              // rows canvas clear. It still counts as a real paint for
-              // `canvasDrawn`: returning false instead is what left summary mode
-              // scrimmed forever; see `basesRenderingActive`.
-              // The `|| !basesRenderingActive` is the sibling-canvas case: past
-              // the summary threshold this backend draws nothing and reports
-              // nothing painted while the rows the user sees are on a sibling
-              // canvas.
+              // One call whatever the rows are doing, because this canvas
+              // carries the coverage band too. In the identity plot and the
+              // codon view the rows are owned by a sibling canvas and the row
+              // marks paint nothing, but the frame still counts as a real
+              // paint for `canvasDrawn`: returning false instead is what left
+              // summary mode scrimmed forever; see `basesRenderingActive`.
               return hasFetched
                 ? b.renderBlocks(
                     self.renderBlocks,

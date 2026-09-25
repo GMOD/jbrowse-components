@@ -9,7 +9,6 @@ import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { observer } from 'mobx-react'
 
 import MafAlignmentTooltipContents from './MafAlignmentTooltipContents.tsx'
-import { findSummaryBarAt } from './computeVisibleSummaryBars.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { MafPointerHit } from './mafHitTest.ts'
@@ -112,12 +111,12 @@ const MAFTooltip = observer(function MAFTooltip({
     ? model.codonHoverInfo(p2.index, baseBp, rowIndex)
     : undefined
   // The zoom-out tier resolves nothing above: `hover` and `codon` both read
-  // `rpcDataMap`, which the summary fetch clears. Hit-test the bars the overlay
-  // drew instead, so a summary row is identifiable by pointing at it — which is
-  // the only way to identify one, since the sidebar labels are the first thing
-  // to go as the row height falls.
+  // `rpcDataMap`, which the summary fetch clears. Hit-test the drawn bars
+  // instead, so a summary row is identifiable by pointing at it — which is the
+  // only way to identify one, since the sidebar labels are the first thing to
+  // go as the row height falls.
   const summary = onRow
-    ? findSummaryBarAt(model.visibleSummaryBars, rowIndex, mouseState.x)
+    ? model.summaryHoverInfo(rowIndex, mouseState.x)
     : undefined
 
   return (

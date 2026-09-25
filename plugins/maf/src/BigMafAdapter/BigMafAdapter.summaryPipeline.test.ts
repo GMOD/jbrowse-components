@@ -3,16 +3,20 @@ import { toArray } from 'rxjs/operators'
 
 import BigBedAdapter from '../../../bed/src/BigBedAdapter/BigBedAdapter.ts'
 import bigBedConfigSchema from '../../../bed/src/BigBedAdapter/configSchema.ts'
-import { computeVisibleSummaryBars } from '../LinearMafDisplay/components/computeVisibleSummaryBars.ts'
+import { encodeSummarySpans } from '../LinearMafDisplay/components/summarySpans.ts'
+import { EMPTY_MAF_CELLS } from '../LinearMafRenderer/mafChannels.ts'
+import { MAF_SUMMARY_MARK } from '../LinearMafRenderer/mafMarks.ts'
 import BigMafAdapter from './BigMafAdapter.ts'
 import configSchema from './configSchema.ts'
 
+import type { MafGPURenderState } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import type { MarkContext2D } from '@jbrowse/render-core/marks'
 
 // End-to-end coverage of the zoom-out summary path that no single unit test
 // spans: the records a real bigMafSummary.bb yields through
-// `getSummaryFeatures` (the worker side) must drive `computeVisibleSummaryBars`
-// (the render side) without a field/coordinate mismatch. The summary RPC
+// `getSummaryFeatures` (the worker side) must drive `encodeSummarySpans` and
+// the summary mark (the render side) without a field/coordinate mismatch. The summary RPC
 // (`LinearMafGetSummaryData`) and `setSummaryData` are transparent pass-throughs
 // — they collect/store these records verbatim — so wiring the two units with
 // the real fixture mirrors production. Catches a species-name (`src`) or
@@ -70,26 +74,55 @@ test('real bigMafSummary records render to positioned bars on their species rows
   const viewWidthPx = (REGION_END - REGION_START) / bpPerPx
   const rowHeight = 15
 
-  const bars = computeVisibleSummaryBars({
-    view: {
-      bpPerPx,
-      visibleRegions: [
-        {
-          displayedRegionIndex: 0,
-          start: REGION_START,
-          end: REGION_END,
-          screenStartPx: 0,
-          reversed: false,
-        },
-      ],
+  const spans = encodeSummarySpans(records, rowIndexBySrc, 'black')
+  const bars: { x: number; y: number; w: number; h: number }[] = []
+  const ctx = {
+    fillStyle: '',
+    fillRect(x: number, y: number, w: number, h: number) {
+      bars.push({ x, y, w, h })
     },
-    summaryDataMap: { get: () => records },
-    rowIndexBySrc,
-    rowHeight,
-    rowProportion: 0.8,
-    scrollTop: 0,
-    viewportHeight: 1000,
-  })
+    save() {},
+    restore() {},
+    beginPath() {},
+    rect() {},
+    clip() {},
+    translate() {},
+    moveTo() {},
+    lineTo() {},
+    bezierCurveTo() {},
+    arc() {},
+    ellipse() {},
+    setLineDash() {},
+    closePath() {},
+    fill() {},
+    strokeStyle: '',
+    lineWidth: 1,
+    strokeRect() {},
+    stroke() {},
+    scale() {},
+    rotate() {},
+  } satisfies MarkContext2D
+  MAF_SUMMARY_MARK.paintBlock(
+    ctx,
+    { cells: EMPTY_MAF_CELLS, summary: spans },
+    {
+      displayedRegionIndex: 0,
+      start: REGION_START,
+      end: REGION_END,
+      screenStartPx: 0,
+      screenEndPx: viewWidthPx,
+      reversed: false,
+    },
+    {
+      canvasWidth: viewWidthPx,
+      canvasHeight: 1000,
+      rowsTop: 0,
+      rowsHeight: 1000,
+      rowHeight,
+      rowProportion: 0.8,
+      scrollTop: 0,
+    } as MafGPURenderState,
+  )
 
   // One bar per record whose species is in the chosen subset (src-filtering).
   const expectedCount = records.filter(r => rowIndexBySrc.has(r.src)).length
@@ -97,16 +130,16 @@ test('real bigMafSummary records render to positioned bars on their species rows
   expect(bars).toHaveLength(expectedCount)
   // The subset really is a filter, not the whole set.
   expect(bars.length).toBeLessThan(records.length)
+  expect(spans.records.every(r => Number.isFinite(r.score))).toBe(true)
 
   for (const b of bars) {
     // Blocks overlapping the region edges extend past the viewport (clipped by
     // the canvas, not here) — assert each bar at least overlaps [0, width].
     expect(Number.isFinite(b.x)).toBe(true)
     expect(b.x).toBeLessThan(viewWidthPx)
-    expect(b.x + b.width).toBeGreaterThan(0)
-    expect(b.width).toBeGreaterThanOrEqual(1)
-    expect(Number.isFinite(b.score)).toBe(true)
-    expect(b.rowTop).toBeGreaterThanOrEqual(0)
-    expect(b.rowTop).toBeLessThan(chosen.length * rowHeight)
+    expect(b.x + b.w).toBeGreaterThan(0)
+    expect(b.w).toBeGreaterThanOrEqual(1)
+    expect(b.y).toBeGreaterThanOrEqual(0)
+    expect(b.y).toBeLessThan(chosen.length * rowHeight)
   }
 })

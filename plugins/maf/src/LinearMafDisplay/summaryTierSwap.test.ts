@@ -9,6 +9,13 @@ import type { Region } from '@jbrowse/core/util'
 const env = () =>
   createMafTestEnvironment({ summaryAdapter: { type: 'BigBedAdapter' } })
 
+// The summary records the rows draw a bar for, over every region.
+function summaryBars(display: LinearMafDisplayModel) {
+  return [...display.encodedUpload.values()].flatMap(
+    p => p.summary?.records ?? [],
+  )
+}
+
 function seedSources(display: LinearMafDisplayModel) {
   display.setSamples({
     samples: [
@@ -90,14 +97,14 @@ describe('the summary bars stand in until the alignment lands', () => {
 
     view.zoomTo(100)
     expect(display.coarseTierActive).toBe(true)
-    expect(display.visibleSummaryBars).toHaveLength(2)
+    expect(summaryBars(display)).toHaveLength(2)
 
     // the swap back in: the tier decision flips a beat before the fetch it
     // triggers can land
     view.zoomTo(1)
     expect(display.coarseTierActive).toBe(false)
     expect(display.rpcDataMap.size).toBe(0)
-    expect(display.visibleSummaryBars).toHaveLength(2)
+    expect(summaryBars(display)).toHaveLength(2)
   })
 
   it('drops them for a region the moment its alignment arrives', () => {
@@ -105,10 +112,10 @@ describe('the summary bars stand in until the alignment lands', () => {
     seedSources(display)
     seedSummary(display, view.displayedRegions)
     view.zoomTo(1)
-    expect(display.visibleSummaryBars).toHaveLength(2)
+    expect(summaryBars(display)).toHaveLength(2)
 
     seedAlignment(display)
-    expect(display.visibleSummaryBars).toEqual([])
+    expect(summaryBars(display)).toEqual([])
   })
 
   // The tiers arrive per region, so the suppression is per region too: the one
@@ -141,10 +148,10 @@ describe('the summary bars stand in until the alignment lands', () => {
     // both regions on screen at once, and still under the 20kb floor
     view.zoomTo(12.5)
     expect(display.coarseTierActive).toBe(false)
-    expect(display.visibleSummaryBars).toHaveLength(3)
+    expect(summaryBars(display)).toHaveLength(3)
 
     seedAlignment(display) // region 0 only
-    expect(display.visibleSummaryBars.map(b => b.start)).toEqual([5100])
+    expect(summaryBars(display).map(b => b.start)).toEqual([5100])
   })
 
   // Zooming back out reuses the summary read, and the detail store keeps its
@@ -158,12 +165,12 @@ describe('the summary bars stand in until the alignment lands', () => {
     seedAlignment(display)
 
     view.zoomTo(1)
-    expect(display.visibleSummaryBars).toEqual([])
+    expect(summaryBars(display)).toEqual([])
 
     view.zoomTo(100)
     expect(display.coarseTierActive).toBe(true)
     expect(display.rpcDataMap.size).toBe(1)
-    expect(display.visibleSummaryBars).toHaveLength(2)
+    expect(summaryBars(display)).toHaveLength(2)
   })
 
   // A track with no summary file has nothing to stand in with, and must not
@@ -173,7 +180,7 @@ describe('the summary bars stand in until the alignment lands', () => {
     seedSources(display)
     view.zoomTo(100)
     expect(display.coarseTierActive).toBe(false)
-    expect(display.visibleSummaryBars).toEqual([])
+    expect(summaryBars(display)).toEqual([])
   })
 })
 

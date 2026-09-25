@@ -17,7 +17,7 @@ export const DEFAULTS = {
    * 1545px and a 447-way cactus at 4141px by default. The rows area is not one
    * canvas but a stack of them — the GPU cells plus every mounted Canvas2D
    * overlay (labels, insertions, deletions, codons, frames, inversions,
-   * summary bars, e-lines) — so at dpr 2 that 447-way costs ~98MB *per
+   * e-lines) — so at dpr 2 that 447-way costs ~98MB *per
    * mounted overlay*, and `maxRowsHeight` only stops it at the point the
    * backing store would throw.
    *

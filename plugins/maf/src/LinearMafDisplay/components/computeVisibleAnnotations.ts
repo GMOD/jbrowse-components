@@ -62,7 +62,7 @@ export function findFrameAt(
  * spanning the row's reference extent. The strip is a thin band at the bottom
  * of each row rather than the full band, so it annotates the CDS structure
  * without hiding the base/SNP coloring drawn underneath at base level. Mirrors
- * `computeVisibleSummaryBars`' `src`→row mapping and compositing.
+ * the summary bars' `src`→row mapping.
  */
 export function computeVisibleAnnotations(
   params: ComputeVisibleAnnotationsParams,

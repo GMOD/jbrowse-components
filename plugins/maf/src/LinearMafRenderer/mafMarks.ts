@@ -55,20 +55,31 @@ function spanPass(id: string): MarkShape<SpanChannels, SpanParams> {
 }
 
 /**
- * One block per row, where the rows band draws each block whole rather than
- * base by base. Unlike the cells these are sparse intervals, so a block
- * narrower than a pixel is widened to one and still reads as present.
+ * The params of a mark drawing each block of a row whole rather than base by
+ * base. Unlike the cells these are sparse intervals, so a block narrower than a
+ * pixel is widened to one and still reads as present.
  */
+const blockSpanParams = (s: MafGPURenderState) => ({
+  rowHeight: s.rowHeight,
+  rowProportion: s.rowProportion,
+  minWidthPx: 1,
+  seamPx: 0,
+  scrollTop: s.scrollTop - s.rowsTop,
+})
+
+/** Each row's aligned blocks, colored by source-chromosome rank. */
 export const MAF_SOURCE_CHROM_MARK = defineMark({
   shape: spanPass('mafSourceChrom'),
   channels: (d: MafRowsPayload) => d.sourceChrom,
-  params: (s: MafGPURenderState) => ({
-    rowHeight: s.rowHeight,
-    rowProportion: s.rowProportion,
-    minWidthPx: 1,
-    seamPx: 0,
-    scrollTop: s.scrollTop - s.rowsTop,
-  }),
+  params: blockSpanParams,
+  band: rowsBand,
+})
+
+/** The summary tier's per-species presence bars, shaded by score. */
+export const MAF_SUMMARY_MARK = defineMark({
+  shape: spanPass('mafSummary'),
+  channels: (d: MafRowsPayload) => d.summary,
+  params: blockSpanParams,
   band: rowsBand,
 })
 
@@ -88,6 +99,7 @@ export const MAF_COVERAGE_MARKS = coverageBandMarks({
 export const MAF_ROWS_MARKS: Mark<MafRowsPayload, MafGPURenderState>[] = [
   MAF_ROW_MARK,
   MAF_SOURCE_CHROM_MARK,
+  MAF_SUMMARY_MARK,
 ]
 
 /** Everything the rows canvas draws, in paint order. */

@@ -5,6 +5,7 @@ import { emptyMafCoverage } from './components/coverageTestFixture.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
+import type { Region } from '@jbrowse/core/util'
 
 function seedRegion(display: LinearMafDisplayModel) {
   display.setSamples({
@@ -49,6 +50,75 @@ function observed(display: LinearMafDisplayModel) {
     void display.encodedUpload
   })
 }
+
+function summaryTier() {
+  const { display, view } = createMafTestEnvironment({
+    summaryAdapter: { type: 'BigBedAdapter' },
+  }).createDisplay()
+  display.setSamples({
+    samples: [
+      { id: 'hg38', label: 'hg38' },
+      { id: 'mm10', label: 'mm10' },
+    ],
+    treeNewick: undefined,
+    samplesCanonical: true,
+  })
+  view.zoomTo(100)
+  display.setCoarseTier(
+    [
+      {
+        displayedRegionIndex: 0,
+        payload: {
+          data: [
+            { refName: 'ctgA', start: 1000, end: 3000, src: 'hg38', score: 1 },
+            { refName: 'ctgA', start: 1000, end: 3000, src: 'mm10', score: 0 },
+          ],
+          frames: undefined,
+        },
+      },
+    ],
+    {
+      regions: view.displayedRegions.map(
+        (region: Region, displayedRegionIndex: number) => ({
+          region,
+          displayedRegionIndex,
+        }),
+      ),
+      key: display.coarseTierIssueKey,
+    },
+  )
+  return { display, view }
+}
+
+describe('the summary bars are a row mark', () => {
+  it('encodes the tier records on a payload with no alignment', () => {
+    const { display } = summaryTier()
+    expect(display.coarseTierActive).toBe(true)
+    const payload = display.encodedUpload.get(0)!
+    expect(payload.cells.count).toBe(0)
+    expect(payload.summary!.records.map(r => r.src)).toEqual(['hg38', 'mm10'])
+  })
+
+  it('hovers the record under the pointer through the mark', () => {
+    const { display, view } = summaryTier()
+    const [block] = display.renderBlocks
+    const x = block!.screenStartPx + (2000 - block!.start) / view.bpPerPx
+    expect(display.summaryHoverInfo(1, x)).toMatchObject({ src: 'mm10' })
+    expect(display.summaryHoverInfo(0, x)).toMatchObject({ src: 'hg38' })
+    expect(display.summaryHoverInfo(1, x + 100)).toBeUndefined()
+  })
+
+  it('does not re-encode on a pan', () => {
+    const { display, view } = summaryTier()
+    const dispose = observed(display)
+    const before = display.encodedUpload.get(0)!.summary
+    const offsetPx = view.offsetPx
+    view.horizontalScroll(5)
+    expect(view.offsetPx).not.toBe(offsetPx)
+    expect(display.encodedUpload.get(0)!.summary).toBe(before)
+    dispose()
+  })
+})
 
 describe('color by source chromosome is a row mark', () => {
   it('encodes one span per aligned row per block, and no cells', () => {

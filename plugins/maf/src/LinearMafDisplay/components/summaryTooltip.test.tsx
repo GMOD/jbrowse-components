@@ -2,17 +2,14 @@ import { render } from '@testing-library/react'
 
 import MafAlignmentTooltipContents from './MafAlignmentTooltipContents.tsx'
 
-import type { SummaryBar } from './computeVisibleSummaryBars.ts'
+import type { MafSummaryRecord } from '../../types.ts'
 
 const p2 = { refName: 'chr1', coord: 1234 }
 
-const bar = (over: Partial<SummaryBar> = {}): SummaryBar => ({
-  x: 0,
-  width: 20,
-  rowTop: 0,
-  h: 12,
+const bar = (over: Partial<MafSummaryRecord> = {}): MafSummaryRecord => ({
+  refName: 'chr1',
+  src: 'panTro6',
   score: 0.873,
-  rowIndex: 3,
   start: 1000,
   end: 2500,
   ...over,

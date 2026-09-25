@@ -8,8 +8,7 @@ import { getFrameColors } from '../../LinearMafRenderer/util.ts'
 import type { FrameMarker } from './computeVisibleAnnotations.ts'
 
 // Per-species CDS frame boxes (UCSC mafFrames), drawn on a backend-independent
-// Canvas2D layer that composites over the per-species rows exactly like
-// SummaryBarsOverlay.
+// Canvas2D layer that composites over the per-species rows.
 const AnnotationOverlay = observer(function AnnotationOverlay({
   markers,
   width,

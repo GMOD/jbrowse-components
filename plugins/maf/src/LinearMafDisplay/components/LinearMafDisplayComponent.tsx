@@ -31,7 +31,6 @@ import MafConservationBand from './MafConservationBand.tsx'
 import MafCoverageBand from './MafCoverageBand.tsx'
 import MafRowsCanvas from './MafRowsCanvas.tsx'
 import SubsequenceContextMenu from './SubsequenceContextMenu.tsx'
-import SummaryBarsOverlay from './SummaryBarsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { resolveMafPointerHit } from './mafHitTest.ts'
 import { useDragSelection } from './useDragSelection.ts'
@@ -230,12 +229,6 @@ const MafBody = observer(function MafBody({
         <MafRowsCanvas model={model} />
         <EmptyLinesOverlay
           segments={model.visibleEmptyLines}
-          width={width}
-          height={rowsHeight}
-          palette={colorPalette}
-        />
-        <SummaryBarsOverlay
-          bars={model.visibleSummaryBars}
           width={width}
           height={rowsHeight}
           palette={colorPalette}

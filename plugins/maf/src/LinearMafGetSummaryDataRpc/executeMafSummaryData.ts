@@ -121,7 +121,7 @@ export async function executeMafSummaryData({
     // A sample-discovery track (no `samples`, no `nhLocation`) has no row set
     // until something names one, and only the alignment path used to. A track
     // opened already zoomed out past the summary threshold therefore resolved
-    // zero sources, so `rowIndexBySrc` matched no `src` and the summary overlay
+    // zero sources, so `rowIndexBySrc` matched no `src` and the summary bars
     // drew nothing at all — a blank, fully-"loaded" track until the user zoomed
     // in far enough to fetch detail. The records name their species, so this
     // path can answer for itself.

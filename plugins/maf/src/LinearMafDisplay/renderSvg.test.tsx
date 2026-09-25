@@ -5,6 +5,7 @@ import { renderToString } from 'react-dom/server'
 import { renderSvg } from './renderSvg.tsx'
 import { createMafTestEnvironment } from './testEnv.ts'
 
+import type { Region } from '@jbrowse/core/util'
 import type React from 'react'
 
 // The export waits on the fetch reaching a terminal state, and this harness
@@ -82,4 +83,73 @@ test('a dismissed color key stays out of the export', async () => {
   expect(draw(await renderSvg(display, {}))).toContain('color-legend')
   display.setShowLegend(false)
   expect(draw(await renderSvg(display, {}))).not.toContain('color-legend')
+})
+
+// A score-0 summary bar is the match colour at alpha 64/255.
+const SUMMARY_FILL_OPACITY = `fill-opacity="${64 / 255}"`
+
+function summaryTierDisplay() {
+  const { display, view } = createMafTestEnvironment({
+    summaryAdapter: { type: 'BigBedAdapter' },
+  }).createDisplay()
+  display.setSamples({
+    samples: [
+      { id: 'hg38', label: 'hg38' },
+      { id: 'mm10', label: 'mm10' },
+    ],
+    treeNewick: undefined,
+    samplesCanonical: true,
+  })
+  const summary = (src: string, start: number, end: number) => ({
+    refName: 'ctgA',
+    start,
+    end,
+    src,
+    score: 0,
+  })
+  view.zoomTo(100)
+  display.setCoarseTier(
+    [
+      {
+        displayedRegionIndex: 0,
+        payload: {
+          data: [
+            summary('hg38', 1000, 3000),
+            summary('mm10', 1000, 3000),
+            summary('hg38', 9_000_000, 9_000_100),
+          ],
+          frames: undefined,
+        },
+      },
+    ],
+    {
+      regions: view.displayedRegions.map(
+        (region: Region, displayedRegionIndex: number) => ({
+          region,
+          displayedRegionIndex,
+        }),
+      ),
+      key: display.coarseTierIssueKey,
+    },
+  )
+  expect(display.coarseTierActive).toBe(true)
+  return display
+}
+
+const count = (svg: string, s: string) => svg.split(s).length - 1
+
+// The summary bars were an overlay before they were a mark: a plot-only
+// export left them out, and a vector layer writes a rect for every fill a
+// clip hides, so the export culls what no block shows.
+test('an export draws the summary bars on screen, and a plot-only one none', async () => {
+  const display = summaryTierDisplay()
+  expect(count(draw(await renderSvg(display, {})), SUMMARY_FILL_OPACITY)).toBe(
+    2,
+  )
+  expect(
+    count(
+      draw(await renderSvg(display, { plotOnly: true })),
+      SUMMARY_FILL_OPACITY,
+    ),
+  ).toBe(0)
 })

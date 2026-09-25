@@ -4,10 +4,9 @@ import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
 import { describeMafStatus } from '../../util/mafStatus.ts'
 import { insertionForwardStart } from './findRowHover.ts'
 
-import type { MafStatus } from '../../types.ts'
+import type { MafStatus, MafSummaryRecord } from '../../types.ts'
 import type { GenomicPosition, MafHover } from '../util.ts'
 import type { CodonChange, CodonHit } from './computeVisibleCodons.ts'
-import type { SummaryBar } from './computeVisibleSummaryBars.ts'
 import type { ReactNode } from 'react'
 
 function strandStr(strand?: number) {
@@ -182,7 +181,7 @@ function SummaryContents({
   location,
   sampleLabel,
 }: {
-  bar: SummaryBar
+  bar: MafSummaryRecord
   location: string
   sampleLabel?: string
 }) {
@@ -274,7 +273,7 @@ export default function MafAlignmentTooltipContents({
   hover?: MafHover
   frame?: FrameHover
   codon?: CodonHit
-  summary?: SummaryBar
+  summary?: MafSummaryRecord
   summarySampleLabel?: string
 }) {
   if (p1) {

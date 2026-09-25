@@ -1,4 +1,8 @@
-import type { AlignmentContext, EmptyRecord } from '../types.ts'
+import type {
+  AlignmentContext,
+  EmptyRecord,
+  MafSummaryRecord,
+} from '../types.ts'
 import type { MafColorPalette } from './util.ts'
 import type { CoverageBandState } from '@jbrowse/alignments-core'
 import type { SpanChannels } from '@jbrowse/render-core/marks'
@@ -33,9 +37,9 @@ export interface MafGPURenderState {
   mismatchRendering: boolean
   /**
    * Full theme-derived color set (base palette + match/gap/mismatch/unknown/
-   * insertion). The cells resolve their colours at encode time, so what reads
-   * this is the overlay and export layers drawn beside them — the insertion
-   * markers, the deletion labels, the empty lines and the summary bars.
+   * insertion). The row marks resolve their colours at encode time, so what
+   * reads this is the overlay and export layers drawn beside them — the
+   * insertion markers, the deletion labels and the empty lines.
    */
   palette: MafColorPalette
 }
@@ -282,6 +286,13 @@ export interface MafRowsPayload {
   cells: SpanChannels
   /** Each row's aligned blocks coloured by source-chromosome rank. */
   sourceChrom?: SpanChannels
+  /** The summary tier's per-species presence bars. */
+  summary?: MafSummarySpans
+}
+
+/** Summary bars as `span` channels, with the record behind each instance. */
+export interface MafSummarySpans extends SpanChannels {
+  records: MafSummaryRecord[]
 }
 
 export interface MafUploadPayload extends MafRowsPayload {
