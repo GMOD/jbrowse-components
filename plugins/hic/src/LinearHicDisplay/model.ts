@@ -9,7 +9,6 @@ import {
   installPrerequisiteFetch,
   readFor,
 } from '@jbrowse/core/util/installPrerequisiteFetch'
-import { formatScore } from '@jbrowse/core/util/numericUtils'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
@@ -325,10 +324,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
             ),
             domain,
             stops: legendStops(self.colorRamp),
-            format: (v: number) =>
-              v === domain[1] && v < maxScore
-                ? `≥${formatScore(v)}`
-                : formatScore(v),
+            extent: [domain[0], maxScore],
           },
         ]
       },
