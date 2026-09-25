@@ -37,11 +37,6 @@ import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 export const SASHIMI_ARCS_MODES = ['up', 'down', 'auto'] as const
 export type SashimiArcsMode = (typeof SASHIMI_ARCS_MODES)[number]
 
-// Which sub-band an arc is drawn in: 'up' overlays the coverage histogram,
-// 'down' sits in the reserved strip below it. Each side's geometry is in its own
-// band-local coordinates, so the overlay/export place each in the matching SVG.
-export type SashimiSide = 'up' | 'down'
-
 // A junction's identity, and the ONE spelling of it. The layout's side
 // assignment and the geometry's cross-region merge both key on this, so a
 // mismatch between them is not expressible. refName is part of the key because

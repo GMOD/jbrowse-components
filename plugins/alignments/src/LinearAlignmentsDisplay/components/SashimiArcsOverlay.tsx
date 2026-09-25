@@ -3,8 +3,8 @@ import { Fragment, useState } from 'react'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { observer } from 'mobx-react'
 
+import { sashimiArcColor } from '../../features/sashimi/computeOverlay.ts'
 import SashimiArcLabels from './SashimiArcLabels.tsx'
-import SashimiSelectionOutline from './SashimiSelectionOutline.tsx'
 import { openSashimiWidget } from './detailWidgets.ts'
 import { PAN_MOVED } from './panState.ts'
 import {
@@ -20,20 +20,10 @@ import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
-// One side's worth of arcs as an absolutely-positioned SVG at the (scrolled)
-// sub-band top. Native per-path hover/click means each band resolves its own
-// events.
-//
-// The box comes from `sashimiSideBand`, which derives extent and clipping from
-// the side — an 'up' band overlays the coverage histogram (overflow visible, so
-// a tall arc can rise into it) and a 'down' band is the reserved strip below it,
-// clipped to its own height so it can't paint over the pileup.
-//
-// Hover just widens the stroke, and stays plain React state: it is a
-// per-mousemove thing with nothing to export. A junction is outlined while the
-// session selection is its detail widget's feature. Arc geometry
-// is memoized on the model (`sashimiArcSections`), so hovering repaints only
-// this band's (low count) paths without recomputing it.
+// One side's arcs as an absolutely-positioned SVG at the sub-band's screen top,
+// each path resolving its own hover and click. Hover widens the stroke and
+// lights the junction's supporting reads; the selected junction is outlined
+// under its arc so it keeps its strand tint.
 const SashimiSubBand = observer(function SashimiSubBand({
   model,
   arcs,
@@ -71,11 +61,17 @@ const SashimiSubBand = observer(function SashimiSubBand({
         return (
           <Fragment key={arcKey}>
             {sashimiFeatureId(groupKey, arc) === model.selectedFeatureId ? (
-              <SashimiSelectionOutline arc={arc} palette={palette} />
+              <path
+                d={arc.d}
+                stroke={palette.text.primary}
+                strokeWidth={arc.strokeWidth + 4}
+                fill="none"
+                style={{ pointerEvents: 'none' }}
+              />
             ) : null}
             <path
               d={arc.d}
-              stroke={arc.stroke}
+              stroke={sashimiArcColor(arc.strand, palette.alignmentFill)}
               strokeWidth={
                 arcKey === hoveredArcKey ? arc.strokeWidth + 2 : arc.strokeWidth
               }
@@ -83,15 +79,16 @@ const SashimiSubBand = observer(function SashimiSubBand({
               style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
               onMouseEnter={() => {
                 setHoveredArcKey(arcKey)
-                // Through `setHoverState` for the reason the two arc overlays
-                // are: it is the write the open context menu's hover pin
-                // refuses, so an arc crossed while the menu is up can't
-                // overwrite the read the menu acts on.
+                // through `setHoverState`, the write an open context menu's
+                // hover pin refuses
                 model.setHoverState({
                   overCigarItem: false,
                   featureIdUnderMouse: undefined,
                   mouseoverExtraInformation: formatSashimiTooltip(arc),
-                  highlightedChainReadIds: [],
+                  highlightedChainReadIds: model.sashimiSupportingReadIds(
+                    groupKey,
+                    arc,
+                  ),
                 })
               }}
               onMouseLeave={() => {
@@ -117,38 +114,28 @@ const SashimiSubBand = observer(function SashimiSubBand({
   )
 })
 
-// Each stacked section contributes two sub-bands: `up` over the coverage
-// histogram and `down` in the reserved strip below it. 'auto' fills both at
-// once; 'up'/'down' leave the other empty. `sashimiArcSections` is [] when
-// sashimi is off or the view hasn't initialized.
+// Each section contributes an `up` sub-band over the coverage histogram and a
+// `down` one in the strip below it.
 const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
   const palette = usePalette()
-  // Ungrouped coverage is sticky (only the pileup scrolls), so its bands keep
-  // their content-space tops; grouped sections scroll as a unit.
   const { scrollModel: scroll, sashimiArcSections: sections } = model
   if (sections.length === 0) {
     return null
   }
-  // Read AFTER that gate: `view.width` throws by design before the view is
-  // measured, and `sashimiArcSections` is empty until `view.initialized` — so
-  // the gate is what makes this read safe, rather than it being safe by
-  // accident of nothing mounting the overlay early (the trap
-  // `PileupBezierOverlay` documents at length).
+  // after the gate: `view.width` throws before the view is measured, and the
+  // sections are empty until then
   const { width } = model.view
   return sections.flatMap(section =>
     SASHIMI_SIDES.map(side => {
       const arcs = section[side]
       const band = sashimiSideBand(section, side, model.bandHeights)
       const screenTop = bandScreenTop(band.top, scroll)
-      // A grouped display re-renders this whole overlay on every scroll frame
-      // (each section's screen top moves), so an off-screen lane's paths would
-      // be reconciled once per frame for a band nobody can see — the same
-      // reason `GroupLabelsOverlay` culls. Not applied to the SVG export, which
-      // has no frames and clips to the same box anyway.
+      // A grouped display re-renders on every scroll frame, so an off-screen
+      // lane's paths would be reconciled for a band nobody can see.
       return arcs.length === 0 ||
         !bandOnScreen(screenTop, band.height, scroll) ? null : (
         <SashimiSubBand

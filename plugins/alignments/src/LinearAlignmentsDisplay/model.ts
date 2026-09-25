@@ -69,6 +69,7 @@ import {
 } from '../features/linkedReads/computeOverlay.ts'
 import { visibleRegionJunctions } from '../features/sashimi/computeOverlay.ts'
 import { mergeJunctions } from '../features/sashimi/junctions.ts'
+import { junctionSupportingReadIds } from '../features/sashimi/supportingReads.ts'
 import {
   BASE_COLOR_FIELDS,
   colorFieldOf,
@@ -94,6 +95,7 @@ import {
   getReadDisplayLegendItems,
   readCategoryLabelOverrides,
   readColorCategoryLabel,
+  sashimiLegendItems,
 } from '../shared/legendUtils.ts'
 import { DEFAULT_MODIFICATION_THRESHOLD } from '../shared/types.ts'
 import { getMismatchContrastMap } from '../shared/util.ts'
@@ -216,7 +218,7 @@ import type {
   SectionsLayout,
 } from './sectionLayout.ts'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
+import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
@@ -2210,23 +2212,6 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * `LegendMixin`'s hook: the read fills, the arc or read-cloud colors
-         * and the connection curves, merged and deduped by
-         * `getAlignmentsColorScales`. Empty while the legend is hidden, since
-         * the category scans above are.
-         */
-        get colorScales(): ColorScale[] {
-          return getAlignmentsColorScales({
-            readRamp: bakedRampScale(self.colorBy, self.bakedColorScale),
-            legendItems: () => self.legendItems(),
-            arcLegendTitle: self.arcLegendTitle,
-            arcLegendItems: () => self.arcLegendItems(),
-            bezierLegendItems: () => this.bezierLegendItems(),
-          })
-        },
-
-        /**
-         * #getter
          * `LegendMixin`'s hook: the split-read rows have to name which kind of
          * read they classify, and that is the tree's longest label.
          */
@@ -2576,6 +2561,63 @@ export default function stateModelFactory(
               // result above has already passed through.
               viewWidthPx: view.width,
               ...self.bandHeights,
+            })
+          },
+
+          /**
+           * #getter
+           * Key rows for the junction strands drawn, read off the merged
+           * junctions rather than the projected arcs so a pan does not rebuild
+           * the legend.
+           */
+          get sashimiLegendItems(): LegendItem[] {
+            return self.showLegend
+              ? sashimiLegendItems(
+                  new Set(
+                    this.sashimiJunctionSections.flatMap(sec =>
+                      sec.junctions.map(j => j.strand),
+                    ),
+                  ),
+                  getPaletteHost(self).palette.alignmentFill,
+                )
+              : []
+          },
+
+          /**
+           * #method
+           * The reads in one lane whose skip gap is this junction.
+           */
+          sashimiSupportingReadIds(
+            groupKey: string,
+            junction: { refName: string; start: number; end: number },
+          ) {
+            const sec = self.renderSections.find(s => s.groupKey === groupKey)
+            return sec
+              ? junctionSupportingReadIds(
+                  [...sec.rawPileupMap].map(([i, data]) => ({
+                    refName: self.loadedRegions.get(i)?.refName,
+                    data,
+                  })),
+                  junction,
+                )
+              : []
+          },
+
+          /**
+           * #getter
+           * `LegendMixin`'s hook: the read fills, the arc or read-cloud colors,
+           * the connection curves and the junction strands, merged and deduped
+           * by `getAlignmentsColorScales`. Empty while the legend is hidden,
+           * since the category scans are.
+           */
+          get colorScales(): ColorScale[] {
+            return getAlignmentsColorScales({
+              readRamp: bakedRampScale(self.colorBy, self.bakedColorScale),
+              legendItems: () => self.legendItems(),
+              arcLegendTitle: self.arcLegendTitle,
+              arcLegendItems: () => self.arcLegendItems(),
+              bezierLegendItems: () => self.bezierLegendItems(),
+              sashimiLegendItems: this.sashimiLegendItems,
             })
           },
         }

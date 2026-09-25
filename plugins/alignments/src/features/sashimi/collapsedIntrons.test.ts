@@ -1,10 +1,10 @@
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import { computeSashimiArcs } from './computeOverlay.ts'
 import { downJunctionKeys, mergeJunctions } from './junctions.ts'
 import { encodeDinucleotide, spliceMotifLabel } from './motif.ts'
+import { computeSashimiArcs } from './testSashimiArcs.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { ComputeSashimiArcsOpts } from './computeOverlay.ts'
+import type { ComputeSashimiArcsOpts } from './testSashimiArcs.ts'
 
 // Collapsed introns (plugins/canvas CollapseIntronsDialog) are the one routine
 // way a single refName becomes many displayedRegions: each exon is padded by a

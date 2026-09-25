@@ -1,6 +1,7 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 
+import { sashimiArcColor } from '../../features/sashimi/computeOverlay.ts'
 import SashimiArcLabels from './SashimiArcLabels.tsx'
 import { SASHIMI_SIDES, sashimiArcKey, sashimiSideBand } from './sashimiArcs.ts'
 import { bandScreenTop } from './sectionScreen.ts'
@@ -9,17 +10,9 @@ import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
-// One side's arcs translated to its sub-band's content-space top. Arc geometry
-// is already band-local, so a single translate places the whole side. Paths
-// first, labels second, so a count is never buried under a neighbouring arc's
-// stroke.
-//
-// `clipped` is `sashimiSideBand`'s, and it is the same box the on-screen band
-// applies as `overflow: hidden` — the down strip must not paint over the pileup
-// underneath it, whereas the up band stays open so a tall arc can rise into the
-// coverage band's own top margin. The export used to draw both sides unclipped,
-// so a down band dragged short enough for its arcs' strokes and count labels to
-// overrun it produced a figure the screen never showed.
+// One side's arcs at its sub-band's top, clipped to the same box the screen
+// clips (`sashimiSideBand`). Paths first, labels second, so a count is never
+// buried under a neighbouring arc's stroke.
 function SashimiSide({
   arcs,
   top,
@@ -48,7 +41,7 @@ function SashimiSide({
         <path
           key={sashimiArcKey(arc)}
           d={arc.d}
-          stroke={arc.stroke}
+          stroke={sashimiArcColor(arc.strand, palette.alignmentFill)}
           strokeWidth={arc.strokeWidth}
           fill="none"
         />
@@ -69,24 +62,12 @@ function SashimiSide({
   )
 }
 
-// Static sashimi arcs for SVG export — the very same `sashimiArcSections`
-// geometry the on-screen overlay renders, minus the hover/click handlers and
-// the selected junction's outline, as no display's selection is exported. Band
-// tops are content-space and go through `bandScreenTop`, the same projection
-// SashimiArcsOverlay uses, so a scrolled export puts the arcs on the reads they
-// belong to. (They sat at their raw content tops while the export pinned
-// scrollTop to 0.)
-//
-// The palette is the EXPORT theme's, passed down rather than pulled from
-// `usePalette`: the export resolves its own palette (`resolvePalette` in
-// renderSvg) so the figure matches the theme the user asked to export in, not
-// the live session's.
+// Static sashimi arcs for SVG export: the on-screen geometry without the hover
+// and selection. The palette is the export theme's, not the live session's.
 //
 // Not an observer: this draws into a figure `useViewSvgFigure` freezes with a
-// `memo`, which does not hold an observer still. Subscribing here re-derived
-// `bandScreenTop` from the live scroll while the pileup underneath stayed where
-// the snapshot left it. The file export renders in one synchronous pass and
-// never needed the subscription.
+// `memo`, which does not hold an observer still, and a subscription re-derived
+// the band tops from the live scroll while the pileup stayed put.
 export default function SashimiArcsSvg({
   model,
   width,

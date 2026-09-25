@@ -3,7 +3,6 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { arcAvailH, arcYScale } from '../features/arcs/arcYScale.ts'
 import { computeCrossRegionArcs } from '../features/arcs/crossRegionOverlay.ts'
 import { projectSashimiArcs } from '../features/sashimi/computeOverlay.ts'
-import { splitArcsBySide } from './components/sashimiArcs.ts'
 
 import type { CrossRegionArc } from '../features/arcs/arcTypes.ts'
 import type { MergedJunction } from '../features/sashimi/junctions.ts'
@@ -57,39 +56,26 @@ export interface SashimiSectionsInput {
 }
 
 /**
- * Per-section sashimi arcs, in stacking order: each group's junction geometry
- * (sashimi counts live per group) already split into the two sub-bands, paired
- * with their content-space tops — `coverageOverlayTop` for `up` arcs drawn over
- * the coverage histogram, `sashimiBandTop` for `down` arcs in the reserved strip
- * below it. In 'auto' both are populated; 'up'/'down' leave the other empty.
- *
- * Which side each arc takes was decided once, in genomic bp, by
- * `sashimiDownKeysByGroup` — this reads the lane's answer rather than a second
- * one in screen space.
- *
- * Projection only: every input here moves during a gesture, and the merge that
- * produced `sec.junctions` does not, which is why it happens a computed earlier.
+ * Per-section sashimi arcs in stacking order, each group's junctions projected
+ * into the two sub-bands with their content-space tops: `coverageOverlayTop`
+ * for `up` arcs over the coverage histogram, `sashimiBandTop` for `down` arcs in
+ * the strip below it. The side comes from the lane (`sashimiDownKeys`), and the
+ * merge behind `sec.junctions` ran a computed earlier because it owes nothing to
+ * the pan.
  */
 export function computeSashimiArcSections(
   input: SashimiSectionsInput,
 ): SashimiArcSection[] {
   const { sections, ...opts } = input
-  return sections.map(sec => {
-    const arcs = projectSashimiArcs(sec.junctions, {
+  return sections.map(sec => ({
+    groupKey: sec.groupKey,
+    ...projectSashimiArcs(sec.junctions, {
       ...opts,
       downJunctionKeys: sec.sashimiDownKeys,
-    })
-    // Already ascending by score — `projectSashimiArcs` emits them that way, and
-    // `computeOverlay.test.ts` pins it. The sort used to be one call up from the
-    // array's producer, which is why it read as missing to anyone looking at the
-    // producer.
-    return {
-      groupKey: sec.groupKey,
-      ...splitArcsBySide(arcs),
-      coverageOverlayTop: sec.coverageTop + YSCALEBAR_LABEL_OFFSET,
-      sashimiBandTop: sec.sashimiBandTop,
-    }
-  })
+    }),
+    coverageOverlayTop: sec.coverageTop + YSCALEBAR_LABEL_OFFSET,
+    sashimiBandTop: sec.sashimiBandTop,
+  }))
 }
 
 export interface CrossRegionArcSectionsInput {

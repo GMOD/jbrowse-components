@@ -26,6 +26,7 @@ import {
   categorySwatchColor,
   rgb255,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import { sashimiArcColor } from '../features/sashimi/computeOverlay.ts'
 import { OVERLAP_ALPHA } from '../shaders/slang/overlap.consts.generated.ts'
 import { colorFieldOf, isBakedScheme } from './alignmentsColor.ts'
 import { paintsModifications } from './colorSchemes.ts'
@@ -51,6 +52,7 @@ import type {
   ColorScale,
   RampScale,
 } from '@jbrowse/core/ui/colorScale'
+import type { AlignmentFill } from '@jbrowse/core/ui/palette'
 
 export type { LegendItem } from '@jbrowse/core/ui'
 
@@ -222,6 +224,7 @@ export function getAlignmentsColorScales(model: {
   arcLegendTitle: string
   arcLegendItems: () => LegendItem[]
   bezierLegendItems: () => LegendItem[]
+  sashimiLegendItems: LegendItem[]
 }): ColorScale[] {
   const reads = model.legendItems()
   const arcs = model.arcLegendItems()
@@ -256,7 +259,26 @@ export function getAlignmentsColorScales(model: {
       'Read connections',
       model.bezierLegendItems().filter(i => !keyed.has(legendKey(i))),
     ),
+    scaleOf('sashimi', 'Splice junctions', model.sashimiLegendItems),
   ]
+}
+
+const SASHIMI_STRAND_LABELS = [
+  [1, 'Forward strand'],
+  [-1, 'Reverse strand'],
+  [0, 'Strand unknown'],
+] as const
+
+/**
+ * The key rows for the junction strands present, in a fixed order.
+ */
+export function sashimiLegendItems(
+  strands: ReadonlySet<number>,
+  fill: Pick<AlignmentFill, 'pairLR'>,
+): LegendItem[] {
+  return SASHIMI_STRAND_LABELS.filter(([strand]) => strands.has(strand)).map(
+    ([strand, label]) => ({ color: sashimiArcColor(strand, fill), label }),
+  )
 }
 
 function hslRamp(

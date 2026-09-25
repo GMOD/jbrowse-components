@@ -1,4 +1,8 @@
-import { resolvePalette } from '@jbrowse/core/ui/palette'
+import {
+  colorPairLR,
+  colorPairLRDark,
+  resolvePalette,
+} from '@jbrowse/core/ui/palette'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { cleanup, fireEvent, render } from '@testing-library/react'
 
@@ -31,9 +35,7 @@ function makeArc(arc: Partial<SashimiArc>): SashimiArc {
     score: 5,
     motif: 0,
     d: 'M...',
-    stroke: 'red',
     strokeWidth: 2,
-    side: 'up',
     labelX: 1500,
     labelY: 10,
     showLabel: true,
@@ -42,10 +44,9 @@ function makeArc(arc: Partial<SashimiArc>): SashimiArc {
 }
 
 describe('sashimiArcKey', () => {
-  it('keys by stable identity (refName/start/end/strand), not array index', () => {
-    const key = sashimiArcKey(makeArc({ start: 1000, end: 2000, strand: 1 }))
-    expect(key).toBe('chr1:1000:2000:1')
-    expect(key).not.toBe('0')
+  it('keys by junction identity, not array index', () => {
+    const key = sashimiArcKey(makeArc({ start: 1000, end: 2000 }))
+    expect(key).toBe('chr1:1000:2000')
   })
 
   it('distinguishes same coordinates in different regions', () => {
@@ -54,10 +55,10 @@ describe('sashimiArcKey', () => {
     expect(a).not.toBe(b)
   })
 
-  it('distinguishes forward/reverse arcs at the same junction', () => {
-    const fwd = sashimiArcKey(makeArc({ strand: 1 }))
-    const rev = sashimiArcKey(makeArc({ strand: -1 }))
-    expect(fwd).not.toBe(rev)
+  it('holds still when a later region changes the junction strand', () => {
+    expect(sashimiFeatureId('g', makeArc({ strand: 1 }))).toBe(
+      sashimiFeatureId('g', makeArc({ strand: -1 })),
+    )
   })
 })
 
@@ -97,7 +98,7 @@ describe('sashimiSideBand', () => {
     // constrains DRAGGING, not what a config or a session snapshot declares — so
     // a height under one y-scalebar offset reaches here, and unfloored it lands
     // on an `<svg height>` and an `<SvgClipRect>` as a negative number. Same
-    // floor `computeSashimiArcs` puts on the height it draws INTO, which had it
+    // floor `projectSashimiArcs` puts on the height it draws INTO, which had it
     // and this did not.
     expect(
       sashimiSideBand(section, 'up', { ...heights, coverageHeight: 3 }).height,
@@ -138,6 +139,7 @@ describe('sashimi selection', () => {
       setHoverState: jest.fn(),
       clearMouseoverState: jest.fn(),
       clearHoverUnlessPinned: jest.fn(),
+      sashimiSupportingReadIds: jest.fn(() => ['r1', 'r2']),
     } as unknown as LinearAlignmentsDisplayModel
   }
 
@@ -188,5 +190,47 @@ describe('sashimi selection', () => {
       <SashimiArcsOverlay model={stubModel(SELECTED)} />,
     )
     expect(strokeWidths(container)).toEqual(['6', '2'])
+  })
+
+  it('lights the reads supporting the hovered junction', () => {
+    const model = stubModel(undefined)
+    const { container } = render(<SashimiArcsOverlay model={model} />)
+    fireEvent.mouseEnter(container.querySelector('path')!)
+    expect(model.sashimiSupportingReadIds).toHaveBeenCalledWith('sampleA', ARC)
+    expect(model.setHoverState).toHaveBeenCalledWith(
+      expect.objectContaining({ highlightedChainReadIds: ['r1', 'r2'] }),
+    )
+  })
+
+  it('strokes an unstranded junction in the export theme grey', () => {
+    const unstranded = makeArc({ strand: 0 })
+    const model = {
+      ...stubModel(undefined),
+      sashimiArcSections: [
+        {
+          groupKey: 'sampleA',
+          up: [unstranded],
+          down: [],
+          coverageOverlayTop: 0,
+          sashimiBandTop: 100,
+        },
+      ],
+    } as unknown as LinearAlignmentsDisplayModel
+    const stroke = (themeName: string) => {
+      const { container } = render(
+        <svg>
+          <SashimiArcsSvg
+            model={model}
+            width={800}
+            palette={resolvePalette({ themeName })}
+          />
+        </svg>,
+      )
+      const value = container.querySelector('path')!.getAttribute('stroke')
+      cleanup()
+      return value
+    }
+    expect(stroke('default')).toBe(colorPairLR)
+    expect(stroke('darkMinimal')).toBe(colorPairLRDark)
   })
 })

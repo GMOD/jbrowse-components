@@ -1,18 +1,18 @@
 import {
   colorFwdStrand,
   colorPairLR,
+  colorPairLRDark,
   colorRevStrand,
-} from '@jbrowse/core/ui/theme'
+  resolvePalette,
+} from '@jbrowse/core/ui/palette'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import {
-  SASHIMI_APEX_CLEARANCE_PX,
-  computeSashimiArcs,
-} from './computeOverlay.ts'
+import { SASHIMI_APEX_CLEARANCE_PX, sashimiArcColor } from './computeOverlay.ts'
 import { junctionKey } from './junctions.ts'
+import { computeSashimiArcs } from './testSashimiArcs.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { ComputeSashimiArcsOpts } from './computeOverlay.ts'
+import type { ComputeSashimiArcsOpts } from './testSashimiArcs.ts'
 
 // Minimal PileupDataResult with only the sashimi fields computeSashimiArcs reads.
 function makeData(counts: number[]): PileupDataResult {
@@ -219,23 +219,13 @@ test('suppresses the count label when the digits, not the span, overflow', () =>
   expect(showByStart.get(500)).toBe(false)
 })
 
-test('tints arcs with the read-alignment strand colors', () => {
-  // Each arc reuses the matching read strand color, so a junction reads the same
-  // hue as the reads supporting it; 0 (no read carried a strand tag) is neutral.
-  const data = makePileupDataResult({
-    sashimiX1: new Uint32Array([100, 300, 500]),
-    sashimiX2: new Uint32Array([200, 400, 600]),
-    sashimiCounts: new Uint32Array([5, 5, 5]),
-    sashimiFwd: new Uint32Array([5, 0, 0]),
-    sashimiRev: new Uint32Array([0, 5, 0]),
-    sashimiDonors: new Uint8Array([0, 0, 0]),
-    sashimiAcceptors: new Uint8Array([0, 0, 0]),
-  })
-  const arcs = computeSashimiArcs(baseOpts(data, 0))
-  const strokeByStart = new Map(arcs.map(a => [a.start, a.stroke]))
-  expect(strokeByStart.get(100)).toBe(colorFwdStrand)
-  expect(strokeByStart.get(300)).toBe(colorRevStrand)
-  expect(strokeByStart.get(500)).toBe(colorPairLR)
+test('tints arcs with the read-alignment strand colors, the neutral from the theme', () => {
+  const light = resolvePalette().alignmentFill
+  const dark = resolvePalette({ themeName: 'darkMinimal' }).alignmentFill
+  expect(sashimiArcColor(1, light)).toBe(colorFwdStrand)
+  expect(sashimiArcColor(-1, light)).toBe(colorRevStrand)
+  expect(sashimiArcColor(0, light)).toBe(colorPairLR)
+  expect(sashimiArcColor(0, dark)).toBe(colorPairLRDark)
 })
 
 test('places each arc on the side its junction key was assigned', () => {
@@ -341,7 +331,7 @@ test('a shared junction whose copies disagree on strand still renders once', () 
   })
   expect(arcs).toHaveLength(1)
   expect(arcs[0]!.score).toBe(8)
-  expect(arcs[0]!.stroke).toBe(colorFwdStrand)
+  expect(arcs[0]!.strand).toBe(1)
 })
 
 test('a coverage band too short for its scalebar margins flattens, never inverts', () => {

@@ -12,6 +12,7 @@ import {
   getAlignmentsColorScales,
   getArcLegendItems,
   getReadDisplayLegendItems,
+  sashimiLegendItems,
 } from './legendUtils.ts'
 import { splitSchemeForTest } from './splitSchemeForTest.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from './types.ts'
@@ -882,6 +883,7 @@ describe('getAlignmentsColorScales', () => {
     arcLegendTitle: 'Arc colors',
     arcLegendItems: () => arcs,
     bezierLegendItems: () => [],
+    sashimiLegendItems: [],
   })
   const entries = (scale: ColorScale | undefined) =>
     scale?.kind === 'categorical' ? scale.entries : []
@@ -1038,6 +1040,7 @@ describe('getAlignmentsColorScales', () => {
         { color: '#aaa', label: 'Normal' },
         { color: '#ff3a8c', label: 'Short insert' },
       ],
+      sashimiLegendItems: [],
       bezierLegendItems: () => [
         // the arc's half of the merged short-insert row, verbatim
         { color: '#ff3a8c', label: 'Short insert' },
@@ -1049,7 +1052,9 @@ describe('getAlignmentsColorScales', () => {
       'Read connections',
       ['Short insert'],
     ])
-    expect(entries(sections.at(-1))[0]!.color).toBe('#123456')
+    expect(entries(sections.find(s => s.id === 'connections'))[0]!.color).toBe(
+      '#123456',
+    )
   })
 
   // The mirror case stays one swatch: same color AND same meaning is one row,
@@ -1076,6 +1081,7 @@ describe('getAlignmentsColorScales', () => {
       ],
       arcLegendTitle: 'Arc colors',
       arcLegendItems: () => [],
+      sashimiLegendItems: [],
       bezierLegendItems: () => [
         // the verbatim repeat
         { color: '#5555bb', label: 'RR - Both mates reverse strand' },
@@ -1228,5 +1234,38 @@ describe('the fill view keys the types drawn beside the methylation states', () 
         detectedModifications: new Map([['a', 'rgb(51,0,111)']]),
       }).map(i => i.label),
     ).toEqual(['5mC methylated'])
+  })
+})
+
+describe('sashimiLegendItems', () => {
+  test('keys the junction strands drawn, in strand order', () => {
+    expect(
+      sashimiLegendItems(new Set([0, 1]), { pairLR: '#d3d3d3' }).map(
+        i => i.label,
+      ),
+    ).toEqual(['Forward strand', 'Strand unknown'])
+  })
+
+  test('takes the neutral from the theme it is given', () => {
+    expect(sashimiLegendItems(new Set([0]), { pairLR: '#b0b0b0' })).toEqual([
+      { color: '#b0b0b0', label: 'Strand unknown' },
+    ])
+  })
+
+  test('lands in its own section', () => {
+    const scales = getAlignmentsColorScales({
+      legendItems: () => [],
+      arcLegendTitle: 'Arc colors',
+      arcLegendItems: () => [],
+      bezierLegendItems: () => [],
+      sashimiLegendItems: sashimiLegendItems(new Set([-1]), {
+        pairLR: '#d3d3d3',
+      }),
+    })
+    expect(scales.at(-1)).toMatchObject({
+      id: 'sashimi',
+      title: 'Splice junctions',
+      entries: [{ label: 'Reverse strand' }],
+    })
   })
 })

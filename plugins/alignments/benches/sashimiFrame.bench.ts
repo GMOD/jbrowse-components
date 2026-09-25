@@ -18,9 +18,9 @@
 // ARMS. Each is a whole frame's worth for ONE lane, written out longhand — a
 // shared driver goes polymorphic and puts the control off 1.00.
 //
-//   whole    what shipped: `computeSashimiArcs`, merge then project
+//   whole    what shipped: `mergeJunctions` then `projectSashimiArcs`
 //   project  what a frame owes: `projectSashimiArcs` off a merge held elsewhere
-//   control  a second, separately-declared driver over `computeSashimiArcs`
+//   control  a second, separately-declared driver over the same two calls
 //
 // THE FIXTURE is real: 651 distinct junctions with their true read support
 // (mean 41.7, max 2424), from `samtools view` over
@@ -40,14 +40,17 @@
 // agent-docs/reference/INTERACTION_PERF.md. Short version, one lane at 651
 // junctions: the merge is a small part of the frame and the frame is small.
 import {
-  computeSashimiArcs,
   projectSashimiArcs,
+  visibleRegionJunctions,
 } from '../src/features/sashimi/computeOverlay.ts'
 import { mergeJunctions } from '../src/features/sashimi/junctions.ts'
 import { encodeDinucleotide } from '../src/features/sashimi/motif.ts'
 
 import type { WorkerPileupData } from '../src/RenderAlignmentDataRPC/types.ts'
-import type { SashimiArc } from '../src/features/sashimi/computeOverlay.ts'
+import type {
+  SashimiArc,
+  SashimiArcsBySide,
+} from '../src/features/sashimi/computeOverlay.ts'
 import type {
   MergedJunction,
   RegionJunctions,
@@ -147,12 +150,13 @@ function frameWhole(
   rpcDataMap: ReadonlyMap<number, WorkerPileupData>,
   visibleRegions: { refName: string; displayedRegionIndex: number }[],
 ) {
-  return computeSashimiArcs({
-    ...projectOpts,
-    ...mergeOpts,
-    rpcDataMap,
-    visibleRegions,
-  })
+  return projectSashimiArcs(
+    mergeJunctions(
+      visibleRegionJunctions(rpcDataMap, visibleRegions),
+      mergeOpts,
+    ).values(),
+    projectOpts,
+  )
 }
 
 // ARM 2: project — what a frame owes once the merge is memoized off the pan.
@@ -167,12 +171,13 @@ function frameControl(
   rpcDataMap: ReadonlyMap<number, WorkerPileupData>,
   visibleRegions: { refName: string; displayedRegionIndex: number }[],
 ) {
-  return computeSashimiArcs({
-    ...projectOpts,
-    ...mergeOpts,
-    rpcDataMap,
-    visibleRegions,
-  })
+  return projectSashimiArcs(
+    mergeJunctions(
+      visibleRegionJunctions(rpcDataMap, visibleRegions),
+      mergeOpts,
+    ).values(),
+    projectOpts,
+  )
 }
 
 function time(fn: () => unknown) {
@@ -182,7 +187,9 @@ function time(fn: () => unknown) {
   return performance.now() - t0
 }
 
-function firstDifference(a: SashimiArc[], b: SashimiArc[]) {
+function firstDifference(sa: SashimiArcsBySide, sb: SashimiArcsBySide) {
+  const a: SashimiArc[] = [...sa.up, ...sa.down]
+  const b: SashimiArc[] = [...sb.up, ...sb.down]
   if (a.length !== b.length) {
     return `length ${a.length} vs ${b.length}`
   }
@@ -244,7 +251,7 @@ async function main() {
   const ms = (v: number) => v.toFixed(4).padStart(9)
   console.log(
     `sashimi frame, ${junctions.length} junctions x ${COPIES} region cop${COPIES === 1 ? 'y' : 'ies'}, ` +
-      `${merged.length} merged, ${outWhole.length} arcs drawn, min of ${ROUNDS} rotated rounds\n` +
+      `${merged.length} merged, ${outWhole.up.length + outWhole.down.length} arcs drawn, min of ${ROUNDS} rotated rounds\n` +
       `  whole (was)   ${ms(best.whole)} ms\n` +
       `  project (is)  ${ms(best.project)} ms   ${x(best.project)}   ` +
       `output ${diffProject ? `DIFFERS — ${diffProject}` : 'identical'}\n` +
