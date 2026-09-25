@@ -17,6 +17,14 @@
 // The figure has to come AFTER the setting. A page whose section shows a
 // picture and then names a setting has shown something else: `dog10k_lof`
 // draws copy number and then, thirty lines on, says to cluster the rows.
+//
+// That direction has one false positive, and it is on the list deliberately
+// rather than fixed by loosening the rule. A section can show one figure and
+// then walk its lanes, naming under each the setting that built it, and
+// `dog10k_lof` does exactly that: its clustered lane is already in the frame
+// above the sentence. **Don't shoot a second figure for one of these** — the
+// repair, where a page is worth repairing, is to name the setting before the
+// figure it produced.
 const MENU_PATH =
   /\*\*[^*\n]*→[^*\n]*\*\*|\*\*[^*\n]+\*\*\s*→\s*\*\*[^*\n]+\*\*/
 const PLUMBING =

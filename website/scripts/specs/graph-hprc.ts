@@ -2537,4 +2537,42 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     hideTooltip: true,
     actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
   },
+
+  // What `pangenome_prepare_graph` builds, drawn. That page runs five build
+  // stages and carried no figure at all, so a reader finished the conversion
+  // with nothing to check their own output against.
+  //
+  // The two BED indexes as an ordinary FeatureTrack lane, colored by `rank`
+  // with the page's own `addtrack` fence's jexl rather than by reference
+  // position: rank is what an rGFA's `SR` tag carries and what the projection
+  // is judged on, so the picture answers "did the conversion keep the
+  // backbone?". Blue is the rank-0 backbone and orange everything the
+  // haplotypes add, which is the negative the frame needs.
+  {
+    mode: 'url' as const,
+    name: 'pangenome/prepare_graph_segments',
+    url: sessionSpec(HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: C4_WINDOW,
+          tracks: [
+            hg38GeneLane(70),
+            {
+              trackId: SEGMENTS_TRACK,
+              type: 'LinearBasicDisplay',
+              showLabels: 'none',
+              heightMode: 'grow',
+              color:
+                "jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'",
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: displayPainted('linear-basic-display'),
+    readyTimeout: 180000,
+    viewportHeight: 700,
+  },
 ]

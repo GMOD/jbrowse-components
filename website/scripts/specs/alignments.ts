@@ -1661,6 +1661,96 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     viewportHeight: 960,
   },
 
+  // The two deep-pileup controls the tutorial's "Reading a deep pileup"
+  // describes and no figure held. Both are one property off a shared builder,
+  // so each pair differs in exactly the setting its caption names.
+  //
+  // ACTB is the deep lane this page already uses, and depth is the premise:
+  // the sort only means something where the spliced reads are a minority
+  // scattered through the stack.
+  ...(
+    [
+      { suffix: 'file_order', display: {} },
+      { suffix: 'spliced_first', display: { splicedReadsFirst: true } },
+    ] as const
+  ).map(({ suffix, display }) => ({
+    mode: 'url' as const,
+    name: `rnaseq/deep_pileup_${suffix}`,
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr7:5,566,500-5,570,500',
+      trackLabels: 'offset' as const,
+      tracks: [
+        'ncbi_gff_hg19',
+        {
+          trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
+          type: 'LinearAlignmentsDisplay',
+          featureHeight: 3,
+          maxHeight: 2000,
+          coverageHeight: 120,
+          height: 420,
+          minSashimiScore: 3,
+          ...display,
+        },
+      ],
+    }),
+    readyText: 'ACTB',
+    readyTimeout: 60000,
+    viewportHeight: 760,
+  })),
+
+  {
+    mode: 'compose',
+    name: 'rnaseq/sort_spliced_first',
+    parts: [
+      'rnaseq/deep_pileup_file_order',
+      'rnaseq/deep_pileup_spliced_first',
+    ],
+  },
+
+  // The non-canonical arcs, and the same view with them dropped. No
+  // `minSashimiScore` on either half: the support floor would remove most of
+  // what the motif filter is supposed to remove, and then the pair would show
+  // two filters doing one job.
+  ...(
+    [
+      { suffix: 'all_junctions', display: {} },
+      {
+        suffix: 'canonical_only',
+        display: { hideNonCanonicalJunctions: true },
+      },
+    ] as const
+  ).map(({ suffix, display }) => ({
+    mode: 'url' as const,
+    name: `rnaseq/sashimi_${suffix}`,
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr7:5,566,500-5,570,500',
+      trackLabels: 'offset' as const,
+      tracks: [
+        'ncbi_gff_hg19',
+        {
+          trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
+          type: 'LinearAlignmentsDisplay',
+          featureHeight: 3,
+          maxHeight: 2000,
+          coverageHeight: 160,
+          height: 380,
+          ...display,
+        },
+      ],
+    }),
+    readyText: 'ACTB',
+    readyTimeout: 60000,
+    viewportHeight: 720,
+  })),
+
+  {
+    mode: 'compose',
+    name: 'rnaseq/hide_non_canonical',
+    parts: ['rnaseq/sashimi_all_junctions', 'rnaseq/sashimi_canonical_only'],
+  },
+
   strandSpecificSpec(),
 
   // Strand-split coverage: grouping splits the coverage band as well as the

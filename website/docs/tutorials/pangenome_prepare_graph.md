@@ -172,6 +172,8 @@ rather than at either file. The adapter resolves `<uri>.segs.bed.gz`,
 }
 ```
 
+<Figure caption="The HPRC graph's two indexes drawn over the C4 region on hg38, colored by the jexl above. The blue segments are the rank-0 backbone the reference walks and the orange ones are what the haplotypes add, so a projection that lost the tags comes out one color." src="/img/pangenome/prepare_graph_segments.png" />
+
 `assemblyNameToPanSN` ties your assembly to the graph's PanSN prefix. A PanSN
 name has two halves and only the first needs configuring: the **sample** half is
 this map, disambiguating an `hg38` assembly against a graph that also carries

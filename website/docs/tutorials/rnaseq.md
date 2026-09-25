@@ -141,6 +141,8 @@ back out, and each is a setting on the track rather than a new file.
 the lowest rows, so the junction-spanning reads sit together at the top of the
 pileup.
 
+<Figure caption="The ACTB pileup in file order above, and sorted with spliced reads first below. The same reads in both: sorting gathers the junction-spanning ones into the top rows, where the file order scatters them through the stack." src="/img/rnaseq/sort_spliced_first.png" links="File order=rnaseq/deep_pileup_file_order,Spliced first=rnaseq/deep_pileup_spliced_first" />
+
 **Filter by...** has a splicing radio: _Only spliced reads_ keeps just those
 reads, and the coverage histogram follows, so what is left is a histogram of the
 junction-spanning evidence alone. _Only unspliced reads_ is the complement,
@@ -151,6 +153,8 @@ does not begin and end with GT-AG, GC-AG or AT-AC on either strand. At depth the
 thin arcs are mostly these alignment artefacts. Raising **Sashimi arcs → Min
 read support** removes them too, but only by also removing a real junction
 supported by few reads.
+
+<Figure caption="Every junction the reads carry above, and only the canonical ones below. The same pileup in both, with the gene model above it: what the motif filter drops is the thin arcs, and what survives is the set the gene model also draws." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/sashimi_all_junctions,Canonical only=rnaseq/sashimi_canonical_only" />
 
 ## Loading your own RNA-seq data
 

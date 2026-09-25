@@ -194,7 +194,7 @@ const ARABIDOPSIS_CONTEXT_LANES = [
 // the only property that differs, so both come out of one builder rather than
 // out of two hand-kept copies. videos/methylation.ts films the route between
 // them and starts from the same `grouped: false` this pair's upper half shows.
-const snrpnReadsPanel = ({ grouped = false } = {}) =>
+const snrpnReadsPanel = ({ grouped = false, fillUnmarked = true } = {}) =>
   lgvSession(DEMO_CONFIG, {
     assembly: 'hg38',
     loc: 'chr15:24,948,000-24,962,000',
@@ -212,7 +212,7 @@ const snrpnReadsPanel = ({ grouped = false } = {}) =>
         forceLoad: true,
         ...(grouped ? { facet: 'tags.HP' } : {}),
         baseColor: { field: 'modifications' },
-        modifications: { fillUnmarked: true },
+        modifications: { fillUnmarked },
       },
     ],
   })
@@ -567,6 +567,60 @@ export const methylationSpecs: ScreenshotSpec[] = [
     parts: [
       'methylation/hg002_snrpn_ungrouped',
       'methylation/hg002_snrpn_grouped',
+    ],
+  },
+
+  // The two modification color modes, which the page describes and no figure
+  // held: the default paints the positions the MM tag calls modified, and
+  // `fillUnmarked` also paints every CpG the tag left implicit. The claim is
+  // that an unmethylated region reads as solid blue, and only the pair shows
+  // it -- the upper half's blank stretch is the same molecules as the lower
+  // half's blue one.
+  //
+  // Same panel as the grouping pair, ungrouped, so the two figures on this page
+  // differ in exactly the property each is about.
+  {
+    mode: 'url',
+    name: 'methylation/hg002_snrpn_marked_only',
+    url: snrpnReadsPanel({ fillUnmarked: false }),
+    readySelector: displayPainted('pileup-display'),
+    readyTimeout: 90000,
+    viewportHeight: 730,
+    hideSelectors: ['.MuiTooltip-popper'],
+    hideTooltip: true,
+    annotations: [
+      {
+        type: 'text',
+        text: 'Modified positions only',
+        anchor: { text: 'HG002 ONT reads', alignX: 'right', dx: 90 },
+      },
+    ],
+  },
+
+  {
+    mode: 'url',
+    name: 'methylation/hg002_snrpn_fill_unmarked',
+    url: snrpnReadsPanel(),
+    readySelector: displayPainted('pileup-display'),
+    readyTimeout: 90000,
+    viewportHeight: 730,
+    hideSelectors: ['.MuiTooltip-popper'],
+    hideTooltip: true,
+    annotations: [
+      {
+        type: 'text',
+        text: 'Every CpG filled in',
+        anchor: { text: 'HG002 ONT reads', alignX: 'right', dx: 90 },
+      },
+    ],
+  },
+
+  {
+    mode: 'compose',
+    name: 'methylation/hg002_snrpn_mod_modes',
+    parts: [
+      'methylation/hg002_snrpn_marked_only',
+      'methylation/hg002_snrpn_fill_unmarked',
     ],
   },
 
