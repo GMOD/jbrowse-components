@@ -138,11 +138,10 @@ bool linkIsFar(float halfWidthPx, float screenWidthPx) {
   return 2.0 * halfWidthPx > LINK_FAR_SCREEN_WIDTHS * screenWidthPx;
 }
 
-// The height above the baseline a mark's `y` value stands at, on the band's
-// value scale inset the way a point's is.
+// The height above the baseline a mark's `y` value stands at: `valueScale`'s
+// inset range, anchored at the band's bottom rather than a point's top.
 public float linkValuePx(float value, float domainMin, float domainMax, float h, int scaleType, float insetPx, float symlogConstant) {
-  float inset = min(insetPx, h * 0.5);
-  return h - inset - valueToYPxScaled(value, domainMin, domainMax, h - 2.0 * inset, scaleType, symlogConstant);
+  return h - insetValueYPx(value, domainMin, domainMax, h, scaleType, insetPx, symlogConstant);
 }
 
 // The apex height of a pair, in CSS px above the baseline.

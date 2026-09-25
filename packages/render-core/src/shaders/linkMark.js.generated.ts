@@ -93,9 +93,13 @@ function valueToYPxScaled(value: number, domainMin: number, domainMax: number, h
   return ((1.0 - normalizeScore(value, domainMin, domainMax, scaleType, symlogConstant)) * h)
 }
 
-export function linkValuePx(value: number, domainMin: number, domainMax: number, h: number, scaleType: number, insetPx: number, symlogConstant: number): number {
+function insetValueYPx(value: number, domainMin: number, domainMax: number, h: number, scaleType: number, insetPx: number, symlogConstant: number): number {
   let _t0 = _min(insetPx, (h * 0.5))
-  return ((h - _t0) - valueToYPxScaled(value, domainMin, domainMax, (h - (2.0 * _t0)), scaleType, symlogConstant))
+  return (_t0 + valueToYPxScaled(value, domainMin, domainMax, (h - (2.0 * _t0)), scaleType, symlogConstant))
+}
+
+export function linkValuePx(value: number, domainMin: number, domainMax: number, h: number, scaleType: number, insetPx: number, symlogConstant: number): number {
+  return (h - insetValueYPx(value, domainMin, domainMax, h, scaleType, insetPx, symlogConstant))
 }
 
 export function linkApexPx(halfWidthPx: number, reachPx: number, linkShape: number, valued: number, valuePx: number): number {
