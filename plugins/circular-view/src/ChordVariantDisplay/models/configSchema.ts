@@ -45,7 +45,7 @@ function configSchemaF(_pluginManager: PluginManager) {
       onChordClick: {
         type: 'boolean',
         description:
-          'callback that should be run when a chord in the track is clicked',
+          "a jexl callback run when a chord is clicked, in place of opening the record's details",
         defaultValue: false,
         contextVariable: ['feature', 'track', 'pluginManager'],
       },

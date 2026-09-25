@@ -6,6 +6,7 @@ import {
   getAssemblyName,
   hasBreakpointSplitView,
   launchBreakpointSplitView,
+  linearGenomeViewOf,
   navToLoc,
 } from '@jbrowse/sv-core'
 import { Typography } from '@mui/material'
@@ -62,7 +63,7 @@ const LaunchBreakpointSplitViewPanel = observer(
         onClick={() => {
           launchBreakpointSplitView({
             session: getSession(model),
-            view: model.view,
+            view: linearGenomeViewOf(model.view),
             assemblyName,
             feature: new SimpleFeature(feature),
             stableViewId: breakpointSplitViewId(model.id, assemblyName),

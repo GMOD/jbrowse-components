@@ -16,6 +16,7 @@ export {
   getBreakendMateLocString,
   hasBreakpointSplitView,
   junctionEnds,
+  linearGenomeViewOf,
   makeFeaturePair,
   makeTitle,
   navToLoc,

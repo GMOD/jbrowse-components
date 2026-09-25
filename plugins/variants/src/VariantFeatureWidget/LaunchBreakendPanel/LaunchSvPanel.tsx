@@ -11,6 +11,7 @@ import {
   getAssemblyName,
   hasBreakpointSplitView,
   launchBreakpointSplitView,
+  linearGenomeViewOf,
   navToLoc,
 } from '@jbrowse/sv-core'
 import { Typography } from '@mui/material'
@@ -59,7 +60,7 @@ const LaunchSvPanel = observer(function LaunchSvPanel({
               onClick={() => {
                 launchBreakpointSplitView({
                   session: getSession(model),
-                  view: model.view,
+                  view: linearGenomeViewOf(model.view),
                   assemblyName,
                   feature: new SimpleFeature({
                     uniqueId: 'sv',

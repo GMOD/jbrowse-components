@@ -6,6 +6,7 @@ import {
   parseSvAlt,
   safeParseBreakend,
 } from '@jbrowse/core/util/svAlt'
+import { openAssemblyInLinearView } from '@jbrowse/core/util/tracks'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type {
@@ -16,6 +17,7 @@ import type {
   NotificationSink,
 } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * What launching a breakpoint split view asks of its host. Stated once because
@@ -448,6 +450,27 @@ export function hasBreakpointSplitView(model: IAnyStateTreeNode) {
   return getEnv(model).pluginManager.viewTypes.has('BreakpointSplitView')
 }
 
+/**
+ * #api
+ * A feature widget's view when a launch can copy its tracks: a linear genome
+ * view, never a circle, whose tracks carry displays a linear panel cannot draw.
+ */
+export function linearGenomeViewOf(view?: { type: string }) {
+  return view && isLinearGenomeView(view) ? view : undefined
+}
+
+function isLinearGenomeView(view: {
+  type: string
+}): view is LinearGenomeViewModel {
+  return view.type === 'LinearGenomeView'
+}
+
+/**
+ * #api
+ * Navigate a feature widget's view to `locString`. A view that cannot navigate
+ * to a locus, such as the circular view, opens the locus in a linear genome
+ * view of its first assembly with the widget's track.
+ */
 export function navToLoc(
   locString: string,
   model: IAnyStateTreeNode,
@@ -456,14 +479,28 @@ export function navToLoc(
   const session = getSession(model)
   const { view } = model
   // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-  if (view) {
-    view.navToLocString(locString, undefined, grow).catch((e: unknown) => {
-      console.error(e)
-      session.notify(`${e}`)
-    })
-  } else {
+  if (!view) {
     session.notify('No view associated with this view anymore')
+    return
   }
+  const assemblyName = getAssemblyName(view)
+  const trackId: string | undefined = model.trackId
+  const navigated =
+    'navToLocString' in view
+      ? view.navToLocString(locString, undefined, grow)
+      : assemblyName !== undefined
+        ? openAssemblyInLinearView({
+            session,
+            id: `${view.id}-linear`,
+            assemblyName,
+            loc: locString,
+            tracks: trackId === undefined ? [] : [trackId],
+          })
+        : Promise.reject(new Error('This view names no assembly to open'))
+  navigated.catch((e: unknown) => {
+    console.error(e)
+    session.notify(`${e}`)
+  })
 }
 
 export interface Region {

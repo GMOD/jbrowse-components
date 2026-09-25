@@ -1,5 +1,5 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { getEnv } from '@jbrowse/core/util'
+import { getEnv, openFeatureWidget } from '@jbrowse/core/util'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -56,14 +56,36 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
         configuration: ConfigurationReference(configSchema),
       }),
     )
+    .views(() => ({
+      /**
+       * #getter
+       * the panel the linear variant displays open for the same record
+       */
+      get featureWidgetType() {
+        return { type: 'VariantFeatureWidget', id: 'variantFeature' }
+      },
+    }))
     .actions(self => {
       const { pluginManager } = getEnv(self)
       return {
         /**
          * #action
+         * the `onChordClick` callback when the config sets one, else the
+         * record's details
          */
         onChordClick(feature: Feature) {
-          getConf(self, 'onChordClick', { feature, track: self, pluginManager })
+          if (isJexl(self.configuration.onChordClick)) {
+            getConf(self, 'onChordClick', {
+              feature,
+              track: self,
+              pluginManager,
+            })
+          } else {
+            openFeatureWidget(self, feature.toJSON(), {
+              widget: self.featureWidgetType,
+              feature,
+            })
+          }
         },
       }
     })

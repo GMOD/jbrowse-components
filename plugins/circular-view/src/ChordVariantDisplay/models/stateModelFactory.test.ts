@@ -1,3 +1,6 @@
+import { setConf } from '@jbrowse/core/configuration'
+import { getEnv } from '@jbrowse/core/util'
+import { navToLoc } from '@jbrowse/sv-core'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
@@ -79,6 +82,39 @@ test('a ready display places both ends of its chords', async () => {
   expect(display.features).toHaveLength(1)
   expect(display.sliceFor(undefined, 'ctgA')?.region.refName).toBe('ctgA')
   expect(display.sliceFor(undefined, 'ctgB')?.region.refName).toBe('ctgB')
+}, 20000)
+
+test('clicking a chord selects the record and opens its details', async () => {
+  const { session, display } = await setup()
+  display.onChordClick(display.features[0])
+  expect(session.selection).toBe(display.features[0])
+  expect(session.widgets.get('variantFeature')?.type).toBe(
+    'VariantFeatureWidget',
+  )
+}, 20000)
+
+// the circle cannot navigate to a locus, so the details panel's link opens one
+test("the details panel's zoom link opens the locus in a linear view", async () => {
+  const { session, view, display } = await setup()
+  display.onChordClick(display.features[0])
+  navToLoc('ctgA:101-200', session.widgets.get('variantFeature'))
+  const linear = session.views.find(v => v.id === `${view.id}-linear`)
+  expect(linear?.type).toBe('LinearGenomeView')
+}, 20000)
+
+test('an onChordClick callback runs in place of the details', async () => {
+  const { session, display } = await setup()
+  const clicked: unknown[] = []
+  getEnv(session).pluginManager.jexl.addFunction(
+    'recordChordClick',
+    (feature: unknown) => {
+      clicked.push(feature)
+    },
+  )
+  setConf(display, 'onChordClick', 'jexl:recordChordClick(feature)')
+  display.onChordClick(display.features[0])
+  expect(clicked).toHaveLength(1)
+  expect(session.widgets.has('variantFeature')).toBe(false)
 }, 20000)
 
 // A VCF names one genome, and both genomes on the circle carry a ctgA: the
