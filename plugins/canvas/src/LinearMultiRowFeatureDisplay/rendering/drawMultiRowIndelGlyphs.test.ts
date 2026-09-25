@@ -1,6 +1,7 @@
 import { insertionBarWidth } from '@jbrowse/alignments-core'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { buildRowTable } from '@jbrowse/render-core/marks'
 
 import { drawMultiRowIndelGlyphs } from './drawMultiRowIndelGlyphs.ts'
 
@@ -75,6 +76,7 @@ const state: MultiRowRenderState = {
   ]),
   rowColorsByIndex: [],
   hiddenColors: new Set<number>(),
+  rowTable: buildRowTable(Uint32Array.of(0, 1)),
 }
 
 // Two 1bp features on two rows: x 100-110 (center 105) and x 500-510 (center
