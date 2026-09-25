@@ -179,5 +179,5 @@ export class InstanceWriter {
 
 // Combined `Sampler2D` bindings. Texture unit indices start at 0.
 export const TEXTURES: readonly [TextureBinding, ...TextureBinding[]] = [
-  { glTextureUnit: 0, glUniformName: 'u_rowTable', filter: 'linear' },
+  { glTextureUnit: 0, glUniformName: 'u_rowTable', filter: 'nearest' },
 ]

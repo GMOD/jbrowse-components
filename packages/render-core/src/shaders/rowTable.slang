@@ -14,10 +14,15 @@
 //
 // Sampled at texel centres with `SampleLevel`, never `Load`: this slangc emits
 // `textureLoad` on the sampler variable for `Load`, which is invalid WGSL. The
-// texel index arithmetic is unsigned and the sampler is `nearest`, so the
-// read-back is the byte the builder wrote. A module can take a sampler as a
-// parameter but not declare the binding for its importer, so each pass reading
-// a table declares its own `[[vk::binding(2, 0)]] Sampler2D<float4>`.
+// texel index arithmetic is unsigned and the filter below is `nearest`, so the
+// read-back is the byte the builder wrote — `rowTableWidth` is the key count
+// itself below the cap, and `(x + 0.5) / w` at a non-power-of-two width does
+// not round-trip through the sampler's fixed point, so a linear tap would blend
+// two keys' slot bytes into a slot belonging to neither. A module can take a
+// sampler as a parameter but not declare the binding for its importer, so each
+// pass reading a table declares its own `[[vk::binding(2, 0)]]
+// Sampler2D<float4>` and inherits the filter from here.
+//! texture-filter: nearest
 //! export-consts: ROW_TABLE_MAX_WIDTH
 //! js-export: rowTableWidth, rowTablePlaneHeight, rowTableTexelX, rowTableTexelY
 //! js-skip: byteOf — recovers a byte from a sampled texel; the TS side reads the table's bytes directly

@@ -10,6 +10,7 @@ import {
   parseTargets,
   parseTopology,
   parseVertsPerInstance,
+  resolveTextureFilter,
 } from './parseDirectives.ts'
 
 describe('parseVertsPerInstance', () => {
@@ -488,5 +489,59 @@ describe('assertOutPathsUnique', () => {
         file('b.slang', '//! js-export-out: pkg/shared.generated.ts'),
       ])
     }).toThrow(/written by two shaders/)
+  })
+})
+
+describe('resolveTextureFilter', () => {
+  const rowTable = {
+    path: 'rowTable.slang',
+    source: '//! texture-filter: nearest\nmodule rowTable;',
+  }
+  const ramp = {
+    path: 'colorRampLut.slang',
+    source: '//! texture-filter: linear\nmodule colorRampLut;',
+  }
+
+  test('has no default', () => {
+    expect(resolveTextureFilter('pass.slang', '//! targets: wgsl', [])).toBe(
+      undefined,
+    )
+  })
+
+  // The point of the directive: the module whose math needs the filter is not
+  // the file that declares the binding, so an importer inherits rather than
+  // restating — or, as before, correcting the generated table in a wrapper.
+  test('inherits a module’s declaration', () => {
+    expect(
+      resolveTextureFilter('pass.slang', 'import rowTable;', [rowTable]),
+    ).toBe('nearest')
+  })
+
+  test('takes the shader’s own declaration', () => {
+    expect(
+      resolveTextureFilter('pass.slang', '//! texture-filter: nearest', []),
+    ).toBe('nearest')
+  })
+
+  test('refuses two modules that need different filters', () => {
+    expect(() =>
+      resolveTextureFilter('pass.slang', 'import rowTable;', [rowTable, ramp]),
+    ).toThrow(/declared as nearest and linear in scope here/)
+  })
+
+  // A shader cannot override a module's requirement into the filter that breaks
+  // it, which is what makes the module's declaration a contract.
+  test('refuses a shader contradicting the module it imports', () => {
+    expect(() =>
+      resolveTextureFilter('pass.slang', '//! texture-filter: linear', [
+        rowTable,
+      ]),
+    ).toThrow(/pass\.slang: linear, rowTable\.slang: nearest/)
+  })
+
+  test('refuses an unknown filter', () => {
+    expect(() =>
+      resolveTextureFilter('pass.slang', '//! texture-filter: bilinear', []),
+    ).toThrow(/unknown value 'bilinear' \(supported: linear, nearest\)/)
   })
 })

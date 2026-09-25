@@ -26,7 +26,12 @@ import {
   findInstanceStruct,
 } from './reflection.ts'
 
-import type { BlendMode, Coverage, Topology } from './parseDirectives.ts'
+import type {
+  BlendMode,
+  Coverage,
+  TextureFilter,
+  Topology,
+} from './parseDirectives.ts'
 import type {
   ArrayType,
   Field,
@@ -51,6 +56,7 @@ export interface CodegenInputs {
   topology?: Topology
   blend?: BlendMode
   coverage?: Coverage
+  textureFilter?: TextureFilter
   instanceWriter?: boolean
 }
 
@@ -860,6 +866,7 @@ export function emitInterface(inputs: CodegenInputs) {
     topology,
     blend,
     coverage,
+    textureFilter,
     instanceWriter,
   } = inputs
   const lines = header(baseName)
@@ -1153,6 +1160,17 @@ export function emitInterface(inputs: CodegenInputs) {
     )
   }
   if (textures && textures.length > 0) {
+    if (textureFilter === undefined) {
+      throw new Error(
+        `${baseName}.slang declares a combined sampler ('${textures[0]!.name}') ` +
+          `and no '//! texture-filter: nearest | linear' is in scope. The ` +
+          `filter is a correctness choice with no safe default: a colour ramp ` +
+          `is 'linear' so a sample lands between two entries, and a lookup ` +
+          `table whose texels are data is 'nearest', where a blend of two ` +
+          `texels decodes to a value neither one holds. Declare it here, or ` +
+          `in the module whose math demands it — every importer inherits that.`,
+      )
+    }
     lines.push(
       '// Combined `Sampler2D` bindings. Texture unit indices start at 0.',
       // Emitted as a non-empty tuple type so it matches ShaderModule.TEXTURES
@@ -1164,7 +1182,7 @@ export function emitInterface(inputs: CodegenInputs) {
     for (let i = 0; i < textures.length; i++) {
       const t = textures[i]!
       lines.push(
-        `  { glTextureUnit: ${i}, glUniformName: 'u_${t.name}', filter: 'linear' },`,
+        `  { glTextureUnit: ${i}, glUniformName: 'u_${t.name}', filter: '${textureFilter}' },`,
       )
     }
     lines.push(']', '')

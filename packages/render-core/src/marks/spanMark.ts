@@ -10,7 +10,6 @@ import { makeAbgrFill } from './colorFill.ts'
 import { HIDDEN_ROW } from './rowTable.ts'
 
 import type { BpProjection } from '../canvas2dUtils.ts'
-import type { TextureBinding } from '../hal/index.ts'
 import type { RenderBlock } from '../renderBlock.ts'
 import type { RowTable } from './rowTable.ts'
 import type { MarkShape } from './types.ts'
@@ -113,20 +112,10 @@ function placeSpan(c: SpanChannels, g: SpanFrame, i: number) {
   return true
 }
 
-function nearest(
-  textures: readonly [TextureBinding, ...TextureBinding[]],
-): [TextureBinding, ...TextureBinding[]] {
-  return [{ ...textures[0], filter: 'nearest' }]
-}
-
 export const spanMark: MarkShape<SpanChannels, SpanParams> = {
   id: 'span',
   pass: {
-    ...slangPass({
-      id: 'span',
-      mod: shader,
-      textures: nearest(shader.TEXTURES),
-    }),
+    ...slangPass({ id: 'span', mod: shader }),
     pack: c => shader.packInstances(c, c.count),
   },
 

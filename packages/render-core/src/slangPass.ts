@@ -57,6 +57,12 @@ export interface ShaderModule {
  * - `blend: false` — nothing disables blending today, which is why there is no
  *   `//! blend: none` to inherit it from.
  *
+ * There is deliberately no `textures` override either. It existed for one
+ * caller, which rebuilt the generated `TEXTURES` with `filter: 'nearest'`
+ * because the codegen emitted `linear` for every sampler; the filter a module's
+ * math needs is now `//! texture-filter:` in the module, so the pass has
+ * nothing left to correct.
+ *
  * There is deliberately no `bufferStride` / `bufferAttributes` pair. Two passes
  * sharing one instance buffer (`drawPass(id, region, bufferPassId)`) must
  * declare the same instance struct — canvas's chevron and line both take
@@ -74,7 +80,6 @@ export interface SlangPassOpts {
   topology?: PipelineDescriptor['topology']
   blend?: boolean
   blendState?: BlendState
-  textures?: [TextureBinding, ...TextureBinding[]]
 }
 
 function generatedBeforeLazyText(mod: Partial<ShaderModule>) {
@@ -109,7 +114,7 @@ export function slangPass(opts: SlangPassOpts): PipelineDescriptor {
     vertexAttributes: opts.mod.VERTEX_ATTRIBUTES,
     topology: opts.topology ?? opts.mod.TOPOLOGY,
     coverage: opts.mod.COVERAGE,
-    textures: opts.textures ?? opts.mod.TEXTURES,
+    textures: opts.mod.TEXTURES,
     bindings: opts.mod.BINDINGS,
   }
 }

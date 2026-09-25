@@ -92,8 +92,10 @@ import {
   parseTargets,
   parseTopology,
   parseVertsPerInstance,
+  resolveTextureFilter,
   stripComments,
 } from './shader-codegen/parseDirectives.ts'
+import { readImports } from './shader-codegen/readImports.ts'
 import {
   findCombinedSamplers,
   findEntryPoint,
@@ -605,40 +607,11 @@ function isModuleFile(source: string) {
   return /^\s*module\s+\w+\s*;/m.test(code) && !code.includes('[shader(')
 }
 
-// Every module a shader `import`s, transitively, resolved against the same
-// include path slangc gets. The constant evaluator reads the sources so a
-// shader can write `CURVE_SEGMENTS * 6u` instead of the product spelled out —
-// Slang resolves the identifier, and until this existed the codegen could not,
-// which is what forced the literal-plus-SYNC-comment pattern. The paths come
-// along for `uniformStructOwner`, which needs to name the file a declaration
-// came from and not just find its text.
-function readImports(
-  slangPath: string,
-  source: string,
-  seen = new Set<string>(),
-): { path: string; source: string }[] {
-  const dir = path.dirname(slangPath)
-  const code = stripComments(source)
-  const out: { path: string; source: string }[] = []
-  for (const m of code.matchAll(/^\s*import\s+(\w+)\s*;/gm)) {
-    const found = [dir, SHARED_INCLUDE]
-      .map(d => path.join(d, `${m[1]!}.slang`))
-      .find(p => existsSync(p))
-    if (!found || seen.has(found)) {
-      continue
-    }
-    seen.add(found)
-    const imported = readFileSync(found, 'utf8')
-    out.push(
-      { path: found, source: imported },
-      ...readImports(found, imported, seen),
-    )
-  }
-  return out
-}
+const importsOf = (slangPath: string, source: string) =>
+  readImports(slangPath, source, SHARED_INCLUDE)
 
 const readImportedSources = (slangPath: string, source: string) =>
-  readImports(slangPath, source).map(m => m.source)
+  importsOf(slangPath, source).map(m => m.source)
 
 // Which `.slang` file declares the struct a shader's uniform block is an
 // instance of — the shader itself, or one of the modules it imports.
@@ -657,14 +630,15 @@ function uniformStructOwner(
     new RegExp(String.raw`\bstruct\s+${structName}\b`).test(stripComments(text))
   return declares(source)
     ? slangPath
-    : readImports(slangPath, source).find(m => declares(m.source))?.path
+    : importsOf(slangPath, source).find(m => declares(m.source))?.path
 }
 
 async function compileOne(log: Log, slangPath: string, source: string) {
   const targets = parseTargets(source)
   const base = path.basename(slangPath, '.slang')
   const dir = path.dirname(slangPath)
-  const imported = readImportedSources(slangPath, source)
+  const importedFiles = importsOf(slangPath, source)
+  const imported = importedFiles.map(m => m.source)
   const tmp = mkdtempSync(path.join(tmpdir(), `build-shaders-${base}-`))
   try {
     const wgslOut = path.join(tmp, `${base}.wgsl`)
@@ -896,6 +870,14 @@ async function compileOne(log: Log, slangPath: string, source: string) {
       topology: parseTopology(source),
       blend: parseBlend(source),
       coverage: parseCoverage(source),
+      textureFilter: resolveTextureFilter(
+        path.relative(PROJECT_ROOT, slangPath),
+        source,
+        importedFiles.map(m => ({
+          path: path.relative(PROJECT_ROOT, m.path),
+          source: m.source,
+        })),
+      ),
       instanceWriter: parseInstanceWriter(source),
     }
     // The interface is emitted FIRST, because it is the one that refuses an

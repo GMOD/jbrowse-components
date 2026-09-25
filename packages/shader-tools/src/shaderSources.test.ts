@@ -11,10 +11,19 @@ import path from 'node:path'
 
 import {
   parseTargets,
+  resolveTextureFilter,
   stripComments,
 } from './shader-codegen/parseDirectives.ts'
+import { readImports } from './shader-codegen/readImports.ts'
+
+// Structural, because shader-tools must not depend on render-core — the same
+// arrangement `bindings.ts` already names for `ShaderBinding`.
+interface Sampler {
+  filter: string
+}
 
 const root = path.resolve(__dirname, '../../..')
+const sharedInclude = path.join(root, 'packages/render-core/src/shaders')
 
 const TEXT_EXPORTS = {
   wgsl: ['WGSL_SOURCE'],
@@ -36,6 +45,40 @@ const shaders = execFileSync('git', ['ls-files', '*.slang'], {
 
 test('finds the tree’s shaders', () => {
   expect(shaders.length).toBeGreaterThan(40)
+})
+
+// Against the shader's own declaration rather than a list kept here: a
+// regenerate after a codegen regression is the case a fixed expectation would
+// wave through.
+test.each(shaders)('%s samples with the filter it declares', async file => {
+  const slangPath = path.join(root, file)
+  const source = readFileSync(slangPath, 'utf8')
+  const mod: { TEXTURES?: readonly Sampler[] } = await import(
+    path.join(root, file.replace(/\.slang$/, '.iface.generated.ts'))
+  )
+  const declared = resolveTextureFilter(
+    file,
+    source,
+    readImports(slangPath, source, sharedInclude),
+  )
+  expect(mod.TEXTURES?.map(t => t.filter)).toEqual(
+    mod.TEXTURES?.map(() => declared),
+  )
+})
+
+// The case above is vacuous for a shader with no sampler, which is most of
+// them, so the one carrying the hazard is named.
+test('spanMark inherits nearest from the module that demands it', async () => {
+  const file = 'packages/render-core/src/shaders/spanMark.slang'
+  const source = readFileSync(path.join(root, file), 'utf8')
+  expect(/^\/\/!\s*texture-filter:/m.test(source)).toBe(false)
+  const mod: { TEXTURES: readonly Sampler[] } = await import(
+    path.join(
+      root,
+      'packages/render-core/src/shaders/spanMark.iface.generated.ts',
+    )
+  )
+  expect(mod.TEXTURES.map(t => t.filter)).toEqual(['nearest'])
 })
 
 test.each(shaders)('%s loads its text through SOURCE alone', async file => {

@@ -5,7 +5,8 @@
 // remap plus `ldValueComputed` sentinel gate, wiggle's `normalizeScore` +
 // `densityGradientT`) and declares its own `[[vk::binding(2, 0)]]
 // Sampler2D<float4> colorRamp;` — a module can take a sampler as a parameter
-// but not declare the binding for its importer. The TS half of the mechanism is
+// but not declare the binding for its importer, and inherits the `linear`
+// filter the remap below is written against. The TS half of the mechanism is
 // `uploadColorRampLut` (../colorRampLut.ts), which puts the 256-entry
 // `Uint8Array` behind these samplers; `buildColorRampLut`
 // (@jbrowse/core/util/colorRamp) is what builds it on both backends.
@@ -18,6 +19,7 @@
 // default straight-alpha blend, where a premultiplied return would be wrong
 // the day a translucent ramp entry appears. The function name carries the
 // contract, so a consumer picks the form that matches its blend declaration.
+//! texture-filter: linear
 //! export-consts: RAMP_LUT_ENTRIES
 module colorRampLut;
 

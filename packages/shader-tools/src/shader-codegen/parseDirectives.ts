@@ -566,6 +566,49 @@ export function parseCoverage(source: string) {
 }
 
 /**
+ * `//! texture-filter: nearest | linear` — how a pass's combined sampler reads
+ * its texture.
+ *
+ * A requirement rather than a default, and unlike every other directive here it
+ * is **inherited from the modules the shader imports**. A module cannot declare
+ * the binding for its importer, so `colorRampLut`'s need for `linear` and
+ * `rowTable`'s for `nearest` would otherwise be restated at each pass — or, as
+ * it was, in a hand-written wrapper around the generated `TEXTURES`.
+ *
+ * Every declaration in scope must agree, and there is no default: a shader
+ * declaring a sampler and inheriting nothing is refused where `TEXTURES` is
+ * emitted.
+ */
+export const TEXTURE_FILTERS = ['linear', 'nearest'] as const
+export type TextureFilter = (typeof TEXTURE_FILTERS)[number]
+
+export function resolveTextureFilter(
+  label: string,
+  source: string,
+  imported: readonly { path: string; source: string }[],
+): TextureFilter | undefined {
+  const declared = [{ path: label, source }, ...imported]
+    .map(m => ({
+      path: m.path,
+      filter: parseChoice(m.source, 'texture-filter', TEXTURE_FILTERS),
+    }))
+    .filter((d): d is { path: string; filter: TextureFilter } => !!d.filter)
+  const distinct = new Set(declared.map(d => d.filter))
+  if (distinct.size > 1) {
+    throw new Error(
+      `${label}: //! texture-filter is declared as ${[...distinct].join(
+        ' and ',
+      )} in scope here (${declared
+        .map(d => `${d.path}: ${d.filter}`)
+        .join(', ')}). The shader binds one sampler and each module's math ` +
+        `needs its own filter, so no choice here is right for both — a pass ` +
+        `wanting each needs its own texture.`,
+    )
+  }
+  return declared[0]?.filter
+}
+
+/**
  * `//! instance-writer` — emit the append-at-a-time `InstanceWriter` class.
  *
  * Opt-in, where `packInstances` and the per-field accessors are emitted for every

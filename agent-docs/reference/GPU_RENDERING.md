@@ -1301,6 +1301,21 @@ exactly its `stages`, and so does the compute driver (`computePipeline.ts`).
 `pnpm gen:shaders` refuses a render shader whose table is not one the HALs bind:
 the uniform block at 1, and at most one combined `Sampler2D` at 2/3.
 
+**A sampler's filter comes from the module whose math needs it.** `//!
+texture-filter: nearest | linear` has no default and is **inherited through
+`import`**, because the module that needs the filter is not the file that
+declares the binding — `colorRampLut` and `rowTable` each take a sampler as a
+parameter, and every pass reading one writes its own `Sampler2D<float4>`.
+`colorRampLut` declares `linear`, which its remap of `t` into texel space is
+written against; `rowTable` declares `nearest`, because `rowTableWidth` is the
+key count itself below 2048 and `(x + 0.5) / w` at a non-power-of-two width does
+not round-trip through the sampler's fixed point, so a linear tap decodes
+through `byteOf` to a slot belonging to neither key — a row drawn on the wrong
+lane, silently. A shader declaring a sampler with nothing in scope is refused,
+and two modules wanting different filters are refused by name; until this
+existed the codegen emitted `linear` for every sampler and `spanMark.ts` rebuilt
+the binding in a wrapper.
+
 **Which stage reads a binding is the shader's answer, not the HAL's.** A
 hand-set layout showed the ramp to the fragment stage alone while the bar and
 point marks sample theirs in the vertex stage, so WebGPU refused both pipelines

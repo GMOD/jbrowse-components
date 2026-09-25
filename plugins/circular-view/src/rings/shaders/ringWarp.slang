@@ -19,6 +19,7 @@
 //! targets: wgsl, glsl
 //! blend: premultiplied
 //! coverage: analytic
+//! texture-filter: linear
 
 import hpmath;
 

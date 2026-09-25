@@ -672,6 +672,7 @@ describe('emitInterface textures', () => {
       baseName: 'test',
       reflection,
       textures: [{ name: 'colorRamp' }],
+      textureFilter: 'linear',
     })
     expect(out).toContain(
       "{ glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },",
@@ -679,6 +680,34 @@ describe('emitInterface textures', () => {
     expect(out).toContain(
       "import type { VertexAttributeLayout, ShaderBinding, TextureBinding } from '@jbrowse/render-core/hal'",
     )
+  })
+
+  // The emitter wrote `filter: 'linear'` for every sampler, whatever the shader
+  // needed, and the one pass that needs `nearest` — rowTable's slot bytes, where
+  // a tap between two texels decodes to a key's slot belonging to neither —
+  // rebuilt the binding in a hand-written wrapper. A regression here draws rows
+  // on the wrong lane with nothing to attribute it to.
+  test('emits the declared filter rather than a fixed one', () => {
+    expect(
+      emitInterface({
+        baseName: 'test',
+        reflection,
+        textures: [{ name: 'rowTable' }],
+        textureFilter: 'nearest',
+      }),
+    ).toContain(
+      "{ glTextureUnit: 0, glUniformName: 'u_rowTable', filter: 'nearest' },",
+    )
+  })
+
+  test('refuses a sampler with no filter in scope', () => {
+    expect(() =>
+      emitInterface({
+        baseName: 'test',
+        reflection,
+        textures: [{ name: 'colorRamp' }],
+      }),
+    ).toThrow(/declares a combined sampler .* no '\/\/! texture-filter/)
   })
 
   // Both HALs bind `textures[0]` and ignore the rest, so a second sampler would
