@@ -4838,6 +4838,7 @@
         "HIDDEN_ROW",
         "LINK_NO_REGION",
         "NO_ROW_COLOR",
+        "RAMP_NOT_FINITE_COLOR",
         "RowKeys",
         "abgrToCssRgba",
         "appendGlyph",

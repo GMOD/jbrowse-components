@@ -31,7 +31,9 @@ _See the **Config slots** section below for all available configuration fields._
 The `facet` setting of the feature, multi-sample variant and alignments
 displays: one labelled section of the track per value of a field. A string
 is the field; the object adds the order. The mark display's `MarkFacet`
-adds the steps each section runs.
+adds the steps each section runs. On the multi-sample variant displays the
+field is a sample attribute from the samples file, such as `population`,
+and it bands the sample rows by its value, with no chip.
 
 ## Related links
 
@@ -44,5 +46,5 @@ These slots go on a display entry: `"displays": [{ "type": "Facet", ... }]`, or 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field each value of which packs its own labelled section of the track: a field name, a dotted path into a structured field (`INFO.SVTYPE`, a read's `tags.HP`), a `jexl:` expression, or `strand`. A feature with no value stacks last, under `field: none`. The alignments displays also take a read dimension here: `firstOfPairStrand`, `pairOrientation`, `splitRead`, `mapq` or `mateAssembly`. Writing `facet: "strand"` lands here. |
+| <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field each value of which packs its own labelled section of the track: a field name, a dotted path into a structured field (`INFO.SVTYPE`, a read's `tags.HP`), a `jexl:` expression, or `strand`. A feature with no value stacks last, under `field: none`. The multi-sample variant displays read a sample attribute instead. The alignments displays also take a read dimension here: `firstOfPairStrand`, `pairOrientation`, `splitRead`, `mapq` or `mateAssembly`. Writing `facet: "strand"` lands here. |
 | <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | The values whose sections stack first, in order; the rest follow sorted. Empty stacks every section sorted, and a `strand` facet forward, reverse, then unstranded (`1`, `-1`, `0`). |

@@ -5782,7 +5782,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "reverse",
-              "type": "boolean"
+              "type": "(boolean | undefined)"
             },
             {
               "name": "domainMin",
