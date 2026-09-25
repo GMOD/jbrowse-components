@@ -18,6 +18,7 @@ import { stickyChromeTops } from '../stickyChrome.ts'
 import Header from './Header.tsx'
 import MiniControls from './MiniControls.tsx'
 import NavigationAnnouncer from './NavigationAnnouncer.tsx'
+import ResizeAllTracksHandle from './ResizeAllTracksHandle.tsx'
 import Rubberband from './Rubberband.tsx'
 import TrackContainer from './TrackContainer.tsx'
 import TracksContainer from './TracksContainer.tsx'
@@ -200,6 +201,7 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
                       track={track}
                     />
                   ))}
+                  <ResizeAllTracksHandle model={model} />
                 </>
               )}
             </TracksContainer>

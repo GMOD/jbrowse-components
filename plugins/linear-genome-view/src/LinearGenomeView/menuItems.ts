@@ -19,6 +19,7 @@ import { renameIds } from '@jbrowse/core/util/types/mst'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import FitScreenIcon from '@mui/icons-material/FitScreen'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LabelIcon from '@mui/icons-material/Label'
 import LaunchIcon from '@mui/icons-material/Launch'
@@ -169,6 +170,18 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
               ])
             },
             icon: FolderOpenIcon,
+          },
+        ]
+      : []),
+    ...(self.isTopLevelView && self.tracks.length
+      ? [
+          {
+            label: 'Fit tracks to window',
+            icon: FitScreenIcon,
+            disabled: !self.scrollPortExcess,
+            onClick: () => {
+              self.fitTracksToWindow()
+            },
           },
         ]
       : []),

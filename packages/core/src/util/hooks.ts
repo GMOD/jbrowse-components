@@ -423,7 +423,7 @@ export function useScrollPortHeightVar() {
  * The nearest ancestor that actually scrolls `el`, or undefined if nothing
  * above it does.
  */
-function scrollPortOf(el: HTMLElement) {
+export function scrollPortOf(el: HTMLElement) {
   let node = el.parentElement
   while (node) {
     const { overflowY } = getComputedStyle(node)

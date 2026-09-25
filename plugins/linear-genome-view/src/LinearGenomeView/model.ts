@@ -49,6 +49,7 @@ import {
   pendingLaunch,
   withLaunchInput,
 } from '@jbrowse/core/util/withLaunchInput'
+import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { contentRightEdgePx } from '@jbrowse/display-kit/regionHost'
 import {
   cast,
@@ -67,6 +68,7 @@ import {
   HEADER_OVERVIEW_HEIGHT,
   MIN_BP_PER_PX,
   MINIMIZED_TRACK_HEIGHT,
+  RESIZE_ALL_HANDLE_HEIGHT,
   RESIZE_HANDLE_HEIGHT,
   SCALE_BAR_HEIGHT,
   SHOW_ALL_REGIONS_FILL,
@@ -95,6 +97,7 @@ import {
   labelFitsInBlock,
   makeBlockTicks,
   runRefNameLabelPx,
+  scaleTrackHeights,
   tickLabelWidth,
 } from './util.ts'
 
@@ -546,6 +549,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * when a band changes.
          */
         trackLabelBands: observable.map<string, number>(),
+        /**
+         * #volatile
+         * How much taller the view's box is than the scroll port it sits in,
+         * in px, negative when it is shorter. Measured by the view component
+         * for a top-level view; undefined until then, and for a nested one.
+         */
+        scrollPortExcess: undefined as number | undefined,
         /**
          * #volatile
          */
@@ -1086,7 +1096,23 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return this.headerHeight + this.scalebarHeight
         }
         return (
-          this.trackHeightsWithChrome + this.headerHeight + this.scalebarHeight
+          this.trackHeightsWithChrome +
+          this.headerHeight +
+          this.scalebarHeight +
+          (self.tracks.length ? RESIZE_ALL_HANDLE_HEIGHT : 0)
+        )
+      },
+
+      /**
+       * #getter
+       * The display height of each track a whole-stack resize moves, by track
+       * instance id: every shown track that is not minimized.
+       */
+      get resizableTrackHeights() {
+        return new Map(
+          self.tracks
+            .filter(t => !t.minimized)
+            .map(t => [t.id, t.activeDisplay.height] as const),
         )
       },
 
@@ -1330,6 +1356,33 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
+       */
+      setScrollPortExcess(px: number | undefined) {
+        self.scrollPortExcess = px
+      },
+      /**
+       * #action
+       * Grow or shrink every unminimized track by `distance` px in all, each
+       * by its share of the height it has above the display minimum. `from` is
+       * the heights to scale, by track instance id; a drag passes the heights
+       * it started with, so whole-pixel rounding does not compound frame by
+       * frame. Returns how far the stack moved.
+       */
+      resizeTracks(distance: number, from = self.resizableTrackHeights) {
+        const tracks = self.tracks.filter(t => !t.minimized && from.has(t.id))
+        const start = tracks.map(t => from.get(t.id)!)
+        const next = scaleTrackHeights(start, distance, MIN_DISPLAY_HEIGHT)
+        for (const [i, track] of tracks.entries()) {
+          const display = track.activeDisplay
+          const delta = next[i]! - display.height
+          if (delta !== 0) {
+            display.resizeHeight(delta)
+          }
+        }
+        return sum(next) - sum(start)
+      },
+      /**
+       * #action
        * A resize keeps the window in bp, so `bpPerPx` follows the new width
        * and the view keeps framing the same sequence (ADR-070).
        */
@@ -1532,6 +1585,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * Resize every unminimized track so the view is exactly as tall as the
+       * scroll port it sits in. Does nothing until the view has measured one.
+       */
+      fitTracksToWindow() {
+        if (self.scrollPortExcess) {
+          self.resizeTracks(-self.scrollPortExcess)
+        }
+      },
       /**
        * #action
        * showTrack for a track whose display state model may be lazily

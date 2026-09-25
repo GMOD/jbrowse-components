@@ -2297,6 +2297,72 @@ describe('TrackInit with display configuration', () => {
     expect(model.height).toBe(height)
   })
 
+  test('resizeTracks splits a distance by headroom and skips minimized tracks', async () => {
+    const { Session, LinearGenomeModel, pluginManager } = initializeWithTracks()
+    const session = Session.create({ configuration: {} }, { pluginManager })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        assembly: 'volvox',
+        loc: 'ctgA:1-1000',
+        tracks: ['track1', 'track2'],
+      }),
+    )
+    model.setWidth(800)
+    await waitFor(() => {
+      expect(model.tracks.length).toBe(2)
+    })
+    const [short, tall] = model.tracks.map(t => t.displays[0]!)
+    short!.setHeight(120)
+    tall!.setHeight(420)
+
+    expect(model.resizeTracks(-250)).toBe(-250)
+    expect([short!.height, tall!.height]).toEqual([70, 220])
+
+    const from = model.resizableTrackHeights
+    let moved = 0
+    for (const frame of [7, 7, 7, 7]) {
+      moved = model.resizeTracks(moved + frame, from)
+    }
+    expect(moved).toBe(28)
+    expect([short!.height, tall!.height]).toEqual([76, 242])
+
+    expect(model.resizeTracks(-10_000)).toBe(-278)
+    expect([short!.height, tall!.height]).toEqual([20, 20])
+
+    model.tracks[0]!.setMinimized(true)
+    model.resizeTracks(100)
+    expect([short!.height, tall!.height]).toEqual([20, 120])
+  })
+
+  test('fitTracksToWindow spends the measured excess', async () => {
+    const { Session, LinearGenomeModel, pluginManager } = initializeWithTracks()
+    const session = Session.create({ configuration: {} }, { pluginManager })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        assembly: 'volvox',
+        loc: 'ctgA:1-1000',
+        tracks: ['track1', 'track2'],
+      }),
+    )
+    model.setWidth(800)
+    await waitFor(() => {
+      expect(model.tracks.length).toBe(2)
+    })
+    const before = model.trackHeights
+    model.fitTracksToWindow()
+    expect(model.trackHeights).toBe(before)
+
+    model.setScrollPortExcess(50)
+    model.fitTracksToWindow()
+    expect(model.trackHeights).toBe(before - 50)
+
+    model.setScrollPortExcess(-30)
+    model.fitTracksToWindow()
+    expect(model.trackHeights).toBe(before - 20)
+  })
+
   // A track already shown used to keep its settings: launching it again with
   // an inline height applied nothing, so a spec entry or a session document
   // could restyle a track only by being the one to open it.

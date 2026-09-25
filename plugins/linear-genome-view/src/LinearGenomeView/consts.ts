@@ -18,6 +18,7 @@ export const SVG_SCALEBAR_CAP = 5
 // which put every model-derived track offset 5px per track above the pixels.
 // The track *label* is not among them: it is measured, see `trackLabelBand`.
 export const RESIZE_HANDLE_HEIGHT = 4
+export const RESIZE_ALL_HANDLE_HEIGHT = 6
 export const TRACK_TOP_GAP = 2
 export const TRACK_OUTLINE_BORDER = 1
 export const MINIMIZED_TRACK_HEIGHT = 20
