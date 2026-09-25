@@ -2571,7 +2571,9 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: displayPainted('linear-basic-display'),
+    // The C4 genes in the lane above, so the gate is content rather than the
+    // track name the header prints before anything draws.
+    readyText: 'C4A',
     readyTimeout: 180000,
     viewportHeight: 700,
   },
