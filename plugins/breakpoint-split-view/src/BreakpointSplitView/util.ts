@@ -1,9 +1,11 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { activeJexlFilters } from '@jbrowse/core/util/jexlFilters'
 
 import type { LayoutRecord, OverlayKind } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -114,6 +116,22 @@ export function makeOffscreenLayout(
 
 export function isOffscreenLayout(c: LayoutRecord) {
   return c[1] === OFFSCREEN_Y_SENTINEL
+}
+
+/**
+ * Where a bp lands in a row, in px from its visible left edge, and whether the
+ * region holding it is reversed. The orientation comes from the region that
+ * placed the bp, since a junction's end sits on the seam between two regions
+ * and the pixel there belongs to the next one.
+ */
+export function placeOnRow(layout: ViewLayout, refName: string, coord: number) {
+  const hit = bpToPx({ refName, coord, self: layout })
+  return hit
+    ? {
+        x: hit.offsetPx - layout.offsetPx,
+        reversed: !!layout.displayedRegions[hit.index]!.reversed,
+      }
+    : undefined
 }
 
 // Vertical screen position (relative to the overlay SVG) of an overlay endpoint

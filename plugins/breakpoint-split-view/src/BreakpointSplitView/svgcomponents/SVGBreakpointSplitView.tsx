@@ -103,12 +103,12 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   // anchors that view's overlay ribbons, and ends as the total content height,
   // so the canvas size, the rendered bodies and the ribbons share one source of
   // truth.
-  // skip tracks minimized in any view: they have no rendered body to anchor a
-  // ribbon to (getTrackOffsets omits them)
+  // A track minimized in one row still links the rows that show it, as on
+  // screen: the overlay skips every pair touching the minimized row.
   const overlayTrackIds = model.overlayTracks
     .map(track => track.configuration.trackId)
     .filter(id =>
-      rowTracks.every(r => r.tracks.some(t => t.configuration.trackId === id)),
+      rowTracks.some(r => r.tracks.some(t => t.configuration.trackId === id)),
     )
   const keyEntries = connectionKeyEntries(model, overlayTrackIds)
   const keyRows = connectionKeyRows(keyEntries).length
@@ -183,7 +183,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
                 key={id}
                 model={model}
                 trackId={id}
-                yOffsetsOverride={rows.map(r => r.trackOffsets[id]!)}
+                yOffsetsOverride={rows.map(r => r.trackOffsets[id])}
               />
             ))}
           </SvgClipRect>

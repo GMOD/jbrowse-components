@@ -10,7 +10,6 @@ import {
   getSession,
   notEmpty,
 } from '@jbrowse/core/util'
-import { layoutBpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { fanOutStatus, makeFetchContext } from '@jbrowse/core/util/fetchContext'
 import { installClearHoverOnSurfaceMove } from '@jbrowse/core/util/installClearHoverOnSurfaceMove'
 import { installFetch } from '@jbrowse/core/util/installFetch'
@@ -48,6 +47,7 @@ import {
   makeOffscreenLayout,
   overlayJexlFilters,
   overlayKind,
+  placeOnRow,
 } from './util.ts'
 
 import type {
@@ -451,19 +451,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * bands are measured into the model), so the overlay re-renders from
        * MobX alone rather than polling the DOM.
        */
-      getTrackOverlayData(trackId: string, yOffsetsOverride?: number[]) {
+      getTrackOverlayData(
+        trackId: string,
+        yOffsetsOverride?: (number | undefined)[],
+      ) {
         const { views } = self
         const tracks = this.getMatchedTracks(trackId)
         const levels: OverlayLevel[] = []
-        // Plain-object projection of each view, snapshotted once per render.
-        // getX resolves a bpToPx per connection endpoint and isReversed a
-        // pxToBp; routing those through the MST view re-reads
-        // displayedRegions/bpPerPx/offsetPx through MobX observable getters on
-        // every single call, which dominated the overlay's render profile on
-        // alignments tracks. Reading them once here is equivalent — this whole
-        // function already re-runs per render inside the caller's observer (see
-        // the 'use no memo' note in overlayUtils), which is exactly what makes
-        // the offsetPx snapshot below correct too.
+        // Plain-object projection of each view, snapshotted once per render:
+        // getX resolves a bpToPx per connection endpoint, and routing that
+        // through the MST view re-reads displayedRegions/bpPerPx/offsetPx
+        // through MobX getters on every call, which dominated the overlay's
+        // render profile on alignments tracks. The caller's observer re-runs
+        // this per render, which keeps the offsetPx snapshot current.
         const layouts: ViewLayout[] = []
 
         let viewTop = 0
@@ -501,10 +501,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         }
 
         function getX(level: number, refName: string, coord: number) {
-          const offsetPx = layoutBpToPx(layouts[level]!, { refName, coord })
-          return offsetPx === undefined
-            ? undefined
-            : offsetPx - levels[level]!.offsetPx
+          return placeOnRow(layouts[level]!, refName, coord)
         }
 
         return { tracks, levels, layouts, getX, getY }

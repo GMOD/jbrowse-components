@@ -13,7 +13,6 @@ import {
   buildPairTooltip,
   chainHighlightRects,
   drawnConnections,
-  isReversed,
 } from './overlayUtils.tsx'
 
 import type { OverlayProps, PathSpec } from './overlayUtils.tsx'
@@ -83,16 +82,16 @@ const AlignmentConnections = observer(function AlignmentConnections(
               end2: c2[RIGHT],
               isSplit: !hasPaired,
             })
-            const rawX1 = getX(level1, f1ref, p1)
-            const rawX2 = getX(level2, f2ref, p2)
-            if (rawX1 == null || rawX2 == null) {
+            const end1 = getX(level1, f1ref, p1)
+            const end2 = getX(level2, f2ref, p2)
+            if (!end1 || !end2) {
               return []
             }
             // An off-display segment's endpoint is clamped into its panel so the
             // bottom-edge terminus getY gives it is actually on screen — see
             // computeOverlayX.
-            const x1 = computeOverlayX(rawX1, layouts[level1]!.width, c1)
-            const x2 = computeOverlayX(rawX2, layouts[level2]!.width, c2)
+            const x1 = computeOverlayX(end1.x, layouts[level1]!.width, c1)
+            const x2 = computeOverlayX(end2.x, layouts[level2]!.width, c2)
             const y1 = getY(level1, c1)
             const y2 = getY(level2, c2)
             // Endpoint 1 is read1's 3' edge; endpoint 2 is the next segment's 5'
@@ -109,8 +108,8 @@ const AlignmentConnections = observer(function AlignmentConnections(
               s1,
               s2,
               leadingEnd2: !hasPaired,
-              reversed1: isReversed(layouts, level1, x1),
-              reversed2: isReversed(layouts, level2, x2),
+              reversed1: end1.reversed,
+              reversed2: end2.reversed,
               dip: level1 === level2 && isAbnormal,
             })
             const hiddenNote = hiddenSegmentsBetween?.length

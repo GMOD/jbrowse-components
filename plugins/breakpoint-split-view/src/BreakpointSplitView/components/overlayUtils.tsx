@@ -8,8 +8,6 @@ import {
   getStrokeProps,
   truncateMiddle,
 } from '@jbrowse/core/util'
-import { pxToBp } from '@jbrowse/core/util/Base1DUtils'
-import { breakendTickPx } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
 import BreakpointTooltip from './BreakpointTooltip.tsx'
@@ -37,8 +35,8 @@ type MinimizableTrack = Pick<OverlayTrack, 'minimized'>
 export interface OverlayProps {
   model: BreakpointViewModel
   trackId: string
-  /** SVG export: fixed track tops, scrollTops zeroed */
-  yOffsetsOverride?: number[]
+  /** SVG export: each row's track top, none where the row minimizes it */
+  yOffsetsOverride?: (number | undefined)[]
 }
 
 // One place the overlay opens a feature widget: the two kinds differ only in
@@ -149,32 +147,6 @@ export function getCanonicalRefPair(
     return undefined
   }
   return { f1ref, f2ref }
-}
-
-// A view level is horizontally flipped when its px→bp maps to a reversed
-// coordinate; an overlay endpoint's tick/handle direction flips with it.
-// Takes the per-render plain layouts (getTrackOverlayData) rather than the MST
-// views: this resolves once per connection endpoint, and going through the view
-// re-reads displayedRegions/bpPerPx/offsetPx through MobX getters every call.
-export function isReversed(layouts: ViewLayout[], level: number, x: number) {
-  return pxToBp(layouts[level]!, x).reversed
-}
-
-// Screen-x of a breakpoint tick mark at endpoint `x`, for an end that keeps its
-// sequence in genomic direction `keepsDir` (+1 = right), on a level that may be
-// horizontally flipped.
-//
-// `keepsDir` is sv-core's convention, so a caller passes what a producer emits.
-// This used to take the negation of it and negate again on the way out, leaving
-// the ticks correct only because two negations cancelled across a package
-// boundary with nothing tying them.
-export function tickAtPx(
-  layouts: ViewLayout[],
-  level: number,
-  x: number,
-  keepsDir: number,
-) {
-  return breakendTickPx(x, keepsDir, isReversed(layouts, level, x) ?? false)
 }
 
 // Flat (y1===y2) connections render as a quadratic arc bowed upward, keeping

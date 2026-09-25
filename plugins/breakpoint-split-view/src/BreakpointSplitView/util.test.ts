@@ -12,6 +12,7 @@ import {
   linksOwnReads,
   overlayJexlFilters,
   makeOffscreenLayout,
+  placeOnRow,
 } from './util.ts'
 
 import type { LayoutRecord } from './types.ts'
@@ -235,4 +236,28 @@ describe('overlayJexlFilters', () => {
     expect(overlayJexlFilters({ height: 100 })).toEqual([])
     expect(overlayJexlFilters(undefined)).toEqual([])
   })
+})
+
+// A junction's end sits on the seam between two regions, where the pixel
+// belongs to the region on the right.
+test('placeOnRow reports the orientation of the region that placed the bp', () => {
+  const layout = {
+    displayedRegions: [
+      { refName: 'chr1', start: 0, end: 1000, assemblyName: 'a' },
+      {
+        refName: 'chr1',
+        start: 1000,
+        end: 2000,
+        assemblyName: 'a',
+        reversed: true,
+      },
+    ],
+    bpPerPx: 1,
+    offsetPx: 100,
+    width: 800,
+    minimumBlockWidth: 3,
+  }
+  expect(placeOnRow(layout, 'chr1', 1000)).toEqual({ x: 900, reversed: false })
+  expect(placeOnRow(layout, 'chr1', 1500)).toEqual({ x: 1400, reversed: true })
+  expect(placeOnRow(layout, 'chr2', 10)).toBeUndefined()
 })

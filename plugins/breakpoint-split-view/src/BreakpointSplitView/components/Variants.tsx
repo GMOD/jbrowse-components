@@ -1,6 +1,6 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { assembleLocString } from '@jbrowse/core/util'
-import { junctionEnds } from '@jbrowse/sv-core'
+import { breakendTickPx, junctionEnds } from '@jbrowse/sv-core'
 
 import { computeOverlayX, findFeatureViewLevel } from './overlayGeometry.ts'
 import {
@@ -8,7 +8,6 @@ import {
   buildBreakpointPath,
   buildPairTooltip,
   isLevelPairMinimized,
-  tickAtPx,
   variantWidgetOpener,
 } from './overlayUtils.tsx'
 
@@ -34,35 +33,38 @@ export default function Variants(props: OverlayProps) {
       stroke={palette.success.main}
       strokeWidth={5}
       hoverStrokeWidth={10}
-      render={variantPaths}
+      render={ctx => variantPaths(ctx, props.model.showIntraviewLinks)}
     />
   )
 }
 
-function variantPaths({
-  session,
-  match,
-  views,
-  tracks,
-  layouts,
-  getX,
-  getY,
-  assemblies,
-}: OverlayContext) {
+export function variantPaths(
+  {
+    session,
+    match,
+    views,
+    tracks,
+    layouts,
+    getX,
+    getY,
+    assemblies,
+  }: OverlayContext,
+  showIntraviewLinks: boolean,
+) {
   // per ROW, for the reason getCanonicalRefPair gives: the rows are
   // independently assembly-picked
   const canon = (level: number, refName: string) =>
     assemblies[level]?.getCanonicalRefName2(refName) ?? refName
   const place = (end: JunctionEnd, level: number, layout: LayoutRecord) => {
-    const rawX = getX(level, canon(level, end.refName), end.pos)
-    if (rawX == null) {
+    const placed = getX(level, canon(level, end.refName), end.pos)
+    if (!placed) {
       return undefined
     }
-    const x = computeOverlayX(rawX, layouts[level]!.width, layout)
+    const x = computeOverlayX(placed.x, layouts[level]!.width, layout)
     return {
       x,
       y: getY(level, layout),
-      tick: tickAtPx(layouts, level, x, end.keeps),
+      tick: breakendTickPx(x, end.keeps, placed.reversed),
     }
   }
   return match.layoutMatches.flatMap<PathSpec>(([near, far]) => {
@@ -78,6 +80,7 @@ function variantPaths({
       findFeatureViewLevel(views, assemblies, mateEnd.refName, mateEnd.pos)
     if (
       farLevel === undefined ||
+      (!showIntraviewLinks && farLevel === near.level) ||
       isLevelPairMinimized(tracks, near.level, farLevel)
     ) {
       return []
