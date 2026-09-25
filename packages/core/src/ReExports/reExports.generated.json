@@ -5294,7 +5294,8 @@
     "@jbrowse/render-core/shaders/pointGlyph": {
       "package": "@jbrowse/render-core",
       "names": [
-        "crispSquareTopLeftPx"
+        "crispSquareTopLeftPx",
+        "discExpand"
       ],
       "worker": "real"
     },
@@ -5374,7 +5375,8 @@
     "@jbrowse/render-core/shaders/scoreScale": {
       "package": "@jbrowse/render-core",
       "names": [
-        "normalizeScore"
+        "normalizeScore",
+        "normalizeScoreUnclamped"
       ],
       "worker": "real"
     },
