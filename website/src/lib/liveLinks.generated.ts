@@ -606,6 +606,1574 @@ export const figureSlowSpecs: string[] = [
   "variants/potato_missingness"
 ]
 
+// Each figure's capture viewport in CSS px, which the recipe's capture command
+// passes on so a reader's frame is the figure's.
+export const figureFrames: Record<
+  string,
+  { width: number; height: number }
+> = {
+  "synteny_offscreen_mates": {
+    "width": 1400,
+    "height": 424
+  },
+  "synteny_human_chimp_cigar_modes": {
+    "width": 1200,
+    "height": 691
+  },
+  "synteny_te_picalm_alu": {
+    "width": 1200,
+    "height": 667
+  },
+  "dotplot": {
+    "width": 1500,
+    "height": 800
+  },
+  "linear_synteny": {
+    "width": 1500,
+    "height": 800
+  },
+  "multiway_synteny/grape_peach_cacao": {
+    "width": 1500,
+    "height": 800
+  },
+  "multiway_synteny/grape_peach_cacao_gene_orthologs": {
+    "width": 1500,
+    "height": 822
+  },
+  "multiway_synteny/blocks_one_vs_all": {
+    "width": 1500,
+    "height": 478
+  },
+  "multiway_synteny/lgv_track_lanes": {
+    "width": 1500,
+    "height": 680
+  },
+  "multiway_synteny/lgv_track_lanes_colored": {
+    "width": 1500,
+    "height": 680
+  },
+  "multiway_synteny/lgv_track_clicked": {
+    "width": 1500,
+    "height": 680
+  },
+  "pangenome/hprc_gbz_cfhr_lanes": {
+    "width": 1500,
+    "height": 860
+  },
+  "multiway_synteny/ecoli_island_lanes": {
+    "width": 1500,
+    "height": 700
+  },
+  "multiway_synteny/vertebrate_hox_lanes": {
+    "width": 1500,
+    "height": 660
+  },
+  "multiway_synteny/solanaceae_lanes": {
+    "width": 1500,
+    "height": 660
+  },
+  "multiway_synteny/drosophila_lanes": {
+    "width": 1500,
+    "height": 660
+  },
+  "multiway_synteny/primate_tp53_lanes": {
+    "width": 1500,
+    "height": 820
+  },
+  "multiway_synteny/primate_chr17_inversions": {
+    "width": 1500,
+    "height": 860
+  },
+  "multiway_synteny/primate_chr2_fusion": {
+    "width": 1500,
+    "height": 600
+  },
+  "multiway_synteny/ecoli_symbol_atp_operon": {
+    "width": 1500,
+    "height": 1340
+  },
+  "multiway_synteny/ecoli_symbol_oantigen": {
+    "width": 1500,
+    "height": 1340
+  },
+  "multiway_synteny/hg38_vertebrates_tp53": {
+    "width": 1500,
+    "height": 1000
+  },
+  "multiway_synteny/hprc_cfh_haplotypes": {
+    "width": 1500,
+    "height": 1000
+  },
+  "multiway_synteny/hprc_amylase_lanes": {
+    "width": 1500,
+    "height": 1000
+  },
+  "multiway_synteny/hprc_amylase_stack": {
+    "width": 1500,
+    "height": 1400
+  },
+  "multiway_synteny/hprc_c4_graph_stack": {
+    "width": 1500,
+    "height": 1400
+  },
+  "multiway_synteny/hprc_c4_graph_bases": {
+    "width": 1500,
+    "height": 230
+  },
+  "syri/col_ler_chr4": {
+    "width": 1500,
+    "height": 460
+  },
+  "syri/six_accessions": {
+    "width": 1500,
+    "height": 1040
+  },
+  "syri/col0_lanes": {
+    "width": 1500,
+    "height": 1000
+  },
+  "multiway_synteny/hg38_vertebrates_17p_break": {
+    "width": 1500,
+    "height": 1000
+  },
+  "multiway_synteny/grasses_rice_lanes": {
+    "width": 1500,
+    "height": 660
+  },
+  "multiway_synteny/wheat_homoeolog_selection": {
+    "width": 900,
+    "height": 767
+  },
+  "homoeolog_synteny/oat_homoeologs": {
+    "width": 900,
+    "height": 767
+  },
+  "selection_pressure/lysozyme": {
+    "width": 1500,
+    "height": 580
+  },
+  "orthofinder_synteny/vertebrates": {
+    "width": 1500,
+    "height": 1000
+  },
+  "orthofinder_synteny/solanaceae": {
+    "width": 1500,
+    "height": 1000
+  },
+  "orthofinder_synteny/drosophila": {
+    "width": 1500,
+    "height": 1000
+  },
+  "orthofinder_synteny/grasses": {
+    "width": 1500,
+    "height": 1000
+  },
+  "orthofinder_synteny/grasses_maize_wgd": {
+    "width": 1500,
+    "height": 1200
+  },
+  "orthofinder_synteny/wheat": {
+    "width": 1500,
+    "height": 1140
+  },
+  "orthofinder_synteny/wheat_4a": {
+    "width": 1500,
+    "height": 640
+  },
+  "multiway_synteny/ecoli_pangenome": {
+    "width": 1500,
+    "height": 715
+  },
+  "multiway_synteny/ecoli_stx_island": {
+    "width": 1500,
+    "height": 560
+  },
+  "multiway_synteny/ecoli_one_vs_all": {
+    "width": 1500,
+    "height": 1290
+  },
+  "multiway_synteny/ecoli_launch_selection": {
+    "width": 1500,
+    "height": 420
+  },
+  "multiway_synteny/ecoli_launch_dialog": {
+    "width": 1500,
+    "height": 622
+  },
+  "multiway_synteny/ecoli_launch_result": {
+    "width": 1500,
+    "height": 620
+  },
+  "multiway_synteny/ecoli_one_vs_all_whole_genome": {
+    "width": 1500,
+    "height": 890
+  },
+  "multiway_synteny/ecoli_import_form": {
+    "width": 1500,
+    "height": 356
+  },
+  "mcscan_anchors": {
+    "width": 1500,
+    "height": 640
+  },
+  "mcscan_synteny/anchors": {
+    "width": 1500,
+    "height": 445
+  },
+  "mcscan_synteny/anchors_simple": {
+    "width": 1500,
+    "height": 445
+  },
+  "mcscan_synteny/dotplot": {
+    "width": 1500,
+    "height": 800
+  },
+  "mcscan_synteny/gene_level": {
+    "width": 1500,
+    "height": 616
+  },
+  "hs1_vs_mm39_synteny": {
+    "width": 1500,
+    "height": 672
+  },
+  "synteny_hg38_hs1_tnnt3": {
+    "width": 1200,
+    "height": 520
+  },
+  "genomes_synteny/ribbons_default": {
+    "width": 1200,
+    "height": 520
+  },
+  "genomes_synteny/ribbons_curved": {
+    "width": 1200,
+    "height": 520
+  },
+  "genomes_synteny/launch_sequence": {
+    "width": 900,
+    "height": 575
+  },
+  "sv_cgiab/dotplot_haplotypes": {
+    "width": 1800,
+    "height": 820
+  },
+  "sv_cgiab/dotplot_import_form": {
+    "width": 1500,
+    "height": 561
+  },
+  "sv_cgiab/synteny_view": {
+    "width": 1800,
+    "height": 806
+  },
+  "sv_synteny/dotplot_import": {
+    "width": 1500,
+    "height": 561
+  },
+  "sv_synteny/dotplot": {
+    "width": 1500,
+    "height": 800
+  },
+  "sv_synteny/linear_synteny_genes": {
+    "width": 1500,
+    "height": 822
+  },
+  "sv_synteny/ortholog_colors": {
+    "width": 900,
+    "height": 822
+  },
+  "sv_synteny/color_by_attribute": {
+    "width": 900,
+    "height": 822
+  },
+  "sv_synteny/assembly_order_warning": {
+    "width": 1500,
+    "height": 425
+  },
+  "dotplot_add": {
+    "width": 900,
+    "height": 800
+  },
+  "synteny_from_dotplot_view": {
+    "width": 1500,
+    "height": 800
+  },
+  "dotplot_self_chry": {
+    "width": 1000,
+    "height": 760
+  },
+  "synteny_self_chry_palindromes_family": {
+    "width": 1000,
+    "height": 740
+  },
+  "synteny_self_chry_palindromes_zoom": {
+    "width": 1000,
+    "height": 602
+  },
+  "gallery/yeast_dotplot": {
+    "width": 1500,
+    "height": 800
+  },
+  "multiway_synteny/ecoli_alignment_menu": {
+    "width": 1500,
+    "height": 440
+  },
+  "multiway_synteny/lane_header_menu": {
+    "width": 1500,
+    "height": 520
+  },
+  "maf_row_menu": {
+    "width": 1500,
+    "height": 560
+  },
+  "agent_synteny/comparison_built": {
+    "width": 1400,
+    "height": 604
+  },
+  "agent_synteny/dotplot_arms": {
+    "width": 1000,
+    "height": 900
+  },
+  "agent_synteny/inversion_2r": {
+    "width": 1400,
+    "height": 664
+  },
+  "agent_synteny/inversion_x": {
+    "width": 1400,
+    "height": 664
+  },
+  "volvox_alignments": {
+    "width": 1000,
+    "height": 550
+  },
+  "sequence_track": {
+    "width": 1100,
+    "height": 400
+  },
+  "alignments_soft_clipped": {
+    "width": 900,
+    "height": 450
+  },
+  "alignments/read_cloud": {
+    "width": 1500,
+    "height": 805
+  },
+  "alignments_soft_clipped_menu": {
+    "width": 1100,
+    "height": 620
+  },
+  "alignments/strand_split_depth": {
+    "width": 1500,
+    "height": 1015
+  },
+  "alignments/strand_split_coverage": {
+    "width": 1500,
+    "height": 690
+  },
+  "linear_align_ctx_menu": {
+    "width": 1500,
+    "height": 499
+  },
+  "alignments/filter_dialog": {
+    "width": 1500,
+    "height": 580
+  },
+  "alignments_sort_by_base": {
+    "width": 1100,
+    "height": 800
+  },
+  "alignments_track_arcs": {
+    "width": 1500,
+    "height": 800
+  },
+  "hic_track": {
+    "width": 1500,
+    "height": 800
+  },
+  "hic/whole_genome": {
+    "width": 1500,
+    "height": 910
+  },
+  "hic/percentile_off": {
+    "width": 1500,
+    "height": 532
+  },
+  "hic/percentile_on": {
+    "width": 1500,
+    "height": 532
+  },
+  "hic/overlay_controls": {
+    "width": 1500,
+    "height": 530
+  },
+  "alignments/modifications2": {
+    "width": 2000,
+    "height": 875
+  },
+  "alignments/haplotype": {
+    "width": 1500,
+    "height": 700
+  },
+  "alignments/haplotype_groupby": {
+    "width": 1500,
+    "height": 550
+  },
+  "alignments/compact": {
+    "width": 1500,
+    "height": 800
+  },
+  "alignments/height_mode_fit": {
+    "width": 1500,
+    "height": 560
+  },
+  "alignments/select_arc_display": {
+    "width": 1500,
+    "height": 600
+  },
+  "rnaseq/basic": {
+    "width": 1500,
+    "height": 800
+  },
+  "rnaseq/compact_stacked": {
+    "width": 1500,
+    "height": 760
+  },
+  "rnaseq/longread_isoseq": {
+    "width": 1500,
+    "height": 960
+  },
+  "rnaseq/strand_specific": {
+    "width": 1500,
+    "height": 718
+  },
+  "rnaseq/strand_split_coverage": {
+    "width": 1500,
+    "height": 890
+  },
+  "alphagenome/expression_two_cell_lines": {
+    "width": 1500,
+    "height": 640
+  },
+  "alphagenome/accessibility_shared_axis": {
+    "width": 1500,
+    "height": 800
+  },
+  "alphagenome/splice_junctions": {
+    "width": 1500,
+    "height": 690
+  },
+  "alphagenome/contact_map": {
+    "width": 1500,
+    "height": 670
+  },
+  "alphagenome/predict_variant_menu": {
+    "width": 1500,
+    "height": 620
+  },
+  "alphagenome/variant_difference": {
+    "width": 1500,
+    "height": 740
+  },
+  "gene_prediction_merge": {
+    "width": 1500,
+    "height": 500
+  },
+  "volvox_variants": {
+    "width": 1000,
+    "height": 550
+  },
+  "variant_with_pileup": {
+    "width": 1500,
+    "height": 800
+  },
+  "variants/consequence_impact_1000g": {
+    "width": 1500,
+    "height": 705
+  },
+  "variants/population_1000genomes": {
+    "width": 1500,
+    "height": 705
+  },
+  "variant_panel": {
+    "width": 1150,
+    "height": 1080
+  },
+  "variants/cluster_dialog": {
+    "width": 1500,
+    "height": 700
+  },
+  "variants/potato_missingness": {
+    "width": 1100,
+    "height": 830
+  },
+  "dtu/dtu_colored_gene_glyph": {
+    "width": 1500,
+    "height": 730
+  },
+  "bigwig_line": {
+    "width": 1500,
+    "height": 765
+  },
+  "gc_content": {
+    "width": 1500,
+    "height": 800
+  },
+  "bigwig/whole_genome_coverage": {
+    "width": 1500,
+    "height": 680
+  },
+  "multiwig/multi_renderer_types": {
+    "width": 1500,
+    "height": 800
+  },
+  "multiwig/trackselector": {
+    "width": 950,
+    "height": 600
+  },
+  "multiwig/addtrack": {
+    "width": 1300,
+    "height": 520
+  },
+  "multiwig/cluster_dialog": {
+    "width": 1500,
+    "height": 620
+  },
+  "genomes_basics/site_home": {
+    "width": 1100,
+    "height": 720
+  },
+  "genomes_basics/site_search": {
+    "width": 1100,
+    "height": 620
+  },
+  "genomes_basics/site_ucsc_list": {
+    "width": 1500,
+    "height": 1000
+  },
+  "genomes_basics/search_tp53": {
+    "width": 1500,
+    "height": 440
+  },
+  "genomes_basics/isoform_control": {
+    "width": 900,
+    "height": 340
+  },
+  "genomes_basics/multiz_alignment": {
+    "width": 1500,
+    "height": 1080
+  },
+  "genomes_basics/promoter_regulation": {
+    "width": 1000,
+    "height": 940
+  },
+  "genomes_basics/gnomad_filter_menu": {
+    "width": 1500,
+    "height": 590
+  },
+  "genomes_basics/about_track": {
+    "width": 1000,
+    "height": 700
+  },
+  "genomes_basics/genark_axolotl": {
+    "width": 1500,
+    "height": 335
+  },
+  "pangenome/genomes_hprc_loci": {
+    "width": 1100,
+    "height": 975
+  },
+  "pangenome/genomes_hprc_mhc_graph": {
+    "width": 1500,
+    "height": 1310
+  },
+  "about_track": {
+    "width": 1500,
+    "height": 680
+  },
+  "gene_track_color_by_cds": {
+    "width": 1500,
+    "height": 500
+  },
+  "gene_track_selenocysteine": {
+    "width": 1500,
+    "height": 500
+  },
+  "gene_track_mature_peptides": {
+    "width": 1500,
+    "height": 425
+  },
+  "gene_track_group_by_strand": {
+    "width": 1500,
+    "height": 520
+  },
+  "gene_track_collapse_introns": {
+    "width": 1500,
+    "height": 590
+  },
+  "feature_detail_sequence": {
+    "width": 1500,
+    "height": 900
+  },
+  "feature_detail_protein": {
+    "width": 1500,
+    "height": 900
+  },
+  "customized_feature_details": {
+    "width": 1500,
+    "height": 680
+  },
+  "upstream_downstream_details": {
+    "width": 1500,
+    "height": 900
+  },
+  "cytobands": {
+    "width": 1500,
+    "height": 347
+  },
+  "protein/connected": {
+    "width": 2000,
+    "height": 890
+  },
+  "protein/annotation_1d": {
+    "width": 1500,
+    "height": 1045
+  },
+  "protein/tp53_hotspot": {
+    "width": 2000,
+    "height": 1000
+  },
+  "protein/tp53_mapped_chain": {
+    "width": 2000,
+    "height": 1000
+  },
+  "top_level_menus": {
+    "width": 1500,
+    "height": 800
+  },
+  "no_build_final": {
+    "width": 1200,
+    "height": 300
+  },
+  "searching_lgv": {
+    "width": 1150,
+    "height": 560
+  },
+  "search_feature_highlight": {
+    "width": 1100,
+    "height": 400
+  },
+  "rubberband": {
+    "width": 1000,
+    "height": 550
+  },
+  "display_settings_url_snapshot": {
+    "width": 1500,
+    "height": 540
+  },
+  "insertion": {
+    "width": 1500,
+    "height": 1200
+  },
+  "multisv": {
+    "width": 1500,
+    "height": 800
+  },
+  "multisv_svtype": {
+    "width": 1500,
+    "height": 800
+  },
+  "multisv_rhd": {
+    "width": 1500,
+    "height": 1230
+  },
+  "multisv_rhd_dosage": {
+    "width": 1500,
+    "height": 1000
+  },
+  "multi-sv-trio": {
+    "width": 1500,
+    "height": 874
+  },
+  "link_to_split_view": {
+    "width": 1500,
+    "height": 1100
+  },
+  "breakpoint_split_view": {
+    "width": 1500,
+    "height": 1000
+  },
+  "read_vs_ref_insertion": {
+    "width": 1500,
+    "height": 820
+  },
+  "lgv_usage_guide": {
+    "width": 1500,
+    "height": 499
+  },
+  "scroll_zoom_toggle": {
+    "width": 1000,
+    "height": 455
+  },
+  "add_track_form": {
+    "width": 1200,
+    "height": 620
+  },
+  "add_track_tracklist": {
+    "width": 1000,
+    "height": 600
+  },
+  "track_menu": {
+    "width": 1200,
+    "height": 540
+  },
+  "tracklabels": {
+    "width": 1500,
+    "height": 520
+  },
+  "edit_track_settings": {
+    "width": 1500,
+    "height": 640
+  },
+  "drawer_widget_toggle": {
+    "width": 1150,
+    "height": 470
+  },
+  "share_button": {
+    "width": 1000,
+    "height": 550
+  },
+  "highlight_list_create": {
+    "width": 1500,
+    "height": 440
+  },
+  "highlight_list_edit_label": {
+    "width": 1500,
+    "height": 520
+  },
+  "hierarchical/hierarchical_user_menu-fs8": {
+    "width": 1500,
+    "height": 800
+  },
+  "recent_tracks": {
+    "width": 1100,
+    "height": 600
+  },
+  "favorite_tracks": {
+    "width": 1500,
+    "height": 560
+  },
+  "plugin_store": {
+    "width": 1500,
+    "height": 800
+  },
+  "lgv_assembly": {
+    "width": 900,
+    "height": 231
+  },
+  "add_hg38_assembly": {
+    "width": 1500,
+    "height": 800
+  },
+  "sample_config": {
+    "width": 1000,
+    "height": 600
+  },
+  "hierarchical/collapse_toplevelcategories-fs8": {
+    "width": 1500,
+    "height": 800
+  },
+  "default_theme": {
+    "width": 1500,
+    "height": 520
+  },
+  "customized_theme": {
+    "width": 1500,
+    "height": 520
+  },
+  "assembly_manager": {
+    "width": 1000,
+    "height": 540
+  },
+  "hg38_assembly_table": {
+    "width": 1000,
+    "height": 540
+  },
+  "default_session_form": {
+    "width": 1000,
+    "height": 480
+  },
+  "config_not_found": {
+    "width": 1200,
+    "height": 154
+  },
+  "chromhmm": {
+    "width": 1500,
+    "height": 1230
+  },
+  "chromhmm_hoxa_fibroblasts": {
+    "width": 1500,
+    "height": 620
+  },
+  "multirow/display_types_pick": {
+    "width": 1000,
+    "height": 560
+  },
+  "multirow/display_types_rows": {
+    "width": 1000,
+    "height": 470
+  },
+  "close_ups": {
+    "width": 1500,
+    "height": 840
+  },
+  "close_up_menu": {
+    "width": 1500,
+    "height": 420
+  },
+  "methylation/arabidopsis_wgbs_contexts": {
+    "width": 1500,
+    "height": 995
+  },
+  "methylation/chromatin_accessibility_6ma": {
+    "width": 1500,
+    "height": 1030
+  },
+  "methylation/hg002_snrpn_ungrouped": {
+    "width": 1500,
+    "height": 730
+  },
+  "methylation/hg002_snrpn_grouped": {
+    "width": 1500,
+    "height": 730
+  },
+  "methylation/hg002_snrpn_combined": {
+    "width": 1500,
+    "height": 1085
+  },
+  "ld/lct_pooled_vs_panel": {
+    "width": 1500,
+    "height": 1070
+  },
+  "ld/lct_fst_scan": {
+    "width": 1500,
+    "height": 520
+  },
+  "ld/anopheles_2la": {
+    "width": 1500,
+    "height": 1395
+  },
+  "ld/lct_haploblock": {
+    "width": 1500,
+    "height": 1224
+  },
+  "popgen/fst_in2lt_2L": {
+    "width": 1500,
+    "height": 560
+  },
+  "popgen/tajimad_cyp6g1": {
+    "width": 1500,
+    "height": 810
+  },
+  "popgen/in2lt_inversion": {
+    "width": 1500,
+    "height": 1150
+  },
+  "qc/smn1_evidence": {
+    "width": 1500,
+    "height": 790
+  },
+  "qc/smn_read_placement": {
+    "width": 1500,
+    "height": 805
+  },
+  "qc/smn_problematic_regions": {
+    "width": 1500,
+    "height": 622
+  },
+  "qc/smn_block_and_reads": {
+    "width": 1500,
+    "height": 1200
+  },
+  "qc/smn_vs_t2t": {
+    "width": 1200,
+    "height": 900
+  },
+  "scatac/pbmc5k_marker_swap": {
+    "width": 1500,
+    "height": 680
+  },
+  "scrna/marker_panel": {
+    "width": 1900,
+    "height": 730
+  },
+  "scrna/percell_lyz": {
+    "width": 1500,
+    "height": 1110
+  },
+  "sv_inspector_importform_loaded": {
+    "width": 1500,
+    "height": 615
+  },
+  "sv_inspector_importform_filtered": {
+    "width": 1500,
+    "height": 615
+  },
+  "horizontally_flip_before": {
+    "width": 1500,
+    "height": 800
+  },
+  "horizontally_flip_after": {
+    "width": 1500,
+    "height": 800
+  },
+  "cnv": {
+    "width": 1500,
+    "height": 800
+  },
+  "smalldel": {
+    "width": 1500,
+    "height": 1000
+  },
+  "alignment_clipping_indicators": {
+    "width": 1500,
+    "height": 497
+  },
+  "inverted_duplication": {
+    "width": 1500,
+    "height": 1075
+  },
+  "sv_channels": {
+    "width": 1500,
+    "height": 990
+  },
+  "inversion_long_read": {
+    "width": 1400,
+    "height": 966
+  },
+  "sv_cgiab/translocation_sv_inspector_start": {
+    "width": 1500,
+    "height": 800
+  },
+  "sv_cgiab/translocation_sv_inspector_view": {
+    "width": 1500,
+    "height": 1065
+  },
+  "sv_cgiab/translocation_breakpoint_split": {
+    "width": 1500,
+    "height": 1000
+  },
+  "sv_cgiab/sv_callset_comparison": {
+    "width": 1500,
+    "height": 956
+  },
+  "sv_cgiab/cnv_show_all_regions": {
+    "width": 1500,
+    "height": 800
+  },
+  "sv_cgiab/deletion_sv_inspector_search": {
+    "width": 1500,
+    "height": 990
+  },
+  "sv_cgiab/deletion_linear_view": {
+    "width": 1500,
+    "height": 800
+  },
+  "sv_cgiab/vntr_tumor_normal": {
+    "width": 1500,
+    "height": 1020
+  },
+  "sv_cgiab/cnv_with_bed_track": {
+    "width": 1800,
+    "height": 895
+  },
+  "sv_cgiab/cnv_callset_comparison": {
+    "width": 1500,
+    "height": 935
+  },
+  "sv_cgiab/cnv_depth_baf": {
+    "width": 1500,
+    "height": 943
+  },
+  "sv_cgiab/driver_cdkn2a_deletion": {
+    "width": 1500,
+    "height": 1135
+  },
+  "sv_cgiab/driver_kras_gain": {
+    "width": 1500,
+    "height": 925
+  },
+  "sv_cgiab/cnv_chr17_loh": {
+    "width": 1500,
+    "height": 940
+  },
+  "sv_cgiab/driver_smad4_loh": {
+    "width": 1500,
+    "height": 985
+  },
+  "sv_cgiab/methylation_cdkn2b": {
+    "width": 1500,
+    "height": 880
+  },
+  "sv_inspector_importform_after": {
+    "width": 1150,
+    "height": 380
+  },
+  "cancer_sv/multihop_tumour_vs_normal": {
+    "width": 1000,
+    "height": 1126
+  },
+  "cancer_sv/multihop_split_view": {
+    "width": 1000,
+    "height": 1126
+  },
+  "cancer_sv/derivative_synteny": {
+    "width": 1600,
+    "height": 895
+  },
+  "cancer_sv/derivative_inserts": {
+    "width": 1600,
+    "height": 1345
+  },
+  "cancer_sv/split_view_from_breakend": {
+    "width": 900,
+    "height": 700
+  },
+  "cancer_sv/realigned_reads_reference": {
+    "width": 700,
+    "height": 785
+  },
+  "cancer_sv/realigned_reads_derivative": {
+    "width": 700,
+    "height": 785
+  },
+  "cancer_sv/k562_fusion_inspector_form": {
+    "width": 1500,
+    "height": 390
+  },
+  "cancer_sv/k562_fusion_inspector_all": {
+    "width": 1500,
+    "height": 700
+  },
+  "cancer_sv/k562_fusion_inspector_pair": {
+    "width": 1500,
+    "height": 700
+  },
+  "cancer_sv/k562_fusion_inspector_reads": {
+    "width": 1500,
+    "height": 880
+  },
+  "cancer_sv/k562_bcr_abl_split": {
+    "width": 1500,
+    "height": 1140
+  },
+  "cancer_sv/k562_amplicon_dna": {
+    "width": 1600,
+    "height": 620
+  },
+  "circular_view/coverage_ring_chords": {
+    "width": 1000,
+    "height": 900
+  },
+  "circular_synteny/ribbons": {
+    "width": 1000,
+    "height": 900
+  },
+  "circular_synteny/rings": {
+    "width": 1000,
+    "height": 900
+  },
+  "circular_synteny/x_control": {
+    "width": 1000,
+    "height": 900
+  },
+  "circular_synteny/ribbon_hover": {
+    "width": 1000,
+    "height": 900
+  },
+  "linkage_groups/alg_dotplot_res_emu": {
+    "width": 900,
+    "height": 1030
+  },
+  "linkage_groups/alg_stack": {
+    "width": 1400,
+    "height": 944
+  },
+  "tcga/cohort_cnv_genome": {
+    "width": 1900,
+    "height": 1120
+  },
+  "tcga/cohort_cnv_erbb2": {
+    "width": 1500,
+    "height": 1024
+  },
+  "tcga/cohort_cnv_recurrence_subtype": {
+    "width": 1900,
+    "height": 710
+  },
+  "tcga/mutations_cdh1_histology": {
+    "width": 1500,
+    "height": 780
+  },
+  "cnv1000g/ccl3l1_ladder": {
+    "width": 1500,
+    "height": 830
+  },
+  "cnv1000g/ugt2b17_biallelic": {
+    "width": 1500,
+    "height": 875
+  },
+  "cnv1000g/zarr_cohort": {
+    "width": 1500,
+    "height": 960
+  },
+  "gwas/manhattan": {
+    "width": 1500,
+    "height": 470
+  },
+  "gwas/locuszoom_ld": {
+    "width": 1500,
+    "height": 520
+  },
+  "gene_density_chr1": {
+    "width": 1500,
+    "height": 800
+  },
+  "gene_density_1q21": {
+    "width": 1500,
+    "height": 620
+  },
+  "hg002_haplotypes_import_form": {
+    "width": 950,
+    "height": 561
+  },
+  "hg002_haplotypes_wholegenome": {
+    "width": 950,
+    "height": 767
+  },
+  "hg002_haplotypes_8p23_inversion": {
+    "width": 1400,
+    "height": 838
+  },
+  "hg002_haplotypes_follow_panel": {
+    "width": 1400,
+    "height": 445
+  },
+  "hg002_haplotypes_location_markers": {
+    "width": 1400,
+    "height": 560
+  },
+  "hic/bcr_abl1_translocation": {
+    "width": 1500,
+    "height": 1100
+  },
+  "hic/compartment_switch": {
+    "width": 1500,
+    "height": 573
+  },
+  "qtl/bxd_tyrp1_locus": {
+    "width": 1500,
+    "height": 1000
+  },
+  "qtl/bxd_painting_sorted": {
+    "width": 1500,
+    "height": 840
+  },
+  "trio-basic": {
+    "width": 1500,
+    "height": 347
+  },
+  "trio-matrix": {
+    "width": 1500,
+    "height": 800
+  },
+  "trio-matrix-phased": {
+    "width": 1500,
+    "height": 800
+  },
+  "trio-matrix-phased-clean": {
+    "width": 1500,
+    "height": 597
+  },
+  "trio-hapibd-painting": {
+    "width": 1500,
+    "height": 305
+  },
+  "trio-crossover-paternal": {
+    "width": 1500,
+    "height": 598
+  },
+  "trio-crossover-maternal": {
+    "width": 1500,
+    "height": 598
+  },
+  "dog10k-wolfdog-ancestry": {
+    "width": 1500,
+    "height": 905
+  },
+  "dog10k-nhej1-cea-deletion": {
+    "width": 1500,
+    "height": 1003
+  },
+  "dog10k-amy2b-duplication": {
+    "width": 1500,
+    "height": 1323
+  },
+  "dog10k-rnase1-insertion": {
+    "width": 1500,
+    "height": 1323
+  },
+  "dog10k-size-fst-scan-genome": {
+    "width": 1500,
+    "height": 460
+  },
+  "dog10k-size-fst-scan-igf1": {
+    "width": 1500,
+    "height": 576
+  },
+  "dog10k-fgf4-retrogene-synteny": {
+    "width": 1500,
+    "height": 1128
+  },
+  "dog10k-cyp1a2-nonsense": {
+    "width": 1500,
+    "height": 951
+  },
+  "dog10k-cyp1a2-cohort-copy-number": {
+    "width": 1500,
+    "height": 1140
+  },
+  "dog10k-igf1-haplotype": {
+    "width": 1500,
+    "height": 1135
+  },
+  "maf_track": {
+    "width": 1000,
+    "height": 716
+  },
+  "maf_codon_tooltip": {
+    "width": 1250,
+    "height": 810
+  },
+  "maf_color_by_chromosome": {
+    "width": 1000,
+    "height": 716
+  },
+  "maf_470way": {
+    "width": 1100,
+    "height": 940
+  },
+  "maf_470way_codon": {
+    "width": 1000,
+    "height": 765
+  },
+  "maf_summary_zoomed_out": {
+    "width": 780,
+    "height": 720
+  },
+  "maf_summary_zoomed_in": {
+    "width": 780,
+    "height": 720
+  },
+  "maf_hprc_pangenome": {
+    "width": 1500,
+    "height": 2000
+  },
+  "mark_display/density_sidecar": {
+    "width": 1500,
+    "height": 370
+  },
+  "mark_display/multiscale": {
+    "width": 1500,
+    "height": 370
+  },
+  "mark_display/facet": {
+    "width": 1500,
+    "height": 610
+  },
+  "mark_display/plot_field": {
+    "width": 1500,
+    "height": 520
+  },
+  "alu_age/locus": {
+    "width": 1500,
+    "height": 410
+  },
+  "alu_age/chromosome": {
+    "width": 1500,
+    "height": 465
+  },
+  "alu_age/binned": {
+    "width": 1500,
+    "height": 465
+  },
+  "read_marks/depth": {
+    "width": 1500,
+    "height": 460
+  },
+  "read_marks/insert_size": {
+    "width": 1500,
+    "height": 655
+  },
+  "read_marks/pileup": {
+    "width": 1500,
+    "height": 600
+  },
+  "read_marks/chromosome": {
+    "width": 1500,
+    "height": 510
+  },
+  "genomes_msa/launch_sequence": {
+    "width": 1500,
+    "height": 900
+  },
+  "genomes_msa/genomic_domains": {
+    "width": 1500,
+    "height": 390
+  },
+  "pangenome/pggb_synteny": {
+    "width": 1500,
+    "height": 715
+  },
+  "pangenome/maf": {
+    "width": 1000,
+    "height": 660
+  },
+  "pangenome/pggb_untangle_rows": {
+    "width": 1000,
+    "height": 450
+  },
+  "pangenome/pggb_untangle_dotplot": {
+    "width": 1000,
+    "height": 640
+  },
+  "pangenome/pav": {
+    "width": 1000,
+    "height": 640
+  },
+  "pangenome/long_reads": {
+    "width": 1000,
+    "height": 865
+  },
+  "pangenome_cactus/graph_bubble": {
+    "width": 1000,
+    "height": 890
+  },
+  "pangenome_cactus/synteny": {
+    "width": 1500,
+    "height": 715
+  },
+  "pangenome_cactus/builders": {
+    "width": 1200,
+    "height": 690
+  },
+  "pangenome_cactus/maf": {
+    "width": 1000,
+    "height": 480
+  },
+  "pangenome_cactus/graph_correspondence": {
+    "width": 1040,
+    "height": 380
+  },
+  "paper/hprc_lanes_graph_anchored": {
+    "width": 1900,
+    "height": 980
+  },
+  "paper/hprc_lanes_graph_stacked": {
+    "width": 1500,
+    "height": 1300
+  },
+  "paper/hprc_lanes_graph_stacked_force": {
+    "width": 1500,
+    "height": 1420
+  },
+  "paper/cohort_sv_multisample": {
+    "width": 1500,
+    "height": 820
+  },
+  "paper/cohort_cnv": {
+    "width": 1500,
+    "height": 700
+  },
+  "pangenome/pggb_bubble_tier": {
+    "width": 1000,
+    "height": 620
+  },
+  "pangenome/pggb_strain_launch": {
+    "width": 1100,
+    "height": 1100
+  },
+  "pangenome/pggb_carriage_lane": {
+    "width": 1000,
+    "height": 610
+  },
+  "pangenome/pggb_locus_sample_rows": {
+    "width": 1000,
+    "height": 840
+  },
+  "pangenome/local_subgraph": {
+    "width": 1000,
+    "height": 640
+  },
+  "pangenome/pggb_haplotype_paths": {
+    "width": 1000,
+    "height": 980
+  },
+  "pangenome/graph_resolution_minigraph": {
+    "width": 750,
+    "height": 1060
+  },
+  "pangenome/graph_resolution_pggb": {
+    "width": 750,
+    "height": 1060
+  },
+  "pangenome/rgfa_subgraph_launch": {
+    "width": 1000,
+    "height": 590
+  },
+  "pangenome/rgfa_paa_bubble": {
+    "width": 1000,
+    "height": 1160
+  },
+  "pangenome/rgfa_segment_neighbourhood": {
+    "width": 1000,
+    "height": 630
+  },
+  "pangenome/graph_context_none": {
+    "width": 750,
+    "height": 1006
+  },
+  "pangenome/graph_context_hop1": {
+    "width": 750,
+    "height": 1006
+  },
+  "pangenome/rgfa_hover_sync": {
+    "width": 1000,
+    "height": 1070
+  },
+  "pangenome/rgfa_insertion_synteny": {
+    "width": 1400,
+    "height": 582
+  },
+  "pangenome/rgfa_launch_out_menu": {
+    "width": 1000,
+    "height": 360
+  },
+  "pangenome/rgfa_strain_launch": {
+    "width": 1000,
+    "height": 820
+  },
+  "pangenome/hprc_whole_chromosome": {
+    "width": 1400,
+    "height": 580
+  },
+  "pangenome/hprc_mhc_layout_force": {
+    "width": 820,
+    "height": 878
+  },
+  "pangenome/hprc_mhc_layout_anchored": {
+    "width": 820,
+    "height": 705
+  },
+  "pangenome/hprc_graph_anatomy": {
+    "width": 1000,
+    "height": 1040
+  },
+  "pangenome/hprc_cfhr_deletion": {
+    "width": 1000,
+    "height": 1184
+  },
+  "pangenome/hprc_inversion": {
+    "width": 1000,
+    "height": 965
+  },
+  "pangenome/hprc_chm13_allele": {
+    "width": 1000,
+    "height": 1222
+  },
+  "pangenome/hprc_lpa_kiv2": {
+    "width": 1000,
+    "height": 1170
+  },
+  "pangenome/hprc_graph_vs_callset": {
+    "width": 1000,
+    "height": 1480
+  },
+  "pangenome/hprc_haplotype_launch": {
+    "width": 1100,
+    "height": 1250
+  },
+  "pangenome/hprc_abca7_repeat_units": {
+    "width": 1400,
+    "height": 1095
+  },
+  "pangenome/hprc_abca7_disagreements": {
+    "width": 1400,
+    "height": 775
+  },
+  "pangenome/mouse_dock2": {
+    "width": 1400,
+    "height": 1260
+  },
+  "pangenome/bovine_polled": {
+    "width": 1400,
+    "height": 540
+  },
+  "pangenome/bovine_kit": {
+    "width": 1400,
+    "height": 560
+  },
+  "pangenome/bovine_tas2r46": {
+    "width": 1400,
+    "height": 560
+  },
+  "pangenome/bovine_bola": {
+    "width": 1400,
+    "height": 690
+  },
+  "pangenome/bovine_whole_chromosome": {
+    "width": 1400,
+    "height": 550
+  },
+  "pangenome/graph_kiv2_walks": {
+    "width": 1400,
+    "height": 1000
+  },
+  "pangenome/graph_kiv2_walk_rows": {
+    "width": 1400,
+    "height": 760
+  },
+  "pangenome/graph_mouse_nnt_halos": {
+    "width": 1400,
+    "height": 880
+  },
+  "pangenome/chrm_deletion_graph": {
+    "width": 1400,
+    "height": 700
+  },
+  "pangenome/chrm_deletion_matrix": {
+    "width": 1500,
+    "height": 860
+  },
+  "pangenome/chrm_lineage_clusters": {
+    "width": 1500,
+    "height": 860
+  },
+  "cookbook_color_by_strand": {
+    "width": 1500,
+    "height": 460
+  },
+  "cookbook_color_by_type": {
+    "width": 1200,
+    "height": 465
+  },
+  "cookbook_color_by_type_rows": {
+    "width": 1200,
+    "height": 465
+  },
+  "cookbook_multiwig": {
+    "width": 1500,
+    "height": 860
+  }
+}
+
 export const videoLiveRefs: Record<string, string> = {
   "pangenome/pggb_subgraph_launch": "?config=test_data/graphgenomeview/config.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22K12_genes%22%2C%22name%22%3A%22K12%20genes%22%2C%22assemblyNames%22%3A%5B%22K12%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22Gff3TabixAdapter%22%2C%22gffGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2FK12.gff.gz%22%7D%2C%22index%22%3A%7B%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2FK12.gff.gz.tbi%22%7D%7D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22K12%22%2C%22loc%22%3A%22chr%3A1%2C290%2C000-1%2C310%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22K12_genes%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A70%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "pangenome_cactus/subgraph_launch": "?config=test_data/graphgenomeview/config.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22K12_genes%22%2C%22name%22%3A%22K12%20genes%22%2C%22assemblyNames%22%3A%5B%22K12%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22Gff3TabixAdapter%22%2C%22gffGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2FK12.gff.gz%22%7D%2C%22index%22%3A%7B%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Fecoli_pangenome%2FK12.gff.gz.tbi%22%7D%7D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22K12%22%2C%22loc%22%3A%22chr%3A1%2C972%2C900-1%2C984%2C900%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22K12_genes%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A70%7D%5D%7D%5D%7D&sessionName=Screenshot",

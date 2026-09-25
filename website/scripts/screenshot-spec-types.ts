@@ -177,11 +177,13 @@ export interface BaseSpecFields {
   diffThreshold?: number
 }
 
+export const DEFAULT_VIEWPORT = { width: 1500, height: 800 }
+
 export interface CommonSpecFields extends BaseSpecFields {
-  // capture-viewport height in CSS px for this spec (default 800); raise it for
-  // tall multi-row pileups so the track isn't clipped by the default viewport
+  // capture-viewport height in CSS px (DEFAULT_VIEWPORT otherwise); raise it
+  // for tall multi-row pileups so the track isn't clipped
   viewportHeight?: number
-  // capture-viewport width in CSS px for this spec (default 1500); raise it for
+  // capture-viewport width in CSS px (DEFAULT_VIEWPORT otherwise); raise it for
   // wide multi-panel layouts (dotplot/synteny/whole-genome) that get cut off
   viewportWidth?: number
   // callouts drawn over the page before capture (arrows/boxes/text/circles)

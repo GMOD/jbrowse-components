@@ -19,6 +19,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { checkOrWrite } from './check-utils.ts'
+import { DEFAULT_VIEWPORT } from './screenshot-spec-types.ts'
 import {
   screenshotLiveLabels,
   screenshotSlowSpecNames,
@@ -35,6 +36,22 @@ const figureLiveRefs = Object.fromEntries(
     // spec is the empty url, and its live link is CODE_BASE itself
     return ref === undefined ? [] : [[spec.name, ref] as const]
   }),
+)
+
+const figureFrames = Object.fromEntries(
+  specs.flatMap(spec =>
+    specLiveRef(spec) === undefined
+      ? []
+      : [
+          [
+            spec.name,
+            {
+              width: spec.viewportWidth ?? DEFAULT_VIEWPORT.width,
+              height: spec.viewportHeight ?? DEFAULT_VIEWPORT.height,
+            },
+          ] as const,
+        ],
+  ),
 )
 
 const videoLiveRefs = Object.fromEntries(
@@ -103,6 +120,13 @@ export const figureLiveLabels: Record<string, string> = ${JSON.stringify(screens
 // says so on the link. Derived in screenshot-specs.ts from the spec's own
 // timeouts — see screenshotSlowSpecNames.
 export const figureSlowSpecs: string[] = ${JSON.stringify([...screenshotSlowSpecNames].sort(), null, 2)}
+
+// Each figure's capture viewport in CSS px, which the recipe's capture command
+// passes on so a reader's frame is the figure's.
+export const figureFrames: Record<
+  string,
+  { width: number; height: number }
+> = ${JSON.stringify(figureFrames, null, 2)}
 
 export const videoLiveRefs: Record<string, string> = ${JSON.stringify(videoLiveRefs, null, 2)}
 

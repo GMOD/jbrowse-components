@@ -85,6 +85,7 @@ import {
   recordUnpainted,
 } from './screenshot-report.ts'
 import { selectSpecsToRender } from './screenshot-select.ts'
+import { DEFAULT_VIEWPORT } from './screenshot-spec-types.ts'
 
 import type { CommitResult } from './image-pipeline.ts'
 import type { RunTotals } from './screenshot-report.ts'
@@ -870,8 +871,7 @@ async function main() {
   // wider viewport for more genomic context; deviceScaleFactor 2 keeps the
   // capture hidpi/retina-crisp (2x backing store) at the larger size
   const defaultViewport = {
-    width: 1500,
-    height: 800,
+    ...DEFAULT_VIEWPORT,
     deviceScaleFactor: DEVICE_SCALE_FACTOR,
   }
   // Chrome leans on swiftshader for headless WebGL; Firefox needs WebGL forced

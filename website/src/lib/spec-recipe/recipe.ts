@@ -1,6 +1,7 @@
 import { deriveAddTrack, deriveAddTrackJson } from '../derive-add-track.ts'
 import { fileKind, lookupAssembly, lookupTrack } from './configs.ts'
 import { takeArrangement } from './arrangements.ts'
+import { figureFrames, videoFrames } from '../liveLinks.generated.ts'
 
 import type { RawTrack, TrackInfo  } from './configs.ts'
 import {
@@ -510,7 +511,12 @@ export function deriveCliRecipe(sessionTracks: RawTrack[] | undefined) {
 // or fetch nothing. The spec goes to a file rather than inline: it is a whole
 // JSON document, and quoting one into a shell argument is the step an agent
 // most reliably gets wrong.
-function agentCommandFor(base: string, configUrl: string, specJson: string) {
+function agentCommandFor(
+  base: string,
+  configUrl: string,
+  specJson: string,
+  frame: { width: number; height: number } | undefined,
+) {
   const instance = base.endsWith('/') ? base : `${base}/`
   return [
     "cat > session.json <<'JSON'",
@@ -519,6 +525,7 @@ function agentCommandFor(base: string, configUrl: string, specJson: string) {
     '',
     `npx @jbrowse/capture --instance ${instance} \\`,
     `  --config ${configUrl} \\`,
+    ...(frame ? [`  --width ${frame.width} --height ${frame.height} \\`] : []),
     '  --session session.json -o figure.png',
   ].join('\n')
 }
@@ -587,7 +594,12 @@ export function buildRecipe(
             ],
     ),
     python: pythonSnippet(configUrl, config, spec),
-    agentCommand: agentCommandFor(base, configUrl, specJson),
+    agentCommand: agentCommandFor(
+      base,
+      configUrl,
+      specJson,
+      figureName ? (figureFrames[figureName] ?? videoFrames[figureName]) : undefined,
+    ),
     cli: deriveCliRecipe(sessionTracks),
     unmapped: [...new Set(collected.flatMap(c => c.unmapped))],
   }
