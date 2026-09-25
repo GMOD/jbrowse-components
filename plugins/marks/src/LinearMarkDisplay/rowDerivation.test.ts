@@ -351,18 +351,26 @@ test('rows beside a facet leave the facet drawing, and say so on another field',
   ])
 })
 
-test('the Plot field default facets a display with no rows, and leaves rows drawing', () => {
+test('the Plot field default draws a row per source, and leaves a facet or rows alone', () => {
   const plot = {
     field: 'score',
     mark: 'point',
     colorField: '',
     binned: false,
   } as const
-  const fields = { numeric: ['score'], categorical: [], facet: 'source' }
+  const fields = { numeric: ['score'], categorical: [], rows: 'source' }
   const bare = loaded({})
   bare.setPlotFields(fields)
   bare.setPlotMarks(plot)
-  expect(bare.facet?.field).toBe('source')
+  expect(bare.facet).toBeUndefined()
+  expect(bare.drawsRows).toBe(true)
+  expect(bare.rowsField).toBe('source')
+
+  const faceted = loaded({ facet: 'tissue' })
+  faceted.setPlotFields(fields)
+  faceted.setPlotMarks(plot)
+  expect(faceted.facet?.field).toBe('tissue')
+  expect(faceted.rowsField).toBe('')
 
   const rows = loaded({ rows: 'source' })
   rows.setPlotFields(fields)

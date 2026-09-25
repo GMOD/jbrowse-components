@@ -1525,6 +1525,17 @@ export function stateModelFactory(
         },
         /**
          * #action
+         * A row per source where the adapter lists several and nothing splits
+         * the features yet: one value per row is the row axis, and a facet is
+         * for bands holding more than one row.
+         */
+        splitByPlotRows(fields: PlotFields) {
+          if (fields.rows && self.splitField === undefined) {
+            setConf(self.conf, ['rows', 'field'], fields.rows)
+          }
+        },
+        /**
+         * #action
          * Order the rows by the value each stands at over (refName, pos),
          * highest first, off the loaded regions with no refetch; false where no
          * loaded region covers the column.
@@ -1636,9 +1647,7 @@ export function stateModelFactory(
         setPlotMarks(spec: PlotSpec) {
           const fields = self.plotFields ?? { numeric: [], categorical: [] }
           setConf(self.conf, 'marks', plotMarks(spec, fields))
-          if (fields.facet && self.splitField !== fields.facet) {
-            self.setFacetField(fields.facet)
-          }
+          self.splitByPlotRows(fields)
         },
         /**
          * #action
@@ -1902,9 +1911,7 @@ export function stateModelFactory(
               const marks = defaultPlotMarks(fields)
               if (marks) {
                 setConf(self.conf, 'marks', marks)
-                if (fields.facet && self.splitField !== fields.facet) {
-                  self.setFacetField(fields.facet)
-                }
+                self.splitByPlotRows(fields)
               } else {
                 self.openPlotFieldDialog()
               }

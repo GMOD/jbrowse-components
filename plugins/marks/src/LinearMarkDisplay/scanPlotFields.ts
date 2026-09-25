@@ -24,7 +24,7 @@ const NON_PLOT_FIELDS = new Set([
 // A code, not a quantity: +1 and -1 want a palette and never a ramp.
 const ALWAYS_CATEGORICAL = new Set(['strand'])
 
-const FACET_FIELD = 'source'
+const ROWS_FIELD = 'source'
 
 /** The plottable fields the scanned features carry, split by what they hold. */
 export interface PlotFields {
@@ -33,8 +33,8 @@ export interface PlotFields {
   sparse?: string[]
   /** Text fields few enough values apart that a colour key can name them. */
   categorical: string[]
-  /** `source`, where a multi-source adapter's features carry more than one. */
-  facet?: string
+  /** `source`, where a multi-source adapter lists more than one: a row each. */
+  rows?: string
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -117,6 +117,6 @@ export function scanPlotFields(
     categorical: fields.filter(
       f => !numeric.get(f)! && values.get(f)!.size <= MAX_LEGEND_ITEMS,
     ),
-    ...(listedSources > 1 ? { facet: FACET_FIELD } : {}),
+    ...(listedSources > 1 ? { rows: ROWS_FIELD } : {}),
   }
 }

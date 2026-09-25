@@ -596,8 +596,8 @@ value gets: a facet section is as deep as its packing and wears a chip, where a
 row is one row. Beside a facet the facet draws: on the same field that is the
 whole picture, and on another it asks for bands of rows, which are not drawn
 yet, so the track says so. A mark display picked from the track menu over a
-multi-BigWig opens faceted by `source`; a row per file takes `rows` written on
-the display itself.
+multi-BigWig opens with `rows: "source"`, a row per file in the adapter's order,
+unless the display already names a `facet` or `rows`.
 
 ## Transforms
 

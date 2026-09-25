@@ -240,11 +240,13 @@ the display honours no other: a quantitative track's preprocessor writes
 `displayDefaults.rows`, the `MultiQuantitativeTrack` seed `rows: 'source'`
 included, onto the quantitative display's entry alone, as it does
 `displayDefaults.facet`, so ADR-134 never routes either to the mark display.
-Over a multi-BigWig the mark display therefore draws as before, every source
-overlaid in one band or, under the Plot field default `facet: 'source'`, a
-chip section per source, and a `displayDefaults.rows` on another field fails
-the load with the quantitative display's reason. One row per source as the
-mark display's default is a visual call for Colin and has not landed.
+Over a multi-BigWig the mark display therefore draws every source overlaid in
+one band until Plot field's default writes `rows: 'source'` where nothing
+already splits the features, and a `displayDefaults.rows` on another field
+fails the load with the quantitative display's reason. Amended 2026-09-25: that
+default had been `facet: 'source'`, a chip section per source. Bars over a
+multi-BigWig pack nothing, so each such section held exactly one row, which is
+the row axis; a facet is for bands holding more than one row.
 
 **Edit as JSON speaks `rows`.** `ChannelSpec` takes
 `rows: field | { field, domain }` beside `facet`, `color` and `filter`, and

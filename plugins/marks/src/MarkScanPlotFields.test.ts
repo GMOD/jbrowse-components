@@ -32,14 +32,14 @@ function scan(adapter: object) {
   })
 }
 
-test("a GFF3 track's source column facets nothing", async () => {
+test("a GFF3 track's source column takes no rows", async () => {
   expect(await scan({})).toEqual({
     numeric: ['score'],
     categorical: ['source'],
   })
 })
 
-test("a multi-BigWig's listed files facet the plot, though its first features are all one file's", async () => {
+test("a multi-BigWig's listed files take a row each, though its first features are all one file's", async () => {
   expect(
     await scan({
       getMultiSourceFeatureArraysMulti: jest.fn(),
@@ -54,11 +54,11 @@ test("a multi-BigWig's listed files facet the plot, though its first features ar
   ).toEqual({
     numeric: ['score'],
     categorical: ['source'],
-    facet: 'source',
+    rows: 'source',
   })
 })
 
-test('a multi-BigWig of one file facets nothing', async () => {
+test('a multi-BigWig of one file takes no rows', async () => {
   expect(
     await scan({
       getMultiSourceFeatureArraysMulti: jest.fn(),

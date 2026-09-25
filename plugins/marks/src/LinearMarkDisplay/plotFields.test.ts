@@ -47,7 +47,7 @@ test('the default is a bar of score, and nothing where the features carry none',
   ).toBeUndefined()
 })
 
-test('an adapter listing more than one source names source as the facet field, whatever the sample holds', () => {
+test('an adapter listing more than one source names source as the rows field, whatever the sample holds', () => {
   const multi = scanPlotFields(
     features([
       { score: 5, source: 'k1' },
@@ -55,7 +55,7 @@ test('an adapter listing more than one source names source as the facet field, w
     ]),
     { listedSources: 2 },
   )
-  expect(multi.facet).toBe('source')
+  expect(multi.rows).toBe('source')
   expect(defaultPlotMarks(multi)).toEqual([
     { mark: 'bar', encoding: { y: 'score' } },
   ])
@@ -66,7 +66,7 @@ test('an adapter listing more than one source names source as the facet field, w
     ]),
     { listedSources: 1 },
   )
-  expect(single.facet).toBeUndefined()
+  expect(single.rows).toBeUndefined()
   expect(defaultPlotMarks(single)).toEqual([
     { mark: 'bar', encoding: { y: 'score' } },
   ])
@@ -90,7 +90,7 @@ test("a GFF3 record's source column is a colour field, not a facet", () => {
     ]),
     { listedSources: 0 },
   )
-  expect(fields.facet).toBeUndefined()
+  expect(fields.rows).toBeUndefined()
   expect(fields.categorical).toEqual(['source'])
 })
 
