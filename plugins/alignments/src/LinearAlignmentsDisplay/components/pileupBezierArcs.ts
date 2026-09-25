@@ -15,9 +15,10 @@ export const BEZIER_ARC_STROKE_OPACITY = 0.8
 
 export interface BezierArcSection {
   groupKey: string
-  // Screen-y of the section's pileup clip top. Its reads scroll under the
-  // bands above it, and so do their connectors.
+  // Screen-y of the section's pileup band. Its reads scroll under the bands
+  // above it, and so do their connectors.
   clipTop: number
+  clipBottom: number
   arcs: PileupArc[]
 }
 
@@ -34,6 +35,11 @@ export function computePileupBezierArcsFromModel(
   const result: BezierArcSection[] = []
   for (const sec of model.bezierPairSections) {
     const clipTop = bandScreenTop(sec.topOffset, scroll)
+    const clipBottom = sectionBandBottom(
+      sec.topOffset,
+      sec.pileupHeight,
+      scroll,
+    )
     const arcs = computePileupBezierArcs({
       pairs: sec.pairs,
       colors,
@@ -44,14 +50,10 @@ export function computePileupBezierArcsFromModel(
       pileupTopOffset: sec.topOffset,
       scrollTop: scroll.scrollTop,
       viewportTop: clipTop,
-      viewportBottom: sectionBandBottom(
-        sec.topOffset,
-        sec.pileupHeight,
-        scroll,
-      ),
+      viewportBottom: clipBottom,
     })
     if (arcs.length > 0) {
-      result.push({ groupKey: sec.groupKey, clipTop, arcs })
+      result.push({ groupKey: sec.groupKey, clipTop, clipBottom, arcs })
     }
   }
   return result

@@ -26,7 +26,9 @@ jest.mock('./pileupBezierArcs.ts', () => ({
   BEZIER_ARC_STROKE_WIDTH: 1,
   BEZIER_ARC_STROKE_OPACITY: 0.8,
   computePileupBezierArcsFromModel: () =>
-    mockArcs.length ? [{ groupKey: '', clipTop: 0, arcs: mockArcs }] : [],
+    mockArcs.length
+      ? [{ groupKey: '', clipTop: 20, clipBottom: 120, arcs: mockArcs }]
+      : [],
 }))
 
 afterEach(cleanup)
@@ -113,6 +115,15 @@ test('a click selects the endpoint nearer the cursor, chain and all', () => {
 
   fireEvent.click(target, { clientX: 5 })
   expect(model.selectFeatureById).toHaveBeenLastCalledWith('readA')
+})
+
+// A curve bulging below its section's last row must not paint over the next
+// section's chip and coverage band.
+test("a section's connectors clip to its own pileup band", () => {
+  const { container } = renderOverlay()
+  const clip = container.querySelector('svg svg')!
+  expect(clip.getAttribute('y')).toBe('20')
+  expect(clip.getAttribute('height')).toBe('100')
 })
 
 // A click-drag pan across the pileup still ends in a click, and the curves sit

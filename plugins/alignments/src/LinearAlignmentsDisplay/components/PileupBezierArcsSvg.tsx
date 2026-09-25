@@ -10,21 +10,21 @@ import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
-// Clips a section's connectors to the canvas below its pileup clip top, in the
-// overlay's own screen coordinates. A nested viewport rather than a clipPath,
-// so neither the overlay nor the export has an id to mint.
-export function BelowClipTop({
+// Clips a section's connectors to its own pileup band, in the overlay's screen
+// coordinates. A nested viewport rather than a clipPath, so neither the overlay
+// nor the export has an id to mint.
+export function SectionBandClip({
   clipTop,
+  clipBottom,
   width,
-  height,
   children,
 }: {
   clipTop: number
+  clipBottom: number
   width: number
-  height: number
   children: React.ReactNode
 }) {
-  const clipHeight = Math.max(0, height - clipTop)
+  const clipHeight = Math.max(0, clipBottom - clipTop)
   return (
     <svg
       y={clipTop}
@@ -59,12 +59,12 @@ export default function PileupBezierArcsSvg({
   const sections = computePileupBezierArcsFromModel(model, view, colors)
   return sections.length ? (
     <g style={{ pointerEvents: 'none' }}>
-      {sections.map(({ groupKey, clipTop, arcs }) => (
-        <BelowClipTop
+      {sections.map(({ groupKey, clipTop, clipBottom, arcs }) => (
+        <SectionBandClip
           key={groupKey}
           clipTop={clipTop}
+          clipBottom={clipBottom}
           width={width}
-          height={model.height}
         >
           {arcs.map(arc => (
             <path
@@ -79,7 +79,7 @@ export default function PileupBezierArcsSvg({
               fill="none"
             />
           ))}
-        </BelowClipTop>
+        </SectionBandClip>
       ))}
     </g>
   ) : null

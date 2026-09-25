@@ -4,7 +4,7 @@ import { ARC_HIT_SLOP_PX, hiddenSegmentsNote } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
 import { bezierArcKey } from '../../features/linkedReads/computeOverlay.ts'
-import { BelowClipTop } from './PileupBezierArcsSvg.tsx'
+import { SectionBandClip } from './PileupBezierArcsSvg.tsx'
 import { PAN_MOVED } from './panState.ts'
 import {
   BEZIER_ARC_STROKE_OPACITY,
@@ -98,7 +98,7 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
         width,
       }}
     >
-      {sections.map(({ groupKey, clipTop, arcs }) => {
+      {sections.map(({ groupKey, clipTop, clipBottom, arcs }) => {
         // Emphasized curves are painted last so a thin crossing curve can't
         // sit on top of one. Every arc of the hovered read thickens, not only
         // the one under the cursor, the way the breakpoint split view thickens
@@ -110,11 +110,11 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
           ;(emphasis ? emphasized : plain).push(arc)
         }
         return (
-          <BelowClipTop
+          <SectionBandClip
             key={groupKey}
             clipTop={clipTop}
+            clipBottom={clipBottom}
             width={width}
-            height={height}
           >
             {[...plain, ...emphasized].map(arc => {
               const arcId = bezierArcKey(arc)
@@ -186,7 +186,7 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
                 </g>
               )
             })}
-          </BelowClipTop>
+          </SectionBandClip>
         )
       })}
     </svg>
