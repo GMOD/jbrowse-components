@@ -98,7 +98,7 @@ test('the bake reads the LUT at the value fraction, floors and ceilings clamped'
 // other NaN, and an infinity at the end on its side.
 test('the bake paints no value, text and infinities as the shader does', () => {
   const c = bars([0, Number.NaN, 10, Infinity, -Infinity])
-  new Uint32Array(c.colorValue!.buffer)[0] = RAMP_NO_VALUE_BITS
+  rampValueBits(c.colorValue!)[0] = RAMP_NO_VALUE_BITS
   const colors = paintColors(c, 5, ramp) as Uint32Array
   const grey = (v: number) => (0xff000000 | (v << 16) | (v << 8) | v) >>> 0
   expect([...colors]).toEqual([
@@ -112,7 +112,7 @@ test('the bake paints no value, text and infinities as the shader does', () => {
 
 test('keeping part of a lane keeps the value-less payload bit for bit', () => {
   const values = new Float32Array([1, 0, 3])
-  new Uint32Array(values.buffer)[1] = RAMP_NO_VALUE_BITS
+  rampValueBits(values)[1] = RAMP_NO_VALUE_BITS
   const kept = keepRampValues(values, (_, i) => i > 0)
   expect(rampValueBits(kept)[0]).toBe(RAMP_NO_VALUE_BITS)
   expect(kept[1]).toBe(3)

@@ -69,8 +69,8 @@ export function keepRampValues(
   values: Float32Array,
   keep: (value: number, index: number) => boolean,
 ) {
-  const bits = rampValueBits(values)
-  return new Float32Array(bits.filter((_, i) => keep(values[i]!, i)).buffer)
+  const kept = rampValueBits(values).filter((_, i) => keep(values[i]!, i))
+  return new Float32Array(kept.buffer, kept.byteOffset, kept.length)
 }
 
 /**
