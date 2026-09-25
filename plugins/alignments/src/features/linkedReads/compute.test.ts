@@ -617,7 +617,7 @@ describe('readGroupConnections', () => {
   })
 })
 
-describe('computeLinkedReadLinesByRegion', () => {
+describe('the straight-line records', () => {
   it('emits a line for a normal paired-LR pair, correct 3-prime endpoints', () => {
     const data = makeData({
       names: ['r1', 'r1'],

@@ -27,12 +27,12 @@ import type { LinkedPair, ReadEntry } from './compute.ts'
 import type { LinkedReadLinesUploadData } from './types.ts'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
-// Cull by endpoint Y, padded by the shaping's reach: a curve dips below or bows
-// above its endpoints (see bezierConnector), so a connector whose reads have
-// both scrolled just past an edge can still have a visible body.
 // The split view's alignment connector width, which draws the same curve.
 const CURVE_STROKE_WIDTH_PX = 1
 
+// Cull by endpoint Y, padded by the shaping's reach: a curve dips below or bows
+// above its endpoints (see bezierConnector), so a connector whose reads have
+// both scrolled just past an edge can still have a visible body.
 function arcIsVisible(
   sy1: number,
   sy2: number,
@@ -248,15 +248,23 @@ export function resolveConnectors(
 }
 
 // `resolveConnectors` over every group, and nothing at all when neither the
-// line pass nor the overlay draws.
+// line pass nor the overlay draws. A group whose reads share one row draws no
+// straight lines, which would lie along that row.
 export function resolveConnectorsByGroup(
   byGroup: ReadonlyMap<string, ReadonlyMap<number, LaidOutPileupData>>,
   opts: Parameters<typeof resolveConnectors>[1],
+  stacksRows: (key: string) => boolean,
 ) {
   const out = new Map<string, GroupConnectors>()
   if (opts.lines || opts.scope !== 'none') {
     for (const [key, map] of byGroup) {
-      out.set(key, resolveConnectors(map, opts))
+      out.set(
+        key,
+        resolveConnectors(map, {
+          ...opts,
+          lines: opts.lines && stacksRows(key),
+        }),
+      )
     }
   }
   return out
@@ -287,7 +295,7 @@ interface Opts {
 // Bezier curves for aberrant pairs, plus straight `M..L..` paths for
 // cross-region normal pairs. Within-region normal pairs are rendered by the
 // GPU + Canvas2D pipelines and are already absent from `pairs`, which
-// `enumerateBezierPairs` narrows to what this draws. Purely a projection of
+// `resolveConnectors` narrows to what this draws. Purely a projection of
 // those pairs to screen space — the only scroll/pan-dependent half, and the only
 // thing it drops is what falls outside the frame.
 export function computePileupBezierArcs(opts: Opts): PileupArc[] {

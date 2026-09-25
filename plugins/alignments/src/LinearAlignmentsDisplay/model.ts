@@ -134,6 +134,7 @@ import {
   nextGroupHeightOverride,
   resolveFitDefaultCap,
   someAcrossGroups,
+  stacksRows,
 } from './groupLayout.ts'
 import {
   buildReadIdsByChainName,
@@ -1621,6 +1622,13 @@ export default function stateModelFactory(
                 scope: self.bezierArcScope,
                 canonicalRefName: this.canonicalRefName,
               },
+              key =>
+                stacksRows(
+                  this.groupLayoutContext,
+                  key,
+                  this.groupRowCaps,
+                  self.collapsedGroups,
+                ),
             )
           },
 
@@ -2578,7 +2586,7 @@ export default function stateModelFactory(
            * geometry and neither path can drift; ungrouped is the single-section
            * case (sticky band below sticky coverage). Empty when sashimi is off.
            *
-           * A computed on purpose (tier 3 — mirrors `bezierPairSections`): the
+           * A computed on purpose (tier 3 — mirrors `connectorsByGroup`): the
            * arc math depends on the view's pan/zoom but NOT on scrollTop, so
            * MobX replays the cache while the user scrolls a grouped track.
            * Computing it in the overlay's render instead re-ran the O(n^2)

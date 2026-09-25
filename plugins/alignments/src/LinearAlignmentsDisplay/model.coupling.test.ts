@@ -718,6 +718,16 @@ describe('curved connectors', () => {
     dispose()
   })
 
+  test('a lane collapsed to its coverage draws no straight lines and keys none', () => {
+    const display = connectorDisplay()
+    display.setShowLegend(true)
+    display.toggleGroupCollapsed('')
+    expect(display.connectorsByGroup.get('')?.lines.size).toBe(0)
+    expect([...display.connectionColorTypes]).toEqual([
+      LINKED_READ_COLOR_PAIR_RL,
+    ])
+  })
+
   test("the key names the straight lines' colour as well as the curves'", () => {
     const display = connectorDisplay()
     display.setShowLegend(true)

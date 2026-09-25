@@ -296,19 +296,6 @@ export function applyChainStrandFrames(
   return out
 }
 
-/**
- * Bake the two per-read color arrays over an already laid-out map.
- *
- * Runs downstream of layout, and spreads each region's laid-out result rather
- * than rebuilding it, so every other array — `readYs` above all — stays
- * reference-identical. That identity is load-bearing twice over: it is what the
- * GPU renderer's upload memo reads to recognize a recolor and rewrite only the
- * read pass, and it is what keeps a color flip off the layout path entirely.
- *
- * Tag colors first: the `noTagValue` category is decided from the baked
- * `readTagColors`, so classifying before that buckets every tag-colored read
- * wrong. One place so the two passes can't be reordered by accident.
- */
 // The straight-line pass's records spread onto the regions holding a line.
 // After the colour bake, so a recolour leaves the line arrays the GPU holds
 // alone and a curved-connector toggle leaves the colours.
@@ -337,6 +324,19 @@ export function attachLinkedReadLinesByGroup(
   return out
 }
 
+/**
+ * Bake the two per-read color arrays over an already laid-out map.
+ *
+ * Runs downstream of layout, and spreads each region's laid-out result rather
+ * than rebuilding it, so every other array — `readYs` above all — stays
+ * reference-identical. That identity is load-bearing twice over: it is what the
+ * GPU renderer's upload memo reads to recognize a recolor and rewrite only the
+ * read pass, and it is what keeps a color flip off the layout path entirely.
+ *
+ * Tag colors first: the `noTagValue` category is decided from the baked
+ * `readTagColors`, so classifying before that buckets every tag-colored read
+ * wrong. One place so the two passes can't be reordered by accident.
+ */
 export function applyReadColorsByGroup(
   byGroup: LaidOutByGroup,
   ctx: ReadColorContext,
@@ -401,6 +401,17 @@ function collapsesRows(
   capOverrides: ReadonlyMap<string, RowCap>,
 ) {
   return ctx.collapseGroupRows && !ctx.isChainMode && !capOverrides.has(key)
+}
+
+// Whether a group's reads are stacked in rows: not drawn as its coverage band
+// alone, and not collapsed onto one row.
+export function stacksRows(
+  ctx: GroupLayoutContext,
+  key: string,
+  capOverrides: ReadonlyMap<string, RowCap>,
+  coverageOnlyKeys: ReadonlySet<string>,
+) {
+  return !coverageOnlyKeys.has(key) && !collapsesRows(ctx, key, capOverrides)
 }
 
 // Per-group row counts (maxY) only — no laid-out clones. The fit-height pass
@@ -553,9 +564,8 @@ export function layoutGroupsToViewport(
   const outcomes: FitGroupOutcome[] = []
   for (const [key, map] of pass) {
     if (
-      collapsedKeys.has(key) ||
       overrideCaps.has(key) ||
-      collapsesRows(ctx, key, overrideCaps)
+      !stacksRows(ctx, key, overrideCaps, collapsedKeys)
     ) {
       continue
     }

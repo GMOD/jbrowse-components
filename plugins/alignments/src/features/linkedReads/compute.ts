@@ -210,9 +210,9 @@ export interface LinkedPair {
 // Enumerate the connections across all displayed regions: group reads by name,
 // then resolve each group into per-mate split junctions + the mate link
 // (readGroupConnections owns filtering, read-order sorting, and paired/split
-// partitioning). Both the straight-line emitter (computeLinkedReadLinesByRegion)
-// and the bezier-curve emitter (computePileupBezierArcs) iterate this, so the
-// rules that define "a linked pair" live in one place.
+// partitioning). `resolveConnectors` walks it once for both the straight-line
+// pass and the bezier overlay, so the rules that define "a linked pair" live in
+// one place.
 //
 // `canonicalRefName` is what lets a junction report the segments it skipped
 // (`hiddenSegmentsBetween`) in the view's own refName spelling. Both emitters
