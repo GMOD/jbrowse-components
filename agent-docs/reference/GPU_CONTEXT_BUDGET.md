@@ -205,6 +205,26 @@ Firefox Nightly 156.0a1 run recorded in
 `agent-docs/measurements/msaa-target-dpr.json`. The line above is the later
 reading, and it is the one the other docs quote.
 
+## What the ceiling costs a zoom, and what WebGPU does instead
+
+**Measured 2026-09-24**, a scroll-zoom over one volvox LGV, production build,
+headed. In Chrome 154 on WebGL2 (this box's Chrome gets no WebGPU adapter),
+going from 8 to 28 tracks took the frames painted in the same gesture from 435 to
+107. The biggest single cost at 28 was context recovery: 18
+`webglcontextlost` events in five seconds, and the rebuilds they schedule
+(`useRenderingBackend`'s recovery timer) took 27% of main-thread time, with the
+longest tasks at 106-188ms.
+
+Firefox Nightly 156 on WebGPU renders the same 28 tracks as 26 WebGPU canvases
+and paces the gesture like 8: median frame 17ms, p90 83ms against 84ms, and
+no frame past 400ms in either. The long tail it does have is the same on WebGL2
+in the same browser, so it is per-frame main-thread work rather than the backend.
+Two things to know before re-running it: Firefox under Wayland stops
+`requestAnimationFrame` for a window the compositor treats as hidden, so launch
+it on X11 (`MOZ_ENABLE_WAYLAND=0 GDK_BACKEND=x11`); and a headed run on a desktop
+in use takes real pointer events, which flip the wheel controller's
+pointer-presence gate.
+
 ## The probe's own context
 
 `getGraphicsCapabilities` is memoized per page and holds its probe context until
