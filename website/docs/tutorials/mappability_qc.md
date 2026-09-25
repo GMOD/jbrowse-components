@@ -147,8 +147,8 @@ The lanes are independent of each other:
   non-uniquely-placed reads before computing it, so wherever the lane above is
   blank this one falls.
 - **Mapping quality on the reads** is the aligner's per-read confidence, in the
-  sample on screen. Red is MAPQ 0, meaning the aligner found another place the
-  read fits equally well; yellow is MAPQ 60 and above.
+  sample on screen. Dark blue is MAPQ 0, meaning the aligner found another place
+  the read fits equally well; yellow is MAPQ 60 and above.
 - The **GIAB low-mappability + segdup lane** in the wide panel is a published
   opinion of the same sequence, drawn by a project that had to decide where its
   benchmark regions stop.

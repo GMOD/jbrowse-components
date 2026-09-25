@@ -129,10 +129,10 @@ reads land in the empty footprint, and the aligner records its uncertainty in
 their mapping quality.
 
 Open HG00113's pileup inside the deleted span and set **Color by... → Mapping
-quality**: the ramp runs red at MAPQ 0 through orange to yellow at MAPQ 60, so
-reads the aligner could not place come out red. Raising the track's mapping
-quality filter empties the span the same way. Residual coverage inside a called
-deletion turns up wherever the deleted sequence has a close paralog.
+quality**: the ramp runs dark blue at MAPQ 0 through grey to yellow at MAPQ 60,
+so reads the aligner could not place come out dark blue. Raising the track's
+mapping quality filter empties the span the same way. Residual coverage inside a
+called deletion turns up wherever the deleted sequence has a close paralog.
 
 ## A complex call read off the pair orientations
 

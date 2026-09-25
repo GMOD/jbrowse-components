@@ -49,19 +49,23 @@ The track menu's **Color by...** offers several schemes.
 
 ### Read quality and bases
 
-- **Mapping quality** shades each read by its MAPQ, so reads in repeats fade
-  out. The [SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf)
-  defines MAPQ as `-10 log10 Pr{mapping position is wrong}`, so a MAPQ 0 read is
-  drawn where it aligned with the aligner putting no better than even odds on it
-  being the right copy, which happens when the best score is tied across
-  positions ([Li, Ruan and Durbin 2008](https://doi.org/10.1101/gr.078212.108)).
-  A **secondary** alignment (FLAG `0x100`) is a competing placement recorded as
+- **Mapping quality** colors each read by its MAPQ on a cividis ramp, dark blue
+  at 0 to yellow at 60 and above, so reads in repeats come out dark. A MAPQ of
+  255, which means the aligner reported none, is grey. The
+  [SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf) defines
+  MAPQ as `-10 log10 Pr{mapping position is wrong}`, so a MAPQ 0 read is drawn
+  where it aligned with the aligner putting no better than even odds on it being
+  the right copy, which happens when the best score is tied across positions
+  ([Li, Ruan and Durbin 2008](https://doi.org/10.1101/gr.078212.108)). A
+  **secondary** alignment (FLAG `0x100`) is a competing placement recorded as
   its own record; the default `flagExclude` of 1540 (duplicate, QC-fail,
   unmapped) does not drop those. The
   [mappability QC tutorial](/docs/tutorials/mappability_qc) works a locus where
   MAPQ 0 covers a whole gene.
-- **Per-base quality** colors every base by Phred score on a red→yellow→green
-  ramp, the quickest way to tell a variant from a run of low-confidence calls.
+- **Per-base quality** colors every base by Phred score on the same cividis
+  ramp, dark blue at 0 to yellow at 40 and above, the quickest way to tell a
+  variant from a run of low-confidence calls. A CRAM read stored without quality
+  scores draws its bases grey.
 - **Per-base lettering** draws every aligned base in its nucleotide color, not
   just the mismatches.
 

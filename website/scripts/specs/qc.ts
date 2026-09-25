@@ -29,7 +29,7 @@ const HG38_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/hg38/co
 //  - STILL TRUE. There is no edge within reach. gnomAD coverage over this block
 //    is under 12x continuously from 69.5 Mb to 71.36 Mb, so the nearest place
 //    the reads recover is 410 kb past SMN1's end -- widening towards it buys a
-//    wider red block and no boundary, and the frame that HOLDS the boundary is
+//    wider dark-blue block and no boundary, and the frame that HOLDS the boundary is
 //    qc/smn_read_placement at 650 kb.
 //  - NO LONGER TRUE, and it is what the refusals rested on: "a read panel
 //    cannot be that wide", because at 200 kb the fetch is 4.61 Mb against the
@@ -201,10 +201,10 @@ const panel = (loc: string) => ({
       // Mapping-quality coloring is the only thing on screen that separates
       // "there are no reads here" from "there are reads and none of them can be
       // placed": both draw a pileup, and the default coloring draws the same
-      // pileup. Red is MAPQ 0 and yellow MAPQ >= 60 (legendUtils.ts).
+      // pileup. Dark blue is MAPQ 0 and yellow MAPQ >= 60 (qualityRamps.ts).
       color: { field: 'mapq' },
       // Opt-in per the display's own default. Without it the reader has to be
-      // told what red means, which is exactly the caption-rescues-the-figure
+      // told what dark blue means, which is exactly the caption-rescues-the-figure
       // failure the house rule names.
       showLegend: true,
       // Compact rows (review: "consider setting compact featureheight"), and it
@@ -271,7 +271,7 @@ export const qcSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'Red is MAPQ 0: mapped here, but they fit elsewhere just as well',
+        text: 'Dark blue is MAPQ 0: mapped here, but they fit elsewhere just as well',
         fontSize: 20,
         maxWidth: 430,
         anchor: {
@@ -298,7 +298,7 @@ export const qcSpecs: ScreenshotSpec[] = [
   // `forceLoad` is the declarative half of the FORCE LOAD button. The rest of
   // that note still holds and is why this window is 650 kb rather than 200: the
   // depression runs continuously to 71.36 Mb, so the nearest sequence where the
-  // reads recover is 410 kb past SMN1's end and anything narrower is a wider red
+  // reads recover is 410 kb past SMN1's end and anything narrower is a wider dark-blue
   // block with no edge in it.
   //
   // Two lanes came out on the way. Umap k100 is per-base and at 464 bp/px the
@@ -308,7 +308,7 @@ export const qcSpecs: ScreenshotSpec[] = [
   // paints the block full height.
   //
   // What is left is the comparison the compose made across a seam, made instead
-  // across the x axis of one picture: a red pileup, the edge, and a
+  // across the x axis of one picture: a dark-blue pileup, the edge, and a
   // multi-coloured one, over a coverage lane that steps up at the same place.
   {
     mode: 'url',
