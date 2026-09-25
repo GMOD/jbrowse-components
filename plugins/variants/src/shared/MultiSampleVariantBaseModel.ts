@@ -1720,7 +1720,7 @@ export default function MultiSampleVariantBaseModelF(
           const { bandingFacet: facet, rowColorField } = self
           return facet?.field === rowColorField
             ? facet.domain
-            : [...self.dealtRowColors.keys()]
+            : [...self.dealtRowColors.keys()].filter(value => value !== '')
         },
 
         /**

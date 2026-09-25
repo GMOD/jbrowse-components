@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "FeatureColor takes `scale: 'identity'`: each feature paints the colour it carries — `value` unset, so its own itemRgb, or a `jexl:` callback — exactly as `none` paints it, and the key names each `domain` colour with its `labels` entry, listed whole once anything is drawn, as a threshold's bins are. It reads no field, since the itemRgb column goes by three names (`itemRgb`, `reserved`, `field8`) and the worker already resolves them. A constant `value` paints no colour of the feature's own, so it keys nothing. The multi-row display's `legend` slot goes, refused with the new spelling, and the basic display gains the key its `legend` slot took with it (ADR-163). Amends ADR-163"
+summary: "FeatureColor takes `scale: 'identity'`: each feature paints the colour it carries — `value` unset, so its own itemRgb, or a `jexl:` callback — exactly as `none` paints it, and the key names each `domain` colour with its `labels` entry, listed whole once anything is drawn, as a threshold's bins are. It reads no field, since the itemRgb column goes by three names (`itemRgb`, `reserved`, `field8`) and the worker already resolves them. A constant `value` paints no colour of the feature's own, so it keys nothing. The multi-row display's `legend` slot goes, refused with the new spelling, and the basic display gains the key its `legend` slot took with it (ADR-167). Amends ADR-167"
 ---
 
 # ADR-166: An identity scale names the colours a file carries

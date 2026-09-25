@@ -124,8 +124,9 @@ export function getGenotypeEntries(
 
 // The sample-grouping scale (the per-row sidebar colouring): one entry per
 // `colorBy` value among the drawn rows, in `order` and then the field's own
-// order with the blank group last, reusing the `labelColor` the palette dealt
-// that group's rows. Empty when colorBy is unset or no row carries it.
+// order, the blank group last unless `order` lists it, reusing the
+// `labelColor` the palette dealt that group's rows. Empty when colorBy is
+// unset or no row carries it.
 export function getSampleGroupEntries(
   colorBy: string,
   sources: Source[] | undefined,
@@ -149,7 +150,7 @@ export function getSampleGroupEntries(
     return []
   }
   return [...colorByValue.keys()]
-    .sort(groupKeyComparator(order.filter(value => value !== '')))
+    .sort(groupKeyComparator(order))
     .map(value => ({
       value,
       label: value || NO_VALUE_LABEL,

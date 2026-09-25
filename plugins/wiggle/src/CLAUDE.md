@@ -98,16 +98,16 @@ and `resolveWiggleColor` turns that into
 of what the layers and both backends read. `pivot` is where the colour parts and
 never where bars grow from: the render state carries both, bars read `origin`,
 and the lines, band and density fade read `pivot`. A gradient (`rampLut`, from
-`linear` or `log`) colours each bar, point and density cell by its score's
-position, `rampMid`, the config's `domainMid`, on its middle stop, and never
-reads `origin`; the white fade, a threshold's density, measures distance from
-`pivot`. The lines alone still part under a gradient, at `domainMid ?? origin`
-in its two end colours, with a corner notice saying so. The gradient follows the
-y domain and y scale; the colour's own `domainMin`/`domainMax` and
-`linear`-vs-`log` go unread. `score` paints through `threshold`, `linear` and
-`log`, `source` through `categorical`, and the other pairings paint the
-misconfiguration grey, because a two-sided plot has nothing to paint a colour
-per score or a cut over subtrack names with. ADR-144, ADR-153.
+`linear`, through the y scale's type) colours each bar, point and density cell
+by its score's position, `rampMid`, the config's `domainMid`, on its middle
+stop, and never reads `origin`; the white fade, a threshold's density, measures
+distance from `pivot`. The lines alone still part under a gradient, at
+`domainMid ?? origin` in its two end colours, with a corner notice saying so.
+The gradient follows the y domain and y scale; the colour's own
+`domainMin`/`domainMax` and `linear`-vs-`log` go unread. `score` paints through
+`threshold`, `linear` and `log`, `source` through `categorical`, and the other
+pairings paint the misconfiguration grey, because a two-sided plot has nothing
+to paint a colour per score or a cut over subtrack names with. ADR-144, ADR-153.
 
 **Everything shared over the geometry is `wiggleDisplayViews`**: `ticks`,
 `scoreColorScale`, `renderState` and the shared halves of the two props methods,

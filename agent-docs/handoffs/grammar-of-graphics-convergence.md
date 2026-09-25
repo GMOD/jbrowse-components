@@ -138,8 +138,8 @@ eigenvector (2026-09-23): `magma`, `inferno` and `cividis` beside viridis,
 the diverging `redblue` and `purpleorange` (ColorBrewer's RdBu and PuOr), and
 ColorBrewer's own stops under `reds` and `blues`. Plasma read as magma's
 sibling and turbo is not perceptually uniform, so neither is in. A ramp dark
-at its low end paints every sparse Hi-C bin a dark speck on the page, so the
-Hi-C menu writes `reverse` for one (`darkAtLowEnd`).
+at its low end paints every sparse Hi-C bin a dark speck on the page, so
+HicColor's `reverse`, left unset, turns one round (`darkAtLowEnd`).
 
 ### 2. y scales shared across tracks
 

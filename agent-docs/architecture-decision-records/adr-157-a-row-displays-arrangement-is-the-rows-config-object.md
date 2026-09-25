@@ -243,8 +243,9 @@ included, onto the quantitative display's entry alone, as it does
 Over a multi-BigWig the mark display therefore draws every source overlaid in
 one band until Plot field's default writes `rows: 'source'` where nothing
 already splits the features, and a `displayDefaults.rows` on another field
-fails the load with the quantitative display's reason. Amended 2026-09-25: that
-default had been `facet: 'source'`, a chip section per source. Bars over a
+fails the load with the quantitative display's reason. Amended 2026-09-25 on
+Colin's answer to call 10 of the row-model handoff: that default had been
+`facet: 'source'`, a chip section per source. Bars over a
 multi-BigWig pack nothing, so each such section held exactly one row, which is
 the row axis; a facet is for bands holding more than one row.
 

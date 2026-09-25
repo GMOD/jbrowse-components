@@ -19,8 +19,8 @@ landed, and the design-pass plans for steps 4–6 are appended to that doc.
   bugs, and ADR-160's Consequences lists them under call 5.
 - **Rows on the mark display:** `a1f54d5ea2`…`e689ad5517`, the fifth display in
   ADR-157. The review's seven findings are fixed. The `MultiQuantitativeTrack`
-  seed stays on the wiggle entry, so a mark display draws main's picture
-  (call 10).
+  seed stays on the wiggle entry; Plot field writes `rows: 'source'` (call 10,
+  answered 2026-09-25).
 - **Rebase damage, repaired 2026-09-24:** the colour branch's last rebase had
   - emptied `packages/tree-sidebar/CLAUDE.md`,
   - numbered its ADR 159 beside the mark/shape ADR,
@@ -80,7 +80,9 @@ parity everywhere except the deviations ADR-160 already lists.
 8. Each band's dendrogram at full gutter width, or one shared depth scale.
 9. `pile` or `stack` for the pileup channel replacing `encoding.row`; and
    whether hiding a band is config or stays volatile.
-10. One row per source as the mark display's default over a multi-BigWig.
+10. ~~One row per source as the mark display's default over a multi-BigWig.~~
+    Answered 2026-09-25: yes, Plot field writes `rows: 'source'` where nothing
+    splits the features yet (ADR-157, amended).
 
 **Answered 2026-09-24.** Call 5 (a recolour under a Color by) became a redesign
 of the arrangement dialog around the `rowColor` object, ADR-164. Call 11 (rows

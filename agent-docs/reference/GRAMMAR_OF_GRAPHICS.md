@@ -438,9 +438,9 @@ synteny display's `domain` slot, every row display's `rows.domain`, every
 display's `facet.domain`
 and the colour and shape channels' legend order are that one word and rule
 (`groupKeyComparator`); a key over the facet's own field lists its rows in the
-sections' order. The four tree-sidebar displays take their row order off
-`rows.domain`, read as `rowDomain`, the object that also holds their labels,
-tree and focus (ADR-157). Their unlisted
+sections' order. Every row display takes its row order off `rows.domain`,
+read as `rowDomain`, the object that also holds its labels, tree and focus
+(ADR-157). Their unlisted
 rows keep the order they arrived in (`orderRowsByDomain`), since a phylogeny's
 leaf order and a file's sample order mean something, and where a tree describes
 the rows the domain rotates it as far as the topology allows
