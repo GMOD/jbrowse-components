@@ -1,0 +1,27 @@
+{
+  "id": "gbz-distinct-walk-collapse",
+  "measured": "2026-09-25",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "The cut of gbz-cohort-subgraph-cut with one flag changed, `--haplotypes distinct` in place of `--haplotypes all`: `node ~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer/node_modules/@gmod/gbz-base/bin/query.js <hprc-v2.1-mc-grch38.gbz.db> --haplotype-index <anchored.db> --sample GRCh38 --contig <C> --interval <A..B> --context 1000 --snarls --haplotypes distinct --limit 50000 --resolve`, JSON output so each path's `weight` is readable. 'forms' is `paths.length`; 'haplotypes' is the sum of the weights; 'top weight' is the largest; 'top form nodes' and 'median nodes' are path-step counts, which is how the top form is shown to be a fragment rather than a walk.",
+    "notes": "DOES THE GRAPH COLLAPSE A COHORT INTO STRUCTURAL FORMS BY ITSELF. `haplotypes: 'distinct'` merges walks that traverse identical nodes and weights each by how many haplotypes it stands for, which looks like a population readout the graph states for free: a dozen alleles with carrier counts instead of 464 bars.\n\nIt is not one. Two walks merge only when every node matches, and at base-level resolution any SNP in the window separates them, so the collapse is weak everywhere and vanishes as the window grows: 464 haplotypes give 395 forms at C4 and the 260 kb CFH window gives 466 forms from 466 walks, every weight 1.\n\nThe collapse that does happen is on FRAGMENTS, not on haplotypes, and the table shows it as an inverse relation between weight and walk completeness. At CFHR one form carries 97 haplotypes, which looks like the CFHR3/CFHR1 deletion allele at about its known population frequency — and is not: that form's walk is 345 nodes against a median of 3,976, a short piece crossing one end of the window that 97 haplotypes share trivially. Amylase repeats the shape at 203 against 1,217. Where the top form IS a full-length walk, ABCA7 at 3,974 against 3,164 and the CFH window at 10,764 against 10,717, its weight falls to 2 and 1. So a weight is worth nothing without its walk length beside it, and reading one alone invents an allele frequency.\n\nIt also costs more than it saves: `distinct` is slower than `all` at every locus and larger in JSON, ABCA7 worst at 126 s.\n\nSo a structural-form readout does not come from node identity. Grouping has to happen on a structural tier — the callset's own per-window forms, or the bubble tier — and the graph's role is to give a chosen form its true length."
+  },
+  "columns": [
+    { "key": "locus", "label": "locus", "format": "text", "align": "left" },
+    { "key": "spanBp", "label": "span bp", "format": "int", "align": "right" },
+    { "key": "wallS", "label": "wall s", "format": "float", "align": "right" },
+    { "key": "forms", "label": "distinct forms", "format": "int", "align": "right" },
+    { "key": "haplotypes", "label": "haplotypes", "format": "int", "align": "right" },
+    { "key": "topWeight", "label": "top weight", "format": "int", "align": "right" },
+    { "key": "topFormNodes", "label": "top form nodes", "format": "int", "align": "right" },
+    { "key": "medianNodes", "label": "median nodes", "format": "int", "align": "right" }
+  ],
+  "rows": [
+    { "values": { "locus": "ABCA7 VNTR chr19", "spanBp": 689, "wallS": 126.0, "forms": 465, "haplotypes": 474, "topWeight": 2, "topFormNodes": 3974, "medianNodes": 3164 } },
+    { "values": { "locus": "C4 chr6", "spanBp": 83361, "wallS": 16.6, "forms": 395, "haplotypes": 464, "topWeight": 9, "topFormNodes": 1574, "medianNodes": 2331 } },
+    { "values": { "locus": "CFHR3/CFHR1 chr1", "spanBp": 84683, "wallS": 18.4, "forms": 342, "haplotypes": 464, "topWeight": 97, "topFormNodes": 345, "medianNodes": 3976 } },
+    { "values": { "locus": "amylase chr1", "spanBp": 121556, "wallS": 21.2, "forms": 725, "haplotypes": 934, "topWeight": 20, "topFormNodes": 203, "medianNodes": 1217 } },
+    { "values": { "locus": "CFH demo window chr1", "spanBp": 260000, "wallS": 45.0, "forms": 466, "haplotypes": 466, "topWeight": 1, "topFormNodes": 10764, "medianNodes": 10717 } }
+  ]
+}
