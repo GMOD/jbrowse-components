@@ -372,12 +372,7 @@ export async function executeRenderAlignmentData({
   // the adapter here rather than inside `fetchFeaturesFromAdapter` below costs
   // nothing — `getAdapter` is cached, so the second resolution is a map hit.
   const { bytes, tooLarge } = await measureRegionBytes({
-    dataAdapter: await getFeatureAdapterOrThrow({
-      pluginManager,
-      sessionId,
-      adapterConfig,
-      sequenceAdapter,
-    }),
+    dataAdapter: await getFeatureAdapterOrThrow({ ...args, pluginManager }),
     regions: [region],
     byteLimit,
     signal,

@@ -26,9 +26,6 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
 
   async execute(args: RpcExecuteArgs<'CoreEncodeFeatures'>) {
     const {
-      sessionId,
-      adapterConfig,
-      sequenceAdapter,
       region,
       layers: requested,
       byteLimit,
@@ -37,10 +34,8 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
     } = args
     const { pluginManager } = this
     const dataAdapter = await getFeatureAdapterOrThrow({
+      ...args,
       pluginManager,
-      sessionId,
-      adapterConfig,
-      sequenceAdapter,
     })
 
     const { bytes, tooLarge } = await measureRegionBytes({

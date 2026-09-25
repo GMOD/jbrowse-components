@@ -45,20 +45,9 @@ export async function executeMafAnnotationData({
   // `statusCallback` is this branch's own slot in the fetch's status fan-out —
   // `fetchMafData` hands the annotation branch one — so the frames read reports
   // progress alongside the alignment's instead of leaving the slot empty.
-  const {
-    regions,
-    adapterConfig,
-    byteLimit,
-    sessionId,
-    signal,
-    statusCallback,
-  } = args
+  const { regions, byteLimit, signal, statusCallback } = args
   const region = regions[0]!
-  const adapter = await getFeatureAdapterOrThrow({
-    pluginManager,
-    sessionId,
-    adapterConfig,
-  })
+  const adapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
 
   const { tooLarge } = await measureRegionBytes({
     dataAdapter: adapter,

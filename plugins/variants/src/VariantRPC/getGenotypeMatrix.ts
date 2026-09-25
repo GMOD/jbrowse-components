@@ -39,16 +39,10 @@ export async function getGenotypeMatrix({
     maxMissingnessFilter,
     filters,
     regions,
-    adapterConfig,
-    sessionId,
     signal,
     statusCallback,
   } = args
-  const dataAdapter = await getFeatureAdapterOrThrow({
-    pluginManager,
-    sessionId,
-    adapterConfig,
-  })
+  const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
 
   // Hoist sample-key resolution out of the per-feature loop. Per (source ×
   // feature) the previous code recomputed `sampleName ?? name`, constant per

@@ -7,20 +7,11 @@ export default class CoreGetExportData extends RpcMethodTypeWithRenameRegions<'C
   name = 'CoreGetExportData' as const
 
   async execute(args: RpcExecuteArgs<'CoreGetExportData'>) {
-    const {
-      sessionId,
-      adapterConfig,
-      regions,
-      formatType,
-      opts,
-      signal,
-      statusCallback,
-    } = args
+    const { regions, formatType, opts, signal, statusCallback } = args
 
     const dataAdapter = await getFeatureAdapterOrThrow({
+      ...args,
       pluginManager: this.pluginManager,
-      sessionId,
-      adapterConfig,
     })
 
     // The handles go down to the adapter, which is the whole point of the

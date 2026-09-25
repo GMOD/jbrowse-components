@@ -41,8 +41,6 @@ export default class MafGetSequences extends RpcMethodTypeWithFiltersAndRenameRe
     const {
       samples,
       regions,
-      adapterConfig,
-      sessionId,
       showAllLetters,
       includeInsertions,
       byteLimit,
@@ -50,9 +48,8 @@ export default class MafGetSequences extends RpcMethodTypeWithFiltersAndRenameRe
       statusCallback,
     } = args
     const dataAdapter = await getFeatureAdapterOrThrow({
+      ...args,
       pluginManager: this.pluginManager,
-      sessionId,
-      adapterConfig,
     })
 
     const { tooLarge } = await measureRegionBytes({

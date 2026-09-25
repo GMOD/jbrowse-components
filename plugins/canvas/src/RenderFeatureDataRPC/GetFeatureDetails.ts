@@ -10,9 +10,8 @@ export default class GetFeatureDetails extends RpcMethodTypeWithRenameRegion<'Ge
     const { sessionId, adapterConfig, featureId, region, ...opts } = args
 
     const dataAdapter = await getFeatureAdapterOrThrow({
+      ...args,
       pluginManager: this.pluginManager,
-      sessionId,
-      adapterConfig,
     })
 
     const featuresArray = await dataAdapter.getFeaturesArray(region, opts)

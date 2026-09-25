@@ -8,18 +8,16 @@ export interface GetFeatureAdapterArgs {
   pluginManager: PluginManager
   sessionId: string
   adapterConfig: Record<string, unknown>
-  // Reference-sequence adapter config for adapters that decode against the
-  // reference (BAM/CRAM). Every execute reads it straight off its RPC args and
-  // forwards it; renameRegionsIfNeeded is what put it there. Optional because
-  // the RPCs that rename no regions have no assembly to derive it from.
   sequenceAdapter?: Record<string, unknown>
 }
 
 /**
  * Resolve a feature data adapter and prime its reference-sequence adapter
  * config in one step — the single resolution path for every RPC that reads
- * features. Returns undefined when the config resolves to a non-feature
- * adapter, so callers that can degrade (e.g. getRefNames → []) decide how; use
+ * features. An RPC passes its whole args (`{ ...args, pluginManager }`) so the
+ * `sequenceAdapter` renaming added reaches the adapter without being named.
+ * Returns undefined when the config resolves to a non-feature adapter, so
+ * callers that can degrade (e.g. getRefNames → []) decide how; use
  * {@link getFeatureAdapterOrThrow} when a feature adapter is required.
  */
 export async function getFeatureAdapter({

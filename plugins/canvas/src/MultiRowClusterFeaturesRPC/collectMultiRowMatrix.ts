@@ -19,8 +19,6 @@ export async function collectMultiRowMatrix({
   args: MultiRowClusterFeaturesArgs & RpcCallContext
 }) {
   const {
-    sessionId,
-    adapterConfig,
     regions,
     sources,
     partitionField,
@@ -28,11 +26,7 @@ export async function collectMultiRowMatrix({
     signal,
     statusCallback,
   } = args
-  const dataAdapter = await getFeatureAdapterOrThrow({
-    pluginManager,
-    sessionId,
-    adapterConfig,
-  })
+  const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
 
   const featurePartition = makeFeatureValueResolver(
     partitionField,

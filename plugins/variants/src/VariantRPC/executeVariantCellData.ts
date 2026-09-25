@@ -129,19 +129,13 @@ export async function executeVariantCellData({
     maxMissingnessFilter,
     filters,
     regions,
-    adapterConfig,
-    sessionId,
     statusCallback,
     signal,
     displayedRegionIndices,
     byteLimit,
   } = args
 
-  const adapter = await getFeatureAdapterOrThrow({
-    pluginManager,
-    sessionId,
-    adapterConfig,
-  })
+  const adapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
 
   // The gate, and the first thing this fetch awaits on the adapter: the index
   // estimate for the largest region, so an over-budget viewport is refused

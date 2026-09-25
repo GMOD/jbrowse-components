@@ -40,8 +40,6 @@ export interface RenderFeatureDataArgs extends GatedFetchArgs {
   // Translation-table fallback for transcripts whose features lack a
   // transl_table attribute.
   geneticCodeId?: number
-  // renameRegionsIfNeeded supplies this during serialization, never a caller.
-  sequenceAdapter?: Record<string, unknown>
   showOnlyGenes?: boolean
   // Matched against feature.id() (the uniqueId) rather than run as a jexl
   // filter, since jexlFeatureProxy cannot reach the uniqueId.

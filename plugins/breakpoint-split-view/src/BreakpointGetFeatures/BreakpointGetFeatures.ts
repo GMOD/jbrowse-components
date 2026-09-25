@@ -24,8 +24,6 @@ export interface BreakpointGetFeaturesArgs {
   adapterConfig: Record<string, unknown>
   /** the display's active filters, `jexl:`-prefixed */
   jexlFilters?: string[]
-  // renameRegionsIfNeeded adds it, so no caller writes it
-  sequenceAdapter?: Record<string, unknown>
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
@@ -136,25 +134,15 @@ export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegion
   }
 
   async execute(args: RpcExecuteArgs<'BreakpointGetFeatures'>) {
-    const {
-      signal,
-      statusCallback,
-      sessionId,
-      adapterConfig,
-      sequenceAdapter,
-      regions,
-      jexlFilters = [],
-    } = args
+    const { signal, statusCallback, regions, jexlFilters = [] } = args
     const filterChain = new SerializableFilterChain({
       filters: jexlFilters,
       jexl: this.pluginManager.jexl,
     })
 
     const dataAdapter = await getFeatureAdapterOrThrow({
+      ...args,
       pluginManager: this.pluginManager,
-      sessionId,
-      adapterConfig,
-      sequenceAdapter,
     })
 
     const features = await dataAdapter.getFeaturesInMultipleRegionsArray(

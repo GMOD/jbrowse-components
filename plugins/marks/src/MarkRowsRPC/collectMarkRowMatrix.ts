@@ -48,8 +48,6 @@ export async function collectMarkRowMatrix({
   args: MarkRowMatrixArgs & RpcCallContext
 }) {
   const {
-    sessionId,
-    adapterConfig,
     regions,
     rows,
     transform,
@@ -60,11 +58,7 @@ export async function collectMarkRowMatrix({
     statusCallback,
   } = args
   const { jexl } = pluginManager
-  const dataAdapter = await getFeatureAdapterOrThrow({
-    pluginManager,
-    sessionId,
-    adapterConfig,
-  })
+  const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
   const slot = createStatusFanOut(statusCallback)
   const fetched = await updateStatus(
     'Downloading features',

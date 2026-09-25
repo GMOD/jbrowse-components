@@ -1,6 +1,7 @@
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from '../configuration/configurationSchema.ts'
 import AdapterType from '../pluggableElementTypes/AdapterType.ts'
+import CoreGetExportData from '../rpc/methods/CoreGetExportData.ts'
 import CoreGetRefNames from '../rpc/methods/CoreGetRefNames.ts'
 import { ObservableCreate } from '../util/rxjs.ts'
 import SimpleFeature from '../util/simpleFeature.ts'
@@ -25,6 +26,10 @@ class ReferenceReadingAdapter extends BaseFeatureDataAdapter {
     }
     const result = await this.getSubAdapter?.(config)
     return result?.dataAdapter as BaseSequenceAdapter | undefined
+  }
+
+  async getExportData(regions: Region[]) {
+    return (await this.getSequenceAdapter())?.getSequence(regions[0]!)
   }
 
   getFeatures(region: Region) {
@@ -97,8 +102,8 @@ const adapterConfig = { type: 'ReferenceReadingAdapter' }
 const sequenceAdapter = { type: 'TestSequenceAdapter' }
 const region = { refName: 'ctgA', start: 0, end: 4, assemblyName: 'volvox' }
 
-// A fetch that passes no sequenceAdapter of its own — CoreGetFeatures as
-// `fetchTrackData` calls it, and CoreGetExportData, which forwards none.
+// A fetch that passes no sequenceAdapter of its own, as a method that renames
+// no regions does.
 async function fetchWithoutPriming() {
   const dataAdapter = await getFeatureAdapterOrThrow({
     pluginManager,
@@ -121,7 +126,7 @@ beforeEach(() => {
   clearAdapterCache()
 })
 
-// The contract the RPCs that forward no config depend on. `dataAdapterCache`
+// The contract the methods that rename no regions depend on. `dataAdapterCache`
 // keys on adapterConfig alone, so the sequence config CoreGetRefNames leaves on
 // the instance is what every later fetch reads — including the ones that pass
 // nothing. Sabotaging the priming reds this; sabotaging any single caller does
@@ -175,4 +180,19 @@ test('CoreGetRefNames primes before it asks, so a scan adapter can answer', asyn
       sequenceAdapter,
     }),
   ).resolves.toEqual(['ctgA'])
+})
+
+// A renaming method hands the adapter its whole args, so the reference arrives
+// on a cold cache. CoreGetExportData named the fields it forwarded and left this
+// one out.
+test('CoreGetExportData reads the reference renaming added, unprimed', async () => {
+  await expect(
+    new CoreGetExportData(pluginManager).execute({
+      sessionId: 'test',
+      adapterConfig,
+      sequenceAdapter,
+      regions: [region],
+      formatType: 'fasta',
+    }),
+  ).resolves.toBe('ACGT')
 })

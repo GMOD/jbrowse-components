@@ -24,8 +24,6 @@ export async function executeGetGroupByCandidates({
   args: RpcExecuteArgs<'GetCanvasGroupByCandidates'>
 }) {
   const {
-    sessionId,
-    adapterConfig,
     regions,
     displayConfig,
     showOnlyGenes,
@@ -36,11 +34,7 @@ export async function executeGetGroupByCandidates({
     statusCallback,
   } = args
 
-  const dataAdapter = await getFeatureAdapterOrThrow({
-    pluginManager,
-    sessionId,
-    adapterConfig,
-  })
+  const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
 
   const { tooLarge } = await measureRegionBytes({
     dataAdapter,

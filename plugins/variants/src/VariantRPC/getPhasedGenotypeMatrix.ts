@@ -43,17 +43,11 @@ export async function getPhasedGenotypeMatrix({
     maxMissingnessFilter,
     filters,
     regions,
-    adapterConfig,
-    sessionId,
     signal,
     sampleInfo,
     statusCallback,
   } = args
-  const dataAdapter = await getFeatureAdapterOrThrow({
-    pluginManager,
-    sessionId,
-    adapterConfig,
-  })
+  const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
 
   // Flatten sources to one entry per output row, up front, through the same
   // `expandSourcesToHaplotypes` the worker's cell computation and the model's

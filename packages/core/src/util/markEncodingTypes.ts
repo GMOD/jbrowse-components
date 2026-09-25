@@ -549,7 +549,6 @@ export type CoreEncodeFeaturesArgs = {
    */
   opts?: object
   byteLimit?: number
-  sequenceAdapter?: Record<string, unknown>
 }
 
 /**

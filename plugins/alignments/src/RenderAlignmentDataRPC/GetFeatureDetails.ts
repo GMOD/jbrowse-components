@@ -8,8 +8,6 @@ import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 interface GetFeatureDetailsArgs {
   adapterConfig: Record<string, unknown>
-  // supplied by renameRegionsIfNeeded during serialization, never by a caller
-  sequenceAdapter?: Record<string, unknown>
   regions: Region[]
   featureId: string
   // The detail tier the pileup was fetched at. Feature ids are only comparable
@@ -31,24 +29,13 @@ export default class GetFeatureDetails extends RpcMethodTypeWithFiltersAndRename
   name = 'GetPileupFeatureDetails' as const
 
   async execute(args: RpcExecuteArgs<'GetPileupFeatureDetails'>) {
-    const {
-      sessionId,
-      adapterConfig,
-      sequenceAdapter,
-      regions,
-      featureId,
-      lodMode,
-      signal,
-      statusCallback,
-    } = args
+    const { regions, featureId, lodMode, signal, statusCallback } = args
 
     const region = regions[0]!
 
     const dataAdapter = await getFeatureAdapter({
+      ...args,
       pluginManager: this.pluginManager,
-      sessionId,
-      adapterConfig,
-      sequenceAdapter,
     })
 
     // The handles go to the adapter, not just into the signature: finding one

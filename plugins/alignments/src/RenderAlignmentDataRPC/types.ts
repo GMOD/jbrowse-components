@@ -25,8 +25,6 @@ import type Flatbush from '@jbrowse/core/util/flatbush'
 // modes.
 export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   adapterConfig: Record<string, unknown>
-  // supplied by renameRegionsIfNeeded during serialization, never by a caller
-  sequenceAdapter?: Record<string, unknown>
   regions: Region[]
   filterBy?: FilterBy
   colorBy?: ReadColorBy

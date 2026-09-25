@@ -28,7 +28,6 @@ export async function executeRenderFeatureData({
 }) {
   const {
     sessionId,
-    adapterConfig,
     displayConfig,
     geneGlyphMode,
     region,
@@ -48,12 +47,7 @@ export async function executeRenderFeatureData({
   } = args
   const config: DisplayConfig = { ...displayConfig, geneGlyphMode }
 
-  const dataAdapter = await getFeatureAdapterOrThrow({
-    pluginManager,
-    sessionId,
-    adapterConfig,
-    sequenceAdapter,
-  })
+  const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
 
   // Stage 1: index-only byte estimate. An adapter with no index estimate
   // reports none and falls through to the density gate.

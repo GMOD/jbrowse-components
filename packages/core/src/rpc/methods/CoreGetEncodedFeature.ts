@@ -15,18 +15,15 @@ export default class CoreGetEncodedFeature extends RpcMethodTypeWithRenameRegion
   name = 'CoreGetEncodedFeature' as const
 
   async execute(args: RpcExecuteArgs<'CoreGetEncodedFeature'>) {
-    const { sessionId, adapterConfig, sequenceAdapter, layer, featureIndex } =
-      args
+    const { layer, featureIndex } = args
     const asked = args.layers[layer]
     if (!asked) {
       return undefined
     }
     const { pluginManager } = this
     const dataAdapter = await getFeatureAdapterOrThrow({
+      ...args,
       pluginManager,
-      sessionId,
-      adapterConfig,
-      sequenceAdapter,
     })
     // A layer's list does not depend on its neighbours, so only the one asked
     // about runs its steps.

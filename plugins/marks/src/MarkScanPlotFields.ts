@@ -26,11 +26,10 @@ export default class MarkScanPlotFields extends RpcMethodTypeWithRenameRegions<'
   name = 'MarkScanPlotFields' as const
 
   async execute(args: RpcExecuteArgs<'MarkScanPlotFields'>) {
-    const { sessionId, adapterConfig, regions, signal, statusCallback } = args
+    const { regions, signal, statusCallback } = args
     const adapter = await getFeatureAdapterOrThrow({
+      ...args,
       pluginManager: this.pluginManager,
-      sessionId,
-      adapterConfig,
     })
     const features = await adapter.getFeaturesInMultipleRegionsArray(regions, {
       signal,

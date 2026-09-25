@@ -48,10 +48,6 @@ export interface RpcRegistry {
     args: {
       regions: RegionLike[]
       adapterConfig: Record<string, unknown>
-      // Not dead, though grepping for a caller says it is: renameRegionsIfNeeded
-      // adds it during serialization. Deleting it costs every CRAM fetch its
-      // reference, silently, with the args still type-checking.
-      sequenceAdapter?: Record<string, unknown>
       opts?: Record<string, unknown>
     }
     return: Feature[]
@@ -171,6 +167,14 @@ export type RpcSession = {
   sessionId: string
 }
 
+// The reference the regions were renamed against, which BAM/CRAM and the
+// reference-scan adapters decode with. renameRegionsIfNeeded adds it, so no
+// caller writes one. An execute passes its whole args to getFeatureAdapter
+// rather than naming it.
+export type RpcReference = {
+  sequenceAdapter?: Record<string, unknown>
+}
+
 // What the call layer adds to every payload the worker sees. A helper factored
 // out of one method's `execute` takes that method's `RpcExecuteArgs<'Key'>`
 // instead; this is for the ones with no single key — a body registered under
@@ -203,7 +207,8 @@ export interface NotInRpcRegistry<M extends string> {
 
 /**
  * What a registered method's `execute` actually receives: its declared args,
- * plus the session it is pinned to, plus the handles the driver merged in.
+ * plus the session it is pinned to, the handles the driver merged in and the
+ * reference renaming added.
  *
  * Derived rather than hand-written, for the reason {@link RpcWireReturn} is:
  * the return type has been checked against the registry for a while and the
@@ -212,7 +217,7 @@ export interface NotInRpcRegistry<M extends string> {
  * both ends checked.
  */
 export type RpcExecuteArgs<M extends string> = M extends RpcMethodName
-  ? RpcArgs<M & RpcMethodName> & RpcCallContext
+  ? RpcArgs<M & RpcMethodName> & RpcCallContext & RpcReference
   : string extends M
     ? unknown
     : NotInRpcRegistry<M>

@@ -126,12 +126,8 @@ export async function getScoreMatrix({
   args: GetScoreMatrixArgs & RpcCallContext
   pluginManager: PluginManager
 }) {
-  const { sources, regions, adapterConfig, sessionId, bpPerPx, signal } = args
-  const dataAdapter = await getFeatureAdapterOrThrow({
-    pluginManager,
-    sessionId,
-    adapterConfig,
-  })
+  const { sources, regions, bpPerPx, signal } = args
+  const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
 
   const { segments, width, invBpPerPx } = columnSegments(regions, bpPerPx)
 

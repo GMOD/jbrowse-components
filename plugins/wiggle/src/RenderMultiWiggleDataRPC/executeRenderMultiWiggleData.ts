@@ -136,8 +136,6 @@ export async function executeRenderMultiWiggleData({
   args,
 }: ExecuteParams) {
   const {
-    sessionId,
-    adapterConfig,
     regions,
     sources: sourcesArg,
     signal,
@@ -148,11 +146,7 @@ export async function executeRenderMultiWiggleData({
     statusCallback,
   } = args
 
-  const dataAdapter = await getFeatureAdapterOrThrow({
-    pluginManager,
-    sessionId,
-    adapterConfig,
-  })
+  const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
 
   const isMulti = isMultiSource(dataAdapter)
   // summaryScoreMode is passed through, not acted on here: an adapter that

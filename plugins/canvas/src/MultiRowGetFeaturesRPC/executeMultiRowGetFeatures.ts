@@ -18,8 +18,6 @@ export async function executeMultiRowGetFeatures({
   args: RpcExecuteArgs<'MultiRowGetFeatures'>
 }) {
   const {
-    sessionId,
-    adapterConfig,
     region,
     byteLimit,
     partitionField,
@@ -29,11 +27,7 @@ export async function executeMultiRowGetFeatures({
     statusCallback,
   } = args
 
-  const dataAdapter = await getFeatureAdapterOrThrow({
-    pluginManager,
-    sessionId,
-    adapterConfig,
-  })
+  const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
 
   const { bytes, tooLarge: tooManyBytes } = await measureRegionBytes({
     dataAdapter,

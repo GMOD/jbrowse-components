@@ -27,8 +27,6 @@ interface GetGlobalValueForTagArgs {
   // was the one path that issued, over a wide view, exactly the fetch the track
   // beside it was already showing a "region too large" banner over.
   byteLimit?: number
-  // renameRegionsIfNeeded adds it, so no caller writes it
-  sequenceAdapter?: Record<string, unknown>
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
@@ -44,23 +42,11 @@ export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFilters
   name = 'PileupGetGlobalValueForTag' as const
 
   async execute(args: RpcExecuteArgs<'PileupGetGlobalValueForTag'>) {
-    const {
-      sessionId,
-      adapterConfig,
-      sequenceAdapter,
-      regions,
-      tag,
-      filterBy,
-      byteLimit,
-      signal,
-      statusCallback,
-    } = args
+    const { regions, tag, filterBy, byteLimit, signal, statusCallback } = args
 
     const dataAdapter = await getFeatureAdapterOrThrow({
+      ...args,
       pluginManager: this.pluginManager,
-      sessionId,
-      adapterConfig,
-      sequenceAdapter,
     })
 
     // The same first await the render fetch takes, judged by the largest region

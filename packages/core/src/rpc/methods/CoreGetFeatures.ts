@@ -17,21 +17,11 @@ export default class CoreGetFeatures extends RpcMethodTypeWithRenameRegions<'Cor
   }
 
   async execute(args: RpcExecuteArgs<'CoreGetFeatures'>) {
-    const {
-      signal,
-      statusCallback,
-      sessionId,
-      adapterConfig,
-      sequenceAdapter,
-      regions,
-      opts,
-    } = args
+    const { signal, statusCallback, regions, opts } = args
 
     const dataAdapter = await getFeatureAdapterOrThrow({
+      ...args,
       pluginManager: this.pluginManager,
-      sessionId,
-      adapterConfig,
-      sequenceAdapter,
     })
 
     const r = await firstValueFrom(

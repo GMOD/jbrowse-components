@@ -33,11 +33,9 @@ export default class MarkGetRowSources extends RpcMethodType<'MarkGetRowSources'
   name = 'MarkGetRowSources' as const
 
   async execute(args: RpcExecuteArgs<'MarkGetRowSources'>) {
-    const { sessionId, adapterConfig } = args
     const dataAdapter = await getFeatureAdapterOrThrow({
+      ...args,
       pluginManager: this.pluginManager,
-      sessionId,
-      adapterConfig,
     })
     if (!listsSources(dataAdapter)) {
       return []
