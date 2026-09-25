@@ -342,11 +342,12 @@ the note in `binning.ts`.
 ### The identity plot: measured, and where its limit really is
 
 Measured 2026-08-05, headless, synthetic 100bp-block shape, 1500px wide, rows
-fit to the 600px `maxAutoFitHeight` so the whole row set is on screen. One
-`drawRowIdentity` call = one pan frame: `renderBlocks` is built from
-`visibleRegions`, whose `screenStartPx` is `block.offsetPx - self.offsetPx`,
-so it changes identity on every pan tick and the `TrackBandCanvas` autorun
-refires.
+fit to the 600px `maxAutoFitHeight` so the whole row set is on screen. The
+identity plot was then a Canvas2D layer that re-walked every visible block and
+row on each pan frame, so one walk was one frame. The rows encode now builds
+each region's identity once (`buildIdentityRuns`) and the heatmap and X-Y plot
+draw it as GPU marks, so a pan moves uniforms; the walk below costs once per
+loaded region rather than per frame.
 
 Short version: the fill loop was doing real redundant work and is fixed; the
 walk underneath it is **not** where a 470-way's problem lives, and the two
