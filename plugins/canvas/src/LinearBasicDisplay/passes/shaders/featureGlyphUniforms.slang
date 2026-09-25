@@ -45,6 +45,11 @@ public float bpToClipX(uint bp, FeatureGlyphUniforms u) {
 public float hpClipX(float2 splitPos, FeatureGlyphUniforms u) {
   return hpToClipX(splitPos, u.bpRangeX, u.zero);
 }
+// bp from a split position to this block's viewport start, for a pass that
+// measures in bp rather than clip space.
+public float hpOffsetBp(float2 splitPos, FeatureGlyphUniforms u) {
+  return hpViewportOffsetBp(splitPos, u.bpRangeX, u.zero);
+}
 // CSS px → clip-space *length*, against this block's visible width (see
 // `canvasWidth` above) and the canvas height. `pxToClipLen` in hpmath owns the
 // conversion and the reason to spell px dimensions through one; these two bind

@@ -65,12 +65,16 @@ public float hpScaleLinear(float2 splitPos, float3 bpRange, float hpZero) {
 }
 
 // Exact-as-possible bp offset from a split position to the viewport start
-// stored in bpRange.xy. Subtracts the hi/lo components separately (same
-// ordering as hpToClipX) so the result stays precise at high genomic
-// coordinates — recombining bpStartHi+bpStartLo first would lose ~256bp near
-// 3e9. Unlike hpToClipX this returns bp, not clip space.
-public float hpViewportOffsetBp(float2 splitPos, float3 bpRange) {
-  return (bpRange.x - splitPos.x) + (bpRange.y - splitPos.y);
+// stored in bpRange.xy. Subtracts the hi/lo components separately so the result
+// stays precise at high genomic coordinates — recombining bpStartHi+bpStartLo
+// first would lose ~256bp near 3e9 — and takes `hpZero` for the same clamp
+// hpToClipX does, which is what stops the compiler recombining them. Unlike
+// hpToClipX this returns bp, not clip space.
+public float hpViewportOffsetBp(float2 splitPos, float3 bpRange, float hpZero) {
+  float floorBp = HP_CLAMP_FLOOR + hpZero;
+  float hi = max(bpRange.x - splitPos.x, floorBp);
+  float lo = max(bpRange.y - splitPos.y, floorBp);
+  return hi + lo;
 }
 
 public float snapToPixelX(float clipX, float canvasWidth) {

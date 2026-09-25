@@ -130,7 +130,7 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   float bpSpacing = chevronOffset(lineLengthBp, chevronsPerLine, 0.0);
 
   float2 splitLine = hpSplitUint(inst.startEnd.x);
-  float viewStartFromLine = hpViewportOffsetBp(splitLine, u.bpRangeX);
+  float viewStartFromLine = hpOffsetBp(splitLine, u);
   float viewEndFromLine = viewStartFromLine + u.bpRangeX.z;
   float viewportStartBp = min(viewStartFromLine, viewEndFromLine);
   float viewportEndBp   = max(viewStartFromLine, viewEndFromLine);
