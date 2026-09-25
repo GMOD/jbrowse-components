@@ -156,14 +156,17 @@ export function showChevron(
   )
 }
 
-// Screen x of the arrowhead apex. `capsEdge` is genomic (+1 the end, -1 the
-// start); the sign folds in screen orientation so it stays correct on reversed
-// blocks (apex lands CHEVRON_PX outside whichever edge is the leading one).
-function chevronApexX(capsEdge: number, xStart: number, xEnd: number) {
-  const tipX = capsEdge > 0 ? xEnd : xStart
-  const otherX = capsEdge > 0 ? xStart : xEnd
-  const dirSign = Math.sign(tipX - otherX) || 1
-  return tipX + dirSign * CHEVRON_PX
+// Screen x of the arrowhead apex, CHEVRON_PX outside the body's floored edge —
+// the same quad edge read.slang hangs its cap verts off. `capsEdge` is genomic
+// (+1 the end, -1 the start); `reversed` turns it into a screen direction.
+function chevronApexX(
+  capsEdge: number,
+  xL: number,
+  xR: number,
+  reversed: boolean,
+) {
+  const outward = capsEdge > 0 !== reversed ? 1 : -1
+  return (outward > 0 ? xR : xL) + outward * CHEVRON_PX
 }
 
 // "Home plate" pentagon: a [xL,xR] body rect with an arrowhead poking out to
@@ -321,7 +324,7 @@ function drawReads(
       )
 
     if (hasChev) {
-      const apexX = chevronApexX(capsEdge, xStart, xEnd)
+      const apexX = chevronApexX(capsEdge, xL, xR, block.reversed)
       traceReadArrow(ctx, xL, xR, y, fH, apexX)
       ctx.fill()
       if (outline) {
@@ -397,7 +400,9 @@ const readShape: MarkShape<ReadMarkRegion, RenderState> = {
         region.readInsertSizes[i]!,
         w,
       )
-    const apexX = chevron ? chevronApexX(capsEdge, xStart, xEnd) : xL
+    const apexX = chevron
+      ? chevronApexX(capsEdge, xL, xL + w, block.reversed)
+      : xL
     const left = Math.min(xL, apexX)
     return {
       left,
