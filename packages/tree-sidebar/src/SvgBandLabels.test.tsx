@@ -58,11 +58,10 @@ describe.each([
     expect(bandTexts(draw())).toEqual(['AFR'])
   })
 
-  test('a hairline where one band meets the next', () => {
-    const lines = draw().querySelectorAll(
-      '[data-testid="row_band_labels"] line',
-    )
-    expect([...lines].map(l => l.getAttribute('y1'))).toEqual(['60'])
+  test('no line marks where one band meets the next', () => {
+    expect(
+      draw().querySelectorAll('[data-testid="row_band_labels"] line'),
+    ).toHaveLength(0)
   })
 
   test('the row labels sit beside the strip', () => {

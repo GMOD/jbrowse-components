@@ -68,7 +68,7 @@ draws no link (`forestRoot`, which `treeLinks` and the hit index skip).
 
 **The band's label is in the margin.** `SvgBandLabels` draws a strip beside the
 tree, each band's name written up its rows where the band is tall enough to
-hold it and culled where not, and a hairline where bands meet: ggplot2's
+hold it and culled where not: ggplot2's
 `strip.position = "left"`, ComplexHeatmap's `row_title`. `RowLabelsOverlay` and
 `SvgTreeSidebar` both draw it and move the row labels past it, so the SVG
 export draws what the screen does. It has no hide control.

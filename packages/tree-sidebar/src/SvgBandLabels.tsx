@@ -1,6 +1,6 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha } from '@jbrowse/core/ui/palette'
-import { getFillProps, getStrokeProps, measureText } from '@jbrowse/core/util'
+import { getFillProps, measureText } from '@jbrowse/core/util'
 
 import type { RowBand } from './arrangeRows.ts'
 
@@ -13,9 +13,9 @@ const TEXT_PAD = 6
 /**
  * The bands' strip in the margin: one column beside the tree, each band's name
  * written up its rows (ggplot2's `strip.position = "left"`, ComplexHeatmap's
- * `row_title`) where the band is tall enough to hold it, and a hairline where
- * one band meets the next. One background rect under every band, since a rect
- * per band blends twice at a fractional boundary.
+ * `row_title`) where the band is tall enough to hold it. One background rect
+ * under every band, since a rect per band blends twice at a fractional
+ * boundary.
  */
 export function SvgBandLabels({
   bands,
@@ -55,31 +55,19 @@ export function SvgBandLabels({
           (y + height < 0 || y > availableHeight)
         const fits = measureText(band.label, FONT_SIZE) + TEXT_PAD <= height
         const cy = y + height / 2
-        return offscreen ? null : (
-          <g key={band.key}>
-            {band.start > first.start ? (
-              <line
-                x1={0}
-                x2={BAND_LABEL_WIDTH}
-                y1={y}
-                y2={y}
-                {...getStrokeProps(alpha(palette.text.primary, 0.35))}
-              />
-            ) : null}
-            {fits ? (
-              <text
-                x={mid}
-                y={cy}
-                transform={`rotate(-90 ${mid} ${cy})`}
-                fontSize={FONT_SIZE}
-                textAnchor="middle"
-                dominantBaseline="central"
-                {...getFillProps(palette.text.primary)}
-              >
-                {band.label}
-              </text>
-            ) : null}
-          </g>
+        return offscreen || !fits ? null : (
+          <text
+            key={band.key}
+            x={mid}
+            y={cy}
+            transform={`rotate(-90 ${mid} ${cy})`}
+            fontSize={FONT_SIZE}
+            textAnchor="middle"
+            dominantBaseline="central"
+            {...getFillProps(palette.text.primary)}
+          >
+            {band.label}
+          </text>
         )
       })}
     </g>
