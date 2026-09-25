@@ -96,10 +96,14 @@ struct Uniforms {
   int    sizeScaleType;
   float  sizeRangeMin;
   float  sizeRangeMax;
-  // The block's own displayed region, which every instance's `x` is on.
-  uint   ownRegion;
+  // The view's width, which picks a link's shape so every block holding one
+  // of its feet draws the same curve.
+  float  canvasWidth;
   uint   regionCount;
   float  zero;
+  // The block's own displayed region's table entry, which every instance's
+  // `x` is on; carried apart from the table so a region past its end places.
+  float4 ownEntry;
   // One entry per displayed region: (anchorPx, anchorBpHi, anchorBpLo,
   // signedPxPerBp), the anchor a bp of the region near the view so a foot's
   // offset from it stays inside float32.
@@ -127,8 +131,7 @@ struct VsOut {
   float  legSide : COLOR5;
 };
 
-float regionPx(uint bp, uint region, Uniforms u) {
-  float4 r = u.regionTable[region];
+float entryPx(uint bp, float4 r) {
   float2 split = hpSplitUint(bp);
   return r.x + ((split.x - r.y) + (split.y - r.z)) * r.w;
 }
@@ -196,9 +199,9 @@ VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
 
   float baseY = u.rowHeight * float(inst.row) + u.rowHeight;
   float reach = max(u.rowHeight - u.insetPx, 0.0);
-  float xPx = regionPx(inst.x, u.ownRegion, u);
+  float xPx = entryPx(inst.x, u.ownEntry);
   bool placed = inst.x2Region < u.regionCount;
-  float x2Px = placed ? regionPx(inst.x2, inst.x2Region, u) : xPx;
+  float x2Px = placed ? entryPx(inst.x2, u.regionTable[inst.x2Region]) : xPx;
 
   float2 p;
   float2 tang;
@@ -218,9 +221,9 @@ VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
     float valuePx = linkValuePx(inst.y, u.domainMin, u.domainMax, u.rowHeight,
                                 u.valueScaleType, u.insetPx, u.valueSymlogConstant);
     float apex = linkApexPx(pairHalf, reach, u.linkShape, u.valued, valuePx);
-    radii = linkRadiiPx(pairHalf, apex, u.blockPxW);
+    radii = linkRadiiPx(pairHalf, apex, u.canvasWidth);
     float2 ends = float2(min(xPx, x2Px), max(xPx, x2Px));
-    if (linkIsFar(pairHalf, u.blockPxW)) {
+    if (linkIsFar(pairHalf, u.canvasWidth)) {
       kind = KIND_CIRCLE;
       float legSweep = legSweepAngle(radii.x, reach + strokeHalf + aaHalf);
       // Two legs, each built from ITS OWN foot outward with the half-angle

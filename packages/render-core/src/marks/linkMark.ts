@@ -1,4 +1,4 @@
-import { clampBlockScissor, getDpr } from '../canvas2dUtils.ts'
+import { getDpr } from '../canvas2dUtils.ts'
 import { SCALE_TYPE_LOG } from '../scoreScale.ts'
 import { distToWideCirclePx } from '../shaders/curveDistance.js.generated.ts'
 import {
@@ -137,12 +137,7 @@ function linkFrame(
   return {
     band,
     reach: Math.max(band - (params.insetPx ?? 0), 0),
-    screenW:
-      clampBlockScissor(
-        block.screenStartPx,
-        block.screenEndPx,
-        frame.canvasWidth,
-      )?.scissorW ?? 0,
+    screenW: frame.canvasWidth,
     regions: params.regions,
     own: block.displayedRegionIndex,
     dpr: getDpr(),
@@ -246,16 +241,28 @@ const TABLE = Array.from(
   (): [number, number, number, number] => [0, 0, 0, 0],
 ) as Parameters<typeof shader.writeUniforms>[1]['regionTable']
 
+function writeEntry(
+  entry: [number, number, number, number],
+  { anchorPx, anchorBp, signedPxPerBp }: LinkRegion,
+) {
+  const lo = anchorBp % 4096
+  entry[0] = anchorPx
+  entry[1] = anchorBp - lo
+  entry[2] = lo
+  entry[3] = signedPxPerBp
+  return entry
+}
+
+const OWN: [number, number, number, number] = [0, 0, 0, 0]
+
+function tableEntry(region: LinkRegion | undefined) {
+  return region ? writeEntry(OWN, region) : OWN.fill(0)
+}
+
 function fillTable(regions: readonly LinkRegion[]) {
   const n = Math.min(regions.length, LINK_MAX_REGIONS)
   for (let i = 0; i < n; i++) {
-    const { anchorPx, anchorBp, signedPxPerBp } = regions[i]!
-    const lo = anchorBp % 4096
-    const entry = TABLE[i]!
-    entry[0] = anchorPx
-    entry[1] = anchorBp - lo
-    entry[2] = lo
-    entry[3] = signedPxPerBp
+    writeEntry(TABLE[i]!, regions[i]!)
   }
   return n
 }
@@ -428,9 +435,10 @@ export const linkMark: MarkShape<LinkChannels, LinkParams> = {
       sizeScaleType: sizeScale?.scale === 'log' ? SCALE_TYPE_LOG : 0,
       sizeRangeMin: sizeScale?.range[0] ?? params.sizePx,
       sizeRangeMax: sizeScale?.range[1] ?? params.sizePx,
-      ownRegion: block.displayedRegionIndex,
+      canvasWidth: frame.canvasWidth,
       regionCount: fillTable(params.regions),
       zero: 0,
+      ownEntry: tableEntry(params.regions[block.displayedRegionIndex]),
       regionTable: TABLE,
     })
   },

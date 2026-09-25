@@ -45,9 +45,10 @@ the alignments band hit and worked around with a view-space DOM overlay:
   none, the precedent ADR-162 set for `text`: `mark: 'link'`, from `x` up
   and over to `x2`. `linkShape` is `dome`, the apex the pair's half-width
   clamped to the band, or `arc`, a true semicircle; a `y` puts the apex at a
-  value on the display's axis. Past three block widths the ellipse
+  value on the display's axis. Past three view widths the ellipse
   degenerates to a circle whose legs rise from each foot, the alignments
-  band's rule and reasoning.
+  band's rule and reasoning. The view's width, not the block's, so the two
+  blocks holding a pair's feet draw one curve.
 - **`x2` takes GenomeSpy's `{ chrom, pos }` form beside a field.** The
   encoder files each feature's far sequence in an `x2Ref` dictionary lane,
   and the display resolves it once per fetch, through the assembly's
@@ -56,8 +57,8 @@ the alignments band hit and worked around with a view-space DOM overlay:
 - **Both feet place through a uniform table of the view's displayed
   regions.** Each entry is anchored at the region's bp under the view's
   left edge, so a foot's offset from it stays inside float32; `x` places
-  through the block's own entry and `x2` through the one its instance
-  names. A curve between two regions is drawn by every block holding a
+  through the block's own entry, carried in a uniform of its own, and `x2`
+  through the table entry its instance names. A curve between two regions is drawn by every block holding a
   foot, each clipped to its column, and a pan or zoom writes the table and
   no buffer. A foot on no region draws a stem at the placed one. This is
   the mechanism the band lacked, and it is what lets the band retire its
@@ -103,7 +104,10 @@ the alignments band hit and worked around with a view-space DOM overlay:
   remains is the strip per instance, the budget the band already spends,
   and the density tier covers the counts past it.
 - The view's displayed regions cap at 256 table entries; a mate on a
-  region past that draws its stem.
+  region past that draws its stem. A block's own foot places at any index.
+- A curve crossing a region that holds neither foot is not drawn there,
+  since each block draws its own payload clipped to its column; a view
+  sliced into many regions shows a link as pieces.
 - Dropped with the plugin: mate-direction ticks, the score-filter slider,
   the display-mode menu, the hover recolour and the one-ended stem a plain
   SNV drew by accident. A link's hover highlight is its box, and its hit

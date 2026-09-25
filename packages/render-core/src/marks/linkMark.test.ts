@@ -1,3 +1,4 @@
+import { clipBlock } from '../blockClipUtils.ts'
 import {
   LINK_NO_REGION,
   LINK_NO_SIZE,
@@ -173,11 +174,11 @@ test('the size lane strokes each link through the size scale, and no number take
 })
 
 test('a far pair degenerates to legs rising from each foot', () => {
-  // px 100 to px 4100: 4000 px apart on a 1000 px block, past three widths
-  const c = channels([{ x: 100, x2: 5000 + 3100, region: 1 }])
+  // px 100 to px 8100: 8000 px apart on a 2000 px view, past three widths
+  const c = channels([{ x: 100, x2: 5000 + 7100, region: 1 }])
   const ink = linkMark.ink!(c, block, frame, params, 0)!
   expect(ink.left).toBe(99)
-  expect(ink.width).toBeCloseTo(4002)
+  expect(ink.width).toBeCloseTo(8002)
   // the legs reach the band top plus half the stroke, so the butt cut lands
   // outside the band, not the circle's apex thousands of px up
   expect(ink.top).toBeCloseTo(-2)
@@ -187,6 +188,62 @@ test('a far pair degenerates to legs rising from each foot', () => {
   expect(calls.length).toBeGreaterThan(2)
   expect(Math.min(...calls.map(r => r.y))).toBeGreaterThanOrEqual(-2.01)
   expect(Math.max(...calls.map(r => r.y + r.h))).toBeLessThan(102)
+})
+
+test('the two blocks holding a pair draw it as one curve, whatever their widths', () => {
+  const split: LinkRegion[] = [
+    { anchorPx: 0, anchorBp: 0, signedPxPerBp: 1 },
+    { anchorPx: 1900, anchorBp: 5000, signedPxPerBp: 1 },
+  ]
+  const wide = { ...block, end: 1900, screenEndPx: 1900 }
+  const narrow = {
+    ...block,
+    displayedRegionIndex: 1,
+    start: 5000,
+    end: 5100,
+    screenStartPx: 1900,
+    screenEndPx: 2000,
+  }
+  const p = { ...params, regions: split }
+  const fromWide = linkMark.ink!(
+    channels([{ x: 100, x2: 5050, region: 1 }]),
+    wide,
+    frame,
+    p,
+    0,
+  )
+  const fromNarrow = linkMark.ink!(
+    channels([{ x: 5050, x2: 100, region: 0 }]),
+    narrow,
+    frame,
+    p,
+    0,
+  )
+  expect(fromNarrow).toEqual(fromWide)
+})
+
+test('a block past the region table places its own foot through its own entry', () => {
+  const many: LinkRegion[] = Array.from({ length: 301 }, (_, i) => ({
+    anchorPx: i * 10,
+    anchorBp: i * 10_000 + 123,
+    signedPxPerBp: 0.5,
+  }))
+  const scratch = new ArrayBuffer(iface.UNIFORMS_SIZE_BYTES)
+  const own = { ...block, displayedRegionIndex: 300 }
+  linkMark.writeUniforms(
+    scratch,
+    clipBlock(own, frame.canvasWidth, frame.canvasHeight, { x: 1, y: 1 })!,
+    own,
+    frame,
+    { ...params, regions: many },
+  )
+  const at = iface.UNIFORM_OFFSET_F32.ownEntry
+  expect([...new Float32Array(scratch).slice(at, at + 4)]).toEqual([
+    3000,
+    3_000_123 - (3_000_123 % 4096),
+    3_000_123 % 4096,
+    0.5,
+  ])
 })
 
 test('the packed lanes land at the generated offsets', () => {

@@ -1,12 +1,15 @@
 ---
 name: review
-description: The link-mark round (de0a383e01..c860b6e68f, ADR-163) reviewed on 2026-09-25. Three findings are fixed; a cross-region link breaks at the seam and never joins in a whole-genome view, GPU blocks past displayed region 255 misplace their own foot, and a link whose far end has no record of its own draws in one block only — each a placement design question, with a probe below.
+description: The link-mark round (de0a383e01..c860b6e68f, ADR-163) reviewed on 2026-09-25. Five findings are fixed, the seam between two regions and the 256-region foot among them; open is that each block draws only its own payload, so a link crossing a region that holds neither foot, or whose far end has no record, draws in pieces — a placement design question, with probes below.
 ---
 
 # Link-mark review
 
 A review of `git diff de0a383e01^ c860b6e68f` probed the link mark with
-throwaway jest tests. Fixed on main since: a far foot on the block's own contig
+throwaway jest tests. Fixed on main since: a link's shape reads the view's
+width rather than each block's, so the halves of a link across two adjacent
+regions join at the seam; a block's own foot places through a uniform of its
+own, so a region past the 256-entry table places; a far foot on the block's own contig
 past a sub-range region now places through that region instead of drawing a
 stem, a far foot resolves to the block's own region before any other region
 holding it, and the `mate` step's pair key reads both ends' spans, so two loops
@@ -14,17 +17,11 @@ sharing only their starts both draw.
 
 ## Open, confirmed by probe
 
-1. **A cross-region link breaks at the seam, and in a whole-genome view its
-   feet never join.** `packages/render-core/src/marks/linkMark.ts:218` and
-   `linkMark.slang:223` pick the dome or the far-circle legs from each block's
-   own width (`g.screenW`, `u.blockPxW`), so two blocks holding one pair choose
-   differently. Regions of 900 px and 100 px with a pair at px 100 and px 950:
-   block 0's ellipse is 47 px high at the seam (px 900), block 1's legs come no
-   nearer than about px 938. Twenty 50 px regions with a link from region 0 to
-   region 9: block 0 draws a leg from (25,100) to (48.9,−1) and nothing meets
-   it. The SVG export shares `paintBlock`, so it has the same seam. Deciding
-   from the canvas width, or the pair's span against it, gives every block the
-   same shape.
+1. **A link draws only in the blocks holding its feet**, each clipped to its
+   column. A view sliced into many regions (a whole-genome view, a
+   multi-locus search) shows the curve's ends as stubs, with nothing over the
+   regions between: volvox.bedpe over ctgA and ctgB cut into 500 bp slices.
+   The same cause as 5 below.
 2. **A log size scale with a zero in the domain and a maximum below 1** draws
    every link at the range minimum: `linkStrokeWidthPx(0.4, …, [0, 0.5], log)`
    is 1.5, the floor, through `normalizeScore` (`scoreScale.slang:43`).
@@ -36,10 +33,6 @@ sharing only their starts both draw.
 
 ## Open, traced not probed
 
-4. **A block for displayed region 256 or later places its own foot through an
-   out-of-range uniform** (`linkMark.slang:199`, `regionPx(inst.x,
-   u.ownRegion, u)` unguarded; only x2 checks `regionCount`). Canvas2D draws it
-   right. A whole-genome view of an assembly past 256 contigs hits it.
 5. **A link whose far end has no record draws only in the block that fetched
    it.** A `<TRA>` with CHR2/END is one feature on chr1, so the chr2 block has
    nothing to draw; a single-ended BND likewise. A `<DEL>` spanning POS..END is
@@ -55,8 +48,6 @@ sharing only their starts both draw.
 - `website/scripts/figure-manifest.json:236` still names
   `LinearPairedArcDisplay` in `cancer_sv/k562_amplicon_dna`'s live url; the
   spec is rewritten, so `audit-figures` regenerates it.
-- `website/release_announcement_drafts/v5.0.0.changelog.md:1161` lists a
-  lineWidth slot on `LinearPairedArcDisplay`.
 - An SV VCF or BEDPE track offers no arcs from the display menu until
   [the default-plot TODO](../todo/a-paired-record-draws-its-links-with-no-config.md)
   lands.
