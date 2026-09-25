@@ -116,11 +116,26 @@ ramps" is the writeup. Classifying every fragment shader by whether it computes
 its own coverage:
 
 **Analytic — MSAA-invariant.** `arc`, `arcFlat`, `arcLine`, `linkedReadLine`,
-`indicator` (alignments); `chevron`, `continuation` (canvas); the dotplot
-capsule; manhattan and every `pointGlyph`; `wiggleLine`'s smooth mode; both
-synteny curve/straight fills and edges (via `syntenyTypes.slang`'s `fillFs` /
-`strokeFs`); `variant.slang`. **`wiggle.slang`'s xyplot bar joined this list on
-2026-08-22** and is why the list below is one entry shorter than it was.
+`indicator` (alignments); the dotplot capsule; manhattan and every `pointGlyph`;
+`wiggleLine`'s smooth mode; both synteny curve/straight fills and edges (via
+`syntenyTypes.slang`'s `fillFs` / `strokeFs`); `variant.slang`.
+**`wiggle.slang`'s xyplot bar joined this list on 2026-08-22** and is why the
+list below is one entry shorter than it was.
+
+**The canvas glyph family was on that list and neither member belongs there**,
+checked 2026-09-25 against this doc's own criterion — that the shader paint zero
+alpha where the primitive ends. `continuation.slang` fails it outright: its
+`edgeAlpha` is `1 - smoothstep(0.5, 1.5, minBary / fwidth(minBary))`, which is
+FULL ink at `minBary == 0`, and the two edges where `bary.y` and `bary.z` vanish
+are two of the triangle's three sides. Every marker stroke has its outer half
+cut by the rasterizer, so MSAA is doing real work on it. `chevron.slang` passes
+along each arm's length — the quad is extruded one CSS px past the core and
+`aaRamp(0.5 - |dist|, aaGradient(dist))` is 0 there at either dpr — and fails at
+the two ends, where the quad is cut square across `dist` and the ramp reaches
+alpha 1 on the cap. So a chevron at 1 sample keeps its arms and quantises its
+tip. Neither carries `//! coverage: analytic`, and neither should until that is
+looked at; annotating them alone moves no bytes anyway, since
+`deriveSampleCount` needs `line` and `arrow` too.
 
 **Pixel-snapped — MSAA has nothing to smooth.** `rect.slang` snaps both x
 (`rectSpanPx` → `floor(x + 0.5)`) and y (`floor(inst.y - scrollY + 0.5)`,
