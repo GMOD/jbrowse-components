@@ -86,6 +86,10 @@ const VALIDATORS: Validator[] = [
     argv: web('check-doc-imports.ts'),
   },
   {
+    name: 'no handoff points at a branch or a worktree',
+    argv: web('check-handoff-pointers.ts'),
+  },
+  {
     // The one check that reads SOURCE comments for a claim about the source.
     // A rename sweeps every use of a name including, fatally, the sentence
     // recording the rename — which is written in the old name, so the sweep

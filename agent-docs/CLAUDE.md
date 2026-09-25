@@ -16,7 +16,12 @@ is filed:
 - `architecture-decision-records/` — *why*, one per file.
 - `handoffs/` — live state of an unfinished thread, usually a review whose
   findings nobody has committed to. **Pointers, not content.** Delete when the
-  thread lands.
+  thread lands. A handoff names what is unfinished and never where someone was
+  doing it: `pnpm check-handoff-pointers` refuses a branch or a worktree path,
+  since both are gone once the thread lands and neither is reachable from
+  another machine before that. Citing a commit stays legal. **The "next" list is
+  the part that rots**, so re-read it against main before editing a handoff, and
+  a done item leaves the list rather than getting relabelled inside it.
 - Tried and declined → a sentence at the site that would re-try it, with the
   number. There is no rejected-ideas shelf.
 - Work **v5.0.0 turns on** → a file in `todo/`, which `TODO.md`'s tables are

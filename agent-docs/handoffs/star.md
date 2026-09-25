@@ -12,8 +12,6 @@ The gene-page link to the multi-way star is live on staging, but I haven't writt
   - Figures: two new figures in website/scripts/specs/synteny.ts. One shows the staging page with the link boxed; the other shows the JBrowse view the link opens.
 
   The full plan is in the multiway thread memory.
-- Left in place:
-  - A jbrowse-components worktree on ada, ~/src/jbc-genomes-synteny-star, with a jbrowse-web build started for capturing the figures.
-  - An empty local worktree, .claude/worktrees/genomes-synteny-star, which you can delete.
+- Left in place: a jbrowse-components checkout on ada, ~/src/jbc-genomes-synteny-star, with a jbrowse-web build started for capturing the figures.
 
 On "no remote for ada": jb2hubs works exactly as you said, and I pulled ~/src/jb2hubs on ada before deploying. My remark was about jbrowse-components, where the tutorial branch existed only on this laptop, so I pushed it to ada's checkout directly rather than through GitHub.

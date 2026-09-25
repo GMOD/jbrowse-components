@@ -11,6 +11,7 @@
     "typecheck": "astro check && node ../node_modules/typescript7/bin/tsc --noEmit -p scripts/api-docs",
     "lint-docs": "node scripts/generate-guide-indexes.ts",
     "check-doc-imports": "node scripts/check-doc-imports.ts",
+    "check-handoff-pointers": "node scripts/check-handoff-pointers.ts",
     "check-rename-archaeology": "node scripts/check-rename-archaeology.ts",
     "check-guide-order": "node scripts/check-guide-order.ts",
     "check-sidebar": "node scripts/check-sidebar.ts",
