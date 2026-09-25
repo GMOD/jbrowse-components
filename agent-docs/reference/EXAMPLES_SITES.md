@@ -51,8 +51,7 @@ check the site runs, including a screenshot, because the page still renders. All
 five of the lineargenomeview site's `nextstrain_*.json` carried `height: 400`
 and `colorBy: 'region'` on a *session* display node, which MST builds from the
 display's state model where both are config slots; both were dropped and the
-demo shipped 150px short and unpainted. The react-app site's copy of the volvox
-config still has eight of its own. Where a fixture is generated, the generator
+demo shipped 150px short and unpainted. Where a fixture is generated, the generator
 validates before it writes (`gen-nextstrain-demos.mjs`); where it is
 hand-maintained, validate it when you touch it. ARCHITECTURE.md "Where a
 display's state lives" is the underlying rule.
@@ -163,9 +162,11 @@ experiment only if one of them starts drawing its own chrome.
 
 ### An engine is built by a hook, never by a `useState` initializer
 
-`useCreateViewState` on every product, or `useCreateOnce`
-(`@jbrowse/core/util/hooks`) where the example has to do something to the engine
-on the way out and the hook's options blob cannot say it. React double-invokes a
+`useCreateViewState` on every product, given options or, when building takes
+more than one call (a fetched config, `loadPlugins`, a session restored from the
+URL with a fallback), an async function returning the engine. `useCreateOnce`
+(`@jbrowse/core/util/hooks`) is left for an engine the example builds
+synchronously to catch what it throws. React double-invokes a
 state initializer under StrictMode — on in most app templates, which is where
 these files get pasted — and discards the second result, so an engine built in
 one is orphaned per mount: an MST tree with live autoruns and a worker pool, and
@@ -222,7 +223,8 @@ One page is one sidebar entry, and a page may stack several sections — that is
 what `ExamplePage.sections` is for, and it is how the sidebar stays short while
 the examples stay separate. **Cap a page at four sections**: each one is a
 `client:only` island that hydrates a whole genome engine on load, so a fifth is
-paid for on every visit.
+paid for on every visit. `pnpm check-links` fails a fifth (`findCrowdedPages`),
+since react-app had grown two five-section pages while the cap was prose.
 
 **A group holding one page is a heading that costs a line and earns nothing.**
 Text search belongs under Navigation, theming under Tracks, plugins under
