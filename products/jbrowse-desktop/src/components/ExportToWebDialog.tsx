@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { ErrorBanner, InfoDialog } from '@jbrowse/core/ui'
+import SessionJsonPanel from '@jbrowse/core/ui/SessionJsonPanel'
 import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
 import { copyTextWithSession } from '@jbrowse/core/util/copyText'
 import { useFetch } from '@jbrowse/core/util/useFetch'
@@ -34,7 +35,6 @@ const SHARE_MODES = [
   // the default first, and in the order ExportToWebInfoDialog explains them
   { value: 'long', label: 'Long link' },
   { value: 'short', label: 'Short link' },
-  { value: 'json', label: 'Plaintext JSON' },
 ] as const
 
 function ShareModeRadios({
@@ -251,7 +251,7 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
     preparation && !awaitingUpload ? () => buildLink(preparation, mode) : null,
   )
   const plan = preparation?.plan
-  const url = link.data?.url ?? ''
+  const url = link.data ?? ''
   const error = prepared.error ?? link.error
   // Only once there is a plan: until then the dialog is still working, and has
   // no share store to name in the prompt.
@@ -344,8 +344,11 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
             ) : generating ? (
               <Typography>Generating {mode} URL...</Typography>
             ) : (
-              <ShareLinkField value={url} plaintext={link.data?.plaintext} />
+              <ShareLinkField value={url} />
             )}
+            {preparation ? (
+              <SessionJsonPanel session={preparation.bakedSession} />
+            ) : null}
           </>
         )}
       </InfoDialog>

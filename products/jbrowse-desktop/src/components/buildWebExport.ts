@@ -111,18 +111,15 @@ export async function buildLink(
   mode: SessionShareMode,
 ) {
   const { plan, bakedSession, shareURL } = prepared
-  const { sessionParam, password, plaintext } = await encodeSessionParam(
+  const { sessionParam, password } = await encodeSessionParam(
     mode,
     bakedSession,
     { shareURL, referer: DEFAULT_WEB_BASE_URL },
   )
-  return {
-    url: buildWebExportUrl(plan, sessionParam, {
-      password,
-      // what made this link, since nothing else in it is pinned — see
-      // buildWebExportUrl
-      exportedFrom: `jbrowse-desktop@${packageJSON.version}`,
-    }),
-    plaintext,
-  }
+  return buildWebExportUrl(plan, sessionParam, {
+    password,
+    // what made this link, since nothing else in it is pinned — see
+    // buildWebExportUrl
+    exportedFrom: `jbrowse-desktop@${packageJSON.version}`,
+  })
 }

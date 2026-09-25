@@ -15,10 +15,9 @@ jest.mock('@jbrowse/product-core', () => ({
 // short mode would POST to the share server; the link's shape is
 // buildShareUrl.test.ts's business
 jest.mock('./buildShareUrl.ts', () => ({
-  buildShareUrl: jest.fn(async (mode: string) => ({
-    url: `http://localhost/app/#session=${mode}-link`,
-    plaintext: mode === 'json' ? '{"session":{}}' : undefined,
-  })),
+  buildShareUrl: jest.fn(
+    async (mode: string) => `http://localhost/app/#session=${mode}-link`,
+  ),
 }))
 
 const mockBuild = buildShareUrl as jest.Mock
@@ -34,7 +33,7 @@ const session = {
   notifyError: () => {},
 } as unknown as SessionWithShareURL
 
-async function renderDialog(mode = 'json', handleClose = () => {}) {
+async function renderDialog(mode = 'long', handleClose = () => {}) {
   localStorage.setItem(SHARE_MODE_LOCALSTORAGE_KEY, mode)
   window.history.replaceState(
     null,
@@ -77,18 +76,18 @@ test('bookmarking shows the share URL, and closing puts the page URL back', asyn
   const { getByText } = await renderDialog()
 
   fireEvent.click(getByText('Create browser Bookmark'))
-  expect(window.location.href).toContain('json-')
+  expect(window.location.href).toContain('long-link')
   expect(window.location.href).not.toContain('session=local-abc')
 
   fireEvent.click(closeButton())
 
   expect(window.location.href).toContain('session=local-abc')
-  expect(window.location.href).not.toContain('json-')
+  expect(window.location.href).not.toContain('long-link')
 })
 
 test('closing without bookmarking leaves the page URL alone', async () => {
   const handleClose = jest.fn()
-  await renderDialog('json', handleClose)
+  await renderDialog('long', handleClose)
 
   fireEvent.click(closeButton())
 
@@ -100,7 +99,7 @@ test('the link is built from the page URL captured on open', async () => {
   await renderDialog()
 
   expect(mockBuild).toHaveBeenCalledWith(
-    'json',
+    'long',
     mockSnapshot,
     'https://share.example/',
     'http://localhost/app/?config=conf.json&session=local-abc',
@@ -117,18 +116,23 @@ test('switching back to a mode reuses its link', async () => {
   expect(utils.getByDisplayValue(/short-link/)).toBeTruthy()
 })
 
+// `json` among them: the dialog made plaintext-JSON links before the readable
+// session became a panel under every link
 test('an unknown stored mode opens as a short link', async () => {
-  await renderDialog('someOldMode')
+  await renderDialog('json')
 
   expect(mockBuild.mock.calls.map(c => c[0])).toEqual(['short'])
 })
 
-test('the json mode offers the readable session', async () => {
-  const utils = await renderDialog('json')
+test.each(['short', 'long'])(
+  'a %s link offers the readable session',
+  async mode => {
+    const utils = await renderDialog(mode)
 
-  fireEvent.click(utils.getByText('Show readable JSON'))
-  expect(utils.getByDisplayValue('{"session":{}}')).toBeTruthy()
-})
+    fireEvent.click(utils.getByText('Show readable JSON'))
+    expect(utils.getByDisplayValue(/"name": "a session"/)).toBeTruthy()
+  },
+)
 
 // a blob-backed track is in the sender's browser only, so the link carries a
 // config with nothing behind it

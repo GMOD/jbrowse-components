@@ -90,9 +90,9 @@ export async function toUrlSafeB64(str: string) {
 }
 
 /**
- * The `?session=` value prefixes, named here because this module is what
- * produces them. The decoder half (jbrowse-web's SessionLoader) has its own
- * list covering the two prefixes nothing here writes (`spec-`, `local-`).
+ * The `?session=` value prefixes for a session carried by or behind the link.
+ * The decoder half (jbrowse-web's SessionLoader) has its own list covering
+ * `spec-` and `local-` too.
  */
 export const SHARE_PREFIX = 'share-'
 export const ENCODED_PREFIX = 'encoded-'
@@ -140,22 +140,21 @@ async function shareSessionToDynamo(
   return { sessionId, password }
 }
 
-export type SessionShareMode = 'short' | 'long' | 'json'
+export type SessionShareMode = 'short' | 'long'
 
 export interface EncodedSessionParam {
   // the `?session=` query value the web SessionLoader decodes
   sessionParam: string
   // present only for a short link
   password?: string
-  // pretty-printed session, present only for json mode (shown in the dialog)
-  plaintext?: string
 }
 
 // Encodes a session snapshot into the `?session=` value jbrowse-web decodes:
-// `share-<id>` (uploaded + encrypted), `encoded-<b64>` (compressed inline), or
-// `json-<json>` (plaintext inline). Single source of these prefixes, shared by
-// jbrowse-web's ShareDialog and jbrowse-desktop's ExportToWebDialog so the two
-// producers can't drift from the decoder.
+// `share-<id>` (uploaded + encrypted) or `encoded-<b64>` (compressed inline).
+// Single source of these prefixes, shared by jbrowse-web's ShareDialog and
+// jbrowse-desktop's ExportToWebDialog so the two producers can't drift from the
+// decoder. The decoder also reads `json-{"session":…}`, which nothing here
+// writes: it is the form a person writes by hand.
 export async function encodeSessionParam(
   mode: SessionShareMode,
   session: unknown,
@@ -168,13 +167,6 @@ export async function encodeSessionParam(
       options.referer,
     )
     return { sessionParam: `${SHARE_PREFIX}${sessionId}`, password }
-  } else if (mode === 'json') {
-    // compact in the link (this mode's URL is the longest of the three
-    // already), indented in the dialog's readable-JSON panel
-    return {
-      sessionParam: `${JSON_PREFIX}${JSON.stringify({ session })}`,
-      plaintext: JSON.stringify({ session }, null, 2),
-    }
   } else {
     const encoded = await toUrlSafeB64(JSON.stringify(session))
     return { sessionParam: `${ENCODED_PREFIX}${encoded}` }

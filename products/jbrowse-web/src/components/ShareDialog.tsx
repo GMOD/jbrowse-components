@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { ErrorBanner, InfoDialog } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import SessionJsonPanel from '@jbrowse/core/ui/SessionJsonPanel'
 import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { copyTextWithSession } from '@jbrowse/core/util/copyText'
@@ -24,7 +25,6 @@ import ShareInfoDialog from './ShareInfoDialog.tsx'
 import { buildShareUrl } from './buildShareUrl.ts'
 import { findLocalFileNames } from './localFileTracks.ts'
 
-import type { ShareUrlResult } from './buildShareUrl.ts'
 import type { SessionShareMode, SessionWithShareURL } from '@jbrowse/core/util'
 
 // remembers the chosen share mode, not a URL
@@ -33,7 +33,6 @@ export const SHARE_MODE_LOCALSTORAGE_KEY = 'jbrowse-shareMode'
 const SHARE_MODES = [
   { value: 'short', label: 'Short URL' },
   { value: 'long', label: 'Long URL' },
-  { value: 'json', label: 'Plaintext JSON' },
 ] as const
 
 function storedMode(): SessionShareMode {
@@ -72,9 +71,7 @@ const ShareDialog = observer(function ShareDialog({
   // One link per mode for the dialog's lifetime: coming back to short would
   // otherwise upload the same snapshot again, and StrictMode's doubled effect
   // uploaded it twice on open. A failure is dropped so a retry builds anew.
-  const [links] = useState(
-    () => new Map<SessionShareMode, Promise<ShareUrlResult>>(),
-  )
+  const [links] = useState(() => new Map<SessionShareMode, Promise<string>>())
   const { data, error, isLoading, mutate } = useFetch(
     ['shareUrl', mode],
     () => {
@@ -90,7 +87,7 @@ const ShareDialog = observer(function ShareDialog({
     },
   )
 
-  const url = data?.url ?? ''
+  const url = data ?? ''
   const disabled = isLoading || !!error
   return (
     <>
@@ -168,8 +165,9 @@ const ShareDialog = observer(function ShareDialog({
             <Typography>Generating {mode} URL...</Typography>
           </Box>
         ) : (
-          <ShareLinkField value={url} plaintext={data?.plaintext} />
+          <ShareLinkField value={url} />
         )}
+        <SessionJsonPanel session={snap} />
       </InfoDialog>
 
       <ShareInfoDialog

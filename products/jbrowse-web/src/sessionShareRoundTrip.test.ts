@@ -9,7 +9,7 @@ import type { SessionShareMode } from '@jbrowse/core/util'
 // mocked: buildShareUrl.test.ts mocks encodeSessionParam, SessionLoader.test.ts
 // mocks fromUrlSafeB64. So nothing failed when the two disagreed — a renamed
 // prefix, a `{session}` wrapper on one side only, a b64 padding change. This
-// runs the real loop end to end for all three modes: build a link from a
+// runs the real loop end to end for both modes: build a link from a
 // snapshot, put that link in the address bar, and let the loader resolve it.
 //
 // Only the network is stubbed, and only for `short` — the share service is the
@@ -81,7 +81,7 @@ function mockShareService() {
 // Builds a link for `mode`, navigates to it, and resolves it the way a fresh
 // page load would.
 async function roundTrip(mode: SessionShareMode) {
-  const { url } = await buildShareUrl(
+  const url = await buildShareUrl(
     mode,
     snap,
     SHARE_URL,
@@ -97,7 +97,7 @@ async function roundTrip(mode: SessionShareMode) {
   return { loader, url }
 }
 
-test.each(['short', 'long', 'json'] as const)(
+test.each(['short', 'long'] as const)(
   'a session survives a %s share link',
   async mode => {
     const service = mockShareService()

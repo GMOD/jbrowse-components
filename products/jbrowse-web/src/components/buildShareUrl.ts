@@ -19,12 +19,6 @@ const PAGE_ONLY_PARAMS = [
   'password',
 ]
 
-export interface ShareUrlResult {
-  url: string
-  // the indented session the dialog shows beside the URL, json mode only
-  plaintext?: string
-}
-
 // Builds a link to this jbrowse-web page carrying `snap`. Session encoding is
 // shared with desktop's export-to-web via encodeSessionParam, so only the URL
 // assembly lives here.
@@ -38,7 +32,7 @@ export async function buildShareUrl(
   snap: unknown,
   shareURL: string,
   pageUrl: string,
-): Promise<ShareUrlResult> {
+): Promise<string> {
   const url = new URL(pageUrl)
   const params = readAllQueryParams(url)
   for (const key of PAGE_ONLY_PARAMS) {
@@ -49,16 +43,15 @@ export async function buildShareUrl(
   const referer = new URL(url)
   referer.search = params.toString()
   referer.hash = ''
-  const { sessionParam, password, plaintext } = await encodeSessionParam(
-    mode,
-    snap,
-    { shareURL, referer: referer.href },
-  )
+  const { sessionParam, password } = await encodeSessionParam(mode, snap, {
+    shareURL,
+    referer: referer.href,
+  })
   params.set('session', sessionParam)
   if (password) {
     params.set('password', password)
   }
   url.search = ''
   url.hash = params.toString()
-  return { url: url.href, plaintext }
+  return url.href
 }

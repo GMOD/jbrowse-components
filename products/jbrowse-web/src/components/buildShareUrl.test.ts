@@ -10,8 +10,8 @@ const mockEncode = encodeSessionParam as jest.Mock
 
 const PAGE = 'http://localhost/app/'
 
-async function build(mode: 'short' | 'long' | 'json', page: string) {
-  const { url } = await buildShareUrl(mode, {}, 'https://share/', PAGE + page)
+async function build(mode: 'short' | 'long', page: string) {
+  const url = await buildShareUrl(mode, {}, 'https://share/', PAGE + page)
   const u = new URL(url)
   return { url, u, params: new URLSearchParams(u.hash.slice(1)) }
 }
@@ -29,17 +29,6 @@ describe('buildShareUrl', () => {
     expect(u.search).toBe('')
     expect(params.get('config')).toBe('conf.json')
     expect(params.getAll('session')).toEqual(['encoded-BIG'])
-  })
-
-  it('puts a json session in the hash', async () => {
-    mockEncode.mockResolvedValue({
-      sessionParam: 'json-{"session":{}}',
-      plaintext: '{}',
-    })
-
-    const { u, params } = await build('json', '?config=conf.json')
-    expect(u.search).toBe('')
-    expect(params.get('session')).toBe('json-{"session":{}}')
   })
 
   // the password decrypts the uploaded session, and a query string reaches the

@@ -40,12 +40,10 @@ test('decodeSessionFromUrl rejects something that is not a session', async () =>
   ).rejects.toThrow()
 })
 
-test('decodeSessionFromUrl reads the json form the share dialog writes', async () => {
+// the hand-written form urlparams.md teaches
+test('decodeSessionFromUrl reads a json- session', async () => {
   const snap = { name: 'plain', views: [] }
-  const { sessionParam } = await encodeSessionParam('json', snap, {
-    shareURL: '',
-    referer: '',
-  })
+  const sessionParam = `json-${JSON.stringify({ session: snap })}`
 
   await expect(decodeSessionFromUrl(sessionParam)).resolves.toEqual(snap)
   await expect(

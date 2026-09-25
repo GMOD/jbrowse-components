@@ -86,31 +86,28 @@ test('shows what the export left behind, and keeps it across a mode switch', asy
   getByText(/My local alignments/)
   getByText(/Self-contained session/)
 
-  fireEvent.click(getByLabelText('Plaintext JSON'))
+  fireEvent.click(getByLabelText('Short link'))
+  fireEvent.click(getByLabelText('Long link'))
 
   // Asserted here, synchronously, rather than after the await: the point is what
   // the dialog shows WHILE it re-encodes. The plan doesn't depend on the mode,
   // so what the dialog already said about the session must not blink away and
   // come back — waiting for the new link first would pass either way.
-  getByText(/Generating json URL/)
+  getByText(/Generating long URL/)
   getByText(/My local alignments/)
   getByText(/Self-contained session/)
 
   await waitFor(() => {
-    expect(linkValue()).toContain('json-')
+    expect(linkValue()).toContain('encoded-')
   })
 })
 
-test('the plaintext mode can show the session that will be opened', async () => {
-  const { getByText, getByLabelText, queryByLabelText } = await renderDialog()
+// what a short link would upload is readable before the upload is asked for
+test('the session that will be opened is readable before anything is sent', async () => {
+  const { getByText, getByLabelText } = await renderDialog()
 
-  // only the plaintext mode has readable JSON to show
-  expect(queryByLabelText('Show readable JSON')).toBeNull()
-
-  fireEvent.click(getByLabelText('Plaintext JSON'))
-  await waitFor(() => {
-    getByLabelText('Show readable JSON')
-  })
+  fireEvent.click(getByLabelText('Short link'))
+  getByText('Upload and create short link')
   fireEvent.click(getByLabelText('Show readable JSON'))
 
   const json = getByText(/"my session"/)

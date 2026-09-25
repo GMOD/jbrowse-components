@@ -55,11 +55,10 @@ of paired rows fits.
 Two menu clicks and a drag changed three settings, and each one has a name you
 can type into a config.
 
-Click **Share** in **JBrowse Web**, choose **Plaintext JSON** from the settings
-icon in the dialog, and tick the **Show readable JSON** box that appears below
+Click **Share** in **JBrowse Web** and tick the **Show readable JSON** box below
 the link.
 
-<Video src="/media/config/settings_to_json.mp4" caption="Two settings chosen from the volvox-sv (cram) track menu, then Plaintext JSON chosen from the share dialog's settings icon, with Show readable JSON ticked to display the session." />
+<Video src="/media/config/settings_to_json.mp4" caption="Two settings chosen from the volvox-sv (cram) track menu, then the share dialog with Show readable JSON ticked to display the session." />
 
 The session JSON in that box lists the three settings under `trackConfigDeltas`,
 keyed by the id of the track you edited, because JBrowse Web saves an edit to a

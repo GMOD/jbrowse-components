@@ -84,9 +84,9 @@ test('assembly aliases', async () => {
 }, 30000)
 
 test('test sharing', async () => {
-  jest.mocked(buildShareUrl).mockResolvedValue({
-    url: 'http://localhost/?session=share-abc&password=123',
-  })
+  jest
+    .mocked(buildShareUrl)
+    .mockResolvedValue('http://localhost/?session=share-abc&password=123')
   const { findByLabelText, findByText } = await createView(config)
   fireEvent.click(await findByText('Share'))
   expect(

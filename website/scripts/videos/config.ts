@@ -9,22 +9,14 @@ import type { VideoSpec } from '../video-spec-types.ts'
 
 const { defaultsSession, trackId } = settingsVideoFixtures
 
-// The share dialog's mode picker. It is a CascadingMenuButton behind a settings
-// gear rather than a control on the dialog's face, which is the half of the
-// route display_settings.md's "Ask JBrowse what you just set" cannot say
-// and a still cannot show being taken. The label comes off the tooltip MUI
-// hands the icon button.
-const SHARE_MODE_MENU = '[aria-label="Session sharing settings"]'
-
 export const configVideos: VideoSpec[] = [
-  // Two menu picks, then the share dialog, which changes shape as it is used:
-  // "Show readable JSON" and the "Session JSON" field exist only after
-  // Plaintext JSON is picked from the gear's cascade. The height is the page's
-  // third setting and the fixture pins it (see settingsVideoFixtures).
+  // Two menu picks, then the share dialog's readable session. The height is
+  // the page's third setting and the fixture pins it (see
+  // settingsVideoFixtures).
   {
     name: 'config/settings_to_json',
     description:
-      "Two settings clicked onto a volvox CRAM and the session they are named in: Color by... and Read connections, then Share, the dialog's settings icon, Plaintext JSON, and the readable session panel that mode brings with it",
+      'Two settings clicked onto a volvox CRAM and the session they are named in: Color by... and Read connections, then Share and the readable session panel under its link',
     url: defaultsSession,
     // Sized to what overhangs the app, which the run's content report cannot
     // see and so asks for 404px back: the Read connections cascade's shadow
@@ -109,24 +101,11 @@ export const configVideos: VideoSpec[] = [
       { type: 'delay', ms: 900 },
       {
         type: 'click',
-        selector: SHARE_MODE_MENU,
-        say: 'The share dialog grows a control as it is used',
-        hold: 1200,
+        text: 'Show readable JSON',
+        say: 'The session behind that link, readable',
+        hold: 800,
       },
-      { type: 'waitForText', text: 'Plaintext JSON' },
-      { type: 'click', text: 'Plaintext JSON' },
-      // A radio writes its setting and leaves the menu standing, here as
-      // everywhere else, and this one stands over the control it just brought
-      // into existence. Escape reaches it while focus is in the list; the
-      // dialog behind it keeps its own Escape handler unfired, because the menu
-      // consumes the key.
-      { type: 'press', key: 'Escape' },
-      { type: 'waitForText', text: 'Plaintext JSON', hidden: true },
-      // The dialog is a control taller than it was a second ago.
-      { type: 'waitForText', text: 'Show readable JSON' },
-      { type: 'delay', ms: 900 },
-      { type: 'click', text: 'Show readable JSON' },
-      // The end of the route: a readable session where a `share-<id>` was.
+      // The end of the route: a readable session under the `share-<id>` link.
       //
       // The tour does NOT scroll it, and three takes went into deciding that.
       // The keys are ~25 wrapped lines from the end of an ~80-line document in

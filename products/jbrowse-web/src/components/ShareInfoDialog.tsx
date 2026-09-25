@@ -12,7 +12,8 @@ export default function ShareInfoDialog({
     <InfoDialog open={open} title="Info about session URLs" onClose={onClose}>
       <DialogContentText>
         A session encodes your tracks, views, and selections in the URL, so it
-        can get long. All three formats below carry the same data.
+        can get long. Both formats below carry the same data, and{' '}
+        <strong>Show readable JSON</strong> shows exactly what it contains.
       </DialogContentText>
       <DialogContentText>
         <strong>Short URL</strong> (recommended): the session is encrypted in
@@ -25,11 +26,6 @@ export default function ShareInfoDialog({
         <strong>Long URL</strong>: the full session is compressed into the URL
         itself. Nothing is uploaded, but the URL can get long enough to break
         some programs.
-      </DialogContentText>
-      <DialogContentText>
-        <strong>Plaintext JSON</strong>: the readable session embedded in the
-        URL, uncompressed. Longest of the three, but lets you inspect exactly
-        what the session contains.
       </DialogContentText>
     </InfoDialog>
   )

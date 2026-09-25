@@ -2742,7 +2742,7 @@ export const videoSteps: Record<string, string[]> = {
     "Color the reads by insert size and orientation",
     "Link each read to its mate",
     "Hand the session back with the settings readable",
-    "The share dialog grows a control as it is used"
+    "The session behind that link, readable"
   ],
   "genomes_basics/gnomad_filter": [
     "Keep only the predicted loss-of-function variants",

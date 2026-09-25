@@ -240,6 +240,7 @@ export default [
   '@jbrowse/core/ui/SanitizedHTML',
   '@jbrowse/core/ui/scrollZoomLabels',
   '@jbrowse/core/ui/ScrollZoomToggle',
+  '@jbrowse/core/ui/SessionJsonPanel',
   '@jbrowse/core/ui/ShareLinkField',
   '@jbrowse/core/ui/showSubMenu',
   '@jbrowse/core/ui/Snackbar',

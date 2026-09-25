@@ -1974,6 +1974,16 @@
         "@mui/material"
       ]
     },
+    "@jbrowse/core/ui/SessionJsonPanel": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
     "@jbrowse/core/ui/ShareLinkField": {
       "package": "@jbrowse/core",
       "names": [

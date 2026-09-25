@@ -37,9 +37,8 @@ export default function ExportToWebInfoDialog({
         computer, which is why nothing is uploaded until you ask for it.
       </DialogContentText>
       <DialogContentText>
-        <strong>Plaintext JSON</strong>: the readable session embedded in the
-        URL, uncompressed. Longest of the three, but lets you inspect exactly
-        what will be opened on the web.
+        Either way, <strong>Show readable JSON</strong> shows exactly what will
+        be opened on the web.
       </DialogContentText>
     </InfoDialog>
   )

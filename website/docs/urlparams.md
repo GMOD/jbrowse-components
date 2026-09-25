@@ -1181,9 +1181,8 @@ button.
 
 - The short link is not: each click mints a new key and uploads a new blob, so
   the same view gives a new id and password every time.
-- "Long URL" and "Plaintext JSON" are: both carry the whole session in the link,
-  so the same view and config produce the same link, and it survives moving the
-  instance.
+- "Long URL" is: it carries the whole session in the link, so the same view and
+  config produce the same link, and it survives moving the instance.
 - The config can still break either. A restored session names tracks by
   `trackId`, so a redeploy that regenerates `config.json` with different ids
   leaves the link unable to find them
