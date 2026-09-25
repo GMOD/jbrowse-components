@@ -17,11 +17,13 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 
 import { allAssembliesLaunchItems } from '../LaunchSyntenyView/allAssembliesLaunch.ts'
+import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
 import { openMateInLinearView } from '../LaunchSyntenyView/openMateInLinearView.ts'
 import {
   pairwiseLaunchLabel,
   pairwiseSyntenyLaunch,
 } from '../LaunchSyntenyView/pairwiseSyntenyLaunch.ts'
+import { visibleSpanOnFeature } from '../LaunchSyntenyView/visibleSpanOnRefName.ts'
 import { getMate, hasAlignmentString } from '../syntenyMate.ts'
 import {
   containingPanelStack,
@@ -119,14 +121,16 @@ function launchSyntenyItem(
   block: ClickedBlock | undefined,
 ): MenuItem[] {
   const view = self.view
+  const host = getSession(self)
   const launch = pairwiseSyntenyLaunch({
-    host: getSession(self),
+    host,
     feature,
-    anchorView: view,
+    anchorAssembly: view.assemblyNames[0],
+    anchorTracks: anchorPanelTracks(view.tracks),
     track: getContainingTrack(self).configuration,
     region: block
       ? { start: block.bpRange[0], end: block.bpRange[1] }
-      : undefined,
+      : visibleSpanOnFeature(host, view, feature),
     // ...so the launched view can take this one's place rather than stacking
     // below it, showing the same locus twice. A row of a stack offers the
     // stack: the row holds no session slot of its own
@@ -172,13 +176,14 @@ function openMateItem(
   feature: Feature,
   block: ClickedBlock | undefined,
 ): MenuItem[] {
+  const host = getSession(self)
   const mate = openMateInLinearView({
-    host: getSession(self),
+    host,
     feature,
-    anchorView: self.view,
+    viewId: self.view.id,
     region: block
       ? { start: block.bpRange[0], end: block.bpRange[1] }
-      : undefined,
+      : visibleSpanOnFeature(host, self.view, feature),
   })
   return mate
     ? [

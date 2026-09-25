@@ -46,9 +46,12 @@ export interface BuildSyntenyViewSpecArgs {
   // collapses whatever this says — see buildViews' scalebarOnly.
   collapseEmptyRows?: boolean
   // Tracks for the anchor panel, normally the launching view's own (see
-  // anchorPanelTracks). Only the anchor row: it is the only panel whose assembly
-  // the source view can speak for.
+  // anchorPanelTracks).
   anchorTracks?: TrackInit[]
+  // Tracks for the mate panels, keyed by each panel's assembly as its alignment
+  // spells it: only a source view showing both genomes, the circle, can speak
+  // for a mate's assembly.
+  mateTracks?: Record<string, TrackInit[]>
 }
 
 // Pure snapshot builder for the launched synteny view, mirroring
@@ -66,6 +69,7 @@ export function buildSyntenyViewSpec({
   flipReversedMates,
   collapseEmptyRows,
   anchorTracks,
+  mateTracks,
 }: BuildSyntenyViewSpecArgs): LinearSyntenyViewSpec {
   if (!panels.length) {
     throw new Error('No alignments to launch a synteny view on')
@@ -84,16 +88,20 @@ export function buildSyntenyViewSpec({
     // launched view's snapshot says "no tracks" the same way it always did
     ...(anchorTracks?.length ? { tracks: anchorTracks } : {}),
   }
-  const mateViews = panels.map(panel => ({
-    assembly: panel.assemblyName,
-    loc: paddedLocString({
-      refName: panel.refName,
-      start: panel.mateStart,
-      end: panel.mateEnd,
-      windowSize,
-      reversed: flipReversedMates && panel.reversed,
-    }),
-  }))
+  const mateViews = panels.map(panel => {
+    const tracks = mateTracks?.[panel.assemblyName]
+    return {
+      assembly: panel.assemblyName,
+      loc: paddedLocString({
+        refName: panel.refName,
+        start: panel.mateStart,
+        end: panel.mateEnd,
+        windowSize,
+        reversed: flipReversedMates && panel.reversed,
+      }),
+      ...(tracks?.length ? { tracks } : {}),
+    }
+  })
 
   const views =
     repeatAnchor && mateViews.length > 1

@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -14,6 +15,7 @@ import {
 } from '@jbrowse/core/util'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import {
+  getConfAssemblyNamesOrNone,
   getTrackName,
   hideTrackGeneric,
   isSameAssemblyName,
@@ -35,6 +37,7 @@ import {
 import { cast, destroy, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   DiagonalizeProgressMixin,
+  isSyntenyTrack,
   ImportFormSyntenyMixin,
   withDiagonalizeProgress,
 } from '@jbrowse/synteny-core'
@@ -59,7 +62,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ViewExportSvgOptions } from '@jbrowse/core/svg/exportViewSvg'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AlignmentData } from '@jbrowse/core/util/diagonalizeRegions'
-import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
+import type { AssemblyNameResolver, TrackInit } from '@jbrowse/core/util/tracks'
 import type { Region } from '@jbrowse/core/util/types'
 import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
@@ -1284,6 +1287,31 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get legendSpec() {
         return circularLegendSpec(self)
+      },
+      /**
+       * #method
+       * the tracks a linear view of one genome on this circle opens with: each
+       * track on that genome but the synteny tracks, a ring as its display and
+       * a chord track as the linear view's own
+       */
+      linearTracksFor(assemblyName: string): TrackInit[] {
+        const { assemblyManager } = getSession(self)
+        const { ringDisplays } = self.ringHost
+        return self.tracks.flatMap(({ configuration, displays }) => {
+          const onGenome = getConfAssemblyNamesOrNone(configuration).some(
+            name => isSameAssemblyName(name, assemblyName, assemblyManager),
+          )
+          if (!onGenome || isSyntenyTrack(configuration)) {
+            return []
+          }
+          const trackId = readConfObject(configuration, 'trackId') as string
+          const display = displays[0]
+          return [
+            display && ringDisplays.includes(display)
+              ? { trackId, type: display.type }
+              : { trackId },
+          ]
+        })
       },
       /**
        * #method

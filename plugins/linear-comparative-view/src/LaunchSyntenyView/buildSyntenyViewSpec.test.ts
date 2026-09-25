@@ -566,6 +566,23 @@ test('anchor tracks go on the anchor panel only, wherever it sits in the stack',
   ).toEqual([undefined, [{ trackId: 'genes' }], undefined])
 })
 
+// a source showing both genomes, the circle, speaks for each mate's assembly
+test('mate tracks go on the panels of their own assembly', () => {
+  const built = buildFrom({
+    features: [makeFeature(), makeFeature({ mateAssembly: 'volvox3' })],
+    windowSize: 0,
+    trackId: 't1',
+    anchorAssembly: 'volvox',
+    flipReversedMates: false,
+    mateTracks: { volvox3: [{ trackId: 'genes3' }] },
+  })
+  expect(built.views.map(v => v.tracks)).toEqual([
+    undefined,
+    undefined,
+    [{ trackId: 'genes3' }],
+  ])
+})
+
 // `tracks: []` on a panel would be a different snapshot than no key at all, and
 // the launches that pass nothing (or whose dialog checkbox is off) should keep
 // producing exactly the view they always did.

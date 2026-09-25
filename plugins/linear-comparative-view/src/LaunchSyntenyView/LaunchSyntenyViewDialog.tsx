@@ -100,6 +100,7 @@ export default function LaunchSyntenyViewDialog({
   feature,
   anchorAssembly,
   anchorTracks = [],
+  mateTracks,
   sourceView,
   trackId,
   handleClose,
@@ -110,6 +111,9 @@ export default function LaunchSyntenyViewDialog({
   anchorAssembly: string
   // the launching view's own tracks, for the panel that opens on its assembly
   anchorTracks?: TrackInit[]
+  // tracks for the mate panel, keyed by its assembly, from a launching view
+  // that shows both genomes
+  mateTracks?: Record<string, TrackInit[]>
   // the launching view itself, which the dialog offers to put the result in
   // place of
   sourceView?: AbstractViewModel
@@ -136,6 +140,7 @@ export default function LaunchSyntenyViewDialog({
           features: [feature],
           anchorAssembly,
           anchorTracks: copySourceTracks ? anchorTracks : undefined,
+          mateTracks: copySourceTracks ? mateTracks : undefined,
           windowSize,
           flipReversedMates,
           trackId,
@@ -163,7 +168,8 @@ export default function LaunchSyntenyViewDialog({
           onChange={setFlipReversedMates}
         />
       ) : null}
-      {anchorTracks.length ? (
+      {anchorTracks.length ||
+      Object.values(mateTracks ?? {}).some(t => t.length) ? (
         <CopySourceTracksCheckbox
           checked={copySourceTracks}
           onChange={setCopySourceTracks}

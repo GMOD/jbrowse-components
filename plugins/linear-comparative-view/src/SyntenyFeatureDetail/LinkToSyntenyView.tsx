@@ -7,13 +7,21 @@ import { allSessionTracks } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import { allAssembliesLaunchItems } from '../LaunchSyntenyView/allAssembliesLaunch.ts'
+import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
 import { openMateInLinearView } from '../LaunchSyntenyView/openMateInLinearView.ts'
 import { pairwiseSyntenyLaunch } from '../LaunchSyntenyView/pairwiseSyntenyLaunch.ts'
 import { visibleSpanOnFeature } from '../LaunchSyntenyView/visibleSpanOnRefName.ts'
+import { getMate } from '../syntenyMate.ts'
 import { centerStackOnFeature } from './centerOnFeature.ts'
 
 import type { SyntenyFeatureDetailModel } from './types.ts'
-import type { SimpleFeatureSerialized, TrackCatalog } from '@jbrowse/core/util'
+import type {
+  AssemblyHost,
+  Feature,
+  SimpleFeatureSerialized,
+  TrackCatalog,
+} from '@jbrowse/core/util'
+import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // The launched view needs the track back, so its id has to resolve to a track
@@ -53,6 +61,56 @@ export function anchorRow({
   return isLinearGenomeView(view) ? view : undefined
 }
 
+// A view showing both genomes of an alignment, as the circle does, which says
+// what a linear view of either genome opens with
+interface BothGenomesView {
+  id: string
+  linearTracksFor: (assemblyName: string) => TrackInit[]
+}
+
+function showsBothGenomes(view: object): view is BothGenomesView {
+  return 'linearTracksFor' in view
+}
+
+/**
+ * What a launch from this widget anchors on: the linear row the feature was
+ * drawn in, with its tracks and its visible window; or on the circle, the
+ * feature's own genome, with the circle's tracks for it and for the mate's.
+ */
+export function launchAnchor(
+  model: SyntenyFeatureDetailModel,
+  host: AssemblyHost,
+  feature: Feature,
+) {
+  const row = anchorRow(model)
+  if (row) {
+    return {
+      viewId: row.id,
+      assembly: row.assemblyNames[0],
+      tracks: anchorPanelTracks(row.tracks),
+      mateTracks: undefined,
+      region: visibleSpanOnFeature(host, row, feature),
+    }
+  }
+  const { view } = model
+  if (!showsBothGenomes(view)) {
+    return undefined
+  }
+  const own = feature.get('assemblyName') as string | undefined
+  const assembly =
+    own === undefined ? undefined : host.assemblyManager.get(own)?.name
+  const mate = getMate(feature)
+  return {
+    viewId: view.id,
+    assembly,
+    tracks: assembly === undefined ? [] : view.linearTracksFor(assembly),
+    mateTracks: mate
+      ? { [mate.assemblyName]: view.linearTracksFor(mate.assemblyName) }
+      : undefined,
+    region: undefined,
+  }
+}
+
 const LinkToSyntenyView = observer(function LinkToSyntenyView({
   model,
   feat,
@@ -65,15 +123,24 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
   const row = anchorRow(model)
   const track = findTrack(session, trackId)
   const feature = new SimpleFeature(feat)
-  const mate = row
-    ? openMateInLinearView({ host: session, feature, anchorView: row })
+  const anchor = launchAnchor(model, session, feature)
+  const mate = anchor
+    ? openMateInLinearView({
+        host: session,
+        feature,
+        viewId: anchor.viewId,
+        region: anchor.region,
+      })
     : undefined
   const launch =
-    row && track
+    anchor && track
       ? pairwiseSyntenyLaunch({
           host: session,
           feature,
-          anchorView: row,
+          anchorAssembly: anchor.assembly,
+          anchorTracks: anchor.tracks,
+          mateTracks: anchor.mateTracks,
+          region: anchor.region,
           track,
           // The view this widget was opened from, so the dialog can offer to
           // put the launched view in its slot rather than below it — the same

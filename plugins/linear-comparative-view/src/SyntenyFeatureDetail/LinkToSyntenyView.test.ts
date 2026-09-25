@@ -1,6 +1,9 @@
-import { anchorRow } from './LinkToSyntenyView.tsx'
+import { SimpleFeature } from '@jbrowse/core/util'
+
+import { anchorRow, launchAnchor } from './LinkToSyntenyView.tsx'
 
 import type { SyntenyFeatureDetailModel } from './types.ts'
+import type { AssemblyHost } from '@jbrowse/core/util'
 
 // A plain LGV, reached via LGVSyntenyDisplay's own context menu: no rows to
 // index, so the view itself is the anchor.
@@ -43,6 +46,43 @@ test('a missing row is no anchor: nothing falls back to the outer view', () => {
       level: undefined,
     } as unknown as SyntenyFeatureDetailModel),
   ).toBeUndefined()
+})
+
+// the ribbon's own side anchors, in the assembly's canonical name, and the
+// circle hands each genome's row the tracks it shows for that genome
+test('a circle ribbon anchors on its own genome with the circle tracks for both', () => {
+  const view = {
+    type: 'CircularView',
+    id: 'circle',
+    assemblyNames: ['hg38', 'mm39'],
+    linearTracksFor: (name: string) => [{ trackId: `${name}-genes` }],
+  }
+  const host = {
+    assemblyManager: {
+      get: (name: string) => ({ name: name === 'GRCh38' ? 'hg38' : name }),
+    },
+  } as unknown as AssemblyHost
+  const feature = new SimpleFeature({
+    uniqueId: 'aln1',
+    assemblyName: 'GRCh38',
+    refName: 'chr1',
+    start: 100,
+    end: 200,
+    mate: { assemblyName: 'mm39', refName: 'chr4', start: 300, end: 400 },
+  })
+  expect(
+    launchAnchor(
+      { view } as unknown as SyntenyFeatureDetailModel,
+      host,
+      feature,
+    ),
+  ).toEqual({
+    viewId: 'circle',
+    assembly: 'hg38',
+    tracks: [{ trackId: 'hg38-genes' }],
+    mateTracks: { mm39: [{ trackId: 'mm39-genes' }] },
+    region: undefined,
+  })
 })
 
 test('a circle ribbon names no anchor: the circular view has no linear row', () => {
