@@ -2,6 +2,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { FormGroup, MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { SYSTEM_THEME } from '../Session/Themes.ts'
 import PreferenceCheckbox from './PreferenceCheckbox.tsx'
 
 import type { ThemeMap } from '@jbrowse/core/ui'
@@ -16,7 +17,7 @@ const useStyles = makeStyles()({
 
 export interface GeneralPreferencesSession {
   allThemes: () => ThemeMap
-  themeName?: string
+  selectedThemeName?: string
   setThemeName: (arg: string) => void
   animationMode: AnimationMode
   numberGrouping: boolean
@@ -42,11 +43,12 @@ const GeneralPreferencesTab = observer(function GeneralPreferencesTab({
         variant="outlined"
         className={classes.field}
         label="Theme"
-        value={session.themeName}
+        value={session.selectedThemeName}
         onChange={event => {
           session.setThemeName(event.target.value)
         }}
       >
+        <MenuItem value={SYSTEM_THEME}>Follow system (light/dark)</MenuItem>
         {Object.entries(session.allThemes()).map(([key, val]) => (
           <MenuItem key={key} value={key}>
             {val.name || '(Unknown name)'}

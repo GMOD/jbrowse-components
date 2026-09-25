@@ -3460,6 +3460,14 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/systemColorScheme": {
+      "package": "@jbrowse/core",
+      "names": [
+        "onColorSchemeChange",
+        "prefersDarkColorScheme"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/tabix": {
       "package": "@jbrowse/core",
       "names": [

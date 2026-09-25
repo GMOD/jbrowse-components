@@ -6,6 +6,10 @@ import {
   defaultThemes,
 } from '@jbrowse/core/ui/theme'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
+import {
+  onColorSchemeChange,
+  prefersDarkColorScheme,
+} from '@jbrowse/core/util/systemColorScheme'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
@@ -30,13 +34,28 @@ function resolveThemeName(themes: ThemeMap, name: string) {
 }
 
 /**
+ * The selection that follows the OS light/dark preference rather than naming a
+ * theme, and what a session starts on before anyone picks something.
+ */
+export const SYSTEM_THEME = 'system'
+
+// The two ends of the light/dark axis: what `system` resolves to in each mode,
+// and where the toolbar's theme control stops. `default` is the one theme that
+// carries the config `theme` slot, and `darkStock` is the same brand colors
+// with `mode: 'dark'`, so a site's palette survives the light half and the
+// control and the `system` selection cannot disagree about either half.
+const LIGHT_THEME = 'default'
+const DARK_THEME = 'darkStock'
+
+/**
  * #stateModel ThemeManagerSessionMixin
  */
 export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
   return types
     .model({})
     .volatile(() => ({
-      sessionThemeName: localStorageGetItem('themeName') ?? 'default',
+      sessionThemeName: localStorageGetItem('themeName') ?? SYSTEM_THEME,
+      systemPrefersDark: prefersDarkColorScheme(),
     }))
     .views(s => {
       const self = asSession(s)
@@ -50,9 +69,38 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
         },
         /**
          * #getter
+         * What the user picked, as the Preferences picker shows it: a name in
+         * `allThemes()`, or `system`. A stored name whose theme is no longer
+         * registered reads as `default` without the stored value being
+         * touched, so it comes back if the plugin supplying it loads again.
+         */
+        get selectedThemeName() {
+          const name = self.sessionThemeName
+          return name === SYSTEM_THEME || this.allThemes()[name]
+            ? name
+            : 'default'
+        },
+        /**
+         * #getter
+         * The theme in effect: `selectedThemeName`, with `system` resolved
+         * against the OS preference.
          */
         get themeName() {
-          return resolveThemeName(this.allThemes(), self.sessionThemeName)
+          const name = this.selectedThemeName
+          return name === SYSTEM_THEME
+            ? self.systemPrefersDark
+              ? DARK_THEME
+              : LIGHT_THEME
+            : name
+        },
+        /**
+         * #getter
+         * Whether what is drawn right now is dark. Read off the resolved
+         * palette, so an `extraThemes` entry declaring `mode: 'dark'` counts
+         * as dark alongside the two built-in dark presets.
+         */
+        get themeIsDark() {
+          return this.palette.mode === 'dark'
         },
         /**
          * #getter
@@ -145,6 +193,28 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
       },
       /**
        * #action
+       */
+      setSystemPrefersDark(dark: boolean) {
+        self.systemPrefersDark = dark
+      },
+      /**
+       * #action
+       * Advance the toolbar's theme control one stop: follow the system, then
+       * light, then dark, then back to following the system. A theme picked in
+       * Preferences that is neither stop — `Dark (minimal)`, an `extraThemes`
+       * entry — counts as whichever mode it draws in, so the next click is the
+       * other one.
+       */
+      cycleThemeMode() {
+        self.sessionThemeName =
+          self.selectedThemeName === SYSTEM_THEME
+            ? LIGHT_THEME
+            : self.themeIsDark
+              ? SYSTEM_THEME
+              : DARK_THEME
+      },
+      /**
+       * #action
        * Point the session at light or dark, for a host that follows its own
        * dark-mode state rather than offering JBrowse's theme menu. Satisfies
        * `ThemeModeSession`, so `useSessionPalette` works against an app
@@ -173,7 +243,15 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
         })
         self.sessionThemeName = 'default'
       },
+    }))
+    .actions(self => ({
       afterAttach() {
+        addDisposer(
+          self,
+          onColorSchemeChange(() => {
+            self.setSystemPrefersDark(prefersDarkColorScheme())
+          }),
+        )
         addDisposer(
           self,
           autorun(

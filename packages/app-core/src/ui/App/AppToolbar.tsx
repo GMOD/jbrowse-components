@@ -5,6 +5,8 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Toolbar, Tooltip, useMediaQuery, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import ThemeModeButton from './ThemeModeButton.tsx'
+
 import type { AppSession } from './types.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -98,6 +100,7 @@ const AppToolbar = observer(function AppToolbar({
         </div>
       </Tooltip>
       {HeaderButtons}
+      <ThemeModeButton session={session} />
       <div className={classes.grow} />
       {narrow ? null : (
         <div className={classes.logo}>

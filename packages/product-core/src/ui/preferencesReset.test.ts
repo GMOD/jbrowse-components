@@ -1,3 +1,4 @@
+import { SYSTEM_THEME } from '../Session/Themes.ts'
 import {
   collectPreferenceChanges,
   resetPreferenceChange,
@@ -10,7 +11,7 @@ import type { TrackConfigChange } from '@jbrowse/core/util'
 function stubSession() {
   const scalars = new Map<string, TrackConfigChange>()
   const session: ResettablePreferencesSession = {
-    themeName: 'default',
+    selectedThemeName: SYSTEM_THEME,
     setThemeName: () => {},
     stickyViewHeaders: true,
     setStickyViewHeaders: () => {},
@@ -32,7 +33,7 @@ test('the reset diff lists the scalar rows and the off-map preferences', () => {
   const { session, scalars } = stubSession()
   scalars.set('scrollZoom', { path: ['scrollZoom'], from: false, to: true })
   session.setThemeName('lightStock')
-  session.themeName = 'lightStock'
+  session.selectedThemeName = 'lightStock'
 
   expect(collectPreferenceChanges(session).map(c => c.path)).toEqual([
     ['scrollZoom'],

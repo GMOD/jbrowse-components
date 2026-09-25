@@ -355,6 +355,7 @@ export default [
   '@jbrowse/core/util/svAlt',
   '@jbrowse/core/util/SvgCanvas',
   '@jbrowse/core/util/svgColorProps',
+  '@jbrowse/core/util/systemColorScheme',
   '@jbrowse/core/util/tabix',
   '@jbrowse/core/util/thresholdScale',
   '@jbrowse/core/util/tickLabels',

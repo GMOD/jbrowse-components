@@ -1,7 +1,9 @@
+import { SYSTEM_THEME } from '../Session/Themes.ts'
+
 import type { TrackConfigChange } from '@jbrowse/core/util'
 
 export interface ResettablePreferencesSession {
-  themeName?: string
+  selectedThemeName?: string
   setThemeName: (arg: string) => void
   stickyViewHeaders: boolean
   setStickyViewHeaders: (sticky: boolean) => void
@@ -28,11 +30,11 @@ const NON_MAP_PREFERENCES: NonMapPreference[] = [
   {
     head: 'theme',
     change: s =>
-      s.themeName && s.themeName !== 'default'
-        ? { path: ['theme'], from: 'default', to: s.themeName }
+      s.selectedThemeName && s.selectedThemeName !== SYSTEM_THEME
+        ? { path: ['theme'], from: SYSTEM_THEME, to: s.selectedThemeName }
         : undefined,
     reset: s => {
-      s.setThemeName('default')
+      s.setThemeName(SYSTEM_THEME)
     },
   },
   {

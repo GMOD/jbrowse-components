@@ -6,6 +6,10 @@ import {
   useSyncExternalStore,
 } from 'react'
 
+import {
+  onColorSchemeChange,
+  prefersDarkColorScheme,
+} from '../util/systemColorScheme.ts'
 import { defaultStyleTheme } from './styleTheme.ts'
 
 import type { JBrowsePalette } from './palette.ts'
@@ -77,22 +81,15 @@ export function usePalette(): JBrowsePalette {
   return useStyleTheme().palette
 }
 
-function darkSchemeQuery() {
-  return typeof window.matchMedia === 'function'
-    ? window.matchMedia('(prefers-color-scheme: dark)')
-    : undefined
-}
-
 function subscribeToColorScheme(onChange: () => void) {
-  const media = darkSchemeQuery()
-  media?.addEventListener('change', onChange)
+  const unsubscribe = onColorSchemeChange(onChange)
   const observer =
     typeof MutationObserver === 'function'
       ? new MutationObserver(onChange)
       : undefined
   observer?.observe(document.documentElement, { attributes: true })
   return () => {
-    media?.removeEventListener('change', onChange)
+    unsubscribe()
     observer?.disconnect()
   }
 }
@@ -109,7 +106,7 @@ function readColorScheme(): 'light' | 'dark' {
     )
   return declared.length === 1
     ? declared[0]!
-    : darkSchemeQuery()?.matches
+    : prefersDarkColorScheme()
       ? 'dark'
       : 'light'
 }

@@ -227,34 +227,35 @@ import * as m222 from '../util/stats.ts'
 import * as m223 from '../util/svAlt.ts'
 import * as m224 from '../util/SvgCanvas.ts'
 import * as m225 from '../util/svgColorProps.ts'
-import * as m226 from '../util/tabix.ts'
-import * as m227 from '../util/thresholdScale.ts'
-import * as m228 from '../util/tickLabels.ts'
-import * as m229 from '../util/TimeTraveller.ts'
-import * as m230 from '../util/tracks.ts'
-import * as m231 from '../util/translateTranscript.ts'
-import * as m232 from '../util/tss-react/index.ts'
-import * as m233 from '../util/tss-react/types.ts'
-import * as m234 from '../util/types/index.ts'
-import * as m235 from '../util/types/data.ts'
-import * as m236 from '../util/types/mst.ts'
-import * as m237 from '../util/unknownSnapshotKeys.ts'
-import * as m238 from '../util/unzip.ts'
-import * as m239 from '../util/useEventCallback.ts'
-import * as m240 from '../util/useFetch.ts'
-import * as m241 from '../util/useFetchPlugins.ts'
-import * as m242 from '../util/useMeasure.ts'
-import * as m243 from '../util/usePanelVirtualScroll.ts'
-import * as m244 from '../util/usePanZoom.ts'
-import * as m245 from '../util/usePointerDrag.ts'
-import * as m246 from '../util/useResizeDrag.ts'
-import * as m247 from '../util/useRowVirtualScroll.ts'
-import * as m248 from '../util/viewHighlights.ts'
-import * as m249 from '../util/viewStatus.ts'
-import * as m250 from '../util/virtualRange.ts'
-import * as m251 from '../util/wheelZoom.ts'
-import * as m252 from '../util/whenViewSettled.ts'
-import * as m253 from '../util/withLaunchInput.ts'
+import * as m226 from '../util/systemColorScheme.ts'
+import * as m227 from '../util/tabix.ts'
+import * as m228 from '../util/thresholdScale.ts'
+import * as m229 from '../util/tickLabels.ts'
+import * as m230 from '../util/TimeTraveller.ts'
+import * as m231 from '../util/tracks.ts'
+import * as m232 from '../util/translateTranscript.ts'
+import * as m233 from '../util/tss-react/index.ts'
+import * as m234 from '../util/tss-react/types.ts'
+import * as m235 from '../util/types/index.ts'
+import * as m236 from '../util/types/data.ts'
+import * as m237 from '../util/types/mst.ts'
+import * as m238 from '../util/unknownSnapshotKeys.ts'
+import * as m239 from '../util/unzip.ts'
+import * as m240 from '../util/useEventCallback.ts'
+import * as m241 from '../util/useFetch.ts'
+import * as m242 from '../util/useFetchPlugins.ts'
+import * as m243 from '../util/useMeasure.ts'
+import * as m244 from '../util/usePanelVirtualScroll.ts'
+import * as m245 from '../util/usePanZoom.ts'
+import * as m246 from '../util/usePointerDrag.ts'
+import * as m247 from '../util/useResizeDrag.ts'
+import * as m248 from '../util/useRowVirtualScroll.ts'
+import * as m249 from '../util/viewHighlights.ts'
+import * as m250 from '../util/viewStatus.ts'
+import * as m251 from '../util/virtualRange.ts'
+import * as m252 from '../util/wheelZoom.ts'
+import * as m253 from '../util/whenViewSettled.ts'
+import * as m254 from '../util/withLaunchInput.ts'
 
 const libs: Record<string, unknown> = {
   '@jbrowse/core/assemblyManager': { ...m0, __esModule: true },
@@ -483,34 +484,35 @@ const libs: Record<string, unknown> = {
   '@jbrowse/core/util/svAlt': m223,
   '@jbrowse/core/util/SvgCanvas': m224,
   '@jbrowse/core/util/svgColorProps': m225,
-  '@jbrowse/core/util/tabix': m226,
-  '@jbrowse/core/util/thresholdScale': m227,
-  '@jbrowse/core/util/tickLabels': m228,
-  '@jbrowse/core/util/TimeTraveller': m229.default,
-  '@jbrowse/core/util/tracks': m230,
-  '@jbrowse/core/util/translateTranscript': m231,
-  '@jbrowse/core/util/tss-react': m232,
-  '@jbrowse/core/util/tss-react/types': m233,
-  '@jbrowse/core/util/types': m234,
-  '@jbrowse/core/util/types/data': m235,
-  '@jbrowse/core/util/types/mst': m236,
-  '@jbrowse/core/util/unknownSnapshotKeys': m237,
-  '@jbrowse/core/util/unzip': m238,
-  '@jbrowse/core/util/useEventCallback': m239,
-  '@jbrowse/core/util/useFetch': m240,
-  '@jbrowse/core/util/useFetchPlugins': m241,
-  '@jbrowse/core/util/useMeasure': m242.default,
-  '@jbrowse/core/util/usePanelVirtualScroll': m243,
-  '@jbrowse/core/util/usePanZoom': m244,
-  '@jbrowse/core/util/usePointerDrag': m245,
-  '@jbrowse/core/util/useResizeDrag': m246,
-  '@jbrowse/core/util/useRowVirtualScroll': m247,
-  '@jbrowse/core/util/viewHighlights': m248,
-  '@jbrowse/core/util/viewStatus': m249,
-  '@jbrowse/core/util/virtualRange': m250,
-  '@jbrowse/core/util/wheelZoom': m251,
-  '@jbrowse/core/util/whenViewSettled': m252,
-  '@jbrowse/core/util/withLaunchInput': m253,
+  '@jbrowse/core/util/systemColorScheme': m226,
+  '@jbrowse/core/util/tabix': m227,
+  '@jbrowse/core/util/thresholdScale': m228,
+  '@jbrowse/core/util/tickLabels': m229,
+  '@jbrowse/core/util/TimeTraveller': m230.default,
+  '@jbrowse/core/util/tracks': m231,
+  '@jbrowse/core/util/translateTranscript': m232,
+  '@jbrowse/core/util/tss-react': m233,
+  '@jbrowse/core/util/tss-react/types': m234,
+  '@jbrowse/core/util/types': m235,
+  '@jbrowse/core/util/types/data': m236,
+  '@jbrowse/core/util/types/mst': m237,
+  '@jbrowse/core/util/unknownSnapshotKeys': m238,
+  '@jbrowse/core/util/unzip': m239,
+  '@jbrowse/core/util/useEventCallback': m240,
+  '@jbrowse/core/util/useFetch': m241,
+  '@jbrowse/core/util/useFetchPlugins': m242,
+  '@jbrowse/core/util/useMeasure': m243.default,
+  '@jbrowse/core/util/usePanelVirtualScroll': m244,
+  '@jbrowse/core/util/usePanZoom': m245,
+  '@jbrowse/core/util/usePointerDrag': m246,
+  '@jbrowse/core/util/useResizeDrag': m247,
+  '@jbrowse/core/util/useRowVirtualScroll': m248,
+  '@jbrowse/core/util/viewHighlights': m249,
+  '@jbrowse/core/util/viewStatus': m250,
+  '@jbrowse/core/util/virtualRange': m251,
+  '@jbrowse/core/util/wheelZoom': m252,
+  '@jbrowse/core/util/whenViewSettled': m253,
+  '@jbrowse/core/util/withLaunchInput': m254,
 }
 
 export default libs
