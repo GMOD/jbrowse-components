@@ -43,23 +43,16 @@ export function openInsertionWidget(
 
 /**
  * On a plain click over an insertion marker, open the feature-details widget
- * with the inserted sequence. The hover tooltip drops the sequence once it
- * exceeds 20bp (see `MafAlignmentTooltipContents`), so clicking is the only
- * way to read a long insertion. Mirrors plugin-alignments' click-an-insertion →
- * `openCigarWidget` flow (same `insertion` feature type + `length`/`sequence`
- * fields). No-op unless the click lands on an insertion marker — the row hover
- * resolves a cell/deletion/empty otherwise — and only in `bases` mode where the
- * markers are actually drawn.
+ * with the inserted sequence, which the tooltip drops past 20bp. Mirrors
+ * plugin-alignments' click-an-insertion flow.
  */
 export function openInsertionWidgetOnClick(
   model: LinearMafDisplayModel,
   mouseX: number,
   mouseY: number,
 ) {
-  if (model.basesRenderingActive) {
-    const hover = resolveMafRowHover(model, mouseX, mouseY)
-    if (hover?.kind === 'insertion') {
-      openInsertionWidget(model, hover)
-    }
+  const hover = resolveMafRowHover(model, mouseX, mouseY)
+  if (hover?.kind === 'insertion') {
+    openInsertionWidget(model, hover)
   }
 }

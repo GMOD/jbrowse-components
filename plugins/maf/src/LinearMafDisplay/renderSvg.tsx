@@ -74,7 +74,6 @@ function MafSvgBody({
     conservationBandActive,
     codonConservationActive,
     conservationDisplayHeight,
-    basesRenderingActive,
     scrollTop,
   } = model
   // SVG export builds its palette from the user-selected export theme, not
@@ -198,20 +197,12 @@ function MafSvgBody({
                 model.visibleFrames,
                 getFrameColors(palette),
               )
-              // Insertion markers + deletion count labels render from the same
-              // positioned markers the on-screen overlays use, so export matches
-              // the screen. Insertions are base-level only (gated like the live
-              // InsertionsOverlay); deletion labels draw in every mode.
-              if (basesRenderingActive) {
-                drawMafInsertions(
-                  ctx,
-                  model.visibleInsertions,
-                  svgState.palette.insertionColor,
-                  1 / view.bpPerPx,
-                )
-              }
-              // `svgState.palette`, so the count follows the export theme the
-              // gap cells under it were painted from
+              drawMafInsertions(
+                ctx,
+                model.visibleInsertions,
+                svgState.palette.insertionColor,
+                1 / view.bpPerPx,
+              )
               drawMafDeletionLabels(
                 ctx,
                 model.visibleDeletions,

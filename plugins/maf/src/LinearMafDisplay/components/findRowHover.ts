@@ -280,9 +280,9 @@ function emptyHit(e: MafEmptyRow): EmptyHit {
 /**
  * Resolve what `rowIndex` shows at absolute genomic `bp`: an aligned base
  * (`cell`), an interbase `insertion` marker, a `deletion` run, or a
- * bridged/empty region (`empty`). An insertion under the cursor wins over the
- * base it abuts (within its narrow marker box), matching plugin-alignments; a
- * gap cell falls through to the deletion run that covers it. Returns undefined
+ * bridged/empty region (`empty`). Where the insertion markers are drawn, one
+ * under the cursor wins over the base it abuts (within its narrow marker box),
+ * matching plugin-alignments; a gap cell falls through to the deletion run that covers it. Returns undefined
  * when no block covers the bp or the row is absent. Blocks are genomically
  * disjoint and sorted, so `blockIndexAtBp` binary-searches the one covering
  * block — this runs on every mousemove against the *buffered* region, which is
@@ -296,6 +296,7 @@ export function findRowHoverAtBp(
   rowIndex: number,
   showAsUpperCase: boolean,
   bpPerPx: number,
+  insertionsDrawn: boolean,
 ): RowHit | undefined {
   const { gposFrac, baseBp: targetBp } = bp
   const i = blockIndexAtBp(region.blocks, targetBp)
@@ -306,7 +307,9 @@ export function findRowHoverAtBp(
   const row = block.rows.find(r => r.rowIndex === rowIndex)
   if (row) {
     return (
-      insertionHitInRow(block, row, gposFrac, bpPerPx, showAsUpperCase) ??
+      (insertionsDrawn
+        ? insertionHitInRow(block, row, gposFrac, bpPerPx, showAsUpperCase)
+        : undefined) ??
       cellHitInRow(block, row, targetBp, showAsUpperCase) ??
       deletionHitInRow(
         block,

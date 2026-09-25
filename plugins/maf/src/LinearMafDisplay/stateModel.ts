@@ -1831,47 +1831,6 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #method
-         * Resolve a hover hit on `rowIndex` at the cursor's genomic position
-         * (absolute uint32, per worker-output convention): an aligned base
-         * (`cell`) or a bridged/empty region (`empty`), each tagged with the
-         * sample label. Returns undefined when no fetched block covers the bp,
-         * the row is out of range, or the cell is a gap.
-         *
-         * `bp` carries both readings of the cursor (see `HoverBp`) because the
-         * cell and the interbase insertion marker are selected by different
-         * ones, and they differ on a reversed region.
-         */
-        rowHoverInfo(
-          displayedRegionIndex: number,
-          bp: HoverBp,
-          rowIndex: number,
-          bpPerPx: number,
-        ) {
-          const { sources } = self
-          const region =
-            rowIndex >= 0 && rowIndex < sources.length
-              ? self.rpcDataMap.get(displayedRegionIndex)
-              : undefined
-          const hit = region
-            ? findRowHoverAtBp(
-                region,
-                bp,
-                rowIndex,
-                self.showAsUpperCase,
-                bpPerPx,
-              )
-            : undefined
-          if (!hit) {
-            return undefined
-          }
-          const source = sources[rowIndex]!
-          return {
-            ...hit,
-            sampleLabel: source.label ?? source.name,
-          }
-        },
-        /**
-         * #method
          * Where the rows `[startRow, endRow)` sit in their own genomes across
          * the reference bp range `[startBp, endBp)` — the loci an "open this
          * species here" navigation targets. A row contributes nothing when it
@@ -2086,16 +2045,6 @@ export default function stateModelFactory(
           },
           /**
            * #getter
-           * Positioned deletion runs for the visible aligned rows; the overlay draws
-           * the deleted-base count inside each run when it fits.
-           */
-          get visibleDeletions() {
-            return self.rowsVisible
-              ? computeVisibleDeletions(overlayParams())
-              : []
-          },
-          /**
-           * #getter
            * Positioned strand-flip (inversion) markers for the visible aligned rows.
            * Empty unless the indicator is toggled on.
            */
@@ -2240,6 +2189,50 @@ export default function stateModelFactory(
           return isRowIdentityMode(rendering) ? rendering : undefined
         },
       }))
+      .views(self => ({
+        /**
+         * #method
+         * Resolve a hover hit on `rowIndex` at the cursor's genomic position
+         * (absolute uint32, per worker-output convention): an aligned base
+         * (`cell`) or a bridged/empty region (`empty`), each tagged with the
+         * sample label. Returns undefined when no fetched block covers the bp,
+         * the row is out of range, or the cell is a gap.
+         *
+         * `bp` carries both readings of the cursor (see `HoverBp`) because the
+         * cell and the interbase insertion marker are selected by different
+         * ones, and they differ on a reversed region.
+         */
+        rowHoverInfo(
+          displayedRegionIndex: number,
+          bp: HoverBp,
+          rowIndex: number,
+          bpPerPx: number,
+        ) {
+          const { sources } = self
+          const region =
+            rowIndex >= 0 && rowIndex < sources.length
+              ? self.rpcDataMap.get(displayedRegionIndex)
+              : undefined
+          const hit = region
+            ? findRowHoverAtBp(
+                region,
+                bp,
+                rowIndex,
+                self.showAsUpperCase,
+                bpPerPx,
+                self.basesRenderingActive,
+              )
+            : undefined
+          if (!hit) {
+            return undefined
+          }
+          const source = sources[rowIndex]!
+          return {
+            ...hit,
+            sampleLabel: source.label ?? source.name,
+          }
+        },
+      }))
       .actions(self => ({
         /**
          * #action
@@ -2287,23 +2280,24 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Positioned insertion markers (interbase) for the visible aligned rows.
-         *
-         * Lives here, past `basesRenderingActive`, rather than beside the other
-         * block overlays: the markers are drawn only in `bases` mode (the
-         * overlay and the SVG export both gate on it), so the identity plot,
-         * codon view and color-by-chromosome were each paying a full per-column
-         * insertion walk of every visible block × row, every frame, for markers
-         * nothing rendered. The identity plot is the expensive case — it is the
-         * zoom-out default once `rowIdentityMode` is set, which is exactly where
-         * the walk covers the most blocks. Same mistake, and same fix, as the
-         * deletion overlay building 679k markers to draw none; see
-         * agent-docs/reference/MAF_LARGE_BLOCKS.md.
-         *
-         * The hover hit-test does NOT read this — it resolves insertions from
-         * the blocks directly (`findRowHoverAtBp`) — so gating costs no
-         * interactivity.
+         * Positioned insertion markers, drawn only while the bases paint the
+         * rows. The hover and the right-click menu name an insertion under the
+         * same gate.
          */
+        /**
+         * #getter
+         * Positioned deletion runs, labelled with their length where it fits.
+         * Only the bases paint the gap cells the count is coloured against.
+         */
+        get visibleDeletions() {
+          return self.rowsVisible && self.basesRenderingActive
+            ? computeVisibleDeletions({
+                view: self.host,
+                rpcDataMap: self.rpcDataMap,
+                ...self.rowGeometry(),
+              })
+            : []
+        },
         get visibleInsertions() {
           return self.rowsVisible && self.basesRenderingActive
             ? computeVisibleInsertions({

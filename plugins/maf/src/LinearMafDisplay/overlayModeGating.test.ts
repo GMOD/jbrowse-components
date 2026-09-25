@@ -67,13 +67,50 @@ describe('insertion markers are only computed for the rendering that draws them'
     expect(display.visibleInsertions).toEqual([])
   })
 
-  // Deletion count labels deliberately draw in every mode (the gap cells they
-  // annotate come from whichever rendering is painting), so they are NOT gated
-  // the same way — pinned here so the two don't get "unified" by mistake.
-  it('leaves the deletion labels ungated by rendering mode', () => {
+  it('draws deletion counts with the bases alone', () => {
+    const { display } = createMafTestEnvironment().createDisplay()
+    display.setSamples({
+      samples: [{ id: 'hg38', label: 'hg38' }],
+      treeNewick: undefined,
+      samplesCanonical: true,
+    })
+    stageDetailRegion(
+      display,
+      0,
+      testWireRegionData(
+        [
+          {
+            startBp: 100,
+            refSeq: 'ACGTACGT',
+            rows: [{ sampleId: 'hg38', seq: 'A----CGT' }],
+          },
+        ],
+        { coverage: emptyMafCoverage(100) },
+      ),
+    )
+    display.view.zoomTo(0.05)
+    display.view.centerAt(104, 'ctgA')
+    expect(display.visibleDeletions.map(d => d.length)).toEqual([4])
+    display.setColorByChromosome(true)
+    expect(display.visibleDeletions).toEqual([])
+  })
+})
+
+describe('the hover names an insertion only where its marker draws', () => {
+  const atAnchor = (display: LinearMafDisplayModel) =>
+    display.rowHoverInfo(0, { gposFrac: 103, baseBp: 103 }, 0, 0.1)?.kind
+
+  it('names the insertion under the bases', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
-    display.setColorByChromosome(true)
-    expect(() => display.visibleDeletions).not.toThrow()
+    expect(atAnchor(display)).toBe('insertion')
+  })
+
+  it('names the base under the identity plot', () => {
+    const { display } = createMafTestEnvironment().createDisplay()
+    seedRegion(display)
+    display.setRowIdentityAutoZoom(false)
+    display.setRowIdentityMode('heatmap')
+    expect(atAnchor(display)).toBe('cell')
   })
 })
