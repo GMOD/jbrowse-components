@@ -90,7 +90,7 @@ type Layer = EncodedFeaturesResult['layers'][number]
 function ramp(
   extent: [number, number],
   pinnedDomain?: [number, number],
-): Layer['scale'] {
+): Extract<Layer['scale'], { kind: 'ramp' }> {
   return {
     kind: 'ramp',
     field: 'score',
@@ -2341,6 +2341,45 @@ test("a threshold key keeps the no-value row another region paints after a hidde
   expect(keyed()).toContain('(no value)')
   display.hideGroup('a')
   expect(keyed()).toContain('(no value)')
+})
+
+test("a span ramp's key drops the no-value row with the section that painted it", () => {
+  const { display } = createTestEnvironment(
+    [
+      {
+        mark: 'span',
+        encoding: { color: { field: 'score', scale: 'linear' } },
+      },
+    ],
+    REGION,
+    'BedAdapter',
+    { facet: 'sample' },
+  ).createDisplay()
+  display.setRpcData(
+    0,
+    result(
+      [
+        {
+          y: [0, 0],
+          row: [0, 1],
+          color: [NO_VALUE_ABGR, 0xff0000ff],
+          scale: { ...ramp([1, 1]), missing: true },
+        },
+      ],
+      [
+        { key: 'a', firstRow: 0, rowCount: 1 },
+        { key: 'b', firstRow: 1, rowCount: 1 },
+      ],
+    ),
+    REGION,
+  )
+  const keyed = () =>
+    display.colorScales.flatMap(c =>
+      c.kind === 'categorical' ? c.entries.map(e => e.label) : [],
+    )
+  expect(keyed()).toContain('(no value)')
+  display.hideGroup('a')
+  expect(keyed()).not.toContain('(no value)')
 })
 
 test("a key over the facet's field follows the sections' order", () => {

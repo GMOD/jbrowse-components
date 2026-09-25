@@ -11,7 +11,11 @@ import {
   rampOverExtent,
 } from '@jbrowse/core/util/markEncoding'
 import { SHAPE_CODES } from '@jbrowse/core/util/shapeNames'
-import { keepRampValues, rampValueMissing } from '@jbrowse/render-core/marks'
+import {
+  RAMP_NO_VALUE_BITS,
+  keepRampValues,
+  rampValueBits,
+} from '@jbrowse/render-core/marks'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
@@ -132,6 +136,7 @@ function rowRemap(region: MarkRegionData, layout: FacetLayout) {
 function drawnScales(layer: StoredLayer): StoredLayer {
   const { y, color, colorValue, glyph, scale, shapeScale } = layer
   const colors = new Set(color)
+  const bits = colorValue && rampValueBits(colorValue)
   const glyphs = new Set(glyph)
   let yMin = Infinity
   let yMax = -Infinity
@@ -150,7 +155,7 @@ function drawnScales(layer: StoredLayer): StoredLayer {
         vMin = Math.min(vMin, v)
         vMax = Math.max(vMax, v)
       } else if (Number.isNaN(v)) {
-        if (rampValueMissing(colorValue, i)) {
+        if (bits?.[i] === RAMP_NO_VALUE_BITS) {
           missing = true
         } else {
           notNumber = true
@@ -166,19 +171,19 @@ function drawnScales(layer: StoredLayer): StoredLayer {
     scale:
       scale?.kind === 'categorical' && color
         ? { ...scale, entries: scale.entries.filter(e => colors.has(e.color)) }
-        : scale?.kind === 'threshold' && color
+        : scale?.kind === 'ramp' && colorValue
           ? {
-              ...scale,
-              missing: scale.missing && colors.has(NO_VALUE_ABGR),
-              notNumber: scale.notNumber && colors.has(MISCONFIGURED_ABGR),
+              ...(scale.pinned[0] && scale.pinned[1]
+                ? { ...scale, extent: [vMin, vMax] as [number, number] }
+                : rampOverExtent(scale, [vMin, vMax])),
+              missing,
+              notNumber,
             }
-          : scale?.kind === 'ramp' && colorValue
+          : (scale?.kind === 'threshold' || scale?.kind === 'ramp') && color
             ? {
-                ...(scale.pinned[0] && scale.pinned[1]
-                  ? { ...scale, extent: [vMin, vMax] as [number, number] }
-                  : rampOverExtent(scale, [vMin, vMax])),
-                missing,
-                notNumber,
+                ...scale,
+                missing: scale.missing && colors.has(NO_VALUE_ABGR),
+                notNumber: scale.notNumber && colors.has(MISCONFIGURED_ABGR),
               }
             : scale,
     shapeScale: shapeScale && {

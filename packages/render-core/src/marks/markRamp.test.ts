@@ -12,7 +12,7 @@ import {
   keepRampValues,
   paintColors,
   rampUniforms,
-  rampValueMissing,
+  rampValueBits,
 } from './markRamp.ts'
 
 import type { BarChannels, BarParams } from './barMark.ts'
@@ -114,7 +114,7 @@ test('keeping part of a lane keeps the value-less payload bit for bit', () => {
   const values = new Float32Array([1, 0, 3])
   new Uint32Array(values.buffer)[1] = RAMP_NO_VALUE_BITS
   const kept = keepRampValues(values, (_, i) => i > 0)
-  expect(rampValueMissing(kept, 0)).toBe(true)
+  expect(rampValueBits(kept)[0]).toBe(RAMP_NO_VALUE_BITS)
   expect(kept[1]).toBe(3)
 })
 

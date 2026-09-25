@@ -52,10 +52,11 @@ export function rampUniforms(ramp: MarkRamp | undefined) {
  */
 export function colorBits(c: ColorChannel): ArrayLike<number> {
   const { colorValue } = c
-  return colorValue ? valueBits(colorValue) : (c.color ?? NO_COLORS)
+  return colorValue ? rampValueBits(colorValue) : (c.color ?? NO_COLORS)
 }
 
-function valueBits(values: Float32Array) {
+/** A ramp lane's float32 values viewed as their bits. */
+export function rampValueBits(values: Float32Array) {
   return new Uint32Array(values.buffer, values.byteOffset, values.length)
 }
 
@@ -68,13 +69,8 @@ export function keepRampValues(
   values: Float32Array,
   keep: (value: number, index: number) => boolean,
 ) {
-  const bits = valueBits(values)
+  const bits = rampValueBits(values)
   return new Float32Array(bits.filter((_, i) => keep(values[i]!, i)).buffer)
-}
-
-/** Whether the lane holds a feature with no value at `index`. */
-export function rampValueMissing(values: Float32Array, index: number) {
-  return valueBits(values)[index] === RAMP_NO_VALUE_BITS
 }
 
 /**
@@ -109,7 +105,7 @@ export function paintColors(
   }
   const entries = lut.length / 4
   const colors = new Uint32Array(count)
-  const bits = valueBits(colorValue)
+  const bits = rampValueBits(colorValue)
   for (let i = 0; i < count; i++) {
     const value = colorValue[i]!
     if (bits[i] === RAMP_NO_VALUE_BITS) {

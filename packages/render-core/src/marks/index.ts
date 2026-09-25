@@ -15,7 +15,7 @@ export {
   RAMP_NO_VALUE_BITS,
   RAMP_NO_VALUE_COLOR,
 } from '../shaders/markColor.generated.ts'
-export { keepRampValues, rampValueMissing } from './markRamp.ts'
+export { keepRampValues, rampValueBits } from './markRamp.ts'
 export { HIDDEN_ROW, NO_ROW_COLOR, RowKeys, buildRowTable } from './rowTable.ts'
 
 export type { MarkPlan } from './markPlan.ts'
