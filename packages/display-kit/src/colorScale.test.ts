@@ -46,6 +46,10 @@ test("a config's range read against a preset's cuts is held to them", () => {
   ).toEqual(['threshold-range'])
 })
 
+test("cuts a config writes are never held to the preset's range", () => {
+  expect(colorProblems({ field: 'ld', domain: ['0.5'] }, LD)).toEqual([])
+})
+
 const rules = (
   color: Parameters<typeof colorProblems>[0],
   scale = 'categorical',

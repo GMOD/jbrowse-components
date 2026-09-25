@@ -104,12 +104,16 @@ function rampItem(
 ): LegendItem {
   const [min, max] = domain
   const [lo, hi] = extent ?? domain
+  // compared at float32 as well, since a value lane carries the extent in one
+  // and a pinned 0.3 is then a hair under the 0.3 it read
+  const below = lo < min && Math.fround(lo) < Math.fround(min)
+  const above = hi > max && Math.fround(hi) > Math.fround(max)
   return {
     label: lone ? (title ?? '') : '',
     gradient: {
       stops,
-      minLabel: `${lo < min ? '≤' : ''}${format(min)}`,
-      maxLabel: `${hi > max ? '≥' : ''}${format(max)}`,
+      minLabel: `${below ? '≤' : ''}${format(min)}`,
+      maxLabel: `${above ? '≥' : ''}${format(max)}`,
     },
   }
 }

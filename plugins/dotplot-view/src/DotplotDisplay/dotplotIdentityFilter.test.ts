@@ -54,7 +54,7 @@ describe('minIdentity filter', () => {
   // -1 is the worker's missing sentinel, not an identity of -100%: a track
   // whose adapter reports no identity must not empty as the slider moves.
   test('keeps features carrying no identity at every threshold', () => {
-    expect(keptFeatures([-1, -1], 0.99)).toStrictEqual([0, 1])
+    expect(keptFeatures([Number.NaN, Number.NaN], 0.99)).toStrictEqual([0, 1])
   })
 
   test('filters alongside minAlignmentLength rather than replacing it', () => {

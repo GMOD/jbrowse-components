@@ -1,3 +1,5 @@
+import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
+
 import { bakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
 import { bakedValueColor } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import {
@@ -407,6 +409,11 @@ describe('getReadDisplayLegendItems', () => {
     expect(key.title).toBe('tags.NM')
     expect(key.domain).toEqual([0, 10])
     expect(key.stops[0]!.color).toBe(ramp.color('0'))
+    // both ends pinned, the key still hears where the loaded reads reach
+    expect(
+      legendSpecOf([bakedRampScale(NM, ramp, [0, 42])!]).sections[0]!.items[0]!
+        .gradient,
+    ).toMatchObject({ minLabel: '0', maxLabel: '≥10' })
 
     const bins = bakedColorScale(
       NM,

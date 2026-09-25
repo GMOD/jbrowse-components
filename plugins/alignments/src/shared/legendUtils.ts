@@ -835,6 +835,7 @@ function bakedValueLegend(
 export function bakedRampScale(
   colorBy: ColorBy,
   scale: BakedColorScale | undefined,
+  extent?: readonly [number, number],
 ): RampScale | undefined {
   return scale?.kind === 'linear'
     ? {
@@ -843,7 +844,7 @@ export function bakedRampScale(
         title: colorFieldOf(colorBy),
         domain: [...scale.domain],
         stops: scale.stops,
-        extent: scale.extent,
+        extent,
       }
     : undefined
 }

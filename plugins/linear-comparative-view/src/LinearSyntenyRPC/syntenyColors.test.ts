@@ -46,7 +46,7 @@ const featureData = features(
     identity: new Float32Array([0.9, 0.5]),
     mappingQual: new Float32Array([60, 10]),
     meanIdentity: new Float32Array([0.9, 0.5]),
-    dnds: new Float32Array([-1]),
+    dnds: new Float32Array([Number.NaN]),
   },
 )
 
@@ -137,7 +137,7 @@ test('a ribbon the colour mode hides stays hidden under the identity fade', () =
           { refName: 'chr2', mateRefName: 'chrB' },
         ],
         {
-          group: new Float32Array([0, -1]),
+          group: new Float32Array([0, Number.NaN]),
           identity: new Float32Array([0.9, 0.9]),
         },
       ),
@@ -170,7 +170,7 @@ test("a hidden ribbon's indels are hidden with it", () => {
           { refName: 'chr1', mateRefName: 'chrA' },
           { refName: 'chr2', mateRefName: 'chrB' },
         ],
-        { group: new Float32Array([0, -1]) },
+        { group: new Float32Array([0, Number.NaN]) },
       ),
       attributeRanges: { group },
     },

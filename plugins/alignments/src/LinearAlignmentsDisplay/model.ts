@@ -1617,11 +1617,24 @@ export default function stateModelFactory(
            */
           get bakedColorExtent(): NumericExtent | undefined {
             const encoding = self.colorEncoding
-            return self.colorBy.type === 'tag' &&
-              typeof encoding === 'object' &&
+            return typeof encoding === 'object' &&
               encoding.scale === 'linear' &&
               (encoding.domainMin === undefined ||
                 encoding.domainMax === undefined)
+              ? this.tagValueExtent
+              : undefined
+          },
+
+          /**
+           * #getter
+           * The span of a linear colour field over the loaded reads, pinned
+           * ends or not, which the key marks an end the reads run past by.
+           */
+          get tagValueExtent(): NumericExtent | undefined {
+            const encoding = self.colorEncoding
+            return self.colorBy.type === 'tag' &&
+              typeof encoding === 'object' &&
+              encoding.scale === 'linear'
               ? numericExtentAcrossGroups(
                   this.laidOutByGroupFramed,
                   d => d.readTagValues,
@@ -2624,7 +2637,11 @@ export default function stateModelFactory(
            */
           get colorScales(): ColorScale[] {
             return getAlignmentsColorScales({
-              readRamp: bakedRampScale(self.colorBy, self.bakedColorScale),
+              readRamp: bakedRampScale(
+                self.colorBy,
+                self.bakedColorScale,
+                self.tagValueExtent,
+              ),
               legendItems: () => self.legendItems(),
               arcLegendTitle: self.arcLegendTitle,
               arcLegendItems: () => self.arcLegendItems(),
