@@ -569,9 +569,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       get variantJunctionsByTrack(): Map<string, Feature[][]> {
         const result = new Map<string, Feature[][]>()
-        for (const [trackId, featureArrays] of Object.entries(
-          self.matchedTrackFeatures,
-        )) {
+        for (const { configuration } of this.fetchedTracks) {
+          const trackId = configuration.trackId
+          const featureArrays = self.matchedTrackFeatures[trackId]
+          if (!featureArrays) {
+            continue
+          }
           result.set(
             trackId,
             getVariantJunctions(
@@ -630,6 +633,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               this.getMatchedTracks(trackId).map(t =>
                 readSourceOf(t.displays[0]),
               ),
+              self.views.map(view => view.staticBlocks.contentBlocks),
             ),
           })
         }

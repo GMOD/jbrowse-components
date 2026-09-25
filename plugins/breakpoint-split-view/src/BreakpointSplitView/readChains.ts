@@ -134,14 +134,30 @@ export function buildReadChains(
   return chains
 }
 
-/** Each chain entry's layout rect in its own row's display. */
+interface BlockSpan {
+  refName: string
+  start: number
+  end: number
+}
+
+/**
+ * Each on-screen chain entry's layout rect in its own row's display. A read in
+ * the display's prefetch margin has a layout too, but no place in the panel.
+ */
 export function layoutReadChains(
   chains: ReadChain[],
   sources: (ReadSource | undefined)[],
+  blocksByLevel: BlockSpan[][],
 ) {
   const layouts = new Map<ReadEntry, LayoutRecord>()
+  const onScreen = (e: ReadEntry) => {
+    const { start, end } = readSpanOf(e)
+    return !!blocksByLevel[e.level]?.some(
+      b => b.refName === e.refName && b.start < end && start < b.end,
+    )
+  }
   for (const { entries } of chains) {
-    for (const e of entries) {
+    for (const e of entries.filter(onScreen)) {
       const layout = sources[e.level]?.readLayoutRecord(
         e.groupKey,
         e.displayedRegionIndex,

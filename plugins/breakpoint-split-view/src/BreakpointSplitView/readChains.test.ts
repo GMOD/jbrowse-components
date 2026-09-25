@@ -241,9 +241,21 @@ test('layoutReadChains asks each entry’s own row for its rect', () => {
     ]),
   ]
   const chains = buildReadChains(sources, assemblies)
-  const layouts = layoutReadChains(chains, sources)
+  const blocks = [
+    [{ refName: 'chr1', start: 0, end: 2000 }],
+    [{ refName: 'chr2', start: 4000, end: 6000 }],
+  ]
+  const layouts = layoutReadChains(chains, sources, blocks)
   expect(chains[0]!.entries.map(e => layouts.get(e))).toEqual([
     [1000, 0, 1500, 5],
     [5000, 0, 5500, 5],
+  ])
+  const offScreen = layoutReadChains(chains, sources, [
+    blocks[0]!,
+    [{ refName: 'chr2', start: 6000, end: 8000 }],
+  ])
+  expect(chains[0]!.entries.map(e => offScreen.get(e))).toEqual([
+    [1000, 0, 1500, 5],
+    undefined,
   ])
 })

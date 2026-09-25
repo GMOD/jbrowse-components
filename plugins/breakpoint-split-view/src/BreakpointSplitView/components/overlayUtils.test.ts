@@ -1,3 +1,5 @@
+import { PAIR_DIRECTION_NUM } from '@jbrowse/alignments-core'
+
 import {
   buildBreakpointPath,
   chainHighlightRects,
@@ -82,6 +84,7 @@ describe('drawnConnections', () => {
     refName: string,
     strand: number,
     level: number,
+    orientation = 0,
   ): ReadEntry => ({
     level,
     groupKey: '',
@@ -93,23 +96,28 @@ describe('drawnConnections', () => {
       readFlags: Uint16Array.from([0]),
       readStrands: Int8Array.from([strand]),
       readInterchrom: Uint8Array.from([0]),
-      readPairOrientations: Uint8Array.from([0]),
+      readPairOrientations: Uint8Array.from([orientation]),
     } as unknown as ReadEntry['data'],
     readIdx: 0,
   })
   const tracks = [{ minimized: false }, { minimized: false }]
   const levels = [{ linksReads: true }, { linksReads: false }]
-  const kinds = (pairs: [ReadEntry, ReadEntry][], showIntraviewLinks = true) =>
+  const kinds = (
+    pairs: [ReadEntry, ReadEntry][],
+    showIntraviewLinks = true,
+    isSplit = true,
+    rowTracks = tracks,
+  ) =>
     [
       ...drawnConnections({
         chains: pairs.map(([e1, e2]) => ({
           entries: [e1, e2],
-          connections: [{ e1, e2, isSplit: true }],
+          connections: [{ e1, e2, isSplit }],
         })),
         entryLayouts: new Map(
           pairs.flat().map(e => [e, [0, 0, 0, 0] as LayoutRecord]),
         ),
-        tracks,
+        tracks: rowTracks,
         levels,
         showIntraviewLinks,
       }),
@@ -132,6 +140,25 @@ describe('drawnConnections', () => {
     expect(kinds([[entry('chr1', 1, 1), entry('chr1', 1, 1)]], false)).toEqual(
       [],
     )
+  })
+
+  test('a mate link takes its kind from the pair orientation', () => {
+    expect(
+      kinds(
+        [[entry('chr1', 1, 0, PAIR_DIRECTION_NUM.RL), entry('chr1', -1, 1)]],
+        true,
+        false,
+      ),
+    ).toEqual(['pairRL'])
+  })
+
+  test('a connection touching a minimized row is not drawn', () => {
+    expect(
+      kinds([[entry('chr1', 1, 0), entry('chr2', 1, 1)]], true, true, [
+        { minimized: false },
+        { minimized: true },
+      ]),
+    ).toEqual([])
   })
 
   test('a read laid out in no row draws nothing', () => {
