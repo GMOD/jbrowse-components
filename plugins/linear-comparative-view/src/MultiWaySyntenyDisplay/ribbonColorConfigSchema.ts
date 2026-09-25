@@ -11,7 +11,7 @@ import { SYNTENY_COLOR_SCALES } from '@jbrowse/synteny-core'
  * #category display
  * The multi-way synteny display's `ribbonColor` setting: one colour for every
  * ribbon, or a field each ribbon carries — the record's strand, a measurement
- * on its preset ramp (`identity`, `mappingQual`, `dnds`), or a column the
+ * on its preset ramp (`identity`, `mapq`, `dnds`), or a column the
  * table declares in `attributeColumns`. A string is the constant.
  *
  * #example
@@ -47,7 +47,7 @@ export const ribbonColorConfigSchema = ConfigurationSchema(
       scaleName: 'RibbonColorScale',
       fieldType: 'string',
       field:
-        "what colours a ribbon: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity, mappingQual and dnds paint the synteny view's ramps; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it)",
+        "what colours a ribbon: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity, mapq and dnds paint the synteny view's ramps; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it)",
       scale:
         'none paints value and keeps the field for a switch back; unset, a field paints',
     }),

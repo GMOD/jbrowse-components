@@ -233,7 +233,7 @@ describe('the colorBy object', () => {
   })
 
   it('reads a preset by the attribute it paints, and any other field as a column', () => {
-    expect(view({ field: 'mappingQual' }).colorByField).toBe('mappingQual')
+    expect(view({ field: 'mapq' }).colorByField).toBe('mapq')
     expect(view({ field: 'dnds' }).colorByField).toBe('dnds')
     expect(view({ field: 'gene_group' }).colorByField).toBe('gene_group')
   })

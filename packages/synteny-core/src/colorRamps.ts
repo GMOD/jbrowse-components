@@ -52,12 +52,12 @@ export interface ContinuousMode {
   maxLabel: string
 }
 
-// The preset fields, keyed by the attribute each reads. Each carries domain
-// knowledge a column name cannot: that identity is a fraction, that MAPQ tops
-// out at minimap2's 60, that dN/dS is read against 1 rather than against its
-// own maximum.
+// The preset fields. Each carries domain knowledge a column name cannot: that
+// identity is a fraction, that MAPQ tops out at minimap2's 60, that dN/dS is
+// read against 1 rather than against its own maximum. `mapq` is the pileup's
+// name for the variable, and reads the attribute the comparative adapters emit.
 export const continuousRampConfig: Record<
-  'identity' | 'mappingQual' | 'dnds',
+  'identity' | 'mapq' | 'dnds',
   ContinuousMode
 > = {
   identity: {
@@ -67,7 +67,7 @@ export const continuousRampConfig: Record<
     minLabel: '0%',
     maxLabel: '100%',
   },
-  mappingQual: {
+  mapq: {
     attribute: 'mappingQual',
     stops: colorRampStops({ scheme: 'cividis' }),
     maxValue: 60,

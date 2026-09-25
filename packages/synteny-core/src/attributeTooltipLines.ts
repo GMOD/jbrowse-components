@@ -3,13 +3,13 @@ import { toLocale } from '@jbrowse/core/util'
 import { colorByShortLabel } from './colorLegend.ts'
 import { continuousRampConfig } from './colorRamps.ts'
 
-// Channel name -> the label the legend uses for the field, so a tooltip and a
-// legend cannot name the same number two ways. The PAF adapter's per-query
-// mean identity is a channel no field paints and still worth a line; a column
-// an MCScan table declared prints under the name its author gave it.
+// Channel name -> the label the legend uses for the field that paints it, so a
+// tooltip and a legend cannot name the same number two ways. The PAF adapter's
+// per-query mean identity is a channel no field paints and still worth a line;
+// a column an MCScan table declared prints under the name its author gave it.
 const CHANNEL_LABELS = new Map([
-  ...Object.keys(continuousRampConfig).map(
-    field => [field, colorByShortLabel(field)] as const,
+  ...Object.entries(continuousRampConfig).map(
+    ([field, { attribute }]) => [attribute, colorByShortLabel(field)] as const,
   ),
   ['meanIdentity', 'Mean query identity'] as const,
 ])

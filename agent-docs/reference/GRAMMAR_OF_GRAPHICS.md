@@ -278,7 +278,7 @@ The seams, named honestly:
   compute them in `colorEncoding`, and the cells paint any other record field
   through the same categorical or threshold field the canvas worker reads.
   The ribbon's `strand`, `identity`,
-  `mappingQual` and `dnds` are fields with a vocabulary or ramp of their own,
+  `mapq` and `dnds` are fields with a vocabulary or ramp of their own,
   as synteny-core's `continuousRampConfig` keys them
   ([ADR-135](../architecture-decision-records/adr-135-the-colour-objects-share-one-shape-and-a-preset-is-a-field.md)).
   `paintedField` (`packages/synteny-core/src/syntenyColorBy.ts`) reads the

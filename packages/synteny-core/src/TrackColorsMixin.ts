@@ -136,7 +136,7 @@ export function TrackColorsMixin() {
        * The colour every track in the view paints with, a
        * [](/docs/config/syntenycolor) object: `{ field: "strand" }`,
        * `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`,
-       * a measurement (`identity`, `mappingQual`, `dnds`) or a column the
+       * a measurement (`identity`, `mapq`, `dnds`) or a column the
        * tracks declare, with `domain` ordering a text column's labels; a
        * colour string paints every alignment. Unset, the default scheme
        * paints.

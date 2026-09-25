@@ -37,9 +37,9 @@ test('dN/dS past the domain top clamps rather than escaping the ramp', () => {
 // it, and they have already disagreed once over MAPQ scaling.
 test('rampNorm reads each preset across its own domain, clamped', () => {
   expect(rampNorm(continuousRampConfig.identity, 0.5)).toBe(0.5)
-  expect(rampNorm(continuousRampConfig.mappingQual, 30)).toBe(0.5)
+  expect(rampNorm(continuousRampConfig.mapq, 30)).toBe(0.5)
   // clamped, which is the piece the dotplot used to omit
-  expect(rampNorm(continuousRampConfig.mappingQual, 600)).toBe(1)
+  expect(rampNorm(continuousRampConfig.mapq, 600)).toBe(1)
 })
 
 // A diverging quantity needs its middle visible, so this ramp is deliberately
@@ -86,7 +86,7 @@ test('an attribute mode resolves for a column no preset knows about', () => {
 // A preset is a preset because it carries a domain a column name cannot supply,
 // so the span the data happens to cover must not quietly rescale it.
 test('a preset keeps its declared domain, a column takes the observed one', () => {
-  const preset = resolveContinuousMode('mappingQual', {
+  const preset = resolveContinuousMode('mapq', {
     mappingQual: { min: 55, max: 60 },
   })
   expect(rampNorm(preset!, 30)).toBe(0.5)

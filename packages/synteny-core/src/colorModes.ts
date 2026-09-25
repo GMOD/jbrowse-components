@@ -85,7 +85,7 @@ export const COLOR_MODES: ColorModeEntry[] = [
       'Sequence identity on a viridis ramp, dark for divergent and yellow for identical. Needs a CIGAR with =/X or a de tag.',
   },
   {
-    field: 'mappingQual',
+    field: 'mapq',
     kind: 'value',
     label: 'Mapping quality',
     helpText: 'MAPQ 0 to 60 on a cividis ramp.',

@@ -71,7 +71,7 @@ const syntenyColorByModes = [
   'reference',
   'track',
   'identity',
-  'mappingQual',
+  'mapq',
   'dnds',
 ] as const satisfies readonly SyntenyColorField[]
 

@@ -20,7 +20,7 @@ test('continuous modes get a gradient ramp with bounded domain labels', () => {
     expect(identity.stops.length).toBeGreaterThan(2)
   }
 
-  const mapq = getColorBySwatch('mappingQual')
+  const mapq = getColorBySwatch('mapq')
   if (mapq?.kind === 'ramp') {
     expect(mapq.maxLabel).toBe('60')
   }

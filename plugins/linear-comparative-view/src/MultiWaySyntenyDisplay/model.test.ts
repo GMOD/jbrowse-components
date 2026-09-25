@@ -1807,9 +1807,9 @@ test('a picked ribbon mode is written as the ribbonColor object', () => {
   display.setRibbonColorBy('strand')
   expect(ribbonColor()).toEqual({ value: 'grey', field: 'strand' })
   expect(display.ribbonColorField).toBe('strand')
-  display.setRibbonColorBy('mappingQual')
-  expect(ribbonColor()).toEqual({ value: 'grey', field: 'mappingQual' })
-  expect(display.ribbonColorField).toBe('mappingQual')
+  display.setRibbonColorBy('mapq')
+  expect(ribbonColor()).toEqual({ value: 'grey', field: 'mapq' })
+  expect(display.ribbonColorField).toBe('mapq')
   display.setRibbonColorBy('other')
   expect(ribbonColor()).toEqual({ value: 'grey', field: 'other' })
 })
@@ -1829,7 +1829,7 @@ test('a ribbonColor field is a preset or a column, scale none parks it, and a pa
       palette: ['red'],
     }),
   ).toThrow('RibbonColor takes value, field, scale and domain, not palette')
-  for (const field of ['strand', 'identity', 'mappingQual', 'dnds']) {
+  for (const field of ['strand', 'identity', 'mapq', 'dnds']) {
     display.configuration.setSubschema('ribbonColor', { field })
     expect(display.ribbonColorField).toBe(field)
   }
