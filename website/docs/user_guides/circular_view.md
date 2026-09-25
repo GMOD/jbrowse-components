@@ -61,6 +61,16 @@ const ringView = {
 
 <Figure src="/img/circular_view/coverage_ring_chords.png" caption="A cancer cell line's long-read coverage as a ring, on a log scale, with its translocations as chords: the copy-number steps sit where the chords land."/>
 
+A multi-source quantitative track with its sources on rows gives each source a
+band inside one ring, so a sample pair or a small cohort is one nested set
+rather than a ring each. The bands are drawn against the display's single score
+domain, and a stack of rows carries no axis of its own, so name that domain
+where the bands are meant to be read against each other. Naming the sources is
+the colour's job here: the row labels are part of the display's chrome and a
+ring samples only its canvas, so give each subtrack a `color` in the adapter.
+
+<Figure src="/img/circular_view/tumor_normal_rings.png" caption="A tumour and its matched normal from one multi-source quantitative track, a band each inside the ring, with the somatic SV truth set as chords. The tumour band steps between levels across whole chromosomes; the normal holds even over the same stretches." />
+
 A variant or synteny track keeps its chords and ribbons; a track that has both a
 linear and a circular display takes the circular one unless the entry names the
 other, as `{ trackId, displaySnapshot: { type: 'LinearMarkDisplay' } }` does for

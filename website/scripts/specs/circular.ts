@@ -63,6 +63,38 @@ const circularSyntenyReady = {
   viewportHeight: 900,
 } as const
 
+// COLO829's tumour and its matched normal from one MultiQuantitativeTrack, the
+// two MinION coverage bigWigs named and coloured per subtrack. On rows they take
+// a band each inside the one ring, against an explicit domain so the two bands
+// share a scale and the comparison is the picture.
+const COLO829_COVERAGE = {
+  type: 'MultiQuantitativeTrack',
+  trackId: 'colo829_coverage_pair',
+  name: 'COLO829 coverage',
+  assemblyNames: ['hg19'],
+  adapter: {
+    type: 'MultiWiggleAdapter',
+    subadapters: [
+      {
+        type: 'BigWigAdapter',
+        name: 'Tumor',
+        color: '#d7191c',
+        bigWigLocation: {
+          uri: 'https://jbrowse.org/genomes/hg19/COLO829/colo_tumor.bw',
+        },
+      },
+      {
+        type: 'BigWigAdapter',
+        name: 'Normal',
+        color: '#2c7bb6',
+        bigWigLocation: {
+          uri: 'https://jbrowse.org/genomes/hg19/COLO829/colo_normal.bw',
+        },
+      },
+    ],
+  },
+}
+
 export const circularSpecs: ScreenshotSpec[] = [
   // SKBR3 on hg19: the sample's long-read coverage as a ring around the
   // ideogram, its Sniffles translocations as chords through the middle. The
@@ -92,6 +124,49 @@ export const circularSpecs: ScreenshotSpec[] = [
     }),
     readySelector: displayPainted('circular-ring-canvas'),
     readyTimeout: 120000,
+    viewportWidth: 1000,
+    viewportHeight: 900,
+  },
+
+  // The same sample pair a linear view would stack: one ring holding a band per
+  // source, with the somatic SV truth set as chords. What the rows buy is the
+  // control — a tumour step is a step only against a normal that holds level
+  // across the same stretch.
+  //
+  // No legend. A ring is the display's canvas alone, so the row labels naming
+  // each source never reach it, and the view's own key falls back to one swatch
+  // for the whole track — in the colour of whichever source it takes first. The
+  // caption names the two bands instead.
+  //
+  // The row order is stated because an inner ring resamples the same strip and
+  // so resolves coarser, which on its own would make whichever band is outside
+  // look the more structured one. Shot both ways round: the steps stay with the
+  // tumour either way, and the tumour is outside here for its own legibility.
+  {
+    mode: 'url',
+    name: 'circular_view/tumor_normal_rings',
+    url: sessionSpec(DEMO, {
+      sessionTracks: [COLO829_COVERAGE],
+      views: [
+        {
+          type: 'CircularView',
+          assembly: 'hg19',
+          height: 780,
+          tracks: [
+            {
+              trackId: 'colo829_coverage_pair',
+              type: 'LinearWiggleDisplay',
+              rows: { field: 'source', domain: ['Tumor', 'Normal'] },
+              scales: { y: { domainMin: 0, domainMax: 100 } },
+              height: 140,
+            },
+            'truthset_somaticSVs_COLO829',
+          ],
+        },
+      ],
+    }),
+    readySelector: displayPainted('circular-ring-canvas'),
+    readyTimeout: 180000,
     viewportWidth: 1000,
     viewportHeight: 900,
   },
