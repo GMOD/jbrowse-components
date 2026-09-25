@@ -62,6 +62,18 @@ test('a view body still waiting on its component keeps the app unsettled', async
   clearTimeout(arrived)
 })
 
+test('one engine finished does not settle a page whose other is loading', async () => {
+  document.body.innerHTML = `<span hidden data-app-phase="ready"></span>
+    <span hidden id="second" data-app-phase="loading"></span>`
+  const finished = setTimeout(() => {
+    document.querySelector<HTMLElement>('#second')!.dataset.appPhase = 'ready'
+  }, 100)
+  const start = Date.now()
+  await expect(waitForAppSettled(jsdomPage(), FAST)).resolves.toBe(true)
+  expect(Date.now() - start).toBeGreaterThanOrEqual(100 + FAST.holdMs)
+  clearTimeout(finished)
+})
+
 // A morph runs with the app finished and every display `ready`, so the marker
 // alone would take a frame between its two pictures.
 test('a display still animating keeps the app unsettled', async () => {

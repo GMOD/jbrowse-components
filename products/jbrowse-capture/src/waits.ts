@@ -21,6 +21,9 @@ export const LOADING_OVERLAY = '[data-testid="loading-overlay"]'
 /** The app's own verdict: no view is resolving an assembly, no display is fetching. */
 export const APP_READY = '[data-app-phase="ready"]'
 
+/** An engine still working, of the several a page of embedded views may hold. */
+const APP_LOADING = '[data-app-phase="loading"]'
+
 /** A display drawing a transition between two settled pictures. */
 export const ANIMATING_DISPLAYS = '[data-display-animating="true"]'
 
@@ -196,8 +199,8 @@ export function waitForAppReady(
 }
 
 /**
- * Wait until the app has read ready, with no view component loading and no
- * display animating, for an unbroken `holdMs`. False on timeout. Throws on a
+ * Wait until every app on the page has read ready, with no view component
+ * loading and no display animating, for an unbroken `holdMs`. False on timeout. Throws on a
  * page that publishes no `[data-app-phase]`, where nothing positive exists to
  * wait for.
  */
@@ -223,11 +226,13 @@ export async function waitForAppSettled(
     () =>
       page
         .evaluate(
-          (ready, pending, animating) =>
+          (ready, loading, pending, animating) =>
             document.querySelector(ready) !== null &&
+            document.querySelector(loading) === null &&
             document.querySelector(pending) === null &&
             document.querySelector(animating) === null,
           APP_READY,
+          APP_LOADING,
           VIEW_COMPONENT_PENDING,
           ANIMATING_DISPLAYS,
         )
