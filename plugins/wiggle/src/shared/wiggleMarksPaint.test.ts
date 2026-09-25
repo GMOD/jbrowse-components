@@ -138,7 +138,7 @@ describe('the wiggle painters', () => {
     canvasWidth: 800,
     canvasHeight: 200,
     numRows: 1,
-    scatterPointSize: 2,
+    diameterPx: 2,
     lineWidth: 1,
     origin: 0,
     pivot: 0,
@@ -302,10 +302,10 @@ describe('the wiggle painters', () => {
     // a single point-size square, not a wide bar (exclude the full-height clip
     // rect); default 2px point is below the small-point threshold → crisp square
     const squares = rectCalls.filter(
-      ([, , , h]) => h === defaultState.scatterPointSize,
+      ([, , , h]) => h === defaultState.diameterPx,
     )
     expect(squares.length).toBe(1)
-    expect(squares[0]![2]).toBe(defaultState.scatterPointSize)
+    expect(squares[0]![2]).toBe(defaultState.diameterPx)
     // centered on the bp midpoint: x = cx - radius = 400 - 1
     expect(squares[0]![0]).toBeCloseTo(399)
     expect(arcCalls.length).toBe(0)
@@ -328,7 +328,7 @@ describe('the wiggle painters', () => {
     })
 
     const squares = rectCalls.filter(
-      ([, , , h]) => h === defaultState.scatterPointSize,
+      ([, , , h]) => h === defaultState.diameterPx,
     )
     expect(squares.length).toBe(1)
     expect(arcCalls.length).toBe(0)
@@ -348,7 +348,7 @@ describe('the wiggle painters', () => {
     paintWiggle(ctx, new Map([[0, [source]]]), [defaultBlock], {
       ...defaultState,
       renderingType: RENDERING_TYPE_SCATTER,
-      scatterPointSize: 8,
+      diameterPx: 8,
     })
 
     expect(arcCalls.length).toBe(1)
@@ -449,7 +449,7 @@ describe('the wiggle painters', () => {
     )
 
     const squares = rectCalls.filter(
-      ([, , , h]) => h === defaultState.scatterPointSize,
+      ([, , , h]) => h === defaultState.diameterPx,
     )
     expect(squares.length).toBe(1)
     // centered on the mirrored midpoint: x = 600 - radius = 599
@@ -496,7 +496,7 @@ const lineState = {
   canvasWidth: 800,
   canvasHeight: 200,
   numRows: 1,
-  scatterPointSize: 2,
+  diameterPx: 2,
   lineWidth: 1,
   origin: 0,
   pivot: 0,
@@ -729,7 +729,7 @@ describe('a log domain entirely under 1', () => {
     canvasWidth: 800,
     canvasHeight: 200,
     numRows: 1,
-    scatterPointSize: 2,
+    diameterPx: 2,
     lineWidth: 1,
     origin: 0,
     pivot: 0,
@@ -840,7 +840,7 @@ describe('the whiskers band', () => {
     canvasWidth: 800,
     canvasHeight: 200,
     numRows: 1,
-    scatterPointSize: 2,
+    diameterPx: 2,
     lineWidth: 1,
     origin: 0,
     pivot: 0,

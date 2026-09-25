@@ -81,7 +81,7 @@ public struct Uniforms {
   public float  domainYMax;
   public float  zero;
   public float  viewportWidth;
-  public float  scatterPointSize;
+  public float  diameterPx;
   public float  lineWidth;
   // The score xyplot bars grow from.
   public float  origin;

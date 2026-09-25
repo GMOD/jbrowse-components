@@ -136,7 +136,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
       canvasWidth: 800,
       canvasHeight: 100,
       numRows: 2,
-      scatterPointSize: 2,
+      diameterPx: 2,
       lineWidth: 1,
       origin: 0,
       pivot: 0,

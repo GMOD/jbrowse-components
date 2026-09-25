@@ -60,7 +60,7 @@ struct VsOut {
 // pointGlyph module so the two stay in lockstep.
 bool drawsDisc() {
   return u.renderingType == RENDERING_TYPE_SCATTER
-    && u.scatterPointSize > SMALL_POINT_MAX_DIAMETER;
+    && u.diameterPx > SMALL_POINT_MAX_DIAMETER;
 }
 
 // Whether this pass draws the xyplot bar, whose two HORIZONTAL cuts the shader
@@ -85,14 +85,14 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
 
   if (u.renderingType == RENDERING_TYPE_SCATTER) {
     // Point plot: every feature is a point marker centered on the bp midpoint,
-    // never a bar (unlike manhattan.slang, which bars wide bins). scatterPointSize
-    // is the disc diameter; tiny points draw as a crisp square like manhattan.
+    // never a bar (unlike manhattan.slang, which bars wide bins). Tiny points
+    // draw as a crisp square like manhattan.
     float midX = (sx1 + sx2) * 0.5;
     float scoreYPx = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant) + rowTop;
     float2 q = quadLocal(vid);
     if (drawsDisc()) {
       // expand the quad by the AA pad so the disc's fade edge isn't clipped
-      float radiusPx = u.scatterPointSize * 0.5;
+      float radiusPx = u.diameterPx * 0.5;
       float2 local = q * 2.0 - float2(1.0, 1.0);
       float expand = discExpand(radiusPx, u.devicePixelRatio);
       float halfPx = radiusPx * expand;
@@ -101,7 +101,7 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
       localPos = local * expand;
     } else {
       // tiny point: pixel-snapped crisp filled square, no AA disc
-      float4 p = crispSquareCornerClip(midX, scoreYPx, u.scatterPointSize, q,
+      float4 p = crispSquareCornerClip(midX, scoreYPx, u.diameterPx, q,
                                        u.viewportWidth, u.canvasHeight);
       sx = p.x;
       sy = p.y;

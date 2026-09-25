@@ -66,7 +66,7 @@ const state: ManhattanRenderState = {
   domainY: [0, 10],
   canvasWidth: 100,
   canvasHeight: 100,
-  pointDiameterPx: 4,
+  diameterPx: 4,
 }
 
 // ABGR packing matches normalizedRgbToABGR/cssColorToABGR: 0xAABBGGRR.
@@ -120,7 +120,7 @@ test('draws tiny points as crisp squares instead of muddy discs', () => {
     MANHATTAN_MARKS,
     new Map([[0, data([500], [5], [red])]]),
     [block],
-    { ...state, pointDiameterPx: 2 },
+    { ...state, diameterPx: 2 },
   )
   const arcs = calls.filter(c => c.kind === 'arc')
   const rects = calls.filter(

@@ -545,7 +545,7 @@ describe('bars and points under a gradient', () => {
         symlogConstant: 1,
         domainY,
         numRows: 1,
-        scatterPointSize: 4,
+        diameterPx: 4,
         lineWidth: 1,
         origin: domainY[1],
         pivot: domainY[1],

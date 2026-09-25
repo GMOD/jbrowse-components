@@ -70,9 +70,8 @@ export interface WiggleGPURenderState {
   // Drives rowHeight in both backends so it matches getRowHeight/findHit even
   // when a source has no features in the visible region.
   numRows: number
-  // Full height in px of a scatterplot point (the point spans scoreY ± size/2).
-  // Default 2 reproduces the previous hardcoded scoreY±1 band.
-  scatterPointSize: number
+  // A scatter point's diameter in px, the `size` slot.
+  diameterPx: number
   // Stroke thickness in px for line rendering. Default 1 matches the canvas
   // default line width.
   lineWidth: number

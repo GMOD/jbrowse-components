@@ -22,7 +22,7 @@ export const UNIFORM_OFFSET_F32 = {
   domainYMax: 8,
   zero: 9,
   viewportWidth: 10,
-  scatterPointSize: 11,
+  diameterPx: 11,
   lineWidth: 12,
   origin: 13,
   pivot: 14,
@@ -92,7 +92,7 @@ export interface Uniforms {
   domainYMax: number
   zero: number
   viewportWidth: number
-  scatterPointSize: number
+  diameterPx: number
   lineWidth: number
   origin: number
   pivot: number
@@ -119,7 +119,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[8] = uniforms.domainYMax
   f32[9] = uniforms.zero
   f32[10] = uniforms.viewportWidth
-  f32[11] = uniforms.scatterPointSize
+  f32[11] = uniforms.diameterPx
   f32[12] = uniforms.lineWidth
   f32[13] = uniforms.origin
   f32[14] = uniforms.pivot

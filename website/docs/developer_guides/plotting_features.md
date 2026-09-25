@@ -469,7 +469,7 @@ export const MANHATTAN_MARKS = [
     channels: (d: ManhattanChannels) => d,
     params: (s: ManhattanRenderState) => ({
       domain: s.domainY,
-      diameterPx: s.pointDiameterPx,
+      diameterPx: s.diameterPx,
     }),
   }),
 ]

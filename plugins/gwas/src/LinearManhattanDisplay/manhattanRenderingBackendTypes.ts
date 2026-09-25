@@ -14,7 +14,7 @@ export interface ManhattanRenderState {
   domainY: [number, number]
   canvasWidth: number
   canvasHeight: number
-  pointDiameterPx: number
+  diameterPx: number
 }
 
 export type ManhattanRenderingBackend = PerRegionRenderingBackend<

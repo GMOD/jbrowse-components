@@ -69,7 +69,7 @@ const DEFAULT_STATE = {
   symlogConstant: 1,
   domainY: [0, 20] as [number, number],
   numRows: 1,
-  scatterPointSize: 2,
+  diameterPx: 2,
   lineWidth: 1,
   origin: 0,
   pivot: 0,

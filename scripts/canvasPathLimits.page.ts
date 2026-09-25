@@ -150,7 +150,7 @@ const cases: [string, number, Painter][] = [
     'wiggle scatter',
     200_000,
     (ctx, n) => {
-      drawScatter({ ...wiggleRow(ctx, n), pointSize: 5 })
+      drawScatter({ ...wiggleRow(ctx, n), diameterPx: 5 })
     },
   ],
   [

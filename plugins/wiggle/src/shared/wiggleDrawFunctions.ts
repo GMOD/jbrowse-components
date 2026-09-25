@@ -562,7 +562,9 @@ function cssRgba([r, g, b]: [number, number, number], alpha: number) {
   return `rgba(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)},${alpha})`
 }
 
-export function drawScatter(row: RowDraw & { rgb: string; pointSize: number }) {
+export function drawScatter(
+  row: RowDraw & { rgb: string; diameterPx: number },
+) {
   const {
     ctx,
     source,
@@ -573,7 +575,7 @@ export function drawScatter(row: RowDraw & { rgb: string; pointSize: number }) {
     scaleType,
     symlogConstant,
     rgb,
-    pointSize,
+    diameterPx,
   } = row
   const rampFill = makeRampFill(row)
   const colorsAbgr = rampFill ? undefined : source.colorsAbgr
@@ -609,7 +611,7 @@ export function drawScatter(row: RowDraw & { rgb: string; pointSize: number }) {
     path.add()
     const cx = (toX(positions[i * 2]!) + toX(positions[i * 2 + 1]!)) / 2
     const scoreY = scoreToY(scores[i]!) + rowTop
-    appendPointMarker(ctx, cx, scoreY, pointSize)
+    appendPointMarker(ctx, cx, scoreY, diameterPx)
   }
   path.flush()
 }

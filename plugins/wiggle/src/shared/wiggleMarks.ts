@@ -60,7 +60,7 @@ interface WiggleParams {
   symlogConstant: number
   domainY: [number, number]
   numRows: number
-  scatterPointSize: number
+  diameterPx: number
   lineWidth: number
   origin: number
   pivot: number
@@ -88,7 +88,7 @@ function wiggleParams(
     symlogConstant: state.symlogConstant,
     domainY: state.domainY,
     numRows: state.numRows,
-    scatterPointSize: state.scatterPointSize,
+    diameterPx: state.diameterPx,
     lineWidth: state.lineWidth,
     origin: state.origin,
     pivot: state.pivot,
@@ -126,7 +126,7 @@ function writeWiggleUniforms(
     // px — and `WIGGLE_MIN_PX`, the Canvas2D floor, is that same generated
     // constant. `clip.scissorW`, therefore, and never `clip.pxW`.
     viewportWidth: clip.scissorW,
-    scatterPointSize: p.scatterPointSize,
+    diameterPx: p.diameterPx,
     lineWidth: p.lineWidth,
     origin: p.origin,
     pivot: p.pivot,
@@ -271,7 +271,7 @@ const fillShape = wiggleShape(
       drawScatter({
         ...row,
         rgb: cssRgb(row.source),
-        pointSize: p.scatterPointSize,
+        diameterPx: p.diameterPx,
       })
     } else {
       drawXYPlot({ ...row, rgb: cssRgb(row.source) })

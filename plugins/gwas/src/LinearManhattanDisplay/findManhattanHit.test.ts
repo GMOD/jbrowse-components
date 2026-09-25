@@ -23,7 +23,7 @@ const state: ManhattanRenderState = {
   domainY: [0, 10],
   canvasWidth: 100,
   canvasHeight: 100,
-  pointDiameterPx: 4,
+  diameterPx: 4,
 }
 
 const regions = [{ refName: 'chr1' }]

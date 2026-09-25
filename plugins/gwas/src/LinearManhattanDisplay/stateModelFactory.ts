@@ -362,7 +362,7 @@ export function stateModelFactory(
             domainY,
             canvasWidth,
             canvasHeight,
-            pointDiameterPx: self.size,
+            diameterPx: self.size,
           }))
         },
         /**
