@@ -1,5 +1,7 @@
+import { setConf } from '@jbrowse/core/configuration'
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
+
 import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEnv.ts'
-import { UNLABELED_GROUP } from './variantLegend.ts'
 
 function display() {
   const { display } = createTestEnvironment().createDisplay()
@@ -34,7 +36,7 @@ test('the unlabeled group is the rows with no value', () => {
 test('a legend click on the group scale focuses it, on the genotype scale nothing', () => {
   const d = display()
   const group = d.legendSpec.sections.find(s => s.id === 'group')!
-  expect(group.items.find(i => i.label === UNLABELED_GROUP)!.value).toBe('')
+  expect(group.items.find(i => i.label === NO_VALUE_LABEL)!.value).toBe('')
   d.focusLegendEntry('genotypes', 'ref')
   expect(d.rowFocus).toBeUndefined()
   d.focusLegendEntry('group', 'AFR')
@@ -101,4 +103,35 @@ test('a legend focus after a phased clustering run names the haplotype rows', ()
     'S2 HP0',
     'S2 HP1',
   ])
+})
+
+function groupKey(d: ReturnType<typeof display>) {
+  return d.legendSpec.sections
+    .find(s => s.id === 'group')!
+    .items.map(i => i.value)
+}
+
+// The bands and the key name one attribute, so they read in one order: the
+// facet's domain first, whatever the counts are.
+test('the group key follows the bands when the facet reads the same field', () => {
+  const d = display()
+  setConf(d, 'facet', { field: 'population', domain: ['EUR', 'AFR'] })
+  expect(groupKey(d)).toEqual(['EUR', 'AFR', ''])
+})
+
+// Unbanded, the key lists values as the palette dealt them, most common across
+// the callset first, so a focus narrows the key without re-ranking it.
+test('the group key follows the palette deal, and a focus does not re-rank it', () => {
+  const d = display()
+  d.setSources([
+    { name: 'S0', population: 'EUR' },
+    { name: 'S1', population: 'AFR' },
+    { name: 'S2', population: 'EUR' },
+    { name: 'S3', population: 'AFR' },
+    { name: 'S4', population: 'EUR' },
+    { name: 'S5' },
+  ])
+  expect(groupKey(d)).toEqual(['EUR', 'AFR', ''])
+  d.setRowFocus(['S1', 'S3', 'S4', 'S5'])
+  expect(groupKey(d)).toEqual(['EUR', 'AFR', ''])
 })

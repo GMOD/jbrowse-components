@@ -121,24 +121,27 @@ describe('getSampleGroupEntries', () => {
     expect(getSampleGroupEntries('population', [])).toEqual([])
   })
 
-  it('one entry per distinct value, most-common first, with its color', () => {
-    const items = getSampleGroupEntries('population', sources)
-    expect(items).toEqual([
-      { value: 'EUR', label: 'EUR', color: '#a' }, // 3 occurrences -> first
-      { value: 'AFR', label: 'AFR', color: '#b' }, // 1 occurrence -> second
+  it('one entry per distinct value in the given order, with its color', () => {
+    expect(getSampleGroupEntries('population', sources, ['EUR'])).toEqual([
+      { value: 'EUR', label: 'EUR', color: '#a' },
+      { value: 'AFR', label: 'AFR', color: '#b' },
+    ])
+    expect(getSampleGroupEntries('population', sources)).toEqual([
+      { value: 'AFR', label: 'AFR', color: '#b' },
+      { value: 'EUR', label: 'EUR', color: '#a' },
     ])
   })
 
-  it('labels missing values as (unlabeled) and tolerates missing color', () => {
+  it('labels missing values as (no value), last, and tolerates missing color', () => {
     const mixed: Source[] = [
       { name: 'a', population: 'EUR', labelColor: '#a' },
       { name: 'b', labelColor: '#b' }, // no population
     ]
     const items = getSampleGroupEntries('population', mixed)
     expect(items).toContainEqual({ value: 'EUR', label: 'EUR', color: '#a' })
-    expect(items).toContainEqual({
+    expect(items.at(-1)).toEqual({
       value: '',
-      label: '(unlabeled)',
+      label: '(no value)',
       color: '#b',
     })
   })
@@ -174,6 +177,7 @@ describe('getVariantColorScales', () => {
       color: undefined,
       colorBy: 'population',
       sources,
+      groupOrder: ['EUR'],
     })
     expect(sections.map(s => s.id)).toEqual(['genotypes', 'group'])
     expect(sections[1]!.title).toBe('Population')

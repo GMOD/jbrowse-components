@@ -1182,9 +1182,18 @@ export default function MultiSampleVariantBaseModelF(
           const rows = self.clusterableSources
           const colors = self.rowColorScale
           const tinted = colors.size ? applyAttributeColors(rows, colors) : rows
-          return self.root && treeDescribesRows(self.root, rows)
-            ? tinted
-            : (maybeApplyFacet(self.facet, tinted) ?? tinted)
+          return maybeApplyFacet(this.bandingFacet, tinted) ?? tinted
+        },
+        /**
+         * #getter
+         * The `facet` the rows are banded by: none while a cluster tree
+         * describes them, which the band yields to.
+         */
+        get bandingFacet(): FacetSetting | undefined {
+          return self.root &&
+            treeDescribesRows(self.root, self.clusterableSources)
+            ? undefined
+            : self.facet
         },
       }))
       .views(self => ({
@@ -1697,8 +1706,21 @@ export default function MultiSampleVariantBaseModelF(
             svTypeColors: self.svTypeColors,
             colorBy: self.rowColorField,
             sources: self.sources,
+            groupOrder: this.rowColorKeyOrder,
             insertionMarkers: self.drawsInsertionMarkers,
           })
+        },
+        /**
+         * #getter
+         * The order the row colour key lists its values in: the bands' while
+         * the rows are banded by the same attribute, so the key reads as the
+         * rows do, else the palette's deal, which a focus never re-ranks.
+         */
+        get rowColorKeyOrder(): readonly string[] {
+          const { bandingFacet: facet, rowColorField } = self
+          return facet?.field === rowColorField
+            ? facet.domain
+            : [...self.dealtRowColors.keys()]
         },
 
         /**

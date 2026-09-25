@@ -1,4 +1,6 @@
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import {
   derivedColorScale,
@@ -120,43 +122,37 @@ export function getGenotypeEntries(
   return [reference!, ...altEntries(hue, inputs), ...rest]
 }
 
-// How the legend names the rows whose `colorBy` attribute is blank. The entry
-// keeps the blank as its `value`, so a click hands `focusGroup` the value
-// itself.
-export const UNLABELED_GROUP = '(unlabeled)'
-
-// Sample-grouping scale (the per-row sidebar coloring): one entry per distinct
-// `colorBy` metadata value (e.g. population), most-common first, reusing the
-// `labelColor` the palette already assigned to that group's sources. Empty
-// when colorBy is unset or no sources carry it.
+// The sample-grouping scale (the per-row sidebar colouring): one entry per
+// `colorBy` value among the drawn rows, in `order` and then the field's own
+// order with the blank group last, reusing the `labelColor` the palette dealt
+// that group's rows. Empty when colorBy is unset or no row carries it.
 export function getSampleGroupEntries(
   colorBy: string,
   sources: Source[] | undefined,
+  order: readonly string[] = [],
 ): CategoricalEntry[] {
   if (!colorBy || !sources?.length) {
     return []
   }
-  const counts = new Map<string, number>()
-  const colorByValue = new Map<string, string>()
+  const colorByValue = new Map<string, string | undefined>()
   for (const source of sources) {
     const value = String(source[colorBy] ?? '')
-    counts.set(value, (counts.get(value) ?? 0) + 1)
     const { labelColor } = source
-    if (labelColor !== undefined) {
+    if (labelColor !== undefined || !colorByValue.has(value)) {
       colorByValue.set(value, labelColor)
     }
   }
   // A single group (whether unset '' or one shared real value) distinguishes
   // nothing, so the group scale is omitted — matches getVariantColorScales'
   // "omitted when colorBy is unset or carries a single value".
-  if (counts.size <= 1) {
+  if (colorByValue.size <= 1) {
     return []
   }
-  return [...counts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .map(([value]) => ({
+  return [...colorByValue.keys()]
+    .sort(groupKeyComparator(order.filter(value => value !== '')))
+    .map(value => ({
       value,
-      label: value || UNLABELED_GROUP,
+      label: value || NO_VALUE_LABEL,
       color: colorByValue.get(value),
     }))
 }
@@ -340,6 +336,7 @@ export function getVariantColorScales({
   svTypeColors,
   colorBy,
   sources,
+  groupOrder,
   insertionMarkers = false,
   ...inputs
 }: VariantLegendInputs & {
@@ -351,12 +348,15 @@ export function getVariantColorScales({
   svTypeColors?: Record<string, string>
   colorBy: string
   sources: Source[] | undefined
+  // The order the grouping key lists its values in: the bands' when the facet
+  // reads `colorBy`, else the palette's deal.
+  groupOrder?: readonly string[]
   // Whether the display is drawing insertion markers in this window (the
   // matrix display never does, and the regular one only where a marker outgrows
   // its cell).
   insertionMarkers?: boolean
 }): ColorScale[] {
-  const groupEntries = getSampleGroupEntries(colorBy, sources)
+  const groupEntries = getSampleGroupEntries(colorBy, sources, groupOrder)
   // Phase-set coloring exists only on the phased path — the allele-count cell
   // loop never reads PS — so outside phased mode the cells are genotype-colored
   // and the legend has to say that instead of describing a scheme that isn't on

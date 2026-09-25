@@ -48,14 +48,14 @@ exports[`allele count a cluster run lands its order and tree, and a facet yields
         "value": "AFR",
       },
       {
-        "color": "#e15759",
-        "label": "EAS",
-        "value": "EAS",
-      },
-      {
         "color": "#f28e2c",
         "label": "EUR",
         "value": "EUR",
+      },
+      {
+        "color": "#e15759",
+        "label": "EAS",
+        "value": "EAS",
       },
     ],
     "focusesRows": true,
@@ -161,14 +161,14 @@ exports[`allele count a cluster run lands its order and tree, and a facet yields
         "value": "AFR",
       },
       {
-        "color": "#e15759",
-        "label": "EAS",
-        "value": "EAS",
-      },
-      {
         "color": "#f28e2c",
         "label": "EUR",
         "value": "EUR",
+      },
+      {
+        "color": "#e15759",
+        "label": "EAS",
+        "value": "EAS",
       },
     ],
     "focusesRows": true,
