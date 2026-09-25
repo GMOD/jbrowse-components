@@ -12,10 +12,11 @@ The rows are derived in stages, each a computed of its own: the display's
 `discoveredRows`, then `expandedRows` (`expandRows`: a variant display's
 haplotypes), then `editableSources`, ordered by `rowOrder`, relabelled by
 `rows.labels` and tinted by the `rowColor` pairs on the `identityChannel`,
-then `clusterableSources`, narrowed to the focus. The row palette is
+then `clusterableSources`, narrowed to the focus, then `bandedSources`,
+stacked in the bands `rowBanding` names. The row palette is
 `dealtRowColors`, dealt by `rowColorDeal` once per change to the deal, and
 `rowColorScale` hands each row its value's colour, which each display
-paints, with its bands, over those.
+paints over those.
 
 Every arrangement write reaches the session at once rather than after the
 track's 400 ms save, so a clustering run is one undo step and undoable the
@@ -64,6 +65,7 @@ or what a track the session owns was added with, and never touches
 | <span id="getter-rowalias">**rowAlias**</span><br><code>RowAlias &#124; undefined</code> | Overridable hook: the name a row also answers to, for a display whose rows stand for something named by another name (a variant display's haplotype rows, each answering to its sample). An order, a label, a tint and a focus written against the alias reach every row answering to it. None by default. |
 | <span id="getter-identitychannel">**identityChannel**</span><br><code>IdentityChannel</code> | Overridable hook: the row channel a `rowColor` entry paints, `color` by default. |
 | <span id="getter-unlistedrowssort">**unlistedRowsSort**</span><br><code>UnlistedRowsSort</code> | Overridable hook: where the rows `rowOrder` does not list go, in the order they arrived by default. |
+| <span id="getter-rowbanding">**rowBanding**</span><br><code>RowBanding &#124; undefined</code> | Overridable hook: the attribute the rows stack in bands by and the bands listed first, or undefined, the default, for no bands. |
 | <span id="getter-roworder">**rowOrder**</span><br><code>readonly string[]</code> | Overridable hook: the names the rows are placed by, `rows.domain` by default; MAF leads with a drawn tree's leaves. |
 | <span id="getter-rowcolors">**rowColors**</span><br><code>ReadonlyMap&lt;string, string&gt;</code> | The colour a reader set on each named row: the `rowColor` pairs while it paints by `name`, and none while it paints by another field. |
 | <span id="getter-rowstylingiscustom">**rowStylingIsCustom**</span><br><code>boolean</code> | Whether `rowColor` sets a row, or a value of the attribute it paints by, a colour the config does not, so "Reset row order" is offered for a recolour too. Picking a colour by attribute sets no colour, so over a config setting none it is not a custom arrangement. |
@@ -78,6 +80,11 @@ or what a track the session owns was added with, and never touches
 | <span id="getter-clusterablesources">**clusterableSources**</span><br><code>S[]</code> | `editableSources` narrowed to the focus: the rows a clustering run clusters, and deliberately not the display's decorated `sources`, whose palette and band a run has no business writing back. |
 | <span id="getter-parsedtree">**parsedTree**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> |  |
 | <span id="getter-root">**root**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> | The parsed tree narrowed to the focus. |
+| <span id="getter-bandedrows">**bandedRows**</span><br><code>{ rows: S[]; bands: RowBand[]; }</code> | `bandedSources` and `rowBands`, from one pass over the rows. |
+| <span id="getter-bandedsources">**bandedSources**</span><br><code>S[]</code> | `clusterableSources` stacked in bands by `rowBanding`, each band's rows in their arranged order: the rows each display paints its palette over. `clusterableSources` itself while nothing bands. |
+| <span id="getter-rowbands">**rowBands**</span><br><code>readonly RowBand[]</code> | Each band's value, label and the rows it spans in `bandedSources`; none while nothing bands. |
+| <span id="getter-clusterpartition">**clusterPartition**</span><br><code>string[][] &#124; undefined</code> | The names of the rows a clustering run clusters, by band, so each band clusters apart and the run writes one forest; undefined while fewer than two bands stack. |
+| <span id="getter-treelessbandcount">**treelessBandCount**</span><br><code>number</code> | How many bands the tree draws no dendrogram for, because it holds no clade whose leaves are that band's rows in order; 0 with no tree or no bands. |
 | <span id="getter-treehasbranchlengths">**treeHasBranchLengths**</span><br><code>boolean</code> | Whether the tree carries merge heights, so a dendrogram layout differs from the cladogram; gates the "Tree branch lengths" toggle. |
 
 ## Methods
@@ -86,6 +93,7 @@ or what a track the session owns was added with, and never touches
 | Member | Description |
 | --- | --- |
 | <span id="method-expandrows">**expandRows**</span><br><code>(rows: S[]) =&gt; S[]</code> | Overridable hook: the discovered rows as the rows drawn, the rows themselves by default; a variant display's phased mode expands each sample to its haplotypes. |
+| <span id="method-rowband">**rowBand**</span><br><code>(row: S) =&gt; string</code> | Overridable hook: the band a row stacks in while `rowBanding` is set, by default its value of the banding attribute, '' for none. |
 | <span id="method-rowcolordealfor">**rowColorDealFor**</span><br><code>(setting: RowColorEntries) =&gt; RowColorDeal&lt;S&gt; &#124; undefined</code> | Overridable hook: what the row palette deals under `setting`, the config's or one the arrangement dialog previews, or undefined to deal none. By default the values of `setting.field` over the rows in the base arrangement, the values its `domain` lists taking its `range`, and every other value the next palette colour, so no reorder, focus or relabel recolours a row. |
 | <span id="method-rowcolorsfor">**rowColorsFor**</span><br><code>(setting: RowColorSetting) =&gt; ReadonlyMap&lt;string, string&gt;</code> | The colour each value takes under `setting`, which the arrangement dialog shows before it writes the setting. |
 | <span id="method-roworderwilldroptree">**rowOrderWillDropTree**</span><br><code>(next: readonly { name: string; }[]) =&gt; boolean</code> | Whether the arrangement dialog's submit of `next` drops the tree: an order that moves no row is not written, so it drops nothing. |

@@ -14,6 +14,7 @@ contigThickness
 diagonalizeAnchorRow
 displayMode
 domain
+facet
 fadeThinAlignmentsMode
 geneTrackId
 height

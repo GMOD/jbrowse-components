@@ -3322,6 +3322,22 @@ export const configManifest: ConfigManifest = {
           "type": "frozen"
         },
         {
+          "name": "facet",
+          "type": "FacetConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            }
+          ],
+          "shorthand": "field"
+        },
+        {
           "name": "showTree",
           "type": "boolean"
         },

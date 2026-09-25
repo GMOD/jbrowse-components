@@ -4233,6 +4233,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/JexlString"
           }
         },
+        "facet": {
+          "$ref": "#/$defs/Facet"
+        },
         "showTree": {
           "description": "show the cluster tree sidebar.",
           "type": "boolean",
@@ -8949,6 +8952,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "anyOf": [
                 {
                   "$ref": "#/$defs/LinearBasicDisplaySlots/properties/facet"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/facet"
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
