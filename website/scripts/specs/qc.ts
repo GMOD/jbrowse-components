@@ -563,7 +563,7 @@ export const qcSpecs: ScreenshotSpec[] = [
         },
       ],
     })}&sessionName=Screenshot`,
-    viewportHeight: 1230,
+    viewportHeight: 1250,
     hideSelectors: HIDE_ISOFORM_CHIP,
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 600000,
