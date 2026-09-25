@@ -24,6 +24,7 @@ import CodeCopy from '../components/CodeCopy.astro'
 import Lightbox from '../components/Lightbox.astro'
 import SearchBox from '../components/SearchBox.astro'
 import SpecDialog from '../components/SpecDialog.astro'
+import TabMemory from '../components/TabMemory.astro'
 import VideoOverlay from '../components/VideoOverlay.astro'
 import styles from './BaseLayout.module.css'
 import { baseUrl } from '../lib/base-url.ts'
@@ -358,6 +359,7 @@ const analytics = import.meta.env.PROD && baseUrl === '/jb2'
     <Lightbox />
     <SpecDialog />
     <CodeCopy />
+    <TabMemory />
     <VideoOverlay />
 
     {analytics && (

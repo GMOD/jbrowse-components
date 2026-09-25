@@ -55,6 +55,11 @@
   .config-cli-tabs > .spec-tab-label {
     font-size: 0.85rem;
   }
+  .spec-tabs .config-tab-hint {
+    margin: 0.5rem 0;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+  }
   .spec-tabs .desktop-steps {
     border: 1px solid var(--color-border);
     border-radius: 6px;

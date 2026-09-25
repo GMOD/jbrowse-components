@@ -1,7 +1,7 @@
-// Every ```json session fence carrying `config=<url>` gets a live link, and
-// this asserts the link opens something: that the config it names is one this
-// repo publishes AND tracks, that every trackId and assembly the session asks
-// for exists in it, and that the session opens at least one track.
+// Every ```json session or addtrack fence carrying `config=<url>` gets a live
+// link, and this asserts the link opens something: that the config it names is
+// one this repo publishes AND tracks, that every trackId and assembly the
+// session asks for exists in it, and that the session opens at least one track.
 //
 // The failure this exists for is silent by design. A session naming a track
 // that is not in the config's `tracks` array opens WITHOUT it — no error, no
@@ -46,7 +46,7 @@ import {
   sessionConfigUrl,
 } from '../src/lib/derive-session-url.ts'
 import { defaultSessionObject } from '../src/lib/derive-set-default-session.ts'
-import { isSession } from '../src/lib/remark-config-cli-tabs.ts'
+import { isAddtrack, isSession } from '../src/lib/remark-config-cli-tabs.ts'
 import { docsMatching, reportProblems } from './check-utils.ts'
 import { docRelative, docsDir, repoRoot } from './paths.ts'
 
@@ -105,14 +105,54 @@ const parser = unified().use(remarkParse).use(remarkGfm)
 const problems: string[] = []
 let checked = 0
 
-// Weaker than isSession by construction — a `session` fence is where its lang
-// and meta come from — so nothing this skips could have matched.
-const SESSION_FENCE = /^\s*(?:```|~~~)json\b[^\n]*\bsession\b/m
+// Weaker than isSession/isAddtrack by construction — the fence is where their
+// lang and meta come from — so nothing this skips could have matched.
+const LIVE_FENCE = /^\s*(?:```|~~~)json\b[^\n]*\b(session|addtrack)\b/m
 
-for (const { file, text } of docsMatching(docsDir, SESSION_FENCE)) {
+// An addtrack fence's link registers the fence's track as a session track on
+// the config's assembly, so the assembly has to be there and the trackId must
+// not already be.
+function checkTrackFence(
+  where: string,
+  configUrl: string,
+  config: DemoConfig,
+  value: string,
+) {
+  let track: { trackId?: unknown; assemblyNames?: unknown }
+  try {
+    track = JSON.parse(value) as typeof track
+  } catch {
+    return
+  }
+  checked++
+  const assemblies = new Set((config.assemblies ?? []).map(a => a.name))
+  const [assembly] = Array.isArray(track.assemblyNames)
+    ? track.assemblyNames
+    : []
+  if (!assemblies.has(assembly)) {
+    problems.push(
+      `  ${where}`,
+      `    → the track's assembly "${assembly}" is not in ${configUrl}, so its`,
+      `      live link would open no view.\n`,
+    )
+  }
+  if ((config.tracks ?? []).some(t => t.trackId === track.trackId)) {
+    problems.push(
+      `  ${where}`,
+      `    → ${configUrl} already defines track "${track.trackId}", so the live`,
+      `      link would add a second track under the same id. Rename the fence's`,
+      `      trackId or drop \`config=\`.\n`,
+    )
+  }
+}
+
+for (const { file, text } of docsMatching(docsDir, LIVE_FENCE)) {
   const rel = docRelative(file)
   visit(parser.parse(text), 'code', node => {
-    const configUrl = isSession(node) ? sessionConfigUrl(node.meta) : undefined
+    const configUrl =
+      isSession(node) || isAddtrack(node)
+        ? sessionConfigUrl(node.meta)
+        : undefined
     if (configUrl === undefined) {
       return
     }
@@ -159,6 +199,10 @@ for (const { file, text } of docsMatching(docsDir, SESSION_FENCE)) {
         `      tracked in git, so it exists in this checkout and on no server.`,
         `      The link would 404 for every reader.\n`,
       )
+      return
+    }
+    if (isAddtrack(node)) {
+      checkTrackFence(where, configUrl, config, node.value)
       return
     }
     let session: unknown
@@ -216,10 +260,10 @@ for (const { file, text } of docsMatching(docsDir, SESSION_FENCE)) {
 
 if (problems.length) {
   problems.unshift(
-    `Found \`json session\` live links whose config does not back them:\n`,
+    `Found \`json session\` / \`json addtrack\` live links whose config does not back them:\n`,
   )
 }
 reportProblems(
   problems,
-  `All ${checked} session live link(s) open a tracked config this repo publishes, with every track and assembly they name in it.`,
+  `All ${checked} session and addtrack live link(s) open a tracked config this repo publishes, with every track and assembly they name in it.`,
 )

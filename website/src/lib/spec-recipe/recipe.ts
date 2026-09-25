@@ -555,7 +555,10 @@ function agentCommandFor(base: string, configUrl: string, specJson: string) {
 // "Screenshot". Rename to the figure it came from, which is both meaningful and
 // distinct per figure. The web link keeps the generator's name: it isn't
 // persisted there, and changing it would re-capture every figure.
-function withSessionName(url: string, figureName: string | undefined) {
+export function withSessionName(
+  url: string,
+  figureName: string | undefined,
+) {
   const rewritten = new URL(url)
   rewritten.searchParams.set(
     'sessionName',

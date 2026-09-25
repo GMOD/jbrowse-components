@@ -109,27 +109,23 @@ const GRAPH_ADAPTERS: Record<
   },
 }
 
-function relativeUris(value: unknown): string[] {
+function uris(value: unknown, key?: string): string[] {
   if (Array.isArray(value)) {
-    return value.flatMap(relativeUris)
+    return value.flatMap(item =>
+      key === 'bigWigs' && typeof item === 'string' ? [item] : uris(item),
+    )
   }
   if (value === null || typeof value !== 'object') {
     return []
   }
-  return Object.entries(value).flatMap(([key, child]) =>
-    key === 'uri' &&
-    typeof child === 'string' &&
-    !/^(\w+:\/\/|\/)/.test(child)
-      ? [child]
-      : relativeUris(child),
+  return Object.entries(value).flatMap(([k, child]) =>
+    k === 'uri' && typeof child === 'string' ? [child] : uris(child, k),
   )
 }
 
-// A relative uri resolves against the config.json it sits in, and a paste or a
-// form has none, so the reader's copy loads nothing until it names a real file.
-// A file written as a bare string resolves the same way, and addRelativeUris is
-// what knows which strings those are.
-function relativeUriNote(config: unknown): RootContent[] {
+// A file written as a bare string counts too, and addRelativeUris is what
+// knows which strings those are.
+export function configFileUris(config: unknown) {
   const lifted = structuredClone(config)
   if (typeof lifted === 'object' && lifted !== null) {
     addRelativeUris(
@@ -137,16 +133,24 @@ function relativeUriNote(config: unknown): RootContent[] {
       new URL('https://config.invalid/'),
     )
   }
-  const uris = [...new Set(relativeUris(lifted))]
-  return uris.length
+  return [...new Set(uris(lifted))]
+}
+
+// A relative uri resolves against the config.json it sits in, and a paste or a
+// form has none, so the reader's copy loads nothing until it names a real file.
+function relativeUriNote(config: unknown): RootContent[] {
+  const relative = configFileUris(config).filter(
+    uri => !/^(\w+:\/\/|\/)/.test(uri),
+  )
+  return relative.length
     ? [
         paragraph([
-          ...uris.flatMap((uri, i) => [
+          ...relative.flatMap((uri, i) => [
             ...(i > 0 ? [text(', ')] : []),
             inline(uri),
           ]),
           text(
-            uris.length > 1
+            relative.length > 1
               ? ' are relative to a config.json. Replace each with its URL or its path on this computer.'
               : ' is relative to a config.json. Replace it with its URL or its path on this computer.',
           ),

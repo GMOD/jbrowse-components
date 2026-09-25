@@ -1,0 +1,54 @@
+---
+// Picking a tab in any `.spec-tabs` widget whose inputs carry `data-tab-kind`
+// checks the same kind in every such widget on the page, and on later pages.
+// The kind rather than the label, because a CLI label differs per fence. The
+// tabs work without this; it only moves the radios.
+---
+
+<script>
+  const KEY = 'jbrowse-docs-tab-kind'
+  const INPUT = '.spec-tabs > .spec-tab-input[data-tab-kind]'
+
+  function readKind() {
+    try {
+      return localStorage.getItem(KEY)
+    } catch {
+      return null
+    }
+  }
+
+  function saveKind(kind: string) {
+    try {
+      localStorage.setItem(KEY, kind)
+    } catch {}
+  }
+
+  function checkKind(kind: string) {
+    for (const input of document.querySelectorAll<HTMLInputElement>(INPUT)) {
+      if (input.dataset.tabKind === kind) {
+        input.checked = true
+      }
+    }
+  }
+
+  const stored = readKind()
+  if (stored) {
+    checkKind(stored)
+  }
+
+  // Panels above the clicked widget change height too, so hold the clicked
+  // tab where it was on screen.
+  document.addEventListener('change', event => {
+    const target = event.target
+    const kind =
+      target instanceof HTMLInputElement && target.matches(INPUT)
+        ? target.dataset.tabKind
+        : undefined
+    if (kind && target instanceof HTMLInputElement) {
+      const before = target.getBoundingClientRect().top
+      saveKind(kind)
+      checkKind(kind)
+      window.scrollBy(0, target.getBoundingClientRect().top - before)
+    }
+  })
+</script>
