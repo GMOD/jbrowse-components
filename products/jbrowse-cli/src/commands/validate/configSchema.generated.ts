@@ -4886,20 +4886,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 0.1
         },
-        "colorBy": {
-          "description": "what a ribbon's hue says: 'default' is the color slot, 'chromosome' the arc color of the chromosome it joins on the circle's first genome, and 'strand' the alignment's strand, which is also the twist in every mode.",
-          "enum": [
-            "default",
-            "chromosome",
-            "strand"
-          ],
-          "default": "default"
-        },
-        "color": {
-          "description": "the fill color of each ribbon.",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "rgba(70,130,180,0.25)"
-        },
         "colorSelected": {
           "description": "the fill color of a ribbon that has been selected.",
           "$ref": "#/$defs/CssColorOrJexl",
@@ -11459,22 +11445,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "bezierRadiusRatio": {
               "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/bezierRadiusRatio"
             },
-            "colorBy": {
-              "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/colorBy"
-            },
-            "color": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/color"
-                },
-                {
-                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/color"
-                },
-                {
-                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/color"
-                }
-              ]
-            },
             "colorSelected": {
               "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/colorSelected"
             },
@@ -11547,6 +11517,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "maxHeight": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/maxHeight"
+            },
+            "color": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/color"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/color"
+                }
+              ]
             },
             "baseColor": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/baseColor"
@@ -17818,6 +17798,58 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "SyntenyColor": {
+      "title": "SyntenyColor",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "$ref": "#/$defs/CssColor",
+          "type": "string"
+        },
+        {
+          "title": "SyntenyColor",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "value": {
+              "description": "the color of every alignment in place of the default scheme.",
+              "$ref": "#/$defs/CssColor"
+            },
+            "field": {
+              "description": "what colours an alignment: strand paints forward and reverse; query and target one colour per sequence on that side, reference one per chromosome of the anchor assembly across a stack, track one per overlaid track (pinned under Track colors); identity, mapq and dnds paint the preset ramps; any other name is a column the tracks declare in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it).",
+              "$ref": "#/$defs/PlainString",
+              "default": ""
+            },
+            "scale": {
+              "description": "none paints value and keeps the field for a switch back; unset, a field paints.",
+              "const": "none"
+            },
+            "domain": {
+              "description": "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out keeps a colour derived from itself that no listed label paints, so every window and session agrees on it.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "CircularViewTrackEntry": {
       "title": "CircularViewTrackEntry",
       "description": "A track to open in a CircularView: a trackId, or an object whose other keys are the display's config slots and state written inline.",
@@ -18500,6 +18532,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "minimized": {
           "type": "boolean"
         },
+        "color": {
+          "$ref": "#/$defs/SyntenyColor"
+        },
+        "trackColors": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "hideUnlabelled": {
+          "type": "boolean"
+        },
+        "alpha": {
+          "type": "number"
+        },
+        "minAlignmentLength": {
+          "type": "number"
+        },
         "offsetRadians": {
           "type": "number"
         },
@@ -18608,58 +18658,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
-    "SyntenyColor": {
-      "title": "SyntenyColor",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
-          "$ref": "#/$defs/CssColor",
-          "type": "string"
-        },
-        {
-          "title": "SyntenyColor",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "value": {
-              "description": "the color of every alignment in place of the default scheme.",
-              "$ref": "#/$defs/CssColor"
-            },
-            "field": {
-              "description": "what colours an alignment: strand paints forward and reverse; query and target one colour per sequence on that side, reference one per chromosome of the anchor assembly across a stack, track one per overlaid track (pinned under Track colors); identity, mapq and dnds paint the preset ramps; any other name is a column the tracks declare in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it).",
-              "$ref": "#/$defs/PlainString",
-              "default": ""
-            },
-            "scale": {
-              "description": "none paints value and keeps the field for a switch back; unset, a field paints.",
-              "const": "none"
-            },
-            "domain": {
-              "description": "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out keeps a colour derived from itself that no listed label paints, so every window and session agrees on it.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
     "DotplotViewTrackEntry": {
       "title": "DotplotViewTrackEntry",
       "description": "A track to open in a DotplotView: a trackId, or an object whose other keys are the display's config slots and state written inline.",
@@ -18730,7 +18728,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "minimized": {
           "type": "boolean"
         },
-        "colorBy": {
+        "color": {
           "$ref": "#/$defs/SyntenyColor"
         },
         "trackColors": {
@@ -18975,7 +18973,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "minimized": {
           "type": "boolean"
         },
-        "colorBy": {
+        "color": {
           "$ref": "#/$defs/SyntenyColor"
         },
         "trackColors": {

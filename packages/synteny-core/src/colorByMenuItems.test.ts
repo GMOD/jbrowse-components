@@ -215,19 +215,19 @@ test('a value mode is disabled until the data has carried it', () => {
 })
 
 test('the mapq field is offered once the adapters carry mappingQual', () => {
-  const setColorBy = jest.fn()
+  const setColorField = jest.fn()
   const rows = valueModes(
     colorByMenuItems(
       target({
         attributeRanges: { mappingQual: { min: 0, max: 60 } },
-        setColorBy,
+        setColorField,
       }),
     ),
   )
   const mapq = rows.find(r => 'label' in r && r.label === 'Mapping quality')!
   expect('disabled' in mapq && mapq.disabled).toBe(false)
   ;(mapq as { onClick: () => void }).onClick()
-  expect(setColorBy).toHaveBeenCalledWith('mapq')
+  expect(setColorField).toHaveBeenCalledWith('mapq')
 })
 
 test('each track row carries its swatch and a way back to automatic', () => {

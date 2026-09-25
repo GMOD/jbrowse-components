@@ -10,7 +10,7 @@ const LEGACY_FIELDS: Record<string, string | undefined> = {
   identity: 'identity',
   identityDiverging: 'identity',
   meanQueryIdentity: 'identity',
-  mappingQuality: 'mappingQual',
+  mappingQuality: 'mapq',
   dnds: 'dnds',
 }
 

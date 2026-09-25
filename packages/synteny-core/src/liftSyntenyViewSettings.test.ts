@@ -7,7 +7,7 @@ test('a mode string lifts into the field it paints', () => {
     color: { field: 'strand' },
   })
   expect(liftSyntenyViewSettings({ colorBy: 'mappingQuality' })).toEqual({
-    color: { field: 'mappingQual' },
+    color: { field: 'mapq' },
   })
   expect(liftSyntenyViewSettings({ colorBy: 'meanQueryIdentity' })).toEqual({
     color: { field: 'identity' },

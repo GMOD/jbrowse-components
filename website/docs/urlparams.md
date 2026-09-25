@@ -636,13 +636,17 @@ restores natively:
 <!-- prettier-ignore -->
 | Property | What it does |
 | --- | --- |
+| [`alpha`](/docs/models/syntenycolorsmixin#property-alpha) | Opacity of every alignment, 0 to 1. The synteny view defaults it low for dense unfiltered hairballs (with minAlignmentLength set, ~0.4 gives stronger colour); the dotplot defaults it opaque. |
 | [`autoFit`](/docs/models/circularview#property-autofit) | whether the view keeps re-fitting to its container on resize. Cleared once the user manually zooms/pans so their view (persisted via bpPerPx/offsetRadians) is preserved across resizes and reloads. |
 | [`bpPerPx`](/docs/models/circularview#property-bpperpx) | the zoom level, base-pairs per pixel. Capped by `minimumRadiusPx`, and refit over by the first resize unless `autoFit` is false. |
+| [`color`](/docs/models/trackcolorsmixin#property-color) | The colour every track in the view paints with, a [](/docs/config/syntenycolor) object: `{ field: "strand" }`, `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`, a measurement (`identity`, `mapq`, `dnds`) or a column the tracks declare, with `domain` ordering a text column's labels; a colour string paints every alignment. Unset, the default scheme paints. |
 | [`disableImportForm`](/docs/models/circularview#property-disableimportform) | suppress the import form even on an error — what the SV inspector's circle wants, since its assembly comes from the sheet beside it and a form there would offer a control that cannot work |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
 | [`height`](/docs/models/circularview#property-height) | the height of the view in pixels. The circle auto-fits its container, so this is what sizes the drawing. |
 | [`hideTrackSelectorButton`](/docs/models/circularview#property-hidetrackselectorbutton) | chrome switch, for an embed that drives the view itself |
+| [`hideUnlabelled`](/docs/models/trackcolorsmixin#property-hideunlabelled) | Under a text-column mode, draw only the rows that carry a label. |
 | [`hideVerticalResizeHandle`](/docs/models/circularview#property-hideverticalresizehandle) | chrome switch, for an embed that drives the view itself |
+| [`minAlignmentLength`](/docs/models/syntenycolorsmixin#property-minalignmentlength) | Hide alignment blocks shorter than this many bp, which cuts whole-genome hairball noise. |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
 | [`minimumRadiusPx`](/docs/models/circularview#property-minimumradiuspx) | how far in the circle may be zoomed, as a floor on the radius; it is what caps bpPerPx |
 | [`minVisibleWidth`](/docs/models/circularview#property-minvisiblewidth) | arcs thinner than this many pixels are elided instead of drawn, so a few thousand unplaced contigs do not become a ring of hairlines |
@@ -650,6 +654,7 @@ restores natively:
 | [`paddingPx`](/docs/models/circularview#property-paddingpx) | blank margin between the circle and the edge of the figure |
 | [`showLegend`](/docs/models/circularview#property-showlegend) | a key naming each track's ring, chords or ribbons in the corner |
 | [`spacingPx`](/docs/models/circularview#property-spacingpx) | the gap drawn between adjacent chromosome arcs |
+| [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `color: { field: 'track' }`. Absent means the track takes an automatic slot from the palette. |
 | [`trackSelectorType`](/docs/models/circularview#property-trackselectortype) | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and share links persist it. |
 
 <!-- SPEC_KEYS CircularView END -->
@@ -704,9 +709,9 @@ restores natively:
 <!-- prettier-ignore -->
 | Property | What it does |
 | --- | --- |
-| [`alpha`](/docs/models/syntenyviewmixin#property-alpha) | Opacity of every alignment, 0 to 1. A uniform, so a slider drag recolours nothing. The synteny view defaults it low for dense unfiltered hairballs (with minAlignmentLength set, ~0.4 gives stronger colour); the dotplot defaults it opaque. |
+| [`alpha`](/docs/models/syntenycolorsmixin#property-alpha) | Opacity of every alignment, 0 to 1. The synteny view defaults it low for dense unfiltered hairballs (with minAlignmentLength set, ~0.4 gives stronger colour); the dotplot defaults it opaque. |
 | [`assemblyNames`](/docs/models/dotplotview#property-assemblynames) | the two assemblies being compared, horizontal axis first. A spec normally names these per axis instead, as `views[0].assembly` and `views[1].assembly`. |
-| [`colorBy`](/docs/models/trackcolorsmixin#property-colorby) | The colour every track in the view paints with, a [](/docs/config/syntenycolor) object: `{ field: "strand" }`, `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`, a measurement (`identity`, `mapq`, `dnds`) or a column the tracks declare, with `domain` ordering a text column's labels; a colour string paints every alignment. Unset, the default scheme paints. |
+| [`color`](/docs/models/trackcolorsmixin#property-color) | The colour every track in the view paints with, a [](/docs/config/syntenycolor) object: `{ field: "strand" }`, `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`, a measurement (`identity`, `mapq`, `dnds`) or a column the tracks declare, with `domain` ordering a text column's labels; a colour string paints every alignment. Unset, the default scheme paints. |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
 | [`drawCigar`](/docs/models/dotplotview#property-drawcigar) | resolve each alignment's CIGAR into the drawn shape rather than plotting it as a single straight segment |
 | [`height`](/docs/models/dotplotview#property-height) | the height of the plot in pixels |
@@ -715,11 +720,11 @@ restores natively:
 | [`lineWidth`](/docs/models/dotplotview#property-linewidth) | Line width in CSS pixels of every alignment in the plot |
 | [`lockAspectRatio`](/docs/models/dotplotview#property-lockaspectratio) | When true, hview and vview are kept at the same bpPerPx so the dotplot stays square. Wheel zoom already preserves the ratio; box-zoom and other independent ops trigger an autorun resync. |
 | [`lodMode`](/docs/models/syntenyviewmixin#property-lodmode) | Level-of-detail tier selection for PIF adapters. 'auto' uses the adapter's bpPerPx threshold; 'fine' forces the per-row CIGAR tier (t/q); 'coarse' forces the tier whose CIGAR is folded to its large indels (T/Q) when present. One value for the view, so every track draws at the same tier. |
-| [`minAlignmentLength`](/docs/models/syntenyviewmixin#property-minalignmentlength) | Hide alignment blocks shorter than this many bp, which cuts whole-genome hairball noise. |
+| [`minAlignmentLength`](/docs/models/syntenycolorsmixin#property-minalignmentlength) | Hide alignment blocks shorter than this many bp, which cuts whole-genome hairball noise. |
 | [`minIdentity`](/docs/models/dotplotview#property-minidentity) | Hide alignments whose sequence identity is below this fraction (0-1), enforced per feature in buildLineSegments beside minAlignmentLength. A feature carrying no identity at all is kept at every threshold — the alternative blanks a plot whose adapter simply never reported one. |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
 | [`showGridlines`](/docs/models/dotplotview#property-showgridlines) | carry each axis' ruler ticks across the plot as faint lines, the way LinearGenomeView's gridlines carry its own down over the tracks |
-| [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `colorBy: { field: 'track' }`. Absent means the track takes an automatic slot from the palette. |
+| [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `color: { field: 'track' }`. Absent means the track takes an automatic slot from the palette. |
 | [`trackSelectorType`](/docs/models/dotplotview#property-trackselectortype) | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and share links persist it. |
 | [`vview`](/docs/models/dotplotview#property-vview) | the vertical axis, the counterpart to `hview`. A spec writes `views[1]`. |
 
@@ -823,9 +828,9 @@ restores natively:
 <!-- prettier-ignore -->
 | Property | What it does |
 | --- | --- |
-| [`alpha`](/docs/models/syntenyviewmixin#property-alpha) | Opacity of every alignment, 0 to 1. A uniform, so a slider drag recolours nothing. The synteny view defaults it low for dense unfiltered hairballs (with minAlignmentLength set, ~0.4 gives stronger colour); the dotplot defaults it opaque. |
+| [`alpha`](/docs/models/syntenycolorsmixin#property-alpha) | Opacity of every alignment, 0 to 1. The synteny view defaults it low for dense unfiltered hairballs (with minAlignmentLength set, ~0.4 gives stronger colour); the dotplot defaults it opaque. |
 | [`cigarMode`](/docs/models/linearsyntenyview#property-cigarmode) | How per-base insertions and deletions inside each alignment are shown: 'full' paints indel wedges, 'matches' leaves them see-through, 'off' draws blocks only. |
-| [`colorBy`](/docs/models/trackcolorsmixin#property-colorby) | The colour every track in the view paints with, a [](/docs/config/syntenycolor) object: `{ field: "strand" }`, `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`, a measurement (`identity`, `mapq`, `dnds`) or a column the tracks declare, with `domain` ordering a text column's labels; a colour string paints every alignment. Unset, the default scheme paints. |
+| [`color`](/docs/models/trackcolorsmixin#property-color) | The colour every track in the view paints with, a [](/docs/config/syntenycolor) object: `{ field: "strand" }`, `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`, a measurement (`identity`, `mapq`, `dnds`) or a column the tracks declare, with `domain` ordering a text column's labels; a colour string paints every alignment. Unset, the default scheme paints. |
 | [`diagonalizeAnchorRow`](/docs/models/linearsyntenyview#property-diagonalizeanchorrow) | Which genome row "Re-order chromosomes" keeps as it is: the rows below it are ordered against the row above them, and the rows above it against the row below. |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
 | [`drawCurves`](/docs/models/linearsyntenyview#property-drawcurves) | Draw every band's ribbons as bezier curves rather than straight chords. |
@@ -837,12 +842,12 @@ restores natively:
 | [`hideUnlabelled`](/docs/models/trackcolorsmixin#property-hideunlabelled) | Under a text-column mode, draw only the rows that carry a label. |
 | [`levels`](/docs/models/linearsyntenyview#property-levels) | One synteny band per adjacent pair of `views`, each holding its own track list. The track-selector and add-track widgets address a band through `trackContainerFor`. |
 | [`lodMode`](/docs/models/syntenyviewmixin#property-lodmode) | Level-of-detail tier selection for PIF adapters. 'auto' uses the adapter's bpPerPx threshold; 'fine' forces the per-row CIGAR tier (t/q); 'coarse' forces the tier whose CIGAR is folded to its large indels (T/Q) when present. One value for the view, so every track draws at the same tier. |
-| [`minAlignmentLength`](/docs/models/syntenyviewmixin#property-minalignmentlength) | Hide alignment blocks shorter than this many bp, which cuts whole-genome hairball noise. |
+| [`minAlignmentLength`](/docs/models/syntenycolorsmixin#property-minalignmentlength) | Hide alignment blocks shorter than this many bp, which cuts whole-genome hairball noise. |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
 | [`opacityByIdentity`](/docs/models/linearsyntenyview#property-opacitybyidentity) | Fade alignment blocks by per-feature identity (lower identity = more transparent), whatever the color mode. |
 | [`overdrawPx`](/docs/models/linearsyntenyview#property-overdrawpx) | pixels beyond the visible viewport edge that synteny lines are still drawn. Effective up to the pan buffer (`syntenyPanBufferPx`: 2000px, or half the viewport when that is wider) — the worker emits CIGAR detail and location markers only that far, so a larger value draws ribbons whose detail stops partway along them. |
 | [`showOffscreenMates`](/docs/models/linearsyntenyview#property-showoffscreenmates) | Mark the alignments the view cannot draw a ribbon for, along both edges of each band. Costs a second query per pair of rows. |
-| [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `colorBy: { field: 'track' }`. Absent means the track takes an automatic slot from the palette. |
+| [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `color: { field: 'track' }`. Absent means the track takes an automatic slot from the palette. |
 | [`trackSelectorType`](/docs/models/linearsyntenyview#property-trackselectortype) | Ignored: the hierarchical selector is the only one. Declared because sessions and share links still carry it. |
 
 <!-- SPEC_KEYS LinearSyntenyView END -->
