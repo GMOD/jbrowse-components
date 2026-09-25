@@ -27,7 +27,10 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface FeatureColorHost {
   conf: { color: Instance<typeof colorConfigSchema> }
-  rpcDataMap: ReadonlyMap<number, { colorValues?: ColorValues }>
+  rpcDataMap: ReadonlyMap<
+    number,
+    { colorValues?: Pick<ColorValues, 'field' | 'values'> }
+  >
 }
 
 // The value text a ramp reads: blank is no number, where `Number` reads 0.

@@ -3199,7 +3199,63 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "color",
-          "type": "(JexlString | (CssColor | undefined))"
+          "type": "FeatureColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "value",
+              "type": "(JexlString | (CssColor | undefined))"
+            },
+            {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "scale",
+              "type": "(FeatureColorScale | undefined)"
+            },
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "range",
+              "type": "CssColorEntry[]"
+            },
+            {
+              "name": "labels",
+              "type": "string[]"
+            },
+            {
+              "name": "scheme",
+              "type": "(ColorScheme | undefined)"
+            },
+            {
+              "name": "reverse",
+              "type": "boolean"
+            },
+            {
+              "name": "domainMid",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "domainMin",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "domainMax",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "title",
+              "type": "(string | undefined)"
+            }
+          ],
+          "shorthand": "value",
+          "fieldScale": {
+            "score": "linear",
+            "*": "categorical"
+          }
         },
         {
           "name": "rowColor",
@@ -3256,10 +3312,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "legend",
           "type": "frozen"
-        },
-        {
-          "name": "colorDomain",
-          "type": "string[]"
         },
         {
           "name": "rowGroups",

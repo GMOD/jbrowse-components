@@ -1,3 +1,4 @@
+import type { FieldPalette } from '../../RenderFeatureDataRPC/colorClasses.ts'
 import type {
   RowKeys,
   RowTable,
@@ -20,6 +21,9 @@ export interface MultiRowFeaturePaintInputs {
   // ABGR colors of legend categories toggled off; matching features are omitted
   // at encode time and so reach neither backend
   hiddenColors: ReadonlySet<number>
+  // the color field's scale while a field paints, which a feature's value
+  // paints through in place of its worker-baked color
+  fieldPalette?: FieldPalette
 }
 
 /**
@@ -33,6 +37,9 @@ export interface MultiRowEncodeInputs {
   // a baked colour equal to a hidden category must not hide their features
   overriddenRows: ReadonlySet<string>
   hiddenColors: ReadonlySet<number>
+  // the color field's scale while a field paints, which a feature's value
+  // paints through in place of its worker-baked color
+  fieldPalette?: FieldPalette
 }
 
 export interface MultiRowRenderState extends MultiRowFeaturePaintInputs {

@@ -1,3 +1,4 @@
+import type { FieldPalette } from '../../RenderFeatureDataRPC/colorClasses.ts'
 import type {
   MultiRowFeaturePaintInputs,
   MultiRowRegionData,
@@ -22,6 +23,34 @@ export function resolveLocalRowIndices(
   return partitionValues.map(v => rowIndexByValue.get(v))
 }
 
+type OwnColorData = Pick<
+  MultiRowRegionData,
+  'featureColors' | 'featureColorValues' | 'colorValues'
+>
+
+/**
+ * Each feature's own color, resolved once per region: its value of the color
+ * field through the field's palette while that field paints this region's
+ * values, else what the worker baked. The encode, the overlays and the
+ * hidden-category rule all read it, so a legend toggle hides what the paint
+ * drew.
+ */
+export function ownColors(data: OwnColorData, fieldPalette?: FieldPalette) {
+  const { featureColors, featureColorValues, colorValues } = data
+  if (
+    !fieldPalette ||
+    !featureColorValues?.length ||
+    colorValues?.field !== fieldPalette.field
+  ) {
+    return featureColors
+  }
+  const table = fieldPalette.tableOf(colorValues.values, false)
+  return Uint32Array.from(featureColors, (baked, i) => {
+    const value = featureColorValues[i]!
+    return value > 0 ? table[(value - 1) * 3]! : baked
+  })
+}
+
 /**
  * Resolved once per region so the per-feature answer is array reads.
  */
@@ -29,10 +58,11 @@ interface DrawnFeatureContext {
   rowForLocal: readonly (number | undefined)[]
   rowColorsByIndex: readonly (number | undefined)[]
   hiddenColors: ReadonlySet<number>
+  colors: Uint32Array
 }
 
 export function drawnFeatureContext(
-  data: Pick<MultiRowRegionData, 'partitionValues'>,
+  data: Pick<MultiRowRegionData, 'partitionValues'> & OwnColorData,
   state: MultiRowFeaturePaintInputs,
 ): DrawnFeatureContext {
   return {
@@ -42,13 +72,14 @@ export function drawnFeatureContext(
     ),
     rowColorsByIndex: state.rowColorsByIndex,
     hiddenColors: state.hiddenColors,
+    colors: ownColors(data, state.fieldPalette),
   }
 }
 
 /**
  * Whether a legend toggle hides a feature painted `abgr`. Only a row painting
- * the baked colour answers to the legend: a row with an override paints
- * something the legend never lists, so a baked colour equal to a hidden
+ * the feature's own colour answers to the legend: a row with an override
+ * paints something the legend never lists, so an own colour equal to a hidden
  * category must not hide its features. The encode and every overlay read this
  * one rule.
  */
@@ -61,7 +92,7 @@ export function hiddenByCategory(
 }
 
 function drawnRowAt(
-  data: Pick<MultiRowRegionData, 'featurePartitionIndex' | 'featureColors'>,
+  data: Pick<MultiRowRegionData, 'featurePartitionIndex'>,
   ctx: DrawnFeatureContext,
   i: number,
 ) {
@@ -70,7 +101,7 @@ function drawnRowAt(
     return undefined
   }
   return hiddenByCategory(
-    data.featureColors[i]!,
+    ctx.colors[i]!,
     ctx.rowColorsByIndex[rowIndex] !== undefined,
     ctx.hiddenColors,
   )
@@ -84,21 +115,14 @@ function drawnRowAt(
  * space. The encode walks it in key space through the same rule.
  */
 export function forEachDrawnFeature(
-  data: Pick<
-    MultiRowRegionData,
-    'featureStarts' | 'featurePartitionIndex' | 'featureColors'
-  >,
+  data: Pick<MultiRowRegionData, 'featureStarts' | 'featurePartitionIndex'>,
   ctx: DrawnFeatureContext,
   visit: (i: number, rowIndex: number, color: number) => void,
 ) {
   for (let i = 0; i < data.featureStarts.length; i++) {
     const rowIndex = drawnRowAt(data, ctx, i)
     if (rowIndex !== undefined) {
-      visit(
-        i,
-        rowIndex,
-        ctx.rowColorsByIndex[rowIndex] ?? data.featureColors[i]!,
-      )
+      visit(i, rowIndex, ctx.rowColorsByIndex[rowIndex] ?? ctx.colors[i]!)
     }
   }
 }

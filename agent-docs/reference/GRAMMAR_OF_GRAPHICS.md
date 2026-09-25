@@ -353,10 +353,12 @@ The seams, named honestly:
   order, and places the rows through the same `legendSpecOf`. The multiway
   lane glyphs' `color` is the `FeatureColor` object, so a field there hands
   the union the values its packer filed each mark under (`laneFieldKey`),
-  `cluster` among them. The multi-row feature display reads colours off
-  `itemRgb` and per-feature `jexl:` with no channel behind them, so it hands
-  the derivation the feature `name` as the field and `colorDomain` as its
-  order. One key stays outside it: the multiway lane glyphs' under a `jexl:`
+  `cluster` among them. The multi-row feature display's `color` is the
+  FeatureColor object too: a field there keys through the same derivation
+  over the values its worker shipped, each with the partition row it lands
+  in, and where no field is named it reads colours off `itemRgb` and a
+  per-feature `jexl:` `value`, handing the derivation the feature `name` as
+  the field and `color.domain` as its order. One key stays outside it: the multiway lane glyphs' under a `jexl:`
   `value` (`laneColorKey`), a row per colour named by the leftmost feature
   carrying it. **A value-less feature files under the empty key `''`**, which
   the one comparator already places after every value, so the worker tables

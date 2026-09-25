@@ -1,9 +1,16 @@
 import { isCallbackValue, readConfigValue } from '@jbrowse/core/configuration'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { cssColorToABGR, featureBedColor } from '@jbrowse/core/util/colorBits'
-import { createLegendCandidateCollector } from '@jbrowse/core/util/legendCandidates'
+import { fieldReader } from '@jbrowse/core/util/fieldReader'
+import { valueText } from '@jbrowse/core/util/groupKeys'
+import {
+  MAX_LEGEND_CANDIDATES,
+  createLegendCandidateCollector,
+} from '@jbrowse/core/util/legendCandidates'
 
+import type { WorkerColor } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type {
+  MultiRowColorValues,
   MultiRowGetFeaturesResult,
   MultiRowRegionData,
   PartitionCandidateValues,
@@ -146,6 +153,35 @@ function createCandidateValueCounter(candidates: string[]) {
   }
 }
 
+// The colour field's value per feature, the main thread's to paint: each
+// feature's one-based index into `values`, and each value with the partition
+// row it lands in.
+function createColorValueCollector(field: string, jexl: JexlInstance) {
+  const read = fieldReader(field, jexl)
+  const values: string[] = []
+  const indexOfText = new Map<string, number>()
+  const painted: MultiRowColorValues['painted'] = []
+  const paintedIds = new Set<string>()
+  return {
+    colorValues: { field, values, painted },
+    laneValueOf(feature: Feature, rowIndex: number) {
+      const text = valueText(read(feature))
+      let index = indexOfText.get(text)
+      if (index === undefined) {
+        index = values.length
+        values.push(text)
+        indexOfText.set(text, index)
+      }
+      const id = `${rowIndex}:${index}`
+      if (painted.length < MAX_LEGEND_CANDIDATES && !paintedIds.has(id)) {
+        paintedIds.add(id)
+        painted.push({ rowIndex, valueIndex: index })
+      }
+      return index + 1
+    },
+  }
+}
+
 export const AUTO_PARTITION_FIELD = ''
 
 const PREFERRED_PARTITION_FIELDS = ['repClass']
@@ -202,7 +238,7 @@ export function packMultiRowFeatures({
   features: Feature[]
   partitionField: string
   lengthField: string
-  colorConfig: string | undefined
+  colorConfig: WorkerColor
   jexl: JexlInstance
   report?: ProgressReporter
 }): MultiRowGetFeaturesResult {
@@ -217,7 +253,11 @@ export function packMultiRowFeatures({
   const featureIds: string[] = new Array(n)
   const partitionValues: string[] = []
   const valueIndex = new Map<string, number>()
-  const featureColor = makeFeatureColorResolver(colorConfig, jexl)
+  const featureColor = makeFeatureColorResolver(colorConfig.value, jexl)
+  const colorValues = colorConfig.field
+    ? createColorValueCollector(colorConfig.field, jexl)
+    : undefined
+  const featureColorValues = new Uint32Array(colorValues ? n : 0)
   const partitionCandidates = collectPartitionCandidates(features)
   const resolvedPartitionField = resolvePartitionField(
     partitionField,
@@ -252,6 +292,9 @@ export function packMultiRowFeatures({
       valueIndex.set(value, idx)
     }
     featurePartitionIndex[i] = idx
+    if (colorValues) {
+      featureColorValues[i] = colorValues.laneValueOf(feature, idx)
+    }
     if (i < PARTITION_VALUE_COUNT_SAMPLE) {
       candidateValues.add(feature)
     }
@@ -264,6 +307,8 @@ export function packMultiRowFeatures({
     featureStarts,
     featureEnds,
     featureColors,
+    featureColorValues,
+    colorValues: colorValues?.colorValues,
     featureDeltas,
     partitionValues,
     featurePartitionIndex,

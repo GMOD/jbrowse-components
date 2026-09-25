@@ -9,6 +9,7 @@ import { legendIsReadable } from '@jbrowse/core/ui'
 import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
@@ -51,6 +52,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import DensityBandMixin from '../shared/DensityBandMixin.ts'
 import { copyItem } from '../shared/copyMenuItem.ts'
+import { featureColorViews } from '../shared/featureColorViews.ts'
 import {
   featureSpanRegion,
   fetchCanvasFeatureDetails,
@@ -74,6 +76,7 @@ import {
 } from './partitionFields.ts'
 import {
   buildColorLegend,
+  buildFieldColorLegend,
   entryHidden,
   resolveConfiguredLegend,
 } from './rendering/colorLegend.ts'
@@ -119,6 +122,8 @@ import type {
   UnlistedRowsSort,
 } from '@jbrowse/tree-sidebar'
 import type React from 'react'
+
+const RAMP_KEY_STOPS = 8
 
 const EMPTY_REGION_DATA: ReadonlyMap<number, MultiRowRegionData> = new Map()
 
@@ -262,21 +267,6 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * The colour key's declared order, off config. The blocks are painted
-       * per feature, so this orders the key and nothing else.
-       */
-      get colorDomain(): string[] {
-        return readConfObject(self.conf, 'colorDomain')
-      },
-      /**
-       * #getter
-       * Raw `color` slot, forwarded to the worker which resolves it per feature.
-       */
-      get colorConfig(): string | undefined {
-        return self.conf.color
-      },
-      /**
-       * #getter
        */
       get rowProportion(): number {
         return readConfObject(self.conf, 'rowProportion')
@@ -291,6 +281,7 @@ export default function stateModelFactory(
         return readConfObject(self.conf, 'rowGroups')
       },
     }))
+    .views(featureColorViews)
     .views(self => {
       // A plain getter hands out a fresh array on every write to `rpcDataMap`,
       // and this list reaches `featurePaintInputs`, whose identity has to hold
@@ -396,7 +387,7 @@ export default function stateModelFactory(
         get effectiveClusterField(): string {
           return resolveClusterField({
             clusterField: self.clusterField,
-            colorConfig: self.colorConfig,
+            color: self.workerColor,
             candidates: partitionCandidates(self),
             partitionField: effectivePartitionField(self),
           })
@@ -465,16 +456,24 @@ export default function stateModelFactory(
       },
       /**
        * #getter
+       * The row palette, while nothing else colours the features: no `color`
+       * value or field, and no itemRgb in the file.
+       */
+      get dealtRowPalette() {
+        const { value, field } = self.workerColor
+        return value === undefined && !field && !self.usedItemRgb
+          ? self.rowColorScale
+          : undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * Per-row CSS color by display row, `undefined` where the row has none
-       * and the worker-baked per-feature color paints instead.
+       * and the feature's own color paints instead.
        */
       get rowColorStringsByIndex(): (string | undefined)[] {
-        return resolveRowColorStrings(
-          self.sources,
-          self.colorConfig === undefined && !self.usedItemRgb
-            ? self.rowColorScale
-            : undefined,
-        )
+        return resolveRowColorStrings(self.sources, self.dealtRowPalette)
       },
     }))
     .views(self => ({
@@ -531,20 +530,30 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Categorical color key, the explicit `legend` slot winning over the one
-       * derived from the loaded data. Both halves are gated on there being a
-       * painting to key, since a key is a claim about colors on screen.
+       * Categorical color key: the explicit `legend` slot, else the one the
+       * color field's scale derives from the values the worker found, else
+       * the one the painted colors derive, each named by the features
+       * carrying it. All are gated on there being a painting to key, since a
+       * key is a claim about colors on screen.
        */
       get colorLegend() {
         const configured = self.hasDrawnFeatures ? self.configuredLegend : []
+        const field = self.paintedColorField
         return configured.length
           ? configured
-          : buildColorLegend(
-              self.drawnRegionData.values(),
-              self.rowIndexByValue,
-              self.rowColorsByIndex,
-              self.colorDomain,
-            )
+          : field
+            ? buildFieldColorLegend(
+                self.drawnRegionData.values(),
+                field,
+                self.rowIndexByValue,
+                self.rowColorsByIndex,
+              )
+            : buildColorLegend(
+                self.drawnRegionData.values(),
+                self.rowIndexByValue,
+                self.rowColorsByIndex,
+                self.colorSettings.domain,
+              )
       },
     }))
     .views(self => ({
@@ -656,12 +665,26 @@ export default function stateModelFactory(
        */
       get colorScales(): ColorScale[] {
         const hidden = self.hiddenCategorySet
+        const { colorRamp, paintedColorField: field } = self
+        const ramp: ColorScale[] =
+          colorRamp && self.hasDrawnFeatures
+            ? [
+                {
+                  kind: 'ramp',
+                  id: 'features',
+                  title: self.colorKeyTitle,
+                  domain: colorRamp.domain,
+                  stops: stopsFromRampLut(colorRamp.lut, RAMP_KEY_STOPS),
+                },
+              ]
+            : []
         return [
+          ...ramp,
           {
             kind: 'categorical' as const,
             id: 'features',
-            title: 'Feature colors',
-            domain: self.colorDomain,
+            title: field ? self.colorKeyTitle : 'Feature colors',
+            domain: field ? field.domain : self.colorSettings.domain,
             entries: self.colorLegend.map(e => ({
               value: e.values[0]!,
               values: e.values,
@@ -681,7 +704,7 @@ export default function stateModelFactory(
               color,
             })),
           },
-        ].filter(scale => scale.entries.length > 0)
+        ].filter(scale => scale.kind === 'ramp' || scale.entries.length > 0)
       },
     }))
     .views(self => ({
@@ -764,12 +787,7 @@ export default function stateModelFactory(
       // order and a reorder would move its identity.
       const overriddenRows = stableIdentityComputed(() => {
         const rows = self.editableSources
-        const colors = resolveRowColorStrings(
-          rows,
-          self.colorConfig === undefined && !self.usedItemRgb
-            ? self.rowColorScale
-            : undefined,
-        )
+        const colors = resolveRowColorStrings(rows, self.dealtRowPalette)
         return new Set(
           rows
             .filter((_, i) => colors[i] !== undefined)
@@ -794,8 +812,8 @@ export default function stateModelFactory(
         /**
          * #getter
          * What the encode reads, and so what re-encodes every region on its
-         * identity: the keys, the rows painting an override and the hidden
-         * categories. The reader's order, focus and colours are the table's.
+         * identity: the keys, the rows painting an override, the hidden
+         * categories and the colour field's palette. The reader's order, focus and colours are the table's.
          */
         get encodeInputs(): MultiRowEncodeInputs {
           const hiddenColors = self.hiddenColors
@@ -804,6 +822,7 @@ export default function stateModelFactory(
             overriddenRows:
               hiddenColors.size === 0 ? NO_ROWS : overriddenRows.get(),
             hiddenColors,
+            fieldPalette: self.fieldPalette,
           }
         },
         /**
@@ -840,6 +859,7 @@ export default function stateModelFactory(
           rowIndexByValue: self.rowIndexByValue,
           rowColorsByIndex: self.rowColorsByIndex,
           hiddenColors: self.hiddenColors,
+          fieldPalette: self.fieldPalette,
         }
       },
       /**
@@ -877,7 +897,7 @@ export default function stateModelFactory(
         return {
           partitionField: self.rowsField,
           lengthField: self.lengthField,
-          colorConfig: self.colorConfig,
+          colorConfig: self.workerColor,
         }
       },
     }))

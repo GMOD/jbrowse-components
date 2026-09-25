@@ -2,7 +2,7 @@ import { resolveClusterField } from './partitionFields.ts'
 
 const base = {
   clusterField: 'auto',
-  colorConfig: undefined as string | undefined,
+  color: { value: undefined as string | undefined, field: '' },
   candidates: ['name', 'state', 'itemRgb', 'sample'],
   partitionField: 'sample',
 }
@@ -12,23 +12,35 @@ describe('auto', () => {
     expect(
       resolveClusterField({
         ...base,
-        colorConfig: "jexl:get(feature,'state')=='TSS'?'red':'gray'",
+        color: {
+          value: "jexl:get(feature,'state')=='TSS'?'red':'gray'",
+          field: '',
+        },
       }),
-    ).toBe('state')
-    expect(
-      resolveClusterField({ ...base, colorConfig: 'jexl:feature.state' }),
     ).toBe('state')
     expect(
       resolveClusterField({
         ...base,
-        colorConfig: "jexl:get( feature, 'state' ) == 'TSS' ? 'red' : 'gray'",
+        color: { value: 'jexl:feature.state', field: '' },
+      }),
+    ).toBe('state')
+    expect(
+      resolveClusterField({
+        ...base,
+        color: {
+          value: "jexl:get( feature, 'state' ) == 'TSS' ? 'red' : 'gray'",
+          field: '',
+        },
       }),
     ).toBe('state')
   })
 
   test('ignores an attribute the loaded features do not carry', () => {
     expect(
-      resolveClusterField({ ...base, colorConfig: "jexl:get(feature,'zzz')" }),
+      resolveClusterField({
+        ...base,
+        color: { value: "jexl:get(feature,'zzz')", field: '' },
+      }),
     ).toBe('name')
   })
 
@@ -36,13 +48,16 @@ describe('auto', () => {
     expect(
       resolveClusterField({
         ...base,
-        colorConfig: "jexl:`rgb(${get(feature,'itemRgb')})`",
+        color: { value: "jexl:`rgb(${get(feature,'itemRgb')})`", field: '' },
       }),
     ).toBe('itemRgb')
     expect(resolveClusterField(base)).toBe('name')
-    expect(resolveClusterField({ ...base, colorConfig: 'goldenrod' })).toBe(
-      'name',
-    )
+    expect(
+      resolveClusterField({
+        ...base,
+        color: { value: 'goldenrod', field: '' },
+      }),
+    ).toBe('name')
   })
 
   test('clusters on presence where name is what the rows already are', () => {
@@ -54,6 +69,15 @@ describe('auto', () => {
   })
 })
 
+test('takes the field a colour object names outright', () => {
+  expect(
+    resolveClusterField({
+      ...base,
+      color: { value: undefined, field: 'state' },
+    }),
+  ).toBe('state')
+})
+
 test('an explicit slot value passes through, empty included', () => {
   expect(resolveClusterField({ ...base, clusterField: 'state' })).toBe('state')
   expect(resolveClusterField({ ...base, clusterField: '' })).toBe('')
@@ -61,7 +85,7 @@ test('an explicit slot value passes through, empty included', () => {
     resolveClusterField({
       ...base,
       clusterField: 'jexl:get(feature,"score")',
-      colorConfig: "jexl:get(feature,'state')",
+      color: { value: "jexl:get(feature,'state')", field: '' },
     }),
   ).toBe('jexl:get(feature,"score")')
 })

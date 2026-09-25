@@ -4182,8 +4182,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": ""
         },
         "color": {
-          "description": "fill color of each block (CSS color or jexl expression for per-feature coloring). Unset, a feature's own itemRgb paints it if it has one, else each row gets a distinct color from a categorical palette.",
-          "$ref": "#/$defs/CssColorOrJexl"
+          "$ref": "#/$defs/FeatureColor"
         },
         "rowColor": {
           "$ref": "#/$defs/RowColor"
@@ -4231,13 +4230,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "explicit {label,color} color key for color-encoded categories; overrides the auto-derived legend. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "not": {
             "$ref": "#/$defs/JexlString"
-          }
-        },
-        "colorDomain": {
-          "description": "optional legend order for the color categories; listed labels first, the rest sorted.",
-          "type": "array",
-          "items": {
-            "type": "string"
           }
         },
         "rowGroups": {
@@ -9045,9 +9037,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "legend": {
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/legend"
-            },
-            "colorDomain": {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/colorDomain"
             },
             "rowGroups": {
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowGroups"

@@ -1,6 +1,7 @@
 import { orderRowsByValueAt } from '@jbrowse/tree-sidebar'
 
 import { featureSpanContainsBp } from '../shared/featureSpanBp.ts'
+import { hiddenByCategory, ownColors } from './rendering/featurePainting.ts'
 
 import type {
   MultiRowFeaturePaintInputs,
@@ -12,23 +13,22 @@ export type RowValueRegion = Pick<
   | 'featureStarts'
   | 'featureEnds'
   | 'featureColors'
+  | 'featureColorValues'
+  | 'colorValues'
   | 'partitionValues'
   | 'featurePartitionIndex'
 >
 
-// A feature in a legend category the user toggled off paints nothing, unless
-// its row carries a per-row color override — the legend never lists that
-// color, so a baked color coinciding with a hidden category must not hide it.
 function paintsAt(
   name: string,
   color: number,
   paint: MultiRowFeaturePaintInputs,
 ) {
   const rowIndex = paint.rowIndexByValue.get(name)
-  return (
-    (rowIndex !== undefined &&
-      paint.rowColorsByIndex[rowIndex] !== undefined) ||
-    !paint.hiddenColors.has(color)
+  return !hiddenByCategory(
+    color,
+    rowIndex !== undefined && paint.rowColorsByIndex[rowIndex] !== undefined,
+    paint.hiddenColors,
   )
 }
 
@@ -38,6 +38,7 @@ function colorsPaintedAt(
   pos: number,
   paint: MultiRowFeaturePaintInputs,
 ) {
+  const colors = ownColors(region, paint.fieldPalette)
   const byRow = new Map<string, number>()
   for (let i = 0; i < region.featureStarts.length; i++) {
     if (
@@ -48,7 +49,7 @@ function colorsPaintedAt(
       )
     ) {
       const name = region.partitionValues[region.featurePartitionIndex[i]!]!
-      const color = region.featureColors[i]!
+      const color = colors[i]!
       if (paintsAt(name, color, paint)) {
         byRow.set(name, color)
       }

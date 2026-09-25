@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { colorConfigSchema } from '@jbrowse/display-kit/colorConfigSchema'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
@@ -125,18 +126,27 @@ export default function configSchemaF() {
           'feature attribute holding a signed bp length change vs the reference; enables indel glyphs. Empty = off',
       },
       /**
-       * #slot
-       * Per-block fill: a CSS color, or a `jexl:` expression for per-feature
-       * coloring (e.g. ``jexl:`rgb(${get(feature,'ancestryRgb')})` ``).
+       * #slot color
+       * Each block's fill, the FeatureColor object: a CSS color or `jexl:`
+       * callback in `value`, or a field whose values each take a colour
+       * through a scale, with a key. Unset, a feature's own itemRgb paints it
+       * if it has one, else each row takes a colour from a categorical
+       * palette.
+       *
+       * #example
+       * ```js
+       * {
+       *   color: {
+       *     field: 'segmean',
+       *     scale: 'threshold',
+       *     domain: ['-1', '-0.3', '0.3', '1'],
+       *     range: ['#2166ac', '#92c5de', '#f7f7f7', '#f4a582', '#b2182b'],
+       *     labels: ['Deep loss', 'Loss', 'Balanced', 'Gain', 'Amplification'],
+       *   },
+       * }
+       * ```
        */
-      // `maybeColor` so unset stays distinct from every real color — unset is
-      // what lets a feature's own itemRgb, or the per-row palette, paint.
-      color: {
-        type: 'maybeColor',
-        description:
-          "fill color of each block (CSS color or jexl expression for per-feature coloring). Unset, a feature's own itemRgb paints it if it has one, else each row gets a distinct color from a categorical palette",
-        contextVariable: ['feature'],
-      },
+      color: colorConfigSchema,
       /**
        * #slot rowColor
        * A colour per row, by value, as `domain`/`range` pairs, painting the
@@ -208,24 +218,6 @@ export default function configSchemaF() {
         defaultValue: [],
         description:
           'explicit {label,color} color key for color-encoded categories; overrides the auto-derived legend',
-      },
-      /**
-       * #slot
-       * The order the colour key lists its categories in: the labels listed
-       * here first, the rest sorted. The blocks take their colour per feature,
-       * from `itemRgb` or the `color` jexl, so this orders the key alone and
-       * paints nothing differently.
-       *
-       * #example
-       * ```js
-       * colorDomain: ['Pathogenic', 'Likely pathogenic', 'Benign']
-       * ```
-       */
-      colorDomain: {
-        type: 'stringArray',
-        defaultValue: [],
-        description:
-          'optional legend order for the color categories; listed labels first, the rest sorted',
       },
       /**
        * #slot

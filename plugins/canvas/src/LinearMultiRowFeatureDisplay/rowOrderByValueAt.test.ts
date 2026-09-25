@@ -1,3 +1,4 @@
+import { createFieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 
 import type { MultiRowFeaturePaintInputs } from './rendering/multiRowRenderingBackendTypes.ts'
@@ -210,4 +211,25 @@ test('sizes the blocks by the rows on screen, not the rows being ordered', () =>
       paintInputs(['a', 'd', 'e']),
     ).map(s => s.name),
   ).toEqual(['d', 'e', 'a', 'b', 'c'])
+})
+
+// The worker bakes one colour for all three, and the field paints two, so the
+// column groups by what the field painted.
+test('orders by the colour the colour field paints, not the baked one', () => {
+  const names = ['A', 'B', 'C']
+  const fielded: RowValueRegion = {
+    ...region(
+      names.map((_, row) => ({ start: 0, end: 10, color: 7, row })),
+      names,
+    ),
+    featureColorValues: new Uint32Array([1, 2, 1]),
+    colorValues: { field: 'state', values: ['x', 'y'], painted: [] },
+  }
+  expect(order(names, fielded, 5)).toEqual(['A', 'B', 'C'])
+  const fieldPalette = createFieldPalette('state', value =>
+    value === 'x' ? 'red' : 'blue',
+  )
+  expect(
+    order(names, fielded, 5, { ...paintInputs(names), fieldPalette }),
+  ).toEqual(['A', 'C', 'B'])
 })

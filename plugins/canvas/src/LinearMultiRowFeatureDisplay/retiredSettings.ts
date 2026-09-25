@@ -14,6 +14,7 @@ export const {
     partitionField: '`rows` (`rows: "sample"`, or `rows: { field, domain }`)',
     domain: '`rows.domain`',
     sampleColorMap: '`rowColor: { domain: [...rows], range: [...colors] }`',
+    colorDomain: '`color.domain`',
   },
   state: ['layout', 'clusterTree', 'clusterProvenance', 'subtreeFilter'],
 })

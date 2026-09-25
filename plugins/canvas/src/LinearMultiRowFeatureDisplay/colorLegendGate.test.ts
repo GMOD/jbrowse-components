@@ -73,11 +73,11 @@ describe('the color key waits for a painting to key', () => {
 
   // The blocks take their colour per feature, so the domain is a claim about
   // the key's order alone.
-  it('lists the colorDomain labels first, the rest sorted', () => {
+  it('lists the color domain labels first, the rest sorted', () => {
     const { display } = createTestEnvironment({
       displayConfig: {
         legend: [...LEGEND, { label: 'SAS', color: 'green' }],
-        colorDomain: ['SAS'],
+        color: { domain: ['SAS'] },
       },
     }).createDisplay()
     display.setRpcData(0, painted(), ctgA)

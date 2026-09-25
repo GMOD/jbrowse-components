@@ -7,6 +7,7 @@ import {
   resolvePartitionField,
 } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 
+import type { WorkerColor } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { LoadedRegion } from '@jbrowse/display-kit/regionCommit'
 
@@ -166,10 +167,12 @@ export const AUTO_CLUSTER_FIELD = 'auto'
 const COLOR_ATTRIBUTE =
   /get\(\s*feature\s*,\s*['"]([^'"]+)['"]\s*\)|\bfeature\.([A-Za-z_]\w*)/
 
-function colorAttribute(colorConfig: string | undefined) {
-  const match = isCallbackValue(colorConfig)
-    ? COLOR_ATTRIBUTE.exec(colorConfig)
-    : null
+// The field a colour names outright, else one its `jexl:` value reads.
+function colorAttribute({ value, field }: WorkerColor) {
+  if (field && !isCallbackValue(field)) {
+    return field
+  }
+  const match = isCallbackValue(value) ? COLOR_ATTRIBUTE.exec(value) : null
   return match ? (match[1] ?? match[2]) : undefined
 }
 
@@ -181,19 +184,19 @@ function colorAttribute(colorConfig: string | undefined) {
  */
 export function resolveClusterField({
   clusterField,
-  colorConfig,
+  color,
   candidates,
   partitionField,
 }: {
   clusterField: string
-  colorConfig: string | undefined
+  color: WorkerColor
   candidates: string[]
   partitionField: string
 }) {
   if (clusterField !== AUTO_CLUSTER_FIELD) {
     return clusterField
   }
-  const fromColor = colorAttribute(colorConfig)
+  const fromColor = colorAttribute(color)
   if (fromColor !== undefined && candidates.includes(fromColor)) {
     return fromColor
   }

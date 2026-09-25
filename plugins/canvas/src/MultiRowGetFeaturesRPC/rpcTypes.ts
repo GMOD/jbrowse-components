@@ -1,3 +1,4 @@
+import type { WorkerColor } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { RegionTooLargeResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { LegendCandidate } from '@jbrowse/core/util/legendCandidates'
@@ -17,7 +18,18 @@ export interface MultiRowGetFeaturesArgs extends GatedFetchArgs {
   }
   partitionField: string
   lengthField: string
-  colorConfig: string | undefined
+  colorConfig: WorkerColor
+}
+
+/**
+ * The colour field's distinct values in one region, as text, and each value a
+ * feature carries with the partition row it lands in (`rowIndex` indexes
+ * `partitionValues`), up to `MAX_LEGEND_CANDIDATES`.
+ */
+export interface MultiRowColorValues {
+  field: string
+  values: string[]
+  painted: { rowIndex: number; valueIndex: number }[]
 }
 
 export interface PartitionCandidateValues {
@@ -30,6 +42,11 @@ export interface MultiRowRegionData {
   featureStarts: Uint32Array
   featureEnds: Uint32Array
   featureColors: Uint32Array
+  // Absent or length 0 when no colour field is named: each feature's
+  // one-based index into `colorValues.values`, which the main thread paints
+  // through the scale in `featureColors`' place.
+  featureColorValues?: Uint32Array
+  colorValues?: MultiRowColorValues
   /**
    * Length 0 when the `lengthField` slot is unset, which gates the whole
    * indel-glyph pass — read it as `featureDeltas.length ===

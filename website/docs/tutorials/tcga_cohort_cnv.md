@@ -96,30 +96,34 @@ The segments themselves are a `FeatureTrack` whose
     {
       "type": "LinearMultiRowFeatureDisplay",
       "rows": "sample",
-      "color": "jexl:feature.segmean<-1?'#2166ac':feature.segmean<-0.3?'#92c5de':feature.segmean<0.3?'#f7f7f7':feature.segmean<1?'#f4a582':'#b2182b'",
-      "legend": [
-        { "label": "Deep loss (log2 < -1)", "color": "#2166ac" },
-        { "label": "Loss", "color": "#92c5de" },
-        { "label": "Balanced", "color": "#f7f7f7" },
-        { "label": "Gain", "color": "#f4a582" },
-        { "label": "Amplification (log2 > 1)", "color": "#b2182b" }
-      ]
+      "color": {
+        "field": "segmean",
+        "scale": "threshold",
+        "domain": ["-1", "-0.3", "0.3", "1"],
+        "range": ["#2166ac", "#92c5de", "#f7f7f7", "#f4a582", "#b2182b"],
+        "labels": [
+          "Deep loss (log2 < -1)",
+          "Loss",
+          "Balanced",
+          "Gain",
+          "Amplification (log2 > 1)"
+        ],
+        "title": "Copy number (log2)"
+      }
     }
   ]
 }
 ```
 
 [`rowHeight`](/docs/config/linearmultirowfeaturedisplay/#slot-rowheight)
-auto-fits, which at this row count leaves every tumor a single pixel line. Three
+auto-fits, which at this row count leaves every tumor a single pixel line. Two
 settings do the rest:
 
 - [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) splits the file
   into one labeled row per `sample`
-- [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) is a
-  [jexl](/docs/config_guides/jexl) expression binning `segmean` onto a diverging
-  blue-to-red scale, since this BED carries no `itemRgb`
-- [`legend`](/docs/config/linearmultirowfeaturedisplay/#slot-legend) names each
-  bin's log2 cutoff and color
+- [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) bins
+  `segmean` onto a diverging blue-to-red scale at four cut points, since this
+  BED carries no `itemRgb`, and `labels` names each bin in the key
 
 ## Cluster the stack
 

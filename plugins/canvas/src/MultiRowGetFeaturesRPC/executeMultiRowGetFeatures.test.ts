@@ -42,7 +42,7 @@ function run(byteLimit?: number) {
       byteLimit,
       partitionField: 'sample',
       lengthField: '',
-      colorConfig: 'goldenrod',
+      colorConfig: { value: 'goldenrod', field: '' },
     },
   })
 }

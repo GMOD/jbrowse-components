@@ -34,7 +34,7 @@ test('dedupes partition values and indexes features into them', () => {
     features,
     partitionField: 'sample',
     lengthField: '',
-    colorConfig: 'goldenrod',
+    colorConfig: { value: 'goldenrod', field: '' },
     jexl: createJexlInstance(),
   })
   expect(r.partitionValues).toEqual(['mom', 'offspring01'])
@@ -48,7 +48,7 @@ test('resolves a jexl color expression per feature (the demo rgb() form)', () =>
     features,
     partitionField: 'sample',
     lengthField: '',
-    colorConfig: `jexl:'rgb('+get(feature,'itemRgb')+')'`,
+    colorConfig: { value: `jexl:'rgb('+get(feature,'itemRgb')+')'`, field: '' },
     jexl: createJexlInstance(),
   })
   expect([...r.featureColors]).toEqual([
@@ -66,7 +66,7 @@ test('a feature with empty itemRgb (-> "rgb()") degrades to magenta, not a crash
     ],
     partitionField: 'sample',
     lengthField: '',
-    colorConfig: `jexl:'rgb('+get(feature,'itemRgb')+')'`,
+    colorConfig: { value: `jexl:'rgb('+get(feature,'itemRgb')+')'`, field: '' },
     jexl: createJexlInstance(),
   })
   expect([...r.featureColors]).toEqual([
@@ -80,7 +80,7 @@ test('an unset color slot paints from the feature itemRgb, no jexl needed', () =
     features,
     partitionField: 'sample',
     lengthField: '',
-    colorConfig: undefined,
+    colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
   expect([...r.featureColors]).toEqual([
@@ -96,7 +96,7 @@ test('no itemRgb on the features leaves the per-row palette in charge', () => {
     features: [feat({ start: 0, end: 5, sample: 'mom' })],
     partitionField: 'sample',
     lengthField: '',
-    colorConfig: undefined,
+    colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
   expect(r.usedItemRgb).toBe(false)
@@ -111,7 +111,7 @@ test('a placeholder itemRgb does not hijack the per-row palette', () => {
     ],
     partitionField: 'sample',
     lengthField: '',
-    colorConfig: undefined,
+    colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
   expect(r.usedItemRgb).toBe(false)
@@ -122,7 +122,10 @@ test('the jexl template-string form reads a non-itemRgb color column', () => {
     features: [feat({ start: 0, end: 5, sample: 'mom', ancestryRgb: '1,2,3' })],
     partitionField: 'sample',
     lengthField: '',
-    colorConfig: 'jexl:`rgb(${get(feature,"ancestryRgb")})`',
+    colorConfig: {
+      value: 'jexl:`rgb(${get(feature,"ancestryRgb")})`',
+      field: '',
+    },
     jexl: createJexlInstance(),
   })
   expect([...r.featureColors]).toEqual([cssColorToABGR('rgb(1,2,3)')])
@@ -133,7 +136,7 @@ test('plain (non-jexl) color applies to every feature, beating itemRgb', () => {
     features,
     partitionField: 'sample',
     lengthField: '',
-    colorConfig: 'red',
+    colorConfig: { value: 'red', field: '' },
     jexl: createJexlInstance(),
   })
   const red = cssColorToABGR('red')
@@ -146,7 +149,7 @@ test('missing partition value collapses to a single empty-string row', () => {
     features: [feat({ start: 1, end: 2 }), feat({ start: 3, end: 4 })],
     partitionField: 'sample',
     lengthField: '',
-    colorConfig: 'red',
+    colorConfig: { value: 'red', field: '' },
     jexl: createJexlInstance(),
   })
   expect(r.partitionValues).toEqual([''])
@@ -161,7 +164,7 @@ test('captures feature id for the click → details fetch', () => {
     ],
     partitionField: 'sample',
     lengthField: '',
-    colorConfig: 'red',
+    colorConfig: { value: 'red', field: '' },
     jexl: createJexlInstance(),
   })
   expect(r.featureIds).toEqual(['feat1', 'feat2'])
@@ -175,7 +178,7 @@ test('captures feature name for tooltips ("" when absent)', () => {
     ],
     partitionField: 'sample',
     lengthField: '',
-    colorConfig: 'red',
+    colorConfig: { value: 'red', field: '' },
     jexl: createJexlInstance(),
   })
   expect(r.featureNames).toEqual(['mom_maternal', ''])
@@ -189,7 +192,7 @@ test('a numeric name column is a label, not an absent name', () => {
     ],
     partitionField: 'sample',
     lengthField: '',
-    colorConfig: 'red',
+    colorConfig: { value: 'red', field: '' },
     jexl: createJexlInstance(),
   })
   expect(r.featureNames).toEqual(['12', '0'])
@@ -241,7 +244,7 @@ describe('makeFeatureColorResolver', () => {
       features,
       partitionField: 'sample',
       lengthField: '',
-      colorConfig: undefined,
+      colorConfig: { value: undefined, field: '' },
       jexl: createJexlInstance(),
     })
     expect([...r.featureColors]).toEqual(
@@ -255,7 +258,7 @@ test('packs no deltas when lengthField is unset', () => {
     features,
     partitionField: 'sample',
     lengthField: '',
-    colorConfig: undefined,
+    colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
   expect(r.featureDeltas).toHaveLength(0)
@@ -271,7 +274,7 @@ test('packs signed deltas from lengthField, coercing strings', () => {
     ],
     partitionField: 'sample',
     lengthField: 'delta',
-    colorConfig: undefined,
+    colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
   expect([...r.featureDeltas]).toEqual([113174, -3217, 0, 0])
@@ -289,7 +292,7 @@ test('partitions on a jexl expression, not just an attribute', () => {
     ],
     partitionField: RMSK_CLASS,
     lengthField: '',
-    colorConfig: undefined,
+    colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
   expect(r.partitionValues).toEqual(['LINE', 'SINE', 'Simple_repeat'])
@@ -308,7 +311,7 @@ describe('the empty partitionField picks a column off the data', () => {
       features,
       partitionField,
       lengthField: '',
-      colorConfig: undefined,
+      colorConfig: { value: undefined, field: '' },
       jexl: createJexlInstance(),
     })
   }
@@ -341,7 +344,7 @@ test('a feature the expression throws on costs its own row, not the region', () 
     ],
     partitionField: RMSK_CLASS,
     lengthField: '',
-    colorConfig: undefined,
+    colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
   expect(r.partitionValues).toEqual(['LINE', ''])
@@ -357,7 +360,7 @@ test('coerces a numeric partition value rather than dropping it', () => {
     ],
     partitionField: 'state',
     lengthField: '',
-    colorConfig: undefined,
+    colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
   expect(r.partitionValues).toEqual(['15', ''])
@@ -381,7 +384,7 @@ describe('the legend candidates', () => {
       features,
       partitionField: 'sample',
       lengthField: '',
-      colorConfig: undefined,
+      colorConfig: { value: undefined, field: '' },
       jexl: createJexlInstance(),
     })
   }
@@ -418,7 +421,7 @@ test('collects the attribute names a reader could partition on', () => {
     features,
     partitionField: 'sample',
     lengthField: '',
-    colorConfig: undefined,
+    colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
   expect(r.partitionCandidates).toEqual(['itemRgb', 'sample'])
@@ -432,7 +435,7 @@ test('unions the names over the head of the list, not just the first feature', (
     ],
     partitionField: 'sample',
     lengthField: '',
-    colorConfig: undefined,
+    colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
   expect(r.partitionCandidates).toEqual(['clade', 'sample'])
@@ -446,7 +449,7 @@ test('samples the head rather than every feature', () => {
     features: many,
     partitionField: 'sample',
     lengthField: '',
-    colorConfig: undefined,
+    colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
   expect(r.partitionCandidates).toContain('col0')
@@ -459,7 +462,7 @@ describe('the distinct values per partition candidate', () => {
       features,
       partitionField: 'sample',
       lengthField: '',
-      colorConfig: undefined,
+      colorConfig: { value: undefined, field: '' },
       jexl: createJexlInstance(),
     })
     expect(r.partitionCandidateValues).toEqual([
@@ -481,7 +484,7 @@ describe('the distinct values per partition candidate', () => {
       features: many,
       partitionField: 'sample',
       lengthField: '',
-      colorConfig: undefined,
+      colorConfig: { value: undefined, field: '' },
       jexl: createJexlInstance(),
     })
     expect(r.partitionCandidateValues).toEqual([
@@ -496,7 +499,7 @@ describe('the distinct values per partition candidate', () => {
       features: [feat({ start: 0, end: 1, sample: 'a', note: long })],
       partitionField: 'sample',
       lengthField: '',
-      colorConfig: undefined,
+      colorConfig: { value: undefined, field: '' },
       jexl: createJexlInstance(),
     })
     const note = r.partitionCandidateValues.find(c => c.field === 'note')
@@ -517,7 +520,7 @@ describe('the distinct values per partition candidate', () => {
       features: many,
       partitionField: 'sample',
       lengthField: '',
-      colorConfig: undefined,
+      colorConfig: { value: undefined, field: '' },
       jexl: createJexlInstance(),
     })
     const batch = r.partitionCandidateValues.find(c => c.field === 'batch')

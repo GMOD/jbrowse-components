@@ -1,4 +1,4 @@
-import { hiddenByCategory } from './featurePainting.ts'
+import { hiddenByCategory, ownColors } from './featurePainting.ts'
 
 import type {
   MultiRowEncodeInputs,
@@ -30,10 +30,10 @@ export interface MultiRowEncoded extends SpanChannels {
  */
 export function buildMultiRowChannels(
   data: MultiRowRegionData,
-  { rowKeys, overriddenRows, hiddenColors }: MultiRowEncodeInputs,
+  { rowKeys, overriddenRows, hiddenColors, fieldPalette }: MultiRowEncodeInputs,
 ): MultiRowEncoded {
-  const { featureStarts, featureEnds, featureColors, featurePartitionIndex } =
-    data
+  const { featureStarts, featureEnds, featurePartitionIndex } = data
+  const featureColors = ownColors(data, fieldPalette)
   const keyForLocal = Uint32Array.from(data.partitionValues, v =>
     rowKeys.keyOf(v),
   )

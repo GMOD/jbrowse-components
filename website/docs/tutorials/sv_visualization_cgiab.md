@@ -452,12 +452,14 @@ track: set [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) to
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "hg008_wakhan_haplotype-LinearMultiRowFeatureDisplay",
       "rows": "haplotype",
-      "color": "jexl:get(feature,'copynumber_state')<0.5?'#2166ac':get(feature,'copynumber_state')<1.5?'#bdbdbd':'#f4a582'",
-      "legend": [
-        { "label": "Haplotype lost (0)", "color": "#2166ac" },
-        { "label": "One copy", "color": "#bdbdbd" },
-        { "label": "Two or more copies", "color": "#f4a582" }
-      ]
+      "color": {
+        "field": "copynumber_state",
+        "scale": "threshold",
+        "domain": ["0.5", "1.5"],
+        "range": ["#2166ac", "#bdbdbd", "#f4a582"],
+        "labels": ["Haplotype lost (0)", "One copy", "Two or more copies"],
+        "title": "Copy number per haplotype"
+      }
     }
   ]
 }
@@ -596,14 +598,14 @@ departs from the rest is a CNV private to that subclone:
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "hg008_subclonal_cnv-LinearMultiRowFeatureDisplay",
       "rows": "clone",
-      "color": "jexl:get(feature,'cn')<1?'#2166ac':get(feature,'cn')<2?'#92c5de':get(feature,'cn')<3?'#e0e0e0':get(feature,'cn')<4?'#f4a582':'#b2182b'",
-      "legend": [
-        { "label": "CN 0", "color": "#2166ac" },
-        { "label": "CN 1", "color": "#92c5de" },
-        { "label": "CN 2", "color": "#e0e0e0" },
-        { "label": "CN 3", "color": "#f4a582" },
-        { "label": "CN 4+", "color": "#b2182b" }
-      ]
+      "color": {
+        "field": "cn",
+        "scale": "threshold",
+        "domain": ["1", "2", "3", "4"],
+        "range": ["#2166ac", "#92c5de", "#e0e0e0", "#f4a582", "#b2182b"],
+        "labels": ["CN 0", "CN 1", "CN 2", "CN 3", "CN 4+"],
+        "title": "Copy number"
+      }
     }
   ]
 }

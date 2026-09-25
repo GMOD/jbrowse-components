@@ -82,6 +82,16 @@ with the field and `""` heading it with nothing. A value written for a reader is
 and a hand-typed list of labels and colours beside a `jexl:` colour has no
 case left on this display, so its `legend` slot goes.
 
+**The multi-row feature display takes the same object.** Its `color` was a
+bare `maybeColor` with a flat `colorDomain` beside it, and the field a picture
+was about could be read back only by a regex over the `jexl:` string. It is
+FeatureColor now, composed through the same `featureColorViews`: its worker
+ships each feature's field value and the partition row it lands in, its encode
+paints values through `fieldPalette`, its key derives from them, and clustering
+under `auto` takes the field the colour names. `colorDomain` is `color.domain`.
+Its `legend` slot stays for the case no field names — a file's own `itemRgb`
+relabelled — which in grammar terms is an identity scale with labels.
+
 **The multi-way gene colour is its own object, `MultiWayGeneColor`**, over
 `DISCRETE_COLOR_SCALES`. It paints genes through `geneColors` on its own path,
 which has no extent to follow, and a display declares the scales it paints.

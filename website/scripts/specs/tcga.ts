@@ -43,18 +43,23 @@ const TCGA_BRCA_CNV_TRACK = {
     {
       type: 'LinearMultiRowFeatureDisplay',
       rows: 'sample',
+      color: {
+        field: 'segmean',
+        scale: 'threshold',
+        domain: ['-1', '-0.3', '0.3', '1'],
+        range: ['#2166ac', '#92c5de', '#f7f7f7', '#f4a582', '#b2182b'],
+        labels: [
+          'Deep loss (log2 < -1)',
+          'Loss',
+          'Balanced',
+          'Gain',
+          'Amplification (log2 > 1)',
+        ],
+        title: 'Copy number (log2)',
+      },
       // 0 = auto-fit: the display height divided across the rows, floored at
       // 1px. At 1104 rows every tumor is a single pixel line, which is the point
-      color:
-        "jexl:get(feature,'segmean')<-1?'#2166ac':get(feature,'segmean')<-0.3?'#92c5de':get(feature,'segmean')<0.3?'#f7f7f7':get(feature,'segmean')<1?'#f4a582':'#b2182b'",
       rowHeight: 0,
-      legend: [
-        { label: 'Deep loss (log2 < -1)', color: '#2166ac' },
-        { label: 'Loss', color: '#92c5de' },
-        { label: 'Balanced', color: '#f7f7f7' },
-        { label: 'Gain', color: '#f4a582' },
-        { label: 'Amplification (log2 > 1)', color: '#b2182b' },
-      ],
     },
   ],
 }

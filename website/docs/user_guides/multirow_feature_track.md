@@ -122,17 +122,17 @@ Four sources of color, in precedence order:
   `range`. Use it when the row identity is the signal (one color per population,
   per treatment arm).
 - [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) is a per-
-  feature fill: a CSS color, or a [jexl](/docs/config_guides/jexl) expression
-  reading any attribute. This is how a continuous value becomes a color scale,
-  by binning it in the expression.
+  feature fill: a CSS color, or a field whose values each take a color through a
+  scale — a color per value, a color per interval between cut points, or a
+  gradient — with a key naming them.
 - `itemRgb` is honored automatically. A BED9 that already carries per-feature
   colors (ChromHMM state colors, for one) paints correctly with no color
   configuration.
 - Otherwise each row is auto-assigned a distinct color from a categorical
   palette.
 
-Binning a numeric column onto a diverging scale is the common jexl case, e.g.
-segment mean copy number:
+Binning a numeric column onto a diverging scale is the common case, e.g. segment
+mean copy number, with `labels` naming each interval in the key:
 
 ```json addtrack
 {
@@ -149,22 +149,33 @@ segment mean copy number:
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "tcga_brca_cnv-LinearMultiRowFeatureDisplay",
       "rows": "sample",
-      "color": "jexl:feature.segmean<-1?'#2166ac':feature.segmean<-0.3?'#92c5de':feature.segmean<0.3?'#f7f7f7':feature.segmean<1?'#f4a582':'#b2182b'"
+      "color": {
+        "field": "segmean",
+        "scale": "threshold",
+        "domain": ["-1", "-0.3", "0.3", "1"],
+        "range": ["#2166ac", "#92c5de", "#f7f7f7", "#f4a582", "#b2182b"],
+        "labels": [
+          "Deep loss (log2 < -1)",
+          "Loss",
+          "Balanced",
+          "Gain",
+          "Amplification (log2 > 1)"
+        ],
+        "title": "Copy number (log2)"
+      }
     }
   ]
 }
 ```
 
-<Figure src="/img/tcga/cohort_cnv_genome.png" caption="TCGA-BRCA copy number across 1104 primary tumors, one row per tumor, colored by a jexl expression binning the caller's log2 ratio. Recurrent events read as vertical stripes through the stack, under the same cohort's gain/loss frequency." />
+<Figure src="/img/tcga/cohort_cnv_genome.png" caption="TCGA-BRCA copy number across 1104 primary tumors, one row per tumor, colored by the interval the caller's log2 ratio falls in. Recurrent events read as vertical stripes through the stack, under the same cohort's gain/loss frequency." />
 
 **Show... → Show legend** keys the colors actually present, and the
 **Categories** submenu beside it hides individual categories, so you can drop
 the states or classes you aren't reading and leave the rest painted. The submenu
 counts what is hidden and offers **Show all categories** to put them back.
-[`colorDomain`](/docs/config/linearmultirowfeaturedisplay/#slot-colordomain)
-sets the order those rows read in — the labels it lists first, the rest sorted —
-the same word and rule `domain` orders the track's rows by. The blocks take
-their color per feature, so it moves the key and nothing on the plot.
+`color.domain` sets the order those rows read in — the values it lists first,
+the rest sorted — the same word and rule `domain` orders the track's rows by.
 
 You can also recolor a single row by hand from **Edit colors/arrangement...**,
 which writes that row's `rowColor` entry and applies at render time, with no
@@ -218,8 +229,8 @@ Each of these builds the input file and the track config end to end:
 
 - [](/docs/tutorials/chromhmm) - many cell types from one merged BED, colored by
   `itemRgb`
-- [](/docs/tutorials/tcga_cohort_cnv) - a thousand tumors, colored by a jexl
-  expression over a numeric column
+- [](/docs/tutorials/tcga_cohort_cnv) - a thousand tumors, colored by the
+  interval a numeric column falls in
 - [](/docs/tutorials/bxd_qtl) - strain genotype painting beside a QTL Manhattan
   plot, sorted at the peak
 - [](/docs/tutorials/analyze_trio) - IBD blocks and local ancestry per haplotype
