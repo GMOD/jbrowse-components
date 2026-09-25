@@ -445,3 +445,23 @@ test('two marks over one declaration share a key only under one title', () => {
   expect(keys(i => (i === 0 ? 'score' : undefined))).toEqual(['score'])
   expect(keys(i => (i === 0 ? 'MAPQ' : undefined))).toEqual(['MAPQ', 'score'])
 })
+
+test('a key names a domain value by the label the colour lists for it', () => {
+  const labelled: ColorScaleTable = {
+    kind: 'categorical',
+    field: 'type',
+    domain: ['DEL', 'DUP'],
+    labels: ['Loss', 'Gain'],
+    entries: [
+      { value: 'DEL', color: 0xff0000ff },
+      { value: 'DUP', color: 0xffff0000 },
+      { value: 'INV', color: 0xff00ff00 },
+    ],
+  }
+  const [key] = markColorScales(buildMarkLegend([region(labelled)]))
+  expect(key?.kind === 'categorical' && key.entries.map(e => e.label)).toEqual([
+    'Loss',
+    'Gain',
+    'INV',
+  ])
+})

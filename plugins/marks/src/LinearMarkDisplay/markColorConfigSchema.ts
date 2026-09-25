@@ -6,6 +6,7 @@ import {
   colorChannelSlots,
   colorDomainEndsSlots,
   colorDomainSlot,
+  colorLabelsSlot,
   colorRampSlots,
   colorRangeSlot,
   colorTitleSlot,
@@ -112,6 +113,7 @@ export const markColorSchema = ConfigurationSchema(
       range:
         "CSS colours a categorical scale hands its domain in order, a threshold scale its intervals, or a linear or log scale's ramp as evenly spaced stops; empty is the default palette, or the scheme",
     }),
+    ...colorLabelsSlot,
     ...colorRampSlots,
     ...colorTitleSlot,
   },

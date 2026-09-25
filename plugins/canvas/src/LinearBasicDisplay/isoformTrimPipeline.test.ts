@@ -57,10 +57,12 @@ function layoutAt(
   maxIsoformsPerGene: number | undefined,
   gene: Feature = GENE,
   peptideDataMap?: Map<string, { protein: string }>,
+  colorField = '',
 ) {
   const config = mockDisplayConfig({
     subfeatureLabels: 'below',
     labels: { name: "jexl:get(feature,'name')", description: '' },
+    color: { field: colorField },
   } as any)
   const packed = collectRenderData({
     layouts: [layoutSubfeatures({ feature: gene, config, jexl })],
@@ -86,6 +88,20 @@ function layoutAt(
     maxIsoformsPerGene,
   }).get(0)!
 }
+
+// The color value lane is picked with every other rect lane, so a kept
+// transcript's parts still name the transcript's value after the trim.
+it("keeps each rect's color value with the rect it paints", () => {
+  const trimmed = layoutAt(1, GENE, undefined, 'name')
+  const { rectColorValues, rectChildOrdinals, colorValues } = trimmed
+  expect(rectColorValues).toHaveLength(rectChildOrdinals.length)
+  const valuesOfKept = new Set(
+    [...rectColorValues]
+      .filter((_, i) => rectChildOrdinals[i] !== ROOT_CHILD_ORDINAL)
+      .map(v => colorValues!.values[v - 1]),
+  )
+  expect(valuesOfKept).toEqual(new Set(['b']))
+})
 
 describe('the trim through the worker pipeline', () => {
   const full = layoutAt(undefined)

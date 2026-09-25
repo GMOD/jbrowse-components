@@ -5988,6 +5988,10 @@ export const configManifest: ConfigManifest = {
                       "type": "CssColorEntry[]"
                     },
                     {
+                      "name": "labels",
+                      "type": "string[]"
+                    },
+                    {
                       "name": "scheme",
                       "type": "(ColorScheme | undefined)"
                     },

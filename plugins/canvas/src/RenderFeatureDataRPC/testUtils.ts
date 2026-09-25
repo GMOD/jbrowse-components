@@ -5,7 +5,7 @@ import {
 
 import { resolveRegionColors } from '../LinearBasicDisplay/components/resolveRegionColors.ts'
 import { derivedColorKey } from '../LinearBasicDisplay/derivedColorKey.ts'
-import { LITERAL } from './colorClasses.ts'
+import { LITERAL, createFieldPalette } from './colorClasses.ts'
 import { createFeatureFloatingLabels } from './floatingLabels.ts'
 import { TRANSCRIPT_PADDING_RATIO } from './glyphs/glyphUtils.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
@@ -287,7 +287,7 @@ export function paintThroughColor(
   const resolved = resolveRegionColors(
     data as FeatureDataResult,
     new Uint32Array(32),
-    value => field.color(field.key(value)),
+    createFieldPalette(color.field, value => field.color(field.key(value))),
   )
   return {
     rectColors: [...resolved.rectColors],

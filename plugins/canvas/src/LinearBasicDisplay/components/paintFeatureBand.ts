@@ -6,6 +6,7 @@ import { forEachDisplayLabel, labelCullBand } from './labelPositioning.ts'
 import { paintLabels } from './paintLabels.ts'
 import { resolveMapColors } from './resolveRegionColors.ts'
 
+import type { FieldPalette } from '../../RenderFeatureDataRPC/colorClasses.ts'
 import type { FeatureDataResult } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { RegionWithData } from './labelPositioning.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
@@ -22,6 +23,7 @@ export interface FeatureBandPaint {
   // Callers pass the palette rather than resolved colors, so the two halves,
   // glyphs and labels, cannot be handed different themes.
   palette: JBrowsePalette
+  fieldPalette?: FieldPalette
 }
 
 export function paintFeatureBand(
@@ -36,12 +38,13 @@ export function paintFeatureBand(
     showDescriptions,
     fontSize,
     palette,
+    fieldPalette,
   }: FeatureBandPaint,
 ) {
   paintMarkBlocks(
     ctx,
     CANVAS_FEATURE_MARKS,
-    resolveMapColors(dataMap, palette),
+    resolveMapColors(dataMap, palette, fieldPalette),
     blocks,
     { scrollY: 0, canvasWidth, canvasHeight: bandHeight, outlineColor: 0 },
   )

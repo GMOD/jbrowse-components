@@ -21,6 +21,7 @@ import {
 } from './components/resolveRegionColors.ts'
 import { CANVAS_FEATURE_MARKS } from './marks/canvasFeatureMarks.ts'
 
+import type { FieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { DensityBandLayer } from '../shared/densityBand.ts'
 import type { FeatureGroupSection } from './facet.ts'
@@ -41,7 +42,7 @@ export interface RenderSvgModel extends SvgExportable {
   densityBandLayer: DensityBandLayer
   densityPeakReadout: string
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>
-  paintColorValue: ((value: string) => string) | undefined
+  fieldPalette: FieldPalette | undefined
   outlineColorSlot: string
   displayDirectionalChevrons: boolean
   // Drawn by the shell, over this body — not here. Declared so the export's
@@ -103,7 +104,7 @@ function CanvasFeaturesSvgBody({
   const dataMap = resolveMapColors(
     model.laidOutDataMap,
     palette,
-    model.paintColorValue,
+    model.fieldPalette,
   )
   // Culled with the DOM overlay's own band so the export emits exactly the
   // labels on screen; anything outside the clip would be written and then

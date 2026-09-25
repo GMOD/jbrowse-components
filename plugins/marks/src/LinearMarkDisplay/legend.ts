@@ -259,12 +259,14 @@ function shapeOverSameField(
 // A key over the facet's own field lists its rows in the sections' order, so
 // the key and the chips read top to bottom alike.
 function keyField(
-  scale: { field: string; domain: string[] },
+  scale: { field: string; domain: string[]; labels?: string[] },
   facet: CategoricalField | undefined,
 ) {
-  return facet?.field === scale.field
-    ? facet
-    : categoricalField(scale.field, { domain: scale.domain })
+  const own = categoricalField(scale.field, {
+    domain: scale.domain,
+    labels: scale.labels,
+  })
+  return facet?.field === scale.field ? { ...facet, label: own.label } : own
 }
 
 function shapeKey(

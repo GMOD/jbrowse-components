@@ -55,6 +55,8 @@ export const MARK_RULES = {
   'ramp-domain': 'warning',
   /** A colour ramp's `domainMax` below its `domainMin`. */
   'ramp-ends': 'warning',
+  /** A colour's `labels` naming values its `domain` does not list, or no categorical scale's. */
+  'labels-domain': 'warning',
   /** A span's or a text's colour ramp with an open end, whose colours then differ from one region to the next. */
   'unpinned-span-ramp': 'warning',
   /** A `minBpPerPx` not below the mark's `maxBpPerPx`, so the mark never draws. */

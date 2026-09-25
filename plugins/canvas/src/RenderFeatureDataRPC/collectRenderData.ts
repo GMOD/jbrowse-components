@@ -55,6 +55,7 @@ export function collectRenderData(
     flatbushItems: collector.flatbushItems,
     subfeatureInfos: collector.subfeatureInfos,
     colorValues: collector.colorKey && {
+      field: collector.colorKey.field,
       values: collector.colorKey.values,
       painted: collector.colorKey.painted,
       rows: collector.colorKey.rows,

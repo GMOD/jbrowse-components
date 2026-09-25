@@ -520,6 +520,19 @@ test('a threshold range with other than one colour per interval is named', () =>
   expect(found(colors(['red', 'orange', 'blue', 'green']))).toHaveLength(1)
 })
 
+test('labels name the domain values of a categorical colour', () => {
+  const labelled = (color: Record<string, unknown>) => [
+    {
+      mark: 'bar',
+      encoding: { y: 'score', color: { field: 'type', ...color } },
+    },
+  ]
+  expect(found(labelled({ domain: ['a'], labels: ['A'] }))).toEqual([])
+  expect(found(labelled({ labels: ['A'] }))).toEqual([
+    'warning labels-domain mark 0 encoding.color.labels',
+  ])
+})
+
 test('a ramp reads its ends, not a domain, and a span wants both ends pinned', () => {
   const ramp = (mark: string, color: Record<string, unknown>) => [
     {

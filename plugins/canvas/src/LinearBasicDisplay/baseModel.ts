@@ -636,7 +636,7 @@ export default function baseStateModelFactory(
       gpuProps() {
         return {
           colorTable: themedColorTable(getPaletteHost(self).palette),
-          paintColorValue: self.paintColorValue,
+          fieldPalette: self.fieldPalette,
         }
       },
     }))
@@ -1073,8 +1073,8 @@ export default function baseStateModelFactory(
         installUpload(self, backend, {
           cells: () => self.renderDataMap,
           inputs: () => self.gpuProps(),
-          encode: (data, { colorTable, paintColorValue }) =>
-            resolveRegionColors(data, colorTable, paintColorValue),
+          encode: (data, { colorTable, fieldPalette }) =>
+            resolveRegionColors(data, colorTable, fieldPalette),
           render: (b, encoded) =>
             b.renderBlocks(self.renderBlocks, encoded, self.renderState),
         })
@@ -1493,7 +1493,9 @@ export default function baseStateModelFactory(
             : undefined
         return derivedColorKey(
           scale,
-          self.rpcDataMap.values(),
+          [...self.rpcDataMap.values()].filter(
+            data => data.colorValues?.field === scale.field,
+          ),
           sectionOf && (section => hiddenGroupKeys.has(sectionOf(section).key)),
           facet && facet.field === colorField?.field
             ? { ...facetField(facet), label: scale.label }
@@ -1607,8 +1609,7 @@ export default function baseStateModelFactory(
        * two values one color.
        */
       pinColorDomain() {
-        const { field, range } = self.colorSettings
-        self.setColorScale({ field, domain: self.pinnedColorDomain, range })
+        setConf(self, ['color', 'domain'], self.pinnedColorDomain)
       },
       /**
        * #action

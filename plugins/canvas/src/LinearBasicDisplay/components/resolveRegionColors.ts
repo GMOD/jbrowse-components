@@ -2,12 +2,13 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import {
   OUTLINE,
-  fieldColorTable,
+  carriesFieldTints,
   resolveColorLane,
   themedColorTable,
 } from '../../RenderFeatureDataRPC/colorClasses.ts'
 import { THEME_DERIVED_COLOR } from '../../RenderFeatureDataRPC/renderConfig.ts'
 
+import type { FieldPalette } from '../../RenderFeatureDataRPC/colorClasses.ts'
 import type { FeatureDataResult } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
@@ -16,21 +17,28 @@ import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
  * classes and a box's color field value as an index, and the main thread
  * fills both in, so a light/dark toggle or a recolor re-encodes the loaded
  * regions without refetching them. A region with neither comes back by
- * reference, because the upload diff compares by reference.
+ * reference, because the upload diff compares by reference. A region whose
+ * values name another field, held on screen while a new field's refetch is
+ * pending, paints its literal colors rather than the old values through the
+ * new scale.
  */
 export function resolveRegionColors(
   data: FeatureDataResult,
   colorTable: Uint32Array,
-  paintColorValue?: (value: string) => string,
+  fieldPalette?: FieldPalette,
 ) {
+  const { colorValues } = data
   const rectColors = resolveColorLane(
     data.rectColors,
     data.rectColorClasses,
     colorTable,
     data.rectColorValues,
-    paintColorValue &&
-      data.colorValues &&
-      fieldColorTable(data.colorValues.values, paintColorValue),
+    fieldPalette && colorValues?.field === fieldPalette.field
+      ? fieldPalette.tableOf(
+          colorValues.values,
+          carriesFieldTints(data.rectColorClasses),
+        )
+      : undefined,
   )
   const lineColors = resolveColorLane(
     data.lineColors,
@@ -66,12 +74,12 @@ export function resolveOutlineColor(slot: string, palette: JBrowsePalette) {
 export function resolveMapColors(
   map: ReadonlyMap<number, FeatureDataResult>,
   palette: JBrowsePalette,
-  paintColorValue?: (value: string) => string,
+  fieldPalette?: FieldPalette,
 ) {
   const colorTable = themedColorTable(palette)
   const out = new Map<number, FeatureDataResult>()
   for (const [idx, data] of map) {
-    out.set(idx, resolveRegionColors(data, colorTable, paintColorValue))
+    out.set(idx, resolveRegionColors(data, colorTable, fieldPalette))
   }
   return out
 }

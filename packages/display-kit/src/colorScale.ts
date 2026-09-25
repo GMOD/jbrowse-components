@@ -41,7 +41,12 @@ export function paintedScale<S extends string, F extends string>(
 
 /** A combination of a colour object's slots the display cannot paint as written. */
 export interface ColorProblem {
-  rule: 'threshold-cuts' | 'threshold-range' | 'ramp-domain' | 'ramp-ends'
+  rule:
+    | 'threshold-cuts'
+    | 'threshold-range'
+    | 'ramp-domain'
+    | 'ramp-ends'
+    | 'labels-domain'
   /** the slot to look at, relative to the colour object */
   slot: string
   message: string
@@ -55,6 +60,7 @@ export interface ColorSlots {
   range?: readonly unknown[]
   domainMin?: number
   domainMax?: number
+  labels?: readonly unknown[]
 }
 
 function pinned(entry: unknown) {
@@ -123,6 +129,20 @@ export function colorProblems(
           'domainMax is below domainMin: the ramp spans the two either way, and reverse is what turns it round',
       })
     }
+  }
+  const { labels = [] } = color
+  if (
+    labels.length > 0 &&
+    (scale !== 'categorical' || labels.length > domain.length)
+  ) {
+    problems.push({
+      rule: 'labels-domain',
+      slot: 'labels',
+      message:
+        scale === 'categorical'
+          ? `labels names the domain's values one each, and ${labels.length} ${labels.length === 1 ? 'label names' : 'labels name'} ${domain.length} ${domain.length === 1 ? 'value' : 'values'}: a label past the domain names nothing`
+          : 'labels names the values of a categorical scale, and this colour paints another scale',
+    })
   }
   return problems
 }

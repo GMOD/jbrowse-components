@@ -837,7 +837,7 @@ test('an encoding channel refuses a key it does not declare', () => {
       { mark: 'span', encoding: { color: { colour: 'strand' } } },
     ]).createDisplay(),
   ).toThrow(
-    'MarkColor takes value, field, scale, domain, domainMin, domainMax, range, scheme, reverse, domainMid and title, not colour',
+    'MarkColor takes value, field, scale, domain, domainMin, domainMax, range, labels, scheme, reverse, domainMid and title, not colour',
   )
   expect(() =>
     createTestEnvironment([

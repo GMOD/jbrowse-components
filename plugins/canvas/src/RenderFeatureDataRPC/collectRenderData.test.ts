@@ -925,6 +925,7 @@ describe('color key', () => {
   it('ships each value its boxes carry, and the section it files under', () => {
     const result = collectAll({ color: { field: 'biotype' } })
     expect(result.colorValues).toEqual({
+      field: 'biotype',
       values: ['protein_coding', 'lncRNA', ''],
       painted: [
         { rowIndex: 0, valueIndex: 0 },

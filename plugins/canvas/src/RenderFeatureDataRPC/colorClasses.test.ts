@@ -10,11 +10,14 @@ import {
 import { createTestEnvironment } from '../LinearBasicDisplay/testEnv.ts'
 import { boxColor, strokeColor } from './collect/glyphColors.ts'
 import {
+  FIELD_LIGHT_TINT,
+  FIELD_MID_TINT,
   LITERAL,
   OUTLINE,
   STROKE,
   cdsFrameClass,
   codonStripeClass,
+  createFieldPalette,
   themedColorTable,
 } from './colorClasses.ts'
 import { THEME_DERIVED_COLOR } from './renderConfig.ts'
@@ -127,6 +130,52 @@ describe('the main thread resolves the classes', () => {
     })
     const resolved = resolveRegionColors(data, table)
     expect([...resolved.rectColors]).toEqual([table[STROKE], 0xff_00_00_ff])
+  })
+})
+
+describe('the main thread paints the color field', () => {
+  const red = 'rgba(255,0,0,0.4)'
+  const palette = createFieldPalette('biotype', value =>
+    value === 'lncRNA' ? red : '#0000ff',
+  )
+  // A box, a light stripe over it, a mid stripe, and a box no value paints.
+  function fieldData(field = 'biotype') {
+    return makeFeatureData({
+      rectColors: new Uint32Array([1, 2, 3, 4]),
+      rectColorClasses: new Uint8Array([
+        LITERAL,
+        FIELD_LIGHT_TINT,
+        FIELD_MID_TINT,
+        LITERAL,
+      ]),
+      rectColorValues: new Uint32Array([1, 1, 1, 0]),
+      colorValues: {
+        field,
+        values: ['lncRNA'],
+        painted: [{ rowIndex: 0, valueIndex: 0 }],
+        rows: [{ strand: undefined, groupKey: undefined }],
+      },
+    })
+  }
+
+  it('paints a value, alpha kept, and its stripes lightened, and leaves the rest', () => {
+    const [box, light, mid, unpainted] = resolveRegionColors(
+      fieldData(),
+      themedColorTable(resolvePalette()),
+      palette,
+    ).rectColors
+    expect(box).toBe(cssColorToABGR(red))
+    expect(light).not.toBe(box)
+    expect(mid).not.toBe(light)
+    expect(unpainted).toBe(4)
+  })
+
+  it('paints the literal lane under a palette for another field', () => {
+    const data = fieldData('strand')
+    expect(
+      resolveRegionColors(data, themedColorTable(resolvePalette()), palette)
+        .rectColors,
+    ).toBe(data.rectColors)
   })
 })
 

@@ -37,13 +37,22 @@ so a switch to Default is a re-encode too. A reading frame still paints over a
 field and records nothing.
 
 **The main thread owns the scale.** `paintColorValue` is the colour a value
-paints, off the colour object, and `resolveColorLane` fills a field-painted rect
-from `fieldColorTable`, three words a value: the colour and its two codon
-tints. A codon stripe over a field-painted box carries the box's value and a
+paints, off the colour object, and `fieldPalette` holds each value's packed
+colour and its two codon tints for as long as the scale stands, so a pan's
+re-encode of a region is a table lookup per distinct value rather than a parse
+of each. `resolveColorLane` fills a field-painted rect from that table. A codon stripe over a field-painted box carries the box's value and a
 field tint class (`FIELD_LIGHT_TINT`, `FIELD_MID_TINT`), lightened here as a
 literal stripe is lightened in the worker. The key derives from the values each
 region shipped, painted through the same function (`derivedColorKey`), so it
 cannot name a colour the encode did not use.
+
+**A region's values name their field.** `colorValues.field` is stamped in the
+worker, and a region whose field is not the one painting — held under the scrim
+while a new field's refetch is pending — paints its literal colours and leaves
+the key and a ramp's extent alone, rather than its old values going through the
+new scale. The worker keeps at most `MAX_LEGEND_CANDIDATES` painted pairs a
+region, as the candidates it shipped before, so a field valued per feature
+costs the key nothing past the bound.
 
 **Only `color.value` and `color.field` reach the worker** (`WorkerColor`, picked
 in `pickDisplayConfig`), so they are the colour's whole share of the cache key.
@@ -52,7 +61,9 @@ in `pickDisplayConfig`), so they are the colour's whole share of the cache key.
 `domainMid`, `domainMin` and `domainMax` from display-kit's ramp slots. An open
 end follows the values the loaded regions carry (`colorValueExtent`), the ramp
 is core's `continuousColorScale`, which the mark encoder now paints through as
-well, and the key is one gradient row titled with the field. A feature with no
+well, and the key is one gradient row titled with the field. The extent and the
+encoding compare by value, so a region committing inside the extent, a pinned
+pair of ends or a key-only edit hands the encode the same palette. A feature with no
 value paints the no-value grey and text that is no number the misconfiguration
 grey, as under a threshold.
 
@@ -63,9 +74,11 @@ carries one, and any other field stays categorical.
 **The key is the colour object's to name.** FeatureColor takes `labels`,
 naming each `domain` value in the key, one each in order, as ggplot2's
 `labels` name a scale's breaks; `categoricalField` carries them, so the key and
-anything else reading the field agree. It takes the `title` MarkColor already
-had, display-kit's `colorTitleSlot`, unset heading the key with the field and
-`""` heading it with nothing. A value written for a reader is then the scale's,
+anything else reading the field agree, and MarkColor takes them too, through
+the categorical scale table. A `labels` longer than the domain, or under
+another scale, is a corner notice (`labels-domain`). It takes the `title`
+MarkColor already had, display-kit's `colorTitleSlot`, unset heading the key
+with the field and `""` heading it with nothing. A value written for a reader is then the scale's,
 and a hand-typed list of labels and colours beside a `jexl:` colour has no
 case left on this display, so its `legend` slot goes.
 

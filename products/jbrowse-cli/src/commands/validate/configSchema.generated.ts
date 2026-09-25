@@ -7467,6 +7467,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "$ref": "#/$defs/CssColor"
               }
             },
+            "labels": {
+              "description": "what the key names each domain value, one each in order; a value past the list keeps its own name.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
               "enum": [

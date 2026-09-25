@@ -14,7 +14,11 @@ import {
   featureColorEncoding,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { colorNotices, fieldScaleOf } from '@jbrowse/display-kit/colorScale'
+import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 
+import { createFieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
+
+import type { FieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
 import type { ColorValues } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LinearCanvasBaseDisplayConfigModel } from './baseConfigSchema.ts'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
@@ -26,13 +30,38 @@ export interface ColorHost {
   rpcDataMap: ReadonlyMap<number, { colorValues?: ColorValues }>
 }
 
-// The value text a ramp reads: `''` is a feature with no value, which no
-// number stands for.
+// The value text a ramp reads: blank is no number, where `Number` reads 0.
 function numericText(text: string) {
-  return text === '' ? Number.NaN : Number(text)
+  return text.trim() === '' ? Number.NaN : Number(text)
 }
 
+const NO_EXTENT: [number, number] = [Infinity, -Infinity]
+
 export function colorViews(self: ColorHost) {
+  // Compared by value, so a region that commits inside the extent, or a
+  // key-only edit such as a title, hands the encode the same scale and
+  // re-encodes nothing.
+  const encoding = stableIdentityComputed(() =>
+    featureColorEncoding(colorSettingsOf(self)),
+  )
+  const extent = stableIdentityComputed(() => {
+    const current = encoding.get()
+    const field = typeof current === 'object' ? current.field : undefined
+    let min = Infinity
+    let max = -Infinity
+    for (const { colorValues } of self.rpcDataMap.values()) {
+      if (colorValues && colorValues.field === field) {
+        for (const text of colorValues.values) {
+          const value = numericText(text)
+          if (Number.isFinite(value)) {
+            min = Math.min(min, value)
+            max = Math.max(max, value)
+          }
+        }
+      }
+    }
+    return [min, max] as [number, number]
+  })
   return {
     /**
      * #getter
@@ -98,7 +127,7 @@ export function colorViews(self: ColorHost) {
      * unset.
      */
     get colorEncoding() {
-      return featureColorEncoding(this.colorSettings)
+      return encoding.get()
     },
 
     /**
@@ -134,18 +163,7 @@ export function colorViews(self: ColorHost) {
      * values hold, which a ramp's open ends follow.
      */
     get colorValueExtent(): [number, number] {
-      let min = Infinity
-      let max = -Infinity
-      for (const { colorValues } of self.rpcDataMap.values()) {
-        for (const text of colorValues?.values ?? []) {
-          const value = numericText(text)
-          if (Number.isFinite(value)) {
-            min = Math.min(min, value)
-            max = Math.max(max, value)
-          }
-        }
-      }
-      return [min, max]
+      return extent.get()
     },
 
     /**
@@ -154,10 +172,15 @@ export function colorViews(self: ColorHost) {
      * values where an end is left open.
      */
     get colorRamp() {
-      const encoding = this.colorEncoding
-      return typeof encoding === 'object' &&
-        (encoding.scale === 'linear' || encoding.scale === 'log')
-        ? continuousColorScale(encoding, this.colorValueExtent)
+      const current = this.colorEncoding
+      return typeof current === 'object' &&
+        (current.scale === 'linear' || current.scale === 'log')
+        ? continuousColorScale(
+            current,
+            current.domainMin !== undefined && current.domainMax !== undefined
+              ? NO_EXTENT
+              : this.colorValueExtent,
+          )
         : undefined
     },
 
@@ -178,6 +201,19 @@ export function colorViews(self: ColorHost) {
       }
       const field = this.paintedColorField
       return field && (value => field.color(field.key(value)))
+    },
+
+    /**
+     * #getter
+     * `paintColorValue` with each value's packed colors held for every
+     * region and re-encode that asks, while the scale stands.
+     */
+    get fieldPalette(): FieldPalette | undefined {
+      const paint = this.paintColorValue
+      const field = this.colorFieldName
+      return paint && field !== undefined
+        ? createFieldPalette(field, paint)
+        : undefined
     },
 
     /**
@@ -216,20 +252,24 @@ export function colorViews(self: ColorHost) {
      * may be a `jexl:` expression over a feature, which has none here.
      */
     get colorSettings(): ColorSetting {
-      return {
-        value: self.conf.color.value,
-        field: self.conf.color.field,
-        scale: getConf(self, ['color', 'scale']),
-        domain: getConf(self, ['color', 'domain']),
-        range: getConf(self, ['color', 'range']),
-        scheme: getConf(self, ['color', 'scheme']),
-        reverse: getConf(self, ['color', 'reverse']),
-        domainMin: getConf(self, ['color', 'domainMin']),
-        domainMax: getConf(self, ['color', 'domainMax']),
-        domainMid: getConf(self, ['color', 'domainMid']),
-        labels: getConf(self, ['color', 'labels']),
-        title: getConf(self, ['color', 'title']),
-      }
+      return colorSettingsOf(self)
     },
+  }
+}
+
+function colorSettingsOf(self: ColorHost): ColorSetting {
+  return {
+    value: self.conf.color.value,
+    field: self.conf.color.field,
+    scale: getConf(self, ['color', 'scale']),
+    domain: getConf(self, ['color', 'domain']),
+    range: getConf(self, ['color', 'range']),
+    scheme: getConf(self, ['color', 'scheme']),
+    reverse: getConf(self, ['color', 'reverse']),
+    domainMin: getConf(self, ['color', 'domainMin']),
+    domainMax: getConf(self, ['color', 'domainMax']),
+    domainMid: getConf(self, ['color', 'domainMid']),
+    labels: getConf(self, ['color', 'labels']),
+    title: getConf(self, ['color', 'title']),
   }
 }

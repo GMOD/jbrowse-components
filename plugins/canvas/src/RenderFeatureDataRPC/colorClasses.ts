@@ -46,22 +46,71 @@ function fieldTintOf(colorClass: number) {
       : 0
 }
 
+function isFieldTint(colorClass: number) {
+  return colorClass === FIELD_LIGHT_TINT || colorClass === FIELD_MID_TINT
+}
+
 /**
- * The packed color each of `values` paints through `paint`, then its light
- * and mid codon tints, three words a value.
+ * The colors a color field's values paint, `paint` being its scale: each
+ * value's packed color and its two codon tints, resolved once for the
+ * palette's life however many regions and re-encodes ask for them. `field`
+ * is the field it paints, which a region's values have to name to be painted
+ * by it.
  */
-export function fieldColorTable(
-  values: readonly string[],
+export function createFieldPalette(
+  field: string,
   paint: (value: string) => string,
 ) {
-  const table = new Uint32Array(values.length * 3)
-  for (const [i, value] of values.entries()) {
-    const hex = formatHEX(parseCssColor(paint(value)))
-    table[i * 3] = cssColorToABGR(hex)
-    table[i * 3 + 1] = cssColorToABGR(lighten(hex, 0.5))
-    table[i * 3 + 2] = cssColorToABGR(lighten(hex, 0.35))
+  const solid = new Map<string, number>()
+  const tints = new Map<string, readonly [number, number]>()
+  const solidOf = (value: string) => {
+    let packed = solid.get(value)
+    if (packed === undefined) {
+      packed = cssColorToABGR(paint(value))
+      solid.set(value, packed)
+    }
+    return packed
   }
-  return table
+  // Through the hex, as a stripe over a literal box is lightened in the worker.
+  const tintsOf = (value: string) => {
+    let pair = tints.get(value)
+    if (pair === undefined) {
+      const hex = formatHEX(parseCssColor(paint(value)))
+      pair = [
+        cssColorToABGR(lighten(hex, 0.5)),
+        cssColorToABGR(lighten(hex, 0.35)),
+      ]
+      tints.set(value, pair)
+    }
+    return pair
+  }
+  return {
+    field,
+    paint,
+    /**
+     * Three words a value, its color and its light and mid tints, the tints
+     * only where `withTints` says a stripe will read them.
+     */
+    tableOf(values: readonly string[], withTints: boolean) {
+      const table = new Uint32Array(values.length * 3)
+      for (const [i, value] of values.entries()) {
+        table[i * 3] = solidOf(value)
+        if (withTints) {
+          const [light, mid] = tintsOf(value)
+          table[i * 3 + 1] = light
+          table[i * 3 + 2] = mid
+        }
+      }
+      return table
+    },
+  }
+}
+
+export type FieldPalette = ReturnType<typeof createFieldPalette>
+
+/** Whether a class lane holds a stripe the field's tints paint. */
+export function carriesFieldTints(classes: Uint8Array) {
+  return classes.some(isFieldTint)
 }
 
 /**

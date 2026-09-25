@@ -212,6 +212,7 @@ describe('the band stands alone, and fetches nothing', () => {
       0,
       makeFeatureData({
         colorValues: {
+          field: 'type',
           values: ['gene', 'exon'],
           painted: [
             { rowIndex: 0, valueIndex: 0 },

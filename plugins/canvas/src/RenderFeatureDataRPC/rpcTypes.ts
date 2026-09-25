@@ -256,10 +256,12 @@ export interface HitItemBase {
 
 /**
  * The color field's distinct values in one region, as text. `painted` lists
- * each value a box carries with the section its record files under: `rowIndex`
- * indexes `rows`.
+ * each value a box carries with the section its record files under, up to
+ * `MAX_LEGEND_CANDIDATES`: `rowIndex` indexes `rows`.
  */
 export interface ColorValues {
+  // The field the values are of, which a scale painting another field skips.
+  field: string
   values: string[]
   painted: { rowIndex: number; valueIndex: number }[]
   rows: SectionStamp[]

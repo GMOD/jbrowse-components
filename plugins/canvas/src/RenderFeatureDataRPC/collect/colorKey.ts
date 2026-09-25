@@ -1,5 +1,6 @@
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
+import { MAX_LEGEND_CANDIDATES } from '@jbrowse/core/util/legendCandidates'
 
 import type { DisplayConfig } from '../renderConfig.ts'
 import type { ColorValues, SectionStamp } from '../rpcTypes.ts'
@@ -40,6 +41,7 @@ export function createColorKey(config: DisplayConfig, jexl: JexlInstance) {
   }
 
   return {
+    field,
     values,
     rows,
     painted,
@@ -72,10 +74,12 @@ export function createColorKey(config: DisplayConfig, jexl: JexlInstance) {
       }
       return index + 1
     },
+    // Bounded as a derived key's candidates are: a field valued per feature
+    // is no vocabulary, and past the bound the key says nothing new.
     record(laneValue: number) {
       const valueIndex = laneValue - 1
       const id = `${row}:${valueIndex}`
-      if (!paintedIds.has(id)) {
+      if (painted.length < MAX_LEGEND_CANDIDATES && !paintedIds.has(id)) {
         paintedIds.add(id)
         painted.push({ rowIndex: row, valueIndex })
       }

@@ -7,6 +7,7 @@ import { createJBrowseTheme, legendSpecOf } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { renderToString } from 'react-dom/server'
 
+import { createFieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
 import { LABEL_FONT_SIZE } from '../RenderFeatureDataRPC/constants.ts'
 import {
   labelsMap,
@@ -101,7 +102,7 @@ function makeModel(overrides: Partial<LegendModel> = {}): LegendModel {
     height: 100,
     scrollTop: 0,
     outlineColorSlot: '',
-    paintColorValue: undefined,
+    fieldPalette: undefined,
     displayDirectionalChevrons: true,
     error: undefined,
     regionTooLarge: false,
@@ -227,6 +228,28 @@ describe('renderSvg', () => {
     expect(html).toContain('stroke="rgb(255,177,29)"')
     expect(html).toContain('stroke-opacity="0.9"')
     expect(html).toContain('x="318"')
+  })
+
+  it('paints a box its color field value through the display palette', async () => {
+    const data = {
+      ...makeData([{ startBp: 1100, endBp: 1200 }]),
+      rectColorValues: new Uint32Array([1]),
+      colorValues: {
+        field: 'biotype',
+        values: ['lncRNA'],
+        painted: [{ rowIndex: 0, valueIndex: 0 }],
+        rows: [{ strand: undefined, groupKey: undefined }],
+      },
+    }
+    const html = renderResult(
+      await renderSvg(
+        makeModel({
+          laidOutDataMap: new Map([[0, data]]),
+          fieldPalette: createFieldPalette('biotype', () => '#123456'),
+        }),
+      ),
+    )
+    expect(html).toContain('rgb(18,52,86)')
   })
 
   it('emits no highlight box when nothing is pinned', async () => {

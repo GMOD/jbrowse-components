@@ -5,6 +5,7 @@ import {
   NO_CATEGORY_COLOR,
 } from '@jbrowse/core/util/color'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { autorun } from 'mobx'
 
 import {
   makeFeatureData,
@@ -44,6 +45,7 @@ describe('the color key', () => {
       0,
       makeFeatureData({
         colorValues: {
+          field: 'repClass',
           values: ['SINE', 'LINE'],
           painted: [
             { rowIndex: 0, valueIndex: 0 },
@@ -83,9 +85,11 @@ describe('derived color key', () => {
   function paintedData(
     values: string[],
     rows: { strand: undefined; groupKey: string | undefined }[] = noSection,
+    field = 'biotype',
   ) {
     return makeFeatureData({
       colorValues: {
+        field,
         values,
         painted: values.map((_, i) => ({
           rowIndex: rows.length > 1 ? i : 0,
@@ -112,6 +116,7 @@ describe('derived color key', () => {
         ...paintedData(
           biotypes,
           biotypes.map(groupKey => ({ strand: undefined, groupKey })),
+          scale.field,
         ),
         flatbushItems: [
           makeFlatbushItem({ featureId: 'pc', groupKey: 'protein_coding' }),
@@ -176,7 +181,7 @@ describe('derived color key', () => {
 
   it('names strand values as strands', () => {
     const display = coloredDisplay({ field: 'strand' })
-    display.setRpcData(0, paintedData(['1', '-1']), ctgA)
+    display.setRpcData(0, paintedData(['1', '-1'], noSection, 'strand'), ctgA)
     expect(display.legendSpec.sections[0]?.items.map(i => i.label)).toEqual([
       'Forward strand',
       'Reverse strand',
@@ -249,7 +254,9 @@ describe('derived color key', () => {
         paintedData(['protein_coding', 'lncRNA', 'snoRNA']),
         ctgA,
       )
-      expect(display.legendSpec.sections[0]?.items).toHaveLength(2)
+      const items = display.legendSpec.sections[0]?.items ?? []
+      expect(items).toHaveLength(2)
+      expect(items.some(i => i.label.includes(', '))).toBe(true)
       pinRow(display)!.onClick()
       expect(display.colorSettings.domain.toSorted()).toEqual([
         'lncRNA',
@@ -287,7 +294,7 @@ describe('derived color key', () => {
 
     it('keys every bin in order, and the no-value row once something paints it', () => {
       const display = thresholdDisplay()
-      display.setRpcData(0, paintedData(['0.45', '']), ctgA)
+      display.setRpcData(0, paintedData(['0.45', ''], noSection, 'dif'), ctgA)
       expect(display.colorScales[0]).toMatchObject({ title: 'dif' })
       expect(keyValues(display)).toEqual(['< -0.3', '-0.3 – 0.3', '≥ 0.3', ''])
       expect(display.colorByMode).toBe('attribute')
@@ -332,12 +339,59 @@ describe('derived color key', () => {
     expect(display.colorScales[0]).toMatchObject({ title: '' })
   })
 
+  it('pins the domain alone, keeping the scale, labels and title', () => {
+    const display = coloredDisplay({ field: 'score' })
+    setConf(display, 'color', {
+      field: 'score',
+      scale: 'categorical',
+      domain: ['1'],
+      labels: ['one'],
+      title: 'My score',
+    })
+    display.setRpcData(
+      0,
+      paintedData(['1', '2', '3'], noSection, 'score'),
+      ctgA,
+    )
+    display.pinColorDomain()
+    expect(display.colorSettings).toMatchObject({
+      scale: 'categorical',
+      domain: ['1', '2', '3'],
+      labels: ['one'],
+      title: 'My score',
+    })
+    expect(display.colorScales[0]).toMatchObject({
+      kind: 'categorical',
+      title: 'My score',
+    })
+  })
+
+  // A settings change keeps the held regions drawn until the refetch lands,
+  // and theirs are the old field's values.
+  it("keys nothing from a region the new field's values have not reached", () => {
+    const display = coloredDisplay({ field: 'biotype' })
+    display.colorByField('strand')
+    expect(display.colorScales).toEqual([])
+  })
+
+  it('notices labels past the domain, which name nothing', () => {
+    const display = coloredDisplay({ field: 'strand' })
+    setConf(display, ['color', 'labels'], ['Plus', 'Minus'])
+    expect(display.notices).toEqual([
+      expect.stringMatching(/^color\.labels: .*2 labels name 0 values/),
+    ])
+  })
+
   describe('ramp color', () => {
     function rampDisplay(color: Record<string, unknown> = { field: 'score' }) {
       const { createDisplay } = createTestEnvironment()
       const { display } = createDisplay()
       setConf(display, 'color', color)
-      display.setRpcData(0, paintedData(['0', '50', '100', '']), ctgA)
+      display.setRpcData(
+        0,
+        paintedData(['0', '50', '100', ''], noSection, 'score'),
+        ctgA,
+      )
       return display
     }
 
@@ -375,6 +429,35 @@ describe('derived color key', () => {
       expect(
         rampDisplay({ field: 'score', domainMin: -50 }).colorScales[0],
       ).toMatchObject({ domain: [-50, 100] })
+    })
+
+    it('hands the encode one palette while a commit leaves the ramp alone', () => {
+      const display = rampDisplay({
+        field: 'score',
+        domainMin: 0,
+        domainMax: 1,
+      })
+      const held = autorun(() => {
+        void display.fieldPalette
+      })
+      const palette = display.fieldPalette
+      display.setRpcData(1, paintedData(['7'], noSection, 'score'), ctgA)
+      expect(display.fieldPalette).toBe(palette)
+
+      setConf(display, 'color', { field: 'score' })
+      const open = display.fieldPalette
+      display.setRpcData(1, paintedData(['40'], noSection, 'score'), ctgA)
+      expect(display.fieldPalette).toBe(open)
+      display.setRpcData(1, paintedData(['400'], noSection, 'score'), ctgA)
+      expect(display.fieldPalette).not.toBe(open)
+      held()
+    })
+
+    it('paints blank text the misconfiguration grey, not the low end', () => {
+      const paint = rampDisplay().paintColorValue!
+      expect(paint(' ')).toBe(
+        abgrToCssRgba(cssColorToABGR(MISCONFIGURED_COLOR)),
+      )
     })
 
     it('takes a scheme and a log scale on any numeric field', () => {
