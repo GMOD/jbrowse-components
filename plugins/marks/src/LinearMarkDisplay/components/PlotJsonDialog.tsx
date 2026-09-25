@@ -11,7 +11,7 @@ import {
   parseMarkPlot,
   summarizeMarkPlot,
 } from '../markPlot.ts'
-import { problemText } from '../markProblems.ts'
+import { MarkProblemList } from './MarkProblems.tsx'
 
 import type { MarkPlot, MarkPlotSettings } from '../markPlot.ts'
 import type { MarkProblem } from '../markProblems.ts'
@@ -108,15 +108,7 @@ const PlotJsonDialog = observer(function PlotJsonDialog({
         helperText={summary}
         inputTestId="mark-plot-json"
       />
-      {problems.length > 0 ? (
-        <ul data-testid="mark-plot-problems">
-          {problems.map(problem => (
-            <li key={`${problem.rule}-${problem.mark}-${problem.slot}`}>
-              {problemText(problem)}
-            </li>
-          ))}
-        </ul>
-      ) : null}
+      <MarkProblemList problems={problems} />
     </SubmitDialog>
   )
 })

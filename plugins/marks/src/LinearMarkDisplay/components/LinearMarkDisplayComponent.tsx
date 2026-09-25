@@ -55,7 +55,12 @@ const LinearMarkDisplayComponent = observer(
                 tooltip={model.densityStandInNotice}
               />
             ) : null}
-            <ConfigProblemsIndicator notices={model.notices} />
+            <ConfigProblemsIndicator
+              notices={model.notices}
+              onClick={() => {
+                model.openPlotJsonDialog()
+              }}
+            />
             <SkippedFeaturesIndicator {...model.skippedFeatures} />
           </>
         )}

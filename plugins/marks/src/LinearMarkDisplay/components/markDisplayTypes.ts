@@ -41,6 +41,7 @@ export interface MarkDisplayModel
   skippedFeatures: SkippedFeatures
   densityStandInNotice: string | undefined
   notices: string[]
+  openPlotJsonDialog: () => void
   facetLayout: FacetLayout
   axes: YAxis[]
   drawsRows: boolean
