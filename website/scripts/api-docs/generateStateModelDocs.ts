@@ -16,7 +16,6 @@ import {
   assertUniquePages,
   codeCell,
   collectTransitive,
-  containsTag,
   docPage,
   exampleCell,
   exampleSection,
@@ -29,6 +28,7 @@ import {
   proseCell,
   repoRelative,
   section,
+  startsWithTag,
   stripComposedBlock,
   suffixCategory,
   withHeaders,
@@ -148,7 +148,7 @@ export function accumulateModel(
     // which are what a contributor reading the file wants — while dropping the
     // model from the published docs. For internals like SessionLoader, the
     // members are app-shell wiring, not an API a user can call.
-    if (containsTag(obj.comment, 'internal')) {
+    if (startsWithTag(obj.comment, 'internal')) {
       return
     }
     assertSingleHeader({

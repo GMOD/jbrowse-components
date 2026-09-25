@@ -191,8 +191,8 @@ export function extractWithComment(
       // #config, so helper files with their own .actions() chains or internal
       // ConfigurationSchema calls don't contribute spurious members/gaps.
       const text = sourceFile.getFullText()
-      const isStateModel = containsTag(text, 'stateModel')
-      const isConfig = containsTag(text, 'config')
+      const isStateModel = startsWithTag(text, 'stateModel')
+      const isConfig = startsWithTag(text, 'config')
       ts.forEachChild(sourceFile, node => {
         visit(node, isStateModel, isConfig)
       })
@@ -240,7 +240,7 @@ export function extractWithComment(
       }
     }
     const comment = getOwnJSDocText(node)
-    const tags = comment ? TAG_TYPES.filter(t => containsTag(comment, t)) : []
+    const tags = comment ? TAG_TYPES.filter(t => startsWithTag(comment, t)) : []
     // A member in a helper file some model delegates to is that model's row,
     // already emitted against the model's filename. Emitting it here too would
     // bucket a second copy under this file, where no #stateModel header can
@@ -384,7 +384,7 @@ function collectUntaggedSlots(node: ts.Node, gaps: ConfigSlotGap[]) {
           ts.isPropertyAssignment(prop) &&
           ts.isIdentifier(prop.name) &&
           !isConfigurationSchemaCall(prop.initializer) &&
-          !containsTag(jsDocText(prop), 'slot')
+          !startsWithTag(jsDocText(prop), 'slot')
         ) {
           gaps.push({
             filename: prop.getSourceFile().fileName,
@@ -522,7 +522,7 @@ function isUndocumentedLocal(
   const symbol = checker.getShorthandAssignmentValueSymbol(node)
   const decl = symbol?.valueDeclaration ?? symbol?.declarations?.[0]
   const doc = decl ? getOwnJSDocText(decl) : ''
-  return !MEMBER_TAGS.some(t => containsTag(doc, t))
+  return !MEMBER_TAGS.some(t => startsWithTag(doc, t))
 }
 
 const MEMBER_TAGS = [
@@ -736,7 +736,7 @@ function collectDelegatedClaims(
   for (const sourceFile of sources) {
     if (
       /\.test\.tsx?$/.test(sourceFile.fileName) ||
-      !containsTag(sourceFile.getFullText(), 'stateModel')
+      !startsWithTag(sourceFile.getFullText(), 'stateModel')
     ) {
       continue
     }
@@ -790,7 +790,7 @@ function emitDelegatedMembers(
   for (const prop of obj.properties) {
     const comment = getOwnJSDocText(prop)
     const tagged = comment
-      ? MEMBER_TAGS.filter(t => containsTag(comment, t))
+      ? MEMBER_TAGS.filter(t => startsWithTag(comment, t))
       : []
     if (sameFile && tagged.length) {
       continue
@@ -1474,23 +1474,28 @@ function stringPropValues(obj: ts.ObjectLiteralExpression, key: string) {
   return literals.filter(ts.isStringLiteral).map(l => l.text)
 }
 
-// True when `text` contains the JSDoc tag `#name` as a whole token, i.e. not as
-// a prefix of a longer word — so `#getter` does not match `#getterById`, nor
-// `#category` match `#categoryManagement`. Used both for the whole-comment tag
-// scan and the per-line parse in parseTaggedComment.
-export function containsTag(text: string, name: string) {
-  return new RegExp(`#${name}(?![A-Za-z0-9_])`).test(text)
-}
-
-// True when `#name` *heads* the comment line, which is how every tag is
-// actually written (`* #category general`). The value tags below take the rest
-// of the line, so containsTag alone let a mention inside prose ("categorized
-// General rather than View, which the #category tag overrides") be parsed as
-// the tag — and the value regex, being greedy, then took the text after the
-// LAST occurrence on the line. That wrote `sidebar_label: \` tag keeps the ->
-// Base1DView` into the generated frontmatter with no error.
+/**
+ * True when the JSDoc tag `#name` *heads* a line of `text`, which is how every
+ * tag is actually written (`* #category general`), and matches as a whole token
+ * — so `#getter` does not match `#getterById`, nor `#category`
+ * `#categoryManagement`.
+ *
+ * Multiline, so one line and a whole comment ask the same question, and this is
+ * the whole scan. A looser `containsTag` used to admit a node while
+ * `parseTaggedComment` parsed it by this rule, so the two disagreed about what
+ * carried a tag and anything writing ABOUT the tag system got tagged by it. The
+ * value tags take the rest of their line and the value regex is greedy, so a
+ * mention inside prose ("categorized General rather than View, which the
+ * #category tag overrides") took the text after the LAST occurrence and wrote
+ * ``sidebar_label: ` tag keeps the -> Base1DView`` into the generated
+ * frontmatter with no error. On the member side it made `whenReady` — a
+ * TypeScript interface method on both embedded controllers, no MST member at all
+ * — a `#getter`, because its docstring says "every `#getter` and `#property` on
+ * the view and session models is a MobX observable". Both products carry that
+ * sentence and both sat in the orphan-members coverage gap for it.
+ */
 export function startsWithTag(text: string, name: string) {
-  return new RegExp(`^\\s*\\*?\\s*#${name}(?![A-Za-z0-9_])`).test(text)
+  return new RegExp(`^\\s*\\*?\\s*#${name}(?![A-Za-z0-9_])`, 'm').test(text)
 }
 
 function getNameNode(node: ts.Node): ts.Node | undefined {

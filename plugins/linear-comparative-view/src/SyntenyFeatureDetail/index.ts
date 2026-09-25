@@ -10,6 +10,12 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 const configSchema = ConfigurationSchema('SyntenyFeatureWidget', {})
 
+/**
+ * #stateModel SyntenyFeatureWidget
+ * #category Widget
+ * The feature-details widget a synteny feature opens, which is
+ * `BaseFeatureWidget` plus the band the click landed in.
+ */
 function stateModelF(pluginManager: PluginManager) {
   return types
     .compose(

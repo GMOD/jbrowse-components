@@ -16,12 +16,17 @@ export default class GridBookmarkPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     GridBookmarkWidgetF(pluginManager)
 
+    // No member tags in here. The doc generator buckets a member by the file it
+    // is written in and renders it on the page whose file carries the
+    // `#stateModel` header, and an `extendViewType` block composes onto a view
+    // type declared in another plugin — so a tag here renders nowhere and lands
+    // in api-docs/coverage-gaps.txt instead. Three of them did. Teaching the
+    // generator to follow the composition was declined at one consumer
+    // (ADR-040's two-consumer bar); the two overrides below are documented at
+    // their declarations on LinearGenomeView either way.
     extendViewType(pluginManager, 'LinearGenomeView', stateModel =>
       stateModel
         .actions(self => ({
-          /**
-           * #action
-           */
           activateHighlightWidget() {
             return activateHighlightWidget(self)
           },
@@ -35,15 +40,9 @@ export default class GridBookmarkPlugin extends Plugin {
             onClick: () => self.activateHighlightWidget(),
           }
           return {
-            /**
-             * #method
-             */
             highlightsSubMenuItems() {
               return [...superHighlightsSubMenuItems(), openList]
             },
-            /**
-             * #method
-             */
             highlightMenuItems(
               highlight: Parameters<typeof superHighlightMenuItems>[0],
             ) {

@@ -465,3 +465,31 @@ test('a member tag no model claims is reported, and a delegated one is not', () 
     'orphan.ts stranded',
   ])
 })
+
+// A docstring that writes ABOUT the tag system is not one that carries a tag. The
+// admission scan matched a tag anywhere in the comment while parseTaggedComment
+// matched only a line the tag heads, so the two disagreed about what was tagged.
+// `whenReady` on both embedded controllers is a TypeScript interface method — no
+// MST member at all — whose docstring says "every `#getter` and `#property` on
+// the view and session models is a MobX observable", and that sentence put it in
+// the orphan-members gap as a #getter of a file documenting no model.
+test('a tag mentioned inside prose does not tag the symbol', () => {
+  const file = write(
+    'controller.ts',
+    `export interface Controller {
+       /**
+        * The model, once it settles. This is the whole read API: every
+        * \`#getter\` and \`#property\` on it is a MobX observable.
+        */
+       whenReady(): Promise<unknown>
+     }`,
+  )
+  const nodes: ExtractedNode[] = []
+  const { orphanMembers } = extractWithComment(
+    createDocProgram([file]),
+    node => nodes.push(node),
+    () => {},
+  )
+  expect(nodes.map(n => `${n.type} ${n.name}`)).toEqual([])
+  expect(orphanMembers).toEqual([])
+})

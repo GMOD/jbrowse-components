@@ -55,11 +55,18 @@ function clampCharactersPerRow(n: number) {
   return Math.max(1, Math.floor(n))
 }
 
-// User preferences for the sequence readout, seeded from and written straight
-// back to localStorage. Nothing here is snapshotted or reads the tree, so an
-// instance is cheap and needs no lifecycle: a holder that only sometimes shows
-// a panel (e.g. a track's right-click dialog) creates one when it opens rather
-// than carrying it around.
+/**
+ * #stateModel SequenceFeatureDetails
+ * #category Widget
+ * User preferences for the sequence readout under a feature's details, seeded
+ * from and written straight back to localStorage. Nothing here is snapshotted
+ * or reads the tree, so an instance is cheap and needs no lifecycle: a holder
+ * that only sometimes shows a panel (e.g. a track's right-click dialog) creates
+ * one when it opens rather than carrying it around.
+ *
+ * `BaseFeatureWidget` holds one as `sequenceFeatureDetails`, which is where a
+ * caller changing the readout reaches these actions.
+ */
 export function SequenceFeatureDetailsF() {
   return types
     .model('SequenceFeatureDetails')
