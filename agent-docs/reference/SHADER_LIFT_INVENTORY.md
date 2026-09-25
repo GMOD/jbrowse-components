@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 45 shaders with entry points. 117 functions
-are inside the emitter's subset, of which **87 are exported**.
+Scanned 45 shaders with entry points. 115 functions
+are inside the emitter's subset, of which **86 are exported**.
 
 ## Candidates
 
@@ -42,7 +42,6 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `covExpandMinWidthX` | `(f32, f32, f32) -> vec2f` | the clip-space half of the rule; nothing outside a shader is in clip space, so what a painter wants is the px core, and coverageBar.slang exports that (hpmath's expandToMinWidthLeftPx and RightPx, into alignments-core's spanMinWidth.generated.ts) for fillSpanRect to place its edges with |
 | `dashCoverage` | `(f32, f32, f32, f32) -> f32` | the dpr wrapper over dashCoverageAt, so it inherits that entry's reason exactly; it became liftable only when the ADR-040 granularity pass swapped its Uniforms parameter for a bare dpr, which changes what the emitter can see and nothing about who wants it |
 | `dashCoverageAt` | `(f32, f32, f32, f32) -> f32` | same, one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage. What they must agree on is ARC_FLAT_DASH_PX / ARC_FLAT_GAP_PX, and those are export-consts already |
-| `discExpand` | `(f32, f32) -> f32` | expands a quad so the fragment AA ramp is not clipped; Canvas2D draws ctx.arc and has no quad to expand |
 | `edgePerp` | `(f32, f32, f32) -> f32` | the analytic edge ramp's slope factor; Canvas2D fills the band as a path and antialiases it itself |
 | `expandMinWidthX` | `(f32, f32, f32) -> vec2f` | the clip-space half of this plugin's 1 CSS px floor; the px core it wraps is hpmath's expandToMinWidthLeftPx and RightPx, which coverageBar.slang exports into @jbrowse/alignments-core and fillSpanRect (this pass's Canvas2D twin) places its edges with |
 | `expandToMinWidthPx` | `(f32, f32, f32) -> vec2f` | the float2 over expandToMinWidthLeftPx and RightPx, which coverageBar.slang exports as the twins; a float2 twin is a tuple per call, and the pileup walk allocating one per span measured 0.85x against 0.78x of its hand painter |
@@ -51,13 +50,13 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `hpSplitUint` | `(u32) -> vec2f` | the hi/lo float32 precision split exists because a GPU has no float64; the Canvas2D path just uses a number |
 | `linkIsFar` | `(f32, f32) -> bool` | reached as a private helper inside the generated linkRadiiPx, the way arc.slang's arcIsFar is, so the far decision is shared without a second way to ask it |
 | `log1pf` | `(f32) -> f32` | JS has Math.log1p, so a twin of this would be the float32 workaround spelled out where the language already answers it |
-| `nearCircleDistancePx` | `(f32, f32, f32, f32) -> f32` | a float32 remedy with no float64 caller. The hit tests' copy of this file's solve (marks/ellipseDistance.ts) holds the ellipse at every aspect, so nothing outside the shader has an approximation to want. |
 | `perpCoverage` | `(f32, f32, f32, f32, f32, f32, bool, f32) -> f32` | measures perpendicular width per fragment from each edge own foreshortening, where Canvas2D measures it once for the whole ribbon (ribbonPerpWidth). Same quantity, deliberately different estimator — only the perpW < 1 boundary is shared, and that is a comparison, not a function |
 | `pxToClipLen` | `(f32, f32) -> f32` | the length half of the same conversion; a px dimension is already in px on the Canvas2D side, so there is nothing to convert |
 | `pxToClipX` | `(f32, f32) -> f32` | the inverse of clipXToPx, same reason |
 | `quadLocal` | `(u32) -> vec2f` | maps a vertex id to a quad corner — Canvas2D has no vertices, it calls fillRect |
 | `sBlendDeriv` | `(f32) -> f32` | the ribbon tangent, for extruding an edge normal per fragment; Canvas2D draws one bezierCurveTo and never needs the derivative |
 | `scoreToY` | `(f32, f32, f32, f32, i32, f32) -> f32` | a plot-box wrapper over scoreScale.slang's normalizeScore, which is where the shared decision is and where it is exported from. The Canvas2D side composes the same normalizer with its own box (wiggle-core yScaleTicks.ts), so a twin of this signature would have no caller |
+| `smallMarkFade` | `(f32) -> f32` | compensation for MSAA quantizing a tiny triangle's coverage to a few sample positions; Canvas2D's rasterizer blends that coverage per pixel on its own, so applying the ramp there would fade the glyph twice |
 | `snapBoxCenterY` | `(f32, f32, f32) -> f32` | clip-space wrapper over the exported snapBoxCenterYPx |
 | `snapCellEdgePx` | `(f32, f32) -> f32` | reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor |
 | `snapToPixelX` | `(f32, f32) -> f32` | clip in, clip out; its px core is `floor(x + 0.5)`, which is Math.round and needs no twin |
@@ -114,11 +113,10 @@ is no longer shared with anything.
 | `aaHalfPx` | tests only — `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `glyphEdgeAlpha.test.ts` |
 | `aaPx` | nothing |
 | `aaRamp` | nothing |
-| `arcDashCoordPx` | tests only — `arcFlatDash.test.ts` |
-| `edgeCoverage` | tests only — `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `sdEllipse.test.ts` |
-| `extendToMinWidthPx` | tests only — `hpmathParity.test.ts`, `markParity.test.ts`, `rectSpanParity.test.ts` |
+| `discExpand` | nothing |
+| `edgeCoverage` | tests only — `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts` |
+| `extendToMinWidthPx` | tests only — `hpmathParity.test.ts`, `rectSpanParity.test.ts` |
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |
 | `sBlend` | tests only — `syntenyShaderParity.test.ts` |
-| `wideCircleLeg` | tests only — `wideCircleLeg.test.ts` |
 | `yCurve` | tests only — `syntenyShaderParity.test.ts` |

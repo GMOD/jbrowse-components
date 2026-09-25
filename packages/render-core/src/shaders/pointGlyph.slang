@@ -8,8 +8,7 @@
 // `export-consts` emits the constant and `js-export` emits the snap, both
 // consumed by `pointMarker.ts` (adr-051).
 //! export-consts: SMALL_POINT_MAX_DIAMETER
-//! js-export: crispSquareTopLeftPx
-//! js-skip: discExpand — expands a quad so the fragment AA ramp is not clipped; Canvas2D draws ctx.arc and has no quad to expand
+//! js-export: crispSquareTopLeftPx, discExpand
 module pointGlyph;
 
 import antialias;
@@ -28,12 +27,20 @@ import hpmath;
 // crisp filled square instead.
 public static const float SMALL_POINT_MAX_DIAMETER = 3.0;
 
-// Quad scale factor that grows the disc's bounding quad by the ramp's reach so
-// its faded edge isn't clipped. localPos is scaled by the same factor so the
-// disc boundary stays at distance 1 (see discAlpha). `max(radiusPx, 0.5)` keeps
-// sub-pixel points from exploding the expansion.
+// Below this the glyph is smaller than the pad it is asking for; the floor is
+// only there so a radius of 0 cannot divide.
+static const float MIN_GLYPH_RADIUS_PX = 1e-3;
+
+// Quad scale factor that grows a glyph's bounding quad by the ramp's reach so
+// its faded edge isn't clipped. localPos is scaled by the same factor, so the
+// glyph boundary stays at distance 1 (see discAlpha) and the quad's half extent
+// comes out at `radiusPx + aaHalfPx(dpr)` px for every radius.
+//
+// Clamping the DIVISOR instead under-pads every radius below the clamp, because
+// the caller scales by the unclamped radius. `pointGlyphPad.test.ts` holds the
+// pad to the reach at the sub-pixel radii a diamond or a triangle reaches.
 public float discExpand(float radiusPx, float dpr) {
-  return (radiusPx + aaHalfPx(dpr)) / max(radiusPx, 0.5);
+  return 1.0 + aaHalfPx(dpr) / max(radiusPx, MIN_GLYPH_RADIUS_PX);
 }
 
 // Pixel-grid-snapped top-left of the crisp small-point square, on one axis. The

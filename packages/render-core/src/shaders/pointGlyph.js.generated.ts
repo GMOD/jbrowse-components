@@ -4,6 +4,22 @@
 // Scalar twins of pointGlyph.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
+function _max(a: number, b: number) {
+  return b > a || Number.isNaN(a) ? b : a
+}
+
 export function crispSquareTopLeftPx(centerPx: number, diameterPx: number): number {
   return Math.floor(((centerPx - (diameterPx * 0.5)) + 0.5))
+}
+
+function aaPx(dpr: number): number {
+  return (1.0 / _max(dpr, 1.0))
+}
+
+function aaHalfPx(dpr: number): number {
+  return (0.5 * aaPx(dpr))
+}
+
+export function discExpand(radiusPx: number, dpr: number): number {
+  return (1.0 + (aaHalfPx(dpr) / _max(radiusPx, 0.00100000004749745)))
 }
