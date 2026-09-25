@@ -28,7 +28,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { AdapterType } from '@jbrowse/core/pluggableElementTypes'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { geneGlyphShape } from '@jbrowse/plugin-canvas'
 import { firstValueFrom, toArray } from 'rxjs'
 
 import blocksSchema from '../../comparative-adapters/src/MCScanBlocksAdapter/configSchema.ts'
@@ -37,6 +36,7 @@ import { configSchemaFactory } from '../src/MultiWaySyntenyDisplay/configSchema.
 import { geneColors } from '../src/MultiWaySyntenyDisplay/geneColor.ts'
 import {
   geneGlyphGeometry,
+  geneGlyphShape,
   laneGeneFeatures,
 } from '../src/MultiWaySyntenyDisplay/geneGlyph.ts'
 import {

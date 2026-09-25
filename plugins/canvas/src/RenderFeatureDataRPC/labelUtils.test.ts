@@ -169,18 +169,6 @@ describe('reservesBelowLabelRow', () => {
     expect(ask(createMockFeature('some-region'), 'below', 'Box')).toBe(true)
   })
 
-  // The two glyphs that ARE the gene: `processFeatureRecord` draws the
-  // feature's own label, so neither may reserve a second row for it. Neither
-  // is reachable as a stacked child today, which is why the check is here
-  // rather than in a render.
-  it('reserves nothing for a glyph that is the gene itself', () => {
-    for (const glyphType of ['Subfeatures', 'MergedGene'] as const) {
-      expect(ask(createMockFeature('NM_001234'), 'below', glyphType)).toBe(
-        false,
-      )
-    }
-  })
-
   it('falls back to the feature id when the name is empty', () => {
     expect(ask(createMockFeature('', 'transcript-fallback-id'), 'below')).toBe(
       true,

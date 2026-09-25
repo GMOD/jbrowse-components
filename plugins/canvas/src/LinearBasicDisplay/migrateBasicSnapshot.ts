@@ -1,4 +1,4 @@
-import { legacyGeneGlyphMode } from '../RenderFeatureDataRPC/geneGlyphMode.ts'
+import { legacyGeneGlyphMode } from './geneGlyphMode.ts'
 import { legacyShowLabelsToMode } from './showLabelsMode.ts'
 
 function isRecord(x: unknown): x is Record<string, unknown> {

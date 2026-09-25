@@ -4,8 +4,8 @@ import {
   isoformPickEntries,
 } from '../../RenderFeatureDataRPC/isoformPicks.ts'
 
-import type { GeneGlyphMode } from '../../RenderFeatureDataRPC/geneGlyphMode.ts'
 import type { IsoformPicks } from '../../RenderFeatureDataRPC/isoformPicks.ts'
+import type { GeneGlyphMode } from '../geneGlyphMode.ts'
 
 export function geneGlyphChipLabel(
   maxIsoforms: number | undefined,
@@ -44,9 +44,6 @@ export function geneGlyphTooltip({
   maxIsoforms?: number
   picks?: IsoformPicks
 }) {
-  if (mode === 'merged') {
-    return 'One row per gene, holding every transcript’s exons. A region coding in any transcript draws full height.'
-  }
   if (!collapsed) {
     return 'All transcripts per gene.'
   }

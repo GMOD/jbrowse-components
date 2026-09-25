@@ -36,7 +36,7 @@ import {
 } from '../../../../packages/synteny-core/src/colorModes.ts'
 import { paintedField } from '../../../../packages/synteny-core/src/syntenyColorBy.ts'
 import { SETTINGS_SURFACE_LABELS } from '../../../../packages/synteny-core/src/settingsSurfaces.ts'
-import { GENE_GLYPH_MODE_OPTIONS } from '../../../../plugins/canvas/src/RenderFeatureDataRPC/geneGlyphMode.ts'
+import { GENE_GLYPH_MODE_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/geneGlyphMode.ts'
 import { SHOW_LABELS_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/showLabelsMode.ts'
 import {
   DISPLAY_MODE_OPTIONS,

@@ -116,10 +116,6 @@ export {
 } from './RenderFeatureDataRPC/util.ts'
 export { impliedUTRs } from './RenderFeatureDataRPC/impliedUTRs.ts'
 export type { ImpliedUTR } from './RenderFeatureDataRPC/impliedUTRs.ts'
-// A gene's shape merged across its transcripts, for a display projecting these
-// glyphs onto an axis of its own.
-export { geneGlyphShape } from './RenderFeatureDataRPC/geneGlyphShape.ts'
-export type { GeneGlyphShape } from './RenderFeatureDataRPC/geneGlyphShape.ts'
 export { mergeSpans } from './shared/mergeSpans.ts'
 export type { Span as GlyphSpan } from './shared/mergeSpans.ts'
 

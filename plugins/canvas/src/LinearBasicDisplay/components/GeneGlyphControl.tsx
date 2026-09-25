@@ -1,11 +1,11 @@
 import TrackControl from '@jbrowse/display-kit/TrackControl'
 import { observer } from 'mobx-react'
 
-import { GENE_GLYPH_MODE_OPTIONS } from '../../RenderFeatureDataRPC/geneGlyphMode.ts'
+import { GENE_GLYPH_MODE_OPTIONS } from '../geneGlyphMode.ts'
 import { geneGlyphChipLabel, geneGlyphTooltip } from './geneGlyphTooltip.ts'
 
-import type { GeneGlyphMode } from '../../RenderFeatureDataRPC/geneGlyphMode.ts'
 import type { IsoformPicks } from '../../RenderFeatureDataRPC/isoformPicks.ts'
+import type { GeneGlyphMode } from '../geneGlyphMode.ts'
 
 // Opening the menu is how the user reads the notice, so the menu closing by any
 // route is the acknowledgement that shrinks the chip back to its icon.

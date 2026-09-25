@@ -125,7 +125,6 @@ import {
   yMorphVolatiles,
 } from './yMorphViews.ts'
 
-import type { GeneGlyphMode } from '../RenderFeatureDataRPC/geneGlyphMode.ts'
 import type { IsoformPicks } from '../RenderFeatureDataRPC/isoformPicks.ts'
 import type {
   DisplayMode,
@@ -146,6 +145,7 @@ import type {
 import type { FeatureFacet, FeatureGroupSection } from './facet.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
 import type { RegionInstanceIndex } from './featureHighlightInk.ts'
+import type { GeneGlyphMode } from './geneGlyphMode.ts'
 import type { GroupByScanOptions } from './scanGroupByCandidates.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
@@ -1357,12 +1357,7 @@ export default function baseStateModelFactory(
         const geneGlyphMode = self.effectiveGeneGlyphMode
         return {
           geneGlyphMode,
-          // Not under `merged`, the one mode no codon draws in: the glyph's
-          // parts are a union across transcripts and the peptide map is keyed
-          // by transcript, so the sequence download and the translation would
-          // both be spent on residues nothing paints.
           peptides:
-            geneGlyphMode !== 'merged' &&
             self.showAminoAcids &&
             shouldRenderPeptideBackground(containingLgv(self).bpPerPx),
           expandedGeneIds:

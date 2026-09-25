@@ -1,8 +1,8 @@
 import { LABEL_FONT_SIZE } from '../constants.ts'
 import { readConfigValueSafe } from '../renderConfig.ts'
-import { featureType, getSubfeatures, isCDS } from '../util.ts'
+import { getSubfeatures, isCDS } from '../util.ts'
 
-import type { DisplayConfig, DisplayMode } from '../renderConfig.ts'
+import type { DisplayMode } from '../renderConfig.ts'
 import type { FeatureLayout, GlyphType, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -100,29 +100,6 @@ export function hasCDSSubfeature(feature: Feature) {
 // row (match → segments).
 export function hasContainerChildren(feature: Feature) {
   return getSubfeatures(feature).some(sub => getSubfeatures(sub).length > 0)
-}
-
-// Is this child one of the isoforms the gene chooses among, rather than a
-// decoration beside them (an NCBI source record, a `biological_region`)?
-// Structural first, like findGlyph's dispatch, because `transcriptTypes` names
-// none of `lnc_RNA`, `misc_RNA`, `ncRNA` or `pseudogenic_transcript` — the type
-// test only catches a childless transcript.
-function isIsoform(sub: Feature, transcriptTypes: ReadonlySet<string>) {
-  return (
-    getSubfeatures(sub).length > 0 ||
-    transcriptTypes.has(featureType(sub).toLowerCase())
-  )
-}
-
-// One rule for "which children are this gene's isoforms", read by the stacked
-// glyph that draws a row each and by the merged glyph that counts them for the
-// mode control.
-export function isoformsOf(subfeatures: Feature[], config: DisplayConfig) {
-  const transcriptTypes = new Set(
-    config.transcriptTypes.map(t => t.toLowerCase()),
-  )
-  const isoforms = subfeatures.filter(sub => isIsoform(sub, transcriptTypes))
-  return isoforms.length > 0 ? isoforms : subfeatures
 }
 
 // The feature ITSELF counts, because an isoform can BE the CDS rather than

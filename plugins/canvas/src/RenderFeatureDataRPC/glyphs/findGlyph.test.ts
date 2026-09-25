@@ -2,8 +2,6 @@ import { mockDisplayConfig } from '../testUtils.ts'
 import { layoutBox } from './box.ts'
 import { layoutCrisprGuide } from './crisprGuide.ts'
 import { findGlyph } from './findGlyph.ts'
-import { layoutMatureProteinRegion } from './matureProteinRegion.ts'
-import { layoutMergedGene } from './mergedGene.ts'
 import { layoutMotif } from './motif.ts'
 import { layoutProcessedTranscript } from './processed.ts'
 import { layoutRepeatRegion } from './repeatRegion.ts'
@@ -147,109 +145,5 @@ describe('findGlyph structural dispatch', () => {
       })
     expect(findGlyph(orf('proteoform_orf'), config)).toBe(layoutSubfeatures)
     expect(findGlyph(orf('Proteoform_ORF'), config)).toBe(layoutSubfeatures)
-  })
-})
-
-describe('the merged gene mode', () => {
-  const merged = mockDisplayConfig({
-    transcriptTypes: ['mRNA'],
-    containerTypes: ['proteoform_orf'],
-    geneGlyphMode: 'merged',
-  })
-
-  const geneOverTranscripts = () =>
-    mockFeature({
-      type: 'gene',
-      subfeatures: [
-        mockFeature({
-          type: 'mRNA',
-          subfeatures: [mockFeature({ type: 'CDS' })],
-        }),
-      ],
-    })
-
-  it('takes the gene the stacked glyph would have taken', () => {
-    expect(findGlyph(geneOverTranscripts(), merged)).toBe(layoutMergedGene)
-  })
-
-  // The other three modes each stack, so naming the mode positively is what
-  // this pins: a test that only checks `all` admits `!== 'all'`, which merges
-  // under `auto` and `longestCoding` too.
-  it('leaves every other mode stacking', () => {
-    for (const geneGlyphMode of ['auto', 'all', 'longestCoding'] as const) {
-      expect(
-        findGlyph(
-          geneOverTranscripts(),
-          mockDisplayConfig({ transcriptTypes: ['mRNA'], geneGlyphMode }),
-        ),
-      ).toBe(layoutSubfeatures)
-    }
-  })
-
-  // `containerTypes` admits a container whose children are whole genes, which
-  // has no transcript structure to union: merging it paints one bar end to end
-  // over the children it should stack.
-  it('leaves a container with nothing to merge stacking', () => {
-    const supercontig = mockFeature({
-      type: 'proteoform_orf',
-      subfeatures: [
-        mockFeature({ type: 'gene' }),
-        mockFeature({ type: 'gene' }),
-      ],
-    })
-    expect(findGlyph(supercontig, merged)).toBe(layoutSubfeatures)
-  })
-
-  // Cleavage products are not isoforms of each other, so merging them would
-  // paint one box over the whole polyprotein.
-  it('leaves a polyprotein stacked', () => {
-    const polyprotein = mockFeature({
-      type: 'gene',
-      subfeatures: [
-        mockFeature({
-          type: 'CDS',
-          subfeatures: [mockFeature({ type: 'mat_peptide' })],
-        }),
-      ],
-    })
-    expect(findGlyph(polyprotein, merged)).toBe(layoutSubfeatures)
-    const cds = mockFeature({
-      type: 'CDS',
-      subfeatures: [mockFeature({ type: 'mat_peptide' })],
-    })
-    expect(findGlyph(cds, merged)).toBe(layoutMatureProteinRegion)
-  })
-
-  it('leaves the shapes that are not a gene over transcripts', () => {
-    expect(
-      findGlyph(
-        mockFeature({
-          type: 'repeat_region',
-          subfeatures: [mockFeature({ type: 'long_terminal_repeat' })],
-        }),
-        merged,
-      ),
-    ).toBe(layoutRepeatRegion)
-    expect(
-      findGlyph(
-        mockFeature({
-          type: 'mRNA',
-          subfeatures: [
-            mockFeature({ type: 'exon' }),
-            mockFeature({ type: 'CDS' }),
-          ],
-        }),
-        merged,
-      ),
-    ).toBe(layoutProcessedTranscript)
-    expect(
-      findGlyph(
-        mockFeature({
-          type: 'match',
-          subfeatures: [mockFeature({ type: 'match_part' })],
-        }),
-        merged,
-      ),
-    ).toBe(layoutSegments)
   })
 })

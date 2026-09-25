@@ -13,13 +13,13 @@ import SegmentIcon from '@mui/icons-material/Segment'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 
 import { SUBFEATURE_LABEL_OPTIONS } from '../RenderFeatureDataRPC/displayModes.ts'
-import { GENE_GLYPH_MODE_OPTIONS } from '../RenderFeatureDataRPC/geneGlyphMode.ts'
 import {
   addTrimmedIsoformPicks,
   mergeIsoformPicks,
 } from '../RenderFeatureDataRPC/isoformPicks.ts'
 import baseStateModelFactory from './baseModel.ts'
 import { collapseIntronsMenuItem } from './collapseIntronsMenu.ts'
+import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
 import { planIsoformTrims } from './isoformTrim.ts'
 import { inertLabelHint, inlineRadioGroup } from './trackMenus.ts'
 
@@ -131,11 +131,9 @@ export default function stateModelFactory(
 
       // Off the raw mode, not `effectiveGeneGlyphMode`: `auto` resolves to
       // `all` under 100bp/px and its job is to fit the track; only the user
-      // picking "All transcripts" withholds the trim. `merged` is here because
-      // it stacks no transcript rows at all, so the isoform rung would report
-      // a trim over a stack it left alone.
+      // picking "All transcripts" withholds the trim.
       get showsEveryIsoform() {
-        return this.geneGlyphMode === 'all' || this.geneGlyphMode === 'merged'
+        return this.geneGlyphMode === 'all'
       },
 
       // Shown in every mode, so picking "All transcripts" from the control

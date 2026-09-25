@@ -1,7 +1,6 @@
 import { readConfigValue as coreReadConfigValue } from '@jbrowse/core/configuration'
 
 import type { SubfeatureLabels } from './displayModes.ts'
-import type { GeneGlyphMode } from './geneGlyphMode.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
@@ -14,12 +13,6 @@ export {
   isDisplayMode,
 } from './displayModes.ts'
 export type { DisplayMode, SubfeatureLabels } from './displayModes.ts'
-export {
-  GENE_GLYPH_MODES,
-  GENE_GLYPH_MODE_OPTIONS,
-  legacyGeneGlyphMode,
-} from './geneGlyphMode.ts'
-export type { GeneGlyphMode } from './geneGlyphMode.ts'
 
 // The worker evaluates every feature up front, so an unguarded throw from a bad
 // jexl expression would fail the entire track render. `null` degrades to
@@ -69,7 +62,7 @@ export interface DisplayConfig {
   // compact/superCompact height scaling, so switching modes skips an RPC
   // round-trip. Track height is not sent either — the fit ladder trims isoforms
   // where it can see the packing.
-  geneGlyphMode: GeneGlyphMode
+  geneGlyphMode: 'auto' | 'all' | 'longestCoding'
   // The `facetField` each feature's `groupKey` is stamped from; absent for a
   // strand facet, which the stamped strand answers without a refetch.
   facetField?: string

@@ -1,12 +1,12 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { GENE_GLYPH_MODES } from '../RenderFeatureDataRPC/geneGlyphMode.ts'
 import {
   GENE_GLYPH_DEFAULTS,
   SUBFEATURE_LABELS,
 } from '../RenderFeatureDataRPC/renderConfig.ts'
 import baseConfigSchemaFactory from './baseConfigSchema.ts'
+import { GENE_GLYPH_MODES } from './geneGlyphMode.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -97,7 +97,7 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         type: 'stringEnum',
         model: types.enumeration('geneGlyphMode', [...GENE_GLYPH_MODES]),
         description:
-          'Gene glyph display mode: "auto" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, "all" draws every transcript and scrolls the surplus instead of trimming, "merged" draws one row per gene holding every transcript\'s exons at once, "longestCoding" shows one transcript per gene — the one canonicalTranscriptTags names, else the longest coding',
+          'Gene glyph display mode: "auto" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, "all" draws every transcript and scrolls the surplus instead of trimming, "longestCoding" shows one transcript per gene — the one canonicalTranscriptTags names, else the longest coding',
         defaultValue: 'auto',
       },
       /**
