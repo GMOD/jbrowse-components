@@ -90,11 +90,6 @@ const ShareDialog = observer(function ShareDialog({
     },
   )
 
-  function chooseMode(value: SessionShareMode) {
-    localStorageSetItem(SHARE_MODE_LOCALSTORAGE_KEY, value)
-    setMode(value)
-  }
-
   const url = data?.url ?? ''
   const disabled = isLoading || !!error
   return (
@@ -144,7 +139,8 @@ const ShareDialog = observer(function ShareDialog({
                 type: 'radio' as const,
                 checked: mode === value,
                 onClick: () => {
-                  chooseMode(value)
+                  localStorageSetItem(SHARE_MODE_LOCALSTORAGE_KEY, value)
+                  setMode(value)
                 },
               })),
               {
@@ -172,21 +168,7 @@ const ShareDialog = observer(function ShareDialog({
             <Typography>Generating {mode} URL...</Typography>
           </Box>
         ) : (
-          <ShareLinkField
-            value={url}
-            plaintext={data?.plaintext}
-            action={
-              mode === 'short' ? undefined : (
-                <Button
-                  onClick={() => {
-                    chooseMode('short')
-                  }}
-                >
-                  Use a short link
-                </Button>
-              )
-            }
-          />
+          <ShareLinkField value={url} plaintext={data?.plaintext} />
         )}
       </InfoDialog>
 

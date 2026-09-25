@@ -14,10 +14,9 @@ jest.mock('@jbrowse/product-core', () => ({
 
 // short mode would POST to the share server; the link's shape is
 // buildShareUrl.test.ts's business
-let mockLongUrlLength = 0
 jest.mock('./buildShareUrl.ts', () => ({
   buildShareUrl: jest.fn(async (mode: string) => ({
-    url: `http://localhost/app/#session=${mode}-link${'x'.repeat(mode === 'long' ? mockLongUrlLength : 0)}`,
+    url: `http://localhost/app/#session=${mode}-link`,
     plaintext: mode === 'json' ? '{"session":{}}' : undefined,
   })),
 }))
@@ -26,7 +25,6 @@ const mockBuild = buildShareUrl as jest.Mock
 
 afterEach(() => {
   mockSnapshot = { name: 'a session' }
-  mockLongUrlLength = 0
   mockBuild.mockClear()
 })
 
@@ -123,17 +121,6 @@ test('an unknown stored mode opens as a short link', async () => {
   await renderDialog('someOldMode')
 
   expect(mockBuild.mock.calls.map(c => c[0])).toEqual(['short'])
-})
-
-test('a link too long to open offers the short one', async () => {
-  mockLongUrlLength = 90_000
-  const utils = await renderDialog('long')
-
-  fireEvent.click(utils.getByText('Use a short link'))
-  await waitFor(() => {
-    expect(utils.getByDisplayValue(/short-link/)).toBeTruthy()
-  })
-  expect(localStorage.getItem(SHARE_MODE_LOCALSTORAGE_KEY)).toBe('short')
 })
 
 test('the json mode offers the readable session', async () => {

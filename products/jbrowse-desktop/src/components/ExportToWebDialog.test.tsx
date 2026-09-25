@@ -174,38 +174,6 @@ test('returning to the short link asks again rather than re-uploading', async ()
   expect(fetchMock).toHaveBeenCalledTimes(1)
 })
 
-// A self-contained export carries its own assemblies and tracks, so it is the
-// biggest kind of session there is, and the long link — the default — puts all
-// of it in the url. Chrome takes 2 MB, so whoever made the link sees nothing
-// wrong with one Safari will refuse.
-test('an unopenable long link says so and offers the mode that fixes it', async () => {
-  // incompressible, so the deflate the encoder runs can't shrink it back under
-  // the ceiling; a repeated string would encode to a few hundred characters
-  // mulberry32, so the filler is deterministic. A textbook LCG is not enough:
-  // `seed * 1103515245` leaves float precision, its low bits degenerate, and
-  // deflate shrinks 200k characters of it to 12k — back under the ceiling.
-  let seed = 1
-  const noise = Array.from({ length: 200_000 }, () => {
-    seed = (seed + 0x6d2b79f5) | 0
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed)
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
-    return String.fromCodePoint(97 + (((t ^ (t >>> 14)) >>> 0) % 26))
-  }).join('')
-  const { getByText, getByLabelText } = await renderDialog({
-    ...snapshot,
-    tracks: [{ trackId: 'big', name: 'Big track', description: noise }],
-  })
-
-  expect(linkValue().length).toBeGreaterThan(80_000)
-  getByText(/Safari and iOS browsers refuse to open/)
-
-  fireEvent.click(getByText('Use a short link'))
-  // the short mode's own gate still holds: the steer selects it, it does not
-  // upload the session on the user's behalf
-  getByText('Upload and create short link')
-  expect((getByLabelText('Short link') as HTMLInputElement).checked).toBe(true)
-})
-
 test('a config webExportUrl reroutes the export to that deployment', async () => {
   await renderDialog({
     ...snapshot,

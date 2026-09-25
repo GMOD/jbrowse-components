@@ -344,27 +344,7 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
             ) : generating ? (
               <Typography>Generating {mode} URL...</Typography>
             ) : (
-              <ShareLinkField
-                value={url}
-                plaintext={link.data?.plaintext}
-                // An export is the biggest kind of session — a self-contained
-                // one carries its own assemblies and tracks — so the mode that
-                // solves an unopenable link is one click away, in the same
-                // state selecting the radio would leave: asked for, not yet
-                // uploaded.
-                action={
-                  mode === 'short' ? undefined : (
-                    <Button
-                      onClick={() => {
-                        setMode('short')
-                        setUploadRequested(false)
-                      }}
-                    >
-                      Use a short link
-                    </Button>
-                  )
-                }
-              />
+              <ShareLinkField value={url} plaintext={link.data?.plaintext} />
             )}
           </>
         )}
