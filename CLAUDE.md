@@ -107,17 +107,26 @@ Desktop's MCP server — `run_javascript`, `docs`, `open`, `screenshot` — and
 
 ## Tooling
 
-- **`pnpm verify` and `pnpm test-related`**, in your own worktree. verify
-  formats, spell-checks and lints the files changed against main (`--all` for
-  the tree). test-related runs the suites whose footprint — the files they
-  executed on their last run — holds a changed file; a comment- or type-only
-  edit runs nothing. `reference/TEST_INFRASTRUCTURE.md` §"Which suites a change
-  runs".
+- **`pnpm verify`, then the changed code's own suite** — `npx jest <file>` — in
+  your own worktree. verify formats, spell-checks and lints the files changed
+  against main (`--all` for the tree).
+- **`pnpm test-related` is the escalation, not the default.** It runs every
+  suite whose footprint — the files it executed on its last run — holds a
+  changed file, and a hub module (render-core marks, a plugin index, a config
+  schema) is in 300-900 of them. That reach is real rather than a selection bug,
+  which is exactly why it is the wrong reflex for a change whose blast radius
+  you already know. Reach for it when you genuinely don't, read `-- --listTests`
+  first, and read the suite-seconds it prints before deciding the wait is worth
+  it. A comment- or type-only edit selects nothing.
+  `reference/TEST_INFRASTRUCTURE.md` §"Which suites a change runs".
 - **Typecheck with `pnpm typecheck`, never a bare `tsc` or `npx tsc`.** Each
-  whole-repo tsgo program is ~4GB, so agent runs of typecheck, type-aware lint
-  and `build:esm` queue on three machine-wide slots
-  (`scripts/heavy-run-slot.sh`). A bare `tsc` skips that queue, and a dozen
-  agents doing so swap the box.
+  whole-repo tsgo program is ~4GB, so agent runs of typecheck, type-aware lint,
+  `build:esm`, `pnpm test` and `pnpm test-related` queue on three machine-wide
+  slots (`scripts/heavy-run-slot.sh`). A bare `tsc` skips that queue, and a
+  dozen agents doing so swap the box. A run that holds a slot gets its full
+  worker count rather than the load-average haircut, since the queue has already
+  counted it; `npx jest` is ungated and stays that way, which is the other
+  reason it is for one file rather than a directory.
 - **The `jbrowse-web` jest project runs on remote CI, not here.** Its app-level
   suites are half the suite clock; `pnpm test` and `test-related` leave them
   out, and `pnpm test-ci` on push runs them. Don't run them before landing, not

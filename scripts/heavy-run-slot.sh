@@ -48,6 +48,12 @@ while :; do
   fi
 done
 
+# A slot is the one thing a run can know about the machine, so say so rather
+# than leaving each child to re-derive it: `jest.config.js` sizes its workers
+# off the load average precisely because nothing gates it, and that reading is
+# wrong for a command that reached here.
+export JB_HEAVY_SLOT=$i
+
 # This shell holds the lock and the command runs as its child, never via
 # `exec`. An inherited lock fd does not survive the command re-executing
 # itself: typescript7's tsc wrapper hands off to the native binary with Node's

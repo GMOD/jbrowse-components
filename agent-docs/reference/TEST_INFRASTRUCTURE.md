@@ -181,6 +181,47 @@ primary checkout's, so a fresh worktree starts from what the primary last ran,
 and a branch that drops an import cannot narrow what another checkout reads.
 Recording costs ~1.6ms per app-level suite.
 
+### The selection is not what makes a run long
+
+`test-related` prints what it selected costs — `N suite(s), ~Xs of suite time` —
+priced from jest's own sequencer cache (`perf-cache-*`), at the **minimum** each
+suite has ever recorded rather than its mean. A duration is only what the box
+allowed that day: the same `sdEllipse.test.ts` sits at 6.1s in one checkout's
+cache and 3979s in another, and the floor is the one number in there that
+describes the work.
+
+Read that figure before reading the clock, because on a laptop with a dozen
+agent sessions the two have almost nothing to do with each other. A 955-suite
+selection off a render-core marks change prices at 380 suite-seconds — about 95s
+at four workers — and was seen taking over twenty minutes. 229 of those suites,
+60 suite-seconds, on a laptop carrying two dozen agent worktrees:
+
+| run                                    | workers | wall clock |
+| -------------------------------------- | ------: | ---------: |
+| ungated, as every agent run used to be |       1 |      1015s |
+| holding one of the machine-wide slots  |       4 |       254s |
+
+Same 229 suites, same box, one after the other, and the gated run went second
+into a load average that had climbed from 32 to 54 — so 4.0x is the floor of
+that gap rather than its best case. What separates the two is worker count, and
+what sets worker count is whether anything gated the run: `resolveMaxWorkers` in
+`jest.config.js` subtracts the load average for an agent session, so on a box the
+other sessions have driven to 30+ every run collapses to one worker. Eight runs
+at one worker each are still eight jest processes, so nothing comes off the box
+and each of them serialises a selection it could have spread.
+
+So `pnpm test`, `pnpm test-related` and `pnpm test-ci-no-react-compiler` now take
+one of the three machine-wide slots `scripts/heavy-run-slot.sh` hands out, the
+same ones the typechecks queue on. A run that holds one skips the load haircut
+and uses its ceiling, since the queue has already counted it; the runs that do
+not fit sleep in `flock` costing nothing. `test-related` takes its slot around
+the jest spawn rather than around the whole script, so a change that selects
+nothing never joins the queue.
+
+A bare `npx jest` stays ungated on purpose — it is the one-file run, and putting
+it behind a queue would make the cheap thing feel expensive. `npx jest <dir>`
+therefore goes around the gate; name files there.
+
 ### Where a warm `pnpm test` spends its time
 
 Measured 2026-08-30 over all 1978 suites, warm cache, on an otherwise quiet

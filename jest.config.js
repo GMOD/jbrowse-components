@@ -69,18 +69,27 @@ function resolveMaxWorkers() {
   //    ceiling 4 CPUs allow.
   const byMemory = Math.floor(availableGb() / 1.6)
 
-  // Load, on the other hand, is the multi-agent fairness knob and applies to
-  // agent runs ONLY. It reads state the other sessions create — nothing here
-  // can see them, but their workers are in the load average — so fourteen
-  // concurrent sessions drive it to the floor of 1, which is what the flat tier
-  // used to hard-code. Two runs it must NOT reach: a human at a terminal, who
-  // gets the machine undiluted (the position `scripts/heavy-run-slot.sh` takes
-  // for typechecks, for the same reason), and CI, where `pnpm install` has just
+  // Load is the multi-agent fairness knob, and it applies only to an agent run
+  // that nothing else is holding back. It reads state the other sessions create
+  // — nothing here can see them, but their workers are in the load average — so
+  // fourteen concurrent sessions drive it to the floor of 1, which is what the
+  // flat tier used to hard-code. Three runs it must NOT reach: a human at a
+  // terminal, who gets the machine undiluted; CI, where `pnpm install` has just
   // finished and left a load average that would read as a busy box and cut a
-  // 4-CPU runner to one worker.
-  const byLoad = process.env.CLAUDECODE
-    ? Math.floor(cpuCount - os.loadavg()[0])
-    : ceiling
+  // 4-CPU runner to one worker; and a run holding one of the machine-wide slots.
+  //
+  // A gated run is the case the load average cannot see on its own, which is
+  // why `scripts/heavy-run-slot.sh` exports the slot it holds. Cutting a run to
+  // one worker takes no work off the box: eight concurrent agent runs at one
+  // worker each are still eight jest processes, each serialising a selection it
+  // could have spread, and the load they read is mostly each other. The queue
+  // has already counted a gated run — at most JB_HEAVY_SLOTS are resident and
+  // the rest sleep in `flock` costing nothing — so the one in the slot uses the
+  // ceiling it was let through for.
+  const byLoad =
+    process.env.CLAUDECODE && !process.env.JB_HEAVY_SLOT
+      ? Math.floor(cpuCount - os.loadavg()[0])
+      : ceiling
 
   return Math.max(1, Math.min(ceiling, byMemory, byLoad))
 }

@@ -179,12 +179,15 @@ about the alternative. A real limitation stays, as does an outage we hit.
 
 ## Definition of done
 
-**`pnpm verify`**, **`pnpm test-related`**, a browser test if UI behavior
-changed. Snapshots only after a visually verified change. **Then commit.** Don't
-push or open a PR unless asked.
+**`pnpm verify`**, **the changed code's own suite** (`npx jest <file>`), a
+browser test if UI behavior changed. Snapshots only after a visually verified
+change. **Then commit.** Don't push or open a PR unless asked.
 
-What each of those two runs over, and the `jbrowse-web` project neither of them
-touches, is `CLAUDE.md` § Tooling.
+`pnpm test-related` is for the change whose blast radius you cannot name — it
+costs what it prints, and on a laptop carrying a dozen agent worktrees that has
+run to twenty minutes. What each run covers, the `jbrowse-web` project none of
+them touches, and the machine-wide slots the gated ones queue on: `CLAUDE.md`
+§ Tooling.
 
 **Three CI jobs are gated by none of that**: `pnpm check-docs`, `pnpm build:esm`
 and type-aware lint of files the change did not touch. `pnpm verify --full` runs
