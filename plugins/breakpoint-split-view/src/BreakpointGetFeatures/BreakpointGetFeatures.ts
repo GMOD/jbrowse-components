@@ -22,10 +22,10 @@ import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 export interface BreakpointGetFeaturesArgs {
   regions: Region[]
   adapterConfig: Record<string, unknown>
-  assemblyName?: string
-  opts?: Record<string, unknown>
   /** the display's active filters, `jexl:`-prefixed */
   jexlFilters?: string[]
+  // renameRegionsIfNeeded adds it, so no caller writes it
+  sequenceAdapter?: Record<string, unknown>
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
@@ -141,8 +141,8 @@ export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegion
       statusCallback,
       sessionId,
       adapterConfig,
+      sequenceAdapter,
       regions,
-      opts,
       jexlFilters = [],
     } = args
     const filterChain = new SerializableFilterChain({
@@ -154,15 +154,12 @@ export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegion
       pluginManager: this.pluginManager,
       sessionId,
       adapterConfig,
+      sequenceAdapter,
     })
 
     const features = await dataAdapter.getFeaturesInMultipleRegionsArray(
       regions,
-      {
-        ...opts,
-        statusCallback,
-        signal,
-      },
+      { statusCallback, signal },
     )
 
     return features

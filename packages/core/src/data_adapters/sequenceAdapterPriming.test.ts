@@ -98,8 +98,7 @@ const sequenceAdapter = { type: 'TestSequenceAdapter' }
 const region = { refName: 'ctgA', start: 0, end: 4, assemblyName: 'volvox' }
 
 // A fetch that passes no sequenceAdapter of its own — CoreGetFeatures as
-// `fetchTrackData` calls it, and BreakpointGetFeatures and CoreGetExportData,
-// none of which forward one.
+// `fetchTrackData` calls it, and CoreGetExportData, which forwards none.
 async function fetchWithoutPriming() {
   const dataAdapter = await getFeatureAdapterOrThrow({
     pluginManager,
@@ -122,7 +121,7 @@ beforeEach(() => {
   clearAdapterCache()
 })
 
-// The contract three RPCs depend on and none of them state. `dataAdapterCache`
+// The contract the RPCs that forward no config depend on. `dataAdapterCache`
 // keys on adapterConfig alone, so the sequence config CoreGetRefNames leaves on
 // the instance is what every later fetch reads — including the ones that pass
 // nothing. Sabotaging the priming reds this; sabotaging any single caller does
