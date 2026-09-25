@@ -57,6 +57,42 @@ test('a density ring shows its ramp under the track name', () => {
   expect(spec.sections[0]?.items).toEqual([{ label: 'gene density', gradient }])
 })
 
+test('a ring coloring by a field keys its colors under the track name', () => {
+  const spec = circularLegendSpec(
+    viewWith([
+      { name: 'translocations', display: { legendColor: '#ff8500' } },
+      {
+        name: 'genes',
+        display: {
+          legendColor: '#1565c0',
+          legendSpec: {
+            sections: [
+              {
+                id: 'color',
+                items: [
+                  { label: 'protein_coding', color: '#1b9e77' },
+                  { label: 'lncRNA', color: '#d95f02' },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    ]),
+  )
+  expect(spec.sections).toEqual([
+    { id: 'tracks', items: [{ label: 'translocations', color: '#ff8500' }] },
+    {
+      id: 'track1-color',
+      title: 'genes',
+      items: [
+        { label: 'protein_coding', color: '#1b9e77' },
+        { label: 'lncRNA', color: '#d95f02' },
+      ],
+    },
+  ])
+})
+
 test('a track with no single color, such as a jexl stroke, is left out', () => {
   const spec = circularLegendSpec(viewWith([{ name: 'svs', display: {} }]))
   expect(spec.sections).toEqual([])
