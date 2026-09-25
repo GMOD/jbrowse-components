@@ -17,6 +17,7 @@
 //! targets: wgsl, glsl
 //! coverage: analytic
 //! export-consts: ARC_FLAT_MIN_PX, ARC_FLAT_ALPHA, ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX
+//! js-export: arcDashCoordPx
 
 import alignmentsUniforms;
 import arcBandUniforms;
@@ -44,6 +45,19 @@ static const float ARC_FLAT_ALPHA = 0.7;
 // to the other two by a comment. One declaration, three consumers.
 static const float ARC_FLAT_DASH_PX = 3.0;
 static const float ARC_FLAT_GAP_PX = 3.0;
+
+// How far along the drawn line a fragment sits, from the line's SCREEN-LEFT
+// end — the dash pattern's origin, because that is where Canvas2D's `moveTo`
+// and SVG's path start it. Measured along the mark rather than across the
+// canvas: an origin on the canvas is fixed to the viewport, and the first block
+// of a single-region view starts at screen x 0, so every ordinary pan slides
+// the line under a stationary pattern and the dashes crawl.
+//
+// `reversed` is a float because `arcFlipX`'s spelling of the same flip takes
+// the uniform struct, which is outside the emitter's scalar subset.
+public float arcDashCoordPx(float localX, float halfLenPx, float reversed) {
+  return halfLenPx + lerp(localX, -localX, reversed);
+}
 
 [[vk::binding(1, 0)]] ConstantBuffer<ArcBandUniforms> u;
 
@@ -74,13 +88,9 @@ struct VsOut {
   // Half-length of the drawn line, so the fragment can measure the butt caps.
   nointerpolation float halfLen : COLOR1;
   nointerpolation float dashed  : COLOR2;
-  // Screen x in CSS px (interpolated) — drives the dash pattern. Deliberately
-  // NOT fragIn.position.x (physical px), which would halve the dash period on a
-  // dpr=2 display and diverge from the Canvas2D setLineDash([3,3]) mirror.
-  float  screenPx : COLOR3;
   // The resolved half stroke width, carried so the quad's pad and the
   // fragment's ramp cannot be sized from two different widths.
-  nointerpolation float halfWidthPx : COLOR4;
+  nointerpolation float halfWidthPx : COLOR3;
 };
 
 [shader("vertex")]
@@ -106,7 +116,6 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.dashed = inst.dashed;
 
   float2 p = c + o.local;
-  o.screenPx = p.x;
   o.position = arcBandClipPos(p, u);
   return o;
 }
@@ -126,7 +135,8 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // in numbers is a period only a comment holds the other two to.
   if (fragIn.dashed > 0.5) {
     alpha *= dashCoverage(
-      fragIn.screenPx, ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX, u.devicePixelRatio);
+      arcDashCoordPx(fragIn.local.x, fragIn.halfLen, u.reversed),
+      ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX, u.devicePixelRatio);
   }
   // Neutral, not black: `colorFlatConnector` is the theme's foreground, so the
   // line reads against a dark track background the way it does against a light
