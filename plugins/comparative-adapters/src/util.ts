@@ -484,12 +484,22 @@ function parseShortPAFLine(line: string) {
     qstart: +parts[2]!,
     qend: +parts[3]!,
     strand: parts[4] === '-' ? -1 : 1,
-    extra: {
-      numMatches: +parts[9]!,
-      blockLen: +parts[10]!,
-      mappingQual: +parts[11]!,
-    } as Record<string, string | number>,
+    extra: mandatoryExtras(+parts[9]!, +parts[10]!, +parts[11]!),
   }
+}
+
+// PAF's twelfth column says 255 where the aligner computed no mapping quality,
+// which is no quality at all rather than the best one.
+const MAPQ_UNAVAILABLE = 255
+
+function mandatoryExtras(
+  numMatches: number,
+  blockLen: number,
+  mappingQual: number,
+): Record<string, string | number> {
+  return mappingQual === MAPQ_UNAVAILABLE
+    ? { numMatches, blockLen }
+    : { numMatches, blockLen, mappingQual }
 }
 
 // One PAF (or PIF) row, walked by tab offset rather than `line.split('\t')`.
@@ -541,11 +551,11 @@ export function parsePAFLine(line: string) {
   if (t11 === -1) {
     t11 = len
   }
-  const extra: Record<string, string | number> = {
-    numMatches: columnNum(line, t8 + 1, t9),
-    blockLen: columnNum(line, t9 + 1, t10),
-    mappingQual: columnNum(line, t10 + 1, t11),
-  }
+  const extra = mandatoryExtras(
+    columnNum(line, t8 + 1, t9),
+    columnNum(line, t9 + 1, t10),
+    columnNum(line, t10 + 1, t11),
+  )
 
   let pos = t11 + 1
   while (pos < len) {

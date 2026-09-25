@@ -19,7 +19,9 @@ function parsePafLineBySplit(line: string) {
   const extra: Record<string, string | number> = {
     numMatches: +parts[9]!,
     blockLen: +parts[10]!,
-    mappingQual: +parts[11]!,
+  }
+  if (parts[11] !== '255') {
+    extra.mappingQual = +parts[11]!
   }
   for (let i = 12; i < parts.length; i++) {
     const field = parts[i]!
@@ -92,4 +94,13 @@ describe('parsePAFLine agrees with the split parse it replaced', () => {
     expect(parsed.extra.numMatches).toBeNaN()
     expect(parsed.extra.blockLen).toBeNaN()
   })
+})
+
+test('a mapping quality of 255 is no mapping quality', () => {
+  const row = (mapq: string) =>
+    ['q', '100', '0', '50', '+', 't', '200', '10', '60', '45', '50', mapq].join(
+      '\t',
+    )
+  expect(parsePAFLine(row('255')).extra).not.toHaveProperty('mappingQual')
+  expect(parsePAFLine(row('60')).extra.mappingQual).toBe(60)
 })
