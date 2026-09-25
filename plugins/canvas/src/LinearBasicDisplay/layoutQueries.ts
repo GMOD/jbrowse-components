@@ -30,16 +30,17 @@ export function maxBottom(
 // nothing anyone draws; built on that, a 2px floor delivered a third of a
 // pixel. Non-positive heights are skipped, or a degenerate `featureHeight: 0`
 // config would disable the squeeze for the whole track.
-export function minDrawnBoxHeight(
+function drawnBoxHeightRange(
   map: ReadonlyMap<number, FeatureDataResult>,
   measureIds?: ReadonlySet<string>,
 ) {
   let min = Number.POSITIVE_INFINITY
+  let max = 0
   for (const data of map.values()) {
     const { rectHeights, rectFeatureIndices, flatbushItems } = data
     for (let i = 0; i < rectHeights.length; i++) {
       const height = rectHeights[i]!
-      if (height <= 0 || height >= min) {
+      if (height <= 0 || (height >= min && height <= max)) {
         continue
       }
       const owner = flatbushItems[rectFeatureIndices[i]!]
@@ -48,16 +49,49 @@ export function minDrawnBoxHeight(
         isPlacedRow(owner.topPx) &&
         (!measureIds || measureIds.has(owner.featureId))
       ) {
-        min = height
+        min = Math.min(min, height)
+        max = Math.max(max, height)
       }
     }
   }
-  return min === Number.POSITIVE_INFINITY ? 0 : min
+  return { min: min === Number.POSITIVE_INFINITY ? 0 : min, max }
+}
+
+export function minDrawnBoxHeight(
+  map: ReadonlyMap<number, FeatureDataResult>,
+  measureIds?: ReadonlySet<string>,
+) {
+  return drawnBoxHeightRange(map, measureIds).min
+}
+
+export function maxDrawnBoxHeight(
+  map: ReadonlyMap<number, FeatureDataResult>,
+  measureIds?: ReadonlySet<string>,
+) {
+  return drawnBoxHeightRange(map, measureIds).max
 }
 
 // Counted over `measureIds` like `maxBottom`, so the "N not shown" sentence
 // never counts features a pan would reveal, and never the features of a
 // section the user hid, which sit unplaced by their own choice.
+export function keepsAnyName(
+  map: ReadonlyMap<number, FeatureDataResult>,
+  measureIds?: ReadonlySet<string>,
+) {
+  for (const data of map.values()) {
+    for (const label of data.floatingLabelsData.values()) {
+      if (
+        label.nameLabel &&
+        (!measureIds ||
+          measureIds.has(label.parentFeatureId ?? label.featureId))
+      ) {
+        return true
+      }
+    }
+  }
+  return false
+}
+
 export function countTruncatedFeatures(
   map: ReadonlyMap<number, FeatureDataResult>,
   measureIds?: ReadonlySet<string>,

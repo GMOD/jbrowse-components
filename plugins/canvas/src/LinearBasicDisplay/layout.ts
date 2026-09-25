@@ -430,6 +430,7 @@ const LAYOUT_CACHE_KEYS_RECORD: Record<
   hiddenGroupKeys: true,
   flattenRows: true,
   dropBelowLabelRows: true,
+  bodyScale: true,
 }
 
 const LAYOUT_CACHE_KEYS = Object.keys(LAYOUT_CACHE_KEYS_RECORD) as Exclude<

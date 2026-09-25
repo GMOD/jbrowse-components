@@ -5,9 +5,12 @@ import {
 import {
   bisectLargestFitting,
   bisectSmallestFitting,
+  LABELED_BODY_TO_FONT_RATIO,
   fitScaleToFill,
+  labeledBodyFloorScale,
   resolveFitLadder,
   snapFittedContentHeight,
+  solveBodyScale,
   solveIsoformCount,
   squeezeFloorScale,
 } from './fitLadder.ts'
@@ -181,6 +184,46 @@ describe('solveIsoformCount', () => {
   it('answers nothing when no gene has a choice to make', () => {
     expect(solveIsoformCount(heightAt, 1, 1, 1)).toBeUndefined()
     expect(solveIsoformCount(heightAt, 1, 0, 1)).toBeUndefined()
+  })
+})
+
+describe('solveBodyScale', () => {
+  // A labelled row: 11px of name that never scales over a 15px body+padding.
+  const rowsOf = (rows: number) => (bodyScale: number) =>
+    rows * (11 + 15 * bodyScale)
+
+  it('answers 1 when the unshortened stack fits', () => {
+    expect(solveBodyScale(rowsOf(4), 200, 0.4)).toBe(1)
+  })
+
+  it('shortens the bodies just enough to fit', () => {
+    const scale = solveBodyScale(rowsOf(8), 160, 0.4)!
+    expect(rowsOf(8)(scale)).toBeLessThanOrEqual(160)
+    expect(scale).toBeCloseTo((160 / 8 - 11) / 15, 1)
+  })
+
+  it('answers nothing when even the floor overflows', () => {
+    expect(solveBodyScale(rowsOf(20), 160, 0.4)).toBeUndefined()
+  })
+
+  it('answers nothing when the bodies are already at the floor', () => {
+    expect(solveBodyScale(rowsOf(8), 160, 1)).toBeUndefined()
+  })
+})
+
+describe('labeledBodyFloorScale', () => {
+  it('holds the tallest body at its share of the label font', () => {
+    expect(labeledBodyFloorScale(10, 10, 11) * 10).toBeCloseTo(
+      LABELED_BODY_TO_FONT_RATIO * 11,
+    )
+  })
+
+  it('keeps the shortest box drawn where that is the tighter floor', () => {
+    expect(labeledBodyFloorScale(10, 2.5, 11)).toBeCloseTo(0.8)
+  })
+
+  it('offers no shortening to bodies already under the floor', () => {
+    expect(labeledBodyFloorScale(4, 4, 11)).toBe(1)
   })
 })
 

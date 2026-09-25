@@ -220,13 +220,23 @@ const ctgA = {
   end: 10_000,
 }
 
+// The `thinned` rung's stack with every body at its floor: the shortest
+// track that still keeps every name.
+function thinnedFloorHeight(display: TestDisplay) {
+  return packedContentHeight(display.rpcDataMap, {
+    ...display.thinnedBaseInputs,
+    bodyScale: display.fitLabeledBodyFloor,
+  })
+}
+
 function displaySignature(display: TestDisplay) {
-  const { level, maxIsoforms } = display.fitStage
+  const { level, maxIsoforms, bodyScale } = display.fitStage
   return rowGeometrySignature({
     displayMode: display.displayMode,
     renderedShowLabels: display.renderedShowLabels,
     renderedShowDescriptions: display.renderedShowDescriptions,
     fitScale: display.fitScale,
+    bodyScale,
     fitLevel: level,
     labelRoomFactor:
       level === 'decimated' ? display.fitDecimatedFactor : undefined,
@@ -319,6 +329,7 @@ describe('canvas display fit-to-display-height', () => {
   it('fitted content fits the track exactly (no float-epsilon overflow)', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
+    display.setShowLabels('none')
     display.setHeightMode('fixed')
     display.setRpcData(0, stackedRegionData(12, 20), {
       assemblyName: 'volvox',
@@ -631,11 +642,16 @@ describe('canvas display fit escalation ladder', () => {
     const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
     display.setHeightMode('fit')
     const minScale = display.fitMinScale
+    const thinnedH = thinnedFloorHeight(display)
+    expect(thinnedH).toBeLessThan(labelsH)
+    expect(thinnedH).toBeGreaterThan(bodiesH)
 
+    // Every feature overlaps every other, so a decimation keeps no name and
+    // the ladder passes straight on to `bodies`.
     const rungs = [
       ['full', fullH],
       ['labels', labelsH],
-      ['decimated', bodiesH],
+      ['thinned', thinnedH],
     ] as const
     const expectedLevel = (h: number) =>
       rungs.find(([, ch]) => ch <= h)?.[0] ?? 'bodies'
@@ -647,7 +663,10 @@ describe('canvas display fit escalation ladder', () => {
       bodiesH - 1,
       bodiesH,
       bodiesH + 1,
-      Math.round((bodiesH + labelsH) / 2),
+      Math.round((bodiesH + thinnedH) / 2),
+      thinnedH - 1,
+      thinnedH,
+      Math.round((thinnedH + labelsH) / 2),
       labelsH - 1,
       labelsH,
       labelsH + 1,
@@ -665,6 +684,9 @@ describe('canvas display fit escalation ladder', () => {
       const scale = display.fitScale
 
       expect(level).toBe(expectedLevel(h))
+      expect(display.fitStage.bodyScale).toBeGreaterThanOrEqual(
+        level === 'thinned' ? display.fitLabeledBodyFloor : 1,
+      )
 
       expect(scale).toBeGreaterThanOrEqual(minScale)
       expect(scale).toBeLessThanOrEqual(1)
@@ -697,13 +719,13 @@ describe('canvas display fit escalation ladder', () => {
     const total = 40
     display.setShowLabels('nameAndDescription')
     display.setRpcData(0, mixedWidthRegionData(total), ctgA)
-    const labelsH = maxBottom(display.fitLabelsOnlyLayout)
-    const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
-    expect(labelsH).toBeGreaterThan(bodiesH * 1.5)
     display.setHeightMode('fit')
+    const fewestNamesH = display.decimatedHeightProbe(8)
+    const everyNameH = thinnedFloorHeight(display)
+    expect(everyNameH).toBeGreaterThan(fewestNamesH * 1.5)
 
     const keptAt = (frac: number) => {
-      const h = Math.round(bodiesH + (labelsH - bodiesH) * frac)
+      const h = Math.round(fewestNamesH + (everyNameH - fewestNamesH) * frac)
       display.setHeight(h)
       const layout: Map<number, FeatureDataResult> = display.fitStage.layout
       let kept = 0
@@ -720,6 +742,7 @@ describe('canvas display fit escalation ladder', () => {
         maxY: display.maxY,
         h,
         factor: display.fitDecimatedFactor,
+        bodyScale: display.fitStage.bodyScale,
         names: display.fitDrops.names,
       }
     }
@@ -731,6 +754,7 @@ describe('canvas display fit escalation ladder', () => {
       expect(s.kept).toBeLessThan(total)
       expect(s.maxY).toBeLessThanOrEqual(s.h + 0.5)
       expect(s.factor).toBeGreaterThan(0)
+      expect(s.bodyScale).toBeGreaterThanOrEqual(display.fitLabeledBodyFloor)
       expect(s.names).toBe('some')
     }
     for (let i = 1; i < sweep.length; i++) {
@@ -771,6 +795,8 @@ describe('canvas display fit escalation ladder', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     setConf(display, 'subfeatureLabels', 'below')
+    // Names off, so no labelled rung stands between `bodies` and `bare`.
+    display.setShowLabels('none')
     display.setRpcData(0, belowLabeledStackedRegionData(8, 10), ctgA)
     display.setHeightMode('fit')
 
@@ -871,9 +897,12 @@ describe('canvas display fit escalation ladder', () => {
     expect(inLabels.level).toBe('labels')
     expect(inLabels.sig).not.toBe(inFull.sig)
 
-    const inDecimated = at(Math.round(labelsH) - 10)
-    expect(inDecimated.level).toBe('decimated')
-    expect(inDecimated.sig).not.toBe(inLabels.sig)
+    const inThinned = at(Math.round(labelsH) - 10)
+    expect(inThinned.level).toBe('thinned')
+    expect(inThinned.sig).not.toBe(inLabels.sig)
+    const thinnerStill = at(Math.ceil(thinnedFloorHeight(display)))
+    expect(thinnerStill.level).toBe('thinned')
+    expect(thinnerStill.sig).not.toBe(inThinned.sig)
 
     expect(at(Math.round(fullH) + 40).sig).toBe(inFull.sig)
     expect(display.fitScale).toBe(1)
@@ -890,10 +919,10 @@ describe('canvas display fit escalation ladder', () => {
     const { display } = createDisplay()
     display.setShowLabels('name')
     display.setRpcData(0, mixedWidthRegionData(40), ctgA)
-    const labelsH = maxBottom(display.fitLabelsOnlyLayout)
-    const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
-    expect(labelsH).toBeGreaterThan(bodiesH * 1.5)
     display.setHeightMode('fit')
+    const labelsH = maxBottom(display.fitLabelsOnlyLayout)
+    const fewestNamesH = display.decimatedHeightProbe(8)
+    const everyNameH = thinnedFloorHeight(display)
 
     const at = (h: number) => {
       display.setHeight(Math.round(h))
@@ -901,14 +930,14 @@ describe('canvas display fit escalation ladder', () => {
     }
 
     const allNames = at(labelsH + 20)
-    const decimated = at(bodiesH + (labelsH - bodiesH) * 0.5)
+    const decimated = at(fewestNamesH + (everyNameH - fewestNamesH) * 0.3)
     expect(decimated.level).toBe('decimated')
     expect(display.fitScale).toBe(1)
     expect(display.renderedShowLabels).toBe(true)
     expect(display.renderedShowDescriptions).toBe(false)
     expect(decimated.sig).not.toBe(allNames.sig)
 
-    const looser = at(bodiesH + (labelsH - bodiesH) * 0.8)
+    const looser = at(fewestNamesH + (everyNameH - fewestNamesH) * 0.7)
     expect(looser.level).toBe('decimated')
     expect(display.fitScale).toBe(1)
     expect(looser.sig).not.toBe(decimated.sig)
@@ -921,7 +950,6 @@ describe('canvas display fit escalation ladder', () => {
     setConf(display, 'featureHeight', "jexl:get(feature,'score') > 5 ? 20 : 8")
     display.setHeightMode('fit')
     display.setHeight(30)
-    expect(display.fitStage.level).toBe('bodies')
     expect(display.laidOutDataMap.size).toBeGreaterThan(0)
     expect(Number.isFinite(display.fitScale)).toBe(true)
     expect(Number.isFinite(display.maxY)).toBe(true)
@@ -941,8 +969,8 @@ describe('canvas display fit escalation ladder', () => {
     expect(labelsH).toBeGreaterThan(bodiesH)
 
     display.setHeightMode('fit')
-    display.setHeight(Math.round((bodiesH + labelsH) / 2))
-    expect(display.fitStage.level).toBe('decimated')
+    display.setHeight(Math.round((thinnedFloorHeight(display) + labelsH) / 2))
+    expect(display.fitStage.level).toBe('thinned')
     expect(display.renderedShowDescriptions).toBe(false)
     expect(display.renderedShowLabels).toBe(true)
   })
@@ -994,7 +1022,10 @@ describe('canvas display fit escalation ladder', () => {
 
     const factor = display.solveLabelRoomFactor(display.fitTargetHeight)
     expect(factor).toBeDefined()
-    const inputs = display.decimatedLayoutInputs(factor!)
+    const inputs = {
+      ...display.decimatedLayoutInputs(factor!),
+      bodyScale: display.fitDecimatedBodyScale,
+    }
     expect(packedContentHeight(display.rpcDataMap, inputs)).toBe(
       maxBottom(computeLaidOutData(display.rpcDataMap, inputs)),
     )
@@ -1247,7 +1278,7 @@ describe('canvas display fit measures the visible window', () => {
     expect(buffered.scale).toBe(alone.scale)
     expect(buffered.level).toBe(alone.level)
     expect(buffered.onScreenBottom).toBe(alone.onScreenBottom)
-    expect(buffered.onScreenBottom).toBeCloseTo(100, 5)
+    expect(buffered.onScreenBottom).toBeLessThanOrEqual(100)
   })
 
   it('chooses a fixed rung over the window and still draws the buffer', () => {

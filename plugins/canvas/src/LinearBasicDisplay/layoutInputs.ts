@@ -54,6 +54,9 @@ export interface LayoutInputs {
   // `labelFontPx`, which is what makes this a layout input rather than a
   // refetch.
   dropBelowLabelRows?: boolean
+  // The fit ladder's labels-first squeeze: bodies and padding shrink, label
+  // rows keep their font size.
+  bodyScale?: number
 }
 
 // Three passes need this exact term, the pack, the trim's re-derivation and
@@ -78,15 +81,18 @@ export interface DisplayModeMetrics {
 }
 
 export function displayModeMetrics(
-  inputs: Pick<LayoutInputs, 'displayMode' | 'dropBelowLabelRows'>,
+  inputs: Pick<
+    LayoutInputs,
+    'displayMode' | 'dropBelowLabelRows' | 'bodyScale'
+  >,
 ): DisplayModeMetrics {
-  const { displayMode } = inputs
+  const { displayMode, bodyScale = 1 } = inputs
   return {
-    heightMultiplier: HEIGHT_MULTIPLIERS[displayMode],
+    heightMultiplier: HEIGHT_MULTIPLIERS[displayMode] * bodyScale,
     // Zero at the `bare` rung, which spends the counted `below` rows at no
     // height.
     labelFontPx: inputs.dropBelowLabelRows ? 0 : labelFontSize(displayMode),
-    rowPadding: ROW_PADDING[displayMode],
+    rowPadding: ROW_PADDING[displayMode] * bodyScale,
     singleRow: displayMode === 'collapsed',
   }
 }

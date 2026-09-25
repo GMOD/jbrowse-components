@@ -159,12 +159,13 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
     self,
     () => {
       const current = self.laidOutDataMap
-      const { level, maxIsoforms } = self.fitStage
+      const { level, maxIsoforms, bodyScale } = self.fitStage
       const geometry = rowGeometrySignature({
         displayMode: self.displayMode,
         renderedShowLabels: self.renderedShowLabels,
         renderedShowDescriptions: self.renderedShowDescriptions,
         fitScale: self.fitScale,
+        bodyScale,
         fitLevel: level,
         // Only where it selects rows: at any other rung reading it would pay
         // for a bisection to discriminate stacks it had no hand in.

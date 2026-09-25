@@ -84,11 +84,54 @@ export function solveLabelRoomFactor(
   return bisectSmallestFitting(fits, 0, FIT_MAX_ROOM_FACTOR, FIT_SOLVE_ITERS)
 }
 
-// `isoforms` sits above `decimated` because the policy is names before
-// isoforms. `bare` sits below `bodies` because subfeature labels are a config
-// choice, given up only where the alternative squeezes bodies under rows the
-// squeeze would hide anyway.
-type FitLevel = 'full' | 'labels' | 'isoforms' | 'decimated' | 'bodies' | 'bare'
+// The largest body scale, down to `floor`, whose labelled stack fits, or
+// undefined when even the floor overflows.
+export function solveBodyScale(
+  heightAt: (bodyScale: number) => number,
+  trackHeight: number,
+  floor: number,
+) {
+  if (floor >= 1) {
+    return undefined
+  }
+  const fitsSqueeze = (squeeze: number) => heightAt(1 - squeeze) <= trackHeight
+  if (fitsSqueeze(0)) {
+    return 1
+  }
+  if (!fitsSqueeze(1 - floor)) {
+    return undefined
+  }
+  return 1 - bisectSmallestFitting(fitsSqueeze, 0, 1 - floor, FIT_SOLVE_ITERS)
+}
+
+// A labelled body shorter than this share of its label's font reads as an
+// underline to the text, so below it the names go instead.
+export const LABELED_BODY_TO_FONT_RATIO = 0.4
+
+export function labeledBodyFloorScale(
+  tallestBodyPx: number,
+  shortestBodyPx: number,
+  labelFontPx: number,
+) {
+  return Math.max(
+    squeezeFloorScale(tallestBodyPx, LABELED_BODY_TO_FONT_RATIO * labelFontPx),
+    squeezeFloorScale(shortestBodyPx, MIN_FIT_BOX_PX),
+  )
+}
+
+// Names before isoforms, then names before body height: `thinned` shortens
+// the bodies under a full set of names, and `decimated` keeps that floor.
+// `bare` sits below `bodies` because subfeature labels are a config choice,
+// given up only where the alternative squeezes bodies under rows the squeeze
+// would hide anyway.
+type FitLevel =
+  | 'full'
+  | 'labels'
+  | 'isoforms'
+  | 'thinned'
+  | 'decimated'
+  | 'bodies'
+  | 'bare'
 
 // A rung that hands back another rung's stack by reference declares that
 // stack's reservation, so a renderer never re-derives it from the level.
@@ -106,15 +149,18 @@ export interface FitRung {
   // Carried on the rung rather than derived from the level, because the two
   // rungs below `isoforms` inherit the count it failed at.
   maxIsoforms?: () => number | undefined
+  bodyScale?: () => number
 }
 
 // `contentHeight` is the kept rung's unscaled `maxBottom`, of which
 // `fixedHeight` is the part the scale leaves alone (the group chip rows), so
-// the fitted height is `fittedHeight`.
+// the fitted height is `fittedHeight`. `bodyScale` is the part of the squeeze
+// the pack already spent on bodies alone.
 export interface FitStage extends LabelReservation {
   level: FitLevel
   layout: Map<number, FeatureDataResult>
   scale: number
+  bodyScale: number
   contentHeight: number
   fixedHeight: number
   maxIsoforms: number | undefined
@@ -216,6 +262,7 @@ export function resolveFitLadder(
         contentHeight,
         fixedHeight,
         maxIsoforms: rung.maxIsoforms?.(),
+        bodyScale: rung.bodyScale?.() ?? 1,
         scale: fitScaleToFill(
           contentHeight,
           trackHeight,

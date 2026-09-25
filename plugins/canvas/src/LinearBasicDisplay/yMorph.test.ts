@@ -166,6 +166,7 @@ test('rowGeometrySignature separates two isoform counts', () => {
       renderedShowLabels: true,
       renderedShowDescriptions: false,
       fitScale: 1,
+      bodyScale: 1,
       fitLevel: 'isoforms',
       labelRoomFactor: undefined,
       maxIsoforms,

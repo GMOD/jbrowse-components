@@ -13,7 +13,12 @@ export interface FitDrops {
 export function fitDrops(
   stage: Pick<
     FitStage,
-    'level' | 'scale' | 'showLabels' | 'showDescriptions' | 'dropBelowLabelRows'
+    | 'level'
+    | 'scale'
+    | 'bodyScale'
+    | 'showLabels'
+    | 'showDescriptions'
+    | 'dropBelowLabelRows'
   >,
   showLabels: boolean,
   showDescriptions: boolean,
@@ -30,7 +35,7 @@ export function fitDrops(
         ? 'some'
         : 'none'
   const descriptions = showDescriptions && !stage.showDescriptions
-  const pct = Math.round(stage.scale * 100)
+  const pct = Math.round(stage.scale * stage.bodyScale * 100)
   return {
     names,
     descriptions,

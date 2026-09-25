@@ -3,7 +3,9 @@ import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { featureGroupSections } from './facet.ts'
 import {
   MIN_FIT_BOX_PX,
+  labeledBodyFloorScale,
   resolveFitLadder,
+  solveBodyScale,
   solveIsoformCount,
   solveLabelRoomFactor,
   squeezeFloorScale,
@@ -14,7 +16,11 @@ import {
   createIncrementalLayout,
   createIsoformCountProbe,
 } from './layout.ts'
-import { minDrawnBoxHeight } from './layoutQueries.ts'
+import {
+  keepsAnyName,
+  maxDrawnBoxHeight,
+  minDrawnBoxHeight,
+} from './layoutQueries.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { FeatureFacet } from './facet.ts'
@@ -66,11 +72,13 @@ export interface FitLadderHost {
   showsEveryIsoform: boolean
   reservesBelowLabelRows: boolean
   fitTargetHeight: number
+  labelFontSize: number
   incrementalLayout: IncrementalLayout
   incrementalLayoutLabelsOnly: IncrementalLayout
   incrementalLayoutBodiesOnly: IncrementalLayout
   incrementalLayoutDecimated: IncrementalLayout
   incrementalLayoutIsoforms: IncrementalLayout
+  incrementalLayoutThinned: IncrementalLayout
   incrementalLayoutBare: IncrementalLayout
 }
 
@@ -106,6 +114,13 @@ export function fitLadderVolatiles() {
     // Unseeded for the same reason as `incrementalLayoutDecimated`: the count
     // is chosen by measuring.
     incrementalLayoutIsoforms: createIncrementalLayout({
+      seedPriorRows: false,
+    }),
+    /**
+     * #volatile
+     */
+    // Unseeded because the body scale is chosen by measuring.
+    incrementalLayoutThinned: createIncrementalLayout({
       seedPriorRows: false,
     }),
     /**
@@ -180,6 +195,9 @@ export function fitLadderViews(self: FitLadderHost) {
         // The rungs below `isoforms` inherit the count that rung failed at:
         // every isoform goes before any name does.
         maxIsoformsPerGene: this.fitIsoformCount,
+        // The factor is solved with the bodies at their floor, so no name
+        // goes while a body could still give up height instead.
+        bodyScale: this.fitLabeledBodyFloor,
       }
     },
     /**
@@ -281,6 +299,78 @@ export function fitLadderViews(self: FitLadderHost) {
     },
     /**
      * #getter
+     * The `thinned` rung's layout inputs minus the body scale: every name,
+     * no descriptions, the `isoforms` rung's count.
+     */
+    get thinnedBaseInputs(): LabelRoomFactorFreeInputs {
+      return {
+        ...self.layoutInputs,
+        ...this.labelsReservation,
+        maxIsoformsPerGene: this.fitIsoformCount,
+      }
+    },
+    /**
+     * #method
+     * Measures a labelled stack's height at any body scale. Each scale is
+     * its own prep, since the pack reads body heights from it.
+     */
+    bodyScaleHeightProbe(
+      inputs: LabelRoomFactorFreeInputs,
+      labelRoomFactor?: number,
+    ): (bodyScale: number) => number {
+      return bodyScale =>
+        createContentHeightProbe(
+          self.rpcDataMap,
+          { ...inputs, bodyScale },
+          self.fitMeasureFeatureIds,
+        )(labelRoomFactor)
+    },
+    /**
+     * #getter
+     * The smallest body scale the labelled rungs may pack at: the tallest
+     * body stays `LABELED_BODY_TO_FONT_RATIO` of the label font, and the
+     * shortest stays drawn.
+     */
+    get fitLabeledBodyFloor() {
+      return labeledBodyFloorScale(
+        maxDrawnBoxHeight(this.baseLaidOutDataMap, self.fitMeasureFeatureIds),
+        this.fitSmallestBoxPx,
+        self.labelFontSize,
+      )
+    },
+    /**
+     * #getter
+     * The body scale the `thinned` rung commits at: the largest whose
+     * stack, every name kept, fits `fitTargetHeight`, or undefined when even
+     * the floor overflows.
+     */
+    get fitBodyScale(): number | undefined {
+      if (!self.layoutReady || !self.showLabels) {
+        return undefined
+      }
+      return solveBodyScale(
+        this.bodyScaleHeightProbe(this.thinnedBaseInputs),
+        self.fitTargetHeight,
+        this.fitLabeledBodyFloor,
+      )
+    },
+    /**
+     * #getter
+     * The `thinned` stack: every name at its font size over bodies shortened
+     * to `fitBodyScale`.
+     */
+    get fitThinnedSolved(): Map<number, FeatureDataResult> {
+      const bodyScale = this.fitBodyScale
+      // Falls back to a stack the ladder already rejected, so it moves on.
+      return bodyScale === undefined
+        ? this.fitIsoformsSolved
+        : self.incrementalLayoutThinned(self.rpcDataMap, {
+            ...this.thinnedBaseInputs,
+            bodyScale,
+          })
+    },
+    /**
+     * #getter
      * Full reservation (names + descriptions): rendered at fit stage `full`
      * and in non-fit modes, and the first stack `fitStage` probes.
      */
@@ -325,12 +415,38 @@ export function fitLadderViews(self: FitLadderHost) {
       // Falls back to the `isoforms` stack, not `labels`: this rung is below
       // that one, and falling past its trim packs a stack the ladder already
       // rejected.
-      return factor === undefined
-        ? this.fitIsoformsSolved
-        : self.incrementalLayoutDecimated(
-            self.rpcDataMap,
-            this.decimatedLayoutInputs(factor),
-          )
+      const bodyScale = this.fitDecimatedBodyScale
+      if (factor === undefined || bodyScale === undefined) {
+        return this.fitIsoformsSolved
+      }
+      const layout = self.incrementalLayoutDecimated(self.rpcDataMap, {
+        ...this.decimatedLayoutInputs(factor),
+        bodyScale,
+      })
+      // With no name left it is the `bodies` stack under the wrong name.
+      return keepsAnyName(layout, self.fitMeasureFeatureIds)
+        ? layout
+        : this.fitIsoformsSolved
+    },
+    /**
+     * #getter
+     * The body scale the `decimated` rung commits at: with the names
+     * `fitDecimatedFactor` kept, the bodies grow back into whatever height
+     * the dropped names freed.
+     */
+    get fitDecimatedBodyScale(): number | undefined {
+      const factor = this.fitDecimatedFactor
+      if (factor === undefined) {
+        return undefined
+      }
+      const floor = this.fitLabeledBodyFloor
+      return (
+        solveBodyScale(
+          this.bodyScaleHeightProbe(this.decimatedBaseInputs, factor),
+          self.fitTargetHeight,
+          floor,
+        ) ?? floor
+      )
     },
     get fitBodiesOnlyLayout(): Map<number, FeatureDataResult> {
       const maxIsoformsPerGene = this.fitIsoformCount
@@ -432,10 +548,18 @@ export function fitLadderViews(self: FitLadderHost) {
               },
               ...isoformRung,
               {
+                level: 'thinned',
+                reserved: this.labelsReservation,
+                layout: () => this.fitThinnedSolved,
+                maxIsoforms: trimmed,
+                bodyScale: () => this.fitBodyScale ?? 1,
+              },
+              {
                 level: 'decimated',
                 reserved: this.labelsReservation,
                 layout: () => this.fitDecimatedSolved,
                 maxIsoforms: trimmed,
+                bodyScale: () => this.fitDecimatedBodyScale ?? 1,
               },
               {
                 level: 'bodies',

@@ -5,13 +5,19 @@ import type { FitStage } from './fitLadder.ts'
 const stage = (
   level: FitStage['level'],
   scale = 1,
-  { fixed = false } = {},
+  { fixed = false, bodyScale = 1 } = {},
 ): Pick<
   FitStage,
-  'level' | 'scale' | 'showLabels' | 'showDescriptions' | 'dropBelowLabelRows'
+  | 'level'
+  | 'scale'
+  | 'bodyScale'
+  | 'showLabels'
+  | 'showDescriptions'
+  | 'dropBelowLabelRows'
 > => ({
   level,
   scale,
+  bodyScale,
   showLabels: level !== 'bodies' && level !== 'bare',
   showDescriptions: level === 'full' || (level === 'isoforms' && fixed),
   dropBelowLabelRows: level === 'bare',
@@ -99,6 +105,12 @@ describe('fitDrops', () => {
       undefined,
     )
     expect(drops(stage('full', 1.5), false, false).squeezePct).toBe(undefined)
+  })
+
+  it('counts the bodies the thinned rung shortened as a squeeze', () => {
+    const thinned = drops(stage('thinned', 1, { bodyScale: 0.6 }), true, false)
+    expect(thinned.names).toBe('none')
+    expect(thinned.squeezePct).toBe(60)
   })
 })
 

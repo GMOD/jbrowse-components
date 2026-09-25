@@ -187,6 +187,7 @@ function reservationByLevel(
         dropBelowLabelRows: false,
       }
     case 'labels':
+    case 'thinned':
     case 'decimated':
       return {
         showLabels: names,
@@ -266,7 +267,15 @@ describe('the rung that packed a layout says what it reserved', () => {
 
   it('landed on every rung each ladder has', () => {
     expect([...reached.get('fit')!].sort()).toEqual(
-      ['bare', 'bodies', 'decimated', 'full', 'isoforms', 'labels'].sort(),
+      [
+        'bare',
+        'bodies',
+        'decimated',
+        'full',
+        'isoforms',
+        'labels',
+        'thinned',
+      ].sort(),
     )
     expect([...reached.get('fixed')!].sort()).toEqual(['full', 'isoforms'])
     expect([...reached.get('grow')!]).toEqual(['full'])
