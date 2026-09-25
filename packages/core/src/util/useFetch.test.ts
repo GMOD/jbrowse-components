@@ -239,6 +239,48 @@ test('is not loading on the first render when there is nothing to fetch', () => 
   ).toBe(false)
 })
 
+// `false` is the sentinel for the WHOLE key and a resolved value inside one.
+// The two shared a predicate, so the MAF sequence widget — whose
+// `includeInsertions` defaults to `false` — shipped fetching nothing at all.
+describe('what counts as nothing to fetch', () => {
+  test('the whole key being false is the sentinel', () => {
+    expect(
+      renderHook(() => useFetch(false, async () => 'done')).result.current
+        .isLoading,
+    ).toBe(false)
+  })
+
+  test('a false ELEMENT is a value, and fetches under it', async () => {
+    const { result } = renderHook(() =>
+      useFetch(['seq', false] as const, async () => 'fetched'),
+    )
+    await waitFor(() => {
+      expect(result.current.data).toBe('fetched')
+    })
+  })
+
+  test('the two settings of one boolean are two keys', async () => {
+    const seen: boolean[] = []
+    const fetcher = async (_name: string, flag: boolean) => {
+      seen.push(flag)
+      return flag ? 'with' : 'without'
+    }
+    const { result, rerender } = renderHook(
+      ({ flag }: { flag: boolean }) =>
+        useFetch(['seq', flag] as const, fetcher),
+      { initialProps: { flag: false } },
+    )
+    await waitFor(() => {
+      expect(result.current.data).toBe('without')
+    })
+    rerender({ flag: true })
+    await waitFor(() => {
+      expect(result.current.data).toBe('with')
+    })
+    expect(seen).toEqual([false, true])
+  })
+})
+
 test('surfaces a rejection as error, leaving data undefined', async () => {
   const { result } = renderHook(() =>
     useFetch(['boom'], () => Promise.reject(new Error('nope'))),

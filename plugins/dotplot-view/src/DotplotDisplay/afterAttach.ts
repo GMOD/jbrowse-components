@@ -91,6 +91,9 @@ export function doAfterAttach(
           hViewSnap: makeViewSnap(view.hview),
           vViewSnap: makeViewSnap(view.vview),
           regions: self.fetchRegions,
+          // stamped at commit, so it names the order this fetch was laid out
+          // under rather than whatever the axes show when it lands
+          regionSignature: self.regionSignature,
         }))
         // #endregion
       }
@@ -138,7 +141,7 @@ export function doAfterAttach(
         }))
       return { result, mismatched }
     },
-    commit: ({ result, mismatched }) => {
+    commit: ({ result, mismatched }, { regionSignature }) => {
       // Before the data lands — see the synteny twin: the accumulated ramp
       // domain has to outlive the payload whose span it was widened by.
       self.view.observeAttributeRanges(result.attributeRanges)
@@ -153,6 +156,7 @@ export function doAfterAttach(
               },
             ]
           : [],
+        regionSignature,
       )
     },
   })

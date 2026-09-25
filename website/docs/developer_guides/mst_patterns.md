@@ -55,6 +55,9 @@ return untracked(() => ({
   hViewSnap: makeViewSnap(view.hview),
   vViewSnap: makeViewSnap(view.vview),
   regions: self.fetchRegions,
+  // stamped at commit, so it names the order this fetch was laid out
+  // under rather than whatever the axes show when it lands
+  regionSignature: self.regionSignature,
 }))
 ```
 

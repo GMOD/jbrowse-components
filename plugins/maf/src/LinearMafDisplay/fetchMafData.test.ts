@@ -278,8 +278,7 @@ describe('the byte gate rides in the tier fetch', () => {
 
     expect(loadedIndices).toEqual([])
     expect(committedBytes).toEqual([[9e9]])
-    // ctgB resolved too, so 9e9 is the max over the whole set and the gate may
-    // compare it against the next viewport's — see `measurementPartial`
+    // ctgB resolved too, so 9e9 is the max over the whole set
     expect(committedPartials).toEqual([false])
   })
 
@@ -306,11 +305,8 @@ describe('the byte gate rides in the tier fetch', () => {
 
     expect(loadedIndices).toEqual([])
     expect(committedBytes).toEqual([[9e9]])
-    // The abort is exactly what makes the number partial: ctgB never reported,
-    // so 9e9 is ctgA's alone. Committing it as whole evidence let
-    // `nextByteEstimate` compare one region's bytes at this viewport against
-    // another's at the next and clear the 90% bar on that alone, dropping the
-    // banner's "zoom in" advice where zooming in would have worked.
+    // the abort is what makes it partial: ctgB never reported, so 9e9 is
+    // ctgA's alone and is no evidence about zoom
     expect(committedPartials).toEqual([true])
     expect(siblingTokens).toHaveLength(1)
     expect(siblingTokens[0]).not.toBe(lastCtxSignal)
@@ -357,9 +353,7 @@ describe('the summary read', () => {
         },
       ],
       bytes: 10,
-      // every region reported, so the max is over the set — the claim rides
-      // beside the number on the success branch too, since `CoarseTierMixin`
-      // reads the pair off whatever this answers
+      // the claim rides beside the number on the success branch too
       partial: false,
     })
     expect(made.loadedIndices).toEqual([])
@@ -377,8 +371,7 @@ describe('the summary read', () => {
     expect(await fetchSummary(made)).toEqual({
       regionTooLarge: true,
       bytes: 9e9,
-      // both regions answered the same stubbed refusal, so the max is over the
-      // set; `CoarseTierMixin` reads this field straight into `commitFetchBytes`
+      // both regions answered, so the max is over the set
       partial: false,
     })
   })

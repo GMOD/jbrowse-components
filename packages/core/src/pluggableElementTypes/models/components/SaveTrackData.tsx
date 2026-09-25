@@ -82,18 +82,24 @@ function useTrackDataExport({
           getConf(model, 'trackId'),
           regionStr,
           type,
-          // a string, not the boolean: useFetch reads a `false` anywhere in an
-          // array key as "don't fetch", so the gated state would fetch nothing
-          force ? 'forced' : 'gated',
+          force,
         ] as const)
       : null,
-    async (_name, _trackId, _regions, fileType, mode, signal, statusCallback) =>
+    async (
+      _name,
+      _trackId,
+      _regions,
+      fileType,
+      forced,
+      signal,
+      statusCallback,
+    ) =>
       fetchTrackData({
         model,
         regions,
         type: fileType,
         options,
-        force: mode === 'forced',
+        force: forced,
         signal,
         statusCallback,
       }),

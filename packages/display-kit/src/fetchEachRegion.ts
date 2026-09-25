@@ -75,23 +75,14 @@ export function callEachRegion<R>(
 }
 
 /**
- * {@link openGateCommit} plus the two things a per-region fan-out adds to it:
- * the measurement it derives rather than reads, and the cancel a refusal owes.
+ * {@link openGateCommit} plus what a per-region fan-out adds: `partial` derived
+ * from its own landed count, and the cancel a refusal owes.
  *
- * **This runner derives `partial` from its own landed count**, where a runner
- * handed one payload can only read the claim off it. The number is the max over
- * whichever regions won the race rather than over the set — but only when some
- * region really did not report: a refusal from the last region to land, and
- * every refusal on a single-region display, measured the whole set and is
- * ordinary evidence.
- *
- * **A refusal commits before it cancels.** The other order strands the verdict:
- * the aborts reject the batch, the commit never lands, `nextGateState` stamps
- * `gateMeasuredViewportKey` only on a committed measurement, so
- * `gateSkipsMeasuredViewport` reads false and the plan re-issues every region
- * off the cancel's own generation bump — forever. `refuse()` is one call, so
- * there is no order to invert, and the commit-at-most-once half is
- * `openGateCommit`'s.
+ * A refusal commits before it cancels. The other order strands the verdict —
+ * the aborts reject the batch, nothing commits, `nextGateState` stamps no
+ * viewport, and the plan re-issues every region off the cancel's own
+ * generation bump, forever. `refuse()` is one call, so there is no order to
+ * invert.
  */
 function gateBatch(
   self: FetchEachRegionModel,
@@ -102,8 +93,7 @@ function gateBatch(
   const bytes: (number | undefined)[] = new Array(size)
   let landed = 0
   const finish = (refused: boolean) => {
-    // a copy, because a refusal commits while siblings are still landing and
-    // would otherwise hand the gate an array that goes on changing under it
+    // a copy: a refusal commits while siblings are still landing
     if (gate.commit({ perRegionBytes: [...bytes], partial: landed < size })) {
       onComplete?.(gate.issued)
       if (refused) {
@@ -223,16 +213,11 @@ export async function fetchEachRegion<R>(
  * method name at the call site so its typed args/return survive and `R` flows
  * into `onResult` with no cast.
  *
- * **Its refusal granularity is the region, and it is the third of three.**
- * {@link fetchEachRegion} stops the batch at the first refusal because N round
- * trips are still in flight; {@link fetchRegionsBatched} refuses the one
- * payload it asked for; this one already holds every result, so it stores the
- * regions that fit and drops the ones that did not, with nothing left to
- * cancel. No gated display is on it today — BigWig implements no
- * `getRegionByteSize` — so which of the three a gated one should want is the
- * open call in
- * agent-docs/ideas/waiting-on-a-call/per-region-banner-for-a-mixed-region-set.md,
- * and the answer is a property of the banner rather than of this loop.
+ * Its refusal granularity is the region, the third of three: `fetchEachRegion`
+ * stops the batch, `fetchRegionsBatched` refuses the one payload, and this one
+ * already holds every result so it keeps the regions that fit. No gated display
+ * is on it, and which granularity a gated one should want is
+ * agent-docs/ideas/waiting-on-a-call/per-region-banner-for-a-mixed-region-set.md.
  */
 export async function fetchAllRegions<R>(
   self: FetchEachRegionModel,

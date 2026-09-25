@@ -4157,6 +4157,15 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/gateCommit": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "measurementOf",
+        "measurementOfEach",
+        "openGateCommit"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/GlobalFetchMixin": {
       "package": "@jbrowse/display-kit",
       "names": [

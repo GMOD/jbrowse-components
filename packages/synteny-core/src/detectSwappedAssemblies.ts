@@ -134,6 +134,10 @@ export function detectDisplayAssembliesSwapped(
  * RPC resolves long after a view can be closed and writing to a dead node
  * throws out of an unawaited promise. Both are invisible until a user closes a
  * view mid-load.
+ *
+ * The epoch is currency, which `isAlive` is not: the body re-runs on its own
+ * tracked reads, so two checks can be in flight and the slower one would win.
+ * Nothing clears a wrong verdict — this check reads no `reloadCounter`.
  */
 export function installAssemblySwapCheck(
   self: SwapCheckHost & { setAssembliesSwapped: (arg: boolean) => void },
@@ -146,6 +150,7 @@ export function installAssemblySwapCheck(
     axisAssemblies: () => [string | undefined, string | undefined] | undefined
   },
 ) {
+  let issued = 0
   addDisposer(
     self,
     autorun(
@@ -157,8 +162,9 @@ export function installAssemblySwapCheck(
         if (!axes) {
           return
         }
+        const mine = ++issued
         const swapped = await detectDisplayAssembliesSwapped(self, ...axes)
-        if (isAlive(self)) {
+        if (mine === issued && isAlive(self)) {
           self.setAssembliesSwapped(swapped)
         }
       },

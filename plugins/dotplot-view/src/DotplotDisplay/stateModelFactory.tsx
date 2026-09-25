@@ -85,6 +85,14 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
           instanceData: undefined as DotplotInstanceData | undefined,
           /**
            * #volatile
+           * The `regionSignature` the fetch behind `rpcData` was laid out
+           * under — its positions are cumBp over the displayed regions' order,
+           * so they draw only while the axes still show it
+           * (`geometryCurrent`). The synteny twin stamps the same thing.
+           */
+          geometryRegionSignature: undefined as string | undefined,
+          /**
+           * #volatile
            * What the last completed fetch had to say about itself, written with
            * the data it describes (see `setRpcData`).
            */
@@ -230,14 +238,39 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
       },
       /**
        * #getter
+       * Both axes' region sets as one string, from each axis' own precomputed
+       * `regionSignature` — the dotplot twin of
+       * `LinearSyntenyDisplay.regionSignature`.
+       */
+      get regionSignature(): string {
+        const { view } = this
+        return `${view.hview.regionSignature}_${view.vview.regionSignature}`
+      },
+      /**
+       * #getter
+       * The held positions were laid out under the regions the axes show now.
+       * Re-ordering the chromosomes moves every cumBp coordinate and nothing
+       * rebuilds them main-thread, so without this the canvas draws the old
+       * layout for the debounce plus the round trip — every alignment against
+       * the wrong chromosome. `LinearSyntenyDisplay.geometryCurrent` is the
+       * same call.
+       */
+      get geometryCurrent(): boolean {
+        return self.geometryRegionSignature === this.regionSignature
+      },
+      /**
+       * #getter
        * Instance positions joined with the computed colors: what the backends
        * upload and what SVG export draws. The view's upload autorun reads this,
-       * so a palette change re-uploads without rebuilding geometry.
+       * so a palette change re-uploads without rebuilding geometry. Undefined
+       * while the geometry describes a region order the axes have left.
        */
       get geometry() {
         const { instanceData } = self
         const colors = this.computedColors
-        return instanceData && colors ? { ...instanceData, colors } : undefined
+        return instanceData && colors && this.geometryCurrent
+          ? { ...instanceData, colors }
+          : undefined
       },
       /**
        * #getter
@@ -249,10 +282,14 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * `undefined` there, and falling back to the raw index would answer with a
        * different feature rather than with nothing. Same reasoning as
        * `LinearSyntenyDisplay.getFeature`.
+       *
+       * Gated on `geometryCurrent` with the drawing: a reorder does not go
+       * through `setRpcData`, so a surviving index would name the wrong
+       * alignment over a canvas drawing nothing.
        */
       get hoveredFeatureIdx(): number {
         const { hoveredSegmentIdx, instanceData } = self
-        return hoveredSegmentIdx < 0
+        return hoveredSegmentIdx < 0 || !this.geometryCurrent
           ? -1
           : (instanceData?.instanceFeatureIdx[hoveredSegmentIdx] ?? -1)
       },
@@ -457,9 +494,15 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * — and had to special-case `undefined` because the skeleton clears the
        * error through the same setter before every fetch.
        */
-      setRpcData(data: DotplotRpcData, warnings: ComparativeWarning[]) {
+      setRpcData(
+        data: DotplotRpcData,
+        warnings: ComparativeWarning[],
+        regionSignature: string,
+      ) {
         self.rpcData = data
         self.fetchWarnings = warnings
+        // captured at issue, never re-read here: the axes can have moved
+        self.geometryRegionSignature = regionSignature
         // The hover index describes the geometry built from the OUTGOING
         // rpcData, so it is meaningless against what replaces it: a surviving
         // index points at an unrelated alignment. Same reason, same place, as

@@ -55,14 +55,21 @@ export function attributeVerdict(
   scan: AttributeScan | undefined,
   use: AttributeUse,
 ): AttributeVerdict | undefined {
-  if (field === '' || scan === undefined || isJexl(field)) {
+  if (scan === undefined) {
     return undefined
   }
+  // Above the field guards, because a refusal is a fact about the REGION and
+  // not about what the user has typed: the options list is empty either way,
+  // and with nothing typed yet an empty list with no caption reads as "this
+  // track carries no attributes" rather than "zoom in and I can tell you".
   if (isRegionRefused(scan)) {
     return {
       color: 'warning.main',
       text: `This region is too large to scan for attribute values, the same limit the track itself refuses at. ${use.refused}`,
     }
+  }
+  if (field === '' || isJexl(field)) {
+    return undefined
   }
   const candidate = scan.find(c => c.field === field)
   if (!candidate) {

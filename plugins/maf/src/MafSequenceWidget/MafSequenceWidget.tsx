@@ -57,7 +57,11 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
           regions,
           showAllLetters,
           includeInsertions,
-          byteLimit,
+          // `undefined` is the gate declining — a force-loaded track — and an
+          // undefined element is `useFetch`'s "not resolved yet", so it would
+          // null the key and the widget would never load on exactly the track
+          // force-load exists to let through
+          byteLimit ?? 'ungated',
         ] as const)
       : null,
     // Read the key tuple (not the outer scope): the null-key ternary above has
@@ -72,7 +76,7 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
       regions,
       showAllLetters,
       includeInsertions,
-      byteLimit,
+      limit,
       signal,
       statusCallback,
     ) =>
@@ -88,7 +92,7 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
           showAllLetters,
           includeInsertions,
           regions,
-          byteLimit,
+          byteLimit: typeof limit === 'number' ? limit : undefined,
           signal,
           statusCallback,
         },

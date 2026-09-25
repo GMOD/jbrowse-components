@@ -36,11 +36,7 @@ export interface RegionTooLargeResult {
   regionTooLarge: true
   featureCount?: number
   bytes?: number
-  /**
-   * The fan-out behind `bytes` stopped at this refusal, so the number is the
-   * max over whichever regions won the race rather than over the region set.
-   * See {@link measurementPartial}.
-   */
+  /** `bytes` is the max over the regions that reported — {@link measurementPartial} */
   partial?: boolean
 }
 
@@ -86,17 +82,9 @@ export function measuredBytes(result: unknown) {
 }
 
 /**
- * Whether a result's `bytes` covers the whole region set it was asked about,
- * read the same way {@link measuredBytes} reads the number itself — so every
- * fetch runner commits the measurement and the claim about it from one place.
- *
- * A fan-out that stops at its first refusal reports whichever regions won the
- * race, and `nextByteEstimate` will not draw a zoom conclusion from one:
- * comparing chr1's bytes at one viewport against chr4's at the next clears the
- * 90% bar on that alone and drops the banner's "zoom in" advice exactly where
- * zooming in would have worked. `fetchEachRegion` derives the fact from its own
- * landed count; a runner handed one payload can only be told, which is what
- * this reads.
+ * Whether a result's `bytes` covers the whole region set it was asked about. A
+ * fan-out that stops at its first refusal reports whichever regions won the
+ * race, and `nextByteEstimate` takes no zoom evidence from one.
  */
 export function measurementPartial(result: unknown) {
   return (

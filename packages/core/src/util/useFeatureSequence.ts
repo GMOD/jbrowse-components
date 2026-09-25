@@ -39,7 +39,7 @@ export function useFeatureSequence({
           start,
           end,
           upDownBp,
-          +forceLoad,
+          forceLoad,
         ] as const)
       : null,
     guard

@@ -170,11 +170,8 @@ const [results, frames] = await Promise.all([
 // one region may cost, so the largest is what was judged and what the
 // banner quotes.
 //
-// `partial` is the claim about that number, and it travels with it for the
-// reason `measurementPartial` gives: the first refusal aborts the siblings,
-// so a refused batch's largest is the largest among whichever regions won
-// the race. `fetchEachRegion` derives the same fact from its own landed
-// count; a runner handed one payload can only be told.
+// `partial` travels with it: the first refusal aborts the siblings, so a
+// refused batch's largest is the largest among the regions that reported.
 const perRegionBytes = results.map(r => measuredBytes(r.result))
 const bytes = largestRegionBytes(perRegionBytes)
 const partial = results.length < regions.length

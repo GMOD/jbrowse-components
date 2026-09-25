@@ -68,12 +68,23 @@ interface UseFetchResponse<Data> extends FetchState<Data> {
   status: RpcStatus | undefined
 }
 
-const isNil = (k: unknown) => k === null || k === undefined || k === false
+// The whole key as the "don't fetch" sentinel: `cond && [...]`, `cond ? [...] :
+// null`. `false` belongs here and NOT in the element check below, which is what
+// this used to share with it.
+const isNoKey = (k: unknown) => k === null || k === undefined || k === false
 
-// A null result means "don't fetch": no key, or an array key with a missing
-// piece (e.g. an offset that isn't resolved yet).
+// An element that has not resolved yet — an offset still being computed, an
+// assembly still loading. **`false` is not one of them**: it is a resolved
+// boolean, and a caller with a `false`-valued setting in its key meant to fetch
+// under that setting. Sharing one predicate with the sentinel above made every
+// such key unfetchable, which the MAF sequence widget shipped — its
+// `includeInsertions` defaults to `false`, so the widget sat on its loading
+// animation forever and issued no RPC at all. `SaveTrackData` hit the same
+// thing and encoded its boolean as a string rather than fixing it here.
+const isUnresolved = (k: unknown) => k === null || k === undefined
+
 function serializeKey(key: FetchKey): string | null {
-  return isNil(key) || (Array.isArray(key) && key.some(isNil))
+  return isNoKey(key) || (Array.isArray(key) && key.some(isUnresolved))
     ? null
     : JSON.stringify(key)
 }

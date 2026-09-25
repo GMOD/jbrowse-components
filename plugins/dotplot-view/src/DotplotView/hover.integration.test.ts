@@ -33,7 +33,8 @@ function commit(
   v: [number, number],
 ) {
   const rpcData = fakeRpcData(h, v)
-  display.setRpcData(rpcData, [])
+  // the live signature: a real fetch stamps what it was issued under
+  display.setRpcData(rpcData, [], display.regionSignature)
   display.setInstanceData(
     buildLineSegments(
       rpcData,
@@ -201,7 +202,11 @@ test.each([
   [
     'a refetch',
     (a: DotplotDisplayModel) => {
-      a.setRpcData(fakeRpcData([5000, 6000], [5000, 6000]), [])
+      a.setRpcData(
+        fakeRpcData([5000, 6000], [5000, 6000]),
+        [],
+        a.regionSignature,
+      )
     },
   ],
   [
@@ -224,6 +229,35 @@ test.each([
   },
   20000,
 )
+
+// A reorder ("Re-order chromosomes") relabels the axes and leaves the canvas
+// drawing the old cumBp for the debounce plus the round trip. The synteny twin
+// has guarded this as `geometryCurrent` all along; this is the dotplot's.
+test('rewriting an axis stops the plot drawing the old layout', async () => {
+  const { view, a } = await setup()
+  const before = a.regionSignature
+  expect(a.geometryCurrent).toBe(true)
+  expect(a.geometry).toBeDefined()
+  view.setHoveredFeature(pickAtBp(view, 1500, 1500))
+  expect(a.hoveredFeatureIdx).toBe(0)
+
+  // a flip is the single-region spelling of the same invalidation
+  view.vview.setDisplayedRegions([
+    {
+      refName: 'ctgA',
+      start: 0,
+      end: 16000,
+      assemblyName: 'volvox',
+      reversed: true,
+    },
+  ])
+  expect(a.regionSignature).not.toBe(before)
+
+  expect(a.geometryCurrent).toBe(false)
+  expect(a.geometry).toBeUndefined()
+  // and the pick that addressed it goes with it
+  expect(a.hoveredFeatureIdx).toBe(-1)
+}, 20000)
 
 function round(n: number) {
   return Math.round(n * 10) / 10

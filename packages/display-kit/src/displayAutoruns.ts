@@ -62,10 +62,16 @@ export function autorunOnReadyView(
  * changes (chromosome navigation, region reorder, etc). Use for state keyed by
  * `displayedRegionIndex` that intentionally survives `clearAllRpcData` —
  * chromosome navigation reuses indices, so an entry left over from chr1 would
- * be applied to chr2 (canvas's `densityStatsPerRegion` is the canonical
- * case). Plugins whose entire per-region data clears through
+ * be applied to chr2. `CoarseTierMixin`'s held bins are the case to read.
+ * Plugins whose entire per-region data clears through
  * `clearDisplaySpecificData` don't need this — the per-region family's own
  * `DisplayedRegionsChange` autorun already covers them.
+ *
+ * **Gate state is not on this helper**, and the byte gate's own autorun is why:
+ * a measurement stops describing the fetch a display would make on a tier swap
+ * as well as on navigation, so `RegionTooLargeMixin` watches both and clears
+ * both axes together (`clearGateMeasurements`). The density counts were on
+ * this helper and so survived a tier swap the byte estimate was dropped for.
  */
 export function onDisplayedRegionsChange(
   self: IAnyStateTreeNode,

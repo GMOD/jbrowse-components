@@ -199,12 +199,8 @@ test('a refused batch commits nothing and marks nothing loaded, but its bytes re
   expect(bytes).toEqual([[9e9]])
 })
 
-// The bytes and the claim about them come off the one payload together. This
-// runner cannot derive the claim — it issued one call and got one answer — so
-// a caller whose `call` is itself a fan-out (MAF, whose `refusalScope` aborts
-// the siblings at the first refusal) reports it on the result, and the runner's
-// job is only to not drop it on the floor. Dropping it is what let
-// `nextByteEstimate` read one region's bytes as evidence about zoom.
+// This runner issued one call, so it cannot derive the claim — a `call` that is
+// itself a fan-out (MAF) reports it on the result and this must not drop it.
 test("carries the result's partial claim into the commit", async () => {
   const run = async (result: unknown) => {
     const partials: boolean[] = []
@@ -224,6 +220,5 @@ test("carries the result's partial claim into the commit", async () => {
   expect(
     await run({ regionTooLarge: true, bytes: 9e9, partial: false }),
   ).toEqual([false])
-  // a payload that says nothing measured the set it was asked about
   expect(await run({ bytes: 10 })).toEqual([false])
 })

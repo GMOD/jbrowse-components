@@ -161,17 +161,12 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
-       * The span on screen, or undefined until the view is measured — the half
-       * of {@link gateViewport} that every budget question needs and the
-       * identity half that only a staleness compare does.
-       *
-       * Split off because the identity is a string joined over
-       * `view.visibleRegions`, which rebuilds on every frame of every gesture,
-       * and `aboveForceLoadFloor` → `gateByteLimit` → `resolvedByteLimit()` →
-       * `tooLargeStatus` is read by both fetch autoruns. Every gated display
-       * therefore rebuilt that string per frame to answer "is the span at
-       * least 20 kb". The key is built where it is compared instead, which is
-       * once per fetch and, on the banner path, only while the banner is up.
+       * The span on screen, or undefined until the view is measured: the half
+       * of {@link gateViewport} the budget questions need. Split off because
+       * the identity half joins a string over `view.visibleRegions`, which
+       * rebuilds every gesture frame, and `aboveForceLoadFloor` sits under
+       * `regionTooLarge` — every gated display rebuilt it per frame to ask
+       * whether the span was 20 kb.
        */
       get gateViewportSpanBp(): number | undefined {
         const view = containingHost(self)
@@ -372,19 +367,10 @@ export default function RegionTooLargeMixin() {
 
       /**
        * #action
-       * Overridable hook (no-op base): drop what the *other* axis measured,
-       * on the one trigger that invalidates this one. `CanvasFeatureGateMixin`
-       * fills it with its per-region feature counts.
-       *
-       * A hook rather than a second autorun beside it, because the two axes
-       * answer one question — `tooLargeStatus` reads bytes and then density —
-       * and a measurement of either describes one file at one viewport. They
-       * used to clear on different triggers, the byte estimate on navigation
-       * *and* a tier swap and the density counts on navigation alone, so
-       * re-pointing a track's adapter dropped the bytes and left
-       * `densityTooLarge` speaking for the previous file until the refetch
-       * landed: "Too many features" standing over a track that no longer had
-       * them.
+       * Overridable hook (no-op base): drop what the other axis measured, on
+       * the trigger that invalidates this one. The two used to clear on
+       * different triggers, so re-pointing an adapter dropped the bytes and
+       * left `densityTooLarge` speaking for the previous file.
        */
       clearGateMeasurements() {},
 
@@ -402,13 +388,9 @@ export default function RegionTooLargeMixin() {
        * `gateFetchState()` captured at issue. An empty batch, or an ungated
        * display, commits nothing.
        *
-       * **Reached through `openGateCommit` (`gateCommit.ts`), which is the only
-       * production caller.** That object owns the capture, the
-       * commit-at-most-once rule and the pairing of the bytes with `partial` —
-       * a claim that was a trailing optional here, which is how three of the
-       * four runners came to commit a number without saying whether it covered
-       * the region set they asked about. A test staging a measurement by hand
-       * calls this directly, which is what the default is for.
+       * Reached through `openGateCommit`, the only production caller, which
+       * owns the capture, the commit-at-most-once rule and the pairing with
+       * `partial`. A test staging a measurement by hand calls this directly.
        */
       commitFetchBytes(
         perRegionBytes: (number | undefined)[],

@@ -166,16 +166,9 @@ export default function CoarseTierMixin<P extends object>() {
       /**
        * #getter
        * Overridable hook (default true): the display has somewhere to put the
-       * tier right now. Alignments fills it with `showCoverage`, the band its
-       * bins are drawn in, so ticking the band off puts the reads back.
-       *
-       * The view being measured is NOT this hook — it is the tier's own term
-       * below, because every display that draws one needs the geometry the
-       * draw is mapped through, and a display forced to `density` has a
-       * `coarseTierActive` that is true before the view is. Canvas and marks
-       * each carried that term as a verbatim copy of the other's
-       * `coarseTierStandsIn` override; alignments carried neither and guarded
-       * `view.initialized` again inside the getter that builds its bins.
+       * tier. Alignments fills it with `showCoverage`. The measured view is
+       * not this hook but the tier's own term below, since every display
+       * drawing one needs the geometry the draw is mapped through.
        */
       get coarseTierHasSomewhereToDraw(): boolean {
         return true
@@ -393,9 +386,7 @@ export default function CoarseTierMixin<P extends object>() {
             )
           },
           run: async (read, ctx) => {
-            // opened here, in `run`'s synchronous prefix, so the gate state is
-            // the one this read was issued under rather than a live re-read at
-            // commit — the same capture point every other runner makes
+            // `run`'s synchronous prefix is the capture point every runner uses
             const gate = self.coarseTierGated
               ? openGateCommit(host(self))
               : undefined

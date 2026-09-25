@@ -59,6 +59,15 @@ test('a long value list is capped, with the count in front of it', () => {
   )
 })
 
+// Said before anything is typed, too: the list is empty either way, and the
+// caption is the only thing that distinguishes a region the scan refused from
+// a track whose features carry no attributes.
+test('a refused region is said with nothing typed', () => {
+  expect(verdict('', { regionTooLarge: true })?.text).toMatch(
+    /too large to scan/,
+  )
+})
+
 test('a refused region is said, not counted', () => {
   expect(verdict('biotype', { regionTooLarge: true })?.text).toMatch(
     /too large to scan/,

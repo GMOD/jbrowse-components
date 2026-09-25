@@ -226,7 +226,7 @@ test('an exported attribute ramp is labelled with the loaded span, not 0', async
     // svgReady gate opens instead of waiting out the whole test on a key that
     // never matches
     display.commitFetchResult(() => {
-      display.setRpcData(rpcData, [])
+      display.setRpcData(rpcData, [], display.regionSignature)
     }, display.currentFetchKey!)
     // svgReady also wants instance geometry; nothing needs to be IN it, the
     // legend is drawn outside the plot rect
