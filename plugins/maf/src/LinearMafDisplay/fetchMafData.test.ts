@@ -114,7 +114,7 @@ function makeSelf() {
       commitFetchBytes: (bytes: (number | undefined)[]) => {
         committedBytes.push(bytes)
       },
-      annotationDataActive: false,
+      annotationsActive: false,
       annotationAdapterConfig: undefined as Record<string, unknown> | undefined,
       resolvedByteLimit: () => 1_000_000 as number | undefined,
       fetchRegions: (
@@ -405,7 +405,7 @@ describe('the CDS-frame read is measured against its own file', () => {
   function framesSelf(over: Record<string, unknown> = {}) {
     const made = makeSelf()
     Object.assign(made.self, {
-      annotationDataActive: true,
+      annotationsActive: true,
       annotationAdapterConfig: { type: 'BigBedAdapter' },
       ...over,
     })
@@ -542,9 +542,22 @@ describe('the CDS-frame read is measured against its own file', () => {
     })
   })
 
-  // A track with the overlay off pays for none of this.
-  test('reads nothing when no consumer wants the frames', async () => {
-    const { self } = framesSelf({ annotationDataActive: false })
+  test('the detail tier reads them with every frame consumer off', async () => {
+    const { self } = framesSelf({ annotationsActive: false })
+    respondWith(false)
+    await fetchMafAlignmentData(self as any, NEEDED)
+    expect(callsTo('LinearMafGetAnnotationData')).toHaveLength(2)
+  })
+
+  test('the summary tier reads none while the strip is off', async () => {
+    const made = framesSelf({ annotationsActive: false })
+    respondWith(false)
+    await fetchSummary(made)
+    expect(callsTo('LinearMafGetAnnotationData')).toHaveLength(0)
+  })
+
+  test('a track with no frames file reads none', async () => {
+    const { self } = framesSelf({ annotationAdapterConfig: undefined })
     respondWith(false)
     await fetchMafAlignmentData(self as any, NEEDED)
     expect(callsTo('LinearMafGetAnnotationData')).toHaveLength(0)

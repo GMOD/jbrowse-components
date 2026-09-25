@@ -73,11 +73,6 @@ describe('the CDS strip keys itself', () => {
   const framesEnv = () =>
     createMafTestEnvironment({ annotationAdapter: { type: 'BigBedAdapter' } })
 
-  // Order matters, and not incidentally: `setShowAnnotations` moves
-  // `annotationDataActive`, which is an `rpcProps()` cache key, so
-  // SettingsInvalidate clears every per-region map — the frames included. The
-  // strip therefore has to be on *before* the frames land, which is the order
-  // the real fetch delivers them in too (the toggle is what triggers it).
   function seed(display: LinearMafDisplayModel, showStrip: boolean) {
     display.setSamples({
       samples: [{ id: 'hg38', label: 'hg38' }],

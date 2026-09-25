@@ -29,7 +29,8 @@ interface MafFetchSelf extends FetchEachRegionModel {
   // stored under are one expression. See the getter for why the sort is
   // load-bearing.
   subtreeFilterSet: string[] | undefined
-  annotationDataActive: boolean
+  // what the summary tier reads the frames for; the detail tier always does
+  annotationsActive: boolean
   annotationAdapterConfig: Record<string, unknown> | undefined
   // read rather than restated, so all three tiers are bounded by the same
   // number — and undefined is how `gateActive` reaches the worker, which then
@@ -160,6 +161,7 @@ async function callMafRegions<R extends SampleSet>(
   self: MafFetchSelf,
   regions: IndexedRegion[],
   ctx: FetchContext,
+  withFrames: boolean,
   call: (
     region: Region,
     ctx: FetchContext,
@@ -184,10 +186,12 @@ async function callMafRegions<R extends SampleSet>(
       (region, regionCtx, displayedRegionIndex) =>
         scope.guard(() => call(region, regionCtx, displayedRegionIndex)),
     ).then(landed),
-    fetchAnnotationData(self, regions, {
-      ...scope.ctx,
-      statusCallback: slot(),
-    }),
+    withFrames
+      ? fetchAnnotationData(self, regions, {
+          ...scope.ctx,
+          statusCallback: slot(),
+        })
+      : NO_FRAMES,
   ])
   // The batch's own byte number, whichever way it goes: the budget is what
   // one region may cost, so the largest is what was judged and what the
@@ -226,13 +230,20 @@ function publishBatch(self: MafFetchSelf, batch: MafBatch<SampleSet>) {
   self.setFramesGateBlocked(batch.framesRefused)
 }
 
+const NO_FRAMES = Promise.resolve({
+  byIndex: new Map<number, MafFrameRecord[]>(),
+  refused: false,
+})
+
 /**
  * Fetch per-species CDS frame rows (UCSC `mafFrames`) for the buffered regions
  * from the MAF adapter's `annotationAdapter` sub-adapter, in parallel with the
- * main alignment/summary fetch and under its signal. Empty when no adapter
- * is configured or neither the frame strip nor the codon view is on, so tracks
- * without frames pay nothing. The frames ride the tier's own payload, so they
- * land under the same commit and the same staleness guard as the rows.
+ * main alignment/summary fetch and under its signal. The detail tier reads
+ * them whenever an adapter is configured, so turning on the strip, the codon
+ * view or the codon band refetches nothing; the summary tier, where the strip
+ * is their only reader and the span is wide, reads them while the strip is on.
+ * The frames ride the tier's own payload, so they land under the same commit
+ * and the same staleness guard as the rows.
  *
  * Gated like both main tiers, by the `byteLimit` the RPC carries: the display's
  * own gate measures exactly one file — the alignment or the summary depending
@@ -258,7 +269,7 @@ async function fetchAnnotationData(
 ): Promise<{ byIndex: Map<number, MafFrameRecord[]>; refused: boolean }> {
   const byIndex = new Map<number, MafFrameRecord[]>()
   const adapterConfig = self.annotationAdapterConfig
-  if (!self.annotationDataActive || !adapterConfig) {
+  if (!adapterConfig) {
     return { byIndex, refused: false }
   }
   const scope = refusalScope(ctx)
@@ -304,7 +315,7 @@ export function fetchMafAlignmentData(
 ) {
   return fetchRegionsBatched(self, needed, {
     call: (regions, ctx) =>
-      callMafRegions(self, regions, ctx, (region, regionCtx) =>
+      callMafRegions(self, regions, ctx, true, (region, regionCtx) =>
         regionCtx.callRpc('LinearMafGetAlignmentData', {
           adapterConfig: self.adapterConfig,
           regions: [region],
@@ -358,18 +369,23 @@ export async function fetchMafSummaryData(
   regions: IndexedRegion[],
   ctx: FetchContext,
 ): Promise<CoarseTierResult<MafRegionPayload<MafSummaryRecord[]>>> {
-  const batch = await callMafRegions(self, regions, ctx, (region, regionCtx) =>
-    regionCtx.callRpc('LinearMafGetSummaryData', {
-      adapterConfig: self.adapterConfig,
-      regions: [region],
-      byteLimit: self.resolvedByteLimit(),
-      // Same row set as the detail path. It has to be sent even though the
-      // records are small: the focus is in the read key, so narrowing the
-      // clade already re-reads — a summary fetch that ignored the focus
-      // would re-download byte-identical rows and then drop the same ones
-      // client-side.
-      subtreeFilter: self.subtreeFilterSet,
-    }),
+  const batch = await callMafRegions(
+    self,
+    regions,
+    ctx,
+    self.annotationsActive,
+    (region, regionCtx) =>
+      regionCtx.callRpc('LinearMafGetSummaryData', {
+        adapterConfig: self.adapterConfig,
+        regions: [region],
+        byteLimit: self.resolvedByteLimit(),
+        // Same row set as the detail path. It has to be sent even though the
+        // records are small: the focus is in the read key, so narrowing the
+        // clade already re-reads — a summary fetch that ignored the focus
+        // would re-download byte-identical rows and then drop the same ones
+        // client-side.
+        subtreeFilter: self.subtreeFilterSet,
+      }),
   )
   if (isRegionRefused(batch)) {
     return batch

@@ -381,4 +381,32 @@ describe('LinearMafDisplay row placement', () => {
       'mm10',
     ])
   })
+
+  // The frames ride the alignment fetch whenever an annotation adapter is
+  // configured, so turning a frames reader on or off refetches nothing.
+  it('keeps the alignment across the frame readers', async () => {
+    const { createDisplay, mockRpcCall } = createMafTestEnvironment({
+      assemblyEnd: 50_000,
+      viewRegionEnd: 10_000,
+      annotationAdapter: { type: 'BigBedAdapter' },
+    })
+    mockRpcCall.mockImplementation((_id, method) =>
+      Promise.resolve(
+        method === 'LinearMafGetAnnotationData'
+          ? { records: [] }
+          : makeMafResult(HG38_MM10),
+      ),
+    )
+    const { display } = createDisplay()
+    await settle(display)
+    expect(alignmentCalls(mockRpcCall)).toHaveLength(1)
+
+    display.setShowAnnotations(true)
+    display.setRowRendering('codon')
+    await settle(display)
+    display.setRowRendering('bases')
+    display.setShowAnnotations(false)
+    await settle(display)
+    expect(alignmentCalls(mockRpcCall)).toHaveLength(1)
+  })
 })

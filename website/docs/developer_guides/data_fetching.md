@@ -159,10 +159,12 @@ const [results, frames] = await Promise.all([
     (region, regionCtx, displayedRegionIndex) =>
       scope.guard(() => call(region, regionCtx, displayedRegionIndex)),
   ).then(landed),
-  fetchAnnotationData(self, regions, {
-    ...scope.ctx,
-    statusCallback: slot(),
-  }),
+  withFrames
+    ? fetchAnnotationData(self, regions, {
+        ...scope.ctx,
+        statusCallback: slot(),
+      })
+    : NO_FRAMES,
 ])
 // The batch's own byte number, whichever way it goes: the budget is what
 // one region may cost, so the largest is what was judged and what the

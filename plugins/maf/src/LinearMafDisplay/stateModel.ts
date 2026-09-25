@@ -731,19 +731,17 @@ export default function stateModelFactory(
          * Whether the per-species CDS frame *strip* should draw: an annotation
          * adapter is configured and the "Show CDS frames" toggle is on. The codon
          * view consumes the same frames data but is gated separately (see
-         * `annotationDataActive`), so the strip can be off while codon view is on.
+         * `framesInUse`), so the strip can be off while codon view is on.
          */
         get annotationsActive(): boolean {
           return self.showAnnotations && !!self.annotationAdapterConfig
         },
         /**
          * #getter
-         * Whether the frames data needs to be fetched: an annotation adapter is
-         * configured and either the strip or the codon view wants it. Gates the
-         * frames RPC and keys the fetch cache so toggling *either* consumer on
-         * triggers the fetch.
+         * An annotation adapter is configured and something reads its frames:
+         * the strip, the codon view or the codon band.
          */
-        get annotationDataActive(): boolean {
+        get framesInUse(): boolean {
           return (
             (self.showAnnotations ||
               self.showTranslation ||
@@ -1000,12 +998,15 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * The summary read carries the same settings the detail fetch does
-         * (the focus, and the frames read beside it), so a settings
-         * change re-reads it.
+         * The detail fetch's settings, and whether the strip wants frames read
+         * beside the summary: the detail tier always reads them, the summary
+         * tier only for the strip.
          */
         get coarseReadKey() {
-          return self.settingsFetchInputs
+          return {
+            settings: self.settingsFetchInputs,
+            frames: self.annotationsActive,
+          }
         },
       }))
       .views(self => ({
@@ -1050,13 +1051,6 @@ export default function stateModelFactory(
          * or exports it reads this, so the menu tick keeps reporting what the
          * user chose and zooming back in restores the band without touching the
          * config.
-         *
-         * The one other reader of the raw setting is `annotationDataActive`, and
-         * it has to stay raw: it is an `rpcProps()` cache key, so resolving it
-         * through this getter would make the key zoom-dependent and drop every
-         * loaded region on each crossing of the summary floor. Fetching frames
-         * the codon band can't draw yet costs one small read; refetching the
-         * alignment costs the tier swap twice over.
          */
         get conservationBandActive() {
           return self.showConservation && !self.coarseTierActive
@@ -1665,38 +1659,15 @@ export default function stateModelFactory(
         },
         /**
          * #method
-         * Worker-fetch inputs that invalidate cached data when changed (tier-1,
-         * via MultiRegionDisplayMixin's `SettingsInvalidate` autorun → refetch).
-         *
-         * Row *order* is deliberately absent: no fetch argument depends on it
-         * any more, since the worker names rows by species and the main thread
-         * places them (`placeMafRegionData`). A reorder therefore re-places the
-         * cached payload — the heaviest in the plugin — instead of refetching it.
-         *
-         * The focus stays because it is a fetch argument, and the *set* is the
-         * only thing about the rows that is: the worker ships only the rows in
-         * it and scopes coverage/identity to them. It is sent as a set, never
-         * an order, so reordering inside a focus is still free.
-         *
-         * The discovered row set growing is deliberately NOT a key — see
-         * `setSamples` for why re-placement covers it.
-         *
-         * Nothing here may be fetch-derived. Keying on a value that is undefined
-         * until the first fetch lands and defined after flips the key on every
-         * track load, and `SettingsInvalidate` then throws away the region that
-         * just arrived — a measured 2 × `LinearMafGetAlignmentData` per region.
-         * Loop-safe but not free, which is exactly the case reference/FETCH_KEYS.md's
-         * "`rpcProps()` loop trap and how to break it" is about. Pinned by
-         * `singleFetchPerRegion.test.ts`.
+         * The detail fetch's inputs, which refetch every loaded region when
+         * they move. The focus is a row SET, since the worker ships only those
+         * genomes; the row order is not, since the client places the rows
+         * (`placeMafRegionData`). Nothing fetch-derived goes here: a key that
+         * moves when a fetch lands throws that fetch away
+         * (`singleFetchPerRegion.test.ts`).
          */
         rpcProps() {
-          // `annotationDataActive` is a cache key so toggling the CDS-frame strip
-          // *or* the codon view on triggers a refetch that brings the frames
-          // for the loaded regions (they ride the same fetch pass).
-          return {
-            subtreeFilter: self.subtreeFilterSet,
-            annotationDataActive: self.annotationDataActive,
-          }
+          return { subtreeFilter: self.subtreeFilterSet }
         },
       }))
       .views(self => ({
@@ -1911,7 +1882,7 @@ export default function stateModelFactory(
          * #method
          * The CDS frame record covering absolute genomic `bp` (uint32) on display
          * `rowIndex`, or undefined when no frame overlaps there (or no frames data
-         * is loaded). Gated on `annotationDataActive` not the strip toggle, so the
+         * is loaded). Gated on `framesInUse` not the strip toggle, so the
          * gene name still reads on hover in codon view with the strip off. The
          * species is matched by the same `src`→row projection the overlay draws
          * with, so the tooltip and the strip can't disagree about which row a gene
@@ -1926,7 +1897,7 @@ export default function stateModelFactory(
           bp: number,
           rowIndex: number,
         ) {
-          if (!self.annotationDataActive) {
+          if (!self.framesInUse) {
             return undefined
           }
           const hit = findFrameAt(

@@ -22,7 +22,6 @@ exports[`a cluster run lands its tree with provenance, and a reset restores the 
   "rowArrangementIsCustom": true,
   "rowTree": "(mm10,(hg38,panTro4));",
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": undefined,
   },
   "sources": [
@@ -87,7 +86,6 @@ exports[`a cluster run lands its tree with provenance, and a reset restores the 
   "rowArrangementIsCustom": false,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": undefined,
   },
   "sources": [
@@ -139,7 +137,6 @@ exports[`a cluster run rotates towards the declared order 1`] = `
   "rowArrangementIsCustom": true,
   "rowTree": "((panTro4,hg38),mm10);",
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": undefined,
   },
   "sources": [
@@ -191,7 +188,6 @@ exports[`a declared order leads with no tree 1`] = `
   "rowArrangementIsCustom": false,
   "rowTree": undefined,
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": undefined,
   },
   "sources": [
@@ -239,7 +235,6 @@ exports[`a declared order rotates a supplied tree 1`] = `
   "rowArrangementIsCustom": false,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": undefined,
   },
   "sources": [
@@ -291,7 +286,6 @@ exports[`a declared order rotates a supplied tree 2`] = `
   "rowArrangementIsCustom": false,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": undefined,
   },
   "sources": [
@@ -343,7 +337,6 @@ exports[`a dialog recolour over an adapter colour, in place 1`] = `
   "rowArrangementIsCustom": true,
   "rowTree": undefined,
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": undefined,
   },
   "sources": [
@@ -391,7 +384,6 @@ exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel
   "rowArrangementIsCustom": true,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": undefined,
   },
   "sources": [
@@ -443,7 +435,6 @@ exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel
   "rowArrangementIsCustom": false,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": undefined,
   },
   "sources": [
@@ -500,7 +491,6 @@ exports[`a discovered row joins after a reorder 1`] = `
   "rowArrangementIsCustom": true,
   "rowTree": undefined,
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": undefined,
   },
   "sources": [
@@ -553,7 +543,6 @@ exports[`a focus narrows the rows and the fetch key 1`] = `
   "rowArrangementIsCustom": false,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": [
       "hg38",
       "panTro4",
@@ -605,7 +594,6 @@ exports[`a focus narrows the rows and the fetch key 2`] = `
   "rowArrangementIsCustom": false,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": [
       "hg38",
       "mm10",
@@ -657,7 +645,6 @@ exports[`a focus narrows the rows and the fetch key 3`] = `
   "rowArrangementIsCustom": false,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": undefined,
   },
   "sources": [
@@ -709,7 +696,6 @@ exports[`a focused cluster run keeps the hidden row after the clade 1`] = `
   "rowArrangementIsCustom": true,
   "rowTree": "(panTro4,hg38);",
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": [
       "hg38",
       "panTro4",
@@ -761,7 +747,6 @@ exports[`a focused cluster run keeps the hidden row after the clade 2`] = `
   "rowArrangementIsCustom": true,
   "rowTree": "(panTro4,hg38);",
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": undefined,
   },
   "sources": [
@@ -812,7 +797,6 @@ exports[`a reorder no rotation of the supplied tree produces drops it, and a res
   "rowArrangementIsCustom": true,
   "rowTree": undefined,
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": undefined,
   },
   "sources": [
@@ -860,7 +844,6 @@ exports[`a reorder no rotation of the supplied tree produces drops it, and a res
   "rowArrangementIsCustom": false,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": undefined,
   },
   "sources": [
@@ -912,7 +895,6 @@ exports[`a supplied guide tree leads the rows 1`] = `
   "rowArrangementIsCustom": false,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": undefined,
   },
   "sources": [
@@ -964,7 +946,6 @@ exports[`adapter labels and colours are the rows own 1`] = `
   "rowArrangementIsCustom": false,
   "rowTree": undefined,
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": undefined,
   },
   "sources": [
@@ -1012,7 +993,6 @@ exports[`hiding the reference row prunes it from the rows and the tree 1`] = `
   "rowArrangementIsCustom": false,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": undefined,
   },
   "sources": [
@@ -1059,7 +1039,6 @@ exports[`hiding the reference row prunes it from the rows and the tree 2`] = `
   "rowArrangementIsCustom": false,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": [
       "hg38",
       "panTro4",
@@ -1106,7 +1085,6 @@ exports[`sort at a column orders the rows by base and drops the supplied tree 1`
   "rowArrangementIsCustom": true,
   "rowTree": undefined,
   "rpcProps": {
-    "annotationDataActive": false,
     "subtreeFilter": undefined,
   },
   "sources": [
