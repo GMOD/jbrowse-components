@@ -142,19 +142,32 @@ test('an appended level matches a hand-resized stack', async () => {
 })
 
 // The bars between the rows size the stack, not one gap: a multi-way view is
-// read as one picture, so a drag on any of them moves every band by the same px.
-// The differences a user already put between the bands survive it, which setting
-// them all to one height would not.
-test('a band drag resizes every band by the same amount', async () => {
+// read as one picture, so a drag on any of them resizes every band, each by
+// its share of the height it has above the floor. Differences a user put
+// between the bands survive as proportions, and a drag back undoes it.
+test('a band drag resizes every band in proportion', async () => {
   const { view } = await openStack(4)
   expect(heights(view)).toEqual([100, 100, 100])
   view.levels[1]!.setHeight(120)
 
   view.resizeAllLevelHeights(30)
-  expect(heights(view)).toEqual([130, 150, 130])
+  expect(heights(view)).toEqual([109, 132, 109])
 
   view.resizeAllLevelHeights(-30)
   expect(heights(view)).toEqual([100, 120, 100])
+})
+
+// The bar under band N sits below N+1 bands, and it has to stay under the
+// pointer: those bands take the whole drag, and the rest scale with them.
+test('the bar a drag started on follows the pointer', async () => {
+  const { view } = await openStack(4)
+  const from = heights(view)
+  let moved = 0
+  for (const frame of [10, 10, 10]) {
+    moved = view.resizeAllLevelHeights(moved + frame, 0, from)
+  }
+  expect(moved).toBe(30)
+  expect(heights(view)).toEqual([130, 130, 130])
 })
 
 // Alt on the press is the way back to a stack whose bands differ on purpose, so
@@ -179,7 +192,7 @@ test('a band drag stops at the height that keeps its bar grabbable', async () =>
   expect(heights(view)).toEqual([20, 20])
 
   view.resizeAllLevelHeights(15)
-  expect(heights(view)).toEqual([35, 35])
+  expect(heights(view)).toEqual([28, 27])
 })
 
 // The dialog's custom-upload path adds the track conf and appends the row in

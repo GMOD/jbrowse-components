@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
@@ -123,10 +123,7 @@ const LevelSection = observer(function LevelSection({
   levelIdx: number
 }) {
   const { classes } = useStyles()
-  // Whether the press that started the current drag held Alt, i.e. sizes this
-  // band alone. Set on every pointerdown, so it is always the live answer by the
-  // time a frame commits.
-  const [alone, setAlone] = useState(false)
+  const drag = useRef({ alone: false, from: [] as number[], moved: 0 })
   const level = model.levels[levelIdx]!
 
   return (
@@ -147,27 +144,24 @@ const LevelSection = observer(function LevelSection({
           actually drawn */}
         {levelIdx === 0 ? <ChromeLegend model={model} /> : null}
       </div>
-      {/* Sizes every band, not this one gap — see `resizeAllLevelHeights` — and
-        Alt sizes this one alone, which is the only way back to a stack whose
-        bands differ on purpose.
-
-        The bar for the Nth level sits below N bands, all of which just grew, so
-        it moves N px per px of height: `gain` divides the drag by that, which is
-        what keeps the bar the user grabbed under their pointer. Alt-dragging
-        moves one band, so its gain is 1 — which is why this is state and not a
-        ref: the divisor is read at render, so the press has to re-render before
-        the first frame commits. */}
+      {/* Sizes every band, not this one gap (see `resizeAllLevelHeights`),
+        and Alt sizes this one alone, which is the only way back to a stack
+        whose bands differ on purpose. */}
       <ResizeHandle
         bar
-        gain={alone ? 1 : levelIdx + 1}
         onPointerDown={event => {
-          setAlone(event.altKey)
+          drag.current = {
+            alone: event.altKey,
+            from: model.levels.map(l => l.height),
+            moved: 0,
+          }
         }}
         onDrag={n => {
-          if (alone) {
+          const d = drag.current
+          if (d.alone) {
             level.resizeHeight(n)
           } else {
-            model.resizeAllLevelHeights(n)
+            d.moved = model.resizeAllLevelHeights(d.moved + n, levelIdx, d.from)
           }
         }}
         title={

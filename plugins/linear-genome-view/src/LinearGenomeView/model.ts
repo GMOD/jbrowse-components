@@ -27,6 +27,7 @@ import {
   moveTo,
   pxToBp,
 } from '@jbrowse/core/util/Base1DUtils'
+import { scaleBandHeights } from '@jbrowse/core/util/bandHeight'
 import { wholeBaseRegions } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
@@ -97,7 +98,6 @@ import {
   labelFitsInBlock,
   makeBlockTicks,
   runRefNameLabelPx,
-  scaleTrackHeights,
   tickLabelWidth,
 } from './util.ts'
 
@@ -1371,7 +1371,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       resizeTracks(distance: number, from = self.resizableTrackHeights) {
         const tracks = self.tracks.filter(t => !t.minimized && from.has(t.id))
         const start = tracks.map(t => from.get(t.id)!)
-        const next = scaleTrackHeights(start, distance, MIN_DISPLAY_HEIGHT)
+        const next = scaleBandHeights(start, distance, MIN_DISPLAY_HEIGHT)
         for (const [i, track] of tracks.entries()) {
           const display = track.activeDisplay
           const delta = next[i]! - display.height

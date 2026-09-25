@@ -9,7 +9,12 @@ import {
   getSession,
   isSessionModelWithWidgets,
   scheduleDetachedDestroy,
+  sum,
 } from '@jbrowse/core/util'
+import {
+  MIN_BAND_HEIGHT,
+  scaleBandHeights,
+} from '@jbrowse/core/util/bandHeight'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { computeViewStatus, viewLoading } from '@jbrowse/core/util/viewStatus'
 import {
@@ -1044,13 +1049,34 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Resize every synteny band by the same delta, keeping their differences.
-       * Each level clamps its own drag (`resizeHeight`).
+       * Resize every synteny band at once by `scaleBandHeights`, choosing the
+       * total so the bar under band `levelIdx` moves by `distance`: the bands
+       * down to it take exactly that, and the rest keep their proportion to
+       * them. `from` is the heights to scale; a drag passes the ones it started
+       * with, so whole-pixel rounding does not compound frame by frame.
+       * Returns how far that bar can go, which is `distance` unless the floor
+       * stopped it.
        */
-      resizeAllLevelHeights(distance: number) {
-        for (const level of self.levels) {
-          level.resizeHeight(distance)
+      resizeAllLevelHeights(
+        distance: number,
+        levelIdx = self.levels.length - 1,
+        from: number[] = self.levels.map(l => l.height),
+      ) {
+        const upTo = levelIdx + 1
+        const room = from.map(h => h - Math.min(h, MIN_BAND_HEIGHT))
+        const above = sum(room.slice(0, upTo))
+        const reachable = Math.max(distance, -above)
+        const next =
+          above > 0
+            ? scaleBandHeights(from, (reachable * sum(room)) / above)
+            : [
+                ...scaleBandHeights(from.slice(0, upTo), reachable),
+                ...from.slice(upTo),
+              ]
+        for (const [i, level] of self.levels.entries()) {
+          level.setHeight(next[i]!)
         }
+        return reachable
       },
       /**
        * #action

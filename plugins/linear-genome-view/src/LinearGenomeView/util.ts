@@ -924,37 +924,3 @@ export function calculateVisibleLocStrings(contentBlocks: ContentBlock[]) {
     })),
   )
 }
-
-/**
- * Heights after growing or shrinking a stack of tracks by `distance` px in
- * all. Each track takes its share of the height it has above `floor`, so the
- * tall tracks give and take the most and none goes below `floor` (or below its
- * own height, if it already sits under it). Whole pixels, rounded by largest
- * remainder so the stack moves by exactly the rounded distance.
- */
-export function scaleTrackHeights(
-  heights: number[],
-  distance: number,
-  floor: number,
-) {
-  const floors = heights.map(h => Math.min(h, floor))
-  const room = heights.map((h, i) => h - floors[i]!)
-  const roomTotal = room.reduce((a, b) => a + b, 0)
-  const target = Math.max(0, Math.round(roomTotal + distance))
-  const exact = room.map(r =>
-    roomTotal > 0 ? (r * target) / roomTotal : target / heights.length,
-  )
-  const whole = exact.map(e => Math.floor(e))
-  let left = target - whole.reduce((a, b) => a + b, 0)
-  const byRemainder = exact
-    .map((e, i) => ({ i, frac: e - whole[i]! }))
-    .sort((a, b) => b.frac - a.frac)
-  for (const { i } of byRemainder) {
-    if (left <= 0) {
-      break
-    }
-    whole[i] = whole[i]! + 1
-    left -= 1
-  }
-  return whole.map((w, i) => w + floors[i]!)
-}
