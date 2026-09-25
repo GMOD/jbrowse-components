@@ -2,6 +2,8 @@ import { mockDisplayConfig } from '../testUtils.ts'
 import { layoutBox } from './box.ts'
 import { layoutCrisprGuide } from './crisprGuide.ts'
 import { findGlyph } from './findGlyph.ts'
+import { layoutMatureProteinRegion } from './matureProteinRegion.ts'
+import { layoutMergedGene } from './mergedGene.ts'
 import { layoutMotif } from './motif.ts'
 import { layoutProcessedTranscript } from './processed.ts'
 import { layoutRepeatRegion } from './repeatRegion.ts'
@@ -145,5 +147,82 @@ describe('findGlyph structural dispatch', () => {
       })
     expect(findGlyph(orf('proteoform_orf'), config)).toBe(layoutSubfeatures)
     expect(findGlyph(orf('Proteoform_ORF'), config)).toBe(layoutSubfeatures)
+  })
+})
+
+describe('the merged gene mode', () => {
+  const merged = mockDisplayConfig({
+    transcriptTypes: ['mRNA'],
+    containerTypes: ['proteoform_orf'],
+    geneGlyphMode: 'merged',
+  })
+
+  const geneOverTranscripts = () =>
+    mockFeature({
+      type: 'gene',
+      subfeatures: [
+        mockFeature({
+          type: 'mRNA',
+          subfeatures: [mockFeature({ type: 'CDS' })],
+        }),
+      ],
+    })
+
+  it('takes the gene the stacked glyph would have taken', () => {
+    expect(findGlyph(geneOverTranscripts(), merged)).toBe(layoutMergedGene)
+    expect(findGlyph(geneOverTranscripts(), config)).toBe(layoutSubfeatures)
+  })
+
+  // Cleavage products are not isoforms of each other, so merging them would
+  // paint one box over the whole polyprotein.
+  it('leaves a polyprotein stacked', () => {
+    const polyprotein = mockFeature({
+      type: 'gene',
+      subfeatures: [
+        mockFeature({
+          type: 'CDS',
+          subfeatures: [mockFeature({ type: 'mat_peptide' })],
+        }),
+      ],
+    })
+    expect(findGlyph(polyprotein, merged)).toBe(layoutSubfeatures)
+    const cds = mockFeature({
+      type: 'CDS',
+      subfeatures: [mockFeature({ type: 'mat_peptide' })],
+    })
+    expect(findGlyph(cds, merged)).toBe(layoutMatureProteinRegion)
+  })
+
+  it('leaves the shapes that are not a gene over transcripts', () => {
+    expect(
+      findGlyph(
+        mockFeature({
+          type: 'repeat_region',
+          subfeatures: [mockFeature({ type: 'long_terminal_repeat' })],
+        }),
+        merged,
+      ),
+    ).toBe(layoutRepeatRegion)
+    expect(
+      findGlyph(
+        mockFeature({
+          type: 'mRNA',
+          subfeatures: [
+            mockFeature({ type: 'exon' }),
+            mockFeature({ type: 'CDS' }),
+          ],
+        }),
+        merged,
+      ),
+    ).toBe(layoutProcessedTranscript)
+    expect(
+      findGlyph(
+        mockFeature({
+          type: 'match',
+          subfeatures: [mockFeature({ type: 'match_part' })],
+        }),
+        merged,
+      ),
+    ).toBe(layoutSegments)
   })
 })

@@ -57,6 +57,7 @@ export type GlyphType =
   | 'ProcessedTranscript'
   | 'Segments'
   | 'Subfeatures'
+  | 'MergedGene'
   | 'MatureProteinRegion'
   | 'RepeatRegion'
   | 'CrisprGuide'

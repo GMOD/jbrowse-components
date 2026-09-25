@@ -70,9 +70,10 @@ const SELF_LABELING_GLYPHS: Record<GlyphType, boolean> = {
   RepeatRegion: false,
   CrisprGuide: false,
   Motif: false,
-  // never a child of a gene — it IS the gene, and processFeatureRecord draws
-  // the feature's own label
+  // neither is ever a child of a gene — each IS the gene, and
+  // processFeatureRecord draws the feature's own label
   Subfeatures: false,
+  MergedGene: false,
 }
 
 // Answers a BOOLEAN rather than a height. The row's height is the display

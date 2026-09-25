@@ -1,10 +1,11 @@
 import { reservesBelowLabelRow } from '../labelUtils.ts'
-import { featureType, getSubfeatures, isCDS } from '../util.ts'
+import { getSubfeatures, isCDS } from '../util.ts'
 import { findGlyph } from './findGlyph.ts'
 import {
   TRANSCRIPT_PADDING_RATIO,
   featureHeightPx,
   isCodingFeature,
+  isoformsOf,
 } from './glyphUtils.ts'
 
 import type { Span } from '../../shared/mergeSpans.ts'
@@ -12,30 +13,6 @@ import type { DisplayConfig } from '../renderConfig.ts'
 import type { IsoformStack } from '../rpcTypes.ts'
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
-
-// Is this child one of the isoforms the gene chooses among, rather than a
-// decoration beside them (an NCBI source record, a `biological_region`)?
-// Structural first, like findGlyph's dispatch, because `transcriptTypes` names
-// none of `lnc_RNA`, `misc_RNA`, `ncRNA` or `pseudogenic_transcript` — the type
-// test only catches a childless transcript.
-function isIsoform(sub: Feature, transcriptTypes: ReadonlySet<string>) {
-  return (
-    getSubfeatures(sub).length > 0 ||
-    transcriptTypes.has(featureType(sub).toLowerCase())
-  )
-}
-
-function transcriptTypeSet(config: DisplayConfig) {
-  return new Set(config.transcriptTypes.map(t => t.toLowerCase()))
-}
-
-function getIsoforms(
-  subfeatures: Feature[],
-  transcriptTypes: ReadonlySet<string>,
-) {
-  const isoforms = subfeatures.filter(sub => isIsoform(sub, transcriptTypes))
-  return isoforms.length > 0 ? isoforms : subfeatures
-}
 
 // "Longest coding" is the longest protein — summed CDS length, not the widest
 // genomic footprint an isoform with a large intron could win. A duplicated CDS
@@ -248,7 +225,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   // One list drives both the gene-glyph control's visibility and the
   // longestCoding collapse, so the control appears exactly when switching modes
   // would change something.
-  const isoforms = getIsoforms(subfeatures, transcriptTypeSet(config))
+  const isoforms = isoformsOf(subfeatures, config)
   const hasMultipleIsoforms = isoforms.length > 1
   const isoformSet = new Set(isoforms)
 

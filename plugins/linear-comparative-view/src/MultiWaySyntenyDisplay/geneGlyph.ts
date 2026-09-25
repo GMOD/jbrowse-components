@@ -1,30 +1,22 @@
 /**
- * A lane's own gene annotation, both halves: which features it draws, what
- * shape each one is in bp, and where that shape lands in px.
+ * A lane's own gene annotation: which features it draws, and where the feature
+ * track's merged gene shape lands on the lane's axis.
  *
- * The two halves are here together because the px side is a projection of the
- * bp side and nothing else — `geneGlyphGeometry` maps the intervals
- * `geneGlyphShape` merged through whatever px map the lane hands it — and
- * because the px half
- * spent its life inside a React component, where the chevron walk was
- * unbounded and untested. The bp half transfers to a GPU-emitting backend and
- * the px half does not; that is the seam, and it runs through the middle of
- * this file rather than between two.
+ * The shape itself is `plugin-canvas`'s `geneGlyphShape`, the same union its
+ * `geneGlyphMode: 'merged'` draws a row from — a lane and that mode ask one
+ * question, and every constant that drifted between them once (the UTR height
+ * fraction, the CDS/exon test, which untranslated stretches a transcript
+ * implies) lived in a second copy of it. What stays here is the projection:
+ * `geneGlyphGeometry` maps those bp intervals through whatever px map the lane
+ * hands it, which no other display has, and which spent its life inside a React
+ * component where the chevron walk was unbounded and untested.
  */
 import { IntervalTree, dedupe, doesIntersect2 } from '@jbrowse/core/util'
-import {
-  featureType,
-  getSubfeatures,
-  impliedUTRs,
-  isCDS,
-  isExon,
-  isUTR,
-  mergeSpans,
-} from '@jbrowse/plugin-canvas'
+import { featureType, geneGlyphShape, mergeSpans } from '@jbrowse/plugin-canvas'
 
 import type { Span } from './layoutMultiWay.ts'
 import type { Feature } from '@jbrowse/core/util'
-import type { GlyphSpan } from '@jbrowse/plugin-canvas'
+import type { GeneGlyphShape, GlyphSpan } from '@jbrowse/plugin-canvas'
 
 // What a lane draws from a gene track's top-level features. An NCBI-style GFF3
 // also carries a `region` row spanning the whole sequence, which would paint
@@ -115,81 +107,6 @@ export function annotatedSpans(annotated: Span[]) {
       }
     }
     return best
-  }
-}
-
-function subtractIntervals(base: [number, number][], cut: [number, number][]) {
-  const out: [number, number][] = []
-  for (const [start, end] of base) {
-    let cursor = start
-    for (const [cutStart, cutEnd] of cut) {
-      if (cutEnd <= cursor || cutStart >= end) {
-        continue
-      }
-      if (cutStart > cursor) {
-        out.push([cursor, cutStart])
-      }
-      cursor = Math.max(cursor, cutEnd)
-    }
-    if (cursor < end) {
-      out.push([cursor, end])
-    }
-  }
-  return out
-}
-
-export interface GeneGlyphShape {
-  // the merged CDS across the gene's transcripts, or the merged exons of a
-  // non-coding gene, or the whole span of a structureless feature — so a plain
-  // BED-backed gene still draws as one box
-  full: [number, number][]
-  // the untranslated parts of the merged exons, drawn thinner
-  thin: [number, number][]
-}
-
-function spanOf(f: Feature): GlyphSpan {
-  return [f.get('start'), f.get('end')]
-}
-
-/**
- * A gene's drawable shape, merged across its transcripts: the CDS full height
- * and the untranslated remainder thin.
- *
- * Merging across transcripts is this display's own operation — the feature
- * track always draws one row per transcript and has nothing to reuse here. What
- * IS the feature track's is every per-transcript rule: which rows are CDS, exon
- * and UTR (`isCDS`/`isExon`/`isUTR`, case-insensitive), and which untranslated
- * stretches a transcript naming no UTRs implies (`impliedUTRs`). A region
- * coding in any transcript reads full.
- */
-export function geneGlyphShape(feature: Feature): GeneGlyphShape {
-  const cds: GlyphSpan[] = []
-  const utr: GlyphSpan[] = []
-  const nonCoding: GlyphSpan[] = []
-  const visit = (f: Feature) => {
-    const subs = getSubfeatures(f)
-    const ownCds = subs.filter(isCDS).map(spanOf)
-    if (ownCds.length) {
-      cds.push(...ownCds)
-      utr.push(...subs.filter(isUTR).map(spanOf))
-      utr.push(...impliedUTRs(f, subs).map(u => [u.start, u.end] as GlyphSpan))
-    } else {
-      const exons = subs.filter(isExon)
-      nonCoding.push(...(exons.length ? exons : subs.filter(isUTR)).map(spanOf))
-    }
-    for (const sub of subs) {
-      visit(sub)
-    }
-  }
-  visit(feature)
-  const full = mergeSpans(cds)
-  if (!full.length) {
-    const merged = mergeSpans(nonCoding)
-    return { full: merged.length ? merged : [spanOf(feature)], thin: [] }
-  }
-  return {
-    full,
-    thin: subtractIntervals(mergeSpans([...utr, ...nonCoding]), full),
   }
 }
 

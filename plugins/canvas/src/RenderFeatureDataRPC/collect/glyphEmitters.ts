@@ -693,6 +693,7 @@ const GLYPH_EMITTERS: Record<GlyphType, GlyphEmitter> = {
   Subfeatures: emitSubfeaturesGlyph,
   ProcessedTranscript: processTranscriptLayout,
   Segments: processTranscriptLayout,
+  MergedGene: processTranscriptLayout,
   MatureProteinRegion: processMatureProteinLayout,
   RepeatRegion: processRepeatRegionLayout,
   Motif: processMotifLayout,

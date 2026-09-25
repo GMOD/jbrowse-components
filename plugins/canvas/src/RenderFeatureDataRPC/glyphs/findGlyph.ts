@@ -6,6 +6,7 @@ import {
   hasMatureProteinChildren,
   layoutMatureProteinRegion,
 } from './matureProteinRegion.ts'
+import { layoutMergedGene } from './mergedGene.ts'
 import { layoutMotif } from './motif.ts'
 import { layoutProcessedTranscript } from './processed.ts'
 import { isRepeatRegion, layoutRepeatRegion } from './repeatRegion.ts'
@@ -67,7 +68,12 @@ export function findGlyph(
       (containerTypes.some(t => t.toLowerCase() === type.toLowerCase()) ||
         hasContainerChildren(feature))
     ) {
-      return layoutSubfeatures
+      // Only here, the gene-over-transcripts shape: the branch above is a
+      // polyprotein's cleavage products, which are not isoforms of each other
+      // and merge into nonsense.
+      return config.geneGlyphMode === 'merged'
+        ? layoutMergedGene
+        : layoutSubfeatures
     }
     if (hasCDSSubfeature(feature)) {
       return layoutProcessedTranscript

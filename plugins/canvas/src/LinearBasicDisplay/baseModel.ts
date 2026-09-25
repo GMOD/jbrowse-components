@@ -125,6 +125,7 @@ import {
   yMorphVolatiles,
 } from './yMorphViews.ts'
 
+import type { GeneGlyphMode } from '../RenderFeatureDataRPC/geneGlyphMode.ts'
 import type { IsoformPicks } from '../RenderFeatureDataRPC/isoformPicks.ts'
 import type {
   DisplayMode,
@@ -145,7 +146,6 @@ import type {
 import type { FeatureFacet, FeatureGroupSection } from './facet.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
 import type { RegionInstanceIndex } from './featureHighlightInk.ts'
-import type { GeneGlyphMode } from './geneGlyphMode.ts'
 import type { GroupByScanOptions } from './scanGroupByCandidates.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
