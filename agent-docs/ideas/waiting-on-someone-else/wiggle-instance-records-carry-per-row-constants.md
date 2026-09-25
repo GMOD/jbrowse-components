@@ -176,16 +176,24 @@ cost then moves to hidden sources staying in the buffer.
   record removes it from density too. Density then needs the ramp and the row
   table in one texture (row 0 the ramp, row 1 the colours), or multi-texture
   support in both HALs.
-- The WebGPU bind group layout gives the texture and sampler
-  `GPUShaderStage.FRAGMENT` only (`deviceGpuCache.ts`). A fragment-stage lookup
-  on a flat row varying works now. A vertex-stage lookup needs VERTEX
-  visibility, a one-line change that every textured pipeline shares.
+- The WebGPU bind group layout shows each binding to the stages the shader's
+  reflected table says read it (`bindGroupLayoutEntries`, `deviceGpuCache.ts`),
+  so a vertex-stage lookup needs nothing of the HAL: `barMark` samples its
+  ramp in the vertex stage, and the span pass samples its row table there
+  ([ADR-ROWTABLE](../../architecture-decision-records/ADR-ROWTABLE-FILE)).
 - **`Sampler2D.Load` emits invalid WGSL** with this slangc: `textureLoad` on the
   sampler variable. `SampleLevel` at the texel centre with a `nearest` binding
   compiles to `textureSampleLevel` and `textureLod`, both of which work. Found
   by compiling a probe shader, not by drawing one.
-- The texture's max dimension is ≥8192 on WebGPU. WebGL2 guarantees 4096, so
-  wrap rows onto 2D past that.
+- The texture's max dimension is ≥8192 on WebGPU. WebGL2 guarantees 2048, so
+  the row table wraps keys onto further rows past `ROW_TABLE_MAX_WIDTH`.
+- **The table exists.** `packages/render-core/src/marks/rowTable.ts` and
+  `shaders/rowTable.slang` are the two-plane key → slot, hidden, colour
+  texture the span pass reads and the multi-row feature display drives
+  (ADR-ROWTABLE). Wiggle's fill and density passes take it once a second
+  texture binding lands in both HALs, or the ramp and the table share one
+  texture; the line and band passes bind nothing today and can take it as
+  span did.
 
 **What kills the uniform-array version:** WebGL2 guarantees a
 `MAX_UNIFORM_BLOCK_SIZE` of only 16,384 bytes, and std140 pads each array
@@ -199,10 +207,12 @@ not measured on hardware.
 avg-path pos/neg split has no GPU consumer left. The line and band shaders
 already colour by side.
 
-**Cost and risk:** medium-high. It touches four shaders, density's texture, the
-HAL layout, and every Canvas2D painter, which today reads `source.color` and
-would read the same table. Whiskers scatter's per-instance tints
-(`colorsAbgr`) need a band index in the row word, or they keep a colour lane.
+**Cost and risk:** medium. The table, its shader module, the shape-side
+binding and the Canvas2D reading of it landed with the span pass
+(ADR-ROWTABLE); what is left here is four wiggle shaders reading it, density's
+second texture, and the painters reading the table where they read
+`source.color`. Whiskers scatter's per-instance tints (`colorsAbgr`) need a
+band index in the row word, or they keep a colour lane.
 
 ### 4. ADR-016, re-measured: don't move the split, delete it — landed
 

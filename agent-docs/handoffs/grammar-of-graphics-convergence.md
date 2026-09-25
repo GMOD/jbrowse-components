@@ -31,7 +31,10 @@ scale, the facet and the transform step are one object each (ADR-131, 135, 142,
 150, 153): the painter, the shader's uniforms, the legend, the axis, the menu,
 the dialog, the validator, the SVG export and the hit test all derive from it.
 A display that spells one of those concepts its own way is the finding. The
-ramp, the row axis and text do not follow this rule yet.
+ramp and text do not follow this rule yet; the row axis does on the multi-row
+feature display, where the row table is the one object the shader, the
+painter and the hit test place a key through
+([ADR-ROWTABLE](../architecture-decision-records/ADR-ROWTABLE-FILE)).
 
 **3. Generality resolves before the loop.** A shape composes its scale at
 `gen:shaders` (ADR-095), a field name becomes a direct read before the walk, a
