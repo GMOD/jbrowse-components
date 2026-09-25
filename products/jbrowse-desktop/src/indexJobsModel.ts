@@ -354,6 +354,10 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
               // for minutes, and writing that stale copy back would revert any
               // edit made to the track while it was indexing
               const current = self.session.trackBasesById.get(trackId)
+              // and the notice goes with the write. A track deleted during the
+              // minutes the run took gets no textSearchAdapter, so reporting it
+              // as indexed named a track that is gone and an .ix nothing points
+              // at.
               if (current) {
                 self.root.updateTrackBase(
                   indexedTrackConf(current, {
@@ -363,11 +367,11 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
                     outLocation,
                   }),
                 )
+                session.notify(
+                  `Successfully indexed track with trackId: ${trackId}`,
+                  'success',
+                )
               }
-              session.notify(
-                `Successfully indexed track with trackId: ${trackId} `,
-                'success',
-              )
             }
           } else {
             for (const assemblyName of assemblies) {
@@ -377,7 +381,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
               })
 
               session.notify(
-                `Successfully indexed assembly: ${assemblyName} `,
+                `Successfully indexed assembly: ${assemblyName}`,
                 'success',
               )
             }

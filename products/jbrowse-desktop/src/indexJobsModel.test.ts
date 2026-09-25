@@ -253,6 +253,25 @@ test('a successful perTrack run indexes only the supported adapters', async () =
   expect(jobsManager.running).toBe(false)
 })
 
+// The run takes minutes, and the track it was indexing can be deleted inside
+// them: there is then nothing to write the textSearchAdapter onto, so saying it
+// was indexed named a track that is gone and an .ix nothing points at.
+test('a track deleted while the run was going gets no success notice', async () => {
+  const tracks = [makeTrack('t1', 'Gff3TabixAdapter')]
+  const { jobsManager, session } = setup({
+    tracks,
+    call: jest.fn().mockImplementation(() => {
+      tracks.length = 0
+      return Promise.resolve(undefined)
+    }),
+  })
+  jobsManager.queueJob(makeEntry())
+  await jobsManager.runJob()
+
+  expect(session.notify).not.toHaveBeenCalled()
+  expect(session.notifyError).not.toHaveBeenCalled()
+})
+
 test("an aggregate run replaces its assembly's index and no other", async () => {
   const { jobsManager, aggregateTextSearchAdapters } = setup()
   const trix = (assemblyNames: string[], localPath: string) => ({
