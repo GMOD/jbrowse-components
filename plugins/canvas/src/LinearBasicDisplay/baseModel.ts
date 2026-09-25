@@ -60,6 +60,7 @@ import {
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
 import DensityBandMixin from '../shared/DensityBandMixin.ts'
+import { featureColorViews } from '../shared/featureColorViews.ts'
 import {
   featureSpanRegion,
   fetchCanvasFeatureDetails,
@@ -349,6 +350,7 @@ export default function baseStateModelFactory(
         return configuredJexlFilters(self)
       },
     }))
+    .views(featureColorViews)
     .views(colorViews)
     .views(() => ({
       /**

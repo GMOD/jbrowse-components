@@ -47,6 +47,14 @@ export const THEME_DERIVED_COLOR = '#f0f'
 
 export type WorkerColor = Pick<ColorSetting, 'value' | 'field'>
 
+/** The share of a colour object the worker reads: its value, and its field. */
+export function workerColorOf({
+  value,
+  field,
+}: Partial<Pick<ColorSetting, 'value' | 'field'>>): WorkerColor {
+  return { value, field: field ?? '' }
+}
+
 // Fully enumerated — no index signature, so a typo on any property is a type
 // error rather than silently typing as `unknown`.
 export interface DisplayConfig {
@@ -182,7 +190,6 @@ export function pickDisplayConfig(snapshot: Record<string, unknown>) {
   for (const key of DISPLAY_CONFIG_KEYS) {
     picked[key] = source[key]
   }
-  const { value, field } = (source.color ?? {}) as Partial<ColorSetting>
-  picked.color = { value, field: field ?? '' }
+  picked.color = workerColorOf(source.color ?? {})
   return picked as unknown as SettingsDisplayConfig
 }
