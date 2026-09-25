@@ -23,8 +23,8 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
  * stack's lanes and its ribbon gutters are cells of one map, and the lens
  * answers `undefined` for a cell these marks have nothing in.
  *
- * `maxChevronsPerLine` is the consumer's budget, not a limit: the chevron pass
- * shades that many slots per line whether or not a chevron lands in one.
+ * `maxChevronsPerLine` is what the chevron pass registers; what it shades is
+ * per draw, off the canvas (`makeChevronShape`).
  */
 export function featureGlyphMarks<TRegion, TState extends MarkFrame>(spec: {
   glyphs: (region: TRegion) => RegionRenderData | undefined

@@ -410,8 +410,8 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
  * strokes its chevrons per line.
  *
  * `maxChevronsPerLine` is what the pass registers; each draw asks instead for
- * the slots this frame's canvas can hold, which at a laptop width is a fifth of
- * the registered budget and never truncates a line the way a fixed budget does.
+ * the slots this frame's canvas can hold — 49 of the 128 at 1920 CSS px, and
+ * more than 128 past 5077, where a fixed budget dropped a line's far chevrons.
  */
 export function makeChevronShape(
   maxChevronsPerLine: number,

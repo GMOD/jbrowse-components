@@ -77,7 +77,7 @@ noticing in a diff.
 
 | Refused because | Functions | For example |
 | --- | --- | --- |
-| type 'vec2' is outside the supported scalar subset | 25 | `arcBandClipPos`, `buttSegmentCoverage`, `capsuleDist`, `capsuleFrame`, `capsuleQuadLocal`, `covFlippedQuad`, … |
+| type 'vec2' is outside the supported scalar subset | 26 | `arcBandClipPos`, `buttSegmentCoverage`, `capsuleDist`, `capsuleFrame`, `capsuleQuadLocal`, `covFlippedQuad`, … |
 | member access (vector swizzle or struct field) is outside the supported scalar subset | 20 | `arcBandDestY`, `arcBandX`, `arcBandY`, `arcFlipX`, `arcStrokeHalfPx`, `arcsPointDown`, … |
 | type 'ptr' is outside the supported scalar subset | 17 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
 | type 'vec4' is outside the supported scalar subset | 13 | `bandColorAt`, `cutYAt`, `cutYsPx`, `edgeSpan`, `entryPx`, `fillEdges`, … |
