@@ -119,5 +119,5 @@ is no longer shared with anything.
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |
 | `sBlend` | tests only — `syntenyShaderParity.test.ts` |
-| `wideCircleLeg` | nothing |
+| `wideCircleLeg` | tests only — `wideCircleLeg.test.ts` |
 | `yCurve` | tests only — `syntenyShaderParity.test.ts` |

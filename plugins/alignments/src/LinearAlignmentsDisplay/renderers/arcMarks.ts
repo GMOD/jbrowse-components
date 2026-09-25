@@ -76,16 +76,12 @@ function writeArcMarkUniforms(
   writeArcBandUniforms(scratch, {
     bpHi: clip.bpStartHi,
     bpLo: clip.bpStartLo,
-    // The BLOCK's span, not the clipped one: an arc's foot may be
-    // extrapolated well outside the block, and `blockStartPx`/`blockWidth`
-    // are what carry that.
     bpLen: block.end - block.start,
     canvasW: clip.scissorW,
     canvasH: frame.canvasHeight,
     reversed: block.reversed,
     arcAnchorPx: arcAnchorY(p.band.top, p.band.height, p.band.down),
     arcBandH: p.band.height,
-    blockStartPx: block.screenStartPx - clip.scissorX,
     blockWidth: block.screenEndPx - block.screenStartPx,
     lineWidthPx: p.lineWidth,
     down: p.band.down,

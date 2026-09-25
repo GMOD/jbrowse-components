@@ -37,9 +37,8 @@ public struct ArcBandUniforms {
   // (`availH`) maps into. Distinct from `canvasH`, the clip-space divisor.
   public float arcBandH;
 
-  // The block's own px projection, which is what carries a foot extrapolated
+  // The block's own px width, which is what carries a foot extrapolated
   // outside it.
-  public float blockStartPx;
   public float blockWidth;
   // The stroke-width FLOOR every mark is raised to, an antialiasing property of
   // the display; each mark's own width rides on its instance.
@@ -84,9 +83,8 @@ public struct ArcBandUniforms {
   // gone; a second table holding the identical nine colours is only somewhere
   // for them to drift.
   //
-  // Last in the block on purpose: the seventeen scalars above pack into 68
-  // bytes, so std140's 16-byte array alignment costs 12 bytes of pad rather
-  // than splitting the scalars around it.
+  // Last in the block on purpose: the sixteen scalars above pack into 64
+  // bytes, exactly where std140's 16-byte array alignment wants it.
   public float4 arcColor[ARC_COLOR_SLOTS];
 };
 
@@ -155,18 +153,12 @@ public float arcBpToLinear(uint bp, ArcBandUniforms u) {
                        u.hpZero);
 }
 
-// Where a genomic position sits along the band, in CSS px across the BLOCK.
-//
-// The band's x is the one piece of its frame that was still spelled six times —
-// twice each in arc.slang and arcFlat.slang, once each in arcMarker.slang and
-// arcLine.slang, identically. It is the block's own projection rather than a
-// canvas one because an arc's foot may be extrapolated well outside the block
-// (a cross-region pair's far mate), and `blockStartPx` / `blockWidth` are what
-// carry that extrapolation; `arcBandClipPos` normalizes the result afterwards.
-// Passes that reach clip space directly — arcLine.slang, whose y is already
-// canvas-absolute — still take their x from here.
+// Where a genomic position sits along the band, in CSS px from the scissor's
+// left edge, which is where `bpHi`/`bpLo` (the clipped start) project to. The
+// block's px width rather than the scissor's carries a foot extrapolated well
+// outside the block (a cross-region pair's far mate).
 public float arcBandX(uint bp, ArcBandUniforms u) {
-  return u.blockStartPx + arcBpToLinear(bp, u) * u.blockWidth;
+  return arcBpToLinear(bp, u) * u.blockWidth;
 }
 
 // A band-local point (CSS px from the anchor) placed on the canvas. Forgetting

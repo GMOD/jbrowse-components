@@ -9,7 +9,7 @@ export const BINDINGS: readonly ShaderBinding[] = [
 
 export const VERTS_PER_INSTANCE = 6
 
-export const UNIFORMS_SIZE_BYTES = 224
+export const UNIFORMS_SIZE_BYTES = 208
 
 // Word indices into a Float32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
@@ -21,19 +21,18 @@ export const UNIFORM_OFFSET_F32 = {
   canvasH: 5,
   covOffset: 6,
   arcBandH: 7,
-  blockStartPx: 8,
-  blockWidth: 9,
-  lineWidthPx: 10,
-  pairedArcsDown: 11,
-  arcsYDomainBp: 12,
-  arcsYLog: 13,
-  reversed: 14,
-  devicePixelRatio: 15,
+  blockWidth: 8,
+  lineWidthPx: 9,
+  pairedArcsDown: 10,
+  arcsYDomainBp: 11,
+  arcsYLog: 12,
+  reversed: 13,
+  devicePixelRatio: 14,
 } as const
 
 // Word indices into a Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_U32 = {
-  colorFlatConnector: 16,
+  colorFlatConnector: 15,
 } as const
 
 
@@ -42,7 +41,7 @@ export const UNIFORM_OFFSET_U32 = {
 // field’s scalar type picks, same as UNIFORM_OFFSET_*). NOT
 // consecutive: std140 pads every array element to 16 bytes.
 export const UNIFORM_SLOT_ARRAYS = {
-  arcColor: [20, 24, 28, 32, 36, 40, 44, 48, 52] as const,
+  arcColor: [16, 20, 24, 28, 32, 36, 40, 44, 48] as const,
 } as const
 
 // Element `i` of the `arcColor` uniform array (4 components).
@@ -71,7 +70,6 @@ export interface Uniforms {
   canvasH: number
   covOffset: number
   arcBandH: number
-  blockStartPx: number
   blockWidth: number
   lineWidthPx: number
   pairedArcsDown: number
@@ -94,51 +92,50 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[5] = uniforms.canvasH
   f32[6] = uniforms.covOffset
   f32[7] = uniforms.arcBandH
-  f32[8] = uniforms.blockStartPx
-  f32[9] = uniforms.blockWidth
-  f32[10] = uniforms.lineWidthPx
-  f32[11] = uniforms.pairedArcsDown
-  f32[12] = uniforms.arcsYDomainBp
-  f32[13] = uniforms.arcsYLog
-  f32[14] = uniforms.reversed
-  f32[15] = uniforms.devicePixelRatio
-  u32[16] = uniforms.colorFlatConnector
-  f32[20] = uniforms.arcColor[0][0]
-  f32[21] = uniforms.arcColor[0][1]
-  f32[22] = uniforms.arcColor[0][2]
-  f32[23] = uniforms.arcColor[0][3]
-  f32[24] = uniforms.arcColor[1][0]
-  f32[25] = uniforms.arcColor[1][1]
-  f32[26] = uniforms.arcColor[1][2]
-  f32[27] = uniforms.arcColor[1][3]
-  f32[28] = uniforms.arcColor[2][0]
-  f32[29] = uniforms.arcColor[2][1]
-  f32[30] = uniforms.arcColor[2][2]
-  f32[31] = uniforms.arcColor[2][3]
-  f32[32] = uniforms.arcColor[3][0]
-  f32[33] = uniforms.arcColor[3][1]
-  f32[34] = uniforms.arcColor[3][2]
-  f32[35] = uniforms.arcColor[3][3]
-  f32[36] = uniforms.arcColor[4][0]
-  f32[37] = uniforms.arcColor[4][1]
-  f32[38] = uniforms.arcColor[4][2]
-  f32[39] = uniforms.arcColor[4][3]
-  f32[40] = uniforms.arcColor[5][0]
-  f32[41] = uniforms.arcColor[5][1]
-  f32[42] = uniforms.arcColor[5][2]
-  f32[43] = uniforms.arcColor[5][3]
-  f32[44] = uniforms.arcColor[6][0]
-  f32[45] = uniforms.arcColor[6][1]
-  f32[46] = uniforms.arcColor[6][2]
-  f32[47] = uniforms.arcColor[6][3]
-  f32[48] = uniforms.arcColor[7][0]
-  f32[49] = uniforms.arcColor[7][1]
-  f32[50] = uniforms.arcColor[7][2]
-  f32[51] = uniforms.arcColor[7][3]
-  f32[52] = uniforms.arcColor[8][0]
-  f32[53] = uniforms.arcColor[8][1]
-  f32[54] = uniforms.arcColor[8][2]
-  f32[55] = uniforms.arcColor[8][3]
+  f32[8] = uniforms.blockWidth
+  f32[9] = uniforms.lineWidthPx
+  f32[10] = uniforms.pairedArcsDown
+  f32[11] = uniforms.arcsYDomainBp
+  f32[12] = uniforms.arcsYLog
+  f32[13] = uniforms.reversed
+  f32[14] = uniforms.devicePixelRatio
+  u32[15] = uniforms.colorFlatConnector
+  f32[16] = uniforms.arcColor[0][0]
+  f32[17] = uniforms.arcColor[0][1]
+  f32[18] = uniforms.arcColor[0][2]
+  f32[19] = uniforms.arcColor[0][3]
+  f32[20] = uniforms.arcColor[1][0]
+  f32[21] = uniforms.arcColor[1][1]
+  f32[22] = uniforms.arcColor[1][2]
+  f32[23] = uniforms.arcColor[1][3]
+  f32[24] = uniforms.arcColor[2][0]
+  f32[25] = uniforms.arcColor[2][1]
+  f32[26] = uniforms.arcColor[2][2]
+  f32[27] = uniforms.arcColor[2][3]
+  f32[28] = uniforms.arcColor[3][0]
+  f32[29] = uniforms.arcColor[3][1]
+  f32[30] = uniforms.arcColor[3][2]
+  f32[31] = uniforms.arcColor[3][3]
+  f32[32] = uniforms.arcColor[4][0]
+  f32[33] = uniforms.arcColor[4][1]
+  f32[34] = uniforms.arcColor[4][2]
+  f32[35] = uniforms.arcColor[4][3]
+  f32[36] = uniforms.arcColor[5][0]
+  f32[37] = uniforms.arcColor[5][1]
+  f32[38] = uniforms.arcColor[5][2]
+  f32[39] = uniforms.arcColor[5][3]
+  f32[40] = uniforms.arcColor[6][0]
+  f32[41] = uniforms.arcColor[6][1]
+  f32[42] = uniforms.arcColor[6][2]
+  f32[43] = uniforms.arcColor[6][3]
+  f32[44] = uniforms.arcColor[7][0]
+  f32[45] = uniforms.arcColor[7][1]
+  f32[46] = uniforms.arcColor[7][2]
+  f32[47] = uniforms.arcColor[7][3]
+  f32[48] = uniforms.arcColor[8][0]
+  f32[49] = uniforms.arcColor[8][1]
+  f32[50] = uniforms.arcColor[8][2]
+  f32[51] = uniforms.arcColor[8][3]
 }
 
 export const INSTANCE_STRIDE_BYTES = 8

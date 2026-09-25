@@ -27,8 +27,7 @@ export interface ArcBandUniformValues {
   /** The arc baseline in absolute canvas px — `arcAnchorY`, band bottom in up mode. */
   arcAnchorPx: number
   arcBandH: number
-  /** The block's own px projection, which carries a foot extrapolated outside it. */
-  blockStartPx: number
+  /** The block's own px width, which carries a foot extrapolated outside it. */
   blockWidth: number
   /** The configured `readConnectionsLineWidth`; raised here to the AA floor. */
   lineWidthPx: number
@@ -79,7 +78,6 @@ export function writeArcBandUniforms(
     canvasH: v.canvasH,
     covOffset: v.arcAnchorPx,
     arcBandH: v.arcBandH,
-    blockStartPx: v.blockStartPx,
     blockWidth: v.blockWidth,
     // A near-horizontal arc thinner than ~1.5 device px has no vertical room to
     // anti-alias and stairsteps. Floor at 1.5 device px (expressed in CSS px via
