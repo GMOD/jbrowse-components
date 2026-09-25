@@ -2466,7 +2466,7 @@ test('a dialog submit over a display already faceted by source keeps its section
   display.setPlotFields({
     numeric: ['score'],
     categorical: [],
-    facet: 'source',
+    rows: 'source',
   })
   display.setPlotMarks({ ...display.plotSpec, mark: 'point' })
   expect(display.markTypes).toEqual(['point'])
@@ -2488,7 +2488,7 @@ test('a dialog submit over a display drawing a row per source keeps drawing rows
   display.setPlotFields({
     numeric: ['score'],
     categorical: [],
-    facet: 'source',
+    rows: 'source',
   })
   display.setPlotMarks({ ...display.plotSpec, mark: 'point' })
   expect(display.markTypes).toEqual(['point'])
