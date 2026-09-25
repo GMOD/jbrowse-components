@@ -37,7 +37,8 @@ The flattest form: an assembly is just a `name` and a sequence-file `uri`.
 jbrowse-core picks the adapter (`Bgzip`/`Indexed`/`TwoBit`) from the
 extension, derives the `.fai`/`.gzi` siblings, and fills in the
 `ReferenceSequenceTrack`. `refNameAliases`/`cytobands` are each just their
-file, as a path or `{ uri }`.
+file, as a path or `{ uri }`; an alias file named `…sequence_report.tsv` is
+read as NCBI's sequence report, anything else as a chromAlias-style table.
 
 ```js
 {

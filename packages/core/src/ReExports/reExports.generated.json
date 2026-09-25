@@ -730,6 +730,7 @@
       "package": "@jbrowse/core",
       "names": [
         "default",
+        "expandAssemblySequence",
         "expandAssemblySequenceAdapter",
         "expandAssemblyShorthand"
       ],

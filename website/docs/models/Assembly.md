@@ -20,8 +20,9 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 | --- | --- |
 | <span id="volatile-error">**error**</span><br><code>error</code> |  |
 | <span id="volatile-loadingp">**loadingP**</span><br><code>loadingP: undefined as Promise&lt;void&gt; &#124; undefined</code> |  |
+| <span id="volatile-loadepoch">**loadEpoch**</span><br><code>loadEpoch: 0</code> |  |
 | <span id="volatile-adapterloads">**adapterLoads**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>adapterLoads: new QuickLRU&lt;string, Promise&lt;RefNameAliases&gt;&gt;({ m…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>adapterLoads: new QuickLRU&lt;string, Promise&lt;RefNameAliases&gt;&gt;({&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;maxSize: 1000,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;})</code></pre></dialog></span> |  |
-| <span id="volatile-volatileregions">**volatileRegions**</span><br><code>volatileRegions: undefined as BasicRegion[] &#124; undefined</code> |  |
+| <span id="volatile-regions">**regions**</span><br><code>regions: undefined as BasicRegion[] &#124; undefined</code> |  |
 | <span id="volatile-refnamealiases">**refNameAliases**</span><br><code>refNameAliases: undefined as RefNameAliases &#124; undefined</code> |  |
 | <span id="volatile-canonicaltoseqadapterrefnames">**canonicalToSeqAdapterRefNames**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>canonicalToSeqAdapterRefNames: undefined as &#124; Record&lt;string, st…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>canonicalToSeqAdapterRefNames: undefined as&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#124; Record&lt;string, string&gt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#124; undefined</code></pre></dialog></span> | Maps canonical refName -> sequence adapter refName (in FASTA). These may differ when refNameAliases with override:true remap names. |
 | <span id="volatile-cytobands">**cytobands**</span><br><code>cytobands: undefined as Feature[] &#124; undefined</code> |  |
@@ -43,7 +44,6 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 | <span id="getter-refnamecolors">**refNameColors**</span><br><code>string[]</code> |  |
 | <span id="getter-allaliases">**allAliases**</span><br><code>string[]</code> |  |
 | <span id="getter-initialized">**initialized**</span><br><code>boolean</code> |  |
-| <span id="getter-regions">**regions**</span><br><code>BasicRegion[] &#124; undefined</code> |  |
 | <span id="getter-allrefnames">**allRefNames**</span><br><code>string[] &#124; undefined</code> | note: lowerCaseRefNameAliases not included here: this allows the list of refnames to be just the "normal casing", but things like getCanonicalRefName can resolve a lower-case name if needed |
 | <span id="getter-namesbycanonicalrefname">**namesByCanonicalRefName**</span><br><code>Map&lt;string, string[]&gt; &#124; undefined</code> | canonical refName -> every name this assembly has for that sequence, canonical first. The inverse of `refNameAliases`, memoized here because the readers that want it want the whole table (the About dialog's alias listing) rather than one row. Undefined until the aliases load. |
 | <span id="getter-rpcmanager">**rpcManager**</span><br><code>RpcManager</code> |  |
@@ -81,3 +81,4 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 | <span id="action-setloadingp">**setLoadingP**</span><br><code>(p?: Promise&lt;void&gt; &#124; undefined) =&gt; void</code> |  |
 | <span id="action-loadpre">**loadPre**</span><br><code>() =&gt; Promise&lt;void&gt;</code> |  |
 | <span id="action-load">**load**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | Resolves once regions + refNameAliases are set, and rejects with the load failure. Idempotent: concurrent callers share one attempt, and a failed attempt is discarded so the next call retries.<br><br>The rejection is the authoritative signal for a caller that awaits it. `self.error` mirrors it for reactive consumers only (the UI renders it), and must not be consulted after an await: a concurrent retry clears it, so an awaiter reading it can see a cleared error and mistake a failed load for a successful one. |
+| <span id="action-reload">**reload**</span><br><code>() =&gt; void</code> | Load again from the current config, discarding the attempt in flight and every refName map built against the old one. The loaded state stays on screen until the new load replaces it. |
