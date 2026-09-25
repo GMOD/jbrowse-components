@@ -120,9 +120,8 @@ export interface ActiveFetch {
    * work and a trailing write lands on top of a hand-written
    * `setStatusMessage(undefined)` up to a window later.
    *
-   * A **superseded** run calls it too, and must: its slot goes on voting for a
-   * phase that is over until it does. The run that replaced it has already
-   * opened its own slot by then, so the label the user is looking at survives.
+   * A superseded run's slot is already retired by the `begin()` that replaced
+   * it, so its `end()` only closes the guard.
    */
   end: () => void
 }
@@ -209,13 +208,14 @@ export function createAbortRotation(
       // the caller's commit guard, which is why both go through this closure.
       let ended = false
       const isCurrent = () => !ended && controller === current && isAlive(self)
-      // Opened BEFORE the superseded run reaches its `finally`, which is what
-      // keeps the label the user is looking at from blanking between the two:
-      // the run being replaced is suspended at an await and resumes a microtask
-      // from now, by which point this slot is already voting. A fetch being
-      // SUPERSEDED is the one case where the display does not stop loading, so
-      // a gap there reads as the overlay's `'Loading'` fallback (ADR-080).
+      // Opened before the superseded slot retires, so the window is never idle
+      // across the handover and the label on screen survives it (ADR-080).
+      // Retired here rather than left to the superseded run's `finally`, which
+      // comes only when its work settles — and a CRAM record read or a shared
+      // parse the signal is withheld from runs on past the abort, its last
+      // reading summed into this fetch's bar the whole time.
       const stream = statusWindow.open({ isCurrent })
+      openStream?.clear()
       openStream = stream
       return {
         signal: controller.signal,

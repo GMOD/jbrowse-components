@@ -285,7 +285,7 @@ export interface StatusStream {
    * the last label of a fetch that is over.
    *
    * It is not guarded by `isCurrent`: a run that has just finished is no longer
-   * current, and a superseded run must retire its slot too or it votes forever.
+   * current, and its slot must still retire.
    */
   clear: () => void
 }

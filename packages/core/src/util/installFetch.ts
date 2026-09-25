@@ -127,9 +127,7 @@ export async function runFetchOnce<TArgs, TResult>(
     if (isAlive(self)) {
       onEnd?.(isCurrent())
     }
-    // last, because it closes the guard `onEnd` reads, and unconditional
-    // because a superseded run's status slot goes on voting for a phase that
-    // is over until it is retired
+    // last, because it closes the guard `onEnd` reads
     end()
   }
 }

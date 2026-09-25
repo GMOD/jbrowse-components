@@ -303,13 +303,8 @@ view has nothing to resolve. `makeFetchContext` says so at more length.
 
 Inside the worker, and in the main-thread paths that still fan out by hand,
 reach for `createStatusFanOut` yourself: `BaseFeatureDataAdapter`'s multi-region
-`merge`, a `Promise.all` over sidecar files, MAF's two concurrent branches. One
-main-thread one is left: the circular view's chord fetch, whose two halves
-(features ‖ refName map) predate the shared helper. It should take
-`fanOutStatus`, and its features half should take `ctx.callRpc` with it — that
-half hand-threads the signal into a bare `rpcManager.call` today, and chord
-is a DISPLAY, so unlike the breakpoint view it has an `rpcSessionId` to resolve.
-The tell that a fan-out is missing: the first operation to finish writes the
+`merge`, a `Promise.all` over sidecar files, MAF's two concurrent branches. The
+tell that a fan-out is missing: the first operation to finish writes the
 `''` that every phase helper clears with, and the label blanks while the rest are
 still running.
 
@@ -344,8 +339,11 @@ closes is the failure mode the rest of this design rests on not happening: a
 fan-out cannot see the end of a batch and no longer guesses at one (ADR-080), so
 **an operation retiring its own slot when its work ends is what ends the
 stream**. Call `clear()` in the `finally` of the operation; it blanks the field
-only when no other operation is still reporting (ADR-081), so a superseded run
-calls it too and must.
+only when no other operation is still reporting (ADR-081). A superseded
+rotation run needs none: the `begin()` that replaced it retires its slot, because
+its own `finally` waits on work that may ignore the abort — a CRAM record read, a
+shared parse the signal is withheld from — and its last reading would be summed
+into the successor's bar until then.
 
 `createStatusWindow(write)` takes the field's single writer at creation, so
 whatever guards it — `isAlive(self)`, a React `alive` flag — guards every status

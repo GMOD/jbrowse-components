@@ -140,11 +140,14 @@ describe('the status window', () => {
   // rotation raised — and clearing there would wipe the label belonging to the
   // fetch that replaced it.
   test('end() on a superseded fetch leaves the live one alone', () => {
+    jest.useFakeTimers()
     const host = makeHost()
     const rotation = createAbortRotation(host, host)
     const first = rotation.begin()
     const second = rotation.begin()
     second.statusCallback('Downloading')
+    clock += 100
+    jest.advanceTimersByTime(100)
     first.end()
     expect(host.statusMessage).toBe('Downloading')
     rotation.dispose()
@@ -307,4 +310,24 @@ describe('a host that owns its own window', () => {
     expect(host.statusMessage).toBeUndefined()
     rotation.dispose()
   })
+})
+
+// A superseded run whose work ignores the abort — a CRAM record read, a shared
+// whole-file parse the signal is withheld from — reaches its `finally` only when
+// that work ends. Its last reading must not be summed into its successor's bar
+// meanwhile: two slots at 2/10 and 6/10 read 40%, for a load that is at 60%.
+test('a superseded run stops voting before it reaches its finally', () => {
+  jest.useFakeTimers({ now: 1_000_000 })
+  const host = makeHost()
+  const rotation = createAbortRotation(host, host)
+  const first = rotation.begin()
+  first.statusCallback({ message: 'Downloading', current: 2, total: 10 })
+  const second = rotation.begin()
+  second.statusCallback({ message: 'Downloading', current: 6, total: 10 })
+  jest.advanceTimersByTime(100)
+  expect(host.statusMessage).toMatchObject({ current: 6, total: 10 })
+  first.end()
+  second.end()
+  rotation.dispose()
+  jest.useRealTimers()
 })
