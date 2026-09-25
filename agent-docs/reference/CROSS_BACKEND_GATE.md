@@ -415,6 +415,15 @@ both sides. Two per-base entries arrived and left again inside a day, which is
 its own worked example of the rule at the top of this section — see "The
 per-base wall" below.
 
+**It is three since 2026-09-24**, when MAF's summary bars moved onto the backend
+canvas and the MAF suite took its first dual snapshots. `maf-summary` measures
+7.50% under swiftshader and 7.18% on a real GPU, so it moves with the
+rasterizer: Canvas2D antialiases each abutting bar's edge on its own and leaves
+a lighter seam where two meet on a fractional pixel, which the GPU does not.
+The old overlay was Canvas2D on every backend, so the seams were on screen
+everywhere until then; closing them on the Canvas2D side is the span shape's
+`seamPx`, which darkens the overlap of two translucent bars instead.
+
 **Order matters now, and did not before.** `thresholdFor` takes the first
 substring match, so `inversion-pbsim-linked` has to sit above `inversion-pbsim`
 or it is swallowed by it. Latent while there was one entry.

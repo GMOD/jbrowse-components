@@ -159,6 +159,14 @@ const THRESHOLD_OVERRIDES: { match: string; threshold: number }[] = [
   // It was deleted on 2026-08-05 at "measured 2.22%" because it sat under the
   // old 3% default; it is 2.40% now, which is worth watching on its own.
   { match: 'inversion-paired-coverage', threshold: 0.03 },
+  // MAF summary bars, one per alignment block per species, abutting where the
+  // blocks do. Canvas2D antialiases each bar's edge on its own, so where two
+  // meet on a fractional pixel it leaves a lighter seam (58 grey between two
+  // opaque black bars); the GPU resolves the pixel's coverage once and leaves
+  // none. Measured 7.50% under swiftshader and 7.18% on a real GPU, so it moves
+  // with the rasterizer. The span shape's `seamPx` would close it on the
+  // Canvas2D side, for a darker sliver where translucent bars then overlap.
+  { match: 'maf-summary', threshold: 0.09 },
   // A one-pixel step line crossing the pivot every few bins: Canvas2D cuts
   // each crossing with a capped stroke, the shader per fragment. The step plot
   // measured 1.82% under swiftshader and 1.69% on a real GPU, all on the line;
