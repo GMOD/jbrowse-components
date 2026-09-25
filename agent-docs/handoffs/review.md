@@ -1,6 +1,6 @@
 ---
 name: review
-description: The link-mark round (de0a383e01..c860b6e68f, ADR-163) reviewed on 2026-09-25. The seam, the 256-region foot, and the per-block drawing that cut a link into pieces are fixed, the last by drawing the link over the whole canvas; open are a log size scale below 1, an alias-spelt breakend pair inside one region, the circular ring's link placement, and a far circle's hover box.
+description: The link-mark round (de0a383e01..c860b6e68f, ADR-163) reviewed on 2026-09-25. The seam, the 256-region foot, the per-block drawing that cut a link into pieces, and the display menu offering no arcs are fixed; open are a log size scale below 1, an alias-spelt breakend pair inside one region, the circular ring's link placement, and a far circle's hover box.
 ---
 
 # Link-mark review
@@ -39,6 +39,3 @@ foot and a record whose far end has none draws whole.
 - `website/scripts/figure-manifest.json:236` still names
   `LinearPairedArcDisplay` in `cancer_sv/k562_amplicon_dna`'s live url; the
   spec is rewritten, so `audit-figures` regenerates it.
-- An SV VCF or BEDPE track offers no arcs from the display menu until
-  [the default-plot TODO](../todo/a-paired-record-draws-its-links-with-no-config.md)
-  lands.
