@@ -42,6 +42,28 @@ test('rasterization is on by default and --noRasterize turns it off', async () =
   )
 })
 
+test('a rasterized pileup layer carries ink', async () => {
+  const { loadImage, createCanvas } = await import('@napi-rs/canvas')
+  const svg = await render({})
+  const uri = /href="(data:image\/png;base64,[^"]+)"/.exec(svg)?.[1]
+  assert.ok(uri, 'the pileup should embed a raster image')
+  const image = await loadImage(uri)
+  const canvas = createCanvas(image.width, image.height)
+  const ctx = canvas.getContext('2d')
+  ctx.drawImage(image, 0, 0)
+  const { data } = ctx.getImageData(0, 0, image.width, image.height)
+  let inked = 0
+  for (let i = 3; i < data.length; i += 4) {
+    if (data[i] > 0) {
+      inked++
+    }
+  }
+  assert.ok(
+    inked > (image.width * image.height) / 20,
+    `only ${inked} of ${image.width * image.height} pixels drawn`,
+  )
+})
+
 // --showGridlines draws genomic coordinate gridlines. The ticks are collapsed
 // into a clipped <path> pair (minor/major) rather than a <line> each, so assert
 // on the gridline clip group the export wraps them in.

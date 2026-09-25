@@ -15,7 +15,7 @@ import {
   renderToSvg as renderLinearToSvg,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createViewStateAsync } from '@jbrowse/react-app2'
-import { createCanvas } from 'canvas'
+import { createCanvas } from '@napi-rs/canvas'
 import { autorun } from 'mobx'
 
 import {
@@ -167,7 +167,7 @@ export interface Rendered {
 
 type ModeRenderer = (ctx: ModeContext) => Promise<string | Rendered>
 
-// Rasterized layers draw into a real node-canvas rather than whatever jsdom
+// Rasterized layers draw into a real canvas rather than whatever jsdom
 // hands back from document.createElement, so PNG-embedded layers (alignments,
 // wiggle, synteny ribbons) come out drawn instead of blank.
 const nodeCanvas = (w: number, h: number) =>
