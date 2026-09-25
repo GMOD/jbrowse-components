@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 45 shaders with entry points. 116 functions
-are inside the emitter's subset, of which **86 are exported**.
+Scanned 45 shaders with entry points. 115 functions
+are inside the emitter's subset, of which **85 are exported**.
 
 ## Candidates
 
@@ -81,8 +81,8 @@ noticing in a diff.
 | member access (vector swizzle or struct field) is outside the supported scalar subset | 19 | `arcBandDestY`, `arcBandX`, `arcBandY`, `arcFlipX`, `arcStrokeHalfPx`, `arcsPointDown`, … |
 | type 'ptr' is outside the supported scalar subset | 17 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
 | type 'vec4' is outside the supported scalar subset | 13 | `bandColorAt`, `cutYAt`, `cutYsPx`, `edgeSpan`, `entryPx`, `fillEdges`, … |
-| type 'vec3' is outside the supported scalar subset | 6 | `arcColorByIndex`, `baseColor`, `bpRange`, `categoryPaletteColor`, `hueRampHalfSat`, `linkedReadColorByIndex` |
 | type 'Instance' is outside the supported scalar subset | 5 | `arcCurve`, `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
+| type 'vec3' is outside the supported scalar subset | 5 | `arcColorByIndex`, `baseColor`, `bpRange`, `categoryPaletteColor`, `linkedReadColorByIndex` |
 | type 'texture_2d' is outside the supported scalar subset | 4 | `markInstanceColor`, `rampColor`, `rampColorPremultiplied`, `rowTableLookup` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 2 | `aaGradient`, `glyphEdgeAlpha` |
 | type 'FillVsOut' is outside the supported scalar subset | 2 | `fillFs`, `strokeFs` |
@@ -117,7 +117,6 @@ is no longer shared with anything.
 | `edgeCoverage` | tests only — `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts` |
 | `extendToMinWidthPx` | tests only — `hpmathParity.test.ts`, `rectSpanParity.test.ts` |
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
-| `hueRampLane` | tests only — `mapqHueParity.test.ts` |
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |
 | `sBlend` | tests only — `syntenyShaderParity.test.ts` |
 | `yCurve` | tests only — `syntenyShaderParity.test.ts` |
