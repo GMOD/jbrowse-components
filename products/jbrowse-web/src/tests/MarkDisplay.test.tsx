@@ -72,14 +72,14 @@ beforeEach(() => {
 
 const timeout = 20000
 
-test('bars from a BED score column, coloured by strand, with the key on screen', async () => {
+test('bars from a BED score column, coloured by name, with the key on screen', async () => {
   const { view, findByTestId } = await createView(
     markTrackConfig('mark_bars', [
       {
         mark: 'bar',
         encoding: {
           y: 'score',
-          color: { field: 'strand', scale: 'categorical' },
+          color: { field: 'name', scale: 'categorical' },
         },
       },
     ]),
@@ -89,12 +89,13 @@ test('bars from a BED score column, coloured by strand, with the key on screen',
 
   const el = await findDisplayPainted('mark-display', { timeout })
   expect(el.dataset.displayId).toBe('mark_bars-marks')
-  // every feature in volvox-bed12 is on the + strand, so the categorical
-  // table the worker resolved has the one entry
+  // by name, not strand: every volvox-bed12 feature is on +, and a one-colour
+  // key is one legendIsReadable drops
   const legend = await findByTestId('floating-legend', {}, { timeout })
   await waitFor(() => {
-    expect(legend.textContent).toContain('Forward strand')
+    expect(legend.textContent).toContain('EDEN.3')
   })
+  expect(legend.textContent).toContain('EDEN.1')
 }, 30000)
 
 test('the SVG export paints the same bars and carries the key under its title', async () => {
@@ -105,10 +106,11 @@ test('the SVG export paints the same bars and carries the key under its title', 
         encoding: {
           y: 'score',
           color: {
-            field: 'strand',
+            field: 'name',
             scale: 'categorical',
-            range: ['red'],
-            title: 'Feature strand',
+            domain: ['EDEN.1', 'EDEN.2'],
+            range: ['red', 'blue'],
+            title: 'Feature name',
           },
         },
       },
@@ -132,8 +134,8 @@ test('the SVG export paints the same bars and carries the key under its title', 
   expect(svg).toContain('height="140" fill="rgb(255,0,0)"')
   // the key, off the same table
   expect(svg).toContain('data-testid="color-legend"')
-  expect(svg).toContain('>Feature strand<')
-  expect(svg).toContain('>Forward strand<')
+  expect(svg).toContain('>Feature name<')
+  expect(svg).toContain('>EDEN.2<')
 }, 40000)
 
 test('points over the same file with a jexl colour', async () => {
@@ -178,9 +180,8 @@ test('points with the shape a scale over a field, and the key drawing each shape
 
   const el = await findDisplayPainted('mark-display', { timeout })
   expect(el.dataset.displayDrawn).toBe('true')
-  // the pinned domain's rows lead the key and the region's other name follows
-  // with the shape derived from its value, which a range the domain has spent
-  // can only repeat; every swatch is the shape itself
+  // the pinned domain's rows lead the key, and the region's other name takes a
+  // shape no listed value holds; every swatch is the shape itself
   const legend = await findByTestId('floating-legend', {}, { timeout })
   await waitFor(() => {
     expect(legend.textContent).toContain('EDEN.3')
@@ -192,7 +193,7 @@ test('points with the shape a scale over a field, and the key drawing each shape
   expect(paths).toEqual([
     'M0 0L12 0L6 12Z',
     'M6 0L12 6L6 12L0 6Z',
-    'M6 0L12 6L6 12L0 6Z',
+    'M12 6A6 6 0 1 0 0 6A6 6 0 1 0 12 6Z',
   ])
 }, 30000)
 
