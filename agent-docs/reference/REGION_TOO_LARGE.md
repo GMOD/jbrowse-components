@@ -39,7 +39,7 @@ is the mixin's and the fetch runners'.
 
 1. **The RPC measures first.** `measureRegionBytes` is the first await that
    touches the data in every gated feature RPC (canvas's two, alignments, the
-   mark display's `CoreEncodeFeatures`, both MAF tiers, multi-sample variant —
+   mark display's `CoreGetEncodedLayers`, both MAF tiers, multi-sample variant —
    MAF's two load their samples
    adapter, a cached Newick read, ahead of it): one index read per region, no
    features. Over budget, it answers a `RegionTooLargeResult` in place of the
