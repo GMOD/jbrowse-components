@@ -17,6 +17,7 @@ import {
 import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { rampDomain } from '@jbrowse/core/util/colorRamp'
 import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
@@ -161,6 +162,7 @@ import type {
   FacetSpec,
   LayerRequest,
   MarkEncoding,
+  SizeScaleTable,
   TransformStep,
 } from '@jbrowse/core/util/markEncoding'
 import type { Region } from '@jbrowse/core/util/types/data'
@@ -1157,29 +1159,32 @@ export function stateModelFactory(
         get sizeScales(): (LinkSizeScale | undefined)[] {
           const payloads = [...self.featurePayloads.values()]
           return self.conf.marks.map((_, i) => {
-            let scale: LinkSizeScale | undefined
+            let table: SizeScaleTable | undefined
             let lo = Infinity
             let hi = -Infinity
             for (const { layers } of payloads) {
-              const table = layers[i]?.sizeScale
-              if (!table) {
+              const next = layers[i]?.sizeScale
+              if (!next) {
                 continue
               }
-              scale ??= {
-                domain: [table.domain[0], table.domain[1]],
-                scale: table.scale,
-                range: table.range,
-              }
-              lo = Math.min(lo, table.extent[0])
-              hi = Math.max(hi, table.extent[1])
-              if (!table.pinned[0] && Number.isFinite(lo)) {
-                scale.domain[0] = lo
-              }
-              if (!table.pinned[1] && Number.isFinite(hi)) {
-                scale.domain[1] = hi
-              }
+              table ??= next
+              lo = Math.min(lo, next.extent[0])
+              hi = Math.max(hi, next.extent[1])
             }
-            return scale
+            const { domain, pinned, scale, range } = table ?? {}
+            return domain && pinned && scale && range
+              ? {
+                  // The open ends follow the union, the pinned ones the
+                  // config, as a colour ramp's domain does.
+                  domain: rampDomain(
+                    pinned[0] ? domain[0] : undefined,
+                    pinned[1] ? domain[1] : undefined,
+                    [lo, hi],
+                  ),
+                  scale,
+                  range,
+                }
+              : undefined
           })
         },
         /**
