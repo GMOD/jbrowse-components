@@ -172,7 +172,13 @@ rather than at either file. The adapter resolves `<uri>.segs.bed.gz`,
 }
 ```
 
-<Figure caption="The HPRC graph's two indexes drawn over the C4 region on hg38, colored by the jexl above. The blue segments are the rank-0 backbone the reference walks and the orange ones are what the haplotypes add, so a projection that lost the tags comes out one color." src="/img/pangenome/prepare_graph_segments.png" />
+<Figure caption="The HPRC graph's two indexes drawn over the C4 region on hg38. The segments tile the window end to end, and where they break is where the graph branches: short ones bunch over the C4 repeat and long quiet ones run either side of it." src="/img/pangenome/prepare_graph_segments.png" />
+
+The colour jexl paints rank 0 one way and everything else the other, and on a
+reference window everything comes out rank 0. An rGFA tags an off-reference
+segment with the sample contig it came from, so `GRCh38#0#chr6` returns the
+backbone and nothing else, and the other colour arrives on a sample's own lane
+or in a graph view cut from the same pair.
 
 `assemblyNameToPanSN` ties your assembly to the graph's PanSN prefix. A PanSN
 name has two halves and only the first needs configuring: the **sample** half is

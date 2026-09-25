@@ -281,8 +281,6 @@ by genotype (see [](/docs/user_guides/clustering)), gathering every carrier into
 one block so a hotspot column becomes a solid bar. It replaces the clinical
 bands while on.
 
-<Figure caption="PIK3CA banded by subtype above, and the same window clustered by genotype below. Clustering gathers each hotspot's carriers together, so the column that was scattered through the bands becomes one block." src="/img/tcga/mutations_cluster_rows.png" links="By subtype=tcga/mutations_pik3ca_grouped,Clustered=tcga/mutations_pik3ca_clustered" />
-
 ## Thin the matrix down to recurrent mutations
 
 **Filter by... → Minor allele frequency** in the track menu (or the
@@ -290,8 +288,6 @@ bands while on.
 slot) drops low-frequency columns, which on somatic data keeps only recurrent
 mutations: at _PIK3CA_ the hotspots survive and the private columns go. See
 [filtering by allele frequency and missingness](/docs/user_guides/multivariant_track#filtering-by-allele-frequency-and-missingness).
-
-<Figure caption="The same PIK3CA window unfiltered above and with a minor-allele-frequency floor below. The hotspot columns survive the filter and the single-tumor columns around them do not." src="/img/tcga/mutations_maf_filter.png" links="Unfiltered=tcga/mutations_pik3ca_grouped,Filtered=tcga/mutations_pik3ca_maf" />
 
 Each somatic call is one alt allele out of two, so a mutation carried by 10% of
 the cohort sits at 0.05. _CDH1_'s truncating calls are spread along the gene, so

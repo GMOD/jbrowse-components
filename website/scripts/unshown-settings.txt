@@ -9,3 +9,4 @@ tutorials/dog10k_lof.md 1
 tutorials/local_ancestry.md 1
 tutorials/mappability_qc.md 2
 tutorials/sv_visualization_cgiab.md 1
+tutorials/tcga_cohort_mutations.md 2

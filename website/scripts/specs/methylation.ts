@@ -585,7 +585,8 @@ export const methylationSpecs: ScreenshotSpec[] = [
     url: snrpnReadsPanel({ fillUnmarked: false }),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
-    viewportHeight: 730,
+    // 730 cut 10 css px off the bottom
+    viewportHeight: 742,
     hideSelectors: ['.MuiTooltip-popper'],
     hideTooltip: true,
     annotations: [
@@ -603,7 +604,8 @@ export const methylationSpecs: ScreenshotSpec[] = [
     url: snrpnReadsPanel(),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
-    viewportHeight: 730,
+    // 730 cut 10 css px off the bottom
+    viewportHeight: 742,
     hideSelectors: ['.MuiTooltip-popper'],
     hideTooltip: true,
     annotations: [

@@ -77,7 +77,7 @@ left implicit, so an unmethylated region reads as solid blue. The
 [alignments track guide](/docs/user_guides/alignments_track#modifications-and-methylation)
 covers both modes, the probability threshold, and the cytosine-context submenu.
 
-<Figure caption="HG002 ONT reads over the SNRPN CpG island in both modification color modes. Top, the MM tag's modified positions alone, red against bare read bodies. Bottom, the same reads with every unmarked CpG filled in, which turns the unmethylated allele solid blue." src="/img/methylation/hg002_snrpn_mod_modes.png" links="Modified only=methylation/hg002_snrpn_marked_only,Every CpG=methylation/hg002_snrpn_fill_unmarked" />
+<Figure caption="HG002 ONT reads over the SNRPN CpG island in both modification color modes. Top, the MM tag's modified positions alone, red against bare read bodies. Bottom, the same reads with every unmarked CpG filled in, so a read carrying no methylation reads blue where it was blank." src="/img/methylation/hg002_snrpn_mod_modes.png" links="Modified only=methylation/hg002_snrpn_marked_only,Every CpG=methylation/hg002_snrpn_fill_unmarked" />
 
 The pileup over the CpG island is an interleaved mix of methylated and
 unmethylated reads. Splitting it by allele is one setting, two sections below.

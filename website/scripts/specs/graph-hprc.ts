@@ -2542,12 +2542,19 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   // stages and carried no figure at all, so a reader finished the conversion
   // with nothing to check their own output against.
   //
-  // The two BED indexes as an ordinary FeatureTrack lane, colored by `rank`
-  // with the page's own `addtrack` fence's jexl rather than by reference
-  // position: rank is what an rGFA's `SR` tag carries and what the projection
-  // is judged on, so the picture answers "did the conversion keep the
-  // backbone?". Blue is the rank-0 backbone and orange everything the
-  // haplotypes add, which is the negative the frame needs.
+  // The two BED indexes as an ordinary FeatureTrack lane, over a reference
+  // window, carrying the page's own `addtrack` fence's colour jexl so the
+  // figure is that fence's output rather than a prettier variant of it.
+  //
+  // EVERYTHING IN THIS FRAME IS BLUE, and deliberately. An rGFA tags an
+  // off-reference segment with the sample contig it came from, so a query on
+  // `GRCh38#0#chr6` returns rank 0 and nothing else; checked against the
+  // hosted index, the C4 window is 13 rows, all rank 0. The jexl's orange
+  // branch fires on a sample's own lane. So the picture's subject is the
+  // TILING -- one row of segments covering the window, broken where the graph
+  // branches -- and the short segments bunched at the C4 repeat are the
+  // negative against the long quiet ones either side. The bubble file in the
+  // next section is those break points named.
   {
     mode: 'url' as const,
     name: 'pangenome/prepare_graph_segments',
@@ -2575,6 +2582,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // track name the header prints before anything draws.
     readyText: 'C4A',
     readyTimeout: 180000,
-    viewportHeight: 700,
+    // 700 left 297 css px of blank under a two-lane view
+    viewportHeight: 404,
   },
 ]

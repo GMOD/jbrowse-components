@@ -1696,7 +1696,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'ACTB',
     readyTimeout: 60000,
-    viewportHeight: 760,
+    // 760 cut 11 css px off the bottom
+    viewportHeight: 772,
   })),
 
   {
@@ -1742,7 +1743,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'ACTB',
     readyTimeout: 60000,
-    viewportHeight: 720,
+    // 720 cut 11 css px off the bottom
+    viewportHeight: 732,
   })),
 
   {

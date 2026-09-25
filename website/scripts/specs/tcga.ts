@@ -932,62 +932,40 @@ export const tcgaSpecs: ScreenshotSpec[] = [
   // an uncollapsed window fills the matrix with private intronic MODIFIER
   // columns, which is precisely what the frequency filter would then be shown
   // removing.
-  ...(
-    [
-      { suffix: 'grouped', display: {} },
-      // Clustering replaces the clinical bands while on, so this half drops the
-      // facet rather than layering the two orderings.
-      { suffix: 'clustered', display: { runClustering: true }, facet: false },
-      { suffix: 'maf', display: { minorAlleleFrequencyFilter: 0.01 } },
-    ] as const
-  ).map(({ suffix, display, facet = true }) => ({
+  // PIK3CA banded by receptor subtype, which the "Group by receptor subtype"
+  // section described and had no picture for: its sentence ended on a colon
+  // with nothing under it. Introns collapsed for the same reason CDH1's are --
+  // the gene is 92 kb and an uncollapsed window fills the matrix with private
+  // intronic MODIFIER columns.
+  //
+  // Its two siblings were captured and DROPPED, and neither is worth
+  // re-proposing as shot. `runClustering: true` on this window painted the
+  // matrix into a band a fraction of the tree sidebar's height, so the
+  // gathered block the section claims was not in the frame; the dendrogram
+  // testid is up before the matrix has redrawn, so a settle wait is where a
+  // retry starts. And `minorAlleleFrequencyFilter: 0.01` left four columns,
+  // each expanded to a few hundred px by the columns layout and orange down
+  // most of the rows -- which reads as a variant the whole cohort carries,
+  // the opposite of the hotspot the page says survives the filter. Check what
+  // that filter keeps on somatic data before drawing it.
+  {
     mode: 'url' as const,
-    name: `tcga/mutations_pik3ca_${suffix}`,
+    name: 'tcga/mutations_pik3ca_grouped',
     url: mutationFigure({
       loc: '3:179,148,000-179,240,500',
-      ...(facet
-        ? {
-            facetField: 'subtype',
-            facetDomain: ['HR+/HER2-', 'HER2+', 'triple-negative'],
-            colorBy: 'subtype',
-          }
-        : {}),
+      facetField: 'subtype',
+      facetDomain: ['HR+/HER2-', 'HER2+', 'triple-negative'],
+      colorBy: 'subtype',
       lineZoneHeight: LINE_ZONE_HEIGHT,
       height: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT,
-      displayOverrides: display,
     }),
     readySelector: MATRIX_DONE,
     readyTimeout: 180000,
-    actions: [
-      ...collapseIntrons('PIK3CA'),
-      // The clustering run is the figure's whole subject, and it starts after
-      // the matrix redraws, so the matrix gate above cannot stand for it.
-      ...('runClustering' in display
-        ? [
-            {
-              type: 'waitForSelector' as const,
-              selector: '[data-testid="tree_sidebar_dendrogram"]',
-              timeout: 240000,
-            },
-          ]
-        : []),
-    ],
+    actions: collapseIntrons('PIK3CA'),
     hideSelectors: ['.MuiSnackbar-root'],
     viewportWidth: 1500,
     viewportHeight:
       MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT,
-  })),
-
-  {
-    mode: 'compose',
-    name: 'tcga/mutations_cluster_rows',
-    parts: ['tcga/mutations_pik3ca_grouped', 'tcga/mutations_pik3ca_clustered'],
-  },
-
-  {
-    mode: 'compose',
-    name: 'tcga/mutations_maf_filter',
-    parts: ['tcga/mutations_pik3ca_grouped', 'tcga/mutations_pik3ca_maf'],
   },
 
   // tcga/mutations_tp53_subtype was here and is DELETED (review: "unclear
