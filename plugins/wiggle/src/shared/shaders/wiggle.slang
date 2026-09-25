@@ -122,10 +122,9 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
     // The bar grows one device px past each horizontal cut so the fragment's
     // ramp has geometry to land on; the ramp is zero out there, so the extra
     // area costs a discarded fragment and paints nothing. A FULL pixel, not the
-    // half `aaHalfPx` pads a centred edge by: the ramp inks a fragment whose
-    // centre sits half a pixel out, and that fragment has to be FULLY inside
-    // the quad or the rasterizer's coverage multiplies into the analytic one
-    // and the bar stops looking the same at 1 sample as at 4.
+    // half `aaHalfPx` pads a centred edge by: the last fragment the ramp inks
+    // has its centre half a pixel out, and it must be FULLY inside the quad or
+    // the rasterizer's own coverage multiplies into the analytic one.
     float padPx = aaPx(u.devicePixelRatio);
     float vy = lerp(botPx + padPx, topPx - padPx, q.y);
     sy = 1.0 - vy * pxToClip;
