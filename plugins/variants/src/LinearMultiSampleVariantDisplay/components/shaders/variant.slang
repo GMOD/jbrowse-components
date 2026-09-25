@@ -6,7 +6,6 @@
 //! export-consts: SHAPE_RECT, SHAPE_TRI_LEFT
 //! js-export: drawnCellHeightPx, snappedCellWidthPx, snappedCellLeftPx
 //! js-skip: snapCellEdgePx — reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor
-//! js-skip: smallMarkFade — compensation for MSAA quantizing a tiny triangle's coverage to a few sample positions; Canvas2D's rasterizer blends that coverage per pixel on its own, so applying the ramp there would fade the glyph twice
 
 import antialias;
 import hpmath;
@@ -186,13 +185,6 @@ float triSdfRight(float2 p, float w, float h, float hyp) {
   return min(min(dLeft, dTop), dBot);
 }
 
-// Dims a mark whose smallest side is under a few CSS px, so a cell too small
-// to read its own shape fades rather than flickers. A whole-mark fade, sized in
-// the CSS px the mark is drawn in; it measures no edge and takes no dpr.
-float smallMarkFade(float smallestSidePx) {
-  return smoothstep(0.0, 3.0, smallestSidePx);
-}
-
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   float alpha = fragIn.color.a;
@@ -205,8 +197,9 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     float w = fragIn.sizePx.x;
     float h = fragIn.sizePx.y;
     float d = triSdfRight(float2(w - fragIn.localPx.x, fragIn.localPx.y), w, h, fragIn.hypRight);
+    // No whole-mark size fade here: both cell sides floor at 2px, so one is a
+    // constant dim on the inversion alone (inversionGlyphInk.test.ts).
     alpha *= edgeCoverage(d, u.devicePixelRatio);
-    alpha *= smallMarkFade(min(w, h));
   }
 
   return float4(fragIn.color.rgb * alpha, alpha);
