@@ -61,7 +61,7 @@ const ResizeAllTracksHandle = observer(function ResizeAllTracksHandle({
   useScrollPortExcess(ref, model, isTopLevelView)
 
   return (
-    <div ref={ref}>
+    <div ref={ref} style={{ position: 'sticky', bottom: 0, zIndex: 300 }}>
       <ResizeHandle
         bar
         data-testid="resize-all-tracks"
