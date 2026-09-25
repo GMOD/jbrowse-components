@@ -28,23 +28,6 @@ import type {
  * winner. That keeps them the same string by construction, instead of by every
  * url-based inspection of a definition remembering to match loadPlugin's order.
  */
-/**
- * A `cjsUrl` definition loaded by writing the bundle to a temp file and
- * `require`ing it in Electron's renderer, which is the one loader that needed
- * Node. Electron's renderer runs ESM, and a plugin reaching the main process
- * does it through `window.require('electron')` whatever format it ships in, so
- * the format bought nothing its two peers do not. Name its successor rather
- * than letting the definition fall through to "could not determine plugin
- * type", which reads as a malformed config.
- */
-function assertRetiredKinds(def: PluginDefinition) {
-  if ('cjsUrl' in def) {
-    throw new Error(
-      `CJS plugins are no longer loaded (${String(def.cjsUrl)}). Publish the plugin as UMD or ESM and name it with umdUrl or esmUrl.`,
-    )
-  }
-}
-
 function assertSingleKind(def: PluginDefinition) {
   const kinds = [
     isESMPluginDefinition(def) ? 'ESM' : undefined,
@@ -53,6 +36,23 @@ function assertSingleKind(def: PluginDefinition) {
   if (kinds.length > 1) {
     throw new Error(
       `Plugin definition names more than one plugin type (${kinds.join(', ')}), refusing to load: ${JSON.stringify(def)}`,
+    )
+  }
+}
+
+/**
+ * A `cjsUrl` definition loaded by writing the bundle to a temp file and
+ * `require`ing it in Electron's renderer, the one loader that needed Node. That
+ * renderer runs UMD and ESM, and a plugin reaching the main process does it
+ * through `window.require('electron')` whatever format it ships in, so the
+ * format bought nothing its two peers do not. Name the successor rather than
+ * letting the definition fall through to "could not determine plugin type",
+ * which reads as a malformed config.
+ */
+function assertRetiredKinds(def: PluginDefinition) {
+  if ('cjsUrl' in def) {
+    throw new Error(
+      `CJS plugins are no longer loaded (${String(def.cjsUrl)}). Publish the plugin as UMD or ESM and name it with umdUrl or esmUrl.`,
     )
   }
 }
