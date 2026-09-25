@@ -655,7 +655,7 @@ and so do format-specific displays rebuilt on the grammar (ADR-114, ADR-118).
 - **The row axis rides a texture the vertex stage samples.** A `span`
   instance carries a stable row key, and a per-pass row table maps each key
   to its drawn slot, hidden, or a colour override
-  ([ADR-164](../architecture-decision-records/ADR-164-FILE)), so a
+  ([ADR-165](../architecture-decision-records/ADR-165-FILE)), so a
   reorder, focus or recolour on the multi-row feature display uploads one
   small texture and no instance bytes, the way a y domain rides a uniform.
   The mark display's rows still re-pack their lanes (`facetRegion`), because
