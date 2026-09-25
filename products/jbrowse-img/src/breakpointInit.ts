@@ -1,4 +1,4 @@
-import { buildDisplaySnapshot, configTrackCategory } from './applyTrackOpts.ts'
+import { trackInits } from './applyTrackOpts.ts'
 
 import type { Entry } from './parseArgv.ts'
 import type { Config, OpenTrack, Opts } from './types.ts'
@@ -77,26 +77,15 @@ export function breakpointTracks(
   showTracks: OpenTrack[],
   tracks: Config['tracks'] = [],
 ): TrackInit[] {
-  return [...showTracks, ...(openTracks ?? [])].map(({ trackId, opts }) => {
-    const { snap, sort, displayType } = buildDisplaySnapshot(
-      configTrackCategory(tracks, trackId),
-      opts,
-    )
-    if (sort) {
-      // The center-line sort is resolved against a view's centerLineInfo, and
-      // there is no single view here -- one panel per --loc, each at its own
-      // locus, so "the position under the centre" is a different answer per
-      // panel. Say so rather than sorting one panel and not the others.
-      console.warn(
-        `Warning: sort:${sort.type} on "${trackId}" ignored — a breakpoint view has one panel per --loc and no single center position`,
-      )
-    }
-    return {
-      trackId,
-      ...snap,
-      ...(displayType ? { type: displayType } : {}),
-    }
-  })
+  return trackInits(
+    [...showTracks, ...(openTracks ?? [])],
+    tracks,
+    // The center-line sort is resolved against a view's centerLineInfo, and
+    // there is no single view here — one panel per --loc, each at its own
+    // locus, so "the position under the centre" is a different answer per
+    // panel. Say so rather than sorting one panel and not the others.
+    'a breakpoint view has one panel per --loc and no single center position',
+  )
 }
 
 /**

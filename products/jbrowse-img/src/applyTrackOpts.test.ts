@@ -118,6 +118,27 @@ describe('alignments modifiers', () => {
 })
 
 describe('feature modifiers', () => {
+  // `facet` is the same object on the feature, variant and alignments displays,
+  // so `group:` writes it for all three. It used to be gated to alignments, and
+  // a feature track could only be faceted through the `facet.field=` path.
+  test('group names the facet field on a feature and a variant track', () => {
+    expect(buildDisplaySnapshot('feature', ['group:strand']).snap.facet).toBe(
+      'strand',
+    )
+    expect(
+      buildDisplaySnapshot('variant', ['group:INFO.SVTYPE']).snap.facet,
+    ).toBe('INFO.SVTYPE')
+  })
+
+  // `attribute:` names a feature field the way `tag:` names a read's, which is
+  // the pair `color:` already takes.
+  test('group:attribute names the attribute, as color:attribute does', () => {
+    expect(
+      buildDisplaySnapshot('feature', ['group:attribute:gene_biotype']).snap
+        .facet,
+    ).toBe('gene_biotype')
+  })
+
   test('featureHeight preset maps to displayMode for canvas features', () => {
     const { snap } = buildDisplaySnapshot('feature', [
       'featureHeight:super-compact',

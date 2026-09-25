@@ -22,24 +22,32 @@ export interface ModeDescriptor {
   // Renders two or more assemblies: accepts --fasta2/--loc2, the comparison
   // track types, and the second-assembly help section.
   comparative: boolean
+  // Opens the tracks `--track` and the file flags name. False for the
+  // comparative modes, whose levels are made of the synteny files themselves
+  // and which open nothing else; renderRegion warns rather than drop a --track
+  // silently there.
+  opensNamedTracks: boolean
 }
 
 export const modeDescriptors: Record<ViewMode, ModeDescriptor> = {
-  linear: { subcommand: 'lgv', comparative: false },
+  linear: { subcommand: 'lgv', comparative: false, opensNamedTracks: true },
   dotplot: {
     subcommand: 'dotplot',
     viewType: 'DotplotView',
     comparative: true,
+    opensNamedTracks: false,
   },
   synteny: {
     subcommand: 'synteny',
     viewType: 'LinearSyntenyView',
     comparative: true,
+    opensNamedTracks: false,
   },
   circular: {
     subcommand: 'circular',
     viewType: 'CircularView',
     comparative: false,
+    opensNamedTracks: true,
   },
   // One assembly, several windows of it stacked with the reads that leave one
   // and arrive in another drawn between them — so `comparative: false` even
@@ -49,6 +57,7 @@ export const modeDescriptors: Record<ViewMode, ModeDescriptor> = {
     subcommand: 'breakpoint',
     viewType: 'BreakpointSplitView',
     comparative: false,
+    opensNamedTracks: true,
   },
 }
 

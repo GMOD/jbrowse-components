@@ -22,6 +22,7 @@ import {
   applyDisplayOpts,
   configTrackCategory,
   resolveTrackId,
+  trackInits,
   writeMembers,
 } from './applyTrackOpts.ts'
 import { breakpointInit, breakpointPanelsFromSpec } from './breakpointInit.ts'
@@ -541,17 +542,23 @@ const renderSynteny: ModeRenderer = async ctx => {
   })
 }
 
-// Which of the config's tracks a CircularView can actually open. A track type
+// Which of these tracks a CircularView can actually open. A track type
 // declaring no display the view draws made showTrack throw "Could not find a
 // compatible display for view type CircularView" and abort the entire render.
 // Ask the question showTrackGeneric asks — does this track type declare a
 // display this view supports — and skip the ones it would reject. Warns per
 // skipped track so the omission is visible.
-function circularTrackIds(model: Model, tracks: Track[]) {
+function circularDrawable(
+  model: Model,
+  tracks: Track[],
+  open: OpenTrack[],
+): OpenTrack[] {
   const { pluginManager } = getEnv(model)
   const supported = viewDisplayNames(pluginManager, 'CircularView')
-  const compatible = tracks.filter(track => {
-    const type = trackType(track)
+  return open.filter(({ trackId }) => {
+    const type = trackType(
+      tracks.find(t => t.trackId === trackId) ?? { trackId },
+    )
     // includes the type this bundle doesn't register at all, which a
     // --hub/--config config can easily carry (a track type from a plugin
     // jb2export doesn't bundle) and which used to throw from inside the very
@@ -559,23 +566,42 @@ function circularTrackIds(model: Model, tracks: Track[]) {
     const ok = viewCanDisplayTrack(pluginManager, supported, type)
     if (!ok) {
       console.warn(
-        `Warning: skipping track "${track.trackId}" (${type}) — it has no display the circular view can render`,
+        `Warning: skipping track "${trackId}" (${type}) — it has no display the circular view can render`,
       )
     }
     return ok
   })
-  return compatible.map(track => track.trackId)
 }
 
 // Circular renders one assembly's tracks: chords for a VCF of structural
-// variants, and a ring for any linear display. Unlike the
-// comparative builders this needs the model (circularTrackIds asks the
-// pluginManager which tracks the view can open), so it stays here rather than in
-// comparativeInit.ts.
+// variants, and a ring for any linear display.
+//
+// `--track` and the file flags name them, the way they do for a linear or a
+// breakpoint view; every track in the config is the fallback for neither
+// naming any, which is what a `--fasta ref.fa --vcfgz sv.vcf.gz` run means.
+// Naming them is the only usable form over a --hub, whose config carries
+// hundreds of tracks and would otherwise open every one of them whole-genome —
+// and until it was read here, `--track` was parsed, warned about, and dropped.
+//
+// Unlike the comparative builders this needs the model (circularDrawable asks
+// the pluginManager which tracks the view can open), so it stays here rather
+// than in comparativeInit.ts.
 function circularInit(ctx: ModeContext): CircularViewCommands {
+  const { model, data, opts } = ctx
+  const named = [
+    ...resolvedShowTracks(opts.showTracks, data),
+    ...(data.openTracks ?? []),
+  ]
+  const open = named.length
+    ? named
+    : data.tracks.map(({ trackId }) => ({ trackId, opts: [] }))
   return {
-    assembly: ctx.data.assembly.name,
-    tracks: circularTrackIds(ctx.model, ctx.data.tracks),
+    assembly: data.assembly.name,
+    tracks: trackInits(
+      circularDrawable(model, data.tracks, open),
+      data.tracks,
+      'a circular view draws whole chromosomes and has no center position',
+    ),
   }
 }
 
@@ -640,21 +666,22 @@ const renderBreakpoint: ModeRenderer = async ctx => {
   }
 }
 
-// Options only renderLinear reads. A comparative or circular view takes its
-// tracks from its own launch blob (or --spec), so a --track/--refseq passed to one is
-// dropped; --loc positions the sub-views of a comparative view but means nothing
-// to a circular one, which always shows the whole assembly. main.ts warns about
-// the reverse — comparative flags in a linear run — so say this here rather than
+// Options only renderLinear reads. A comparative view takes its levels from its
+// own launch blob (or --spec), so a --track/--refseq passed to one is dropped;
+// --loc positions the sub-views of a comparative view but means nothing to a
+// circular one, which always shows the whole assembly. main.ts warns about the
+// reverse — comparative flags in a linear run — so say this here rather than
 // leave the non-linear direction silent.
 //
-// Breakpoint is the one non-linear mode that DOES read --track: its panels are
-// ordinary LGVs and the tracks on them are the whole picture.
+// `opensNamedTracks` is which modes read --track: the breakpoint view's panels
+// are ordinary LGVs and the tracks on them are the whole picture, and the
+// circular view rings whichever tracks were named.
 function warnLinearOnlyOptions(mode: ViewMode, opts: Opts) {
   if (mode !== 'linear') {
     // A comparative view's levels are made of the synteny files, and it opens
     // nothing else — so `--fasta a --paf x --fasta b --bigwig sig.bw` built the
     // bigwig's track config and then showed it nowhere. Circular is exempt: it
-    // picks its chord tracks out of the whole config.
+    // rings them.
     const droppedFiles = modeDescriptors[mode].comparative
       ? [
           ...new Set(
@@ -665,7 +692,9 @@ function warnLinearOnlyOptions(mode: ViewMode, opts: Opts) {
         ].map(type => `--${type}`)
       : []
     const ignored = [
-      opts.showTracks?.length && mode !== 'breakpoint' ? '--track' : '',
+      opts.showTracks?.length && !modeDescriptors[mode].opensNamedTracks
+        ? '--track'
+        : '',
       opts.refseq ? '--refseq' : '',
       mode === 'circular' && opts.loc ? '--loc' : '',
       ...droppedFiles,
