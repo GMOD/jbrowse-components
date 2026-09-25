@@ -34,11 +34,13 @@ wrapped portion is unreachable at the origin (its tabix-indexed start sits near
 the contig end, so a `0..N` query never returns it — and redispatch only expands
 to bounds of features *already found*); and there's no topology flag anywhere in
 core (`Region` is `refName/start/end/reversed` only; assembly/refseq have no
-`isCircular`; the parsed `Is_circular` is inert; the circular-view plugin is a
-chord diagram, not a feature viewer). Two architectures: **(B) a true circular
-(polar) viewer** — biologically honest but a whole new rendering + GPU-layout
-stack; the chords-only circular-view is not a starting point. **(A)
-repeated-linear concatenation (recommended)** — the key unlock is that
+`isCircular`; the parsed `Is_circular` is inert). The polar picture exists: the
+circular view draws any linear display as a ring warped from its strip
+(ADR-119), so a one-contig circle with `spacingPx: 0` is a plasmid or organelle
+map whose origin is the ring's seam, where the decorator below would make the
+two halves of an origin-spanning feature abut. Its feature labels and highlights
+are DOM layers the ring does not warp yet, so a gene ring there has no names.
+For the linear view, **repeated-linear concatenation** — the key unlock is that
 `displayedRegions` *already is* linear concatenation (LGV space sums `Region[]`
 end-to-end, each region carrying true coords), so listing the contig twice gives
 the `2L` space, scroll-through-origin, and true-coordinate location box/search

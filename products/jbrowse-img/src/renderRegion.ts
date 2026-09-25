@@ -541,13 +541,12 @@ const renderSynteny: ModeRenderer = async ctx => {
   })
 }
 
-// Which of the config's tracks a CircularView can actually open: it renders
-// chord displays only, so a track type with none (a --bigwig passed alongside
-// the SVs, or the whole track set of a --hub/--config) made showTrack throw
-// "Could not find a compatible display for view type CircularView" and abort the
-// entire render. Ask the question showTrackGeneric asks — does this track type
-// declare a display this view supports — and skip the ones it would reject, so
-// the chords still render. Warns per skipped track so the omission is visible.
+// Which of the config's tracks a CircularView can actually open. A track type
+// declaring no display the view draws made showTrack throw "Could not find a
+// compatible display for view type CircularView" and abort the entire render.
+// Ask the question showTrackGeneric asks — does this track type declare a
+// display this view supports — and skip the ones it would reject. Warns per
+// skipped track so the omission is visible.
 function circularTrackIds(model: Model, tracks: Track[]) {
   const { pluginManager } = getEnv(model)
   const supported = viewDisplayNames(pluginManager, 'CircularView')
@@ -568,8 +567,8 @@ function circularTrackIds(model: Model, tracks: Track[]) {
   return compatible.map(track => track.trackId)
 }
 
-// Circular renders one assembly's chord tracks (e.g. a VCF of structural
-// variants); the view picks each track's chord display automatically. Unlike the
+// Circular renders one assembly's tracks: chords for a VCF of structural
+// variants, and a ring for any linear display. Unlike the
 // comparative builders this needs the model (circularTrackIds asks the
 // pluginManager which tracks the view can open), so it stays here rather than in
 // comparativeInit.ts.

@@ -138,8 +138,11 @@ list naming contigs of both restricts both and each reports its own misses.
 - A whole-genome PAF is fetched entire, like the variant chords: one
   `CoreGetFeatures` over every displayed region, one React `<path>` per record.
   There is no LOD tier and no cap. A million-row alignment will not draw; a
-  chromosome-scale one will. **PIF's coarse tier is the lever if that becomes a
-  complaint**, and it is a fetch-side change, not a geometry one.
+  chromosome-scale one will. PIF's coarse tier is not the lever for that: it
+  writes one row per fine row with the CIGAR folded
+  (`products/jbrowse-cli/src/commands/make-pif/pif-generator.ts`), so it cuts
+  bytes and not records. Fewer ribbons means filtering them, as the synteny
+  views' `minAlignmentLength` does, or merging blocks.
 - `ChordDisplayFrame` now owns the error/loading/phase chrome both chord
   displays publish, including the `data-display-drawn` census attribute — so a
   third circular display gets it by composing the frame rather than by
