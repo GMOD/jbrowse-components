@@ -26,16 +26,12 @@ export interface RectData extends PrimitiveBase {
 export interface LineData extends PrimitiveBase {
   start: number
   end: number
-  // Height of the box this intron line rides on, so the renderer can snap the
-  // line onto the box's drawn center row.
-  height: number
   direction: number
 }
 
 export interface ArrowData extends PrimitiveBase {
   x: number
-  // Height of the box this arrow sits on, so the renderer can snap it onto the
-  // box's drawn center row.
+  // Height of the box this arrow comes off, which caps its head.
   height: number
   // In bp, because the worker never sees bpPerPx: the renderers drop the arrow
   // when this comes out narrower than ARROW_MIN_FEATURE_WIDTH_PX on screen.
@@ -158,7 +154,6 @@ export function packRenderArrays(
 
   const linePositions = new Uint32Array(visibleLines.length * 2)
   const lineYs = new Float32Array(visibleLines.length)
-  const lineHeights = new Float32Array(visibleLines.length)
   const lineColors = new Uint32Array(visibleLines.length)
   const lineDirections = new Int8Array(visibleLines.length)
   const lineColorClasses = colorClassArray(visibleLines)
@@ -170,7 +165,6 @@ export function packRenderArrays(
     linePositions[i * 2] = line.start
     linePositions[i * 2 + 1] = line.end
     lineYs[i] = line.y
-    lineHeights[i] = line.height
     lineColors[i] = line.color
     lineDirections[i] = line.direction
     lineFeatureIndices[i] = line.flatbushIdx
@@ -211,7 +205,6 @@ export function packRenderArrays(
     rectChildOrdinals,
     linePositions,
     lineYs,
-    lineHeights,
     lineColors,
     lineDirections,
     lineColorClasses,

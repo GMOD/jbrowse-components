@@ -58,7 +58,6 @@ const EMPTY: RegionRenderData = {
   outlineColor: 0,
   linePositions: new Uint32Array(),
   lineYs: new Float32Array(),
-  lineHeights: new Float32Array(),
   lineColors: new Uint32Array(),
   lineDirections: new Int8Array(),
   arrowXs: new Uint32Array(),
@@ -105,7 +104,6 @@ test('intron chevrons follow the screen axis', () => {
     ...EMPTY,
     linePositions: new Uint32Array([60, 140]),
     lineYs: new Float32Array([20]),
-    lineHeights: new Float32Array([10]),
     lineColors: new Uint32Array([0xff_00_00_00]),
     lineDirections: new Int8Array([1]),
   }

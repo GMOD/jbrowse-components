@@ -362,7 +362,6 @@ function processRepeatRegionLayout(
     start: feature.get('start'),
     end: feature.get('end'),
     y: baseTopPx + layout.height / 2,
-    height: layout.height,
     color: stroke.color,
     colorClass: stroke.colorClass,
     direction: 0,

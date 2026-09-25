@@ -105,7 +105,6 @@ export interface RectChannels {
 export interface LineChannels {
   startEnd: Uint32Array
   y: Float32Array
-  height: Float32Array
   direction: Int8Array
   color: Uint32Array
   count: number
@@ -142,7 +141,9 @@ function rowVisible(
 }
 
 // `y` is the box's center for lines and arrows and its top for rects, and only
-// this pair of helpers has to know which is which.
+// this trio of helpers has to know which is which. A line carries no height at
+// all: what it draws is a 1px stroke on its center row plus chevron arms, and
+// `GLYPH_Y_SLACK_PX` already covers the reach of both.
 function centeredRowVisible(
   scrollY: number,
   canvasHeight: number,
@@ -150,6 +151,14 @@ function centeredRowVisible(
   heightPx: number,
 ) {
   return rowVisible(scrollY, canvasHeight, centerY - heightPx * 0.5, heightPx)
+}
+
+function centerRowVisible(
+  scrollY: number,
+  canvasHeight: number,
+  centerY: number,
+) {
+  return rowVisible(scrollY, canvasHeight, centerY, 0)
 }
 
 // `makeAbgrFill`'s stroke twin: the line glyphs are the one family whose runs
@@ -313,13 +322,13 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
   writeUniforms: writeFeatureGlyphUniforms,
 
   paintBlock(ctx, channels, block, frame, params) {
-    const { startEnd, y: ys, height, direction, color, count } = channels
+    const { startEnd, y: ys, direction, color, count } = channels
     const { scrollY, hideChevrons } = params
     const { canvasWidth, canvasHeight } = frame
     const toX = makeBpMapper(block)
     const setStroke = makeAbgrStroke(ctx)
     for (let i = 0; i < count; i++) {
-      if (!centeredRowVisible(scrollY, canvasHeight, ys[i]!, height[i]!)) {
+      if (!centerRowVisible(scrollY, canvasHeight, ys[i]!)) {
         continue
       }
       const x1 = toX(startEnd[i * 2]!)
@@ -371,15 +380,8 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
   // hull, which the arrow and the rect give and this shape's placement rule
   // does not.
   ink(channels, block, frame, params, i) {
-    const { startEnd, y: ys, height, direction } = channels
-    if (
-      !centeredRowVisible(
-        params.scrollY,
-        frame.canvasHeight,
-        ys[i]!,
-        height[i]!,
-      )
-    ) {
+    const { startEnd, y: ys, direction } = channels
+    if (!centerRowVisible(params.scrollY, frame.canvasHeight, ys[i]!)) {
       return undefined
     }
     const toX = makeBpMapper(block)

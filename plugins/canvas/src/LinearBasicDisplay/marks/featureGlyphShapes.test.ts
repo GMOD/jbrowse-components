@@ -129,7 +129,6 @@ describe('line: the render state decides whether chevrons draw', () => {
   const lines: LineChannels = {
     startEnd: Uint32Array.from([10, 190]),
     y: Float32Array.from([10]),
-    height: Float32Array.from([10]),
     direction: Int8Array.from([1]),
     color: Uint32Array.from([0xff0000ff]),
     count: 1,

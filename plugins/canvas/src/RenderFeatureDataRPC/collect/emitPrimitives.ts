@@ -65,8 +65,7 @@ export function emitIntronLines(
   const feature = transcript.feature
   const start = feature.get('start')
   const end = feature.get('end')
-  const lineHeight = transcript.height
-  const lineY = topPx + lineHeight / 2
+  const lineY = topPx + transcript.height / 2
   const direction = feature.get('strand') ?? 0
 
   const pushLine = (lineStart: number, lineEnd: number) => {
@@ -74,7 +73,6 @@ export function emitIntronLines(
       start: lineStart,
       end: lineEnd,
       y: lineY,
-      height: lineHeight,
       ...stroke,
       direction,
       flatbushIdx,

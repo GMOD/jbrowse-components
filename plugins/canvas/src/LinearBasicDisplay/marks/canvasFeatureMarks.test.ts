@@ -29,7 +29,6 @@ function regionData(numRects: number, over: Partial<RegionRenderData> = {}) {
     outlineColor: 0,
     linePositions: new Uint32Array(0),
     lineYs: new Float32Array(0),
-    lineHeights: new Float32Array(0),
     lineColors: new Uint32Array(0),
     lineDirections: new Int8Array(0),
     arrowXs: new Uint32Array(0),
@@ -139,7 +138,6 @@ describe('draw passes', () => {
     const data = regionData(2, {
       linePositions: new Uint32Array([100, 200, 300, 400]),
       lineYs: new Float32Array(2),
-      lineHeights: new Float32Array(2).fill(10),
       lineColors: new Uint32Array(2).fill(0xff00_00ff),
       lineDirections: new Int8Array(2).fill(1),
       arrowXs: new Uint32Array([150, 350]),
@@ -162,7 +160,6 @@ describe('draw passes', () => {
     const data = regionData(0, {
       linePositions: new Uint32Array([100, 400]),
       lineYs: new Float32Array(1),
-      lineHeights: new Float32Array(1).fill(10),
       lineColors: new Uint32Array(1).fill(0xff00_00ff),
       lineDirections: new Int8Array(1).fill(1),
     })

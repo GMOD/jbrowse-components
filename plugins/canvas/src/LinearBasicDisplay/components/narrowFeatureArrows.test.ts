@@ -20,7 +20,6 @@ const EMPTY = {
   outlineColor: 0,
   linePositions: new Uint32Array(),
   lineYs: new Float32Array(),
-  lineHeights: new Float32Array(),
   lineColors: new Uint32Array(),
   lineDirections: new Int8Array(),
   arrowXs: new Uint32Array(),

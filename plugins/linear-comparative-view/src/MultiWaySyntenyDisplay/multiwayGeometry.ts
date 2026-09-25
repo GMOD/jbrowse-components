@@ -626,7 +626,6 @@ class GlyphBuilder {
   rectStrands: number[] = []
   linePositions: number[] = []
   lineYs: number[] = []
-  lineHeights: number[] = []
   lineColors: number[] = []
   lineDirections: number[] = []
   arrowXs: number[] = []
@@ -646,17 +645,9 @@ class GlyphBuilder {
     this.rectStrands.push(0)
   }
 
-  line(
-    x1: number,
-    x2: number,
-    y: number,
-    height: number,
-    direction: number,
-    color: number,
-  ) {
+  line(x1: number, x2: number, y: number, direction: number, color: number) {
     this.linePositions.push(toU32(x1), toU32(x2))
     this.lineYs.push(y)
-    this.lineHeights.push(height)
     this.lineDirections.push(direction)
     this.lineColors.push(color)
   }
@@ -687,7 +678,6 @@ class GlyphBuilder {
       rectDensityFade: new Uint32Array(this.rectYs.length),
       linePositions: Uint32Array.from(this.linePositions),
       lineYs: Float32Array.from(this.lineYs),
-      lineHeights: Float32Array.from(this.lineHeights),
       lineColors: Uint32Array.from(this.lineColors),
       lineDirections: Int8Array.from(this.lineDirections),
       arrowXs: Uint32Array.from(this.arrowXs),
@@ -884,7 +874,7 @@ export function buildLaneCells({
   boxes.outlineColor = stroke
   const divider = cssColorToABGR(colors.divider)
   for (const [x1, x2] of lane.baseline) {
-    glyphs.line(x1, x2, centerY, glyphHeight, 0, divider)
+    glyphs.line(x1, x2, centerY, 0, divider)
   }
 
   const drawn: DrawnGene[] = []
@@ -914,7 +904,7 @@ export function buildLaneCells({
     const row = geneRow(lane, glyphHeight, pxDir)
     const rowCenter = row.top + row.height / 2
     for (const [x1, x2] of introns) {
-      glyphs.line(x1, x2, rowCenter, row.height, pxDir, stroke)
+      glyphs.line(x1, x2, rowCenter, pxDir, stroke)
     }
     const [utrY, utrHeight] = centerShrink(
       row.top,

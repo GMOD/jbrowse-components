@@ -316,7 +316,6 @@ const N = 3000
 const GLYPH_REGION = {
   linePositions: new Uint32Array(N * 2),
   lineYs: new Float32Array(N),
-  lineHeights: new Float32Array(N),
   lineDirections: new Int8Array(N),
   lineColors: new Uint32Array(N),
   rectPositions: new Uint32Array(N * 2),
@@ -349,7 +348,6 @@ const glyphParams =
 const lineLens = (d: GlyphRegion) => ({
   startEnd: d.linePositions,
   y: d.lineYs,
-  height: d.lineHeights,
   direction: d.lineDirections,
   color: d.lineColors,
   count: d.lineYs.length,

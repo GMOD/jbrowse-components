@@ -131,6 +131,24 @@ function boxes(
   return out.sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2])
 }
 
+// The line lane carries no height, so its boxes are a span and a centre row.
+function lines(
+  positions: ArrayLike<number>,
+  ys: Float32Array,
+  origin: number,
+  top: number,
+) {
+  const out: [number, number, number][] = []
+  for (let i = 0; i < ys.length; i++) {
+    out.push([
+      positions[i * 2]! - origin,
+      positions[i * 2 + 1]! - origin,
+      round(ys[i]! - top),
+    ])
+  }
+  return out.sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2])
+}
+
 const trackTop = Math.min(...track.rectYs)
 
 test('a lane emits the boxes the feature track emits, at its UTR height and centring', () => {
@@ -143,15 +161,14 @@ test('a lane emits the boxes the feature track emits, at its UTR height and cent
 
 test('a lane connects the introns the feature track connects, on the box centre', () => {
   // the lane's own baseline has no counterpart on the feature track
-  const laneIntrons = boxes(
+  const laneIntrons = lines(
     lane.linePositions,
     lane.lineYs,
-    lane.lineHeights,
     PX_ORIGIN,
     0,
   ).filter(([start, end]) => start >= GENE_START && end <= GENE_END)
   expect(laneIntrons).toEqual(
-    boxes(track.linePositions, track.lineYs, track.lineHeights, 0, trackTop),
+    lines(track.linePositions, track.lineYs, 0, trackTop),
   )
   // `rectYs` is a box top and `lineYs` its centre — half a height apart
   expect(laneIntrons.map(l => l[2])).toContain(HEIGHT / 2)

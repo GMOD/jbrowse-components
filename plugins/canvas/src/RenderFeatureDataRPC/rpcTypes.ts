@@ -122,9 +122,6 @@ export interface FeatureDataResult {
 
   linePositions: Uint32Array
   lineYs: Float32Array
-  // Box height each line rides on, so the renderer snaps the line onto the
-  // box's drawn center row rather than ~1px off in odd-height modes.
-  lineHeights: Float32Array
   lineColors: Uint32Array
   lineDirections: Int8Array
   lineColorClasses: Uint8Array
@@ -133,8 +130,8 @@ export interface FeatureDataResult {
 
   arrowXs: Uint32Array
   arrowYs: Float32Array
-  // Box height each arrow sits on, so the renderer snaps it onto the box's
-  // drawn center row rather than ~1px off in odd-height modes.
+  // Box height each arrow comes off, which caps its head (`arrowHeadHalfHeightPx`)
+  // so a 3px body does not carry a marker taller than itself.
   arrowHeights: Float32Array
   // Carried as bp because the worker never sees bpPerPx; both renderers drop
   // the arrow below ARROW_MIN_FEATURE_WIDTH_PX on screen.

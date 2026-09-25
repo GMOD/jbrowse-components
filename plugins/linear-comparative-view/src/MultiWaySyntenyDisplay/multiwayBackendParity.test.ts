@@ -65,7 +65,6 @@ const glyphs: LaneGlyphData = {
   rectDensityFade: Uint32Array.of(0),
   linePositions: Uint32Array.of(PX_ORIGIN + 400, PX_ORIGIN + 500),
   lineYs: Float32Array.of(GLYPH_CENTRE),
-  lineHeights: Float32Array.of(GLYPH_H),
   lineColors: Uint32Array.of(0xff333333),
   lineDirections: Int8Array.of(1),
   arrowXs: Uint32Array.of(PX_ORIGIN + 560),

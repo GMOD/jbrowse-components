@@ -732,7 +732,6 @@ test('lines and arrows are offset by parent feature top', () => {
   })
   data.linePositions = new Uint32Array([200, 400])
   data.lineYs = new Float32Array([10])
-  data.lineHeights = new Float32Array([20])
   data.lineColors = new Uint32Array([0xff000000])
   data.lineDirections = new Int8Array([1])
   data.lineFeatureIndices = new Uint32Array([1])

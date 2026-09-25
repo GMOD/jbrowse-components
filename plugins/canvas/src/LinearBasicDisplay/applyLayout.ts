@@ -44,8 +44,9 @@ export function applyHeightScale(
       multiplier,
       labelFontPx,
     )
-    scaleFloat32(data[`${kind}Heights`], multiplier)
   }
+  scaleFloat32(data.rectHeights, multiplier)
+  scaleFloat32(data.arrowHeights, multiplier)
   for (const item of data.flatbushItems) {
     item.featureHeightPx = bodyHeightPx(
       item.featureHeightPx,
@@ -183,7 +184,6 @@ export function cloneMutableFields(raw: FeatureDataResult) {
     rectHeights: new Float32Array(raw.rectHeights),
     rectDensityFade: new Uint32Array(raw.rectDensityFade),
     lineYs: new Float32Array(raw.lineYs),
-    lineHeights: new Float32Array(raw.lineHeights),
     arrowYs: new Float32Array(raw.arrowYs),
     arrowHeights: new Float32Array(raw.arrowHeights),
     flatbushItems: raw.flatbushItems.map(item => ({ ...item })),

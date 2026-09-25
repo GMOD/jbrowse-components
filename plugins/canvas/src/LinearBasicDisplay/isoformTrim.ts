@@ -235,13 +235,13 @@ function trimPrimitiveKind(
   }
   data[`${kind}Ys`] = ys
   data[`${kind}LabelRows`] = labelRows
-  data[`${kind}Heights`] = pick(data[`${kind}Heights`], kept, 1)
   data[`${kind}Colors`] = pick(data[`${kind}Colors`], kept, 1)
   data[`${kind}ColorClasses`] = pick(data[`${kind}ColorClasses`], kept, 1)
   data[`${kind}ChildOrdinals`] = pick(ordinals, kept, 1)
   data[`${kind}FeatureIndices`] = pick(featureIndices, kept, 1)
 
   if (kind === 'rect') {
+    data.rectHeights = pick(data.rectHeights, kept, 1)
     data.rectColorValues = pick(data.rectColorValues, kept, 1)
     data.rectPositions = pick(data.rectPositions, kept, 2)
     data.rectStrands = pick(data.rectStrands, kept, 1)
@@ -250,6 +250,7 @@ function trimPrimitiveKind(
     data.linePositions = pick(data.linePositions, kept, 2)
     data.lineDirections = pick(data.lineDirections, kept, 1)
   } else {
+    data.arrowHeights = pick(data.arrowHeights, kept, 1)
     data.arrowXs = pick(data.arrowXs, kept, 1)
     data.arrowDirections = pick(data.arrowDirections, kept, 1)
     data.arrowWidthsBp = pick(data.arrowWidthsBp, kept, 1)
