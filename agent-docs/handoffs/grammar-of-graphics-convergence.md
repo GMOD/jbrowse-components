@@ -202,8 +202,8 @@ displays resolve colour through `colorEncodingOf`. The arc displays are gone
 (ADR-163): an arc is a `link` mark on the mark display, so its colour is the
 mark colour object and its stroke the `size` channel. Hi-C's is the `HicColor`
 object, LD's is named per metric, and the variant and multi-row row colours go
-with the row scale. MAF's `colorByChromosome` is what remains, through
-ADR-135.
+with the row scale. MAF's is the `MafColor` object, with identity on a
+separate `y` channel.
 
 ## Order
 

@@ -332,9 +332,8 @@ nothing a normal one troubles.
 
 The default render path — GPU base cells plus the worker-packed coverage band —
 is in good shape. The identity plot, conservation band and color-by-chromosome
-are all opt-in (`rowIdentityMode: 'none'`, `showConservation: false`,
-`colorByChromosome: false`), so none of them is what a default-configured track
-pays.
+are all opt-in (`color: 'mismatch'`, no `y`, `showConservation: false`), so
+none of them is what a default-configured track pays.
 
 Note the decimation trick does **not** transfer to the identity plot or the
 conservation band: those paint a mean, and a mean needs its whole sample. See

@@ -1,7 +1,7 @@
 digraph maf_cell_colour {
   rankdir=TB
   node [shape=box fontname=monospace fontsize=10]
-  { node [shape=diamond] refDash; alnGap; match; showAll; mismatchOn }
+  { node [shape=diamond] refDash; alnGap; match; colorMatches }
 
   cell [label="one (reference byte, aligned byte) pair"]
   refDash [label="reference is a gap"]
@@ -16,22 +16,17 @@ digraph maf_cell_colour {
 
   match [label="case-folded equal"]
   alnGap -> match [label=" no"]
-  showAll [label="showAllLetters"]
-  match -> showAll [label=" equal"]
-  showAll -> matchCat [label=" off"]
+  colorMatches [label="color is base"]
+  match -> colorMatches [label=" equal"]
+  colorMatches -> matchCat [label=" no"]
   matchCat [label="Match"]
 
-  mismatchOn [label="mismatchRendering"]
-  showAll -> mismatchOn [label=" on"]
-  match -> mismatchOn [label=" differs"]
-  mismatchOn -> baseCat [label=" on"]
-  mismatchOn -> flat    [label=" off"]
+  colorMatches -> baseCat [label=" yes"]
+  match -> baseCat [label=" differs"]
   baseCat [label="Base"]
-  flat [label="one flat tone"]
 
   category [label="a CellCategory, not a colour", style=bold]
-  skip -> category  gap -> category  matchCat -> category
-  baseCat -> category  flat -> category
+  skip -> category  gap -> category  matchCat -> category  baseCat -> category
 
   css [label="CSS strings\nfor Canvas2D"]
   packed [label="packed ABGR\nfor the instance buffer"]

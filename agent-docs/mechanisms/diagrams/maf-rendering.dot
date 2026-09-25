@@ -1,45 +1,38 @@
 digraph maf_rendering {
   rankdir=TB
   node [shape=box fontname=monospace fontsize=10]
-  { node [shape=diamond] slots; summaryTier; kind; base }
+  { node [shape=diamond] summaryTier; field; y }
 
-  slots [label="three config slots"]
-  slots -> codon [label=" showTranslation"]
-  slots -> chrom [label=" colorByChromosome"]
-  slots -> ident [label=" rowIdentityMode"]
-  slots -> bases [label=" none set"]
-  codon [label="codon"]
-  chrom [label="sourceChrom"]
-  ident [label="heatmap / xyplot"]
-  bases [label="bases"]
+  slots [label="color and y\ntwo independent channels"]
 
-  selected [label="selectedRowRendering\nthe setting, zoom-independent", style=bold]
-  codon -> selected  chrom -> selected  ident -> selected  bases -> selected
+  selected [label="selectedRowRendering\nthe radio's tick, zoom-independent", style=bold]
+  slots -> selected
 
-  summaryTier [label="showSummary"]
-  selected -> summaryTier
+  summaryTier [label="summary tier owns the view"]
+  slots -> summaryTier
   summaryTier -> fallback [label=" yes"]
-  summaryTier -> kind     [label=" no"]
-  fallback [label="bases"]
+  fallback [label="mismatch, no y"]
 
-  kind [label="which selection won"]
-  kind -> codonZoom [label=" codon"]
-  kind -> identZoom [label=" identity"]
-  kind -> chrom2    [label=" sourceChrom"]
-  codonZoom [label="codon at base level,\nelse bases"]
-  identZoom [label="bases at base level,\nelse the plot"]
-  chrom2 [label="sourceChrom, at every zoom"]
+  field [label="can the color field\ndraw at this zoom"]
+  summaryTier -> field [label=" no"]
+  field -> keep [label=" yes"]
+  field -> mismatch [label=" no: codon off base level,\n identity at base level"]
+  keep [label="the field"]
+  mismatch [label="mismatch"]
 
-  active [label="activeRowRendering\nwhat is painting", style=bold]
-  fallback -> active  codonZoom -> active  identZoom -> active  chrom2 -> active
+  rowsColor [label="rowsColor\nwhat colours the cells", style=bold]
+  fallback -> rowsColor  keep -> rowsColor  mismatch -> rowsColor
 
-  base [label="basesRenderingActive\ncan the GPU canvas draw it"]
+  y [label="y set, off the summary tier,\nidentity not yielding at base level"]
+  slots -> y
+  rowsY [label="rowsY\nwhat the bar height carries", style=bold]
+  y -> rowsY
+
+  active [label="activeRowRendering\nxyplot while rowsY, else rowsColor", style=bold]
+  rowsColor -> active  rowsY -> active
+
+  marks [label="one GPU mark per rendering\nbases, identity, bars, codon,\nsource chromosome, summary"]
+  active -> marks
+  base [label="basesRenderingActive\nletters, insertions and\ndeletion counts draw over"]
   active -> base
-  base -> gpu   [label=" yes"]
-  base -> other [label=" no"]
-  gpu [label="the GPU canvas owns the rows"]
-  other [label="a sibling surface owns them"]
-
-  clear [label="the GPU canvas clears,\nand still counts as a paint", style=bold]
-  other -> clear
 }

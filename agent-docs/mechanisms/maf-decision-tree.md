@@ -1,6 +1,6 @@
 ---
 name: maf-decision-tree
-description: What a multiple-alignment track decides — which of two tiers a fetch reads, which of five renderings the rows are painting, what colour one aligned base takes, and how a species becomes a placed row — as four rendered decision graphs, each stated against the naive version it replaced. Read before touching the summary threshold, a row rendering, the cell colour table or the height ladder.
+description: What a multiple-alignment track decides — which of two tiers a fetch reads, which rendering the rows are painting, what colour one aligned base takes, and how a species becomes a placed row — as four rendered decision graphs, each stated against the naive version it replaced. Read before touching the summary threshold, a row rendering, the cell colour table or the height ladder.
 audience: internal
 ---
 
@@ -9,8 +9,8 @@ audience: internal
 A MAF track is a stack of per-species rows over one reference, and nearly every
 decision in it follows from that shape: a row is a *genome* rather than a
 feature, so the worker cannot know where it goes; the rows are the payload, so
-the payload is enormous; and there are five things the rows can be coloured by,
-three of which cannot draw at every zoom.
+the payload is enormous; and the rows can be coloured by five fields, two of which cannot draw at every
+zoom.
 
 Four questions:
 
@@ -56,41 +56,35 @@ not a key over the tier's name.
 
 ## The rendering
 
-![Which of five renderings the per-sample rows are painting](diagrams/maf-rendering.svg)
+![Which rendering the per-sample rows are painting](diagrams/maf-rendering.svg)
 
-The naive version is one enum and one branch. What is here is three config slots
-and three getters, and each of those numbers has a reason.
+The display states what colours the rows as two channels: `color`, whose field
+names the variable (mismatch, base, identity, chromosome, codon), and `y`, which
+puts identity on each row's bar height. They are independent, so identity bars
+can take the identity ramp. What is left to decide is what each channel can draw
+at the current zoom.
 
-**Three slots, because each predates the others** and a saved session names them
-individually. Precedence between them is therefore decided exactly once, and
-everything downstream starts from that answer rather than re-deriving it — a
-second derivation let a lower-precedence slot take over at the zooms where the
-winner could not draw, so the menu named one rendering while the rows showed
-another.
+**The setting and the active rendering are different getters.** The one the
+radio ticks is zoom-independent, or the tick moves as the user zooms, which
+reads as the app changing the setting behind their back. `rowsColor` and `rowsY`
+apply the overrides — the summary tier carries no bases, codons exist only at
+base level with a frames file, and identity yields to the letters at base level
+— and every painter branches on those.
 
-**The setting and the active rendering are different getters.** The one the menu
-ticks is zoom-independent, or the radio moves its own tick as the user zooms,
-which reads as the app changing the setting behind their back. The one every
-painter branches on applies the overrides.
-
-**There is a third getter, because "which choice won" and "can this surface draw
-it" are different questions.** On the summary tier every alternative resolves
-back to the base rendering — and the base canvas cannot draw from summary rows
-either. Answering the second question with the first left a fully loaded track
-under a loading scrim forever, because the surface that would have reported a
-paint was never the surface painting.
-
-**Exclusivity is written, not just displayed.** The slots are independent
-booleans that were once independent checkboxes, so a selection has to clear the
-others; otherwise a setting stays on, persists into the session, and paints
-nothing.
+**Every rendering is a GPU mark over one encode per region.** A pan moves
+uniforms rather than re-walking the blocks. `basesRenderingActive` now only says
+whether the letters, insertion markers and deletion counts draw over the cells,
+so the hover and menu consult it too: an insertion under the cursor is only an
+answer while insertions paint.
 
 ## The cell
 
 ![What colour one aligned base takes](diagrams/maf-cell-colour.svg)
 
 The naive version is a branch cascade returning a colour, spelled once in each
-painter. Both halves of that are wrong here.
+painter. Both halves of that are wrong here. Only `color: 'base'` paints a
+matching base in its own colour; every other field leaves matches in the match
+tone.
 
 **The cascade returns a category, not a colour**, and each representation maps
 from it — CSS strings for Canvas2D, packed integers for the instance buffer.

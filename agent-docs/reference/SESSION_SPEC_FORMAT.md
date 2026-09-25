@@ -163,7 +163,7 @@ the samples or the species, and so are the multi-row feature display's, whose
 the same lag holds for those rows.
 
 **The long tail names mechanisms, not aesthetics.** The keys used on one
-display type — `readConnections`, `showSoftClipping`, `rowIdentityMode`,
+display type — `readConnections`, `showSoftClipping`, `conservationMode`,
 `hideSelfAlignments`, `maxMissingnessFilter` — each name
 something no other display has. A grammar has no channel to put them in; it
 would carry them as mark-specific options under a different key, which is the
