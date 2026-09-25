@@ -92,11 +92,11 @@ import {
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 import { makePointSizeSubMenu } from '@jbrowse/wiggle-core/chrome'
+import DataObjectIcon from '@mui/icons-material/DataObject'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import { autorun } from 'mobx'
 
-import { markRequirementProblems } from './configSchema.ts'
 import { densityRegionData } from './densityLayer.ts'
 import { facetLayout, facetRegion, rowsLayout } from './facet.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
@@ -110,7 +110,13 @@ import {
   rowValuesAt,
   zoomInRange,
 } from './markList.ts'
-import { markProblems, problemText } from './markProblems.ts'
+import {
+  MARK_PLOT_EXAMPLES,
+  liftMarkPlot as liftPlot,
+  markPlotOf,
+  markPlotProblems,
+} from './markPlot.ts'
+import { problemText } from './markProblems.ts'
 import {
   encodingOf,
   lastBinEdges,
@@ -145,6 +151,7 @@ import type {
   StoredLayer,
   TextMarkEntry,
 } from './markList.ts'
+import type { MarkPlot, MarkPlotSettings } from './markPlot.ts'
 import type {
   FacetSnapshot,
   MarkProblem,
@@ -196,6 +203,7 @@ const PlotFieldDialog = lazy(() => import('./components/PlotFieldDialog.tsx'))
 const MarkRowArrangementDialog = lazy(
   () => import('./components/MarkRowArrangementDialog.tsx'),
 )
+const PlotJsonDialog = lazy(() => import('./components/PlotJsonDialog.tsx'))
 const MarkClusterDialog = lazy(
   () => import('./components/MarkClusterDialog.tsx'),
 )
@@ -1290,17 +1298,34 @@ export function stateModelFactory(
          * reported where a load would once have refused the track.
          */
         get configProblems(): MarkProblem[] {
-          const marks: MarkSnapshot[] = getSnapshot(self.conf.marks)
-          const transform = getSnapshot(self.conf.transform) as StepSnapshot[]
-          return [
-            ...markRequirementProblems(marks),
-            ...markProblems(
-              marks,
-              getSnapshot(self.conf.facet) as FacetSnapshot,
-              transform,
-              getSnapshot(self.conf.rows) as RowsSnapshot,
-            ),
-          ]
+          return markPlotProblems({
+            marks: getSnapshot(self.conf.marks),
+            transform: getSnapshot(self.conf.transform) as StepSnapshot[],
+            facet: getSnapshot(self.conf.facet) as FacetSnapshot,
+            rows: getSnapshot(self.conf.rows) as RowsSnapshot,
+          })
+        },
+        /**
+         * #getter
+         * The plot as declared, which "Edit marks as JSON..." opens on: the
+         * four settings the rule list reads together, defaults left off.
+         */
+        get markPlot(): MarkPlot {
+          return markPlotOf(getSnapshot(self.conf))
+        },
+        /**
+         * #method
+         * A typed plot as the config schema would hold it, throwing what a
+         * config file would be refused for. Nothing on this display is touched.
+         */
+        liftMarkPlot(plot: MarkPlot): MarkPlotSettings {
+          return liftPlot(configSchema, plot, this.markPlot)
+        },
+        /**
+         * #getter
+         */
+        get markPlotExamples(): { plot: string; description: string }[] {
+          return MARK_PLOT_EXAMPLES
         },
         /**
          * #getter
@@ -1697,6 +1722,18 @@ export function stateModelFactory(
             { model: self, handleClose },
           ])
         },
+        /**
+         * #action
+         * Open the plot as JSON, over everything the display declares rather
+         * than the one mark Plot field... can read. `seed` overlays a setting
+         * the caller has in hand but has not applied.
+         */
+        openPlotJsonDialog(seed?: MarkPlot) {
+          getDialogHost(self).queueDialog(handleClose => [
+            PlotJsonDialog,
+            { model: self, seed, handleClose },
+          ])
+        },
       }))
       .views(self => ({
         /**
@@ -1709,6 +1746,13 @@ export function stateModelFactory(
               icon: ShowChartIcon,
               onClick: () => {
                 self.openPlotFieldDialog()
+              },
+            },
+            {
+              label: 'Edit marks as JSON...',
+              icon: DataObjectIcon,
+              onClick: () => {
+                self.openPlotJsonDialog()
               },
             },
             makeScoreSubMenu(self, { domain: self.domain }),

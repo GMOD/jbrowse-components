@@ -5,7 +5,7 @@ import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, screen } from '@testing-library/react'
 
 import { configSchemaFactory } from '../configSchema.ts'
-import { liftMarkPlot, markPlotProblems } from '../markPlot.ts'
+import { liftMarkPlot } from '../markPlot.ts'
 import PlotJsonDialog from './PlotJsonDialog.tsx'
 
 import type { MarkPlot } from '../markPlot.ts'
@@ -20,7 +20,6 @@ function setup(markPlot: MarkPlot = {}) {
     markPlot,
     markPlotExamples: [{ plot: '{"facet":"HP"}', description: 'by haplotype' }],
     liftMarkPlot: plot => liftMarkPlot(schema, plot, markPlot),
-    markPlotProblems,
     applyDisplaySettings,
   }
   render(
@@ -116,7 +115,6 @@ it('seeds over the declared plot without losing the rest', () => {
     markPlot: BAR,
     markPlotExamples: [],
     liftMarkPlot: plot => liftMarkPlot(schema, plot, BAR),
-    markPlotProblems,
     applyDisplaySettings: jest.fn(),
   }
   render(

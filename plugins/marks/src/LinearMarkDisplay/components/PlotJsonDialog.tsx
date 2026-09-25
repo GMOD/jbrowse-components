@@ -5,6 +5,7 @@ import { DialogContentText } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
+  markPlotProblems,
   markPlotSettingsWritten,
   markPlotText,
   parseMarkPlot,
@@ -21,7 +22,6 @@ export interface PlotJsonDialogModel {
   markPlotExamples: { plot: string; description: string }[]
   /** Throws for a plot the config schema would refuse. */
   liftMarkPlot: (plot: MarkPlot) => MarkPlotSettings
-  markPlotProblems: (settings: MarkPlotSettings) => MarkProblem[]
   applyDisplaySettings: (settings: Record<string, unknown>) => unknown
 }
 
@@ -41,7 +41,7 @@ interface Draft {
 function readDraft(model: PlotJsonDialogModel, text: string): Draft {
   try {
     const plot = parseMarkPlot(text)
-    const problems = model.markPlotProblems(model.liftMarkPlot(plot))
+    const problems = markPlotProblems(model.liftMarkPlot(plot))
     return {
       plot,
       problems,

@@ -23,6 +23,23 @@ import type {
 export const MARK_PLOT_KEYS = ['marks', 'transform', 'facet', 'rows'] as const
 export type MarkPlotKey = (typeof MARK_PLOT_KEYS)[number]
 
+/** What the box lists above the text, one line each. */
+export const MARK_PLOT_EXAMPLES = [
+  {
+    plot: '{"marks":[{"mark":"point","encoding":{"y":"score","color":{"field":"strand"}}}]}',
+    description: 'a point per feature at its score, coloured by strand',
+  },
+  {
+    plot: '{"facet":"HP","marks":[{"mark":"span"}]}',
+    description: 'one band per haplotype, each packed on its own',
+  },
+  {
+    plot: '{"marks":[{"mark":"bar","encoding":{"y":"count"},"transform":[{"type":"bin","step":"auto"},{"type":"aggregate","ops":[{"op":"count"}]}],"minBpPerPx":100}]}',
+    description: 'a count per zoom-following bin, drawn only zoomed out',
+  },
+  { plot: '{"facet":null}', description: 'stop faceting' },
+]
+
 /**
  * A partial plot as the user typed it: a key left out is left alone, and
  * `null` resets that slot, which is what `applyConfSettings` does with it
