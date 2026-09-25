@@ -31,7 +31,7 @@ function symlogTransform(x: number, c: number): number {
   return ((((Math.sign(x)) | 0)) * log1pf(Math.abs((x / c))))
 }
 
-export function normalizeScore(score: number, domainMin: number, domainMax: number, scaleType: number, symlogConstant: number): number {
+export function normalizeScoreUnclamped(score: number, domainMin: number, domainMax: number, scaleType: number, symlogConstant: number): number {
   let tMax: number
   let tMin: number
   let t: number
@@ -68,5 +68,9 @@ export function normalizeScore(score: number, domainMin: number, domainMax: numb
     }
     return tMax
   }
-  return _clamp(((t - tMin) / tRange), 0.0, 1.0)
+  return ((t - tMin) / tRange)
+}
+
+export function normalizeScore(score: number, domainMin: number, domainMax: number, scaleType: number, symlogConstant: number): number {
+  return _clamp(normalizeScoreUnclamped(score, domainMin, domainMax, scaleType, symlogConstant), 0.0, 1.0)
 }

@@ -6,7 +6,7 @@
 // A domain with no range is a step: a score above its min maps to 1 and any
 // other to 0, so a score above a pinned domain sits off the top everywhere.
 //! export-consts: SCALE_TYPE_LOG, SCALE_TYPE_SYMLOG
-//! js-export: normalizeScore
+//! js-export: normalizeScore, normalizeScoreUnclamped
 //! js-skip: log1pf — JS has Math.log1p, so a twin of this would be the float32 workaround spelled out where the language already answers it
 //! js-skip: symlogTransform — render-core scoreScale.ts reaches Math.log1p directly, one call inside a normalizer it hoists the whole log domain out of, so a per-call twin of this would have no caller. What both backends must agree on is normalizeScore, which is exported and swept by normalizeScoreParity.test.ts
 module scoreScale;
@@ -30,7 +30,12 @@ public float symlogTransform(float x, float c) {
   return sign(x) * log1pf(abs(x / c));
 }
 
-public float normalizeScore(float score, float domainMin, float domainMax, int scaleType, float symlogConstant) {
+// The fraction a score sits at, extrapolated past either end rather than
+// clamped, so a value outside the domain keeps its order against every other
+// one. A threshold cut is placed through this: a cut the domain excludes then
+// lands off the plot, instead of tying with the scores clamped to the edge it
+// would sit on and reading as crossed.
+public float normalizeScoreUnclamped(float score, float domainMin, float domainMax, int scaleType, float symlogConstant) {
   float t = score;
   float tMin = domainMin;
   float tMax = domainMax;
@@ -49,5 +54,9 @@ public float normalizeScore(float score, float domainMin, float domainMax, int s
   if (tRange <= 0.0) {
     return t > tMin ? 1.0 : 0.0;
   }
-  return clamp((t - tMin) / tRange, 0.0, 1.0);
+  return (t - tMin) / tRange;
+}
+
+public float normalizeScore(float score, float domainMin, float domainMax, int scaleType, float symlogConstant) {
+  return clamp(normalizeScoreUnclamped(score, domainMin, domainMax, scaleType, symlogConstant), 0.0, 1.0);
 }

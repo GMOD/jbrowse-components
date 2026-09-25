@@ -1,4 +1,8 @@
-import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import {
+  abgrToCssRgba,
+  cssColorToABGR,
+  normalizedRgbToABGR,
+} from '@jbrowse/core/util/colorBits'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import {
   drawnRowHeightPx,
@@ -15,6 +19,7 @@ import {
   getNiceDomain,
 } from '@jbrowse/wiggle-core'
 
+import { makeSummaryLayers } from './wiggleLayers.ts'
 import { WIGGLE_MARKS } from './wiggleMarks.ts'
 
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
@@ -1155,5 +1160,112 @@ describe('line plots colour by pivot side', () => {
       [160, 150],
       [160, 100],
     ])
+  })
+})
+
+// A threshold the score domain excludes. Domain [0, 10] with the cut at 15: no
+// bin reaches it, so no rendering may paint the above-cut colour.
+//
+// The xyplot never did — `bandColorsAbgr` bands raw scores. The line family
+// bands screen y, and a cut outside the domain used to normalize to the same
+// clamped row edge that a score at the top of the domain does, so the tie read
+// as crossed and the same data changed colour when the user switched plot type.
+// Both sides answer here, because a test written from either one alone passes
+// against the version that disagreed.
+describe('a cut outside the domain parts nothing', () => {
+  const posColor: [number, number, number] = [0, 0, 1]
+  const negColor: [number, number, number] = [1, 0, 0]
+  const scores = [10, 4]
+  const starts = [0, 100]
+  const ends = [100, 200]
+  const cutState = { ...lineState, pivot: 15, cuts: [15] }
+  const below = 'rgb(255,0,0)'
+  const above = 'rgb(0,0,255)'
+
+  const bandOf = (abgr: number) =>
+    abgr === normalizedRgbToABGR(...negColor)
+      ? below
+      : abgr === normalizedRgbToABGR(...posColor)
+        ? above
+        : `unknown ${abgr}`
+
+  function xyplotBands() {
+    const featurePositions = new Uint32Array(scores.length * 2)
+    for (let i = 0; i < scores.length; i++) {
+      featurePositions[i * 2] = starts[i]!
+      featurePositions[i * 2 + 1] = ends[i]!
+    }
+    const featureScores = new Float32Array(scores)
+    const [layer] = makeSummaryLayers({
+      data: {
+        featurePositions,
+        featureScores,
+        featureMinScores: featureScores,
+        featureMaxScores: featureScores,
+        numFeatures: scores.length,
+        hasSummaryScores: false,
+      },
+      summaryScoreMode: 'avg',
+      posColor,
+      negColor,
+      pivot: cutState.pivot,
+      origin: 0,
+      cuts: cutState.cuts,
+      innerColors: [],
+      renderingType: RENDERING_TYPE_XYPLOT,
+      gradient: false,
+    })
+    return [...layer!.colorsAbgr!].map(bandOf)
+  }
+
+  function lineBands(renderingType: WiggleRenderingType) {
+    const mock = createMockCanvas()
+    const source = {
+      ...makeSource(scores, starts, ends, renderingType),
+      color: posColor,
+      negColor,
+    }
+    paintWiggle(mock.ctx, new Map([[0, [source]]]), [lineBlock], {
+      ...cutState,
+      renderingType,
+    })
+    return mock.strokeStyles
+  }
+
+  test('the xyplot leaves every bar below it', () => {
+    expect(xyplotBands()).toEqual([below, below])
+  })
+
+  test('the step line agrees with the xyplot', () => {
+    expect(lineBands(RENDERING_TYPE_LINE)).toEqual([...new Set(xyplotBands())])
+  })
+
+  test('the interpolated line agrees with the xyplot', () => {
+    expect(lineBands(RENDERING_TYPE_LINE_CENTER)).toEqual([
+      ...new Set(xyplotBands()),
+    ])
+  })
+
+  test('a cut inside the domain still parts both renderings', () => {
+    const inside = { ...cutState, pivot: 6, cuts: [6] }
+    const mock = createMockCanvas()
+    paintWiggle(
+      mock.ctx,
+      new Map([
+        [
+          0,
+          [
+            {
+              ...makeSource(scores, starts, ends, RENDERING_TYPE_LINE_CENTER),
+              color: posColor,
+              negColor,
+            },
+          ],
+        ],
+      ]),
+      [lineBlock],
+      { ...inside, renderingType: RENDERING_TYPE_LINE_CENTER },
+    )
+    expect(mock.strokeStyles).toEqual([above, below])
   })
 })

@@ -3,7 +3,10 @@ import {
   SCALE_TYPE_LOG,
   SCALE_TYPE_SYMLOG,
 } from './shaders/scoreScale.generated.ts'
-import { normalizeScore } from './shaders/scoreScale.js.generated.ts'
+import {
+  normalizeScore,
+  normalizeScoreUnclamped,
+} from './shaders/scoreScale.js.generated.ts'
 
 import type { ScaleTypeCode } from './scoreScale.ts'
 
@@ -55,6 +58,50 @@ describe.each(CASES)('$name', ({ scaleType, domain, c }) => {
     )
     expect(denormalizeScore(1.5, min, max, scaleType, c)).toBeGreaterThan(max)
   })
+})
+
+// A threshold cut is placed through the unclamped twin, so a cut the domain
+// excludes lands off the plot rather than on the edge the scores beyond it are
+// clamped onto. The wiggle line renderings colour by comparing those two
+// placements, and that tie read as crossed.
+describe.each(CASES)('$name, unclamped', ({ scaleType, domain, c }) => {
+  const [min, max] = domain
+  const norm = (score: number) =>
+    normalizeScoreUnclamped(score, min, max, scaleType, c)
+
+  test('a score above the domain sits above its top', () => {
+    expect(norm(max)).toBeCloseTo(1, 9)
+    expect(norm(denormalizeScore(1.5, min, max, scaleType, c))).toBeCloseTo(
+      1.5,
+      9,
+    )
+  })
+
+  test('the clamped twin is this one, clipped', () => {
+    for (const t of [-0.5, ...FRACTIONS, 1.5]) {
+      const score = denormalizeScore(t, min, max, scaleType, c)
+      expect(normalizeScore(score, min, max, scaleType, c)).toBeCloseTo(
+        Math.max(0, Math.min(1, norm(score))),
+        9,
+      )
+    }
+  })
+})
+
+// log alone has a second floor of its own — the domain's min, or 1 — so a score
+// under it has nowhere below 0 to sit.
+test('a score below a non-log domain sits below its floor', () => {
+  for (const { scaleType, domain, c } of CASES) {
+    if (scaleType === SCALE_TYPE_LOG) {
+      continue
+    }
+    const [min, max] = domain
+    const below = denormalizeScore(-0.5, min, max, scaleType, c)
+    expect(normalizeScoreUnclamped(below, min, max, scaleType, c)).toBeCloseTo(
+      -0.5,
+      9,
+    )
+  }
 })
 
 test('a domain with no range answers where the forward step sits', () => {

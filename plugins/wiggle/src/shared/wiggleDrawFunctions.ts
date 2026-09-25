@@ -11,6 +11,7 @@ import {
   drawnRowHeightPx,
   rowBandOffsetPx,
 } from '@jbrowse/render-core/shaders/rowRect'
+import { normalizeScoreUnclamped } from '@jbrowse/render-core/shaders/scoreScale'
 import { appendPointMarker, makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import { WIGGLE_MIN_PX } from '../util.ts'
@@ -76,6 +77,27 @@ function makeScoreToY(
     symlogConstant,
   )
   return (score: number) => (1 - normalize(score)) * rowHeight
+}
+
+// `wiggleCommon.slang`'s `rowCutToYPx`: a cut is placed unclamped, so one the
+// domain excludes sits outside the row rather than on the edge that
+// out-of-domain scores are clamped onto, where the tie read as crossed.
+function makeCutToY(
+  rowHeight: number,
+  domainY: [number, number],
+  scaleType: ScaleTypeCode,
+  symlogConstant: number,
+) {
+  return (cut: number) => {
+    const norm = normalizeScoreUnclamped(
+      cut,
+      domainY[0],
+      domainY[1],
+      scaleType,
+      symlogConstant,
+    )
+    return (1 - norm) * rowHeight
+  }
 }
 
 function makeRampFill({
@@ -319,13 +341,14 @@ export function drawLine({
   }
   ctx.lineWidth = lineWidth
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
+  const cutToY = makeCutToY(rowHeight, domainY, scaleType, symlogConstant)
   const zeroY = scoreToY(0) + rowTop
   const positions = source.featurePositions
   const scores = source.featureScores
   const toX = makeBpMapper(block)
   strokeByBands(
     ctx,
-    cuts.map(cut => scoreToY(cut) + rowTop),
+    cuts.map(cut => cutToY(cut) + rowTop),
     bandStyles(negRgb, innerColors, rgb, lineRgb),
     pen => {
       let inRun = false
@@ -388,9 +411,10 @@ export function drawLineCenter({
   const scores = source.featureScores
   const toX = makeBpMapper(block)
   const gapLimitBp = source.gapLimitBp ?? Number.POSITIVE_INFINITY
+  const cutToY = makeCutToY(rowHeight, domainY, scaleType, symlogConstant)
   strokeByBands(
     ctx,
-    cuts.map(cut => scoreToY(cut) + rowTop),
+    cuts.map(cut => cutToY(cut) + rowTop),
     bandStyles(negRgb, innerColors, rgb, lineRgb),
     pen => {
       for (let i = 0; i < n; i++) {
@@ -506,8 +530,9 @@ export function drawWhiskerBand({
   } else {
     const dpr = getDpr()
     const rowBottom = rowTop + rowHeight
+    const cutToY = makeCutToY(rowHeight, domainY, scaleType, symlogConstant)
     const snapped = cuts.map(
-      cut => Math.round((scoreToY(cut) + rowTop) * dpr) / dpr,
+      cut => Math.round((cutToY(cut) + rowTop) * dpr) / dpr,
     )
     for (const [k, { top, bottom }] of [
       ...bandEdges(snapped).entries(),

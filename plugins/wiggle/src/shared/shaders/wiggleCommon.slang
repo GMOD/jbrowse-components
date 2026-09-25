@@ -134,13 +134,25 @@ public float cutScore(int i, Uniforms u) {
   return u.cuts[i / 4][i % 4];
 }
 
+// A cut's y in the row, placed UNCLAMPED — `normalizeScoreUnclamped` and not
+// the `rowScoreToYPx` every drawn score goes through. A cut outside the domain
+// then sits outside the row, where no drawn geometry reaches, and the whole
+// plot stays in the band it belongs to. Clamped, the cut landed on the row edge
+// that out-of-domain scores are clamped onto too, and the tie read as crossed:
+// domain [0, 100] with a cut at 150 coloured a bin scoring 100 as over the
+// threshold, which the xyplot — comparing raw scores — never did.
+public float rowCutToYPx(float cut, float rowTop, float rowHeight, Uniforms u) {
+  float norm = normalizeScoreUnclamped(cut, u.domainYMin, u.domainYMax, u.scaleType, u.symlogConstant);
+  return (1.0 - norm) * rowHeight + rowTop;
+}
+
 // Each cut's y in the row, four to a vector: placed once per vertex and handed
 // to the fragment flat, so a pixel only compares. Slots past `numCuts` are 0.
 public float4 cutYsPx(int from, float rowTop, float rowHeight, Uniforms u) {
   float4 ys = float4(0.0);
   for (int k = 0; k < 4; k++) {
     if (from + k < u.numCuts) {
-      ys[k] = rowScoreToYPx(cutScore(from + k, u), rowTop, rowHeight, u);
+      ys[k] = rowCutToYPx(cutScore(from + k, u), rowTop, rowHeight, u);
     }
   }
   return ys;
