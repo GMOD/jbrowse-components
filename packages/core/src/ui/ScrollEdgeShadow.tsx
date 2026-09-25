@@ -5,12 +5,8 @@ import { makeStyles } from '../util/tss-react/index.ts'
 
 import type { VirtualScrollModel } from '../util/useVirtualScrollWheel.ts'
 
-/**
- * How deep each edge fade is. Enough to read as a soft edge under the content
- * rather than as a rule, not so deep that it dims a whole row (the shortest row
- * a display draws is ~7px in its most compact mode).
- */
-const SHADOW_HEIGHT = 16
+// deep enough to read as a soft edge rather than a rule
+const SHADOW_HEIGHT = 10
 
 // Slack at each edge, so a float residue in `scrollTop` doesn't mark one.
 const EPSILON = 0.5
@@ -20,11 +16,9 @@ const useStyles = makeStyles()(theme => {
   // the dark theme's #121212 canvas, which is the same trap the scrollbar thumb
   // hit before it became theme-aware.
   const ink = theme.palette.mode === 'dark' ? '255,255,255' : '0,0,0'
-  // 0.18, down from the 0.3 this shipped at: over a dense pileup the deep end
-  // of the ramp read as a band of its own and drew the eye before the features
-  // did, which inverts what it is for. It only has to be findable when someone
-  // asks "is that everything?", not noticeable when nobody asked.
-  const from = `rgba(${ink},0.18)`
+  // findable when someone asks "is that everything?", not noticeable when
+  // nobody asked
+  const from = `rgba(${ink},0.1)`
   // NOT the `transparent` keyword, which is transparent BLACK: interpolating to
   // it puts a grey cast through the middle of the ramp, and on the dark theme's
   // white ink that is the whole ramp.

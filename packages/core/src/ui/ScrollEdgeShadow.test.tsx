@@ -88,8 +88,8 @@ test('both edges are placed inside the viewport, not the display', () => {
   expect(
     spans({ scrollTop: 100, viewportHeight: 100, contentHeight: 300, top: 40 }),
   ).toEqual({
-    top: { top: '40px', height: '16px' },
-    bottom: { top: '124px', height: '16px' },
+    top: { top: '40px', height: '10px' },
+    bottom: { top: '130px', height: '10px' },
   })
 })
 
