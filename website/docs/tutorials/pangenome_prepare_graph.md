@@ -260,6 +260,10 @@ Whichever route wrote the file, its path count counts routes combinatorially
 rather than haplotypes observed, and saturates at `2147483647`, which the track
 labels uncountable.
 
+[Part 2's bubble track](/docs/tutorials/pangenome_hprc_part2#the-bubble-track)
+draws this file on the HPRC graph, so a lane built from your own has something
+to check against.
+
 ## A whole chromosome: the bubble tier
 
 The track above draws one node per segment, so a window past a few hundred
@@ -309,6 +313,9 @@ is a few dozen tier nodes. A `GraphGenomeView` pointed at a tier carries
 **`maxRegionBp`** raised to the span it is drawing. The real ceiling is
 unchanged, since `maxGraphNodes` counts what actually came back.
 
+[Part 2 draws a whole chromosome](/docs/tutorials/pangenome_hprc_part2#a-whole-chromosome-as-a-graph)
+off the HPRC tier, at the scale this threshold is chosen for.
+
 ## What the variation is: the allele inventory
 
 The bubbles report where the graph varies. One row per allele, anchored on the
@@ -353,6 +360,9 @@ that order may lack the sequence, may have had its copy merged into an existing
 path, or may simply not have aligned there. The script's closing summary prints
 how many rows are nested, which is the filter (`jexl:feature.nested==0`) to
 apply before reading lengths in bulk.
+
+[Part 2's allele inventory](/docs/tutorials/pangenome_hprc_part2#the-allele-inventory)
+is the same file over HPRC, read against the callset beside it.
 
 ## Who carries what
 
@@ -411,6 +421,9 @@ alone merges a diploid sample's two copies and reports a segment carried only on
 the maternal one as "HG002 carries it". `feature.carriers` is absent rather than
 `0` on an rGFA-derived index, which is the difference between the two routes
 showing up in a jexl.
+
+[Part 2 reads carriage at the graph's own granularity](/docs/tutorials/pangenome_hprc_part2#carriage-at-the-graphs-own-granularity),
+which is the lane a file built here feeds.
 
 ## Every haplotype's walk: a gbz-base database
 
