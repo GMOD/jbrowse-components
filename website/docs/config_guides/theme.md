@@ -39,6 +39,16 @@ sets the starting value of the settings users can toggle for themselves.
 
 <Figure src="/img/customized_theme.png" caption="Example screenshot showing the customized theme"/>
 
+## Following the system
+
+A new session takes its light or dark setting from the operating system. The
+sun/moon button in the toolbar cycles between following the system, light, and
+dark. The theme picker in Preferences lists "Follow system" alongside the named
+themes, and a choice made either way is remembered per browser.
+
+Following the system draws the `default` theme in light and `Dark (stock)` in
+dark, so the colors you set under `theme` below survive the light half.
+
 ## Extra themes and dark mode
 
 `extraThemes` entries show up in the Preferences dialog for the user to select.
