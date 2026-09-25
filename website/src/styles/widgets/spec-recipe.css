@@ -84,7 +84,17 @@
   .spec-note {
     margin: 0.5rem 0;
   }
-  .spec-desktop-open {
+  .spec-fallback {
+    margin: 0 0 0.75rem;
+  }
+  .spec-fallback summary {
+    cursor: pointer;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    font-weight: 400;
+    margin: 0;
+  }
+  .spec-open {
     margin: 0 0 0.5rem;
     font-size: 1rem;
     font-weight: 600;

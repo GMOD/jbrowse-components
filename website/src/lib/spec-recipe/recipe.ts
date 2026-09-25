@@ -38,6 +38,8 @@ export interface RecipeStep {
   // the steps taken inside this one: a track's settings under the step that
   // adds it, a row's or a pane's steps under its name
   substeps?: RecipeStep[]
+  // the step as JBrowse Web takes it, where that differs from Desktop
+  web?: { title: string }
   // this step is what opens its view (see FieldStep.opensView)
   opensView?: boolean
 }
@@ -53,6 +55,7 @@ export interface Recipe {
   config: string
   specJson: string
   steps: RecipeStep[]
+  webSteps: RecipeStep[]
   // absent when a view needs a plugin the widget cannot load from the config
   python?: string
   // the `npx @jbrowse/capture` invocation that rebuilds this figure, for an
@@ -287,6 +290,10 @@ function importFormSteps(
     steps.push({
       title:
         'Open your genomes: on the JBrowse Desktop start screen click **Open new genome** (or **Show all available genomes** to pick a hosted one), then **File → Open genome...** for each of the rest.',
+      web: {
+        title:
+          "Put your genomes in your JBrowse Web's `config.json`: run `jbrowse add-assembly` once for each.",
+      },
       example: form.assemblies(assemblies),
     })
   }
@@ -418,6 +425,10 @@ function viewSteps(
     steps.push({
       title:
         'Open your genome: on the JBrowse Desktop start screen click **Open new genome** (or **Show all available genomes** to pick a hosted one).',
+      web: {
+        title:
+          "Put your genome in your JBrowse Web's `config.json`: `jbrowse add-assembly` adds it.",
+      },
       example: `This figure uses ${view.assembly}${kind ? `, loaded from ${kind}` : ''}.`,
     })
   }
@@ -550,6 +561,14 @@ export function withSessionName(
   return rewritten.href
 }
 
+function forWeb(steps: RecipeStep[]): RecipeStep[] {
+  return steps.map(({ web, substeps, ...step }) => ({
+    ...step,
+    ...web,
+    ...(substeps ? { substeps: forWeb(substeps) } : {}),
+  }))
+}
+
 export function buildRecipe(
   liveUrl: string,
   // the screenshot-spec name of the figure this link belongs to, when it has
@@ -569,6 +588,22 @@ export function buildRecipe(
   const desktopWebUrl = withSessionName(liveUrl, figureName)
   const specJson = JSON.stringify(spec, null, 2)
   const configUrl = new URL(config, base).href
+  // A figure of two panes describes both, each pane's steps under the one
+  // that opens it: **Add → <view>**, unless the pane already says how it
+  // opened, which an import form and a launched-from-a-track graph view both
+  // do.
+  const steps = collected.flatMap((c, index) =>
+    views.length < 2
+      ? c.steps
+      : c.steps.some(step => step.opensView)
+        ? groupSteps(`Pane ${index + 1}`, c.steps)
+        : [
+            {
+              title: `Open pane ${index + 1}: **Add → ${viewName(views[index]?.type)}**.`,
+              substeps: c.steps,
+            },
+          ],
+  )
   return {
     liveUrl,
     desktopWebUrl,
@@ -577,22 +612,8 @@ export function buildRecipe(
     desktopUrl: toProtocolUrl(desktopWebUrl),
     config,
     specJson,
-    // A figure of two panes describes both, each pane's steps under the one
-    // that opens it: **Add → <view>**, unless the pane already says how it
-    // opened, which an import form and a launched-from-a-track graph view both
-    // do.
-    steps: collected.flatMap((c, index) =>
-      views.length < 2
-        ? c.steps
-        : c.steps.some(step => step.opensView)
-          ? groupSteps(`Pane ${index + 1}`, c.steps)
-          : [
-              {
-                title: `Open pane ${index + 1}: **Add → ${viewName(views[index]?.type)}**.`,
-                substeps: c.steps,
-              },
-            ],
-    ),
+    steps,
+    webSteps: forWeb(steps),
     python: pythonSnippet(configUrl, config, spec),
     agentCommand: agentCommandFor(
       base,

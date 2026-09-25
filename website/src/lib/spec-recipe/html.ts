@@ -54,6 +54,16 @@ function renderStep(step: RecipeStep): string {
   ].join('')
 }
 
+function ownDataSteps(steps: RecipeStep[], unmapped: string[]): string {
+  return [
+    note('<strong>With your own data</strong>, the steps behind the figure:'),
+    `<ol class="spec-steps">${steps.map(renderStep).join('')}</ol>`,
+    unmapped.length
+      ? note('Some settings have no written step yet — see the <strong>Spec</strong> tab.')
+      : '',
+  ].join('')
+}
+
 interface Panel {
   label: string
   // what the tab is, for a page script that carries a reader's pick across
@@ -78,24 +88,25 @@ function assembliesNote(assemblies: string[]): string {
 function panels(recipe: Recipe): Panel[] {
   return [
     {
-      label: 'Steps',
-      kind: 'steps',
-      body: [
-        note('The steps behind the figure above, run against your own data.'),
-        `<ol class="spec-steps">${recipe.steps.map(renderStep).join('')}</ol>`,
-        recipe.unmapped.length
-          ? note('Some settings have no written step yet — see the <strong>Spec</strong> tab.')
-          : '',
-      ].join(''),
-    },
-    {
       label: 'Desktop',
       kind: 'desktop',
       body: [
-        `<p class="spec-desktop-open"><a href="${escapeAttr(recipe.desktopUrl)}">Open this view in JBrowse Desktop ↗</a></p>`,
-        note(`Opens JBrowse Desktop (<strong>${DESKTOP_LINK_MIN_VERSION}+</strong>) at this view and saves it as a reopenable session — swap in your own files afterwards.`),
-        note('Nothing happens? Paste this link into Desktop\'s <strong>Open JBrowse Web link...</strong> (start screen, or <strong>File → Session</strong>):'),
+        `<p class="spec-open"><a href="${escapeAttr(recipe.desktopUrl)}">Open this view in JBrowse Desktop ↗</a></p>`,
+        note(`Opens JBrowse Desktop (<strong>${DESKTOP_LINK_MIN_VERSION}+</strong>) at this view and saves it as a reopenable session.`),
+        '<details class="spec-fallback"><summary>Nothing happens?</summary>',
+        note("Paste this link into Desktop's <strong>Open JBrowse Web link...</strong> (start screen, or <strong>File → Session</strong>):"),
         copyableBlock(recipe.desktopWebUrl, 'spec-json', 'spec-url'),
+        '</details>',
+        ownDataSteps(recipe.steps, recipe.unmapped),
+      ].join(''),
+    },
+    {
+      label: 'Web',
+      kind: 'web',
+      body: [
+        `<p class="spec-open"><a href="${escapeAttr(recipe.liveUrl)}" target="_blank" rel="noopener">Open this view in JBrowse Web ↗</a></p>`,
+        note('Its genome and tracks are hosted, so <strong>File → Open track...</strong> there adds your own files beside them.'),
+        ownDataSteps(recipe.webSteps, recipe.unmapped),
       ].join(''),
     },
     ...(recipe.cli
