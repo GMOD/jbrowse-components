@@ -1,3 +1,4 @@
+import { RAMP_NOT_FINITE_COLOR } from '@jbrowse/render-core/marks'
 import {
   GLYPH_DIAMOND,
   GLYPH_DISC,
@@ -10,6 +11,7 @@ import { cssColorToABGR } from './colorBits.ts'
 import Flatbush from './flatbush/index.ts'
 import createJexlInstance from './jexl.ts'
 import {
+  continuousColorScale,
   encodeFeatures,
   encodedChannelTransferables,
   rampOverExtent,
@@ -966,4 +968,15 @@ test('the size and x2Ref lanes ride the transfer list', () => {
   const buffers = encodedChannelTransferables(out)
   expect(buffers).toContain(out.size.buffer)
   expect(buffers).toContain(out.x2Ref.buffer)
+})
+
+// A bar, point or link mark's ramp resolves on the GPU or in the Canvas2D bake,
+// a span's in the worker through `continuousColorScale`: one value, one colour.
+test('every ramp path paints a value that is no finite number one grey', () => {
+  const { colorOf } = continuousColorScale(
+    { field: 'score', scale: 'linear' },
+    [0, 1],
+  )
+  expect(colorOf(Number.NaN)).toBe(RAMP_NOT_FINITE_COLOR)
+  expect(colorOf(Infinity)).toBe(RAMP_NOT_FINITE_COLOR)
 })

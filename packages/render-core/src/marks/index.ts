@@ -10,6 +10,7 @@ export { linkMark, LINK_NO_REGION } from './linkMark.ts'
 export { ellipseDistance, ellipseNearest } from './ellipseDistance.ts'
 export { appendGlyph, pointInsetPx } from './glyphPaint.ts'
 export { abgrToCssRgba, makeAbgrFill } from './colorFill.ts'
+export { RAMP_NOT_FINITE_COLOR } from '../shaders/markColor.generated.ts'
 export { HIDDEN_ROW, NO_ROW_COLOR, RowKeys, buildRowTable } from './rowTable.ts'
 
 export type { MarkPlan } from './markPlan.ts'

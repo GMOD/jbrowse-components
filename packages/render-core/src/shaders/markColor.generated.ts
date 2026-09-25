@@ -6,3 +6,5 @@ export const RAMP_NONE = 0
 export const RAMP_LINEAR = 1
 
 export const RAMP_LOG = 2
+
+export const RAMP_NOT_FINITE_COLOR = 4286611584

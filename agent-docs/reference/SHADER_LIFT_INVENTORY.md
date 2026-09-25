@@ -14,7 +14,7 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 45 shaders with entry points. 116 functions
+Scanned 45 shaders with entry points. 117 functions
 are inside the emitter's subset, of which **86 are exported**.
 
 ## Candidates
@@ -55,6 +55,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `pxToClipLen` | `(f32, f32) -> f32` | the length half of the same conversion; a px dimension is already in px on the Canvas2D side, so there is nothing to convert |
 | `pxToClipX` | `(f32, f32) -> f32` | the inverse of clipXToPx, same reason |
 | `quadLocal` | `(u32) -> vec2f` | maps a vertex id to a quad corner — Canvas2D has no vertices, it calls fillRect |
+| `rampValueFinite` | `(u32) -> bool` | reads the lane's bits, which only the GPU holds; the Canvas2D bake reads the Float32Array and asks Number.isFinite |
 | `sBlendDeriv` | `(f32) -> f32` | the ribbon tangent, for extruding an edge normal per fragment; Canvas2D draws one bezierCurveTo and never needs the derivative |
 | `scoreToY` | `(f32, f32, f32, f32, i32, f32) -> f32` | a plot-box wrapper over scoreScale.slang's normalizeScore, which is where the shared decision is and where it is exported from. The Canvas2D side composes the same normalizer with its own box (wiggle-core yScaleTicks.ts), so a twin of this signature would have no caller |
 | `smallMarkFade` | `(f32) -> f32` | compensation for MSAA quantizing a tiny triangle's coverage to a few sample positions; Canvas2D's rasterizer blends that coverage per pixel on its own, so applying the ramp there would fade the glyph twice |

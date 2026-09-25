@@ -1,4 +1,5 @@
 import { INSTANCE_STRIDE_BYTES } from '../shaders/barMark.generated.ts'
+import { RAMP_NOT_FINITE_COLOR } from '../shaders/markColor.generated.ts'
 import { barMark } from './barMark.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { recordingContext as mockCtx } from './drawAgainstHit.ts'
@@ -81,6 +82,17 @@ test('the bake reads the LUT at the value fraction, floors and ceilings clamped'
     grey(255),
     grey(255),
   ])
+})
+
+test('a value that is no finite number bakes the not-finite grey', () => {
+  const c = bars([Number.NaN, 10, Infinity, -Infinity])
+  const colors = paintColors(c, 4, ramp) as Uint32Array
+  expect([colors[0], colors[2], colors[3]]).toEqual([
+    RAMP_NOT_FINITE_COLOR,
+    RAMP_NOT_FINITE_COLOR,
+    RAMP_NOT_FINITE_COLOR,
+  ])
+  expect(colors[1]).not.toBe(RAMP_NOT_FINITE_COLOR)
 })
 
 test('a domain with no range steps: the ceiling above its min, the floor at or below', () => {

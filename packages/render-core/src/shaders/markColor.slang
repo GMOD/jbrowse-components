@@ -17,7 +17,8 @@
 //
 // `normalizeScore` is `scoreScale`'s, so a ramp's domain is read exactly as the
 // axis reads y's and as the Canvas2D twin reads both.
-//! export-consts: RAMP_NONE, RAMP_LINEAR, RAMP_LOG
+//! export-consts: RAMP_NONE, RAMP_LINEAR, RAMP_LOG, RAMP_NOT_FINITE_COLOR
+//! js-skip: rampValueFinite — reads the lane's bits, which only the GPU holds; the Canvas2D bake reads the Float32Array and asks Number.isFinite
 module markColor;
 
 import colorPack;
@@ -29,6 +30,16 @@ public static const int RAMP_NONE = 0;
 public static const int RAMP_LINEAR = 1;
 public static const int RAMP_LOG = 2;
 
+// The misconfiguration grey, packed, which a value that is no finite number
+// paints, as `continuousColorScale` paints one on the per-region path. Read
+// off the lane's bits rather than the float, since a NaN need not survive a
+// vertex attribute through every driver's fast math.
+public static const uint RAMP_NOT_FINITE_COLOR = 0xFF808080u;
+
+public bool rampValueFinite(uint bits) {
+  return (bits & 0x7F800000u) != 0x7F800000u;
+}
+
 public float4 markInstanceColor(
   Sampler2D<float4> ramp,
   uint packed,
@@ -38,6 +49,9 @@ public float4 markInstanceColor(
 ) {
   if (rampMode == RAMP_NONE) {
     return unpackRGBA(packed);
+  }
+  if (!rampValueFinite(packed)) {
+    return unpackRGBA(RAMP_NOT_FINITE_COLOR);
   }
   int scaleType = rampMode == RAMP_LOG ? SCALE_TYPE_LOG : 0;
   return rampColor(

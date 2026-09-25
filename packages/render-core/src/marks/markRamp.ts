@@ -3,6 +3,7 @@ import {
   RAMP_LINEAR,
   RAMP_LOG,
   RAMP_NONE,
+  RAMP_NOT_FINITE_COLOR,
 } from '../shaders/markColor.generated.ts'
 import { normalizeScore } from '../shaders/scoreScale.js.generated.ts'
 
@@ -91,13 +92,12 @@ export function paintColors(
   const entries = lut.length / 4
   const colors = new Uint32Array(count)
   for (let i = 0; i < count; i++) {
-    const t = normalizeScore(
-      colorValue[i]!,
-      min,
-      max,
-      log ? SCALE_TYPE_LOG : 0,
-      1,
-    )
+    const value = colorValue[i]!
+    if (!Number.isFinite(value)) {
+      colors[i] = RAMP_NOT_FINITE_COLOR
+      continue
+    }
+    const t = normalizeScore(value, min, max, log ? SCALE_TYPE_LOG : 0, 1)
     const o = Math.round(t * (entries - 1)) * 4
     colors[i] =
       ((lut[o + 3]! << 24) |
