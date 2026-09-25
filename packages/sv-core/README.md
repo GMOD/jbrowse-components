@@ -104,26 +104,6 @@ through `junctionEnds`; a record naming no other end spans its own extent.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
 
-### junctionEnds
-
-Where a paired record's junction is at each of its two ends, and which side of
-it each end keeps — the one answer every launcher, the row menu and the chain
-walk take, whether the record is a VCF breakend, a symbolic SV or a paired
-adapter's row (BEDPE, STAR-Fusion). Refnames are as the record spells them.
-`undefined` for a record naming no other end.
-
-A VCF end is its own position. A paired adapter's end is a block, and the
-junction is the block's edge on the side the end keeps: stated by
-`mateDirection` where the adapter knows it, read off a BEDPE strand otherwise,
-and with neither the two blocks face each other.
-
-```js
-// type signature
-(feature: Feature) => { own: JunctionEnd; mate: JunctionEnd; } | undefined
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
-
 ### linearGenomeViewOf
 
 A feature widget's view when a launch can copy its tracks: a linear genome view,

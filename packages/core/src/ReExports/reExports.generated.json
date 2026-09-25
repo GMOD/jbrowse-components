@@ -3401,7 +3401,9 @@
         "SV_SYMBOLIC_ALLELES",
         "breakendKeepsDirections",
         "getBreakendMateLocString",
+        "junctionEnds",
         "parseSvAlt",
+        "readTranslocationMate",
         "safeParseBreakend",
         "svTypeOfAlt"
       ],

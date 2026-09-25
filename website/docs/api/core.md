@@ -460,6 +460,29 @@ keeps the direct call, and only a config that writes a path pays for one.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/fieldReader.ts)
 
+## junctionEnds
+
+Where a paired record's junction is at each of its two ends, and which side
+of it each end keeps — the one answer every launcher, the row menu and the
+chain walk take, whether the record is a VCF breakend, a symbolic SV or a
+paired adapter's row (BEDPE, STAR-Fusion). Refnames are as the record spells
+them. `undefined` for a record naming no other end. A VCF record is read
+through `alt`, its first ALT unless the caller names another.
+
+A VCF end is its own position. A paired adapter's end is a block, and the
+junction is the block's edge on the side the end keeps: stated by
+`mateDirection` where the adapter knows it, read off the strands where the
+record states one for each end as BEDPE does, and with neither the two
+blocks face each other. A PAF row's strand is the query's orientation and
+states none for the target, so it names no side.
+
+```js
+// type signature
+(feature: Feature, alt?: string | undefined) => { own: JunctionEnd; mate: JunctionEnd; } | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
+
 ## LaneName
 
 The lanes a caller asks the encoder to fill, beyond `x`, `x2` and
