@@ -144,6 +144,41 @@ test('a feature swap washes the panel, and a re-format of the same feature does 
   expect(queryByTestId('feature-details-wash')).toBeTruthy()
 })
 
+// A BEDPE, breakend or PAF feature carries its other end as `mate`, whose
+// position the Mate details section already shows
+test("the mate's fields render once, under Mate details", async () => {
+  const pluginManager = new PluginManager([])
+  const Session = types.model({
+    rpcManager: types.optional(types.frozen(), {}),
+    configuration: ConfigurationSchema('test', {}),
+    widget: stateModelFactory(pluginManager),
+  })
+  const model = Session.create(
+    {
+      widget: {
+        type: 'BaseFeatureWidget',
+        unformattedFeatureData: {
+          uniqueId: 'bp1',
+          refName: 'ctgA',
+          start: 10,
+          end: 20,
+          mate: { refName: 'ctgB', start: 100, end: 101, assemblyName: 'hg2' },
+        },
+      },
+    },
+    { pluginManager },
+  )
+  const { findByText, queryByText, getAllByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <BaseFeatureDetails model={model.widget} />
+    </ThemeProvider>,
+  )
+  expect(await findByText('Mate details')).toBeTruthy()
+  expect(queryByText('mate.start')).toBeNull()
+  expect(queryByText('mate.refName')).toBeNull()
+  expect(getAllByText('mate.assemblyName')).toHaveLength(1)
+})
+
 // A transcript clicked inside a gene opens the panel on the transcript alone,
 // and its card is headed `NM_004006.2 - mRNA` -- nothing there says DMD. The
 // display resolves the containing feature at click time (see

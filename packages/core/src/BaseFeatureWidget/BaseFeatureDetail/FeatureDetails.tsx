@@ -1,5 +1,3 @@
-import { Fragment } from 'react'
-
 import { Divider, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -25,19 +23,7 @@ function SectionHeader({ title }: { title: string }) {
   return <Typography variant="overline">{title}</Typography>
 }
 
-// interleave a <Divider/> between each node, e.g. [a,b,c] -> a | b | c
-function joinByDivider(nodes: React.ReactNode[]) {
-  return nodes.map((node, i) => (
-    // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed section order
-    <Fragment key={i}>
-      {i > 0 ? <Divider /> : null}
-      {node}
-    </Fragment>
-  ))
-}
-
-// coreDetails are omitted in some circumstances
-const coreDetails = [
+const shownByCoreDetails = [
   'name',
   'start',
   'end',
@@ -72,49 +58,42 @@ const FeatureDetails = observer(function FeatureDetails(
     fieldActions,
   } = props
   const maxDepth = model.maxDepth ?? Infinity
-  const {
-    mate: m,
-    name = '',
-    id = '',
-    type = '',
-    subfeatures,
-    uniqueId,
-  } = feature
-  // resolved rather than raw props: `depth` is what tells a registered panel
-  // whether it is under the clicked feature (0) or a nested subfeature card, and
-  // it is only defaulted here -- passing raw props left it undefined at the top
-  // level, so a panel selecting on `depth === 0` could never match
+  const { mate, name = '', id = '', type = '', subfeatures, uniqueId } = feature
+  // a panel selecting on `depth === 0` has to see the default, not undefined
   const panelProps = { ...props, depth }
   return (
     <BaseCard title={generateTitle(name, id, type)}>
-      {joinByDivider(
-        [
-          <Fragment key="core">
-            <SectionHeader title="Core details" />
-            <CoreDetails {...props} />
-          </Fragment>,
-          m ? (
-            <Fragment key="mate">
-              <SectionHeader title="Mate details" />
-              <CoreDetails
-                {...props}
-                feature={{ ...m, uniqueId: `${uniqueId}-mate` }}
-              />
-            </Fragment>
-          ) : null,
-          <Fragment key="attributes">
-            <SectionHeader title="Attributes" />
-            <Attributes
-              attributes={feature}
-              omit={omit}
-              omitSingleLevel={coreDetails}
-              descriptions={descriptions}
-              formatter={formatter}
-              fieldActions={fieldActions}
-            />
-          </Fragment>,
-        ].filter(Boolean),
-      )}
+      <SectionHeader title="Core details" />
+      <CoreDetails {...props} />
+      {mate ? (
+        <>
+          <Divider />
+          <SectionHeader title="Mate details" />
+          <CoreDetails
+            {...props}
+            feature={{ ...mate, uniqueId: `${uniqueId}-mate` }}
+          />
+          <Attributes
+            attributes={mate}
+            prefix={['mate']}
+            omit={omit}
+            omitSingleLevel={shownByCoreDetails}
+            descriptions={descriptions}
+            formatter={formatter}
+            fieldActions={fieldActions}
+          />
+        </>
+      ) : null}
+      <Divider />
+      <SectionHeader title="Attributes" />
+      <Attributes
+        attributes={feature}
+        omit={omit}
+        omitSingleLevel={[...shownByCoreDetails, 'mate']}
+        descriptions={descriptions}
+        formatter={formatter}
+        fieldActions={fieldActions}
+      />
 
       <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
         <SequenceFeatureDetails {...props} feature={unformatted} />
@@ -150,10 +129,6 @@ const FeatureDetails = observer(function FeatureDetails(
               }
               model={model}
               depth={depth + 1}
-              // a subfeature's fields are the same fields, so the caller's
-              // descriptions and value formatter apply here too -- omitting
-              // them silently dropped e.g. VCF header descriptions and the
-              // truncating <Formatter> from every nested card
               descriptions={descriptions}
               formatter={formatter}
               fieldActions={fieldActions}
