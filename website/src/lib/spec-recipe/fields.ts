@@ -1264,6 +1264,17 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
+  // A peer radio of `sortedBy`'s own modes in the same group (menus/sortGroup.ts),
+  // so it reads as a Sort by... row rather than a checkbox. Only `true` names a
+  // path: false is the group sitting on some other radio, which whichever field
+  // holds that ordering describes.
+  splicedReadsFirst: (value, { displayType }) =>
+    value === true && isAlignmentsOnlyField(displayType)
+      ? {
+          path: `${TRACK_MENU} → Sort by... → Spliced reads first`,
+          note: 'Gives every read whose CIGAR carries a skip the lowest rows, so the junction-spanning reads sit together at the top of a deep pileup. One ordering at a time: this and the sort modes are one radio group.',
+        }
+      : undefined,
   showLegend: (value, { displayType }) =>
     typeof value === 'boolean' &&
     displayType &&
@@ -1501,6 +1512,12 @@ export const trackFields: Record<string, FieldRecipe> = {
   showReverse: checkbox('Show reverse'),
   showTranslation: checkbox('Show translation'),
   showSashimiLabels: checkbox('Sashimi arcs → Show labels'),
+  // A peer of the two above, in the submenu the arcs own (menus/sashimi.ts),
+  // and shown only while the arcs are.
+  hideNonCanonicalJunctions: checkbox(
+    'Sashimi arcs → Hide non-canonical junctions',
+    'Drops every arc whose intron does not begin and end with one of the six canonical dinucleotide pairs. At depth those are mostly alignment artefacts, and the support floor removes them only by also removing a real junction few reads carry.',
+  ),
   readConnectionsDown: checkbox(
     'Read connections → Arc / read cloud band options → Draw arcs below coverage band',
   ),

@@ -18,7 +18,6 @@ facet
 fadeThinAlignmentsMode
 geneTrackId
 height
-hideNonCanonicalJunctions
 hideUnlabelled
 highlightedPath
 jexlFiltersSetting
@@ -44,7 +43,6 @@ showLegend
 showProteinTracks
 showVariantLane
 sideBySide
-splicedReadsFirst
 structures
 transcriptId
 uniprotId
