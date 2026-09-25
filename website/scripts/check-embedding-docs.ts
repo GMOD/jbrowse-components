@@ -283,7 +283,7 @@ function snippetFences(): Fence[] {
     return python
       ? [
           {
-            where: `"In a notebook" tab of ${name}`,
+            where: `"Notebook" tab of ${name}`,
             lang: 'python' as const,
             code: python,
           },
@@ -328,7 +328,7 @@ for (const fence of [...docFences(), ...snippetFences()]) {
   }
   checked++
   for (const problem of [...surfaceProblems, ...initProblems(fence)]) {
-    const key = fence.where.startsWith('"In a notebook"')
+    const key = fence.where.startsWith('"Notebook"')
       ? `snippet ${problem}`
       : `${fence.where} ${problem}`
     if (!seen.has(key)) {

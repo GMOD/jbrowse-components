@@ -34,11 +34,9 @@ export interface RecipeStep {
   // the figure's own value for this step, shown as the concrete example
   example?: string
   note?: string
-  // Which pane, row and track the step belongs to, general to specific.
-  // Collected as the recipe is built and folded into `example` at the end, so a
-  // step gains a segment wherever a figure has more than one of something and
-  // the reader would otherwise be counting identical steps.
-  where?: string[]
+  // the steps taken inside this one: a track's settings under the step that
+  // adds it, a row's or a pane's steps under its name
+  substeps?: RecipeStep[]
   // this step is what opens its view (see FieldStep.opensView)
   opensView?: boolean
 }
@@ -162,34 +160,8 @@ function fieldSteps(
   return { steps, unmapped }
 }
 
-// Says which pane, row or track a run of steps belongs to. A recipe with three
-// of anything reads as three copies of one step otherwise, and the reader has
-// only the order to go on. Outermost caller wins the leading segment, since
-// each level of the walk labels what it is looping over.
-function labelSteps(steps: RecipeStep[], label: string): RecipeStep[] {
-  return steps.map(step => ({ ...step, where: [label, ...(step.where ?? [])] }))
-}
-
-function withWhere({ where, ...step }: RecipeStep): RecipeStep {
-  if (!where?.length) {
-    return step
-  }
-  const breadcrumb = where.join(' · ')
-  return {
-    ...step,
-    example: step.example ? `${breadcrumb} — ${step.example}` : `${breadcrumb}.`,
-  }
-}
-
-// The track's own name as a breadcrumb segment, falling back to the id a
-// figure's config doesn't carry a name for.
-function trackName(
-  entry: SpecTrackEntry,
-  config: string,
-  sessionTracks?: RawTrack[],
-): string {
-  const trackId = specTrackId(entry)
-  return `“${lookupTrack(config, trackId, sessionTracks)?.name ?? trackId}”`
+function groupSteps(label: string, steps: RecipeStep[]): RecipeStep[] {
+  return steps.length ? [{ title: label, substeps: steps }] : []
 }
 
 // What the Add menu calls each view, for a figure whose spec holds more than
@@ -236,13 +208,27 @@ const OPEN_TRACK =
 const ADD_TRACK =
   "Add your own track: open this view's track selector, click **+** and choose **Add track**, then paste a URL or choose a local file."
 
+function addTrackTitle(
+  info: TrackInfo | undefined,
+  kind: string | undefined,
+  band: BandContext | undefined,
+  viaTrackSelector: boolean | undefined,
+) {
+  const needs = kind ? ` This one needs ${kind}.` : ''
+  return info?.type === 'ReferenceSequenceTrack'
+    ? `Show the genome's sequence: open the track selector and check **${info.name}**.`
+    : band
+      ? `Point the import form at your own file: ${band.form.band}, choose **New track**, and paste a URL or pick a local file.${needs}`
+      : `${viaTrackSelector ? ADD_TRACK : OPEN_TRACK}${needs}`
+}
+
 function trackStep(
   entry: SpecTrackEntry,
   config: string,
   sessionTracks?: RawTrack[],
   band?: BandContext,
   viaTrackSelector?: boolean,
-): RecipeStep & { settings: RecipeStep[]; unmapped: string[] } {
+): RecipeStep & { unmapped: string[] } {
   const trackId = specTrackId(entry)
   const info = lookupTrack(config, trackId, sessionTracks)
   const kind = info ? fileKind(info.adapterType) : undefined
@@ -269,16 +255,15 @@ function trackStep(
     settings.unshift({ title: arrangement.step.path })
   }
   const name = info ? `“${info.name}”` : `the “${trackId}” track`
-  const needs = kind ? ` This one needs ${kind}.` : ''
   return {
-    title: band
-      ? `Point the import form at your own file: ${band.form.band}, choose **New track**, and paste a URL or pick a local file.${needs}`
-      : `${viaTrackSelector ? ADD_TRACK : OPEN_TRACK}${needs}`,
+    title: addTrackTitle(info, kind, band, viaTrackSelector),
     example:
-      band && band.bands > 1
-        ? `This figure uses ${name} for ${band.bands === 2 ? 'both bands' : `all ${band.bands} bands`}.`
-        : `This figure uses ${name}.`,
-    settings,
+      info?.type === 'ReferenceSequenceTrack'
+        ? undefined
+        : band && band.bands > 1
+          ? `This figure uses ${name} for ${band.bands === 2 ? 'both bands' : `all ${band.bands} bands`}.`
+          : `This figure uses ${name}.`,
+    ...(settings.length ? { substeps: settings } : {}),
     unmapped,
   }
 }
@@ -319,14 +304,12 @@ function importFormSteps(
     ...new Map(entries.map(entry => [JSON.stringify(entry), entry])).values(),
   ]
   for (const [index, entry] of distinct.entries()) {
-    const {
-      settings,
-      unmapped: trackUnmapped,
-      ...step
-    } = trackStep(entry, config, sessionTracks, {
-      form,
-      bands: distinct.length === 1 ? entries.length : 0,
-    })
+    const { unmapped: trackUnmapped, ...step } = trackStep(
+      entry,
+      config,
+      sessionTracks,
+      { form, bands: distinct.length === 1 ? entries.length : 0 },
+    )
     steps.push(
       index === 0
         ? {
@@ -334,7 +317,6 @@ function importFormSteps(
             note: `A synteny track the session already has is quicker: pick it under **Quick start**, which fills in ${form.rowsControl} itself.`,
           }
         : step,
-      ...settings,
     )
     unmapped.push(...trackUnmapped)
   }
@@ -446,20 +428,14 @@ function viewSteps(
   } else {
     const entries = specTracks(view)
     for (const entry of entries) {
-      const {
-        settings,
-        unmapped: trackUnmapped,
-        ...step
-      } = trackStep(entry, config, sessionTracks, undefined, viaTrackSelector)
-      // Three tracks in one view produce three runs of "Track menu → ..." with
-      // nothing between them, and every one of those menus hangs off a
-      // different track's label. The settings say which.
-      steps.push(
-        step,
-        ...(entries.length > 1
-          ? labelSteps(settings, trackName(entry, config, sessionTracks))
-          : settings),
+      const { unmapped: trackUnmapped, ...step } = trackStep(
+        entry,
+        config,
+        sessionTracks,
+        undefined,
+        viaTrackSelector,
       )
+      steps.push(step)
       unmapped.push(...trackUnmapped)
     }
   }
@@ -487,7 +463,7 @@ function viewSteps(
     // a sub-view is never the session's only view, so its tracks go in through
     // its own track selector
     const sub = viewSteps(subView, config, sessionTracks, label, true)
-    steps.push(...(label ? labelSteps(sub.steps, label) : sub.steps))
+    steps.push(...(label ? groupSteps(label, sub.steps) : sub.steps))
     unmapped.push(...sub.unmapped)
   }
 
@@ -594,29 +570,22 @@ export function buildRecipe(
     desktopUrl: toProtocolUrl(desktopWebUrl),
     config,
     specJson,
-    // A figure of two panes describes both, and the reader has to know which
-    // pane each step opens a genome or a track in. **Add → <view>** is what
-    // makes a pane exist, so it leads that pane's steps — unless the pane
-    // already says how it opened, which an import form and a launched-from-a-
-    // track graph view both do.
-    steps: collected
-      .flatMap((c, index) => {
-        if (views.length < 2) {
-          return c.steps
-        }
-        const opened = c.steps.some(step => step.opensView)
-        return [
-          ...(opened
-            ? []
-            : [
-                {
-                  title: `Open pane ${index + 1}: **Add → ${viewName(views[index]?.type)}**.`,
-                },
-              ]),
-          ...labelSteps(c.steps, `Pane ${index + 1}`),
-        ]
-      })
-      .map(withWhere),
+    // A figure of two panes describes both, each pane's steps under the one
+    // that opens it: **Add → <view>**, unless the pane already says how it
+    // opened, which an import form and a launched-from-a-track graph view both
+    // do.
+    steps: collected.flatMap((c, index) =>
+      views.length < 2
+        ? c.steps
+        : c.steps.some(step => step.opensView)
+          ? groupSteps(`Pane ${index + 1}`, c.steps)
+          : [
+              {
+                title: `Open pane ${index + 1}: **Add → ${viewName(views[index]?.type)}**.`,
+                substeps: c.steps,
+              },
+            ],
+    ),
     python: pythonSnippet(configUrl, config, spec),
     agentCommand: agentCommandFor(base, configUrl, specJson),
     cli: deriveCliRecipe(sessionTracks),

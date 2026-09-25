@@ -1435,8 +1435,8 @@ export const trackFields: Record<string, FieldRecipe> = {
       ? { path: `${TRACK_MENU} → Show... → Labels → ${label}` }
       : undefined
   },
-  height: numberField(() => ({
-    path: 'Drag the bar at the bottom edge of the track to resize it.',
+  height: numberField(n => ({
+    path: `Drag the bar at the bottom edge of the track to resize it (${n}px here).`,
   })),
   subfeatureLabels: fromTable('Subfeature labels', SUBFEATURE_LABELS),
   sashimiArcsMode: fromTable('Sashimi arcs → Arc placement', SASHIMI_PLACEMENT),

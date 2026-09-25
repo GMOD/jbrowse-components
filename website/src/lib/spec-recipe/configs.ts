@@ -92,7 +92,7 @@ function sequenceTrack(
   return assembly
     ? {
         trackId,
-        name: 'Reference sequence',
+        name: `Reference sequence (${assembly.name})`,
         type: 'ReferenceSequenceTrack',
         adapter: assembly.sequence?.adapter,
       }

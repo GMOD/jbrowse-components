@@ -22,9 +22,9 @@ function renderInline(text: string): string {
 // `<code>` text — decoded straight from the figure's link, so what a reader
 // copies is exactly what produced the image above and cannot drift from it.
 // The copy handler is delegated in DocsLayout (the dialog is not hydrated).
-function copyableBlock(text: string, className: string): string {
+function copyableBlock(text: string, className: string, wrap = ''): string {
   return [
-    '<div class="code-copywrap">',
+    `<div class="code-copywrap${wrap ? ` ${wrap}` : ''}">`,
     '<button type="button" class="code-copy">Copy</button>',
     `<pre class="${className}"><code>${escapeAttr(text)}</code></pre>`,
     '</div>',
@@ -47,12 +47,18 @@ function renderStep(step: RecipeStep): string {
     step.example
       ? `<span class="spec-step-example">${renderInline(step.example)}</span>`
       : '',
+    step.substeps
+      ? `<ol class="spec-substeps">${step.substeps.map(renderStep).join('')}</ol>`
+      : '',
     '</li>',
   ].join('')
 }
 
 interface Panel {
   label: string
+  // what the tab is, for a page script that carries a reader's pick across
+  // every tab widget on the page
+  kind: string
   body: string
 }
 
@@ -72,48 +78,52 @@ function assembliesNote(assemblies: string[]): string {
 function panels(recipe: Recipe): Panel[] {
   return [
     {
-      label: 'Do it yourself',
+      label: 'Steps',
+      kind: 'steps',
       body: [
         note('The steps behind the figure above, run against your own data.'),
         `<ol class="spec-steps">${recipe.steps.map(renderStep).join('')}</ol>`,
         recipe.unmapped.length
-          ? note('Some settings have no written step yet — see the <strong>Session spec</strong> tab.')
+          ? note('Some settings have no written step yet — see the <strong>Spec</strong> tab.')
           : '',
       ].join(''),
     },
     {
-      label: 'In Desktop',
+      label: 'Desktop',
+      kind: 'desktop',
       body: [
         `<p class="spec-desktop-open"><a href="${escapeAttr(recipe.desktopUrl)}">Open this view in JBrowse Desktop ↗</a></p>`,
         note(`Opens JBrowse Desktop (<strong>${DESKTOP_LINK_MIN_VERSION}+</strong>) at this view and saves it as a reopenable session — swap in your own files afterwards.`),
         note('Nothing happens? Paste this link into Desktop\'s <strong>Open JBrowse Web link...</strong> (start screen, or <strong>File → Session</strong>):'),
-        copyableBlock(recipe.desktopWebUrl, 'spec-json'),
+        copyableBlock(recipe.desktopWebUrl, 'spec-json', 'spec-url'),
       ].join(''),
     },
     ...(recipe.cli
       ? [
           {
-            label: 'With the CLI',
+            label: 'CLI',
+            kind: 'cli',
             body: [
               note('A figure adds its tracks to one session. The <a href="/docs/cli/">jbrowse CLI</a> writes the same tracks into a <code>config.json</code> instead, where every session that opens it has them: <a href="/docs/cli/#jbrowse-add-track"><code>add-track</code></a> where flags cover the whole track, <a href="/docs/cli/#jbrowse-add-track-json"><code>add-track-json</code></a> where they do not.'),
               copyableBlock(recipe.cli.commands, 'spec-json'),
-              note(`Run these where the <code>config.json</code> is, or add <code>--out &lt;dir&gt;</code>, and point each <code>uri</code> at your own file.${assembliesNote(recipe.cli.assemblies)} The location and the settings the steps carry are session state rather than track config — that half is the <strong>Session spec</strong> tab, or <a href="/docs/cli/#jbrowse-set-default-session"><code>jbrowse set-default-session</code></a>.`),
+              note(`Run these where the <code>config.json</code> is, or add <code>--out &lt;dir&gt;</code>, and point each <code>uri</code> at your own file.${assembliesNote(recipe.cli.assemblies)} The location and the settings the steps carry are session state rather than track config — that half is the <strong>Spec</strong> tab, or <a href="/docs/cli/#jbrowse-set-default-session"><code>jbrowse set-default-session</code></a>.`),
             ].join(''),
           },
         ]
       : []),
     {
-      label: 'Session spec',
+      label: 'Spec',
+      kind: 'spec',
       body: [
-        note('This <a href="/docs/urlparams/#session-spec">session spec</a> pastes after <code>&amp;session=spec-</code> on any JBrowse Web instance.'),
+        note(`This <a href="/docs/urlparams/#session-spec">session spec</a> draws the figure from <code>${escapeAttr(recipe.config)}</code>: paste it after <code>&amp;session=spec-</code> on a JBrowse Web link that loads that config.`),
         copyableBlock(recipe.specJson, 'spec-json'),
-        note(`Loaded against config: <code>${escapeAttr(recipe.config)}</code>`),
       ].join(''),
     },
     ...(recipe.python
       ? [
           {
-            label: 'In a notebook',
+            label: 'Notebook',
+            kind: 'notebook',
             body: [
               note('The same view with <a href="/docs/jbrowse_anywidget/">jbrowse-anywidget</a>, from the config the figure loads. Swap a track\'s <code>uri</code> for your own file.'),
               copyableBlock(recipe.python, 'spec-python'),
@@ -122,7 +132,8 @@ function panels(recipe: Recipe): Panel[] {
         ]
       : []),
     {
-      label: 'With an agent',
+      label: 'Agent',
+      kind: 'agent',
       body: [
         note('Hand this to a coding agent. It rebuilds the figure above headlessly, and the session file is then the thing to edit — swap an adapter <code>uri</code> for your own file and rerun.'),
         copyableBlock(recipe.agentCommand, 'spec-json'),
@@ -142,7 +153,7 @@ function dialogHtml(id: string, list: Panel[]): string {
     '<div class="spec-tabs">',
     ...list.map((panel, i) =>
       [
-        `<input type="radio" name="${name}" id="${id}-t${i}" class="spec-tab-input"${i === 0 ? ' checked' : ''}/>`,
+        `<input type="radio" name="${name}" id="${id}-t${i}" class="spec-tab-input" data-tab-kind="${panel.kind}"${i === 0 ? ' checked' : ''}/>`,
         `<label for="${id}-t${i}" class="spec-tab-label">${escapeAttr(panel.label)}</label>`,
         `<div class="spec-panel">${panel.body}</div>`,
       ].join(''),
@@ -165,7 +176,8 @@ export function videoRecipeDialogHtml(
   video: { steps: string[]; paste?: string },
 ): string {
   const walkthrough: Panel = {
-    label: 'Follow the video',
+    label: 'Video',
+    kind: 'video',
     body: [
       note(
         `<a href="${escapeAttr(recipe.liveUrl)}" target="_blank" rel="noopener noreferrer">Open the session the video starts in ↗</a>, then take the steps it shows:`,

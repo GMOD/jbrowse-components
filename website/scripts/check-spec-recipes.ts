@@ -31,6 +31,8 @@ import {
 } from './recipe-path-labels.ts'
 import { screenshotLiveUrls } from './screenshot-specs.ts'
 
+import type { RecipeStep } from '../src/lib/spec-recipe/recipe.ts'
+
 // Checks the figure recipes against every real figure link.
 //
 // 1. The "Open in JBrowse Desktop" link crosses three modules that are
@@ -95,11 +97,15 @@ for (const [name, url] of Object.entries(screenshotLiveUrls)) {
     for (const field of recipe.unmapped) {
       unmappedCounts.set(field, (unmappedCounts.get(field) ?? 0) + 1)
     }
-    for (const step of recipe.steps) {
-      if (step.title.includes('→')) {
-        recipePaths.add(step.title)
+    const collectPaths = (steps: RecipeStep[]) => {
+      for (const step of steps) {
+        if (step.title.includes('→')) {
+          recipePaths.add(step.title)
+        }
+        collectPaths(step.substeps ?? [])
       }
     }
+    collectPaths(recipe.steps)
     try {
       const unwrapped = parseProtocolUrl(recipe.desktopUrl)
       if (unwrapped !== recipe.desktopWebUrl) {

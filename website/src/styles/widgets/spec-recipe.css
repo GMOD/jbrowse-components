@@ -99,6 +99,22 @@
   .spec-steps li {
     margin: 0 0 0.7rem;
   }
+  .spec-substeps {
+    margin: 0.35rem 0 0;
+    padding-left: 1.25rem;
+    list-style: lower-alpha;
+  }
+  .spec-substeps li {
+    margin: 0 0 0.35rem;
+  }
+  /* a link a reader copies whole, so it wraps clear of the Copy button and
+     shows only its first lines */
+  .spec-url pre {
+    max-height: 7.5rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+    padding-right: 4.5rem;
+  }
   .spec-step-title {
     display: block;
   }
