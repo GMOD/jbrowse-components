@@ -26,12 +26,21 @@ beforeEach(() => {
 const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
+// fit, the default, drops every name at this crowded window
+async function openGenesTrack(view: LinearGenomeViewModel) {
+  fireEvent.click(await screen.findByTestId(hts('gff3tabix_genes'), ...opts))
+  await waitFor(() => {
+    expect(view.tracks.length).toBe(1)
+  })
+  view.tracks[0].displays[0].setHeightMode('fixed')
+  await findAnyDisplayPainted(delay)
+}
+
 test('collapse introns on gene feature', async () => {
   const { view, session, findByText } = await createView(config)
 
   await view.navToLocString('ctgA:907..10,000')
-  fireEvent.click(await screen.findByTestId(hts('gff3tabix_genes'), ...opts))
-  await findAnyDisplayPainted(delay)
+  await openGenesTrack(view)
 
   const label = await screen.findByTestId('feature-name-EDEN', ...opts)
   fireEvent.contextMenu(label)
@@ -78,8 +87,7 @@ test('collapse introns dialog lists the transcripts to scope to', async () => {
   const { view, findByText } = await createView(config)
 
   await view.navToLocString('ctgA:907..10,000')
-  fireEvent.click(await screen.findByTestId(hts('gff3tabix_genes'), ...opts))
-  await findAnyDisplayPainted(delay)
+  await openGenesTrack(view)
 
   const label = await screen.findByTestId('feature-name-EDEN', ...opts)
   fireEvent.contextMenu(label)
@@ -100,8 +108,7 @@ test('the dialog says what the window size collapses to before anything is click
   const { view, findByText } = await createView(config)
 
   await view.navToLocString('ctgA:907..10,000')
-  fireEvent.click(await screen.findByTestId(hts('gff3tabix_genes'), ...opts))
-  await findAnyDisplayPainted(delay)
+  await openGenesTrack(view)
 
   fireEvent.contextMenu(await screen.findByTestId('feature-name-EDEN', ...opts))
   fireEvent.click(await findByText('Collapse introns', ...opts))

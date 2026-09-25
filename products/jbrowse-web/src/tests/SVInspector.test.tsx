@@ -118,7 +118,7 @@ test('opens a track with minimal adapter config via "Open from track"', () => {
       delay,
     )
     await waitFor(() => {
-      expect(container.querySelectorAll('path').length).toBe(3)
+      expect(container.querySelectorAll('[data-testid="r2"]').length).toBe(3)
     }, delay)
   })
 }, 90000)

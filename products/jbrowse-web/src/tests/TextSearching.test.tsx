@@ -269,7 +269,7 @@ test('an explicit grow reaches a feature hit, not only a locstring', async () =>
 test('enter reads the index once, exact miss or not', async () => {
   const { session, view } = await getTestSession()
   view.setWidth(800)
-  const search = jest.spyOn(session.textSearchManager, 'search')
+  const search = jest.spyOn(session.textSearchManager, 'searchIndexes')
 
   // "apple" prefixes Apple2/Apple3 and matches no attribute exactly
   await view.navToLocString('apple', 'volvox')

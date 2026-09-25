@@ -1,4 +1,4 @@
-import { fireEvent, screen } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 
 import {
   createView,
@@ -29,6 +29,11 @@ test('toggle subfeature labels and verify eden.1 label appears', async () => {
 
   await view.navToLocString('ctgA:907..15,319')
   fireEvent.click(await screen.findByTestId(hts('gff3tabix_genes'), ...opts))
+  await waitFor(() => {
+    expect(view.tracks.length).toBe(1)
+  })
+  // fit, the default, spends the below-label rows at this crowded window
+  view.tracks[0].displays[0].setHeightMode('fixed')
 
   fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await screen.findByText('Show...', ...opts))
