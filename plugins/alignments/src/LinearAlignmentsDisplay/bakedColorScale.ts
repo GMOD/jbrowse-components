@@ -46,8 +46,6 @@ interface LinearBakedScale {
   kind: 'linear'
   declared: true
   domain: NumericExtent
-  /** The loaded reads' extremes, which a key marks an end the data runs past by. */
-  extent: NumericExtent
   stops: RampStop[]
   color: (value: string) => string | undefined
 }
@@ -78,7 +76,6 @@ function flattenOntoWhite(lut: Uint8Array) {
 function linearScale(
   encoding: ContinuousRef,
   [min, max]: NumericExtent,
-  extent: NumericExtent,
 ): LinearBakedScale {
   const span = max - min
   const norm = (v: number) => (span > 0 ? (v - min) / span : 0.5)
@@ -95,7 +92,6 @@ function linearScale(
     kind: 'linear',
     declared: true,
     domain: [min, max],
-    extent,
     stops: stopsFromRampLut(lut, LEGEND_RAMP_STOPS),
     color: value => {
       const v = Number(value)
@@ -146,11 +142,13 @@ export function bakedColorScale(
 ): BakedColorScale {
   const scaled = typeof encoding === 'object' ? encoding : undefined
   if (colorBy.type === 'tag' && scaled?.scale === 'linear') {
-    const loaded = extent ?? [Infinity, -Infinity]
     return linearScale(
       scaled,
-      rampDomain(scaled.domainMin, scaled.domainMax, loaded),
-      loaded,
+      rampDomain(
+        scaled.domainMin,
+        scaled.domainMax,
+        extent ?? [Infinity, -Infinity],
+      ),
     )
   }
   if (colorBy.type === 'tag' && scaled?.scale === 'threshold') {

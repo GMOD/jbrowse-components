@@ -146,7 +146,7 @@ export const SYNTENY_LANES = [
     kind: 'opaque',
     name: 'attributes',
     axis: 'neither',
-    doc: 'Float32 channel per numeric attribute, -1 for missing; see `SyntenyFeatureData`.',
+    doc: 'Float32 channel per numeric attribute, NaN for missing; see `SyntenyFeatureData`.',
   },
   {
     kind: 'opaque',

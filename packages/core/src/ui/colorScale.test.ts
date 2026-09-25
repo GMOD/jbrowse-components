@@ -130,6 +130,19 @@ test('an end the data runs past prints as a bound', () => {
   })
 })
 
+// A value lane holds the extent at float32, where 0.3 reads a hair over the
+// 0.3 a config pinned: that meets the end rather than passing it.
+test('an extent meeting a pinned end at float32 prints no bound', () => {
+  const [gradient] = legendSpecOf([
+    {
+      ...contacts,
+      domain: [0.1, 0.3],
+      extent: [Math.fround(0.1), Math.fround(0.3)],
+    },
+  ]).sections[0]!.items
+  expect(gradient!.gradient).toMatchObject({ minLabel: '0.1', maxLabel: '0.3' })
+})
+
 test('a ramp prints its domain through its own format', () => {
   const { sections } = legendSpecOf([
     { ...contacts, domain: [0, 1], format: v => `${v * 100}%` },

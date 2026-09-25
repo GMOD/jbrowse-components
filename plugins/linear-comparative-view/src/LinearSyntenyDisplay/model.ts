@@ -57,9 +57,9 @@ export interface SyntenyFeatureData extends SyntenyFeatureLanes {
   // attribute name. Holds the four presets — `identity`, `meanIdentity`,
   // `mappingQual`, and the derived `dnds` — plus whatever columns the track
   // declares, so switching between them recolors on the main thread with no
-  // refetch. Float32 with -1 for missing, which is why there is no valid bitmap.
+  // refetch. Float32 with NaN for missing, which is why there is no valid bitmap.
   attributes: Record<string, Float32Array>
-  // What each channel actually spanned, ignoring the -1s. The domain a
+  // What each channel actually spanned, ignoring the NaNs. The domain a
   // column's ramp scales to, and the numbers its legend is labelled
   // with; the presets have fixed domains and ignore this.
   attributeRanges: Record<string, AttributeRange>
@@ -103,7 +103,7 @@ export interface FeatPos {
   // Every numeric channel this feature carried a value for, keyed by channel
   // name — not `identity` alone, which is what the tooltip and the feature
   // panel used to show while the fetch carried mapping quality, dN/dS and any
-  // column the track declared. `featureAttributes` drops the -1 sentinel.
+  // column the track declared. `featureAttributes` drops the NaN sentinel.
   attributes: Record<string, number>
 }
 

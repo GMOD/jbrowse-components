@@ -12,7 +12,7 @@ import type { DotplotRpcData } from './types.ts'
  * overrides argument is how each suite keeps saying only what it varies.
  *
  * One feature, one segment, forward strand, and every optional channel present
- * but empty (-1, the worker's missing sentinel), so a suite that overrides
+ * but empty (NaN, the worker's missing sentinel), so a suite that overrides
  * nothing gets the plainest possible payload rather than a special case.
  */
 export function fakeDotplotRpcData(
@@ -26,10 +26,10 @@ export function fakeDotplotRpcData(
     strands: new Int8Array([1]),
     alignmentLengths: new Uint32Array([100]),
     attributes: {
-      identity: new Float32Array([-1]),
-      meanIdentity: new Float32Array([-1]),
+      identity: new Float32Array([Number.NaN]),
+      meanIdentity: new Float32Array([Number.NaN]),
       mappingQual: new Float32Array([Number.NaN]),
-      dnds: new Float32Array([-1]),
+      dnds: new Float32Array([Number.NaN]),
     },
     attributeRanges: {},
     refNameDict: ['chr1'],

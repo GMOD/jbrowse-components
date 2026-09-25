@@ -183,7 +183,7 @@ export function buildLineSegments(
     }
     if (identities) {
       const identity = identities[i]!
-      if (identity >= 0 && identity < identityThreshold) {
+      if (identity < identityThreshold) {
         continue
       }
     }
