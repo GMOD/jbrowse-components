@@ -24,10 +24,10 @@ import type { Region } from '@jbrowse/core/util/types/data'
 // crosses untouched, which is why nothing here reads through `getConf`.
 export function encodingOf(mark: MarkConfig): MarkEncoding {
   const { x, x2, y, row, shape, color, text, size } = mark.encoding
-  const scaled = colorEncodingOf(color)
   const channels = MARK_SPECS[mark.mark].channels as readonly string[]
-  const readsText = channels.includes('text')
-  const readsSize = channels.includes('size') && size.field !== ''
+  // The request carries only what the mark's type reads, so editing a slot it
+  // draws nothing from refetches no region.
+  const reads = (channel: string) => channels.includes(channel)
   const shapeEncoding: ShapeEncoding =
     markShapeScale(shape) === 'none'
       ? shape.value
@@ -46,14 +46,12 @@ export function encodingOf(mark: MarkConfig): MarkEncoding {
     // through is the display's `scales.y`. Shipping that scale would put the
     // axis type and its bounds in the fetch's inputs, so a menu toggle
     // between linear and log would refetch every region to no effect.
-    y: y === '' ? undefined : y,
-    row: row || undefined,
-    color: scaled,
-    shape: shapeEncoding,
-    // Only a mark that prints it sends it, so every other mark's request is
-    // the one it was.
-    ...(readsText && text ? { text } : {}),
-    ...(readsSize
+    y: reads('y') && y !== '' ? y : undefined,
+    row: (reads('row') && row) || undefined,
+    color: colorEncodingOf(color),
+    ...(reads('shape') ? { shape: shapeEncoding } : {}),
+    ...(reads('text') && text ? { text } : {}),
+    ...(reads('size') && size.field !== ''
       ? {
           size: {
             field: size.field,
