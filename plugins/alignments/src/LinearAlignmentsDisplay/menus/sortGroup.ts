@@ -35,7 +35,7 @@ interface SortByModel {
 // unsorted default, so it doubles as the reset — no separate "Clear".
 //
 // The three non-slot orderings go through `setLayoutOrder`, one write for the
-// whole radio group. `setSortSlot` drops both flags as it writes `sortedBy`, so
+// whole radio group. `setSortedByAtPosition` drops both flags as it writes `sortedBy`, so
 // a sort that never lands (no valid center line, a cancelled tag dialog) leaves
 // the ordering alone instead of unchecking every radio.
 //

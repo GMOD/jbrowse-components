@@ -85,14 +85,14 @@ test('a region starting at zero is unaffected', () => {
   expect(display.sortedBy?.pos).toBe(400)
 })
 
-// `setSortSlot` drops the layout-order flags, since a sort and those flags are
+// `setSortedByAtPosition` drops the layout-order flags, since a sort and those flags are
 // peer radios. The old no-center-line fallback wrote `{pos: -1, refName: ''}`
 // AFTER that drop — a slot no layout can use (`sortForRegions` matches no
 // region named '', and nothing ranks at -1), so picking a strand sort out of
 // range threw away an active ordering and replaced it with nothing.
 test('a sort with no center line warns and leaves the ordering alone', () => {
   const { display, view } = createDisplay({ start: 1000, end: 2000 })
-  display.setLargeFeaturesFirst(true)
+  display.setLayoutOrder('length')
   view.setDisplayedRegions([])
 
   display.setSortedBy('strand')

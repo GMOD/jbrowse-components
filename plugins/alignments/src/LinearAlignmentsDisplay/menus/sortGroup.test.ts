@@ -168,7 +168,7 @@ describe('sort menu keeps the two ordering slots mutually exclusive', () => {
     expect(model.setSortedBy).not.toHaveBeenCalled()
   })
 
-  // The sort radios delegate the mutual exclusion to setSortSlot, which drops
+  // The sort radios delegate the mutual exclusion to setSortedByAtPosition, which drops
   // largeFeaturesFirst only as it writes the slot. Clearing it here instead would
   // wipe the current ordering even when the sort never lands (no valid center
   // line), leaving every radio unchecked.

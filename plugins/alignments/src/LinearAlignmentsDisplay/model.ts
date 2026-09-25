@@ -3329,45 +3329,11 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Commit a sort, the single place the `sortedBy` slot is written. Also
-           * drops the layout-order flags: they are peer radios in one group
-           * ("Longest reads first" and "Spliced reads first" are flags, a sort
-           * is the slot), so exactly one must hold state. Clearing them here
-           * instead of in the menu means a sort that is not applied (no valid
-           * center line, a cancelled tag dialog) leaves the previous ordering
-           * and its checked radio in place. `computeMultiRegionLayout` would
-           * tolerate both being set (an explicit sort wins there anyway); this
-           * keeps the menu's checkmarks matching the applied order.
+           * Commit a sort, the one place the `sortedBy` slot is written. It
+           * also drops the layout-order flags, since a sort and those flags are
+           * one radio group and exactly one holds state.
            */
-          setSortSlot,
-
-          /**
-           * #action
-           */
-          setSortedByAtPosition(sortedBy: SortedBy) {
-            setSortSlot(sortedBy)
-          },
-
-          /**
-           * #action
-           */
-          clearSortedBy() {
-            setConf(self, 'sortedBy', null)
-          },
-
-          /**
-           * #action
-           */
-          setLargeFeaturesFirst(flag: boolean) {
-            setConf(self, 'largeFeaturesFirst', flag)
-          },
-
-          /**
-           * #action
-           */
-          setSplicedReadsFirst(flag: boolean) {
-            setConf(self, 'splicedReadsFirst', flag)
-          },
+          setSortedByAtPosition: setSortSlot,
 
           /**
            * #action

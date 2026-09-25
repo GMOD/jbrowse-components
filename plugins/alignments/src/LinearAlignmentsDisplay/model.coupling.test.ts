@@ -389,7 +389,7 @@ describe('sortedBy refName normalization', () => {
   test('an aliased refName resolves to the canonical one', () => {
     const display = createDisplay({ withRegions: true })
     // 'chrA' is the test assembly's alias for the canonical 'ctgA'
-    display.setSortSlot({
+    display.setSortedByAtPosition({
       type: 'base',
       pos: 100,
       refName: 'chrA',
@@ -414,7 +414,9 @@ describe('sortedBy refName normalization', () => {
     // Cast because this is the one writer the action's signature can't
     // describe: `sortedBy` is a frozen slot, so a config or session spec can
     // put half a sort in it, and that is exactly the input under test.
-    display.setSortSlot(slot as Parameters<typeof display.setSortSlot>[0])
+    display.setSortedByAtPosition(
+      slot as Parameters<typeof display.setSortedByAtPosition>[0],
+    )
 
     expect(display.sortedBy).toBeUndefined()
   })
@@ -423,7 +425,7 @@ describe('sortedBy refName normalization', () => {
     const display = createDisplay({ withRegions: true })
     expect(display.sortedBy).toBeUndefined()
 
-    display.setSortSlot({
+    display.setSortedByAtPosition({
       type: 'base',
       pos: 100,
       refName: 'ctgA',
@@ -499,7 +501,7 @@ describe('ordering controls in chain mode', () => {
   // be projected the same way here.
   test('the sort tag leaves the fetch key when chain mode drops it', () => {
     const display = createDisplay()
-    display.setSortSlot({
+    display.setSortedByAtPosition({
       type: 'tag',
       pos: 50,
       refName: 'ctgA',
