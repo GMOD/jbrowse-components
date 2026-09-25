@@ -1,6 +1,8 @@
+import { ARC_COLOR_SHORT_INSERT } from '../../shaders/slang/arc.consts.generated.ts'
 import * as arcShader from '../../shaders/slang/arc.iface.generated.ts'
 import * as arcFlatShader from '../../shaders/slang/arcFlat.iface.generated.ts'
 import * as arcLineShader from '../../shaders/slang/arcLine.iface.generated.ts'
+import * as arcMarkerShader from '../../shaders/slang/arcMarker.iface.generated.ts'
 import { ARC_WIDTH_MAX_SCALE } from './arcLineWidth.ts'
 import { arcsToRegionResult } from './arcRegions.ts'
 import {
@@ -94,6 +96,27 @@ describe('arc pack split (curved vs flat)', () => {
     const dashed = arcFlatShader.INSTANCE_OFFSET_F32.dashed * 4
     expect(view.getFloat32(dashed, true)).toBe(0)
     expect(view.getFloat32(stride + dashed, true)).toBe(1)
+  })
+
+  // colorType is a palette slot, and the three passes that carry one declare it
+  // `uint` rather than rounding a float attribute back with `uint(x + 0.5)`.
+  // The packers feed it from a Uint8Array, so the word has to read back exact
+  // through a Uint32Array view — through a Float32Array one it is garbage.
+  it('packs a palette slot as an integer word', () => {
+    const slot = ARC_COLOR_SHORT_INSERT
+    const curved = arcsToRegionResult([arc(ARC_SHAPE_ARC, 100, slot)], [])
+    const u32 = new Uint32Array(packArcs(curved, BASE_WIDTH))
+    expect(u32[arcShader.INSTANCE_OFFSET_U32.colorType]).toBe(slot)
+
+    const cloud = arcsToRegionResult([arc(ARC_SHAPE_FLAT, 100, slot)], [])
+    const markers = new Uint32Array(packArcMarkers(cloud))
+    expect(markers[arcMarkerShader.INSTANCE_OFFSET_U32.colorType]).toBe(slot)
+    expect(
+      markers[
+        arcMarkerShader.INSTANCE_STRIDE_WORDS +
+          arcMarkerShader.INSTANCE_OFFSET_U32.colorType
+      ],
+    ).toBe(slot)
   })
 
   it('read cloud leaves the curve pass empty and arc mode the flat pass', () => {

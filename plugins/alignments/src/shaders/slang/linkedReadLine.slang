@@ -111,7 +111,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.position = float4(flipX(pxToClipX(p.x, u.canvasW), u),
                       yPxToClipY(p.y, u.canvasH), 0.0, 1.0);
 
-  o.color = float4(linkedReadColorByIndex(inst.colorType, u), LINKED_READ_LINE_ALPHA);
+  uint idx = inst.colorType;
+  o.color = float4(linkedReadColorByIndex(idx, u), LINKED_READ_LINE_ALPHA);
   return o;
 }
 

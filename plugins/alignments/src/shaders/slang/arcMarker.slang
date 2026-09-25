@@ -43,7 +43,8 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // The arc palette itself — the squares and the curves paint one meaning in
   // one colour. A second `arcMarkerColor` table existed for a short-insert
   // substitution that no longer exists; see arcColor in alignmentsUniforms.
-  o.color = float4(arcColorByIndex(inst.colorType, u), 1.0);
+  uint idx = inst.colorType;
+  o.color = float4(arcColorByIndex(idx, u), 1.0);
   return o;
 }
 

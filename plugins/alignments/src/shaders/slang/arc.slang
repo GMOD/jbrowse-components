@@ -259,14 +259,19 @@ Curve arcCurve(Instance inst, ArcBandUniforms u, float strokeHalfPx) {
   // `far` is purely a function of on-screen span — no bp limit — and it is
   // measured against the VIEW's width, so the same pair is the same shape
   // wherever the blocks fall. `u.canvasW` is this block's.
-  cv.kind = arcIsFar(halfWidthPx, u.viewWidthPx) ? KIND_CIRCLE : KIND_ELLIPSE;
+  bool far = arcIsFar(halfWidthPx, u.viewWidthPx);
+  cv.kind = far ? KIND_CIRCLE : KIND_ELLIPSE;
   cv.c = float2((x1Px + x2Px) * 0.5, 0.0);
   cv.radii = arcRadiiPx(halfWidthPx, destY, u.viewWidthPx);
   // The band the pass is scissored to is u.arcBandH tall measured from the
   // anchor, so that — plus the stroke, so the cut is outside the band rather
-  // than on its last row — is the whole of a leg that can be seen.
-  cv.legSweep =
-    legSweepAngle(cv.radii.x, u.arcBandH + strokeHalfPx + aaHalfPx(u.devicePixelRatio));
+  // than on its last row — is the whole of a leg that can be seen. Only a far
+  // circle has legs, so an ellipse would pay the asin for nothing.
+  cv.legSweep = 0.0;
+  if (far) {
+    cv.legSweep = legSweepAngle(
+      cv.radii.x, u.arcBandH + strokeHalfPx + aaHalfPx(u.devicePixelRatio));
+  }
   return cv;
 }
 
