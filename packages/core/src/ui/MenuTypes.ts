@@ -22,9 +22,11 @@ export interface BaseMenuItem {
   /**
    * #menuField stable identifier; keys the row, and finds it again from a test
    *
-   * Required of a row whose `label` is not a string: the label is the fallback
-   * key, and an element interpolates to `[object Object]`, so a menu of them
-   * hands React one key for every row.
+   * Worth setting on a row the menu cannot otherwise tell apart — one whose
+   * `label` is an element, or one a list may repeat the text of. A level's keys
+   * are unique either way (`rowKeys` suffixes a repeat), so this is what keeps a
+   * row's React identity when the rows around it reorder rather than something
+   * the menu needs to draw correctly.
    */
   id?: string
   /** #menuField the row's text */

@@ -29,11 +29,13 @@ the barrel put ~80 Material components in every host's first paint.
   element and is the last resort — a builder that sets it drags its whole
   component graph into every caller. `icon` is still an element type;
   `agent-docs/reference/EAGER_BUNDLE.md`.
-- **A row React can't tell apart by its label sets `id`.** `CascadingMenu` keys
-  on `id ?? label`, so a `React.ReactNode` label keys every such row as
-  `[object Object]`, and two rows a list deduped on something other than their
-  text collide the same way. React reports it through `console.error`, which an
-  agent's jest run does not print for a passing suite — so both shipped.
+- **A row's key is `id ?? label`, deduped by occurrence within the level**
+  (`rowKeys`), so no menu can hand React one key for several rows whatever its
+  rows are called — an element label, which interpolates to `[object Object]`,
+  or a label two rows legitimately share. `id` then buys a row its identity
+  across a reorder rather than being owed. Both collisions shipped because React
+  reports them through `console.error`, which an agent's jest run does not print
+  for a passing suite.
 
 ## State that hides things declares itself: `Reversible`
 

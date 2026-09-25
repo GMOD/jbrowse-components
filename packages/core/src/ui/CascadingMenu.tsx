@@ -252,22 +252,51 @@ function useSubmenuHover() {
   return { openSubmenu, hover }
 }
 
-// Identity of a row: `id` when the item carries one, else its label. Deliberately
-// not the array index: the items are re-derived on every observable change (a
-// checkbox toggle can add or drop a row above), so an index-keyed "open" flag
-// would follow the position rather than the submenu and the open panel would jump
-// to whichever row landed at that index.
+// One key per row, unique WITHIN the level — the React key, and for a submenu row
+// also the identity of "which submenu is open".
 //
-// `id` is what a menu whose labels are not strings has to key on. A label is a
-// `React.ReactNode`, so interpolating an element yields `[object Object]` for
-// every row in the menu — which the favorites/recently-used track dropdown did,
-// giving all of its rows one key.
-function rowKey(item: BaseMenuItem) {
-  return item.id ?? `${item.label}`
-}
-
-function submenuKey(item: BaseMenuItem) {
-  return `subMenu-${rowKey(item)}`
+// A row is named by its `id`, or by its label where it has none. Deliberately not
+// the array index: the items are re-derived on every observable change (a checkbox
+// toggle can add or drop a row above), so an index-keyed "open" flag would follow
+// the position rather than the submenu and the open panel would jump to whichever
+// row landed at that index.
+//
+// A NAME THAT REPEATS TAKES AN OCCURRENCE SUFFIX, so the level's keys are unique
+// whatever its rows are called. Two ways a name repeats, and both shipped: a
+// `label` is a `React.ReactNode`, so an element interpolates to `[object Object]`
+// and a menu of them named every row the same — the favorites and recently-used
+// track dropdowns did — and a label can simply be shared, since a list may dedupe
+// on something other than its text, as the recent locations dedupe on the
+// location. Handling it here rather than asking every caller for an `id` means
+// neither case can reach React as one key for several rows; only the rows that
+// genuinely repeat depend on their order among each other, and `id` is then a way
+// to keep a row's identity across a reorder rather than a correctness obligation.
+//
+// The kind prefix is the render branch below: a submenu row and a clickable row
+// sharing a label draw different components, which must not share a key.
+function rowKeys(items: JBMenuItem[]) {
+  const seen = new Map<string, number>()
+  return items.map(item => {
+    const kind =
+      'subMenu' in item
+        ? 'subMenu'
+        : item.type === 'divider' || item.type === 'subHeader'
+          ? item.type
+          : item.type === 'custom'
+            ? 'custom'
+            : 'menuitem'
+    // a divider has no identity beyond its position among the other dividers.
+    // `'id' in item` rather than `item.id`: a divider and a subHeader are their
+    // own interfaces and carry neither an `id` nor, for the divider, a label
+    const name =
+      item.type === 'divider'
+        ? ''
+        : ('id' in item && item.id) || `${item.label}`
+    const base = `${kind}-${name}`
+    const seenBefore = seen.get(base) ?? 0
+    seen.set(base, seenBefore + 1)
+    return seenBefore ? `${base}#${seenBefore}` : base
+  })
 }
 
 // Where the aim cone's tip goes for a submenu opened from the keyboard, which
@@ -620,12 +649,15 @@ function CascadingMenuList({
     () => menuItems.toSorted((a, b) => (b.priority ?? 0) - (a.priority ?? 0)),
     [menuItems],
   )
+  // keyed after the sort, so an occurrence suffix counts up the level in the
+  // order it is drawn
+  const keys = useMemo(() => rowKeys(sortedItems), [sortedItems])
 
   return (
     <>
       {sortedItems.map((item, idx) => {
+        const key = keys[idx]!
         if ('subMenu' in item) {
-          const key = submenuKey(item)
           return (
             <CascadingSubmenu
               key={key}
@@ -640,13 +672,12 @@ function CascadingMenuList({
           )
         }
         if (item.type === 'divider') {
-          // eslint-disable-next-line @eslint-react/no-array-index-key -- dividers have no identifying field, list order is fixed
-          return <Divider key={`divider-${idx}`} component="li" />
+          return <Divider key={key} component="li" />
         }
         if (item.type === 'subHeader') {
           return (
             <ListSubheader
-              key={`subHeader-${item.label}`}
+              key={key}
               className={cx(
                 classes.subHeader,
                 idx === 0 && classes.leadingSubHeader,
@@ -658,18 +689,12 @@ function CascadingMenuList({
           )
         }
         if (item.type === 'custom') {
-          return (
-            <CustomMenuRow
-              key={`custom-${rowKey(item)}`}
-              item={item}
-              onHover={closeOnHover}
-            />
-          )
+          return <CustomMenuRow key={key} item={item} onHover={closeOnHover} />
         }
 
         return (
           <CascadingMenuItem
-            key={`menuitem-${rowKey(item)}`}
+            key={key}
             item={item}
             inset={hasIcon && !item.icon}
             columns={columns}

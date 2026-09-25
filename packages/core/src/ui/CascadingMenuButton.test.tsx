@@ -339,27 +339,67 @@ describe('CascadingMenuButton', () => {
   // every element-labelled row — which the favorites/recently-used track
   // dropdown hit, handing React one key for its whole list. `id` is what such a
   // row keys on.
-  it('should key element-labelled rows on their id', async () => {
+  async function openWatchingForDuplicateKeys(items: MenuItem[]) {
     const errors: string[] = []
     const spy = jest
       .spyOn(console, 'error')
       .mockImplementation((...args: unknown[]) => {
         errors.push(`${args[0]}`)
       })
-    const user = await setup([
-      { id: 't1', label: <span>track one</span>, onClick: () => {} },
-      { id: 't2', label: <span>track two</span>, onClick: () => {} },
-      {
-        id: 's1',
-        label: <span>group</span>,
-        type: 'subMenu',
-        subMenu: [{ label: 'Sub', onClick: () => {} }],
-      },
-    ])
+    const user = await setup(items)
     await user.click(screen.getByTestId('menu-button'))
-    expect(await screen.findByText('track one')).toBeTruthy()
+    await screen.findAllByRole('menuitem')
     spy.mockRestore()
-    expect(errors.filter(e => e.includes('same key'))).toEqual([])
+    return errors.filter(e => e.includes('same key'))
+  }
+
+  it('should key element-labelled rows on their id', async () => {
+    expect(
+      await openWatchingForDuplicateKeys([
+        { id: 't1', label: <span>track one</span>, onClick: () => {} },
+        { id: 't2', label: <span>track two</span>, onClick: () => {} },
+        {
+          id: 's1',
+          label: <span>group</span>,
+          type: 'subMenu',
+          subMenu: [{ label: 'Sub', onClick: () => {} }],
+        },
+      ]),
+    ).toEqual([])
+  })
+
+  // A row that carries no `id` and cannot be told apart by its text still gets a
+  // key of its own — an element label, which every row of a menu would otherwise
+  // share, and a label two rows legitimately repeat, as a list deduping on
+  // something other than its text produces.
+  it('should key rows apart when nothing about them differs', async () => {
+    expect(
+      await openWatchingForDuplicateKeys([
+        { label: <span>same element</span>, onClick: () => {} },
+        { label: <span>same element</span>, onClick: () => {} },
+        { label: 'trnA', onClick: () => {} },
+        { label: 'trnA', onClick: () => {} },
+        { type: 'subHeader', label: 'Group' },
+        { type: 'subHeader', label: 'Group' },
+        { type: 'divider' },
+        { type: 'divider' },
+      ]),
+    ).toEqual([])
+  })
+
+  // and a submenu row sharing a label with a clickable one keeps its own key,
+  // since the two draw different components
+  it('should key a submenu apart from a clickable row of the same name', async () => {
+    expect(
+      await openWatchingForDuplicateKeys([
+        { label: 'Score', onClick: () => {} },
+        {
+          label: 'Score',
+          type: 'subMenu',
+          subMenu: [{ label: 'Log', onClick: () => {} }],
+        },
+      ]),
+    ).toEqual([])
   })
 
   it('should not rule off a subHeader that opens the menu', async () => {
