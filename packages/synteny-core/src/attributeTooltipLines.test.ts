@@ -4,13 +4,13 @@ import {
 } from './attributeTooltipLines.ts'
 
 const attributes = {
-  identity: new Float32Array([0.9876, -1]),
-  meanIdentity: new Float32Array([-1, 0.5]),
+  identity: new Float32Array([0.9876, Number.NaN]),
+  meanIdentity: new Float32Array([Number.NaN, 0.5]),
   mappingQual: new Float32Array([60, 60]),
-  ka_ks: new Float32Array([1.5, -1]),
+  ka_ks: new Float32Array([1.5, Number.NaN]),
 }
 
-test('reads one feature, dropping the -1 missing sentinel', () => {
+test('reads one feature, dropping the NaN missing sentinel', () => {
   expect(featureAttributes(attributes, 0)).toEqual({
     identity: 0.9876000285148621,
     mappingQual: 60,

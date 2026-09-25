@@ -193,7 +193,6 @@ export type {
   AttributeSpan,
   CategoricalMode,
   ContinuousMode,
-  Rgb,
 } from './colorRamps.ts'
 export {
   MISSING_VALUE_COLOR,

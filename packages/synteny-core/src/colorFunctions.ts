@@ -9,6 +9,7 @@ import {
   packAbgr,
   withAbgrAlpha,
 } from '@jbrowse/core/util/colorBits'
+import { sampleColorRamp } from '@jbrowse/core/util/colorRamp'
 
 import {
   rampNorm,
@@ -21,8 +22,8 @@ import type {
   AttributeRange,
   CategoricalMode,
   ContinuousMode,
-  Rgb,
 } from './colorRamps.ts'
+import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
 
 /**
  * The per-feature color function both comparative views build from a fetch
@@ -44,7 +45,7 @@ import type {
  * whole color array and re-upload the instance buffer once a frame.
  */
 
-// Missing data. -1 is the worker's sentinel on every numeric channel, and a
+// Missing data. NaN is the worker's sentinel on every numeric channel, and a
 // track carrying an attribute on no feature at all has no array; both paint
 // this rather than the ramp's bottom, so "no data" cannot be misread as "the
 // lowest value".
@@ -148,26 +149,26 @@ export function nameColorCss(
   return refNameColor(refName, namePosition?.(refName))
 }
 
-function buildLut(toRgb: (norm: number) => Rgb) {
+function buildLut(stops: readonly ColorRampStop[]) {
   const lut = new Uint32Array(256)
   for (let i = 0; i < 256; i++) {
-    const [r, g, b] = toRgb(i / 255)
+    const [r, g, b] = sampleColorRamp(stops, i / 255)
     lut[i] = packAbgr(r, g, b, 255)
   }
   return lut
 }
 
-// One LUT per colormap, cached by the colormap function itself rather than by
-// field: several fields share viridis, and a column has no fixed identity to
-// key on. Built a handful of times for the life of the process, where the
-// dotplot used to rebuild one per recolor pass.
-const lutCache = new Map<(norm: number) => Rgb, Uint32Array>()
+// One LUT per stop list, cached by the list itself rather than by field:
+// several fields share viridis, and a column has no fixed identity to key on.
+// Built a handful of times for the life of the process, where the dotplot used
+// to rebuild one per recolor pass.
+const lutCache = new Map<readonly ColorRampStop[], Uint32Array>()
 
-function lutFor(toRgb: (norm: number) => Rgb) {
-  let lut = lutCache.get(toRgb)
+function lutFor(stops: readonly ColorRampStop[]) {
+  let lut = lutCache.get(stops)
   if (!lut) {
-    lut = buildLut(toRgb)
-    lutCache.set(toRgb, lut)
+    lut = buildLut(stops)
+    lutCache.set(stops, lut)
   }
   return lut
 }
@@ -182,18 +183,16 @@ export function makeContinuousColorFunction(
   attributes: Record<string, Float32Array>,
 ) {
   const values = attributes[mode.attribute]
-  const lut = lutFor(mode.toRgb)
+  const lut = lutFor(mode.stops)
   return (index: number) => {
     const value = values?.[index]
-    if (value === undefined || value < 0) {
+    if (value === undefined || !Number.isFinite(value)) {
       return MISSING_VALUE_COLOR
     }
-    // Clamped on BOTH ends before truncating, and against the float rather than
-    // an already-`| 0`'d int: `rampNorm` clamps to [0,1] itself only when the
-    // mode has no custom `normalize`, and an unclamped value here indexes past
-    // the LUT — or, negative, int32-truncates to a negative index. Either reads
-    // `undefined`, which a Uint32Array store then writes as 0: a transparent
-    // black feature, silently.
+    // Clamped on both ends before truncating, and against the float rather than
+    // an already-`| 0`'d int: an index past the LUT, or a negative one, reads
+    // `undefined`, which a Uint32Array store writes as 0, a transparent black
+    // feature, silently.
     const norm = Math.max(0, Math.min(255, rampNorm(mode, value) * 255))
     return lut[(norm + 0.5) | 0]!
   }
@@ -227,7 +226,7 @@ export function makeCategoricalColorFunction(
   )
   return (index: number) => {
     const value = values?.[index]
-    return value === undefined || value < 0
+    return value === undefined || Number.isNaN(value)
       ? unlabelledColor
       : (lut[value] ?? unlabelledColor)
   }

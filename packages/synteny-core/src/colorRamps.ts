@@ -1,124 +1,40 @@
-// Shared normalized-value → RGB color ramps for synteny/dotplot "color by"
-// modes. Centralizing the ramp math here is what keeps the two views from
-// drifting: the linear-synteny view bakes these into 256-bin LUTs while the
-// dotplot view evaluates them per feature, but both draw from the same stops,
-// value scaling, and diverging-identity pivot.
-//
-// All continuous ramps are perceptually-uniform, colorblind-safe colormaps
-// (viridis / cividis / RdYlBu) rather than raw HSL hue sweeps. A constant-
-// saturation hue sweep is neither perceptually uniform (equal value steps read
-// as unequal color steps, e.g. a false-bright yellow ridge mid-scale) nor
-// colorblind-safe (red→green is the worst case for deuteranopia). viridis and
-// cividis are monotonic in luminance, so "brighter = higher value" holds even
-// in grayscale.
+import { VIRIDIS_STOPS, colorRampStops } from '@jbrowse/core/util/colorRamp'
+import { formatScore } from '@jbrowse/core/util/numericUtils'
 
-export type Rgb = readonly [number, number, number]
+import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
 
-function lerp(a: number, b: number, t: number) {
-  return a + (b - a) * t
-}
+// The continuous "color by" ramps of the synteny, dotplot and multi-way views,
+// which bake these stops into one LUT per ramp and sample it per feature. The
+// stops are core's where the ramp is one of core's named ones, so a viridis
+// here is the viridis every other display paints.
 
-function sampleStops(stops: readonly Rgb[], t: number): Rgb {
-  const clamped = Math.max(0, Math.min(1, t))
-  const scaled = clamped * (stops.length - 1)
-  const i = Math.min(stops.length - 2, Math.floor(scaled))
-  const frac = scaled - i
-  const [r0, g0, b0] = stops[i]!
-  const [r1, g1, b1] = stops[i + 1]!
-  return [
-    Math.round(lerp(r0, r1, frac)),
-    Math.round(lerp(g0, g1, frac)),
-    Math.round(lerp(b0, b1, frac)),
-  ]
-}
-
-// matplotlib viridis, sampled at 10 stops (dark purple → teal → yellow). Used
-// for the identity axis: high identity reads bright yellow, divergent reads
-// dark. Perceptually uniform + colorblind-safe.
-const VIRIDIS: readonly Rgb[] = [
-  [68, 1, 84],
-  [72, 40, 120],
-  [62, 73, 137],
-  [49, 104, 142],
-  [38, 130, 142],
-  [31, 158, 137],
-  [53, 183, 121],
-  [110, 206, 88],
-  [181, 222, 43],
-  [253, 231, 37],
+// ColorBrewer RdYlBu, reversed so low reads cool and high reads hot: the one
+// diverging ramp here, its pale middle the pivot a diverging quantity is read
+// against.
+const RD_YL_BU_R: readonly ColorRampStop[] = [
+  [69, 117, 180, 255],
+  [116, 173, 209, 255],
+  [171, 217, 233, 255],
+  [224, 243, 248, 255],
+  [255, 255, 191, 255],
+  [254, 224, 144, 255],
+  [253, 174, 97, 255],
+  [244, 109, 67, 255],
+  [215, 48, 39, 255],
 ]
-
-// matplotlib cividis, sampled at 10 stops (dark blue → gray → yellow). Used for
-// the mapping-quality axis. Optimized specifically for CVD viewers and visually
-// distinct from viridis (no green), so identity vs quality modes don't look
-// identical.
-const CIVIDIS: readonly Rgb[] = [
-  [0, 32, 77],
-  [0, 51, 111],
-  [57, 72, 107],
-  [87, 93, 109],
-  [112, 113, 115],
-  [138, 135, 121],
-  [166, 157, 117],
-  [196, 181, 108],
-  [228, 207, 91],
-  [255, 234, 70],
-]
-
-// ColorBrewer RdYlBu, reversed so low reads cool and high reads hot. The one
-// diverging map here, and the only one that is deliberately NOT monotonic in
-// luminance: a diverging quantity has a meaningful middle, and a ramp that
-// climbs steadily through it hides exactly the value the reader is looking for.
-// Its pale middle is the pivot. Still a ColorBrewer colorblind-safe map.
-const RD_YL_BU_R: readonly Rgb[] = [
-  [69, 117, 180],
-  [116, 173, 209],
-  [171, 217, 233],
-  [224, 243, 248],
-  [255, 255, 191],
-  [254, 224, 144],
-  [253, 174, 97],
-  [244, 109, 67],
-  [215, 48, 39],
-]
-
-function viridisRgb(norm: number): Rgb {
-  return sampleStops(VIRIDIS, norm)
-}
-
-function cividisRgb(norm: number): Rgb {
-  return sampleStops(CIVIDIS, norm)
-}
-
-function rdYlBuReversedRgb(norm: number): Rgb {
-  return sampleStops(RD_YL_BU_R, norm)
-}
 
 /**
- * dN/dS is read against 1, not against its own maximum: below it a gene is
- * under purifying selection, above it under positive selection, and the whole
- * point of looking is which side a gene falls on. So the ramp's own middle has
- * to be 1, which a divide-and-clamp cannot promise — it would put the pivot
- * wherever the domain's top happened to fall.
- *
- * The top is 2 rather than the data's max because the distribution is far from
- * symmetric: nearly every gene sits well under 1, and a domain stretched to
- * accommodate a handful of fast-evolving outliers flattens everything else into
- * the same blue. Anything at or above 2 is already the strongest statement this
- * ramp makes, so clamping there costs nothing and keeps the rest legible.
+ * dN/dS is read against 1: below it a gene is under purifying selection, above
+ * it under positive selection. The ramp spans 0 to 2, so 1 lands on its pale
+ * middle, and anything at or above 2 takes its top: nearly every gene sits well
+ * under 1, and a domain stretched to a few fast-evolving outliers would flatten
+ * the rest into one blue.
  */
-export const DNDS_PIVOT = 1
 export const DNDS_MAX = 2
 
-export function dndsNorm(value: number) {
-  return value <= DNDS_PIVOT
-    ? 0.5 * Math.min(1, value / DNDS_PIVOT)
-    : 0.5 + 0.5 * Math.min(1, (value - DNDS_PIVOT) / (DNDS_MAX - DNDS_PIVOT))
-}
-
 /**
- * A continuous colour field: which feature attribute it paints, the colormap,
- * and the domain that maps a raw value into it.
+ * A continuous colour field: which feature attribute it paints, the ramp's
+ * stops, and the domain a raw value is read against.
  *
  * A value rather than a switch arm, so the field list does not grow by one
  * enum member, one menu entry, one legend arm, one LUT, one typed array and
@@ -128,15 +44,10 @@ export function dndsNorm(value: number) {
 export interface ContinuousMode {
   /** the per-feature numeric attribute this reads */
   attribute: string
-  toRgb: (norm: number) => Rgb
+  stops: readonly ColorRampStop[]
   /** domain bottom; 0 unless the mode says otherwise */
   minValue?: number
   maxValue: number
-  /**
-   * present only where a linear span across the domain is the wrong shape,
-   * which so far means the one diverging mode
-   */
-  normalize?: (value: number) => number
   minLabel: string
   maxLabel: string
 }
@@ -144,31 +55,29 @@ export interface ContinuousMode {
 // The preset fields, keyed by the attribute each reads. Each carries domain
 // knowledge a column name cannot: that identity is a fraction, that MAPQ tops
 // out at minimap2's 60, that dN/dS is read against 1 rather than against its
-// own maximum — a ramp scaled to the data would put dN/dS's pivot wherever the
-// visible range happened to fall.
+// own maximum.
 export const continuousRampConfig: Record<
   'identity' | 'mappingQual' | 'dnds',
   ContinuousMode
 > = {
   identity: {
     attribute: 'identity',
-    toRgb: viridisRgb,
+    stops: VIRIDIS_STOPS,
     maxValue: 1,
     minLabel: '0%',
     maxLabel: '100%',
   },
   mappingQual: {
     attribute: 'mappingQual',
-    toRgb: cividisRgb,
+    stops: colorRampStops({ scheme: 'cividis' }),
     maxValue: 60,
     minLabel: '0',
     maxLabel: '60',
   },
   dnds: {
     attribute: 'dnds',
-    toRgb: rdYlBuReversedRgb,
+    stops: RD_YL_BU_R,
     maxValue: DNDS_MAX,
-    normalize: dndsNorm,
     minLabel: '0',
     maxLabel: '≥2',
   },
@@ -246,12 +155,6 @@ export function resolveCategoricalMode(
     : undefined
 }
 
-// Enough significant figures to tell two legend ends apart without printing a
-// float's full tail, which is what a raw min/max off real data looks like.
-function domainLabel(value: number) {
-  return Number.isInteger(value) ? String(value) : value.toPrecision(3)
-}
-
 /**
  * How a numeric field paints: a preset's fixed ramp, or a viridis ramp over
  * the observed span of a declared column, labelled with the actual numbers —
@@ -282,32 +185,24 @@ export function resolveContinuousMode(
   const max = range?.max ?? 0
   return {
     attribute: field,
-    toRgb: viridisRgb,
+    stops: VIRIDIS_STOPS,
     minValue: min,
     maxValue: max,
-    minLabel: domainLabel(min),
-    maxLabel: domainLabel(max),
+    minLabel: formatScore(min),
+    maxLabel: formatScore(max),
   }
 }
 
 /**
- * A raw per-feature value in [0,1] ramp space. The one place the choice between
- * "divide by the domain top" and a mode's own normalization is made, so the
- * linear-synteny LUT and the dotplot's per-feature evaluation cannot answer it
- * differently — the divergence this file exists to prevent, and one the two
- * views have already had once over MAPQ scaling.
+ * A raw per-feature value in [0,1] ramp space, read linearly across the mode's
+ * domain and clamped, so the linear-synteny LUT and the dotplot's per-feature
+ * evaluation cannot answer it differently — the two views have already
+ * disagreed once over MAPQ scaling.
  */
 export function rampNorm(
-  config: {
-    minValue?: number
-    maxValue: number
-    normalize?: (value: number) => number
-  },
+  config: { minValue?: number; maxValue: number },
   value: number,
 ) {
-  if (config.normalize) {
-    return config.normalize(value)
-  }
   const lo = config.minValue ?? 0
   const span = config.maxValue - lo
   // a flat domain (one distinct value, or an attribute with no data) has no
@@ -321,9 +216,9 @@ export function rampNorm(
  * from a codeml run — publish dN and dS separately, and both are worth having in
  * the detail panel on their own.
  *
- * -1 is "no answer", which is not 0: Compara leaves dS unestimated for a distant
- * pair, and a ratio of 0 reads as total purifying selection rather than as a
- * missing measurement. A dS at or below 0 is the same case — the ratio is
+ * NaN is "no answer", which is not 0: Compara leaves dS unestimated for a
+ * distant pair, and a ratio of 0 reads as total purifying selection rather than
+ * as a missing measurement. A dS at or below 0 is the same case — the ratio is
  * undefined, not infinite.
  *
  * Shared by the linear-synteny and dotplot workers so the two views cannot
@@ -334,5 +229,5 @@ export function dnDsRatio(feature: { get: (key: string) => unknown }): number {
   const ds = feature.get('ds')
   return typeof dn === 'number' && typeof ds === 'number' && ds > 0 && dn >= 0
     ? dn / ds
-    : -1
+    : Number.NaN
 }

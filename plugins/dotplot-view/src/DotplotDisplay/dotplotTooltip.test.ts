@@ -39,9 +39,9 @@ function fakeRpcData(overrides: Partial<DotplotRpcData> = {}): DotplotRpcData {
     p22: new Float64Array([450]),
     attributes: {
       identity: new Float32Array([0.9876]),
-      meanIdentity: new Float32Array([-1]),
+      meanIdentity: new Float32Array([Number.NaN]),
       mappingQual: new Float32Array([60]),
-      dnds: new Float32Array([-1]),
+      dnds: new Float32Array([Number.NaN]),
     },
     refNameDict: ['1'],
     mateRefNameDict: ['5'],
@@ -214,8 +214,8 @@ describe('attributes', () => {
     expect(lines().slice(5)).toEqual(['Identity: 0.988', 'Mapping quality: 60'])
   })
 
-  // -1 is the worker's missing sentinel, so meanIdentity and dnds above are
-  // absent rather than reported as -1.
+  // NaN is the worker's missing sentinel, so meanIdentity and dnds above are
+  // absent rather than reported.
   test('omits the missing sentinel', () => {
     expect(lines().join(',')).not.toContain('Mean query identity')
     expect(lines().join(',')).not.toContain('dN/dS')

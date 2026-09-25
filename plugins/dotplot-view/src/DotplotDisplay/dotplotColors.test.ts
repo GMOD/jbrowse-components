@@ -17,7 +17,7 @@ function fakeRpcData(overrides: Partial<DotplotRpcData> = {}): DotplotRpcData {
       identity: new Float32Array([0.5]),
       meanIdentity: new Float32Array([0.5]),
       mappingQual: new Float32Array([30]),
-      dnds: new Float32Array([-1]),
+      dnds: new Float32Array([Number.NaN]),
     },
     ...overrides,
   })
@@ -90,9 +90,9 @@ describe('createDotplotColorFunction', () => {
     }
   })
 
-  test('missing-value sentinel (-1) returns red', () => {
+  test('missing-value sentinel (NaN) returns red', () => {
     const data = fakeRpcData({
-      attributes: { identity: new Float32Array([-1]) },
+      attributes: { identity: new Float32Array([Number.NaN]) },
     })
     const fn = createDotplotColorFunction('identity', data, TRACK_COLOR, {})
     expect(unpack(fn(0))).toMatchObject({ r: 255, g: 0, b: 0 })

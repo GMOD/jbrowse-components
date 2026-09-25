@@ -42,13 +42,13 @@ function fill(name: string, rows: Record<string, unknown>[]) {
   return channels.finish(rows.length)
 }
 
-test('a numeric column reports its span, missing as -1', () => {
+test('a numeric column reports its span, missing as NaN', () => {
   const { attributes, attributeRanges } = fill('dn', [
     { dn: 0.5 },
     {},
     { dn: 2 },
   ])
-  expect(Array.from(attributes.dn!)).toEqual([0.5, -1, 2])
+  expect(Array.from(attributes.dn!)).toEqual([0.5, Number.NaN, 2])
   expect(attributeRanges.dn).toEqual({ min: 0.5, max: 2, missing: true })
 })
 
@@ -62,7 +62,7 @@ test('a text column interns labels in first-seen order and keeps the file color'
     { group: 'B1', color: '#000000' },
     { group: 'A1a', color: '#4DB5E3' },
   ])
-  expect(Array.from(attributes.group!)).toEqual([0, 1, -1, 0, 1])
+  expect(Array.from(attributes.group!)).toEqual([0, 1, Number.NaN, 0, 1])
   expect(attributeRanges.group).toEqual({
     labels: ['B1', 'A1a'],
     colors: { B1: '#2F54E3', A1a: '#4DB5E3' },
@@ -86,10 +86,22 @@ test('numbers seen before the first label become labels of their own', () => {
     { group: 7 },
     { group: 3 },
   ])
-  expect(Array.from(attributes.group!)).toEqual([0, -1, 1, 0, 2])
+  expect(Array.from(attributes.group!)).toEqual([0, Number.NaN, 1, 0, 2])
   expect(attributeRanges.group).toEqual({
     labels: ['7', 'x', '3'],
     colors: {},
     missing: true,
   })
+})
+
+// A signed column is a column: a log fold change of -1.5 is a value, not a
+// missing one, and the span reaches it.
+test('a negative number is a value, and only NaN is missing', () => {
+  const { attributes, attributeRanges } = fill('lfc', [
+    { lfc: -1.5 },
+    {},
+    { lfc: 2 },
+  ])
+  expect(Array.from(attributes.lfc!)).toEqual([-1.5, Number.NaN, 2])
+  expect(attributeRanges.lfc).toEqual({ min: -1.5, max: 2, missing: true })
 })
