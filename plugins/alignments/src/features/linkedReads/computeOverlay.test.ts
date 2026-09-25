@@ -406,7 +406,7 @@ describe('computePileupBezierArcs — discordant curves dip', () => {
     expect(depthAt(400)).toBeCloseTo(depthAt(1))
   })
 
-  it('never dips past the section band, whatever the event', () => {
+  it('scales the dip to the band, overshooting the clip by at most a row', () => {
     const arcsFor = (positions: [number, number][], pileupHeight: number) =>
       computePileupBezierArcs({
         colors: PALETTE,
@@ -448,6 +448,10 @@ describe('computePileupBezierArcs — discordant curves dip', () => {
         )
         const { sy1, cp1y } = controlPoints(arcs[0]!.d)
         // the apex, not the control point, is the ink the clip has to hold
+        // What this pins is that the band reaches the law — not that the ink
+        // lands inside the clip, which it does not: the depth is measured from
+        // the read's own row while the band is measured from its top, so the
+        // curve passes the clip by that row's offset. See discordantDip.ts.
         expect((cp1y - sy1) * CUBIC_APEX_RATIO).toBeLessThanOrEqual(
           pileupHeight,
         )
