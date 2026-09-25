@@ -283,8 +283,8 @@ function mates(features: readonly Feature[]) {
     fields: Record<string, unknown>,
     id?: string,
   ) => {
-    const here = `${f.get('refName')}:${f.get('start')}`
-    const there = `${mate.refName}:${mate.start}`
+    const here = `${f.get('refName')}:${f.get('start')}-${f.get('end')}`
+    const there = `${mate.refName}:${mate.start}-${mate.end}`
     const key = here < there ? `${here}|${there}` : `${there}|${here}`
     if (!seen.has(key)) {
       seen.add(key)

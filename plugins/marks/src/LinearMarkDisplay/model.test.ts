@@ -2787,6 +2787,34 @@ test('each far foot resolves to the displayed region holding it, or to none', ()
   expect(bars.rpcDataMap.get(0)!.layers[0]!.x2Region).toBeUndefined()
 })
 
+test("a far foot on the block's own contig places through the block's own region", () => {
+  const sub = {
+    refName: 'ctgA',
+    start: 1000,
+    end: 2000,
+    assemblyName: 'volvox',
+  }
+  const past = createTestEnvironment([LINK], [sub]).createDisplay().display
+  past.setRpcData(
+    0,
+    { layers: [linkLayer([1500], [2500], [0], ['ctgA'])] },
+    sub,
+  )
+  expect([...past.rpcDataMap.get(0)!.layers[0]!.x2Region!]).toEqual([0])
+
+  const reversed = { ...REGION, reversed: true }
+  const twice = createTestEnvironment(
+    [LINK],
+    [REGION, reversed],
+  ).createDisplay().display
+  twice.setRpcData(
+    1,
+    { layers: [linkLayer([100], [200], [0], ['ctgA'])] },
+    reversed,
+  )
+  expect([...twice.rpcDataMap.get(1)!.layers[0]!.x2Region!]).toEqual([1])
+})
+
 test('the link regions place a bp where the view does, and are empty without a link mark', () => {
   const ctgB = { refName: 'ctgB', start: 0, end: 5000, assemblyName: 'volvox' }
   const { display, view } = createTestEnvironment(

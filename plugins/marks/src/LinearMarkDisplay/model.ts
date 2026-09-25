@@ -261,14 +261,17 @@ interface MateRegion {
 }
 
 /**
- * Each link layer's `x2Region`: the displayed region holding the far foot,
- * its refName read through the assembly's aliases, or none. Once per fetch
- * or region change, so a pan places through the shader's table alone.
+ * Each link layer's `x2Region`: the region the far foot places through, its
+ * refName read through the assembly's aliases. The block's own region when it
+ * holds the foot, else any displayed region that does, else the block's own
+ * region when the foot is on its contig past its edge, else none. Once per
+ * fetch or region change, so a pan places through the shader's table alone.
  */
 function withMateRegions(
   data: MarkRegionData,
   regions: readonly MateRegion[],
   canonical: (assemblyName: string, refName: string) => string,
+  ownIndex: number,
 ): MarkRegionData {
   const byRef = new Map<string, MateRegion[]>()
   for (const region of regions) {
@@ -301,9 +304,10 @@ function withMateRegions(
       const x2Region = new Uint32Array(layer.count)
       for (let i = 0; i < layer.count; i++) {
         const pos = layer.x2[i]!
-        const region = candidates[x2Ref[i]!]?.find(
-          r => pos >= r.start && pos < r.end,
-        )
+        const onRef = candidates[x2Ref[i]!] ?? []
+        const holds = (r: MateRegion) => pos >= r.start && pos < r.end
+        const own = onRef.find(r => r.index === ownIndex)
+        const region = own && holds(own) ? own : (onRef.find(holds) ?? own)
         x2Region[i] = region ? region.index : LINK_NO_REGION
       }
       return { ...layer, x2Region }
@@ -885,7 +889,8 @@ export function stateModelFactory(
         const mated = createEncodeMemo(
           () => (self.hasLinkMark ? drawn() : NO_REGIONS),
           () => mateRegions.get(),
-          (data, regions) => withMateRegions(data, regions, canonical),
+          (data, regions, index) =>
+            withMateRegions(data, regions, canonical, index),
         )
         return {
           /**

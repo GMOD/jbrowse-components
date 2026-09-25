@@ -759,6 +759,23 @@ test('mate passes a paired record through on its own mate, and drops a record na
   ])
 })
 
+test('mate keeps two pairs that share only their starts', () => {
+  const out = runTransforms(
+    [
+      feature(1000, 1500, {
+        mate: { refName: 'ctgA', start: 50000, end: 51000 },
+        score: 3,
+      }),
+      feature(1000, 2000, {
+        mate: { refName: 'ctgA', start: 50000, end: 52000 },
+        score: 90,
+      }),
+    ],
+    [{ type: 'mate' }],
+  )
+  expect(rows(out, 'score')).toEqual([[3], [90]])
+})
+
 test('mate answers a pair of ends once, whichever record or allele states it', () => {
   const out = runTransforms(
     [
