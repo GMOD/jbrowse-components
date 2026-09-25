@@ -58,10 +58,10 @@ the format to reach for unless you are loading a plugin you build yourself.
 Add `integrity` beside a UMD url to have the browser check the bytes against the
 hash before running them; the store publishes one per build.
 
-A url is an answer computed on the day the config was written, which is what
-`storePlugin` exists to avoid. The two can ride together — the ref for a JBrowse
-that resolves it, the url for one that does not, and as the fallback when the
-store cannot be reached:
+A url is an answer computed on the day the config was written. `storePlugin`
+defers it to load time instead, and the two can ride together — the ref for a
+JBrowse that resolves it, the url for one that does not, and as the fallback
+when the store cannot be reached:
 
 ```json
 {
