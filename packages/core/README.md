@@ -1222,6 +1222,22 @@ than an extrapolation past them, and a one-stop ramp is that stop everywhere.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
 
+### scaleBandHeights
+
+Heights after growing or shrinking a stack of bands by `distance` px in all: the
+one rule every whole-stack resize uses. Each band takes its share of the height
+it has above `floor`, so the tall bands give and take the most, and none goes
+below `floor`, or below its own height if it already sits under it (the
+clampBandHeight rule). Whole pixels, rounded by largest remainder, so the stack
+moves by exactly the rounded distance.
+
+```js
+// type signature
+(heights: number[], distance: number, floor?: number) => number[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandHeight.ts)
+
 ### ScaleTable
 
 Any channel's scale table; the kind names the channel.
