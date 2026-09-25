@@ -1,11 +1,12 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { TrackColorsMixin } from './TrackColorsMixin.ts'
 import { colorableColumns } from './attributeChannels.ts'
 import { DEFAULT_MIN_ALIGNMENT_LENGTH } from './minLengthHelp.ts'
 
 import type { ComparativeTrackModel } from './lodTier.ts'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel SyntenyColorsMixin
@@ -104,4 +105,22 @@ export function SyntenyColorsMixin({ defaultAlpha }: { defaultAlpha: number }) {
         self.minAlignmentLength = value
       },
     }))
+}
+
+export interface SyntenyColorsModel extends Instance<
+  ReturnType<typeof SyntenyColorsMixin>
+> {}
+
+/**
+ * #api
+ * What a view holding `SyntenyColorsMixin` hands the view it opens on the same
+ * alignments: the colour object, the pinned track colours, the unlabelled
+ * filter and the length filter. Opacity stays each view's own default, since a
+ * linear ribbon, a dotplot point and a circle's ribbon draw at densities of
+ * their own.
+ */
+export function carriedSyntenySettings(view: SyntenyColorsModel) {
+  const { color, trackColors, hideUnlabelled, minAlignmentLength } =
+    getSnapshot(view)
+  return { color, trackColors, hideUnlabelled, minAlignmentLength }
 }

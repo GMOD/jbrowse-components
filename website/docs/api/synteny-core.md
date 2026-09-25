@@ -78,6 +78,21 @@ to rather than over an assumed white.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
 
+## carriedSyntenySettings
+
+What a view holding `SyntenyColorsMixin` hands the view it opens on the same
+alignments: the colour object, the pinned track colours, the unlabelled
+filter and the length filter. Opacity stays each view's own default, since a
+linear ribbon, a dotplot point and a circle's ribbon draw at densities of
+their own.
+
+```js
+// type signature
+(view: SyntenyColorsModel) => { color: ModelSnapshotType<Record<string, any>>; trackColors: IKeyValueMap<string>; hideUnlabelled: boolean; minAlignmentLength: number; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyColorsMixin.ts)
+
 ## colorByMenuItems
 
 The color-by menu shared by the dotplot and linear-synteny palette buttons

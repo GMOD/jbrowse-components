@@ -42,12 +42,14 @@ import {
   DiagonalizeProgressMixin,
   ImportFormSyntenyMixin,
   SyntenyViewMixin,
+  carriedSyntenySettings,
   collectTrackWarnings,
   comparativeSurfacePhase,
   comparativeSurfaceSettled,
   liftColorBy,
   releaseTemporaryAssemblies,
 } from '@jbrowse/synteny-core'
+import DataUsageIcon from '@mui/icons-material/DataUsage'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import HighlightIcon from '@mui/icons-material/Highlight'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
@@ -1234,6 +1236,23 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #action
+         * a circular view of the two axes' genomes with this view's tracks as
+         * ribbons, the second genome reordered to follow the first, and this
+         * view's colour and length filter
+         */
+        openInCircularSyntenyView() {
+          const assembly = [...new Set(self.assemblyNames)]
+          void getSession(self).launchView('CircularView', {
+            assembly,
+            tracks: self.tracks.map(
+              track => track.configuration.trackId as string,
+            ),
+            autoDiagonalize: assembly.length === 2,
+            ...carriedSyntenySettings(self),
+          })
+        },
+        /**
+         * #action
          * opens a linear synteny view on the clicked and dragged region: the
          * horizontal axis' span on the top row, the vertical axis' below, each
          * fitted to this view's width, with every track that has a linear
@@ -1243,13 +1262,7 @@ export default function stateModelFactory(pm: PluginManager) {
         launchLinearSyntenyView(mousedown: Coord, mouseup: Coord) {
           const result = self.getCoords(mousedown, mouseup)
           if (result) {
-            const {
-              color,
-              trackColors,
-              hideUnlabelled,
-              minAlignmentLength,
-              lodMode,
-            } = getSnapshot(self)
+            const { lodMode } = self
             const { x1, x2, y1, y2 } = result
             const row = (
               axis: Dotplot1DViewModel,
@@ -1291,10 +1304,7 @@ export default function stateModelFactory(pm: PluginManager) {
                 : []
             })
             void getSession(self).launchView('LinearSyntenyView', {
-              color,
-              trackColors,
-              hideUnlabelled,
-              minAlignmentLength,
+              ...carriedSyntenySettings(self),
               lodMode,
               views: [row(self.hview, x1, x2), row(self.vview, y2, y1)],
               // the level between the two rows, which is where a synteny track
@@ -1475,6 +1485,18 @@ export default function stateModelFactory(pm: PluginManager) {
                       self.activateTrackSelector()
                     },
                     icon: TrackSelectorIcon,
+                  },
+                ]
+              : []),
+            ...(self.assemblyNames.length > 0 &&
+            pm.viewTypes.has('CircularView')
+              ? [
+                  {
+                    label: 'Open in circular synteny view',
+                    icon: DataUsageIcon,
+                    onClick: () => {
+                      self.openInCircularSyntenyView()
+                    },
                   },
                 ]
               : []),

@@ -134,7 +134,11 @@ export {
   orderAttributeLabels,
   widenAttributeRanges,
 } from './TrackColorsMixin.ts'
-export { SyntenyColorsMixin } from './SyntenyColorsMixin.ts'
+export {
+  SyntenyColorsMixin,
+  carriedSyntenySettings,
+} from './SyntenyColorsMixin.ts'
+export type { SyntenyColorsModel } from './SyntenyColorsMixin.ts'
 export { liftColorBy } from './liftColorBy.ts'
 export { SyntenyViewMixin } from './SyntenyViewMixin.ts'
 export { minLengthMenuItem, opacityMenuItem } from './settingsMenuItems.ts'

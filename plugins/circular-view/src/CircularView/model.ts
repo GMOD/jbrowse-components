@@ -39,6 +39,7 @@ import { cast, destroy, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   DiagonalizeProgressMixin,
   SyntenyColorsMixin,
+  carriedSyntenySettings,
   colorByMenuItems,
   colorByMenuTargetFor,
   isSyntenyTrack,
@@ -47,6 +48,7 @@ import {
   ImportFormSyntenyMixin,
   withDiagonalizeProgress,
 } from '@jbrowse/synteny-core'
+import CalendarViewDayIcon from '@mui/icons-material/CalendarViewDay'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -906,6 +908,31 @@ function stateModelFactory(pluginManager: PluginManager) {
           radiusPx: self.radiusPx,
         })
       },
+      /**
+       * #method
+       * the tracks a linear view of one genome on this circle opens with: each
+       * track on that genome but the synteny tracks, a ring as its display and
+       * a chord track as the linear view's own
+       */
+      linearTracksFor(assemblyName: string): TrackInit[] {
+        const { assemblyManager } = getSession(self)
+        const { ringDisplays } = self.ringHost
+        return self.tracks.flatMap(({ configuration, displays }) => {
+          const onGenome = getConfAssemblyNamesOrNone(configuration).some(
+            name => isSameAssemblyName(name, assemblyName, assemblyManager),
+          )
+          if (!onGenome || isSyntenyTrack(configuration)) {
+            return []
+          }
+          const trackId = readConfObject(configuration, 'trackId') as string
+          const display = displays[0]
+          return [
+            display && ringDisplays.includes(display)
+              ? { trackId, type: display.type }
+              : { trackId },
+          ]
+        })
+      },
     }))
     .actions(self => ({
       /**
@@ -1202,6 +1229,41 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       * a linear synteny view of this circle's genomes, a row each over the
+       * chromosomes the circle shows with the tracks it shows for that genome,
+       * its ribbon tracks between them, reordered, in this view's colour and
+       * length filter. A self-alignment opens the genome against itself
+       */
+      openInLinearSyntenyView() {
+        const session = getSession(self)
+        const [first, second = first] = self.assemblyNames
+        if (first === undefined || second === undefined) {
+          return
+        }
+        const row = (assembly: string) => {
+          const names = self.displayedRegions
+            .filter(r => r.assemblyName === assembly)
+            .map(r => r.refName)
+          const whole = session.assemblyManager.get(assembly)?.regions?.length
+          return {
+            assembly,
+            tracks: self.linearTracksFor(assembly),
+            ...(whole !== undefined && names.length < whole
+              ? { displayedRegionNames: names }
+              : {}),
+          }
+        }
+        void session.launchView('LinearSyntenyView', {
+          views: [row(first), row(second)],
+          tracks: [
+            self.syntenyTracks().map(track => track.configuration.trackId),
+          ],
+          autoDiagonalize: first !== second,
+          ...carriedSyntenySettings(self),
+        })
+      },
+      /**
+       * #action
        * The init-time reorder, behind the "Reordering chromosomes" screen
        * `withDiagonalizeProgress` drives.
        */
@@ -1336,31 +1398,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #method
-       * the tracks a linear view of one genome on this circle opens with: each
-       * track on that genome but the synteny tracks, a ring as its display and
-       * a chord track as the linear view's own
-       */
-      linearTracksFor(assemblyName: string): TrackInit[] {
-        const { assemblyManager } = getSession(self)
-        const { ringDisplays } = self.ringHost
-        return self.tracks.flatMap(({ configuration, displays }) => {
-          const onGenome = getConfAssemblyNamesOrNone(configuration).some(
-            name => isSameAssemblyName(name, assemblyName, assemblyManager),
-          )
-          if (!onGenome || isSyntenyTrack(configuration)) {
-            return []
-          }
-          const trackId = readConfObject(configuration, 'trackId') as string
-          const display = displays[0]
-          return [
-            display && ringDisplays.includes(display)
-              ? { trackId, type: display.type }
-              : { trackId },
-          ]
-        })
-      },
-      /**
-       * #method
        * return the view menu items
        */
       menuItems(): MenuItem[] {
@@ -1410,6 +1447,18 @@ function stateModelFactory(pluginManager: PluginManager) {
                 },
                 opacityMenuItem(self),
                 minLengthMenuItem(self),
+                ...(self.assemblyNames.length <= 2 &&
+                pluginManager.viewTypes.has('LinearSyntenyView')
+                  ? [
+                      {
+                        label: 'Open in linear synteny view',
+                        icon: CalendarViewDayIcon,
+                        onClick: () => {
+                          self.openInLinearSyntenyView()
+                        },
+                      },
+                    ]
+                  : []),
               ]
             : []),
           {

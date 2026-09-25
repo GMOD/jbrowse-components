@@ -22,12 +22,14 @@ import {
   ImportFormSyntenyMixin,
   SyntenyViewMixin,
   allSessionTracks,
+  carriedSyntenySettings,
   collectTrackWarnings,
   getSyntenyTracks,
   liftColorBy,
   releaseTemporaryAssemblies,
 } from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
+import DataUsageIcon from '@mui/icons-material/DataUsage'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
@@ -1170,6 +1172,32 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           () => import('./svgcomponents/SVGLinearSyntenyView.tsx'),
         )
       },
+      /**
+       * #action
+       * a circular view of this view's two genomes with its synteny tracks
+       * as ribbons, the second genome reordered to follow the first, and this
+       * view's colour and length filter
+       */
+      openInCircularSyntenyView() {
+        const assembly = [
+          ...new Set(
+            self.views.flatMap(view => view.assemblyNames.slice(0, 1)),
+          ),
+        ]
+        const tracks = [
+          ...new Set(
+            self.levels.flatMap(level =>
+              level.tracks.map(track => track.configuration.trackId as string),
+            ),
+          ),
+        ]
+        void getSession(self).launchView('CircularView', {
+          assembly,
+          tracks,
+          autoDiagonalize: assembly.length === 2,
+          ...carriedSyntenySettings(self),
+        })
+      },
     }))
     .views(self => {
       const exportSvgMenuItem = {
@@ -1185,6 +1213,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           ])
         },
       }
+      const circularMenuItems = () =>
+        self.views.length === 2 && pluginManager.viewTypes.has('CircularView')
+          ? [
+              {
+                label: 'Open in circular synteny view',
+                icon: DataUsageIcon,
+                onClick: () => {
+                  self.openInCircularSyntenyView()
+                },
+              },
+            ]
+          : []
       const returnToImportFormMenuItem = {
         label: 'Return to import form',
         icon: FolderOpenIcon,
@@ -1273,6 +1313,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   },
                 ]
               : []),
+            ...circularMenuItems(),
             exportSvgMenuItem,
           ]
         },
@@ -1283,6 +1324,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           return [
             returnToImportFormMenuItem,
             ...rowViewMenuItems(self),
+            ...circularMenuItems(),
             exportSvgMenuItem,
           ]
         },
