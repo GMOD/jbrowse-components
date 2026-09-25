@@ -123,4 +123,4 @@ is no longer shared with anything.
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |
 | `sBlend` | tests only — `syntenyShaderParity.test.ts` |
 | `wideCircleLeg` | tests only — `wideCircleLeg.test.ts` |
-| `yCurve` | tests only — `syntenyShaderParity.test.ts` |
+| `yCurve` | tests only — `syntenyCull.test.ts`, `syntenyShaderParity.test.ts` |

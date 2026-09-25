@@ -67,7 +67,7 @@ struct Uniforms {
 
 struct VsOut {
   float4 position : SV_Position;
-  float4 color    : COLOR0;
+  nointerpolation float4 color : COLOR0;
   // Offset from the segment's CENTER in screen px, in the segment's own frame
   // (x along, y across) — capsule.slang's `local`. Tracks `pos` exactly: it is
   // the same point in that frame, so the pad appears in both or the fragment

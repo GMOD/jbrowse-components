@@ -262,30 +262,29 @@ public bool isCulled(float4 c, float alignmentLength, float kind, Uniforms u) {
   }
   float mOff = u.overdrawPx;
   float rW = u.resolution.x;
-  // Hull: nothing of the instance is anywhere near the band. Subsumed by the
-  // per-edge test below for a ribbon (both edges out implies the hull is out),
-  // so it is here for the marker case, which returns right after it.
-  if (spanOutsideBand(min(min(c.x, c.y), min(c.z, c.w)),
-                      max(max(c.x, c.y), max(c.z, c.w)), rW, mOff)) {
-    return true;
-  }
-  // A MARKER STOPS HERE. It is a 1px line between two points, one per view, so
-  // the hull is its whole extent and either endpoint being on screen means part
-  // of the line is. The per-edge test below would drop it whenever ONE endpoint
-  // left the band — and the two endpoints of a marker are exactly what a
-  // crossed ribbon pulls apart, so on an inversion spanning the frame, panning
-  // past the overdraw band deleted the leading half of the tick fan while the
-  // ribbon under it stayed.
+  // A MARKER IS CULLED HERE, ON ITS HULL. It is a 1px line between two points,
+  // one per view, so the hull is its whole extent and either endpoint being on
+  // screen means part of the line is. The per-edge test below would drop it
+  // whenever ONE endpoint left the band — and the two endpoints of a marker are
+  // exactly what a crossed ribbon pulls apart, so on an inversion spanning the
+  // frame, panning past the overdraw band deleted the leading half of the tick
+  // fan while the ribbon under it stayed.
   //
   // What replaces the per-edge test for a marker is the travel cap, which is the
   // rule that shape actually needs — see markerTravelsTooFar. A marker's two
   // corners per view coincide, so c.x and c.z are its two ends.
+  //
+  // A ribbon needs no hull test — the per-edge pair below already answers true
+  // for every hull the band excludes, and this ran first for every vertex of
+  // every one. syntenyCull.test.ts is that subsumption.
   if (isMarkerKind(kind)) {
-    return markerTravelsTooFar(c.x, c.z, rW);
+    return spanOutsideBand(min(min(c.x, c.y), min(c.z, c.w)),
+                           max(max(c.x, c.y), max(c.z, c.w)), rW, mOff)
+        || markerTravelsTooFar(c.x, c.z, rW);
   }
-  // Per-edge for ribbons, and deliberately harsher than the hull: an edge
-  // entirely outside the band contributes only a sliver, and keeping the
-  // instance costs a trapezoid spanning the whole horizontal travel.
+  // Per-edge for ribbons, and deliberately harsher than a hull: an edge entirely
+  // outside the band contributes only a sliver, and keeping the instance costs a
+  // trapezoid spanning the whole horizontal travel.
   return spanOutsideBand(min(c.x, c.y), max(c.x, c.y), rW, mOff)
       || spanOutsideBand(min(c.z, c.w), max(c.z, c.w), rW, mOff);
 }
@@ -375,7 +374,7 @@ struct FillEdges {
 FillEdges fillEdges(float4 c, float s, float sd, float dydt) {
   float2 e = ribbonEdges(c, s);
   // Each edge's own dx/dy: its total travel scaled by this point's ds/dy.
-  float2 slope = ribbonEdgeDeltas(c) * (sd / max(abs(dydt), 1e-4));
+  float2 slope = ribbonEdgeDeltas(c) * (sd / abs(dydt));
   FillEdges o;
   o.edge0 = e.x;
   o.edge1 = e.y;
@@ -519,7 +518,7 @@ public float2 edgeSpan(float4 c, float s) {
 // polygon. Mirrors the rowRect module's split (render-core).
 public struct FillVsOut {
   public float4 position : SV_Position;
-  public float4 color    : COLOR0;
+  public nointerpolation float4 color : COLOR0;
   public nointerpolation float featureId : COLOR1;
   // Per-instance corner positions in CSS-pixel screen X, exactly as
   // computeCorners produces them: (x, y) belong to the top view, (z, w) to the
