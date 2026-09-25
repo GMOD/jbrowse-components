@@ -56,19 +56,17 @@ const args = {
     },
     matchColor: '#d3d3d3',
     gapColor: '#1e1e1e',
-    mismatchOffColor: '#ffa500',
     unknownBaseColor: '#000000',
     insertionColor: '#800080',
     bridgeLineColor: '#888888',
     missingDataColor: '#ffffcc',
   },
-  showAllLetters: false,
-  mismatchRendering: true,
+  colorMatches: false,
 }
 
 test('two disjoint blocks emit runs at distinct absolute positions', () => {
   // Block 1 at 100-105 (5 matches), block 2 at 1100-1105 (5 matches)
-  // With showAllLetters=false, matches collapse into a single MATCH_COLOR run.
+  // With colorMatches=false, matches collapse into a single MATCH_COLOR run.
   const blocks = [
     block(100, 'ACGTA', [[0, 'ACGTA']]),
     block(1100, 'ACGTA', [[0, 'ACGTA']]),

@@ -61,7 +61,7 @@ test('the rows layer is clipped to the rows box', async () => {
 // `showLegend` at all.
 test('a dismissed color key stays out of the export', async () => {
   const { display, view } = clusteredDisplay()
-  display.setRowRendering('heatmap')
+  display.setRowRendering('identity')
   // the identity plots swap themselves out for the bases at base level
   view.zoomTo(100)
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)

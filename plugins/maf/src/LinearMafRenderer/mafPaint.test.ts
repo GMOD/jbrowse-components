@@ -80,7 +80,6 @@ const palette = {
   colorForBase: { a: 'green', c: 'blue', g: 'orange', t: 'red', n: 'grey' },
   matchColor: 'lightgrey',
   gapColor: 'white',
-  mismatchOffColor: 'black',
   unknownBaseColor: 'grey',
   insertionColor: 'purple',
   bridgeLineColor: 'grey',
@@ -108,8 +107,6 @@ function state(binBp: number) {
     rowHeight: 10,
     rowProportion: 1,
     scrollTop: 0,
-    showAllLetters: true,
-    mismatchRendering: false,
     palette,
   }
 }
@@ -131,8 +128,7 @@ function draw(reversed: boolean, n: number, binBp = 1, aln?: string) {
   const channels = buildMafChannels({
     blocks: regionData(n, aln).blocks,
     palette,
-    showAllLetters: s.showAllLetters,
-    mismatchRendering: s.mismatchRendering,
+    colorMatches: false,
     binBp,
   })
   MAF_ROW_MARK.paintBlock(ctx, { cells: channels }, block(reversed), s)

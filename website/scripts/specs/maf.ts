@@ -366,7 +366,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               trackId: 'ce11.26way',
               type: 'LinearMafDisplay',
               height: 470,
-              showTranslation: true,
+              color: 'codon',
             },
           ],
         },
@@ -437,7 +437,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               type: 'LinearMafDisplay',
               rowHeight: 8,
               rowProportion: 0.9,
-              colorByChromosome: true,
+              color: 'chromosome',
               rows: { kept: CE11_26WAY_NON_REFERENCE },
             },
           ],
@@ -496,7 +496,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               // scrolling off. The top-right legend names the red/blue ramp.
               type: 'LinearMafDisplay',
               height: 600,
-              rowIdentityMode: 'heatmap',
+              color: 'identity',
               rowIdentityAutoZoom: false,
               // The byte gate is live at this zoom — it has no span floor
               // (`gateActive`, RegionTooLargeMixin), so it measures at
@@ -578,7 +578,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               // acids at a more compact per-row height (reviewer).
               type: 'LinearMafDisplay',
               height: 460,
-              showTranslation: true,
+              color: 'codon',
               showConservation: true,
               conservationMode: 'codon',
               rows: { kept: HG38_470WAY_30 },

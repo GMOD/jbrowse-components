@@ -46,6 +46,7 @@ test('mismatched bases produce labels', () => {
     scrollTop: 0,
     viewportHeight: 1000,
     showAllLetters: false,
+    colorMatches: false,
     showAsUpperCase: false,
   })
   expect(labels.map(l => l.text)).toEqual(['C', 'G', 'T'])
@@ -69,6 +70,7 @@ test('reversed region mirrors label x positions through the region end', () => {
     scrollTop: 0,
     viewportHeight: 1000,
     showAllLetters: false,
+    colorMatches: false,
     showAsUpperCase: false,
   })
   expect(labels.map(l => l.text)).toEqual(['C', 'G', 'T'])
@@ -92,6 +94,7 @@ test('space chars in alignment are treated as gaps, not labeled', () => {
     scrollTop: 0,
     viewportHeight: 1000,
     showAllLetters: true,
+    colorMatches: false,
     showAsUpperCase: false,
   })
   // Only the two 'A' matches would produce labels (with showAllLetters=true);
@@ -115,6 +118,7 @@ test('columns outside the visible span emit no label', () => {
     scrollTop: 0,
     viewportHeight: 1000,
     showAllLetters: true,
+    colorMatches: false,
     showAsUpperCase: false,
   })
   expect(labels).toHaveLength(12)
@@ -134,6 +138,7 @@ test('dashes in alignment are treated as gaps', () => {
     scrollTop: 0,
     viewportHeight: 1000,
     showAllLetters: true,
+    colorMatches: false,
     showAsUpperCase: false,
   })
   expect(labels.map(l => l.text)).toEqual(['A', 'A'])

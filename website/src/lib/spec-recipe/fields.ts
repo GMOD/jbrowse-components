@@ -453,6 +453,9 @@ function colorStep(
   context: FieldContext,
 ): FieldStep | undefined {
   const { displayType } = context
+  if (displayType === 'LinearMafDisplay') {
+    return mafColorStep(value)
+  }
   if (
     displayType
       ? ALIGNMENTS_FACET_DISPLAYS.has(displayType)
@@ -497,6 +500,14 @@ function colorStep(
       : { path: `${colorBy} → Attribute... → ${field}` }
   }
   return constantColorStep(value, context)
+}
+
+// The MAF display's `color`: a field named bare or as `{ field }`, each one a
+// Row coloring option.
+function mafColorStep(value: unknown): FieldStep | undefined {
+  const field = typeof value === 'string' ? value : asString(asRecord(value)?.field)
+  const label = field === undefined ? undefined : MAF_ROW_RENDERING_LABELS.get(field)
+  return label ? { path: `${ROW_COLORING} → ${label}` } : undefined
 }
 
 // The multi-sample variant displays' cell `color`: a preset field has its own
@@ -670,11 +681,8 @@ const CIGAR_MODES: Record<string, string> = Object.fromEntries(
   CIGAR_MODE_OPTIONS.map(o => [o.value, o.label]),
 )
 
-// The MAF display stores what its rows are colored by across three slots that
-// each predate the others (showTranslation, colorByChromosome, rowIdentityMode)
-// while the menu presents them as one radio — they are alternatives, and only
-// one paints. So each of those slots resolves to the same 'Row coloring' group,
-// and its option labels are imported.
+// The MAF display's Row coloring radio writes `color` and `y` together, so
+// both resolve to its options, whose labels are imported.
 const ROW_COLORING = `${TRACK_MENU} → Row coloring`
 const MAF_ROW_RENDERING_LABELS = new Map<string, string>([
   ...ROW_RENDERINGS.map(([v, l]) => [v, l] as [string, string]),
@@ -1313,19 +1321,10 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'Absent in the density plot types, where score maps to color rather than height and a hatch would mark nothing.',
         }
       : undefined,
-  colorByChromosome: (value, { displayType }) =>
-    value === true && displayType === 'LinearMafDisplay'
-      ? { path: `${ROW_COLORING} → ${MAF_ROW_RENDERING_LABELS.get('sourceChrom')}` }
+  y: (value, { displayType }) =>
+    value === 'identity' && displayType === 'LinearMafDisplay'
+      ? { path: `${ROW_COLORING} → ${MAF_ROW_RENDERING_LABELS.get('xyplot')}` }
       : undefined,
-  rowIdentityMode: (value, { displayType }) => {
-    const label =
-      typeof value === 'string'
-        ? MAF_ROW_RENDERING_LABELS.get(value)
-        : undefined
-    return label && displayType === 'LinearMafDisplay'
-      ? { path: `${ROW_COLORING} → ${label}` }
-      : undefined
-  },
   rowIdentityAutoZoom: (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LinearMafDisplay'
       ? {

@@ -212,7 +212,7 @@ function MafSvgBody({
                 ctx,
                 model.visibleLabels,
                 contrast,
-                state.mismatchRendering,
+                palette.text.primary,
               )
               drawMafCodons(ctx, model.visibleCodons, getCodonColors(palette))
               drawInversions(ctx, model.visibleInversions, colorLongreadInv)

@@ -252,7 +252,6 @@ const MafBody = observer(function MafBody({
           labels={model.visibleLabels}
           width={width}
           height={rowsHeight}
-          mismatchRendering={model.mismatchRendering}
         />
         <CodonTranslationOverlay
           markers={model.visibleCodons}

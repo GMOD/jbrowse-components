@@ -13,7 +13,6 @@ export interface MafColorPalette {
   colorForBase: Record<string, string>
   matchColor: string
   gapColor: string
-  mismatchOffColor: string
   unknownBaseColor: string
   insertionColor: string
   /** Color of the single/double bridge lines drawn for `e`-line rows */
@@ -38,7 +37,6 @@ export function getMafColorPalette(palette: JBrowsePalette): MafColorPalette {
     colorForBase: getColorBaseMap(palette),
     matchColor: palette.action.disabledBackground,
     gapColor: palette.mafGap,
-    mismatchOffColor: palette.mutedSnpBase,
     unknownBaseColor: palette.text.primary,
     insertionColor: palette.insertion,
     bridgeLineColor: palette.text.secondary,

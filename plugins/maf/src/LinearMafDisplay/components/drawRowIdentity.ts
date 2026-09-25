@@ -13,12 +13,14 @@ import {
 } from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { RowIdentityMode } from '../rowIdentityModes.ts'
 import type { CellPxRange } from './visibleRegionGeometry.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+
+/** How the identity plot draws: a ramp per cell, or a bar per cell. */
+export type IdentityPlot = 'heatmap' | 'xyplot'
 
 interface DrawRowIdentityState {
   rowHeight: number
@@ -30,7 +32,7 @@ interface DrawRowIdentityState {
   canvasHeight: number
   scrollTop: number
   /** `heatmap` shades each cell on a ramp; `xyplot` draws an identity wiggle */
-  mode: RowIdentityMode
+  mode: IdentityPlot
 }
 
 const IDENTITY_STOPS: readonly ColorRampStop[] = [
@@ -79,7 +81,7 @@ const XYPLOT_BAR_COLOR = IDENTITY_RAMP[100]!
  * its midpoint, so three stops are the whole ramp. The X-Y plot paints every
  * bar the conserved end of it and varies the height.
  */
-export function identityColorScale(mode: RowIdentityMode): ColorScale {
+export function identityColorScale(mode: IdentityPlot): ColorScale {
   const title = 'Per-base identity to reference'
   return mode === 'xyplot'
     ? {

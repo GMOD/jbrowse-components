@@ -5658,8 +5658,19 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "mismatchRendering",
-          "type": "boolean"
+          "name": "color",
+          "type": "MafColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "MafColorField"
+            }
+          ],
+          "shorthand": "field"
+        },
+        {
+          "name": "y",
+          "type": "(MafYField | undefined)"
         },
         {
           "name": "showAsUpperCase",
@@ -5762,23 +5773,11 @@ export const configManifest: ConfigManifest = {
           "type": "MafConservationMode"
         },
         {
-          "name": "rowIdentityMode",
-          "type": "RowIdentityMode"
-        },
-        {
           "name": "rowIdentityAutoZoom",
           "type": "boolean"
         },
         {
           "name": "showAnnotations",
-          "type": "boolean"
-        },
-        {
-          "name": "showTranslation",
-          "type": "boolean"
-        },
-        {
-          "name": "colorByChromosome",
           "type": "boolean"
         },
         {

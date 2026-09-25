@@ -11,18 +11,28 @@ export interface VisibleLabel {
   y: number
   text: string
   lowerBase: string
+  /** the cell under the letter paints its base's colour, not the match colour */
+  onBase: boolean
 }
 
 interface ComputeVisibleLabelsParams extends MafOverlayParams {
   showAllLetters: boolean
   showAsUpperCase: boolean
+  /** a matching base's cell paints its own colour */
+  colorMatches: boolean
 }
 
 export function computeVisibleLabels(
   params: ComputeVisibleLabelsParams,
 ): VisibleLabel[] {
-  const { view, rpcDataMap, rowHeight, showAllLetters, showAsUpperCase } =
-    params
+  const {
+    view,
+    rpcDataMap,
+    rowHeight,
+    showAllLetters,
+    showAsUpperCase,
+    colorMatches,
+  } = params
 
   const labels: VisibleLabel[] = []
   const { h, offset, firstRow, endRow } = rowViewport(params)
@@ -85,6 +95,7 @@ export function computeVisibleLabels(
                   y: yPos,
                   text: String.fromCharCode(displayCode),
                   lowerBase: String.fromCharCode(alnCode | LOWER_BIT),
+                  onBase: colorMatches || !isMatch,
                 })
               }
             }

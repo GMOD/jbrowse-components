@@ -18,10 +18,8 @@ const cfg: MafCellColorConfig = {
   },
   matchColor: '#111111',
   gapColor: '#222222',
-  mismatchOffColor: '#333333',
   unknownBaseColor: '#444444',
-  showAllLetters: false,
-  mismatchRendering: true,
+  colorMatches: false,
 }
 
 const byte = (c: string) => c.charCodeAt(0)
@@ -38,22 +36,19 @@ const byte = (c: string) => c.charCodeAt(0)
 // together is the range a 7-bit sweep excludes.
 test('the packed colour table agrees with the cascade over every byte pair', () => {
   const disagreements: string[] = []
-  for (const showAllLetters of [false, true]) {
-    for (const mismatchRendering of [false, true]) {
-      const c = { ...cfg, showAllLetters, mismatchRendering }
-      const packed = packMafCellColorConfig(c)
-      for (let refByte = 0; refByte < 256; refByte++) {
-        for (let alnByte = 0; alnByte < 256; alnByte++) {
-          const int = resolveCellPacked(refByte, alnByte, packed)
-          const want =
-            refByte === DASH
-              ? RESOLVE_PACKED_SKIP
-              : resolvePackedUncached(refByte, alnByte, packed)
-          if (int !== want) {
-            disagreements.push(
-              `ref=${refByte} aln=${alnByte} showAllLetters=${showAllLetters} mismatchRendering=${mismatchRendering}: table ${int} !== cascade ${want}`,
-            )
-          }
+  for (const colorMatches of [false, true]) {
+    const packed = packMafCellColorConfig({ ...cfg, colorMatches })
+    for (let refByte = 0; refByte < 256; refByte++) {
+      for (let alnByte = 0; alnByte < 256; alnByte++) {
+        const int = resolveCellPacked(refByte, alnByte, packed)
+        const want =
+          refByte === DASH
+            ? RESOLVE_PACKED_SKIP
+            : resolvePackedUncached(refByte, alnByte, packed)
+        if (int !== want) {
+          disagreements.push(
+            `ref=${refByte} aln=${alnByte} colorMatches=${colorMatches}: table ${int} !== cascade ${want}`,
+          )
         }
       }
     }
@@ -65,4 +60,16 @@ test('reference insertion (ref dash) is skipped', () => {
   expect(
     resolveCellPacked(byte('-'), byte('A'), packMafCellColorConfig(cfg)),
   ).toBe(RESOLVE_PACKED_SKIP)
+})
+
+test('a match paints the match colour, or its own base under colorMatches', () => {
+  const at = (colorMatches: boolean) =>
+    resolveCellPacked(
+      byte('A'),
+      byte('a'),
+      packMafCellColorConfig({ ...cfg, colorMatches }),
+    )
+  const { match, packedByLowerByte } = packMafCellColorConfig(cfg)
+  expect(at(false)).toBe(match)
+  expect(at(true)).toBe(packedByLowerByte[byte('a')])
 })

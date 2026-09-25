@@ -45,7 +45,7 @@ describe('insertion markers are only computed for the rendering that draws them'
   it('emits markers in bases mode', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
-    expect(display.activeRowRendering).toBe('bases')
+    expect(display.activeRowRendering).toBe('mismatch')
     expect(display.visibleInsertions.length).toBeGreaterThan(0)
   })
 
@@ -54,16 +54,16 @@ describe('insertion markers are only computed for the rendering that draws them'
     seedRegion(display)
     // auto-zoom off pins the identity plot on at this zoom
     display.setRowIdentityAutoZoom(false)
-    display.setRowIdentityMode('heatmap')
-    expect(display.activeRowRendering).toBe('heatmap')
+    display.setRowRendering('identity')
+    expect(display.activeRowRendering).toBe('identity')
     expect(display.visibleInsertions).toEqual([])
   })
 
   it('emits none while color-by-source-chromosome owns the rows', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
-    display.setColorByChromosome(true)
-    expect(display.activeRowRendering).toBe('sourceChrom')
+    display.setRowRendering('chromosome')
+    expect(display.activeRowRendering).toBe('chromosome')
     expect(display.visibleInsertions).toEqual([])
   })
 
@@ -91,7 +91,7 @@ describe('insertion markers are only computed for the rendering that draws them'
     display.view.zoomTo(0.05)
     display.view.centerAt(104, 'ctgA')
     expect(display.visibleDeletions.map(d => d.length)).toEqual([4])
-    display.setColorByChromosome(true)
+    display.setRowRendering('chromosome')
     expect(display.visibleDeletions).toEqual([])
   })
 })
@@ -110,7 +110,7 @@ describe('the hover names an insertion only where its marker draws', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
     display.setRowIdentityAutoZoom(false)
-    display.setRowIdentityMode('heatmap')
+    display.setRowRendering('identity')
     expect(atAnchor(display)).toBe('cell')
   })
 })

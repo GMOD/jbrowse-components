@@ -72,7 +72,6 @@ interface MafMenuSelf
   showLegend: boolean
   setShowLegend: (arg: boolean) => void
   showAllLetters: boolean
-  mismatchRendering: boolean
   showAsUpperCase: boolean
   showTree: boolean
   showRowLabels: boolean
@@ -94,8 +93,7 @@ interface MafMenuSelf
   showAnnotations: boolean
   showInversions: boolean
   annotationAdapterConfig: Record<string, unknown> | undefined
-  // The three slots behind "Row coloring" are read and written through this
-  // pair, not individually — that is what keeps exactly one of them on.
+  // what the Row coloring radio ticks, and the pick it writes (color and y)
   selectedRowRendering: RowRendering
   setRowRendering: (m: RowRendering) => void
   rowIdentityAutoZoom: boolean
@@ -111,7 +109,6 @@ interface MafMenuSelf
   setFitToHeight: () => void
   setRowProportion: (n: number) => void
   setShowAllLetters: (f: boolean) => void
-  setMismatchRendering: (f: boolean) => void
   setShowAsUpperCase: (f: boolean) => void
   setShowTree: (f: boolean) => void
   setShowBranchLength: (f: boolean) => void
@@ -156,27 +153,10 @@ function frameMenuItems(self: MafMenuSelf): MenuItem[] {
 }
 
 /**
- * The one thing the per-sample rows are colored by.
- *
- * These are alternatives — `activeRowRendering` paints exactly one and resolves
- * a clash by precedence — but they used to be three separate controls sitting
- * among the visibility toggles: a "Color by source chromosome" checkbox, a
- * "Codon view" checkbox, and a "Per-row identity" radio. Nothing said they
- * competed, so checking one while another was on left a setting that was on,
- * persisted, and painting nothing. One radio, in the shape wiggle's "Plot type"
- * already uses for the same problem, makes the exclusivity the menu's rather
- * than something the user has to know.
- *
- * The toggles after the radios qualify them: `Show bases when zoomed in` the
- * two identity plots, and the three letter toggles how the bases are drawn.
- *
- * The codon option is the one whose tick can sit on a rendering that is not
- * painting: codons only exist at base level and not at all on the summary tier,
- * and `activeRowRendering` falls back to the bases at both without moving the
- * tick (deliberately — a radio that re-picks itself as you zoom reads as the
- * menu changing the setting behind your back). The two identity options have
- * carried an explanation of their own swap since they got one; this is the same
- * sentence for the option that never had it.
+ * What the rows are coloured by, as one radio over `color` and `y`. The
+ * codon and identity options can tick a rendering that yields at the current
+ * zoom; the tick stays on the setting, and the hint and the toggle below say
+ * why the rows show bases instead.
  */
 function rowRenderingMenuItem(self: MafMenuSelf): MenuItem {
   const [codonValue, codonLabel] = CODON_ROW_RENDERING
@@ -220,11 +200,6 @@ function rowRenderingMenuItem(self: MafMenuSelf): MenuItem {
         'Show letters at all positions',
         self.showAllLetters,
         self.setShowAllLetters,
-      ),
-      toggleItem(
-        'Show mismatches colored by base',
-        self.mismatchRendering,
-        self.setMismatchRendering,
       ),
       toggleItem(
         'Show letters as uppercase',

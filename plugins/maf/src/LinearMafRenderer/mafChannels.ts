@@ -27,8 +27,8 @@ export const EMPTY_MAF_CELLS: SpanChannels = {
 export interface BuildChannelsArgs {
   blocks: MafBlock[]
   palette: MafColorPalette
-  showAllLetters: boolean
-  mismatchRendering: boolean
+  /** a matching base paints its own colour rather than the match colour */
+  colorMatches: boolean
   /**
    * Genomic bp per emitted cell. `1` encodes every base; larger values decimate
    * to one sample per window. Comes from `encodeBinBp` on the display, which
@@ -78,13 +78,12 @@ function maxInstances(blocks: MafBlock[], binBp: number) {
  * blank.
  */
 export function buildMafChannels(args: BuildChannelsArgs): SpanChannels {
-  const { blocks, palette, showAllLetters, mismatchRendering, binBp } = args
+  const { blocks, palette, colorMatches, binBp } = args
   // Pack the palette once: per-cell color resolution then reads packed ABGR
   // ints directly with no CSS-string allocation or Map lookups.
   const cfg = packMafCellColorConfig({
     ...palette,
-    showAllLetters,
-    mismatchRendering,
+    colorMatches,
   })
   const cap = maxInstances(blocks, binBp)
   const x = new Uint32Array(cap)

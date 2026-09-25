@@ -29,7 +29,6 @@ export const DEFAULTS = {
   maxAutoFitHeight: 600,
   rowProportion: 0.8,
   showAllLetters: false,
-  mismatchRendering: true,
   showAsUpperCase: true,
   showTree: true,
   showRowLabels: true,
@@ -42,14 +41,8 @@ export const DEFAULTS = {
   // Conservation band resolution: per-base percent identity ('base') or
   // per-codon amino-acid identity ('codon', needs an annotationAdapter).
   conservationMode: 'base',
-  rowIdentityMode: 'none',
   rowIdentityAutoZoom: true,
-  // CDS-frame strip is an opt-in expert overlay (frame-number coloring is
-  // noisy), so leave it off even when an annotationAdapter is configured. Codon
-  // view (showTranslation) is likewise opt-in and no longer requires this on.
   showAnnotations: false,
-  showTranslation: false,
-  colorByChromosome: false,
   showInversions: false,
   // On, because that is what the track has always drawn. Under the default
   // mismatch coloring the row is a solid match-colored bar and UCSC omits it,

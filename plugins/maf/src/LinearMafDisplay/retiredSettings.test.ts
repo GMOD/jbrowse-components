@@ -32,6 +32,19 @@ describe('the retired domain slot on a MAF display config', () => {
   })
 })
 
+describe('the retired row-coloring slots on a MAF display config', () => {
+  it.each([
+    ['showTranslation', true, /`showTranslation` is `color: "codon"`/],
+    ['colorByChromosome', true, /`colorByChromosome` is `color: "chromosome"`/],
+    ['rowIdentityMode', 'xyplot', /`y: "identity"` for the X-Y plot/],
+    ['mismatchRendering', false, /`color: "base"`/],
+  ])('%s fails the load naming its replacement', (key, value, message) => {
+    expect(() => configSchema.create({ ...base, [key]: value })).toThrow(
+      message,
+    )
+  })
+})
+
 describe('the retired arrangement props on a MAF display snapshot', () => {
   it.each(['layout', 'clusterTree', 'clusterProvenance', 'subtreeFilter'])(
     '%s fails the load naming rows',

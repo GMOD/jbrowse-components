@@ -6902,6 +6902,45 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "MafColor": {
+      "title": "MafColor",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "enum": [
+            "mismatch",
+            "base",
+            "identity",
+            "chromosome",
+            "codon"
+          ],
+          "default": "mismatch",
+          "type": "string"
+        },
+        {
+          "title": "MafColor",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "what colours a cell: mismatch, base, identity, chromosome or codon.",
+              "enum": [
+                "mismatch",
+                "base",
+                "identity",
+                "chromosome",
+                "codon"
+              ],
+              "default": "mismatch"
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "LinearMafDisplaySlots": {
       "type": "object",
       "properties": {
@@ -6935,14 +6974,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": 0.8
         },
         "showAllLetters": {
-          "description": "draw every base letter instead of only mismatches.",
+          "description": "draw every base's letter, not only the mismatches'.",
           "type": "boolean",
           "default": false
         },
-        "mismatchRendering": {
-          "description": "color bases by mismatch to the reference.",
-          "type": "boolean",
-          "default": true
+        "color": {
+          "$ref": "#/$defs/MafColor"
+        },
+        "y": {
+          "description": "what a row's bar height carries: identity, or unset for none.",
+          "const": "identity"
         },
         "showAsUpperCase": {
           "description": "uppercase all base letters.",
@@ -7013,32 +7054,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ],
           "default": "base"
         },
-        "rowIdentityMode": {
-          "description": "per-row identity rendering: none, heatmap, or xyplot.",
-          "enum": [
-            "none",
-            "heatmap",
-            "xyplot"
-          ],
-          "default": "none"
-        },
         "rowIdentityAutoZoom": {
-          "description": "show the base/SNP coloring instead of the per-row identity plot once zoomed in to base level (UCSC wigMaf); false pins the plot on at every zoom.",
+          "description": "show the bases instead of the identity plot once zoomed in to base level (UCSC wigMaf); false draws identity at every zoom.",
           "type": "boolean",
           "default": true
         },
         "showAnnotations": {
           "description": "show the per-species CDS reading-frame overlay.",
-          "type": "boolean",
-          "default": false
-        },
-        "showTranslation": {
-          "description": "draw translated amino acids in place of nucleotides.",
-          "type": "boolean",
-          "default": false
-        },
-        "colorByChromosome": {
-          "description": "color alignment blocks by source chromosome.",
           "type": "boolean",
           "default": false
         },
@@ -11130,8 +11152,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showAllLetters": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/showAllLetters"
             },
-            "mismatchRendering": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/mismatchRendering"
+            "color": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/color"
+            },
+            "y": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/y"
             },
             "showAsUpperCase": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/showAsUpperCase"
@@ -11175,20 +11200,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "conservationMode": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/conservationMode"
             },
-            "rowIdentityMode": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowIdentityMode"
-            },
             "rowIdentityAutoZoom": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowIdentityAutoZoom"
             },
             "showAnnotations": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/showAnnotations"
-            },
-            "showTranslation": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showTranslation"
-            },
-            "colorByChromosome": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/colorByChromosome"
             },
             "showReferenceRow": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/showReferenceRow"

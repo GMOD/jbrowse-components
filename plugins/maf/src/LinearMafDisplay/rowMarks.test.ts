@@ -124,7 +124,7 @@ describe('color by source chromosome is a row mark', () => {
   it('encodes one span per aligned row per block, and no cells', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
-    display.setRowRendering('sourceChrom')
+    display.setRowRendering('chromosome')
     const payload = display.encodedUpload.get(0)!
     expect(payload.cells.count).toBe(0)
     expect(payload.sourceChrom).toMatchObject({ count: 4 })
@@ -148,7 +148,7 @@ describe('color by source chromosome is a row mark', () => {
       ],
     })
     seedRegion(display)
-    display.setRowRendering('sourceChrom')
+    display.setRowRendering('chromosome')
     const dispose = observed(display)
     const before = display.encodedUpload.get(0)!.sourceChrom
     view.horizontalScroll(500)

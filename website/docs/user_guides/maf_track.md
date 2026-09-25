@@ -63,9 +63,16 @@ _which_ genomes diverge in a region. The rows are colored one way at a time:
 
 - **Bases (SNPs vs reference)**, the default, is the per-base coloring described
   above.
+- **Bases (every base colored)** colors matching bases by base too, so the whole
+  alignment reads as sequence.
 - **Identity heatmap** shades each row on a red→grey→blue ramp (red divergent,
   blue conserved).
 - **Identity X-Y plot** draws the same signal as a per-species wiggle.
+
+In a display config each option is a value of `color` (`mismatch`, `base`,
+`identity`, and the `chromosome` and `codon` options below) except the X-Y plot,
+which is `y: "identity"`, identity on each row's bar height. The two combine:
+`color: "identity", y: "identity"` shades the bars on the heatmap's ramp.
 
 The heatmap and the X-Y plot draw only while you are zoomed out past base level,
 where individual bases are no longer legible, and zooming in swaps them back for

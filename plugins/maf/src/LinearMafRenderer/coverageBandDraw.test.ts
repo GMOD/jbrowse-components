@@ -62,13 +62,10 @@ function state(coverage: CoverageBandState): MafGPURenderState {
     rowHeight: 10,
     rowProportion: 1,
     scrollTop: 0,
-    showAllLetters: false,
-    mismatchRendering: false,
     palette: {
       colorForBase: { a: 'green', c: 'blue', g: 'orange', t: 'red', n: 'grey' },
       matchColor: 'lightgrey',
       gapColor: 'white',
-      mismatchOffColor: 'grey',
       unknownBaseColor: 'black',
       insertionColor: 'purple',
       bridgeLineColor: 'grey',

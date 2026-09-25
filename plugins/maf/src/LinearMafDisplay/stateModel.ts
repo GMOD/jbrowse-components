@@ -100,7 +100,7 @@ import { openInsertionWidget } from './openInsertionWidget.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
 import { refuseRetiredState } from './retiredSettings.ts'
-import { isRowIdentityMode } from './rowIdentityModes.ts'
+import { paintsBases, rowRenderingSettings } from './rowRenderings.ts'
 import {
   ZOOM_IN_FOR_BAND,
   buildMafTrackMenuItems,
@@ -109,7 +109,6 @@ import {
 
 import type {
   MafGPURenderState,
-  MafGpuProps,
   MafRegionData,
   MafRenderingBackend,
   MafUploadPayload,
@@ -129,6 +128,7 @@ import type {
   LocatedCodon,
 } from './components/computeVisibleCodons.ts'
 import type { StrandConsensus } from './components/computeVisibleInversions.ts'
+import type { IdentityPlot } from './components/drawRowIdentity.ts'
 import type { HoverBp } from './components/findRowHover.ts'
 import type { RowSpan } from './components/findRowSpan.ts'
 import type { MafRowGeometryParams } from './components/visibleRegionGeometry.ts'
@@ -138,11 +138,7 @@ import type {
 } from './configSchema.ts'
 import type { ConservationMode } from './conservationModes.ts'
 import type { MafRowsEncodeProps, MafRowsSource } from './encodeMafRows.ts'
-import type {
-  RowIdentityMode,
-  RowIdentityModeWithOff,
-} from './rowIdentityModes.ts'
-import type { RowRendering } from './rowRenderings.ts'
+import type { MafColorField, MafYField, RowRendering } from './rowRenderings.ts'
 import type { MafHover } from './util.ts'
 import type { CoverageBandState } from '@jbrowse/alignments-core'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
@@ -416,12 +412,6 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get mismatchRendering(): boolean {
-          return getConf(self, 'mismatchRendering')
-        },
-        /**
-         * #getter
-         */
         get showAsUpperCase(): boolean {
           return getConf(self, 'showAsUpperCase')
         },
@@ -464,8 +454,14 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get rowIdentityMode(): RowIdentityModeWithOff {
-          return getConf(self, 'rowIdentityMode')
+        get colorField(): MafColorField {
+          return getConf(self, ['color', 'field'])
+        },
+        /**
+         * #getter
+         */
+        get yField(): MafYField | undefined {
+          return getConf(self, 'y')
         },
         /**
          * #getter
@@ -478,18 +474,6 @@ export default function stateModelFactory(
          */
         get showAnnotations(): boolean {
           return getConf(self, 'showAnnotations')
-        },
-        /**
-         * #getter
-         */
-        get showTranslation(): boolean {
-          return getConf(self, 'showTranslation')
-        },
-        /**
-         * #getter
-         */
-        get colorByChromosome(): boolean {
-          return getConf(self, 'colorByChromosome')
         },
         /**
          * #getter
@@ -516,12 +500,6 @@ export default function stateModelFactory(
          */
         setShowAllLetters(f: boolean) {
           setConf(self, 'showAllLetters', f)
-        },
-        /**
-         * #action
-         */
-        setMismatchRendering(f: boolean) {
-          setConf(self, 'mismatchRendering', f)
         },
         /**
          * #action
@@ -618,8 +596,14 @@ export default function stateModelFactory(
         /**
          * #action
          */
-        setRowIdentityMode(arg: RowIdentityModeWithOff) {
-          setConf(self, 'rowIdentityMode', arg)
+        setColorField(field: MafColorField) {
+          setConf(self, ['color', 'field'], field)
+        },
+        /**
+         * #action
+         */
+        setYField(field: MafYField | undefined) {
+          setConf(self, 'y', field)
         },
         /**
          * #action
@@ -632,18 +616,6 @@ export default function stateModelFactory(
          */
         setShowAnnotations(arg: boolean) {
           setConf(self, 'showAnnotations', arg)
-        },
-        /**
-         * #action
-         */
-        setShowTranslation(arg: boolean) {
-          setConf(self, 'showTranslation', arg)
-        },
-        /**
-         * #action
-         */
-        setColorByChromosome(arg: boolean) {
-          setConf(self, 'colorByChromosome', arg)
         },
         /**
          * #action
@@ -744,7 +716,7 @@ export default function stateModelFactory(
         get framesInUse(): boolean {
           return (
             (self.showAnnotations ||
-              self.showTranslation ||
+              self.colorField === 'codon' ||
               (self.showConservation && self.conservationMode === 'codon')) &&
             !!self.annotationAdapterConfig
           )
@@ -1599,7 +1571,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * Theme-derived color palette (per-base colors + match/gap/mismatch/
-         * unknown/insertion), read by `gpuProps()` and `renderState`. Derived
+         * unknown/insertion), read by `rowsEncodeProps()` and `renderState`. Derived
          * from the session theme so it's always available — including headless
          * SVG export and RPC, where no component mounts to seed it. Theme changes
          * trigger a main-thread re-encode but never an RPC refetch.
@@ -1639,22 +1611,6 @@ export default function stateModelFactory(
             rowProportion: self.rowProportion,
             scrollTop: self.scrollTop,
             viewportHeight: self.rowsHeight,
-          }
-        },
-        /**
-         * #method
-         * Inputs to the main-thread GPU instance encoder. Changes here
-         * re-encode in the per-region encode autorun — no RPC
-         * roundtrip. Intentionally excludes `showAsUpperCase` (label-only)
-         * and view-shape props (rowHeight, rowProportion — driven by shader
-         * uniforms).
-         */
-        gpuProps(): MafGpuProps {
-          return {
-            palette: self.colorPalette,
-            showAllLetters: self.showAllLetters,
-            mismatchRendering: self.mismatchRendering,
-            binBp: self.encodeBinBp,
           }
         },
         /**
@@ -1793,8 +1749,6 @@ export default function stateModelFactory(
             rowHeight: self.effectiveRowHeight,
             rowProportion: self.rowProportion,
             scrollTop: self.scrollTop,
-            showAllLetters: self.showAllLetters,
-            mismatchRendering: self.mismatchRendering,
             palette: self.colorPalette,
           }
         },
@@ -2045,133 +1999,100 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The row coloring the *user picked*, as one value across the three
-         * slots that store it. `activeRowRendering` below is what is actually
-         * painting; this is the setting behind it, and the two differ wherever
-         * zoom or the summary path overrides the choice.
-         *
-         * Zoom-independent on purpose. The radio it drives would otherwise
-         * move its own tick as the user zoomed — the identity plot yields to
-         * the bases at base level, codon view only exists there — which reads
-         * as the menu changing the setting behind their back.
-         *
-         * This is where precedence between the three slots is decided, once:
-         * `activeRowRendering` starts from the answer rather than re-deriving
-         * it, so the two cannot disagree about which setting won.
+         * The Row coloring radio's tick: the X-Y plot where `y` is identity,
+         * else the colour field, codon falling back to the bases where no
+         * frames file can define a reading frame. Zoom-independent, so the
+         * tick never moves under the user as they zoom.
          */
         get selectedRowRendering(): RowRendering {
-          return self.showTranslation && !!self.annotationAdapterConfig
-            ? 'codon'
-            : self.colorByChromosome
-              ? 'sourceChrom'
-              : self.rowIdentityMode !== 'none'
-                ? self.rowIdentityMode
-                : 'bases'
+          return self.yField === 'identity'
+            ? 'xyplot'
+            : self.colorField === 'codon' && !self.annotationAdapterConfig
+              ? 'mismatch'
+              : self.colorField
         },
-      }))
-      .views(self => ({
         /**
          * #getter
-         * Single source of truth for what the per-sample rows area draws right now:
-         * `bases` (the GPU SNP/base coloring), `codon` (per-codon change coloring
-         * from `mafFrames`), `sourceChrom` (color-by-source-chromosome SV mode), or
-         * a per-row identity style (`heatmap` / `xyplot`). The GPU canvas, the
-         * identity/chromosome canvases, the codon overlay, and SVG export all
-         * branch on this one getter so they can't disagree about what's on screen.
-         *
-         * `selectedRowRendering` is the setting; this applies the two things that
-         * can override it, and falls back to the bases — the rendering that needs
-         * nothing beyond the alignment — whenever it does:
-         *
-         * - the cheap summary path carries neither per-row bases nor per-row
-         *   source chromosomes, so no alternative can draw from it;
-         * - zoom, in the two directions UCSC `wigMaf` uses. Codons only exist at
-         *   base level, and with `rowIdentityAutoZoom` (the default) the identity
-         *   plot yields to the bases there, where the letters say more than a
-         *   per-pixel mean of them. Auto off pins the plot on at every zoom.
-         *
-         * Deriving from the selection rather than restating its precedence is
-         * also what keeps a config that sets two of the three slots — the state
-         * the old menu of independent checkboxes could reach, and a hand-written
-         * config still can — painting the one the menu ticks. Re-deriving let a
-         * lower-precedence slot take over at the zooms where the winner couldn't
-         * draw, so the menu said "Codon changes" while the rows were colored by
-         * source chromosome.
+         * Identity yields to the bases at base level while
+         * `rowIdentityAutoZoom` is on, where the letters say more than a mean.
          */
-        get activeRowRendering():
-          | 'bases'
-          | 'codon'
-          | 'sourceChrom'
-          | RowIdentityMode {
-          if (self.coarseTierActive) {
-            return 'bases'
-          }
-          const selected = self.selectedRowRendering
-          if (selected === 'codon') {
-            return self.zoomedToBaseLevel ? 'codon' : 'bases'
-          }
-          if (isRowIdentityMode(selected)) {
-            return self.rowIdentityAutoZoom && self.zoomedToBaseLevel
-              ? 'bases'
-              : selected
-          }
-          return selected
+        get identityYields() {
+          return self.rowIdentityAutoZoom && self.zoomedToBaseLevel
         },
       }))
       .views(self => ({
         /**
          * #getter
-         * The GPU base canvas owns the rows: per-base SNP cells are what's
-         * painted, so the per-base letters draw, insertion markers are live
-         * (drawn, hoverable, clickable), and the encode autorun has a buffer
-         * worth building.
-         *
-         * Named once here because it is the question six consumers ask —
-         * the encode and render callbacks, the insertion overlay and its cursor,
-         * the insertion click, and SVG export — and a mode added to
-         * `activeRowRendering` has to reach all six or the markers keep drawing
-         * over a rendering that isn't theirs.
-         *
-         * **Not simply `activeRowRendering === 'bases'`.** That getter answers
-         * which of the *selectable* renderings wins, and summary mode resolves
-         * to `bases` there because none of the alternatives can draw from
-         * summary rows. But the cells can't draw from them either: the rows
-         * the user sees are the summary bars. So the two questions genuinely
-         * differ here, and answering this one with that one pinned the display
-         * in `loading` forever — the render callback took the paint-from-
-         * `rpcDataMap` branch, `renderBlocks` returned `painted: false` over an
-         * empty map every frame, and `canvasDrawn` never flipped, so
-         * `computeActivityPhase`'s `rendersCanvas && !canvasDrawn` stayed true
-         * under a track that was fully loaded and visibly drawn.
+         * What colours the cells now: the colour field, or the mismatches
+         * where it cannot draw. The summary tier carries no bases, codons only
+         * exist at base level with a frames file, and identity yields at base
+         * level (`identityYields`).
+         */
+        get rowsColor(): MafColorField {
+          const field = self.colorField
+          return self.coarseTierActive
+            ? 'mismatch'
+            : field === 'codon'
+              ? self.annotationAdapterConfig && self.zoomedToBaseLevel
+                ? 'codon'
+                : 'mismatch'
+              : field === 'identity' && self.identityYields
+                ? 'mismatch'
+                : field
+        },
+        /**
+         * #getter
+         * What the row bars' height carries now, or undefined where each row
+         * is one band of cells.
+         */
+        get rowsY(): MafYField | undefined {
+          return self.coarseTierActive || self.identityYields
+            ? undefined
+            : self.yField
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * What the rows paint now: the X-Y plot while `rowsY` is set, else
+         * `rowsColor`. Every painter, the key and the export branch on it.
+         */
+        get activeRowRendering(): RowRendering {
+          return self.rowsY ? 'xyplot' : self.rowsColor
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The cells are drawn base by base, so the letters, the insertion
+         * markers and the deletion counts draw over them. Not on the summary
+         * tier, whose rows are the summary bars.
          */
         get basesRenderingActive() {
-          return self.activeRowRendering === 'bases' && !self.coarseTierActive
+          return (
+            !self.coarseTierActive && !self.rowsY && paintsBases(self.rowsColor)
+          )
         },
         /**
          * #getter
-         * Which identity plot the sibling Canvas2D rows layer paints, or
-         * undefined when it paints nothing (`bases` and `sourceChrom` are the
-         * rendering backend's marks, `codon` is its own overlay). The on-screen
-         * canvas and SVG export both branch on this, so the two cannot diverge
-         * in how they resolve the rendering.
+         * Which identity plot the Canvas2D rows layer paints, or undefined.
          */
-        get rowsCanvas2dMode(): RowIdentityMode | undefined {
+        get rowsCanvas2dMode(): IdentityPlot | undefined {
           const rendering = self.activeRowRendering
-          return isRowIdentityMode(rendering) ? rendering : undefined
+          return rendering === 'xyplot'
+            ? 'xyplot'
+            : rendering === 'identity'
+              ? 'heatmap'
+              : undefined
         },
       }))
       .views(self => ({
         /**
          * #method
-         * Resolve a hover hit on `rowIndex` at the cursor's genomic position
-         * (absolute uint32, per worker-output convention): an aligned base
-         * (`cell`) or a bridged/empty region (`empty`), each tagged with the
-         * sample label. Returns undefined when no fetched block covers the bp,
-         * the row is out of range, or the cell is a gap.
-         *
-         * `bp` carries both readings of the cursor (see `HoverBp`) because the
-         * cell and the interbase insertion marker are selected by different
-         * ones, and they differ on a reversed region.
+         * The hover on `rowIndex` at the cursor's genomic position: an aligned
+         * base, an insertion where the markers draw, a deletion or a bridged
+         * region, tagged with the sample label. `bp` carries both readings of
+         * the cursor (`HoverBp`), which differ on a reversed region.
          */
         rowHoverInfo(
           displayedRegionIndex: number,
@@ -2207,38 +2128,20 @@ export default function stateModelFactory(
       .actions(self => ({
         /**
          * #action
-         * Pick the row coloring, writing all three slots so exactly one is on.
-         *
-         * The slots are independent booleans and `activeRowRendering` resolves
-         * a clash by precedence, so a slot left on under a higher-precedence one
-         * persists in the session and paints nothing. Clearing the other two
-         * slots here keeps the menu's checkmark on the rendering that is drawn.
-         *
-         * An older session or a hand-written config can still set two of them.
-         * No migration runs: `selectedRowRendering` reports the one that takes
-         * precedence, and the next pick clears the rest.
+         * Write a Row coloring pick: its colour field and bar height.
          */
         setRowRendering(rendering: RowRendering) {
-          // Through the per-slot actions, not `setConf` again: they are the
-          // persisted form and stay individually settable (a saved session
-          // names them one by one), so this is the exclusivity rule on top of
-          // them rather than a second place that knows the slot names.
-          self.setShowTranslation(rendering === 'codon')
-          self.setColorByChromosome(rendering === 'sourceChrom')
-          self.setRowIdentityMode(
-            isRowIdentityMode(rendering) ? rendering : 'none',
-          )
+          const { color, y } = rowRenderingSettings(rendering)
+          self.setColorField(color)
+          self.setYField(y)
         },
       }))
       .views(self => ({
         /**
          * #getter
-         * Positioned per-base SNP/sequence letters. Suppressed in any non-base
-         * rendering (the identity plot and codon view both replace the letters).
+         * Positioned per-base letters, over the bases only.
          */
         get visibleLabels() {
-          // Suppressed in any non-base rendering (identity plot / codon view both
-          // replace the per-base letters).
           return self.rowsVisible && !self.resizing && self.basesRenderingActive
             ? computeVisibleLabels({
                 view: self.host,
@@ -2246,15 +2149,10 @@ export default function stateModelFactory(
                 ...self.rowGeometry(),
                 showAllLetters: self.showAllLetters,
                 showAsUpperCase: self.showAsUpperCase,
+                colorMatches: self.rowsColor === 'base',
               })
             : []
         },
-        /**
-         * #getter
-         * Positioned insertion markers, drawn only while the bases paint the
-         * rows. The hover and the right-click menu name an insertion under the
-         * same gate.
-         */
         /**
          * #getter
          * Positioned deletion runs, labelled with their length where it fits.
@@ -2269,6 +2167,12 @@ export default function stateModelFactory(
               })
             : []
         },
+        /**
+         * #getter
+         * Positioned insertion markers, drawn only while the bases paint the
+         * rows. The hover and the right-click menu name an insertion under the
+         * same gate.
+         */
         get visibleInsertions() {
           return self.rowsVisible && self.basesRenderingActive
             ? computeVisibleInsertions({
@@ -2403,7 +2307,7 @@ export default function stateModelFactory(
          * pays nothing.
          */
         get sourceChromRanks(): ReturnType<typeof perRowChromRanks> {
-          return self.activeRowRendering === 'sourceChrom'
+          return self.activeRowRendering === 'chromosome'
             ? perRowChromRanks(self.rpcDataMap.values())
             : { ranks: new Map<number, Map<string, number>>(), maxRank: 0 }
         },
@@ -2505,7 +2409,7 @@ export default function stateModelFactory(
                     getCodonLegendItems(palette),
                   ),
                 ]
-              : rendering === 'sourceChrom'
+              : rendering === 'chromosome'
                 ? [
                     // Colored by each row's per-row chromosome RANK, not by
                     // chromosome name, so the key is this short fixed scheme
@@ -2516,9 +2420,15 @@ export default function stateModelFactory(
                       sourceChromLegendItems(self.sourceChromRanks.maxRank),
                     ),
                   ]
-                : isRowIdentityMode(rendering)
-                  ? [identityColorScale(rendering)]
-                  : []
+                : rendering === 'identity'
+                  ? [identityColorScale('heatmap')]
+                  : rendering === 'xyplot'
+                    ? [
+                        identityColorScale(
+                          self.rowsColor === 'identity' ? 'heatmap' : 'xyplot',
+                        ),
+                      ]
+                    : []
           // The CDS strip draws *over* whichever rendering won, so it is its
           // own section rather than a branch of the dispatch, and last, in
           // paint order.
@@ -2537,9 +2447,9 @@ export default function stateModelFactory(
          * #getter
          * Whether this display HAS a color key, as opposed to whether one is
          * drawn right now — which is the question "Show legend" is offered on.
-         * `bases` paints the reference's own base colors and keys nothing; every
-         * other rendering keys what it paints, and the CDS strip keys itself
-         * over whichever won.
+         * The bases key nothing, since they paint the theme's base colours;
+         * every other rendering keys what it paints, and the CDS strip keys
+         * itself over whichever won.
          *
          * Overrides `LegendMixin`'s, which reads the scales: those decline on
          * an uninitialized view and on a rank the data has not reported yet, so
@@ -2548,7 +2458,8 @@ export default function stateModelFactory(
          */
         get hasLegendKey(): boolean {
           return (
-            self.activeRowRendering !== 'bases' || self.visibleFrames.length > 0
+            !paintsBases(self.activeRowRendering) ||
+            self.visibleFrames.length > 0
           )
         },
         /**
@@ -2609,9 +2520,13 @@ export default function stateModelFactory(
         rowsEncodeProps(): MafRowsEncodeProps {
           return {
             basesActive: self.basesRenderingActive,
-            gpu: self.gpuProps(),
+            gpu: {
+              palette: self.colorPalette,
+              colorMatches: self.rowsColor === 'base',
+              binBp: self.encodeBinBp,
+            },
             sourceChromRanks:
-              self.activeRowRendering === 'sourceChrom'
+              self.activeRowRendering === 'chromosome'
                 ? self.sourceChromRanks.ranks
                 : undefined,
             rowIndexBySrc: self.rowIndexBySrc,
@@ -2646,7 +2561,7 @@ export default function stateModelFactory(
            * Every loaded region's upload payload — the rows band's `span`
            * channels beside the coverage band's buffers — keyed by
            * displayedRegionIndex. Held here rather than in the upload's setup
-           * thunk so theme / showAllLetters / mismatchRendering changes
+           * thunk so a theme or colour change
            * re-encode without an RPC roundtrip and the memo outlives a
            * context-loss recovery.
            */

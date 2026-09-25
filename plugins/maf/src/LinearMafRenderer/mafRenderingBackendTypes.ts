@@ -33,8 +33,6 @@ export interface MafGPURenderState {
   rowProportion: number
   /** rows-area scroll offset; every layer paints row i at `rowHeight*i - this` */
   scrollTop: number
-  showAllLetters: boolean
-  mismatchRendering: boolean
   /**
    * Full theme-derived color set (base palette + match/gap/mismatch/unknown/
    * insertion). The row marks resolve their colours at encode time, so what
@@ -259,8 +257,8 @@ export interface MafRegionData {
 // round-trip through the worker.
 export interface MafGpuProps {
   palette: MafColorPalette
-  showAllLetters: boolean
-  mismatchRendering: boolean
+  /** a matching base paints its own colour rather than the match colour */
+  colorMatches: boolean
   /**
    * Genomic bp per emitted cell — `1` for the exact per-base encode, a larger
    * power of two once cells go sub-pixel (see `encodeBinBp`). Quantized so

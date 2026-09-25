@@ -13,14 +13,12 @@ interface Props {
   labels: VisibleLabel[]
   width: number
   height: number
-  mismatchRendering: boolean
 }
 
 const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
   labels,
   width,
   height,
-  mismatchRendering,
 }: Props) {
   const palette = usePalette()
   const contrastForBase = useMemo(() => getContrastBaseMap(palette), [palette])
@@ -33,7 +31,7 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
       width={width}
       height={height}
       draw={ctx => {
-        drawMafLabels(ctx, labels, contrastForBase, mismatchRendering)
+        drawMafLabels(ctx, labels, contrastForBase, palette.text.primary)
       }}
     />
   )

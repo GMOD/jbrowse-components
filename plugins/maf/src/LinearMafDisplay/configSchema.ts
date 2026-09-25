@@ -8,8 +8,9 @@ import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebar
 
 import { CONSERVATION_MODE_VALUES } from './conservationModes.ts'
 import { DEFAULTS } from './displayDefaults.ts'
+import { mafColorConfigSchema } from './mafColorConfigSchema.ts'
 import { refuseRetiredConfig } from './retiredSettings.ts'
-import { ROW_IDENTITY_MODE_VALUES } from './rowIdentityModes.ts'
+import { MAF_Y_FIELDS } from './rowRenderings.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -116,15 +117,29 @@ export default function configSchemaF() {
       showAllLetters: {
         type: 'boolean',
         defaultValue: DEFAULTS.showAllLetters,
-        description: 'draw every base letter instead of only mismatches',
+        description: "draw every base's letter, not only the mismatches'",
       },
       /**
-       * #slot
+       * #slot color
+       * What colours the aligned cells; see [MafColor](../mafcolor).
+       *
+       * #example
+       * ```js
+       * { color: 'identity' }
+       * ```
        */
-      mismatchRendering: {
-        type: 'boolean',
-        defaultValue: DEFAULTS.mismatchRendering,
-        description: 'color bases by mismatch to the reference',
+      color: mafColorConfigSchema,
+      /**
+       * #slot
+       * Unset, each row is one band of cells. `identity` draws each row as a
+       * bar chart of its identity to the reference, the bars painted by
+       * `color` where it is `identity` and in one colour otherwise.
+       */
+      y: {
+        type: 'maybeStringEnum',
+        model: types.enumeration('MafYField', [...MAF_Y_FIELDS]),
+        description:
+          "what a row's bar height carries: identity, or unset for none",
       },
       /**
        * #slot
@@ -244,25 +259,10 @@ export default function configSchemaF() {
       },
       /**
        * #slot
-       * Per-row identity rendering shown once zoomed out past base level:
-       * `heatmap` shades the row band, `xyplot` draws a per-species identity
-       * wiggle, `none` keeps the base coloring at every zoom.
-       */
-      rowIdentityMode: {
-        type: 'stringEnum',
-        model: types.enumeration('RowIdentityMode', [
-          ...ROW_IDENTITY_MODE_VALUES,
-        ]),
-        defaultValue: DEFAULTS.rowIdentityMode,
-        description: 'per-row identity rendering: none, heatmap, or xyplot',
-      },
-      /**
-       * #slot
-       * When true (the default) the `rowIdentityMode` plot draws only while
-       * zoomed out, and zooming in to base level swaps it back for the base/SNP
-       * coloring — where individual bases are legible, the letters say more than
-       * a per-pixel mean of them. This is UCSC `wigMaf` behavior. When false the
-       * plot is pinned on at every zoom and the bases are never shown.
+       * When true (the default) identity, as `color` or as `y`, draws only
+       * while zoomed out, and zooming in to base level swaps it back for the
+       * bases, where the letters say more than a mean of them. This is UCSC
+       * `wigMaf` behavior. When false identity draws at every zoom.
        *
        * The slot name is the mechanism ("auto by zoom"); what a user picks is
        * which of the two renderings they get zoomed in, which is how the menu
@@ -272,7 +272,7 @@ export default function configSchemaF() {
         type: 'boolean',
         defaultValue: DEFAULTS.rowIdentityAutoZoom,
         description:
-          'show the base/SNP coloring instead of the per-row identity plot once zoomed in to base level (UCSC wigMaf); false pins the plot on at every zoom',
+          'show the bases instead of the identity plot once zoomed in to base level (UCSC wigMaf); false draws identity at every zoom',
       },
       /**
        * #slot
@@ -283,27 +283,6 @@ export default function configSchemaF() {
         type: 'boolean',
         defaultValue: DEFAULTS.showAnnotations,
         description: 'show the per-species CDS reading-frame overlay',
-      },
-      /**
-       * #slot
-       * Translate each species in the reference reading frame and draw the amino
-       * acid on each codon in place of nucleotides (UCSC `wigMaf` "show
-       * translation"). Needs an `annotationAdapter`.
-       */
-      showTranslation: {
-        type: 'boolean',
-        defaultValue: DEFAULTS.showTranslation,
-        description: 'draw translated amino acids in place of nucleotides',
-      },
-      /**
-       * #slot
-       * Color each species' blocks by their source chromosome instead of the
-       * per-base SNP coloring, surfacing translocations/rearrangements.
-       */
-      colorByChromosome: {
-        type: 'boolean',
-        defaultValue: DEFAULTS.colorByChromosome,
-        description: 'color alignment blocks by source chromosome',
       },
       /**
        * #slot

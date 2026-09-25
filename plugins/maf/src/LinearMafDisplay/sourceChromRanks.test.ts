@@ -38,7 +38,7 @@ function loadTwoChromBlocks(display: LinearMafDisplayModel) {
 describe('sourceChromRanks', () => {
   it('ranks a row by aligned bp, longest first', () => {
     const { display } = createMafTestEnvironment().createDisplay()
-    display.setRowRendering('sourceChrom')
+    display.setRowRendering('chromosome')
     loadTwoChromBlocks(display)
 
     const { ranks, maxRank } = display.sourceChromRanks
@@ -59,7 +59,7 @@ describe('sourceChromRanks', () => {
         { assemblyName: 'volvox', start: 0, end: 100_000, refName: 'ctgA' },
       ],
     })
-    display.setRowRendering('sourceChrom')
+    display.setRowRendering('chromosome')
     loadTwoChromBlocks(display)
 
     let latest = display.sourceChromRanks

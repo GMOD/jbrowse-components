@@ -131,10 +131,10 @@ describe('the CDS strip keys itself', () => {
   it('rides alongside the active rendering key rather than replacing it', () => {
     const { display } = framesEnv().createDisplay()
     seed(display, true)
-    display.setRowRendering('heatmap')
+    display.setRowRendering('identity')
     // pins the plot on at this zoom, where it would otherwise yield to the bases
     display.setRowIdentityAutoZoom(false)
-    expect(display.activeRowRendering).toBe('heatmap')
+    expect(display.activeRowRendering).toBe('identity')
 
     expect(display.legendSpec.sections.map(s => s.title)).toEqual([
       'Per-base identity to reference',

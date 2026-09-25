@@ -110,7 +110,7 @@ describe('the color key is dismissible, like every other row display', () => {
 
   function heatmapDisplay() {
     const { display, view } = createMafTestEnvironment().createDisplay()
-    display.setRowRendering('heatmap')
+    display.setRowRendering('identity')
     // the identity plots swap themselves out for the bases at base level
     view.zoomTo(100)
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
