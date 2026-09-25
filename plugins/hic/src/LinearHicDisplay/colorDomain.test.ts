@@ -1,10 +1,18 @@
 import { setConf } from '@jbrowse/core/configuration'
+import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { SCALE_TYPE_LOG } from '@jbrowse/render-core/scoreScale'
 
 import { INSTANCE_STRIDE_WORDS } from './components/shaders/hic.iface.generated.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { HicDataResult } from '../RenderHicDataRPC/types.ts'
+
+function maxLabel(display: {
+  colorScales: Parameters<typeof legendSpecOf>[0]
+}) {
+  return legendSpecOf(display.colorScales).sections[0]?.items[0]?.gradient
+    ?.maxLabel
+}
 
 const DATA: HicDataResult = {
   instances: new Float32Array(INSTANCE_STRIDE_WORDS),
@@ -38,16 +46,14 @@ function loaded() {
 test('an unset top saturates at the percentile, and the key says so', () => {
   const display = loaded()
   expect(display.colorDomain).toEqual([0, 40])
-  const [scale] = display.colorScales
-  expect(scale!.kind === 'ramp' && scale!.format?.(40)).toBe('≥40')
+  expect(maxLabel(display)).toBe('≥40')
 })
 
 test('with the percentile off an unset top is the largest count', () => {
   const display = loaded()
   display.setUseColorPercentile(false)
   expect(display.colorDomain).toEqual([0, 400])
-  const [scale] = display.colorScales
-  expect(scale!.kind === 'ramp' && scale!.format?.(400)).toBe('400')
+  expect(maxLabel(display)).toBe('400')
 })
 
 test('a pinned top holds whatever the loaded counts are', () => {

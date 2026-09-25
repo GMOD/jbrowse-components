@@ -1483,6 +1483,7 @@ export default function baseStateModelFactory(
               title: colorKeyTitle,
               domain: colorRamp.domain,
               stops: stopsFromRampLut(colorRamp.lut, RAMP_KEY_STOPS),
+              extent: self.colorValueExtent,
             },
           ]
         }

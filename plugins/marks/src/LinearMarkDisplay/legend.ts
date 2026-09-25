@@ -119,8 +119,9 @@ function union(current: ScaleTable, next: ScaleTable) {
     case 'ramp':
       // A ramp's open ends are the union of the regions' extremes, which is
       // the same number the shaders read as a uniform, so the key and the
-      // painting cannot disagree across a pan. A pinned end already agrees.
-      if (next.kind === 'ramp' && !fullyPinned(current)) {
+      // painting cannot disagree across a pan. A pinned end already agrees,
+      // and the union still says whether the data runs past it.
+      if (next.kind === 'ramp') {
         current.extent = [
           Math.min(current.extent[0], next.extent[0]),
           Math.max(current.extent[1], next.extent[1]),
@@ -383,6 +384,7 @@ export function markColorScales(
             title,
             domain: scale.domain,
             stops: stopsFromRampLut(scale.lut, RAMP_STOPS),
+            extent: scale.extent,
           },
         ]
     }

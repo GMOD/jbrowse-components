@@ -843,6 +843,7 @@ export function bakedRampScale(
         title: colorFieldOf(colorBy),
         domain: [...scale.domain],
         stops: scale.stops,
+        extent: scale.extent,
       }
     : undefined
 }

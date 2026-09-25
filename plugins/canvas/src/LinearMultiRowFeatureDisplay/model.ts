@@ -675,6 +675,7 @@ export default function stateModelFactory(
                   title: self.colorKeyTitle,
                   domain: colorRamp.domain,
                   stops: stopsFromRampLut(colorRamp.lut, RAMP_KEY_STOPS),
+                  extent: self.colorValueExtent,
                 },
               ]
             : []

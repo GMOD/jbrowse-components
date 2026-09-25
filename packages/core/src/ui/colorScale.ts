@@ -81,6 +81,11 @@ export interface RampScale {
   domain: [number, number]
   stops: RampStop[]
   format?: (value: number) => string
+  /**
+   * The loaded values' extremes. An end of `domain` the data runs past prints
+   * `≤` or `≥`, since the ramp paints every value beyond it in its end colour.
+   */
+  extent?: readonly [number, number]
 }
 
 /**
@@ -94,13 +99,18 @@ export type ColorScale = CategoricalScale | RampScale
 // draw a section's title only beside other sections, and a bar of numbers
 // with nothing saying what they count is not a key.
 function rampItem(
-  { title, domain, stops, format = formatScore }: RampScale,
+  { title, domain, stops, format = formatScore, extent }: RampScale,
   lone: boolean,
 ): LegendItem {
   const [min, max] = domain
+  const [lo, hi] = extent ?? domain
   return {
     label: lone ? (title ?? '') : '',
-    gradient: { stops, minLabel: format(min), maxLabel: format(max) },
+    gradient: {
+      stops,
+      minLabel: `${lo < min ? '≤' : ''}${format(min)}`,
+      maxLabel: `${hi > max ? '≥' : ''}${format(max)}`,
+    },
   }
 }
 

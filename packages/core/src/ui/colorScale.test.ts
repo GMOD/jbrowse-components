@@ -117,6 +117,19 @@ test('beside another section a ramp leaves the naming to its section title', () 
   ])
 })
 
+// A pinned end the loaded values run past paints them all in its end colour,
+// so the key says the end holds more than its number.
+test('an end the data runs past prints as a bound', () => {
+  const gradient = (extent: [number, number]) =>
+    legendSpecOf([{ ...contacts, domain: [0, 10], extent }]).sections[0]!
+      .items[0]!.gradient
+  expect(gradient([0, 10])).toMatchObject({ minLabel: '0', maxLabel: '10' })
+  expect(gradient([-2, 40])).toMatchObject({
+    minLabel: '≤0',
+    maxLabel: '≥10',
+  })
+})
+
 test('a ramp prints its domain through its own format', () => {
   const { sections } = legendSpecOf([
     { ...contacts, domain: [0, 1], format: v => `${v * 100}%` },
