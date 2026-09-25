@@ -117,9 +117,10 @@ whatever the rows are colored by, so it composes with any **Row coloring**.
 per-sample rows from per-base SNP coloring to a per-codon view: every species is
 translated in the reference reading frame, and each codon cell is colored by how
 its amino acid compares to the reference: nonsynonymous changes stand out,
-synonymous (silent) changes get a faint tint, stop codons are flagged, and
-conserved codons stay clean. The residue is drawn on each codon once you zoom in
-far enough to read it.
+synonymous (silent) changes get a faint tint, a stop the reference does not
+share is flagged, and conserved codons, the gene's own stop among them, stay
+clean. The residue is drawn on each codon once you zoom in far enough to read
+it.
 
 <!-- COLOR_TABLE maf START -->
 
@@ -128,7 +129,7 @@ far enough to read it.
 | --- | --- | --- | --- |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#e8930c;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#e8930c"></span> | Nonsynonymous codon | `#e8930c` | MAF codon view: the species' amino acid differs from the reference (nonsynonymous) |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#3a7bd5;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#3a7bd5"></span> | Synonymous codon | `#3a7bd5` | MAF codon view: the codon differs from the reference but the amino acid is unchanged (silent) |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#cc2222;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#cc2222"></span> | Codon stop | `#cc2222` | MAF codon view: a stop codon |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#cc2222;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#cc2222"></span> | Stop gained | `#cc2222` | MAF codon view: a stop the reference codon is not |
 
 <!-- COLOR_TABLE maf END -->
 

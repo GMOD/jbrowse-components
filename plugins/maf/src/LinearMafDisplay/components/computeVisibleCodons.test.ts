@@ -235,12 +235,33 @@ test('classifies each species codon vs the reference', () => {
     'same',
     'nonsyn',
     'syn', // codon 2 — ref K, row2 E, row3 silent
-    'stop',
-    'stop',
-    'stop', // codon 3 (stop)
+    'same',
+    'same',
+    'same', // codon 3, the stop every row shares
   ])
   // cell spans the 3 bases: scale=10, p0=100 → xLeft=0, width=30; center x=15
   expect(markers[0]).toMatchObject({ xLeft: 0, width: 30, x: 15 })
+})
+
+test('a stop is a change only where the reference codes an amino acid', () => {
+  // ref:  ATG AAA TAA  → M K *
+  // row1: ATG TAA TAG  → M * *  (K→*: gained; TAA→TAG: both stops)
+  // row2: ATG AAA CAA  → M K Q  (the reference stop read through)
+  const markers = computeVisibleCodons(
+    locate(
+      new Map([[0, regionData('ATGAAATAA', ['ATGTAATAG', 'ATGAAACAA'])]]),
+      new Map([[0, frames]]),
+    ),
+    GEOM,
+  )
+  expect(markers.map(m => m.change)).toEqual([
+    'same',
+    'same',
+    'stop',
+    'same',
+    'syn',
+    'nonsyn',
+  ])
 })
 
 test('codons with a gap in a row are skipped for that row only', () => {

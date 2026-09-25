@@ -575,7 +575,7 @@ export interface StringColors {
   codonNonsynonymous: string
   /** MAF codon view: the codon differs but the amino acid does not */
   codonSynonymous: string
-  /** MAF codon view: a stop codon */
+  /** MAF codon view: a stop the reference codon is not */
   codonStop: string
   /** Coverage histogram fill */
   coverage: string
@@ -639,7 +639,7 @@ const startCodon = '#3e3'
 const codonNonsynonymous = '#e8930c'
 /** #color maf | Synonymous codon | MAF codon view: the codon differs from the reference but the amino acid is unchanged (silent) */
 const codonSynonymous = '#3a7bd5'
-/** #color maf | Codon stop | MAF codon view: a stop codon */
+/** #color maf | Stop gained | MAF codon view: a stop the reference codon is not */
 const codonStop = '#cc2222'
 /** #color alignments-indicators | Insertion | Reads carry an insertion relative to the reference */
 const insertion = '#800080'

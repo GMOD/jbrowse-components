@@ -150,7 +150,7 @@ export function getCodonLegendItems(palette: JBrowsePalette): LegendItem[] {
   return [
     { label: 'Nonsynonymous', color: fill.nonsyn },
     { label: 'Synonymous', color: fill.syn },
-    { label: 'Stop', color: fill.stop },
+    { label: 'Stop gained', color: fill.stop },
   ]
 }
 

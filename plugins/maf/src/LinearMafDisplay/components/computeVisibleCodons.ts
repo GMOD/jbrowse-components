@@ -23,7 +23,7 @@ import type {
  * - `same` — identical codon (no change)
  * - `syn` — synonymous: nucleotides differ but the amino acid is unchanged
  * - `nonsyn` — nonsynonymous: the amino acid changed
- * - `stop` — a stop codon
+ * - `stop` — the species reads a stop where the reference codes an amino acid
  */
 export type CodonChange = 'same' | 'syn' | 'nonsyn' | 'stop'
 
@@ -491,8 +491,9 @@ function rowTriplet(
  * Classify a species' codon against the reference codon — both given as oriented
  * uppercase triplet strings (5'→3' in the gene direction, so `−`-strand codons
  * are already reverse-complemented):
- * - `stop`   — the species codon is a stop
- * - `nonsyn` — its amino acid differs from the reference's (a coding change)
+ * - `stop`   — the species codon is a stop the reference codon is not
+ * - `nonsyn` — its amino acid differs from the reference's, a read-through of
+ *   the reference's stop included
  * - `same`   — the two codons are nucleotide-identical
  * - `syn`    — silent: the nucleotides differ but the amino acid is unchanged
  *
@@ -516,7 +517,7 @@ function classifyChange(
     return undefined
   }
   const change: CodonChange =
-    aa === '*'
+    aa === '*' && refAa !== '*'
       ? 'stop'
       : aa !== refAa
         ? 'nonsyn'

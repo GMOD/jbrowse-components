@@ -35,7 +35,7 @@ theme; anything you don't set keeps its preset value.
 | `startCodon` | `string` | Start codon in gene/CDS tracks |
 | `codonNonsynonymous` | `string` | MAF codon view: the species' amino acid differs from the reference |
 | `codonSynonymous` | `string` | MAF codon view: the codon differs but the amino acid does not |
-| `codonStop` | `string` | MAF codon view: a stop codon |
+| `codonStop` | `string` | MAF codon view: a stop the reference codon is not |
 | `coverage` | `string` | Coverage histogram fill |
 | `insertion` | `string` | Insertion markers in alignments |
 | `softclip` | `string` | Soft-clipped bases (clipped bases retained in the read) |

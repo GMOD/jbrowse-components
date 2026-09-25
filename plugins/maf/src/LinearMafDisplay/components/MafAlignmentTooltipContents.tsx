@@ -223,7 +223,7 @@ const CHANGE_LABEL: Record<CodonChange, string> = {
   same: 'none',
   syn: 'synonymous',
   nonsyn: 'nonsynonymous',
-  stop: 'stop',
+  stop: 'stop gained',
 }
 
 // The codon under the cursor in codon view, as a single compact table: the
