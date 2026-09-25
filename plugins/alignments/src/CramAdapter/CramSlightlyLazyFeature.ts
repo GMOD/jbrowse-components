@@ -261,7 +261,7 @@ export default class CramSlightlyLazyFeature
       case 'NUMERIC_CIGAR':
         return this.NUMERIC_CIGAR
       case 'seq_length':
-        return this.readLength
+        return this.isUnknownBases() ? 0 : this.readLength
       case 'pair_orientation':
         return this.pair_orientation
       case 'next_ref':

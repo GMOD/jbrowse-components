@@ -102,6 +102,8 @@ function makeCigarEmitter(
   // `emitGap` because it is a property of the read, not of the gap — see
   // getEffectiveStrand.
   let skipStrand: number | undefined
+  let seq: string | undefined
+  let seqResolved = !showSoftClipping
   return (type, start, length, base, qual, _altbase, cliplen) => {
     if (type === MISMATCH_TYPE) {
       emitMismatch(
@@ -123,14 +125,17 @@ function makeCigarEmitter(
         output.insertions,
       )
     } else if (type === SOFTCLIP_TYPE) {
+      if (!seqResolved) {
+        seq = feature.get('seq') as string | undefined
+        seqResolved = true
+      }
       emitSoftclip(
         start,
         cliplen,
         readIndex,
         featureStart,
-        feature,
+        seq,
         output.softclips,
-        showSoftClipping,
       )
     } else if (type === DELETION_TYPE) {
       emitGap(

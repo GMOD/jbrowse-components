@@ -32,3 +32,13 @@ test('the intended overrides still exist on both sides', () => {
     expect(own(CramSlightlyLazyFeature)).toContain(name)
   }
 })
+
+// A record stored with SEQ='*' still carries its readLength, and the consensus
+// skips a read only when it reports no bases to vote with.
+test('a read with unknown bases reports a sequence length of 0', () => {
+  const record = Object.create(CramSlightlyLazyFeature.prototype, {
+    readLength: { value: 50 },
+    isUnknownBases: { value: () => true },
+  }) as CramSlightlyLazyFeature
+  expect(record.get('seq_length')).toBe(0)
+})
