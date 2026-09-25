@@ -10,6 +10,7 @@ import {
 } from '@jbrowse/cigar-utils'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { getTag } from '@jbrowse/modifications-utils'
@@ -23,6 +24,8 @@ export interface BreakpointGetFeaturesArgs {
   adapterConfig: Record<string, unknown>
   assemblyName?: string
   opts?: Record<string, unknown>
+  /** the display's active filters, `jexl:`-prefixed */
+  jexlFilters?: string[]
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
@@ -133,8 +136,19 @@ export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegion
   }
 
   async execute(args: RpcExecuteArgs<'BreakpointGetFeatures'>) {
-    const { signal, statusCallback, sessionId, adapterConfig, regions, opts } =
-      args
+    const {
+      signal,
+      statusCallback,
+      sessionId,
+      adapterConfig,
+      regions,
+      opts,
+      jexlFilters = [],
+    } = args
+    const filterChain = new SerializableFilterChain({
+      filters: jexlFilters,
+      jexl: this.pluginManager.jexl,
+    })
 
     const dataAdapter = await getFeatureAdapterOrThrow({
       pluginManager: this.pluginManager,
@@ -152,7 +166,7 @@ export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegion
     )
 
     return features
-      .filter(keepAlignmentFeature)
+      .filter(f => keepAlignmentFeature(f) && filterChain.passes(f))
       .map((feature): BreakpointSerializedFeature => {
         const cigar = feature.get('CIGAR') as string | undefined
         const strand = feature.get('strand')

@@ -46,6 +46,7 @@ import {
   layoutUnknown,
   linksOwnReads,
   makeOffscreenLayout,
+  overlayJexlFilters,
   overlayKind,
 } from './util.ts'
 
@@ -825,7 +826,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             const regionsPerView = tracks.length
               ? self.views.map(view => view.staticBlocks.contentBlocks)
               : []
-            return { tracks, regionsPerView }
+            // Tracked too, so a filter change refetches.
+            const jexlFilters = tracks.map(track =>
+              self.views.map(view =>
+                overlayJexlFilters(
+                  view.getTrack(track.configuration.trackId)?.displays[0],
+                ),
+              ),
+            )
+            return { tracks, regionsPerView, jexlFilters }
           },
           // One fan-out slot per track, so the N of them aggregate into one bar
           // rather than the first to finish blanking the label.
@@ -837,7 +846,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           // throws. A view-level fetch reaching an RPC has to root its context
           // on the track it is fetching for.
           run: async (
-            { tracks, regionsPerView },
+            { tracks, regionsPerView, jexlFilters },
             ctx,
           ): Promise<Record<string, Feature[][]>> => {
             const perTrack = fanOutStatus(ctx, tracks.length)
@@ -850,6 +859,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                       await getBlockFeatures(
                         track,
                         regionsPerView,
+                        jexlFilters[i]!,
                         makeFetchContext(track, perTrack[i]!),
                       ),
                     ] as const,

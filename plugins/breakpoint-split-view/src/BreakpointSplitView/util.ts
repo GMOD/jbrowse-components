@@ -1,4 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { activeJexlFilters } from '@jbrowse/core/util/jexlFilters'
 
 import type { LayoutRecord, OverlayKind } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -43,6 +44,20 @@ interface OverlayDisplayBase {
   linkedReads?: 'off' | 'normal'
   /** the same display's curved connectors; `'all'` links every pair itself */
   bezierArcScope?: 'all' | 'crossRegion' | 'none'
+  /** the "Filter by..." contract, `JexlFilterSource`, on displays that have one */
+  configuredFilters?: () => string[]
+  jexlFiltersSetting?: readonly string[]
+}
+
+// The filters the display applies, so the overlay draws no connector for a
+// feature the track has filtered out.
+export function overlayJexlFilters(d: OverlayDisplayBase | undefined) {
+  return d?.configuredFilters
+    ? activeJexlFilters({
+        configuredFilters: d.configuredFilters,
+        jexlFiltersSetting: d.jexlFiltersSetting,
+      })
+    : []
 }
 
 /** A display that indexes its features, so an overlay can ask where one landed. */
@@ -214,6 +229,7 @@ export function layoutUnknown(track: OverlayTrack) {
 export async function getBlockFeatures(
   track: OverlayTrack,
   regionsPerView: Region[][],
+  jexlFiltersPerView: string[][],
   // This track's own status slot, from the caller's `fanOutStatus`, and a
   // context rebuilt on the TRACK — see the caller. Both views run concurrently
   // on the one slot deliberately: a second fan-out here would aggregate a pair
@@ -225,10 +241,11 @@ export async function getBlockFeatures(
   ctx: FetchContext,
 ) {
   return Promise.all(
-    regionsPerView.map(regions =>
+    regionsPerView.map((regions, level) =>
       ctx.callRpc('BreakpointGetFeatures', {
         adapterConfig: getConf(track, ['adapter']),
         regions,
+        jexlFilters: jexlFiltersPerView[level],
       }),
     ),
   )

@@ -10,6 +10,7 @@ import {
   isOffscreenLayout,
   layoutUnknown,
   linksOwnReads,
+  overlayJexlFilters,
   makeOffscreenLayout,
 } from './util.ts'
 
@@ -214,5 +215,24 @@ describe('computeOverlayX', () => {
     // one already in the panel is untouched, so the terminus keeps the side it
     // was on rather than snapping to an edge
     expect(computeOverlayX(400, WIDTH, off)).toBe(400)
+  })
+})
+
+describe('overlayJexlFilters', () => {
+  const display = { height: 100, configuredFilters: () => ['jexl:a'] }
+
+  test('follows the config slot until the dialog overrides it', () => {
+    expect(overlayJexlFilters(display)).toEqual(['jexl:a'])
+    expect(
+      overlayJexlFilters({ ...display, jexlFiltersSetting: ['jexl:b'] }),
+    ).toEqual(['jexl:b'])
+    expect(overlayJexlFilters({ ...display, jexlFiltersSetting: [] })).toEqual(
+      [],
+    )
+  })
+
+  test('a display with no filter contract filters nothing', () => {
+    expect(overlayJexlFilters({ height: 100 })).toEqual([])
+    expect(overlayJexlFilters(undefined)).toEqual([])
   })
 })
