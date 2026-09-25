@@ -29,13 +29,14 @@ const { plugins } = pluginJSON
         </p>
         <p>
           The configuration specified for each plugin can be added to the{' '}
-          <code>plugins</code> array as a top-level entry. For example:
+          <code>plugins</code> array as a top-level entry. Naming the store
+          entry rather than a url is what lets JBrowse pick a build published
+          for the version doing the reading, and check its integrity hash:
         </p>
         <pre><code>{`{
   "plugins": [
     {
-      "name": "MsaView",
-      "url": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/latest/dist/jbrowse-plugin-msaview.umd.production.min.js"
+      "storePlugin": "MsaView"
     }
   ]
 }`}</code></pre>
@@ -68,7 +69,7 @@ const { plugins } = pluginJSON
       <div class="plugin-list">
         {plugins.map(plugin => {
           const configString = JSON.stringify(
-            { name: plugin.name, url: plugin.url },
+            { storePlugin: plugin.name },
             null,
             2,
           )

@@ -273,6 +273,16 @@ for (const p of plugins) {
 // that carry meaning: a version bump on a plugin that still breaks the same way
 // is not news, and putting it in here would make the weekly run cry wolf.
 const BASELINE = 'packages/core/src/ReExports/publishedPluginBreaks.json'
+
+// The website's plugin-store page is prerendered from a committed copy of this
+// same manifest, so nothing about a docs build touches the network. Nothing
+// refreshed it: by 2026-09 it still listed six v4 plugins the store had dropped
+// (three of them since vendored into core) and was missing three it had gained.
+// Refreshed from the fetch this script already makes, and checked by the same
+// weekly run, since the drift and the breaks have one cause — an author
+// publishing — and one moment to look.
+const SITE_LIST = 'website/plugins.json'
+const siteShape = () => `${JSON.stringify({ plugins }, null, 2)}\n`
 const baselineShape = () =>
   `${JSON.stringify(
     [...report]
@@ -294,38 +304,80 @@ const sameContent = (a: string, b: string) => {
   }
 }
 
+function checkSiteList() {
+  const fresh = siteShape()
+  const committed = fs.existsSync(SITE_LIST)
+    ? fs.readFileSync(SITE_LIST, 'utf8')
+    : ''
+  if (sameContent(fresh, committed)) {
+    return true
+  }
+  const names = (src: string) => {
+    try {
+      return new Set(
+        (JSON.parse(src) as { plugins: StorePlugin[] }).plugins.map(
+          p => p.name,
+        ),
+      )
+    } catch {
+      return new Set<string>()
+    }
+  }
+  const [was, now] = [names(committed), names(fresh)]
+  const gone = [...was].filter(n => !now.has(n))
+  const added = [...now].filter(n => !was.has(n))
+  console.error(`${SITE_LIST} is out of date:`)
+  if (gone.length > 0) {
+    console.error(`  no longer in the store: ${gone.join(', ')}`)
+  }
+  if (added.length > 0) {
+    console.error(`  new in the store: ${added.join(', ')}`)
+  }
+  if (gone.length === 0 && added.length === 0) {
+    console.error('  same entries, changed contents')
+  }
+  return false
+}
+
 if (process.argv.includes('--write')) {
   fs.writeFileSync(BASELINE, baselineShape())
   console.log(`wrote ${BASELINE}`)
+  fs.writeFileSync(SITE_LIST, siteShape())
+  console.log(`wrote ${SITE_LIST}`)
 } else if (process.argv.includes('--check')) {
+  const siteOk = checkSiteList()
   const fresh = baselineShape()
   const committed = fs.existsSync(BASELINE)
     ? fs.readFileSync(BASELINE, 'utf8')
     : ''
-  if (sameContent(fresh, committed)) {
+  if (sameContent(fresh, committed) && siteOk) {
     const broken = report.filter(r => r.breaks.length > 0)
     console.log(
       `unchanged: ${broken.length} of ${report.length} break against this build`,
     )
   } else {
-    // Both directions matter, and the good one more: a plugin that stopped
-    // breaking means an author rebuilt, which is the moment to drop it from the
-    // upgrade advice in the release notes.
-    const was = new Map<string, string[]>(
-      (committed ? JSON.parse(committed) : []).map(
-        (r: { plugin: string; breaks: string[] }) => [r.plugin, r.breaks],
-      ),
-    )
-    const now = new Map(report.map(r => [r.plugin, r.breaks]))
-    console.error(`${BASELINE} is out of date:`)
-    for (const plugin of new Set([...was.keys(), ...now.keys()])) {
-      const before = was.get(plugin)
-      const after = now.get(plugin)
-      if (JSON.stringify(before) !== JSON.stringify(after)) {
-        console.error(
-          `  ${plugin}: ${before === undefined ? '(not in the store before)' : before.join(', ') || 'ok'}` +
-            ` -> ${after === undefined ? '(gone from the store)' : after.join(', ') || 'ok'}`,
-        )
+    // Guarded, so a run where only the site listing moved does not print a
+    // heading naming the baseline and then no line under it.
+    if (!sameContent(fresh, committed)) {
+      // Both directions matter, and the good one more: a plugin that stopped
+      // breaking means an author rebuilt, which is the moment to drop it from
+      // the upgrade advice in the release notes.
+      const was = new Map<string, string[]>(
+        (committed ? JSON.parse(committed) : []).map(
+          (r: { plugin: string; breaks: string[] }) => [r.plugin, r.breaks],
+        ),
+      )
+      const now = new Map(report.map(r => [r.plugin, r.breaks]))
+      console.error(`${BASELINE} is out of date:`)
+      for (const plugin of new Set([...was.keys(), ...now.keys()])) {
+        const before = was.get(plugin)
+        const after = now.get(plugin)
+        if (JSON.stringify(before) !== JSON.stringify(after)) {
+          console.error(
+            `  ${plugin}: ${before === undefined ? '(not in the store before)' : before.join(', ') || 'ok'}` +
+              ` -> ${after === undefined ? '(gone from the store)' : after.join(', ') || 'ok'}`,
+          )
+        }
       }
     }
     console.error(
