@@ -44,9 +44,12 @@
     color: var(--color-accent);
     opacity: 1;
   }
+  /* Top-pinned rather than centred: a centred dialog moves its tab row every
+     time a shorter panel is picked, out from under the cursor. */
   .spec-dialog {
     width: min(46rem, 92vw);
     max-height: 85vh;
+    margin-block: 7.5vh auto;
     padding: 1.25rem 1.5rem 1.5rem;
     border: 1px solid var(--color-border);
     border-radius: 8px;

@@ -88,7 +88,6 @@ export const PATH_ROOTS = new Set([
   'Graph view menu',
   'Graph view toolbar',
   'Dotplot header',
-  'Launch synteny view dialog',
   'palette button',
   'the ⋮ menu',
 ])

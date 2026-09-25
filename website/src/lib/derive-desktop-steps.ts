@@ -59,6 +59,9 @@ export const DESKTOP_UI_LABELS = {
   fromUrl: 'Open from a URL',
   openTrack: 'File → Open track...',
   pasteJson: 'Add track from pasted JSON',
+  syntenyView: 'Add → Linear synteny view',
+  quickStart: 'Quick start',
+  launch: 'Launch',
   moreOptions: 'More options',
   genomeName: 'Genome name',
   displayName: 'Assembly display name',
@@ -221,6 +224,19 @@ export function desktopTrackNodes(
     ]),
     { type: 'code', lang: 'json', value: json } satisfies Code,
     ...relativeUriNote(config),
+    ...(config.type === 'SyntenyTrack'
+      ? [
+          paragraph([
+            text('That shows it in the linear view. For the synteny view, open '),
+            strong(DESKTOP_UI_LABELS.syntenyView),
+            text(', pick the track under '),
+            strong(DESKTOP_UI_LABELS.quickStart),
+            text(', and click '),
+            strong(DESKTOP_UI_LABELS.launch),
+            text('.'),
+          ]),
+        ]
+      : []),
     raw('</div>'),
   ]
 }

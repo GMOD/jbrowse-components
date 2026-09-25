@@ -1820,16 +1820,6 @@ export const viewFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
-  // Applied while the view is built (afterAttach sets scalebarOnly on any row
-  // the launch gave no tracks), so the control is the launch dialog's checkbox
-  // rather than anything on the finished view.
-  collapseEmptyRows: (value, { viewType }) =>
-    typeof value === 'boolean' && viewType === 'LinearSyntenyView'
-      ? {
-          path: `Launch synteny view dialog → Collapse panels to rulers (${value ? 'checked' : 'unchecked'})`,
-          note: 'Checked by default. A row the launch gave no tracks opens as its ruler alone instead of a "No tracks active" block; any row expands again from its own controls afterwards.',
-        }
-      : undefined,
   // Applied by initHelpers as levels[i].setHeight(h), and the only thing that
   // calls setHeight from the UI is the ResizeHandle bar under each level
   // (LinearComparativeRenderArea) — there is no menu entry or dialog for it.
@@ -2055,6 +2045,21 @@ export const viewFields: Record<string, FieldRecipe> = {
           note: `This figure highlights ${value.length} region${value.length === 1 ? '' : 's'}; highlights can also be set with the &highlight= URL parameter.`,
         }
       : undefined,
+}
+
+// The synteny launch dialog applies these while it builds the view (afterAttach
+// sets scalebarOnly on any row the launch gave no tracks), so their steps come
+// before Launch. An empty list is a value at the dialog's default.
+export const launchFields: Record<string, FieldRecipe> = {
+  collapseEmptyRows: value =>
+    value === false
+      ? {
+          path: 'Launch synteny view dialog → Collapse panels to rulers (unchecked)',
+          note: 'A row the launch gave no tracks opens with its "No tracks active" block instead of its ruler alone.',
+        }
+      : value === true
+        ? []
+        : undefined,
 }
 
 // Fields that describe the figure itself rather than a setting the reader would

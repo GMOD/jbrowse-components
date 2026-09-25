@@ -11,9 +11,11 @@ const DESKTOP_LINK_MIN_VERSION = 'JBrowse Desktop 5.0'
 // Astro components, so this emits a plain <dialog> a small script in
 // DocsLayout opens. Tabs are radio inputs switched with CSS — no hydration.
 
-// `**bold**` in a step title marks the literal UI label to click.
-function renderTitle(title: string): string {
-  return escapeAttr(title).replaceAll(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+// `**bold**` marks the literal UI label to click, `` `code` `` a value to type.
+function renderInline(text: string): string {
+  return escapeAttr(text)
+    .replaceAll(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replaceAll(/`([^`]+)`/g, '<code>$1</code>')
 }
 
 // A code block with a Copy button. The button copies the block's own
@@ -38,12 +40,12 @@ function note(html: string): string {
 function renderStep(step: RecipeStep): string {
   return [
     '<li>',
-    `<span class="spec-step-title">${renderTitle(step.title)}</span>`,
+    `<span class="spec-step-title">${renderInline(step.title)}</span>`,
     step.note
-      ? `<span class="spec-step-note">${escapeAttr(step.note)}</span>`
+      ? `<span class="spec-step-note">${renderInline(step.note)}</span>`
       : '',
     step.example
-      ? `<span class="spec-step-example">${escapeAttr(step.example)}</span>`
+      ? `<span class="spec-step-example">${renderInline(step.example)}</span>`
       : '',
     '</li>',
   ].join('')

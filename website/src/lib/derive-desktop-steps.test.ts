@@ -142,6 +142,22 @@ test('a file written as a bare string is named as one to replace too', () => {
   )
 })
 
+test('a synteny track goes on from the paste to the synteny view', () => {
+  const synteny = {
+    type: 'SyntenyTrack',
+    trackId: 'grape_peach',
+    assemblyNames: ['grape', 'peach'],
+    adapter: { type: 'PAFAdapter', uri: 'https://x/grape_peach.paf' },
+  }
+  const feature = { ...synteny, type: 'FeatureTrack' }
+  expect(flatten(desktopTrackNodes(synteny, '{}'))).toContain(
+    'open Add → Linear synteny view, pick the track under Quick start',
+  )
+  expect(flatten(desktopTrackNodes(feature, '{}'))).not.toContain(
+    'Quick start',
+  )
+})
+
 test('absolute uris and local paths need no replacing', () => {
   const config = {
     type: 'FeatureTrack',

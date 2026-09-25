@@ -10,7 +10,12 @@ import {
   specTrackSettings,
   specTracks,
 } from './decode.ts'
-import { IGNORED_FIELDS, trackFields, viewFields } from './fields.ts'
+import {
+  IGNORED_FIELDS,
+  launchFields,
+  trackFields,
+  viewFields,
+} from './fields.ts'
 import { configManifest } from '../../../../products/jbrowse-cli/src/commands/validate/configManifest.generated.ts'
 import { toProtocolUrl } from '../../../../products/jbrowse-desktop/electron/launchTarget.ts'
 
@@ -150,7 +155,7 @@ function fieldSteps(
         opensView: step.opensView,
       })
     }
-    if (!found.length) {
+    if (!produced) {
       unmapped.push(field)
     }
   }
@@ -338,7 +343,13 @@ function importFormSteps(
   // it is the form itself that the picture shows — launching is the step after
   // the one it illustrates.
   if (assemblies.length || entries.length) {
-    steps.push({ title: 'Click **Launch**.' })
+    const launch = fieldSteps(
+      Object.entries(view).filter(([field]) => field in launchFields),
+      launchFields,
+      { noun: 'feature', viewType: view.type },
+    )
+    steps.push(...launch.steps, { title: 'Click **Launch**.' })
+    unmapped.push(...launch.unmapped)
   }
   return { steps, unmapped }
 }
@@ -461,10 +472,11 @@ function viewSteps(
     })
   }
 
-  const viewFieldSteps = fieldSteps(Object.entries(view), viewFields, {
-    noun: 'feature',
-    viewType: view.type,
-  })
+  const viewFieldSteps = fieldSteps(
+    Object.entries(view).filter(([field]) => !(form && field in launchFields)),
+    viewFields,
+    { noun: 'feature', viewType: view.type },
+  )
   steps.push(...viewFieldSteps.steps)
   unmapped.push(...viewFieldSteps.unmapped)
 
