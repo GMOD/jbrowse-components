@@ -118,6 +118,9 @@ const MAFTooltip = observer(function MAFTooltip({
   const summary = onRow
     ? model.summaryHoverInfo(rowIndex, mouseState.x)
     : undefined
+  const identity = onRow
+    ? model.identityHoverInfo(p2.index, baseBp, rowIndex)
+    : undefined
 
   return (
     <BaseTooltip clientPoint={clientPoint}>
@@ -129,6 +132,7 @@ const MAFTooltip = observer(function MAFTooltip({
         codon={codon}
         summary={summary}
         summarySampleLabel={model.samples[rowIndex]?.label}
+        identity={identity}
       />
     </BaseTooltip>
   )

@@ -124,10 +124,10 @@ function summaryTierDisplay() {
 
 const count = (svg: string, s: string) => svg.split(s).length - 1
 
-// The summary bars were an overlay before they were a mark: a plot-only
-// export left them out, and a vector layer writes a rect for every fill a
-// clip hides, so the export culls what no block shows.
-test('an export draws the summary bars on screen, and a plot-only one none', async () => {
+// A plot-only export is the display's canvas alone, which draws the summary
+// bars; and a vector layer writes a rect for every fill a clip hides, so the
+// export culls what no block shows.
+test('an export draws the summary bars on screen, plot-only or not', async () => {
   const display = summaryTierDisplay()
   expect(count(draw(await renderSvg(display, {})), SUMMARY_FILL_OPACITY)).toBe(
     2,
@@ -137,5 +137,5 @@ test('an export draws the summary bars on screen, and a plot-only one none', asy
       draw(await renderSvg(display, { plotOnly: true })),
       SUMMARY_FILL_OPACITY,
     ),
-  ).toBe(0)
+  ).toBe(2)
 })

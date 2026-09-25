@@ -100,7 +100,7 @@ const NO_BASE = 255
  * column of a truncated row — phantom insertion length, phantom depth, and a
  * mismatch recorded against base code 0. Every other per-column row walk in the
  * plugin stops at the row's end (`renderBases`, `buildInstanceBuffer`,
- * `IdentityColumns.accumulate`); one helper keeps the three conditions together
+ * `buildIdentityRuns`); one helper keeps the three conditions together
  * so a new caller can't drop one.
  *
  * The length check got *more* load-bearing when rows moved into the shared

@@ -13,8 +13,6 @@ import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.t
 import {
   MAF_COVERAGE_MARKS,
   MAF_ROWS_MARKS,
-  MAF_ROW_MARK,
-  MAF_SOURCE_CHROM_MARK,
 } from '../LinearMafRenderer/mafMarks.ts'
 import { drawMafAnnotations } from '../LinearMafRenderer/rendering/annotations.ts'
 import { drawMafCodons } from '../LinearMafRenderer/rendering/codons.ts'
@@ -34,7 +32,6 @@ import {
   drawCodonConservation,
   drawConservation,
 } from './components/drawConservation.ts'
-import { drawMafRowsCanvas2d } from './components/drawMafRowsCanvas2d.ts'
 import { visibleRowRange } from './components/visibleRegionGeometry.ts'
 import { cullMafRows, encodeMafRows } from './encodeMafRows.ts'
 
@@ -108,12 +105,6 @@ function MafSvgBody({
       ),
     ]),
   )
-  // The summary bars were an overlay before they were a mark, and a
-  // `plotOnly` export still leaves them out.
-  const rowMarks = overlays
-    ? MAF_ROWS_MARKS
-    : [MAF_ROW_MARK, MAF_SOURCE_CHROM_MARK]
-
   return (
     <>
       {coverageBandActive ? (
@@ -182,11 +173,13 @@ function MafSvgBody({
             height={rowsHeight}
             opts={opts}
             paint={ctx => {
-              // The screen's stacking: the backend's row marks, then the
-              // identity plot's canvas over them. Only the model's active
-              // rendering encodes or paints anything.
-              paintMarkBlocks(ctx, rowMarks, svgRows, renderBlocks, svgState)
-              drawMafRowsCanvas2d(ctx, model, renderBlocks, width)
+              paintMarkBlocks(
+                ctx,
+                MAF_ROWS_MARKS,
+                svgRows,
+                renderBlocks,
+                svgState,
+              )
               // the overlay canvases the screen stacks over the rows canvas
               if (!overlays) {
                 return

@@ -108,7 +108,7 @@ export function rowBandGeometry(
  * row count and most of its callers have none to give: they test a `rowIndex`
  * the data handed them, and a bound past the end excludes nothing that exists.
  * A caller sizing a buffer or indexing rows by it needs its own
- * `Math.min(endRow, nRows)` (`drawRowIdentity`). Contrast
+ * `Math.min(endRow, nRows)`. Contrast
  * `@jbrowse/core/util/virtualRange`, which clamps to a `total` because its
  * consumers size canvases from `(end - start) * cellSize`.
  */

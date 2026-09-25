@@ -186,7 +186,7 @@ export async function buildIdentityMatrix({
   // Per-block reference decisions, replayed for every row: the bin each column
   // falls in (-1 for none) and its case-folded reference byte. Grown across
   // blocks rather than allocated per block, and the fold hoisted out of the row
-  // loop, for the reasons `IdentityColumns` in `drawRowIdentity` gives for the
+  // loop, for the reasons `ColumnMapper` in `binning.ts` gives for the
   // same shape — real MAF is many small blocks (ce11 26-way's median is 7bp),
   // and the fold was redone once per species per column.
   let columnBin = new Int32Array(0)

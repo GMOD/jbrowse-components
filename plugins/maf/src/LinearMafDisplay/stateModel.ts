@@ -56,6 +56,10 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.ts'
 import {
+  identityColorScale,
+  identityOver,
+} from '../LinearMafRenderer/identity.ts'
+import {
   getCodonLegendItems,
   getFrameLegendItems,
   getMafColorPalette,
@@ -80,7 +84,6 @@ import {
 } from './components/computeVisibleInversions.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { conservationTicks } from './components/drawConservation.ts'
-import { identityColorScale } from './components/drawRowIdentity.ts'
 import {
   perRowChromRanks,
   sourceChromLegendItems,
@@ -128,7 +131,6 @@ import type {
   LocatedCodon,
 } from './components/computeVisibleCodons.ts'
 import type { StrandConsensus } from './components/computeVisibleInversions.ts'
-import type { IdentityPlot } from './components/drawRowIdentity.ts'
 import type { HoverBp } from './components/findRowHover.ts'
 import type { RowSpan } from './components/findRowSpan.ts'
 import type { MafRowGeometryParams } from './components/visibleRegionGeometry.ts'
@@ -137,7 +139,11 @@ import type {
   LinearMafDisplayConfigModel,
 } from './configSchema.ts'
 import type { ConservationMode } from './conservationModes.ts'
-import type { MafRowsEncodeProps, MafRowsSource } from './encodeMafRows.ts'
+import type {
+  IdentityEncoding,
+  MafRowsEncodeProps,
+  MafRowsSource,
+} from './encodeMafRows.ts'
 import type { MafColorField, MafYField, RowRendering } from './rowRenderings.ts'
 import type { MafHover } from './util.ts'
 import type { CoverageBandState } from '@jbrowse/alignments-core'
@@ -2075,13 +2081,15 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Which identity plot the Canvas2D rows layer paints, or undefined.
+         * How identity draws now: the heatmap's cells, the X-Y plot's bars in
+         * one colour, or its bars on the ramp where `color` is identity too.
          */
-        get rowsCanvas2dMode(): IdentityPlot | undefined {
-          const rendering = self.activeRowRendering
-          return rendering === 'xyplot'
-            ? 'xyplot'
-            : rendering === 'identity'
+        get identityEncoding(): IdentityEncoding | undefined {
+          return self.rowsY === 'identity'
+            ? self.rowsColor === 'identity'
+              ? 'rampBars'
+              : 'bars'
+            : self.rowsColor === 'identity'
               ? 'heatmap'
               : undefined
         },
@@ -2123,6 +2131,26 @@ export default function stateModelFactory(
             ...hit,
             sampleLabel: source.label ?? source.name,
           }
+        },
+        /**
+         * #method
+         * The mean identity of the window a heatmap cell or X-Y bar paints at
+         * base `bp` on `rowIndex`, and how many bases it averages, while
+         * identity draws.
+         */
+        identityHoverInfo(
+          displayedRegionIndex: number,
+          bp: number,
+          rowIndex: number,
+        ) {
+          const region = self.identityEncoding
+            ? self.rpcDataMap.get(displayedRegionIndex)
+            : undefined
+          const binBp = self.encodeBinBp
+          const start = Math.floor(bp / binBp) * binBp
+          return region
+            ? identityOver(region.blocks, rowIndex, start, start + binBp)
+            : undefined
         },
       }))
       .actions(self => ({
@@ -2520,6 +2548,7 @@ export default function stateModelFactory(
         rowsEncodeProps(): MafRowsEncodeProps {
           return {
             basesActive: self.basesRenderingActive,
+            identity: self.identityEncoding,
             gpu: {
               palette: self.colorPalette,
               colorMatches: self.rowsColor === 'base',
@@ -2632,11 +2661,9 @@ export default function stateModelFactory(
                 self.hasRegionData ||
                 self.coarseTierRead !== undefined
               // One call whatever the rows are doing, because this canvas
-              // carries the coverage band too. In the identity plot and the
-              // codon view the rows are owned by a sibling canvas and the row
-              // marks paint nothing, but the frame still counts as a real
-              // paint for `canvasDrawn`: returning false instead is what left
-              // summary mode scrimmed forever; see `basesRenderingActive`.
+              // carries the coverage band too. In the codon view the overlay
+              // owns the rows and the row marks paint nothing, but the frame
+              // still counts as a paint for `canvasDrawn`.
               return hasFetched
                 ? b.renderBlocks(
                     self.renderBlocks,

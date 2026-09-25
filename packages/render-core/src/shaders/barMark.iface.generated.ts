@@ -24,10 +24,12 @@ export const UNIFORM_OFFSET_F32 = {
   rampMax: 10,
   origin: 11,
   rowHeight: 12,
-  zero: 13,
-  minCellDenomPx: 14,
-  minWidthPx: 15,
-  devicePixelRatio: 16,
+  rowBandPx: 13,
+  rowOffsetPx: 14,
+  zero: 15,
+  minCellDenomPx: 16,
+  minWidthPx: 17,
+  devicePixelRatio: 18,
 } as const
 
 // Word indices into a Int32Array view over the uniform buffer.
@@ -49,6 +51,8 @@ export interface Uniforms {
   rampMax: number
   origin: number
   rowHeight: number
+  rowBandPx: number
+  rowOffsetPx: number
   zero: number
   minCellDenomPx: number
   minWidthPx: number
@@ -71,10 +75,12 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[10] = uniforms.rampMax
   f32[11] = uniforms.origin
   f32[12] = uniforms.rowHeight
-  f32[13] = uniforms.zero
-  f32[14] = uniforms.minCellDenomPx
-  f32[15] = uniforms.minWidthPx
-  f32[16] = uniforms.devicePixelRatio
+  f32[13] = uniforms.rowBandPx
+  f32[14] = uniforms.rowOffsetPx
+  f32[15] = uniforms.zero
+  f32[16] = uniforms.minCellDenomPx
+  f32[17] = uniforms.minWidthPx
+  f32[18] = uniforms.devicePixelRatio
 }
 
 export const INSTANCE_STRIDE_BYTES = 20

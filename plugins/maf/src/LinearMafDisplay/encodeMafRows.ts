@@ -1,6 +1,11 @@
 import { clipBlockForCanvas } from '@jbrowse/render-core/canvas2dUtils'
 
 import {
+  buildIdentityRuns,
+  identityBars,
+  identitySpans,
+} from '../LinearMafRenderer/identity.ts'
+import {
   EMPTY_MAF_CELLS,
   buildMafChannels,
 } from '../LinearMafRenderer/mafChannels.ts'
@@ -40,10 +45,17 @@ export const EMPTY_MAF_COVERAGE: MafCoverageRegion = {
   indicatorPackedBuffer: new ArrayBuffer(0),
 }
 
+/**
+ * How identity draws, where it does: the heatmap's cells, or the X-Y plot's
+ * bars in one colour or on the heatmap's ramp.
+ */
+export type IdentityEncoding = 'heatmap' | 'bars' | 'rampBars'
+
 /** Everything a region's rows encode reads beyond the region itself. */
 export interface MafRowsEncodeProps {
   /** The rows are drawn base by base (`basesRenderingActive`). */
   basesActive: boolean
+  identity: IdentityEncoding | undefined
   gpu: MafGpuProps
   /** The rows' source-chromosome ranks, while the rows are colored by them. */
   sourceChromRanks: ReadonlyMap<number, ReadonlyMap<string, number>> | undefined
@@ -67,8 +79,16 @@ export interface MafRowsSource {
  */
 export function encodeMafRows(
   { detail, summary }: MafRowsSource,
-  { basesActive, gpu, sourceChromRanks, rowIndexBySrc }: MafRowsEncodeProps,
+  {
+    basesActive,
+    identity,
+    gpu,
+    sourceChromRanks,
+    rowIndexBySrc,
+  }: MafRowsEncodeProps,
 ): MafRowsPayload {
+  const runs =
+    identity && detail ? buildIdentityRuns(detail.blocks, gpu.binBp) : undefined
   return {
     cells:
       basesActive && detail
@@ -81,6 +101,11 @@ export function encodeMafRows(
     summary:
       summary &&
       encodeSummarySpans(summary, rowIndexBySrc, gpu.palette.matchColor),
+    identity: runs && identity === 'heatmap' ? identitySpans(runs) : undefined,
+    identityBars:
+      runs && identity !== 'heatmap'
+        ? identityBars(runs, identity === 'rampBars')
+        : undefined,
   }
 }
 
@@ -125,11 +150,18 @@ export function cullMafRows(
     }
     return kept
   }
-  const { cells, sourceChrom, summary } = payload
+  const { cells, sourceChrom, summary, identity, identityBars } = payload
   const summaryKept = summary && shown(summary)
+  const barsKept = identityBars && shown(identityBars)
   return {
     cells: pickSpans(cells, shown(cells)),
     sourceChrom: sourceChrom && pickSpans(sourceChrom, shown(sourceChrom)),
+    identity: identity && pickSpans(identity, shown(identity)),
+    identityBars: identityBars &&
+      barsKept && {
+        ...pickSpans(identityBars, barsKept),
+        y: Float32Array.from(barsKept, i => identityBars.y[i]!),
+      },
     summary: summary &&
       summaryKept && {
         ...pickSpans(summary, summaryKept),

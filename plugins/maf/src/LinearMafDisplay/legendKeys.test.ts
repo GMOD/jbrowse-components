@@ -2,13 +2,13 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 
 import {
+  identityColorScale,
+  identityRgb,
+} from '../LinearMafRenderer/identity.ts'
+import {
   getCodonColors,
   getCodonLegendItems,
 } from '../LinearMafRenderer/util.ts'
-import {
-  identityColorScale,
-  identityRgb,
-} from './components/drawRowIdentity.ts'
 import {
   SOURCE_CHROM_PALETTE,
   sourceChromLegendItems,

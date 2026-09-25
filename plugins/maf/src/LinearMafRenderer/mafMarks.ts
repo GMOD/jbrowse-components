@@ -1,5 +1,9 @@
 import { coverageBandMarks } from '@jbrowse/alignments-core'
-import { defineMark, spanMark } from '@jbrowse/render-core/marks'
+import { barMark, defineMark, spanMark } from '@jbrowse/render-core/marks'
+import {
+  drawnRowHeightPx,
+  rowBandOffsetPx,
+} from '@jbrowse/render-core/shaders/rowRect'
 
 import { GAP_STROKE_OFFSET } from './rendering/types.ts'
 
@@ -9,12 +13,7 @@ import type {
   MafRowsPayload,
   MafUploadPayload,
 } from './mafRenderingBackendTypes.ts'
-import type {
-  Mark,
-  MarkShape,
-  SpanChannels,
-  SpanParams,
-} from '@jbrowse/render-core/marks'
+import type { Mark, MarkShape } from '@jbrowse/render-core/marks'
 
 const rowsBand = (s: MafGPURenderState) => ({
   top: s.rowsTop,
@@ -49,9 +48,9 @@ export const MAF_ROW_MARK = defineMark({
   band: rowsBand,
 })
 
-// A pass id keys the instance buffer, so a second `span` mark needs its own.
-function spanPass(id: string): MarkShape<SpanChannels, SpanParams> {
-  return { ...spanMark, id, pass: { ...spanMark.pass, id } }
+// A pass id keys the instance buffer, so a second mark of a shape needs its own.
+function passOf<C, P>(shape: MarkShape<C, P>, id: string): MarkShape<C, P> {
+  return { ...shape, id, pass: { ...shape.pass, id } }
 }
 
 /**
@@ -67,9 +66,46 @@ const blockSpanParams = (s: MafGPURenderState) => ({
   scrollTop: s.scrollTop - s.rowsTop,
 })
 
+/**
+ * The identity heatmap: each row's mean identity per window, tiling like the
+ * cells, so it takes their params.
+ */
+export const MAF_IDENTITY_MARK = defineMark({
+  shape: passOf(spanMark, 'mafIdentity'),
+  channels: (d: MafRowsPayload) => d.identity,
+  params: (s: MafGPURenderState) => ({
+    rowHeight: s.rowHeight,
+    rowProportion: s.rowProportion,
+    minWidthPx: 0,
+    seamPx: GAP_STROKE_OFFSET,
+    scrollTop: s.scrollTop - s.rowsTop,
+  }),
+  band: rowsBand,
+})
+
+/**
+ * The identity X-Y plot: a bar per window standing from each row band's
+ * bottom to its identity, the band the cells would fill.
+ */
+export const MAF_IDENTITY_BAR_MARK = defineMark({
+  shape: passOf(barMark, 'mafIdentityBar'),
+  channels: (d: MafRowsPayload) => d.identityBars,
+  params: (s: MafGPURenderState) => ({
+    domain: [0, 1] as [number, number],
+    origin: 0,
+    minWidthPx: 0,
+    seamPx: GAP_STROKE_OFFSET,
+    rowHeight: s.rowHeight,
+    rowBandPx: drawnRowHeightPx(s.rowHeight, s.rowProportion),
+    rowOffsetPx:
+      s.rowsTop + rowBandOffsetPx(s.rowHeight, s.rowProportion) - s.scrollTop,
+  }),
+  band: rowsBand,
+})
+
 /** Each row's aligned blocks, colored by source-chromosome rank. */
 export const MAF_SOURCE_CHROM_MARK = defineMark({
-  shape: spanPass('mafSourceChrom'),
+  shape: passOf(spanMark, 'mafSourceChrom'),
   channels: (d: MafRowsPayload) => d.sourceChrom,
   params: blockSpanParams,
   band: rowsBand,
@@ -77,7 +113,7 @@ export const MAF_SOURCE_CHROM_MARK = defineMark({
 
 /** The summary tier's per-species presence bars, shaded by score. */
 export const MAF_SUMMARY_MARK = defineMark({
-  shape: spanPass('mafSummary'),
+  shape: passOf(spanMark, 'mafSummary'),
   channels: (d: MafRowsPayload) => d.summary,
   params: blockSpanParams,
   band: rowsBand,
@@ -98,6 +134,8 @@ export const MAF_COVERAGE_MARKS = coverageBandMarks({
 /** The rows band's marks, in paint order. */
 export const MAF_ROWS_MARKS: Mark<MafRowsPayload, MafGPURenderState>[] = [
   MAF_ROW_MARK,
+  MAF_IDENTITY_MARK,
+  MAF_IDENTITY_BAR_MARK,
   MAF_SOURCE_CHROM_MARK,
   MAF_SUMMARY_MARK,
 ]

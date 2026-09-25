@@ -37,6 +37,24 @@ export interface BarParams extends RowParams, MarkValueScale {
   minWidthPx: number
   /** CSS px the painter alone adds to the drawn width; see `SpanParams.seamPx`. */
   seamPx: number
+  /** CSS px each row's value scale runs over; the row's own height when absent. */
+  rowBandPx?: number
+  /** CSS px every row's band starts below its top, less a scroll; 0 when absent. */
+  rowOffsetPx?: number
+}
+
+// Where row `i`'s value scale sits: its top and height, in the frame's CSS px.
+function barBand(
+  params: BarParams,
+  canvasHeight: number,
+  row: Uint32Array | undefined,
+  i: number,
+) {
+  const pitch = bandHeightPx(params, canvasHeight)
+  return {
+    top: (params.rowOffsetPx ?? 0) + bandTopPx(row, i, pitch),
+    band: params.rowBandPx ?? pitch,
+  }
 }
 
 type YScale = ReturnType<typeof valueScaleUniforms>
@@ -89,6 +107,8 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
       ...rampUniforms(params.ramp),
       origin: params.origin,
       rowHeight: bandHeightPx(params, frame.canvasHeight),
+      rowBandPx: params.rowBandPx ?? bandHeightPx(params, frame.canvasHeight),
+      rowOffsetPx: params.rowOffsetPx ?? 0,
       zero: 0,
       minCellDenomPx: clip.scissorW,
       minWidthPx: params.minWidthPx,
@@ -101,19 +121,10 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
     const color = paintColors(channels, count, params.ramp)
     const bpToPx = makeBpMapper(block)
     const setFill = makeAbgrFill(ctx)
-    const band = bandHeightPx(params, frame.canvasHeight)
     const yScale = valueScaleUniforms(params)
     for (let i = 0; i < count; i++) {
-      const r = barRect(
-        bpToPx,
-        x[i]!,
-        x2[i]!,
-        y[i]!,
-        bandTopPx(row, i, band),
-        band,
-        params,
-        yScale,
-      )
+      const { top, band } = barBand(params, frame.canvasHeight, row, i)
+      const r = barRect(bpToPx, x[i]!, x2[i]!, y[i]!, top, band, params, yScale)
       if (r) {
         setFill(color[i]!)
         ctx.fillRect(r.left, r.top, r.width + params.seamPx, r.height)
@@ -123,18 +134,22 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
 
   ink(channels, block, frame, params, i) {
     const { x, x2, y, row } = channels
-    const band = bandHeightPx(params, frame.canvasHeight)
+    const { top, band } = barBand(params, frame.canvasHeight, row, i)
     return barRect(
       makeBpMapper(block),
       x[i]!,
       x2[i]!,
       y[i]!,
-      bandTopPx(row, i, band),
+      top,
       band,
       params,
       valueScaleUniforms(params),
     )
   },
 
-  valueWindow,
+  valueWindow(yPx, radiusPx, frame, params) {
+    return params.rowOffsetPx === undefined && params.rowBandPx === undefined
+      ? valueWindow(yPx, radiusPx, frame, params)
+      : [-Infinity, Infinity]
+  },
 }

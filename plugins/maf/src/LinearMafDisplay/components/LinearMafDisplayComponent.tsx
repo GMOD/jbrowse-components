@@ -29,7 +29,6 @@ import MAFTooltip from './MAFTooltip.tsx'
 import MafBandLabels from './MafBandLabels.tsx'
 import MafConservationBand from './MafConservationBand.tsx'
 import MafCoverageBand from './MafCoverageBand.tsx'
-import MafRowsCanvas from './MafRowsCanvas.tsx'
 import SubsequenceContextMenu from './SubsequenceContextMenu.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { resolveMafPointerHit } from './mafHitTest.ts'
@@ -223,7 +222,6 @@ const MafBody = observer(function MafBody({
           cursor: overInsertion ? 'pointer' : undefined,
         }}
       >
-        <MafRowsCanvas model={model} />
         <EmptyLinesOverlay
           segments={model.visibleEmptyLines}
           width={width}

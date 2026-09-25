@@ -23,9 +23,8 @@ import { DASH } from '../util/asciiBytes.ts'
  * under a pixel rather than one surviving base, and a mean needs its whole
  * sample: at 333bp/px `encodeBinBp` picks a 128bp window, which would average
  * about 2.6 bases per pixel instead of 333 and turn a smooth ramp into noise.
- * They are made affordable a different way — `IdentityColumns` hoists the
- * row-independent work out of the per-row walk and drops off-block columns
- * (`drawRowIdentity.ts`).
+ * The identity encode walks every column once per region instead
+ * (`buildIdentityRuns`).
  *
  * Both painters reading this is what keeps them showing the same *data*. It
  * does not make them pixel-identical — they never were, and measurably differ
@@ -57,8 +56,7 @@ export interface GenomicColumns {
  * once per block, so the standalone spelling allocates one short `Uint32Array`
  * per block per encode and per frame. The buffer only ever grows to the widest
  * block seen, and nothing outlives the block's own row loop, so one instance per
- * pass serves them all. Same shape and the same reason as `IdentityColumns` in
- * `drawRowIdentity.ts`, which measured 2.4x over per-block allocation at that
+ * pass serves them all; reuse measured 2.4x over per-block allocation at that
  * block count.
  *
  * `colForGpos` is therefore longer than `refLen` after a wide block, which is

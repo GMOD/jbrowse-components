@@ -286,6 +286,15 @@ export interface MafRowsPayload {
   sourceChrom?: SpanChannels
   /** The summary tier's per-species presence bars. */
   summary?: MafSummarySpans
+  /** The identity heatmap's cells. */
+  identity?: SpanChannels
+  /** The identity X-Y plot's bars. */
+  identityBars?: MafIdentityBars
+}
+
+/** The `bar` shape's channels, every lane filled. */
+export interface MafIdentityBars extends SpanChannels {
+  y: Float32Array
 }
 
 /** Summary bars as `span` channels, with the record behind each instance. */

@@ -259,6 +259,23 @@ function CodonContents({
   )
 }
 
+// The window the identity plot paints under the cursor, read as a number.
+function IdentityContents({ identity }: { identity: IdentityHover }) {
+  return (
+    <TableShell caption="Identity to reference">
+      <Row
+        label="Identity"
+        value={`${(identity.identity * 100).toFixed(1)}% of ${toLocale(identity.bases)} bp`}
+      />
+    </TableShell>
+  )
+}
+
+export interface IdentityHover {
+  identity: number
+  bases: number
+}
+
 export default function MafAlignmentTooltipContents({
   p1,
   p2,
@@ -267,6 +284,7 @@ export default function MafAlignmentTooltipContents({
   codon,
   summary,
   summarySampleLabel,
+  identity,
 }: {
   p1?: GenomicPosition
   p2: GenomicPosition
@@ -275,6 +293,7 @@ export default function MafAlignmentTooltipContents({
   codon?: CodonHit
   summary?: MafSummaryRecord
   summarySampleLabel?: string
+  identity?: IdentityHover
 }) {
   if (p1) {
     return <RangeContents p1={p1} p2={p2} />
@@ -315,6 +334,7 @@ export default function MafAlignmentTooltipContents({
           <Row label="Ref" value={refLabel(p2)} />
         </TableShell>
       )}
+      {identity ? <IdentityContents identity={identity} /> : null}
       {frame ? <FrameContents frame={frame} /> : null}
     </>
   )

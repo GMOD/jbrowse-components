@@ -130,7 +130,8 @@ describe('color by source chromosome is a row mark', () => {
     expect(payload.sourceChrom).toMatchObject({ count: 4 })
     expect([...payload.sourceChrom!.x]).toEqual([100, 100, 110, 110])
     expect([...payload.sourceChrom!.row]).toEqual([0, 1, 0, 1])
-    expect(display.rowsCanvas2dMode).toBeUndefined()
+    expect(payload.identity).toBeUndefined()
+    expect(payload.identityBars).toBeUndefined()
   })
 
   it('encodes nothing for it in the bases rendering', () => {
@@ -154,6 +155,51 @@ describe('color by source chromosome is a row mark', () => {
     view.horizontalScroll(500)
     expect(view.offsetPx).toBeGreaterThan(0)
     expect(display.encodedUpload.get(0)!.sourceChrom).toBe(before)
+    dispose()
+  })
+})
+
+describe('identity is a row mark', () => {
+  it('encodes the heatmap as cells and no bars', () => {
+    const { display } = createMafTestEnvironment().createDisplay()
+    seedRegion(display)
+    display.setRowIdentityAutoZoom(false)
+    display.setRowRendering('identity')
+    const payload = display.encodedUpload.get(0)!
+    expect(payload.cells.count).toBe(0)
+    expect(payload.identity!.count).toBeGreaterThan(0)
+    expect(payload.identityBars).toBeUndefined()
+  })
+
+  it('encodes the X-Y plot as bars, on the ramp only under color identity', () => {
+    const { display } = createMafTestEnvironment().createDisplay()
+    seedRegion(display)
+    display.setRowIdentityAutoZoom(false)
+    display.setRowRendering('xyplot')
+    const flat = display.encodedUpload.get(0)!.identityBars!
+    expect(flat.count).toBeGreaterThan(0)
+    expect(new Set(flat.color).size).toBe(1)
+    expect(display.identityEncoding).toBe('bars')
+
+    display.setColorField('identity')
+    expect(display.identityEncoding).toBe('rampBars')
+    expect(display.encodedUpload.get(0)!.identity).toBeUndefined()
+  })
+
+  it('does not re-encode on a pan', () => {
+    const { display, view } = createMafTestEnvironment().createDisplay({
+      regions: [
+        { assemblyName: 'volvox', start: 0, end: 100_000, refName: 'ctgA' },
+      ],
+    })
+    seedRegion(display)
+    display.setRowIdentityAutoZoom(false)
+    display.setRowRendering('identity')
+    const dispose = observed(display)
+    const before = display.encodedUpload.get(0)!.identity
+    view.horizontalScroll(500)
+    expect(view.offsetPx).toBeGreaterThan(0)
+    expect(display.encodedUpload.get(0)!.identity).toBe(before)
     dispose()
   })
 })
