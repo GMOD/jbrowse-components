@@ -1,6 +1,7 @@
 import { syntenyTrackTypes, trackTypes } from './makeConfigs.ts'
 import {
   buildBatchHelp,
+  buildFullHelp,
   buildHelp,
   getBoolean,
   getBooleanValue,
@@ -191,6 +192,25 @@ test('help text lists options, examples, and track flags', () => {
   expect(help).toContain('[default: 1500]')
   expect(help).toContain('Track options: --bam')
   expect(help).toContain('Comparative subcommands')
+})
+
+// `batch` is a subcommand a user can type, and main.ts names it in the error
+// for an unknown one — but --help listed neither it nor any of its options, so
+// the only way to find it was to already know it was there.
+test('the top-level help names the batch subcommand', () => {
+  const help = buildHelp('jb2export', trackTypes, syntenyTrackTypes)
+  expect(help).toContain('jb2export batch --vcf')
+})
+
+// The docs embed this as the complete help, so every subcommand's options have
+// to be in it.
+test('the full help reference carries every subcommand, batch included', () => {
+  const help = buildFullHelp('jb2export', trackTypes, syntenyTrackTypes)
+  for (const mode of ['dotplot', 'synteny', 'circular', 'breakpoint']) {
+    expect(help).toContain(`Usage: jb2export ${mode} [options]`)
+  }
+  expect(help).toContain('Usage: jb2export batch --vcf <file> [options]')
+  expect(help).toContain('--outDir')
 })
 
 test('subcommand help lists comparison track options', () => {

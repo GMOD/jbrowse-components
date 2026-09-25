@@ -735,12 +735,13 @@ Available `baseColor:` fields:
 
 These share one display base, so every modifier below applies to both.
 
-| Modifier                            | Example                 | Description                                                                                                                                                                                                       |
-| ----------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `color:value`                       | `color:magenta`         | Glyph fill: any CSS color, or `strand` to color by feature strand (tomato forward, cornflowerblue reverse)                                                                                                        |
-| `color:attribute:name`              | `color:attribute:type`  | One stable color per distinct value of that feature attribute — the canvas analogue of an alignments `color:tag:XX`                                                                                               |
-| `featureHeight:preset`              | `featureHeight:compact` | Display mode (`normal`, `compact`, `super-compact`)                                                                                                                                                               |
-| `heightMode:<fixed\|grow\|fit>[:N]` | `heightMode:fit:200`    | Track-height strategy: `fixed` scrolls to see all features, `grow` resizes the track to fit every feature, `fit` shrinks glyphs so every row fits without scrolling; an optional number sets the track height too |
+| Modifier                                | Example                                        | Description                                                                                                                                                                                                       |
+| --------------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `color:value`                           | `color:magenta`                                | Glyph fill: any CSS color, or `strand` to color by feature strand (tomato forward, cornflowerblue reverse)                                                                                                        |
+| `color:attribute:name`                  | `color:attribute:type`                         | One stable color per distinct value of that feature attribute — the canvas analogue of an alignments `color:tag:XX`                                                                                               |
+| `group:field` or `group:attribute:name` | `group:strand`, `group:attribute:gene_biotype` | Stack the track into one labelled section per value: `strand`, an attribute, or a dotted path such as `INFO.SVTYPE`. The same modifier an alignments track takes, writing the same `facet` setting                |
+| `featureHeight:preset`                  | `featureHeight:compact`                        | Display mode (`normal`, `compact`, `super-compact`)                                                                                                                                                               |
+| `heightMode:<fixed\|grow\|fit>[:N]`     | `heightMode:fit:200`                           | Track-height strategy: `fixed` scrolls to see all features, `grow` resizes the track to fit every feature, `fit` shrinks glyphs so every row fits without scrolling; an optional number sets the track height too |
 
 **BigWig tracks**
 
@@ -1072,6 +1073,11 @@ structural variants) as a circular ideogram with chords drawn between the two
 breakends of each rearrangement. It is single-assembly and shows the whole
 genome (no `--loc`); each track picks its chord display automatically.
 
+The tracks it draws are the ones the track flags and `--track` name, with the
+same display modifiers a linear render takes. Name them over a `--hub` or a
+large `--config`, whose hundreds of tracks would otherwise all be opened — which
+is what a run naming none still means.
+
 ```bash
 jb2export circular --fasta ref.fa --vcfgz sv.vcf.gz --out circular.svg
 ```
@@ -1328,6 +1334,7 @@ subcommand's options. The complete output:
 ```text
 Usage: jb2export [options]
        jb2export <dotplot|synteny|circular|breakpoint> [options]
+       jb2export batch --vcf <file> [options]
        jb2export list [hub] [filter]
 
 Options:
@@ -1372,6 +1379,8 @@ Examples:
 Track options: --bam, --cram, --bigwig, --multiwig, --vcfgz, --gffgz, --hic, --bigbed, --bedgz
 
 Comparative subcommands (run "jb2export dotplot --help"): dotplot, synteny, circular, breakpoint
+
+Whole callsets: "jb2export batch --vcf calls.vcf.gz" writes one image per record (run "jb2export batch --help")
 
 Discovery: "jb2export list" lists genomes.jbrowse.org assemblies; "jb2export list <hub> [filter]" lists a hub's tracks
 
@@ -1526,6 +1535,65 @@ Examples:
       A multi-hop chain: one panel per locus, in the order the reads cross them
   jb2export breakpoint --fasta ref.fa --bam tumor.bam --loc "chr9:28,030,000-28,032,000 chr9:28,058,000-28,060,000" --loc chr9:28,059,000-28,061,000 --out fb.png
       Quote one --loc to put several windows in a single panel
+
+Usage: jb2export batch --vcf <file> [options]
+
+Renders one image per record. A junction is a breakpoint split view: both
+loci stacked, with the reads that leave one panel and arrive in the other
+drawn between them. A record that fits one window is a single panel: an
+insertion, a single breakend, or two ends closer together than --flank
+reaches. The module graph loads once for the whole callset, so this is
+much faster than a shell loop over "jb2export breakpoint".
+
+Options:
+  --fasta           Path to indexed FASTA file
+  --chromSizes      Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
+  --aliases         Path to reference name aliases file
+  --assembly        Path to assembly JSON (or "-" for stdin) or name in config
+  --hub             Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
+  --track           Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
+  --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
+  --width           Width of output in pixels [default: 1500]
+  --noRasterize     Disable rasterization of pileup/coverage [default: false]
+  --defaultSession  Use default session from config [default: false]
+  --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
+  --cytobands       Path to cytoband file for the assembly
+  --themeName       Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
+  --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
+  --showGridlines   Show genomic coordinate gridlines in the output [default: false]
+  --trackLabels     Track label position: offset, overlapping, left, or hidden
+  --refseq          Show the reference sequence track [default: false]
+  --vcf             VCF (plain or bgzipped) of structural variants to render, one image per record
+  --bedpe           BEDPE to render, one image per row; the format for anything a VCF cannot express (a LINX TSV reshaped by awk)
+  --outDir          Directory to write the images to [default: jb2export-batch]
+  --flank           bp of context around each breakend [default: 500]
+  --limit           Render only the first N rows
+  --format          Output format: png, svg, or pdf [default: png]
+  --passOnly        Skip VCF records whose FILTER is neither PASS nor "." [default: false]
+  --resume          Skip a record whose image is already in --outDir, so an interrupted run picks up where it stopped [default: false]
+  --manifest        Also write manifest.tsv to --outDir: one row per image with its file, loci, name, line in the input, EVENT, the reads joining its panels and status [default: false]
+  --dryRun          Print the file and loci each record would render, and render nothing [default: false]
+  --jobs            Processes to render in, each about a gigabyte. The default is half the cores, up to 4 and to what memory allows; 1 renders in this process
+
+Examples:
+  jb2export batch --vcf calls.vcf.gz --fasta ref.fa --bam tumor.bam --outDir figs --flank 1000
+      A contact sheet of every junction in a callset
+  jb2export batch --vcf calls.vcf.gz --hub hg38 --bam tumor.bam --limit 20
+      The first 20, to check the framing before committing to the whole run
+  jb2export batch --bedpe linx_links.bedpe --hub hg38 --bam tumor.bam
+      The same from a BEDPE, for a caller whose output is not a VCF
+
+The ALT grammar is parsed by @gmod/vcf, so inserted sequence at the
+junction and upper-cased mate contigs are handled; reciprocal breakend
+pairs collapse, so each junction is queued once.
+
+Every track is drawn as if given force:true, since a window is only --flank
+wide and a "Region too large" panel cannot be clicked through on an image;
+force:false on a track restores its size limit.
+
+Records a caller files under one VCF EVENT are also drawn together, as
+event_<n>_<label>, when the event visits more than two loci: one panel per
+locus, in contig order.
 ```
 
 <!-- INJECT_HELP END -->

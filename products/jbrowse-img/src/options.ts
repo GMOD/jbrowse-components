@@ -695,6 +695,7 @@ export function buildHelp(
   return [
     `Usage: ${scriptName} [options]`,
     `       ${scriptName} <${subcommandNames.join('|')}> [options]`,
+    `       ${scriptName} batch --vcf <file> [options]`,
     `       ${scriptName} list [hub] [filter]`,
     '',
     'Options:',
@@ -709,12 +710,16 @@ export function buildHelp(
     '',
     `Comparative subcommands (run "${scriptName} dotplot --help"): ${subcommandNames.join(', ')}`,
     '',
+    `Whole callsets: "${scriptName} batch --vcf calls.vcf.gz" writes one image per record (run "${scriptName} batch --help")`,
+    '',
     `Discovery: "${scriptName} list" lists genomes.jbrowse.org assemblies; "${scriptName} list <hub> [filter]" lists a hub's tracks`,
   ].join('\n')
 }
 
-// The complete help reference: the top-level help followed by each subcommand's
-// help. The docs embed this so the published help can't drift from the code.
+// The complete help reference: the top-level help, then each subcommand's. The
+// docs embed this so the published help can't drift from the code — which means
+// `batch` belongs here too, since it is a subcommand a reader can type and its
+// options appear in no other help.
 export function buildFullHelp(
   scriptName: string,
   trackTypes: string[],
@@ -726,5 +731,6 @@ export function buildFullHelp(
   return [
     buildHelp(scriptName, trackTypes, syntenyTrackTypes),
     ...subcommandHelp,
+    buildBatchHelp(scriptName),
   ].join('\n\n')
 }
