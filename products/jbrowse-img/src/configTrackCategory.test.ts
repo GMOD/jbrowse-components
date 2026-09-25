@@ -58,6 +58,25 @@ test('every CLI file-type flag resolves to its display category', () => {
   })
 })
 
+test('a config assembly written as { name, uri } gets its sequence track', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb2export-shorthand-'))
+  const configFile = path.join(tmpDir, 'config.json')
+  fs.writeFileSync(
+    configFile,
+    JSON.stringify({ assemblies: [{ name: 'volvox', uri: 'volvox.fa' }] }),
+  )
+  try {
+    const { assembly } = readData({ config: configFile })
+    expect(assembly.sequence).toEqual({
+      type: 'ReferenceSequenceTrack',
+      trackId: 'volvox-ReferenceSequenceTrack',
+      adapter: { uri: 'volvox.fa' },
+    })
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true })
+  }
+})
+
 describe('readData with a config', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb2export-readData-'))
   const configFile = path.join(tmpDir, 'config.json')

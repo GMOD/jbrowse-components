@@ -5,9 +5,34 @@ import type PluginManager from '../PluginManager.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export {
+  expandAssemblySequence,
   expandAssemblySequenceAdapter,
   expandAssemblyShorthand,
 } from './expandAssemblyConfigShorthand.ts'
+
+/**
+ * A sidecar sub-schema written as just its file: `'aliases.txt'` or
+ * `{ uri: 'aliases.txt' }` becomes `{ adapter: { type, uri } }`, with `type`
+ * picked from the uri. baseUri, stamped by addRelativeUris, rides along. An
+ * explicit `adapter` passes through untouched.
+ */
+function fileAdapterShorthand(typeFor: (uri: string) => string) {
+  return {
+    shorthand: 'uri',
+    preProcessSnapshot: (snap: Record<string, unknown>) => {
+      const { uri, baseUri, adapter } = snap
+      if (adapter) {
+        return snap
+      }
+      return {
+        adapter:
+          typeof uri === 'string'
+            ? { type: typeFor(uri), uri, ...(baseUri ? { baseUri } : {}) }
+            : { type: typeFor('') },
+      }
+    },
+  }
+}
 
 /**
  * #config BaseAssembly
@@ -40,7 +65,8 @@ export {
  * jbrowse-core picks the adapter (`Bgzip`/`Indexed`/`TwoBit`) from the
  * extension, derives the `.fai`/`.gzi` siblings, and fills in the
  * `ReferenceSequenceTrack`. `refNameAliases`/`cytobands` are each just their
- * file, as a path or `{ uri }`.
+ * file, as a path or `{ uri }`; an alias file named `…sequence_report.tsv` is
+ * read as NCBI's sequence report, anything else as a chromAlias-style table.
  * ```js
  * {
  *   name: 'hg38',
@@ -196,29 +222,11 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
            */
           adapter: pluginManager.pluggableConfigSchemaType('adapter'),
         },
-        {
-          // the alias file is always a RefNameAliasAdapter, so both its type
-          // and the `adapter` nesting are boilerplate: allow
-          // `refNameAliases: 'aliases.txt'` or `{ uri: 'aliases.txt' }`
-          // (baseUri, stamped by addRelativeUris, rides along). An explicit
-          // `adapter` passes through untouched; absent, the empty default is
-          // filled in.
-          shorthand: 'uri',
-          preProcessSnapshot: snap =>
-            snap.adapter
-              ? snap
-              : {
-                  adapter: {
-                    type: 'RefNameAliasAdapter',
-                    ...(snap.uri
-                      ? {
-                          uri: snap.uri,
-                          ...(snap.baseUri ? { baseUri: snap.baseUri } : {}),
-                        }
-                      : {}),
-                  },
-                },
-        },
+        fileAdapterShorthand(uri =>
+          /sequence_report\.tsv(\.gz)?$/i.test(uri)
+            ? 'NcbiSequenceReportAliasAdapter'
+            : 'RefNameAliasAdapter',
+        ),
       ),
       cytobands: ConfigurationSchema(
         'Cytoband',
@@ -230,26 +238,7 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
            */
           adapter: pluginManager.pluggableConfigSchemaType('adapter'),
         },
-        {
-          // same shorthand as refNameAliases: `cytobands: 'cytoBand.txt'` fills
-          // in the CytobandAdapter; an explicit `adapter` passes through,
-          // absent it defaults to the empty adapter.
-          shorthand: 'uri',
-          preProcessSnapshot: snap =>
-            snap.adapter
-              ? snap
-              : {
-                  adapter: {
-                    type: 'CytobandAdapter',
-                    ...(snap.uri
-                      ? {
-                          uri: snap.uri,
-                          ...(snap.baseUri ? { baseUri: snap.baseUri } : {}),
-                        }
-                      : {}),
-                  },
-                },
-        },
+        fileAdapterShorthand(() => 'CytobandAdapter'),
       ),
 
       /**

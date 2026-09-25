@@ -3,53 +3,74 @@ import { UNKNOWN } from '../util/tracks.ts'
 
 import type PluginManager from '../PluginManager.ts'
 
+export function referenceSequenceTrackId(assemblyName: unknown) {
+  return `${assemblyName}-ReferenceSequenceTrack`
+}
+
+/**
+ * The part of {@link expandAssemblyShorthand} that needs no plugin manager, for
+ * a reader of raw config JSON: the flat `{ name, uri }` form moves onto
+ * `sequence.adapter`, and `sequence.type` and `sequence.trackId` are each
+ * filled in when omitted. Returns `snap` itself when there is nothing to do.
+ */
+export function expandAssemblySequence<T>(snap: T): T {
+  if (!isPlainObject(snap)) {
+    return snap
+  }
+  const { uri, baseUri, ...rest } = snap
+  const given = rest.sequence
+  // baseUri, stamped next to `uri` by addRelativeUris, rides down onto the
+  // adapter so the sequence resolves against the config's location
+  const seq: unknown =
+    typeof uri === 'string' &&
+    (given === undefined || (isPlainObject(given) && !given.adapter))
+      ? {
+          ...(isPlainObject(given) ? given : {}),
+          adapter: { uri, ...(baseUri ? { baseUri } : {}) },
+        }
+      : given
+  if (
+    !isPlainObject(seq) ||
+    (seq === snap.sequence && 'type' in seq && 'trackId' in seq)
+  ) {
+    return snap
+  }
+  return {
+    ...rest,
+    sequence: {
+      type: 'ReferenceSequenceTrack',
+      trackId: referenceSequenceTrackId(snap.name),
+      ...seq,
+    },
+  } as T
+}
+
 /**
  * Expand an assembly snapshot's own shorthands into the `sequence` an assembly
- * config declares: the flat `{ name, uri: 'genome.fa.gz' }` form, the
- * `sequence: { adapter: { uri } }` form, and the omitted
- * `sequence.type`/`trackId`.
+ * config declares: {@link expandAssemblySequence}, then the sequence adapter's
+ * type guessed from its `uri`.
  *
  * This is the assembly config schema's `preProcessSnapshot`, lifted out so a
  * caller that has to see canonical locations *before* MST builds the tree can
  * run it too. `localFiles` is that caller: it rewrites `{ uri: <a registered
  * name> }` location nodes into blobs, and until this has run the only `uri` in
  * a shorthand assembly is on the assembly itself, where it is not a location
- * node and must not be rewritten as one. Idempotent — the flat `uri` is
- * consumed, so the schema's own later pass finds nothing to do.
+ * node and must not be rewritten as one. Idempotent, and returns `snap` itself
+ * when there is nothing to expand.
  */
 export function expandAssemblyShorthand<T>(
   snap: T,
   pluginManager: PluginManager,
 ): T {
-  if (!isPlainObject(snap)) {
-    return snap
+  const expanded = expandAssemblySequence(snap)
+  if (!isPlainObject(expanded)) {
+    return expanded
   }
-  const { name, uri, baseUri, ...rest } = snap
-  // flattest shorthand: `{ name, uri: 'genome.fa.gz' }` describes an
-  // assembly by its sequence file alone. baseUri, stamped next to the
-  // `uri` key by addRelativeUris (hub/relative configs), rides down onto
-  // the adapter so the sequence resolves against the config's location.
-  const rawSequence =
-    rest.sequence ??
-    (typeof uri === 'string'
-      ? { adapter: { uri, ...(baseUri ? { baseUri } : {}) } }
-      : undefined)
-  // infer sequence.adapter.type from its uri when omitted, so a config can
-  // give just `sequence: { adapter: { uri: 'genome.fa.gz' } }` and core
-  // picks the adapter (Bgzip/Indexed/TwoBit) — no adapter table in hosts
-  const seq = expandAssemblySequenceAdapter(rawSequence, pluginManager)
-  // then allow sequence.type/trackId to be omitted, since they are always
-  // 'ReferenceSequenceTrack' and a name derived from the assembly name
-  const sequence =
-    seq && typeof seq === 'object' && !('type' in seq)
-      ? {
-          type: 'ReferenceSequenceTrack',
-          trackId: `${name}-ReferenceSequenceTrack`,
-          ...seq,
-        }
-      : seq
-  // preserve the identity-unchanged case so nothing rebuilds needlessly
-  return (sequence === snap.sequence ? snap : { ...rest, name, sequence }) as T
+  const sequence = expandAssemblySequenceAdapter(
+    expanded.sequence,
+    pluginManager,
+  )
+  return sequence === expanded.sequence ? expanded : { ...expanded, sequence }
 }
 
 /**

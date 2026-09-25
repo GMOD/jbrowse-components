@@ -126,3 +126,50 @@ test('an explicit sequence.type/trackId is left untouched', () => {
 
   expect(model.sequence.trackId).toBe('volvox-custom-id')
 })
+
+// the shape JBrowseModel.addAssemblyConf used to build: a sequence carrying
+// only type/trackId beside the flat uri, which dropped the uri and left the
+// union's default adapter as the genome's sequence
+test('the flat uri reaches a sequence that names no adapter', () => {
+  const model = getAssemblyConfigSchema().create({
+    name: 'hg38',
+    uri: 'hg38.fa.gz',
+    sequence: { type: 'ReferenceSequenceTrack', trackId: 'hg38-seq' },
+  })
+
+  expect(model.sequence.trackId).toBe('hg38-seq')
+  expect(getSnapshot(model.sequence.adapter)).toMatchObject({
+    type: 'BgzipFastaAdapter',
+  })
+})
+
+test('a typed sequence without a trackId gets the derived one', () => {
+  const model = getAssemblyConfigSchema().create({
+    name: 'volvox',
+    sequence: {
+      type: 'ReferenceSequenceTrack',
+      adapter: { type: 'BgzipFastaAdapter', uri: 'volvox.fa.gz' },
+    },
+  })
+
+  expect(model.sequence.trackId).toBe('volvox-ReferenceSequenceTrack')
+})
+
+test('a sequence_report.tsv alias file reads as NCBI, anything else as chromAlias', () => {
+  const schema = getAssemblyConfigSchema()
+  const ncbi = schema.create({
+    name: 'a',
+    uri: 'a.fa.gz',
+    refNameAliases: 'GCF_000001405.40_sequence_report.tsv',
+  })
+  const ucsc = schema.create({
+    name: 'b',
+    uri: 'b.fa.gz',
+    refNameAliases: { uri: 'b.chromAlias.txt' },
+  })
+
+  expect(ncbi.refNameAliases.adapter.type).toBe(
+    'NcbiSequenceReportAliasAdapter',
+  )
+  expect(ucsc.refNameAliases.adapter.type).toBe('RefNameAliasAdapter')
+})
