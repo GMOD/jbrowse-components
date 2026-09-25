@@ -24,6 +24,19 @@ import type { ColorPalette, RGBColor } from './colors.ts'
 // A parity test can only catch that after someone writes it. Deriving is what
 // makes it unrepresentable, and it is the shape `readCategoryPaletteKeys`
 // already uses for the reads themselves.
+//
+// **Indexing `readCategoryColor` from these passes instead — dropping both
+// tables — has been proposed twice and declined both times.** The colour is
+// already one derivation, so it retires an index space and nothing else, and
+// each table pays for the merge separately. `arcColor` is in
+// `ArcBandUniforms`, not the pileup block, so merging takes the band's struct
+// from 224 to 432 bytes to carry 12 categories the band never paints: the
+// conversion shape ADR-062 rejected for the base colours. `linkedReadColor` IS
+// in the pileup block and dropping it would reach a 512-byte ring slot, but
+// that is the saving ARCHITECTURAL_LIMITS priced and parked — "the slot count
+// is the oversized term, not the slot size" — and slots 1-4 there ARE
+// `PAIR_DIRECTION_NUM`, which `features/linkedReads/compute.ts` exists to keep
+// true by construction.
 type PaletteKey = keyof ColorPalette
 
 // Slot → meaning for the Slang arc shaders (u.arcColor0..8), which the Canvas2D
