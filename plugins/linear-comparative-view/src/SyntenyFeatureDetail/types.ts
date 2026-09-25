@@ -18,5 +18,8 @@ export interface SyntenyFeatureDetailModel extends FeatureDetailsModel {
   // outer LinearSyntenyView itself when opened from a ribbon click (in which
   // case `level` says which row-pair produced the feature), or a view with no
   // linear row at all — the circular view's ribbons.
-  view: LinearGenomeViewModel | LinearSyntenyViewModel | AbstractViewModel
+  view:
+    | LinearGenomeViewModel
+    | LinearSyntenyViewModel
+    | (AbstractViewModel & { assemblyNames: string[] })
 }
