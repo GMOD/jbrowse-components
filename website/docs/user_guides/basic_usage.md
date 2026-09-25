@@ -45,6 +45,17 @@ Drag the six-dot handle on a track label up or down.
 
 <Figure caption="The main linear genome view controls, labeled in place: the track selector, the scroll-zoom toggle, the pan and zoom buttons, the search box, and each track's drag handle and track menu." src="/img/lgv_usage_guide.png" />
 
+### Resizing tracks
+
+- **One track:** drag the thin handle under it. Double-clicking the handle grows
+  a track that scrolls its own content to show all of it.
+- **Every track at once:** drag the grey bar under the last track. Each track
+  gives or takes in proportion to its height, so tall tracks move the most.
+  While the view is taller than the window, the bar stays at the bottom of the
+  window.
+- **Fit to the window:** double-click that bar, or pick **Fit tracks to window**
+  in the view's hamburger menu, to size the tracks so the view fills the window.
+
 ### Reordering views
 
 Views have no drag handle. Use "Move up"/"Move down" in the view menu (hamburger
