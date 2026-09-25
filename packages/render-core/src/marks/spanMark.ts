@@ -98,7 +98,10 @@ function placeSpan(c: SpanChannels, g: SpanFrame, i: number) {
     if (slot === HIDDEN_ROW) {
       return false
     }
-    color = table.color[key]! || color
+    const override = table.color[key]!
+    if (override >>> 24 !== 0) {
+      color = override
+    }
   }
   const xa = projectBp(g, c.x[i]!)
   const xb = projectBp(g, c.x2[i]!)

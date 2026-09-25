@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { createJBrowseTheme, legendSpecOf } from '@jbrowse/core/ui'
+import { RowKeys, buildRowTable } from '@jbrowse/render-core/marks'
 import { clusterLayout } from '@jbrowse/tree-sidebar'
 import { ThemeProvider } from '@mui/material'
 import { renderToString } from 'react-dom/server'
@@ -108,6 +109,7 @@ function makeModel(overrides: Partial<LegendModel> = {}): LegendModel {
   // tint, so an override naming only one of them means both here.
   const sources = overrides.sources ?? [{ name: 'a' }, { name: 'b' }]
   const drawnRegionData = new Map([[0, makeRegionData()]])
+  const rowKeys = new RowKeys()
   const renderState = {
     canvasWidth: 800,
     canvasHeight: 100,
@@ -119,6 +121,14 @@ function makeModel(overrides: Partial<LegendModel> = {}): LegendModel {
     ]),
     hiddenColors: new Set<number>(),
     rowColorsByIndex: [undefined, undefined],
+    rowTable: buildRowTable(
+      Uint32Array.from(['a', 'b'], name => rowKeys.keyOf(name)),
+    ),
+  }
+  const encodeInputs = {
+    rowKeys,
+    overriddenRows: new Set<string>(),
+    hiddenColors: renderState.hiddenColors,
   }
   return {
     id: 'test',
@@ -134,7 +144,7 @@ function makeModel(overrides: Partial<LegendModel> = {}): LegendModel {
     encodedChannels: new Map(
       [...drawnRegionData].map(([k, d]) => [
         k,
-        buildMultiRowChannels(d, renderState),
+        buildMultiRowChannels(d, encodeInputs),
       ]),
     ),
     renderState,

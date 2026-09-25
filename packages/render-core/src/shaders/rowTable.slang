@@ -9,8 +9,8 @@
 // dimension). The slot plane holds the slot's low 24 bits in rgb and 255 in
 // alpha where the key is drawn, 0 where it is hidden; the colour plane below it
 // holds the override, straight alpha, and alpha 0 where the instance keeps its
-// own colour. `marks/rowTable.ts` writes it and is the painter's and hit test's
-// reading of the same bytes.
+// own colour. `marks/rowTable.ts` writes it through the texel twins exported
+// here, and is the painter's and hit test's reading of the same bytes.
 //
 // Sampled at texel centres with `SampleLevel`, never `Load`: this slangc emits
 // `textureLoad` on the sampler variable for `Load`, which is invalid WGSL. The
@@ -19,6 +19,7 @@
 // parameter but not declare the binding for its importer, so each pass reading
 // a table declares its own `[[vk::binding(2, 0)]] Sampler2D<float4>`.
 //! export-consts: ROW_TABLE_MAX_WIDTH
+//! js-export: rowTableWidth, rowTablePlaneHeight, rowTableTexelX, rowTableTexelY
 //! js-skip: byteOf — recovers a byte from a sampled texel; the TS side reads the table's bytes directly
 module rowTable;
 
@@ -29,6 +30,24 @@ public struct RowPlacement {
   public uint slot;
   public float4 color;
 };
+
+public uint rowTableWidth(uint keys) {
+  return max(min(keys, ROW_TABLE_MAX_WIDTH), 1u);
+}
+
+public uint rowTablePlaneHeight(uint keys) {
+  uint w = rowTableWidth(keys);
+  return max((keys + w - 1u) / w, 1u);
+}
+
+public uint rowTableTexelX(uint key, uint keys) {
+  return key % rowTableWidth(keys);
+}
+
+// The key's row in the slot plane; the colour plane's is one plane height on.
+public uint rowTableTexelY(uint key, uint keys) {
+  return key / rowTableWidth(keys);
+}
 
 uint byteOf(float channel) {
   return uint(channel * 255.0 + 0.5);
@@ -52,15 +71,17 @@ public RowPlacement rowTableLookup(
     p.hidden = true;
     return p;
   }
-  uint w = min(n, ROW_TABLE_MAX_WIDTH);
-  uint h = (n + w - 1u) / w;
-  float u = (float(key % w) + 0.5) / float(w);
+  uint h = rowTablePlaneHeight(n);
+  float u = (float(rowTableTexelX(key, n)) + 0.5) / float(rowTableWidth(n));
   float rows = float(2u * h);
-  float4 s = table.SampleLevel(float2(u, (float(key / w) + 0.5) / rows), 0.0);
-  p.hidden = s.a < 0.5;
+  uint y = rowTableTexelY(key, n);
+  float4 s = table.SampleLevel(float2(u, (float(y) + 0.5) / rows), 0.0);
+  if (s.a < 0.5) {
+    p.hidden = true;
+    return p;
+  }
   p.slot = byteOf(s.r) | (byteOf(s.g) << 8) | (byteOf(s.b) << 16);
-  float4 c = table.SampleLevel(
-    float2(u, (float(key / w + h) + 0.5) / rows), 0.0);
+  float4 c = table.SampleLevel(float2(u, (float(y + h) + 0.5) / rows), 0.0);
   p.color = c.a > 0.0 ? c : own;
   return p;
 }

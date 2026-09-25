@@ -15,7 +15,7 @@ import type {
   MultiRowRenderState,
 } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { ContextMenuAnchor } from '@jbrowse/core/ui'
-import type { MarkInstance } from '@jbrowse/render-core/marks'
+import type { MarkInstance, RowKeys } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { RowSource } from '@jbrowse/tree-sidebar'
 
@@ -65,6 +65,7 @@ export interface MultiRowHitTestSlice {
   treeAreaWidth: number
   sources: RowSource[]
   rowIndexByValue: ReadonlyMap<string, number>
+  rowKeys: RowKeys
   effectiveRowHeight: number
   rowProportion: number
   renderBlocks: RenderBlock[]
@@ -93,23 +94,36 @@ function pointerBase(self: MultiRowHitTestSlice, mouseX: number) {
   return p.oob ? undefined : p
 }
 
+/** The channel indices carrying `key`, back to front. */
+function* channelsOfKey(
+  { rowStart, rowIndices }: MultiRowEncoded,
+  key: number | undefined,
+) {
+  const lo = key === undefined ? undefined : rowStart[key]
+  const hi = key === undefined ? undefined : rowStart[key + 1]
+  if (lo !== undefined && hi !== undefined) {
+    for (let k = hi - 1; k >= lo; k--) {
+      yield rowIndices[k]!
+    }
+  }
+}
+
 /**
  * The channel indices drawn on rows `nearest` down to `lowest`, each row's
  * bucket back to front: both render paths paint in array order, so a later
  * channel sits on top, and the mark keeps the first zero-distance candidate.
+ * The buckets are by key, so each drawn row names its key first.
  */
 function* channelsOnRows(
-  { rowStart, rowIndices }: MultiRowEncoded,
+  self: Pick<MultiRowHitTestSlice, 'sources' | 'rowKeys'>,
+  encoded: MultiRowEncoded,
   nearest: number,
   lowest: number,
 ) {
   for (let r = nearest; r >= lowest; r--) {
-    const lo = rowStart[r]
-    const hi = rowStart[r + 1]
-    if (lo !== undefined && hi !== undefined) {
-      for (let k = hi - 1; k >= lo; k--) {
-        yield rowIndices[k]!
-      }
+    const name = self.sources[r]?.name
+    if (name !== undefined) {
+      yield* channelsOfKey(encoded, self.rowKeys.lookup(name))
     }
   }
 }
@@ -151,21 +165,21 @@ function featureAtBase(
     self.renderState,
     Math.floor(mouseX) + 0.5,
     contentYAt(mouseY, { rowHeight }),
-    channelsOnRows(encoded, nearest, lowest),
+    channelsOnRows(self, encoded, nearest, lowest),
     INSIDE_ONLY,
   )
   if (!hit) {
     return undefined
   }
-  const row = self.sources[encoded.row[hit.index]!]
-  if (!row) {
+  const rowName = self.rowKeys.names[encoded.row[hit.index]!]
+  if (rowName === undefined) {
     return undefined
   }
   const i = encoded.featureIndex[hit.index]!
   return {
     id: region.featureIds[i]!,
     regionIndex: p.index,
-    rowName: row.name,
+    rowName,
     name: region.featureNames[i]!,
     refName: p.refName,
     start: region.featureStarts[i]!,
@@ -207,30 +221,26 @@ export function contextTargetAtPixel(
 
 /**
  * The instance a hit names in the live encoding, resolved by row name and
- * feature id rather than trusted from the hit, so a reorder moves the box
- * and a row since filtered away lights nothing. The walk is the row's own
- * bucket, which is a handful of channels.
+ * feature id rather than trusted from the hit, so a row since filtered away
+ * lights nothing. The walk is the row's own bucket, which is a handful of
+ * channels.
  */
 export function hitInstance(
   self: Pick<
     MultiRowHitTestSlice,
-    'rowIndexByValue' | 'drawnRegionData' | 'encodedChannels'
+    'rowIndexByValue' | 'rowKeys' | 'drawnRegionData' | 'encodedChannels'
   >,
   hit: MultiRowHit | undefined,
 ): MarkInstance | undefined {
-  const rowIndex = hit && self.rowIndexByValue.get(hit.rowName)
   const region = hit && self.drawnRegionData.get(hit.regionIndex)
   const encoded = hit && self.encodedChannels.get(hit.regionIndex)
-  if (rowIndex === undefined || !region || !encoded) {
+  if (!region || !encoded || !self.rowIndexByValue.has(hit.rowName)) {
     return undefined
   }
-  const lo = encoded.rowStart[rowIndex]
-  const hi = encoded.rowStart[rowIndex + 1]
-  if (lo === undefined || hi === undefined) {
-    return undefined
-  }
-  for (let k = lo; k < hi; k++) {
-    const index = encoded.rowIndices[k]!
+  for (const index of channelsOfKey(
+    encoded,
+    self.rowKeys.lookup(hit.rowName),
+  )) {
     if (region.featureIds[encoded.featureIndex[index]!] === hit.id) {
       return { mark: 0, index }
     }

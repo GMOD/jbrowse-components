@@ -24,7 +24,13 @@ import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
-import { inkOfInstances } from '@jbrowse/render-core/marks'
+import {
+  HIDDEN_ROW,
+  NO_ROW_COLOR,
+  RowKeys,
+  buildRowTable,
+  inkOfInstances,
+} from '@jbrowse/render-core/marks'
 import {
   ContextMenuMixin,
   RowHeightMixin,
@@ -90,6 +96,7 @@ import type { MultiRowContextMenuInfo, MultiRowHit } from './hitTesting.ts'
 import type { PartitionRowCount } from './partitionFields.ts'
 import type { MultiRowEncoded } from './rendering/multiRowChannels.ts'
 import type {
+  MultiRowEncodeInputs,
   MultiRowFeaturePaintInputs,
   MultiRowRegionData,
   MultiRowRenderState,
@@ -105,6 +112,7 @@ import type {
 } from '@jbrowse/display-kit/highlightHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { RowTable } from '@jbrowse/render-core/marks'
 import type {
   RowColorDeal,
   RowSource,
@@ -113,6 +121,11 @@ import type {
 import type React from 'react'
 
 const EMPTY_REGION_DATA: ReadonlyMap<number, MultiRowRegionData> = new Map()
+
+// The override exemption from a category hide matters only while a category
+// is hidden, so until one is the encode reads no rows and a first override
+// re-encodes nothing.
+const NO_ROWS: ReadonlySet<string> = new Set()
 
 export type { MultiRowContextMenuInfo, MultiRowHit } from './hitTesting.ts'
 
@@ -544,14 +557,10 @@ export default function stateModelFactory(
         return new Set(self.hiddenCategories)
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * ABGR colors currently hidden via the legend's category toggles. Both
-       * render paths and the hit test skip features painted in one of these, so
-       * a toggle drops it everywhere without a refetch.
-       */
-      get hiddenColors(): ReadonlySet<number> {
+    .views(self => {
+      // Identity-stable, in colour order: the encode keys on it, and the legend
+      // it is read off recomputes on every recolour and region arrival.
+      const hiddenColors = stableIdentityComputed(() => {
         if (!self.hiddenCategories.length) {
           return new Set<number>()
         }
@@ -559,10 +568,22 @@ export default function stateModelFactory(
         return new Set(
           self.colorLegend
             .filter(e => entryHidden(e, hidden))
-            .map(e => e.color),
+            .map(e => e.color)
+            .sort((a, b) => a - b),
         )
-      },
-    }))
+      })
+      return {
+        /**
+         * #getter
+         * ABGR colors currently hidden via the legend's category toggles. Both
+         * render paths and the hit test skip features painted in one of these,
+         * so a toggle drops it everywhere without a refetch.
+         */
+        get hiddenColors(): ReadonlySet<number> {
+          return hiddenColors.get()
+        },
+      }
+    })
     .views(self => ({
       /**
        * #getter
@@ -723,14 +744,96 @@ export default function stateModelFactory(
         return buildSpatialIndex(self.hierarchy)
       },
     }))
+    .views(self => {
+      const rowKeys = new RowKeys()
+      // Every value a loaded region carries, and every row drawn, keyed; the
+      // identity moves only when a name is first seen.
+      const rowKeyNames = stableIdentityComputed(() => {
+        for (const data of self.drawnRegionData.values()) {
+          for (const value of data.partitionValues) {
+            rowKeys.keyOf(value)
+          }
+        }
+        for (const { name } of self.sources) {
+          rowKeys.keyOf(name)
+        }
+        return rowKeys.names.slice()
+      })
+      // Over the unfocused arrangement, so a focus leaves the set alone, and
+      // in name order, since the structural comparer walks a Set in insertion
+      // order and a reorder would move its identity.
+      const overriddenRows = stableIdentityComputed(() => {
+        const rows = self.editableSources
+        const colors = resolveRowColorStrings(
+          rows,
+          self.colorConfig === undefined && !self.usedItemRgb
+            ? self.rowColorScale
+            : undefined,
+        )
+        return new Set(
+          rows
+            .filter((_, i) => colors[i] !== undefined)
+            .map(s => s.name)
+            .sort(),
+        )
+      })
+      const tableInputs = stableIdentityComputed(() => ({
+        order: self.sources.map(s => s.name),
+        colors: self.rowColorsByIndex,
+      }))
+      return {
+        /**
+         * #getter
+         * The key each row name holds across every loaded region, assigned
+         * at the name's first arrival and never moved; the instance buffers
+         * carry these.
+         */
+        get rowKeys(): RowKeys {
+          return rowKeys
+        },
+        /**
+         * #getter
+         * What the encode reads, and so what re-encodes every region on its
+         * identity: the keys, the rows painting an override and the hidden
+         * categories. The reader's order, focus and colours are the table's.
+         */
+        get encodeInputs(): MultiRowEncodeInputs {
+          const hiddenColors = self.hiddenColors
+          return {
+            rowKeys,
+            overriddenRows:
+              hiddenColors.size === 0 ? NO_ROWS : overriddenRows.get(),
+            hiddenColors,
+          }
+        },
+        /**
+         * #getter
+         * The row table both backends and the hit test place each key
+         * through: its drawn row, hidden where the focus left it out, and its
+         * colour override. Rebuilt on a reorder, focus, recolour or a new
+         * name, which is one texture upload and no instance bytes.
+         */
+        get rowTable(): RowTable {
+          const keys = rowKeyNames.get().length
+          const { order, colors } = tableInputs.get()
+          const slot = new Uint32Array(keys).fill(HIDDEN_ROW)
+          const color = new Uint32Array(keys)
+          for (const [i, name] of order.entries()) {
+            const key = rowKeys.keyOf(name)
+            slot[key] = i
+            color[key] = colors[i] ?? NO_ROW_COLOR
+          }
+          return buildRowTable(slot, color)
+        },
+      }
+    })
     .views(self => ({
       /**
        * #getter
-       * The three inputs to "does this feature paint, and in what color".
-       * Split out of `renderState`, whose canvas box and row geometry move on
-       * every frame of a resize drag, so the encode memo behind
-       * `encodedChannels` keys on something that moves only on a reorder,
-       * recolor or refetch.
+       * The three inputs to "does this feature paint, and in what color", in
+       * drawn row space, for the indel-glyph overlay and the sort at a
+       * column. Split out of `renderState`, whose canvas box and row geometry
+       * move on every frame of a resize drag.
        */
       get featurePaintInputs(): MultiRowFeaturePaintInputs {
         return {
@@ -749,6 +852,7 @@ export default function stateModelFactory(
           canvasHeight: self.height,
           rowHeight: self.effectiveRowHeight,
           rowProportion: self.rowProportion,
+          rowTable: self.rowTable,
           ...this.featurePaintInputs,
         }
       },
@@ -780,19 +884,18 @@ export default function stateModelFactory(
     .views(self => {
       const encoded = createEncodeMemo(
         () => self.drawnRegionData,
-        // `featurePaintInputs`, never `renderState`: the channels hold
+        // `encodeInputs`, never `renderState`: the channels hold
         // {x,x2,row,color} and no geometry — the row height and canvas box
-        // reach the shape as uniforms, and both move on every frame of a
-        // track-height drag. Declaring the narrow one is what keeps a
-        // reorder / recolor / category toggle re-encoding without an RPC
-        // roundtrip while a resize re-encodes nothing.
-        () => self.featurePaintInputs,
+        // reach the shape as uniforms, the reader's order, focus and colours
+        // reach it as the row table, and a category toggle is what is left
+        // to re-encode for.
+        () => self.encodeInputs,
         buildMultiRowChannels,
       )
       return {
         /**
          * #getter
-         * Every loaded region's `span` channels with the per-row buckets the
+         * Every loaded region's `span` channels with the per-key buckets the
          * hit test reads; one encode serves the upload, the hit test and the
          * SVG export. The memo lives in this closure so it outlives a
          * context-loss recovery, and `afterAttach` installs the observer it
@@ -1081,6 +1184,14 @@ export default function stateModelFactory(
               void self.encodedChannels
             },
             { name: 'MultiRowEncodedChannels' },
+          )
+          // The table the hit test places through, held for the same reason.
+          autorunOnReadyView(
+            self,
+            () => {
+              void self.rowTable
+            },
+            { name: 'MultiRowRowTable' },
           )
           setupTreeSidebarAutoruns(self, {
             name: 'MultiRowFeature',

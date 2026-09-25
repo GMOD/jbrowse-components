@@ -16,6 +16,7 @@ export const MULTI_ROW_MARK = defineMark({
     // sparse intervals with background between them, so nothing to seam
     seamPx: 0,
     scrollTop: 0,
+    rowTable: s.rowTable,
   }),
 })
 

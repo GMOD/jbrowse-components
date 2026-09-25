@@ -1,4 +1,9 @@
-import { ROW_TABLE_MAX_WIDTH } from '../shaders/rowTable.generated.ts'
+import {
+  rowTablePlaneHeight,
+  rowTableTexelX,
+  rowTableTexelY,
+  rowTableWidth,
+} from '../shaders/rowTable.js.generated.ts'
 
 import type { MarkTexels } from './types.ts'
 
@@ -25,18 +30,12 @@ export interface RowTable {
   readonly texture: MarkTexels
 }
 
-export function rowTableWidth(keys: number) {
-  return Math.max(1, Math.min(keys, ROW_TABLE_MAX_WIDTH))
-}
-
-export function rowTablePlaneHeight(keys: number) {
-  return Math.max(1, Math.ceil(keys / rowTableWidth(keys)))
-}
-
 /**
  * The table for `slot[key]` and `color[key]`, both indexed by key: `slot` is
  * `HIDDEN_ROW` where the key draws nothing, `color` is `NO_ROW_COLOR` where the
- * instance keeps its own colour. Both arrays are held, not copied.
+ * instance keeps its own colour, an override alpha 0 being none. Both arrays
+ * are held, not copied. Each key's texel sits where the shader's own twins
+ * put it.
  */
 export function buildRowTable(
   slot: Uint32Array,
@@ -51,10 +50,11 @@ export function buildRowTable(
   const width = rowTableWidth(keys)
   const plane = rowTablePlaneHeight(keys)
   const bytes = new Uint8Array(width * plane * 2 * 4)
-  const colorPlane = width * plane * 4
   for (let key = 0; key < keys; key++) {
     const s = slot[key]!
-    const o = key * 4
+    const x = rowTableTexelX(key, keys)
+    const y = rowTableTexelY(key, keys)
+    const o = (y * width + x) * 4
     if (s !== HIDDEN_ROW) {
       if (s > MAX_SLOT) {
         throw new Error(
@@ -67,10 +67,11 @@ export function buildRowTable(
       bytes[o + 3] = 0xff
     }
     const c = color[key]!
-    bytes[colorPlane + o] = c & 0xff
-    bytes[colorPlane + o + 1] = (c >>> 8) & 0xff
-    bytes[colorPlane + o + 2] = (c >>> 16) & 0xff
-    bytes[colorPlane + o + 3] = c >>> 24
+    const p = ((y + plane) * width + x) * 4
+    bytes[p] = c & 0xff
+    bytes[p + 1] = (c >>> 8) & 0xff
+    bytes[p + 2] = (c >>> 16) & 0xff
+    bytes[p + 3] = c >>> 24
   }
   return {
     keys,
@@ -99,6 +100,11 @@ export class RowKeys {
       this.index.set(name, key)
     }
     return key
+  }
+
+  /** The key a name holds, undefined where none was ever assigned. */
+  lookup(name: string): number | undefined {
+    return this.index.get(name)
   }
 
   get size() {

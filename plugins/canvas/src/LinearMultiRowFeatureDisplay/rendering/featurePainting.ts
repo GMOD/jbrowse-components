@@ -45,6 +45,21 @@ export function drawnFeatureContext(
   }
 }
 
+/**
+ * Whether a legend toggle hides a feature painted `abgr`. Only a row painting
+ * the baked colour answers to the legend: a row with an override paints
+ * something the legend never lists, so a baked colour equal to a hidden
+ * category must not hide its features. The encode and every overlay read this
+ * one rule.
+ */
+export function hiddenByCategory(
+  abgr: number,
+  rowOverridden: boolean,
+  hiddenColors: ReadonlySet<number>,
+) {
+  return !rowOverridden && hiddenColors.has(abgr)
+}
+
 function drawnRowAt(
   data: Pick<MultiRowRegionData, 'featurePartitionIndex' | 'featureColors'>,
   ctx: DrawnFeatureContext,
@@ -54,20 +69,19 @@ function drawnRowAt(
   if (rowIndex === undefined) {
     return undefined
   }
-  // The hidden-category test applies only to rows painting the baked color: a
-  // row with an override paints something the legend never lists, so a baked
-  // color equal to a hidden category must not hide it.
-  return ctx.rowColorsByIndex[rowIndex] === undefined &&
-    ctx.hiddenColors.has(data.featureColors[i]!)
+  return hiddenByCategory(
+    data.featureColors[i]!,
+    ctx.rowColorsByIndex[rowIndex] !== undefined,
+    ctx.hiddenColors,
+  )
     ? undefined
     : rowIndex
 }
 
 /**
  * The features that actually paint, in paint order, each with its display row
- * and ABGR color. Every painter goes through this, because a painter that
- * re-derives the skip rules can paint a category the legend has turned off, or
- * an out-of-range lane, and raises no error.
+ * and ABGR color, for the overlays that walk the region data in drawn row
+ * space. The encode walks it in key space through the same rule.
  */
 export function forEachDrawnFeature(
   data: Pick<

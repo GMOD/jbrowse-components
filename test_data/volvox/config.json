@@ -355,7 +355,11 @@
         {
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "volvox_mouse_inheritance_rows-LinearMultiRowFeatureDisplay",
-          "rows": { "field": "sample", "domain": ["offspring10", "dad"] },
+          "rows": {
+            "field": "sample",
+            "domain": ["offspring10", "dad"],
+            "kept": ["offspring10", "dad", "mom", "offspring03", "offspring07"]
+          },
           "rowColor": {
             "domain": ["mom", "offspring03"],
             "range": ["#222222", "#bbbbbb"]

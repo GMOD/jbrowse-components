@@ -1,33 +1,50 @@
 // What does a row reorder, a focus or a recolour cost the multi-row display
 // per loaded region, on the main thread, and how many bytes does each gesture
-// upload?
+// upload — as the display ran it before the row table, and through the table?
 //
 //   node plugins/canvas/benches/rowTableRepack.bench.ts
 //   node plugins/canvas/benches/rowTableRepack.bench.ts --rows=1000 --features=50000 --rounds=15
 //
 // The harness rules — interleave, min-of-rounds, a separately-declared
-// control — are in agent-docs/reference/BENCHMARKING.md. One process per
-// fixture: quote the 100-row and 1000-row numbers from separate runs.
+// control, an identity check before any timing is believed — are in
+// agent-docs/reference/BENCHMARKING.md. One process per fixture: quote the
+// 100-row and 1000-row numbers from separate runs.
 //
 // One synthetic region: `features` intervals tiling the region, dealt across
-// `rows` partition values. Each arm is the whole main-thread cost of one
-// gesture for that region as the display runs it today — the encode
-// (`buildMultiRowChannels`, which bakes the drawn row and the row colour into
-// every instance) and the pack the upload then runs (`spanMark.pass.pack`):
+// `rows` partition values. The first three arms are the whole main-thread cost
+// of one gesture for that region as the display ran it before the table
+// (kept here as `repackRegion`, the encode that baked the drawn row and the
+// row colour into every instance) and the pack the upload then runs
+// (`spanMark.pass.pack`); the table arms are the same gestures through
+// `buildRowTable`, which is the whole cost, since no region re-encodes:
 //
 //   reorder          the rows permuted
 //   reorder-control  the same call through a second driver, the harness's floor
 //   focus            half the rows kept, so half the features drop out
 //   recolour         one row's colour override changed
+//   table-reorder    the table for the permuted rows
+//   table-focus      the table with half the rows hidden
+//   table-recolour   the table with one row's override changed
 //
-// Beside each time, the instance bytes the gesture uploads for the region.
+// Beside each time, the bytes the gesture uploads: instance bytes for the
+// region on the re-pack arms, the table texture on the table arms. Identity
+// first: the rects the painter puts down through the table are the rects the
+// re-pack put down, as a multiset, for every gesture.
 import { performance } from 'node:perf_hooks'
 
-import { spanMark } from '@jbrowse/render-core/marks'
+import {
+  HIDDEN_ROW,
+  NO_ROW_COLOR,
+  RowKeys,
+  buildRowTable,
+  spanMark,
+} from '@jbrowse/render-core/marks'
+import { recordingContext } from '@jbrowse/render-core/marks/drawAgainstHit'
 
 import { buildMultiRowChannels } from '../src/LinearMultiRowFeatureDisplay/rendering/multiRowChannels.ts'
 
 import type { MultiRowRegionData } from '../src/LinearMultiRowFeatureDisplay/rendering/multiRowRenderingBackendTypes.ts'
+import type { SpanChannels, SpanParams } from '@jbrowse/render-core/marks'
 
 const arg = (name: string, fallback: number) =>
   Number(
@@ -92,6 +109,43 @@ const names = data.partitionValues
 // Every row carries a palette colour, the display's default configuration.
 const colors = names.map((_, r) => PALETTE[r % PALETTE.length]!)
 
+interface RepackInputs {
+  rowIndexByValue: ReadonlyMap<string, number>
+  rowColorsByIndex: readonly (number | undefined)[]
+}
+
+// The encode the table retired: the drawn row and the row colour baked into
+// every instance, a row outside the order dropped.
+function repackRegion(
+  {
+    featureStarts,
+    featureEnds,
+    featureColors,
+    featurePartitionIndex,
+  }: MultiRowRegionData,
+  { rowIndexByValue, rowColorsByIndex }: RepackInputs,
+): SpanChannels {
+  const rowForLocal = data.partitionValues.map(v => rowIndexByValue.get(v))
+  const n = featureStarts.length
+  const x = new Uint32Array(n)
+  const x2 = new Uint32Array(n)
+  const row = new Uint32Array(n)
+  const color = new Uint32Array(n)
+  let count = 0
+  for (let i = 0; i < n; i++) {
+    const rowIndex = rowForLocal[featurePartitionIndex[i]!]
+    if (rowIndex === undefined) {
+      continue
+    }
+    x[count] = featureStarts[i]!
+    x2[count] = featureEnds[i]!
+    row[count] = rowIndex
+    color[count] = rowColorsByIndex[rowIndex] ?? featureColors[i]!
+    count++
+  }
+  return { x, x2, row, color, count }
+}
+
 function orderOf(order: readonly string[]) {
   return new Map(order.map((name, i) => [name, i] as const))
 }
@@ -106,7 +160,6 @@ function reorderInputs() {
   return {
     rowIndexByValue: orderOf(flip ? shuffled : names),
     rowColorsByIndex: colors,
-    hiddenColors: new Set<number>(),
   }
 }
 function focusInputs() {
@@ -114,7 +167,6 @@ function focusInputs() {
   return {
     rowIndexByValue: orderOf(flip ? kept : names),
     rowColorsByIndex: colors,
-    hiddenColors: new Set<number>(),
   }
 }
 let tint = 0
@@ -122,35 +174,50 @@ function recolourInputs() {
   tint += 1
   const recoloured = colors.slice()
   recoloured[0] = 0xff000000 | (tint & 0xffffff)
-  return {
-    rowIndexByValue: orderOf(names),
-    rowColorsByIndex: recoloured,
-    hiddenColors: new Set<number>(),
+  return { rowIndexByValue: orderOf(names), rowColorsByIndex: recoloured }
+}
+
+// The table for the same gesture: the keys never move, the table follows.
+const rowKeys = new RowKeys()
+const keyed = buildMultiRowChannels(data, {
+  rowKeys,
+  overriddenRows: new Set<string>(),
+  hiddenColors: new Set<number>(),
+})
+function tableOf({ rowIndexByValue, rowColorsByIndex }: RepackInputs) {
+  const slot = new Uint32Array(rowKeys.size).fill(HIDDEN_ROW)
+  const color = new Uint32Array(rowKeys.size)
+  for (const [name, i] of rowIndexByValue) {
+    const key = rowKeys.keyOf(name)
+    slot[key] = i
+    color[key] = rowColorsByIndex[i] ?? NO_ROW_COLOR
   }
+  return buildRowTable(slot, color)
 }
 
 // One driver per arm, written out longhand: a shared driver makes the call
 // site polymorphic and hands every arm one set of inline caches.
 let bytes = 0
 const reorder = () => {
-  bytes = spanMark.pass.pack(
-    buildMultiRowChannels(data, reorderInputs()),
-  ).byteLength
+  bytes = spanMark.pass.pack(repackRegion(data, reorderInputs())).byteLength
 }
 const reorderControl = () => {
-  bytes = spanMark.pass.pack(
-    buildMultiRowChannels(data, reorderInputs()),
-  ).byteLength
+  bytes = spanMark.pass.pack(repackRegion(data, reorderInputs())).byteLength
 }
 const focus = () => {
-  bytes = spanMark.pass.pack(
-    buildMultiRowChannels(data, focusInputs()),
-  ).byteLength
+  bytes = spanMark.pass.pack(repackRegion(data, focusInputs())).byteLength
 }
 const recolour = () => {
-  bytes = spanMark.pass.pack(
-    buildMultiRowChannels(data, recolourInputs()),
-  ).byteLength
+  bytes = spanMark.pass.pack(repackRegion(data, recolourInputs())).byteLength
+}
+const tableReorder = () => {
+  bytes = tableOf(reorderInputs()).texture.bytes.byteLength
+}
+const tableFocus = () => {
+  bytes = tableOf(focusInputs()).texture.bytes.byteLength
+}
+const tableRecolour = () => {
+  bytes = tableOf(recolourInputs()).texture.bytes.byteLength
 }
 
 const ARMS = [
@@ -158,7 +225,55 @@ const ARMS = [
   { name: 'reorder-control', run: reorderControl },
   { name: 'focus', run: focus },
   { name: 'recolour', run: recolour },
+  { name: 'table-reorder', run: tableReorder },
+  { name: 'table-focus', run: tableFocus },
+  { name: 'table-recolour', run: tableRecolour },
 ]
+
+// identity: the painter through the table puts down the re-pack's rects
+const block = {
+  displayedRegionIndex: 0,
+  start: 0,
+  end: data.featureEnds[data.featureEnds.length - 1]!,
+  screenStartPx: 0,
+  screenEndPx: 1600,
+  reversed: false,
+}
+const frame = { canvasWidth: 1600, canvasHeight: rows * 4 }
+const params: SpanParams = {
+  rowHeight: 4,
+  rowProportion: 1,
+  minWidthPx: 2,
+  seamPx: 0,
+  scrollTop: 0,
+}
+function rectsOf(channels: SpanChannels, rowTable?: SpanParams['rowTable']) {
+  const { ctx, calls } = recordingContext()
+  spanMark.paintBlock(ctx, channels, block, frame, { ...params, rowTable })
+  return calls
+    .map(r => `${r.x},${r.y},${r.w},${r.h},${String(r.fillStyle)}`)
+    .sort()
+}
+for (const [gesture, inputs] of [
+  ['reorder', { rowIndexByValue: orderOf(shuffled), rowColorsByIndex: colors }],
+  ['focus', { rowIndexByValue: orderOf(kept), rowColorsByIndex: colors }],
+  ['recolour', recolourInputs()],
+] as const) {
+  const repacked = rectsOf(repackRegion(data, inputs))
+  const tabled = rectsOf(keyed, tableOf(inputs))
+  if (repacked.length !== tabled.length) {
+    throw new Error(
+      `${gesture}: the table painted ${tabled.length} rects, the re-pack ${repacked.length}`,
+    )
+  }
+  const at = repacked.findIndex((r, i) => r !== tabled[i])
+  if (at !== -1) {
+    throw new Error(
+      `${gesture}: rect ${at} differs — re-pack ${repacked[at]}, table ${tabled[at]}`,
+    )
+  }
+  console.log(`${gesture}: ${tabled.length} rects match the re-pack`)
+}
 
 const best = ARMS.map(() => Infinity)
 const uploaded = ARMS.map(() => 0)
@@ -172,13 +287,13 @@ for (let r = 0; r < rounds; r++) {
 }
 
 console.log(
-  `rounds=${rounds}, ${rows} rows, ${data.featureStarts.length.toLocaleString()} features in one region, min per arm`,
+  `\nrounds=${rounds}, ${rows} rows, ${data.featureStarts.length.toLocaleString()} features in one region, min per arm`,
 )
 for (const [i, { name }] of ARMS.entries()) {
   const ms = best[i]!
   console.log(
-    `  ${name.padEnd(16)} ${ms.toFixed(2).padStart(8)}ms  ` +
-      `${(uploaded[i]! / 1024).toFixed(0).padStart(6)} KiB uploaded  ` +
-      `${(ms / best[0]!).toFixed(2)}x reorder`,
+    `  ${name.padEnd(16)} ${ms.toFixed(3).padStart(9)}ms  ` +
+      `${(uploaded[i]! / 1024).toFixed(1).padStart(8)} KiB uploaded  ` +
+      `${(ms / best[0]!).toFixed(3)}x reorder`,
   )
 }
