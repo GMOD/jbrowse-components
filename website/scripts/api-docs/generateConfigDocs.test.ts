@@ -81,7 +81,7 @@ const MANIFEST: Record<string, TypedManifestEntry> = {
   LinearVariantDisplay: entry('displays', ['type', 'height'], {
     stateModelProps: ['layout'],
   }),
-  ChordVariantDisplay: entry('displays', ['type', 'strokeColor']),
+  ChordVariantDisplay: entry('displays', ['type', 'colorHover']),
   MultiWiggleAdapter: {
     category: 'adapters',
     slots: [slot('type'), slot('subadapters', '(JexlString | frozen)')],
@@ -149,7 +149,7 @@ describe('the keys of one example object', () => {
   test('displayDefaults is checked against every display of the track', () => {
     expect(
       keysOf(
-        `{ type: 'VariantTrack', displayDefaults: { height: 1, strokeColor: 'red' } }`,
+        `{ type: 'VariantTrack', displayDefaults: { height: 1, colorHover: 'red' } }`,
       ),
     ).toEqual([])
     expect(

@@ -9,9 +9,10 @@ Auto-generated config schema for the current JBrowse release — see the [config
 ## Example usage
 
 The circular-view display for a `VariantTrack` of structural variants;
-translocations are drawn as chords across the circle. The three stroke slots
-are the chord's resting, hovered and selected colors, and each takes a `jexl:`
-expression over the `feature` so a chord can be colored by what it is:
+translocations are drawn as chords across the circle. `color`, `colorHover`
+and `colorSelected` are the chord's resting, hovered and selected colors, as
+on the synteny ribbons, and each takes a `jexl:` expression over the
+`feature` so a chord can be colored by what it is:
 
 ```js
 {
@@ -27,8 +28,8 @@ expression over the `feature` so a chord can be colored by what it is:
     {
       type: 'ChordVariantDisplay',
       displayId: 'sv-ChordVariantDisplay',
-      strokeColor: "jexl:get(feature,'INFO').SVTYPE=='BND'?'#d95f02':'rgba(255,133,0,0.32)'",
-      strokeColorHover: '#555',
+      color: "jexl:get(feature,'INFO').SVTYPE=='BND'?'#d95f02':'rgba(255,133,0,0.32)'",
+      colorHover: '#555',
     },
   ],
 }
@@ -53,7 +54,7 @@ These slots go on a display entry: `"displays": [{ "type": "ChordVariantDisplay"
 | Slot | Description |
 | --- | --- |
 | <span id="slot-onchordclick">**onChordClick**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | a jexl callback run when a chord is clicked, in place of opening the record's details<br>_callback args:_ `feature`, `track`, `pluginManager` |
-| <span id="slot-strokecolor">**strokeColor**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(255,133,0,0.32)'</code> | the line color of each arc<br>_callback args:_ `feature` |
-| <span id="slot-strokecolorselected">**strokeColorSelected**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'black'</code> | the line color of an arc that has been selected<br>_callback args:_ `feature` |
-| <span id="slot-strokecolorhover">**strokeColorHover**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#555'</code> | the line color of an arc that is being hovered over with the mouse<br>_callback args:_ `feature` |
+| <span id="slot-color">**color**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(255,133,0,0.32)'</code> | the line color of each chord<br>_callback args:_ `feature` |
+| <span id="slot-colorselected">**colorSelected**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'black'</code> | the line color of a chord that has been selected<br>_callback args:_ `feature` |
+| <span id="slot-colorhover">**colorHover**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#555'</code> | the line color of a chord that is being hovered over with the mouse<br>_callback args:_ `feature` |
 | <span id="slot-bezierradiusratio">**bezierRadiusRatio**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.1</code> | how far from the center a chord across the circle passes, as a fraction of the circle's radius: 0 draws it straight through the center, and a larger value keeps every chord nearer the rim. A shorter chord bows less, in proportion to its span |

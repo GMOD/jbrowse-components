@@ -4,14 +4,45 @@ import { chordConfigSchemaFields } from '../../chords/chordConfigSchemaFields.ts
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
+const STROKE_SLOTS = {
+  strokeColor: 'color',
+  strokeColorSelected: 'colorSelected',
+  strokeColorHover: 'colorHover',
+} as const
+
+// v4 spelt the chord colours `strokeColor*`, on the display or inside its
+// `renderer`, and session tracks in share links still carry both
+function liftStrokeSlots(snap: Record<string, unknown>) {
+  const { renderer, ...rest } = snap
+  const sources = [
+    renderer && typeof renderer === 'object'
+      ? (renderer as Record<string, unknown>)
+      : {},
+    rest,
+  ]
+  const lifted: Record<string, unknown> = {}
+  for (const source of sources) {
+    for (const [old, name] of Object.entries(STROKE_SLOTS)) {
+      if (source[old] !== undefined) {
+        lifted[name] = source[old]
+      }
+    }
+  }
+  for (const old of Object.keys(STROKE_SLOTS)) {
+    delete rest[old]
+  }
+  return { ...rest, ...lifted }
+}
+
 /**
  * #config ChordVariantDisplay
  *
  * #example
  * The circular-view display for a `VariantTrack` of structural variants;
- * translocations are drawn as chords across the circle. The three stroke slots
- * are the chord's resting, hovered and selected colors, and each takes a `jexl:`
- * expression over the `feature` so a chord can be colored by what it is:
+ * translocations are drawn as chords across the circle. `color`, `colorHover`
+ * and `colorSelected` are the chord's resting, hovered and selected colors, as
+ * on the synteny ribbons, and each takes a `jexl:` expression over the
+ * `feature` so a chord can be colored by what it is:
  * ```js
  * {
  *   type: 'VariantTrack',
@@ -26,14 +57,13 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *     {
  *       type: 'ChordVariantDisplay',
  *       displayId: 'sv-ChordVariantDisplay',
- *       strokeColor: "jexl:get(feature,'INFO').SVTYPE=='BND'?'#d95f02':'rgba(255,133,0,0.32)'",
- *       strokeColorHover: '#555',
+ *       color: "jexl:get(feature,'INFO').SVTYPE=='BND'?'#d95f02':'rgba(255,133,0,0.32)'",
+ *       colorHover: '#555',
  *     },
  *   ],
  * }
  * ```
  */
-
 function configSchemaF(_pluginManager: PluginManager) {
   return ConfigurationSchema(
     'ChordVariantDisplay',
@@ -52,28 +82,28 @@ function configSchemaF(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      strokeColor: {
+      color: {
         type: 'color',
-        description: 'the line color of each arc',
+        description: 'the line color of each chord',
         defaultValue: 'rgba(255,133,0,0.32)',
         contextVariable: ['feature'],
       },
       /**
        * #slot
        */
-      strokeColorSelected: {
+      colorSelected: {
         type: 'color',
-        description: 'the line color of an arc that has been selected',
+        description: 'the line color of a chord that has been selected',
         defaultValue: 'black',
         contextVariable: ['feature'],
       },
       /**
        * #slot
        */
-      strokeColorHover: {
+      colorHover: {
         type: 'color',
         description:
-          'the line color of an arc that is being hovered over with the mouse',
+          'the line color of a chord that is being hovered over with the mouse',
         defaultValue: '#555',
         contextVariable: ['feature'],
       },
@@ -81,25 +111,7 @@ function configSchemaF(_pluginManager: PluginManager) {
     {
       explicitIdentifier: 'displayId',
       explicitlyTyped: true,
-      preProcessSnapshot: (snap: Record<string, unknown>) => {
-        const { renderer, ...rest } = snap
-        if (renderer && typeof renderer === 'object') {
-          const r = renderer as Record<string, unknown>
-          return {
-            ...rest,
-            ...(r.strokeColor !== undefined
-              ? { strokeColor: r.strokeColor }
-              : {}),
-            ...(r.strokeColorSelected !== undefined
-              ? { strokeColorSelected: r.strokeColorSelected }
-              : {}),
-            ...(r.strokeColorHover !== undefined
-              ? { strokeColorHover: r.strokeColorHover }
-              : {}),
-          }
-        }
-        return snap
-      },
+      preProcessSnapshot: liftStrokeSlots,
     },
   )
 }

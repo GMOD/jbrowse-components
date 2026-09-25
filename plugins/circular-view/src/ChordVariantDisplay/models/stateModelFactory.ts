@@ -104,7 +104,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        * the chord color the circle's key shows, when every chord shares one
        */
       get legendColor(): string | undefined {
-        const value: unknown = self.configuration.strokeColor
+        const value: unknown = self.configuration.color
         return typeof value === 'string' && !isJexl(value) ? value : undefined
       },
       /**

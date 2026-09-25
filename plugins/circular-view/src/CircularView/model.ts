@@ -253,7 +253,7 @@ async function applyInit(
  *   type: 'CircularView',
  *   assembly: 'hg38',
  *   displayedRegionNames: ['chr1', 'chr2', 'chr3'],
- *   tracks: [{ trackId: 'my-sv-vcf', strokeColor: 'red' }],
+ *   tracks: [{ trackId: 'my-sv-vcf', color: 'red' }],
  * }
  * ```
  * `assembly` also takes a list, for a synteny ribbon plot: each

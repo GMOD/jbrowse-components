@@ -302,7 +302,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
                   displayId: `${trackId}-chord-display`,
                   onChordClick:
                     'jexl:defaultOnChordClick(feature, track, pluginManager)',
-                  strokeColor: 'jexl:svChordColor(feature)',
+                  color: 'jexl:svChordColor(feature)',
                 },
               ],
             }

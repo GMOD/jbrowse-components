@@ -2040,7 +2040,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displayDefaults": {
         "color": "#1f78b4",
-        "strokeColor": "#e31a1c",
       },
       "metadata": {
         "skipTextIndex": true,

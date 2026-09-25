@@ -17,13 +17,10 @@ function declares(schema: AnyConfigurationSchemaType, key: string) {
 
 /**
  * Route each shorthand `displayDefaults: {...}` setting to the display types
- * whose slot of that name takes its value, so slot names disambiguate across
- * displays (`color` → LinearVariantDisplay, `strokeColor` →
- * ChordVariantDisplay) and so do the values: `displayMode: 'compact'` on a
- * FeatureTrack reaches the feature display and not the arc display, whose
- * `displayMode` is `arcs | semicircles`. A key no display declares is an `unknownKeys`
- * entry, and one every declaring display refuses a `refused` entry carrying
- * each display's reason.
+ * whose slot of that name takes its value: `color: 'red'` reaches every display
+ * with a colour, `color: { field: 'type' }` only those whose colour maps a
+ * field. A key no display declares is an `unknownKeys` entry, and one every
+ * declaring display refuses a `refused` entry carrying each display's reason.
  */
 export function collectDisplayOverrides(
   displaySettings: Record<string, unknown>,

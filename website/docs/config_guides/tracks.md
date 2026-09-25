@@ -95,16 +95,15 @@ slot by that name takes the value:
     "type": "VcfTabixAdapter",
     "uri": "https://yourhost/file.vcf.gz"
   },
-  "displayDefaults": { "color": "green", "strokeColor": "red", "height": 200 }
+  "displayDefaults": { "color": "green", "height": 200 }
 }
 ```
 
-- **Differently named slots land on different displays.** `color` reaches the
-  linear display and `strokeColor` the circular (chord) one.
-- **A shared name reaches every display that takes the value.** `height` sets
-  all of them; `color: { "field": "type" }` reaches the displays whose `color`
-  paints by a field, and a value no display takes fails the track's load, naming
-  why.
+- **A name reaches every display that takes the value.** `color: "green"` paints
+  the linear, multi-sample and circular (chord) displays alike, and `height`
+  sets all of them; `color: { "field": "type" }` reaches only the displays whose
+  `color` paints by a field, and a value no display takes fails the track's
+  load, naming why.
 - **A name no display defines is ignored**, with a console warning so typos show
   up.
 

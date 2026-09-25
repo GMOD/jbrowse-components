@@ -49,14 +49,14 @@ test('displayDefaults shorthand color lands on the LinearBasicDisplay', () => {
   ).toBe('#6a3d9a')
 })
 
-test('display settings route by slot name across a track’s displays', () => {
+test('one track-wide colour reaches every variant display', () => {
   const conf = hydrateTrack('volvox_filtered_vcf_shorthand')
   expect(
     readConfObject(display(conf, 'LinearVariantDisplay'), ['color', 'value']),
   ).toBe('#1f78b4')
-  expect(
-    readConfObject(display(conf, 'ChordVariantDisplay'), 'strokeColor'),
-  ).toBe('#e31a1c')
+  expect(readConfObject(display(conf, 'ChordVariantDisplay'), 'color')).toBe(
+    '#1f78b4',
+  )
   // the multi-sample displays' cell colour is a colour object too, so a
   // track-wide colour paints their alt cells
   expect(

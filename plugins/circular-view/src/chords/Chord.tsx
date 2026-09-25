@@ -28,11 +28,7 @@ const Chord = observer(function Chord({
   const [hovered, setHovered] = useState(false)
   const stroke = readConfObject(
     config,
-    hovered
-      ? 'strokeColorHover'
-      : selected
-        ? 'strokeColorSelected'
-        : 'strokeColor',
+    hovered ? 'colorHover' : selected ? 'colorSelected' : 'color',
     { feature },
   )
   return (

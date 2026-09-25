@@ -54,12 +54,12 @@ test('displayedRegionNames and per-track display props are forwarded', async () 
     session,
     assembly: 'hg38',
     displayedRegionNames: ['chr1', 'chr2'],
-    tracks: [{ trackId: 'sv', strokeColor: 'red' }],
+    tracks: [{ trackId: 'sv', color: 'red' }],
   })
   expect(captured[0]!.initialState).toEqual({
     assembly: 'hg38',
     displayedRegionNames: ['chr1', 'chr2'],
-    tracks: [{ trackId: 'sv', strokeColor: 'red' }],
+    tracks: [{ trackId: 'sv', color: 'red' }],
   })
 })
 

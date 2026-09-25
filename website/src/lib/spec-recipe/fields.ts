@@ -456,6 +456,14 @@ function colorStep(
   if (displayType === 'LinearMafDisplay') {
     return mafColorStep(value)
   }
+  if (displayType === 'ChordVariantDisplay') {
+    return typeof value === 'string'
+      ? {
+          path: `${TRACK_MENU} → Settings → color`,
+          note: 'The chord color. No menu writes it, so it is set on the config like the other per-feature color expressions.',
+        }
+      : undefined
+  }
   if (
     displayType
       ? ALIGNMENTS_FACET_DISPLAYS.has(displayType)
@@ -1093,16 +1101,6 @@ export const trackFields: Record<string, FieldRecipe> = {
       ? {
           path: `${TRACK_MENU} → Show... → Fit to display height (${value ? 'checked' : 'unchecked'})`,
           note: 'Squashes the triangle vertically to fill the track instead of drawing square bins at its natural half-the-view-width height. Unchecked keeps square bins, which fits when the feature of interest sits nearer the diagonal than the track is tall.',
-        }
-      : undefined,
-  // ChordVariantDisplay's only, and it has no control — Chord.tsx reads the slot
-  // straight through to the stroke.
-  strokeColor: (value, { displayType }) =>
-    typeof value === 'string' &&
-    (displayType === undefined || displayType === 'ChordVariantDisplay')
-      ? {
-          path: `${TRACK_MENU} → Settings → strokeColor`,
-          note: 'The chord outline color. No menu writes it, so it is set on the config like the other per-feature color expressions.',
         }
       : undefined,
   renderingMode: (value, { displayType }) =>
