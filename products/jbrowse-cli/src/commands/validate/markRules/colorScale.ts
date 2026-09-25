@@ -25,18 +25,80 @@ export type ColorScaleName =
   | (typeof COLOR_SCALES)[number]
   | typeof IDENTITY_SCALE
 
-/** The scale each field paints through while `scale` is unset, `*` for any other field. */
-export type FieldScales = Readonly<Record<string, ColorScaleName>>
+/**
+ * A field's defaults on a display: the scale it paints through while `scale`
+ * is unset, and the members that scale reads while the config leaves them
+ * unwritten, so a field with a vocabulary or ramp of its own is the colour
+ * object's defaults rather than a painter beside it.
+ */
+export interface FieldPreset<S extends string = ColorScaleName> {
+  scale: S
+  domain?: readonly string[]
+  range?: readonly string[]
+  labels?: readonly string[]
+  title?: string
+  domainMin?: number
+  domainMax?: number
+  domainMid?: number
+  scheme?: string
+  reverse?: boolean
+}
 
-/** What a field paints through under `scales` while `scale` is unset. */
+/** Each field's preset, `*` for any other field. */
+export type FieldPresets<S extends string = ColorScaleName> = Readonly<
+  Record<string, FieldPreset<S>>
+>
+
+const CATEGORICAL_PRESET: FieldPreset<'categorical'> = { scale: 'categorical' }
+
+/** Every field categorical while `scale` is unset, with nothing preset. */
+export const CATEGORICAL_FIELD_PRESETS = {
+  '*': CATEGORICAL_PRESET,
+} as const satisfies FieldPresets
+
+/** A field's preset under `presets`: its own, else `*`'s, else categorical. */
+export function presetOf<S extends string>(
+  presets: FieldPresets<S>,
+  field: string,
+): FieldPreset<S | 'categorical'> {
+  return (
+    (Object.hasOwn(presets, field) ? presets[field] : presets['*']) ??
+    CATEGORICAL_PRESET
+  )
+}
+
+/** What a field paints through under `presets` while `scale` is unset. */
 export function fieldScaleOf<S extends string>(
-  scales: Readonly<Record<string, S>>,
+  presets: FieldPresets<S>,
   field: string,
 ): S | 'categorical' {
-  return (
-    (Object.hasOwn(scales, field) ? scales[field] : scales['*']) ??
-    'categorical'
+  return presetOf(presets, field).scale
+}
+
+function unwritten(value: unknown) {
+  return value === undefined || (Array.isArray(value) && value.length === 0)
+}
+
+/**
+ * A colour object with its field's preset under it: each member the preset
+ * names and the config leaves unwritten, an empty list counting as unwritten.
+ * Only while the colour paints through the preset's own scale, so the cuts of
+ * a threshold preset never reach a field read through a ramp.
+ */
+export function withPreset<C extends { field?: string; scale?: string }>(
+  color: C,
+  presets: FieldPresets<string>,
+): C {
+  const field = color.field ?? ''
+  const preset = presetOf(presets, field)
+  if (!field || (color.scale ?? preset.scale) !== preset.scale) {
+    return color
+  }
+  const written = new Map<string, unknown>(Object.entries(color))
+  const filled = Object.entries(preset).filter(
+    ([key]) => key !== 'scale' && unwritten(written.get(key)),
   )
+  return filled.length > 0 ? { ...color, ...Object.fromEntries(filled) } : color
 }
 
 /**
@@ -80,21 +142,22 @@ function pinned(entry: unknown) {
 
 /**
  * What a colour object's slots say together that no single slot can refuse,
- * since the config editor writes one slot at a time (ADR-133). A display shows
- * these as a notice and draws what it can. `fieldScale` is the scale a named
- * field paints through when `scale` is unset.
+ * since the config editor writes one slot at a time (ADR-133), read with its
+ * field's preset under it. A display shows these as a notice and draws what
+ * it can.
  */
 export function colorProblems(
-  color: ColorSlots,
-  fieldScale: string,
+  written: ColorSlots,
+  presets: FieldPresets<string>,
 ): ColorProblem[] {
+  const color = withPreset(written, presets)
   const { domain = [], range = [], domainMin, domainMax } = color
   const scale =
     color.scale === IDENTITY_SCALE
       ? IDENTITY_SCALE
       : paintedScale(
           { scale: color.scale, field: color.field ?? '' },
-          fieldScale,
+          fieldScaleOf(presets, color.field ?? ''),
         )
   const problems: ColorProblem[] = []
   if (scale === 'threshold') {
@@ -173,10 +236,10 @@ export function colorProblems(
 /** `colorProblems` as the lines a display's corner notice lists, under the setting's own name. */
 export function colorNotices(
   color: ColorSlots,
-  fieldScale: string,
+  presets: FieldPresets<string>,
   name = 'color',
 ): string[] {
-  return colorProblems(color, fieldScale).map(
+  return colorProblems(color, presets).map(
     ({ slot, message }) => `${name}.${slot}: ${message}`,
   )
 }

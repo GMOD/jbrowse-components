@@ -3858,10 +3858,11 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "CATEGORICAL_COLOR_SCALES",
+        "CATEGORICAL_FIELD_PRESETS",
         "COLOR_SCALES",
         "DISCRETE_COLOR_SCALES",
         "FEATURE_COLOR_SCALES",
-        "FEATURE_FIELD_SCALES",
+        "FEATURE_FIELD_PRESETS",
         "IDENTITY_SCALE",
         "categoricalColorField",
         "colorChannelOptions",
@@ -3885,19 +3886,24 @@
         "identityKeyEntries",
         "normalizeChannel",
         "paintedScale",
-        "pairedColorsOf"
+        "pairedColorsOf",
+        "presetOf",
+        "withPreset"
       ],
       "worker": "real"
     },
     "@jbrowse/display-kit/colorScale": {
       "package": "@jbrowse/display-kit",
       "names": [
+        "CATEGORICAL_FIELD_PRESETS",
         "COLOR_SCALES",
         "IDENTITY_SCALE",
         "colorNotices",
         "colorProblems",
         "fieldScaleOf",
-        "paintedScale"
+        "paintedScale",
+        "presetOf",
+        "withPreset"
       ],
       "worker": "real"
     },
