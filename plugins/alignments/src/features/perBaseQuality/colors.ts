@@ -1,21 +1,20 @@
-import {
-  abgrToCssRgba,
-  getBlue,
-  getGreen,
-  getRed,
-  packAbgr,
-  parseCssColor,
-} from '@jbrowse/core/util/colorBits'
+import { colorPairLR } from '@jbrowse/core/ui/palette'
+import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
-// Per-base-quality color ramp, one ABGR-packed entry per score 0-255. Score 255
-// lights up green (hue 150); lower scores wrap red→yellow (hue = score*1.5),
-// matching origin/main renderPerBaseQuality. Packed once here so the GPU vertex
-// buffer (packGpu) and the Canvas2D fill (drawCanvas) read the same bytes and
-// can't drift in color.
-export const qualityAbgr = Uint32Array.from({ length: 256 }, (_, score) => {
-  const hue = score === 255 ? 150 : score * 1.5
-  const c = parseCssColor(`hsl(${hue},55%,50%)`)
-  return packAbgr(getRed(c), getGreen(c), getBlue(c), 255)
-})
+import {
+  BASE_QUALITY_RAMP_MAX,
+  qualityRampAbgr,
+} from '../../shared/qualityRamps.ts'
+
+// A BAM record with no QUAL has no scores at all; a CRAM one decodes as 255 at
+// every base.
+export const BASE_QUALITY_UNAVAILABLE = 255
+
+export const BASE_QUALITY_UNAVAILABLE_COLOR = colorPairLR
+
+export const qualityAbgr = qualityRampAbgr(BASE_QUALITY_RAMP_MAX)
+qualityAbgr[BASE_QUALITY_UNAVAILABLE] = cssColorToABGR(
+  BASE_QUALITY_UNAVAILABLE_COLOR,
+)
 
 export const qualityCssColors = Array.from(qualityAbgr, abgrToCssRgba)

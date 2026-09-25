@@ -52,7 +52,7 @@ export function packColorCells(
 //
 // Opaque on both backends: `packedColorQuad.slang` has no fade of any kind and
 // the ramp packs alpha 255 into every entry. The score is carried in the COLOUR,
-// not in the alpha — a low-quality base goes red rather than faint, which is the
+// not in the alpha — a low-quality base goes dark rather than faint, which is the
 // whole point of the ramp. The ramp `qualityCssColors` is built from is what the
 // packer reads, so the fill and the vertex buffer cannot carry different colours
 // for one score.
