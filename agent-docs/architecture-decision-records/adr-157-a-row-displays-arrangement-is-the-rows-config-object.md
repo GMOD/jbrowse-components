@@ -72,7 +72,7 @@ levels: `facet` for labelled bands, `rows` for one row per value.
 | `field`          | the field each value of which takes a row; empty draws no rows                         | the config, the Plot type menu                                    |
 | `domain`         | the row order: the values listed lead, the rest keep the order they arrived in         | a clustering run, the arrangement dialog, Sort rows by score here |
 | `labels`         | a label drawn in place of a row's value, by value                                      | the arrangement dialog                                            |
-| `tree`           | the dendrogram, as newick                                                              | a clustering run, beside the order it produced                    |
+| `tree`           | the dendrogram, as newick; under bands one forest of band trees (ADR-169)              | a clustering run, beside the order it produced                    |
 | `treeProvenance` | the locus and settings `tree` was computed from; unset for a tree that arrived as data | a clustering run                                                  |
 | `kept`           | the focus, by value; empty, or naming no current row, shows every row                  | a tree click, a key row                                           |
 

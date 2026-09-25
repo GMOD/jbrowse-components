@@ -106,8 +106,9 @@ their own, over one `arrangeRows` and the hooks a display supplies.
 - **A display supplies the discovered rows and its hooks.** Discovered rows stay
   a stable-identity getter over region payloads (wiggle, multi-row) or a volatile
   from a header fetch (variants, MAF).
-- **"A band yields while a tree describes the rows"** is one rule in the
-  derivation; it is written twice today (`maybeApplyFacet`, `applyRowGroups`).
+- **A band draws the clade of its rows**, one rule in the derivation
+  (`bandedSources`, ADR-169), where "a band yields while a tree describes the
+  rows" was written twice (`maybeApplyFacet`, `applyRowGroups`).
 
 Unlisted keys follow the key source: a declared list (a VCF header, subtracks,
 MAF samples, a tree) keeps its own order, and values discovered in features
@@ -146,8 +147,8 @@ before it is asked.
    handing in its old order and palette at a zero image diff~~ (ADR-160); then
    the palette flip after the side-by-side capture, the base arrangement on
    wiggle and the one precedence on the variant displays.
-5. **A tree per band**, ComplexHeatmap's `row_split` with `cluster_rows`, which
-   retires "a band yields to a tree".
+5. ~~**A tree per band**, ComplexHeatmap's `row_split` with `cluster_rows`, which
+   retires "a band yields to a tree"~~ (ADR-169, `3125107fde`…`f28f63a8c6`).
 6. ~~**The mark display takes `rows`** for bar and point marks, whose rows are
    one band each~~ (ADR-157). `facet` with `rows` waits on step 5's bands, and
    a pileup's variable-height sections need a tree laid against section tops.
@@ -225,9 +226,12 @@ ADR-151 palette→range; no categorical scheme. ADR-153: categoricalScale hashes
 - Mark display `rows` must not re-split in the worker (ADR-130 one split stands).
 - `facet.hidden` as config only where a band gets a chip → variants = Q1.
 
-### Colin's questions (a picture each)
-1. Chips on the row displays? (1000G matrix by population: bare tint strip vs 26 chips + hairline dividers; the only golden mover, four figures)
-2. Facet set over a clustered cohort: banded with empty gutter + "re-run clustering" vs unbanded keeping its tree.
-3. Each band's dendrogram at full gutter width vs one shared depth scale.
-4. `pile` or `stack` for the pileup channel.
-5. If Q1 yes: hide × on a band chip writes `facet.hidden` as config, or stays volatile as on section displays.
+### Colin's questions, answered 2026-09-25
+1. Chips on the row displays: no. A band is labelled in the margin beside the tree, up a strip beside its tint (ggplot2's `strip.position = "left"`, ComplexHeatmap's `row_title`), culled where the band is too short, and the same in the SVG export; hairline dividers between bands, no hide control.
+2. Facet set over a clustered cohort: bands win. A band draws its dendrogram iff the tree has a clade of exactly its rows in order; the hint counts the bands without one and says to re-run clustering.
+3. One shared depth scale across the band trees.
+4. `pile` or `stack` for the pileup channel: out of scope for step 5, still open with step 6.
+5. Does not arise, since no band has a chip.
+
+### Step 5 — as landed
+Per the decisions above, with three departures. The band hooks are two: `rowBanding` (the field and the bands listed first) beside `rowBand(row)`, so the mixin reads no `facet` of its own. Multi-row's band order lists its `rowGroups` groups in declared order after `facet.domain`, so `facet: 'group'` stacks the groups as the partition did. Wiggle, MAF and the mark display keep `sources` over `clusterableSources`, which `bandedSources` returns by reference while nothing bands.

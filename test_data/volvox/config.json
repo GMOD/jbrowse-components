@@ -367,6 +367,7 @@
           "rowGroups": [
             { "match": "^(mom|dad)$", "group": "Parents", "color": "#e41a1c" }
           ],
+          "facet": "group",
           "colorRowLabels": true,
           "rowHeight": 14
         }

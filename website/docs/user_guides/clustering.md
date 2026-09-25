@@ -86,6 +86,11 @@ drawn in the sidebar.
   Navigating away from that region marks it, since the tree describes the region
   it was run on. Re-run clustering, or reset the row order, to bring the two
   back together.
+- On a track banded by `facet` (a multi-sample variant track's samples column,
+  or a multi-row track's `group`), clustering runs within each band and draws a
+  dendrogram per band, all on one depth scale. A tree run before the bands were
+  set draws only in the bands that happen to be one of its clades, and the chip
+  counts the bands left without one until clustering runs again.
 
 ## Encoding a clustering result in a session URL
 

@@ -1618,8 +1618,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // for exactly this -- so it was built and measured here: the four
           // groups the panel above names (CLUP wolves, GOLD, LABR, BOXR) are
           // ~250 of 1,987 rows, which is 10 CSS px of a 300px lane, and
-          // `rowGroups` also pulls them out of the copy-number sort into blocks
-          // at the top of the lane. 10px of stripe cannot attribute a copy
+          // banding them (`facet: 'group'`) pulls them out of the copy-number
+          // sort into blocks at the top of the lane. 10px of stripe cannot attribute a copy
           // number to a breed, and it costs the sorted banding that is what this
           // lane is for. The breed attribution is the named-animals lane above,
           // which is the same four groups at a readable row height.

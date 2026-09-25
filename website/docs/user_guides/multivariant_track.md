@@ -177,10 +177,11 @@ any attribute you supply. Two slots wire it up:
   or the arrangement editor gave a row. Clear it to restore each row's
   individual color.
 - `facet` bands the rows so each value of a column is contiguous: the column's
-  name, or `{ "field": …, "domain": [...] }` with the band order. The band is
-  applied over whatever order you have arranged, so dragging a sample into
-  another band snaps it back, and it steps aside while a clustering dendrogram
-  is positioned against the rows.
+  name, or `{ "field": …, "domain": [...] }` with the band order. Each band's
+  name runs up a strip beside the dendrogram where the band is tall enough to
+  hold it. The band is applied over whatever order you have arranged, so
+  dragging a sample into another band snaps it back, and clustering under bands
+  clusters each band on its own, with a dendrogram per band.
 - [`rows.domain`](/docs/config/rowarrangement/#slot-domain) names the samples
   that lead the rows; the rest keep the file's order, and a grouping attribute
   bands within that order.

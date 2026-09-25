@@ -37,11 +37,13 @@ silently. When writing a display:
 - **Every action that moves rows routes through `setRowOrder`**, never a bare
   write to `rows.domain`.
 - **Pass `sources` to `computeClusterHierarchy`** — after every reorder, filter
-  and decoration, never the pre-layout list.
+  and decoration, never the pre-layout list — and `rowBands` beside it on a
+  display that bands.
 
 `StaleTreeHint` (rendered by `TreeSidebar`, so no display wires it up)
 distinguishes stale from "no tree" and from "deliberately not positioned"
-(multi-wiggle overlay) by testing `root` against the rows.
+(multi-wiggle overlay) by testing `root` against the rows, and over bands counts
+the bands with no clade (`treelessBandCount`).
 
 ## A declared row order rotates the tree, it does not reorder against it
 
@@ -123,7 +125,10 @@ only the stages downstream of it:
    hands back `expandedRows` itself while nothing is arranged, which the `!==`
    caches downstream (`featurePaintInputs`, `createEncodeMemo`) key on.
 4. `clusterableSources`: the focus (`keptRows`).
-5. `sources`, the display's: palette, bands, MAF's reference row.
+5. `bandedSources`: the bands `rowBanding` names (`bandRows`), each band's rows
+   in their arranged order; `clusterableSources` itself while nothing bands.
+   `rowBands` is each band's value, label and row span.
+6. `sources`, the display's: palette, MAF's reference row.
 
 The hooks are declared by the mixin and overridden by a getter in a later
 `.views` block, as `RowHeightMixin`'s `autoRowHeight` is; a `.volatile` of a
@@ -138,6 +143,12 @@ hook's name throws at `create`:
   MAF and marks tint the label.
 - `unlistedRowsSort` — `source` by default; multi-row's discovered values sort.
 - `rowOrder` — `rows.domain` by default; MAF leads with a drawn tree's leaves.
+- `rowBanding` — none by default; the variant displays' `facet`, and the
+  multi-row display's `facet` with its `rowGroups` groups listed after the
+  facet's domain.
+- `rowBand(row)` — the row's value of the banding attribute by default;
+  multi-row matches `rowGroups` on the name, since its rows are tagged after the
+  arrangement.
 - `rowColorDealFor(setting)` — what `dealRowColors` deals under a `rowColor`
   object, the config's (`rowColorDeal`, none under `scale: 'none'`, dealt into
   `dealtRowColors`, which `rowColorScale` maps each row onto) or one the dialog
@@ -349,6 +360,38 @@ the static named imports tree-shake to leaf modules, while the namespace request
 pulls the rest of the barrel into an async chunk. Measured 608KB vs 539KB for
 ~4KB actually deferrable. Split inside a function, or from a module nobody
 imports eagerly.
+
+## A tree per band
+
+ComplexHeatmap's `row_split` with `cluster_rows`: bands stack the rows and each
+band draws its own dendrogram. **The bands win over a tree**, so nothing yields:
+a band draws the clade of `rows.tree` whose leaves are exactly its rows in
+order, and a band with none draws nothing, which the stale-tree hint counts
+(`treelessBandCount`). A whole-cohort tree under a facet set afterwards draws in
+the bands that happen to be its clades, and a band a row joined loses its own
+tree alone.
+
+- **`rows.tree` holds one forest**: a run under two or more bands sends
+  `clusterPartition`, `clusterMatrix` clusters each band apart, and the root
+  joins the band trees at the tallest one's height, so every leaf sits at one
+  depth and the forest drawn unbanded is a dendrogram. A one-row band is a bare
+  leaf. `rows.domain` is the leaves in turn, written by the one `setRowOrder`,
+  and the forest root's child order places nothing, since `rowBanding` places
+  the bands.
+- **`matchBandClades` is one post-order walk** labelling each node with the band
+  its leaves share and their count, and `computeClusterHierarchy` calls it once,
+  never per band.
+- **`bandForestLayout` puts every clade on one depth scale**, as ComplexHeatmap
+  draws slice dendrograms, so a band's farthest leaf meets the right edge and
+  its root sits as far in as its height. The root joining them is `forestRoot`:
+  `treeLinks` (canvas and SVG) skips its links and the spatial index leaves it
+  out. No clade with a branch, no hierarchy.
+- **The band strip is the band's label**, never a chip over the data:
+  `SvgBandLabels`, a `BAND_LABEL_WIDTH` column beside the tree with each band's
+  name written up its rows where it fits, culled where it does not, and a
+  hairline between bands. `RowLabelsOverlay` and `SvgTreeSidebar` both take
+  `bands` and shift the row labels past the strip, so the screen and the export
+  draw one strip; it draws whatever `showRowLabels` says, and nothing hides it.
 
 ## SVG export: `SvgTreeSidebar`, never `SvgRowLabels` alone
 

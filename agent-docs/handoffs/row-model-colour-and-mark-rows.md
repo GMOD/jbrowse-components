@@ -1,6 +1,6 @@
 ---
 name: row-model-colour-and-mark-rows
-description: State of the row-model thread on 2026-09-24. Step 4's first half (ADR-160, one rowColor channel and one dealer) and rows on the mark display (ADR-157's fifth display) are on main, each probed by two review rounds whose defects are fixed, the third finding an undo that blanked a variant display for good; the colour half's zero-image-diff browser run was never recorded; nine calls are Colin's, each answered by a page not yet made, and no visible flip lands before them; call 5 became the dialog redesign of ADR-164 and call 11 was answered as leave it. Read before touching a row display's colour, bands, the mark display's rows or the palette.
+description: State of the row-model thread on 2026-09-24. Step 4's first half (ADR-160, one rowColor channel and one dealer) and rows on the mark display (ADR-157's fifth display) are on main, each probed by two review rounds whose defects are fixed, the third finding an undo that blanked a variant display for good; the colour half's zero-image-diff browser run was never recorded; five calls are Colin's, each answered by a page not yet made, and no visible flip lands before them; call 5 became the dialog redesign of ADR-164, call 11 was answered as leave it, and calls 6-8 (bands) were answered and built as ADR-169. Read before touching a row display's colour, bands, the mark display's rows or the palette.
 ---
 
 # Row model: colour and mark rows
@@ -73,13 +73,14 @@ parity everywhere except the deviations ADR-160 already lists.
 2. Label boxes always tinted on multi-row and rows-layout wiggle (on/off pair).
 3. Variants' value order: first-seen versus count-ranked (the legend both ways).
 4. A field mapping versus a samplesTsv colour column (no fixture has one).
-6. Band chips on the row displays (the 1000 Genomes matrix by population; four
-   figures move).
-7. A band field set over a clustered cohort: bands with an empty gutter and a
-   re-run hint, or no bands and the tree kept.
-8. Each band's dendrogram at full gutter width, or one shared depth scale.
-9. `pile` or `stack` for the pileup channel replacing `encoding.row`; and
-   whether hiding a band is config or stays volatile.
+6. ~~Band chips on the row displays.~~ Answered 2026-09-25: no chips; a band's
+   label sits in the margin beside the tree (ADR-169).
+7. ~~A band field set over a clustered cohort.~~ Answered 2026-09-25: bands win,
+   and the hint counts the bands without a clade (ADR-169).
+8. ~~Full gutter width or one shared depth scale.~~ Answered 2026-09-25: one
+   shared depth scale (ADR-169).
+9. `pile` or `stack` for the pileup channel replacing `encoding.row`. Hiding a
+   band does not arise, since no band has a chip.
 10. ~~One row per source as the mark display's default over a multi-BigWig.~~
     Answered 2026-09-25: yes, Plot field writes `rows: 'source'` where nothing
     splits the features yet (ADR-157, amended).
@@ -99,7 +100,8 @@ at most a hint where the setting is chosen.
 3. Step 4's second half per the plan: the legend by field value, then retiring
    `colorRowLabels` and `rowGroups[].color`, then the palette flip, one commit
    per display naming its figures.
-4. Step 5 per the plan: a tree per band, its zero-pixel half first.
+4. ~~Step 5 per the plan: a tree per band.~~ On its branch (ADR-169); the banded
+   figures and the `misc-multirow-arranged` golden move with it.
 5. Harden the hook seam: static hooks become mixin factory options and dynamic
    ones getters, plus a test that no display redefines a mixin member outside
    the declared list.

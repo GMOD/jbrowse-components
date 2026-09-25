@@ -253,9 +253,9 @@ export default function configSchemaFactory() {
        *
        * The band is applied when the rows are read, over whatever order the
        * reader has arranged, so a drag that moves a sample into another band
-       * snaps back while this is set. It yields while a cluster tree describes
-       * the rows: clear the tree, or reset the row order, to band a clustered
-       * track.
+       * snaps back while this is set. Each band is labelled beside the tree
+       * and draws the clade of the cluster tree whose leaves are exactly its
+       * rows; a clustering run under bands clusters each band apart.
        */
       facet: facetConfigSchema,
       /**

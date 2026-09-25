@@ -278,12 +278,11 @@ export function subtreeCoversEveryRow(
 //
 // This is a *derived* check on purpose. `setLayout` clears a stale
 // `clusterTree` for the writes that go through it, but rows also move without
-// any layout write at all: a display decorating `sources` downstream of its
-// order (multi-row features' `rowGroups` partition), a discovered row set
-// growing as regions load (multi-row features, multi-wiggle), a phased
-// expansion switching on when the ploidy arrives (multi-sample variants). One
-// check where the tree is positioned covers all of them, and covers whatever
-// the next one turns out to be.
+// any layout write at all: a discovered row set growing as regions load
+// (multi-row features, multi-wiggle), a phased expansion switching on when the
+// ploidy arrives (multi-sample variants). One check where the tree is
+// positioned covers all of them, and covers whatever the next one turns out to
+// be; bands ask it of each band's clade (`matchBandClades`).
 export function treeDescribesRows(
   root: HierarchyNode<ClusterNodeData>,
   rows: readonly { name: string }[],

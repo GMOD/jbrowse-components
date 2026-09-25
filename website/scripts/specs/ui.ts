@@ -1,10 +1,6 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
-
 import { displayPainted, displaySettled } from '@jbrowse/browser-test-utils'
 
 import { SPLIT_VIEW_LINK_LABEL } from '../../../plugins/variants/src/VariantFeatureWidget/LaunchBreakendPanel/labels.ts'
-import { repoRoot } from '../paths.ts'
 import {
   DEMO_CONFIG,
   HG38_RMSK_TRACK,
@@ -259,9 +255,8 @@ export const uiVideoFixtures = {
 const CHROMHMM_TRACK_ID = 'roadmap_chromhmm_multirow_hg19'
 const CHROMHMM_HOXA_WINDOW = 'chr7:26,950,000-27,450,000'
 
-// Roadmap 2015 Fig. 2's group order, which Fig. 3a keeps. The hosted track
-// lists its rowGroups alphabetically, and the display stacks rows in rowGroups
-// order, so the figure re-sorts them.
+// Roadmap 2015 Fig. 2's group order, which Fig. 3a keeps, and the order the
+// figure stacks its tissue bands in.
 const ROADMAP_FIGURE_GROUPS = [
   'IMR90',
   'ESC',
@@ -283,25 +278,6 @@ const ROADMAP_FIGURE_GROUPS = [
   'Other',
   'ENCODE2012',
 ]
-
-function roadmapFigureRowGroups() {
-  const config = JSON.parse(
-    readFileSync(join(repoRoot, 'test_data/config_demo.json'), 'utf8'),
-  ) as {
-    tracks: {
-      trackId: string
-      displays?: { rowGroups?: { group: string }[] }[]
-    }[]
-  }
-  const groups =
-    config.tracks.find(t => t.trackId === 'roadmap_chromhmm_multirow_hg19')
-      ?.displays?.[0]?.rowGroups ?? []
-  return groups.toSorted(
-    (a, b) =>
-      ROADMAP_FIGURE_GROUPS.indexOf(a.group) -
-      ROADMAP_FIGURE_GROUPS.indexOf(b.group),
-  )
-}
 
 const HOXA_FIBROBLAST_ROWS = [
   'NHLF Lung Fibroblast Primary Cells',
@@ -2327,7 +2303,7 @@ export const uiSpecs: ScreenshotSpec[] = [
         {
           trackId: 'roadmap_chromhmm_multirow_hg19',
           type: 'LinearMultiRowFeatureDisplay',
-          rowGroups: roadmapFigureRowGroups(),
+          facet: { field: 'group', domain: ROADMAP_FIGURE_GROUPS },
           height: 900,
         },
       ],

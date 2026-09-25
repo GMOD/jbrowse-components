@@ -148,8 +148,9 @@ naming a haplotype keeps its sample there (`keptRows` with `rowAlias`, through
 `parseRowName`). The rest are `TreeSidebarMixin`'s over this display's hooks:
 `discoveredRows`, `expandRows` (`expandPhasedRows`), then `editableSources`,
 ordered, relabelled and tinted by pair with no focus, palette or band — the
-dialog's list and the sort's — and `clusterableSources`, narrowed to the focus,
-which both clustering paths send. `sources` adds the palette and the band.
+dialog's list and the sort's — `clusterableSources`, narrowed to the focus,
+which both clustering paths send, and `bandedSources`, stacked in the `facet`'s
+bands. `sources` adds the palette.
 
 **Phased rows are the ploidy `sampleInfo` reports plus any haplotype the order
 names.** Until the ploidy lands, the named haplotypes stand in for it, so an
@@ -178,10 +179,12 @@ reset returns `rowColor` only where its `name` pairs differ from the config's,
 so over a config setting no row colour a Color by survives it and a mode switch.
 The flip ADR-160 names puts the row's own colour ahead of the palette here too.
 
-**The `facet` band yields while a cluster tree describes the rows**
-(`treeDescribesRows`), the mechanism `LinearMultiRowFeatureDisplay` uses for its
-row groups. That is what lets a clustering run leave the `facet` slot alone: a
-run that cleared it would erase a session spec's own `facet` on load.
+**The `facet` bands win over a cluster tree** (tree-sidebar's "A tree per
+band"): `rowBanding` is the `facet`, each band draws the clade of exactly its
+rows, and a run under bands clusters each band apart into one forest. A run
+never writes the `facet` slot, so a session spec's own `facet` survives it, and
+the colour key lists its values in the band order while both read one attribute
+(`rowColorKeyOrder`).
 
 **A `layout`, `clusterTree`, `clusterProvenance` or `subtreeFilter` on the
 display snapshot, or a `domain` in its config, fails the load**, naming `rows`:

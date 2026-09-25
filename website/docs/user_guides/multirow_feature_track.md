@@ -211,6 +211,12 @@ track off and on. **Reset row order** appears in the track menu once any of the
 three has run, and returns the rows, their labels and their colors to what the
 config declares.
 
+[`facet: "group"`](/docs/config/linearmultirowfeaturedisplay/#slot-facet) stacks
+the rows in bands by their
+[`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) group,
+each band named in a strip beside the dendrogram and keeping its rows in their
+arranged order; clustering then runs within each band.
+
 **Show... → Show tree** toggles the dendrogram once one has been computed, and
 **Show... → Show row labels** the labels beside it, which are useful with no
 clustering run.

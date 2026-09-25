@@ -156,10 +156,9 @@ export const epigenomicsVideos: VideoSpec[] = [
   // trade nothing on the page performs.
   //
   // What the clip adds is the BEFORE, and here the before is not noise. The demo
-  // config's track carries a 127-line `domain` in Roadmap's group order and
-  // `rowGroups` keeps those groups contiguous while no tree names the rows, so
-  // the stack opens with a clean tissue stripe beside a painting with no block in
-  // it. The run swaps which axis is tidy: the blocks appear in the painting and
+  // config's track carries a 127-line `domain` in Roadmap's group order, which
+  // keeps those groups contiguous until a run writes its own order, so the stack
+  // opens with a clean tissue stripe beside a painting with no block in it. The run swaps which axis is tidy: the blocks appear in the painting and
   // the stripe goes mixed, which is the page's "the tissue is an axis the
   // clustering never saw" happening rather than being asserted.
   //

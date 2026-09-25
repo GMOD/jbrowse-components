@@ -147,9 +147,9 @@ dimension (`pairOrientation`, `splitRead`, `mapq`, `mateAssembly`) or a tag
 (`tags.HP`). The multi-sample variant displays' row banding used to answer to
 `groupBy` while doing something else — sorting the rows by a sample-metadata
 column, with no sections, no chips and no domain — and it is spelled `facet`
-instead, the feature display's setting (`maybeApplyFacet` and
-`sortSourcesByAttribute` in
-`plugins/variants/src/shared/MultiSampleVariantBaseModel.ts`). The census counts
+instead, the feature display's setting (`bandRows` in
+`packages/tree-sidebar/src/arrangeRows.ts`, through `TreeSidebarMixin`'s
+`rowBanding`). The census counts
 the key as the corpus spelled it when the record was written, so the `groupBy`
 row above still holds the feature and variant displays' entries. The same lag
 holds for the quantitative display, whose row per subtrack is `rows: 'source'`
