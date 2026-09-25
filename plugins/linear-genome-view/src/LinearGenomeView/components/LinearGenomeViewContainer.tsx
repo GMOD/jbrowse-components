@@ -173,7 +173,8 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
                 <>
                   {pinnedTracks.length ? (
                     <Paper
-                      elevation={6}
+                      elevation={2}
+                      data-testid="pinned-tracks"
                       className={classes.pinnedTracks}
                       style={{
                         top: stickyTops.pinnedTracks,

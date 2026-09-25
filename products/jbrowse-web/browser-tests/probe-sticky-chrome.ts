@@ -75,7 +75,7 @@ function sampler() {
 function readPinnedCap() {
   const tc = document.querySelector('[data-testid="tracksContainer"]')!
   const pinned = document.querySelector<HTMLElement>(
-    '[data-testid="tracksContainer"] .MuiPaper-elevation6',
+    '[data-testid="pinned-tracks"]',
   )!
   let node: Element | null = tc.parentElement
   while (
