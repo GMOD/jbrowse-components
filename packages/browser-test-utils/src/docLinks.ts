@@ -527,11 +527,11 @@ export function runExamplesSiteChecks({
   const engines = findEnginesBuiltInInitializers([path.join(src, 'examples')])
   for (const e of engines) {
     log(
-      `ENGINE IN INITIALIZER ${rel(e.file)}:${e.line}\n` +
+      `ENGINE IN ${e.where === 'effect' ? 'AN EFFECT' : 'INITIALIZER'} ${rel(e.file)}:${e.line}\n` +
         `       ${e.text}\n` +
-        '       StrictMode double-invokes this and discards the second engine,\n' +
-        "       which then has nothing holding it. Use the product's\n" +
-        '       useCreateViewState, or useCreateOnce where that cannot fit.',
+        '       StrictMode runs this twice, and the engine it builds is\n' +
+        "       the product's to own. Use useCreateViewState, with an async\n" +
+        '       build function when building takes more than one call.',
     )
   }
 

@@ -177,7 +177,10 @@ nothing left holding it. Nothing errors, because the one React kept is fine.
 site used `useCreateViewState` in all twenty of its examples; react-app used it
 in one file and a `useState` initializer in two others, and circular in none —
 seventeen demos on `jbrowse-build-your-own` had the same shape. A convention
-nobody is reminded of is a convention three files skip.
+nobody is reminded of is a convention three files skip. The check reports an
+engine built in an effect as well: after the initializers were fixed, three
+react-app examples still built theirs in a `useEffect` with a hand-kept unmount
+flag, and StrictMode runs an effect twice as surely as an initializer.
 
 ## The demo comes first on the page
 

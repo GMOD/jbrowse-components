@@ -28,8 +28,10 @@ import path from 'node:path'
 // "`useCreateViewState`, not `useState(() => createViewState(…))`" — so the
 // first version of this check reported all three files it had just been written
 // to clear, which is the most confusing way for a new check to fail.
-const BUILDERS = /\b(?:createViewState|createLinearGenomeView)\s*\(/
+const BUILDERS =
+  /\b(?:createViewState|createViewStateAsync|createLinearGenomeView)\s*\(/
 const IN_INITIALIZER = /\buse(?:State|Memo)\s*(?:<[^;]*?>)?\s*\(\s*\(\s*\)\s*=>/
+const EFFECT = /\buse(?:Layout)?Effect\s*\(/
 
 // blanked rather than dropped, so a reported line number still points at the
 // line the reader will find
@@ -43,14 +45,33 @@ export interface EngineHookViolation {
   file: string
   line: number
   text: string
+  where: 'initializer' | 'effect'
+}
+
+// An effect's body, as the lines from its `useEffect(` to the paren that
+// closes it. Effects run long, so the initializer rule's few-line window
+// cannot see a builder at the bottom of one.
+function effectBody(code: string[], start: number) {
+  let depth = 0
+  for (let i = start; i < code.length; i++) {
+    const line =
+      i === start ? code[i]!.slice(EFFECT.exec(code[i]!)!.index) : code[i]!
+    for (const ch of line) {
+      depth += ch === '(' ? 1 : ch === ')' ? -1 : 0
+    }
+    if (depth <= 0) {
+      return code.slice(start, i + 1)
+    }
+  }
+  return code.slice(start)
 }
 
 /**
  * Report every example that constructs an engine inside a `useState`/`useMemo`
- * initializer. The fix is the product's own `useCreateViewState`, or
- * `useCreateOnce` from `@jbrowse/core/util/hooks` where the example needs to do
- * something to the engine on the way out and the hook's options blob cannot say
- * it.
+ * initializer or an effect. StrictMode runs an effect twice as it double-invokes
+ * an initializer, and an effect's hand-kept unmount flag and teardown are what
+ * the product's hook already does. The fix is `useCreateViewState`, given an
+ * async build function when building takes more than one call.
  */
 export function findEnginesBuiltInInitializers(
   exampleDirs: string[],
@@ -74,7 +95,18 @@ export function findEnginesBuiltInInitializers(
           opened.index < line.length &&
           BUILDERS.test(window.slice(opened.index))
         ) {
-          out.push({ file, line: i + 1, text: raw[i]!.trim() })
+          out.push({
+            file,
+            line: i + 1,
+            text: raw[i]!.trim(),
+            where: 'initializer',
+          })
+        }
+        if (
+          EFFECT.test(line) &&
+          effectBody(code, i).some(l => BUILDERS.test(l))
+        ) {
+          out.push({ file, line: i + 1, text: raw[i]!.trim(), where: 'effect' })
         }
       })
     }
