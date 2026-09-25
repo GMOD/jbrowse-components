@@ -5,7 +5,7 @@ import type { Recipe, RecipeStep } from './recipe.ts'
 // First Desktop release carrying the jbrowse:// handler + "Open JBrowse Web
 // link...". The docs deploy independently of a Desktop release, so this text
 // has to stay true before one ships — update it if the target release moves.
-const DESKTOP_LINK_MIN_VERSION = 'JBrowse Desktop 5.0'
+export const DESKTOP_LINK_MIN_VERSION = 'JBrowse Desktop 5.0'
 
 // Docs markdown is rendered to an HTML string (src/lib/markdown.ts), not to
 // Astro components, so this emits a plain <dialog> a small script in
