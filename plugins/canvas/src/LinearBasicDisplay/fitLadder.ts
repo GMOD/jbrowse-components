@@ -84,6 +84,10 @@ export function solveLabelRoomFactor(
   return bisectSmallestFitting(fits, 0, FIT_MAX_ROOM_FACTOR, FIT_SOLVE_ITERS)
 }
 
+// The pack snaps rows to a pitch of a tenth of the body height, so a finer
+// scale than 1/32 of the range buys no pixel.
+const BODY_SCALE_SOLVE_ITERS = 5
+
 // The largest body scale, down to `floor`, whose labelled stack fits, or
 // undefined when even the floor overflows.
 export function solveBodyScale(
@@ -101,7 +105,9 @@ export function solveBodyScale(
   if (!fitsSqueeze(1 - floor)) {
     return undefined
   }
-  return 1 - bisectSmallestFitting(fitsSqueeze, 0, 1 - floor, FIT_SOLVE_ITERS)
+  return (
+    1 - bisectSmallestFitting(fitsSqueeze, 0, 1 - floor, BODY_SCALE_SOLVE_ITERS)
+  )
 }
 
 // A labelled body shorter than this share of its label's font reads as an
