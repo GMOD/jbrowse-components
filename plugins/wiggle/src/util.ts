@@ -9,12 +9,10 @@ import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
 // re-exported here so existing `../util.ts` importers are unaffected.
 export { WIGGLE_RENDERINGS, WIGGLE_RENDERING_TYPES } from './renderingTypes.ts'
 
-// Default colors used by wiggle config schema. The negative color is a clean,
-// saturated red rather than a muted coral so that at high density (many thin
-// overlapping bars, e.g. a zoomed-out phyloP track) the negative side still
-// reads as red instead of muddying toward brown.
-export const WIGGLE_POS_COLOR_DEFAULT = '#0068d1'
-export const WIGGLE_NEG_COLOR_DEFAULT = '#e01e26'
+export {
+  WIGGLE_NEG_COLOR_DEFAULT,
+  WIGGLE_POS_COLOR_DEFAULT,
+} from './colorDefaults.ts'
 
 // A row of the wiggle display, which is exactly the metadata its adapter
 // reported — so this is `SourceInfo`, not a widened copy of it.

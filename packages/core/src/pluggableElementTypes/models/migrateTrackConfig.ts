@@ -28,37 +28,107 @@ declare module '../../PluginManager.ts' {
 }
 // #endregion
 
-// Registers a back-compat migration for a display's CONFIG snapshot that runs
-// BEFORE the display `types.union` validates it.
-//
-// Use this — NOT a config-schema `preProcessSnapshot` — whenever the migration
-// rewrites the VALUE of an existing constrained slot (enum rename, type narrow).
-// A config-schema `preProcessSnapshot` does not run during union validation
-// (the union tests the raw snapshot), so the union rejects the legacy value
-// first and the migration never fires. A slot add/remove/rename, where the old
-// data becomes an unknown extra prop, does NOT need this — the union ignores
-// unknown props, so a config-schema `preProcessSnapshot` is fine there.
-//
-// Pass every type name the display answers to (canonical + aliases); this runs
-// before alias normalization. `migrate` must be idempotent (it also fires via
-// the config-schema `preProcessSnapshot` on a direct create).
-export function addDisplayConfigMigration(
+const isBareEntry = (entry: DisplayConfigSnapshot) =>
+  Object.keys(entry).every(k => k === 'type' || k === 'displayId')
+
+interface Migrated {
+  entry: DisplayConfigSnapshot
+  type?: string
+  rank: number
+}
+
+/**
+ * Loads each display entry a retired type names as the display it retired
+ * into, and rewrites every entry's retired slot values, as each DisplayType's
+ * `retiredTypes` and `retiredConfig` declare. Runs on the track config before
+ * the `Core-preProcessTrackConfig` handlers, which read the current names, and
+ * before the display union, which refuses a retired value where a schema's own
+ * `preProcessSnapshot` never runs.
+ *
+ * Entries that collapse onto one type become one: an entry written for this
+ * display beats one written for a retired type, a bare `{ type, displayId }`
+ * stub yields to either, and among equals the first wins. The survivor takes
+ * the first one's place and id, so the default display and the references a
+ * session holds stay where they were.
+ */
+export function migrateRetiredDisplays(
   pluginManager: PluginManager,
-  displayTypes: string[],
-  migrate: (displaySnap: Record<string, unknown>) => Record<string, unknown>,
-) {
-  const match = new Set(displayTypes)
-  const matches = (d: DisplayConfigSnapshot) =>
-    typeof d.type === 'string' && match.has(d.type)
-  pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', snap => {
-    const { displays } = snap
-    return Array.isArray(displays) && displays.some(matches)
-      ? {
-          ...snap,
-          displays: displays.map(d => (matches(d) ? migrate(d) : d)),
-        }
-      : snap
+  snap: TrackConfigSnapshot,
+): TrackConfigSnapshot {
+  const { displays, trackId } = snap
+  if (!Array.isArray(displays) || displays.length === 0) {
+    return snap
+  }
+  const elements = pluginManager.getDisplayElements()
+  const byName = new Map(elements.map(d => [d.name, d]))
+  const byRetiredName = new Map(
+    elements.flatMap(d => d.retiredTypes.map(r => [r.type, { d, r }] as const)),
+  )
+  const migrated = displays.map((entry): Migrated => {
+    const type = entry.type
+    const retired = type === undefined ? undefined : byRetiredName.get(type)
+    const display = retired?.d ?? (type ? byName.get(type) : undefined)
+    if (!display) {
+      return { entry, rank: 0 }
+    }
+    let next = entry
+    if (retired) {
+      const { displayId } = entry
+      next = {
+        ...(retired.r.migrate?.(entry) ?? entry),
+        type: display.name,
+        ...(displayId === undefined
+          ? {}
+          : {
+              displayId:
+                displayId === `${String(trackId)}-${type}`
+                  ? `${String(trackId)}-${display.name}`
+                  : displayId,
+            }),
+      }
+    }
+    next = display.retiredConfig?.(next) ?? next
+    return {
+      entry: next,
+      type: display.name,
+      rank: isBareEntry(entry) ? 1 : retired ? 2 : 3,
+    }
   })
+  if (
+    migrated.every(
+      (m, i) => m.entry === displays[i] && m.type === displays[i].type,
+    ) &&
+    new Set(migrated.map(m => m.type)).size === migrated.length
+  ) {
+    return snap
+  }
+  const winners = new Map<string, Migrated>()
+  for (const m of migrated) {
+    const best = m.type === undefined ? undefined : winners.get(m.type)
+    if (m.type !== undefined && (!best || m.rank > best.rank)) {
+      winners.set(m.type, m)
+    }
+  }
+  const placed = new Set<string>()
+  return {
+    ...snap,
+    displays: migrated.flatMap(m => {
+      if (m.type === undefined) {
+        return [m.entry]
+      }
+      if (placed.has(m.type)) {
+        return []
+      }
+      placed.add(m.type)
+      const winner = winners.get(m.type)!
+      const displayId = m.entry.displayId ?? winner.entry.displayId
+      return [
+        winner === m || displayId === undefined
+          ? winner.entry
+          : { ...winner.entry, displayId },
+      ]
+    }),
+  }
 }
 
 export interface LegacyDisplaySnapshot {

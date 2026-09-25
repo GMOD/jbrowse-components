@@ -1,8 +1,12 @@
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
+import {
+  RETIRED_ROW_STATE_KEYS,
+  liftRetiredRowState,
+} from '@jbrowse/display-kit/retiredSettings'
 
 import configSchemaFactory from './configSchema.ts'
-import { foldRetiredMatrixDisplay } from './retiredMatrixDisplay.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -13,10 +17,6 @@ const VariantDisplayComponent = lazyWithPreload(
 export default function LinearMultiSampleVariantDisplayF(
   pluginManager: PluginManager,
 ) {
-  pluginManager.addToExtensionPoint(
-    'Core-preProcessTrackConfig',
-    foldRetiredMatrixDisplay,
-  )
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory()
     return new DisplayType({
@@ -32,12 +32,33 @@ export default function LinearMultiSampleVariantDisplayF(
       trackType: 'VariantTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: VariantDisplayComponent,
-      // renamed from MultiLinearVariantDisplay; alias remaps old track configs
-      // (active display instances are remapped in model.ts preProcessSnapshot)
-      aliases: [
-        'MultiLinearVariantDisplay',
-        'LinearMultiSampleVariantMatrixDisplay',
-        'LinearVariantMatrixDisplay',
+      // A v4 layout copied the colorBy palette into its rows, so its
+      // colours stay behind and the palette keeps painting them.
+      retiredState: {
+        keys: [...RETIRED_ROW_STATE_KEYS, 'jexlFilters'],
+        lift: instance => ({
+          ...liftRetiredRowState(instance, { colors: false }),
+          ...(Array.isArray(instance.jexlFilters)
+            ? {
+                jexlFilters: (instance.jexlFilters as string[]).map(
+                  ensureJexlPrefix,
+                ),
+              }
+            : {}),
+        }),
+      },
+      retiredTypes: [
+        { type: 'MultiLinearVariantDisplay' },
+        ...[
+          'LinearMultiSampleVariantMatrixDisplay',
+          'LinearVariantMatrixDisplay',
+        ].map(type => ({
+          type,
+          migrate: (entry: Record<string, unknown>) => ({
+            ...entry,
+            variantLayout: 'columns',
+          }),
+        })),
       ],
     })
   })

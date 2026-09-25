@@ -6592,7 +6592,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       ],
       "properties": {
         "type": {
-          "const": "LinearWiggleDisplay"
+          "enum": [
+            "LinearWiggleDisplay",
+            "MultiLinearWiggleDisplay"
+          ]
         },
         "displayId": {
           "type": "string"
@@ -13716,7 +13719,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "object",
             "properties": {
               "type": {
-                "const": "LinearWiggleDisplay"
+                "enum": [
+                  "LinearWiggleDisplay",
+                  "MultiLinearWiggleDisplay"
+                ]
               }
             },
             "required": [
@@ -14740,6 +14746,34 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "clusterProvenance": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "clusterTree": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "layout": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "showSidebarLabelsSetting": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "showTreeSetting": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "subtreeFilter": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "treeAreaWidth": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
         }
       }
     },
@@ -15299,7 +15333,35 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
         },
+        "clusterProvenance": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "clusterTree": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
         "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "layout": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "showSidebarLabelsSetting": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "showTreeSetting": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "subtreeFilter": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "treeAreaWidth": {
           "deprecated": true,
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
         }
@@ -15402,6 +15464,74 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "autoscale": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "clusterProvenance": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "clusterTree": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "color": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "constraints": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "displayCrossHatches": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "layout": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "negColor": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "posColor": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "rendererTypeNameState": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "resolution": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "scale": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "showSidebarLabelsSetting": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "showTreeSetting": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "subtreeFilter": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "summaryScoreMode": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "treeAreaWidth": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
         }
       }
     },
@@ -15416,7 +15546,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       ],
       "properties": {
         "type": {
-          "const": "LinearWiggleDisplay"
+          "enum": [
+            "LinearWiggleDisplay",
+            "MultiLinearWiggleDisplay"
+          ]
         },
         "id": {
           "type": "string"
@@ -15553,6 +15686,34 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "sortRowsBy": {},
         "heightPreConfig": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "clusterProvenance": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "clusterTree": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "layout": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "showSidebarLabelsSetting": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "showTreeSetting": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "subtreeFilter": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
+        },
+        "treeAreaWidth": {
           "deprecated": true,
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
         }
@@ -16517,7 +16678,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "object",
             "properties": {
               "type": {
-                "const": "LinearWiggleDisplay"
+                "enum": [
+                  "LinearWiggleDisplay",
+                  "MultiLinearWiggleDisplay"
+                ]
               }
             },
             "required": [

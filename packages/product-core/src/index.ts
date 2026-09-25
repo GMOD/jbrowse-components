@@ -147,9 +147,8 @@ export {
 export { getSessionSnapshot, observeSession } from './observeSession.ts'
 export type { SessionObservers, ViewLocation } from './observeSession.ts'
 export {
-  MIGRATED_DISPLAY_INSTANCE_KEYS,
-  migrateConfigSnapshot,
   migrateSessionSnapshot,
+  migratedDisplayInstanceKeys,
 } from './sessionMigrations/index.ts'
 export {
   DEFAULT_WEB_BASE_URL,

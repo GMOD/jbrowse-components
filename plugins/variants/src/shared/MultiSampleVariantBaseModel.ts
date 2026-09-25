@@ -169,9 +169,10 @@ export interface VariantContextMenuInfo extends ContextMenuAnchor {
   feature: Feature
 }
 
-// The display-state arrangement these displays kept before `rows`. Named on
-// the way in because MST drops an undeclared key in silence, and a session
-// carrying one would open unarranged with nothing said.
+// The display-state arrangement these displays kept before `rows`. A loaded
+// session's is lifted into `rows` before this model sees it (the DisplayType's
+// `retiredState`), so this refuses a snapshot written some other way, which
+// MST would otherwise open unarranged with nothing said.
 const RETIRED_ARRANGEMENT_PROPS = [
   'layout',
   'clusterTree',

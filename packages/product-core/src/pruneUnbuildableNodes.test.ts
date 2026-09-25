@@ -591,10 +591,8 @@ test('does not hold a malformed snapshot of a type it does have', () => {
   expect(snapshot.heldForMissingPlugins).toBeUndefined()
 })
 
-// `aliases` used to be DisplayType's alone, so renaming a track type or a view
-// type had no declared route at all — only the central `displayTypeMap` in
-// sessionMigrations, which a plugin outside this repo cannot add to. On
-// PluggableElementBase it covers every group the prune walks.
+// `aliases` sits on PluggableElementBase, so renaming a track type or a view
+// type has a declared route too, in every group the prune walks.
 const withAliases = fakeBuild(
   {
     widget: ['HierarchicalTrackSelectorWidget'],

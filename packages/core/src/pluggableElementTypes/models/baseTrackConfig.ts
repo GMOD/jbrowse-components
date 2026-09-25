@@ -7,7 +7,10 @@ import {
 } from '../../configuration/index.ts'
 import { expandLooseSearchIndex } from '../../util/expandLooseSearchIndex.ts'
 import { expandTrackConfigShorthand } from './expandTrackConfigShorthand.ts'
-import { liftLegacyRendererConfig } from './migrateTrackConfig.ts'
+import {
+  liftLegacyRendererConfig,
+  migrateRetiredDisplays,
+} from './migrateTrackConfig.ts'
 
 import type PluginManager from '../../PluginManager.ts'
 import type { LegacyDisplaySnapshot } from './migrateTrackConfig.ts'
@@ -24,10 +27,10 @@ interface TrackConfigSnapshot {
 
 /**
  * Snapshot normalization shared by every track config schema (including
- * ReferenceSequenceTrack). Runs the `Core-preProcessTrackConfig` extension
- * point, expands the `displayDefaults` shorthand, auto-fills a stub display for
- * each of the track type's registered displays, normalizes legacy display-type
- * aliases to their canonical name, dedupes by type (first wins), and lifts
+ * ReferenceSequenceTrack). Loads retired display types as the displays they
+ * retired into, runs the `Core-preProcessTrackConfig` extension point, expands
+ * the `displayDefaults` shorthand, auto-fills a stub display for each of the
+ * track type's registered displays, dedupes by type (first wins), and lifts
  * legacy renderer configs.
  */
 export function preprocessTrackConfigSnapshot(
@@ -38,7 +41,7 @@ export function preprocessTrackConfigSnapshot(
     pluginManager.evaluateExtensionPoint(
       /** #extensionPoint Core-preProcessTrackConfig | sync | Rewrite a track config snapshot before it is instantiated */
       'Core-preProcessTrackConfig',
-      structuredClone(snapshot),
+      migrateRetiredDisplays(pluginManager, structuredClone(snapshot)),
     ),
     pluginManager,
   ) as TrackConfigSnapshot
@@ -66,23 +69,10 @@ export function preprocessTrackConfigSnapshot(
       )
     }
   }
-  const displayElements = pluginManager.getDisplayElements()
-  const knownDisplayTypes = new Set(displayElements.map(d => d.name))
-  // Map of legacy display type → canonical name, built from each DisplayType's
-  // `aliases` declaration. Lets each display "own" its renames without a central
-  // migration file.
-  const displayAliasMap = new Map<string, string>()
-  for (const d of displayElements) {
-    if (d.aliases) {
-      for (const alias of d.aliases) {
-        displayAliasMap.set(alias, d.name)
-      }
-    }
-  }
-  // After alias normalization, dedupe by type so the track config holds one
-  // display per type (old sessions can carry several display configs whose types
-  // are all aliases of one canonical type). First occurrence wins to preserve
-  // the default (displays[0]).
+  const knownDisplayTypes = new Set(
+    pluginManager.getDisplayElements().map(d => d.name),
+  )
+  // one display per type; the first keeps its place as the default
   const seenTypes = new Set<string>()
   const { textSearching } = snap
   return {
@@ -99,10 +89,6 @@ export function preprocessTrackConfigSnapshot(
         }
       : {}),
     displays: displays
-      .map(d => {
-        const canonical = displayAliasMap.get(d.type)
-        return canonical ? { ...d, type: canonical } : d
-      })
       .filter(d => {
         const known = knownDisplayTypes.has(d.type)
         if (!known) {

@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { migrateRetiredDisplays } from '@jbrowse/core/pluggableElementTypes/models'
 import { isPluginUrl, maybePluginUrl } from '@jbrowse/core/pluginDefinitions'
 import { expandLooseSearchIndex } from '@jbrowse/core/util/expandLooseSearchIndex'
 import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
@@ -9,7 +10,6 @@ import {
   isStateTreeNode,
   types,
 } from '@jbrowse/mobx-state-tree'
-import { migrateConfigSnapshot } from '@jbrowse/product-core'
 import { toJS } from 'mobx'
 
 import { JBrowseConfigF } from '../JBrowseConfig/index.ts'
@@ -54,7 +54,12 @@ function expandLooseTracks(
       ? (assemblies[0] as { name?: string }).name
       : undefined
   const expandedTracks = Array.isArray(tracks)
-    ? tracks.map(t => expandLooseTrackConfig(t, pluginManager, only))
+    ? tracks.map(t => {
+        const track = expandLooseTrackConfig(t, pluginManager, only)
+        return track && typeof track === 'object'
+          ? migrateRetiredDisplays(pluginManager, track)
+          : track
+      })
     : tracks
   const expandedIndexes = Array.isArray(indexes)
     ? indexes.map(i => expandLooseSearchIndex(i, only ? [only] : undefined))
@@ -256,14 +261,12 @@ export function JBrowseModelF({
       },
     }))
 
-  // Migrate legacy display types (e.g. LinearPileupDisplay →
-  // LinearAlignmentsDisplay) when ingesting config snapshots so saved
-  // configs from older JBrowse versions still load. `tracks` stays frozen
-  // (ADR-032), so the loose `{ trackId, uri }` form is expanded here, where
-  // the track selector and the trackId index read it, and never by a schema.
+  // `tracks` stays frozen (ADR-032), so the loose `{ trackId, uri }` form is
+  // expanded and a retired display type loaded as its successor here, where
+  // the track selector and the trackId index read them, and never by a schema.
   return types.snapshotProcessor(model, {
     preProcessor(snapshot: Record<string, unknown>) {
-      return migrateConfigSnapshot(expandLooseTracks(snapshot, pluginManager))
+      return expandLooseTracks(snapshot, pluginManager)
     },
   })
 }

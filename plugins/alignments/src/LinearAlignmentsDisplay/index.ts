@@ -2,6 +2,7 @@ import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchemaFactory from './configSchema.ts'
+import { retiredConfig, retiredState, retiredTypes } from './retired.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -27,12 +28,9 @@ export default function register(pluginManager: PluginManager) {
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: AlignmentsDisplayComponent,
-      aliases: [
-        'LinearPileupDisplay',
-        'LinearSNPCoverageDisplay',
-        'LinearReadArcsDisplay',
-        'LinearReadCloudDisplay',
-      ],
+      retiredTypes,
+      retiredConfig,
+      retiredState,
     })
   })
 }

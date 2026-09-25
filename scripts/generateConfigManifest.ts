@@ -69,7 +69,7 @@ const SCHEMA_SITE_OUT = path.join(REPO_ROOT, 'website/static', SCHEMA_URL_PATH)
 // needs to say has to come back as JSON.
 const ENTRY = `
 import PluginManager from '@jbrowse/core/PluginManager'
-import { MIGRATED_DISPLAY_INSTANCE_KEYS } from '@jbrowse/product-core'
+import { migratedDisplayInstanceKeys } from '@jbrowse/product-core'
 import { JBrowseConfigF } from '@jbrowse/app-core'
 import {
   getConfigurationSchemaMetadata,
@@ -501,11 +501,10 @@ function collect(group, getType) {
       ...(group === 'adapter' || group === 'text search adapter'
         ? { shorthandKeys: shorthandKeysOf(entry) }
         : {}),
-      // Old type names a DisplayType still answers to. baseTrackConfig
-      // canonicalizes these before validation, and product-core's
-      // sessionMigrations displayTypeMap additionally restores the settings
-      // that made the old single-purpose display distinct — so a config using
-      // one is fully supported, not stale, and must not be flagged.
+      // Old type names a DisplayType still answers to, from its
+      // retiredTypes. The track config loads one as its successor, with the
+      // settings that made the old display distinct, so a config using one is
+      // fully supported, not stale, and must not be flagged.
       ...(entry.aliases?.length ? { aliases: entry.aliases } : {}),
       // Which displays a track offers. The validator needs these to check the
       // keys inside a track's displayDefaults shorthand, which route to
@@ -530,12 +529,11 @@ const manifest = {
   connections: collect('connection', n => pm.getConnectionType(n)),
   internetAccounts: collect('internet account', n => pm.getInternetAccountType(n)),
   views: collectViews(),
-  // Legacy display-instance keys product-core's sessionMigrations still lifts
-  // into the config, keyed by display type ('*' = any). Taken from the migration
-  // itself rather than restated, so the two cannot disagree about what is stale
-  // versus dead.
+  // Legacy display-instance keys the session migration still lifts into the
+  // config, keyed by display type ('*' = any), read off the DisplayTypes the
+  // migration reads, so the two cannot disagree about what is stale versus dead.
   migratedDisplayKeys: Object.fromEntries(
-    Object.entries(MIGRATED_DISPLAY_INSTANCE_KEYS).map(([type, keys]) => [
+    Object.entries(migratedDisplayInstanceKeys(pm)).map(([type, keys]) => [
       type,
       [...keys].sort(),
     ]),

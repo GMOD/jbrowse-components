@@ -32,6 +32,39 @@ const tracks = [
       },
     ],
   },
+  {
+    type: 'MultiQuantitativeTrack',
+    trackId: 'multi',
+    name: 'multi',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'MultiWiggleAdapter', bigWigs: ['a.bw', 'b.bw'] },
+  },
+  // what jb2hubs writes for a UCSC overlaid multiWig, and keeps writing for
+  // older releases
+  {
+    type: 'MultiQuantitativeTrack',
+    trackId: 'layered',
+    name: 'layered',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'MultiWiggleAdapter', bigWigs: ['a.bw', 'b.bw'] },
+    displays: [
+      { type: 'MultiLinearWiggleDisplay', defaultRendering: 'multixyplot' },
+    ],
+  },
+  {
+    type: 'QuantitativeTrack',
+    trackId: 'bw',
+    name: 'bw',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'BigWigAdapter', uri: 'a.bw' },
+  },
+  {
+    type: 'VariantTrack',
+    trackId: 'vcf',
+    name: 'vcf',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'VcfTabixAdapter', uri: 'a.vcf.gz' },
+  },
 ]
 
 function setup() {
@@ -143,4 +176,113 @@ test('a v4 read-arcs display on a config.json track keeps drawing arcs', async (
   expect(getConf(display, 'readConnections')).toBe('arc')
   expect(getConf(display, 'showPileup')).toBe(false)
   expect(getConf(display, 'showCoverage')).toBe(false)
+})
+
+test('a v4 multi-wiggle display opens as rows, in its order and colours', async () => {
+  const { display, notifications } = await load(
+    v4Session('MultiQuantitativeTrack', 'multi', {
+      type: 'MultiLinearWiggleDisplay',
+      configuration: 'multi-MultiLinearWiggleDisplay',
+      rendererTypeNameState: 'multirowdensity',
+      layout: [
+        { name: 'b', source: 'b', color: 'red' },
+        { name: 'A sample', source: 'a' },
+      ],
+    }),
+  )
+  expect(notifications).toEqual([])
+  expect(display.type).toBe('LinearWiggleDisplay')
+  expect(display.isRowLayout).toBe(true)
+  expect(display.renderingType).toBe('density')
+  expect(display.rowDomain).toEqual(['b', 'a'])
+  expect(display.rowLabels).toEqual({ a: 'A sample' })
+  expect(getConf(display, ['rowColor', 'range'])).toEqual(['red'])
+})
+
+test('a v4 multi-wiggle display left overlaid stays overlaid', async () => {
+  const { display } = await load(
+    v4Session('MultiQuantitativeTrack', 'multi', {
+      type: 'MultiLinearWiggleDisplay',
+      configuration: 'multi-MultiLinearWiggleDisplay',
+      rendererTypeNameState: 'xyplot',
+    }),
+  )
+  expect(display.isRowLayout).toBe(false)
+  expect(display.renderingType).toBe('xyplot')
+})
+
+test('a v4 multi-wiggle display on its default opens as rows', async () => {
+  const { display } = await load(
+    v4Session('MultiQuantitativeTrack', 'multi', {
+      type: 'MultiLinearWiggleDisplay',
+      configuration: 'multi-MultiLinearWiggleDisplay',
+    }),
+  )
+  expect(display.isRowLayout).toBe(true)
+  expect(display.renderingType).toBe('xyplot')
+})
+
+// the lifted arrangement names no field, and must not switch the rows off
+test('a v4 multi-wiggle display arranged on its default keeps its rows', async () => {
+  const { display } = await load(
+    v4Session('MultiQuantitativeTrack', 'multi', {
+      type: 'MultiLinearWiggleDisplay',
+      configuration: 'multi-MultiLinearWiggleDisplay',
+      layout: [
+        { name: 'b', source: 'b' },
+        { name: 'a', source: 'a' },
+      ],
+      clusterTree: '(b:1,a:1);',
+    }),
+  )
+  expect(display.isRowLayout).toBe(true)
+  expect(display.rowDomain).toEqual(['b', 'a'])
+  expect(getConf(display, ['rows', 'tree'])).toBe('(b:1,a:1);')
+})
+
+test("a hosted config's overlaid multi-wiggle opens overlaid", async () => {
+  const { display } = await load(
+    v4Session('MultiQuantitativeTrack', 'layered', {
+      type: 'LinearWiggleDisplay',
+      configuration: 'layered-LinearWiggleDisplay',
+    }),
+  )
+  expect(display.isRowLayout).toBe(false)
+  expect(display.renderingType).toBe('xyplot')
+})
+
+test('a v4 wiggle display keeps the scale and colours a reader set', async () => {
+  const { display } = await load(
+    v4Session('QuantitativeTrack', 'bw', {
+      type: 'LinearWiggleDisplay',
+      configuration: 'bw-LinearWiggleDisplay',
+      scale: 'log',
+      autoscale: 'localsd',
+      constraints: { min: 1 },
+      posColor: 'green',
+      rendererTypeNameState: 'line',
+    }),
+  )
+  expect(display.renderingType).toBe('line')
+  expect(getConf(display, ['scales', 'y', 'type'])).toBe('log')
+  expect(getConf(display, ['scales', 'y', 'autoscale'])).toBe('localsd')
+  expect(getConf(display, ['scales', 'y', 'domainMin'])).toBe(1)
+  expect(getConf(display, ['color', 'range'])).toEqual(['#e01e26', 'green'])
+})
+
+test('a v4 clustered multi-sample variant display loads with its order and tree', async () => {
+  const { display } = await load(
+    v4Session('VariantTrack', 'vcf', {
+      type: 'MultiLinearVariantDisplay',
+      configuration: 'vcf-MultiLinearVariantDisplay',
+      layout: [{ name: 'HG00097', color: '#e41a1c' }, { name: 'HG00096' }],
+      clusterTree: '(HG00097:1,HG00096:1);',
+      subtreeFilter: ['HG00097'],
+    }),
+  )
+  expect(display.type).toBe('LinearMultiSampleVariantDisplay')
+  expect(display.rowDomain).toEqual(['HG00097', 'HG00096'])
+  expect(getConf(display, ['rows', 'tree'])).toBe('(HG00097:1,HG00096:1);')
+  expect(getConf(display, ['rows', 'kept'])).toEqual(['HG00097'])
+  expect(getConf(display, ['rowColor', 'domain'])).toEqual([])
 })

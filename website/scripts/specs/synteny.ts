@@ -3803,9 +3803,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // `heightPreConfig` path — an alignments-base refactor once dropped that prop,
   // discarding the session's stored 28/52px synteny heights so both panels fell
   // back to the 250px alignments default. Setting `height` directly here retires
-  // that incidental coverage, which is fine: extractInstanceHeight owns the
-  // migration and sessionMigrations.test.ts covers it directly (one case uses
-  // this very session's 52px value).
+  // that incidental coverage, which is fine: the session migration owns it and
+  // sessionMigrations.test.ts covers it directly.
   {
     mode: 'url',
     name: 'mcscan_anchors',

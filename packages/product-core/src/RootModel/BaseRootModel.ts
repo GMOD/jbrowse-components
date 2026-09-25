@@ -138,7 +138,10 @@ export function BaseRootModelFactory({
           // before the cast, because a type this build has no plugin for is a
           // union failure the try below never gets to see
           const pruned = pruneUnbuildableNodes(
-            migrateSessionSnapshot(sessionSnapshot as Record<string, unknown>),
+            migrateSessionSnapshot(
+              sessionSnapshot as Record<string, unknown>,
+              pluginManager,
+            ),
             pluginManager,
             sessionModelType,
           )

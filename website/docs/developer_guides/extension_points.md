@@ -979,30 +979,29 @@ This declaration lives inside core, so it augments the module by relative path;
 a plugin writes `declare module '@jbrowse/core/PluginManager'` for the same
 effect.
 
-For the common case — migrating a _display's_ config across a format change —
-register through `addDisplayConfigMigration` rather than by hand:
+For the common case — a _display's_ config across a format change — declare it
+on the `DisplayType` rather than registering a handler:
 
 <!-- include: plugins/canvas/src/LinearBasicDisplay/index.ts#migration -->
 
 ```typescript
-// Legacy values on existing enum slots, normalized before the display union
-// validates the snapshot, where a schema preProcessSnapshot does not run.
-addDisplayConfigMigration(
-  pluginManager,
-  ['LinearBasicDisplay', 'LinearFeatureDisplay'],
-  migrateBasicConfigSnapshot,
-)
+retiredTypes: [{ type: 'LinearFeatureDisplay' }],
+retiredConfig: migrateBasicConfigSnapshot,
 ```
 
-That helper walks `snap.displays` for you and only calls your `migrate` for the
-display types you name, so unrelated tracks pass through untouched. Use it, not
-a config-schema `preProcessSnapshot`, whenever the migration rewrites the
-**value** of an existing constrained slot: a `types.union` tests the raw
-snapshot, so it rejects the legacy value before a schema-level preprocessor ever
-runs. Adding, removing, or renaming a slot does not need this, since the union
-ignores props it doesn't know. Pass every type name the display answers to
-(canonical plus aliases), and make `migrate` idempotent, since it also fires
-from the config-schema `preProcessSnapshot` on a direct create.
+`retiredTypes` names the display types this one replaced. A config or a session
+naming one loads as this display, the entry rewritten first by that entry's
+`migrate`, which is where the settings the old type's picture needs go.
+`retiredConfig` rewrites any entry of this display whose slot values an older
+release spelt differently. Both run before every `Core-preProcessTrackConfig`
+handler, so a handler reads current names, and before the display union reads
+the entry: a `types.union` tests the raw snapshot, so it rejects a legacy value
+before a schema-level `preProcessSnapshot` ever runs. `retiredConfig` runs on
+every entry, so it must leave a current one as it found it.
+
+`retiredState` does the same for an old session's display instance: `keys` names
+the props it carried that are config slots now, and `lift` answers the slots
+they become, which the session migration writes into the track's config.
 
 ### Core-addTrackComponent
 

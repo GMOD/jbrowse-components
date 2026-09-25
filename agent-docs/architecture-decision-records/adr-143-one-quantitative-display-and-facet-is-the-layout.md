@@ -104,9 +104,12 @@ multi-region pass. Only an adapter carrying several sources in one file
 - A config author meets one display type for one idea, and the settings that
   decide the picture are orthogonal: the plot name, and whether the sources are
   on rows.
-- No migration (v5 breaks compat). `"type": "MultiLinearWiggleDisplay"` and all
+- ~~No migration (v5 breaks compat). `"type": "MultiLinearWiggleDisplay"` and all
   nine rendering names stop loading; a config spells the plot name and, where it
-  was an overlapping mode on a `MultiQuantitativeTrack`, `facet: ""`.
+  was an overlapping mode on a `MultiQuantitativeTrack`, `facet: ""`.~~ A
+  `MultiLinearWiggleDisplay` entry or session display loads as this display,
+  its rendering folded into the plot and `rows`
+  ([ADR-168](adr-168-a-retired-display-is-declared-on-its-successor.md)).
 - A multi-source overlay picks up the scalebar-label gutter, so its plot canvas
   is 10px shorter than it was — one image snapshot moved.
 - Switching the summary score mode on a single-source track now refetches. The

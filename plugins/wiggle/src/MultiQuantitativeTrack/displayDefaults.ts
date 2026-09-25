@@ -1,5 +1,7 @@
 import { moveDisplayDefaults } from '@jbrowse/display-kit/retiredSettings'
 
+import { foldMultiWiggleRendering } from '../LinearWiggleDisplay/retired.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 // What a MultiQuantitativeTrack asks of the one quantitative display, which a
@@ -32,7 +34,10 @@ function wiggleDisplays(snap: Record<string, unknown>) {
 // runs after this extension point, so a key the config already spells — in
 // `displayDefaults` or in an explicit `displays` entry — wins.
 export function seedDisplayDefaults(snap: Record<string, unknown>) {
-  const written = snap.displayDefaults as Record<string, unknown> | undefined
+  const given = snap.displayDefaults as Record<string, unknown> | undefined
+  const written = given
+    ? foldMultiWiggleRendering(given, { plainNames: false })
+    : undefined
   const spelled = new Set([
     ...Object.keys(written ?? {}),
     ...wiggleDisplays(snap)
@@ -40,7 +45,7 @@ export function seedDisplayDefaults(snap: Record<string, unknown>) {
       .flatMap(d => Object.keys(d)),
   ])
   const missing = Object.entries(DEFAULTS).filter(([key]) => !spelled.has(key))
-  return missing.length === 0
+  return missing.length === 0 && written === given
     ? snap
     : {
         ...snap,

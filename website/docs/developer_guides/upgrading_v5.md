@@ -343,11 +343,12 @@ row labels, and `rows: ''` draws every source in one shared plot. A
 `height: 200` into its display defaults, so a multi track that names no display
 setting still opens as a stack of rows.
 
-`renderingType` is the five plot names — `xyplot`, `density`, `line`,
-`linecenter` and `scatter`. The nine `multi*` and `multirow*` spellings stop
-loading, and so do `SINGLE_TO_MULTI_RENDERING` and `remapMultiWiggleRendering`,
-which used to remap them. A config that named one spells the plot name instead,
-plus `rows: ""` where it was an overlapping mode. Nothing migrates.
+`defaultRendering` is the five plot names — `xyplot`, `density`, `line`,
+`linecenter` and `scatter`. A config or a session naming
+`MultiLinearWiggleDisplay` loads as `LinearWiggleDisplay`, its rendering read as
+the plot and the layout it drew: `multirowxy` is `xyplot` on rows, and
+`multixyplot`, or a plain `xyplot`, is `xyplot` with `rows: ""`. A
+`LinearWiggleDisplay` entry takes the five names alone.
 
 `rows` also holds a reader's arrangement of the rows, which
 `MultiLinearWiggleDisplay` kept as display props. The arrangement is therefore
@@ -363,9 +364,11 @@ stay display props.
 | `clusterTree` | `rows.tree`, beside `rows.treeProvenance` |
 | `subtreeFilter` | `rows.kept` |
 
-**None of it migrates**: a session carrying those props reopens unarranged. A
-`facet` in the display's config, the spelling earlier v5 documentation used for
-`rows`, fails the track's load with a message naming `rows: "source"`.
+A session carrying those props opens with them moved into `rows` and `rowColor`,
+and a v4 session's plot, scale, autoscale, domain and colours move to the config
+slots that hold them now. A `facet` in the display's config, the spelling
+earlier v5 documentation used for `rows`, fails the track's load with a message
+naming `rows: "source"`.
 
 ## The multi-sample variant rows are config too
 
@@ -387,10 +390,11 @@ one is named.
 | `subtreeFilter` display prop | `rows.kept` |
 | `domain` config slot | `rows.domain` |
 
-**None of it migrates.** A display snapshot carrying `layout`, `clusterTree`,
-`clusterProvenance` or `subtreeFilter`, or a display config carrying `domain`,
-fails the load with a message naming `rows`; a `domain` in a session spec's
-track entry is reported as a setting no display takes.
+A session carrying `layout`, `clusterTree`, `clusterProvenance` or
+`subtreeFilter` opens with them moved into `rows`, less the colors, which a v4
+`colorBy` copied into `layout` from its palette. A display config carrying
+`domain` fails the load with a message naming `rows`; a `domain` in a session
+spec's track entry is reported as a setting no display takes.
 
 ## The multi-row feature display's rows are config too
 
@@ -413,11 +417,11 @@ colors/arrangement...**.
 | `subtreeFilter` display prop | `rows.kept` |
 | `setPartitionField` action | `setRowsField` |
 
-**None of it migrates.** A multi-row display config carrying `partitionField`,
-`domain` or `sampleColorMap`, a feature track's `displayDefaults` carrying one
-of the three, and a display snapshot carrying `layout`, `clusterTree`,
-`clusterProvenance` or `subtreeFilter` each fail the load with a message naming
-the replacement.
+A session carrying `layout`, `clusterTree`, `clusterProvenance` or
+`subtreeFilter` opens with them moved into `rows` and `rowColor`. A multi-row
+display config carrying `partitionField`, `domain` or `sampleColorMap`, or a
+feature track's `displayDefaults` carrying one of the three, fails the load with
+a message naming the replacement.
 
 ## The MAF rows are config too
 
@@ -437,10 +441,10 @@ set, over the adapter's `samples[].color`.
 | `clusterTree`, `clusterProvenance` display props | `rows.tree`, `rows.treeProvenance` |
 | `subtreeFilter` display prop | `rows.kept` |
 
-**None of it migrates.** A MAF display config carrying `domain`, a MAF track's
-`displayDefaults` carrying it, and a display snapshot carrying `layout`,
-`clusterTree`, `clusterProvenance` or `subtreeFilter` each fail the load with a
-message naming `rows`.
+A session carrying `layout`, `clusterTree`, `clusterProvenance` or
+`subtreeFilter` opens with them moved into `rows` and `rowColor`. A MAF display
+config carrying `domain`, or a MAF track's `displayDefaults` carrying it, fails
+the load with a message naming `rows`.
 
 ## The wiggle color is one `color` object
 

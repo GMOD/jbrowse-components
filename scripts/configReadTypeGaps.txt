@@ -326,7 +326,6 @@ plugins/spreadsheet-view/src/SpreadsheetView/ImportWizard.ts  (3)
 plugins/trix/src/TrixTextSearchAdapter/TrixTextSearchAdapter.ts  (2)
   56	readConfObject('ixFilePath')
   57	readConfObject('ixxFilePath')
-plugins/variants/src/LinearMultiSampleVariantDisplay/retiredMatrixDisplay.test.ts  (2)  [test]
   85	readConfObject('variantLayout')
   86	readConfObject('height')
 plugins/variants/src/LinearMultiSampleVariantDisplay/showInsertionGlyphsSlot.test.ts  (1)  [test]

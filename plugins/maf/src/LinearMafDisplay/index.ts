@@ -1,5 +1,9 @@
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
+import {
+  RETIRED_ROW_STATE_KEYS,
+  liftRetiredRowState,
+} from '@jbrowse/display-kit/retiredSettings'
 
 import configSchemaF from './configSchema.ts'
 import { routeRetiredShorthandF } from './retiredSettings.ts'
@@ -25,6 +29,10 @@ export default function LinearMafDisplayF(pluginManager: PluginManager) {
       viewType: 'LinearGenomeView',
       trackType: 'MafTrack',
       displayName: 'MAF display',
+      retiredState: {
+        keys: RETIRED_ROW_STATE_KEYS,
+        lift: liftRetiredRowState,
+      },
     })
   })
 }

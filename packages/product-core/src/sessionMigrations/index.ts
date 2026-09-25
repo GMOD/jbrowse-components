@@ -1,511 +1,202 @@
-/**
- * Migrates old session and config snapshots to be compatible with the current
- * display type registrations. Handles display types that were removed or
- * renamed in the v4 rendering rearchitecture.
- *
- * Remapped display types (see `displayTypeMap` for the band settings each one
- * carries over):
- *   LinearPileupDisplay → LinearAlignmentsDisplay
- *   LinearSNPCoverageDisplay → LinearAlignmentsDisplay
- *   LinearReadArcsDisplay → LinearAlignmentsDisplay
- *   LinearReadCloudDisplay → LinearAlignmentsDisplay
- *   LinearFeatureDisplay → LinearBasicDisplay
- *
- * Also lifts the per-instance alignments settings a v4.3.0 session persisted
- * (`colorBySetting`, `filterBySetting`, `trackMaxHeight`,
- * `hideMismatchesSetting`) into the config where they now live as slots — off
- * the nested `LinearAlignmentsDisplay` container's `PileupDisplay` /
- * `SNPCoverageDisplay` sub-nodes and off a flat old display alike, see
- * `extractAlignmentsInstanceSettings` — and routes the legacy per-instance
- * `heightPreConfig` display-height prop onto the `height` config slot — see
- * `extractInstanceHeight`.
- */
-
-// Each old display drew one band; the unified LinearAlignmentsDisplay draws all
-// of them, so a bare type rename turns a coverage-only track into coverage +
-// pileup and an arcs track into a plain pileup. `settings` restores the old
-// intent through the config slots that now express it, and is applied only where
-// the snapshot doesn't already carry the key, so an explicit author value wins.
-const displayTypeMap: Record<
-  string,
-  { type: string; settings?: Record<string, unknown> }
-> = {
-  LinearPileupDisplay: {
-    type: 'LinearAlignmentsDisplay',
-    settings: { showCoverage: false },
-  },
-  LinearSNPCoverageDisplay: {
-    type: 'LinearAlignmentsDisplay',
-    // coverageHeight + height together, else the band keeps its 45px default
-    // under the 250px display height and leaves 200px blank.
-    settings: { showPileup: false, coverageHeight: 100, height: 100 },
-  },
-  LinearReadArcsDisplay: {
-    type: 'LinearAlignmentsDisplay',
-    settings: {
-      showPileup: false,
-      showCoverage: false,
-      readConnections: 'arc',
-    },
-  },
-  LinearReadCloudDisplay: {
-    type: 'LinearAlignmentsDisplay',
-    settings: {
-      showPileup: false,
-      showCoverage: false,
-      readConnections: 'cloud',
-    },
-  },
-  LinearFeatureDisplay: { type: 'LinearBasicDisplay' },
-}
-
-// The pre-4.x LinearAlignmentsDisplay was a container whose per-instance
-// track-menu settings lived on nested `PileupDisplay` / `SNPCoverageDisplay`
-// sub-nodes. Those settings are now config slots on the flat
-// LinearAlignmentsDisplay, so the sub-nodes are dead on load — MST drops them
-// and `colorBy`/`filterBy` silently revert to their config default (e.g. a
-// modifications/methylation session opens colored `normal`). We pull them off
-// the instance here and route them into the config.
-const NESTED_ALIGNMENTS_SUBNODES = ['PileupDisplay', 'SNPCoverageDisplay']
-
-// The alignments `color` field each v4 scheme name paints now. `methylation`,
-// `stranded` and `insertSizeGradient` were retired before the colour object
-// and land on the fields that replaced them.
-const V4_COLOR_FIELDS: Record<string, string> = {
-  strand: 'strand',
-  mappingQuality: 'mapq',
-  insertSize: 'insertSize',
-  insertSizeGradient: 'insertSize',
-  firstOfPairStrand: 'firstOfPairStrand',
-  stranded: 'firstOfPairStrand',
-  pairOrientation: 'pairOrientation',
-  insertSizeAndOrientation: 'insertSizeAndOrientation',
-  mateRefName: 'mateRefName',
-}
-
-// The v4 schemes that drew a cell per base, which are the `baseColor` object's
-// field now rather than the read fill's.
-const V4_BASE_COLOR_FIELDS: Record<string, string> = {
-  perBaseQuality: 'baseQuality',
-  perBaseLetter: 'base',
-  perBaseLettering: 'base',
-  modifications: 'modifications',
-  methylation: 'modifications',
-  bisulfite: 'bisulfite',
-}
-
-function colorSlotsOf(value: unknown): Record<string, unknown> {
-  if (!isObject(value)) {
-    return {}
-  }
-  const { type, tag, modifications } = value
-  const field =
-    type === 'tag' && typeof tag === 'string'
-      ? `tags.${tag}`
-      : typeof type === 'string'
-        ? V4_COLOR_FIELDS[type]
-        : undefined
-  const baseField =
-    typeof type === 'string' ? V4_BASE_COLOR_FIELDS[type] : undefined
-  const given = isObject(modifications) ? modifications : undefined
-  const { isolatedModification, ...rest } = given ?? {}
-  const settings =
-    given || type === 'methylation'
-      ? {
-          ...rest,
-          ...(typeof isolatedModification === 'string'
-            ? { shownModifications: [isolatedModification] }
-            : {}),
-          ...(type === 'methylation' ? { fillUnmarked: true } : {}),
-        }
-      : undefined
-  return {
-    ...(field ? { color: { field } } : {}),
-    ...(baseField ? { baseColor: { field: baseField } } : {}),
-    ...(settings ? { modifications: settings } : {}),
-  }
-}
-
-// Persisted key -> the slot it now lives in, and how to carry its value across.
-//
-// The `*Setting` names are the ones a real saved session carries, and getting
-// them wrong is why this migration never fired: SharedLinearPileupDisplayMixin
-// (v4.3.0) declared the props as `colorBySetting`/`filterBySetting`, its
-// `preProcessSnapshot` renamed an incoming bare `colorBy` to `colorBySetting`,
-// and its `postProcessSnapshot` wrote that name back out — so no session
-// snapshot JBrowse ever produced holds the bare form this used to look for. The
-// bare names stay accepted because a hand-written snapshot may use them.
-//
-// `hideSmallIndelsSetting` and `hideLargeIndelsSetting` are deliberately absent:
-// those two toggles have no slot today, the feature having been removed rather
-// than moved, so there is nowhere to carry them. `jexlFilters` is absent for the
-// same reason since the slot left `baseLinearDisplayConfigSchema`: the
-// alignments display never read it, so the slot this used to carry the value to
-// no longer exists.
-//
-// `spread` carries one old key across as several slots: a v4 `colorBy` named a
-// scheme and held the modification settings, which are the `color` or
-// `baseColor` object's field and the `modifications` slot now.
-const MIGRATED_INSTANCE_SLOTS: Record<
-  string,
-  {
-    slot: string
-    convert?: (value: unknown) => unknown
-    spread?: (value: unknown) => Record<string, unknown>
-  }
-> = {
-  colorBy: { slot: 'color', spread: colorSlotsOf },
-  colorBySetting: { slot: 'color', spread: colorSlotsOf },
-  filterBy: { slot: 'filterBy' },
-  filterBySetting: { slot: 'filterBy' },
-  trackMaxHeight: { slot: 'maxHeight' },
-  hideMismatchesSetting: {
-    slot: 'showMismatches',
-    convert: value => !value,
-  },
-}
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
+  DisplayEntry,
+  DisplayType,
+  RetiredDisplayType,
+} from '@jbrowse/core/pluggableElementTypes'
 
 /**
- * Every display-instance key a session snapshot may still carry and have
- * honored, keyed by the display type it applies to — `*` for the ones any
- * display gets. A snapshot carrying one of these loads correctly, so `jbrowse
- * validate` reports it as stale rather than dead; that command reads this map
- * (through the generated config manifest) rather than keeping a copy that could
- * drift.
+ * Loads an old session's display instances as the displays this build
+ * registers, reading what each DisplayType declares: a `retiredTypes` entry
+ * renames the instance and supplies the settings its old picture needs, and
+ * `retiredState` lifts the props an old instance carried that are config slots
+ * now. Every display also gets `heightPreConfig`, the per-instance height
+ * before `height` was a slot.
  *
- * Not every entry is lifted *here*. The two multi-sample variant displays lift
- * their own `jexlFilters` in the model's `preProcessSnapshot`, because the value
- * stays on the instance (under `jexlFiltersSetting`) rather than moving to a
- * config slot, which is the only shape this module handles. What decides
- * membership is whether the key still works, not which file makes it work.
- *
- * Keyed rather than flat because the same name means different things on
- * different displays: `jexlFilters` still works on the two multi-sample variant
- * ones, while on a LinearBasicDisplay — whose own prop has always been
- * `jexlFiltersSetting` — and on the alignments display, which reads no filter
- * slot at all, it is simply dead, and a flat list would call those supported.
+ * An instance holds no config, so what it lifts is written into the config it
+ * points at: a `sessionTracks` entry in place, or a `trackConfigDeltas` entry
+ * for a track whose base is the config.json. Config nodes need nothing here;
+ * the track config's own preprocessor loads a retired type wherever one
+ * hydrates.
  */
-export const MIGRATED_DISPLAY_INSTANCE_KEYS: Record<string, string[]> = {
-  '*': ['heightPreConfig'],
-  LinearAlignmentsDisplay: [
-    ...Object.keys(MIGRATED_INSTANCE_SLOTS),
-    ...NESTED_ALIGNMENTS_SUBNODES,
-  ],
-  LinearMultiSampleVariantDisplay: ['jexlFilters'],
-  LinearMultiSampleVariantMatrixDisplay: ['jexlFilters'],
+
+interface Resolved {
+  display: DisplayType
+  retired?: RetiredDisplayType
 }
 
-// Read the migrated settings off one node (a nested sub-node, or an old flat
-// display's own snapshot), keyed by the slot they now belong to. A key present
-// under both its bare and its `*Setting` spelling resolves to whichever comes
-// last in MIGRATED_INSTANCE_SLOTS, which is the `*Setting` one — the spelling
-// the display was actually writing.
-function migratedSettingsOf(source: Record<string, unknown>) {
-  const settings: Record<string, unknown> = {}
-  for (const [key, { slot, convert, spread }] of Object.entries(
-    MIGRATED_INSTANCE_SLOTS,
-  )) {
-    if (source[key] !== undefined) {
-      if (spread) {
-        Object.assign(settings, spread(source[key]))
-      } else {
-        settings[slot] = convert ? convert(source[key]) : source[key]
-      }
+type Resolve = (type: unknown) => Resolved | undefined
+
+function resolverFor(pluginManager: PluginManager): Resolve {
+  const byName = new Map<string, Resolved>()
+  for (const display of pluginManager.getDisplayElements()) {
+    byName.set(display.name, { display })
+    for (const retired of display.retiredTypes) {
+      byName.set(retired.type, { display, retired })
     }
   }
-  return settings
+  return type => (typeof type === 'string' ? byName.get(type) : undefined)
 }
 
-// A per-instance setting lifted off an old display, tagged with the track +
-// display config it must land on. `displayType` is used only when the target
-// config has no display with this id yet and one must be synthesized (so it's
-// typed correctly — not every source is a LinearAlignmentsDisplay).
+/**
+ * Every display-instance key an old session may carry and have honoured, by
+ * display type, `*` for any display, so `jbrowse validate` reports one as
+ * stale rather than dead.
+ */
+export function migratedDisplayInstanceKeys(pluginManager: PluginManager) {
+  return {
+    '*': ['heightPreConfig'],
+    ...Object.fromEntries(
+      pluginManager
+        .getDisplayElements()
+        .flatMap(d =>
+          d.retiredState ? [[d.name, [...d.retiredState.keys]]] : [],
+        ),
+    ),
+  } as Record<string, string[]>
+}
+
 interface ExtractedDisplaySettings {
   trackConfigId: string
   displayId: string
-  displayType?: string
-  settings: Record<string, unknown>
+  displayType: string
+  settings: DisplayEntry
 }
 
 function isObject(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === 'object' && !Array.isArray(v)
 }
 
-function migrateDisplayType(
+function migrateDisplay(
   display: Record<string, unknown>,
   trackConfigId: string | undefined,
+  resolve: Resolve,
   collected: ExtractedDisplaySettings[],
 ) {
-  const entry = displayTypeMap[display.type as string]
-  if (!entry) {
+  const resolved = resolve(display.type)
+  if (!resolved) {
     return display
   }
-  const missing = Object.fromEntries(
-    Object.entries(entry.settings ?? {}).filter(
-      ([k]) => display[k] === undefined,
-    ),
+  const { display: displayType, retired } = resolved
+  const state = displayType.retiredState
+  const shed = ['heightPreConfig', ...(state?.keys ?? [])].filter(
+    k => k in display,
   )
-  // Every one of these is a config slot on the flat display, and a session
-  // instance declares only `type` and `configuration` — so merging them here
-  // would hand MST properties it drops on load, and the compensation would be
-  // gone exactly where it is needed most: a v4 session on an admin config, which
-  // is the commonest way anyone has one of these displays at all. Route them the
-  // way extractInstanceHeight routes its own, into the config the instance
-  // points at, under the id the new type mints: the old type's id names no
-  // display a config.json track hydrates. A *config* display node has no
-  // `configuration` reference and keeps them inline, where they are the live
-  // slots.
+  if (!retired && shed.length === 0) {
+    return display
+  }
   const { configuration } = display
-  if (trackConfigId && typeof configuration === 'string') {
-    const displayId =
-      configuration === `${trackConfigId}-${String(display.type)}`
-        ? `${trackConfigId}-${entry.type}`
-        : configuration
-    if (Object.keys(missing).length > 0) {
-      collected.push({
-        trackConfigId,
-        displayId,
-        displayType: entry.type,
-        settings: missing,
-      })
-    }
-    return { ...display, type: entry.type, configuration: displayId }
+  if (typeof configuration !== 'string') {
+    return { ...display, type: displayType.name }
   }
-  return { ...display, ...missing, type: entry.type }
-}
-
-/**
- * Pull the per-instance alignments settings off an old display into `collected`
- * and return the display with the dead keys stripped. The caller routes
- * `collected` into the config (see `applyExtractedSettings`); the settings can't
- * stay on the instance because they're config slots now.
- *
- * Two shapes, because v4.3.0 sessions hold both:
- *
- *   - the nested `LinearAlignmentsDisplay` container, whose settings sat on
- *     `PileupDisplay` / `SNPCoverageDisplay` sub-nodes
- *   - a flat `LinearPileupDisplay` / `LinearReadArcsDisplay` /
- *     `LinearReadCloudDisplay` / `LinearSNPCoverageDisplay`, which carried them
- *     directly — `migrateDisplayType` has already renamed it by the time this
- *     runs, so both arrive here as a LinearAlignmentsDisplay
- *
- * The display's own keys are read only when it carries a `configuration`
- * reference, i.e. only for a session instance. A *config* display node reaches
- * this same function through `migrateConfigSnapshot`, and there `filterBy` and
- * friends are the live slots — lifting them would strip a working config. Its
- * `colorBy` is the one key rewritten in place, onto the `color`, `baseColor`
- * and `modifications` slots that replaced it.
- */
-function extractAlignmentsInstanceSettings(
-  display: Record<string, unknown>,
-  trackConfigId: string | undefined,
-  collected: ExtractedDisplaySettings[],
-): Record<string, unknown> {
-  if (display.type !== 'LinearAlignmentsDisplay') {
-    return display
+  const lifted: DisplayEntry = {
+    ...state?.lift(display),
+    ...(typeof display.heightPreConfig === 'number'
+      ? { height: display.heightPreConfig }
+      : {}),
   }
-  const subNode = NESTED_ALIGNMENTS_SUBNODES.map(k => display[k]).find(isObject)
-  // The instance's `configuration` string is the display config id the settings
-  // must merge onto (`${trackId}-LinearAlignmentsDisplay`). Skip routing if it's
-  // inline or the track id is unknown — nothing to key the merge on.
-  const displayId = display.configuration
-  const isInstance = typeof displayId === 'string'
-  const ownSettings = isInstance ? migratedSettingsOf(display) : {}
-  const settings = {
-    ...(subNode ? migratedSettingsOf(subNode) : {}),
-    ...ownSettings,
-  }
-  if (!isInstance && !subNode && display.colorBy !== undefined) {
-    const { colorBy, ...config } = display
-    return { ...config, ...colorSlotsOf(colorBy) }
-  }
-  if (!subNode && Object.keys(settings).length === 0) {
-    return display
-  }
-  if (trackConfigId && isInstance && Object.keys(settings).length > 0) {
+  const migrated = retired?.migrate?.(lifted) ?? lifted
+  const settings = displayType.retiredConfig?.(migrated) ?? migrated
+  const displayId =
+    retired && configuration === `${trackConfigId}-${retired.type}`
+      ? `${trackConfigId}-${displayType.name}`
+      : configuration
+  if (trackConfigId && Object.keys(settings).length > 0) {
     collected.push({
       trackConfigId,
       displayId,
-      displayType: 'LinearAlignmentsDisplay',
+      displayType: displayType.name,
       settings,
     })
   }
-  const { PileupDisplay, SNPCoverageDisplay, ...rest } = display
-  if (isInstance) {
-    // Every one of these is dead on a display instance now, routed or not — MST
-    // would drop them on load anyway, and leaving them makes a migrated snapshot
-    // still look like it holds settings it does not.
-    for (const key of Object.keys(MIGRATED_INSTANCE_SLOTS)) {
-      delete rest[key]
-    }
+  const rest = { ...display }
+  for (const key of shed) {
+    delete rest[key]
   }
-  return rest
+  return { ...rest, type: displayType.name, configuration: displayId }
 }
 
-// Pre-v4 the display height lived in a per-instance `heightPreConfig` MST
-// prop (`height = heightPreConfig ?? config-height`); the drag-resize handle
-// wrote it. That prop is gone — the height is now the `height` config slot only
-// — so an old session's `heightPreConfig` is silently dropped on load and the
-// track snaps to the config default (e.g. the alignments 250px). Route it onto
-// the display's `height` slot so saved/shared sessions keep their heights, and
-// strip the dead prop. When a track shows in two panels (a synteny view's two
-// LGVs share one display config), the last panel's value wins — both then render
-// at one height, which is the config-slot model's intent.
-function extractInstanceHeight(
-  display: Record<string, unknown>,
-  trackConfigId: string | undefined,
-  collected: ExtractedDisplaySettings[],
-): Record<string, unknown> {
-  if (typeof display.heightPreConfig !== 'number') {
-    return display
-  }
-  const displayId = display.configuration
-  if (trackConfigId && typeof displayId === 'string') {
-    collected.push({
-      trackConfigId,
-      displayId,
-      displayType: typeof display.type === 'string' ? display.type : undefined,
-      settings: { height: display.heightPreConfig },
-    })
-  }
-  const { heightPreConfig, ...rest } = display
-  return rest
-}
-
-function migrateDisplaySnapshot(
-  display: Record<string, unknown>,
-  trackConfigId: string | undefined,
-  collected: ExtractedDisplaySettings[],
-) {
-  return extractInstanceHeight(
-    extractAlignmentsInstanceSettings(
-      migrateDisplayType(display, trackConfigId, collected),
-      trackConfigId,
-      collected,
-    ),
-    trackConfigId,
-    collected,
-  )
-}
-
-function migrateDisplaysArray(
-  displays: unknown[],
-  trackConfigId: string | undefined,
-  collected: ExtractedDisplaySettings[],
-) {
-  let changed = false
-  const result = displays.map(d => {
-    if (isObject(d) && 'type' in d) {
-      const migrated = migrateDisplaySnapshot(d, trackConfigId, collected)
-      if (migrated !== d) {
-        changed = true
-      }
-      return migrated
-    }
-    return d
-  })
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  return changed ? result : displays
-}
-
-function migrateTrackSnapshot(
+function migrateTrack(
   track: unknown,
+  resolve: Resolve,
   collected: ExtractedDisplaySettings[],
 ): unknown {
-  if (!isObject(track)) {
+  if (!isObject(track) || !Array.isArray(track.displays)) {
     return track
   }
-  let changed = false
-  const result = { ...track }
-
-  const displays = track.displays as unknown[] | undefined
-  if (Array.isArray(displays)) {
-    const trackConfigId =
-      typeof track.configuration === 'string' ? track.configuration : undefined
-    const newDisplays = migrateDisplaysArray(displays, trackConfigId, collected)
-    if (newDisplays !== displays) {
-      changed = true
-      result.displays = newDisplays
-    }
-  }
-
-  return changed ? result : track
+  const trackConfigId =
+    typeof track.configuration === 'string' ? track.configuration : undefined
+  const displays = track.displays as unknown[]
+  const next = displays.map(d =>
+    isObject(d) ? migrateDisplay(d, trackConfigId, resolve, collected) : d,
+  )
+  return next.some((d, i) => d !== displays[i])
+    ? { ...track, displays: next }
+    : track
 }
 
-function migrateViewSnapshot(
+function migrateView(
   view: Record<string, unknown>,
+  resolve: Resolve,
   collected: ExtractedDisplaySettings[],
 ): Record<string, unknown> {
-  let changed = false
-  const result = { ...view }
-
-  const tracks = view.tracks as unknown[] | undefined
+  let result = view
+  const { tracks, views } = view
   if (Array.isArray(tracks)) {
-    const newTracks = tracks.map(t => migrateTrackSnapshot(t, collected))
-    if (newTracks.some((t, i) => t !== tracks[i])) {
-      changed = true
-      result.tracks = newTracks
+    const next = tracks.map(t => migrateTrack(t, resolve, collected))
+    if (next.some((t, i) => t !== tracks[i])) {
+      result = { ...result, tracks: next }
     }
   }
-
-  // Handle nested views (e.g. LinearSyntenyView has sub-views)
-  const subViews = view.views as unknown[] | undefined
-  if (Array.isArray(subViews)) {
-    const newSubViews = subViews.map(sv =>
-      isObject(sv) ? migrateViewSnapshot(sv, collected) : sv,
+  // a synteny view's panels are views of their own
+  if (Array.isArray(views)) {
+    const next = views.map(v =>
+      isObject(v) ? migrateView(v, resolve, collected) : v,
     )
-    if (newSubViews.some((v, i) => v !== subViews[i])) {
-      changed = true
-      result.views = newSubViews
+    if (next.some((v, i) => v !== views[i])) {
+      result = { ...result, views: next }
     }
   }
-
-  return changed ? result : view
+  return result
 }
 
-// Merge `settings` onto the display config carrying `displayId` inside `track`
-// (an in-session track config). Returns a new track if it changed. The config
-// slots win over whatever the old config held.
+// The entry the settings belong to is the one under their id, else the one
+// whose type loads as the same display: a session track still spelling the
+// retired type holds it under the retired type's id.
 function mergeSettingsIntoTrackConfig(
   track: Record<string, unknown>,
-  displayId: string,
-  displayType: string | undefined,
-  settings: Record<string, unknown>,
+  { displayId, displayType, settings }: ExtractedDisplaySettings,
+  resolve: Resolve,
 ): Record<string, unknown> {
-  const displays = track.displays
-  const list = Array.isArray(displays) ? displays : []
-  const hasMatch = list.some(d => isObject(d) && d.displayId === displayId)
-  const newDisplays = hasMatch
-    ? list.map(d =>
-        isObject(d) && d.displayId === displayId ? { ...d, ...settings } : d,
-      )
-    : [
-        ...list,
-        {
-          type: displayType ?? 'LinearAlignmentsDisplay',
-          displayId,
-          ...settings,
-        },
-      ]
-  return { ...track, displays: newDisplays }
+  const list = Array.isArray(track.displays)
+    ? (track.displays as unknown[])
+    : []
+  const index = [
+    (d: unknown) => isObject(d) && d.displayId === displayId,
+    (d: unknown) =>
+      isObject(d) && resolve(d.type)?.display.name === displayType,
+  ]
+    .map(matches => list.findIndex(matches))
+    .find(i => i !== -1)
+  const displays =
+    index === undefined
+      ? [...list, { type: displayType, displayId, ...settings }]
+      : list.map((d, i) =>
+          i === index ? { ...(d as object), ...settings } : d,
+        )
+  return { ...track, displays }
 }
 
-/**
- * Route each setting lifted off a nested alignments instance into the config it
- * now lives in: a user-added `sessionTracks` entry is edited in place (the
- * config is embedded there), while an admin config track — whose base lives in
- * the reloaded config file, out of reach here — gets a `trackConfigDeltas`
- * entry keyed by trackId (see product-core/src/Session/CLAUDE.md).
- */
 function applyExtractedSettings(
   snapshot: Record<string, unknown>,
   collected: ExtractedDisplaySettings[],
+  resolve: Resolve,
 ): Record<string, unknown> {
   if (collected.length === 0) {
     return snapshot
   }
   const sessionTracks = Array.isArray(snapshot.sessionTracks)
-    ? [...snapshot.sessionTracks]
+    ? [...(snapshot.sessionTracks as unknown[])]
     : []
   const sessionTrackIndex = new Map(
     sessionTracks.map((t, i) => [isObject(t) ? t.trackId : undefined, i]),
@@ -515,31 +206,27 @@ function applyExtractedSettings(
     : {}
   let sessionTracksChanged = false
   let deltasChanged = false
-
-  for (const { trackConfigId, displayId, displayType, settings } of collected) {
-    const idx = sessionTrackIndex.get(trackConfigId)
-    if (idx !== undefined && isObject(sessionTracks[idx])) {
-      sessionTracks[idx] = mergeSettingsIntoTrackConfig(
-        sessionTracks[idx],
-        displayId,
-        displayType,
-        settings,
+  for (const extracted of collected) {
+    const { trackConfigId } = extracted
+    const index = sessionTrackIndex.get(trackConfigId)
+    const sessionTrack = index === undefined ? undefined : sessionTracks[index]
+    if (index !== undefined && isObject(sessionTrack)) {
+      sessionTracks[index] = mergeSettingsIntoTrackConfig(
+        sessionTrack,
+        extracted,
+        resolve,
       )
       sessionTracksChanged = true
     } else {
-      const existing = isObject(deltas[trackConfigId])
-        ? deltas[trackConfigId]
-        : { trackId: trackConfigId }
+      const existing = deltas[trackConfigId]
       deltas[trackConfigId] = mergeSettingsIntoTrackConfig(
-        existing,
-        displayId,
-        displayType,
-        settings,
+        isObject(existing) ? existing : { trackId: trackConfigId },
+        extracted,
+        resolve,
       )
       deltasChanged = true
     }
   }
-
   return {
     ...snapshot,
     ...(sessionTracksChanged ? { sessionTracks } : {}),
@@ -548,80 +235,24 @@ function applyExtractedSettings(
 }
 
 /**
- * Walks a session snapshot and remaps old display types to their new names.
- * Handles displays nested inside views, tracks, and sessionTracks.
+ * Returns the snapshot by identity when nothing in it is retired, which is
+ * every session this build wrote.
  */
 export function migrateSessionSnapshot(
   snapshot: Record<string, unknown>,
+  pluginManager: PluginManager,
 ): Record<string, unknown> {
-  let changed = false
-  const result = { ...snapshot }
-  // Per-instance alignments settings lifted off old nested displays in views,
-  // routed into the config after the walk (they can't stay on the instance).
+  const { views } = snapshot
+  if (!Array.isArray(views)) {
+    return snapshot
+  }
+  const resolve = resolverFor(pluginManager)
   const collected: ExtractedDisplaySettings[] = []
-
-  const views = snapshot.views as unknown[] | undefined
-  if (Array.isArray(views)) {
-    const newViews = views.map(view =>
-      isObject(view) ? migrateViewSnapshot(view, collected) : view,
-    )
-    if (newViews.some((v, i) => v !== views[i])) {
-      changed = true
-      result.views = newViews
-    }
-  }
-
-  const sessionTracks = snapshot.sessionTracks as unknown[] | undefined
-  if (Array.isArray(sessionTracks)) {
-    const newTracks = sessionTracks.map(t => migrateTrackSnapshot(t, collected))
-    if (newTracks.some((t, i) => t !== sessionTracks[i])) {
-      changed = true
-      result.sessionTracks = newTracks
-    }
-  }
-
-  // trackConfigDeltas is a `trackId → partial track config` map (see
-  // SessionTracks.ts). A delta carries a `displays` array like a track, so run
-  // each through the same track migrator; migrateTrackSnapshot is a no-op for a
-  // delta that carries no stale display type.
-  const deltas = snapshot.trackConfigDeltas as
-    | Record<string, unknown>
-    | undefined
-  if (deltas && typeof deltas === 'object') {
-    let deltasChanged = false
-    const newDeltas: Record<string, unknown> = {}
-    for (const [trackId, delta] of Object.entries(deltas)) {
-      const migrated = migrateTrackSnapshot(delta, collected)
-      if (migrated !== delta) {
-        deltasChanged = true
-      }
-      newDeltas[trackId] = migrated
-    }
-    if (deltasChanged) {
-      changed = true
-      result.trackConfigDeltas = newDeltas
-    }
-  }
-
-  // applyExtractedSettings returns its input by identity when nothing was
-  // collected, so this preserves the unchanged-by-identity contract.
-  return applyExtractedSettings(changed ? result : snapshot, collected)
-}
-
-/**
- * Walks a config snapshot and remaps old display types in track definitions.
- * Config tracks have displays in their configuration (not in views).
- */
-export function migrateConfigSnapshot(
-  snapshot: Record<string, unknown>,
-): Record<string, unknown> {
-  const tracks = snapshot.tracks as unknown[] | undefined
-  if (!Array.isArray(tracks)) {
-    return snapshot
-  }
-  const newTracks = tracks.map(t => migrateTrackSnapshot(t, []))
-  if (newTracks.every((t, i) => t === tracks[i])) {
-    return snapshot
-  }
-  return { ...snapshot, tracks: newTracks }
+  const next = views.map(view =>
+    isObject(view) ? migrateView(view, resolve, collected) : view,
+  )
+  const result = next.some((v, i) => v !== views[i])
+    ? { ...snapshot, views: next }
+    : snapshot
+  return applyExtractedSettings(result, collected, resolve)
 }

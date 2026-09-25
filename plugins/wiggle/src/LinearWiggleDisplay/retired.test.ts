@@ -1,0 +1,55 @@
+import { seedDisplayDefaults } from '../MultiQuantitativeTrack/displayDefaults.ts'
+import { foldMultiWiggleRendering } from './retired.ts'
+
+test.each([
+  ['multirowxy', 'xyplot', 'source'],
+  ['multirowdensity', 'density', 'source'],
+  ['multirowline', 'line', 'source'],
+  ['multirowlinecenter', 'linecenter', 'source'],
+  ['multirowscatter', 'scatter', 'source'],
+  ['multixyplot', 'xyplot', ''],
+  ['multiline', 'line', ''],
+  ['multilinecenter', 'linecenter', ''],
+  ['multiscatter', 'scatter', ''],
+  ['xyplot', 'xyplot', ''],
+  ['line', 'line', ''],
+  ['density', 'density', 'source'],
+])('the multi display’s %s is %s with rows %j', (old, plot, rows) => {
+  expect(foldMultiWiggleRendering({ defaultRendering: old })).toEqual({
+    defaultRendering: plot,
+    rows,
+  })
+})
+
+test('the layout joins an arrangement already lifted', () => {
+  expect(
+    foldMultiWiggleRendering({
+      defaultRendering: 'multirowxy',
+      rows: { domain: ['b', 'a'] },
+    }),
+  ).toEqual({
+    defaultRendering: 'xyplot',
+    rows: { domain: ['b', 'a'], field: 'source' },
+  })
+})
+
+test('an entry with no rendering is left alone', () => {
+  const entry = { height: 300 }
+  expect(foldMultiWiggleRendering(entry)).toBe(entry)
+})
+
+test('a multi-source track’s displayDefaults folds the multi names alone', () => {
+  const seeded = (defaultRendering: string) =>
+    seedDisplayDefaults({
+      type: 'MultiQuantitativeTrack',
+      displayDefaults: { defaultRendering },
+    }).displayDefaults
+  expect(seeded('multixyplot')).toMatchObject({
+    defaultRendering: 'xyplot',
+    rows: '',
+  })
+  expect(seeded('xyplot')).toMatchObject({
+    defaultRendering: 'xyplot',
+    rows: 'source',
+  })
+})

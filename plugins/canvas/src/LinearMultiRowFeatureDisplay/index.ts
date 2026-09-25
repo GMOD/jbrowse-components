@@ -1,5 +1,9 @@
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
+import {
+  RETIRED_ROW_STATE_KEYS,
+  liftRetiredRowState,
+} from '@jbrowse/display-kit/retiredSettings'
 
 import configSchemaFactory from './configSchema.ts'
 import { routeRetiredShorthandF } from './retiredSettings.ts'
@@ -24,6 +28,10 @@ export default function register(pluginManager: PluginManager) {
       trackType: 'FeatureTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: LinearMultiRowFeatureDisplayComponent,
+      retiredState: {
+        keys: RETIRED_ROW_STATE_KEYS,
+        lift: liftRetiredRowState,
+      },
     })
   })
 }

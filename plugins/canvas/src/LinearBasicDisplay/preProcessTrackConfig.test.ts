@@ -1,7 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { addDisplayConfigMigration } from '@jbrowse/core/pluggableElementTypes/models'
+import { migrateRetiredDisplays } from '@jbrowse/core/pluggableElementTypes/models'
 
-import { migrateBasicConfigSnapshot } from './migrateBasicSnapshot.ts'
+import registerLinearBasicDisplay from './index.ts'
 
 type DisplaySnapshot = {
   type?: string
@@ -25,15 +25,9 @@ type TrackConfigSnapshot = {
 
 function evaluate(snap: TrackConfigSnapshot) {
   const pm = new PluginManager()
-  addDisplayConfigMigration(
-    pm,
-    ['LinearBasicDisplay', 'LinearFeatureDisplay'],
-    migrateBasicConfigSnapshot,
-  )
-  return pm.evaluateExtensionPoint(
-    'Core-preProcessTrackConfig',
-    snap,
-  ) as TrackConfigSnapshot
+  registerLinearBasicDisplay(pm)
+  pm.createPluggableElements()
+  return migrateRetiredDisplays(pm, snap) as TrackConfigSnapshot
 }
 
 test('remaps legacy geneGlyphMode "longest" before the display union validates', () => {
@@ -108,16 +102,12 @@ test('drops a legacy autoHeight:false without setting heightMode', () => {
   expect(out.displays![0]!.autoHeight).toBeUndefined()
 })
 
-test('drops the retired maxHeight slot, from the display and the renderer', () => {
-  const out = evaluate({
-    type: 'FeatureTrack',
-    displays: [
-      { type: 'LinearBasicDisplay', maxHeight: 600 },
-      { type: 'LinearBasicDisplay', renderer: { maxHeight: 600 } },
-    ],
-  })
+test.each([
+  { type: 'LinearBasicDisplay', maxHeight: 600 },
+  { type: 'LinearBasicDisplay', renderer: { maxHeight: 600 } },
+])('drops the retired maxHeight slot from %j', display => {
+  const out = evaluate({ type: 'FeatureTrack', displays: [display] })
   expect(out.displays![0]!.maxHeight).toBeUndefined()
-  expect(out.displays![1]!.maxHeight).toBeUndefined()
 })
 
 test('lifts style slots out of the old renderer sub-config', () => {

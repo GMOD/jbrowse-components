@@ -25,7 +25,6 @@ export {
   type FileTypeExporter,
   type IBaseViewModel,
   InternetAccount,
-  addDisplayConfigMigration,
   baseConnectionConfig,
   createBaseTrackConfig,
   createBaseTrackModel,
@@ -53,6 +52,11 @@ export { default as TrackType } from './TrackType.ts'
 export { default as WidgetType } from './WidgetType.ts'
 export { default as ViewType } from './ViewType.ts'
 export { default as DisplayType } from './DisplayType.ts'
+export type {
+  DisplayEntry,
+  RetiredDisplayState,
+  RetiredDisplayType,
+} from './DisplayType.ts'
 export { default as InternetAccountType } from './InternetAccountType.ts'
 
 export { default as RpcMethodType } from './RpcMethodType.ts'

@@ -1,5 +1,4 @@
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import { addDisplayConfigMigration } from '@jbrowse/core/pluggableElementTypes/models'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
 import configSchemaFactory from './configSchema.ts'
@@ -12,15 +11,6 @@ const LinearBasicDisplayComponent = lazyWithPreload(
 )
 
 export default function register(pluginManager: PluginManager) {
-  // #region migration
-  // Legacy values on existing enum slots, normalized before the display union
-  // validates the snapshot, where a schema preProcessSnapshot does not run.
-  addDisplayConfigMigration(
-    pluginManager,
-    ['LinearBasicDisplay', 'LinearFeatureDisplay'],
-    migrateBasicConfigSnapshot,
-  )
-  // #endregion
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({
@@ -36,7 +26,10 @@ export default function register(pluginManager: PluginManager) {
       trackType: 'FeatureTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: LinearBasicDisplayComponent,
-      aliases: ['LinearFeatureDisplay'],
+      // #region migration
+      retiredTypes: [{ type: 'LinearFeatureDisplay' }],
+      retiredConfig: migrateBasicConfigSnapshot,
+      // #endregion
     })
   })
 }

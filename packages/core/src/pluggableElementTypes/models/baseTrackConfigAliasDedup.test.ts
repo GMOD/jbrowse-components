@@ -43,11 +43,11 @@ function pluginManagerWithAliasedDisplay() {
         trackType: 'AlignmentsTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: () => null,
-        aliases: [
-          'LinearPileupDisplay',
-          'LinearSNPCoverageDisplay',
-          'LinearReadArcsDisplay',
-          'LinearReadCloudDisplay',
+        retiredTypes: [
+          { type: 'LinearPileupDisplay' },
+          { type: 'LinearSNPCoverageDisplay' },
+          { type: 'LinearReadArcsDisplay' },
+          { type: 'LinearReadCloudDisplay' },
         ],
       }),
   )

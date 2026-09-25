@@ -65,8 +65,8 @@ is declared in `STATES_NO_RULES`.
   way. And don't write a slot name onto a *session* display node: that node is
   built by the state model, so the key is dropped in silence. See [where a
   display's state lives](#where-a-displays-state-lives).
-- Don't rewrite the *value* of an existing constrained slot without
-  `addDisplayConfigMigration`. The display `types.union` validates the raw
+- Don't rewrite the *value* of an existing constrained slot anywhere but the
+  DisplayType's `retiredConfig`. The display `types.union` validates the raw
   snapshot before any schema `preProcessSnapshot` runs, so the union rejects the
   legacy value first and the hook never fires; adding, removing or renaming a
   slot needs none of this. See [where a display's state
@@ -425,10 +425,11 @@ wrong place (ADR-120).
 
 **Migrating one:** adding, removing or renaming a slot needs only a
 config-schema `preProcessSnapshot`. Rewriting the **value** of an existing
-constrained slot must go through `addDisplayConfigMigration`, because the
-display `types.union` validates the raw snapshot before any schema hook runs. A
-legacy display-instance key that a session migration lifts onto its replacing
-slot goes in `migratedDisplayKeys`.
+constrained slot goes in the DisplayType's `retiredConfig`, because the display
+`types.union` validates the raw snapshot before any schema hook runs. A retired
+display type goes in its successor's `retiredTypes`, and a display-instance
+prop an old session carries that is a slot now goes in its `retiredState`,
+which `migratedDisplayKeys` reads.
 
 How a slot then reaches the renderer — snapshot, plain object, RPC payload, and
 the JEXL callbacks along the way — is

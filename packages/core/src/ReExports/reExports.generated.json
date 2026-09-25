@@ -997,7 +997,6 @@
         "TrackType",
         "ViewType",
         "WidgetType",
-        "addDisplayConfigMigration",
         "addDisplayMenuItems",
         "addViewMenuItems",
         "baseConnectionConfig",
@@ -1045,10 +1044,10 @@
         "BaseInternetAccountConfig",
         "BaseViewModel",
         "InternetAccount",
-        "addDisplayConfigMigration",
         "baseConnectionConfig",
         "createBaseTrackConfig",
         "createBaseTrackModel",
+        "migrateRetiredDisplays",
         "preprocessTrackConfigSnapshot"
       ],
       "worker": "real"
@@ -1188,6 +1187,7 @@
         "corePluginRecords",
         "default",
         "pluggableElementTypeGroups",
+        "pluggableStateModelGroup",
         "wrappedComponent"
       ],
       "worker": "real"
@@ -4381,6 +4381,8 @@
     "@jbrowse/display-kit/retiredSettings": {
       "package": "@jbrowse/display-kit",
       "names": [
+        "RETIRED_ROW_STATE_KEYS",
+        "liftRetiredRowState",
         "moveDisplayDefaults",
         "retiredSettings"
       ],

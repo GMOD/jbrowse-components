@@ -7,11 +7,9 @@ export default abstract class PluggableElementBase {
    * or config names one. Each entry is a legacy `type` value previously used.
    *
    * Lets an element own its renames instead of a central migration file, so a
-   * plugin can be renamed out of tree. A per-element `preProcessSnapshot` hook
-   * then handles any property migrations within the renamed type; for a
-   * migration that rewrites the value of an existing constrained slot (an enum
-   * rename, a type narrow) use `addDisplayConfigMigration` instead — see that
-   * helper for why.
+   * plugin can be renamed out of tree. A display declares its renames as
+   * `retiredTypes`, which also say what the old type's entries become, and
+   * answers these from them.
    */
   aliases?: string[]
 
