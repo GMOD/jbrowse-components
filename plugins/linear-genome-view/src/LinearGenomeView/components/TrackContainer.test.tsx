@@ -16,7 +16,7 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { act, fireEvent, render, waitFor } from '@testing-library/react'
 
-import { RESIZE_HANDLE_HEIGHT } from '../consts.ts'
+import { RESIZE_ALL_HANDLE_HEIGHT, RESIZE_HANDLE_HEIGHT } from '../consts.ts'
 import LinearGenomeView from './LinearGenomeView.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -126,7 +126,9 @@ test('the track resize divider is transparent at rest, visible on hover', async 
 
   const handles = await waitFor(() => {
     const found = [...container.querySelectorAll('div')].filter(
-      el => getComputedStyle(el).cursor === 'row-resize',
+      el =>
+        getComputedStyle(el).cursor === 'row-resize' &&
+        el.dataset.testid !== 'resize-all-tracks',
     )
     expect(found.length).toBeGreaterThan(0)
     return found
@@ -142,6 +144,13 @@ test('the track resize divider is transparent at rest, visible on hover', async 
       expect(colord(background).alpha()).toBeGreaterThan(0)
     }
   }
+
+  const stackBar = container.querySelector<HTMLElement>(
+    '[data-testid="resize-all-tracks"]',
+  )!
+  const { backgroundColor, height } = getComputedStyle(stackBar)
+  expect(colord(backgroundColor).alpha()).toBeGreaterThan(0)
+  expect(height).toBe(`${RESIZE_ALL_HANDLE_HEIGHT}px`)
 }, 20000)
 
 // The expand itself is pinned on the mixin (TrackHeightMixin.test.ts, which
