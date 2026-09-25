@@ -172,7 +172,7 @@ rather than at either file. The adapter resolves `<uri>.segs.bed.gz`,
 }
 ```
 
-<Figure caption="The HPRC graph's two indexes drawn over the C4 region on hg38. The segments tile the window end to end, and where they break is where the graph branches: short ones bunch over the C4 repeat and long quiet ones run either side of it." src="/img/pangenome/prepare_graph_segments.png" />
+<Figure caption="The HPRC graph's two indexes drawn over the C4 region on hg38. The segments tile the window end to end, and where they break is where the graph branches: the slivers fall among the C4 and CYP21 copies, and long unbroken segments run either side of them." src="/img/pangenome/prepare_graph_segments.png" />
 
 The colour jexl paints rank 0 one way and everything else the other, and on a
 reference window everything comes out rank 0. An rGFA tags an off-reference

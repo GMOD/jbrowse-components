@@ -288,8 +288,6 @@ export const figureLiveRefs: Record<string, string> = {
   "tcga/cohort_cnv_recurrence_subtype": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2F1000g%2Fconfig.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22MultiQuantitativeTrack%22%2C%22trackId%22%3A%22tcga_brca_cnv_recurrence_by_subtype%22%2C%22name%22%3A%22TCGA-BRCA%20recurrence%20by%20receptor%20subtype%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BedGraphTabixAdapter%22%2C%22bedGraphGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_cnv_recurrence_by_subtype.bedGraph.gz%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22index%22%3A%7B%22indexType%22%3A%22TBI%22%2C%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_cnv_recurrence_by_subtype.bedGraph.gz.tbi%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%7D%2C%22displays%22%3A%5B%7B%22type%22%3A%22LinearWiggleDisplay%22%2C%22height%22%3A500%2C%22color%22%3A%7B%22field%22%3A%22score%22%2C%22scale%22%3A%22threshold%22%2C%22range%22%3A%5B%22%232166ac%22%2C%22%23b2182b%22%5D%7D%2C%22scales%22%3A%7B%22y%22%3A%7B%22domainMin%22%3A-70%2C%22domainMax%22%3A70%7D%7D%2C%22showRowSeparators%22%3Atrue%7D%5D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22displayedRegionNames%22%3A%5B%221%22%2C%222%22%2C%223%22%2C%224%22%2C%225%22%2C%226%22%2C%227%22%2C%228%22%2C%229%22%2C%2210%22%2C%2211%22%2C%2212%22%2C%2213%22%2C%2214%22%2C%2215%22%2C%2216%22%2C%2217%22%2C%2218%22%2C%2219%22%2C%2220%22%2C%2221%22%2C%2222%22%2C%22X%22%5D%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22tcga_brca_cnv_recurrence_by_subtype%22%2C%22type%22%3A%22LinearWiggleDisplay%22%2C%22height%22%3A500%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "tcga/mutations_cdh1_histology": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2F1000g%2Fconfig.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22tcga_brca_mutations%22%2C%22name%22%3A%22TCGA-BRCA%20somatic%20mutations%20(979%20primary%20tumors)%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22VcfTabixAdapter%22%2C%22vcfGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_mutations.vcf.gz%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22index%22%3A%7B%22indexType%22%3A%22TBI%22%2C%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_mutations.vcf.gz.tbi%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%22samplesTsvLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_clinical.tsv%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%22displays%22%3A%5B%7B%22type%22%3A%22LinearMultiSampleVariantDisplay%22%2C%22variantLayout%22%3A%22columns%22%2C%22height%22%3A450%2C%22lineZoneHeight%22%3A130%2C%22color%22%3A%7B%22field%22%3A%22impact%22%7D%2C%22facet%22%3A%7B%22field%22%3A%22histology%22%2C%22domain%22%3A%5B%22ductal%22%2C%22lobular%22%5D%7D%2C%22rowColor%22%3A%22histology%22%7D%5D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%2216%3A68%2C730%2C000-68%2C842%2C000%22%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22MANE.GRCh38.v1.4.refseq%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A84%7D%2C%7B%22trackId%22%3A%22tcga_brca_mutations%22%2C%22type%22%3A%22LinearMultiSampleVariantDisplay%22%2C%22variantLayout%22%3A%22columns%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "tcga/mutations_pik3ca_grouped": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2F1000g%2Fconfig.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22tcga_brca_mutations%22%2C%22name%22%3A%22TCGA-BRCA%20somatic%20mutations%20(979%20primary%20tumors)%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22VcfTabixAdapter%22%2C%22vcfGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_mutations.vcf.gz%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22index%22%3A%7B%22indexType%22%3A%22TBI%22%2C%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_mutations.vcf.gz.tbi%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%22samplesTsvLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_clinical.tsv%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%22displays%22%3A%5B%7B%22type%22%3A%22LinearMultiSampleVariantDisplay%22%2C%22variantLayout%22%3A%22columns%22%2C%22height%22%3A450%2C%22lineZoneHeight%22%3A130%2C%22color%22%3A%7B%22field%22%3A%22impact%22%7D%2C%22facet%22%3A%7B%22field%22%3A%22subtype%22%2C%22domain%22%3A%5B%22HR%2B%2FHER2-%22%2C%22HER2%2B%22%2C%22triple-negative%22%5D%7D%2C%22rowColor%22%3A%22subtype%22%7D%5D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%223%3A179%2C148%2C000-179%2C240%2C500%22%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22MANE.GRCh38.v1.4.refseq%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A84%7D%2C%7B%22trackId%22%3A%22tcga_brca_mutations%22%2C%22type%22%3A%22LinearMultiSampleVariantDisplay%22%2C%22variantLayout%22%3A%22columns%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
-  "tcga/mutations_pik3ca_clustered": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2F1000g%2Fconfig.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22tcga_brca_mutations%22%2C%22name%22%3A%22TCGA-BRCA%20somatic%20mutations%20(979%20primary%20tumors)%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22VcfTabixAdapter%22%2C%22vcfGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_mutations.vcf.gz%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22index%22%3A%7B%22indexType%22%3A%22TBI%22%2C%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_mutations.vcf.gz.tbi%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%22samplesTsvLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_clinical.tsv%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%22displays%22%3A%5B%7B%22type%22%3A%22LinearMultiSampleVariantDisplay%22%2C%22variantLayout%22%3A%22columns%22%2C%22height%22%3A450%2C%22lineZoneHeight%22%3A130%2C%22color%22%3A%7B%22field%22%3A%22impact%22%7D%2C%22rowColor%22%3A%22%22%7D%5D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%223%3A179%2C148%2C000-179%2C240%2C500%22%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22MANE.GRCh38.v1.4.refseq%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A84%7D%2C%7B%22trackId%22%3A%22tcga_brca_mutations%22%2C%22type%22%3A%22LinearMultiSampleVariantDisplay%22%2C%22variantLayout%22%3A%22columns%22%2C%22runClustering%22%3Atrue%7D%5D%7D%5D%7D&sessionName=Screenshot",
-  "tcga/mutations_pik3ca_maf": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2F1000g%2Fconfig.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22VariantTrack%22%2C%22trackId%22%3A%22tcga_brca_mutations%22%2C%22name%22%3A%22TCGA-BRCA%20somatic%20mutations%20(979%20primary%20tumors)%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22VcfTabixAdapter%22%2C%22vcfGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_mutations.vcf.gz%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22index%22%3A%7B%22indexType%22%3A%22TBI%22%2C%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_mutations.vcf.gz.tbi%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%22samplesTsvLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fdemos%2Ftcga%2Ftcga_brca_clinical.tsv%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%22displays%22%3A%5B%7B%22type%22%3A%22LinearMultiSampleVariantDisplay%22%2C%22variantLayout%22%3A%22columns%22%2C%22height%22%3A450%2C%22lineZoneHeight%22%3A130%2C%22color%22%3A%7B%22field%22%3A%22impact%22%7D%2C%22facet%22%3A%7B%22field%22%3A%22subtype%22%2C%22domain%22%3A%5B%22HR%2B%2FHER2-%22%2C%22HER2%2B%22%2C%22triple-negative%22%5D%7D%2C%22rowColor%22%3A%22subtype%22%7D%5D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%223%3A179%2C148%2C000-179%2C240%2C500%22%2C%22trackLabels%22%3A%22offset%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22MANE.GRCh38.v1.4.refseq%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A84%7D%2C%7B%22trackId%22%3A%22tcga_brca_mutations%22%2C%22type%22%3A%22LinearMultiSampleVariantDisplay%22%2C%22variantLayout%22%3A%22columns%22%2C%22minorAlleleFrequencyFilter%22%3A0.01%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "cnv1000g/ccl3l1_ladder": "?config=test_data/config_demo.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22MultiQuantitativeTrack%22%2C%22trackId%22%3A%22pur_cnv_ladder%22%2C%22name%22%3A%22PUR%20copy%20number%2C%20six%20individuals%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22MultiWiggleAdapter%22%2C%22subadapters%22%3A%5B%7B%22type%22%3A%22BigWigAdapter%22%2C%22name%22%3A%22HG01177%22%2C%22bigWigLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fgenomes%2FGRCh38%2F1000g%2Fkidd_lab_cnv%2FPUR%2FHG01177.qm2.CN.1k.bw%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%7B%22type%22%3A%22BigWigAdapter%22%2C%22name%22%3A%22HG01083%22%2C%22bigWigLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fgenomes%2FGRCh38%2F1000g%2Fkidd_lab_cnv%2FPUR%2FHG01083.qm2.CN.1k.bw%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%7B%22type%22%3A%22BigWigAdapter%22%2C%22name%22%3A%22HG01070%22%2C%22bigWigLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fgenomes%2FGRCh38%2F1000g%2Fkidd_lab_cnv%2FPUR%2FHG01070.qm2.CN.1k.bw%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%7B%22type%22%3A%22BigWigAdapter%22%2C%22name%22%3A%22HG01395%22%2C%22bigWigLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fgenomes%2FGRCh38%2F1000g%2Fkidd_lab_cnv%2FPUR%2FHG01395.qm2.CN.1k.bw%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%7B%22type%22%3A%22BigWigAdapter%22%2C%22name%22%3A%22HG00731%22%2C%22bigWigLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fgenomes%2FGRCh38%2F1000g%2Fkidd_lab_cnv%2FPUR%2FHG00731.qm2.CN.1k.bw%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%2C%7B%22type%22%3A%22BigWigAdapter%22%2C%22name%22%3A%22HG00553%22%2C%22bigWigLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fgenomes%2FGRCh38%2F1000g%2Fkidd_lab_cnv%2FPUR%2FHG00553.qm2.CN.1k.bw%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%5D%7D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A36%2C080%2C000-36%2C270%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A80%7D%2C%7B%22trackId%22%3A%22pur_cnv_ladder%22%2C%22type%22%3A%22LinearWiggleDisplay%22%2C%22defaultRendering%22%3A%22line%22%2C%22height%22%3A500%2C%22scales%22%3A%7B%22y%22%3A%7B%22domainMin%22%3A0%2C%22domainMax%22%3A10%7D%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "cnv1000g/ugt2b17_biallelic": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr4%3A68%2C480%2C000-68%2C660%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22displayMode%22%3A%22compact%22%2C%22jexlFilters%22%3A%5B%22feature.type%3D%3D'gene'%22%5D%2C%22height%22%3A80%7D%2C%7B%22trackId%22%3A%22ALL.wgs.integrated_sv_map_v2_GRCh38.20130502.svs.genotypes.vcf%22%2C%22height%22%3A90%7D%2C%7B%22type%22%3A%22LinearWiggleDisplay%22%2C%22defaultRendering%22%3A%22density%22%2C%22origin%22%3A2%2C%22scales%22%3A%7B%22y%22%3A%7B%22domainMin%22%3A0%2C%22domainMax%22%3A4%7D%7D%2C%22color%22%3A%7B%22field%22%3A%22score%22%2C%22scale%22%3A%22threshold%22%2C%22range%22%3A%5B%22%232166ac%22%2C%22%23b2182b%22%5D%7D%2C%22trackId%22%3A%22pur_copynumber_1000g%22%2C%22height%22%3A420%2C%22runClustering%22%3Atrue%2C%22showTree%22%3Afalse%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "cnv1000g/zarr_cohort": "?config=test_data/1000g_cnv/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A35%2C975%2C000-36%2C675%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_hg38%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A80%7D%2C%7B%22type%22%3A%22LinearWiggleDisplay%22%2C%22defaultRendering%22%3A%22density%22%2C%22origin%22%3A2%2C%22scales%22%3A%7B%22y%22%3A%7B%22domainMin%22%3A0%2C%22domainMax%22%3A4%7D%7D%2C%22color%22%3A%7B%22field%22%3A%22score%22%2C%22scale%22%3A%22threshold%22%2C%22range%22%3A%5B%22%232166ac%22%2C%22%23b2182b%22%5D%7D%2C%22trackId%22%3A%22cnv_1000g_zarr%22%2C%22height%22%3A640%2C%22runClustering%22%3Atrue%2C%22showTree%22%3Afalse%2C%22showRowLabels%22%3Afalse%7D%5D%7D%5D%7D&sessionName=Screenshot",
@@ -614,9 +612,7 @@ export const figureSlowSpecs: string[] = [
   "tcga/cohort_cnv_genome",
   "tcga/cohort_cnv_recurrence_subtype",
   "tcga/mutations_cdh1_histology",
-  "tcga/mutations_pik3ca_clustered",
   "tcga/mutations_pik3ca_grouped",
-  "tcga/mutations_pik3ca_maf",
   "variants/consequence_impact_1000g",
   "variants/potato_missingness"
 ]
@@ -1061,19 +1057,19 @@ export const figureFrames: Record<
   },
   "rnaseq/deep_pileup_file_order": {
     "width": 1500,
-    "height": 760
+    "height": 772
   },
   "rnaseq/deep_pileup_spliced_first": {
     "width": 1500,
-    "height": 760
+    "height": 772
   },
   "rnaseq/sashimi_all_junctions": {
     "width": 1500,
-    "height": 720
+    "height": 732
   },
   "rnaseq/sashimi_canonical_only": {
     "width": 1500,
-    "height": 720
+    "height": 732
   },
   "rnaseq/strand_specific": {
     "width": 1500,
@@ -1477,11 +1473,11 @@ export const figureFrames: Record<
   },
   "methylation/hg002_snrpn_marked_only": {
     "width": 1500,
-    "height": 730
+    "height": 742
   },
   "methylation/hg002_snrpn_fill_unmarked": {
     "width": 1500,
-    "height": 730
+    "height": 742
   },
   "methylation/hg002_snrpn_combined": {
     "width": 1500,
@@ -1752,14 +1748,6 @@ export const figureFrames: Record<
     "height": 780
   },
   "tcga/mutations_pik3ca_grouped": {
-    "width": 1500,
-    "height": 780
-  },
-  "tcga/mutations_pik3ca_clustered": {
-    "width": 1500,
-    "height": 780
-  },
-  "tcga/mutations_pik3ca_maf": {
     "width": 1500,
     "height": 780
   },
@@ -2161,7 +2149,7 @@ export const figureFrames: Record<
   },
   "pangenome/prepare_graph_segments": {
     "width": 1500,
-    "height": 700
+    "height": 404
   },
   "pangenome/mouse_dock2": {
     "width": 1400,

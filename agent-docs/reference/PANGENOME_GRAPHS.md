@@ -400,6 +400,15 @@ Facts behind it, each measured rather than assumed:
 *contributed* it first, never who else carries it. Both pangenome tutorials warn
 about this, and the two workarounds are:
 
+**And a linear lane over the reference never sees a rank above 0.** An
+off-reference segment's `SN` is the sample contig it came from, so it indexes
+under that contig's PanSN name: a `.segs.bed.gz` query on `GRCh38#0#chr6` at
+the C4 window returns 13 rows, every one rank 0, while `HG00097#1#CM094060.1`
+returns rank 236 throughout. A jexl colouring rank 0 against the rest is
+therefore one flat colour on a reference lane, and says something only on a
+sample's own lane or in a graph view cut from the same pair. Checked against
+the hosted release 2 index on 2026-09-25.
+
 - **`minigraph -cxasm --call`** per assembly, projected to a per-bubble-per-
   sample BED by `scripts/build_minigraph_paths.sh`. Header line is the contract
   (`chrom start end name score strand thickStart thickEnd itemRgb strain class
