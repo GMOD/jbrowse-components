@@ -239,14 +239,14 @@ export function buildColorRampLut(stops: readonly ColorRampStop[], mid = 0.5) {
   return data
 }
 
+// Both sides of `mid` on one scale, the farther end reaching its end stop and
+// the nearer one stopping short, so equal distances from the middle take equal
+// colours: ggplot2's `rescale_mid`, and the density fade's own rule.
 function unwarp(t: number, mid: number) {
-  if (mid <= 0) {
-    return t >= 1 ? 1 : 0.5 + 0.5 * t
-  }
-  if (mid >= 1) {
-    return t <= 0 ? 0 : 0.5 * t
-  }
-  return t <= mid ? (0.5 * t) / mid : 0.5 + (0.5 * (t - mid)) / (1 - mid)
+  return Math.min(
+    1,
+    Math.max(0, 0.5 + (t - mid) / (2 * Math.max(mid, 1 - mid))),
+  )
 }
 
 /**

@@ -180,11 +180,13 @@ public float densityGradientT(float norm, float zeroNorm) {
   return abs(norm - zeroNorm) / max(maxDist, 0.0001);
 }
 
-// A named ramp's position: the domain's ends at its end stops and `midNorm`, in
-// [0, 1], at its middle one, linear on each side. core's `buildColorRampLut`
-// warps by the same rule, so a middle at the domain's bottom starts there.
+// A named ramp's position: `midNorm`, in [0, 1], at its middle stop, and both
+// sides on one scale, the farther domain end at its end stop. core's
+// `buildColorRampLut` warps by the same rule, as the white fade already reads.
 public float densityRampT(float norm, float midNorm) {
-  return midNorm > 0.0 && norm <= midNorm
-    ? 0.5 * norm / midNorm
-    : 0.5 + 0.5 * (norm - midNorm) / max(1.0 - midNorm, 0.0001);
+  return clamp(
+    0.5 + (norm - midNorm) / (2.0 * max(midNorm, 1.0 - midNorm)),
+    0.0,
+    1.0,
+  );
 }
