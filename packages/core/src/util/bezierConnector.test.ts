@@ -1,4 +1,7 @@
-import { bezierConnectorPath } from './bezierConnector.ts'
+import {
+  BEZIER_CONNECTOR_MAX_REACH_PX,
+  bezierConnectorPath,
+} from './bezierConnector.ts'
 
 // Parse the two cubic control-point Ys out of an "M .. C cx1 cy1 cx2 cy2 x y" path.
 function controlYs(path: string) {
@@ -11,22 +14,30 @@ function controlXs(path: string) {
   return [Number(m[1]), Number(m[3])] as const
 }
 
+function cubicAt(vals: readonly number[], t: number) {
+  const [p0, p1, p2, p3] = vals as [number, number, number, number]
+  const u = 1 - t
+  return (
+    u * u * u * p0 + 3 * u * u * t * p1 + 3 * u * t * t * p2 + t * t * t * p3
+  )
+}
+
 // Sample the curve itself, rather than the control points that shape it.
 function cubicYAt(path: string, t: number) {
   const m =
     /M [\d.-]+ ([\d.-]+) C [\d.-]+ ([\d.-]+) [\d.-]+ ([\d.-]+) [\d.-]+ ([\d.-]+)/.exec(
       path,
     )!
-  const [y0, y1, y2, y3] = m.slice(1).map(Number) as [
-    number,
-    number,
-    number,
-    number,
-  ]
-  const u = 1 - t
-  return (
-    u * u * u * y0 + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * y3
-  )
+  return cubicAt(m.slice(1).map(Number), t)
+}
+
+// x is what folds back over itself when a handle outruns the span.
+function cubicXAt(path: string, t: number) {
+  const m =
+    /M ([\d.-]+) [\d.-]+ C ([\d.-]+) [\d.-]+ ([\d.-]+) [\d.-]+ ([\d.-]+) [\d.-]+/.exec(
+      path,
+    )!
+  return cubicAt(m.slice(1).map(Number), t)
 }
 
 test('same-row connection bows the control points up so it is not a flat line', () => {
@@ -155,7 +166,7 @@ test('a discordant connection dips below the reads, not above them', () => {
       y2: 100,
       s1: 1,
       s2: 1,
-      dip: true,
+      dipPx: 40,
     }),
   )
   // larger y = down on screen; a concordant connection here would bow up
@@ -164,9 +175,11 @@ test('a discordant connection dips below the reads, not above them', () => {
   expect(cy1).toBe(cy2)
 })
 
-// Control-point Y of a discordant same-row connection spanning `x2` px.
-const dipY = (x2: number) =>
-  controlYs(
+// The deepest point of a discordant same-row connection asked to dip `dipPx`,
+// drawn `x2` px wide. Sampled off the curve, not the control points: the depth a
+// caller asks for is the depth of the INK, which is what a band can hold.
+const dipDepth = (dipPx: number, x2 = 300) =>
+  cubicYAt(
     bezierConnectorPath({
       x1: 0,
       y1: 100,
@@ -174,32 +187,55 @@ const dipY = (x2: number) =>
       y2: 100,
       s1: 1,
       s2: 1,
-      dip: true,
+      dipPx,
     }),
-  )[0]
+    0.5,
+  ) - 100
 
-// "view as pairs" / "link supplementary alignments" puts every qname on one
-// row, so dipping to a shared row (previously the track's bottom edge) bottomed
-// every discordant curve out at the same depth and they collapsed into
-// spaghetti. Depth has to come from the connection's own span instead.
-test('dip depth scales with span, so same-row connections do not all bottom out together', () => {
-  expect(dipY(60)).toBeLessThan(dipY(300))
-  expect(dipY(300)).toBeLessThan(dipY(1200))
+test('a dip reaches the depth it was asked for, whatever the span', () => {
+  // the renderer bounds the depth by the band its ink has to survive in, so the
+  // number it passes has to be the apex and not the control-point drop
+  expect(dipDepth(40)).toBeCloseTo(40)
+  expect(dipDepth(40, 20)).toBeCloseTo(40)
+  expect(dipDepth(40, 2000)).toBeCloseTo(40)
 })
 
-test('dip depth keeps separating even the widest connections, and stays bounded', () => {
-  // a hard cap would bottom every wide connection out at the same depth, which
-  // is the spaghetti this is meant to avoid
-  expect(dipY(300)).toBeLessThan(dipY(1200))
-  expect(dipY(1200)).toBeLessThan(dipY(5000))
-  expect(dipY(1e6)).toBeLessThan(100 + 110)
+test('a dip is bounded by the curve reach the cull pads by', () => {
+  // the cull pads its viewport test by this constant, so a caller passing more
+  // than it would hide a curve rather than draw it deeper
+  expect(dipDepth(1000)).toBeCloseTo(BEZIER_CONNECTOR_MAX_REACH_PX)
+})
+
+// SPAN_FACTOR's contract: a shaping term may not outrun the distance the curve
+// has to cover, or the cubic overshoots its far endpoint and has to curl back to
+// arrive — the squiggle on tightly-spaced reads. Only the HORIZONTAL handles can
+// do that, which is why the dip is not clamped to the budget and this samples x
+// rather than comparing the dip against it. A deep dip on a narrow connection is
+// a narrow trough, and that is fine.
+test('a dipped connection never overshoots its endpoints in x', () => {
+  for (const x2 of [3, 12, 60, 300, 1200]) {
+    // an FR pair, whose handles both point into the span
+    const path = bezierConnectorPath({
+      x1: 0,
+      y1: 100,
+      x2,
+      y2: 100,
+      s1: 1,
+      s2: -1,
+      dipPx: 110,
+    })
+    for (let t = 0; t <= 1; t += 0.05) {
+      expect(cubicXAt(path, t)).toBeGreaterThanOrEqual(0)
+      expect(cubicXAt(path, t)).toBeLessThanOrEqual(x2)
+    }
+  }
 })
 
 test('dip depth does not depend on the endpoints rows', () => {
-  // the old dip reached for the track's bottom edge, so its depth changed with
-  // track height and scroll position rather than with the event
+  // the original dip reached for the track's bottom edge, so its depth changed
+  // with track height and scroll position rather than with the connection
   const depthFrom = (y: number) =>
-    controlYs(
+    cubicYAt(
       bezierConnectorPath({
         x1: 0,
         y1: y,
@@ -207,24 +243,11 @@ test('dip depth does not depend on the endpoints rows', () => {
         y2: y,
         s1: 1,
         s2: 1,
-        dip: true,
+        dipPx: 50,
       }),
-    )[0] - y
-  expect(depthFrom(20)).toBe(depthFrom(500))
-})
-
-// SPAN_FACTOR's contract: no shaping term may exceed 0.3x the distance the
-// curve has to cover, or the cubic overshoots its far endpoint and has to curl
-// back to arrive — the squiggle on tightly-spaced reads. The bow clamps to that
-// budget explicitly; the dip's saturating curve happens to resolve under it at
-// the current tuning, so nothing would catch a retune (MAX_DIP_PX >= ~145, or a
-// smaller DIP_HALF_SPAN_PX) quietly reintroducing the squiggle.
-test('the dip never outgrows its shaping budget', () => {
-  // tightest spans bind: the dip approaches MAX_DIP_PX/DIP_HALF_SPAN_PX of the
-  // span as it shrinks, while the budget stays a flat fraction of it
-  for (const span of [1, 5, 20, 60, 150, 300, 800, 2000, 10_000]) {
-    expect(dipY(span) - 100).toBeLessThanOrEqual(0.3 * span)
-  }
+      0.5,
+    ) - y
+  expect(depthFrom(20)).toBeCloseTo(depthFrom(500))
 })
 
 test('an inversion folds back at its leading end', () => {

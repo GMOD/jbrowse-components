@@ -1,6 +1,10 @@
 import { connectionEndpoints } from '@jbrowse/alignments-core'
 import { assembleLocString, bezierConnectorPath } from '@jbrowse/core/util'
-import { HIDDEN_SEGMENT_DASH, hiddenSegmentsNote } from '@jbrowse/sv-core'
+import {
+  HIDDEN_SEGMENT_DASH,
+  discordantDipPx,
+  hiddenSegmentsNote,
+} from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
 import { readIdOf, readNameOf, readSpanOf } from '../readChains.ts'
@@ -72,7 +76,17 @@ const AlignmentConnections = observer(function AlignmentConnections(
             leadingEnd2: isSplit,
             reversed1: end1.reversed,
             reversed2: end2.reversed,
-            dip: e1.level === e2.level && abnormal,
+            // A dip stays inside the panel it is drawn in: this view clips
+            // nothing per level, so a deeper one would bleed over the
+            // neighbouring panel's reads. The band is the pileup body below
+            // coverage, and only a same-contig connection has a span.
+            dipPx:
+              e1.level === e2.level && abnormal
+                ? discordantDipPx(
+                    levels[e1.level]!.height - levels[e1.level]!.coverageOffset,
+                    e1.refName === e2.refName ? Math.abs(bp2 - bp1) : undefined,
+                  )
+                : undefined,
           })
           const hiddenNote = hiddenSegmentsBetween?.length
             ? hiddenSegmentsNote(hiddenSegmentsBetween)

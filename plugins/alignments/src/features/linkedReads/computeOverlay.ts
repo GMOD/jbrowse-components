@@ -3,7 +3,7 @@ import {
   BEZIER_CONNECTOR_MAX_REACH_PX,
   bezierConnectorPath,
 } from '@jbrowse/core/util'
-import { HIDDEN_SEGMENT_DASH } from '@jbrowse/sv-core'
+import { HIDDEN_SEGMENT_DASH, discordantDipPx } from '@jbrowse/sv-core'
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
@@ -32,7 +32,10 @@ const CURVE_STROKE_WIDTH_PX = 1
 
 // Cull by endpoint Y, padded by the shaping's reach: a curve dips below or bows
 // above its endpoints (see bezierConnector), so a connector whose reads have
-// both scrolled just past an edge can still have a visible body.
+// both scrolled just past an edge can still have a visible body. The pad stays
+// the CONSTANT even though a dip is now scaled by the band: core clamps every
+// dip to it, so it still bounds the reach, and a pad derived from this section's
+// band would be the same number on any band deep enough to matter.
 function arcIsVisible(
   sy1: number,
   sy2: number,
@@ -281,6 +284,12 @@ interface Opts {
   featureHeight: number
   featureSpacing: number
   pileupTopOffset: number
+  // The section's laid-out pileup band height, which is how deep a discordant
+  // connector may dip. A layout quantity on purpose: `clipBottom - clipTop`
+  // moves as the reader scrolls (bandScreenTop is sticky while the band bottom
+  // clamps to the canvas), and keying depth on it would put the depth back on
+  // the scroll position.
+  pileupHeight: number
   scrollTop: number
   // Screen-y of this section's pileup clip top and band bottom, the edges the
   // visibility cull keeps a curve between.
@@ -306,6 +315,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     featureHeight,
     featureSpacing,
     pileupTopOffset,
+    pileupHeight,
     scrollTop,
     viewportTop,
     viewportBottom,
@@ -352,7 +362,8 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     // on the chain's connecting line, so it bows up over the row instead, as
     // the split view bows a same-level normal link.
     const hidden = !!hiddenSegmentsBetween?.length
-    const plain = c.isNormal && r1.refName === r2.refName
+    const sameRef = r1.refName === r2.refName
+    const plain = c.isNormal && sameRef
     const straight = plain && !(hidden && sy1 === sy2)
     const d = straight
       ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
@@ -366,7 +377,14 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
           leadingEnd2: c.isSplit,
           reversed1: !!r1.reversed,
           reversed2: !!r2.reversed,
-          dip: !plain,
+          // The endpoint bps, not their screen xs, so one event holds its depth
+          // while the reader zooms; no span at all for an interchromosomal pair.
+          dipPx: plain
+            ? undefined
+            : discordantDipPx(
+                pileupHeight,
+                sameRef ? Math.abs(c.bp2 - c.bp1) : undefined,
+              ),
         })
     const stroke = rgb255(linkedReadPalette[linkedReadColorSlot(c.colorType)]!)
 

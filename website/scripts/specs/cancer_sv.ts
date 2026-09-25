@@ -848,17 +848,15 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // tutorial, and the connectors above are the whole reason
                   // (reviewer: "it is too hard to see the bezier curves"). A
                   // curve is drawn from one read's row to the other's and then
-                  // dipped by an amount keyed on its horizontal SPAN
-                  // (bezierConnector.ts, saturating toward 110px), so at a 1px
-                  // pitch 28 molecules put 28 curves, each wanting tens of px
-                  // of dip, into a 28px band: they bottom out together against
-                  // the lane's lower edge and publish as one purple smear with
-                  // no individual curve in it. Row pitch is what the overlay
-                  // has to draw in, so the lane pays for it -- 6px (5 + the
-                  // 1px gap featureSpacingForHeight adds above 3) is 168px of
-                  // rows, and at the ~1/3 downscale this figure publishes at, a
-                  // row and the curve leaving it each survive as their own
-                  // mark.
+                  // dipped by the event's size in bp, scaled to the lane's own
+                  // band (discordantDipPx), so at a 1px pitch 28 molecules put
+                  // 28 curves into a 28px band and publish as one purple smear
+                  // with no individual curve in it. Row pitch is what the
+                  // overlay has to draw in, so the lane pays for it -- 6px (5 +
+                  // the 1px gap featureSpacingForHeight adds above 3) is 168px
+                  // of rows, and at the ~1/3 downscale this figure publishes
+                  // at, a row and the curve leaving it each survive as their
+                  // own mark.
                   //
                   // 'grow' rather than a fixed height for the same reason as
                   // the sibling lane on derivative_synteny: a configured

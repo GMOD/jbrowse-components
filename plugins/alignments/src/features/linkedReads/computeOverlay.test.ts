@@ -5,6 +5,7 @@ import {
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
+import { CUBIC_APEX_RATIO } from '@jbrowse/core/util'
 import { HIDDEN_SEGMENT_DASH, hiddenSegmentsNote } from '@jbrowse/sv-core'
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
@@ -106,6 +107,7 @@ const baseOpts = {
   featureHeight: 10,
   featureSpacing: 2,
   pileupTopOffset: 0,
+  pileupHeight: 200,
   scrollTop: 0,
   viewportTop: 0,
   viewportBottom: 1000,
@@ -369,6 +371,88 @@ describe('computePileupBezierArcs — discordant curves dip', () => {
     const { sy1, cp1y, cp2y, sy2 } = controlPoints(arcs[0]!.d)
     expect(cp1y).toBeGreaterThan(sy1)
     expect(cp2y).toBeGreaterThan(sy2)
+  })
+
+  // The depth is the mark's one free channel, so it has to say how big the event
+  // is and not how much screen it happens to cover. Keyed on the endpoints' pixel
+  // separation, as it was, this same event drew 55 px deep zoomed in and 7.5 px
+  // deep zoomed out.
+  it('dips the same depth for one event at every zoom', () => {
+    const data = makeData({
+      names: ['p', 'p'],
+      flags: [
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+      ],
+      strands: [1, 1],
+      orientations: [LINKED_READ_COLOR_PAIR_RR, LINKED_READ_COLOR_PAIR_RR],
+      positions: [
+        [1000, 1100],
+        [21_000, 21_100],
+      ],
+      ys: [0, 0],
+    })
+    const depthAt = (bpPerPx: number) => {
+      const arcs = computePileupBezierArcs({
+        colors: PALETTE,
+        ...baseOpts,
+        bpToScreenX: (_refName: string, bp: number) => bp / bpPerPx,
+        pairs: enumerateBezierPairs(new Map([[0, data]])),
+      })
+      const { sy1, cp1y } = controlPoints(arcs[0]!.d)
+      return cp1y - sy1
+    }
+    expect(depthAt(20)).toBeCloseTo(depthAt(1))
+    expect(depthAt(400)).toBeCloseTo(depthAt(1))
+  })
+
+  it('never dips past the section band, whatever the event', () => {
+    const arcsFor = (positions: [number, number][], pileupHeight: number) =>
+      computePileupBezierArcs({
+        colors: PALETTE,
+        ...baseOpts,
+        pileupHeight,
+        pairs: enumerateBezierPairs(
+          new Map([
+            [
+              0,
+              makeData({
+                names: ['p', 'p'],
+                flags: [
+                  SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+                  SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+                ],
+                strands: [1, 1],
+                orientations: [
+                  LINKED_READ_COLOR_PAIR_RR,
+                  LINKED_READ_COLOR_PAIR_RR,
+                ],
+                positions,
+                ys: [0, 0],
+              }),
+            ],
+          ]),
+        ),
+      })
+    // A five-read pileup is the regime the previous rule failed in: it drew a
+    // 55 px apex under a ~54 px band, and the section's clip cut the curve into
+    // a tick.
+    for (const pileupHeight of [12, 54, 200]) {
+      for (const far of [3000, 21_000, 201_000, 901_000]) {
+        const arcs = arcsFor(
+          [
+            [1000, 1100],
+            [far, far + 100],
+          ],
+          pileupHeight,
+        )
+        const { sy1, cp1y } = controlPoints(arcs[0]!.d)
+        // the apex, not the control point, is the ink the clip has to hold
+        expect((cp1y - sy1) * CUBIC_APEX_RATIO).toBeLessThanOrEqual(
+          pileupHeight,
+        )
+      }
+    }
   })
 })
 

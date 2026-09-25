@@ -45,29 +45,18 @@ const MAX_BOW_PX = 30
 // it that way — a renderer that opts out makes "below the reads" mean two
 // different things in two views of the same data.
 //
-// Depth comes from the connection's own horizontal span
-// rather than reaching for some fixed row: with "view as pairs" / "link
-// supplementary alignments" every qname lands on one row, so dipping to a
-// shared row bottoms every curve out at the same depth and they collapse into
-// spaghetti. Keying on span makes the depth mean something — wide events dive
-// deeper than narrow ones — and lets the curves nest.
-//
-// Depth saturates toward MAX_DIP_PX rather than clamping at it. A hard cap
-// reintroduces exactly the problem being fixed: every connection wider than the
-// cap point bottoms out at an identical depth, and at any plausible cap a
-// typical view is mostly wider. This form stays strictly increasing in span at
-// every width while staying bounded. DIP_HALF_SPAN_PX is the span at which the
-// dip reaches half its maximum.
-const MAX_DIP_PX = 110
-const DIP_HALF_SPAN_PX = 500
+// HOW DEEP is the renderer's call, not this file's. Depth is the mark's one free
+// channel, and only the renderer knows the band the ink has to survive in — the
+// pileup clips each section at its band bottom, and the split view bleeds a
+// too-deep dip into the panel below. So callers pass the depth they want and
+// `discordantDipPx` (@jbrowse/sv-core) is the law the two of them share.
 
-// How far a curve can stray outside the band between its two endpoints. A cubic
-// with both control points offset by `d` apexes at 0.75 * d, and the dip — the
-// deeper of the two shaping terms — saturates toward MAX_DIP_PX, so this bounds
-// both. A caller that culls off-screen curves has to pad its viewport test by
-// this: the shaping is applied to the *control points*, so a curve whose two
+// How far a curve can stray outside the band between its two endpoints. The dip
+// is the deeper of the two shaping terms, so this is a ceiling on it, applied
+// here rather than trusted to a caller: a culler pads its viewport test by this,
+// and the shaping is applied to the *control points*, so a curve whose two
 // endpoints both sit just outside the viewport can still have a visible body.
-export const BEZIER_CONNECTOR_MAX_REACH_PX = CUBIC_APEX_RATIO * MAX_DIP_PX
+export const BEZIER_CONNECTOR_MAX_REACH_PX = 110
 
 interface Pt {
   x: number
@@ -96,20 +85,6 @@ function bowHeight(p1: Pt, p2: Pt, budget: number) {
   return Math.min(budget, Math.max(0, MAX_BOW_PX - Math.abs(p2.y - p1.y)))
 }
 
-// Negative = the control points drop below the reads (see MAX_DIP_PX). Keyed on
-// horizontal span alone: two reads a few px apart describe a small event and get
-// a small dip, however tall their track happens to be.
-//
-// Budget-clamped like the bow. At the current tuning the saturating curve
-// already resolves under the budget at every span (worst ratio ~0.73, as span
-// → 0), so this is inert — it's here so retuning MAX_DIP_PX / DIP_HALF_SPAN_PX
-// can't silently reintroduce the fold-back squiggle SPAN_FACTOR exists to
-// prevent. Pinned by 'the dip never outgrows its shaping budget'.
-function dipHeight(p1: Pt, p2: Pt, budget: number) {
-  const span = Math.abs(p2.x - p1.x)
-  return -Math.min(budget, MAX_DIP_PX * (span / (span + DIP_HALF_SPAN_PX)))
-}
-
 function cubicPath(from: Pt, ctrl1: Pt, ctrl2: Pt, to: Pt) {
   return `M ${from.x} ${from.y} C ${ctrl1.x} ${ctrl1.y} ${ctrl2.x} ${ctrl2.y} ${to.x} ${to.y}`
 }
@@ -127,10 +102,13 @@ export function bezierConnectorPath({
   reversed1 = false,
   reversed2 = false,
   maxHandlePx = MAX_HANDLE_PX,
-  // This connection is discordant (aberrant pair orientation, or a split
-  // junction's strand flip): it dips below the reads instead of arcing over
-  // them, so the two classes are tellable apart by shape alone.
-  dip = false,
+  // Depth, in px, of the dip a discordant connection draws instead of the bow a
+  // concordant one gets — aberrant pair orientation, or a split junction's
+  // strand flip, so the two classes are tellable apart by shape alone. It is
+  // the depth of the curve's APEX — what a caller can bound by the room it has —
+  // and CUBIC_APEX_RATIO converts it to the control-point drop that puts the ink
+  // there. Leave it out to bow up.
+  dipPx,
 }: {
   x1: number
   y1: number
@@ -142,13 +120,22 @@ export function bezierConnectorPath({
   reversed1?: boolean
   reversed2?: boolean
   maxHandlePx?: number
-  dip?: boolean
+  dipPx?: number
 }) {
   const from = { x: x1, y: y1 }
   const to = { x: x2, y: y2 }
   const budget = shapingBudget(from, to)
   const handle = Math.min(maxHandlePx, budget)
-  const bow = dip ? dipHeight(from, to, budget) : bowHeight(from, to, budget)
+  // The dip is deliberately not clamped to the budget, unlike the bow. The
+  // budget stops the cubic folding back over itself, and only the horizontal
+  // handles can do that — a vertical offset leaves x(t) monotonic however deep
+  // it goes, so a big event squeezed into a few px draws a narrow trough rather
+  // than a squiggle. Pinned by 'a dipped connection never overshoots its
+  // endpoints in x'.
+  const bow =
+    dipPx === undefined
+      ? bowHeight(from, to, budget)
+      : -Math.min(dipPx, BEZIER_CONNECTOR_MAX_REACH_PX) / CUBIC_APEX_RATIO
   return cubicPath(
     from,
     { x: x1 + handle * tangentSign(s1, false, reversed1), y: y1 - bow },

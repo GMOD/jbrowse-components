@@ -46,6 +46,7 @@ export function computePileupBezierArcsFromModel(
       featureHeight: model.featureHeight,
       featureSpacing: model.featureSpacing,
       pileupTopOffset: sec.topOffset,
+      pileupHeight: sec.pileupHeight,
       scrollTop: scroll.scrollTop,
       viewportTop: clipTop,
       viewportBottom: clipBottom,
