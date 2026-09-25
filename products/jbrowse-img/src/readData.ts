@@ -60,6 +60,23 @@ function readMultiWiggleSources(file: string): unknown[] {
   return data
 }
 
+// A config may write an assembly as `{ name, uri }`. The app's own expansion
+// starts by moving that uri onto a sequence adapter, and doing the same here
+// puts the sequence where this tool reads it: its trackId, and the adapter a
+// CRAM track borrows.
+function withSequence(assembly: Assembly) {
+  const { uri, baseUri, ...rest } = assembly as Assembly & {
+    uri?: unknown
+    baseUri?: unknown
+  }
+  return (rest.sequence as unknown) || typeof uri !== 'string'
+    ? assembly
+    : {
+        ...rest,
+        sequence: { adapter: { uri, ...(baseUri ? { baseUri } : {}) } },
+      }
+}
+
 // Resolve every `localPath` nested anywhere in `value` relative to `baseDir`,
 // so paths inside a config/assembly/tracks JSON are relative to that file.
 function resolveLocalPaths(value: unknown, baseDir: string) {
@@ -192,6 +209,7 @@ export function readData(
   }
   // else check if it was an assembly name in a config file
   else if (configData.assemblies?.length) {
+    configData.assemblies = configData.assemblies.map(withSequence)
     // --config/--hub and the CLI assembly flags are alternatives, not additive:
     // the config's assemblies win outright, so a --fasta given alongside one is
     // dropped — and in a comparative run so is every --paf/--chain that binds to
