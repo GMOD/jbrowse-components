@@ -131,15 +131,21 @@ export function encodeSourceChromSpans(
   const row = new Uint32Array(count)
   const color = new Uint32Array(count)
   const last = RANK_ABGR.length - 1
+  const chrOfRow: (string | undefined)[] = []
+  const colorOfRow: number[] = []
   let i = 0
   for (const { startBp, endBp, rows } of blocks) {
     for (const { rowIndex, chr } of rows) {
       if (chr) {
-        const rank = ranks.get(rowIndex)?.get(chr) ?? 0
+        if (chrOfRow[rowIndex] !== chr) {
+          const rank = ranks.get(rowIndex)?.get(chr) ?? 0
+          chrOfRow[rowIndex] = chr
+          colorOfRow[rowIndex] = RANK_ABGR[Math.min(rank, last)]!
+        }
         x[i] = startBp
         x2[i] = endBp
         row[i] = rowIndex
-        color[i] = RANK_ABGR[Math.min(rank, last)]!
+        color[i] = colorOfRow[rowIndex]!
         i++
       }
     }

@@ -25,7 +25,7 @@ function recordingCtx() {
   const ctx = {
     fillStyle: '',
     fillRect(x: number, y: number, w: number, h: number) {
-      rects.push({ x, y, w, h, fill: this.fillStyle })
+      rects.push({ x, y, w, h, fill: `${this.fillStyle}` })
     },
     save() {},
     restore() {},
