@@ -269,13 +269,16 @@ test('a row that could not center gives the anchor to the one that did', async (
 test('every navigation-shaped action of a row is classified', async () => {
   const view = await openStack()
   // matches of the shape test that do not navigate: a preference, a
-  // decoration, a read, the rubber band's highlight, an animation's cancel
+  // decoration, a read, the rubber band's highlight, an animation's cancel,
+  // the track heights
   const notNavigation = new Set([
     'setScrollZoom',
     'setShowCenterLine',
     'getSelectedRegions',
     'setOffsets',
     'cancelZoomAnimation',
+    'setScrollPortExcess',
+    'fitTracksToWindow',
   ])
   const shape =
     /scroll|zoom|^nav|moveTo|center|^fly|slide|fit|regions|window|offsets|newView|flip/i
