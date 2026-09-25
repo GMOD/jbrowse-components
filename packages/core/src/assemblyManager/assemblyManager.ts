@@ -3,6 +3,7 @@ import { autorun, untracked, when } from 'mobx'
 
 import { readConfObject } from '../configuration/index.ts'
 import assemblyFactory from './assembly.ts'
+import { indexAssemblyNames } from './indexAssemblyNames.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
@@ -164,14 +165,13 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       /**
        * #getter
        */
-      get assemblyNameMap() {
-        const obj: Record<string, Assembly> = {}
-        for (const assembly of self.assemblies) {
-          for (const name of assembly.allAliases) {
-            obj[name] = assembly
-          }
-        }
-        return obj
+      get assemblyNameMap(): Record<string, Assembly> {
+        return Object.fromEntries(
+          indexAssemblyNames(self.assemblies, a => ({
+            name: a.name,
+            aliases: a.aliases,
+          })),
+        )
       },
     }))
     .views(self => ({
@@ -253,7 +253,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       // Both lookups are load-bearing, and the config one has to cover aliases
       // as well: assemblyNameMap is keyed by allAliases ([name, ...aliases]) but
       // only exists once the afterAttach autorun has built the models, while
-      // configuredAssemblyNames answers off the configs from the first render.
+      // confByName answers off the configs from the first render.
       // Screening on the canonical names alone left `vvx` unknown for the whole
       // startup window even though the config for `volvox` names it — a wrong
       // "no", which means the caller re-adds an assembly the session already
@@ -268,10 +268,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       // read is never undefined to the compiler, so `!!` on it infers the
       // literal `true` and `!has(name)` would be dead code at every call site.
       has(asmName: string): boolean {
-        return (
-          !!self.assemblyNameMap[asmName] ||
-          this.configuredAssemblyNames.has(asmName)
-        )
+        return !!self.assemblyNameMap[asmName] || this.confByName.has(asmName)
       },
 
       /**
@@ -290,9 +287,8 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
 
       /**
        * #getter
-       * read via readConfObject, matching how the afterAttach autorun names the
-       * assemblies it creates: get() treats a name found here as "a config
-       * exists, its model is just not built yet", so the two must agree
+       * the canonical name of every configured assembly, read the way the
+       * afterAttach autorun names the models it builds
        */
       get assemblyNamesList(): string[] {
         return this.assemblyList.map(asm => readConfObject(asm, 'name'))
@@ -301,21 +297,15 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       /**
        * #getter
        * Every name the *configs* answer to — each assembly's `name` and its
-       * `aliases`. What {@link has} knows before the models exist.
-       *
-       * Separate from assemblyNamesList rather than widening it: `get` treats a
-       * name found in that list as "a config exists, its model is just not built
-       * yet", which has to stay the canonical name the autorun will create the
-       * assembly under. A Set because `has` is called per name by per-render
-       * scans over every track in the session.
+       * `aliases` — mapped to its config, which exists before the assembly's
+       * model does. What {@link has} knows before the models exist, and
+       * resolved by the same precedence as `assemblyNameMap`.
        */
-      get configuredAssemblyNames(): Set<string> {
-        return new Set(
-          this.assemblyList.flatMap(asm => [
-            readConfObject(asm, 'name') as string,
-            ...((readConfObject(asm, 'aliases') as string[] | undefined) ?? []),
-          ]),
-        )
+      get confByName(): Map<string, AnyConfigurationModel> {
+        return indexAssemblyNames(this.assemblyList, asm => ({
+          name: readConfObject(asm, 'name'),
+          aliases: readConfObject(asm, 'aliases') ?? [],
+        }))
       },
 
       /**
@@ -378,9 +368,10 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         // Nothing left that could still produce it. Both clauses are things
         // that end on their own, so this needs no bound of its own.
         const settled = () =>
-          // a config carrying the name is already in the tree and the
-          // afterAttach autorun is about to build its model
-          !self.assemblyNamesList.includes(assemblyName) &&
+          // a config answering to the name, as its name or an alias, is
+          // already in the tree and the afterAttach autorun is about to build
+          // its model
+          !self.confByName.has(assemblyName) &&
           // a connection mid-fetch could be carrying it. Every loading
           // connection counts, not just one naming this assembly: a connection
           // config need not declare what it will turn out to provide, and
@@ -486,9 +477,9 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
           for (const asm of orphaned) {
             this.removeAssembly(asm)
           }
+          const built = new Set(self.assemblies.map(a => a.name))
           for (const conf of assemblyConfs) {
-            const name = readConfObject(conf, 'name')
-            if (!self.assemblies.some(a => a.name === name)) {
+            if (!built.has(readConfObject(conf, 'name'))) {
               this.addAssembly(conf)
             }
           }

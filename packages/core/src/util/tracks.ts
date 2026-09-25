@@ -86,7 +86,7 @@ export interface AssemblyNameResolver {
  * which is built from assembly *models*, so it answers no during the window
  * where a config exists and the manager's afterAttach autorun hasn't built its
  * model yet — which is exactly when an import form first renders. `has` also
- * consults `assemblyNamesList`, read off the configs, so it covers both. See
+ * consults `confByName`, read off the configs, so it covers both. See
  * assemblyManager's own note on the pair.
  */
 export interface SessionAssemblies extends AssemblyNameResolver {

@@ -1,11 +1,13 @@
+import { isRegionsAdapter } from '../data_adapters/BaseAdapter/util.ts'
+
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type {
   BaseOptions,
   BaseRefNameAliasAdapter,
   CytobandAdapter,
-  RegionsAdapter,
 } from '../data_adapters/BaseAdapter/index.ts'
+import type { AnyDataAdapter } from '../data_adapters/BaseAdapter/util.ts'
 
 interface AdapterArgs {
   config: AnyConfigurationModel
@@ -16,7 +18,7 @@ interface AdapterArgs {
   // adapter already reads out of BaseOptions, so nothing downstream is special
   // cased. Without it every adapter's own "Downloading …" reporting is dropped
   // on the floor and the view spins on a bare "Loading".
-  opts?: BaseOptions
+  opts: BaseOptions
 }
 
 async function instantiateAdapter<T>(
@@ -38,7 +40,7 @@ export async function getRefNameAliases({
     config,
     pluginManager,
   )
-  return adapter.getRefNameAliases(opts ?? {})
+  return adapter.getRefNameAliases(opts)
 }
 
 export async function getCytobands({
@@ -58,9 +60,16 @@ export async function getAssemblyRegions({
   pluginManager,
   opts,
 }: AdapterArgs) {
-  const adapter = await instantiateAdapter<RegionsAdapter>(
+  const adapter = await instantiateAdapter<AnyDataAdapter>(
     config,
     pluginManager,
   )
-  return adapter.getRegions(opts ?? {})
+  // an assembly written with no sequence at all gets whatever adapter the
+  // union defaults to, which lists no regions
+  if (!isRegionsAdapter(adapter)) {
+    throw new Error(
+      `a ${config.type} cannot supply an assembly's sequence: give the assembly a "uri" or a "sequence.adapter"`,
+    )
+  }
+  return adapter.getRegions(opts)
 }

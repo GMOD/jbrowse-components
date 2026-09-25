@@ -109,19 +109,14 @@ export function JBrowseModelF({
         if (!name) {
           throw new Error('Can\'t add assembly with no "name"')
         }
-        if (self.assemblyNames.includes(name)) {
+        if (
+          self.assemblies.some(a => a.name === name || a.aliases.includes(name))
+        ) {
           throw new Error(
             `Can't add assembly with name "${name}", an assembly with that name already exists`,
           )
         }
-        const length = self.assemblies.push({
-          ...conf,
-          sequence: {
-            type: 'ReferenceSequenceTrack',
-            trackId: `${name}-${Date.now()}`,
-            ...conf.sequence,
-          },
-        })
+        const length = self.assemblies.push(conf)
         return self.assemblies[length - 1]
       },
       /**

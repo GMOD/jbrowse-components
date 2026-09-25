@@ -1,7 +1,5 @@
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import { assemblyConfByName } from './assemblyConfByName.ts'
-
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type { Assembly } from './assembly.ts'
 
@@ -25,10 +23,10 @@ export function getSequenceAdapterConfig(
  * regions have loaded.
  */
 export function getSequenceAdapterConfigByName(
-  assemblyManager: { assemblyList: AnyConfigurationModel[] },
+  assemblyManager: { confByName: Map<string, AnyConfigurationModel> },
   assemblyName: string,
 ): Record<string, unknown> | undefined {
-  const adapter = assemblyConfByName(assemblyManager, assemblyName)?.sequence
-    ?.adapter
+  const adapter =
+    assemblyManager.confByName.get(assemblyName)?.sequence?.adapter
   return adapter ? getSnapshot(adapter) : undefined
 }

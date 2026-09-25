@@ -1,10 +1,11 @@
 import {
   addDisposer,
   getParent,
+  getSnapshot,
   isAlive,
   types,
 } from '@jbrowse/mobx-state-tree'
-import { onBecomeObserved } from 'mobx'
+import { compareStructural, onBecomeObserved, reaction } from 'mobx'
 
 import { getConf } from '../configuration/index.ts'
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
@@ -84,6 +85,9 @@ export default function assemblyFactory(
          * #volatile
          */
         loadingP: undefined as Promise<void> | undefined,
+        // bumped by `reload`, so a load started before it cannot write over
+        // the one started after
+        loadEpoch: 0,
         // per-instance promise cache for refName maps. Kept on the instance,
         // not the factory closure, because each map resolves an adapter's
         // contigs against THIS assembly's aliases: a closure cache shared by
@@ -97,7 +101,7 @@ export default function assemblyFactory(
         /**
          * #volatile
          */
-        volatileRegions: undefined as BasicRegion[] | undefined,
+        regions: undefined as BasicRegion[] | undefined,
         /**
          * #volatile
          */
@@ -191,7 +195,7 @@ export default function assemblyFactory(
        * #getter
        */
       get displayName(): string {
-        return self.getConf('displayName') || self.getConf('name') || ''
+        return self.getConf('displayName') || this.name
       },
       /**
        * #getter
@@ -262,7 +266,7 @@ export default function assemblyFactory(
         cytobands: Feature[]
         geneticCodes: Record<string, number>
       }) {
-        self.volatileRegions = regions
+        self.regions = regions
         self.refNameAliases = refNameAliases
         self.lowerCaseRefNameAliases = lowerCaseRefNameAliases
         self.canonicalToSeqAdapterRefNames = canonicalToSeqAdapterRefNames
@@ -294,6 +298,8 @@ export default function assemblyFactory(
           throw new Error('assembly configuration is not available')
         }
         const assemblyName = self.name
+        const epoch = self.loadEpoch
+        const isCurrentLoad = () => isAlive(self) && epoch === self.loadEpoch
 
         // The four loads run at once and would otherwise fight over the one
         // status field, and the first to finish would blank the label (the ''
@@ -323,7 +329,7 @@ export default function assemblyFactory(
         })
         let loading = true
         const stream = statusWindow.open({
-          isCurrent: () => loading && isAlive(self),
+          isCurrent: () => loading && isCurrentLoad(),
         })
         const fanOut = createStatusFanOut(stream.statusCallback)
         const optsFor = (): BaseOptions => ({ statusCallback: fanOut() })
@@ -365,10 +371,10 @@ export default function assemblyFactory(
           }
           const maps = buildRefNameMaps(regions, refNameAliasCollection)
 
-          // the same tree-destroyed-mid-load case the status sink above is
-          // guarded for, at the write the load exists to make: a dead node has
-          // nothing to load into, and `setLoaded` is an action on it
-          if (isAlive(self)) {
+          // the same guard as the status sink above, at the write the load
+          // exists to make: a dead node has nothing to load into, and a
+          // superseded load would write over the reload that replaced it
+          if (isCurrentLoad()) {
             this.setLoaded({
               ...maps,
               regions: regions.map(r => ({
@@ -387,9 +393,12 @@ export default function assemblyFactory(
           // on screen after the load has ended. Closing the guard first is what
           // stops a still-running sibling load from writing over it — see the
           // `loading` flag above, and note `clear` deliberately does not consult
-          // it.
+          // it. A superseded load leaves the field to the reload that
+          // replaced it.
           loading = false
-          stream.clear()
+          if (epoch === self.loadEpoch) {
+            stream.clear()
+          }
         }
       },
     }))
@@ -411,11 +420,12 @@ export default function assemblyFactory(
           // clear any prior failure so a successful retry isn't masked by the
           // stale error left over from the previous attempt
           self.setError(undefined)
+          const epoch = self.loadEpoch
           self.loadingP = self.loadPre().catch((e: unknown) => {
             // both writes are actions, and a failure can arrive after the tree
-            // holding this assembly is gone; the rejection still reaches
-            // whoever awaited it
-            if (isAlive(self)) {
+            // holding this assembly is gone, or after a reload has replaced
+            // this attempt; the rejection still reaches whoever awaited it
+            if (isAlive(self) && epoch === self.loadEpoch) {
               console.error(e)
               self.setLoadingP(undefined)
               self.setError(e)
@@ -427,14 +437,55 @@ export default function assemblyFactory(
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * Load again from the current config, discarding the attempt in flight
+       * and every refName map built against the old one. The loaded state
+       * stays on screen until the new load replaces it.
+       */
+      reload() {
+        self.loadEpoch += 1
+        self.loadingP = undefined
+        self.adapterLoads.clear()
+        self.refNameMismatches = new Map()
+        self.load().catch(() => {})
+      },
+    }))
+    .actions(self => ({
       afterAttach() {
+        // the assembly editor edits the live config, so a source changing
+        // under a loaded assembly has to load again. Only the adapters and
+        // the genetic-code file: the sequence track's display settings are
+        // not something the load reads.
+        addDisposer(
+          self,
+          reaction(
+            () => {
+              const conf = self.configuration
+              return conf
+                ? [
+                    getSnapshot(conf.sequence.adapter),
+                    getSnapshot(conf.refNameAliases.adapter),
+                    getSnapshot(conf.cytobands.adapter),
+                    self.getConf('geneticCodesLocation'),
+                  ]
+                : undefined
+            },
+            sources => {
+              if (sources && (self.loadingP || self.error !== undefined)) {
+                self.reload()
+              }
+            },
+            { equals: compareStructural, name: 'assemblyReloadOnConfigEdit' },
+          ),
+        )
         // lazy load: start fetching the first time something observes the
         // loaded state reactively (a view rendering this assembly, an autorun,
         // a `when` predicate), keeping the getters below pure. Both volatiles
         // are watched because consumers observe them independently (regions vs
         // refNameAliases/allRefNames); load() is idempotent so the overlapping
         // triggers collapse to a single fetch.
-        for (const prop of ['volatileRegions', 'refNameAliases'] as const) {
+        for (const prop of ['regions', 'refNameAliases'] as const) {
           addDisposer(
             self,
             onBecomeObserved(self, prop, () => {
@@ -453,13 +504,6 @@ export default function assemblyFactory(
        */
       get initialized() {
         return !!self.refNameAliases
-      },
-
-      /**
-       * #getter
-       */
-      get regions() {
-        return self.volatileRegions
       },
 
       /**

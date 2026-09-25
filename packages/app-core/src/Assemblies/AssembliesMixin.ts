@@ -42,8 +42,9 @@ export function AssembliesMixin(
       return {
         /**
          * #method
-         * The assembly config already carrying `name`, from any of the three
-         * arrays the assemblyManager draws on, or undefined.
+         * The assembly config answering to `name`, as its name or one of its
+         * aliases, from any of the three arrays the assemblyManager draws on,
+         * or undefined.
          *
          * One namespace, because `name` is the assembly config's MST
          * identifier: a second config carrying a name one of the others
@@ -52,13 +53,19 @@ export function AssembliesMixin(
          * MST then throws on every read of one — inside the manager's own
          * autorun and inside `assemblyNameMap`, which takes the session down.
          * So each add path checks all three, not just the array it pushes to.
+         * Aliases count too: a new assembly named `GRCh38` beside an `hg38`
+         * aliased `GRCh38` would leave `get('GRCh38')` to array order.
          */
-        findAssemblyConf(name: unknown): BaseAssemblyConfigModel | undefined {
-          return [
+        findAssemblyConf(name: string): BaseAssemblyConfigModel | undefined {
+          const confs = [
             ...self.jbrowse.assemblies,
             ...self.sessionAssemblies,
             ...self.temporaryAssemblies,
-          ].find(f => f.name === name)
+          ]
+          return (
+            confs.find(f => f.name === name) ??
+            confs.find(f => f.aliases.includes(name))
+          )
         },
       }
     })
