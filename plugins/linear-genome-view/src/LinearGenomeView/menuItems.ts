@@ -325,7 +325,7 @@ export function openSpanInNewView(
  * `launchItems`, the plugin-supplied ones (`rubberBandLaunchMenuItems()`).
  *
  * The new view is a copy of this one, so only a top-level view offers it: a row
- * of a comparative view carries that view's framing, a hidden header among it.
+ * of a comparative view carries that view's framing, such as a hidden header.
  */
 export function buildRubberBandMenuItems(
   self: LinearGenomeViewModel,
