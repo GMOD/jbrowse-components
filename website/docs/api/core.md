@@ -252,10 +252,7 @@ alike.
 
 What surrounds an encode: the jexl instance a `jexl:` channel compiles
 against — a caller whose channels are all readers or field names passes
-none — a progress reporter, and the region the features were fetched for,
-in the adapter's naming, with which an `x2` on another sequence indexes
-over the whole region, since the curve to it reaches the region's edge
-from its near foot.
+none — and a progress reporter.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
@@ -288,9 +285,9 @@ list.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
-## EncodedFeaturesResult
+## EncodedLayersResult
 
-What `CoreEncodeFeatures` answers for one region: `layers[i]` is the
+What `CoreGetEncodedLayers` answers for one region: `layers[i]` is the
 request's `layers[i]` over the region's features, so a display's mark
 list indexes straight into it.
 
@@ -496,7 +493,7 @@ index, which is most of the encoder's cost after the walk.
 
 ## LayerRequest
 
-One layer of a `CoreEncodeFeatures` request: the encoding to evaluate and
+One layer of a `CoreGetEncodedLayers` request: the encoding to evaluate and
 the lanes the display's mark reads.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
@@ -789,7 +786,7 @@ names the scale it resolved through, or a shape's. A `size` channel's
 ## selectEncodedFeature
 
 Open the feature widget on the feature behind one instance of a
-`CoreEncodeFeatures` answer. A display holds channels, not records, so it
+`CoreGetEncodedLayers` answer. A display holds channels, not records, so it
 sends `CoreGetEncodedFeature` the request the instance's region came back
 under, and the worker answers the entry of `layer`'s list that the
 instance's `featureIndex` names: the record as the adapter wrote it, or the
@@ -797,7 +794,7 @@ bin or run the steps made. A second click aborts the first.
 
 ```js
 // type signature
-(self: IStateTreeNode<IAnyType>, rotation: { begin(): ActiveFetch; cancel: () => void; dispose(): void; }, args: Omit<CoreEncodeFeaturesArgs, "byteLimit"> & { ...; }) => void
+(self: IStateTreeNode<IAnyType>, rotation: { begin(): ActiveFetch; cancel: () => void; dispose(): void; }, args: Omit<CoreGetEncodedLayersArgs, "byteLimit"> & { ...; }) => void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/selectEncodedFeature.ts)
