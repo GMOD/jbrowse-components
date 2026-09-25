@@ -606,10 +606,9 @@ another reason.
   `*_assembly_report.txt` was tried and reverted as unnecessary.
 - **UCSC GenArk hubs are keyed on RefSeq accessions**, so a track from one drops
   into a config for the same assembly with no aliasing — the TAIR10 RepeatMasker
-  bigBed's chroms *are* `NC_003070.9` and friends, which is what let it land
-  straight in the Arabidopsis bisulfite config. Worth checking before hosting
-  anything of your own for a non-model assembly:
-  `https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.3/bbi/`.
+  bigBed's chroms *are* `NC_003070.9` and friends. Worth checking before
+  hosting anything of your own for a non-model assembly:
+  `https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/bbi/`.
 - **MANE Select's symbol column is `geneSymbol`**, not `geneName2` (confirm with
   `bigBedInfo -as`). Filtering still wants the accession — CDKN2A has two MANE
   entries — but `labels: { name: "jexl:get(feature,'geneSymbol')" }` makes the

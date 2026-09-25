@@ -14,11 +14,11 @@ the methylation cytosine-context views (CpG / CHG / CHH / all).
 
 `config_emseq_bisulfite.json` is the config behind the
 [bisulfite tutorial](../../website/docs/tutorials/bisulfite.md). Its TAIR10
-assembly and NCBI RefSeq gene track are the genomes.jbrowse.org hub's for
-`GCF_000001735.4`, verbatim, with `arabidopsis` as an assembly alias. The WGBS
-CRAM and MethylDackel bigWigs come from the pipeline in
-`scripts/build_arabidopsis_wgbs.sh` and live under
-`jbrowse.org/demos/bisulfite/`; the RepeatMasker lane is UCSC's bigBed.
+assembly, NCBI RefSeq gene track and RepeatMasker track are the
+genomes.jbrowse.org hub's for `GCF_000001735.4`, verbatim, with `arabidopsis` as
+an assembly alias. The WGBS CRAM and MethylDackel bigWigs come from the pipeline
+in `scripts/build_arabidopsis_wgbs.sh` and live under
+`jbrowse.org/demos/bisulfite/`.
 
 ## Source / attribution
 

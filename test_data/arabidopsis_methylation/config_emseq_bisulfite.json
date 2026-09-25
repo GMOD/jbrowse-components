@@ -90,17 +90,30 @@
       ]
     },
     {
-      "type": "FeatureTrack",
-      "trackId": "arabidopsis_rmsk",
-      "name": "RepeatMasker (TAIR10)",
-      "adapter": {
-        "type": "BigBedAdapter",
-        "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.3/bbi/GCF_000001735.3_TAIR10.rmsk.bb",
-          "locationType": "UriLocation"
+      "metadata": {
+        "ucsc": {
+          "track": "repeatMasker",
+          "shortLabel": "RepeatMasker",
+          "longLabel": "RepeatMasker Repetitive Elements",
+          "type": "bigRmsk 9 +",
+          "visibility": "pack",
+          "group": "varRep",
+          "bigDataUrl": "bbi/GCF_000001735.4_TAIR10.1.rmsk.bb",
+          "xrefDataUrl": "bbi/GCF_000001735.4_TAIR10.1.rmsk.align.bb",
+          "maxWindowToDraw": "5000000",
+          "html": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/html/GCF_000001735.4_TAIR10.1.repeatMasker\">html/GCF_000001735.4_TAIR10.1.repeatMasker</a>"
         }
       },
-      "assemblyNames": ["GCF_000001735.4"]
+      "category": ["Variation and Repeats"],
+      "trackId": "GCF_000001735.4-repeatMasker",
+      "description": "RepeatMasker Repetitive Elements",
+      "assemblyNames": ["GCF_000001735.4"],
+      "name": "RepeatMasker",
+      "type": "FeatureTrack",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.4/bbi/GCF_000001735.4_TAIR10.1.rmsk.bb"
+      }
     },
     {
       "type": "MultiQuantitativeTrack",

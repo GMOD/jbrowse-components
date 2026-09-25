@@ -126,10 +126,9 @@ const ARABIDOPSIS_CONTEXT_LANES = [
   // THE TRANSPOSON, DRAWN RATHER THAN ASSERTED. The RefSeq genes above
   // carry nothing over the silenced half, so without this lane the label
   // below would be the figure's only evidence for the word "transposon".
-  // This lane is UCSC's GenArk RepeatMasker bigBed for TAIR10
-  // (GCF_000001735.3); the hub's chromAlias resolves its NC_ names. Over
-  // this window it returns `META1_LTR#LTR/Copia` at 4,406,005-4,411,120,
-  // the element TAIR10_Transposable_Elements.txt calls AT1TE14315.
+  // This lane is the TAIR10 hub's own RepeatMasker track. Over this
+  // window it returns `META1_LTR#LTR/Copia` at 4,406,005-4,411,120, the
+  // element TAIR10_Transposable_Elements.txt calls AT1TE14315.
   //
   // Filtered by length rather than partitioned into rows by repeat
   // class. The class route USED to be blocked by a display defect and
@@ -162,13 +161,14 @@ const ARABIDOPSIS_CONTEXT_LANES = [
   // headers are the wrong tool rather than a broken one.
   //
   // The length filter is doing that job: the other four repeats here
-  // are 30-80 bp simple repeats ((AATAA)n, (TTC)n), sub-pixel ticks
-  // that would only add labels; 200 bp is far below the 5.1 kb element
-  // and far above all four.
+  // are 30-80 bp simple repeats ((AATAA)n, (TTC)n) and a 339 bp
+  // ATLINE1_3A fragment at the window's right edge, each of which would
+  // only add a label; 1 kb is far below the 5.1 kb element and far
+  // above all four.
   {
-    trackId: 'arabidopsis_rmsk',
+    trackId: `${TAIR10}-repeatMasker`,
     type: 'LinearBasicDisplay',
-    jexlFiltersSetting: ['jexl:feature.end-feature.start>200'],
+    jexlFiltersSetting: ['jexl:feature.end-feature.start>1000'],
     height: 50,
   },
   // aggregate CpG/CHG/CHH fraction, one labeled row each

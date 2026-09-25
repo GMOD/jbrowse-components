@@ -269,9 +269,8 @@ context for both regions.
 
 The RepeatMasker lane names the element: `META1_LTR#LTR/Copia`, an LTR
 retrotransposon, `AT1TE14315` in TAIR10's own transposable-element annotation.
-The RefSeq gene track has no transcript over it. The lane is the RepeatMasker
-bigBed from UCSC's GenArk hub for the first TAIR10 release, and the hub
-assembly's alias table resolves its `NC_003070.9`.
+The RefSeq gene track has no transcript over it. The lane is the TAIR10 genome
+hub's own RepeatMasker track, filtered to repeats longer than 1 kb.
 
 <Figure caption="RefSeq genes, the RepeatMasker lane, the aggregate MethylDackel track, and three copies of the same WGBS pileup colored by CpG, CHG and CHH. AT1G12930 is red in CpG only; the LTR/Copia element on the right is red in all three." src="/img/methylation/arabidopsis_wgbs_contexts.png" />
 

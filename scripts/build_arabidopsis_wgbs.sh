@@ -5,10 +5,10 @@
 #
 # It downloads the TAIR10 reference (NCBI datasets) and one wild-type Col-0
 # WGBS run (DRR029742, from ENA), trims adapters, bisulfite-aligns with bwameth,
-# downloads JBrowse, and writes a config.json whose assembly and gene track are
-# TAIR10's genome hub on genomes.jbrowse.org, taken verbatim, beside the per-read
-# WGBS pileup pre-colored Bisulfite / CpG, opening on the AT1G12930 window from
-# the tutorial.
+# downloads JBrowse, and writes a config.json whose assembly, gene track and
+# RepeatMasker track are TAIR10's genome hub on genomes.jbrowse.org, taken
+# verbatim, beside the per-read WGBS pileup pre-colored Bisulfite / CpG, opening
+# on the AT1G12930 window from the tutorial.
 #
 # Everything is pinned (fixed RefSeq accession, fixed SRA run), so re-running
 # reproduces the same view. The alignment step downloads a full WGBS run and can
@@ -96,8 +96,9 @@ fi
 HUB=https://jbrowse.org/hubs/genark/GCF/000/001/735/GCF_000001735.4
 [ -s hub_config.json ] || curl -fsS -o hub_config.json "$HUB/config.json"
 
-# The hub's assembly entry and NCBI RefSeq gene track, verbatim, with `tair10`
-# as an alias so a session can still name the assembly that way.
+# The hub's assembly entry, NCBI RefSeq gene track and RepeatMasker track,
+# verbatim, with `tair10` as an alias so a session can still name the assembly
+# that way.
 python3 - jbrowse2/config.json hub_config.json "$HUB" <<'PY'
 import json, os, sys
 path, hub_path, base = sys.argv[1:]
@@ -119,7 +120,9 @@ by_id = {t['trackId']: t for t in hub['tracks']}
 gene = next(by_id[f'{HUB}-{k}'] for k in ['ncbiRefSeq', 'ncbiRefSeqCurated'] if f'{HUB}-{k}' in by_id)
 cfg = json.load(open(path)) if os.path.exists(path) else {}
 cfg['assemblies'] = [{**absolutize(assembly), 'aliases': ['tair10']}]
-cfg['tracks'] = [absolutize(gene)] + [t for t in cfg.get('tracks', []) if t['trackId'] != gene['trackId']]
+hub_tracks = [absolutize(gene), absolutize(by_id[f'{HUB}-repeatMasker'])]
+hub_ids = {t['trackId'] for t in hub_tracks}
+cfg['tracks'] = hub_tracks + [t for t in cfg.get('tracks', []) if t['trackId'] not in hub_ids]
 json.dump(cfg, open(path, 'w'), indent=2)
 PY
 jb add-track arabidopsis_wgbs.bam --name "Arabidopsis WGBS (bwameth)" \
@@ -147,7 +150,11 @@ cfg["defaultSession"] = {
         "type": "LinearGenomeView",
         "assembly": "GCF_000001735.4",
         "loc": "chr1:4,398,000-4,412,000",
-        "tracks": ["GCF_000001735.4-ncbiRefSeq", "arabidopsis_wgbs"],
+        "tracks": [
+            "GCF_000001735.4-ncbiRefSeq",
+            "GCF_000001735.4-repeatMasker",
+            "arabidopsis_wgbs",
+        ],
     }],
 }
 json.dump(cfg, open(path, "w"), indent=2)
