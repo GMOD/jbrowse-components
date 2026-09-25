@@ -239,9 +239,11 @@ store entry published a CJS build, Electron's renderer runs UMD and ESM, and a
 plugin reaching the main process does it through `window.require('electron')`
 whichever format it ships in — so the loader that needed Node bought nothing its
 two peers do not. `PluginLoader` names UMD or ESM as the successor for a config
-still carrying `cjsUrl`, and `products/jbrowse-desktop/src/util.tsx` is gone,
-taking `node:fs/promises`, `node:os` and `node:path` out of the renderer's graph
-and the RCE-by-`require` vector with them.
+still carrying `cjsUrl`, and the desktop `src/util.tsx` that held `fetchCJS` is
+deleted, taking `node:fs/promises`, `node:os` and `node:path` out of the
+renderer's graph and the RCE-by-`require` vector with them. What is left naming
+a node builtin in that renderer's own source is `src/indexJobsModel.ts`, the
+small one this section's table already calls separate.
 
 A plugin evaluated in the renderer still reaches Node through `window.require`
 until the flip, so the trust gate is not redundant — what changed is that the
