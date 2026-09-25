@@ -248,7 +248,10 @@ export function accumulateConfig(
     file.identifier = item
   } else if (obj.type === 'preProcessSnapshot') {
     file.preProcess = item
-  } else if (obj.type === 'slot') {
+  } else if (
+    obj.type === 'slot' &&
+    !file.slots.some(s => s.name === item.name)
+  ) {
     file.slots.push({
       ...item,
       schemaDeclIds: obj.valueDeclIds,

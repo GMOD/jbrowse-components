@@ -19,6 +19,9 @@
   },
   "author": "JBrowse Team",
   "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "files": [
     "esm"
   ],
