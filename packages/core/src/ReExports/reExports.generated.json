@@ -2926,6 +2926,7 @@
         "LGV_HEADER_HEIGHT_VAR",
         "SCROLL_PORT_HEIGHT_VAR",
         "VIEW_HEADER_HEIGHT_VAR",
+        "scrollPortOf",
         "useChromeHeightVar",
         "useCreateOnce",
         "useCreateOnceAsync",
