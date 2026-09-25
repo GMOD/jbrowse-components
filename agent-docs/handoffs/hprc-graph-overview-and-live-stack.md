@@ -1,6 +1,6 @@
 ---
 name: hprc-graph-overview-and-live-stack
-description: The HPRC graph thread as of 2026-09-24. Alignments between haplotype lanes are moving off the graph (gbz-base pairAlignments, plugin 3.0.4) to a hosted all-vs-all PAF over a panel, drawn per base by an unlanded gutter spike; the panel size and a whole-genome timing are the open calls. PangyPlot's v2.1 chr22 overview is done; chr1 is Colin's call.
+description: The HPRC graph thread as of 2026-09-24. Alignments between haplotype lanes were to move off the graph (gbz-base pairAlignments, plugin 3.0.4) to a hosted all-vs-all PAF over a curated panel, which Colin rejected as not pangenome-ready, so the gutter source is open again; an unlanded spike draws each gutter per base. PangyPlot's v2.1 chr22 overview is done; chr1 is Colin's call.
 ---
 
 # HPRC graph: the v2 overview and alignments between haplotype lanes
@@ -41,8 +41,11 @@ against GRCh38, their gutters composed through it. Retire from the gutter path:
 and the graph view. impg reads local files only and HPRC's all-vs-all set is
 sparse, so it is a host-side prep tool, not a gutter source.
 
-**Open calls for Colin.** Whether a curated panel (8-16 haplotypes) is enough;
-how mismatches are inked in the gutter (≥1 px at full colour, or faded to
+**Colin rejected the curated panel (2026-09-24)**: a hand-picked 8-16 shows
+that we are not truly pangenome ready, and puts the GBZ effort in question. So
+the panel plan below is not agreed, and what replaces it is open.
+
+**Open calls for Colin.** How mismatches are inked in the gutter (≥1 px at full colour, or faded to
 their width; captures at https://claude.ai/artifact/JnHcRi5HCJKyJD39oEhA86).
 
 **Next, in order.**

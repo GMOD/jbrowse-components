@@ -18,6 +18,4 @@ Housekeeping: the primary checkout's local figure store had old copies of the re
 
 Still open:
 - restack_around_locus: its tour and page text need the rewrite described above.
-- GRCh38 hub: your call, and I recommend leaving it.
-- Pushing: everything from today is on local main but not pushed.
 - Site deploys: neither site has been deployed.
