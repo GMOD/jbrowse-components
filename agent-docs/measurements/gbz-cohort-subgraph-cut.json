@@ -1,0 +1,30 @@
+{
+  "id": "gbz-cohort-subgraph-cut",
+  "measured": "2026-09-25",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "The cut GraphGenomeView issues for a whole-cohort graph view, taken directly rather than through the browser: `node ~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer/node_modules/@gmod/gbz-base/bin/query.js <hprc-v2.1-mc-grch38.gbz.db> --haplotype-index <hprc-v2.1-mc-grch38.haplotype-index.anchored.db> --sample GRCh38 --contig <C> --interval <A..B> --context 1000 --snarls --haplotypes all --limit 50000 --resolve --format gfa --stats`, against the hosted HPRC database and the hosted haplotype index over the network. Those flags are the adapter's config defaults (`context` 1000, `subgraphSnarls` 'contained', `nodeLimit` 50000) plus the `haplotypes: 'all'` and `names: 'resolved'` GbzBaseSyntenyAdapter.getSubgraph passes when the session names no haplotype subset. Run it through the plugin's own node_modules, NOT `npx -p @gmod/gbz-base`, which costs ~37 s per invocation before the query starts. 'net' is the db plus haplotype-index range-read total the reader's own --stats reports; 'GFA' is the string the worker hands the main thread. The split and complete-bar columns apply walkRows' flank rule (a walk is complete when it reaches a reference node on both sides of the region) to the W lines; that script is not committed and the numbers reproduce from the command above.",
+    "notes": "CAN A WHOLE-COHORT GRAPH CUT CARRY WALK ROWS AT A REAL LOCUS. The picture walk rows draws — every haplotype as a bar on its own bp, so a private repeat copy has width the reference axis cannot give it — had only ever been cut at ABCA7, a 689 bp window, and nobody had run it at the loci the HPRC demos care about.\n\nIt survives at C4, CFHR and the 260 kb CFH demo window, where the cut returns one walk per haplotype in 5-14 s. It does not survive at amylase or the 1q21.1 inversion, where 296 and 342 walks are split.\n\nThe gate is not window size — 260 kb works and 122 kb fails. It is whether the locus's top-level snarl sits inside the cut: `extractSnarls` adds a snarl only when both its boundaries are contained, so where the snarl is wider than the window a haplotype's walk leaves the cut and comes back, and the pieces are separated by a median 73 kb (amylase) and 18 kb (1q21.1) of walk the cut does not hold. `subgraphSnarls: 'overlapping'` rescues amylase (15.6 s, 15,737 nodes, 443 of 463 complete) and trips the 50,000 node limit at 1q21.1, where the adapter's advice to zoom in cannot help because the snarl does not shrink with the window.\n\nThe slowest cut of the six is the 689 bp window the tutorial already ships. ABCA7's 56 s is haplotype identification rather than size: 452 of 463 chains hold no sampled GBWT position inside the cut, so naming them walks 898k steps.\n\nWalk rows already computes `complete` per row and sorts the incomplete ones to the bottom without saying so, which is what makes amylase read as a short-bar distribution rather than as a cut that could not hold 295 of the walks."
+  },
+  "columns": [
+    { "key": "locus", "label": "locus", "format": "text", "align": "left" },
+    { "key": "spanBp", "label": "span bp", "format": "int", "align": "right" },
+    { "key": "wallS", "label": "wall s", "format": "float", "align": "right" },
+    { "key": "gfaMb", "label": "GFA MB", "format": "float", "align": "right" },
+    { "key": "netMb", "label": "net MB", "format": "float", "align": "right" },
+    { "key": "nodes", "label": "nodes", "format": "int", "align": "right" },
+    { "key": "walks", "label": "W lines", "format": "int", "align": "right" },
+    { "key": "haplotypes", "label": "haplotypes", "format": "int", "align": "right" },
+    { "key": "split", "label": "split walks", "format": "int", "align": "right" },
+    { "key": "completeBars", "label": "complete bars", "format": "int", "align": "right" }
+  ],
+  "rows": [
+    { "values": { "locus": "ABCA7 VNTR chr19", "spanBp": 689, "wallS": 56.0, "gfaMb": 14.3, "netMb": 4.59, "nodes": 13153, "walks": 474, "haplotypes": 459, "split": 12, "completeBars": 444 } },
+    { "values": { "locus": "C4 chr6", "spanBp": 83361, "wallS": 5.4, "gfaMb": 10.8, "netMb": 4.19, "nodes": 4978, "walks": 464, "haplotypes": 463, "split": 0, "completeBars": 462 } },
+    { "values": { "locus": "CFHR3/CFHR1 chr1", "spanBp": 84683, "wallS": 8.6, "gfaMb": 11.1, "netMb": 4.32, "nodes": 6053, "walks": 464, "haplotypes": 463, "split": 0, "completeBars": 463 } },
+    { "values": { "locus": "amylase chr1", "spanBp": 121556, "wallS": 14.0, "gfaMb": 18.7, "netMb": 5.96, "nodes": 6469, "walks": 934, "haplotypes": 463, "split": 296, "completeBars": 168 } },
+    { "values": { "locus": "1q21.1 inversion chr1", "spanBp": 153166, "wallS": 18.5, "gfaMb": 38.0, "netMb": 7.20, "nodes": 17933, "walks": 825, "haplotypes": 453, "split": 342, "completeBars": 114 } },
+    { "values": { "locus": "CFH demo window chr1", "spanBp": 260000, "wallS": 13.8, "gfaMb": 36.8, "netMb": 5.37, "nodes": 16372, "walks": 466, "haplotypes": 463, "split": 2, "completeBars": 452 } }
+  ]
+}
