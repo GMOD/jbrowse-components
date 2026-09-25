@@ -218,36 +218,6 @@ public float2 arcRadiiPx(float halfWidthPx, float destYPx, float canvasWidthPx) 
   return float2(halfWidthPx, ARC_APEX_FRACTION * destYPx);
 }
 
-// How far around a far circle each leg's HULL has to sweep, in radians from the
-// endpoint. The pass is scissored to the arc band, so a leg is only ever seen
-// between its endpoint and the band's far edge; sweeping the whole quarter
-// circle regardless spends nearly every segment off-screen, and THAT is what
-// drew far arcs as triangles rather than as lines.
-//
-// The failure is worth spelling out, because it looks like a tessellation
-// problem and is not. At r = 3e6 px the first of the 32 chords per leg already
-// reaches y = 49,000 px, so the entire band lies inside chord one — and a chord
-// leaves its circle at tan(halfAngle) px of x per px of y, here tan(PI/128) ≈
-// 0.0245, a rate set by the ANGLE PER SEGMENT and so identical at every large
-// radius. The fragment measures the true, near-vertical curve, so the ink is
-// whatever that receding chord still covers: full width at the foot, tapering to
-// nothing at y ≈ 2·(halfWidth + aaHalfPx)/0.0245 — about 100px for a hairline
-// in a 200px band, which is why the thicker (better-supported) arcs were also the
-// longer triangles. Doubling ARC_CURVE_SEGMENTS only halves the taper rate; it
-// converges to a truncated leg, not to a correct one.
-//
-// Sweeping to the band edge instead puts all 64 segments where they can be seen.
-// The chord sagitta is then r·(1 - cos(sweep/64)) ≈ yReach²/(8192·r) at large r —
-// under a thousandth of a px — so the hull contains the curve everywhere the
-// scissor keeps.
-//
-// Clamped, so a circle small enough to apex inside the band (a narrow block, where
-// `arcIsFar`'s canvasW-relative threshold can fire on a modest radius) still gets
-// its full half-sweep and draws as the rounded dome it is.
-float legSweepAngle(float radiusPx, float yReachPx) {
-  return asin(clamp(yReachPx / max(radiusPx, 1e-6), 0.0, 1.0));
-}
-
 // The analytic curve, in band-local CSS px. `radii` and `kind` say which
 // distance function measures it; `c` is the centre an ellipse is measured from,
 // `ends` the two endpoints' screen x a far circle's legs rise from, `legSweep`
@@ -303,7 +273,8 @@ Curve arcCurve(Instance inst, ArcBandUniforms u, float strokeHalfPx) {
 // each arc is drawn at the width its read support earns (see Instance).
 struct ArcVertex { float2 screen; float2 local; float legSide; };
 
-ArcVertex evalArcVertex(float t, float side, float halfWidthPx, Curve cv) {
+ArcVertex evalArcVertex(uint seg, float side, float halfWidthPx, Curve cv) {
+  float t = float(seg) / float(ARC_CURVE_SEGMENTS);
   float hw = halfWidthPx + aaHalfPx(u.devicePixelRatio);
   float2 p;
   float2 tang;
@@ -320,15 +291,13 @@ ArcVertex evalArcVertex(float t, float side, float halfWidthPx, Curve cv) {
     // (a mate a few thousand screen widths away): both terms are huge and their
     // difference is the handful of pixels actually on screen. `1 - cos b` is
     // the same trap one level down, hence the half-angle identity.
-    bool rightLeg = t <= 0.5;
-    // Each leg gets half the strip, so its own parameter runs over [0, 0.5] and
-    // 2·legSweep is what turns that into the angle it should cover.
-    float b = (rightLeg ? t : 1.0 - t) * 2.0 * cv.legSweep;
+    float2 leg = wideCircleLeg(seg, ARC_CURVE_SEGMENTS, cv.legSweep);
+    float b = leg.y;
     float sh = sin(b * 0.5);
     p = float2(-2.0 * cv.radii.x * sh * sh, sin(b) * cv.radii.x * cv.yDir);
     tang = float2(-sin(b), cos(b) * cv.yDir);
-    origin = float2(rightLeg ? cv.ends.y : cv.ends.x, 0.0);
-    legDir = rightLeg ? 1.0 : -1.0;
+    origin = float2(leg.x > 0.0 ? cv.ends.y : cv.ends.x, 0.0);
+    legDir = leg.x;
     // Constant within a leg, opposite between them — see VsOut.legSide.
     legSide = legDir;
   } else {
@@ -353,7 +322,6 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
   uint seg = vid / 2u;
   float side = (vid % 2u == 0u) ? -1.0 : 1.0;
-  float t = float(seg) / float(ARC_CURVE_SEGMENTS);
 
   // Resolved before the curve, because the curve's leg sweep is padded by it.
   // `arcLineWidth` never returns less than the configured width, so a support-1
@@ -361,7 +329,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.halfWidthPx = arcStrokeHalfPx(inst.lineWidthPx, u);
 
   Curve cv = arcCurve(inst, u, o.halfWidthPx);
-  ArcVertex av = evalArcVertex(t, side, o.halfWidthPx, cv);
+  ArcVertex av = evalArcVertex(seg, side, o.halfWidthPx, cv);
   o.local = av.local;
   o.legSide = av.legSide;
   o.radii = cv.radii;

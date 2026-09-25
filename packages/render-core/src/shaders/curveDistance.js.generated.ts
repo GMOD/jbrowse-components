@@ -12,3 +12,11 @@ export function distToWideCirclePx(x: number, y: number, r: number): number {
   let rk = ((2.0 * x) + (((x * x) + (y * y)) / r))
   return Math.abs((rk / (Math.sqrt(_max((1.0 + (rk / r)), 0.0)) + 1.0)))
 }
+
+export function wideCircleLeg(seg: number, segments: number, legSweep: number): [number, number] {
+  let half = Math.trunc(segments / 2)
+  if ((seg <= half)) {
+    return [1.0, (((seg) / (half)) * legSweep)]
+  }
+  return [-1.0, (((((segments - seg) >>> 0)) / (((half - 1) >>> 0))) * legSweep)]
+}

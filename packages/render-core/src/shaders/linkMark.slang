@@ -176,13 +176,6 @@ public float linkStrokeWidthPx(float raw, int sizeMode, float constantPx, float 
   return max(w, 1.5 / dpr);
 }
 
-// How far around a far circle each leg's hull sweeps, in radians from the
-// foot: to the band's edge and no further, so all 64 segments land where the
-// scissor keeps them. arc.slang's `legSweepAngle` and its reasoning.
-float legSweepAngle(float radiusPx, float yReachPx) {
-  return asin(clamp(yReachPx / max(radiusPx, 1e-6), 0.0, 1.0));
-}
-
 [shader("vertex")]
 VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
   uint seg = vid / 2u;
@@ -227,13 +220,13 @@ VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
       // Two legs, each built from ITS OWN foot outward with the half-angle
       // identity, so a radius past 1e6 px cancels nothing; the frame's y is
       // negative upward, canvas px.
-      bool rightLeg = t <= 0.5;
-      float b = (rightLeg ? t : 1.0 - t) * 2.0 * legSweep;
+      float2 leg = wideCircleLeg(seg, LINK_CURVE_SEGMENTS, legSweep);
+      float b = leg.y;
       float sh = sin(b * 0.5);
       p = float2(-2.0 * radii.x * sh * sh, -sin(b) * radii.x);
       tang = float2(-sin(b), -cos(b));
-      origin = float2(rightLeg ? ends.y : ends.x, baseY);
-      legDir = rightLeg ? 1.0 : -1.0;
+      origin = float2(leg.x > 0.0 ? ends.y : ends.x, baseY);
+      legDir = leg.x;
       legSide = legDir;
     } else {
       kind = KIND_ELLIPSE;

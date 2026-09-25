@@ -2,7 +2,7 @@
 // axis-aligned ellipse, and a circle whose radius dwarfs the band it is
 // clipped to. Shared by the alignments arc band and the link mark, which
 // draw the same half-ellipse and degenerate it to the same circle.
-//! js-export: distToWideCirclePx
+//! js-export: distToWideCirclePx, wideCircleLeg
 
 module curveDistance;
 
@@ -109,4 +109,28 @@ public float distToWideCirclePx(float x, float y, float r) {
 
 public float distToWideCircle(float2 legLocal, float r) {
   return distToWideCirclePx(legLocal.x, legLocal.y, r);
+}
+
+// How far around a far circle each leg's hull sweeps, in radians from its foot:
+// to the band's edge and no further. Sweeping the whole quarter spends nearly
+// every segment off-screen, and at r = 3e6 px the whole band then falls inside
+// the first chord, which recedes from the near-vertical curve at a rate set by
+// the angle per segment — so the leg draws as a tapering triangle however many
+// segments there are. Clamped, so a circle small enough to apex inside the band
+// still gets its full quarter and draws as a dome.
+public float legSweepAngle(float radiusPx, float yReachPx) {
+  return asin(clamp(yReachPx / max(radiusPx, 1e-6), 0.0, 1.0));
+}
+
+// Which leg vertex pair `seg` of a `segments`-long strip builds (x: +1 the right
+// leg, -1 the left), and its angle from that leg's foot (y). The strip has an odd
+// number of pairs, so the right leg gets one more than the left; each is spread
+// over its own count so both reach `legSweep`. The quad between the two tips is
+// the seam the fragment discards.
+public float2 wideCircleLeg(uint seg, uint segments, float legSweep) {
+  uint half = segments / 2u;
+  if (seg <= half) {
+    return float2(1.0, float(seg) / float(half) * legSweep);
+  }
+  return float2(-1.0, float(segments - seg) / float(half - 1u) * legSweep);
 }
