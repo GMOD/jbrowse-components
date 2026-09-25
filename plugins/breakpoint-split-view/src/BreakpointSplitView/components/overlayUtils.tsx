@@ -471,15 +471,17 @@ export function* drawnConnections({
 
 const KIND_ORDER = Object.keys(CONNECTION_LABELS) as ConnectionKind[]
 
-// What the key lists: one entry per label the overlay's alignment connectors
-// draw, in CONNECTION_LABELS order.
-export function connectionKeyEntries(model: BreakpointViewModel) {
-  const { assemblies, overlayMatches, overlayTracks, showIntraviewLinks } =
-    model
+// What the overlay's alignment connectors draw, one entry per label, in
+// CONNECTION_LABELS order.
+export function connectionKeyEntries(
+  model: BreakpointViewModel,
+  trackIds = model.overlayTracks.map(t => t.configuration.trackId),
+) {
+  const { assemblies, overlayMatches, showIntraviewLinks } = model
   const entries = new Map<string, { kind: ConnectionKind; isSplit: boolean }>()
-  for (const { configuration } of overlayTracks) {
-    const match = overlayMatches.get(configuration.trackId)
-    const tracks = model.getMatchedTracks(configuration.trackId)
+  for (const trackId of trackIds) {
+    const match = overlayMatches.get(trackId)
+    const tracks = model.getMatchedTracks(trackId)
     if (
       match?.kind !== 'alignment' ||
       tracks.some(t => t.displays[0]?.regionTooLarge)
@@ -491,7 +493,7 @@ export function connectionKeyEntries(model: BreakpointViewModel) {
       match,
       assemblies,
       tracks,
-      levels: model.overlayLinksReads(configuration.trackId),
+      levels: model.overlayLinksReads(trackId),
       showIntraviewLinks,
     })) {
       entries.set(connectionLabel(kind, isSplit), { kind, isSplit })

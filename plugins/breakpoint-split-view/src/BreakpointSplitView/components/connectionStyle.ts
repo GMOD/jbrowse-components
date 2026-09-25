@@ -52,19 +52,24 @@ export function isAbnormalConnection(kind: ConnectionKind) {
   )
 }
 
+function colorSlot(kind: ConnectionKind) {
+  return kind === 'readPair' || kind === 'pairLR' || kind === 'splitDeletion'
+    ? 'longInsert'
+    : kind
+}
+
 export function connectionColor(
   kind: ConnectionKind,
   alignmentFill: Record<'pairRL' | 'pairRR' | 'pairLL', string>,
 ) {
-  switch (kind) {
-    case 'readPair':
-    case 'pairLR':
-    case 'splitDeletion':
+  const slot = colorSlot(kind)
+  switch (slot) {
+    case 'longInsert':
       return colorLongInsert
     case 'pairRL':
     case 'pairRR':
     case 'pairLL':
-      return alignmentFill[kind]
+      return alignmentFill[slot]
     case 'splitInversion':
       return colorSplitReadInversion
     case 'interchrom':
@@ -72,10 +77,14 @@ export function connectionColor(
   }
 }
 
+// An LR pair reaches this view only without the proper-pair flag, so the
+// display's "Normal pair orientation" would misname it.
 export function connectionLabel(kind: ConnectionKind, isSplit: boolean) {
   return kind === 'interchrom' && isSplit
     ? SPLIT_JUNCTION_LABELS.interchrom
-    : CONNECTION_LABELS[kind]
+    : kind === 'pairLR'
+      ? 'LR - Not a proper pair'
+      : CONNECTION_LABELS[kind]
 }
 
 export function useConnectionStyle() {
@@ -85,4 +94,34 @@ export function useConnectionStyle() {
     color: alpha(connectionColor(kind, palette.alignmentFill), 0.8),
     label: connectionLabel(kind, isSplit),
   })
+}
+
+export interface KeyEntry {
+  kind: ConnectionKind
+  isSplit: boolean
+}
+
+// One row per colour: kinds that share a swatch share a row, their labels
+// joined.
+export function connectionKeyRows(entries: KeyEntry[]) {
+  const rows = new Map<string, { kind: ConnectionKind; labels: string[] }>()
+  for (const { kind, isSplit } of entries) {
+    const label = connectionLabel(kind, isSplit)
+    const row = rows.get(colorSlot(kind))
+    if (row) {
+      row.labels.push(label)
+    } else {
+      rows.set(colorSlot(kind), { kind, labels: [label] })
+    }
+  }
+  return [...rows.values()]
+}
+
+export function useConnectionKeyRows(entries: KeyEntry[]) {
+  const connectionStyle = useConnectionStyle()
+  return connectionKeyRows(entries).map(({ kind, labels }) => ({
+    key: kind,
+    color: connectionStyle(kind, false).color,
+    label: labels.join(' / '),
+  }))
 }

@@ -19,6 +19,7 @@ import {
 
 import { SvgConnectionKey } from '../components/ConnectionKey.tsx'
 import Overlay from '../components/Overlay.tsx'
+import { connectionKeyRows } from '../components/connectionStyle.ts'
 import { connectionKeyEntries } from '../components/overlayUtils.tsx'
 import { getTrackOffsets } from './util.ts'
 
@@ -102,7 +103,15 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   // anchors that view's overlay ribbons, and ends as the total content height,
   // so the canvas size, the rendered bodies and the ribbons share one source of
   // truth.
-  const keyRows = connectionKeyEntries(model).length
+  // skip tracks minimized in any view: they have no rendered body to anchor a
+  // ribbon to (getTrackOffsets omits them)
+  const overlayTrackIds = model.overlayTracks
+    .map(track => track.configuration.trackId)
+    .filter(id =>
+      rowTracks.every(r => r.tracks.some(t => t.configuration.trackId === id)),
+    )
+  const keyEntries = connectionKeyEntries(model, overlayTrackIds)
+  const keyRows = connectionKeyRows(keyEntries).length
   const keyBand = keyRows > 0 ? keyRows * LEGEND_ROW_HEIGHT + 4 : 0
   let y = keyBand
   const rows = views.map((view, idx) => {
@@ -133,7 +142,10 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     children: (
       <>
         {keyBand > 0 ? (
-          <SvgConnectionKey model={model} canvasWidth={w} />
+          <SvgConnectionKey
+            entries={keyEntries}
+            canvasWidth={w + exportMargin + 4}
+          />
         ) : null}
         {rows.map(({ view, top }, idx) => (
           <SVGStackedRow
@@ -166,26 +178,14 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
             width={width}
             height={totalHeightSvg}
           >
-            {model.overlayTracks
-              .filter(track =>
-                // skip tracks minimized in any view: they have no rendered body
-                // to anchor a ribbon to (getTrackOffsets omits them)
-                rows.every(
-                  r =>
-                    r.trackOffsets[track.configuration.trackId] !== undefined,
-                ),
-              )
-              .map(track => {
-                const id = track.configuration.trackId
-                return (
-                  <Overlay
-                    key={id}
-                    model={model}
-                    trackId={id}
-                    yOffsetsOverride={rows.map(r => r.trackOffsets[id]!)}
-                  />
-                )
-              })}
+            {overlayTrackIds.map(id => (
+              <Overlay
+                key={id}
+                model={model}
+                trackId={id}
+                yOffsetsOverride={rows.map(r => r.trackOffsets[id]!)}
+              />
+            ))}
           </SvgClipRect>
         </g>
       </>

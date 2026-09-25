@@ -6,7 +6,9 @@ import {
 
 import {
   connectionColor,
+  connectionKeyRows,
   connectionKind,
+  connectionLabel,
   isAbnormalConnection,
 } from './connectionStyle.ts'
 
@@ -52,4 +54,27 @@ test('only an aberrant orientation or a strand flip dips', () => {
   expect(isAbnormalConnection('interchrom')).toBe(false)
   expect(isAbnormalConnection('pairLL')).toBe(true)
   expect(isAbnormalConnection('splitInversion')).toBe(true)
+})
+
+test('labels say what reaches this view', () => {
+  expect(connectionLabel('pairLR', false)).toBe('LR - Not a proper pair')
+  expect(connectionLabel('interchrom', false)).toBe('Inter-chromosomal')
+  expect(connectionLabel('interchrom', true)).toBe(
+    'Split alignment (interchromosomal)',
+  )
+})
+
+test('the key has one row per colour', () => {
+  const rows = connectionKeyRows([
+    { kind: 'pairLR', isSplit: false },
+    { kind: 'splitDeletion', isSplit: true },
+    { kind: 'interchrom', isSplit: false },
+    { kind: 'interchrom', isSplit: true },
+    { kind: 'pairRR', isSplit: false },
+  ])
+  expect(rows.map(r => r.labels)).toEqual([
+    ['LR - Not a proper pair', 'Split alignment (same strand)'],
+    ['Inter-chromosomal', 'Split alignment (interchromosomal)'],
+    ['RR - Both mates reverse strand'],
+  ])
 })

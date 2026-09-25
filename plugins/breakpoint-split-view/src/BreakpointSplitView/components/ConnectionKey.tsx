@@ -2,10 +2,11 @@ import SvgColorLegend from '@jbrowse/core/ui/SvgColorLegend'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { useConnectionStyle } from './connectionStyle.ts'
+import { useConnectionKeyRows } from './connectionStyle.ts'
 import { connectionKeyEntries } from './overlayUtils.tsx'
 
 import type { BreakpointViewModel } from '../model.ts'
+import type { KeyEntry } from './connectionStyle.ts'
 
 const useStyles = makeStyles()({
   key: {
@@ -36,41 +37,33 @@ const ConnectionKey = observer(function ConnectionKey({
   model: BreakpointViewModel
 }) {
   const { classes } = useStyles()
-  const connectionStyle = useConnectionStyle()
-  const entries = connectionKeyEntries(model)
-  return entries.length > 0 ? (
+  const rows = useConnectionKeyRows(connectionKeyEntries(model))
+  return rows.length > 0 ? (
     <div className={classes.key} data-testid="connection-key">
-      {entries.map(({ kind, isSplit }) => {
-        const { color, label } = connectionStyle(kind, isSplit)
-        return (
-          <span key={label} className={classes.entry}>
-            <span className={classes.swatch} style={{ background: color }} />
-            {label}
-          </span>
-        )
-      })}
+      {rows.map(({ key, color, label }) => (
+        <span key={key} className={classes.entry}>
+          <span className={classes.swatch} style={{ background: color }} />
+          {label}
+        </span>
+      ))}
     </div>
   ) : null
 })
 
-export const SvgConnectionKey = observer(function SvgConnectionKey({
-  model,
+export function SvgConnectionKey({
+  entries,
   canvasWidth,
 }: {
-  model: BreakpointViewModel
+  entries: KeyEntry[]
   canvasWidth: number
 }) {
-  const connectionStyle = useConnectionStyle()
   return (
     <SvgColorLegend
       canvasWidth={canvasWidth}
       testid="connection-key"
-      entries={connectionKeyEntries(model).map(({ kind, isSplit }) => {
-        const { color, label } = connectionStyle(kind, isSplit)
-        return { key: label, label, color }
-      })}
+      entries={useConnectionKeyRows(entries)}
     />
   )
-})
+}
 
 export default ConnectionKey

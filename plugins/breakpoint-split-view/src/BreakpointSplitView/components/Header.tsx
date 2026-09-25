@@ -19,6 +19,7 @@ import type { BreakpointViewModel } from '../model.ts'
 const useStyles = makeStyles()({
   header: {
     display: 'flex',
+    flexWrap: 'wrap',
     alignItems: 'center',
     gap: 4,
   },
