@@ -60,6 +60,7 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
         : await fetchAndMaybeUnzip(
             openLocation(this.getConf('samLocation'), this.pluginManager),
             opts,
+            'Downloading alignments',
           )
 
       const headerLines: string[] = []
@@ -81,7 +82,7 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
         opts.statusCallback,
         // no signal: cachedSetup drops it deliberately, since this parse is
         // shared and one caller's cancel would reject the caller replacing it
-        { label: 'Parsing SAM' },
+        { label: 'Processing alignments' },
       )
 
       // @SQ lines resolve through the same parser a BAM/CRAM binary header does
@@ -98,7 +99,7 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
                   `${this.id}-${refName}-${i}`,
                 ),
             ),
-          'Parsing SAM',
+          'Processing alignments',
         ),
         // @SQ lines are the authority when present, since they carry the
         // reference order; a headerless SAM falls back to what the records name

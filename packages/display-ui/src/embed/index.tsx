@@ -1,6 +1,10 @@
 import { Fragment, Suspense } from 'react'
 
-import { useStalled, useWidthSetter } from '@jbrowse/core/util/hooks'
+import {
+  useSlowLoad,
+  useStalled,
+  useWidthSetter,
+} from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { useResizeDrag } from '@jbrowse/core/util/useResizeDrag'
 import { observer } from 'mobx-react'
@@ -136,11 +140,12 @@ export const TrackToggle = observer(function TrackToggle({
 })
 
 function ViewLoading({ message, progress, source }: ViewLoadingValue) {
+  const slow = useSlowLoad()
   const stalled = useStalled(`${message}|${progress}|${source}`)
   return (
     <>
-      {message}
-      {progress === undefined ? null : (
+      {slow ? message : 'Loading'}
+      {!slow || progress === undefined ? null : (
         <progress
           value={progress}
           max={1}

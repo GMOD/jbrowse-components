@@ -65,7 +65,7 @@ test('a stack shows the view status until the view is ready, then every track in
     progress: 0,
   })
   const { container } = render(<TrackStack view={view} />)
-  expect(screen.getByRole('status').textContent).toBe('Loading hg38')
+  expect(screen.getByRole('status').textContent).toBe('Loading')
 
   act(() => {
     view.setStatus({ type: 'ready' })
@@ -78,7 +78,7 @@ test('a stack shows the view status until the view is ready, then every track in
   expect(slots).toHaveLength(2)
 })
 
-test('a load shows its fraction, and names the file it waits on once it stalls', () => {
+test('a slow load shows its phase and fraction, and names the file it waits on once it stalls', () => {
   jest.useFakeTimers()
   try {
     const view = fakeView({
@@ -89,11 +89,17 @@ test('a load shows its fraction, and names the file it waits on once it stalls',
     })
     render(<TrackStack view={view} />)
     const status = screen.getByRole('status')
-    expect(status.querySelector('progress')?.value).toBe(0.4)
-    expect(status.textContent).not.toContain('still waiting')
+    expect(status.textContent).toBe('Loading')
+    expect(status.querySelector('progress')).toBeNull()
 
     act(() => {
-      jest.advanceTimersByTime(5000)
+      jest.advanceTimersByTime(2000)
+    })
+    expect(status.textContent).toBe('Downloading hg38.fa.gz.fai')
+    expect(status.querySelector('progress')?.value).toBe(0.4)
+
+    act(() => {
+      jest.advanceTimersByTime(3000)
     })
     expect(status.textContent).toContain(
       'still waiting on https://example.com/hg38.fa.gz.fai',

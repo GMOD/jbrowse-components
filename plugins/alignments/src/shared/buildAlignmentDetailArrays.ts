@@ -57,20 +57,16 @@ export async function buildAlignmentDetailArrays({
   showSoftClipping?: boolean
   statusCallback: StatusCallback | undefined
 }) {
-  return updateStatus(
-    'Building alignment arrays',
-    statusCallback,
-    async () => ({
-      gapArrays: buildGapArrays(gaps),
-      mismatchArrays: buildMismatchArrays(mismatches),
-      softclipBaseArrays: buildSoftclipBaseArrays(
-        showSoftClipping ? softclips : [],
-      ),
-      interbaseArrays: buildInterbaseArrays(insertions, softclips, hardclips),
-      modificationArrays: buildModificationArrays(modifications),
-      perBaseQualityArrays: buildPerBaseQualityArrays(perBaseQualities),
-      perBaseLetterArrays: buildPerBaseLetterArrays(perBaseLetters),
-      segmentArrays: buildSegmentArrays(features, gaps),
-    }),
-  )
+  return updateStatus('Processing alignments', statusCallback, async () => ({
+    gapArrays: buildGapArrays(gaps),
+    mismatchArrays: buildMismatchArrays(mismatches),
+    softclipBaseArrays: buildSoftclipBaseArrays(
+      showSoftClipping ? softclips : [],
+    ),
+    interbaseArrays: buildInterbaseArrays(insertions, softclips, hardclips),
+    modificationArrays: buildModificationArrays(modifications),
+    perBaseQualityArrays: buildPerBaseQualityArrays(perBaseQualities),
+    perBaseLetterArrays: buildPerBaseLetterArrays(perBaseLetters),
+    segmentArrays: buildSegmentArrays(features, gaps),
+  }))
 }

@@ -3,17 +3,42 @@ import { act, render } from '@testing-library/react'
 import ViewLoadingScreen from './ViewLoadingScreen.tsx'
 
 // The point of this screen is to answer "is the app hung, or is it downloading
-// something?" — so what's pinned here is that the phase label reaches the DOM,
-// and that a determinate status draws an actual bar rather than silently
-// degrading to the same animated ellipses an indeterminate one shows.
+// something?" — so what's pinned here is that a slow load's phase label reaches
+// the DOM, and that a determinate status draws an actual bar rather than
+// silently degrading to the same animated ellipses an indeterminate one shows.
 
-test('shows the phase label, with the percent when determinate', () => {
+beforeEach(() => {
+  jest.useFakeTimers()
+})
+afterEach(() => {
+  jest.useRealTimers()
+})
+
+function waitOutFastLoad() {
+  act(() => {
+    jest.advanceTimersByTime(2000)
+  })
+}
+
+test('a fast load says only Loading, with no bar', () => {
   const { container } = render(
     <ViewLoadingScreen
       message="Downloading chromosome aliases"
       progress={0.42}
     />,
   )
+  expect(container.textContent).not.toContain('chromosome aliases')
+  expect(container.querySelector('[role="progressbar"]')).toBeNull()
+})
+
+test('a slow load shows the phase label, with the percent when determinate', () => {
+  const { container } = render(
+    <ViewLoadingScreen
+      message="Downloading chromosome aliases"
+      progress={0.42}
+    />,
+  )
+  waitOutFastLoad()
   expect(container.textContent).toContain('Downloading chromosome aliases 42%')
 
   const bar = container.querySelector('[role="progressbar"]')
@@ -27,6 +52,7 @@ test('an indeterminate phase keeps the label and drops the bar', () => {
   const { container } = render(
     <ViewLoadingScreen message="Downloading chromosome sizes" />,
   )
+  waitOutFastLoad()
   expect(container.textContent).toContain('Downloading chromosome sizes')
   expect(container.textContent).not.toContain('%')
   expect(container.querySelector('[role="progressbar"]')).toBeNull()
@@ -34,6 +60,7 @@ test('an indeterminate phase keeps the label and drops the bar', () => {
 
 test('falls back to a bare Loading when nothing has reported yet', () => {
   const { container } = render(<ViewLoadingScreen />)
+  waitOutFastLoad()
   expect(container.textContent).toContain('Loading')
 })
 
@@ -41,13 +68,6 @@ test('falls back to a bare Loading when nothing has reported yet', () => {
 // chromosome aliases" describes a hosted hub that has stopped answering exactly
 // as well as it describes a healthy load, and only the address separates them.
 describe('the stalled-load notice', () => {
-  beforeEach(() => {
-    jest.useFakeTimers()
-  })
-  afterEach(() => {
-    jest.useRealTimers()
-  })
-
   it('says nothing until the load has actually stopped reporting', () => {
     const { container } = render(
       <ViewLoadingScreen

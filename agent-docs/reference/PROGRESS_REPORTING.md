@@ -210,6 +210,9 @@ unconstrained full-width bar under an unaligned label — every other caller wra
 it in a centered flex container and sets `barClassName`. Its metrics deliberately
 match `DiagonalizeLoadingScreen`, the sibling render branch in both comparative
 views, so a view can't jump between two differently laid-out loading screens.
+It says only "Loading" for its first two seconds (`useSlowLoad`), as does the
+embed's `ViewStatus`: a fast assembly load otherwise flashes "Downloading
+chromosome sizes" for a frame.
 
 These adapters run on the **main thread** (`assemblyAdapters.ts` instantiates
 them directly, no RPC hop), so `statusCallback` is a plain function call. It is

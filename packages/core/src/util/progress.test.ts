@@ -1245,7 +1245,7 @@ describe('createStatusFanOut', () => {
   // What separates a phase a region is still working through from one it has
   // merely announced: whether this batch has ever measured it. Ranking on first
   // appearance alone would hand the label — and the bar under it — to the region
-  // still sizing its region, over the one already reporting bytes.
+  // still downloading its index, over the one already reporting bytes.
   it('does not let a phase with nothing to measure hold the label', () => {
     const seen: RpcStatus[] = []
     const slot = createStatusFanOut(s => {
@@ -1253,8 +1253,8 @@ describe('createStatusFanOut', () => {
     })
     const a = slot()
     const b = slot()
-    a('Checking region size')
-    b('Checking region size')
+    a('Downloading index')
+    b('Downloading index')
     a({ message: 'Downloading features', current: 100, total: 1000 })
     expect(statusMessageText(seen.at(-1))).toBe('Downloading features')
     // b is charged the mean rather than dropped, so one of two regions a tenth

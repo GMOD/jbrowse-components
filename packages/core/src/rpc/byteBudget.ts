@@ -102,7 +102,7 @@ export async function measureRegionBytes({
     return {}
   }
   const bytes = largestRegionBytes(
-    await updateStatus('Checking region size', statusCallback, () =>
+    await updateStatus('Downloading index', statusCallback, () =>
       Promise.all(
         regions.map(region =>
           dataAdapter.getRegionByteSize([region], {

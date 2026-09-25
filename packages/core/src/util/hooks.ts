@@ -94,6 +94,26 @@ export function useStalled(key: string) {
   return stalledKey === key
 }
 
+const SLOW_LOAD_MS = 2000
+
+/**
+ * Has the loading screen been up for two seconds? Until then it says only
+ * "Loading": a fast load flashes its phase labels too briefly to read, and a
+ * label glimpsed for a frame reads as a claim about what the app is doing.
+ */
+export function useSlowLoad() {
+  const [slow, setSlow] = useState(false)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSlow(true)
+    }, SLOW_LOAD_MS)
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [])
+  return slow
+}
+
 export function useDebounce<T>(value: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value)
 

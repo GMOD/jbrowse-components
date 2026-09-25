@@ -161,7 +161,7 @@ label outright — and the loading overlay renders a missing label as its
 
 - **The byte gate ran unlabelled.** It is the first thing a canvas feature fetch
   does, and no phase was open for it, so every fetch showed "Loading" until the
-  download phase opened. It says `Checking region size` now.
+  download phase opened. It says `Downloading index` now.
 - **A superseded fetch cleared the label.** `runFetch` called `resetStatus` when
   another fetch replaced one in flight, which is the single case where the
   display does not stop loading — so a pan, or a linked view resyncing, flashed

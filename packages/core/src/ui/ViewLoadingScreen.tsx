@@ -1,6 +1,6 @@
 import { Typography } from '@mui/material'
 
-import { useStalled } from '../util/hooks.ts'
+import { useSlowLoad, useStalled } from '../util/hooks.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
 import LoadingProgress from './LoadingProgress.tsx'
 
@@ -29,8 +29,9 @@ const useStyles = makeStyles()(theme => ({
 /**
  * The "view exists but isn't ready yet" screen a view renders instead of its
  * content — LGV, dotplot and linear synteny all show it while the assembly they
- * name is still loading, labelled with which of the assembly's files is
- * downloading and a determinate bar when that download reports one.
+ * name is still loading. A load past two seconds is labelled with which of the
+ * assembly's files is downloading, and a determinate bar when that download
+ * reports one; a faster one says only "Loading".
  *
  * A load that then stops reporting names the file it is waiting on. The phase
  * label alone does not: "Downloading chromosome aliases" is a fair description
@@ -55,13 +56,14 @@ export default function ViewLoadingScreen({
   source?: string
 }) {
   const { classes } = useStyles()
+  const slow = useSlowLoad()
   const stalled = useStalled(`${message}|${progress}|${source}`)
   return (
     <div className={classes.root}>
       <LoadingProgress
         variant="h6"
-        message={message}
-        fraction={progress}
+        message={slow ? message : undefined}
+        fraction={slow ? progress : undefined}
         barClassName={classes.bar}
       />
       {stalled && source ? (
