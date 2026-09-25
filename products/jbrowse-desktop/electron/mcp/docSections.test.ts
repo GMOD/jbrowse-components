@@ -128,7 +128,7 @@ Synteny body.
 
   it('names the sections when the requested one is missing', () => {
     const { error } = readDocSection(doc, 'gamma')
-    expect(error).toContain('No section or member "gamma"')
+    expect(error).toContain('No section "gamma"')
     expect(error).toContain('- Beta')
   })
 
@@ -152,29 +152,29 @@ Summary.
 `
 
     it('answers with that bullet under the heading it sits in', () => {
-      const { text } = readDocSection(page, 'rowHeight')
+      const { text } = readDocSection(page, 'rowHeight', { members: true })
       expect(text).toBe(
         '## Getters\n- `rowHeight: number`: What one row takes.\n',
       )
     })
 
     it('matches a name the way it matches a heading — the separators collapse', () => {
-      expect(readDocSection(page, 'indexIndexType').text).toContain(
-        'stringEnum (BAI, CSI)',
-      )
+      expect(
+        readDocSection(page, 'indexIndexType', { members: true }).text,
+      ).toContain('stringEnum (BAI, CSI)')
     })
 
     // The whole point is not to answer with the section, so a name that is a
     // prefix of another must not silently widen to it — and on the real
     // alignments page `setColor` is a prefix of the legacy `setColorBy`.
     it('does not take setColorTag for setColor', () => {
-      const { text } = readDocSection(page, 'setColor')
+      const { text } = readDocSection(page, 'setColor', { members: true })
       expect(text).toContain('Replace the color object whole.')
       expect(text).not.toContain('setColorTag')
     })
 
     it('answers a partial name with the near names, not their bullets', () => {
-      const { error } = readDocSection(page, 'color')
+      const { error } = readDocSection(page, 'color', { members: true })
       expect(error).toContain('setColor, setColorTag')
       expect(error).not.toContain('Replace the color object whole.')
     })
@@ -182,7 +182,20 @@ Summary.
     // A heading wins: `Getters` is a section and not a member, and a document
     // where a member shares a heading's name means the section.
     it('prefers a heading over a member of the same name', () => {
-      expect(readDocSection(page, 'Getters').text).toContain('rowHeight')
+      expect(readDocSection(page, 'Getters', { members: true }).text).toContain(
+        'rowHeight',
+      )
+    })
+
+    // The hand-written topics do not opt in. Their bullets are prose, and the
+    // fallback answered `section:"loc"` out of a fast-path recipe's bullet
+    // instead of listing the sections the agent had guessed wrong at — which is
+    // the whole value of a miss on a page with real headings.
+    it('is off unless the caller asks, so a prose topic still lists its sections', () => {
+      const { error, text } = readDocSection(page, 'rowHeight')
+      expect(text).toBeUndefined()
+      expect(error).toContain('No section "rowHeight"')
+      expect(error).toContain('- Getters')
     })
   })
 
@@ -223,7 +236,7 @@ Summary.
         'Beta body.',
       )
       expect(readDocSection(doc, 'Beta', { omit: ['Beta'] }).error).toContain(
-        'No section or member "Beta"',
+        'No section "Beta"',
       )
     })
 
@@ -316,7 +329,7 @@ describe('the biggest generated type page as the docs tool serves it', () => {
   // The bullet shape the member route matches is the generator's, so pin it
   // against the generated page rather than only against a fixture of it.
   it('answers one member by name without the section holding it', () => {
-    const { text } = readDocSection(page, 'setColor')
+    const { text } = readDocSection(page, 'setColor', { members: true })
     expect(text).toContain('## Actions')
     expect(text).toContain('`setColor(')
     expect(text!.length).toBeLessThan(500)

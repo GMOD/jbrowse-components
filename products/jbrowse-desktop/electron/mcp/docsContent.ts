@@ -64,7 +64,9 @@ export function docsToolResult(
   }
   const typed = topic ? lookupTypeDoc(typePages, topic) : undefined
   if (typed) {
-    return 'text' in typed ? readDocSection(typed.text, section) : typed
+    return 'text' in typed
+      ? readDocSection(typed.text, section, { members: true })
+      : typed
   }
   const listing = [
     ...Object.entries(DOC_TOPICS).map(([name, t]) => `- ${name}: ${t.summary}`),

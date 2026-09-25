@@ -155,7 +155,20 @@ function bodyStart(sections: DocSection[]) {
 export function readDocSection(
   markdown: string,
   section: string,
-  { splitAt, omit }: { splitAt?: string; omit?: readonly string[] } = {},
+  {
+    splitAt,
+    omit,
+    // A generated type page is four flat lists of members and nothing else, so
+    // a `section` naming none of the four headings is an agent asking for a
+    // member. A hand-written topic has real headings and its bullets are prose,
+    // where the same fallback answers "loc" out of a fast-path recipe instead
+    // of listing the sections the agent had guessed wrong at.
+    members: memberFallback = false,
+  }: {
+    splitAt?: string
+    omit?: readonly string[]
+    members?: boolean
+  } = {},
 ): BridgeToolResult {
   const served = omit?.length ? withoutSections(markdown, omit) : markdown
   if (section === 'all') {
@@ -189,7 +202,7 @@ export function readDocSection(
   if (index !== -1) {
     return { text: sectionWithChildren(sections, index) }
   }
-  const named = findMembers(sections, section)
+  const named = memberFallback ? findMembers(sections, section) : []
   if (named.length > 0) {
     return {
       text: `${named.map(m => `## ${m.heading}\n${m.line.trim()}`).join('\n\n')}\n`,
@@ -199,15 +212,17 @@ export function readDocSection(
   // one-word ask matches dozens, so this is the index into the section rather
   // than a second answer.
   const loose = normalized(section)
-  const near = [
-    ...new Set(
-      members(sections)
-        .filter(m => normalized(m.name).includes(loose))
-        .map(m => m.name),
-    ),
-  ]
+  const near = memberFallback
+    ? [
+        ...new Set(
+          members(sections)
+            .filter(m => normalized(m.name).includes(loose))
+            .map(m => m.name),
+        ),
+      ]
+    : []
   return {
-    error: `No section or member "${section}". Sections:\n${tableOfContents(
+    error: `No ${memberFallback ? 'section or member' : 'section'} "${section}". Sections:\n${tableOfContents(
       sections,
       bodyStart(sections),
     )}${
