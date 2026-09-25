@@ -333,7 +333,8 @@ A spline between chromosomes takes the inter-chromosomal color. Within one
 chromosome, an inverted split alignment is magenta and a pair with an aberrant
 orientation takes its pair color (green LL, dark blue RR, teal RL); every other
 spline is long-insert red, since each one the view draws is a pair the aligner
-did not call proper or a split read.
+did not call proper or a split read. The right end of the header lists the
+colors the view is drawing.
 
 <Figure caption="Breakpoint split view for an interchromosomal translocation, each panel centered on one breakpoint locus. Splines connect supporting reads that span the junction, and the green line with feet is the variant call drawn across both panels to show directionality." src="/img/breakpoint_split_view.png" />
 

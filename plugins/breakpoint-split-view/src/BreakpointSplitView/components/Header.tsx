@@ -12,6 +12,8 @@ import TuneIcon from '@mui/icons-material/Tune'
 import { ToggleButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import ConnectionKey from './ConnectionKey.tsx'
+
 import type { BreakpointViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
@@ -73,6 +75,7 @@ const Header = observer(function Header({
       {prefs.showSearchBoxes ? (
         <HeaderSearchBoxRow views={views} sideBySide={prefs.sideBySide} />
       ) : null}
+      <ConnectionKey model={model} />
     </div>
   )
 })

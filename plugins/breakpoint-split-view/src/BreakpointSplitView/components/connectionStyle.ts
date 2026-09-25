@@ -72,14 +72,17 @@ export function connectionColor(
   }
 }
 
+export function connectionLabel(kind: ConnectionKind, isSplit: boolean) {
+  return kind === 'interchrom' && isSplit
+    ? SPLIT_JUNCTION_LABELS.interchrom
+    : CONNECTION_LABELS[kind]
+}
+
 export function useConnectionStyle() {
   const palette = usePalette()
   return (kind: ConnectionKind, isSplit: boolean) => ({
     abnormal: isAbnormalConnection(kind),
     color: alpha(connectionColor(kind, palette.alignmentFill), 0.8),
-    label:
-      kind === 'interchrom' && isSplit
-        ? SPLIT_JUNCTION_LABELS.interchrom
-        : CONNECTION_LABELS[kind],
+    label: connectionLabel(kind, isSplit),
   })
 }

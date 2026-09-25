@@ -428,6 +428,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
+       * Per view level, whether the track's own pileup draws a junction's
+       * connector, so the overlay leaves it out. Reads no scroll or zoom.
+       */
+      overlayLinksReads(trackId: string) {
+        return this.getMatchedTracks(trackId).map(t => ({
+          linksReads: linksOwnReads(t.displays[0]!),
+        }))
+      },
+
+      /**
+       * #method
        * Per-render precompute for an overlay track. Resolves an OverlayLevel of
        * geometry per view level, then returns getX/getY closures for converting
        * feature layout records to SVG coordinates.

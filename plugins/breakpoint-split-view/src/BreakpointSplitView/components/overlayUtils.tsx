@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
 
+import { pairDirection } from '@jbrowse/alignments-core'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import {
   assembleLocString,
@@ -12,6 +13,7 @@ import { breakendTickPx } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
 import BreakpointTooltip from './BreakpointTooltip.tsx'
+import { connectionKind } from './connectionStyle.ts'
 import { computeOverlayRect, isOffscreenLayout } from './overlayGeometry.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
@@ -22,6 +24,7 @@ import type {
   OverlayMatch,
 } from '../types.ts'
 import type { OverlayTrack } from '../util.ts'
+import type { ConnectionKind } from '@jbrowse/alignments-core'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
@@ -101,7 +104,7 @@ export function isDrawnByPileup({
   c2,
 }: {
   level: number
-  levels: OverlayLevel[]
+  levels: Pick<OverlayLevel, 'linksReads'>[]
   c1: LayoutRecord
   c2: LayoutRecord
 }) {
@@ -422,6 +425,46 @@ export function* resolvedPairs({
           ...refs,
         }
       }
+    }
+  }
+}
+
+// The alignment connectors the overlay draws, each with its kind: the pileup
+// links an intra-view junction itself, and showIntraviewLinks off drops the rest
+// of them.
+export function* drawnConnections({
+  match,
+  assemblies,
+  tracks,
+  levels,
+  showIntraviewLinks,
+}: {
+  match: Pick<OverlayMatch, 'layoutMatches' | 'hasPairedReads'>
+  assemblies: RowAssemblies
+  tracks: MinimizableTrack[]
+  levels: Pick<OverlayLevel, 'linksReads'>[]
+  showIntraviewLinks: boolean
+}): Generator<ResolvedPair & { kind: ConnectionKind }> {
+  for (const pair of resolvedPairs({ match, assemblies, tracks })) {
+    const { f1, f2, level1, level2, c1, c2, f1ref, f2ref } = pair
+    if (
+      level1 === level2 &&
+      (!showIntraviewLinks ||
+        isDrawnByPileup({ level: level1, levels, c1, c2 }))
+    ) {
+      continue
+    }
+    yield {
+      ...pair,
+      kind: connectionKind({
+        isSplit: !match.hasPairedReads,
+        interchrom: f1ref !== f2ref,
+        pairDirection: pairDirection(
+          f1.get('pair_orientation') as string | undefined,
+        ),
+        s1: f1.get('strand')!,
+        s2: f2.get('strand')!,
+      }),
     }
   }
 }

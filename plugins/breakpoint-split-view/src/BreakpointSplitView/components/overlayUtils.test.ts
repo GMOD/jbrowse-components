@@ -2,6 +2,7 @@ import { makeOffscreenLayout } from '../util.ts'
 import {
   buildBreakpointPath,
   chainHighlightRects,
+  drawnConnections,
   isDrawnByPileup,
   resolvedPairs,
 } from './overlayUtils.tsx'
@@ -211,6 +212,56 @@ describe('chainHighlightRects', () => {
       ],
     })
     expect(rects.map(r => r.key)).toEqual(['0-a'])
+  })
+})
+
+describe('drawnConnections', () => {
+  const feat = (refName: string, strand: number) =>
+    ({
+      id: () => refName,
+      get: (k: string) =>
+        k === 'refName' ? refName : k === 'strand' ? strand : undefined,
+    }) as unknown as Feature
+  const entry = (refName: string, strand: number, level: number) => ({
+    feature: feat(refName, strand),
+    layout: [0, 0, 0, 0] as LayoutRecord,
+    level,
+    clipLengthAtStartOfRead: 0,
+  })
+  const assemblies = [
+    { getCanonicalRefName: (r: string) => r } as unknown as Assembly,
+    { getCanonicalRefName: (r: string) => r } as unknown as Assembly,
+  ]
+  const tracks = [{ minimized: false }, { minimized: false }]
+  const levels = [{ linksReads: true }, { linksReads: false }]
+  const kinds = (layoutMatches: LayoutMatch[][], showIntraviewLinks = true) =>
+    [
+      ...drawnConnections({
+        match: { layoutMatches, hasPairedReads: false },
+        assemblies,
+        tracks,
+        levels,
+        showIntraviewLinks,
+      }),
+    ].map(c => c.kind)
+
+  test('a split junction takes its kind, and one between chromosomes is interchromosomal', () => {
+    expect(
+      kinds([
+        [entry('chr1', 1, 0), entry('chr1', -1, 1)],
+        [entry('chr1', 1, 0), entry('chr2', 1, 1)],
+      ]),
+    ).toEqual(['splitInversion', 'interchrom'])
+  })
+
+  test('drops what the pileup links itself, and intra-view links when they are off', () => {
+    expect(kinds([[entry('chr1', 1, 0), entry('chr1', 1, 0)]])).toEqual([])
+    expect(kinds([[entry('chr1', 1, 1), entry('chr1', 1, 1)]])).toEqual([
+      'splitDeletion',
+    ])
+    expect(kinds([[entry('chr1', 1, 1), entry('chr1', 1, 1)]], false)).toEqual(
+      [],
+    )
   })
 })
 

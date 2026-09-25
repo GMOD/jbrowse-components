@@ -1,10 +1,9 @@
-import { pairDirection } from '@jbrowse/alignments-core'
 import { connectionEndpointBps } from '@jbrowse/cigar-utils'
 import { bezierConnectorPath } from '@jbrowse/core/util'
 import { HIDDEN_SEGMENT_DASH, hiddenSegmentsNote } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
-import { connectionKind, useConnectionStyle } from './connectionStyle.ts'
+import { useConnectionStyle } from './connectionStyle.ts'
 import { computeOverlayX } from './overlayGeometry.ts'
 import {
   LEFT,
@@ -13,9 +12,8 @@ import {
   alignmentWidgetOpener,
   buildPairTooltip,
   chainHighlightRects,
-  isDrawnByPileup,
+  drawnConnections,
   isReversed,
-  resolvedPairs,
 } from './overlayUtils.tsx'
 
 import type { OverlayProps, PathSpec } from './overlayUtils.tsx'
@@ -44,7 +42,13 @@ const AlignmentConnections = observer(function AlignmentConnections(
         } = ctx
         const { layoutMatches, hasPairedReads: hasPaired } = match
         return [
-          ...resolvedPairs({ match, assemblies, tracks }),
+          ...drawnConnections({
+            match,
+            assemblies,
+            tracks,
+            levels,
+            showIntraviewLinks,
+          }),
         ].flatMap<PathSpec>(
           ({
             f1,
@@ -57,33 +61,15 @@ const AlignmentConnections = observer(function AlignmentConnections(
             f1ref,
             f2ref,
             hiddenSegmentsBetween,
+            kind,
           }) => {
-            if (level1 === level2) {
-              if (
-                !showIntraviewLinks ||
-                isDrawnByPileup({ level: level1, levels, c1, c2 })
-              ) {
-                return []
-              }
-            }
             const s1 = f1.get('strand')!
             const s2 = f2.get('strand')!
             const {
               abnormal: isAbnormal,
               color,
               label: colorReason,
-            } = connectionStyle(
-              connectionKind({
-                isSplit: !hasPaired,
-                interchrom: f1ref !== f2ref,
-                pairDirection: pairDirection(
-                  f1.get('pair_orientation') as string | undefined,
-                ),
-                s1,
-                s2,
-              }),
-              !hasPaired,
-            )
+            } = connectionStyle(kind, !hasPaired)
             // First endpoint: this segment's read-trailing (3') edge. Second:
             // the mate's 3' edge for a pair, or the next segment's read-leading
             // (5') edge for a split junction (shared rule — see
