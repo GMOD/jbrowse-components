@@ -1723,18 +1723,6 @@ export function stateModelFactory(
       .actions(self => ({
         /**
          * #action
-         * Open the dialog, prefilled from a single-mark config where the display
-         * already carries one, with the field scan running behind it.
-         */
-        openPlotFieldDialog() {
-          void self.ensurePlotFields().catch(() => {})
-          getDialogHost(self).queueDialog(handleClose => [
-            PlotFieldDialog,
-            { model: self, handleClose },
-          ])
-        },
-        /**
-         * #action
          * Open the plot as controls: every mark, the channels its type reads,
          * and what the rules say under each. The field scan runs behind it, as
          * it does for the field dialog.
@@ -1743,6 +1731,23 @@ export function stateModelFactory(
           void self.ensurePlotFields().catch(() => {})
           getDialogHost(self).queueDialog(handleClose => [
             MarkPlotDialog,
+            { model: self, handleClose },
+          ])
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         * Open the dialog, prefilled from a single-mark config where the display
+         * already carries one, with the field scan running behind it.
+         */
+        // Its own block, after openMarkPlotDialog: it hands `self` over as
+        // PlotFieldDialog's model, and that interface names the editor this
+        // form sends a config it cannot read to.
+        openPlotFieldDialog() {
+          void self.ensurePlotFields().catch(() => {})
+          getDialogHost(self).queueDialog(handleClose => [
+            PlotFieldDialog,
             { model: self, handleClose },
           ])
         },
