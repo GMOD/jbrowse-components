@@ -24,7 +24,7 @@ import type { Region } from '@jbrowse/core/util/types/data'
 // crosses untouched, which is why nothing here reads through `getConf`.
 export function encodingOf(mark: MarkConfig): MarkEncoding {
   const { x, x2, y, row, shape, color, text, size } = mark.encoding
-  const scaled = colorEncodingOf(color, 'categorical')
+  const scaled = colorEncodingOf(color)
   const channels = MARK_SPECS[mark.mark].channels as readonly string[]
   const readsText = channels.includes('text')
   const readsSize = channels.includes('size') && size.field !== ''

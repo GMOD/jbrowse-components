@@ -810,7 +810,7 @@ export function stateModelFactory(
        * display's colour object goes through
        */
       get geneColorEncoding() {
-        return colorEncodingOf(self.geneColorSettings.color, 'categorical')
+        return colorEncodingOf(self.geneColorSettings.color)
       },
     }))
     .views(self => ({

@@ -1,5 +1,6 @@
 import { AUTO_BIN } from './autoBin.ts'
 import {
+  CATEGORICAL_FIELD_PRESETS,
   aggregateFieldName,
   colorProblems,
   isJexl,
@@ -471,7 +472,10 @@ function ownProblems(
     )
   }
   const color = mark.encoding?.color ?? {}
-  for (const { rule, slot, message } of colorProblems(color, 'categorical')) {
+  for (const { rule, slot, message } of colorProblems(
+    color,
+    CATEGORICAL_FIELD_PRESETS,
+  )) {
     problems.push(found(rule, `encoding.color.${slot}`, message))
   }
   const ramp = rampColor(mark)

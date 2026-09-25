@@ -4,6 +4,12 @@
 // generator and the validator agree on a contract, and a generator change that
 // drops a field is a type error rather than a silent behaviour change.
 
+/** One field's defaults in a colour object's `fieldPresets`. */
+export interface FieldPresetEntry {
+  scale: string
+  [member: string]: unknown
+}
+
 export interface SlotEntry {
   name: string
   /** MST's own name for the slot type, e.g. `(JexlString | number)` */
@@ -17,10 +23,11 @@ export interface SlotEntry {
    */
   shorthand?: string
   /**
-   * A colour object: the scale a `field` paints through while `scale` is
-   * unset, `*` for any other field (the schema's `fieldScale` option).
+   * A colour object: each field's defaults, `*` for any other field — the
+   * scale while `scale` is unset and the members it reads while unwritten
+   * (the schema's `fieldPresets` option).
    */
-  fieldScale?: Readonly<Record<string, string>>
+  fieldPresets?: Readonly<Record<string, FieldPresetEntry>>
   /** A `stringArray` slot whose schema reads a bare string as a list of one. */
   liftsString?: true
   /** A `stringArray` slot whose schema carries a number written in it as a string. */

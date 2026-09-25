@@ -17,10 +17,7 @@ export function paintedField({
   field = '',
   domain = [],
 }: SyntenyColorSnapshot) {
-  const encoding = colorEncodingOf(
-    { value, field, scale, domain, range: [] },
-    'categorical',
-  )
+  const encoding = colorEncodingOf({ value, field, scale, domain, range: [] })
   return typeof encoding === 'object' ? encoding.field : ''
 }
 

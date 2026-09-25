@@ -38,10 +38,7 @@ const TestColor = ConfigurationSchema(
 )
 
 function encodingOf(snapshot: Record<string, unknown>) {
-  return colorEncodingOf(
-    TestColor.create(snapshot, { pluginManager }),
-    'categorical',
-  )
+  return colorEncodingOf(TestColor.create(snapshot, { pluginManager }))
 }
 
 const WRITTEN = {

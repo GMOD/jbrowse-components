@@ -152,9 +152,9 @@ function slotsOf(type) {
       // file before its rules read it: a bare string into a sub-schema's
       // shorthand slot or into a list of one, and numbers carried as strings.
       shorthand: subOptions?.shorthand,
-      // a colour object's scale by field while its scale is unset, which the
-      // validator's colour rules read
-      fieldScale: subOptions?.fieldScale,
+      // a colour object's defaults by field, which the validator's colour
+      // rules read the object with
+      fieldPresets: subOptions?.fieldPresets,
       liftsString: lifts.string || undefined,
       liftsNumbers: lifts.numbers || undefined,
     }

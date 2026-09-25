@@ -108,8 +108,11 @@ export interface ConfigurationSchemaOptions<
    * `preProcessSnapshot`, on the same paths.
    */
   closed?: boolean
-  /** A colour object's scale by `field` while `scale` is unset, `*` for any other. */
-  fieldScale?: Readonly<Record<string, string>>
+  /**
+   * A colour object's defaults by `field`, `*` for any other: the scale while
+   * `scale` is unset, and the members that scale reads while unwritten.
+   */
+  fieldPresets?: Readonly<Record<string, { readonly scale: string }>>
   preProcessSnapshot?: (
     snapshot: Record<string, unknown>,
   ) => Record<string, unknown>

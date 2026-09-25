@@ -279,10 +279,13 @@ export function paintThroughColor(
   color: Partial<ColorSetting> & { field: string },
 ) {
   const field = colorFieldOf(
-    colorEncodingOf(
-      { value: undefined, scale: undefined, domain: [], range: [], ...color },
-      'categorical',
-    ),
+    colorEncodingOf({
+      value: undefined,
+      scale: undefined,
+      domain: [],
+      range: [],
+      ...color,
+    }),
   )!
   const resolved = resolveRegionColors(
     data as FeatureDataResult,

@@ -3,7 +3,7 @@ import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
 import {
-  FEATURE_FIELD_SCALES,
+  FEATURE_FIELD_PRESETS,
   categoricalColorField,
   colorFieldOf,
   colorMembersOf,
@@ -11,7 +11,7 @@ import {
   featureColorEncoding,
   identityKeyEntries,
 } from '@jbrowse/display-kit/colorConfigSchema'
-import { colorNotices, fieldScaleOf } from '@jbrowse/display-kit/colorScale'
+import { colorNotices } from '@jbrowse/display-kit/colorScale'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 
 import { createFieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
@@ -228,10 +228,7 @@ export function featureColorViews(self: FeatureColorHost) {
      */
     get notices(): string[] {
       const settings = this.colorSettings
-      return colorNotices(
-        settings,
-        fieldScaleOf(FEATURE_FIELD_SCALES, settings.field),
-      )
+      return colorNotices(settings, FEATURE_FIELD_PRESETS)
     },
 
     /**

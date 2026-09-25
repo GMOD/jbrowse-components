@@ -8,8 +8,9 @@ import {
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { LD_FIELD } from '../GWASAdapter/ldFields.ts'
+import { LD_DOMAIN, LD_PALETTE } from './ldBins.ts'
 
-import type { FieldScales } from '@jbrowse/display-kit/colorScale'
+import type { FieldPresets } from '@jbrowse/display-kit/colorScale'
 
 const MANHATTAN_COLOR_SCALES = ['none', 'categorical', 'threshold'] as const
 
@@ -21,11 +22,11 @@ const MANHATTAN_COLOR_SCALES = ['none', 'categorical', 'threshold'] as const
  */
 export type ManhattanColorScale = (typeof MANHATTAN_COLOR_SCALES)[number]
 
-/** r² bins are a threshold and any other field categorical while `scale` is unset. */
-export const MANHATTAN_FIELD_SCALES = {
-  [LD_FIELD]: 'threshold',
-  '*': 'categorical',
-} as const satisfies FieldScales
+/** r² to the index SNP is LocusZoom's bins, and any other field categorical, while unwritten. */
+export const MANHATTAN_FIELD_PRESETS = {
+  [LD_FIELD]: { scale: 'threshold', domain: LD_DOMAIN, range: LD_PALETTE },
+  '*': { scale: 'categorical' },
+} as const satisfies FieldPresets
 
 /**
  * #config ManhattanColor
@@ -95,5 +96,5 @@ export const manhattanColorConfigSchema = ConfigurationSchema(
         'CSS colours a categorical scale hands its domain in order, continuing into the default palette past its end, or a threshold scale hands its intervals, lowest first',
     }),
   },
-  colorChannelOptions('color', MANHATTAN_FIELD_SCALES),
+  colorChannelOptions('color', MANHATTAN_FIELD_PRESETS),
 )
