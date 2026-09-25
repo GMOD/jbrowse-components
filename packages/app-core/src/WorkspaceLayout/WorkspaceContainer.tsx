@@ -55,6 +55,7 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
   const { classes } = useStyles()
   const { drag, handlers } = useLayoutDrag(session)
 
+  // #region autorunInEffect
   useEffect(
     () =>
       autorun(() => {
@@ -64,6 +65,7 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
       }),
     [session],
   )
+  // #endregion
 
   // The layout does not own views, so closing anything that holds them is
   // explicitly the pair. Stated ONCE, here, because every spelling of it is a

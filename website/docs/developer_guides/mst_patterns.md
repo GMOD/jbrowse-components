@@ -14,109 +14,27 @@ and using `self` over `this` in views.
 
 ## autorun inside useEffect
 
-Drive canvas drawing or other side-effects from MST observables in a React
-component. The autorun's disposer is returned straight out of the `useEffect`,
-so it becomes the cleanup, and every observable read inside becomes a dependency
-without going in the dep array:
+Drive a side-effect from MST observables in a React component. The autorun's
+disposer is returned straight out of the `useEffect`, so it becomes the cleanup,
+and every observable read inside becomes a dependency without going in the dep
+array:
 
-<!-- include: plugins/maf/src/LinearMafDisplay/components/TrackBandCanvas.tsx -->
+<!-- include: packages/app-core/src/WorkspaceLayout/WorkspaceContainer.tsx#autorunInEffect -->
 
 ```tsx
-import { useEffect, useRef } from 'react'
-
-import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
-import { autorun } from 'mobx'
-import { observer } from 'mobx-react'
-
-import type { LinearMafDisplayModel } from '../stateModel.ts'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
-
-/**
- * What a band paints, given the display and the palette. **A module-level
- * function, never a closure built in the parent's render** — it is an `autorun`
- * dependency, so a fresh identity per render tore the autorun down and rebuilt
- * it on every parent render. Taking the model as an argument is also what keeps
- * the reads inside the autorun: a closure over `model.conservationHeight` read
- * that value during the render instead, leaving the autorun tracking nothing
- * and the rebuild doing the redraw it looked like mobx was doing.
- */
-export type BandDraw = (
-  ctx: CanvasRenderingContext2D,
-  model: LinearMafDisplayModel,
-  palette: JBrowsePalette,
-) => void
-
-/**
- * Shared absolutely-positioned band canvas for the MAF conservation band and
- * the Canvas2D rows layer. Runs `draw` inside an `autorun` so observable map
- * mutations (`rpcDataMap`/`renderBlocks`) redraw without `useEffect` deps —
- * `observable.map` keeps a stable outer reference. Hidden and not drawn when
- * `show` is false.
- *
- * `canvasWidthPx`, not `lgv.width`: every one of these bands' painters is handed
- * `canvasWidthPx` as its `canvasWidth` and clamps to it, and the GPU rows canvas
- * this one *replaces* in the identity modes is that wide too.
- * Sizing the element by the view width instead left it 2px past its own
- * container (`TrackRenderingContainer` insets by the track outline under
- * `contain: strict`, so the browser clipped the overhang) with its rightmost 2px
- * unpainted — the exact drift `canvasWidthPx`'s own docstring records MAF making
- * once before.
- */
-const TrackBandCanvas = observer(function TrackBandCanvas({
-  model,
-  top,
-  height,
-  show,
-  draw,
-}: {
-  model: LinearMafDisplayModel
-  top: number
-  height: number
-  show: boolean
-  draw: BandDraw
-}) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const width = model.canvasWidthPx
-  const palette = usePalette()
-
-  useEffect(
-    () =>
-      autorun(() => {
-        const ctx = getPreparedCanvas2D(canvasRef.current, width, height)
-        if (ctx && show) {
-          draw(ctx, model, palette)
-        }
-      }),
-    [model, width, height, show, draw, palette],
-  )
-
-  return show ? (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'absolute',
-        top,
-        left: 0,
-        width,
-        height,
-        pointerEvents: 'none',
-      }}
-    />
-  ) : null
-})
-
-export default TrackBandCanvas
+useEffect(
+  () =>
+    autorun(() => {
+      // reads session.views itself, so it re-runs when the view set changes;
+      // homeUnassignedViews is an action and would not be tracked from inside
+      session.homeUnassignedViews(session.views.map(v => v.id))
+    }),
+  [session],
+)
 ```
 
-The `draw` callbacks read `model.rpcDataMap` from inside the autorun, so a
-mutation there redraws the canvas without React re-running the effect; the deps
-carry only what changes the canvas's size or identity. Sizing goes through
-`getPreparedCanvas2D`, which handles device pixel ratio — don't set
-`width`/`height` by hand.
-
-Prefer `autorun` over `reaction` for drawing: it runs immediately and tracks
-dependencies automatically. Use `reaction` only to separate the tracked
+Prefer `autorun` over `reaction` for side-effects: it runs immediately and
+tracks dependencies automatically. Use `reaction` only to separate the tracked
 expression from the effect.
 
 To read an observable inside an autorun **without** making it a dependency, wrap
