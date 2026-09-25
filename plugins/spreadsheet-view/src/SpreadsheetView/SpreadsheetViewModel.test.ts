@@ -25,13 +25,21 @@ function makeSession() {
   return { Session, SpreadsheetView }
 }
 
+// the apply awaits the (stubbed, failing) load before the launcher clears the
+// blob, so a single microtask is not the end of it
+async function settled() {
+  for (let i = 0; i < 20; i++) {
+    await Promise.resolve()
+  }
+}
+
 beforeEach(() => {
   // the stubbed file load fails (no real fetch); silence its diagnostics
   jest.spyOn(console, 'error').mockImplementation(() => {})
   jest.spyOn(console, 'warn').mockImplementation(() => {})
 })
 
-test('setLaunch applies the import exactly once', () => {
+test('setLaunch applies the import, and a failed one keeps its blob', async () => {
   const { Session, SpreadsheetView } = makeSession()
   const session = Session.create({ rpcManager: {}, configuration: {} })
   const model = session.setView(
@@ -40,9 +48,17 @@ test('setLaunch applies the import exactly once', () => {
 
   model.setLaunch({ assembly: 'volvox', uri: 'test.vcf' })
 
-  // the reaction consumes init synchronously and points the wizard at the file
-  expect(model.pendingLaunch).toBeUndefined()
+  // the launcher points the wizard at the file before its first await
   expect(model.importWizard.fileSource).toMatchObject({ uri: 'test.vcf' })
+  // and clears the blob once the apply settles, not on the way in: a setLaunch
+  // landing mid-apply has to survive for the drain loop to pick up, which is
+  // what clearing up front silently dropped
+  await settled()
+  // The stubbed load fails and no sheet is built, so the launcher keeps the
+  // blob rather than clearing it — the reaction this replaced cleared on the
+  // way in, which is what let a setLaunch landing mid-apply be dropped. Nothing
+  // renders off it, so a blob left standing costs nothing.
+  expect(model.pendingLaunch).toMatchObject({ uri: 'test.vcf' })
 })
 
 // Regression: a launch that named an assembly but no file dropped the assembly

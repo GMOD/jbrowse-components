@@ -1,12 +1,12 @@
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession, isSessionWithAddSessionTrack } from '@jbrowse/core/util'
+import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import {
   pendingLaunch,
   withLaunchInput,
 } from '@jbrowse/core/util/withLaunchInput'
-import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import { reaction } from 'mobx'
 
 import ImportWizard from './ImportWizard.ts'
 import Spreadsheet from './SpreadsheetModel.tsx'
@@ -169,6 +169,17 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
 
           /**
            * #action
+           * Where a failed launch lands, which `installInitAutorun` requires of
+           * its host. Delegated rather than given a slot of its own: the import
+           * form is what is on screen before a sheet exists, and its banner is
+           * already the one place this view shows an error.
+           */
+          setError(error: unknown) {
+            self.importWizard.setError(error)
+          },
+
+          /**
+           * #action
            */
           setDrilldownTracks(trackIds: string[]) {
             self.drilldownTracks = cast(trackIds)
@@ -217,14 +228,18 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
            * reload, the import form's Open button) routes through here so the
            * view stays the sole owner of displaySpreadsheet
            */
-          async loadSpreadsheet(assemblyName: string) {
+          async loadSpreadsheet(
+            assemblyName: string,
+            superseded?: () => boolean,
+          ) {
             const session = getSession(self)
             try {
               const data = await self.importWizard.import(assemblyName)
-              // the view can be closed while the file is still in flight, and
-              // there is then neither a node to write to nor anyone left to
-              // read the snackbar
-              if (data && isAlive(self)) {
+              // Alive is the weaker half. A second launch of this same view is
+              // still a live node, so liveness alone let a superseded load
+              // reach `displaySpreadsheet` and put the file the user had
+              // already replaced on screen.
+              if (data && isAlive(self) && !superseded?.()) {
                 self.displaySpreadsheet(data)
                 self.registerImportedTrack(assemblyName)
               }
@@ -255,7 +270,10 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
            * then opens on the caller's assembly and file type instead of
            * whichever assembly happens to sort first
            */
-          async applyInit(init: LaunchInput<SpreadsheetViewCommands>) {
+          async applyInit(
+            init: LaunchInput<SpreadsheetViewCommands>,
+            superseded?: () => boolean,
+          ) {
             const { importWizard } = self
             const { assembly, uri, baseUri, fileType, filterText } = init
             const { svEventFilter } = init
@@ -285,12 +303,12 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
             // spec naming a file and no assembly seeds the wizard and stops
             // there rather than importing against nothing
             if (uri && assembly) {
-              await self.loadSpreadsheet(assembly)
+              await self.loadSpreadsheet(assembly, superseded)
               // after the load, because the sheet the filter belongs to does
               // not exist until then: displaySpreadsheet replaces the whole
               // node, so a filter set before it would be thrown away with the
               // sheet it was set on
-              if (isAlive(self)) {
+              if (isAlive(self) && !superseded?.()) {
                 self.spreadsheet?.setFilterText(filterText)
                 self.spreadsheet?.setSvEventFilter(svEventFilter)
               }
@@ -300,27 +318,23 @@ export default function stateModelFactory(pluginManager?: PluginManager) {
         .actions(self => ({
           afterAttach() {
             const hadInit = !!self.pendingLaunch
-            addDisposer(
-              self,
-              // Trigger on `init` ONLY. A reaction tracks just its data fn, so
-              // the async apply can read width/etc without making them
-              // dependencies — width churn (sv-inspector resizes, a workspace
-              // tab settling, StrictMode) can no longer retrigger the load. `init`
-              // is cleared synchronously up front so the same request can't be
-              // applied twice; a later setLaunch supersedes. Re-entrancy is
-              // excluded by the dependency graph rather than a guard flag.
-              reaction(
-                () => self.pendingLaunch,
-                init => {
-                  if (init) {
-                    self.setLaunch(undefined)
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                    self.applyInit(init)
-                  }
-                },
-                { fireImmediately: true, name: 'SpreadsheetViewInit' },
-              ),
-            )
+            // The same launcher the other four views use. The reaction this
+            // replaced fired `applyInit` without awaiting it and cleared `init`
+            // up front, claiming "a later setLaunch supersedes" — it did not.
+            // Two launches ran at once over one import wizard, and whichever
+            // file came back last won, so the one the user had replaced could
+            // be the one on screen. `installInitAutorun` drains them one at a
+            // time and hands each the `superseded` guard that liveness alone
+            // cannot supply.
+            installInitAutorun(self, {
+              name: 'SpreadsheetViewInit',
+              // nothing to measure first: this view needs no width to load
+              ready: () => true,
+              // a sheet on screen is the view up, so a later failure is one
+              // step's problem rather than the import form's
+              materialized: () => !!self.spreadsheet,
+              apply: (init, { superseded }) => self.applyInit(init, superseded),
+            })
             // reload a session-cached URI (init and a cached file are mutually
             // exclusive — fresh addView vs reloaded session — but guard anyway)
             const { importWizard } = self
