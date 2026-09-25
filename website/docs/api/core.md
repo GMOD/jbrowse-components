@@ -531,6 +531,21 @@ reader or a value list is built in the worker.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
+## matedBy
+
+How a record states its other end, or undefined where it states none: the
+`mate` a paired adapter fills (BEDPE, STAR-Fusion), or an `ALT` the breakend
+and symbolic-SV readers resolve. The `mate` step admits exactly the features
+this names one for, so a caller deciding whether links are the picture a
+track wants asks here rather than re-reading the fields.
+
+```js
+// type signature
+(f: Feature) => "alt" | "mate" | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
+
 ## MateStep
 
 One feature per other end a record states: the `mate` a paired adapter

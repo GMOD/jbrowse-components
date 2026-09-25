@@ -2802,6 +2802,7 @@
         "DEFAULT_PILEUP_AS",
         "DEFAULT_PILEUP_FIELDS",
         "facetLayers",
+        "matedBy",
         "runTransforms"
       ],
       "worker": "real"
