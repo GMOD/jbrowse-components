@@ -841,7 +841,8 @@
         "TRUSTED_PLUGIN_URL_PREFIXES",
         "checkPlugins",
         "checkPluginsAgainstStore",
-        "fetchPlugins"
+        "fetchPlugins",
+        "forgetFetchedPlugins"
       ],
       "worker": "real"
     },
