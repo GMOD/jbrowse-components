@@ -55,9 +55,29 @@ test('zoom to region(s) survives the selection being released on menu close', as
   for (const v of view.views) {
     v.setOffsets(undefined, undefined)
   }
-  items[0]!.onClick()
+  const zoom = items.find(i => 'label' in i && i.label === 'Zoom to region(s)')!
+  ;(zoom as { onClick: () => void }).onClick()
 
   for (const [i, v] of view.views.entries()) {
     expect(v.bpPerPx).toBeLessThan(before[i]!)
   }
+})
+
+// Both halves of a breakpoint are the same assembly, so the rows are named by
+// position — which is the case `rowLabels` disambiguates, and the reason this
+// view stopped numbering them itself.
+test('rows are named by assembly and each offers its own rubberband menu', async () => {
+  const view = await setup()
+  for (const v of view.views) {
+    v.setOffsets(v.pxToBp(100), v.pxToBp(300))
+  }
+  expect(
+    view.rubberBandMenuItems().map(i => ('label' in i ? i.label : i.type)),
+  ).toEqual(['Zoom to region(s)', 'volvox (row 1)', 'volvox (row 2)'])
+  expect(
+    view
+      .menuItems()
+      .slice(0, 2)
+      .map(i => ('label' in i ? i.label : i.type)),
+  ).toEqual(['volvox (row 1)', 'volvox (row 2)'])
 })

@@ -11,8 +11,11 @@
  *
  * One function over the whole list rather than one row at a time, since
  * uniqueness is a property of the list. Shared by every menu that names the
- * rows — the track selectors, the row menus, the follow anchors — so they
- * cannot drift into calling the same row two different things one click apart.
+ * rows — the track selectors, the row menus, the follow anchors, the
+ * rubberband — so they cannot drift into calling the same row two different
+ * things one click apart. Here rather than in the synteny view because the
+ * breakpoint split view is the same stack of rows and had been numbering them
+ * itself.
  */
 export function rowLabels(views: { assemblyNames: string[] }[]) {
   const names = views.map(

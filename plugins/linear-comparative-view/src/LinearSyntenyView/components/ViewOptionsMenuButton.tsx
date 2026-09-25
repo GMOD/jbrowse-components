@@ -1,7 +1,7 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { searchBoxMenuItems } from '@jbrowse/plugin-linear-genome-view'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 import { observer } from 'mobx-react'
 
 import type { LinearSyntenyViewModel } from '../model.ts'
@@ -22,13 +22,7 @@ const ViewOptionsMenuButton = observer(function ViewOptionsMenuButton({
     <CascadingMenuButton
       tooltip="View options"
       menuItems={() =>
-        model.headerMenuItems([
-          {
-            label: 'Show...',
-            icon: VisibilityIcon,
-            subMenu: searchBoxMenuItems(prefs),
-          },
-        ])
+        model.headerMenuItems(makeShowSubMenu(searchBoxMenuItems(prefs)))
       }
     >
       <MoreVertIcon />

@@ -110,7 +110,11 @@ export {
 export type { SearchBoxPrefs } from './LinearGenomeView/components/useSearchBoxPrefs.ts'
 export { normalizeTrackInit } from '@jbrowse/core/util/tracks'
 export { applyInitHighlights } from './LinearGenomeView/afterAttach.ts'
-export { MultiLevelRubberband } from './MultiLevelRubberband/index.ts'
+export {
+  MultiLevelRubberband,
+  multiLevelRowMenuItems,
+  rowLabels,
+} from './MultiLevelRubberband/index.ts'
 export { fetchResults, SearchResultsNotFoundError } from './searchUtils.ts'
 export type { LaunchLinearGenomeViewArgs } from './LaunchLinearGenomeView/index.ts'
 export type {

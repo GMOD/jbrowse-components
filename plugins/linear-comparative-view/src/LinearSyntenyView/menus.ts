@@ -1,10 +1,9 @@
 import { radioItems } from '@jbrowse/core/ui/menuItems'
+import { rowLabels } from '@jbrowse/plugin-linear-genome-view'
 import AnchorIcon from '@mui/icons-material/Anchor'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
 import RemoveIcon from '@mui/icons-material/Remove'
-
-import { rowLabels } from './rowLabel.ts'
 
 import type { FollowHost } from '../SyntenyFollow/followHost.ts'
 import type { MenuItem } from '@jbrowse/core/ui'

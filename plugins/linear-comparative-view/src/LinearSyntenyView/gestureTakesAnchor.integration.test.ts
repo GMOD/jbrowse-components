@@ -207,10 +207,10 @@ test("the stack's rubber-band zoom leaves the anchor where it was", async () => 
   for (const row of view.views) {
     row.setOffsets(row.pxToBp(100), row.pxToBp(300))
   }
-  view
+  const zoom = view
     .rubberBandMenuItems()
-    .find(item => item.label === 'Zoom to region(s)')!
-    .onClick()
+    .find(item => 'onClick' in item && item.label === 'Zoom to region(s)')
+  ;(zoom as { onClick: () => void }).onClick()
   expect(view.followAnchorIndex).toBe(0)
   expect(view.views.every(row => row.bpPerPx < 5)).toBe(true)
 })

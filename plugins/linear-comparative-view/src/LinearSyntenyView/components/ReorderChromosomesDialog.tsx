@@ -1,7 +1,7 @@
+import { rowLabels } from '@jbrowse/plugin-linear-genome-view'
 import { DiagonalizeDialog } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
-import { rowLabels } from '../rowLabel.ts'
 import { runDiagonalize } from '../util/runDiagonalize.ts'
 
 import type { LinearSyntenyViewModel } from '../model.ts'

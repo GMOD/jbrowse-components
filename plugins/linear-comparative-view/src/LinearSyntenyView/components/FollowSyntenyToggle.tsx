@@ -1,10 +1,9 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { rowLabels } from '@jbrowse/plugin-linear-genome-view'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import SyncProblemIcon from '@mui/icons-material/SyncProblem'
 import { ToggleButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
-
-import { rowLabels } from '../rowLabel.ts'
 
 import type { FollowReport } from '../../SyntenyFollow/followHost.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'

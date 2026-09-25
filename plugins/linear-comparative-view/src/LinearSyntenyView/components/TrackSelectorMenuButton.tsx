@@ -1,8 +1,7 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { rowLabels } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
-
-import { rowLabels } from '../rowLabel.ts'
 
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'

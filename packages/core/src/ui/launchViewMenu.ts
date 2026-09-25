@@ -15,8 +15,12 @@ export function pushIntoSubMenu(
   label: string,
   item: MenuItem,
 ) {
+  // `'subMenu' in i`, not `i.type === 'subMenu'`: `type` is OPTIONAL on a
+  // submenu row and most of the tree omits it, so the type test would miss an
+  // existing group and push a second top-level row under the same label — two
+  // rows that then share a React key and an open/closed state.
   const existing = items.find(
-    (i): i is SubMenuItem => i.type === 'subMenu' && i.label === label,
+    (i): i is SubMenuItem => 'subMenu' in i && i.label === label,
   )
   if (existing) {
     const { subMenu } = existing

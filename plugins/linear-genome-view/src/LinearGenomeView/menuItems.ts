@@ -3,6 +3,7 @@ import {
   TrackSelector as TrackSelectorIcon,
 } from '@jbrowse/core/ui/Icons'
 import { radioItems } from '@jbrowse/core/ui/menuItems'
+import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import {
   assembleLocStrings,
   getDialogHost,
@@ -28,7 +29,6 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import SearchIcon from '@mui/icons-material/Search'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 
 import {
@@ -192,103 +192,99 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
         self.horizontallyFlip()
       },
     },
-    {
-      label: 'Show...',
-      icon: VisibilityIcon,
-      subMenu: [
-        showAllRegionsMenuItem(self),
-        {
-          label: 'Show ruler only',
-          type: 'checkbox',
-          checked: self.scalebarOnly,
-          onClick: () => {
-            self.setScalebarOnly(!self.scalebarOnly)
-          },
+    ...makeShowSubMenu([
+      showAllRegionsMenuItem(self),
+      {
+        label: 'Show ruler only',
+        type: 'checkbox',
+        checked: self.scalebarOnly,
+        onClick: () => {
+          self.setScalebarOnly(!self.scalebarOnly)
         },
-        {
-          label: 'Show header',
-          type: 'checkbox',
-          checked: !self.hideHeader,
-          // opts out of the checkbox "stay open" default: with the header
-          // hidden these same items are reachable from MiniControls, which this
-          // row unmounts — leaving the menu anchored to a removed node
-          keepMenuOpen: false,
-          onClick: () => {
-            self.setHideHeader(!self.hideHeader)
-          },
+      },
+      {
+        label: 'Show header',
+        type: 'checkbox',
+        checked: !self.hideHeader,
+        // opts out of the checkbox "stay open" default: with the header
+        // hidden these same items are reachable from MiniControls, which this
+        // row unmounts — leaving the menu anchored to a removed node
+        keepMenuOpen: false,
+        onClick: () => {
+          self.setHideHeader(!self.hideHeader)
         },
-        {
-          label: 'Show header overview',
-          type: 'checkbox',
-          checked: !self.hideHeaderOverview,
-          onClick: () => {
-            self.setHideHeaderOverview(!self.hideHeaderOverview)
-          },
-          disabled: self.hideHeader,
+      },
+      {
+        label: 'Show header overview',
+        type: 'checkbox',
+        checked: !self.hideHeaderOverview,
+        onClick: () => {
+          self.setHideHeaderOverview(!self.hideHeaderOverview)
         },
-        ...(self.canShowCytobands
-          ? [
-              {
-                label: 'Show ideogram',
-                type: 'checkbox' as const,
-                checked: self.showCytobands,
-                onClick: () => {
-                  self.setShowCytobands(!self.showCytobands)
-                },
+        disabled: self.hideHeader,
+      },
+      ...(self.canShowCytobands
+        ? [
+            {
+              label: 'Show ideogram',
+              type: 'checkbox' as const,
+              checked: self.showCytobands,
+              onClick: () => {
+                self.setShowCytobands(!self.showCytobands)
               },
-            ]
-          : []),
-        {
-          label: 'Show center line',
-          type: 'checkbox',
-          checked: self.showCenterLine,
-          onClick: () => {
-            self.setShowCenterLine(!self.showCenterLine)
-          },
+            },
+          ]
+        : []),
+      {
+        label: 'Show center line',
+        type: 'checkbox',
+        checked: self.showCenterLine,
+        onClick: () => {
+          self.setShowCenterLine(!self.showCenterLine)
         },
-        {
-          label: 'Show guidelines',
-          type: 'checkbox',
-          checked: self.showGridlines,
-          onClick: () => {
-            self.setShowGridlines(!self.showGridlines)
-          },
+      },
+      {
+        label: 'Show guidelines',
+        type: 'checkbox',
+        checked: self.showGridlines,
+        onClick: () => {
+          self.setShowGridlines(!self.showGridlines)
         },
-        {
-          label: 'Show track outlines',
-          type: 'checkbox',
-          checked: self.showTrackOutlines,
-          onClick: () => {
-            self.setShowTrackOutlines(!self.showTrackOutlines)
-          },
+      },
+      {
+        label: 'Show track outlines',
+        type: 'checkbox',
+        checked: self.showTrackOutlines,
+        onClick: () => {
+          self.setShowTrackOutlines(!self.showTrackOutlines)
         },
-        {
-          label: 'Show no tracks active button',
-          type: 'checkbox',
-          checked: !self.hideNoTracksActive,
-          onClick: () => {
-            self.setHideNoTracksActive(!self.hideNoTracksActive)
-          },
+      },
+      {
+        label: 'Show no tracks active button',
+        type: 'checkbox',
+        checked: !self.hideNoTracksActive,
+        onClick: () => {
+          self.setHideNoTracksActive(!self.hideNoTracksActive)
         },
-        { type: 'subHeader', label: 'Sequence' },
-        {
-          label: 'Show CDS reading frame colors',
-          type: 'checkbox',
-          checked: self.colorByCDS,
-          onClick: () => {
-            self.setColorByCDS(!self.colorByCDS)
-          },
+      },
+      { type: 'subHeader', label: 'Sequence' },
+      {
+        label: 'Show CDS reading frame colors',
+        type: 'checkbox',
+        checked: self.colorByCDS,
+        onClick: () => {
+          self.setColorByCDS(!self.colorByCDS)
         },
-        {
-          label: 'Show amino acids when zoomed in',
-          type: 'checkbox',
-          checked: self.showAminoAcids,
-          onClick: () => {
-            self.setShowAminoAcids(!self.showAminoAcids)
-          },
+      },
+      {
+        label: 'Show amino acids when zoomed in',
+        type: 'checkbox',
+        checked: self.showAminoAcids,
+        onClick: () => {
+          self.setShowAminoAcids(!self.showAminoAcids)
         },
-      ],
-    },
+      },
+    ]),
     {
       label: 'Highlights',
       icon: Highlighter,

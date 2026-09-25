@@ -22,6 +22,7 @@ import {
   withLaunchInput,
 } from '@jbrowse/core/util/withLaunchInput'
 import { addDisposer, cast, detach, types } from '@jbrowse/mobx-state-tree'
+import { multiLevelRowMenuItems } from '@jbrowse/plugin-linear-genome-view'
 import {
   DiagonalizeProgressMixin,
   ImportFormSyntenyMixin,
@@ -1357,7 +1358,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #method
          */
-        rubberBandMenuItems() {
+        rubberBandMenuItems(): MenuItem[] {
           // captured here rather than read inside onClick: the menu's onClose
           // runs first and releases the selection, so a live read sees undefined
           // and the zoom silently no-ops
@@ -1380,6 +1381,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 })
               },
             },
+            ...multiLevelRowMenuItems(self.views),
           ]
         },
       }

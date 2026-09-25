@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
+import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import {
   avg,
   createStatusChannel,
@@ -19,10 +20,13 @@ import {
   withLaunchInput,
 } from '@jbrowse/core/util/withLaunchInput'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
-import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
+import {
+  installLinkedViewSync,
+  multiLevelRowMenuItems,
+  rowLabels,
+} from '@jbrowse/plugin-linear-genome-view'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun } from 'mobx'
 
 import {
@@ -903,9 +907,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       menuItems(): MenuItem[] {
         return [
-          ...self.views.map((view, idx) => ({
-            label: `Row ${idx + 1} view menu`,
-            subMenu: view.menuItems(),
+          // named the way the synteny view's rows are named — the assembly,
+          // numbered only where one repeats. Both views stack the same rows and
+          // this one had been calling them "Row 1" and "Row 2".
+          ...rowLabels(self.views).map((label, idx) => ({
+            label,
+            subMenu: self.views[idx]!.menuItems(),
           })),
 
           ...(self.views.length > 1
@@ -927,32 +934,28 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 },
               ]
             : []),
-          {
-            label: 'Show...',
-            icon: VisibilityIcon,
-            subMenu: [
-              {
-                label: 'Show header',
-                type: 'checkbox',
-                checked: self.showHeader,
-                // opts out of the checkbox "stay open" default: this menu is
-                // rendered by a button in the very header the row hides, so
-                // staying open would leave it anchored to a removed node
-                keepMenuOpen: false,
-                onClick: () => {
-                  self.setShowHeader(!self.showHeader)
-                },
+          ...makeShowSubMenu([
+            {
+              label: 'Show header',
+              type: 'checkbox',
+              checked: self.showHeader,
+              // opts out of the checkbox "stay open" default: this menu is
+              // rendered by a button in the very header the row hides, so
+              // staying open would leave it anchored to a removed node
+              keepMenuOpen: false,
+              onClick: () => {
+                self.setShowHeader(!self.showHeader)
               },
-              {
-                label: 'Show intra-view links',
-                type: 'checkbox',
-                checked: self.showIntraviewLinks,
-                onClick: () => {
-                  self.setShowIntraviewLinks(!self.showIntraviewLinks)
-                },
+            },
+            {
+              label: 'Show intra-view links',
+              type: 'checkbox',
+              checked: self.showIntraviewLinks,
+              onClick: () => {
+                self.setShowIntraviewLinks(!self.showIntraviewLinks)
               },
-            ],
-          },
+            },
+          ]),
           {
             label: 'Allow clicking alignment squiggles',
             type: 'checkbox',
@@ -980,7 +983,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
-      rubberBandMenuItems() {
+      rubberBandMenuItems(): MenuItem[] {
         // captured here rather than read inside onClick: the menu's onClose
         // runs first and releases the selection, so a live read sees undefined
         // and the zoom silently no-ops
@@ -1000,6 +1003,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               }
             },
           },
+          ...multiLevelRowMenuItems(self.views),
         ]
       },
     }))
