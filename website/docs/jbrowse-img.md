@@ -1102,6 +1102,23 @@ jb2export circular --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 
 Run `jb2export circular --help` for the full list of options.
 
+Two genomes on one circle come from a config and a session spec, the way the
+comparative views do. This one is the
+[circular synteny tutorial](https://jbrowse.org/jb2/docs/tutorials/circular_synteny/)'s
+hosted config: human and mouse liftOver blocks as ribbons, inside a ring of
+genes per 100 kb for both genomes. The spec names the pair of assemblies and
+opens the ring with its density rendering:
+
+<!-- jb2export: circular_synteny -->
+
+```bash
+jb2export --config https://jbrowse.org/demos/circular_synteny/config.json \
+  --spec data/comparative/hg38_mm39_circular.spec.json --width 800 \
+  --out circular_synteny.png
+```
+
+<Figure src="/img/jbrowse-img/circular_synteny.png" caption="Human chromosomes 1, 2 and X against their mouse counterparts on one circle, liftOver ribbons inside a gene density ring for both genomes" />
+
 ## Configs and sessions
 
 ### Use with a jbrowse config.json

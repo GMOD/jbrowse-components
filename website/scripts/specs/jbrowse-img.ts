@@ -238,6 +238,19 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '800',
   ]),
 
+  // Two genomes on one circle: the circular synteny tutorial's hosted config,
+  // human and mouse liftOver blocks as ribbons inside a gene density ring. The
+  // spec is what opens the ring with its density rendering, and names the
+  // assemblies as a pair.
+  cliSpec('circular_synteny', [
+    '--config',
+    'https://jbrowse.org/demos/circular_synteny/config.json',
+    '--spec',
+    'data/comparative/hg38_mm39_circular.spec.json',
+    '--width',
+    '800',
+  ]),
+
   // Gene/feature track over the reference sequence: hosted hg38 NCBI RefSeq
   // (--hub, --track) with --refseq adding the DNA-base + six-frame-translation
   // sequence track below it. Zoomed to a TP53 intron/CDS boundary (not mid-exon)
