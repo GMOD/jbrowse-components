@@ -159,9 +159,12 @@ one behaviour that changed with the shape: a REPEATED position used to be
 dropped and to block every position after it (the per-base loop could match at
 most one position per base offset), and now emits once per occurrence.
 
+`from` starts the walk at a `refWindowToRead` cursor instead of the first op,
+for positions that all lie at or past its `readStart`.
+
 ```js
 // type signature
-(cigarOps: ArrayLike<number>, positions: number[], callback: (ref: number, idx: number) => void) => void
+(cigarOps: ArrayLike<number>, positions: number[], callback: (ref: number, idx: number) => void, from?: CigarCursor | undefined) => void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/getNextRefPos.ts)
@@ -214,6 +217,27 @@ word; an unequal run as a `CIGAR_RUN` word pair, own axis first.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/coarseCigar.ts)
+
+## refWindowToRead
+
+The read offsets `[readStart, readEnd)` holding every aligned base whose
+read-relative reference offset lies in `[refStart, refEnd)`, and the op a
+`getNextRefPos` walk over them starts at. Aligned read offsets map to
+ascending reference offsets, so the range holds no other aligned base; a
+clip or insertion inside it maps to no reference offset. The returned
+`refStart`/`refEnd` are the requested ones clipped to the read's span.
+
+The op loop adds each op's lengths through the masks above rather than
+branching on the op, because a long read's op sequence is close to random
+and the branches mispredict; only the op that crosses the next edge takes
+the slow path.
+
+```js
+// type signature
+(cigarOps: ArrayLike<number>, refStart: number, refEnd: number) => ReadWindow
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/refWindowToRead.ts)
 
 ## splitSA
 

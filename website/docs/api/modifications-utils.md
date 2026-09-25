@@ -24,9 +24,16 @@ cytosines in `context` are considered (default CpG); plants also use CHG/CHH.
 
 Parse MM tag to extract modification positions on the read sequence.
 
+Only the calls placed inside `[readStart, readEnd)` are kept, and each
+entry's `probStart` moves past the calls dropped ahead of them, so ML
+indexing is unchanged. The deltas count from the read's 5' end, which is the
+END of `fseq` on a reverse read: the bases between that end and the window
+are still counted, but only as a tally, and nothing past the far side of the
+window is walked.
+
 ```js
 // type signature
-(mm: string, fseq: string, fstrand: number) => ModWithPositions[]
+(mm: string, fseq: string, fstrand: number, readStart?: number, readEnd?: number) => ModWithPositions[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getModPositions.ts)
