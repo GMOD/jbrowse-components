@@ -7,7 +7,7 @@ import { ARC_COLOR_FIELDS } from '../shared/arcColorOptions.ts'
  * #config AlignmentsArcColor
  * #category display
  * The alignments displays' `arcColor` setting: what colours the
- * read-connection arcs and the read cloud. Empty, the arcs take the reads'
+ * read-connection arcs and the read cloud. Empty, the default, the arcs take the reads'
  * `color` field where it is one an arc paints (`insertSize`,
  * `pairOrientation`, `insertSizeAndOrientation`), and paint
  * `insertSizeAndOrientation` under any other. A field of its own colours the
@@ -22,7 +22,6 @@ import { ARC_COLOR_FIELDS } from '../shared/arcColorOptions.ts'
  *   type: 'LinearAlignmentsDisplay',
  *   readConnections: 'cloud',
  *   color: { field: 'insertSize' },
- *   arcColor: '',
  * }
  * ```
  */
@@ -38,7 +37,7 @@ export const alignmentsArcColorConfigSchema = ConfigurationSchema(
         '',
         ...ARC_COLOR_FIELDS,
       ]),
-      defaultValue: 'insertSizeAndOrientation',
+      defaultValue: '',
       description:
         "the pair field the arcs paint: insertSizeAndOrientation, insertSize or pairOrientation; empty takes the reads' color field where an arc paints it",
     },

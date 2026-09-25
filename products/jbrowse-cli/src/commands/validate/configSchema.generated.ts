@@ -4489,7 +4489,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "insertSize",
             "pairOrientation"
           ],
-          "default": "insertSizeAndOrientation",
+          "default": "",
           "type": "string"
         },
         {
@@ -4505,7 +4505,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "insertSize",
                 "pairOrientation"
               ],
-              "default": "insertSizeAndOrientation"
+              "default": ""
             }
           },
           "patternProperties": {

@@ -4282,7 +4282,7 @@
             "insertSize",
             "pairOrientation"
           ],
-          "default": "insertSizeAndOrientation",
+          "default": "",
           "type": "string"
         },
         {
@@ -4298,7 +4298,7 @@
                 "insertSize",
                 "pairOrientation"
               ],
-              "default": "insertSizeAndOrientation"
+              "default": ""
             }
           },
           "patternProperties": {

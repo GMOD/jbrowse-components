@@ -357,7 +357,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               // long-/normal-insert pairs paint by their pair type. The arc
               // palette uses a saturated short-insert pink so the thin cloud
               // lines stay visible.
-              arcColor: 'insertSizeAndOrientation',
               color: { field: 'insertSizeAndOrientation' },
               // legend on (reviewer): the cloud leaves enough empty space that
               // the floating legend keys the insert-size/orientation colors

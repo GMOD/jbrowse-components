@@ -280,6 +280,12 @@ describe('arc color follows the reads unless it names its own field', () => {
     expect(display.arcColorField).toBe('insertSizeAndOrientation')
   })
 
+  test('a display naming no arcColor follows the reads', () => {
+    const display = createDisplay()
+    display.setColorBy({ type: 'insertSize' })
+    expect(display.arcColorField).toBe('insertSize')
+  })
+
   test('an arcColor field of its own ignores the reads', () => {
     const display = createDisplay()
     display.setArcColorField('insertSize')

@@ -17,14 +17,13 @@ Auto-generated config schema for the current JBrowse release — see the [config
   type: 'LinearAlignmentsDisplay',
   readConnections: 'cloud',
   color: { field: 'insertSize' },
-  arcColor: '',
 }
 ```
 
 _See the **Config slots** section below for all available configuration fields._
 
 The alignments displays' `arcColor` setting: what colours the
-read-connection arcs and the read cloud. Empty, the arcs take the reads'
+read-connection arcs and the read cloud. Empty, the default, the arcs take the reads'
 `color` field where it is one an arc paints (`insertSize`,
 `pairOrientation`, `insertSizeAndOrientation`), and paint
 `insertSizeAndOrientation` under any other. A field of its own colours the
@@ -37,4 +36,4 @@ These slots go on a display entry: `"displays": [{ "type": "AlignmentsArcColor",
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-field">**field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ("", insertSizeAndOrientation, insertSize, pairOrientation) = <code>'insertSizeAndOrientation'</code> | the pair field the arcs paint: insertSizeAndOrientation, insertSize or pairOrientation; empty takes the reads' color field where an arc paints it |
+| <span id="slot-field">**field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) ("", insertSizeAndOrientation, insertSize, pairOrientation) = <code>''</code> | the pair field the arcs paint: insertSizeAndOrientation, insertSize or pairOrientation; empty takes the reads' color field where an arc paints it |
