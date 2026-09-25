@@ -62,7 +62,6 @@ export async function renderSvg(
 
 function MultiRowSvgBody({
   model: self,
-  view,
   height,
   canvasWidth,
   renderBlocks,
@@ -132,8 +131,6 @@ function MultiRowSvgBody({
           rowHeight={self.effectiveRowHeight}
           treeAreaWidth={self.treeAreaWidth}
           availableHeight={height}
-          clusterProvenance={self.rowTreeProvenance}
-          contentBlocks={view.dynamicBlocks.contentBlocks}
         />
       ) : null}
     </>

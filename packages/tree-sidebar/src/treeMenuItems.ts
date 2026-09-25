@@ -229,15 +229,8 @@ interface ClusterProvenanceMenuModel {
 }
 
 // "Clustered on <locus>", or nothing when the tree was supplied rather than
-// computed (maf's `.nh`) — spread, don't insert.
-//
-// This is where the locus lives now. `ClusterProvenanceHint` used to put it on
-// screen in both of its states, and the quiet one is text over the rows stating
-// what a viewer already assumes; the chip now draws only when the view has
-// drifted off the clustered span, which is the case that is silently wrong. The
-// information itself still has to be reachable, because "which region is this
-// tree from" has no other answer once the chip is gone and a dendrogram beside
-// the wrong locus looks exactly like one beside the right locus.
+// computed (maf's `.nh`) — spread, don't insert. The only place the locus
+// shows; nothing draws it over the track.
 //
 // Disabled because it is a fact and not an action; `disabledHelpText` carries
 // the full sentence (`describeClusterProvenance`) that the label abbreviates.

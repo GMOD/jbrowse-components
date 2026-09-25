@@ -131,8 +131,6 @@ function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
             sources={[]}
             rowHeight={model.effectiveRowHeight}
             treeAreaWidth={model.treeAreaWidth}
-            clusterProvenance={model.rowTreeProvenance}
-            contentBlocks={view.dynamicBlocks.contentBlocks}
           />
         </g>
       ) : null}

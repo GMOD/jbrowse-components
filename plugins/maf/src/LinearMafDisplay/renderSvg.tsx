@@ -238,8 +238,6 @@ function MafSvgBody({
             showLabels={showRowLabels}
             scrollTop={scrollTop}
             availableHeight={rowsHeight}
-            clusterProvenance={model.rowTreeProvenance}
-            contentBlocks={view.dynamicBlocks.contentBlocks}
           />
         ) : null}
       </g>

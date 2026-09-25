@@ -43,15 +43,11 @@ const useStyles = makeStyles()(theme => ({
     // node, which is pointer-events:none so it doesn't eat canvas events
     pointerEvents: 'auto',
   },
-  warning: {
-    color: theme.palette.warning.dark,
-    borderColor: theme.palette.warning.main,
-  },
 }))
 
 /**
- * The chip `StaleTreeHint` and `ClusterProvenanceHint` both draw: a line of
- * text tucked into the top-left of the tree gutter, over the first row's label.
+ * The chip `StaleTreeHint` and `SubtreeFilterHint` both draw: a line of text
+ * tucked into the top-left of the tree gutter, over the first row's label.
  *
  * One component rather than two copies because the two share a gutter — a
  * padding or a z-index that drifts between them is visible as a step in the
@@ -76,23 +72,21 @@ export function SidebarHintChip({
   hint,
   top = 0,
   maxWidth,
-  warning = false,
   testId,
   onClick,
 }: {
   hint?: { title: string; text: string }
   top?: number
   maxWidth?: number
-  warning?: boolean
   testId: string
   onClick?: () => void
 }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const [dismissed, setDismissed] = useState(false)
   return hint && !dismissed ? (
     <button
       type="button"
-      className={warning ? cx(classes.chip, classes.warning) : classes.chip}
+      className={classes.chip}
       style={{ top, maxWidth }}
       data-testid={testId}
       title={hint.title}

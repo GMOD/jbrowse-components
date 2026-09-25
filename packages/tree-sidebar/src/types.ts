@@ -68,7 +68,7 @@ export interface TreeSidebarModel extends IStateTreeNode {
   root?: HierarchyNode<ClusterNodeData>
   // What the tree was computed from, when this app computed it. Undefined for
   // a supplied phylogeny (maf's `.nh`) and for a session that predates the
-  // field — `ClusterProvenanceHint` simply renders nothing in both cases.
+  // field.
   rowTreeProvenance?: ClusterProvenance
   treeAreaWidth: number
   height: number

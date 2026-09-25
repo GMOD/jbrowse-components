@@ -39,7 +39,6 @@ export async function renderSvg(
 
 function VariantMatrixSvgBody({
   model,
-  view,
   overlays,
   canvasWidth,
   opts,
@@ -67,7 +66,6 @@ function VariantMatrixSvgBody({
     <SvgVariantOverlay
       model={model}
       width={canvasWidth}
-      contentBlocks={view.dynamicBlocks.contentBlocks}
       overlays={overlays}
       lineZone={
         <LinesConnectingMatrixToGenomicPosition

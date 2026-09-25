@@ -77,10 +77,9 @@ handed.
 ## A tree's provenance is written in the same action as the tree, always
 
 `treeDescribesRows` gates on row **names**, which don't change when you pan, so
-the tree stays drawn over a different locus looking just as authoritative.
-`ClusterProvenanceHint` draws **only on drift off the clustered span**, measured
-as an overlap fraction — `contentBlocks` shift a sub-bp amount on any pan, so
-equality would flag constantly.
+the tree stays drawn over a different locus. Nothing on the track says so — an
+on-track locus chip was removed as distracting — so the Clustering submenu
+(`clusterProvenanceMenuItems`) is where the locus shows.
 
 The invariant is not that provenance is present but that it is never **wrong**,
 so the mixin writes the tree through one private `writeTree`, which sets
@@ -88,9 +87,7 @@ so the mixin writes the tree through one private `writeTree`, which sets
 its result, and a reorder that moves a row passes nothing; `resetRowArrangement`
 returns both to the config.json's in one action. maf's supplied `.nh` has no
 provenance because a phylogeny has no locus, so a tree with no provenance is
-also the signal it was supplied rather than computed. `SvgTreeSidebar` draws the
-same drift-only hint in the export (`SvgClusterProvenanceHint`), and
-`clusterProvenanceMenuItems` puts the locus in the menu.
+also the signal it was supplied rather than computed.
 
 ## One mixin holds the arrangement and derives the rows
 

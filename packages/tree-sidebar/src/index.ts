@@ -24,20 +24,14 @@ export {
 export { StaleTreeHint } from './StaleTreeHint.tsx'
 export { SubtreeFilterHint } from './SubtreeFilterHint.tsx'
 export { focusRowGroup, focusRows } from './focusRows.ts'
-export { ClusterProvenanceHint } from './ClusterProvenanceHint.tsx'
 export {
-  CLUSTER_PROVENANCE_MIN_OVERLAP,
-  clusterProvenanceDrifted,
   clusterProvenanceFromRegions,
-  clusterProvenanceLocLabel,
-  clusterProvenanceOverlap,
   describeClusterProvenance,
 } from './clusterProvenance.ts'
 export type {
   ClusterProvenance,
   ClusterProvenanceRegion,
 } from './clusterProvenance.ts'
-export { SvgClusterProvenanceHint } from './SvgClusterProvenanceHint.tsx'
 export { SvgTreePath } from './SvgTreePath.tsx'
 export { SvgTreeSidebar } from './SvgTreeSidebar.tsx'
 export { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'

@@ -68,7 +68,7 @@ describe('StaleTreeHint', () => {
   // matrix display's connector zone, which the user can drag arbitrarily tall).
   // At top:0 the hint floated that far above the rows it is describing, while
   // every other thing the sidebar paints — including its sibling
-  // `ClusterProvenanceHint` — starts at the same offset.
+  // `SubtreeFilterHint` — starts at the same offset.
   it('sits at the top of the rows, not of the line zone above them', () => {
     const { getByTestId } = render(
       <StaleTreeHint

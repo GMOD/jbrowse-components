@@ -3,7 +3,6 @@ import { RowSeparatorLines, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 import { SEPARATOR_OPACITY } from '../constants.ts'
 
 import type { RenderSvgBaseModel } from '../renderSvgUtils.ts'
-import type { ClusterProvenanceRegion } from '@jbrowse/tree-sidebar'
 import type React from 'react'
 
 // The frame both multi-sample variant SVG exports end in: the row content and
@@ -22,7 +21,6 @@ import type React from 'react'
 const SvgVariantOverlay = ({
   model,
   width,
-  contentBlocks,
   overlays,
   variantLane,
   lineZone,
@@ -30,7 +28,6 @@ const SvgVariantOverlay = ({
 }: {
   model: RenderSvgBaseModel
   width: number
-  contentBlocks: readonly ClusterProvenanceRegion[]
   // false for a reader that samples only the display's canvas: the lane, the
   // connector zone, the separators and the sidebar are all drawn over it
   overlays: boolean
@@ -78,8 +75,6 @@ const SvgVariantOverlay = ({
             showLabels={showRowLabels}
             scrollTop={scrollTop}
             availableHeight={availableHeight}
-            clusterProvenance={model.rowTreeProvenance}
-            contentBlocks={contentBlocks}
           />
         ) : null}
       </g>

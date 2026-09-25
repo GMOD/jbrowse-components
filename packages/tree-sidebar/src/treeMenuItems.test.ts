@@ -9,11 +9,7 @@ import {
 
 const CLUSTERED_AT = { refName: 'ctgA', start: 1000, end: 2000 }
 
-// `ClusterProvenanceHint` draws only when the view has drifted off the
-// clustered span, so this menu item is the only route to the locus in the
-// ordinary case. If it ever silently returns nothing, a dendrogram beside the
-// wrong locus looks exactly like one beside the right locus and there is no
-// longer anywhere to check.
+// This menu item is the only route to the locus a tree was clustered on.
 describe('clusterProvenanceMenuItems', () => {
   it('names the locus the tree was computed from', () => {
     const [item] = clusterProvenanceMenuItems({

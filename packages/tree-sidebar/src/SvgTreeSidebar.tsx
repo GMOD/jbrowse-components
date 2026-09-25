@@ -1,12 +1,7 @@
-import { SvgClusterProvenanceHint } from './SvgClusterProvenanceHint.tsx'
 import { SvgRowLabels } from './SvgRowLabels.tsx'
 import { SvgTreePath } from './SvgTreePath.tsx'
 import { treeIsShowing, treeSidebarOffset } from './treeSidebarGeometry.ts'
 
-import type {
-  ClusterProvenance,
-  ClusterProvenanceRegion,
-} from './clusterProvenance.ts'
 import type { ClusterHierarchyNode, RowLabelSource } from './types.ts'
 
 // The SVG-export counterpart of the on-screen `TreeSidebar`: the left sidebar's
@@ -26,8 +21,6 @@ export function SvgTreeSidebar({
   showLabels = true,
   scrollTop,
   availableHeight,
-  clusterProvenance,
-  contentBlocks,
 }: {
   showTree: boolean
   hierarchy: ClusterHierarchyNode | undefined
@@ -39,11 +32,6 @@ export function SvgTreeSidebar({
   showLabels?: boolean
   scrollTop?: number
   availableHeight?: number
-  // What the tree was computed from, and the blocks the view now shows, so a
-  // tree clustered somewhere else says so. Undefined provenance for a tree
-  // that arrives as data (maf's `.nh` phylogeny), which has no locus.
-  clusterProvenance?: ClusterProvenance
-  contentBlocks: readonly ClusterProvenanceRegion[]
 }) {
   // The tree, but only if it is showing — one binding rather than a boolean
   // beside the hierarchy it is about, so the hint, the path and the label
@@ -67,13 +55,6 @@ export function SvgTreeSidebar({
       ) : null}
       {drawnTree ? (
         <SvgTreePath hierarchy={drawnTree} scrollTop={scrollTop} />
-      ) : null}
-      {/* last, over the first row's label, as the on-screen chip sits */}
-      {drawnTree ? (
-        <SvgClusterProvenanceHint
-          clusterProvenance={clusterProvenance}
-          contentBlocks={contentBlocks}
-        />
       ) : null}
     </>
   )

@@ -7,7 +7,6 @@ import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { Menu, MenuItem, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { ClusterProvenanceHint } from './ClusterProvenanceHint.tsx'
 import { StaleTreeHint } from './StaleTreeHint.tsx'
 import { SubtreeFilterHint } from './SubtreeFilterHint.tsx'
 import { getLeafNames, subtreeCoversEveryRow } from './clusterUtils.ts'
@@ -246,7 +245,6 @@ const TreeSidebar = observer(function TreeSidebar({
               height: contentHeight,
             }}
           />
-          <ClusterProvenanceHint model={model} top={innerTop} />
           <SubtreeFilterHint model={model} top={innerTop} />
           {/* the ref callbacks are the model's own actions, which are stable per
               instance — wrapping them in useCallback([model]) bought nothing */}

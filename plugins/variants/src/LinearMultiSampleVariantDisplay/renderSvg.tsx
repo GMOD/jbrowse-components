@@ -49,7 +49,6 @@ export async function renderSvg(
 
 function VariantSvgBody({
   model,
-  view,
   overlays,
   canvasWidth,
   opts,
@@ -80,7 +79,6 @@ function VariantSvgBody({
     <SvgVariantOverlay
       model={model}
       width={canvasWidth}
-      contentBlocks={view.dynamicBlocks.contentBlocks}
       overlays={overlays}
       // Its own paint layer in the band above the rows, untranslated — the
       // same split the screen takes (a separate canvas outside the offset

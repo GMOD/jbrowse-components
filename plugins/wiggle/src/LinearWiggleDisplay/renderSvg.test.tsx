@@ -165,7 +165,6 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     showTree: false,
     treeAreaWidth: 40,
     hierarchy: undefined,
-    rowTreeProvenance: undefined,
     sources: [{ name: 'a' }, { name: 'b' }],
     isOverlay: false,
     isDensityMode: false,
@@ -299,38 +298,6 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
     ).not.toContain('stroke="#0008"')
   })
 
-  // As on screen, the tree's locus is said only once the view has left it: a
-  // tree computed on the figure's own span is what a reader assumes.
-  it('warns only when the tree was clustered somewhere else', async () => {
-    const onSpan = render(
-      await renderSvg(
-        makeModel({
-          showTree: true,
-          hierarchy: makeHierarchy(),
-          rowTreeProvenance: {
-            regions: [{ refName: 'ctgA', start: 0, end: 1000 }],
-          },
-        }),
-      ),
-    )
-    expect(onSpan).not.toContain('⚠')
-    const elsewhere = render(
-      await renderSvg(
-        makeModel({
-          showTree: true,
-          hierarchy: makeHierarchy(),
-          rowTreeProvenance: {
-            regions: [{ refName: 'ctgB', start: 0, end: 1000 }],
-          },
-        }),
-      ),
-    )
-    expect(elsewhere).toContain('⚠ ctgB:1..1,000')
-  })
-
-  // The key is the chrome's, off `legendSpec`, and both surfaces read
-  // `showLegend`, so a legend the user dismissed stays out of the export
-  // rather than reappearing in the figure.
   it('draws the overlay color key only when it applies', async () => {
     const shown = render(
       await renderSvg(makeModel({ isOverlay: true, ...withKey(true) })),
