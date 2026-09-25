@@ -968,28 +968,21 @@ test('a plain x2 files every feature under its own sequence when the lane is ask
   expect([...out.x2Ref]).toEqual([0, 0, 0, 0, 0])
 })
 
-test('the hit index boxes a link between its feet whichever way round, and a far sequence over the region', () => {
+test('the hit index boxes a link between its feet whichever way round', () => {
   const links = [
     feature(0, { mate: { refName: 'chr1', start: 20 } }, 200, 250),
     feature(1, { mate: { refName: 'chr7', start: 300 } }, 900, 950),
   ]
   const encoding = { x2: { chrom: 'mate.refName', pos: 'mate.start' } }
-  const region = { refName: 'chr1', start: 0, end: 10_000 }
   const fb = Flatbush.from(
-    encodeFeatures(links, encoding, ['index'], { region }).flatbushData!,
-  )
-  // the upstream mate at 20 boxes from 20 to the feature's own 200, and the
-  // chr7 mate reaches the region's edge from its near foot, so its box covers
-  // every column of the region
-  expect(fb.search(100, -1, 101, 1).sort()).toEqual([0, 1])
-  expect(fb.search(9_000, -1, 9_001, 1)).toEqual([1])
-  expect(fb.search(10, -1, 11, 1)).toEqual([1])
-  // without a region, a far mate boxes its near foot alone
-  const bare = Flatbush.from(
     encodeFeatures(links, encoding, ['index']).flatbushData!,
   )
-  expect(bare.search(9_000, -1, 9_001, 1)).toEqual([])
-  expect(bare.search(900, -1, 900, 1)).toEqual([1])
+  // the upstream mate at 20 boxes from 20 to the feature's own 200
+  expect(fb.search(100, -1, 101, 1)).toEqual([0])
+  // a mate on another sequence boxes to the coordinate it names, since the
+  // link shape spans the view and its index is asked unbounded
+  expect(fb.search(500, -1, 501, 1)).toEqual([1])
+  expect(fb.search(9_000, -1, 9_001, 1)).toEqual([])
 })
 
 test('the size and x2Ref lanes ride the transfer list', () => {

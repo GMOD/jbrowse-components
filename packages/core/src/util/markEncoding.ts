@@ -137,15 +137,11 @@ export interface MarkEncodingInput {
  * #api
  * What surrounds an encode: the jexl instance a `jexl:` channel compiles
  * against — a caller whose channels are all readers or field names passes
- * none — a progress reporter, and the region the features were fetched for,
- * in the adapter's naming, with which an `x2` on another sequence indexes
- * over the whole region, since the curve to it reaches the region's edge
- * from its near foot.
+ * none — and a progress reporter.
  */
 export interface EncodeContext {
   jexl?: JexlInstance
   report?: ProgressReporter
-  region?: { refName: string; start: number; end: number }
 }
 
 function jexlExpression(ref: string, jexl: JexlInstance | undefined) {
@@ -289,7 +285,7 @@ export function encodeFeatures<L extends LaneName>(
   lanes: readonly L[],
   ctx: EncodeContext = {},
 ): Encoded<L> {
-  const { jexl, report, region } = ctx
+  const { jexl, report } = ctx
   const n = features.length
   const has = (lane: LaneName) => (lanes as readonly LaneName[]).includes(lane)
   const readX = channelReader(encoding.x ?? 'start', jexl)
@@ -303,8 +299,6 @@ export function encodeFeatures<L extends LaneName>(
   const x2Ref = has('x2Ref') ? new Uint32Array(n) : undefined
   const x2RefNames: string[] = []
   const refIndex = new Map<string, number>()
-  const hitLo = has('index') && x2Locus ? new Uint32Array(n) : undefined
-  const hitHi = hitLo ? new Uint32Array(n) : undefined
   const { size: sizeEncoding } = encoding
   const sizeRef: SizeRef | undefined =
     has('size') &&
@@ -439,23 +433,15 @@ export function encodeFeatures<L extends LaneName>(
     }
     x[count] = xv
     x2[count] = x2v
-    if (x2Ref || hitLo) {
-      const own = f.get('refName')
-      const there = readX2Chrom ? valueText(readX2Chrom(f)) : own
-      if (x2Ref) {
-        let ref = refIndex.get(there)
-        if (ref === undefined) {
-          ref = x2RefNames.length
-          refIndex.set(there, ref)
-          x2RefNames.push(there)
-        }
-        x2Ref[count] = ref
+    if (x2Ref) {
+      const there = readX2Chrom ? valueText(readX2Chrom(f)) : f.get('refName')
+      let ref = refIndex.get(there)
+      if (ref === undefined) {
+        ref = x2RefNames.length
+        refIndex.set(there, ref)
+        x2RefNames.push(there)
       }
-      if (hitLo && hitHi) {
-        const away = there !== own
-        hitLo[count] = away ? (region?.start ?? xv) : Math.min(xv, x2v)
-        hitHi[count] = away ? (region?.end ?? xv) : Math.max(xv, x2v)
-      }
+      x2Ref[count] = ref
     }
     if (y) {
       y[count] = yv
@@ -624,9 +610,7 @@ export function encodeFeatures<L extends LaneName>(
   }
 
   const flatbushData =
-    has('index') && count > 0
-      ? hitIndexOf(hitLo ?? x, hitHi ?? x2, y, count).data
-      : undefined
+    has('index') && count > 0 ? hitIndexOf(x, x2, y, count).data : undefined
 
   const encoded: EncodedChannels = {
     count,
