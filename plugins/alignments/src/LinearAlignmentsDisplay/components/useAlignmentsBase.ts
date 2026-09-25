@@ -208,7 +208,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
               hit,
               region.refName,
               readColorCategoryLabel(
-                arcColorLegendCategory(hit.colorType, model.arcColorByType),
+                arcColorLegendCategory(hit.colorType, model.arcColorField),
               ),
             ),
       highlight,

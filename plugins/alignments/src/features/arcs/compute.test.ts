@@ -72,7 +72,7 @@ function tick(
 describe('computeArcsFromPileupData', () => {
   test('returns empty result for empty data', () => {
     const result = computeArcsFromPileupData(new Map(), [], {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: true,
       drawLongRange: true,
     })
@@ -97,7 +97,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: false,
       drawLongRange: true,
     })
@@ -128,7 +128,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: true,
       drawLongRange: true,
     })
@@ -168,7 +168,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: true,
       drawLongRange: true,
     })
@@ -198,7 +198,7 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 }],
       {
-        colorByType: 'insertSize',
+        colorField: 'insertSize',
         drawInter: true,
         drawLongRange: true,
       },
@@ -243,7 +243,7 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 }],
       {
-        colorByType: 'insertSize',
+        colorField: 'insertSize',
         drawInter: true,
         drawLongRange: true,
       },
@@ -289,7 +289,7 @@ describe('computeArcsFromPileupData', () => {
     }
     const run = (data: PileupDataResult, minInterchromSupport: number) =>
       computeArcsFromPileupData(new Map([[0, data]]), regions, {
-        colorByType: 'insertSize',
+        colorField: 'insertSize',
         drawInter: true,
         drawLongRange: true,
         minInterchromSupport,
@@ -475,7 +475,7 @@ describe('computeArcsFromPileupData', () => {
           ]),
           twoRegions,
           {
-            colorByType: 'insertSize',
+            colorField: 'insertSize',
             drawLongRange: true,
             ...settings,
           },
@@ -549,7 +549,7 @@ describe('computeArcsFromPileupData', () => {
           { refName: 'chr1', start: 1000, end: 9000, displayedRegionIndex: 0 },
           { refName: 'chr2', start: 4000, end: 9000, displayedRegionIndex: 1 },
         ],
-        { colorByType: 'insertSize', drawInter: true, drawLongRange: true },
+        { colorField: 'insertSize', drawInter: true, drawLongRange: true },
       )
       // Four arcs, no two of them coalescing — and every one carrying the four
       // reads behind the event rather than the one at its own bp.
@@ -590,7 +590,7 @@ describe('computeArcsFromPileupData', () => {
       cloud = false,
     ) =>
       computeArcsFromPileupData(new Map([[0, data]]), regions, {
-        colorByType: 'insertSize',
+        colorField: 'insertSize',
         cloud,
         drawInter: true,
         drawLongRange: true,
@@ -682,7 +682,7 @@ describe('computeArcsFromPileupData', () => {
     }
     const run = (data: PileupDataResult, drawProperPairArcs: boolean) =>
       computeArcsFromPileupData(new Map([[0, data]]), regions, {
-        colorByType: 'insertSizeAndOrientation',
+        colorField: 'insertSizeAndOrientation',
         drawInter: false,
         drawLongRange: true,
         drawProperPairArcs,
@@ -777,7 +777,7 @@ describe('computeArcsFromPileupData', () => {
     const { lines } = computeArcsFromPileupData(
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 }],
-      { colorByType: 'insertSize', drawInter: true, drawLongRange: true },
+      { colorField: 'insertSize', drawInter: true, drawLongRange: true },
     )
 
     const atBreakpoint = lines.find(l => l.x.refName === 'chr1')
@@ -810,7 +810,7 @@ describe('computeArcsFromPileupData', () => {
     const { lines } = computeArcsFromPileupData(
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 }],
-      { colorByType: 'insertSize', drawInter: true, drawLongRange: true },
+      { colorField: 'insertSize', drawInter: true, drawLongRange: true },
     )
 
     expect(
@@ -835,7 +835,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: false,
       drawLongRange: true,
     })
@@ -869,7 +869,7 @@ describe('computeArcsFromPileupData', () => {
     })
     const run = (drawInter: boolean, drawLongRange: boolean) =>
       computeArcsFromPileupData(new Map([[0, offScreenMates]]), regions, {
-        colorByType: 'insertSizeAndOrientation',
+        colorField: 'insertSizeAndOrientation',
         drawInter,
         drawLongRange,
       })
@@ -920,7 +920,7 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 1000, end: 20000, displayedRegionIndex: 0 }],
       {
-        colorByType: 'insertSizeAndOrientation',
+        colorField: 'insertSizeAndOrientation',
         drawInter: true,
         drawLongRange: false,
       },
@@ -954,7 +954,7 @@ describe('computeArcsFromPileupData', () => {
     const { lines } = computeArcsFromPileupData(
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 1000, end: 20000, displayedRegionIndex: 0 }],
-      { colorByType: 'insertSize', drawInter: true, drawLongRange: true },
+      { colorField: 'insertSize', drawInter: true, drawLongRange: true },
     )
 
     // each acceptor carries its own reads...
@@ -992,7 +992,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: false,
       drawLongRange: false,
     })
@@ -1016,7 +1016,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: true,
       drawLongRange: true,
     })
@@ -1047,7 +1047,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: true,
       drawLongRange: true,
     })
@@ -1072,7 +1072,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: false,
       drawLongRange: true,
     })
@@ -1103,7 +1103,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: false,
       drawLongRange: true,
     })
@@ -1137,7 +1137,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 6000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: false,
       drawLongRange: true,
     })
@@ -1183,7 +1183,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 5000, end: 6000, displayedRegionIndex: 1 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: false,
       drawLongRange: false,
     })
@@ -1217,7 +1217,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorByType: 'orientation',
+      colorField: 'pairOrientation',
       drawInter: false,
       drawLongRange: true,
     })
@@ -1244,7 +1244,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorByType: 'insertSize',
+      colorField: 'insertSize',
       drawInter: false,
       drawLongRange: true,
     })
@@ -1277,7 +1277,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 600000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: false,
       drawLongRange: true,
     })
@@ -1310,15 +1310,15 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 600000, displayedRegionIndex: 0 },
     ]
 
-    for (const colorByType of [
-      'orientation',
+    for (const colorField of [
+      'pairOrientation',
       'insertSizeAndOrientation',
     ] as const) {
       const result = computeArcsFromPileupData(
         new Map([[0, mkData()]]),
         regions,
         {
-          colorByType,
+          colorField,
           drawInter: false,
           drawLongRange: true,
         },
@@ -1344,7 +1344,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 },
     ]
     const opts = {
-      colorByType: 'insertSizeAndOrientation' as const,
+      colorField: 'insertSizeAndOrientation' as const,
       cloud: true,
       drawInter: false,
       drawLongRange: true,
@@ -1387,7 +1387,7 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 0, end: 20000, displayedRegionIndex: 0 }],
       {
-        colorByType: 'insertSizeAndOrientation',
+        colorField: 'insertSizeAndOrientation',
         cloud: true,
         drawInter: false,
         drawLongRange: true,
@@ -1424,7 +1424,7 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 0, end: 20000, displayedRegionIndex: 0 }],
       {
-        colorByType: 'orientation',
+        colorField: 'pairOrientation',
         cloud: true,
         drawInter: false,
         drawLongRange: true,
@@ -1457,7 +1457,7 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 0, end: 20000, displayedRegionIndex: 0 }],
       {
-        colorByType: 'orientation',
+        colorField: 'pairOrientation',
         cloud: true,
         drawInter: false,
         drawLongRange: true,
@@ -1483,7 +1483,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorByType: 'insertSizeAndOrientation' as const,
+      colorField: 'insertSizeAndOrientation' as const,
       cloud: true,
       drawInter: false,
       drawLongRange: true,
@@ -1510,7 +1510,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 },
     ]
     const opts = {
-      colorByType: 'insertSizeAndOrientation' as const,
+      colorField: 'insertSizeAndOrientation' as const,
       cloud: true,
       drawInter: false,
       drawLongRange: true,
@@ -1547,7 +1547,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 10000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       cloud: true,
       drawInter: false,
       drawLongRange: true,
@@ -1581,7 +1581,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 10000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       cloud: true,
       drawInter: false,
       drawLongRange: true,
@@ -1610,7 +1610,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 10000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: true,
       drawLongRange: true,
     })
@@ -1633,7 +1633,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
     ]
     const opts = {
-      colorByType: 'insertSizeAndOrientation' as const,
+      colorField: 'insertSizeAndOrientation' as const,
       cloud: true,
       drawInter: false,
       drawLongRange: true,
@@ -1669,7 +1669,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
     ]
     const opts = {
-      colorByType: 'insertSizeAndOrientation' as const,
+      colorField: 'insertSizeAndOrientation' as const,
       cloud: true,
       drawInter: false,
       drawLongRange: true,
@@ -1717,7 +1717,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: false,
       drawLongRange: true,
     })
@@ -1740,7 +1740,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: false,
       drawLongRange: true,
     })
@@ -1767,7 +1767,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: '1', start: 1000, end: 4000, displayedRegionIndex: 0 },
     ]
     const base = {
-      colorByType: 'insertSizeAndOrientation' as const,
+      colorField: 'insertSizeAndOrientation' as const,
       drawInter: true,
       drawLongRange: true,
     }
@@ -1806,7 +1806,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: false,
       drawLongRange: true,
     })
@@ -1865,7 +1865,7 @@ describe('computeArcsFromPileupData', () => {
         new Map([[0, data]]),
         regions,
         {
-          colorByType: 'insertSizeAndOrientation',
+          colorField: 'insertSizeAndOrientation',
           drawInter: false,
           drawLongRange: true,
         },
@@ -1903,7 +1903,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 900, end: 2300, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: false,
       drawLongRange: true,
     })
@@ -1939,7 +1939,7 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       regions,
       {
-        colorByType: 'insertSizeAndOrientation',
+        colorField: 'insertSizeAndOrientation',
         drawInter: false,
         drawLongRange: true,
       },
@@ -1959,7 +1959,7 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       regions,
       {
-        colorByType: 'insertSizeAndOrientation',
+        colorField: 'insertSizeAndOrientation',
         drawInter: false,
         drawLongRange: false,
       },
@@ -1990,7 +1990,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 6000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: false,
       drawLongRange: true,
     })
@@ -2031,7 +2031,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 6000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: false,
       drawLongRange: false,
     })
@@ -2068,7 +2068,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 10000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: false,
       drawLongRange: true,
     })
@@ -2101,7 +2101,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 10000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: false,
       drawLongRange: false,
     })
@@ -2147,7 +2147,7 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       regions,
       {
-        colorByType: 'insertSizeAndOrientation',
+        colorField: 'insertSizeAndOrientation',
         drawInter: false,
         drawLongRange: true,
       },
@@ -2169,7 +2169,7 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       regions,
       {
-        colorByType: 'insertSizeAndOrientation',
+        colorField: 'insertSizeAndOrientation',
         drawInter: false,
         drawLongRange: false,
       },
@@ -2203,7 +2203,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 8000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: false,
       drawLongRange: true,
     })
@@ -2238,7 +2238,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 40000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorByType: 'insertSizeAndOrientation',
+      colorField: 'insertSizeAndOrientation',
       drawInter: false,
       drawLongRange: true,
     })
@@ -2255,7 +2255,7 @@ describe('computeArcsByGroup', () => {
     { refName: 'chr1', start: 0, end: 2_000_000, displayedRegionIndex: 0 },
   ]
   const settings = {
-    colorByType: 'orientation' as const,
+    colorField: 'pairOrientation' as const,
     drawInter: false,
     drawLongRange: true,
   }
@@ -2482,7 +2482,7 @@ describe('computeArcsByGroup', () => {
 // the upload and the per-mousemove hit-test walk by the region count.
 describe('an arc is uploaded only to the regions it reaches', () => {
   const settings = {
-    colorByType: 'insertSize' as const,
+    colorField: 'insertSize' as const,
     drawInter: false,
     drawLongRange: false,
   }
@@ -2692,7 +2692,7 @@ describe('groupArcsByRef', () => {
       { refName: 'chr2', start: 4000, end: 6000, displayedRegionIndex: 1 },
     ]
     const result = computeArcsFromPileupData(new Map([[0, data]]), both, {
-      colorByType: 'insertSize',
+      colorField: 'insertSize',
       drawInter: true,
       drawLongRange: true,
     })
@@ -2815,17 +2815,17 @@ describe('arcColorLegendCategory', () => {
   test('insert-size + orientation slots map to their read-fill categories', () => {
     expect(arcColorLegendCategory(1, 'insertSize')).toBe('longInsert')
     expect(arcColorLegendCategory(2, 'insertSize')).toBe('shortInsert')
-    expect(arcColorLegendCategory(3, 'orientation')).toBe('interchrom')
-    expect(arcColorLegendCategory(4, 'orientation')).toBe('pairLL')
-    expect(arcColorLegendCategory(5, 'orientation')).toBe('pairRR')
-    expect(arcColorLegendCategory(6, 'orientation')).toBe('pairRL')
+    expect(arcColorLegendCategory(3, 'pairOrientation')).toBe('interchrom')
+    expect(arcColorLegendCategory(4, 'pairOrientation')).toBe('pairLL')
+    expect(arcColorLegendCategory(5, 'pairOrientation')).toBe('pairRR')
+    expect(arcColorLegendCategory(6, 'pairOrientation')).toBe('pairRL')
   })
   test('the default slot labels by coloring mode (both colorPairLR)', () => {
     expect(arcColorLegendCategory(0, 'insertSize')).toBe('normalInsert')
     expect(arcColorLegendCategory(0, 'insertSizeAndOrientation')).toBe(
       'normalInsert',
     )
-    expect(arcColorLegendCategory(0, 'orientation')).toBe('pairLR')
+    expect(arcColorLegendCategory(0, 'pairOrientation')).toBe('pairLR')
   })
 })
 
@@ -2852,7 +2852,7 @@ describe('identical arcs coalesce and carry their support', () => {
     { refName: 'chr1', start: 1000, end: 3000, displayedRegionIndex: 0 },
   ]
   const settings = {
-    colorByType: 'insertSizeAndOrientation' as const,
+    colorField: 'insertSizeAndOrientation' as const,
     drawInter: false,
     drawLongRange: true,
   }
@@ -3021,7 +3021,7 @@ describe('a mate link reads its pair fields off a primary, not a supplementary',
     const { arcs } = computeArcsFromPileupData(
       new Map([[0, splitMateOffScreenPrimary]]),
       regions,
-      { colorByType: 'orientation', drawInter: false, drawLongRange: false },
+      { colorField: 'pairOrientation', drawInter: false, drawLongRange: false },
     )
     expect(arcs).toHaveLength(1)
     // COLOR_PAIR_RL. The supplementary's own orientation (1/LR) has no slot and
@@ -3039,7 +3039,7 @@ describe('a mate link reads its pair fields off a primary, not a supplementary',
       new Map([[0, withStats]]),
       regions,
       {
-        colorByType: 'insertSize',
+        colorField: 'insertSize',
         drawInter: false,
         drawLongRange: false,
       },
@@ -3070,7 +3070,7 @@ describe('a mate link reads its pair fields off a primary, not a supplementary',
     const { arcs } = computeArcsFromPileupData(
       new Map([[0, bothPrimaries]]),
       regions,
-      { colorByType: 'orientation', drawInter: false, drawLongRange: false },
+      { colorField: 'pairOrientation', drawInter: false, drawLongRange: false },
     )
     expect(arcs).toHaveLength(1)
     expect(arcs[0]!.colorType).toBe(6)

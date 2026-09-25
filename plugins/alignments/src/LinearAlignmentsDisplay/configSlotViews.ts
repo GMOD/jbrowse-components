@@ -8,8 +8,10 @@ import {
   baseLayerOf,
   bodyColorScheme,
   colorByOf,
+  colorFieldOf,
   pinnedInsertSizeBand,
 } from '../shared/alignmentsColor.ts'
+import { arcColorFieldOf } from '../shared/arcColorOptions.ts'
 import { normalizeFilterBy } from '../shared/types.ts'
 
 import type {
@@ -17,7 +19,7 @@ import type {
   AlignmentsColorSetting,
 } from '../shared/alignmentsColor.ts'
 import type {
-  ArcColorByType,
+  ArcColorField,
   BaseLayer,
   ColorSchemeType,
   FilterBy,
@@ -142,10 +144,6 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return getConf(self, 'drawLongRange')
     },
     /** #getter */
-    get arcColorByType(): ArcColorByType {
-      return getConf(self, 'arcColorByType')
-    },
-    /** #getter */
     get readConnections(): ReadConnectionsMode {
       return getConf(self, 'readConnections')
     },
@@ -224,6 +222,17 @@ export function configSlotViews(self: ConfigSlotSelf) {
      */
     get colorBy(): ReadColorBy {
       return colorByOf(this.colorEncoding)
+    },
+    /**
+     * #getter
+     * The field the arcs and the read cloud paint: `arcColor`'s own, or the
+     * reads' where `arcColor` names none.
+     */
+    get arcColorField(): ArcColorField {
+      return arcColorFieldOf(
+        getConf(self, ['arcColor', 'field']),
+        colorFieldOf(this.colorBy),
+      )
     },
     /**
      * #getter

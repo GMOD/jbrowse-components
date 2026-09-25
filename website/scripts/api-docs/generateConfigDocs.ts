@@ -1269,13 +1269,17 @@ function slotAnchor(name: string) {
   return `slot-${name.toLowerCase().replace(/\./g, '')}`
 }
 
+function enumList(values: readonly string[]) {
+  return values.map(v => (v === '' ? '""' : v)).join(', ')
+}
+
 // The Type cell: the slot's declared type, linked to the slot-types guide, with
 // a stringEnum's choices after it. A slot whose value isn't a `{ type, ... }`
 // object at all (`pluginManager.pluggableConfigSchemaType('adapter')`, a nested
 // `ConfigurationSchema`) has no type to name, so its source stands in — that
 // expression is the only thing there is to say about it.
 function slotTypeCell(meta: SlotMeta, schemaPage: Item['schemaPage']) {
-  const enums = meta.enumValues ? ` (${meta.enumValues.join(', ')})` : ''
+  const enums = meta.enumValues ? ` (${enumList(meta.enumValues)})` : ''
   return meta.type
     ? `${typeLink(meta.type)}${enums}`
     : schemaPage
@@ -1737,7 +1741,7 @@ const AGENT_SLOT_NESTING: Record<string, (name: string) => string> = {
 
 function agentSlotLine(item: Item) {
   const { meta } = slotMetaFor(item)
-  const enums = meta.enumValues ? ` (${meta.enumValues.join(', ')})` : ''
+  const enums = meta.enumValues ? ` (${enumList(meta.enumValues)})` : ''
   const type = meta.type
     ? `${meta.type}${enums}`
     : (item.schemaPage?.name ??

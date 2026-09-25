@@ -270,6 +270,41 @@ describe('Arc color menu visibility', () => {
   })
 })
 
+describe('arc color follows the reads unless it names its own field', () => {
+  test('an empty arcColor takes a pair field from the reads', () => {
+    const display = createDisplay()
+    display.setArcColorField('')
+    display.setColorBy({ type: 'pairOrientation' })
+    expect(display.arcColorField).toBe('pairOrientation')
+    display.setColorBy({ type: 'strand' })
+    expect(display.arcColorField).toBe('insertSizeAndOrientation')
+  })
+
+  test('an arcColor field of its own ignores the reads', () => {
+    const display = createDisplay()
+    display.setArcColorField('insertSize')
+    display.setColorBy({ type: 'pairOrientation' })
+    expect(display.arcColorField).toBe('insertSize')
+  })
+
+  test('the Arc color radios write the field, Same as reads the empty one', () => {
+    const display = createDisplay()
+    display.setReadConnections('arc')
+    display.setColorBy({ type: 'insertSize' })
+    const arcMenu = () => menuSubItems(display.trackMenuItems(), 'Arc color')
+    clickMenuItem(arcMenu(), 'Orientation')
+    expect(display.arcColorField).toBe('pairOrientation')
+    expect(findMenuItem(arcMenu(), 'Same as reads')).toMatchObject({
+      checked: false,
+    })
+    clickMenuItem(arcMenu(), 'Same as reads')
+    expect(display.arcColorField).toBe('insertSize')
+    expect(findMenuItem(arcMenu(), 'Same as reads')).toMatchObject({
+      checked: true,
+    })
+  })
+})
+
 // Sort and the read SIZE rows act only on the pileup rows, so they grey out
 // (with a tip) when the pileup band is hidden — mirrors the disabled
 // band-options pattern. Group-by and filters are NOT gated: both still affect

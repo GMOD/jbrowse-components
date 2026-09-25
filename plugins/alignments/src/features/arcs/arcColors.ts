@@ -8,7 +8,7 @@ import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 
 import type { ReadColorCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
-import type { ArcColorByType } from '../../shared/types.ts'
+import type { ArcColorField } from '../../shared/types.ts'
 import type { ComputedArc, PendingArc } from './arcTypes.ts'
 
 // Which colour slot an arc paints in, and the paint order that follows from it.
@@ -133,7 +133,7 @@ export function arcPaintOrder(a: ComputedArc, b: ComputedArc) {
 // switch, which is how the two ended up describing different things.
 export function arcColorLegendCategory(
   colorType: number,
-  colorByType: ArcColorByType,
+  colorField: ArcColorField,
 ): ReadColorCategory {
   const category = ARC_SLOT_CATEGORY[colorType]
   // Slot 0 and anything out of range are the baseline colorPairLR; its LABEL is
@@ -141,7 +141,7 @@ export function arcColorLegendCategory(
   // orientation), which is why this is not a bare table lookup. Every other slot
   // means the same thing whatever the mode.
   return category === undefined || category === 'normalInsert'
-    ? colorByType === 'orientation'
+    ? colorField === 'pairOrientation'
       ? 'pairLR'
       : 'normalInsert'
     : category
@@ -199,11 +199,11 @@ function insertSizeColor(tlen: number, stats: InsertSizeBand | undefined) {
 // `readColorCategory`.
 export function getArcColorType(args: {
   arc: PendingArc
-  colorByType: ArcColorByType
+  colorField: ArcColorField
   hasPaired: boolean
   stats: InsertSizeBand | undefined
 }) {
-  const { arc, colorByType, hasPaired, stats } = args
+  const { arc, colorField, hasPaired, stats } = args
 
   // A split-read junction carries no pair semantics (no template length, no
   // pair orientation), so it colors by its own segment strands — opposite
@@ -213,7 +213,7 @@ export function getArcColorType(args: {
   // its inversion junctions correctly. Resolved before the insert class below
   // because that is a paired concept and a junction has no TLEN to classify.
   if (!hasPaired || arc.isSplit) {
-    return colorByType === 'insertSize'
+    return colorField === 'insertSize'
       ? COLOR_DEFAULT
       : unpairedOrientationColor(arc.p1Strand, arc.p2Strand)
   }
@@ -235,10 +235,10 @@ export function getArcColorType(args: {
   // IN VIEW, so an arc's color depended on what else was on screen and changed
   // as you panned.
   const insert = insertSizeColor(arc.tlen, stats)
-  switch (colorByType) {
+  switch (colorField) {
     case 'insertSize':
       return insert
-    case 'orientation':
+    case 'pairOrientation':
       return orient ?? COLOR_DEFAULT
     // Short-insert pairs always paint pink, even with abnormal orientation;
     // otherwise orientation wins, falling back to long-/normal-insert.

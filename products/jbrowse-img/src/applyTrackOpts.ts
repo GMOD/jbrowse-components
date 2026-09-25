@@ -262,7 +262,7 @@ interface DisplaySnapshot {
   maxHeight?: number
   minSashimiScore?: number
   sashimiArcsHeight?: number
-  arcColorByType?: string
+  arcColor?: string
   // Lifted back out by `applyDisplayOpts` rather than passed to showTrack —
   // see there for why this one slot cannot ride in on the snapshot.
   filterBy?: FilterBySnapshot
@@ -304,9 +304,10 @@ type WiggleConfigSlotKey = 'defaultRendering' | 'color' | 'scales'
 // divergently-named `configForceLoad` getter, so `keyof` the instance misses it
 // the same way it misses the wiggle slots above.
 type BaseConfigSlotKey = 'forceLoad'
-// `modifications` and `baseColor` are alignments config slots read through the
-// divergently-named `modificationSettings` and `baseLayer` getters.
-type AlignmentsConfigSlotKey = 'modifications' | 'baseColor'
+// `modifications`, `baseColor` and `arcColor` are alignments config slots read
+// through the divergently-named `modificationSettings`, `baseLayer` and
+// `arcColorField` getters.
+type AlignmentsConfigSlotKey = 'modifications' | 'baseColor' | 'arcColor'
 type DisplayKeys =
   | keyof LinearAlignmentsDisplayModel
   | keyof LinearBasicDisplayModel
@@ -703,10 +704,10 @@ const modifiers: Record<string, Modifier> = {
   arcColor: {
     on: ['alignments'],
     apply: (r, v) => {
-      r.snap.arcColorByType = parseEnum('arcColor', v, [
+      r.snap.arcColor = parseEnum('arcColor', v, [
         'insertSizeAndOrientation',
         'insertSize',
-        'orientation',
+        'pairOrientation',
       ] as const)
     },
   },

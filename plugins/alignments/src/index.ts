@@ -135,7 +135,7 @@ export type {
 } from './LinearAlignmentsDisplay/bakedColorScale.ts'
 export type { AlignmentsColorSetting } from './shared/alignmentsColor.ts'
 export type {
-  ArcColorByType,
+  ArcColorField,
   CategoryFilter,
   BaseLayer,
   ColorBy,

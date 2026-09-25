@@ -1,5 +1,5 @@
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
-import type { ArcColorByType } from '../../shared/types.ts'
+import type { ArcColorField } from '../../shared/types.ts'
 
 // The shared vocabulary of the arc pass: the region lists it runs against, the
 // settings that gate it, the pending form a read pair or split junction takes
@@ -37,9 +37,9 @@ export interface ArcRegions {
 }
 
 export interface ArcSettings {
-  colorByType: ArcColorByType
+  colorField: ArcColorField
   // read cloud mode: flat lines at Y=|tlen|, concordant FR pairs
-  // filtered out so only discordant pairs remain. Coloring follows colorByType
+  // filtered out so only discordant pairs remain. Coloring follows colorField
   // (same palette as arcs), not a separate DEL/DUP/INV scheme.
   cloud?: boolean
   drawInter: boolean

@@ -135,6 +135,6 @@ describe('unknown pair orientation', () => {
   test('the arc baseline and the read fill are the same grey', () => {
     expect(swatchPaletteKeys.nonSplit).toBe(swatchPaletteKeys.pairLR)
     expect(ARC_SLOT_CATEGORY[0]).toBe('normalInsert')
-    expect(arcColorLegendCategory(0, 'orientation')).toBe('pairLR')
+    expect(arcColorLegendCategory(0, 'pairOrientation')).toBe('pairLR')
   })
 })

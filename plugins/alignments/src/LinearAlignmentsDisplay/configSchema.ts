@@ -6,8 +6,8 @@ import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeCon
 import { types } from '@jbrowse/mobx-state-tree'
 import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
-import { ARC_COLOR_TYPES } from '../shared/arcColorOptions.ts'
 import { defaultFilterFlags } from '../shared/util.ts'
+import { alignmentsArcColorConfigSchema } from './alignmentsArcColorConfigSchema.ts'
 import { alignmentsBaseColorConfigSchema } from './alignmentsBaseColorConfigSchema.ts'
 import { alignmentsColorConfigSchema } from './alignmentsColorConfigSchema.ts'
 import {
@@ -446,14 +446,12 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         description: 'Draw long-range read-connection arcs',
       },
       /**
-       * #slot
+       * #slot arcColor
+       * What colours the read-connection arcs and the read cloud:
+       * `"pairOrientation"` paints them by pair orientation whatever the reads
+       * show, and `""` takes the reads' `color` field where an arc paints it.
        */
-      arcColorByType: {
-        type: 'stringEnum',
-        model: types.enumeration('ArcColorByType', [...ARC_COLOR_TYPES]),
-        defaultValue: 'insertSizeAndOrientation',
-        description: 'How to color read-connection arcs',
-      },
+      arcColor: alignmentsArcColorConfigSchema,
       /**
        * #slot
        */

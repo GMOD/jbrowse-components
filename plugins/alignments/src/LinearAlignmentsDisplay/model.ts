@@ -185,7 +185,7 @@ import type { CoverageRegionFields } from '../features/coverage/types.ts'
 import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
 import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
 import type {
-  ArcColorByType,
+  ArcColorField,
   BaseLayer,
   ColorSchemeType,
   FilterBy,
@@ -1142,9 +1142,9 @@ export default function stateModelFactory(
            * #getter
            * The arc color slots actually plotted, mapped to legend buckets —
            * curved paired-end arcs and the read cloud's flat lines and endpoint
-           * squares alike, since both paint from `arcColorByType`. Its own
-           * vocabulary when the fills use a different scheme (a track colored by
-           * strand still draws insert-size-colored arcs); `getAlignmentsColorScales`
+           * squares alike, since both paint `arcColorField`, which follows the
+           * reads only where they paint a pair field (a track colored by strand
+           * still draws insert-size-colored arcs); `getAlignmentsColorScales`
            * folds the rows the reads already key. Empty unless an overlay is on
            * with the legend shown.
            */
@@ -1158,7 +1158,7 @@ export default function stateModelFactory(
               // `ArcsByGroupResult`, which also says why it is computed after
               // regionization rather than before.
               for (const slot of this.arcsResult.colorSlots) {
-                present.add(arcColorLegendCategory(slot, self.arcColorByType))
+                present.add(arcColorLegendCategory(slot, self.arcColorField))
               }
             }
             return present
@@ -1839,7 +1839,7 @@ export default function stateModelFactory(
               }
             }
             const settings = {
-              colorByType: self.arcColorByType,
+              colorField: self.arcColorField,
               cloud: self.readConnections === 'cloud',
               drawInter: self.drawInter,
               drawLongRange: self.drawLongRange,
@@ -2877,7 +2877,7 @@ export default function stateModelFactory(
         // Fields that invalidate the fetched pileup/chain data. Worker-
         // bound (filterBy, colorBy, …) plus the one main-thread decision
         // field that selects between pileup and chain RPC (linkedReads).
-        // Arc-only fields (arcColorByType, drawInter, drawLongRange) are
+        // Arc-only fields (arcColor, drawInter, drawLongRange) are
         // NOT here — `arcsResult` reads them and they do not require a
         // refetch. Non-tag sort changes are handled by the main-thread layout,
         // as is tag coloring (`readTagColors` is baked in `laidOutByGroup` from
@@ -3652,8 +3652,8 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setArcColorByType(type: ArcColorByType) {
-            setConf(self, 'arcColorByType', type)
+          setArcColorField(field: ArcColorField | '') {
+            setConf(self, ['arcColor', 'field'], field)
           },
 
           /**
@@ -4003,9 +4003,9 @@ export default function stateModelFactory(
                 self.readConnections === 'off'
                   ? undefined
                   : {
-                      current: self.arcColorByType,
-                      setColor: (type: ArcColorByType) => {
-                        self.setArcColorByType(type)
+                      own: getConf(self, ['arcColor', 'field']),
+                      setField: (field: ArcColorField | '') => {
+                        self.setArcColorField(field)
                       },
                     },
               supplementaryColoring: {

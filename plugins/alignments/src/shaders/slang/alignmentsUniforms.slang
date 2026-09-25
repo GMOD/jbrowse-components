@@ -296,7 +296,7 @@ public static const uint ARC_COLOR_SHORT_INSERT = 2u;
 // The connector-tick slot, and the ONLY color an interchromosomal tick takes.
 // Insert size, long-range distance and pair orientation are all meaningless
 // across two references — a cross-chromosome "pair orientation" is arbitrary —
-// so every translocation tick is this one color whatever `arcColorByType` says
+// so every translocation tick is this one color whatever `arcColor` says
 // (see resolveArcs). That is why arcLine.slang carries no per-instance
 // colorType: the attribute existed to convey a constant. `//! export-consts`ed
 // through arcLine.slang, the pass that consumes it.

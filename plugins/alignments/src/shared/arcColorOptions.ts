@@ -1,18 +1,11 @@
 /**
- * The three schemes a paired-end arc / read cloud can be colored by, and the
- * radios the 'Arc color' submenu builds from them.
+ * The read fields a paired-end arc and the read cloud can paint, and the
+ * radios the 'Arc color' submenu builds from them. They are the reads' own
+ * field names, so `arcColor` and `color` over one variable are one word.
  *
- * A deliberately smaller, separately-persisted vocabulary than the read-fill
- * `ColorSchemeType`: arcs support only these three, and `'orientation'` is the
- * arc name for the read scheme's `'pairOrientation'`. Kept distinct because it
- * is a saved config value (renaming would need a migration) and the arc menu
- * carries its own richer help text. `getArcColorType`
- * (features/arcs/arcColors.ts) mirrors the matching read-fill logic.
- *
- * Here rather than beside the menu that renders it because the website's figure
- * recipes name these labels in a click path, and the node script that builds
- * them cannot load a module importing React, MUI or a lazy `.tsx`. A leaf module
- * makes the recipe import the label instead of retyping it.
+ * A leaf module because the website's figure recipes name these labels in a
+ * click path, and the node script that builds them cannot load a module
+ * importing React, MUI or a lazy `.tsx`.
  */
 export const ARC_COLOR_OPTIONS = [
   {
@@ -28,13 +21,38 @@ export const ARC_COLOR_OPTIONS = [
       'Colors only by template length: short inserts pink, long inserts red, normal grey — orientation ignored. Thresholds use a robust median ± 3·1.4826·MAD spread so a tight insert-size distribution with a few very large outliers still flags genuinely short inserts.',
   },
   {
-    value: 'orientation',
+    value: 'pairOrientation',
     label: 'Orientation',
     helpText:
       'Colors only by pair orientation (LR/RL/RR/LL), ignoring insert size. Useful when you only care about inversion/duplication signatures.',
   },
 ] as const
 
-export type ArcColorByType = (typeof ARC_COLOR_OPTIONS)[number]['value']
+export type ArcColorField = (typeof ARC_COLOR_OPTIONS)[number]['value']
 
-export const ARC_COLOR_TYPES = ARC_COLOR_OPTIONS.map(o => o.value)
+export const ARC_COLOR_FIELDS = ARC_COLOR_OPTIONS.map(o => o.value)
+
+export const SAME_AS_READS_LABEL = 'Same as reads'
+
+export const SAME_AS_READS_HELP =
+  "Arcs take the reads' color when the reads are colored by insert size, pair orientation, or both. Under any other read color they paint by insert size and orientation."
+
+/** What an arc paints when neither it nor the reads name a field it can. */
+export const DEFAULT_ARC_COLOR_FIELD: ArcColorField = 'insertSizeAndOrientation'
+
+function isArcColorField(field: string): field is ArcColorField {
+  return (ARC_COLOR_FIELDS as readonly string[]).includes(field)
+}
+
+/**
+ * The field the arcs paint: `own`, the `arcColor` object's, unless it is
+ * empty, then `readField`, the reads' `color` field, where an arc can paint
+ * it, else {@link DEFAULT_ARC_COLOR_FIELD}.
+ */
+export function arcColorFieldOf(own: string, readField: string) {
+  return isArcColorField(own)
+    ? own
+    : isArcColorField(readField)
+      ? readField
+      : DEFAULT_ARC_COLOR_FIELD
+}

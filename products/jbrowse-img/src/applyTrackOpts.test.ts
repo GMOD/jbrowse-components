@@ -229,7 +229,7 @@ describe('alignments settings a static export cannot reach any other way', () =>
       maxHeight: 4000,
       minSashimiScore: 3,
       sashimiArcsHeight: 120,
-      arcColorByType: 'insertSize',
+      arcColor: 'insertSize',
     })
   })
 

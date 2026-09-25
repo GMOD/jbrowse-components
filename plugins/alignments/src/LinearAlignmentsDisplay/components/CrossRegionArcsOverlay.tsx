@@ -108,7 +108,7 @@ const CrossRegionArcsBand = observer(function CrossRegionArcsBand({
                   },
                   arc.refName,
                   readColorCategoryLabel(
-                    arcColorLegendCategory(arc.colorType, model.arcColorByType),
+                    arcColorLegendCategory(arc.colorType, model.arcColorField),
                   ),
                   arc.endRefName,
                 ),

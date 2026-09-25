@@ -915,8 +915,9 @@ export const svSpecs: ScreenshotSpec[] = [
               readConnections: 'arc',
               readConnectionsDown: true,
               drawProperPairArcs: false,
-              // arcColorByType stays the default insertSizeAndOrientation, so
-              // the legend is what says what the four bands' arc colors mean.
+              // No `arcColor` or `color`, so the arcs paint
+              // insertSizeAndOrientation, and the legend is what says what the
+              // four bands' arc colors mean.
               showLegend: true,
               coverageHeight: 60,
               readConnectionsHeight: 90,

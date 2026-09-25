@@ -686,15 +686,15 @@ which lets a script pass a category through from a variable that may be empty.
 
 Overlays & subtracks:
 
-| Modifier               | Example               | Description                                                                            |
-| ---------------------- | --------------------- | -------------------------------------------------------------------------------------- |
-| `arcs:mode`            | `arcs:cloud`          | Read-connection arcs / read-cloud panel (`off`, `up`, `down`, `cloud`)                 |
-| `linkedReads:mode`     | `linkedReads:normal`  | Linked-read chains (`off`, `normal`, `bezier`)                                         |
-| `sashimi:mode`         | `sashimi:up`          | Sashimi splice-junction arcs (`off`, `up`, `down`, `auto`)                             |
-| `coverage:true\|false` | `coverage:false`      | Toggle coverage subtrack                                                               |
-| `snpcov`               | `snpcov`              | Coverage-only view — resizes the coverage band to fill the track                       |
-| `sashimiScore:N`       | `sashimiScore:3`      | Minimum reads a splice junction needs before its arc is drawn                          |
-| `arcColor:mode`        | `arcColor:insertSize` | Read-connection arc coloring (`insertSizeAndOrientation`, `insertSize`, `orientation`) |
+| Modifier               | Example               | Description                                                                                |
+| ---------------------- | --------------------- | ------------------------------------------------------------------------------------------ |
+| `arcs:mode`            | `arcs:cloud`          | Read-connection arcs / read-cloud panel (`off`, `up`, `down`, `cloud`)                     |
+| `linkedReads:mode`     | `linkedReads:normal`  | Linked-read chains (`off`, `normal`, `bezier`)                                             |
+| `sashimi:mode`         | `sashimi:up`          | Sashimi splice-junction arcs (`off`, `up`, `down`, `auto`)                                 |
+| `coverage:true\|false` | `coverage:false`      | Toggle coverage subtrack                                                                   |
+| `snpcov`               | `snpcov`              | Coverage-only view — resizes the coverage band to fill the track                           |
+| `sashimiScore:N`       | `sashimiScore:3`      | Minimum reads a splice junction needs before its arc is drawn                              |
+| `arcColor:mode`        | `arcColor:insertSize` | Read-connection arc coloring (`insertSizeAndOrientation`, `insertSize`, `pairOrientation`) |
 
 Layout & sizing:
 

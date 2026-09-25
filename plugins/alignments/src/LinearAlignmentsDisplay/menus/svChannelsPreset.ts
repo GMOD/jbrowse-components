@@ -31,12 +31,11 @@ export const SV_CHANNELS_LABEL = 'SV channels (pairs by orientation)'
 // arrangement anyone finds by looking.
 //
 // `colorBy` is deliberately NOT among them, though the arrangement wrote it
-// until 2026-08-26. With the pileup hidden there are no read fills to paint:
-// the arcs take `arcColorByType` and the coverage band reads `colorBy` only
-// under a modification or bisulfite scheme (executeRenderAlignmentData's
-// `trackStrands`/`bisulfite`). So the one setting that cost a reader their
-// methylation or insert-size coloring on the way in, and reset it to `normal`
-// on the way out, was also the one changing nothing in the picture.
+// until 2026-08-26. With the pileup hidden there are no read fills to paint,
+// and the coverage band reads `colorBy` only under a modification or bisulfite
+// scheme (executeRenderAlignmentData's `trackStrands`/`bisulfite`). What the
+// read colour still reaches is the arcs, through `arcColorField`, so writing
+// it would also have repainted them.
 //
 // `readConnectionsDown` is in NEITHER preset, and that is the same statement
 // `isSvChannelsActive` makes by not matching on it: which side of the coverage

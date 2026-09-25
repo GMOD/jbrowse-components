@@ -3623,8 +3623,15 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "arcColorByType",
-          "type": "ArcColorByType"
+          "name": "arcColor",
+          "type": "AlignmentsArcColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "AlignmentsArcColorField"
+            }
+          ],
+          "shorthand": "field"
         },
         {
           "name": "readConnections",
@@ -4066,8 +4073,15 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "arcColorByType",
-          "type": "ArcColorByType"
+          "name": "arcColor",
+          "type": "AlignmentsArcColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "AlignmentsArcColorField"
+            }
+          ],
+          "shorthand": "field"
         },
         {
           "name": "readConnections",

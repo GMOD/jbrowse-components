@@ -350,6 +350,13 @@ region either side of a breakpoint shows the connection as one curve.
 Interchromosomal arcs draw in one colour, since insert size and orientation mean
 nothing across chromosomes.
 
+**Color by... → Arc color** picks what colours the arcs and the read cloud:
+insert size, pair orientation, or both. **Same as reads** takes the read colour
+when the reads are coloured by one of those three, and paints insert size and
+orientation under any other read colour. The
+[`arcColor`](/docs/config/linearalignmentsdisplay/#slot-arccolor) slot holds the
+choice, `""` meaning same as reads.
+
 Reads describing the same connection draw as **one arc, thickened by how many
 there are**, on a log scale, so the arcs rank the evidence. A single-read
 connection draws at

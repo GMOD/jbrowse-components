@@ -25,7 +25,10 @@ import {
   facetTag,
 } from '../../../../plugins/alignments/src/shared/groupByLabels.ts'
 import { DEFAULT_AUTOSCALE_OPTIONS } from '../../../../packages/wiggle-core/src/autoscale.ts'
-import { ARC_COLOR_OPTIONS } from '../../../../plugins/alignments/src/shared/arcColorOptions.ts'
+import {
+  ARC_COLOR_OPTIONS,
+  SAME_AS_READS_LABEL,
+} from '../../../../plugins/alignments/src/shared/arcColorOptions.ts'
 import { CIGAR_MODE_OPTIONS } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyView/cigarModes.ts'
 import {
   COLOR_MODES,
@@ -821,9 +824,10 @@ function filterStep(
 
 // The radios inside the alignments display's 'Arc color' submenu, imported so a
 // renamed radio changes this table with it.
-const ARC_COLORS: Record<string, string> = Object.fromEntries(
-  ARC_COLOR_OPTIONS.map(o => [o.value, o.label]),
-)
+const ARC_COLORS: Record<string, string> = Object.fromEntries([
+  ['', SAME_AS_READS_LABEL],
+  ...ARC_COLOR_OPTIONS.map(o => [o.value, o.label]),
+])
 
 // The alignments 'Sort by...' radios (menus/sortGroup.ts). The strand row is
 // titled from the track's noun, as the height submenus are.
@@ -1237,8 +1241,9 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'Greyed out until "Read connections → View as pairs / link supplementary alignments" is on. It is what classifies a long read\'s segments against the orientation the chains on screen agree on, so unchecking it drops the red/blue split-segment colouring and the legend rows that go with it.',
         }
       : undefined,
-  arcColorByType: (value, { displayType }) => {
-    const label = typeof value === 'string' ? ARC_COLORS[value] : undefined
+  arcColor: (value, { displayType }) => {
+    const field = typeof value === 'string' ? value : asRecord(value)?.field
+    const label = typeof field === 'string' ? ARC_COLORS[field] : undefined
     return label && displayType === 'LinearAlignmentsDisplay'
       ? { path: `${TRACK_MENU} → Color by... → Arc color → ${label}` }
       : undefined

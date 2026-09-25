@@ -259,7 +259,7 @@ function resolveArcs(
   // Resolved once for the feed: it describes the VIEW, not a connection.
   const reachBp = cloudReachBp(loadedRegions)
   const {
-    colorByType,
+    colorField,
     cloud = false,
     drawInter,
     drawProperPairArcs = true,
@@ -518,7 +518,7 @@ function resolveArcs(
     // colour: insert size, long-range distance and pair orientation are all
     // meaningless across refs (a cross-chromosome "pair orientation" is
     // arbitrary), so colouring by them just produces visual noise — one uniform
-    // colour regardless of colorByType, and regardless of whether the evidence
+    // colour regardless of colorField, and regardless of whether the evidence
     // is a split read or a mate pair. As a TICK that was because the mark
     // carries no colour of its own (ARC_COLOR_INTERCHROM lives in arcLine.slang,
     // where the pass reads it). As an ARC the reason is stronger: "crosses
@@ -643,7 +643,7 @@ function resolveArcs(
     // aren't loaded in the current view; see `offScreenMateArcs`.)
     const colorType = getArcColorType({
       arc,
-      colorByType,
+      colorField,
       hasPaired,
       stats,
     })
@@ -669,7 +669,7 @@ function resolveArcs(
     // currently drawing as a category can be hidden as routine, whatever the
     // flags say. `arcPaintRank` is the same classifier the paint order uses, so
     // "hidden" and "grey" are the same set by construction, and both follow
-    // `colorByType` — under `orientation` a short insert IS routine, and the
+    // `colorField` — under `pairOrientation` a short insert IS routine, and the
     // setting agrees without being told.
     //
     // A split junction has no pair to call proper and is never suppressed: it is

@@ -2,9 +2,10 @@ import {
   arcColorLegendCategory,
   getArcColorType,
 } from '../features/arcs/arcColors.ts'
+import { ARC_COLOR_FIELDS } from '../shared/arcColorOptions.ts'
 import { readColorCategory } from './colorUtils.ts'
 
-import type { ArcColorByType, ColorSchemeType } from '../shared/types.ts'
+import type { ArcColorField } from '../shared/types.ts'
 
 // The arc overlay and the read fills classify a pair INDEPENDENTLY —
 // `getArcColorType` on one side, `readColorCategory` on the other — and the
@@ -23,14 +24,8 @@ const ORIENTATIONS = [1, 2, 3, 4]
 // straddles classifyInsertSize's lower/upper against `stats`
 const INSERT_SIZES = [50, 300, 5000]
 
-const ARC_TO_READ_SCHEME: Record<ArcColorByType, ColorSchemeType> = {
-  insertSize: 'insertSize',
-  orientation: 'pairOrientation',
-  insertSizeAndOrientation: 'insertSizeAndOrientation',
-}
-
 function arcCategory(
-  colorByType: ArcColorByType,
+  colorField: ArcColorField,
   pairOrientationNum: number,
   tlen: number,
 ) {
@@ -52,16 +47,16 @@ function arcCategory(
         // carried for the concordant-arc filter, which colouring never consults
         flags: 0,
       },
-      colorByType,
+      colorField,
       hasPaired: true,
       stats,
     }),
-    colorByType,
+    colorField,
   )
 }
 
 function readCategory(
-  colorByType: ArcColorByType,
+  colorField: ArcColorField,
   pairOrientationNum: number,
   tlen: number,
 ) {
@@ -78,27 +73,22 @@ function readCategory(
       readInterchrom: Uint8Array.of(0),
       insertSizeStats: stats,
     },
-    ARC_TO_READ_SCHEME[colorByType],
+    colorField,
   )
 }
 
 describe('arc and read color classifiers', () => {
-  test.each(Object.keys(ARC_TO_READ_SCHEME) as ArcColorByType[])(
+  test.each(ARC_COLOR_FIELDS)(
     'agree on every orientation x insert-size pair in %s mode',
-    colorByType => {
+    colorField => {
       for (const po of ORIENTATIONS) {
         for (const tlen of INSERT_SIZES) {
           expect([
-            colorByType,
+            colorField,
             po,
             tlen,
-            arcCategory(colorByType, po, tlen),
-          ]).toEqual([
-            colorByType,
-            po,
-            tlen,
-            readCategory(colorByType, po, tlen),
-          ])
+            arcCategory(colorField, po, tlen),
+          ]).toEqual([colorField, po, tlen, readCategory(colorField, po, tlen)])
         }
       }
     },
@@ -112,23 +102,19 @@ describe('arc and read color classifiers', () => {
   // information-unavailable pair is `normal` on both sides rather than red on
   // one of them.
   test('agree on TLEN 0, however far apart the mates are drawn', () => {
-    for (const colorByType of Object.keys(
-      ARC_TO_READ_SCHEME,
-    ) as ArcColorByType[]) {
-      expect(arcCategory(colorByType, 1, 0)).toBe(
-        readCategory(colorByType, 1, 0),
-      )
+    for (const colorField of ARC_COLOR_FIELDS) {
+      expect(arcCategory(colorField, 1, 0)).toBe(readCategory(colorField, 1, 0))
     }
   })
 
-  // `orientation` mode has no insert-size vocabulary at all on the read side,
+  // `pairOrientation` mode has no insert-size vocabulary at all on the read side,
   // so an arc keying an insert bucket there is unfoldable into the read key —
   // which is exactly what the long-insert LR fallback used to produce.
   test('orientation mode never emits an insert-size bucket', () => {
     for (const po of ORIENTATIONS) {
       for (const tlen of [0, ...INSERT_SIZES]) {
         expect(['longInsert', 'shortInsert', 'normalInsert']).not.toContain(
-          arcCategory('orientation', po, tlen),
+          arcCategory('pairOrientation', po, tlen),
         )
       }
     }

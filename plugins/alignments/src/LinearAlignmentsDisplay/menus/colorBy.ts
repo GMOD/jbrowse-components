@@ -10,7 +10,11 @@ import { getDialogHost } from '@jbrowse/core/util'
 import Palette from '@mui/icons-material/Palette'
 
 import { BASE_COLOR_FIELDS } from '../../shared/alignmentsColor.ts'
-import { ARC_COLOR_OPTIONS } from '../../shared/arcColorOptions.ts'
+import {
+  ARC_COLOR_OPTIONS,
+  SAME_AS_READS_HELP,
+  SAME_AS_READS_LABEL,
+} from '../../shared/arcColorOptions.ts'
 import { radioColorOptions } from '../../shared/colorSchemes.ts'
 import { bisulfiteItem } from './bisulfiteMenu.ts'
 import { modificationsMenu } from './modificationsMenu.ts'
@@ -18,7 +22,7 @@ import { modificationsMenu } from './modificationsMenu.ts'
 import type { AlignmentsColorEncoding } from '../../shared/alignmentsColor.ts'
 import type { ColorOption } from '../../shared/colorSchemes.ts'
 import type {
-  ArcColorByType,
+  ArcColorField,
   BaseLayer,
   BaseLayerType,
   ColorSchemeType,
@@ -76,8 +80,8 @@ interface ColorByMenuOptions {
   // other section here) when no overlay (arcs or read cloud) is active, since
   // both share this coloring — the caller passes `undefined` in that case.
   arcColor?: {
-    current: ArcColorByType
-    setColor: (type: ArcColorByType) => void
+    own: ArcColorField | ''
+    setField: (field: ArcColorField | '') => void
   }
   // Supplementary/split-read coloring modifiers. These color how chained
   // supplementary alignments are drawn, so they belong with the color scheme
@@ -231,7 +235,14 @@ function arcColorItem(
     type: 'subMenu',
     helpText:
       'How paired-end arcs and the read cloud overlay are colored by insert size and/or pair orientation, to surface structural-variant signal (deletions, inversions, duplications, insertions).',
-    subMenu: radioItems(ARC_COLOR_OPTIONS, arcColor.current, arcColor.setColor),
+    subMenu: radioItems(
+      [
+        { value: '', label: SAME_AS_READS_LABEL, helpText: SAME_AS_READS_HELP },
+        ...ARC_COLOR_OPTIONS,
+      ],
+      arcColor.own,
+      arcColor.setField,
+    ),
   }
 }
 

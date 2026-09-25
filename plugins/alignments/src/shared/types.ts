@@ -2,7 +2,7 @@ import { defaultFilterFlags } from './util.ts'
 
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
-export type { ArcColorByType } from './arcColorOptions.ts'
+export type { ArcColorField } from './arcColorOptions.ts'
 
 // Minimum modification-call probability (%) shown by default. Stored threshold
 // is omitted at this value so default sessions don't carry a redundant field.

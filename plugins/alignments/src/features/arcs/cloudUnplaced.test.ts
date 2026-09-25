@@ -51,7 +51,7 @@ function loneMateAt(mateBp: number, tlen: number, readBp = 1000) {
 }
 
 const CLOUD = {
-  colorByType: 'insertSizeAndOrientation' as const,
+  colorField: 'insertSizeAndOrientation' as const,
   cloud: true,
   drawInter: false,
   drawLongRange: true,

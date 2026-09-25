@@ -4478,6 +4478,43 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "AlignmentsArcColor": {
+      "title": "AlignmentsArcColor",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "enum": [
+            "",
+            "insertSizeAndOrientation",
+            "insertSize",
+            "pairOrientation"
+          ],
+          "default": "insertSizeAndOrientation",
+          "type": "string"
+        },
+        {
+          "title": "AlignmentsArcColor",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "the pair field the arcs paint: insertSizeAndOrientation, insertSize or pairOrientation; empty takes the reads' color field where an arc paints it.",
+              "enum": [
+                "",
+                "insertSizeAndOrientation",
+                "insertSize",
+                "pairOrientation"
+              ],
+              "default": "insertSizeAndOrientation"
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "LinearAlignmentsDisplaySlots": {
       "type": "object",
       "properties": {
@@ -4697,14 +4734,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "boolean",
           "default": true
         },
-        "arcColorByType": {
-          "description": "How to color read-connection arcs.",
-          "enum": [
-            "insertSizeAndOrientation",
-            "insertSize",
-            "orientation"
-          ],
-          "default": "insertSizeAndOrientation"
+        "arcColor": {
+          "$ref": "#/$defs/AlignmentsArcColor"
         },
         "readConnections": {
           "description": "Read-connection rendering mode (mate pairs + split reads).",
@@ -5273,14 +5304,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "boolean",
           "default": true
         },
-        "arcColorByType": {
-          "description": "How to color read-connection arcs.",
-          "enum": [
-            "insertSizeAndOrientation",
-            "insertSize",
-            "orientation"
-          ],
-          "default": "insertSizeAndOrientation"
+        "arcColor": {
+          "$ref": "#/$defs/AlignmentsArcColor"
         },
         "readConnections": {
           "description": "Read-connection rendering mode (mate pairs + split reads).",
@@ -9411,8 +9436,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "drawLongRange": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/drawLongRange"
             },
-            "arcColorByType": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/arcColorByType"
+            "arcColor": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/arcColor"
             },
             "readConnections": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/readConnections"
@@ -11604,8 +11629,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "drawLongRange": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawLongRange"
             },
-            "arcColorByType": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/arcColorByType"
+            "arcColor": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/arcColor"
             },
             "readConnections": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnections"
