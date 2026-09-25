@@ -12,9 +12,11 @@ import { thresholdPalette } from '@jbrowse/core/util/thresholdScale'
 import { buildMarkLegend, categoryLabel, markColorScales } from './legend.ts'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type {
   ColorScaleTable,
   ContinuousRef,
+  ShapeName,
 } from '@jbrowse/core/util/markEncoding'
 
 function table(values: string[], numericKeys?: boolean): ColorScaleTable {
@@ -59,6 +61,20 @@ test('a numeric key a reader can still scan carries no hint', () => {
 
 test('a long key over values that are not numbers carries no hint', () => {
   expect(noteOf(table(TEN.map(v => `type${v}`)))).toBeUndefined()
+})
+
+test('the hint stands in for a numeric key too long to draw', () => {
+  const sixty = Array.from({ length: 60 }, (_, i) => `${i}`)
+  expect(
+    legendEntries(
+      legendSpecOf(
+        markColorScales(buildMarkLegend([region(table(sixty, true))])),
+      ),
+    ).map(e => e.label),
+  ).toEqual([
+    'score',
+    expect.stringMatching(/numeric values drawn as categories/),
+  ])
 })
 
 test('the hint needs every region to have met numbers, the union ANDing them', () => {
@@ -143,6 +159,96 @@ test('a colour two values hashed onto names both of them on hover', () => {
   expect(categoryLabel(shared, 0xff222222)).toBe('tRNA')
   expect(categoryLabel(shared, 0xff333333)).toBeUndefined()
   expect(categoryLabel(thresholdTable(), 0xff222222)).toBe('0.1 – 0.5')
+})
+
+const GREY = cssColorToABGR('#8c8c8c')
+
+function lineages(
+  colors = [cssColorToABGR('#4575b4'), cssColorToABGR('#fdae61'), GREY, GREY],
+): ColorScaleTable {
+  const values = ['AluJ', 'AluS', 'FLAM', 'FRAM']
+  return {
+    kind: 'categorical',
+    field: 'lineage',
+    domain: values,
+    entries: values.map((value, i) => ({ value, color: colors[i]! })),
+  }
+}
+
+function keyRows(scales: ColorScale[]) {
+  return scales.flatMap(s =>
+    s.kind === 'categorical' ? s.entries.map(e => [e.label, e.swatches]) : [],
+  )
+}
+
+// alu_age's two fossil monomers share a grey, and the key listed two grey
+// rows a reader could not tell apart.
+test('two values sharing a colour are one row naming both', () => {
+  expect(
+    keyRows(markColorScales(buildMarkLegend([region(lineages())]))),
+  ).toEqual([
+    ['AluJ', undefined],
+    ['AluS', undefined],
+    ['FLAM, FRAM', undefined],
+  ])
+})
+
+test('a key painting one colour says nothing and is not drawn', () => {
+  expect(markColorScales(buildMarkLegend([region(table(['1']))]))).toEqual([])
+})
+
+function shapes(
+  entries: [string, ShapeName][],
+): NonNullable<StoredLayer['shapeScale']> {
+  return {
+    kind: 'shape',
+    field: 'lineage',
+    domain: [],
+    entries: entries.map(([value, shape]) => ({ value, shape })),
+  }
+}
+
+function withShapes(
+  scale: ColorScaleTable,
+  shapeScale: NonNullable<StoredLayer['shapeScale']>,
+): MarkRegionData {
+  const [layer] = region(scale).layers
+  return { layers: [{ ...layer!, shapeScale }] }
+}
+
+test("a shared colour's row draws each shape its values take, in the colour", () => {
+  const loaded = withShapes(
+    lineages(),
+    shapes([
+      ['AluJ', 'circle'],
+      ['AluS', 'circle'],
+      ['FLAM', 'diamond'],
+      ['FRAM', 'triangle-down'],
+    ]),
+  )
+  const grey = 'rgba(140,140,140,1)'
+  expect(keyRows(markColorScales(buildMarkLegend([loaded]))).at(-1)).toEqual([
+    'FLAM, FRAM',
+    [
+      { color: grey, shape: 'diamond' },
+      { color: grey, shape: 'triangle-down' },
+    ],
+  ])
+})
+
+test('a colour key with nothing to say leaves the shape key over its field standing', () => {
+  const scales = markColorScales(
+    buildMarkLegend([
+      withShapes(
+        lineages([GREY, GREY, GREY, GREY]),
+        shapes([
+          ['AluJ', 'circle'],
+          ['FLAM', 'diamond'],
+        ]),
+      ),
+    ]),
+  )
+  expect(scales.map(s => s.id)).toEqual(['mark-0-shape'])
 })
 
 function rampRegion(values: unknown[], color: Partial<ContinuousRef> = {}) {

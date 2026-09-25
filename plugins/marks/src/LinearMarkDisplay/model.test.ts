@@ -1563,17 +1563,15 @@ test('two marks colouring by one field through one range share a key', () => {
   expect(shared.colorScales.map(s => s.id)).toEqual(['mark-0-1-color'])
 
   const apart = createTestEnvironment(marks).createDisplay().display
+  const both = [
+    { value: '1', color: 0xff0000ff },
+    { value: '-1', color: 0xff00ff00 },
+  ]
   apart.setRpcData(
     0,
     result([
-      {
-        y: [1],
-        scale: strandTable([{ value: '1', color: 0xff0000ff }], ['red']),
-      },
-      {
-        y: [2],
-        scale: strandTable([{ value: '1', color: 0xff0000ff }], ['blue']),
-      },
+      { y: [1], scale: strandTable(both, ['red']) },
+      { y: [2], scale: strandTable(both, ['blue']) },
     ]),
     REGION,
   )
@@ -1630,15 +1628,20 @@ test('a shape scale over the field the colour classifies folds into one key', ()
       kind: 'categorical',
       id: 'mark-0-color',
       title: 'strand',
+      domain: ['1', '-1', '0'],
       entries: [
         {
           value: '1',
+          values: ['1'],
           label: 'Forward strand',
+          color: 'rgba(255,0,0,1)',
           swatches: [{ color: 'rgba(255,0,0,1)', shape: 'triangle-down' }],
         },
         {
           value: '-1',
+          values: ['-1'],
           label: 'Reverse strand',
+          color: 'rgba(0,255,0,1)',
           swatches: [{ color: 'rgba(0,255,0,1)', shape: 'diamond' }],
         },
       ],
@@ -2243,21 +2246,23 @@ test('a hidden section leaves the key and the axis the way it leaves the plot', 
     { facet: 'sample' },
   ).createDisplay()
   const RED = 0xff0000ff
+  const GREEN = 0xff00ff00
   const BLUE = 0xffff0000
   display.setRpcData(
     0,
     result(
       [
         {
-          y: [3, 90],
-          row: [0, 1],
-          color: [RED, BLUE],
+          y: [3, 5, 90],
+          row: [0, 0, 1],
+          color: [RED, GREEN, BLUE],
           scale: {
             kind: 'categorical',
             field: 'type',
             domain: [],
             entries: [
               { value: 'exon', color: RED },
+              { value: 'CDS', color: GREEN },
               { value: 'gene', color: BLUE },
             ],
           },
@@ -2274,10 +2279,10 @@ test('a hidden section leaves the key and the axis the way it leaves the plot', 
     display.colorScales.flatMap(c =>
       c.kind === 'categorical' ? c.entries.map(e => e.value) : [],
     )
-  expect(keyed()).toEqual(['exon', 'gene'])
+  expect(keyed()).toEqual(['CDS', 'exon', 'gene'])
   expect(display.domain![1]).toBeGreaterThanOrEqual(90)
   display.hideGroup('b')
-  expect(keyed()).toEqual(['exon'])
+  expect(keyed()).toEqual(['CDS', 'exon'])
   expect(display.domain![1]).toBeLessThan(90)
 })
 

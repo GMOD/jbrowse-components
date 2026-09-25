@@ -1,7 +1,11 @@
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
-import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { DEFAULT_COLOR_SCHEME } from '@jbrowse/core/util/colorSchemes'
+import {
+  derivedColorScale,
+  everyRowPaints,
+} from '@jbrowse/core/util/legendCandidates'
 import { rampOverExtent } from '@jbrowse/core/util/markEncoding'
 import {
   thresholdKeyEntries,
@@ -9,18 +13,24 @@ import {
 } from '@jbrowse/core/util/thresholdScale'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
-import type { CategoricalScale, ColorScale } from '@jbrowse/core/ui/colorScale'
-import type { LegendSwatch } from '@jbrowse/core/ui/legendSpec'
+import type {
+  CategoricalEntry,
+  CategoricalScale,
+  ColorScale,
+} from '@jbrowse/core/ui/colorScale'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
-import type { ShapeName, ScaleTable } from '@jbrowse/core/util/markEncoding'
+import type {
+  ShapeName,
+  ShapeScaleTable,
+  ScaleTable,
+} from '@jbrowse/core/util/markEncoding'
 
 const RAMP_STOPS = 8
 
-// Rows past which a key over a numeric field has stopped being a vocabulary.
-// A numeric field genuinely used as one — a rank, a copy number, a tier — has
-// a handful of values; past eight the key is a rainbow and the author meant a
-// colour scale. The neighbouring `legendIsReadable` answers a different
-// question, whether a key is worth its rows at all, and its bar is 20.
+// Values past which a numeric field drawn as categories has stopped being a
+// vocabulary. A numeric field genuinely used as one — a rank, a copy number, a
+// tier — has a handful of values; past eight the author meant a colour scale,
+// and the hint stands in for the key where `legendIsReadable` drops it.
 const NUMERIC_KEY_HINT_ROWS = 8
 
 const NUMERIC_KEY_HINT =
@@ -248,17 +258,22 @@ function shapeOverSameField(
 
 // A key over the facet's own field lists its rows in the sections' order, so
 // the key and the chips read top to bottom alike.
-function categoricalKey<E extends { value: string }>(
+function keyField(
+  scale: { field: string; domain: string[] },
+  facet: CategoricalField | undefined,
+) {
+  return facet?.field === scale.field
+    ? facet
+    : categoricalField(scale.field, { domain: scale.domain })
+}
+
+function shapeKey(
   id: string,
   title: string | undefined,
-  scale: { field: string; domain: string[]; entries: E[] },
-  swatchOf: (entry: E) => { color: string } | { swatches: LegendSwatch[] },
+  scale: ShapeScaleTable,
   facet: CategoricalField | undefined,
 ): CategoricalScale {
-  const field =
-    facet?.field === scale.field
-      ? facet
-      : categoricalField(scale.field, { domain: scale.domain })
+  const field = keyField(scale, facet)
   return {
     kind: 'categorical',
     id,
@@ -268,18 +283,36 @@ function categoricalKey<E extends { value: string }>(
       .map(e => ({
         value: e.value,
         label: field.label(e.value),
-        ...swatchOf(e),
+        swatches: [{ color: 'currentColor', shape: e.shape }],
         ...(e.value === '' ? { missing: true } : {}),
       })),
   }
 }
 
+// A colour row names every value painted in its colour, so it draws each
+// shape those values take, in the colour.
+function shapeSwatches(shape: ShapeScaleTable) {
+  const shapeOf = new Map(shape.entries.map(e => [e.value, e.shape]))
+  return ({
+    value,
+    values = [value],
+    color,
+  }: CategoricalEntry & { color: string }) => {
+    const shapes = [...new Set(values.flatMap(v => shapeOf.get(v) ?? []))]
+    return shapes.length > 0
+      ? shapes.map(shape => ({ color, shape }))
+      : [{ color }]
+  }
+}
+
 /**
  * The keys as the color scales `LegendMixin` derives the legend from. A
- * shape table is a categorical scale whose swatches are the shapes, drawn in
- * the text colour: the key describes the shape channel, not the colour one —
- * unless the colour is a categorical scale over the same field, when one key
- * carries both, each swatch the value's shape in the value's colour.
+ * categorical colour's key is the one every colour channel derives
+ * (`derivedColorScale`), a row per colour. A shape table is a categorical
+ * scale whose swatches are the shapes, drawn in the text colour: the key
+ * describes the shape channel, not the colour one — unless the colour key is
+ * over the same field, when it carries both, each swatch a value's shape in
+ * its colour.
  */
 export function markColorScales(
   sections: MarkLegendSection[],
@@ -296,40 +329,36 @@ export function markColorScales(
     switch (scale.kind) {
       case 'categorical': {
         const shape = shapeOverSameField(sections, section)
-        if (shape) {
+        const keys = derivedColorScale([scale.entries], everyRowPaints, {
+          id,
+          field: keyField(scale, facet),
+          title: section.title,
+          swatches:
+            shape?.scale.kind === 'shape'
+              ? shapeSwatches(shape.scale)
+              : undefined,
+        })
+        if (shape && keys.length > 0) {
           folded.add(shape)
         }
-        const shapeOf = (value: string) =>
-          shape?.scale.kind === 'shape'
-            ? shape.scale.entries.find(e => e.value === value)?.shape
-            : undefined
-        const key = categoricalKey(
-          id,
-          title,
-          scale,
-          ({ value, color }) => {
-            const css = abgrToCssRgba(color)
-            const g = shapeOf(value)
-            return g ? { swatches: [{ color: css, shape: g }] } : { color: css }
-          },
-          facet,
-        )
-        return [
-          scale.numericKeys && key.entries.length > NUMERIC_KEY_HINT_ROWS
-            ? { ...key, note: NUMERIC_KEY_HINT }
-            : key,
-        ]
+        const hinted =
+          scale.numericKeys && scale.entries.length > NUMERIC_KEY_HINT_ROWS
+        if (!hinted) {
+          return keys
+        }
+        return keys.length > 0
+          ? keys.map(key => ({ ...key, note: NUMERIC_KEY_HINT }))
+          : [
+              {
+                kind: 'categorical',
+                id,
+                title,
+                entries: [{ value: '', label: NUMERIC_KEY_HINT }],
+              },
+            ]
       }
       case 'shape':
-        return [
-          categoricalKey(
-            id,
-            title,
-            scale,
-            e => ({ swatches: [{ color: 'currentColor', shape: e.shape }] }),
-            facet,
-          ),
-        ]
+        return [shapeKey(id, title, scale, facet)]
       case 'threshold':
         return [
           {
