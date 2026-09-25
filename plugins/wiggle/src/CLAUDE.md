@@ -103,11 +103,11 @@ by its score's position, `rampMid`, the config's `domainMid`, on its middle
 stop, and never reads `origin`; the white fade, a threshold's density, measures
 distance from `pivot`. The lines alone still part under a gradient, at
 `domainMid ?? origin` in its two end colours, with a corner notice saying so.
-The gradient follows the y domain and y scale; the colour's own
-`domainMin`/`domainMax` and `linear`-vs-`log` go unread. `score` paints through
-`threshold`, `linear` and `log`, `source` through `categorical`, and the other
-pairings paint the misconfiguration grey, because a two-sided plot has nothing
-to paint a colour per score or a cut over subtrack names with. ADR-144, ADR-153.
+The gradient follows the y domain and y scale, so the colour declares no
+`domainMin`/`domainMax` and no `log`. `score` paints through `threshold` and
+`linear`, `source` through `categorical`, and the other pairings paint the
+misconfiguration grey, because a two-sided plot has nothing to paint a colour
+per score or a cut over subtrack names with. ADR-144, ADR-153.
 
 **Everything shared over the geometry is `wiggleDisplayViews`**: `ticks`,
 `scoreColorScale`, `renderState` and the shared halves of the two props methods,
@@ -252,7 +252,7 @@ magenta. Whiskers adds a `band` layer under the line, split the same way.
 ## The colour key follows the scale
 
 The ramp wherever `scoreGradientPaints` — density, and bars or points under
-`linear`/`log` — a row per source for `categorical`, a row per interval for a
+`linear` — a row per source for `categorical`, a row per interval for a
 `threshold` whose cut the config declared, and none for a string. A threshold
 cutting at the `origin` draws none either: the axis already shows where the
 origin is. Density's white fade is keyed only while no row brings its own
