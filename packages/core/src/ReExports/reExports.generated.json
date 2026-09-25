@@ -2918,6 +2918,7 @@
         "useLocalStorage",
         "useScrollPortHeightVar",
         "useScrollPortOverflow",
+        "useSlowLoad",
         "useStalled",
         "useWidthSetter"
       ],
