@@ -1,11 +1,6 @@
 import { useState } from 'react'
 
-import {
-  ErrorBanner,
-  InfoDialog,
-  LabeledCheckbox,
-  MonospaceTextField,
-} from '@jbrowse/core/ui'
+import { ErrorBanner, InfoDialog } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
@@ -29,6 +24,7 @@ import ShareInfoDialog from './ShareInfoDialog.tsx'
 import { buildShareUrl } from './buildShareUrl.ts'
 import { findLocalFileNames } from './localFileTracks.ts'
 
+import type { ShareUrlResult } from './buildShareUrl.ts'
 import type { SessionShareMode, SessionWithShareURL } from '@jbrowse/core/util'
 
 // remembers the chosen share mode, not a URL
@@ -40,6 +36,11 @@ const SHARE_MODES = [
   { value: 'json', label: 'Plaintext JSON' },
 ] as const
 
+function storedMode(): SessionShareMode {
+  const stored = localStorageGetItem(SHARE_MODE_LOCALSTORAGE_KEY)
+  return SHARE_MODES.find(m => m.value === stored)?.value ?? 'short'
+}
+
 const ShareDialog = observer(function ShareDialog({
   handleClose,
   session,
@@ -48,17 +49,10 @@ const ShareDialog = observer(function ShareDialog({
   session: SessionWithShareURL
 }) {
   const [infoDialogOpen, setInfoDialogOpen] = useState(false)
-  const [showReadableJson, setShowReadableJson] = useState(false)
-
-  const shareURL = session.shareURL
-  const [currentSetting, setCurrentSetting] = useState<SessionShareMode>(
-    () =>
-      (localStorageGetItem(SHARE_MODE_LOCALSTORAGE_KEY) ??
-        'short') as SessionShareMode,
-  )
-  // Capture snapshot once when dialog opens — we don't want to re-upload every
-  // time the session mutates while the dialog is open. Stamp what the live
-  // session resolves at read time so the recipient sees what the sender saw.
+  const [mode, setMode] = useState(storedMode)
+  // Snapshotted once on open, so the session changing under the dialog does
+  // not re-upload it. Stamps what the live session resolves at read time, so
+  // the recipient sees what the sender saw.
   const [snap] = useState(() => getShareableSessionSnapshot(session))
   const localFileNames = findLocalFileNames(snap)
   // The bookmark button below has to put the share URL in the address bar — a
@@ -75,18 +69,34 @@ const ShareDialog = observer(function ShareDialog({
     handleClose()
   }
 
-  const {
-    data,
-    error,
-    isLoading: loading,
-    mutate,
-  } = useFetch(['shareUrl', currentSetting], () =>
-    buildShareUrl(currentSetting, snap, shareURL, pageUrl),
+  // One link per mode for the dialog's lifetime: coming back to short would
+  // otherwise upload the same snapshot again, and StrictMode's doubled effect
+  // uploaded it twice on open. A failure is dropped so a retry builds anew.
+  const [links] = useState(
+    () => new Map<SessionShareMode, Promise<ShareUrlResult>>(),
+  )
+  const { data, error, isLoading, mutate } = useFetch(
+    ['shareUrl', mode],
+    () => {
+      let link = links.get(mode)
+      if (!link) {
+        link = buildShareUrl(mode, snap, session.shareURL, pageUrl)
+        link.catch(() => {
+          links.delete(mode)
+        })
+        links.set(mode, link)
+      }
+      return link
+    },
   )
 
+  function chooseMode(value: SessionShareMode) {
+    localStorageSetItem(SHARE_MODE_LOCALSTORAGE_KEY, value)
+    setMode(value)
+  }
+
   const url = data?.url ?? ''
-  const plaintext = data?.plaintext
-  const disabled = loading || !!error
+  const disabled = isLoading || !!error
   return (
     <>
       <InfoDialog
@@ -99,14 +109,8 @@ const ShareDialog = observer(function ShareDialog({
             <Button
               startIcon={<BookmarkAddIcon />}
               disabled={disabled}
-              onClick={event => {
-                event.preventDefault()
-                // point the address bar at the assembled share URL (inline
-                // sessions live in the hash, see buildShareUrl) so the bookmark
-                // the user saves is the shareable one
-                if (url) {
-                  window.history.replaceState(null, '', url)
-                }
+              onClick={() => {
+                window.history.replaceState(null, '', url)
                 alert('Now press Ctrl+D (PC) or Cmd+D (Mac)')
               }}
             >
@@ -138,12 +142,9 @@ const ShareDialog = observer(function ShareDialog({
               ...SHARE_MODES.map(({ value, label }) => ({
                 label,
                 type: 'radio' as const,
-                checked: currentSetting === value,
+                checked: mode === value,
                 onClick: () => {
-                  // guarded write to match the guarded read above: a browser
-                  // with storage disabled must not throw out of a menu click
-                  localStorageSetItem(SHARE_MODE_LOCALSTORAGE_KEY, value)
-                  setCurrentSetting(value)
+                  chooseMode(value)
                 },
               })),
               {
@@ -165,33 +166,27 @@ const ShareDialog = observer(function ShareDialog({
               mutate()
             }}
           />
-        ) : loading ? (
+        ) : isLoading ? (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <CircularProgress size={16} />
-            <Typography>Generating {currentSetting} URL...</Typography>
+            <Typography>Generating {mode} URL...</Typography>
           </Box>
         ) : (
-          <>
-            <ShareLinkField value={url} />
-            {plaintext ? (
-              <LabeledCheckbox
-                checked={showReadableJson}
-                onChange={val => {
-                  setShowReadableJson(val)
-                }}
-                label="Show readable JSON"
-              />
-            ) : null}
-            {plaintext && showReadableJson ? (
-              <MonospaceTextField
-                label="Session JSON"
-                value={plaintext}
-                readOnly
-                fullWidth
-                maxRows={20}
-              />
-            ) : null}
-          </>
+          <ShareLinkField
+            value={url}
+            plaintext={data?.plaintext}
+            action={
+              mode === 'short' ? undefined : (
+                <Button
+                  onClick={() => {
+                    chooseMode('short')
+                  }}
+                >
+                  Use a short link
+                </Button>
+              )
+            }
+          />
         )}
       </InfoDialog>
 

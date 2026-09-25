@@ -44,6 +44,7 @@ export function findLocalFileNames(snap: Record<string, unknown>) {
     ...sessionTracksWithEdits(snap),
     ...entries(snap, 'sessionAssemblies'),
     ...entries(snap, 'temporaryAssemblies'),
+    ...entries(snap, 'sessionConnections'),
   ]
     .filter(entry => hasLocalFile(entry))
     .map(entry =>

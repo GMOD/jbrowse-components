@@ -1,11 +1,6 @@
 import { useState } from 'react'
 
-import {
-  ErrorBanner,
-  InfoDialog,
-  LabeledCheckbox,
-  MonospaceTextField,
-} from '@jbrowse/core/ui'
+import { ErrorBanner, InfoDialog } from '@jbrowse/core/ui'
 import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
 import { copyTextWithSession } from '@jbrowse/core/util/copyText'
 import { useFetch } from '@jbrowse/core/util/useFetch'
@@ -219,33 +214,6 @@ function ShortLinkPrompt({
   )
 }
 
-// The plaintext-JSON mode's inspect panel. Owns its own expanded flag: it is
-// unmounted whenever the mode produces no plaintext, so the flag resetting with
-// it is the behavior we want.
-function SessionJsonPanel({ plaintext }: { plaintext: string }) {
-  const [show, setShow] = useState(false)
-  return (
-    <>
-      <LabeledCheckbox
-        checked={show}
-        onChange={val => {
-          setShow(val)
-        }}
-        label="Show readable JSON"
-      />
-      {show ? (
-        <MonospaceTextField
-          label="Session JSON"
-          value={plaintext}
-          readOnly
-          fullWidth
-          maxRows={20}
-        />
-      ) : null}
-    </>
-  )
-}
-
 const ExportToWebDialog = observer(function ExportToWebDialog({
   handleClose,
   snapshot,
@@ -284,7 +252,6 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
   )
   const plan = preparation?.plan
   const url = link.data?.url ?? ''
-  const plaintext = link.data?.plaintext
   const error = prepared.error ?? link.error
   // Only once there is a plan: until then the dialog is still working, and has
   // no share store to name in the prompt.
@@ -377,29 +344,27 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
             ) : generating ? (
               <Typography>Generating {mode} URL...</Typography>
             ) : (
-              <>
-                <ShareLinkField
-                  value={url}
-                  // An export is the biggest kind of session — a self-contained
-                  // one carries its own assemblies and tracks — so the mode
-                  // that solves an unopenable link is one click away, in the
-                  // same state selecting the radio would leave: asked for, not
-                  // yet uploaded.
-                  action={
-                    mode === 'short' ? undefined : (
-                      <Button
-                        onClick={() => {
-                          setMode('short')
-                          setUploadRequested(false)
-                        }}
-                      >
-                        Use a short link
-                      </Button>
-                    )
-                  }
-                />
-                {plaintext ? <SessionJsonPanel plaintext={plaintext} /> : null}
-              </>
+              <ShareLinkField
+                value={url}
+                plaintext={link.data?.plaintext}
+                // An export is the biggest kind of session — a self-contained
+                // one carries its own assemblies and tracks — so the mode that
+                // solves an unopenable link is one click away, in the same
+                // state selecting the radio would leave: asked for, not yet
+                // uploaded.
+                action={
+                  mode === 'short' ? undefined : (
+                    <Button
+                      onClick={() => {
+                        setMode('short')
+                        setUploadRequested(false)
+                      }}
+                    >
+                      Use a short link
+                    </Button>
+                  )
+                }
+              />
             )}
           </>
         )}

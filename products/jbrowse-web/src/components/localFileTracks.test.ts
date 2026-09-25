@@ -25,3 +25,18 @@ test('a session track is read with its delta merged over it', () => {
     }),
   ).toEqual(['My reads'])
 })
+
+test('a connection reading a local file is named', () => {
+  expect(
+    findLocalFileNames({
+      sessionConnections: [
+        { connectionId: 'hub', name: 'My hub', hubTxtLocation: localBam },
+        {
+          connectionId: 'remote',
+          name: 'Remote hub',
+          hubTxtLocation: { uri: 'https://x/hub.txt' },
+        },
+      ],
+    }),
+  ).toEqual(['My hub'])
+})

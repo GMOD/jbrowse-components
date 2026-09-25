@@ -9,13 +9,7 @@ export default function ShareInfoDialog({
   onClose: () => void
 }) {
   return (
-    <InfoDialog
-      open={open}
-      title="Info about session URLs"
-      onClose={() => {
-        onClose()
-      }}
-    >
+    <InfoDialog open={open} title="Info about session URLs" onClose={onClose}>
       <DialogContentText>
         A session encodes your tracks, views, and selections in the URL, so it
         can get long. All three formats below carry the same data.

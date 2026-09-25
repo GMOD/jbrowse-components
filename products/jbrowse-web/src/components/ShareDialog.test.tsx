@@ -1,6 +1,7 @@
 import { fireEvent, render, waitFor } from '@testing-library/react'
 
 import ShareDialog, { SHARE_MODE_LOCALSTORAGE_KEY } from './ShareDialog.tsx'
+import { buildShareUrl } from './buildShareUrl.ts'
 
 import type { SessionWithShareURL } from '@jbrowse/core/util'
 
@@ -11,16 +12,32 @@ jest.mock('@jbrowse/product-core', () => ({
   getShareableSessionSnapshot: () => mockSnapshot,
 }))
 
+// short mode would POST to the share server; the link's shape is
+// buildShareUrl.test.ts's business
+let mockLongUrlLength = 0
+jest.mock('./buildShareUrl.ts', () => ({
+  buildShareUrl: jest.fn(async (mode: string) => ({
+    url: `http://localhost/app/#session=${mode}-link${'x'.repeat(mode === 'long' ? mockLongUrlLength : 0)}`,
+    plaintext: mode === 'json' ? '{"session":{}}' : undefined,
+  })),
+}))
+
+const mockBuild = buildShareUrl as jest.Mock
+
 afterEach(() => {
   mockSnapshot = { name: 'a session' }
+  mockLongUrlLength = 0
+  mockBuild.mockClear()
 })
 
-const session = { shareURL: 'https://share.example/' } as SessionWithShareURL
+const session = {
+  shareURL: 'https://share.example/',
+  notify: () => {},
+  notifyError: () => {},
+} as unknown as SessionWithShareURL
 
-async function renderDialog(handleClose = () => {}) {
-  // json mode assembles the link locally; short mode would POST to the share
-  // server
-  localStorage.setItem(SHARE_MODE_LOCALSTORAGE_KEY, 'json')
+async function renderDialog(mode = 'json', handleClose = () => {}) {
+  localStorage.setItem(SHARE_MODE_LOCALSTORAGE_KEY, mode)
   window.history.replaceState(
     null,
     '',
@@ -40,6 +57,17 @@ async function renderDialog(handleClose = () => {}) {
 // `container`
 const closeButton = () =>
   document.body.querySelector<HTMLElement>('[data-testid=CloseIcon]')!
+
+async function pickMode(
+  utils: Awaited<ReturnType<typeof renderDialog>>,
+  label: string,
+) {
+  fireEvent.click(utils.getByLabelText('Session sharing settings'))
+  fireEvent.click(await utils.findByText(label))
+  await waitFor(() => {
+    expect(utils.queryByText(/Generating/)).toBeNull()
+  })
+}
 
 // The address bar is what a reload restores from, so a tab left pointing at a
 // share link reloads the snapshot that link was built from — silently dropping
@@ -62,12 +90,57 @@ test('bookmarking shows the share URL, and closing puts the page URL back', asyn
 
 test('closing without bookmarking leaves the page URL alone', async () => {
   const handleClose = jest.fn()
-  await renderDialog(handleClose)
+  await renderDialog('json', handleClose)
 
   fireEvent.click(closeButton())
 
   expect(handleClose).toHaveBeenCalled()
   expect(window.location.href).toContain('session=local-abc')
+})
+
+test('the link is built from the page URL captured on open', async () => {
+  await renderDialog()
+
+  expect(mockBuild).toHaveBeenCalledWith(
+    'json',
+    mockSnapshot,
+    'https://share.example/',
+    'http://localhost/app/?config=conf.json&session=local-abc',
+  )
+})
+
+// coming back to short would otherwise upload the same snapshot again
+test('switching back to a mode reuses its link', async () => {
+  const utils = await renderDialog('short')
+  await pickMode(utils, 'Long URL')
+  await pickMode(utils, 'Short URL')
+
+  expect(mockBuild.mock.calls.map(c => c[0])).toEqual(['short', 'long'])
+  expect(utils.getByDisplayValue(/short-link/)).toBeTruthy()
+})
+
+test('an unknown stored mode opens as a short link', async () => {
+  await renderDialog('someOldMode')
+
+  expect(mockBuild.mock.calls.map(c => c[0])).toEqual(['short'])
+})
+
+test('a link too long to open offers the short one', async () => {
+  mockLongUrlLength = 90_000
+  const utils = await renderDialog('long')
+
+  fireEvent.click(utils.getByText('Use a short link'))
+  await waitFor(() => {
+    expect(utils.getByDisplayValue(/short-link/)).toBeTruthy()
+  })
+  expect(localStorage.getItem(SHARE_MODE_LOCALSTORAGE_KEY)).toBe('short')
+})
+
+test('the json mode offers the readable session', async () => {
+  const utils = await renderDialog('json')
+
+  fireEvent.click(utils.getByText('Show readable JSON'))
+  expect(utils.getByDisplayValue('{"session":{}}')).toBeTruthy()
 })
 
 // a blob-backed track is in the sender's browser only, so the link carries a

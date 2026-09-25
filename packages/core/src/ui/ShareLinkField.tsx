@@ -1,7 +1,11 @@
+import { useState } from 'react'
+
 import { Alert, TextField, Typography } from '@mui/material'
 
 import { formatBytes } from '../util/formatBytes.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
+import LabeledCheckbox from './LabeledCheckbox.tsx'
+import MonospaceTextField from './MonospaceTextField.tsx'
 
 import type { ReactNode } from 'react'
 
@@ -25,6 +29,30 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+function SessionJsonPanel({ plaintext }: { plaintext: string }) {
+  const [show, setShow] = useState(false)
+  return (
+    <>
+      <LabeledCheckbox
+        checked={show}
+        onChange={val => {
+          setShow(val)
+        }}
+        label="Show readable JSON"
+      />
+      {show ? (
+        <MonospaceTextField
+          label="Session JSON"
+          value={plaintext}
+          readOnly
+          fullWidth
+          maxRows={20}
+        />
+      ) : null}
+    </>
+  )
+}
+
 // Read-only single-line field for a shareable URL; clicking selects the whole
 // value so it's easy to copy, and overly long URLs surface a size warning.
 // Shared by jbrowse-web's ShareDialog and jbrowse-desktop's ExportToWebDialog.
@@ -33,14 +61,19 @@ const useStyles = makeStyles()(theme => ({
 // "switch to a short link", which is the mode that solves it. Only rendered at
 // the unusable tier, where saying so without offering the fix leaves the user
 // with a link and no way to make a working one.
+//
+// `plaintext` is the session a plaintext-JSON link carries, offered indented
+// behind a checkbox.
 export default function ShareLinkField({
   value,
   label = 'URL',
   action,
+  plaintext,
 }: {
   value: string
   label?: string
   action?: ReactNode
+  plaintext?: string
 }) {
   const { classes } = useStyles()
   const size = formatBytes(value.length)
@@ -74,6 +107,7 @@ export default function ShareLinkField({
           prefer a short link if possible.
         </Typography>
       ) : null}
+      {plaintext ? <SessionJsonPanel plaintext={plaintext} /> : null}
     </>
   )
 }
