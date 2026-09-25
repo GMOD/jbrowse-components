@@ -1,6 +1,11 @@
 import { MockHal } from '@jbrowse/render-core/hal'
 import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 
+import {
+  CHEVRON_VERTS,
+  chevronSlotBudget,
+} from '../components/sharedRendererConstants.ts'
+import { lineShader } from '../passes/index.ts'
 import { CANVAS_FEATURE_MARKS } from './canvasFeatureMarks.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
@@ -171,6 +176,28 @@ describe('draw passes', () => {
     const passes = callsTo(hal, 'drawPass').map(c => c.args[0])
     expect(passes).toContain('line')
     expect(passes).not.toContain('chevron')
+  })
+
+  it('shades the chevron slots this canvas can hold, not the registered cap', () => {
+    const { hal, renderer } = setup()
+    const data = regionData(0, {
+      linePositions: new Uint32Array([100, 400]),
+      lineYs: new Float32Array(1),
+      lineColors: new Uint32Array(1).fill(0xff00_00ff),
+      lineDirections: new Int8Array(1).fill(1),
+    })
+    renderer.upload(REGION, data)
+    renderer.renderBlocks([block()], new Map([[REGION, data]]), STATE)
+    const drawn = hal.draws()
+    // 800 CSS px holds 21 slots; the pass registers 128, and every surplus slot
+    // is a vertex invocation running the whole placement before culling itself.
+    expect(drawn.find(d => d.passId === 'chevron')!.verticesPerInstance).toBe(
+      chevronSlotBudget(STATE.canvasWidth) * CHEVRON_VERTS,
+    )
+    // Only the chevron pass asks; the rest draw their descriptor's count.
+    expect(drawn.find(d => d.passId === 'line')!.verticesPerInstance).toBe(
+      lineShader.VERTS_PER_INSTANCE,
+    )
   })
 
   it('skips the continuation pass on an interior block', () => {

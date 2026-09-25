@@ -684,7 +684,12 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     })
   }
 
-  drawPass(passId: string, regionKey: number, bufferPassId?: string) {
+  drawPass(
+    passId: string,
+    regionKey: number,
+    bufferPassId?: string,
+    verticesPerInstance?: number,
+  ) {
     if (!this.currentPass) {
       return
     }
@@ -724,7 +729,10 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     this.currentPass.setPipeline(pipeline)
     this.currentPass.setBindGroup(0, bindGroup, [dynamicOffset])
     this.currentPass.setVertexBuffer(0, regionBuf.dataBuffer)
-    this.currentPass.draw(desc.verticesPerInstance, regionBuf.count)
+    this.currentPass.draw(
+      verticesPerInstance ?? desc.verticesPerInstance,
+      regionBuf.count,
+    )
   }
 
   /**

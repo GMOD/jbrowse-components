@@ -8,6 +8,7 @@ import {
   CHEVRON_SPACING_PX,
   CHEVRON_W_PX,
   MAX_VISIBLE_CHEVRONS_PER_LINE,
+  chevronSlotBudget,
 } from './sharedRendererConstants.ts'
 
 const HALF_W = CHEVRON_W_PX / 2
@@ -145,10 +146,9 @@ test('it is at least as tight as the shader window it replaced', () => {
   }
 })
 
-// The GPU addresses a fixed MAX_VISIBLE_CHEVRONS_PER_LINE slots, so a block
-// needing more loses its far-end chevrons there and nowhere else. No bpPerPx
-// axis: the slot count turns on `reach / spacing`, in which the conversion
-// cancels.
+// How many slots the window can walk across a block this wide, which is what
+// each draw asks the GPU to shade. No bpPerPx axis: the slot count turns on
+// `reach / spacing`, in which the conversion cancels.
 function worstCaseSlots(blockPx: number) {
   let max = 0
   for (let mult = 0.001; mult <= 4096; mult *= 1.3) {
@@ -171,24 +171,28 @@ function worstCaseSlots(blockPx: number) {
   return max
 }
 
-test('the vertex budget covers the block width its comment claims', () => {
-  expect(worstCaseSlots(5077)).toBeLessThanOrEqual(
-    MAX_VISIBLE_CHEVRONS_PER_LINE,
-  )
-  expect(worstCaseSlots(5300)).toBeGreaterThan(MAX_VISIBLE_CHEVRONS_PER_LINE)
-  expect(worstCaseSlots(1200)).toBe(31)
-  expect(worstCaseSlots(3840)).toBe(97)
-  expect(worstCaseSlots(7680)).toBe(193)
+// A canvas narrow enough that the budget is a handful of slots, one at a
+// laptop width, and two past what the registered worst case covers.
+const CANVAS_WIDTHS = [120, 320, 800, 1200, 1920, 3840, 5077, 7680]
+
+test('the per-frame budget is exactly what the window can walk', () => {
+  // `reach` adds under a tenth of a slot at any spacing the gate admits, so the
+  // ceil plus one slot is both sufficient and tight — a draw asking for
+  // `chevronSlotBudget` truncates no line and shades no slot it need not.
+  for (const canvasPx of CANVAS_WIDTHS) {
+    expect(worstCaseSlots(canvasPx)).toBe(chevronSlotBudget(canvasPx))
+  }
 })
 
-test('the window walks one slot more than the block spans, and no more', () => {
-  // `reach` adds under a tenth of a slot at any spacing the gate admits, so the
-  // ceil/floor pair is the whole of the slack.
-  for (const blockPx of [400, 1200, 3840, 5077, 7680]) {
-    expect(worstCaseSlots(blockPx)).toBeLessThanOrEqual(
-      Math.ceil(blockPx / CHEVRON_SPACING_PX) + 1,
-    )
-  }
+test('and is a fraction of the count the pass registers', () => {
+  expect(chevronSlotBudget(1920)).toBe(49)
+  expect(MAX_VISIBLE_CHEVRONS_PER_LINE / chevronSlotBudget(1920)).toBeCloseTo(
+    2.61,
+    2,
+  )
+  // Past the registered count the per-frame budget is what keeps the far-end
+  // chevrons of a long line, which a fixed 128 dropped.
+  expect(chevronSlotBudget(7680)).toBeGreaterThan(MAX_VISIBLE_CHEVRONS_PER_LINE)
 })
 
 test('the window needs no floor and no total guard of its own', () => {

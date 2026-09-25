@@ -25,6 +25,7 @@ import {
 import {
   CHEVRON_H_PX,
   CHEVRON_THICKNESS_PX,
+  CHEVRON_VERTS,
   CHEVRON_W_PX,
   CONT_EDGE_MARGIN_PX,
   CONT_MARK_ALPHA,
@@ -35,6 +36,7 @@ import {
   STEM_HALF_H_PX,
   STEM_LENGTH_PX,
   canvasEdgeFlags,
+  chevronSlotBudget,
 } from '../components/sharedRendererConstants.ts'
 import {
   ArrowPass,
@@ -403,10 +405,13 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
 }
 
 /**
- * The GPU's chevrons: one pass over the line buffer, shading
- * `maxChevronsPerLine` slots per line, so a consumer declares it with
- * `bufferOf` the line mark and a cap of its own. The painter is a no-op — the
- * line shape strokes its chevrons per line.
+ * The GPU's chevrons: one pass over the line buffer, so a consumer declares it
+ * with `bufferOf` the line mark. The painter is a no-op — the line shape
+ * strokes its chevrons per line.
+ *
+ * `maxChevronsPerLine` is what the pass registers; each draw asks instead for
+ * the slots this frame's canvas can hold, which at a laptop width is a fifth of
+ * the registered budget and never truncates a line the way a fixed budget does.
  */
 export function makeChevronShape(
   maxChevronsPerLine: number,
@@ -419,6 +424,8 @@ export function makeChevronShape(
     },
     writeUniforms: writeFeatureGlyphUniforms,
     paintsBlock: (_block, _frame, params) => !params.hideChevrons,
+    verticesPerInstance: frame =>
+      chevronSlotBudget(frame.canvasWidth) * CHEVRON_VERTS,
     paintBlock() {},
   }
 }

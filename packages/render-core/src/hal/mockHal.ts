@@ -58,6 +58,8 @@ export interface MockDraw {
   passId: string
   regionKey: number
   bufferPassId: string | undefined
+  /** The vertex count the draw asked for, its descriptor's where it asked for none. */
+  verticesPerInstance: number
   scissor: MockRect | null
   viewport: MockRect | null
   uniformWrite: number
@@ -260,7 +262,12 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
   // `bufferPassId` is checked too: `drawPass(a, key, b)` runs pass `a`'s
   // pipeline over pass `b`'s buffer, and every such pair in tree names two
   // registered passes (canvas's chevron over line, continuation over rect).
-  drawPass(passId: string, regionKey: number, bufferPassId?: string) {
+  drawPass(
+    passId: string,
+    regionKey: number,
+    bufferPassId?: string,
+    verticesPerInstance?: number,
+  ) {
     this.assertRegistered(passId, 'passId')
     if (bufferPassId !== undefined) {
       this.assertRegistered(bufferPassId, 'bufferPassId')
@@ -279,6 +286,9 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
       passId,
       regionKey,
       bufferPassId,
+      verticesPerInstance:
+        verticesPerInstance ??
+        this.descriptors.get(passId)!.verticesPerInstance,
       scissor: this.scissor && { ...this.scissor },
       viewport: this.viewport && { ...this.viewport },
       uniformWrite: this.uniformWrites.length - 1,

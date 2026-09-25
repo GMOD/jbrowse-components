@@ -1,13 +1,23 @@
+import { CHEVRON_SPACING_PX } from '../passes/shaders/chevron.consts.generated.ts'
+
 export {
   LABEL_FONT_SIZE,
   LABEL_OVERLAY_BACKGROUND,
 } from '../../RenderFeatureDataRPC/constants.ts'
 
-// A budget, not a limit: `makeChevronPass` multiplies it by `CHEVRON_VERTS`, so
-// every intron line shades all 128 slots whether or not a chevron lands in one.
-// 128 slots cover a block up to 5077 CSS px; past that the GPU path drops the
-// far-end chevrons of the longest lines, which Canvas2D still draws.
+// What `makeChevronPass` registers, and the count a draw supplying no width
+// uses. The GPU path supplies one — `chevronSlotBudget` off the frame's canvas
+// — so this binds nothing it draws; it stays the registered worst case because
+// a `PipelineDescriptor` is built before any canvas exists.
 export const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
+
+// Slots a line can put on screen across a canvas this wide. The window is over
+// chevron CENTRES widened by the arms, and `reach` adds under a tenth of a slot
+// at any spacing `showChevrons` admits, so the ceil plus one slot is the whole
+// of it — `chevronWindow.test.ts` walks the window itself against this.
+export function chevronSlotBudget(canvasWidthPx: number) {
+  return Math.ceil(canvasWidthPx / CHEVRON_SPACING_PX) + 1
+}
 
 // Continuation markers fire only at the true canvas edge, never at an internal
 // seam between two on-screen displayedRegions.
@@ -32,10 +42,11 @@ export {
 } from '../passes/shaders/rect.consts.generated.ts'
 export {
   CHEVRON_H_PX,
-  CHEVRON_SPACING_PX,
   CHEVRON_THICKNESS_PX,
+  CHEVRON_VERTS,
   CHEVRON_W_PX,
 } from '../passes/shaders/chevron.consts.generated.ts'
+export { CHEVRON_SPACING_PX }
 // No HEAD_HALF_H_PX: `arrowHeadHalfHeightPx` clamps the arrowhead to the box it
 // comes off, and re-exporting the raw ceiling is how a caller reaches past it.
 export {

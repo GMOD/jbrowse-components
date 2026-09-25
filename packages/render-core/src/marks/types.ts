@@ -162,6 +162,15 @@ export interface MarkShape<TChannels, TParams> {
    */
   paintsBlock?(block: RenderBlock, frame: MarkFrame, params: TParams): boolean
   /**
+   * Slots the GPU addresses per instance this frame, where the pass's
+   * registered count is a worst case over canvas widths. The canvas chevron
+   * pass shades a slot per chevron a line could put on screen, which is the
+   * canvas width over the chevron pitch — a tenth of its registered budget at a
+   * laptop width, and every surplus slot is a vertex invocation that runs the
+   * whole placement before culling itself.
+   */
+  verticesPerInstance?(frame: MarkFrame): number
+  /**
    * The texture the pass samples, read off the params the painter and the hit
    * test read (`span`'s row table), so the two backends cannot be handed
    * different tables. A display's own `texture` lens wins where it declares
@@ -436,7 +445,12 @@ export function defineMark<
           staged.params = params
         }
       }
-      hal.drawPass(shape.pass.id, regionKey, bufferOf)
+      hal.drawPass(
+        shape.pass.id,
+        regionKey,
+        bufferOf,
+        shape.verticesPerInstance?.(state),
+      )
       if (scissor) {
         hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
       }

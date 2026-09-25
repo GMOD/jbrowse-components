@@ -459,7 +459,12 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
   }
 
-  drawPass(passId: string, regionKey: number, bufferPassId?: string) {
+  drawPass(
+    passId: string,
+    regionKey: number,
+    bufferPassId?: string,
+    verticesPerInstance?: number,
+  ) {
     const gl = this.gl
     // Buffer first, so a pass with nothing to draw links no program.
     const regionBuf = this.regions.get(regionKey, bufferPassId ?? passId)
@@ -486,7 +491,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     gl.drawArraysInstanced(
       glMode,
       0,
-      pass.descriptor.verticesPerInstance,
+      verticesPerInstance ?? pass.descriptor.verticesPerInstance,
       regionBuf.count,
     )
     if (this.debug && !this.firstDrawSeen.has(passId)) {

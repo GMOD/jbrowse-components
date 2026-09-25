@@ -183,7 +183,17 @@ export interface GpuHal {
   // Draw a pass. If bufferPassId is provided, use that pass's data buffer
   // instead of passId's own buffer (for sharing data between passes with
   // different pipelines/topologies).
-  drawPass(passId: string, regionKey: number, bufferPassId?: string): void
+  //
+  // `verticesPerInstance` overrides the descriptor's for this draw. Nothing
+  // about the pipeline or the buffer depends on it — the canvas chevron pass
+  // addresses its slots off `SV_VertexID` alone — so a pass whose slot count is
+  // a per-frame fact states it here rather than registering the worst case.
+  drawPass(
+    passId: string,
+    regionKey: number,
+    bufferPassId?: string,
+    verticesPerInstance?: number,
+  ): void
   endFrame(): void
 
   // Scissor and viewport control (coordinates in physical pixels, top-left
