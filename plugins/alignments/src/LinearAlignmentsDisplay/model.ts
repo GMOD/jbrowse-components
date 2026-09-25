@@ -1728,7 +1728,7 @@ export default function stateModelFactory(
            */
           get baseQualitySpan(): QualitySpan {
             return self.showLegend && self.baseLayer?.type === 'perBaseQuality'
-              ? baseQualitySpanAcrossGroups(this.laidOutByGroup)
+              ? baseQualitySpanAcrossGroups(this.laidOutByGroupFramed)
               : NO_QUALITY_SPAN
           },
 

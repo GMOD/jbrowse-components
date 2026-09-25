@@ -2,7 +2,7 @@ import { BASE_QUALITY_UNAVAILABLE } from '../features/perBaseQuality/colors.ts'
 import { RC_MAPQ } from '../shaders/slang/read.consts.generated.ts'
 
 import type { NumericExtent } from './bakedColorScale.ts'
-import type { ColoredByGroup } from './groupLayout.ts'
+import type { ColoredByGroup, LaidOutByGroup } from './groupLayout.ts'
 
 /** The MAPQ span of the reads the ramp paints, over every laid-out region. */
 export function mapqExtentAcrossGroups(
@@ -39,7 +39,7 @@ export const NO_QUALITY_SPAN: QualitySpan = {
  * any base carries none.
  */
 export function baseQualitySpanAcrossGroups(
-  byGroup: ColoredByGroup,
+  byGroup: LaidOutByGroup,
 ): QualitySpan {
   let min = Infinity
   let max = -Infinity
