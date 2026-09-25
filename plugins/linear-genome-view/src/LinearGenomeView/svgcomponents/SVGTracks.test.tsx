@@ -37,6 +37,9 @@ function separatorCount(display: {
           textHeight={0}
           fontSize={10}
           trackLabels="hidden"
+          trackLabelOffset={0}
+          leftBuffer={0}
+          legendWidth={0}
           displayResults={[
             {
               track: {
