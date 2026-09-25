@@ -151,7 +151,6 @@ export interface JBrowsePluginVersion {
   url?: string
   umdUrl?: string
   esmUrl?: string
-  cjsUrl?: string
   integrity?: string
 }
 
@@ -164,7 +163,6 @@ export interface JBrowsePlugin {
   url?: string
   umdUrl?: string
   esmUrl?: string
-  cjsUrl?: string
   integrity?: string
   // v2 plugin store entries list per-version urls + JBrowse compatibility ranges.
   // When absent, the top-level url applies to all JBrowse versions.

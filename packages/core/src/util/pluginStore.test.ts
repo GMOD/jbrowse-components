@@ -171,20 +171,15 @@ describe('installablePlugins', () => {
     expect(names([p], false)).toEqual(['PerVersion'])
   })
 
-  it('drops an entry with no web build anywhere, and keeps it on desktop', () => {
+  // both products load the same two formats, so an entry publishing neither is
+  // hidden on both rather than offered on one and dropped by the other's loader
+  it('drops an entry that publishes no build, on either product', () => {
     const p = plugin({
-      name: 'CjsOnly',
-      cjsUrl: 'https://x/p.cjs',
-      versions: [
-        {
-          pluginVersion: '1.0.0',
-          jbrowseRange: '*',
-          cjsUrl: 'https://x/1.0.0/p.cjs',
-        },
-      ],
+      name: 'NoBuild',
+      versions: [{ pluginVersion: '1.0.0', jbrowseRange: '*' }],
     })
     expect(names([p], false)).toEqual([])
-    expect(names([p], true)).toEqual(['CjsOnly'])
+    expect(names([p], true)).toEqual([])
   })
 
   it('drops the plugins both products vendor', () => {

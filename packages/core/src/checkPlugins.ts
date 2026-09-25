@@ -64,13 +64,8 @@ function isTrustedDefinition(def: PluginDefinition) {
 // version-pinned build. A config plugin is "in the store" if its url is any of
 // these.
 function storePluginUrls(p: JBrowsePlugin) {
-  const top = [p.url, p.umdUrl, p.esmUrl, p.cjsUrl]
-  const versioned = (p.versions ?? []).flatMap(v => [
-    v.url,
-    v.umdUrl,
-    v.esmUrl,
-    v.cjsUrl,
-  ])
+  const top = [p.url, p.umdUrl, p.esmUrl]
+  const versioned = (p.versions ?? []).flatMap(v => [v.url, v.umdUrl, v.esmUrl])
   return [...top, ...versioned].filter(url => url !== undefined)
 }
 

@@ -78,30 +78,30 @@ test('Installs a session plugin', async () => {
   })
 })
 
-test('removeSessionPlugin removes a plugin that carries a cjsUrl', () => {
+test('removeSessionPlugin removes a plugin that carries a second build url', () => {
   const { session } = setup()
   const plugin = {
     name: 'MsaView',
     url: 'https://example.com/msaview.umd.js',
-    cjsUrl: 'https://example.com/msaview.cjs.js',
+    esmUrl: 'https://example.com/msaview.esm.js',
   }
   session.addSessionPlugin(plugin)
   expect(getSnapshot(session.sessionPlugins)).toHaveLength(1)
 
   // mirrors what InstalledPlugin passes: pluginManager metadata carries only
-  // the resolved url, not the cjsUrl, so removal must match on url alone
+  // the resolved url, and the two builds resolve to different ones, so removal
+  // must match on the stored name rather than on a url
   session.removeSessionPlugin({ name: plugin.name, url: plugin.url })
   expect(getSnapshot(session.sessionPlugins)).toHaveLength(0)
 })
 
 test('uninstalls a session plugin through the full UI flow', async () => {
   const user = userEvent.setup()
-  // a store-style definition carrying both a web (url) and desktop (cjsUrl)
-  // build, loaded into the plugin manager so it appears as installed
+  // a store-style definition, loaded into the plugin manager so it appears as
+  // installed
   const definition = {
     name: 'MsaView',
     url: 'https://example.com/msaview.umd.js',
-    cjsUrl: 'https://example.com/msaview.cjs.js',
   }
   class MsaViewPlugin extends Plugin {
     name = 'MsaView'

@@ -14,10 +14,7 @@ import type { PluginDefinition } from '../pluginDefinitions.ts'
 import type { JBrowsePlugin, JBrowsePluginVersion } from './types/data.ts'
 
 // The url-bearing fields shared by a JBrowsePlugin and a JBrowsePluginVersion.
-type UrlFields = Pick<
-  JBrowsePlugin,
-  'url' | 'umdUrl' | 'esmUrl' | 'cjsUrl' | 'integrity'
->
+type UrlFields = Pick<JBrowsePlugin, 'url' | 'umdUrl' | 'esmUrl' | 'integrity'>
 
 // Every build an entry publishes: the top-level one plus each version-pinned
 // one, which is the same set resolvePlugin picks from.
@@ -35,14 +32,11 @@ function publishedBuilds(plugin: JBrowsePlugin): UrlFields[] {
  *
  * Two independent reasons to hide an entry:
  *
- * - **No build this product can load.** Web runs ESM/UMD; a CJS-only entry needs
- *   Node's `require`, so only Desktop can install it. Asked of every build the
- *   entry publishes rather than only the top-level urls — an entry that pins urls
- *   per version, which `resolvePlugin`'s fallback exists to accommodate, used to
- *   vanish from Web's list with no diagnostic. An entry whose *resolved* build is
- *   the CJS-only one is still shown, since that is a fact about this JBrowse
- *   version rather than about the product, and PluginStoreCard already has a
- *   place to say so.
+ * - **No build at all.** Asked of every build the entry publishes rather than
+ *   only the top-level urls — an entry that pins urls per version, which
+ *   `resolvePlugin`'s fallback exists to accommodate, used to vanish from the
+ *   list with no diagnostic. Both products load the same two formats, so this
+ *   half no longer differs between them.
  * - **Already vendored into this product's core bundle**, where installing does
  *   nothing because `dropVendoredPlugins` drops the definition at load. Desktop's
  *   half of that list counts too, and is the half both surfaces were missing.
@@ -58,8 +52,7 @@ export function installablePlugins(
   return plugins.filter(
     plugin =>
       !vendored.has(plugin.name) &&
-      (isElectron ||
-        publishedBuilds(plugin).some(b => b.esmUrl ?? b.url ?? b.umdUrl)),
+      publishedBuilds(plugin).some(b => b.esmUrl ?? b.url ?? b.umdUrl),
   )
 }
 
@@ -121,11 +114,9 @@ function definitionFrom(
     ? { name, umdUrl: src.umdUrl, ...integrity }
     : src.esmUrl !== undefined
       ? { esmUrl: src.esmUrl }
-      : src.cjsUrl !== undefined
-        ? { cjsUrl: src.cjsUrl }
-        : src.url !== undefined
-          ? { name, url: src.url, ...integrity }
-          : undefined
+      : src.url !== undefined
+        ? { name, url: src.url, ...integrity }
+        : undefined
 }
 
 function highestVersion(versions: JBrowsePluginVersion[]) {

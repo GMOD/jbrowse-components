@@ -1389,17 +1389,15 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
   defs.PluginDefinition = {
     title: 'PluginDefinition',
     description:
-      'A plugin to load: its name plus a `url`/`umdUrl`/`esmUrl`/`cjsUrl`, or `umdLoc`/`esmLoc`/`cjsLoc` for a file relative to the config.',
+      'A plugin to load: its name plus a `url`/`umdUrl`/`esmUrl`, or `umdLoc`/`esmLoc` for a file relative to the config.',
     type: 'object',
     properties: {
       name: { type: 'string' },
       url: { type: 'string' },
       umdUrl: { type: 'string' },
       esmUrl: { type: 'string' },
-      cjsUrl: { type: 'string' },
       umdLoc: ref('FileLocation'),
       esmLoc: ref('FileLocation'),
-      cjsLoc: ref('FileLocation'),
     },
     required: ['name'],
   }

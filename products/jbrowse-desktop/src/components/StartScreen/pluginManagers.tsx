@@ -17,7 +17,6 @@ import corePlugins from '../../corePlugins.ts'
 import { invokeIpc } from '../../ipc.ts'
 import JBrowseRootModelFactory from '../../rootModel/rootModel.ts'
 import sessionModelFactory from '../../sessionModel/sessionModel.ts'
-import { fetchCJS } from '../../util.tsx'
 import { completeConfig } from './configInputs.ts'
 import { fetchConfig } from './fetchConfig.ts'
 import {
@@ -51,13 +50,17 @@ import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 // it broke the packaged app. The volvox assembly hung at initialized:false with
 // an empty error, which is what an RPC worker that never answers looks like.
 //
-// The suspected mechanism, unconfirmed: `fetchCJS` lives in src/util.tsx, which
-// rpcWorker.ts — a separate webpack entry — also imports. Adding a second async
-// renderer consumer of it appears to tip splitChunks into extracting a shared
-// chunk that the worker then has to load at runtime, and worker chunk loading
-// under file:// with publicPath './' is exactly what desktop's webpack config
-// warns about. Anyone retrying this should confirm that first; the win on offer
-// is deferring the graph from start-screen-mount to session-open, not bytes.
+// The suspected mechanism was `fetchCJS` in src/util.tsx, which rpcWorker.ts —
+// a separate webpack entry — also imported: a second async renderer consumer of
+// it appeared to tip splitChunks into extracting a shared chunk the worker then
+// had to load at runtime, which is what desktop's webpack config warns about
+// for publicPath './' under file://. That module went with the CJS plugin
+// loader, so the renderer and the worker entry now share nothing here and the
+// suspicion is untested rather than confirmed. A retry is worth it — the win on
+// offer is deferring the graph from start-screen-mount to session-open, not
+// bytes — but only `pnpm package:linux:no-installer && pnpm test:e2e:headless`
+// can say whether it holds; typecheck, the unit suites and every bundle
+// measurement stayed green through the break.
 
 // undefined where there is nothing to load — see `initializeWorker` for what a
 // loader costs
@@ -66,7 +69,6 @@ function makePluginLoader(definitions: PluginDefinition[]) {
   return toLoad.length
     ? new PluginLoader(toLoad, {
         fetchESM: url => import(/* webpackIgnore:true */ url),
-        fetchCJS,
       }).installGlobalReExports(
         window,
         () => import('../../reExports.generated.ts'),

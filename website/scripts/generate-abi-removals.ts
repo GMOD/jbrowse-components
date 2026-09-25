@@ -160,12 +160,16 @@ const NAME_GROUPS: NameGroup[] = [
     label:
       'plugin-definition helpers, now in `@jbrowse/core/pluginDefinitions`, so reading a definition does not load the re-export registry',
     names: [
-      'isCJSPluginDefinition',
       'isESMPluginDefinition',
       'isUMDPluginDefinition',
       'pluginDescriptionString',
       'pluginUrl',
     ],
+  },
+  {
+    label:
+      'the CJS plugin loader, which wrote a bundle to a temp file and `require`d it in Desktop’s renderer — publish UMD or ESM instead',
+    names: ['isCJSPluginDefinition'],
   },
   {
     label:

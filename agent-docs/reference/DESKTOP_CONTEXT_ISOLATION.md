@@ -22,10 +22,14 @@ Two specific paths to that privilege are now gated, but the privilege itself
 remains, and gating paths one at a time is a losing game:
 
 - Remote-config plugins (`f573bcad11`): a `jbrowse://` link, or a start-screen
-  favorite, → remote config → its `plugins` → `fetchCJS` → `require()`. Now
-  vetted in `fetchConfig` — the one door such a config comes through — using
-  `@jbrowse/core/checkPlugins`, shared with web. See
-  [ADR-038](../architecture-decision-records/adr-038-desktop-plugin-trust-at-fetchconfig-funnel.md).
+  favorite, → remote config → its `plugins` → `fetchCJS` → `require()`. Vetted
+  in `fetchConfig` — the one door such a config comes through — using
+  `@jbrowse/core/checkPlugins`, shared with web
+  ([ADR-038](../architecture-decision-records/adr-038-desktop-plugin-trust-at-fetchconfig-funnel.md)),
+  and the `require()` end of it is now gone with the CJS plugin loader: a plugin
+  is UMD or ESM in both products, evaluated as browser code. The gate stays,
+  because a plugin evaluated in a nodeIntegration renderer still reaches Node
+  through `window.require` whatever format it shipped in.
 - Navigation (`c7a2ef063c`): the window had no `will-navigate` guard, so a
   navigated-to page inherited nodeIntegration. Now `electron/navigationGuard.ts`.
 
@@ -181,7 +185,7 @@ boot.
 | `generic-filehandle2`, via `util/io/index.ts` | 1487 | `fs/promises` |
 | `ixixx`, via `src/indexJobsModel.ts` | 6404 | `child_process`, `stream`, `stream/promises`, `string_decoder`, `events`, `os`, `path`, `fs` |
 | `src/indexJobsModel.ts` itself | 2973 | `fs`, `path` |
-| `src/util.tsx` (`fetchCJS`, blocker 4) | via `pluginManagers.tsx` | `fs/promises`, `os`, `path` |
+| `src/util.tsx` (`fetchCJS`, blocker 4) | via `pluginManagers.tsx` | `fs/promises`, `os`, `path` — **fixed**, the module went with the CJS loader |
 
 **`indexJobsModel.ts` was a barrel leak, not a channel and not a worker move —
 and it is fixed.** It imports exactly two *values* from `@jbrowse/text-indexing`
@@ -226,14 +230,22 @@ renderer today — making `|| isElectron` redundant at this call site. Not probe
 directly; check before relying on it. After the flip both go false, which is
 correct, but by then the bundling issue above has already bitten.
 
-### 4. Plugin loading
+### 4. Plugin loading — done
 
-`src/util.tsx` `fetchCJS` writes plugin code to a temp dir with `node:fs` and
-`require`s it in the renderer. Under contextIsolation neither is available, so
-the CJS plugin path needs rethinking (ESM `import(url)` already works in a
-browser context). Note this is also the RCE vector the plugin gate compensates
-for; once the renderer has no Node, a plugin evaluated there gets only browser
-APIs plus the shim, which is the actual goal.
+`src/util.tsx` `fetchCJS` wrote plugin code to a temp dir with `node:fs` and
+`require`d it in the renderer, neither of which survives contextIsolation. The
+rethink this section asked for was to delete the format rather than port it: no
+store entry published a CJS build, Electron's renderer runs UMD and ESM, and a
+plugin reaching the main process does it through `window.require('electron')`
+whichever format it ships in — so the loader that needed Node bought nothing its
+two peers do not. `PluginLoader` names UMD or ESM as the successor for a config
+still carrying `cjsUrl`, and `products/jbrowse-desktop/src/util.tsx` is gone,
+taking `node:fs/promises`, `node:os` and `node:path` out of the renderer's graph
+and the RCE-by-`require` vector with them.
+
+A plugin evaluated in the renderer still reaches Node through `window.require`
+until the flip, so the trust gate is not redundant — what changed is that the
+plugin loader no longer *hands* it Node.
 
 ### 5. Argument validation is part of this work, not a follow-up
 
@@ -290,7 +302,8 @@ all, and every later step is unverifiable while the renderer won't boot.
    Doing that is what makes step 5's validation type-checked, and what keeps the
    allowlist from drifting again.
 3. IPC-backed `GenericFilehandle` behind `openLocation` + the capability check.
-4. Plugin loading off `node:fs`/`require`.
+4. ~~Plugin loading off `node:fs`/`require`~~ — done, by deleting the CJS
+   format.
 5. Argument validation on the channels above.
 6. Flip `window.ts`: `contextIsolation: true`, `nodeIntegration: false`, keep
    `nodeIntegrationInWorker: true`, add `preload: build/preload.cjs`.

@@ -50,11 +50,6 @@ export type ESMPluginDefinition =
   | ESMLocPluginDefinition
   | ESMUrlPluginDefinition
 
-export interface CJSPluginDefinition {
-  cjsUrl: string
-  name?: string
-}
-
 /**
  * A plugin named by its plugin-store entry rather than by a url — the query
  * ("MsaView, for this JBrowse") instead of a precomputed answer ("these exact
@@ -101,7 +96,6 @@ export type PluginDefinition = (
   | LegacyUMDPluginDefinition
   | ESMLocPluginDefinition
   | ESMUrlPluginDefinition
-  | CJSPluginDefinition
   | StorePluginDefinition
 ) & { storePlugin?: string }
 
@@ -117,15 +111,9 @@ export function isESMPluginDefinition(
   return 'esmUrl' in def || 'esmLoc' in def
 }
 
-export function isCJSPluginDefinition(
-  def: PluginDefinition,
-): def is CJSPluginDefinition {
-  return 'cjsUrl' in def
-}
-
 /**
  * Whether a definition names a store entry to resolve. Deliberately not part of
- * the CJS/ESM/UMD trio `assertSingleKind` counts: those are loaders, and a ref
+ * the ESM/UMD pair `assertSingleKind` counts: those are loaders, and a ref
  * is not one. A ref names *which plugin*, and pairing it with a url is the
  * supported migration shape rather than the two-loaders ambiguity that guard
  * exists to refuse.
@@ -193,18 +181,16 @@ export function dropVendoredPlugins(
 }
 
 // The two functions below describe a definition by picking the one url it will
-// be loaded from, so both dispatch in loadPlugin's order — CJS, then ESM, then
-// UMD. Keep them in step with it: they are what the plugin trust gate
-// (checkPlugins) reads and what the untrusted-plugin prompt shows, so an order
-// that disagrees with the loader's vets one url and executes another. They once
-// did disagree, and a definition carrying both `umdUrl` and `cjsUrl` was
-// approved on its jbrowse.org umd url while loadPlugin require()d its cjs one.
-// assertSingleKind now rejects such a definition outright; this order is the
-// second half of that guarantee, since the gate runs before the loader does.
+// be loaded from, so both dispatch in loadPlugin's order — ESM, then UMD. Keep
+// them in step with it: they are what the plugin trust gate (checkPlugins)
+// reads and what the untrusted-plugin prompt shows, so an order that disagrees
+// with the loader's vets one url and executes another. They once did disagree,
+// and a definition naming two loaders was approved on its jbrowse.org url while
+// loadPlugin ran the other. assertSingleKind now rejects such a definition
+// outright; this order is the second half of that guarantee, since the gate
+// runs before the loader does.
 export function pluginDescriptionString(d: PluginDefinition) {
-  if (isCJSPluginDefinition(d)) {
-    return `CJS plugin ${d.cjsUrl}`
-  } else if (isESMPluginDefinition(d)) {
+  if (isESMPluginDefinition(d)) {
     return `ESM plugin ${'esmUrl' in d ? d.esmUrl : d.esmLoc.uri}`
   } else if (isUMDPluginDefinition(d)) {
     return `UMD plugin ${d.name}`
@@ -224,9 +210,7 @@ export function pluginDescriptionString(d: PluginDefinition) {
  * the same plugin just because neither has a url.
  */
 export function maybePluginUrl(d: PluginDefinition) {
-  if (isCJSPluginDefinition(d)) {
-    return d.cjsUrl
-  } else if (isESMPluginDefinition(d)) {
+  if (isESMPluginDefinition(d)) {
     return 'esmUrl' in d ? d.esmUrl : d.esmLoc.uri
   } else if (isUMDPluginDefinition(d)) {
     return 'umdLoc' in d ? d.umdLoc.uri : 'umdUrl' in d ? d.umdUrl : d.url

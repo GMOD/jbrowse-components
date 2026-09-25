@@ -41,10 +41,16 @@ format and in what the path resolves against:
 | `umdLoc` | UMD           | config.json               |
 | `esmUrl` | ESM           | index.html                |
 | `esmLoc` | ESM           | config.json               |
-| `cjsUrl` | CJS           | index.html (desktop only) |
 
-`umdLoc`/`esmLoc` suit a plugin file that lives beside config.json, and `cjsUrl`
-is for jbrowse-desktop, since Electron does not load ESM.
+`umdLoc`/`esmLoc` suit a plugin file that lives beside config.json. UMD is what
+the plugin store publishes and the only format an RPC worker can load, so it is
+the format to reach for unless you are loading a plugin you build yourself.
+
+The `cjsUrl` field is gone as of v5. It loaded a plugin by writing it to a temp
+file and `require`ing it in jbrowse-desktop's renderer, which nothing needed:
+Electron's renderer runs both other formats, and a plugin reaching the main
+process does it through `window.require('electron')` whichever format it ships
+in. A config still naming one fails that plugin by name and opens without it.
 
 <Figure src="/img/plugin_store.png" caption="Opening the plugin store from the Tools menu. Plugins installed via the config (here UMDUrlPlugin) show a lock icon in the Installed plugins section, and the GUI cannot remove them. The Available plugins list below offers one-click installs."/>
 

@@ -300,7 +300,11 @@ Loader, and the start screen's two dialogs-behind-buttons.
 `StartScreen/pluginManagers.eager.test.ts` guards it, because one static import
 anywhere puts the graph back and nothing about that diff would say so.
 
-**The part that did not work, because you will think of it too.** The start
+**The part that did not work, because you will think of it too.** (The suspected
+cause below is gone as of 2026-09-25 — `src/util.tsx` went with the CJS plugin
+loader, so the renderer and the worker entry share no module here. That makes a
+retry worth running, and it still has to be run the way the last one was caught:
+`pnpm package:linux:no-installer && pnpm test:e2e:headless`.) The start
 screen still *loads* the graph — just after first paint, when its own plugin
 manager is built, rather than before. `createStartScreenPluginManager` needs no
 corePlugins (it exists for the three `Desktop-StartScreen*` extension points, and

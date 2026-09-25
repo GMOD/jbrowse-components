@@ -2,7 +2,6 @@ import PluginLoader, { workerScriptLoadMessage } from './PluginLoader.ts'
 import {
   dedupePlugins,
   dropVendoredPlugins,
-  isCJSPluginDefinition,
   isESMPluginDefinition,
   isUMDPluginDefinition,
   pluginDefinitionMetadata,
@@ -33,10 +32,9 @@ test('matches the external config name, not the core plugin class name', () => {
   expect(dropVendoredPlugins(defs)).toEqual(defs)
 })
 
-test('leaves ESM/CJS definitions untouched (no name field to match)', () => {
+test('leaves an ESM definition untouched (no name field to match)', () => {
   const defs: PluginDefinition[] = [
     { esmUrl: 'https://example.com/mafviewer.esm.js' },
-    { cjsUrl: 'https://example.com/mafviewer.cjs.js' },
   ]
   expect(dropVendoredPlugins(defs)).toEqual(defs)
 })
@@ -44,16 +42,16 @@ test('leaves ESM/CJS definitions untouched (no name field to match)', () => {
 // pluginUrl feeds the trust gate (checkPlugins) and pluginDescriptionString the
 // approval prompt; both must name the url loadPlugin will actually run, or the
 // gate vets one url and the loader executes another. loadPlugin dispatches
-// CJS -> ESM -> UMD, so a mixed definition resolves to its CJS url in both.
+// ESM -> UMD, so a mixed definition resolves to its ESM url in both.
 test('pluginUrl/description resolve to the url loadPlugin runs, not another', () => {
   const def = {
     name: 'Innocent',
     umdUrl: 'https://jbrowse.org/plugins/innocent.js',
-    cjsUrl: 'https://evil.example.com/pwn.js',
+    esmUrl: 'https://evil.example.com/pwn.js',
   } as unknown as PluginDefinition
   expect(pluginUrl(def)).toBe('https://evil.example.com/pwn.js')
   expect(pluginDescriptionString(def)).toBe(
-    'CJS plugin https://evil.example.com/pwn.js',
+    'ESM plugin https://evil.example.com/pwn.js',
   )
 })
 
@@ -61,10 +59,21 @@ test('loadPlugin refuses a definition that names more than one plugin type', asy
   const def = {
     name: 'Innocent',
     umdUrl: 'https://jbrowse.org/plugins/innocent.js',
-    cjsUrl: 'https://evil.example.com/pwn.js',
+    esmUrl: 'https://evil.example.com/pwn.js',
   } as unknown as PluginDefinition
   await expect(new PluginLoader().loadPlugin(def)).rejects.toThrow(
     /more than one plugin type/,
+  )
+})
+
+// The retired format names its successor rather than falling through to "could
+// not determine plugin type", which reads as a malformed config.
+test('loadPlugin names the successor for a retired cjsUrl definition', async () => {
+  const def = {
+    cjsUrl: 'https://example.com/plugin.cjs.js',
+  } as unknown as PluginDefinition
+  await expect(new PluginLoader().loadPlugin(def)).rejects.toThrow(
+    /CJS plugins are no longer loaded.*umdUrl or esmUrl/s,
   )
 })
 
@@ -316,12 +325,6 @@ describe('pluginUrl', () => {
     ).toBe('plugin.esm.js')
   })
 
-  it('extracts url from CJS plugin', () => {
-    expect(pluginUrl({ cjsUrl: 'https://example.com/plugin.cjs.js' })).toBe(
-      'https://example.com/plugin.cjs.js',
-    )
-  })
-
   it('returns unknown url for unrecognized plugin type', () => {
     expect(pluginUrl({} as PluginDefinition)).toBe('unknown url')
   })
@@ -359,16 +362,6 @@ describe('pluginDefinitionMetadata', () => {
       url: 'https://example.com/plugin.esm.js',
     })
   })
-
-  it('returns url without name for CJS plugin', () => {
-    const meta = pluginDefinitionMetadata({
-      cjsUrl: 'https://example.com/plugin.cjs.js',
-    })
-    expect(meta).toEqual({
-      name: undefined,
-      url: 'https://example.com/plugin.cjs.js',
-    })
-  })
 })
 
 describe('pluginLabel', () => {
@@ -399,7 +392,6 @@ describe('type guards', () => {
     }
     expect(isUMDPluginDefinition(d)).toBe(true)
     expect(isESMPluginDefinition(d)).toBe(false)
-    expect(isCJSPluginDefinition(d)).toBe(false)
   })
 
   it('identifies UMD url plugin', () => {
@@ -409,7 +401,6 @@ describe('type guards', () => {
     }
     expect(isUMDPluginDefinition(d)).toBe(true)
     expect(isESMPluginDefinition(d)).toBe(false)
-    expect(isCJSPluginDefinition(d)).toBe(false)
   })
 
   it('identifies UMD loc plugin', () => {
@@ -426,7 +417,6 @@ describe('type guards', () => {
     }
     expect(isUMDPluginDefinition(d)).toBe(false)
     expect(isESMPluginDefinition(d)).toBe(true)
-    expect(isCJSPluginDefinition(d)).toBe(false)
   })
 
   it('identifies ESM loc plugin', () => {
@@ -436,13 +426,14 @@ describe('type guards', () => {
     expect(isESMPluginDefinition(d)).toBe(true)
   })
 
-  it('identifies CJS plugin', () => {
-    const d: PluginDefinition = {
+  // the retired format is no longer a kind: nothing classifies it, and
+  // loadPlugin is where it is refused by name
+  it('classifies a retired cjsUrl definition as no kind at all', () => {
+    const d = {
       cjsUrl: 'https://example.com/plugin.cjs.js',
-    }
+    } as unknown as PluginDefinition
     expect(isUMDPluginDefinition(d)).toBe(false)
     expect(isESMPluginDefinition(d)).toBe(false)
-    expect(isCJSPluginDefinition(d)).toBe(true)
   })
 })
 
@@ -515,8 +506,8 @@ describe('dedupePlugins', () => {
 // runtime plugin doesn't pay for it (~126 KB gzipped, see
 // ReExports/registry.ts). That makes *when* it is published a contract rather
 // than a consequence of a static import, and these are its two halves: a UMD
-// bundle reads `JBrowseExports` off the global at module scope, and a CJS/ESM
-// plugin's `install()` calls `pluginManager.jbrequire(name)` synchronously.
+// bundle reads `JBrowseExports` off the global at module scope, and a plugin's
+// `install()` calls `pluginManager.jbrequire(name)` synchronously.
 // Both must be satisfied by the time any plugin script runs.
 const loadCoreRegistry = () => import('./ReExports/modules.ts')
 

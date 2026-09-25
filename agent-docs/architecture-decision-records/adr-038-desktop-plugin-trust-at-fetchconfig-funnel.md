@@ -10,6 +10,11 @@ summary: "Desktop vets remote-config plugins at the `fetchConfig` funnel, not pe
 Accepted (2026-07). Mitigation only — the underlying privilege is the subject of
 `reference/DESKTOP_CONTEXT_ISOLATION.md`, which this ADR does not resolve.
 
+Amended 2026-09-25: `fetchCJS` is gone with the CJS plugin format, so the
+Context below describes the loader as it was. The gate is unchanged and still
+needed — a plugin evaluated in a `nodeIntegration` renderer reaches Node through
+`window.require` whatever format it shipped in.
+
 ## Context
 
 `electron/window.ts` creates the main window with `nodeIntegration: true`,

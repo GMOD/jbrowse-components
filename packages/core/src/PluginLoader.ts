@@ -5,19 +5,16 @@ import {
   setReExportRegistry,
 } from './ReExports/registry.ts'
 import {
-  isCJSPluginDefinition,
   isESMPluginDefinition,
   isUMDPluginDefinition,
   maybePluginUrl,
   pluginDescriptionString,
   pluginLabel,
 } from './pluginDefinitions.ts'
-import { isElectron } from './util/index.ts'
 import { isWebWorker } from './util/isWebWorker.ts'
 
 import type { PluginConstructor } from './Plugin.ts'
 import type {
-  CJSPluginDefinition,
   ESMPluginDefinition,
   LegacyUMDPluginDefinition,
   PluginDefinition,
@@ -31,9 +28,25 @@ import type {
  * winner. That keeps them the same string by construction, instead of by every
  * url-based inspection of a definition remembering to match loadPlugin's order.
  */
+/**
+ * A `cjsUrl` definition loaded by writing the bundle to a temp file and
+ * `require`ing it in Electron's renderer, which is the one loader that needed
+ * Node. Electron's renderer runs ESM, and a plugin reaching the main process
+ * does it through `window.require('electron')` whatever format it ships in, so
+ * the format bought nothing its two peers do not. Name its successor rather
+ * than letting the definition fall through to "could not determine plugin
+ * type", which reads as a malformed config.
+ */
+function assertRetiredKinds(def: PluginDefinition) {
+  if ('cjsUrl' in def) {
+    throw new Error(
+      `CJS plugins are no longer loaded (${String(def.cjsUrl)}). Publish the plugin as UMD or ESM and name it with umdUrl or esmUrl.`,
+    )
+  }
+}
+
 function assertSingleKind(def: PluginDefinition) {
   const kinds = [
-    isCJSPluginDefinition(def) ? 'CJS' : undefined,
     isESMPluginDefinition(def) ? 'ESM' : undefined,
     isUMDPluginDefinition(def) ? 'UMD' : undefined,
   ].filter(kind => kind !== undefined)
@@ -287,26 +300,15 @@ export default class PluginLoader {
   definitions: PluginDefinition[] = []
 
   fetchESM?: (url: string) => Promise<LoadedPlugin>
-  fetchCJS?: (url: string) => Promise<LoadedPlugin>
 
   constructor(
     defs: PluginDefinition[] = [],
     args?: {
       fetchESM?: (url: string) => Promise<LoadedPlugin>
-      fetchCJS?: (url: string) => Promise<LoadedPlugin>
     },
   ) {
     this.fetchESM = args?.fetchESM
-    this.fetchCJS = args?.fetchCJS
     this.definitions = structuredClone(defs)
-  }
-
-  async loadCJSPlugin(def: CJSPluginDefinition, baseUri?: string) {
-    const parsedUrl = resolvePluginUrl(def.cjsUrl, baseUri)
-    if (!this.fetchCJS) {
-      throw new Error('No fetchCJS callback provided')
-    }
-    return this.fetchCJS(parsedUrl.href)
   }
 
   async loadESMPlugin(def: ESMPluginDefinition, baseUri?: string) {
@@ -353,17 +355,11 @@ export default class PluginLoader {
   }
 
   async loadPlugin(def: PluginDefinition, baseUri?: string) {
+    assertRetiredKinds(def)
     assertSingleKind(def)
     armIfUnderDevelopment(def)
     let plugin: LoadedPlugin
-    if (isCJSPluginDefinition(def)) {
-      if (!isElectron) {
-        throw new Error(
-          `CommonJS plugin found, but not in a NodeJS environment: ${JSON.stringify(def)}`,
-        )
-      }
-      plugin = await this.loadCJSPlugin(def, baseUri)
-    } else if (isESMPluginDefinition(def)) {
+    if (isESMPluginDefinition(def)) {
       plugin = await this.loadESMPlugin(def, baseUri)
     } else if (isUMDPluginDefinition(def)) {
       plugin = await this.loadUMDPlugin(def, baseUri)

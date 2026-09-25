@@ -28,7 +28,6 @@ describe('checkPluginsAgainstStore', () => {
     { umdUrl: 'https://example.com/plugin1.umd.js' },
     { url: 'https://example.com/plugin2.js' },
     { esmUrl: 'https://example.com/plugin3.esm.js' },
-    { cjsUrl: 'https://example.com/plugin4.cjs.js' },
   ])
 
   it('returns true for empty plugin list', () => {
@@ -56,13 +55,6 @@ describe('checkPluginsAgainstStore', () => {
     expect(checkPluginsAgainstStore(plugins, mockStorePlugins)).toBe(true)
   })
 
-  it('returns true for CJS plugin with matching cjsUrl', () => {
-    const plugins: PluginDefinition[] = [
-      { cjsUrl: 'https://example.com/plugin4.cjs.js' },
-    ]
-    expect(checkPluginsAgainstStore(plugins, mockStorePlugins)).toBe(true)
-  })
-
   it('returns false for unknown UMD plugin', () => {
     const plugins: PluginDefinition[] = [
       { name: 'UnknownPlugin', umdUrl: 'https://evil.com/malicious.js' },
@@ -73,13 +65,6 @@ describe('checkPluginsAgainstStore', () => {
   it('returns false for unknown ESM plugin', () => {
     const plugins: PluginDefinition[] = [
       { esmUrl: 'https://evil.com/malicious.esm.js' },
-    ]
-    expect(checkPluginsAgainstStore(plugins, mockStorePlugins)).toBe(false)
-  })
-
-  it('returns false for unknown CJS plugin', () => {
-    const plugins: PluginDefinition[] = [
-      { cjsUrl: 'https://evil.com/malicious.cjs.js' },
     ]
     expect(checkPluginsAgainstStore(plugins, mockStorePlugins)).toBe(false)
   })
@@ -148,13 +133,6 @@ describe('checkPluginsAgainstStore', () => {
     it('trusts ESM plugins from https://jbrowse.org/plugins/', () => {
       const plugins: PluginDefinition[] = [
         { esmUrl: 'https://jbrowse.org/plugins/MyPlugin/dist/plugin.esm.js' },
-      ]
-      expect(checkPluginsAgainstStore(plugins, { plugins: [] })).toBe(true)
-    })
-
-    it('trusts CJS plugins from https://jbrowse.org/plugins/', () => {
-      const plugins: PluginDefinition[] = [
-        { cjsUrl: 'https://jbrowse.org/plugins/MyPlugin/dist/plugin.cjs.js' },
       ]
       expect(checkPluginsAgainstStore(plugins, { plugins: [] })).toBe(true)
     })

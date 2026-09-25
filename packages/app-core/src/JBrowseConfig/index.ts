@@ -45,9 +45,9 @@ export function JBrowseConfigF({
      *    { umdUrl: string, name:string } |
      *    { url: string, name: string } |
      *    { esmUrl: string } |
-     *    { cjsUrl: string } |
      *    { umdLoc: { uri: string } } |
      *    { esmLoc: { uri: string } } |
+     *    { storePlugin: string }
      * ```
      */
     plugins: types.array(types.frozen<PluginDefinition>()),

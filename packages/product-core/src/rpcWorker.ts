@@ -22,7 +22,6 @@ declare global {
 
 export interface WorkerOptions {
   fetchESM?: (url: string) => Promise<LoadedPlugin>
-  fetchCJS?: (url: string) => Promise<LoadedPlugin>
   /**
    * The product's `workerReExports.generated.ts`, so a runtime plugin loading
    * here reads the host's copy of every `@jbrowse` package the product

@@ -49,11 +49,8 @@ export default function AddCustomPluginDialog({
   const [umdPluginName, setUMDPluginName] = useState('')
   const [umdPluginUrl, setUMDPluginUrl] = useState('')
   const [esmPluginUrl, setESMPluginUrl] = useState('')
-  const [cjsPluginUrl, setCJSPluginUrl] = useState('')
   const [advancedOptionsOpen, setAdvancedOptionsOpen] = useState(false)
-  const ready = Boolean(
-    (umdPluginName && umdPluginUrl) || esmPluginUrl || cjsPluginUrl,
-  )
+  const ready = Boolean((umdPluginName && umdPluginUrl) || esmPluginUrl)
 
   return (
     <SubmitDialog
@@ -67,9 +64,7 @@ export default function AddCustomPluginDialog({
         const definition =
           umdPluginName && umdPluginUrl
             ? { name: umdPluginName, umdUrl: umdPluginUrl }
-            : esmPluginUrl
-              ? { esmUrl: esmPluginUrl }
-              : { cjsUrl: cjsPluginUrl }
+            : { esmUrl: esmPluginUrl }
         if (onAdd(definition)) {
           onClose()
         }
@@ -119,10 +114,9 @@ export default function AddCustomPluginDialog({
         <Collapse in={advancedOptionsOpen}>
           <div className={classes.dialogContent}>
             <DialogContentText>
-              The above fields assume that the plugin is built in UMD format. If
-              your plugin is in another format, or you have additional builds
-              you want to add (such as a CJS build for using NodeJS APIs in
-              desktop), you can enter the URLs for those builds below.
+              The above fields assume that the plugin is built in UMD format.
+              For an ESM build, enter its URL here instead; it carries its own
+              name, so the fields above stay empty.
             </DialogContentText>
             <TextField
               label="ESM build URL"
@@ -132,16 +126,6 @@ export default function AddCustomPluginDialog({
               value={esmPluginUrl}
               onChange={event => {
                 setESMPluginUrl(event.target.value)
-              }}
-            />
-            <TextField
-              label="CJS build URL"
-              variant="outlined"
-              fullWidth
-              margin="dense"
-              value={cjsPluginUrl}
-              onChange={event => {
-                setCJSPluginUrl(event.target.value)
               }}
             />
           </div>
