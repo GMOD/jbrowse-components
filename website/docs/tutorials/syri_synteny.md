@@ -289,9 +289,9 @@ those two accessions, so it carries the type SyRI gave that pair:
 
 <Figure caption="The first 6 Mb of Col-0 chromosome 4: each accession's SyRI regions against Col-0 as a row above, and the accessions as lanes below in their own coordinates, each band colored by SyRI's type for the two genomes it joins. Every accession is inverted against Col-0 across the same stretch, and the bands between accessions run straight there." src="/img/syri/col0_lanes.png" />
 
-`ribbonColor` here and `rows` on the track above take the two keys a channel
-takes anywhere in JBrowse, a column of the file and the domain its values run
-over, which is why the menu route and the config reach one knob.
+`ribbonColor` here and `rows` on the track above each take a column of the file
+and a domain for its values, the two keys every channel in JBrowse takes. The
+menu route writes those same two, so it and the config reach one knob.
 [](/docs/tutorials/alu_age) declares a plot off a BED with nothing else.
 
 ## Check it against syri.out

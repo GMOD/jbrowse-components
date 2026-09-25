@@ -25,10 +25,25 @@ and `genomes_synteny`, and they are correct as they stand: each is a click-path
 through genomes.jbrowse.org, so the hosted site *is* the destination and the
 prerequisite already reads "nothing to install".
 
-**Still to build: `check-prereq-app.ts`**, the mirror of `check-prereq-tools`.
-Satisfied by a link to either quickstart, to `basic_usage#opening-tracks`, or to
-genomes.jbrowse.org — that third arm is what keeps the four above passing, and a
-check without it would push a wrong bullet onto them.
+**`check-prereq-app.ts` was the proposal here, and re-measuring closed it
+instead** (2026-09-25, 69 pages). Six pages match none of the three arms this
+section names, and reading all six shows the arms are incomplete and the
+pages are correct:
+
+- `gene_prediction_review` and `tp53_structures` hand the reader a hosted
+  JBrowse URL of their own (`jbrowse.org/demos/tiberius_review/`,
+  `jbrowse.org/code/jb2/main/test_data/protein3d_config.json`), which is a
+  destination the three arms do not admit.
+- `pangenome_hprc_part2`, `part5`, `pangenome_graph_reading` and
+  `pangenome_prepare_graph` open their Prerequisites with the session from an
+  earlier part. A series member inherits its destination, and a check that did
+  not follow that link would put a redundant bullet on every part after the
+  first.
+
+Widen the arms to those two and every page passes, so the checker would ship
+green over a convention 69 pages already keep. `check-prereq-tools` earned its
+place by finding live drift; this one finds none. **Build it when a page lands
+that names nowhere, not before.**
 
 ## 2. Nothing starts from scratch, and nothing is Desktop
 

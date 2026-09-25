@@ -141,7 +141,7 @@ back out, and each is a setting on the track rather than a new file.
 the lowest rows, so the junction-spanning reads sit together at the top of the
 pileup.
 
-<Figure caption="The ACTB pileup in file order above, and sorted with spliced reads first below. The same reads in both. The teal lines are the reads whose CIGAR carries a skip: file order scatters them down the stack, and the sort brings them into the top rows." src="/img/rnaseq/sort_spliced_first.png" links="File order=rnaseq/deep_pileup_file_order,Spliced first=rnaseq/deep_pileup_spliced_first" />
+<Figure caption="The ACTB pileup in file order above, and sorted with spliced reads first below. The same reads in both. The teal lines are the reads whose CIGAR carries a skip. File order scatters them down the stack, and the sort gathers them into the top rows." src="/img/rnaseq/sort_spliced_first.png" links="File order=rnaseq/deep_pileup_file_order,Spliced first=rnaseq/deep_pileup_spliced_first" />
 
 **Filter by...** has a splicing radio: _Only spliced reads_ keeps just those
 reads, and the coverage histogram follows, so what is left is a histogram of the
@@ -154,7 +154,7 @@ thin arcs are mostly these alignment artefacts. Raising **Sashimi arcs → Min
 read support** removes them too, but only by also removing a real junction
 supported by few reads.
 
-<Figure caption="Every junction the reads carry above, and only the canonical ones below. The same pileup in both, with the gene model above it. The salmon arc over the second intron is what the motif filter drops; the purple arcs, whose introns the gene model also draws, survive it." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/sashimi_all_junctions,Canonical only=rnaseq/sashimi_canonical_only" />
+<Figure caption="Every junction the reads carry above, and only the canonical ones below. The same pileup in both, with the gene model above it. The motif filter drops the salmon arc over the second intron and keeps the purple ones, whose introns the gene model also draws." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/sashimi_all_junctions,Canonical only=rnaseq/sashimi_canonical_only" />
 
 ## Loading your own RNA-seq data
 

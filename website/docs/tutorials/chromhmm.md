@@ -150,10 +150,10 @@ The `uri` shorthand resolves the `.bed.gz.tbi` beside the file.
 [`rowHeight`](/docs/config/linearmultirowfeaturedisplay/#slot-rowheight) stays
 at its auto-fit default, dividing the track height across the rows.
 
-`field` and `domain` are the shape every channel on a JBrowse display takes: a
-column of the file, and the order or range its values map onto. The `color` slot
-further down takes the same pair, and [](/docs/tutorials/alu_age) draws a plot
-off a BED with nothing but channels of that shape.
+`field` names a column of the file and `domain` the order its values take. Every
+channel on a JBrowse display takes that pair, the `color` slot further down
+included, and [](/docs/tutorials/alu_age) draws a plot off a BED with nothing
+else.
 
 The defline names the columns, so the adapter's
 [`columnNames`](/docs/config/bedtabixadapter/#slot-columnnames) is for files

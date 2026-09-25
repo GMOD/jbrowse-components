@@ -125,10 +125,10 @@ settings do the rest:
   `segmean` onto a diverging blue-to-red scale at four cut points, since this
   BED carries no `itemRgb`, and `labels` names each bin in the key
 
-That colour block is a whole encoding channel written out: the column, the kind
-of scale, its cut points, the colours they map onto and the key those get
-labeled in. Any display taking a `color` slot takes the same five, and
-[](/docs/tutorials/alu_age) puts height and colour on one file that way.
+That colour block writes out a whole encoding channel. It names the column, the
+kind of scale, its cut points, the colours those map onto and the labels the key
+carries. Any display with a `color` slot takes the same five keys, and
+[](/docs/tutorials/alu_age) puts height and colour on one file through them.
 
 ## Cluster the stack
 

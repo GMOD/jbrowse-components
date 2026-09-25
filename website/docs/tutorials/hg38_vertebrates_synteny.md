@@ -225,7 +225,7 @@ so its ribbons come out straight on screen; the strand color still marks every
 one of them as an inversion, and a single crossed ribbon into an unflipped lane
 is one block running against its neighbours.
 
-<Figure caption="The same eight lanes at chr17 near the PMP22 duplications, ribbons colored by strand. A flipped lane's ribbons run straight and still carry the reversed color, so the color and the crossing are separate statements about the same block." src="/img/multiway_synteny/hg38_vertebrates_17p_strand.png" />
+<Figure caption="The same eight lanes at chr17 near the PMP22 duplications, ribbons colored by strand. A flipped lane's ribbons run straight and still carry the reversed color, so crossing and color disagree on the same block." src="/img/multiway_synteny/hg38_vertebrates_17p_strand.png" />
 
 ## Reading the stack
 

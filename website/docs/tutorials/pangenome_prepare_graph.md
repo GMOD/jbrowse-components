@@ -172,13 +172,13 @@ rather than at either file. The adapter resolves `<uri>.segs.bed.gz`,
 }
 ```
 
-<Figure caption="The HPRC graph's two indexes drawn over the C4 region on hg38. The segments tile the window end to end, and where they break is where the graph branches: the slivers fall among the C4 and CYP21 copies, and long unbroken segments run either side of them." src="/img/pangenome/prepare_graph_segments.png" />
+<Figure caption="The HPRC graph's two indexes drawn over the C4 region on hg38. The segments tile the window end to end and break where the graph branches. The slivers fall among the C4 and CYP21 copies, with long unbroken segments either side." src="/img/pangenome/prepare_graph_segments.png" />
 
 The colour jexl paints rank 0 one way and everything else the other, and on a
 reference window everything comes out rank 0. An rGFA tags an off-reference
 segment with the sample contig it came from, so `GRCh38#0#chr6` returns the
-backbone and nothing else, and the other colour arrives on a sample's own lane
-or in a graph view cut from the same pair.
+backbone and nothing else, and the other colour appears only on a sample's own
+lane or in a graph view cut from the same pair.
 
 `assemblyNameToPanSN` ties your assembly to the graph's PanSN prefix. A PanSN
 name has two halves and only the first needs configuring: the **sample** half is
@@ -422,8 +422,8 @@ the maternal one as "HG002 carries it". `feature.carriers` is absent rather than
 `0` on an rGFA-derived index, which is the difference between the two routes
 showing up in a jexl.
 
-[Part 2 reads carriage at the graph's own granularity](/docs/tutorials/pangenome_hprc_part2#carriage-at-the-graphs-own-granularity),
-which is the lane a file built here feeds.
+[Part 2 reads carriage at the graph's own granularity](/docs/tutorials/pangenome_hprc_part2#carriage-at-the-graphs-own-granularity)
+from a file built the way this section builds one.
 
 ## Every haplotype's walk: a gbz-base database
 

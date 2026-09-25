@@ -14,19 +14,18 @@ take, the config to paste or the command to run. `check-figure-actions` ratchets
 the tags that arrive without one; `pnpm check-figure-actions --list` prints
 them.
 
-**And an instruction gets a figure.** A display setting is a visual claim:
-`Color by... → Modifications` paints something, `Cluster rows by similarity`
-reorders something. Write the path and no picture and the reader has to imagine
-the result, which is the one thing a tutorial can do for them.
-`check-unshown-settings` ratchets the paths nothing shows, in their own section
-or the next; `pnpm check-unshown-settings --list` prints them. It forgives
-`File → ...` and `Global plugins...`, which draw nothing of their own.
+**And an instruction gets a figure.** A display setting makes a visual claim.
+`Color by... → Modifications` paints the reads, `Cluster rows by similarity`
+reorders them. Write the path with no picture under it and the reader has to
+imagine the result. Showing it is the page's job. `check-unshown-settings`
+ratchets the paths nothing shows, in their own section or the next;
+`pnpm check-unshown-settings --list` prints them. The check skips `File → ...`
+and `Global plugins...`, which draw nothing of their own.
 
-**A page leading with its build is not a defect.** Most pages run 150 to 250
-lines of preparation before the first figure, and that is deliberate: a picture
-before the reader has done anything is confusing. So the figure-free stretch at
-the top of a page is not worth closing, and "put the payoff figure first" is a
-closed question.
+**Most pages lead with their build, and that is deliberate.** 150 to 250 lines
+of preparation come before the first figure, because a picture shown before the
+reader has done anything confuses them. So the figure-free stretch at the top of
+a page needs no closing, and "put the payoff figure first" is a closed question.
 
 One dataset is the usual way to get that, and the safe default. A second is fine
 where the first **raised the question it answers**, so the reader arrives at it
