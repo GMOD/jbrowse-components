@@ -3727,15 +3727,15 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "strokeColor",
+          "name": "color",
           "type": "(JexlString | CssColor)"
         },
         {
-          "name": "strokeColorSelected",
+          "name": "colorSelected",
           "type": "(JexlString | CssColor)"
         },
         {
-          "name": "strokeColorHover",
+          "name": "colorHover",
           "type": "(JexlString | CssColor)"
         }
       ],
@@ -4964,7 +4964,7 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "scatterPointSize",
+          "name": "size",
           "type": "number"
         },
         {
@@ -5223,7 +5223,7 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "scatterPointSize",
+          "name": "size",
           "type": "number"
         },
         {
@@ -5491,7 +5491,7 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "scatterPointSize",
+          "name": "size",
           "type": "number"
         },
         {
@@ -5992,7 +5992,7 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "scatterPointSize",
+          "name": "size",
           "type": "number"
         },
         {

@@ -18,7 +18,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="getter-scatterpointsize">**scatterPointSize**</span><br><code>number</code> |  | WiggleScoreConfigMixin |
+| <span id="getter-size">**size**</span><br><code>number</code> |  | WiggleScoreConfigMixin |
 | <span id="getter-displaycrosshatches">**displayCrossHatches**</span><br><code>boolean</code> | The configured cross-hatch setting the menu toggles; `showCrossHatches` is what draws. | WiggleScoreConfigMixin |
 | <span id="getter-isdensitymode">**isDensityMode**</span><br><code>boolean</code> | Whether score maps to color instead of height; a display overrides it. | WiggleScoreConfigMixin |
 | <span id="getter-showcrosshatches">**showCrossHatches**</span><br><code>boolean</code> | Whether the score-axis cross hatches draw: never in density mode, which has no height axis to rule and no toggle in its menu. | WiggleScoreConfigMixin |
@@ -49,7 +49,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="action-togglecrosshatches">**toggleCrossHatches**</span><br><code>() =&gt; void</code> |  | WiggleScoreConfigMixin |
-| <span id="action-setscatterpointsize">**setScatterPointSize**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | WiggleScoreConfigMixin |
+| <span id="action-setsize">**setSize**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | WiggleScoreConfigMixin |
 | <span id="action-setscaletype">**setScaleType**</span><br><code>(scaleType: string) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setscaletype) |
 | <span id="action-setautoscale">**setAutoscale**</span><br><code>(val?: string &#124; undefined) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setautoscale) |
 | <span id="action-setminscore">**setMinScore**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setminscore) |

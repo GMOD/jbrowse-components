@@ -4833,18 +4833,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
-        "strokeColor": {
-          "description": "the line color of each arc.",
+        "color": {
+          "description": "the line color of each chord.",
           "$ref": "#/$defs/CssColorOrJexl",
           "default": "rgba(255,133,0,0.32)"
         },
-        "strokeColorSelected": {
-          "description": "the line color of an arc that has been selected.",
+        "colorSelected": {
+          "description": "the line color of a chord that has been selected.",
           "$ref": "#/$defs/CssColorOrJexl",
           "default": "black"
         },
-        "strokeColorHover": {
-          "description": "the line color of an arc that is being hovered over with the mouse.",
+        "colorHover": {
+          "description": "the line color of a chord that is being hovered over with the mouse.",
           "$ref": "#/$defs/CssColorOrJexl",
           "default": "#555"
         },
@@ -6506,8 +6506,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 0
         },
-        "scatterPointSize": {
-          "description": "Point height in px for scatterplot rendering. Defaults to 2.",
+        "size": {
+          "description": "Point diameter in px in scatter rendering. The same slot, with the same meaning, as the mark display's size.",
           "type": "number",
           "default": 2
         },
@@ -6646,8 +6646,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 0
         },
-        "scatterPointSize": {
-          "description": "Point height in px for scatterplot rendering. Defaults to 2.",
+        "size": {
+          "description": "Point diameter in px in scatter rendering. The same slot, with the same meaning, as the mark display's size.",
           "type": "number",
           "default": 2
         },
@@ -6798,8 +6798,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "number",
           "default": 0
         },
-        "scatterPointSize": {
-          "description": "Point height in px for scatterplot rendering. Defaults to 2.",
+        "size": {
+          "description": "Point diameter in px in scatter rendering. The same slot, with the same meaning, as the mark display's size.",
           "type": "number",
           "default": 2
         },
@@ -7356,8 +7356,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "boolean",
           "default": false
         },
-        "scatterPointSize": {
-          "description": "Diameter in px of Manhattan points.",
+        "size": {
+          "description": "Point diameter in px.",
           "type": "number",
           "default": 4
         },
@@ -9146,8 +9146,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scatterPointSize"
+            "size": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/size"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -9659,8 +9659,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "origin": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/origin"
             },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/scatterPointSize"
+            "size": {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/size"
             },
             "lineWidth": {
               "$ref": "#/$defs/LinearGCContentDisplaySlots/properties/lineWidth"
@@ -9821,14 +9821,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "onChordClick": {
               "$ref": "#/$defs/ChordVariantDisplaySlots/properties/onChordClick"
             },
-            "strokeColor": {
-              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/strokeColor"
+            "color": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ChordVariantDisplaySlots/properties/color"
+                },
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/color"
+                }
+              ]
             },
-            "strokeColorSelected": {
-              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/strokeColorSelected"
+            "colorSelected": {
+              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/colorSelected"
             },
-            "strokeColorHover": {
-              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/strokeColorHover"
+            "colorHover": {
+              "$ref": "#/$defs/ChordVariantDisplaySlots/properties/colorHover"
             },
             "renderer": {
               "anyOf": [
@@ -9952,16 +9962,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "maxDescriptionFeatureDensity": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxDescriptionFeatureDensity"
-            },
-            "color": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/color"
-                }
-              ]
             },
             "outlineColor": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/outlineColor"
@@ -10440,8 +10440,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scatterPointSize"
+            "size": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/size"
             },
             "lineWidth": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
@@ -10725,8 +10725,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scatterPointSize"
+            "size": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/size"
             },
             "lineWidth": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
@@ -10975,8 +10975,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "origin": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/origin"
             },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/scatterPointSize"
+            "size": {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/size"
             },
             "lineWidth": {
               "$ref": "#/$defs/LinearGCContentTrackDisplaySlots/properties/lineWidth"
@@ -11828,8 +11828,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "minimalTicks": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minimalTicks"
             },
-            "scatterPointSize": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/scatterPointSize"
+            "size": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/size"
             },
             "showLegend": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/showLegend"
