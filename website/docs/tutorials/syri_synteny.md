@@ -133,7 +133,7 @@ Open the first 6 Mb of chromosome 4 in both accessions and pick **syri** under
           { "assembly": "Ler", "loc": "Chr4:1-6,000,000" }
         ],
         "tracks": [["syri_pangenome"]],
-        "colorBy": {
+        "color": {
           "field": "syri",
           "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
         },
@@ -185,7 +185,7 @@ genomes it joins:
           ["syri_pangenome"],
           ["syri_pangenome"]
         ],
-        "colorBy": {
+        "color": {
           "field": "syri",
           "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]
         },

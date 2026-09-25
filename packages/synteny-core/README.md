@@ -167,6 +167,20 @@ With this interface the compiler checks those calls again.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/lodTier.ts)
 
+### featureColorInputs
+
+The lanes `createComparativeColorFunction` reads, built from features a display
+holds on the main thread rather than from a worker's payload. `ends` answers a
+feature's two refNames in the order the colour modes read them: `query` paints
+by the first and `target` by the second.
+
+```js
+// type signature
+(features: readonly Feature[], ends: (feature: Feature) => readonly [string, string], channelNames: readonly string[]) => ColorFunctionInputs
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/featureColorInputs.ts)
+
 ### LEGEND_CHIP_ALPHA_FLOOR
 
 The alpha a legend chip is blended at however faint the ribbons are.
@@ -195,6 +209,21 @@ blendOverGround for a legend chip, floored at LEGEND_CHIP_ALPHA_FLOOR.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
+
+### liftColorBy
+
+A linear synteny or dotplot view snapshot's `colorBy`, lifted into `color`, on
+the view and in a v4 `init` blob: the mode string a v4 session holds, with the
+`colorDomain` beside it, or the colour object the views held under that name
+before it took the name every other colour object has. Share links carry both
+spellings.
+
+```js
+// type signature
+(snap: Record<string, unknown> | undefined) => Record<string, unknown> | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/liftColorBy.ts)
 
 ### minLengthMenuItem
 

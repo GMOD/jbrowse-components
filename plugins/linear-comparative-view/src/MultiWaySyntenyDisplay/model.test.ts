@@ -407,7 +407,7 @@ test('the strand ribbon mode adds its own section', () => {
   )
   expect(display.colorScales.map(s => s.id)).toEqual(['genes'])
 
-  display.setRibbonColorBy('strand')
+  display.setRibbonColorField('strand')
   expect(display.colorScales.map(s => s.id)).toEqual(['genes', 'ribbons'])
 })
 
@@ -1712,7 +1712,7 @@ test('the ribbon label table accumulates across fetches and re-keys on a mode pi
         end: 300,
       },
     })
-  display.setRibbonColorBy('group')
+  display.setRibbonColorField('group')
   // `color` is parsed for the labels' palette, never offered as a mode
   expect(display.ribbonColorAttributes).toEqual(['group'])
   const group = () => display.ribbonAttributeRanges.group
@@ -1726,7 +1726,7 @@ test('the ribbon label table accumulates across fetches and re-keys on a mode pi
     labels: ['B1', 'A1a', 'C1'],
     colors: { A1a: '#4DB5E3' },
   })
-  display.setRibbonColorBy('group')
+  display.setRibbonColorField('group')
   expect(group()).toEqual({ labels: ['C1', 'A1a'], colors: {} })
 })
 
@@ -1759,7 +1759,7 @@ test('a ribbonColorDomain moves the label table, and the key with it', () => {
     const range = display.ribbonAttributeRanges.group
     return range && 'labels' in range ? range.labels : []
   }
-  display.setRibbonColorBy('group')
+  display.setRibbonColorField('group')
   display.setFeatures([row('f1', 'B1'), row('f2', 'A1a'), row('f3', 'C1')])
   expect(labels()).toEqual(['B1', 'A1a', 'C1'])
 
@@ -1784,15 +1784,15 @@ test('a picked ribbon mode is written as the ribbonColor object', () => {
   })
   const ribbonColor = () => getSnapshot(display.configuration.ribbonColor)
   display.configuration.setSubschema('ribbonColor', 'grey')
-  display.setRibbonColorBy('group')
+  display.setRibbonColorField('group')
   display.setRibbonColorDomain(['C1'])
-  display.setRibbonColorBy('group')
+  display.setRibbonColorField('group')
   expect(ribbonColor()).toEqual({
     value: 'grey',
     field: 'group',
     domain: ['C1'],
   })
-  display.setRibbonColorBy('')
+  display.setRibbonColorField('')
   expect(ribbonColor()).toEqual({
     value: 'grey',
     field: 'group',
@@ -1801,16 +1801,16 @@ test('a picked ribbon mode is written as the ribbonColor object', () => {
   })
   expect(display.ribbonColorField).toBe('')
   expect(display.ribbonColor).toBe('grey')
-  display.setRibbonColorBy('group')
+  display.setRibbonColorField('group')
   expect(display.ribbonColorField).toBe('group')
   expect(display.ribbonColorDomain).toEqual(['C1'])
-  display.setRibbonColorBy('strand')
+  display.setRibbonColorField('strand')
   expect(ribbonColor()).toEqual({ value: 'grey', field: 'strand' })
   expect(display.ribbonColorField).toBe('strand')
-  display.setRibbonColorBy('mapq')
+  display.setRibbonColorField('mapq')
   expect(ribbonColor()).toEqual({ value: 'grey', field: 'mapq' })
   expect(display.ribbonColorField).toBe('mapq')
-  display.setRibbonColorBy('other')
+  display.setRibbonColorField('other')
   expect(ribbonColor()).toEqual({ value: 'grey', field: 'other' })
 })
 
@@ -1845,7 +1845,7 @@ test('a ribbonColor field is a preset or a column, scale none parks it, and a pa
 
 test('identity ribbons key their ramp only when a record carries an identity', () => {
   const display = createDisplay()
-  display.setRibbonColorBy('identity')
+  display.setRibbonColorField('identity')
   display.setFeatures([mateRecord('r1', 'volvox_random')])
   expect(display.colorScales.map(scale => scale.id)).toEqual([])
   display.setFeatures([

@@ -23,9 +23,9 @@ import type {
 } from '@jbrowse/synteny-core'
 
 // Per-instance kind tag. Determines how the color for an instance is derived
-// from the parent feature's strand/refName/featureIdx and the current colorBy
+// from the parent feature's strand/refName/featureIdx and the view's current `color`
 // scheme. Emitted by the worker once during geometry build; colors are
-// recomputed on the main thread whenever colorBy changes, so a color-scheme
+// recomputed on the main thread whenever the colour changes, so a color-scheme
 // toggle never triggers an RPC refetch.
 //
 // The shaders only ever test BASE-vs-CIGAR (`isCigarKind`, i.e. kind >= the
@@ -56,7 +56,7 @@ export function paintsFeatureColor(kind: number) {
 
 // Location-marker tick: the band's contrast ink at the alpha of the legacy
 // rgba(0,0,0,0.25) context lines. Renderers draw KIND_MARKER instances as 1px
-// lines using this packed alpha directly (no colorBy/global-alpha scaling).
+// lines using this packed alpha directly (no colour or global-alpha scaling).
 //
 // Contrast-derived rather than either black or a theme text colour: the band is
 // an opaque KNOWN colour by construction (`syntenyGroundClear`), so a
@@ -98,7 +98,7 @@ interface InstanceInputs {
 
 // Pure function: produce a fresh Uint32Array of packed ABGR colors from
 // per-instance descriptors plus per-feature data and the current color
-// scheme. Called on the main thread whenever colorBy or featureData
+// scheme. Called on the main thread whenever the colour or featureData
 // changes — no RPC round-trip.
 export function computeSyntenyColors({
   instanceData,
@@ -119,12 +119,12 @@ export function computeSyntenyColors({
   field: string
   // the display's slot in the view's track palette; only read under 'track'
   trackColor: string
-  // the view's `colorBy.value`: what the match blocks paint under the default
+  // the view's `color.value`: what the match blocks paint under the default
   // mode in place of the red, when set
   valueColor?: string
   opacityByIdentity?: boolean
   // The location-marker toggle, which is a color decision rather than a fetch
-  // one — the geometry always carries the ticks. Independent of colorBy: markers
+  // one — the geometry always carries the ticks. Independent of the colour: markers
   // are the ruler continued through the ribbons, not data, so no scheme paints
   // them and none of them can hide them either.
   drawLocationMarkers?: boolean

@@ -27,7 +27,7 @@ import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
 
 /**
  * The per-feature color function both comparative views build from a fetch
- * payload: `colorBy` plus the payload's lanes in, a packed-ABGR color per
+ * payload: `color` plus the payload's lanes in, a packed-ABGR color per
  * feature index out.
  *
  * One module because the two views had drifted while each carried a comment
@@ -126,7 +126,7 @@ export function refNamePositionFor(
  * The dictionary is at most a scaffold count long, so its colors resolve once
  * into a LUT and the per-feature path is a double array index — no hash and no
  * Map probe. It used to hash each name and memoize in a `Map<string, number>`,
- * i.e. rebuild the dictionary the worker now ships, once per colorBy pass.
+ * i.e. rebuild the dictionary the worker now ships, once per recolor pass.
  */
 export function makeNameColorFunction(
   dict: readonly string[],

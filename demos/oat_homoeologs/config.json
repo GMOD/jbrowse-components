@@ -50,7 +50,7 @@
           }
         ],
         "tracks": ["oat_homoeologs"],
-        "colorBy": { "field": "dnds" }
+        "color": { "field": "dnds" }
       }
     ]
   }

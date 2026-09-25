@@ -28,7 +28,7 @@ const trackColors = (tracks: ColorByMenuTrack[]) => ({
 })
 
 const target = (over: Partial<ColorByMenuTarget> = {}): ColorByMenuTarget => ({
-  colorBy: '',
+  field: '',
   structuralFields: ['', 'strand', 'track', 'query', 'target'],
   attributes: [],
   attributeRanges: {
@@ -40,7 +40,7 @@ const target = (over: Partial<ColorByMenuTarget> = {}): ColorByMenuTarget => ({
   hideUnlabelled: false,
   colorDomain: [],
   setHideUnlabelled: noop,
-  setColorBy: noop,
+  setColorField: noop,
   setColorDomain: noop,
   trackColors: trackColors([track(0), track(1)]),
   ...over,
@@ -99,13 +99,13 @@ function viewModel(tracks: number, reference = false): TrackColorsModel {
     })),
     colorableAttributes: [],
     attributeRanges: {},
-    colorByField: '',
+    colorField: '',
     hideUnlabelled: false,
     colorDomain: [],
     trackColorFor: () => '#4e79a7',
     colorSurface: () => 'ribbons',
     offersReferenceColor: () => reference,
-    setColorBy: noop,
+    setColorField: noop,
     setHideUnlabelled: noop,
     setColorDomain: noop,
     setTrackColor: noop,
@@ -148,7 +148,7 @@ test('a text column offers its unlabelled toggle and a pin for the labels not ye
   const categorical = (colorDomain: string[]) =>
     colorByMenuItems(
       target({
-        colorBy: 'group',
+        field: 'group',
         attributeRanges: {
           group: { labels: ['B1', 'A1a', 'C1'], colors: {} },
         },
@@ -188,7 +188,7 @@ test('value modes live in one submenu whose row names the active one', () => {
     'Mapping quality',
     'dN/dS',
   ])
-  const active = labels(colorByMenuItems(target({ colorBy: 'dnds' })))
+  const active = labels(colorByMenuItems(target({ field: 'dnds' })))
   expect(active).toContain(`${VALUE_MODES_LABEL} — dN/dS`)
 })
 
@@ -268,7 +268,7 @@ test('a declared numeric column is offered as its own mode', () => {
   const items = colorByMenuItems(
     target({
       attributes: ['dn', 'goc_score'],
-      setColorBy: value => {
+      setColorField: value => {
         picked.push(value)
       },
     }),
@@ -303,7 +303,7 @@ test('an attribute mode checks like a preset', () => {
   const items = colorByMenuItems(
     target({
       attributes: ['dn'],
-      colorBy: 'dn',
+      field: 'dn',
     }),
   )
   const dn = valueModes(items).find(i => 'label' in i && i.label === 'dn')!

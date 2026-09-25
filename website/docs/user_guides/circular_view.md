@@ -98,7 +98,7 @@ view's menu offers what the linear synteny view's palette offers: either
 genome's chromosome (in that arc's ideogram color), strand, identity or another
 measurement, a column the track declares, or one color per track when several
 overlay. **Opacity** and **Min length** sit beside it, and as view settings all
-three go in a session as `colorBy`, `alpha` and `minAlignmentLength`.
+three go in a session as `color`, `alpha` and `minAlignmentLength`.
 
 ## Interacting with chords
 

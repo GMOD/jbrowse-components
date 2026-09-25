@@ -139,10 +139,10 @@ export function TrackColorsMixin() {
        * colour string paints every alignment. Unset, the default scheme
        * paints.
        */
-      colorBy: syntenyColorConfigSchema,
+      color: syntenyColorConfigSchema,
       /**
        * #property
-       * trackId -> explicit color under `colorBy: { field: 'track' }`. Absent
+       * trackId -> explicit color under `color: { field: 'track' }`. Absent
        * means the track takes an automatic slot from the palette.
        */
       trackColors: types.map(types.string),
@@ -240,30 +240,30 @@ export function TrackColorsMixin() {
     .views(self => ({
       /**
        * #getter
-       * The `colorBy` object as its snapshot holds it.
+       * The `color` object as its snapshot holds it.
        */
-      get colorBySetting(): SyntenyColorSnapshot {
+      get colorSetting(): SyntenyColorSnapshot {
         return {
-          value: readConfObject(self.colorBy, 'value'),
-          field: readConfObject(self.colorBy, 'field'),
-          scale: readConfObject(self.colorBy, 'scale'),
-          domain: readConfObject(self.colorBy, 'domain'),
+          value: readConfObject(self.color, 'value'),
+          field: readConfObject(self.color, 'field'),
+          scale: readConfObject(self.color, 'scale'),
+          domain: readConfObject(self.color, 'domain'),
         }
       },
       /**
        * #getter
-       * `colorBy.value`: the colour every alignment paints under the default
+       * `color.value`: the colour every alignment paints under the default
        * mode in place of the view's own scheme, or undefined for that scheme.
        */
-      get colorByValue(): string | undefined {
-        return this.colorBySetting.value
+      get colorValue(): string | undefined {
+        return this.colorSetting.value
       },
       /**
        * #getter
-       * `colorBy.domain`, the order a text column's labels take.
+       * `color.domain`, the order a text column's labels take.
        */
       get colorDomain(): readonly string[] {
-        return this.colorBySetting.domain ?? []
+        return this.colorSetting.domain ?? []
       },
       /**
        * #getter
@@ -323,7 +323,7 @@ export function TrackColorsMixin() {
     .views(self => ({
       /**
        * #getter
-       * trackId -> the color it draws in under `colorBy: { field: 'track' }`.
+       * trackId -> the color it draws in under `color: { field: 'track' }`.
        * Assigned across the whole view rather than per display, so an automatic slot
        * can't duplicate a color pinned on a sibling.
        */
@@ -332,10 +332,10 @@ export function TrackColorsMixin() {
       },
       /**
        * #getter
-       * The field `colorBy` paints by, `''` for the default colour.
+       * The field `color` paints by, `''` for the default colour.
        */
-      get colorByField(): string {
-        return paintedField(self.colorBySetting)
+      get colorField(): string {
+        return paintedField(self.colorSetting)
       },
       /**
        * #getter
@@ -345,7 +345,7 @@ export function TrackColorsMixin() {
        * there the colour is the only strand cue and needs its key.
        */
       get hasLegendKey(): boolean {
-        const field = this.colorByField
+        const field = this.colorField
         return (
           field === 'track' ||
           (field === 'strand' && self.colorSurface() === 'points') ||
@@ -367,11 +367,11 @@ export function TrackColorsMixin() {
       /**
        * #getter
        * Legend rows naming the overlaid tracks — one per track with its palette
-       * color, however many levels it is on, and only under `colorBy: { field: 'track' }`,
+       * color, however many levels it is on, and only under `color: { field: 'track' }`,
        * since every other mode has a fixed legend of its own.
        */
       get colorLegendChips(): ColorChip[] {
-        if (self.colorByField !== 'track') {
+        if (self.colorField !== 'track') {
           return []
         }
         const names = new Map(
@@ -394,7 +394,7 @@ export function TrackColorsMixin() {
         if (!self.hasLegendKey) {
           return []
         }
-        const field = self.colorByField
+        const field = self.colorField
         // only a text column's rows are the reader's to order; a track
         // palette and a ramp key what they key
         return colorByScales(field, {
@@ -460,12 +460,12 @@ export function TrackColorsMixin() {
         },
         /**
          * #action
-         * Set the field the view paints by over the `colorBy` object (`''`
+         * Set the field the view paints by over the `color` object (`''`
          * for the default colour), and rescale the ramp, which is the only way
          * back from a domain one outlying window widened.
          */
-        setColorBy(field: string) {
-          self.colorBy = cast(syntenyColorFor(field, self.colorBySetting))
+        setColorField(field: string) {
+          self.color = cast(syntenyColorFor(field, self.colorSetting))
           forgetSeenRanges()
         },
         /**
@@ -475,11 +475,11 @@ export function TrackColorsMixin() {
          * fetches found them in.
          */
         setColorDomain(domain: string[]) {
-          self.colorBy = cast({ ...self.colorBySetting, domain })
+          self.color = cast({ ...self.colorSetting, domain })
         },
         /**
          * #action
-         * Pin one track's color under `colorBy: { field: 'track' }`, or release it back to
+         * Pin one track's color under `color: { field: 'track' }`, or release it back to
          * an automatic palette slot.
          */
         setTrackColor(trackId: string, value: string | undefined) {

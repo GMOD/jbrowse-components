@@ -144,7 +144,7 @@ const identityLegendTest: TestCase = {
             type: 'LinearSyntenyView',
             tracks: ['subset'],
             // a ramp mode brings its legend up on its own
-            colorBy: { field: 'identity' },
+            color: { field: 'identity' },
             views: [
               { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
               { loc: 'chr1:316,306..316,364', assembly: 'grape' },

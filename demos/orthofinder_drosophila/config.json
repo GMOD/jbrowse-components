@@ -138,7 +138,7 @@
           ["drosophila_orthogroups"],
           ["drosophila_orthogroups"]
         ],
-        "colorBy": { "field": "reference" },
+        "color": { "field": "reference" },
         "autoDiagonalize": true,
         "sameScale": true,
         "collapseEmptyRows": true

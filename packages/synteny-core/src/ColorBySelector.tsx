@@ -22,7 +22,7 @@ const ColorBySelector = observer(function ColorBySelector({
   return (
     <CascadingMenuButton
       data-testid="color_by_menu"
-      tooltip={`Color by: ${colorByShortLabel(model.colorByField)}`}
+      tooltip={`Color by: ${colorByShortLabel(model.colorField)}`}
       menuItems={colorByMenuItems(colorByMenuTargetFor(model))}
     >
       <PaletteIcon />

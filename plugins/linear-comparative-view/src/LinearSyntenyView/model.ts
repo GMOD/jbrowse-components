@@ -24,6 +24,7 @@ import {
   allSessionTracks,
   collectTrackWarnings,
   getSyntenyTracks,
+  liftColorBy,
   releaseTemporaryAssemblies,
 } from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
@@ -107,7 +108,7 @@ function takeOutRow(row: LinearGenomeViewModel) {
  *   views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
  *   tracks: ['hg38_vs_mm10.paf'],
  *   drawCurves: true,
- *   colorBy: { field: 'query' },
+ *   color: { field: 'query' },
  * }
  * ```
  * The launch keys are `views`, `tracks`, `levelHeights`, `autoDiagonalize`,
@@ -1365,7 +1366,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     >(snap => {
       // the boolean spelling of fadeThinAlignmentsMode, which shares its name
       // with the resolved getter
-      const { fadeThinAlignments, ...rest } = snap || {}
+      const { fadeThinAlignments, ...rest } = liftColorBy(snap) ?? {}
       return typeof fadeThinAlignments === 'boolean'
         ? {
             ...rest,

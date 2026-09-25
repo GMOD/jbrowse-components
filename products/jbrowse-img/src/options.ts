@@ -58,7 +58,7 @@ const cigarModes = [
   'full',
 ] as const satisfies readonly CigarMode[]
 
-// Synteny ribbon coloring: the field the comparative views' `colorBy` object
+// Synteny ribbon coloring: the field the comparative views' `color` object
 // paints by. Validated here so a typo like `--colorBy quary` reports itself.
 type SyntenyColorField =
   | (typeof SYNTENY_VIEW_FIELDS)[number]

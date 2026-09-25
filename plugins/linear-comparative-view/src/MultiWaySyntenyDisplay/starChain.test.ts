@@ -89,7 +89,7 @@ test('a three-mate star composes relative strand down the chain', async () => {
   expect(strandsOf(`${B}|${C}`)).toEqual([-1, -1, -1, -1])
   expect(strandsOf(`${C}|${D}`)).toEqual([1, 1, 1, 1])
 
-  display.setRibbonColorBy('strand')
+  display.setRibbonColorField('strand')
   const alpha = cssColorToABGR(display.ribbonColor) >>> 24
   const pos = withAbgrAlpha(cssColorToABGR(colorSchemes.strand.posColor), alpha)
   const neg = withAbgrAlpha(cssColorToABGR(colorSchemes.strand.negColor), alpha)

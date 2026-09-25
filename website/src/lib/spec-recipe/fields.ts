@@ -329,7 +329,7 @@ const SYNTENY_COLOR_MODES: Record<string, string> = Object.fromEntries(
   ]),
 )
 
-// A synteny colour object (the views' `colorBy`, the multi-way display's
+// A synteny colour object (the views' `color`, the multi-way display's
 // `ribbonColor`) as the field the Color by radios carry, `''` for Default. A
 // colour paints through no radio, whether it is spelled as the string
 // shorthand or as `value` on the object, so both map to nothing.
@@ -1843,7 +1843,7 @@ export const viewFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
-  colorBy: (value, { viewType }) => {
+  color: (value, { viewType }) => {
     const mode = syntenyColorField(value)
     const label = syntenyColorLabel(mode)
     // Both comparative views carry the same palette button; only the header it

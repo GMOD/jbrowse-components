@@ -46,12 +46,12 @@ async function loadedDotplotDisplay() {
 // The rpcProps/gpuProps split: positions come from the fetch + zoom, colors are
 // a separate main-thread pass. Palette changes are the common interaction, and
 // rebuilding positions for one re-walks every CIGAR of every feature.
-test('a colorBy change recolors without rebuilding geometry', async () => {
+test('a colour change recolors without rebuilding geometry', async () => {
   const { view, display } = await loadedDotplotDisplay()
   const positions = display.instanceData
   const colorsBefore = Uint32Array.from(display.geometry.colors)
 
-  view.setColorBy('strand')
+  view.setColorField('strand')
 
   expect(display.instanceData).toBe(positions)
   expect(display.geometry.colors).not.toStrictEqual(colorsBefore)
@@ -126,7 +126,7 @@ test('a track shown after a settings change inherits them', async () => {
 }, 45000)
 
 // Two alignment files drawn into one plot used to be indistinguishable — same
-// mode, same black points. colorBy: { field: 'track' } is what tells them apart, and the
+// mode, same black points. color: { field: 'track' } is what tells them apart, and the
 // palette is assigned by the view so a color pinned on one shifts what the
 // other can automatically take.
 async function twoOverlaidTracks() {

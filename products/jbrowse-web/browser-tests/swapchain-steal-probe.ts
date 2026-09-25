@@ -99,7 +99,7 @@ try {
           tracks: ['peach_grape_minimap2'],
           minAlignmentLength: 2000,
           drawCurves: true,
-          colorBy: { field: 'query' },
+          color: { field: 'query' },
           levelHeights: [350],
           views: [{ assembly: 'grape' }, { assembly: 'peach' }],
         },

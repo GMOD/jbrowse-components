@@ -413,7 +413,7 @@ dialog. The declarative equivalent, stacking peach-cacao-grape:
           { "assembly": "GCF_030704535.1" }
         ],
         "tracks": [["grape_peach_cacao_blocks"], ["grape_peach_cacao_blocks"]],
-        "colorBy": { "field": "reference" },
+        "color": { "field": "reference" },
         "autoDiagonalize": true
       }
     ]
@@ -423,7 +423,7 @@ dialog. The declarative equivalent, stacking peach-cacao-grape:
 
 `tracks` is one entry per band. `autoDiagonalize` reorders and flips each row's
 chromosomes on load so the ribbons run along the diagonal, and
-`colorBy: { "field": "reference" }` anchors every band on the middle row.
+`color: { "field": "reference" }` anchors every band on the middle row.
 
 <Figure caption="Three genomes stacked peach-cacao-grape, with one MCScan .blocks file backing both synteny bands. autoDiagonalize has reordered and flipped each row's chromosomes so the ribbons run along the diagonal, and Color by → Reference anchors both bands on the shared middle row." src="/img/multiway_synteny/grape_peach_cacao.png" />
 

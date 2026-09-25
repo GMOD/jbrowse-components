@@ -352,7 +352,7 @@
           }
         ],
         "tracks": [["grape_peach_cacao_blocks"], ["grape_peach_cacao_blocks"]],
-        "colorBy": {
+        "color": {
           "field": "reference"
         },
         "autoDiagonalize": true

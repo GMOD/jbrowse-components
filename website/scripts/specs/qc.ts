@@ -639,7 +639,7 @@ export const qcSpecs: ScreenshotSpec[] = [
   // between the two assemblies, and the gene order rules that out -- SMN2 comes
   // before SMN1 in both (hg38 70,049,523 then 70,924,940; hs1 70,809,743 then
   // 71,381,728). The reverse chains are copy-to-copy, which is what 99.9%
-  // identity between an inverted pair of copies produces. colorBy 'strand' is
+  // identity between an inverted pair of copies produces. Field 'strand' is
   // on so the two reverse chains are separable from the forward one, not as an
   // argument about the block's orientation.
   //
@@ -655,7 +655,7 @@ export const qcSpecs: ScreenshotSpec[] = [
         views: [
           {
             type: 'LinearSyntenyView',
-            colorBy: { field: 'strand' },
+            color: { field: 'strand' },
             // CURVES, and they are what makes three overlapping chains
             // separable (review: "confusing screenshot ... maybe with
             // transparent cigar indels and showcurves"). Straight ribbons over

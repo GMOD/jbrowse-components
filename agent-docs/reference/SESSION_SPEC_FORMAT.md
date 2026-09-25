@@ -19,7 +19,7 @@ half of the question already ran.
 
 A session spec is a session with its views written as **launch arguments**
 rather than as state snapshots: `views[]` carries each view's launch keys flat
-(`assembly`, `loc`, `tracks`, and per-view settings such as `colorBy` on a
+(`assembly`, `loc`, `tracks`, and per-view settings such as `color` on a
 synteny view), and nesting views (`views`, `levels`) is how a synteny or
 breakpoint-split layout composes linear views. The URL form is
 `&session=spec-{json}`, `defaultSession` puts the same keys under `init`, and

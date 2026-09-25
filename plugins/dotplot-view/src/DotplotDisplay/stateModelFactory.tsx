@@ -155,7 +155,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
       /**
        * #getter
        * Main-thread-computed per-segment colors — the gpuProps half of the
-       * rpcProps/gpuProps split. A colorBy change recomputes this alone,
+       * rpcProps/gpuProps split. A colour change recomputes this alone,
        * without re-walking a single CIGAR.
        *
        * Opacity is NOT read here. It rides the shader's `alpha` uniform (and
@@ -172,7 +172,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
               rpcData,
               field: this.paintedField,
               trackColor: this.trackColor,
-              valueColor: this.view.colorByValue,
+              valueColor: this.view.colorValue,
               namePosition: this.paintedRefNamePosition,
               attributeRanges: this.view.attributeRanges,
               hideUnlabelled: this.view.hideUnlabelled,
@@ -181,7 +181,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
       },
       /**
        * #getter
-       * Where a refName sits in whichever axis' assembly `colorBy` names —
+       * Where a refName sits in whichever axis' assembly `color` names —
        * `Assembly.getRefNamePosition`, alias-aware — which the
        * chromosome-painting modes hand the palette out by. Undefined for every
        * other mode, and while the assembly is still loading — the color
@@ -204,13 +204,13 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
       },
       /**
        * #getter
-       * The view's `colorByField` as this plot paints it. 'reference' is the
+       * The view's `colorField` as this plot paints it. 'reference' is the
        * horizontal axis, the one diagonalize orders the vertical against, so it
        * paints as 'query' — the dotplot twin of `LinearSyntenyDisplay.paintedField`,
        * which resolves it per level.
        */
       get paintedField(): string {
-        const field = this.view.colorByField
+        const field = this.view.colorField
         return field === 'reference' ? 'query' : field
       },
       /**

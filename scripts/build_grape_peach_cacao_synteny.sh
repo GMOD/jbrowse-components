@@ -262,7 +262,7 @@ config = {
             'displayName': 'Peach - Cacao - Grape (MCScan blocks)',
             'views': [{'assembly': accession[n]} for n in ('peach', 'cacao', 'grape')],
             'tracks': [['grape_peach_cacao_blocks'], ['grape_peach_cacao_blocks']],
-            'colorBy': {'field': 'reference'},
+            'color': {'field': 'reference'},
             'autoDiagonalize': True,
         }],
     },

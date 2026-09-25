@@ -5,7 +5,7 @@ import type { ColorableTrack } from './trackColors.ts'
 export interface ColorByMenuTrack {
   trackId: string
   name: string
-  /** the color it draws under `colorBy: { field: 'track' }` */
+  /** the color it draws under `color: { field: 'track' }` */
   trackColor: string
   /** whether that color was pinned by hand rather than taken from the palette */
   pinned: boolean
@@ -27,7 +27,7 @@ export function colorByMenuTargetFor(
     pinned: color !== undefined,
   }))
   return {
-    colorBy: model.colorByField,
+    field: model.colorField,
     structuralFields: [
       '',
       'strand',
@@ -41,8 +41,8 @@ export function colorByMenuTargetFor(
     surface: model.colorSurface(),
     hideUnlabelled: model.hideUnlabelled,
     colorDomain: model.colorDomain,
-    setColorBy: field => {
-      model.setColorBy(field)
+    setColorField: field => {
+      model.setColorField(field)
     },
     setHideUnlabelled: value => {
       model.setHideUnlabelled(value)
@@ -69,13 +69,13 @@ export interface TrackColorsModel {
   colorableTracks: ColorableTrack[]
   colorableAttributes: string[]
   attributeRanges: Record<string, AttributeRange>
-  colorByField: string
+  colorField: string
   hideUnlabelled: boolean
   colorDomain: readonly string[]
   trackColorFor: (trackId: string) => string
   colorSurface: () => SyntenyColorSurface
   offersReferenceColor: () => boolean
-  setColorBy: (field: string) => void
+  setColorField: (field: string) => void
   setHideUnlabelled: (value: boolean) => void
   setColorDomain: (domain: string[]) => void
   setTrackColor: (trackId: string, value: string | undefined) => void
@@ -84,7 +84,7 @@ export interface TrackColorsModel {
 
 export interface ColorByMenuTarget {
   /** the field the surface paints by, `''` for its default colour */
-  colorBy: string
+  field: string
   /** the structural fields the surface paints, in `COLOR_MODES` order */
   structuralFields: readonly string[]
   /**
@@ -104,7 +104,7 @@ export interface ColorByMenuTarget {
   hideUnlabelled: boolean
   /** the order a text column's labels take, which Pin distinct colors writes */
   colorDomain: readonly string[]
-  setColorBy: (field: string) => void
+  setColorField: (field: string) => void
   setHideUnlabelled: (value: boolean) => void
   setColorDomain: (domain: string[]) => void
   /** the per-track swatches of a view overlaying tracks */

@@ -34,7 +34,7 @@ describe('viewSettingsFromSpec', () => {
     ).toMatchObject({
       alpha: 0.9,
       drawCurves: true,
-      colorBy: { field: 'query' },
+      color: { field: 'query' },
     })
   })
 
@@ -48,10 +48,10 @@ describe('viewSettingsFromSpec', () => {
 
   it('merges only the shared knobs for a dotplot', () => {
     const settings = viewSettingsFromSpec(
-      { type: 'DotplotView', views: [], colorBy: { field: 'target' } },
+      { type: 'DotplotView', views: [], color: { field: 'target' } },
       dotplotViewKnobs({ colorBy: 'query', alpha: 0.2 }),
     )
-    expect(settings).toMatchObject({ colorBy: { field: 'query' } })
+    expect(settings).toMatchObject({ color: { field: 'query' } })
     expect(settings).not.toHaveProperty('alpha')
   })
 })

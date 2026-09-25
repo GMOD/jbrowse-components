@@ -73,12 +73,12 @@ function radios(target: ColorByMenuTarget, modes: ModeEntry[]): MenuItem[] {
   return modes.map(({ label, value, helpText, disabledHelpText }) => ({
     label,
     type: 'radio' as const,
-    checked: target.colorBy === value,
+    checked: target.field === value,
     helpText,
     disabled: disabledHelpText !== undefined,
     disabledHelpText,
     onClick: () => {
-      target.setColorBy(value)
+      target.setColorField(value)
     },
   }))
 }
@@ -177,7 +177,7 @@ function trackColorItems({
 export function colorByMenuItems(target: ColorByMenuTarget): MenuItem[] {
   const values = valueModes(target)
   const categorical = resolveCategoricalMode(
-    target.colorBy,
+    target.field,
     target.attributeRanges,
   )
   const { trackColors } = target
@@ -186,7 +186,7 @@ export function colorByMenuItems(target: ColorByMenuTarget): MenuItem[] {
     {
       label: withHint(
         VALUE_MODES_LABEL,
-        values.find(m => m.value === target.colorBy)?.label,
+        values.find(m => m.value === target.field)?.label,
       ),
       helpText: 'A number each alignment carries, on a ramp the legend labels.',
       subMenu: radios(target, values),

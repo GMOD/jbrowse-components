@@ -146,7 +146,7 @@ with the sponge's unplaced scaffolds left off its axis:
           { "assembly": "EMU", "displayedRegionNames": ["EMU*"] }
         ],
         "tracks": ["RES_EMU"],
-        "colorBy": { "field": "gene_group" },
+        "color": { "field": "gene_group" },
         "autoDiagonalize": true,
         "lineWidth": 4,
         "height": 860
@@ -204,7 +204,7 @@ sub-pixel ribbons is off, since the ribbons' color is the figure.
           ["BFL_EMU"],
           ["EMU_CLAa"]
         ],
-        "colorBy": { "field": "gene_group" },
+        "color": { "field": "gene_group" },
         "hideUnlabelled": true,
         "autoDiagonalize": true,
         "diagonalizeAnchorRow": 2,

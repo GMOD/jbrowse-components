@@ -277,7 +277,7 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   `size`. Declared coordinates stay colinear and correct. This rendered as
   periodic ~300bp phantom inserts and cost hours to diagnose (fixed
   `95616b5201`).
-- **Multiway synteny** uses `colorBy: { field: 'reference' }`, the meaningful multi-way mode;
+- **Multiway synteny** uses `color: { field: 'reference' }`, the meaningful multi-way mode;
   `drawCurves` defaults false and the figures show straight ribbons.
 - **`demos/primate_orthologs` is a gene-symbol join, no aligner**
   (`build_primate_orthologs.sh`, `symbols_to_blocks.py`): GRCh38.p14, the six

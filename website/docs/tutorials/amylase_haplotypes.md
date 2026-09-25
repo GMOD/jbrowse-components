@@ -264,7 +264,7 @@ with its own gene track, colored by strand:
           ["amylase_adjacent"],
           ["amylase_adjacent"]
         ],
-        "colorBy": { "field": "strand" },
+        "color": { "field": "strand" },
         "drawCurves": true,
         "levelHeights": [110, 110, 110, 110]
       }
@@ -399,7 +399,7 @@ two and a short _C4B_, and HG00146.1 with one:
           ["graph_adjacent"],
           ["graph_adjacent"]
         ],
-        "colorBy": { "field": "strand" },
+        "color": { "field": "strand" },
         "drawCurves": true,
         "levelHeights": [110, 110, 110, 110]
       }

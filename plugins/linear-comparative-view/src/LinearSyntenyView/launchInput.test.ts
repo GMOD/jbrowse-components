@@ -64,30 +64,41 @@ test('any declared property lands natively, named nowhere in the launch path', a
 test('a property a composed mixin contributes lands too', async () => {
   const view = await open({
     views: ROWS,
-    colorBy: { field: 'query' },
+    color: { field: 'query' },
   })
-  expect(view.colorByField).toBe('query')
-  expect(getSnapshot(view).colorBy).toEqual({ field: 'query' })
+  expect(view.colorField).toBe('query')
+  expect(getSnapshot(view).color).toEqual({ field: 'query' })
 })
 
-// The spec is the session: a colorBy written as the object comes back as the
+// The spec is the session: a color written as the object comes back as the
 // object, and the reader refuses the shapes a config cannot hold.
-test('colorBy round-trips a session spec and refuses a stray key', async () => {
+test('color round-trips a session spec and refuses a stray key', async () => {
   const view = await open({
     views: ROWS,
-    colorBy: { field: 'gene_group', domain: ['B1', 'A1a'] },
+    color: { field: 'gene_group', domain: ['B1', 'A1a'] },
   })
-  expect(view.colorByField).toBe('gene_group')
+  expect(view.colorField).toBe('gene_group')
   expect(view.colorDomain).toEqual(['B1', 'A1a'])
-  expect(getSnapshot(view).colorBy).toEqual({
+  expect(getSnapshot(view).color).toEqual({
     field: 'gene_group',
     domain: ['B1', 'A1a'],
   })
   await expect(
-    open({ views: ROWS, colorBy: { fields: 'strand' } }),
+    open({ views: ROWS, color: { fields: 'strand' } }),
   ).rejects.toThrow(
     'SyntenyColor takes value, field, scale and domain, not fields',
   )
+})
+
+// a share link from before the colour object holds the mode string, and one
+// saved while the views held the object under that name holds the object
+test('a colorBy from an older session lands as color', async () => {
+  expect((await open({ views: ROWS, colorBy: 'strand' })).colorField).toBe(
+    'strand',
+  )
+  expect(
+    (await open({ views: ROWS, colorBy: { field: 'query' } })).colorField,
+  ).toBe('query')
 })
 
 test('an omitted property keeps its default', async () => {
@@ -112,12 +123,13 @@ describe('the v4 nested form', () => {
   })
 
   // The v4 demos wrote `"init": { "colorBy": "reference", … }` and v4 applied
-  // it, so unwrapping has to reach a declared property too.
+  // it, so unwrapping has to reach a declared property too, under the name it
+  // has now
   test('a declared property nested inside it lands', async () => {
     const view = await open({
-      init: { views: ROWS, colorBy: { field: 'reference' } },
+      init: { views: ROWS, colorBy: 'reference' },
     })
-    expect(view.colorByField).toBe('reference')
+    expect(view.colorField).toBe('reference')
     expect(warnings()).toEqual([DEPRECATED])
   })
 })

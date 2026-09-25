@@ -308,8 +308,9 @@ The seams, named honestly:
   is GenomeSpy's `color: { field: 'base' }, opacity: { field: 'baseQuality' }`
   spelled as `Paint` and `Fade` codes over typed arrays.
 - **A view-level colour is the plot-level `aes()` every layer inherits.** The
-  linear synteny and dotplot views' `colorBy` is the same `SyntenyColor`
-  object the multi-way display holds per layer as `ribbonColor`, with the
+  linear synteny, dotplot and circular views' `color` is the same
+  `SyntenyColor` object the multi-way display holds per layer as
+  `ribbonColor`, with the
   structural variables as fields — `strand`, `query`, `target`, `reference`,
   `track` — beside the presets and the declared columns
   ([ADR-139](../architecture-decision-records/adr-139-the-synteny-views-colorby-is-the-colour-object-every-band-inherits.md)).

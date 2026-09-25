@@ -111,7 +111,7 @@
           ["solanaceae_orthogroups"],
           ["solanaceae_orthogroups"]
         ],
-        "colorBy": { "field": "reference" },
+        "color": { "field": "reference" },
         "autoDiagonalize": true,
         "sameScale": true,
         "collapseEmptyRows": true

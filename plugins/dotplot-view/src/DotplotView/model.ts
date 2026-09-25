@@ -45,6 +45,7 @@ import {
   collectTrackWarnings,
   comparativeSurfacePhase,
   comparativeSurfaceSettled,
+  liftColorBy,
   releaseTemporaryAssemblies,
 } from '@jbrowse/synteny-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
@@ -203,7 +204,7 @@ export type ExportSvgOptions = ViewExportSvgOptions
  *   type: 'DotplotView',
  *   views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
  *   tracks: ['hg38_vs_mm10.paf'],
- *   colorBy: { field: 'query' },
+ *   color: { field: 'query' },
  * }
  * ```
  * `autoDiagonalize` and a per-axis `loc` on each `views` entry are the other
@@ -1243,7 +1244,7 @@ export default function stateModelFactory(pm: PluginManager) {
           const result = self.getCoords(mousedown, mouseup)
           if (result) {
             const {
-              colorBy,
+              color,
               trackColors,
               hideUnlabelled,
               minAlignmentLength,
@@ -1290,7 +1291,7 @@ export default function stateModelFactory(pm: PluginManager) {
                 : []
             })
             void getSession(self).launchView('LinearSyntenyView', {
-              colorBy,
+              color,
               trackColors,
               hideUnlabelled,
               minAlignmentLength,
@@ -1494,7 +1495,7 @@ export default function stateModelFactory(pm: PluginManager) {
       registry: pm,
       materialized: snap => !!snap.assemblyNames?.length,
     },
-  )
+  ).preProcessSnapshot(liftColorBy)
 }
 
 export type DotplotViewStateModel = ReturnType<typeof stateModelFactory>

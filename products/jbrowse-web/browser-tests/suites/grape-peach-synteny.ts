@@ -24,7 +24,7 @@ const suite: TestSuite = {
         minAlignmentLength: 2000,
         drawCurves: true,
         autoDiagonalize: true,
-        colorBy: { field: 'query' },
+        color: { field: 'query' },
         alpha: 0.4,
         levelHeights: [350],
         views: [{ assembly: 'grape' }, { assembly: 'peach' }],

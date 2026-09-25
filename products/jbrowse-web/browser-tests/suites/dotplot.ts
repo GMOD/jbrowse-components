@@ -200,7 +200,7 @@ const suite: TestSuite = {
     },
     {
       // Two alignment files drawn into one plot were indistinguishable before
-      // colorBy:'track' — same mode, same black points. The palette is assigned
+      // color: { field: 'track' } — same mode, same black points. The palette is assigned
       // by the view so an automatic slot can't collide with a pinned one.
       name: 'overlaid tracks take distinct colors under "Distinct color per track"',
       fn: async page => {

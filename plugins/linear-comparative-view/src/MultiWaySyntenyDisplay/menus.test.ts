@@ -147,7 +147,7 @@ function trackModel({
       calls.push('open picker')
     },
     ribbonColorField: '',
-    setRibbonColorBy: () => {},
+    setRibbonColorField: () => {},
     ribbonColorAttributes: [],
     ribbonAttributeRanges: {},
     ribbonColorDomain: [],

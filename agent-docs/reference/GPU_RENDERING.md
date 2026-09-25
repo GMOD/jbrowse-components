@@ -948,7 +948,7 @@ form (N is only 4–8 buffered regions at their gene-level zoom). Full derivatio
 the incremental-layout memo and its chain-mode wrinkle: [ADR-017](../architecture-decision-records/adr-017-wiggle-per-key-autoruns.md), [ADR-011](../architecture-decision-records/adr-011-canvas-flatbush-immutable-offsets.md).
 
 **A shared-canvas backend wants the same kind of memo one level down: the
-color-lane patch.** A genuine recolor (`colorBy`, `opacityByIdentity`, a track
+color-lane patch.** A genuine recolor (the view's `color`, `opacityByIdentity`, a track
 palette shift) does produce a fresh `colors` array, and the `geometry` getter
 then hands the backend a fresh object over the *same* coordinate arrays — which
 is exactly what `installUpload`'s reference diff is meant to catch, but a

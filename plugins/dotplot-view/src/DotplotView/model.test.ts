@@ -552,7 +552,7 @@ test('a dragged rect opens a synteny view whose rows span it at full width', asy
 test('the synteny view a dragged rect opens paints and filters as the plot does', async () => {
   const model = await setup()
   model.setWidth(800)
-  model.setColorBy('query')
+  model.setColorField('query')
   model.setTrackColor('t1', '#123456')
   model.setHideUnlabelled(true)
   model.setMinAlignmentLength(500)
@@ -561,7 +561,7 @@ test('the synteny view a dragged rect opens paints and filters as the plot does'
   model.launchLinearSyntenyView([100, 100], [300, 300])
   await when(() => session.views.length === 2)
   const synteny = session.views[1] as typeof model
-  expect(synteny.colorByField).toBe('query')
+  expect(synteny.colorField).toBe('query')
   expect(synteny.trackColors.get('t1')).toBe('#123456')
   expect(synteny.hideUnlabelled).toBe(true)
   expect(synteny.minAlignmentLength).toBe(500)

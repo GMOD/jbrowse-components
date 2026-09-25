@@ -60,8 +60,7 @@ export function SyntenyViewMixin({ defaultAlpha }: { defaultAlpha: number }) {
        */
       get showLegend(): boolean {
         return (
-          self.hasLegendKey &&
-          self.colorLegendDismissedFor !== self.colorByField
+          self.hasLegendKey && self.colorLegendDismissedFor !== self.colorField
         )
       },
       /**
@@ -85,14 +84,14 @@ export function SyntenyViewMixin({ defaultAlpha }: { defaultAlpha: number }) {
        * only, so picking another mode brings its key up.
        */
       setShowLegend(show: boolean) {
-        self.colorLegendDismissedFor = show ? undefined : self.colorByField
+        self.colorLegendDismissedFor = show ? undefined : self.colorField
       },
       /**
        * #action
        * One section is the whole key here.
        */
       dismissLegendSection() {
-        self.colorLegendDismissedFor = self.colorByField
+        self.colorLegendDismissedFor = self.colorField
       },
     }))
 }

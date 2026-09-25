@@ -234,9 +234,9 @@ function round(n: number) {
 // names where 'query' placed them by the assembly's own order.
 test('a reference colour paints the horizontal axis, as query does', async () => {
   const { view, a } = await setup()
-  view.setColorBy('query')
+  view.setColorField('query')
   const query = [...a.computedColors!]
-  view.setColorBy('reference')
+  view.setColorField('reference')
   expect([...a.computedColors!]).toEqual(query)
 }, 20000)
 

@@ -228,7 +228,7 @@ test('export svg of synteny bakes in the color-by legend', async () => {
         views: [
           {
             ...syntenySession.views[0],
-            colorBy: { field: 'identity' },
+            color: { field: 'identity' },
           },
         ],
       },

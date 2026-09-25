@@ -36,9 +36,9 @@ below uses the second:
   numbers an alignment carries, identity and mapping quality among them, sit
   under **Color by value**. Each option carries a description of what it colors.
   A text column there paints one color per label, the same wherever the plot is
-  opened. The view's `colorBy.domain` lists labels that take the palette in
-  order and lead the legend, and **Pin distinct colors** writes every label seen
-  so far into it. With more than one alignment file plotted together, **Distinct
+  opened. The view's `color.domain` lists labels that take the palette in order
+  and lead the legend, and **Pin distinct colors** writes every label seen so
+  far into it. With more than one alignment file plotted together, **Distinct
   color per track** gives each its own color, and **Track colors** below it pins
   the color for one track at a time. On a plot whose blocks are all a single
   pixel wide, reach for **Min length** first.

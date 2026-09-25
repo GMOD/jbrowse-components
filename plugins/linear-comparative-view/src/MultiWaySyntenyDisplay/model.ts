@@ -526,7 +526,7 @@ export function stateModelFactory(
         /**
          * #action
          */
-        setRibbonColorBy(field: string) {
+        setRibbonColorField(field: string) {
           setConf(
             self,
             'ribbonColor',

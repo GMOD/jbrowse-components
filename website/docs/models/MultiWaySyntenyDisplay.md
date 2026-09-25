@@ -263,7 +263,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="action-setdomain">**setDomain**</span><br><code>(domain: string[]) =&gt; void</code> | The whole pinned order; empty is back to densest-first. A caller that saw only some lanes merges first (`mergeDomain`). | MultiWaySyntenyDisplay |
 | <span id="action-setselectedlanes">**setSelectedLanes**</span><br><code>(names: string[] &#124; undefined) =&gt; void</code> | draw only `names`, unhiding everything; undefined puts the lanes back to `configuredLanes`, or every lane | MultiWaySyntenyDisplay |
 | <span id="action-setbridgeskippedlanes">**setBridgeSkippedLanes**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
-| <span id="action-setribboncolorby">**setRibbonColorBy**</span><br><code>(field: string) =&gt; void</code> |  | MultiWaySyntenyDisplay |
+| <span id="action-setribboncolorfield">**setRibbonColorField**</span><br><code>(field: string) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setribboncolordomain">**setRibbonColorDomain**</span><br><code>(domain: string[]) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-sethideunlabelled">**setHideUnlabelled**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setdrawcurves">**setDrawCurves**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |

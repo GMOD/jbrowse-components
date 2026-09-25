@@ -67,7 +67,7 @@ const view = {
   views: rest.views.map((v, i) => (locs?.[i] ? { ...v, loc: locs[i] } : v)),
   drawCurves: !args.includes('--straight'),
   autoDiagonalize: !args.includes('--no-diagonalize'),
-  colorBy: { field: 'query' },
+  color: { field: 'query' },
   alpha: 0.4,
   levelHeights: [350],
 }

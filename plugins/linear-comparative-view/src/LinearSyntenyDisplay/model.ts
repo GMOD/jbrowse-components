@@ -514,7 +514,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           // identical features. The worker emits the ticks unconditionally now
           // and `computedColors` paints them transparent when the toggle is off,
           // which makes the toggle a color-lane patch through
-          // `SYNTENY_INSTANCE_CACHE` — the same path colorBy takes to avoid an
+          // `SYNTENY_INSTANCE_CACHE` — the same path a colour change takes to avoid an
           // RPC.
           view.drawCIGAR,
           view.drawCIGARMatchesOnly,
@@ -584,8 +584,8 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       /**
        * #getter
        * Main-thread-computed per-instance colors. Recomputes whenever
-       * colorBy, featureData, or instanceData descriptors change — this is
-       * the gpuProps half of the rpcProps/gpuProps split. colorBy changes
+       * the view's `color`, featureData, or instanceData descriptors change — this is
+       * the gpuProps half of the rpcProps/gpuProps split. Colour changes
        * flow through here without touching the RPC.
        *
        * `drawLocationMarkers` goes through the same color lane, so it stays out
@@ -604,7 +604,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           featureData,
           field: this.paintedField,
           trackColor: this.trackColor,
-          valueColor: this.view.colorByValue,
+          valueColor: this.view.colorValue,
           opacityByIdentity,
           drawLocationMarkers: this.view.drawLocationMarkers,
           groundColor: this.groundColor,
@@ -665,12 +665,12 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * 'reference' view reports 'reference' rather than the query/target each
        * level resolved it to.
        */
-      get colorByField(): string {
-        return this.view.colorByField
+      get colorField(): string {
+        return this.view.colorField
       },
       /**
        * #getter
-       * `colorByField` resolved for this specific level, for the renderer.
+       * `colorField` resolved for this specific level, for the renderer.
        * 'reference' colors every level by the shared anchor assembly's
        * chromosome names; each level maps it to 'query' or 'target' depending
        * on which of its two assemblies is the anchor, so the coloring stays
@@ -682,7 +682,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * that level while the legend still reads "reference".
        */
       get paintedField(): string {
-        const field = this.colorByField
+        const field = this.colorField
         if (field === 'reference') {
           const anchor = this.view.anchorAssemblyName
           const pair = this.parentHelper.rowPair
@@ -697,7 +697,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       /**
        * #getter
        * Instance data with main-thread-computed colors substituted in. The
-       * view's upload autorun reads this, so any colorBy change re-fires
+       * view's upload autorun reads this, so any colour change re-fires
        * upload without an RPC round-trip.
        */
       get renderInstanceData() {

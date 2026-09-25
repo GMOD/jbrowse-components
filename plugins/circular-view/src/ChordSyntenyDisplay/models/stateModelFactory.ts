@@ -152,14 +152,14 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
-       * each alignment's resting fill under the view's `colorBy` and `alpha`,
+       * each alignment's resting fill under the view's `color` and `alpha`,
        * by feature id. A chromosome mode paints the ideogram colour of the
        * chromosome it joins, so a ribbon matches the arc it leaves
        */
       get ribbonColors(): Map<string, string> {
         const { view } = self
         const features = self.features ?? []
-        const field = view.colorByField
+        const field = view.colorField
         const [first, second = first] = self.trackAssemblyNames
         const genome =
           field === 'query' ? first : field === 'target' ? second : undefined
@@ -177,9 +177,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           trackColor: view.trackColorFor(
             getContainingTrack(self).configuration.trackId,
           ),
-          defaultColor: cssColorToABGR(
-            view.colorByValue ?? DEFAULT_RIBBON_COLOR,
-          ),
+          defaultColor: cssColorToABGR(view.colorValue ?? DEFAULT_RIBBON_COLOR),
           nameColor: assembly
             ? name =>
                 assembly.getRefNameColor(self.canonicalRefName(genome!, name))
@@ -219,9 +217,9 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
        */
       get legendColor(): string | undefined {
         const { view } = self
-        return view.colorByField === ''
+        return view.colorField === ''
           ? atAlpha(
-              cssColorToABGR(view.colorByValue ?? DEFAULT_RIBBON_COLOR),
+              cssColorToABGR(view.colorValue ?? DEFAULT_RIBBON_COLOR),
               view.alpha,
             )
           : undefined

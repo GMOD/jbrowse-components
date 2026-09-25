@@ -161,15 +161,15 @@ test("the view's colorBy paints each ribbon, at the view's alpha", async () => {
   const ideogram = (assembly: string, refName: string) =>
     session.assemblyManager.get(assembly)!.getRefNameColor(refName)!
 
-  view.setColorBy('query')
+  view.setColorField('query')
   expect(colord(display.ribbonFill(feature)).toRgbString()).toBe(
     colord(ideogram('volvox', 'ctgA')).alpha(0.25).toRgbString(),
   )
-  view.setColorBy('target')
+  view.setColorField('target')
   expect(colord(display.ribbonFill(feature)).toRgbString()).toBe(
     colord(ideogram('volvox2', 'ctgB')).alpha(0.25).toRgbString(),
   )
-  view.setColorBy('strand')
+  view.setColorField('strand')
   view.setAlpha(0.5)
   expect(colord(display.ribbonFill(feature)).toRgbString()).toBe(
     colord('#00f').alpha(0.5).toRgbString(),

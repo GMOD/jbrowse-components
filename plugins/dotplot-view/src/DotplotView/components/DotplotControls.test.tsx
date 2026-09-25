@@ -55,7 +55,7 @@ test('the palette button says which mode the plot is in', async () => {
     'Color by: Default',
   )
   act(() => {
-    model.setColorBy('strand')
+    model.setColorField('strand')
   })
   expect(screen.getByTestId('color_by_menu')).toHaveAttribute(
     'aria-label',

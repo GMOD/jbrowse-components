@@ -135,6 +135,7 @@ export {
   widenAttributeRanges,
 } from './TrackColorsMixin.ts'
 export { SyntenyColorsMixin } from './SyntenyColorsMixin.ts'
+export { liftColorBy } from './liftColorBy.ts'
 export { SyntenyViewMixin } from './SyntenyViewMixin.ts'
 export { minLengthMenuItem, opacityMenuItem } from './settingsMenuItems.ts'
 export type { ColorableTrack, PalettableTrack } from './trackColors.ts'

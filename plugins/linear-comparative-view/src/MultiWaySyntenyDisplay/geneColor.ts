@@ -69,6 +69,7 @@ export function geneColors(
   const painted = (css: string) =>
     memo(byCss, css, () => ({ css, packed: cssColorToABGR(css) }))
 
+  // #region contextVariableRead
   // the slot as written, not resolved: a jexl colour read without a feature
   // evaluates against an empty context and hands back the fallout (adr-066)
   const utrConstant = isJexl(utrColor)
@@ -79,6 +80,7 @@ export function geneColors(
     memo(utrByFeature, feature.id(), () =>
       cssColorToABGR(String(readConfObject(conf, 'utrColor', { feature }))),
     )
+  // #endregion
 
   const field = colorFieldOf(encoding)
   if (field) {

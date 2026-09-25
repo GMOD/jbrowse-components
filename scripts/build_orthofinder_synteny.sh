@@ -784,7 +784,7 @@ print(json.dumps({
           "views": [{"assembly": n} for n in names],
           # one entry per band: N genomes stack into N-1 bands
           "tracks": [[track]] * (len(names) - 1),
-          "colorBy": { "field": "reference" },
+          "color": { "field": "reference" },
           "autoDiagonalize": True,
           # one bp/px down the whole stack, so a row's drawn length is its
           # genome size and the size differences between the genomes (which

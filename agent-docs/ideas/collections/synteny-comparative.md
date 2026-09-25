@@ -57,7 +57,7 @@ mechanism, and the difference is the whole reason it went first. Markers need no
 from the adapter, so "always emit" cost only the tick instances (`MIN_MARKER_FEATURE_PX`
 bounds those: a whole-genome hairball emits none) and the toggle became a zero alpha on
 the color lane in `computeSyntenyColors` — no new uniform, and it reuses the
-`patchInstanceColors` path colorBy already had. The two CIGAR flags cannot follow that
+`patchInstanceColors` path the colour already had. The two CIGAR flags cannot follow that
 route: they gate the CIGAR *parse* in `executeSyntenyFeaturesAndPositions`, so the fetch
 genuinely brings back different bytes, and "always emit" means always parsing
 multi-megabyte CIGARs. A uniform flag is the right shape for them; a color-lane trick is
@@ -89,7 +89,7 @@ shared block/anchor id anywhere in `comparative-adapters` or `synteny-core` (PAF
 `uniqueId` is just the row index). Add an optional adapter-provided `syntenyGroupId`
 (block/anchor id) *alongside* `mate` — not replacing it — and you get the real multi-way value
 without touching the pairwise geometry the linear layout needs anyway: consistent color per
-block across every row it touches (`colorBy: group`, hash the id in `syntenyColors.ts`,
+block across every row it touches (`color: { field: 'group' }`, hash the id in `syntenyColors.ts`,
 main-thread recolor with no RPC), hover-one-highlight-the-block across rows, and "present in
 all N" filtering. MCScan `.anchors` and MAF already carry block structure to populate it; PAF
 (independent lines) leaves it undefined. This is the cheap 80% and is consistent with "don't
@@ -194,7 +194,7 @@ Surveyed `~/src/vendor/{ntSynt-viz,plotsr,SVbyEye,SafFire,jupiterplot}` against 
 current stack. The overriding conclusion is that **the render/model/color surface is
 already comprehensive** — `SyntenyColorBy` covers `default·strand·query·target·
 reference·identity·mappingQuality·dnds`, plus `opacityByIdentity`,
-`fadeThinAlignments`, N-way stacked views, `colorBy: { field: 'reference' }` chromosome-painting,
+`fadeThinAlignments`, N-way stacked views, `color: { field: 'reference' }` chromosome-painting,
 and `MultiGenomePAFAdapter`. So the remaining wins are **leaf parsers that map a popular
 file onto the EXISTING SyntenyTrack render path**, never new render/color surface. Each
 below reuses the renderer unchanged (the `MCScanBlocksAdapter` / `MultiGenomePAFAdapter`

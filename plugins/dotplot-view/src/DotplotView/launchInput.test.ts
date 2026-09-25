@@ -52,7 +52,7 @@ test('any declared property lands natively, named nowhere in the launch path', a
     lineWidth: 3,
     lockAspectRatio: false,
     lodMode: 'coarse',
-    colorBy: { field: 'query' },
+    color: { field: 'query' },
     minAlignmentLength: 1000,
   })
   expect(view.alpha).toBe(0.55)
@@ -60,7 +60,7 @@ test('any declared property lands natively, named nowhere in the launch path', a
   expect(view.lineWidth).toBe(3)
   expect(view.lockAspectRatio).toBe(false)
   expect(view.lodMode).toBe('coarse')
-  expect(view.colorByField).toBe('query')
+  expect(view.colorField).toBe('query')
   expect(view.minAlignmentLength).toBe(1000)
   expect(view.launch).toEqual({ views: AXES })
 })
@@ -81,12 +81,13 @@ describe('the v4 nested form', () => {
   })
 
   // `scripts/build_oat_homoeologs.sh` shipped `"init": { …, "colorBy": "dnds" }`
-  // and v4 applied it, so unwrapping has to reach a declared property too.
+  // and v4 applied it, so unwrapping has to reach a declared property too,
+  // under the name it has now
   test('a declared property nested inside it lands', async () => {
     const view = await open({
-      init: { views: AXES, colorBy: { field: 'dnds' } },
+      init: { views: AXES, colorBy: 'dnds' },
     })
-    expect(view.colorByField).toBe('dnds')
+    expect(view.colorField).toBe('dnds')
     expect(warnings()).toEqual([DEPRECATED])
   })
 
@@ -94,10 +95,10 @@ describe('the v4 nested form', () => {
     expect(
       (
         await open({
-          init: { colorBy: { field: 'dnds' } },
-          colorBy: { field: 'strand' },
+          init: { color: { field: 'dnds' } },
+          color: { field: 'strand' },
         })
-      ).colorByField,
+      ).colorField,
     ).toBe('strand')
   })
 })

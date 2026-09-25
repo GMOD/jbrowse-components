@@ -40,7 +40,7 @@ function definedOnly<T extends object>(obj: T): Partial<T> {
 function sharedComparativeKnobs(opts: Opts): SyntenyViewSharedInit {
   return {
     autoDiagonalize: opts.autoDiagonalize ? true : undefined,
-    colorBy: opts.colorBy === undefined ? undefined : { field: opts.colorBy },
+    color: opts.colorBy === undefined ? undefined : { field: opts.colorBy },
     minAlignmentLength: opts.minAlignmentLength,
   }
 }

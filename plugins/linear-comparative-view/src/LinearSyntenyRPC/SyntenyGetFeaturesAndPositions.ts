@@ -14,7 +14,7 @@ export interface SyntenyGetFeaturesAndPositionsArgs {
   // already renamed into the adapter's namespace on the main thread.
   queryView: SyntenyQueryViewSnap
   targetView: SyntenyTargetViewSnap
-  // no colorBy: the worker emits per-instance kind/featureIdx descriptors and
+  // no colour: the worker emits per-instance kind/featureIdx descriptors and
   // the display recomputes colors on the main thread, so a color-scheme change
   // never reaches this RPC (see computeSyntenyColors).
   //

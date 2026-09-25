@@ -10,9 +10,9 @@ Auto-generated config schema for the current JBrowse release — see the [config
 
 The circular-view display for a `SyntenyTrack`: each alignment is a ribbon
 between the span it covers on one side and the span its mate covers on the
-other. The three color slots are its resting, hovered and selected fills, and
-each takes a `jexl:` expression over the `feature`, so anything on the record
-can drive the fill — here the alignment's score:
+other. What a ribbon's colour says is the circular view's `colorBy`, as in
+the linear synteny view, with its `alpha` and `minAlignmentLength`; these
+slots are the hovered and selected fills:
 
 ```js
 {
@@ -30,19 +30,9 @@ can drive the fill — here the alignment's score:
     {
       type: 'ChordSyntenyDisplay',
       displayId: 'volvox_self-ChordSyntenyDisplay',
-      color: "jexl:get(feature,'score')>1000?'rgba(0,0,0,0.4)':'rgba(0,0,0,0.1)'",
+      colorHover: 'rgba(0,0,0,0.5)',
     },
   ],
-}
-```
-
-The default is one flat translucent fill, since a reverse alignment already
-twists between its two ends. To color by strand as the linear synteny
-displays do:
-
-```js
-{
-  color: "jexl:get(feature,'strand')==-1?'rgba(0,0,255,0.25)':'rgba(255,0,0,0.25)'",
 }
 ```
 
@@ -71,8 +61,6 @@ These slots go on a display entry: `"displays": [{ "type": "ChordSyntenyDisplay"
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-colorby">**colorBy**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) = <code>'default'</code> | what a ribbon's hue says: 'default' is the color slot, 'chromosome' the arc color of the chromosome it joins on the circle's first genome, and 'strand' the alignment's strand, which is also the twist in every mode |
-| <span id="slot-color">**color**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(70,130,180,0.25)'</code> | the fill color of each ribbon<br>_callback args:_ `feature` |
 | <span id="slot-colorselected">**colorSelected**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(0,0,0,0.6)'</code> | the fill color of a ribbon that has been selected<br>_callback args:_ `feature` |
 | <span id="slot-colorhover">**colorHover**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(85,85,85,0.6)'</code> | the fill color of a ribbon that is being hovered over with the mouse<br>_callback args:_ `feature` |
 | <span id="slot-bezierradiusratio">**bezierRadiusRatio**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.1</code> | how far from the center a chord across the circle passes, as a fraction of the circle's radius: 0 draws it straight through the center, and a larger value keeps every chord nearer the rim. A shorter chord bows less, in proportion to its span |

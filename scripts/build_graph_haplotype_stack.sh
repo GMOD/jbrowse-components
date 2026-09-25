@@ -154,7 +154,7 @@ session = {
                 for row in rows
             ],
             'tracks': [['graph_adjacent'] for _ in rows[1:]],
-            'colorBy': {'field': 'strand'},
+            'color': {'field': 'strand'},
             'drawCurves': True,
         }
     ]

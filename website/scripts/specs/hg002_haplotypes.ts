@@ -260,7 +260,7 @@ type PanelTracks = (string | Record<string, unknown>)[]
 // figure is about. Each panel therefore carries the chain blocks on its OWN
 // haplotype's coordinates -- and that is the SAME SyntenyTrack the ribbons come
 // from, not a second file. In a plain LGV a SyntenyTrack draws as
-// LGVSyntenyDisplay (the only display registered for that pair), whose colorBy
+// LGVSyntenyDisplay (the only display registered for that pair), whose `color`
 // already promotes to `strand`, so this needs no display config at all.
 //
 // It resolves per panel because the published chain carries BOTH directions:
@@ -305,7 +305,7 @@ function haplotypeSession(
         type: 'LinearSyntenyView',
         // strand is the whole point here: it is what makes the inverted block
         // the one sweep crossing an otherwise same-color frame
-        colorBy: { field: 'strand' },
+        color: { field: 'strand' },
         drawCurves: true,
         tracks: [['hg002v1.2_mat_vs_pat']],
         ...viewProps,
@@ -556,7 +556,7 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
           // and the 493 inverted chains are invisible without it; in strand
           // color they are the blue ticks on a red line. Same red-forward /
           // blue-reverse vocabulary as the gene lanes below (STRAND_COLOR).
-          colorBy: { field: 'strand' },
+          color: { field: 'strand' },
           views: WHOLE_GENOME_AXES,
           tracks: ['hg002v1.2_mat_vs_pat'],
         },

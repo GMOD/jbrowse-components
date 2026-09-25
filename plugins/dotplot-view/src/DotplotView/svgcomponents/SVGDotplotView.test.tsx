@@ -161,7 +161,7 @@ test('the color legend is exported beside the plot, which the canvas widens for'
   const plain = await renderToSvg(view, {})
   expect(plain).not.toContain('Identity')
 
-  view.setColorBy('identity')
+  view.setColorField('identity')
   const svg = await renderToSvg(view, {})
   expect(svg).toContain('Identity')
   expect(clipGroupContents(svg)).not.toContain('Identity')
@@ -179,7 +179,7 @@ test('the color legend is exported beside the plot, which the canvas widens for'
 // colours is the inversion.
 test('a strand-coloured plot exports its two-colour key', async () => {
   const { view } = await setup()
-  view.setColorBy('strand')
+  view.setColorField('strand')
   const legend = legendContents(await renderToSvg(view, {}))
   expect(legend).toContain('>forward<')
   expect(legend).toContain('>reverse<')
@@ -232,7 +232,7 @@ test('an exported attribute ramp is labelled with the loaded span, not 0', async
     // legend is drawn outside the plot rect
     display.setInstanceData(fakeDotplotInstanceData(0))
   }
-  view.setColorBy('goc')
+  view.setColorField('goc')
 
   expect(view.attributeRanges).toEqual({ goc: { min: 0, max: 75 } })
   const legend = legendContents(await renderToSvg(view, {}))

@@ -1,11 +1,24 @@
 ---
 status: Accepted
-summary: "The linear synteny and dotplot views' `colorBy` is a `SyntenyColor` object — `\"grey\" | { value, field, scale: 'none', domain }` from the display-kit colour factory, held as the MST property itself so one lift and one set of refusals run on every path — replacing the mode string and the `colorDomain` property. The structural modes are fields the views read (`strand`, `query`, `target`, `reference`, `track`) beside the measurement presets; any other field is a declared column. The field is the runtime form: the colour functions, legends, menus and the worker dispatch on it, and the mode vocabulary — `default`, `mappingQuality`, `attribute:<name>` — is gone with the string. Supersedes ADR-131's \"the synteny view's `colorBy` stays a mode string\""
+summary: "Amended 2026-09-25: the property is named `color`, as every colour object is, the circular view holds it too, and an older snapshot's `colorBy` lifts into it. The linear synteny and dotplot views' `colorBy` is a `SyntenyColor` object — `\"grey\" | { value, field, scale: 'none', domain }` from the display-kit colour factory, held as the MST property itself so one lift and one set of refusals run on every path — replacing the mode string and the `colorDomain` property. The structural modes are fields the views read (`strand`, `query`, `target`, `reference`, `track`) beside the measurement presets; any other field is a declared column. The field is the runtime form: the colour functions, legends, menus and the worker dispatch on it, and the mode vocabulary — `default`, `mappingQuality`, `attribute:<name>` — is gone with the string. Supersedes ADR-131's \"the synteny view's `colorBy` stays a mode string\""
 ---
 
 # ADR-139: The synteny views' `colorBy` is the colour object every band inherits
 
 ## Status
+
+**Amended 2026-09-25**: the property is named `color`, as every other colour
+object in the tree is (FeatureColor, ManhattanColor, AlignmentsColor, MarkColor
+and the rest sit under `color`), and the circular view composes it too, through
+`SyntenyColorsMixin`. The model's members follow the house spelling —
+`colorSetting`, `colorField`, `colorValue`, `setColorField` — and the "Color
+by..." menu keeps its label. A snapshot's `colorBy` lifts into `color`
+(`liftColorBy`, in both views' `preProcessSnapshot`, reaching into a v4
+`init` blob): the object under its old name, and the v4 mode string with its
+`colorDomain` beside it, mapped the way `coerceColorBy` mapped them. That
+reverses the rejected alternative below that let the string fail at load.
+Share links carry both spellings, and state other people hold in URLs keeps
+working. jbrowse-img keeps its `--colorBy` flag and writes `color`.
 
 Accepted (2026-09-18). Supersedes one consequence of
 [ADR-131](adr-131-a-categorical-channel-is-one-config-object.md) ("The

@@ -3763,14 +3763,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "colorBy",
-          "type": "ChordSyntenyColorBy"
-        },
-        {
-          "name": "color",
-          "type": "(JexlString | CssColor)"
-        },
-        {
           "name": "colorSelected",
           "type": "(JexlString | CssColor)"
         },
@@ -6885,6 +6877,11 @@ export const configManifest: ConfigManifest = {
         "id",
         "displayName",
         "minimized",
+        "color",
+        "trackColors",
+        "hideUnlabelled",
+        "alpha",
+        "minAlignmentLength",
         "type",
         "offsetRadians",
         "bpPerPx",
@@ -6915,7 +6912,7 @@ export const configManifest: ConfigManifest = {
         "id",
         "displayName",
         "minimized",
-        "colorBy",
+        "color",
         "trackColors",
         "hideUnlabelled",
         "alpha",
@@ -6947,7 +6944,7 @@ export const configManifest: ConfigManifest = {
         "id",
         "displayName",
         "minimized",
-        "colorBy",
+        "color",
         "trackColors",
         "hideUnlabelled",
         "alpha",

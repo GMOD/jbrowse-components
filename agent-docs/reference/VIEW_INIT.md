@@ -164,7 +164,7 @@ prop list found nothing else.
 | breakpoint | `views` | its one key and its one discriminator |
 
 Everything else each view can be launched with is a declared property —
-`colorBy`, `alpha`, `minAlignmentLength`, `lodMode`, `height` — and none of them
+`color`, `alpha`, `minAlignmentLength`, `lodMode`, `height` — and none of them
 is a launch key.
 
 ## The registration is the one declaration

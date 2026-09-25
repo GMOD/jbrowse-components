@@ -372,21 +372,22 @@ value: {
 },
 ```
 
-The chord synteny display reads its `color` that way, once per feature, in a
-getter kept out of the draw loop:
+The multi-way synteny display reads its gene `utrColor` that way, once per
+feature and memoized, and not at all when the slot holds a plain colour:
 
-<!-- include: plugins/circular-view/src/ChordSyntenyDisplay/models/stateModelFactory.ts#contextVariableRead -->
+<!-- include: plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/geneColor.ts#contextVariableRead -->
 
 ```ts
-/**
- * #getter
- * the resting fill of each ribbon under `colorBy`
- */
-get ribbonFill(): (feature: Feature) => string {
-  const { configuration } = self
-  const { colorBy } = this
-  const configured = (feature: Feature) =>
-    readConfObject(configuration, 'color', { feature })
+// the slot as written, not resolved: a jexl colour read without a feature
+// evaluates against an empty context and hands back the fallout (adr-066)
+const utrConstant = isJexl(utrColor)
+  ? undefined
+  : cssColorToABGR(String(utrColor))
+const utr = (feature: Feature) =>
+  utrConstant ??
+  memo(utrByFeature, feature.id(), () =>
+    cssColorToABGR(String(readConfObject(conf, 'utrColor', { feature }))),
+  )
 ```
 
 `getConf` takes the context object in the same third position. Evaluate these

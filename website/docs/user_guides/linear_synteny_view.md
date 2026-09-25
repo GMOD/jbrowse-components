@@ -206,7 +206,7 @@ A mode whose number a track does not carry leaves every ribbon the default
 color.
 
 A text column's label paints the same color in every window and session. The
-view's `colorBy.domain` lists labels that take the palette in order and lead the
+view's `color.domain` lists labels that take the palette in order and lead the
 legend, the rest sorted after them, so a session can put an ancestral linkage
 group's names in the order a reader expects and give each a distinct color.
 **Pin distinct colors**, under a text column's mode, writes every label seen so

@@ -93,7 +93,7 @@ describe('the domain accumulated across fetches', () => {
     const view = viewWith([{ dn: { min: 0, max: 1 } }])
     view.observeAttributeRanges({ dn: { min: 0, max: 900 } })
     expect(view.attributeRanges).toEqual({ dn: { min: 0, max: 900 } })
-    view.setColorBy('dn')
+    view.setColorField('dn')
     expect(view.attributeRanges).toEqual({ dn: { min: 0, max: 1 } })
   })
 })
@@ -147,7 +147,7 @@ describe('a categorical column', () => {
 
   it('lists the key in that order too, and only for a column mode', () => {
     const view = viewWith([])
-    view.setColorBy('group')
+    view.setColorField('group')
     view.observeAttributeRanges({
       group: { labels: ['B1', 'A1a', 'C1'], colors: {} },
     })
@@ -162,7 +162,7 @@ describe('a categorical column', () => {
     })
     expect(labels()).toEqual(['C1', 'A1a', 'B1', NO_VALUE_LABEL])
 
-    view.setColorBy('track')
+    view.setColorField('track')
     expect(view.colorScales[0]!.kind === 'categorical').toBe(true)
     expect(
       view.colorScales[0]!.kind === 'categorical'
@@ -192,7 +192,7 @@ test('strand keys its two colours on points, and nothing on ribbons', () => {
           return surface
         },
       }))
-      .create({ colorBy: { field: 'strand' } })
+      .create({ color: { field: 'strand' } })
   expect(
     legendSpecOf(on('points').colorScales).sections[0]!.items.map(
       item => item.label,
@@ -216,36 +216,35 @@ test('the track legend lists a track on several levels once', () => {
         ]
       },
     }))
-    .create({ colorBy: { field: 'track' } })
+    .create({ color: { field: 'track' } })
   expect(view.colorLegendChips).toEqual([
     { label: 'orthogroups', color: view.trackColorFor('ortho') },
     { label: 'other', color: view.trackColorFor('other') },
   ])
 })
 
-// The view's `colorBy` is one SyntenyColor object: a field the view reads as a
+// The view's `color` is one SyntenyColor object: a field the view reads as a
 // mode of its own, a measurement preset, a declared column, or a colour.
-describe('the colorBy object', () => {
-  const view = (colorBy: unknown) =>
-    TrackColorsMixin().create({ colorBy } as never)
+describe('the color object', () => {
+  const view = (color: unknown) => TrackColorsMixin().create({ color } as never)
 
   it('reads the structural fields as their modes', () => {
     for (const field of ['strand', 'query', 'target', 'reference', 'track']) {
-      expect(view({ field }).colorByField).toBe(field)
+      expect(view({ field }).colorField).toBe(field)
     }
   })
 
   it('reads a preset by the attribute it paints, and any other field as a column', () => {
-    expect(view({ field: 'mapq' }).colorByField).toBe('mapq')
-    expect(view({ field: 'dnds' }).colorByField).toBe('dnds')
-    expect(view({ field: 'gene_group' }).colorByField).toBe('gene_group')
+    expect(view({ field: 'mapq' }).colorField).toBe('mapq')
+    expect(view({ field: 'dnds' }).colorField).toBe('dnds')
+    expect(view({ field: 'gene_group' }).colorField).toBe('gene_group')
   })
 
   it('lifts a colour string into value, which the default mode paints', () => {
     const v = view('grey')
-    expect(v.colorByField).toBe('')
-    expect(v.colorByValue).toBe('grey')
-    expect(getSnapshot(v).colorBy).toEqual({ value: 'grey' })
+    expect(v.colorField).toBe('')
+    expect(v.colorValue).toBe('grey')
+    expect(getSnapshot(v).color).toEqual({ value: 'grey' })
   })
 
   it('refuses a mode string where a colour goes, naming the value', () => {
@@ -259,29 +258,29 @@ describe('the colorBy object', () => {
   })
 
   it('clears on null and on omission', () => {
-    expect(view(null).colorByField).toBe('')
-    expect(view(undefined).colorByField).toBe('')
-    expect(getSnapshot(view(null)).colorBy).toBeUndefined()
+    expect(view(null).colorField).toBe('')
+    expect(view(undefined).colorField).toBe('')
+    expect(getSnapshot(view(null)).color).toBeUndefined()
   })
 
   it('writes the whole object from a picked mode, keeping the field under none', () => {
     const v = view({ field: 'gene_group', domain: ['B1'] })
-    v.setColorBy('')
-    expect(getSnapshot(v).colorBy).toEqual({
+    v.setColorField('')
+    expect(getSnapshot(v).color).toEqual({
       field: 'gene_group',
       domain: ['B1'],
       scale: 'none',
     })
-    expect(v.colorByField).toBe('')
-    v.setColorBy('gene_group')
-    expect(getSnapshot(v).colorBy).toEqual({
+    expect(v.colorField).toBe('')
+    v.setColorField('gene_group')
+    expect(getSnapshot(v).color).toEqual({
       field: 'gene_group',
       domain: ['B1'],
     })
-    v.setColorBy('query')
-    expect(getSnapshot(v).colorBy).toEqual({ field: 'query' })
+    v.setColorField('query')
+    expect(getSnapshot(v).color).toEqual({ field: 'query' })
     v.setColorDomain(['chr2'])
-    expect(getSnapshot(v).colorBy).toEqual({
+    expect(getSnapshot(v).color).toEqual({
       field: 'query',
       domain: ['chr2'],
     })

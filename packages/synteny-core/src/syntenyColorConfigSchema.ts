@@ -38,7 +38,7 @@ export interface SyntenyColorSnapshot {
 /**
  * #config SyntenyColor
  * #category view
- * The linear synteny and dotplot views' `colorBy` setting, which every track
+ * The linear synteny and dotplot views' `color` setting, which every track
  * in the view paints with: one colour for every alignment, or a field each
  * alignment carries — its strand, the sequence at either end, the anchor
  * assembly's, the track it came from, a measurement on its preset ramp
@@ -47,15 +47,15 @@ export interface SyntenyColorSnapshot {
  *
  * #example
  * ```js
- * { type: 'LinearSyntenyView', colorBy: { field: 'strand' } }
+ * { type: 'LinearSyntenyView', color: { field: 'strand' } }
  * ```
  * ```js
- * { type: 'DotplotView', colorBy: { field: 'query' } }
+ * { type: 'DotplotView', color: { field: 'query' } }
  * ```
  * ```js
  * {
  *   type: 'LinearSyntenyView',
- *   colorBy: { field: 'gene_group', domain: ['A1a', 'B1'] },
+ *   color: { field: 'gene_group', domain: ['A1a', 'B1'] },
  * }
  * ```
  */
@@ -67,7 +67,7 @@ export const syntenyColorConfigSchema = ConfigurationSchema(
      * The colour of every alignment under the `none` scale, in place of the
      * view's default scheme: the match block of a synteny ribbon, whose
      * insertions and deletions keep their colours, or a dotplot point.
-     * Writing `colorBy: "grey"` lands here. Unset, the default scheme paints.
+     * Writing `color: "grey"` lands here. Unset, the default scheme paints.
      */
     value: {
       type: 'maybeColor',
@@ -88,7 +88,7 @@ export const syntenyColorConfigSchema = ConfigurationSchema(
         "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out keeps a colour derived from itself that no listed label paints, so every window and session agrees on it",
     }),
   },
-  colorChannelOptions('colorBy'),
+  colorChannelOptions('color'),
 )
 
 export type SyntenyColorConfigModel = typeof syntenyColorConfigSchema
