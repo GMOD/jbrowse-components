@@ -655,10 +655,11 @@ By default each track uses its primary display. `display:value` selects an
 alternate one. These friendly aliases are recognized (any other value is passed
 through verbatim as a display state-model name):
 
-| `display:` value     | Selected display                                              | Use                                          |
-| -------------------- | ------------------------------------------------------------- | -------------------------------------------- |
-| `multivariant`       | `LinearMultiSampleVariantDisplay`                             | multi-sample VCF genotype matrix (rows)      |
-| `multivariantmatrix` | `LinearMultiSampleVariantDisplay`, `variantLayout: 'columns'` | the same, one equal-width column per variant |
+| `display:` value     | Selected display                                              | Use                                             |
+| -------------------- | ------------------------------------------------------------- | ----------------------------------------------- |
+| `marks`              | `LinearMarkDisplay`                                           | bars, points, spans, text and links you declare |
+| `multivariant`       | `LinearMultiSampleVariantDisplay`                             | multi-sample VCF genotype matrix (rows)         |
+| `multivariantmatrix` | `LinearMultiSampleVariantDisplay`, `variantLayout: 'columns'` | the same, one equal-width column per variant    |
 
 **Alignment tracks (BAM/CRAM)**
 
@@ -768,6 +769,16 @@ figure wants. The rest are BigWig-only and warn on any other track type.
 | `resolution:value`       | `resolution:superfine` | BigWig resolution (`fine`, `superfine`, or a multiplier)  |
 | `color:value`            | `color:purple`         | Fill color (any CSS color — `tag:` form is BAM/CRAM only) |
 
+Two tracks read against each other need one axis, and an image has no menu to
+open, so give both the same `scales.y.autoscaleGroup` and they share a domain:
+
+```bash
+jb2export --fasta ref.fa \
+  --bigwig tumor.bw scales.y.autoscaleGroup=cov height:120 \
+  --bigwig normal.bw scales.y.autoscaleGroup=cov height:120 \
+  --loc chr17:7,660,000-7,690,000 --out pair.svg
+```
+
 ### Any display setting (`slot.path=value`)
 
 A modifier written `slot.path=value` sets that slot of the track's display, so
@@ -790,6 +801,8 @@ jb2export --fasta ref.fa --bam reads.bam color:tag:HP color.domain=1,2 \
 
 - `true` and `false` are booleans and a number is a number
 - a comma makes a list, and a trailing comma a list of one: `color.range=tan,`
+- a digit segment indexes a list: `color.range.1=red` changes the second entry
+  where `color.range=tan,teal` says what the whole range is
 - a `jexl:` item keeps the commas inside its own brackets and quotes:
   `jexlFilters=jexl:get(feature,'score')>5,` is a list of one filter
 - a location keeps the commas grouping its digits:
@@ -797,13 +810,55 @@ jb2export --fasta ref.fa --bam reads.bam color:tag:HP color.domain=1,2 \
 - a slot the display does not declare, or a key its object refuses, fails the
   export with the display's own message
 
+### Declaring what to draw (`display:marks`)
+
+`display:marks` opens the track's
+[mark display](https://jbrowse.org/jb2/docs/config/linearmarkdisplay/), which
+draws the marks you declare instead of the glyphs its track type would: a list
+of bars, points, spans, text or links, each naming which feature fields feed
+which channel. It opens over a BAM, CRAM, VCF, GFF3, BED, BigBed, BigWig or
+MultiWiggle track — everything but `--hic` — so what differs between them is
+only which fields answer: a read's `score` is its MAPQ, a variant's is `QUAL`,
+and a BigWig past its raw section answers a zoom level's mean with `minScore`
+and `maxScore` beside it.
+
+The marks are a list, and a digit segment indexes one, so a whole figure is
+written in the same `path=value` grammar as any other setting. Score as a point
+per feature, coloured by strand:
+
+```bash
+jb2export --fasta ref.fa --bigbed peaks.bb display:marks height:200 \
+  marks.0.mark=point marks.0.encoding.y=score \
+  marks.0.encoding.color.field=strand marks.0.encoding.shape=diamond \
+  --loc chr1:1-100000 --out out.svg
+```
+
+A mark carries a `transform` list, run before it draws, which is itself a list
+of objects — so the binned count below is two indexed steps, and its aggregate's
+`ops` a third level down:
+
+```bash
+jb2export --fasta ref.fa --gffgz genes.gff.gz display:marks height:160 \
+  marks.0.mark=bar marks.0.encoding.y=count \
+  marks.0.transform.0.type=bin marks.0.transform.0.step=100000 \
+  marks.0.transform.1.type=aggregate \
+  marks.0.transform.1.groupby=start,end \
+  marks.0.transform.1.ops.0.op=count \
+  --loc chr1:1-10,000,000 --out density.svg
+```
+
+Writing `marks.2` before anything has written `marks.0` and `marks.1` is an
+error rather than a list with holes in it, and a mark the display cannot draw as
+declared — a bar naming no `y` — fails the export with the rule the display
+itself states.
+
 ### Raw display settings (JSON)
 
 A modifier that starts with `{` is parsed as JSON, for a value `slot.path=value`
-cannot write: a color with commas of its own, or a list of objects. Each key
-states its setting whole, the way a session spec does, so a `color` object here
-replaces the one the track's config wrote. Use compact JSON (a single shell
-token, no spaces):
+cannot write, such as a color with commas of its own. Each key states its
+setting whole, the way a session spec does, so a `color` object here replaces
+the one the track's config wrote. Use compact JSON (a single shell token, no
+spaces):
 
 ```bash
 jb2export --fasta ref.fa --bam reads.bam '{"color":{"range":["rgb(217,201,163)"]}}' \
