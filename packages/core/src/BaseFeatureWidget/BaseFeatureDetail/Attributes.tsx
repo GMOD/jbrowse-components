@@ -8,7 +8,7 @@ import {
 } from '../../util/index.ts'
 import ArrayValue, { isObjectArray } from './ArrayValue.tsx'
 import SimpleField from './SimpleField.tsx'
-import UriAttribute from './UriField.tsx'
+import UriField from './UriField.tsx'
 import { accessNested } from './util.ts'
 
 import type { Descriptors, FeatureFormatter, FieldActions } from '../types.tsx'
@@ -62,27 +62,49 @@ const globalOmit = [
   'cdsEndStat',
 ]
 
+function isLocation(value: unknown) {
+  return isUriLocation(value) || isLocalPathLocation(value)
+}
+
+// hideUris prunes the data rather than each render branch checking: an array
+// of objects reaches the data grid and ArrayValue, which print locations too
+function withoutLocations(
+  attributes: Record<string, unknown>,
+): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(attributes)
+      .filter(([, value]) => !isLocation(value))
+      .map(([key, value]) => [key, valueWithoutLocations(value)]),
+  )
+}
+
+function valueWithoutLocations(value: unknown): unknown {
+  return Array.isArray(value)
+    ? value.filter(v => !isLocation(v)).map(valueWithoutLocations)
+    : isObject(value)
+      ? withoutLocations(value)
+      : value
+}
+
 /**
  * The widest label `Attributes` will actually render under `attributes`, in
  * text units — the padding is added once by `widestLabel`, not per level.
  *
  * Follows the same branches the render below does: a flat array is one labelled
- * row (`rendersOwnFieldRow`), an array of objects renders each element as its
- * own block with no label at this level, a data grid heads its own grid rather
- * than sharing a row, a `UriLocation` is one field, any other object recurses.
- * Kept next to the render for that reason — the two agree by being read
- * together, and `Attributes.test.tsx` fails if they stop.
+ * row, an array of objects renders each element as its own block with no label
+ * at this level, a data grid heads its own grid rather than sharing a row, a
+ * `UriLocation` is one field, any other object recurses. `Attributes.test.tsx`
+ * fails if the two stop agreeing.
  */
 function measureLabels(
   attributes: Record<string, unknown>,
   opts: {
     omits: Set<string>
     deepOmits: Set<string>
-    hideUris?: boolean
     prefix: string[]
   },
 ): number {
-  const { omits, deepOmits, hideUris, prefix } = opts
+  const { omits, deepOmits, prefix } = opts
   let widest = 0
   const measure = (key: string) =>
     measureText([...prefix, key].join('.'), FIELD_NAME_FONT_SIZE)
@@ -97,9 +119,6 @@ function measureLabels(
         widest = Math.max(widest, measure(key))
       }
     } else if (isObject(value)) {
-      if (hideUris && (isUriLocation(value) || isLocalPathLocation(value))) {
-        continue
-      }
       widest = Math.max(
         widest,
         isUriLocation(value)
@@ -107,7 +126,6 @@ function measureLabels(
           : measureLabels(value, {
               omits: deepOmits,
               deepOmits,
-              hideUris,
               prefix: [...prefix, key],
             }),
       )
@@ -141,7 +159,6 @@ export default function Attributes(props: {
   labelWidth?: number
 }) {
   const {
-    attributes,
     omit = [],
     omitSingleLevel = [],
     descriptions,
@@ -151,6 +168,9 @@ export default function Attributes(props: {
     prefix = [],
     labelWidth,
   } = props
+  const attributes = hideUris
+    ? withoutLocations(props.attributes)
+    : props.attributes
 
   const omits = new Set([...omit, ...globalOmit, ...omitSingleLevel])
   const shown = Object.entries(attributes).filter(
@@ -170,7 +190,6 @@ export default function Attributes(props: {
         deepOmits: omitSingleLevel.length
           ? new Set([...omit, ...globalOmit])
           : omits,
-        hideUris,
         prefix,
       }),
     MAX_FIELD_NAME_WIDTH,
@@ -201,18 +220,8 @@ export default function Attributes(props: {
             />
           )
         } else if (isObject(value)) {
-          // hideUris means "don't show where the data sits". A LocalPathLocation
-          // says that as plainly as a UriLocation does — it is what desktop and
-          // `jbrowse add-track --load copy` write — and it used to fall through
-          // to the recursive branch below and print the path in full
-          if (
-            hideUris &&
-            (isUriLocation(value) || isLocalPathLocation(value))
-          ) {
-            return null
-          }
           return isUriLocation(value) ? (
-            <UriAttribute
+            <UriField
               key={key}
               name={key}
               prefix={prefix}
@@ -227,7 +236,6 @@ export default function Attributes(props: {
               descriptions={descriptions}
               formatter={formatter}
               fieldActions={fieldActions}
-              hideUris={hideUris}
               prefix={[...prefix, key]}
               labelWidth={width}
             />

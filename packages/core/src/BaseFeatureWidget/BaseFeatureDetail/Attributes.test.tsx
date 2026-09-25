@@ -152,6 +152,49 @@ describe('Attributes', () => {
     expect(queryByText('file.localPath')).toBeNull()
   })
 
+  // regression: an array of objects rendered through ArrayValue, which dropped
+  // hideUris, so a MultiWiggle track's `subadapters` printed every BigWig URL
+  test('hides locations inside an array of objects', () => {
+    const bigWig = (name: string) => ({
+      type: 'BigWigAdapter',
+      bigWigLocation: { uri: `https://secret.example/${name}.bw` },
+    })
+    const { queryByText, getByText } = renderWithTheme(
+      <Attributes
+        hideUris
+        attributes={{
+          one: [bigWig('a')],
+          mixed: [bigWig('b'), { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6 }],
+        }}
+      />,
+    )
+    expect(getByText('one.type')).toBeTruthy()
+    expect(queryByText(/secret/)).toBeNull()
+  })
+
+  // same leak through the data grid, which resolves a location to its URL
+  test('hides locations inside a data grid', async () => {
+    const { findByText, queryByText } = renderWithTheme(
+      <Attributes
+        hideUris
+        attributes={{
+          subadapters: [
+            {
+              name: 'first',
+              bigWigLocation: { uri: 'https://secret.example/a.bw' },
+            },
+            {
+              name: 'second',
+              bigWigLocation: { uri: 'https://secret.example/b.bw' },
+            },
+          ],
+        }}
+      />,
+    )
+    expect(await findByText('first', {}, { timeout: 15000 })).toBeTruthy()
+    expect(queryByText(/secret/)).toBeNull()
+  }, 20000)
+
   // DataGridDetails is lazy() behind a null Suspense fallback, so nothing at all
   // renders — not even the field name — until the chunk resolves. That chunk
   // pulls @mui/x-data-grid and core's `ui` barrel, which is slower than
