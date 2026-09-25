@@ -2,6 +2,7 @@ import { useAsyncEngineLifecycle } from '@jbrowse/product-core'
 
 import { createViewStateAsync } from './createViewState.ts'
 
+import type { ViewModel } from './createModel.ts'
 import type { CreateViewStateOptions } from './createViewState.ts'
 
 /**
@@ -9,6 +10,11 @@ import type { CreateViewStateOptions } from './createViewState.ts'
  * components that render `<JBrowseApp viewState={...}>` themselves — driving
  * the app imperatively off the model, or composing it with their own chrome —
  * where `<JBrowse>`'s prop-shaped API doesn't fit.
+ *
+ * Pass a function returning the engine instead of options when building takes
+ * more than one call: a config fetched first, plugins from `loadPlugins`, or a
+ * fallback for a restored session that will not load. It runs once per mount,
+ * and a build that throws rethrows from render, for an error boundary.
  *
  * Options are read on the first render only. To swap assemblies or plugins,
  * remount via a React `key`; to swap the session, call `viewState.setSession`.
@@ -25,8 +31,12 @@ import type { CreateViewStateOptions } from './createViewState.ts'
  * `destroyViewState` cleanup by hand: both halves are StrictMode traps, and
  * `useCreateOnce` / `useDestroyOnUnmount` in product-core spell out why.
  */
-export function useCreateViewState(opts: CreateViewStateOptions) {
+export function useCreateViewState(
+  opts: CreateViewStateOptions | (() => Promise<ViewModel>),
+): ViewModel | undefined {
   // undefined until the engine's lazily loaded view and display state models
   // resolve — render a fallback (or nothing) for that frame
-  return useAsyncEngineLifecycle(() => createViewStateAsync(opts))
+  return useAsyncEngineLifecycle(() =>
+    typeof opts === 'function' ? opts() : createViewStateAsync(opts),
+  )
 }

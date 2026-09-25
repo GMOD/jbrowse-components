@@ -11,6 +11,11 @@ import type { AsyncViewStateOptions } from './createViewState.ts'
  * out of the render body (calling it there rebuilds the whole engine on every
  * render).
  *
+ * Pass a function returning the engine instead of options when building takes
+ * more than one call: plugins from `loadPlugins`, or a fallback for a restored
+ * session that will not load. It runs once per mount, and a build that throws
+ * rethrows from render, for an error boundary.
+ *
  * Options are read on the first render only. To swap the assembly or plugins,
  * remount via a React `key`.
  *
@@ -27,9 +32,11 @@ import type { AsyncViewStateOptions } from './createViewState.ts'
  * `useCreateOnce` / `useDestroyOnUnmount` in product-core spell out why.
  */
 export function useCreateViewState(
-  opts: AsyncViewStateOptions,
+  opts: AsyncViewStateOptions | (() => Promise<ViewModel>),
 ): ViewModel | undefined {
   // undefined until the engine's lazily loaded state models resolve — render a
   // fallback (or nothing) for that frame
-  return useAsyncEngineLifecycle(() => createViewState(opts))
+  return useAsyncEngineLifecycle(() =>
+    typeof opts === 'function' ? opts() : createViewState(opts),
+  )
 }
