@@ -6,7 +6,7 @@
       "minAlignmentLength": 500000,
       "drawCurves": true,
       "autoDiagonalize": true,
-      "colorBy": { "field": "query" },
+      "color": { "field": "query" },
       "alpha": 0.4,
       "levelHeights": [350],
       "views": [{ "assembly": "hs1" }, { "assembly": "mm39" }]

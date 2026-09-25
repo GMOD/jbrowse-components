@@ -1169,7 +1169,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       state[key] ??= {
         deprecated: true,
         description:
-          'Legacy display-instance key: a session migration lifts it onto the config slot that replaced it.',
+          'Legacy display-instance key: a migration lifts it onto the setting that replaced it.',
       }
     }
     defs[`${entry.name}State`] = { type: 'object', properties: state }

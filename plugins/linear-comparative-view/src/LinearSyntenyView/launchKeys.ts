@@ -1,4 +1,5 @@
 import { defineLaunchKeys } from '@jbrowse/core/util/withLaunchInput'
+import { LIFTED_VIEW_KEYS } from '@jbrowse/synteny-core'
 
 import type { LinearSyntenyViewCommands } from './types.ts'
 
@@ -15,7 +16,7 @@ import type { LinearSyntenyViewCommands } from './types.ts'
 // `sameScale` is `replay`, the one kind that is not remapped: the value lands
 // on the declared property, and a copy rides in the blob because launching also
 // has to zoom the rows onto the shared scale, after `autoDiagonalize` has
-// rewritten and re-centred them. `colorBy`, `alpha`,
+// rewritten and re-centred them. `color`, `alpha`,
 // `minAlignmentLength` and the rest are plain properties — writing them is the
 // whole job, so none of them is a launch key.
 //
@@ -23,7 +24,8 @@ import type { LinearSyntenyViewCommands } from './types.ts'
 // `fadeThinAlignmentsMode`. It is no longer a declared property, so the
 // partition would read it as a typo; the model's own preProcessSnapshot
 // converts it, so a saved session or a hand-written document naming it keeps
-// working.
+// working. `colorBy` and `colorDomain` are older spellings of `color` the same
+// way (`liftSyntenyViewSettings`).
 export const linearSyntenyLaunchKeys =
   defineLaunchKeys<LinearSyntenyViewCommands>()(
     {
@@ -34,5 +36,5 @@ export const linearSyntenyLaunchKeys =
       collapseEmptyRows: { kind: 'launch' },
       sameScale: { kind: 'replay' },
     },
-    { passThrough: ['fadeThinAlignments'] },
+    { passThrough: ['fadeThinAlignments', ...LIFTED_VIEW_KEYS] },
   )

@@ -46,7 +46,7 @@ import {
   collectTrackWarnings,
   comparativeSurfacePhase,
   comparativeSurfaceSettled,
-  liftColorBy,
+  liftSyntenyViewSettings,
   releaseTemporaryAssemblies,
 } from '@jbrowse/synteny-core'
 import DataUsageIcon from '@mui/icons-material/DataUsage'
@@ -1517,7 +1517,7 @@ export default function stateModelFactory(pm: PluginManager) {
       registry: pm,
       materialized: snap => !!snap.assemblyNames?.length,
     },
-  ).preProcessSnapshot(liftColorBy)
+  ).preProcessSnapshot(liftSyntenyViewSettings)
 }
 
 export type DotplotViewStateModel = ReturnType<typeof stateModelFactory>

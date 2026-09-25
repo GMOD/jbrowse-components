@@ -25,7 +25,7 @@ import {
   carriedSyntenySettings,
   collectTrackWarnings,
   getSyntenyTracks,
-  liftColorBy,
+  liftSyntenyViewSettings,
   releaseTemporaryAssemblies,
 } from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
@@ -1408,7 +1408,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     >(snap => {
       // the boolean spelling of fadeThinAlignmentsMode, which shares its name
       // with the resolved getter
-      const { fadeThinAlignments, ...rest } = liftColorBy(snap) ?? {}
+      const { fadeThinAlignments, ...rest } =
+        liftSyntenyViewSettings(snap) ?? {}
       return typeof fadeThinAlignments === 'boolean'
         ? {
             ...rest,

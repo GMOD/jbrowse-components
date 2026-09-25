@@ -90,7 +90,7 @@ export interface LinearSyntenyViewCommands extends SyntenyViewSharedCommands {
  * What a `LinearSyntenyView` can be launched with — a session spec, a config
  * `defaultSession` view, a share link, all one shape.
  *
- * The commands above plus every declared property of the view (`colorBy`,
+ * The commands above plus every declared property of the view (`color`,
  * `cigarMode`, `drawCurves`, `alpha`,
  * `opacityByIdentity`, `lodMode`, and whatever the model grows next), each in
  * its own type. None of them is listed anywhere: the type comes off the state

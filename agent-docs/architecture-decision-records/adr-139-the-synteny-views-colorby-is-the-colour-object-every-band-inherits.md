@@ -12,13 +12,18 @@ object in the tree is (FeatureColor, ManhattanColor, AlignmentsColor, MarkColor
 and the rest sit under `color`), and the circular view composes it too, through
 `SyntenyColorsMixin`. The model's members follow the house spelling —
 `colorSetting`, `colorField`, `colorValue`, `setColorField` — and the "Color
-by..." menu keeps its label. A snapshot's `colorBy` lifts into `color`
-(`liftColorBy`, in both views' `preProcessSnapshot`, reaching into a v4
-`init` blob): the object under its old name, and the v4 mode string with its
-`colorDomain` beside it, mapped the way `coerceColorBy` mapped them. That
-reverses the rejected alternative below that let the string fail at load.
-Share links carry both spellings, and state other people hold in URLs keeps
-working. jbrowse-img keeps its `--colorBy` flag and writes `color`.
+by..." menu keeps its label. Older spellings lift into place
+(`liftSyntenyViewSettings`, in both views' `preProcessSnapshot`): v4.3.0 held
+`colorBy`, `alpha` and `minAlignmentLength` on each synteny display, so the
+first display carrying each lands on the view; the v5 betas held `colorBy` on
+the view, the mode string with a `colorDomain` beside it and then the object;
+and a v4 `init` blob holds it too. Each lands as `color`, a mode string mapped
+the way `coerceColorBy` mapped it. That reverses the rejected alternative
+below that let the string fail at load: share links carry every one of these,
+and state other people hold in URLs keeps working. The two views name
+`colorBy` and `colorDomain` as launch-key `passThrough`, and the validator
+manifest takes the display keys from the lift, so `jbrowse validate` accepts
+an older session. jbrowse-img keeps its `--colorBy` flag and writes `color`.
 
 Accepted (2026-09-18). Supersedes one consequence of
 [ADR-131](adr-131-a-categorical-channel-is-one-config-object.md) ("The

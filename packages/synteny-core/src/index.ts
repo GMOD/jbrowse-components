@@ -139,7 +139,11 @@ export {
   carriedSyntenySettings,
 } from './SyntenyColorsMixin.ts'
 export type { SyntenyColorsModel } from './SyntenyColorsMixin.ts'
-export { liftColorBy } from './liftColorBy.ts'
+export {
+  LIFTED_DISPLAY_KEYS,
+  LIFTED_VIEW_KEYS,
+  liftSyntenyViewSettings,
+} from './liftSyntenyViewSettings.ts'
 export { SyntenyViewMixin } from './SyntenyViewMixin.ts'
 export { minLengthMenuItem, opacityMenuItem } from './settingsMenuItems.ts'
 export type { ColorableTrack, PalettableTrack } from './trackColors.ts'

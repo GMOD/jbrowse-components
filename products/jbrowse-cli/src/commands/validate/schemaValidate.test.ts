@@ -558,6 +558,41 @@ describe('the schema', () => {
     ).toEqual(['defaultSession.views[0].tracks[0].displays[0].colorBy'])
   })
 
+  // the views lift their older colour spellings, and v4.3.0 held colorBy,
+  // alpha and minAlignmentLength on each synteny display
+  it('accepts the synteny settings an older session spells another way', () => {
+    const config = baseConfig()
+    config.defaultSession.views = [
+      {
+        type: 'LinearSyntenyView',
+        colorBy: 'attribute:gene_group',
+        colorDomain: ['B1'],
+        levels: [
+          {
+            tracks: [
+              {
+                type: 'SyntenyTrack',
+                configuration: 'aln',
+                displays: [
+                  {
+                    type: 'LinearSyntenyDisplay',
+                    configuration: 'aln-LinearSyntenyDisplay',
+                    colorBy: 'strand',
+                    alpha: 0.6,
+                    minAlignmentLength: 500,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      { type: 'DotplotView', colorBy: { field: 'query' } },
+      { type: 'DotplotView', init: { colorBy: 'dnds' } },
+    ]
+    expect(whereOf(config)).toEqual([])
+  })
+
   it('checks displays inside a session sub-view', () => {
     const config = baseConfig()
     config.defaultSession.views = [

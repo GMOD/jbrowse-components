@@ -224,20 +224,46 @@ blendOverGround for a legend chip, floored at LEGEND_CHIP_ALPHA_FLOOR.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
 
-### liftColorBy
+### LIFTED_DISPLAY_KEYS
 
-A linear synteny or dotplot view snapshot's `colorBy`, lifted into `color`, on
-the view and in a v4 `init` blob: the mode string a v4 session holds, with the
-`colorDomain` beside it, or the colour object the views held under that name
-before it took the name every other colour object has. Share links carry both
-spellings.
+The display keys `liftSyntenyViewSettings` moves onto the view, by display type,
+for a validator reading a v4.3.0 session.
 
 ```js
 // type signature
-(snap: Record<string, unknown> | undefined) => Record<string, unknown> | undefined
+Record<string, readonly string[]>
 ```
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/liftColorBy.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/liftSyntenyViewSettings.ts)
+
+### LIFTED_VIEW_KEYS
+
+The view keys `liftSyntenyViewSettings` converts, which the two views name as
+their launch keys' `passThrough` so a validator accepts them.
+
+```js
+// type signature
+readonly[('colorBy', 'colorDomain')]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/liftSyntenyViewSettings.ts)
+
+### liftSyntenyViewSettings
+
+A linear synteny or dotplot view snapshot's older spellings of the settings the
+view holds now, lifted into place. A v4.3.0 session held `colorBy` (a mode
+string), `alpha` and `minAlignmentLength` on each synteny display; the v5 betas
+held them on the view with `colorBy` the mode string and a `colorDomain` beside
+it, then the colour object under that name; a v4 `init` blob holds them too.
+Each lands on the view, `colorBy` as `color`. Share links carry every one of
+these.
+
+```js
+// type signature
+(snap: Snap | undefined) => Snap | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/liftSyntenyViewSettings.ts)
 
 ### minLengthMenuItem
 

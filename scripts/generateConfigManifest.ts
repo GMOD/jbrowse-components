@@ -70,6 +70,7 @@ const SCHEMA_SITE_OUT = path.join(REPO_ROOT, 'website/static', SCHEMA_URL_PATH)
 const ENTRY = `
 import PluginManager from '@jbrowse/core/PluginManager'
 import { migratedDisplayInstanceKeys } from '@jbrowse/product-core'
+import { LIFTED_DISPLAY_KEYS } from '../../packages/synteny-core/src/liftSyntenyViewSettings.ts'
 import { JBrowseConfigF } from '@jbrowse/app-core'
 import {
   getConfigurationSchemaMetadata,
@@ -532,12 +533,22 @@ const manifest = {
   // Legacy display-instance keys the session migration still lifts into the
   // config, keyed by display type ('*' = any), read off the DisplayTypes the
   // migration reads, so the two cannot disagree about what is stale versus dead.
-  migratedDisplayKeys: Object.fromEntries(
-    Object.entries(migratedDisplayInstanceKeys(pm)).map(([type, keys]) => [
-      type,
-      [...keys].sort(),
-    ]),
-  ),
+  // The synteny displays' v4.3.0 colour, opacity and length filter move onto
+  // the view instead, read off the view's own lift.
+  migratedDisplayKeys: (() => {
+    const migrated = migratedDisplayInstanceKeys(pm)
+    return Object.fromEntries(
+      [
+        ...new Set([
+          ...Object.keys(migrated),
+          ...Object.keys(LIFTED_DISPLAY_KEYS),
+        ]),
+      ].map(type => [
+        type,
+        [...(migrated[type] ?? []), ...(LIFTED_DISPLAY_KEYS[type] ?? [])].sort(),
+      ]),
+    )
+  })(),
 }
 
 // Every registered element of a group whose type resolves, with the built
