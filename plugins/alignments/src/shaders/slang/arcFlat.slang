@@ -17,7 +17,6 @@
 //! targets: wgsl, glsl
 //! coverage: analytic
 //! export-consts: ARC_FLAT_MIN_PX, ARC_FLAT_ALPHA, ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX
-//! js-export: arcDashCoordPx
 
 import alignmentsUniforms;
 import arcBandUniforms;
@@ -45,19 +44,6 @@ static const float ARC_FLAT_ALPHA = 0.7;
 // to the other two by a comment. One declaration, three consumers.
 static const float ARC_FLAT_DASH_PX = 3.0;
 static const float ARC_FLAT_GAP_PX = 3.0;
-
-// How far along the drawn line a fragment sits, from the line's SCREEN-LEFT
-// end — the dash pattern's origin, because that is where Canvas2D's `moveTo`
-// and SVG's path start it. Measured along the mark rather than across the
-// canvas: an origin on the canvas is fixed to the viewport, and the first block
-// of a single-region view starts at screen x 0, so every ordinary pan slides
-// the line under a stationary pattern and the dashes crawl.
-//
-// `reversed` is a float because `arcFlipX`'s spelling of the same flip takes
-// the uniform struct, which is outside the emitter's scalar subset.
-public float arcDashCoordPx(float localX, float halfLenPx, float reversed) {
-  return halfLenPx + lerp(localX, -localX, reversed);
-}
 
 [[vk::binding(1, 0)]] ConstantBuffer<ArcBandUniforms> u;
 
@@ -133,10 +119,16 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // a 3.0/6.0 pair spelled into the arithmetic — the SVG twin passes them to
   // `stroke-dasharray` and Canvas2D to `setLineDash`, so a period written here
   // in numbers is a period only a comment holds the other two to.
+  //
+  // The coordinate is distance from the line's SCREEN-LEFT end, which is where
+  // Canvas2D's `moveTo` and SVG's path start the pattern. Along the mark and
+  // not across the canvas: an origin on the canvas is fixed to the viewport,
+  // and a single-region view's block sits at screen x 0 and stays there, so a
+  // pan slides the line under a stationary pattern and the dashes crawl.
   if (fragIn.dashed > 0.5) {
     alpha *= dashCoverage(
-      arcDashCoordPx(fragIn.local.x, fragIn.halfLen, u.reversed),
-      ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX, u.devicePixelRatio);
+      fragIn.halfLen + arcFlipX(fragIn.local.x, u), ARC_FLAT_DASH_PX,
+      ARC_FLAT_GAP_PX, u.devicePixelRatio);
   }
   // Neutral, not black: `colorFlatConnector` is the theme's foreground, so the
   // line reads against a dark track background the way it does against a light

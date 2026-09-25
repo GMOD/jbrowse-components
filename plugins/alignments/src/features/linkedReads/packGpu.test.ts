@@ -18,8 +18,10 @@ import type { LinkedReadLinesUploadData } from './types.ts'
 const DATA: LinkedReadLinesUploadData = {
   linkedReadLinePositions: new Uint32Array([1000, 4096 + 7, 90, 250]),
   linkedReadLineYs: new Uint16Array([3, 11, 0, 400]),
-  // Two slots that differ in their float and integer encodings, which is what
-  // makes reading them back a check rather than a restatement.
+  // Two slots whose float and integer encodings differ, which is what makes
+  // reading them back through the u32 view a check rather than a restatement:
+  // both encodings occupy the same word, so a float write keeps the stride and
+  // decodes to a palette slot nobody chose.
   linkedReadLineColorTypes: new Uint8Array([3, 7]),
   numLinkedReadLines: 2,
 }
@@ -57,14 +59,4 @@ test('the buffer is exactly the instances, at the generated stride', () => {
   expect(buf.byteLength).toBe(
     DATA.numLinkedReadLines * shader.INSTANCE_STRIDE_BYTES,
   )
-})
-
-test('a float write of that index would not read back as the index', () => {
-  // Why reading `colorType` through the u32 view above is a check rather than a
-  // restatement: both encodings occupy the same word, so writing it as a float
-  // stays in bounds, keeps the stride, and decodes to a palette slot nobody
-  // chose — the clamped last one, for every connector on screen.
-  const word = new ArrayBuffer(4)
-  new Float32Array(word)[0] = 3
-  expect(new Uint32Array(word)[0]).not.toBe(3)
 })

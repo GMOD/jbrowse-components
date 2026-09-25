@@ -18,5 +18,5 @@ export function wideCircleLeg(seg: number, segments: number, legSweep: number): 
   if ((seg <= half)) {
     return [1.0, (((seg) / (half)) * legSweep)]
   }
-  return [-1.0, (((((segments - seg) >>> 0)) / (((half - 1) >>> 0))) * legSweep)]
+  return [-1.0, (((((segments - seg) >>> 0)) / (((((segments - half) >>> 0) - 1) >>> 0))) * legSweep)]
 }

@@ -35,12 +35,16 @@ export interface ArcBandFrame {
   arcsTop: number
   arcsH: number
   pairedArcsDown: boolean
-  // The whole track's on-screen width, which the shader carries as
-  // `viewWidthPx`. It decides the near/far branch below, so a consumer on the
-  // other side of that test from the paint measures an ellipse against a
-  // painted circle — a different mark, not a near miss. Measured against a
-  // BLOCK instead, the threshold moves as a region edge scrolls on screen and
-  // a settled arc changes shape partway through a pan (ADR-163).
+  // The width of the surface this mark is drawn across, which the shader
+  // carries as `viewWidthPx`. It decides the near/far branch below, so a
+  // consumer on the other side of that test from the paint measures an ellipse
+  // against a painted circle — a different mark, not a near miss. Measured
+  // against a BLOCK instead, the threshold moves as a region edge scrolls on
+  // screen and a settled arc changes shape partway through a pan (ADR-163).
+  //
+  // The per-region passes take the track canvas (`RenderState.canvasWidth`,
+  // and the export's own width when it exports); the cross-region overlay
+  // takes `view.width`, because that is the surface IT paints on.
   viewWidthPx: number
 }
 

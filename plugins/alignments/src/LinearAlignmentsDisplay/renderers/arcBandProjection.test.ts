@@ -3,7 +3,9 @@ import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { MockHal } from '@jbrowse/render-core/hal'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import * as glsl from '../../shaders/slang/arc.glsl.generated.ts'
 import { UNIFORM_OFFSET_F32 } from '../../shaders/slang/arc.iface.generated.ts'
+import * as wgsl from '../../shaders/slang/arc.wgsl.generated.ts'
 import { makeTestRenderState } from '../testUtils.ts'
 import {
   ALIGNMENTS_PASSES,
@@ -21,28 +23,39 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
  * The band's uniforms carry a bp origin (`bpHi`/`bpLo`) and a px scale
  * (`bpLen`/`blockWidth`), and the origin is the CLIPPED start, which is the bp
  * at the scissor's left edge. A block-origin px offset on top of that applies
- * the clip twice, which is what `blockStartPx` did between 051be51dd0 and this
- * test: every arc, tick, bar and marker of a block panned off the left edge
- * drew that far from where Canvas2D, SVG and the hit test all agreed it went.
+ * the clip twice, which is what `blockStartPx` did between 051be51dd0 and
+ * 29dbd7a85a.
  *
- * Only a clipped block shows it, and only on the edge the clip cut — so a view
- * sitting inside one chromosome, where nothing is trimmed, is exactly the case
- * that stays right.
+ * The size of that is worth stating, because the commit overstated it. A
+ * render block's `screenStartPx` is `max(windowLeftPx, regionLeftPx) -
+ * offsetPx` and so never negative, and `scissorX` is its floor — so the
+ * doubled term was `frac(screenStartPx)`, under one CSS px. Every mark in the
+ * band, on every block whose screen start is not a whole pixel, which is most
+ * frames of a pan, and the other way round on a reversed block.
  */
 
-const CANVAS_W = 200
+// `view.width` 800 with the 2px track outline on, which is what every display
+// passes as the canvas width.
+const CANVAS_W = 798
 const CANVAS_H = 100
 const BAND = { top: 0, height: 20, down: false }
 
-// Panned so the block's start is 300px off the left edge and its end 300px off
-// the right: the clip trims both edges and neither is the block's own origin.
+/**
+ * The rightmost block of a panned view: it starts on a fractional pixel and
+ * runs past the track's right edge.
+ *
+ * Both trims at once and unequal (-0.5 left, 102.5 right), which is what makes
+ * the reversed row of the table below mean something: `clipBlock` pulls the
+ * LOW bp in by the right trim on a reversed block and by the left trim on a
+ * forward one, so a fixture whose two trims match passes either way.
+ */
 function block(reversed: boolean): RenderBlock {
   return {
     displayedRegionIndex: 0,
     start: 1_000_000,
     end: 1_001_000,
-    screenStartPx: -300,
-    screenEndPx: 500,
+    screenStartPx: 100.5,
+    screenEndPx: 900.5,
     reversed,
   }
 }
@@ -53,7 +66,8 @@ const SECTION: SectionRender = {
   covClipTop: 0,
   covClipHeight: 0,
   pileupClipTop: 0,
-  pileupClipHeight: 40,
+  // No pileup ink, so the band's write is the frame's last one.
+  pileupClipHeight: 0,
   arcBand: BAND,
 }
 
@@ -93,7 +107,7 @@ function bandUniforms(b: RenderBlock) {
  * The shader half of the contract, in CSS px. `arcBandX` scales the bp offset
  * from the uniform origin by the block's px width; `arcBandClipPos` normalizes
  * that over `canvasW` and flips a reversed block, and `drawMarks` puts the
- * viewport on the block's clip column — so 0 and `blockWidth` land on the
+ * viewport on the block's clip column — so 0 and `scissorW` land on the
  * scissor's two edges, near end first.
  */
 function arcBandScreenX(
@@ -125,11 +139,30 @@ test.each([false, true])(
   },
 )
 
-test('the band carries no px origin of its own beyond the two bp slots', () => {
-  // The clip's own trim, which is what a block-origin uniform would re-apply.
-  // Stated as a number so the case above is known to be a clipped one: with
-  // nothing trimmed both projections agree however many origins are added.
+test('the fixture really is clipped, unequally, on both edges', () => {
+  // Stated as numbers so the table above is known to be measuring something:
+  // with nothing trimmed the two projections agree however many origins are
+  // added, and with the two trims equal the reversed pivot is invisible.
   const b = block(false)
   const clip = clipBlock(b, CANVAS_W, CANVAS_H, { x: 1, y: 1 })!
-  expect(clip.scissorX - b.screenStartPx).toBe(300)
+  expect(clip.scissorX - b.screenStartPx).toBe(-0.5)
+  expect(b.screenEndPx - (clip.scissorX + clip.scissorW)).toBe(102.5)
 })
+
+// The table above reads the uniforms the band wrote; this one pins that the
+// shader spends them the way it models. Without it, reinstating `blockStartPx`
+// in `arcBandUniforms.slang` and adding it back to `arcBandX` — the whole of
+// the bug — leaves every assertion above green, because the uniform values do
+// not change.
+test.each([
+  ['wgsl', wgsl.WGSL_SOURCE],
+  ['glsl', glsl.GLSL_VERTEX],
+])(
+  '%s projects a bp from the scissor edge, with no block origin',
+  (_n, src) => {
+    expect(src).toMatch(
+      /fn arcBandX_0[^}]*return arcBpToLinear_0\(\w+\) \* u_0\.blockWidth_0;|float arcBandX_0[^}]*return arcBpToLinear_0\(\w+\) \* u_0\.blockWidth_0;/,
+    )
+    expect(src).not.toContain('blockStartPx')
+  },
+)

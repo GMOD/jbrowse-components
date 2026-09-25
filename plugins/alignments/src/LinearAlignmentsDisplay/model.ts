@@ -3030,7 +3030,12 @@ export default function stateModelFactory(
             regionScreenExtent: i => extentByRegion[i],
             lineWidth: self.readConnectionsLineWidth,
             colors,
-            viewWidthPx: self.canvasWidthPx,
+            // The VIEW's, not `canvasWidthPx`: this overlay projects through
+            // `makeBpToScreenX(view)` and paints onto a surface `view.width`
+            // wide, where a per-region pass has the track canvas. Each measures
+            // the far test against the width it is actually drawn across — see
+            // `ArcBandFrame`.
+            viewWidthPx: view.width,
             // Once per NUMBER, not once per evaluation, since this getter
             // re-runs on every pan frame — see `reportArcCap`.
             onCapped: (groupKey, dropped, kept) => {

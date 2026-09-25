@@ -12,7 +12,9 @@ import {
 } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { ARC_FAR_SCREEN_WIDTHS } from '../../shaders/slang/arc.consts.generated.ts'
+import * as glsl from '../../shaders/slang/arc.glsl.generated.ts'
 import { UNIFORM_OFFSET_F32 } from '../../shaders/slang/arc.iface.generated.ts'
+import * as wgsl from '../../shaders/slang/arc.wgsl.generated.ts'
 import { arcMarkFrom } from './mark.ts'
 import { ARC_SHAPE_ARC } from './shapes.ts'
 import { emptyArcsUploadData } from './types.ts'
@@ -196,4 +198,35 @@ test('the hit test resolves that same dome, and still clips to the block', () =>
   // used to be the one `screenWidthPx`, so widening the test would have
   // widened the overlay's clip over a block-clipped paint.
   expect(debug.clip.width).toBe(BLOCK_W)
+})
+
+/** The emitted body of `fn`, brace-matched, so a temp's name cannot matter. */
+function bodyOf(src: string, fn: string) {
+  const open = src.indexOf('{', src.indexOf(`${fn}(`))
+  let depth = 0
+  for (let i = open; i < src.length; i++) {
+    if (src[i] === '{') {
+      depth++
+    } else if (src[i] === '}' && --depth === 0) {
+      return src.slice(open, i + 1)
+    }
+  }
+  throw new Error(`no body for ${fn}`)
+}
+
+// The three cases above pin the uniform, the painter and the hit test. This one
+// pins the vertex stage, which has no JS twin and is the only consumer that
+// could still read the block's width: swapping `u.viewWidthPx` back to
+// `u.canvasW` in `arcCurve` — the whole of the regression — leaves every other
+// assertion in the tree green.
+test.each([
+  ['wgsl', wgsl.WGSL_SOURCE],
+  ['glsl', glsl.GLSL_VERTEX],
+])('%s resolves the curve against the view width alone', (_name, src) => {
+  const body = bodyOf(src, 'arcCurve_0')
+  expect(body).toContain('viewWidthPx')
+  // `canvasW` is the block's clamped span and belongs to `arcBandClipPos`,
+  // which vs_main calls after the curve is resolved. Inside the curve it could
+  // only be the far test reading the wrong width.
+  expect(body).not.toContain('canvasW')
 })

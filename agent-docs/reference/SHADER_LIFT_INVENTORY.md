@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 45 shaders with entry points. 120 functions
-are inside the emitter's subset, of which **90 are exported**.
+Scanned 45 shaders with entry points. 118 functions
+are inside the emitter's subset, of which **89 are exported**.
 
 ## Candidates
 
@@ -48,7 +48,6 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `expandToMinWidthX` | `(f32, f32, f32, f32) -> vec2f` | clip-space wrapper over expandToMinWidthPx, same reason as extendToMinWidthX |
 | `extendToMinWidthX` | `(f32, f32, f32, f32) -> f32` | clip-space wrapper over the exported extendToMinWidthPx, which is the decision |
 | `hpSplitUint` | `(u32) -> vec2f` | the hi/lo float32 precision split exists because a GPU has no float64; the Canvas2D path just uses a number |
-| `insetValueYPx` | `(f32, f32, f32, f32, i32, f32, f32) -> f32` | its two consumers lift it under their own anchors, pointMark.slang as pointYPx and linkMark.slang as linkValuePx, and those are the spellings the painters and hit tests read; a third twin would be one nothing calls |
 | `linkIsFar` | `(f32, f32) -> bool` | reached as a private helper inside the generated linkRadiiPx, the way arc.slang's arcIsFar is, so the far decision is shared without a second way to ask it |
 | `log1pf` | `(f32) -> f32` | JS has Math.log1p, so a twin of this would be the float32 workaround spelled out where the language already answers it |
 | `nearCircleDistancePx` | `(f32, f32, f32, f32) -> f32` | a float32 remedy with no float64 caller. The hit tests' copy of this file's solve (marks/ellipseDistance.ts) holds the ellipse at every aspect, so nothing outside the shader has an approximation to want. |
@@ -77,7 +76,7 @@ noticing in a diff.
 
 | Refused because | Functions | For example |
 | --- | --- | --- |
-| type 'vec2' is outside the supported scalar subset | 26 | `arcBandClipPos`, `buttSegmentCoverage`, `capsuleDist`, `capsuleFrame`, `capsuleQuadLocal`, `covFlippedQuad`, … |
+| type 'vec2' is outside the supported scalar subset | 25 | `arcBandClipPos`, `buttSegmentCoverage`, `capsuleDist`, `capsuleFrame`, `capsuleQuadLocal`, `covFlippedQuad`, … |
 | member access (vector swizzle or struct field) is outside the supported scalar subset | 20 | `arcBandDestY`, `arcBandX`, `arcBandY`, `arcFlipX`, `arcStrokeHalfPx`, `arcsPointDown`, … |
 | type 'ptr' is outside the supported scalar subset | 17 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
 | type 'vec4' is outside the supported scalar subset | 13 | `bandColorAt`, `cutYAt`, `cutYsPx`, `edgeSpan`, `entryPx`, `fillEdges`, … |
@@ -114,7 +113,6 @@ is no longer shared with anything.
 | `aaHalfPx` | tests only — `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `glyphEdgeAlpha.test.ts`, `pointGlyphPad.test.ts` |
 | `aaPx` | nothing |
 | `aaRamp` | tests only — `pointGlyphPad.test.ts` |
-| `arcDashCoordPx` | tests only — `arcFlatDash.test.ts` |
 | `discExpand` | tests only — `pointGlyphPad.test.ts` |
 | `edgeCoverage` | tests only — `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `sdEllipse.test.ts` |
 | `extendToMinWidthPx` | tests only — `hpmathParity.test.ts`, `markParity.test.ts`, `rectSpanParity.test.ts` |
@@ -123,4 +121,4 @@ is no longer shared with anything.
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |
 | `sBlend` | tests only — `syntenyShaderParity.test.ts` |
 | `wideCircleLeg` | tests only — `wideCircleLeg.test.ts` |
-| `yCurve` | tests only — `syntenyCull.test.ts`, `syntenyShaderParity.test.ts` |
+| `yCurve` | tests only — `syntenyShaderParity.test.ts` |
