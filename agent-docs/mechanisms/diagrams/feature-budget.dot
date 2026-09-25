@@ -1,7 +1,7 @@
 digraph feature_budget {
   rankdir=TB
   node [shape=box fontname=monospace fontsize=10]
-  { node [shape=diamond] mode; isoforms; fits; over }
+  { node [shape=diamond] mode; glyphmode; fits; over }
 
   mode [label="displayMode"]
   mode -> sized     [label=" normal, compact,\n super-compact"]
@@ -9,11 +9,11 @@ digraph feature_budget {
   sized     [label="height multiplier\nand row padding"]
   collapsed [label="every feature on one row,\nevery label suppressed"]
 
-  isoforms [label="geneGlyphMode"]
-  sized -> isoforms  collapsed -> isoforms
-  isoforms -> allt [label=" all"]
-  isoforms -> one  [label=" representative"]
-  isoforms -> zoom [label=" auto"]
+  glyphmode [label="geneGlyphMode"]
+  sized -> glyphmode  collapsed -> glyphmode
+  glyphmode -> allt [label=" all"]
+  glyphmode -> one  [label=" representative"]
+  glyphmode -> zoom [label=" auto"]
   allt [label="every transcript"]
   one  [label="one per gene: MANE or\nRefSeq Select, else longest coding"]
   zoom [label="by zoom"]
@@ -30,16 +30,17 @@ digraph feature_budget {
   plain [label="fixed: full then isoforms, then scroll.\ngrow: full, and never a trim"]
 
   ladder [label="the fit ladder\nfirst rung that fits wins,\nthe last rung always returns,\neach rung is laid out lazily", style=bold]
-  ladder -> full -> labels -> isoforms -> decimated -> bodies
+  ladder -> full -> labels -> isoforms -> thinned -> decimated -> bodies
   full      [label="full: names and descriptions"]
   labels    [label="labels: descriptions dropped"]
   isoforms  [label="isoforms: each gene trimmed to the largest\ntranscripts-per-gene whose NAMED pack fits,\nfound by bisection — names before isoforms"]
-  decimated [label="decimated: a name only where it is\nisolated; the whitespace factor is the\nsmallest that fits, found by bisection"]
+  thinned   [label="thinned: every name kept, bodies shortened\nto the largest scale that fits, down to\n0.4x the label font — names before height"]
+  decimated [label="decimated: a name only where it is\nisolated, the factor solved with bodies\nat that floor; then bodies grow back\ninto the freed room"]
   bodies    [label="bodies: no labels"]
-  isoforms -> decimated [label=" the two below\n inherit the count\n it failed at"]
+  isoforms -> bodies [label=" the rungs below\n inherit the count\n it failed at" style=dashed]
 
   scale [label="one uniform scale over the kept rung:\nnever above 1; squeezes until the\nshortest drawn box hits its floor"]
-  full -> scale  labels -> scale  isoforms -> scale  decimated -> scale  bodies -> scale
+  full -> scale  labels -> scale  isoforms -> scale  thinned -> scale  decimated -> scale  bodies -> scale
   scale -> over
   over [label="still taller than the track"]
   over -> scroll [label=" yes"]

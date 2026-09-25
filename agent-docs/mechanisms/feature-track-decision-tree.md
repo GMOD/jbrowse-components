@@ -43,12 +43,19 @@ those name a meaning rather than a shape.
 - Where the display fits to height, which is the default, the **fit ladder**
   runs: `full` → `labels`
   (descriptions dropped) → `isoforms` (each gene trimmed to the count that fits
-  WITH its names) → `decimated` (a name only where it is isolated) → `bodies` (no
-  labels). The first rung that fits wins, each rung is laid out lazily, and the
-  last always returns.
+  WITH its names) → `thinned` (every name, bodies shortened) → `decimated` (a
+  name only where it is isolated) → `bodies` (no labels). The first rung that
+  fits wins, each rung is laid out lazily, and the last always returns.
+- The policy after isoforms is **names before height**. `thinned` packs the
+  bodies and row padding at the largest scale that fits while label rows keep
+  their font size, down to a floor where the tallest body is 0.4× the label
+  font. `decimated` solves its whitespace factor with the bodies at that floor,
+  so no name goes while a body could shrink instead, then grows the bodies back
+  into the room the dropped names freed. A `decimated` pack that keeps no name
+  hands on to `bodies`.
 - The `isoforms` rung bisects the transcripts-per-gene the track can hold. It
   sits above `decimated` because the policy is **names before isoforms**, and
-  when even one per gene overflows the two rungs below inherit that 1 rather than
+  when even one per gene overflows the rungs below inherit that 1 rather than
   going back to the full stack to save a name. A fixed-height track runs the
   short ladder `full` → `isoforms` and scrolls; `grow` never trims, because its
   height IS its content's.
