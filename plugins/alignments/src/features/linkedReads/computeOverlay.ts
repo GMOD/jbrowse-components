@@ -12,6 +12,7 @@ import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
 // shader's clamp on every slot in use and resolves an out-of-range one to a
 // different real color instead of the last slot.
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
+import { LINKED_READ_LINE_WIDTH_PX } from '../../shaders/slang/linkedReadLine.consts.generated.ts'
 import {
   connectionLabel,
   isGpuLinkedReadLine,
@@ -24,12 +25,12 @@ import type { CanonicalRefName } from '../arcs/arcTypes.ts'
 import type { LinkedPair, ReadEntry } from './compute.ts'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
-// Cull by endpoint Y. The endpoints alone don't bound the curve — every curve
-// this overlay draws is discordant, so it dips below them (see bezierConnector)
-// — so pad by the shaping's reach. Without this, a connector whose reads have
-// both scrolled just past an edge takes its visible body with it. The pad is
-// applied to both edges though the curve only reaches downward, which is merely
-// over-inclusive: it keeps a few culled arcs, never drops a visible one.
+// Cull by endpoint Y, padded by the shaping's reach: a curve dips below or bows
+// above its endpoints (see bezierConnector), so a connector whose reads have
+// both scrolled just past an edge can still have a visible body.
+// The split view's alignment connector width, which draws the same curve.
+const CURVE_STROKE_WIDTH_PX = 1
+
 function arcIsVisible(
   sy1: number,
   sy2: number,
@@ -59,6 +60,9 @@ export interface PileupArc {
   // the two are tellable apart at a glance; the tooltip names which evidence
   // produced the arc rather than overloading a second dimension onto the stroke.
   label: string
+  // A straight connector strokes at the line pass's width, which draws the same
+  // connection when both ends share a region; a curve at the split view's.
+  strokeWidth: number
   // Set together, and only for a junction across unfetched segments: the dash
   // resolved HERE so the live overlay and the SVG export cannot disagree about
   // which arcs are dashed (the invariant this file's stroke constants exist
@@ -74,13 +78,9 @@ export function bezierArcKey(arc: Pick<PileupArc, 'id1' | 'id2'>) {
   return `${arc.id1}:${arc.id2}`
 }
 
-// A linked pair becomes an overlay arc unless the GPU / Canvas2D pipeline draws
-// it (`isGpuLinkedReadLine`), which cannot dash a line or name the loci it
-// skips. Applied once, by `enumerateBezierPairs`, so the arc emitter
-// (computePileupBezierArcs) and the legend (bezierConnectionColorTypes) work
-// from one already-narrowed list and the key can never list a connection color
-// the overlay didn't draw.
-export function isBezierArcPair(pair: LinkedPair): boolean {
+// Every pair the line pass leaves: it cannot dash a line or name the loci a
+// junction skips.
+function isBezierArcPair(pair: LinkedPair) {
   return !isGpuLinkedReadLine(pair)
 }
 
@@ -195,6 +195,21 @@ export function enumerateBezierPairs(
   return out
 }
 
+// `enumerateBezierPairs` over every group's laid-out map.
+export function enumerateBezierPairsByGroup(
+  byGroup: ReadonlyMap<string, ReadonlyMap<number, LaidOutPileupData>>,
+  scope: BezierArcScope,
+  canonicalRefName?: CanonicalRefName,
+) {
+  const out = new Map<string, LinkedPair[]>()
+  if (scope !== 'none') {
+    for (const [key, map] of byGroup) {
+      out.set(key, enumerateBezierPairs(map, scope, canonicalRefName))
+    }
+  }
+  return out
+}
+
 interface Opts {
   pairs: LinkedPair[]
   displayedRegions: { refName: string; reversed?: boolean }[]
@@ -278,27 +293,28 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     // the split view bows a same-level normal link.
     const hidden = !!hiddenSegmentsBetween?.length
     const plain = c.isNormal && r1.refName === r2.refName
-    const d =
-      plain && !(hidden && sy1 === sy2)
-        ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
-        : bezierConnectorPath({
-            x1: sx1,
-            y1: sy1,
-            x2: sx2,
-            y2: sy2,
-            s1: c.s1,
-            s2: c.s2,
-            leadingEnd2: c.isSplit,
-            reversed1: !!r1.reversed,
-            reversed2: !!r2.reversed,
-            dip: !plain,
-          })
+    const straight = plain && !(hidden && sy1 === sy2)
+    const d = straight
+      ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
+      : bezierConnectorPath({
+          x1: sx1,
+          y1: sy1,
+          x2: sx2,
+          y2: sy2,
+          s1: c.s1,
+          s2: c.s2,
+          leadingEnd2: c.isSplit,
+          reversed1: !!r1.reversed,
+          reversed2: !!r2.reversed,
+          dip: !plain,
+        })
     const stroke = rgb255(linkedReadPalette[linkedReadColorSlot(c.colorType)]!)
 
     result.push({
       d,
       stroke,
       label: connectionLabel(c.colorType),
+      strokeWidth: straight ? LINKED_READ_LINE_WIDTH_PX : CURVE_STROKE_WIDTH_PX,
       // The id STRINGS, not the keys: these reach `selectFeatureById` and
       // `getFeatureInfoById`. One pair per drawn arc, not per read.
       id1: readIdAt(e1.data, e1.readIdx)!,

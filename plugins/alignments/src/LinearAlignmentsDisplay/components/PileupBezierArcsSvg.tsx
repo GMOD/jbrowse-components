@@ -1,7 +1,6 @@
 import { bezierArcKey } from '../../features/linkedReads/computeOverlay.ts'
 import {
   BEZIER_ARC_STROKE_OPACITY,
-  BEZIER_ARC_STROKE_WIDTH,
   computePileupBezierArcsFromModel,
 } from './pileupBezierArcs.ts'
 
@@ -71,7 +70,7 @@ export default function PileupBezierArcsSvg({
               key={bezierArcKey(arc)}
               d={arc.d}
               stroke={arc.stroke}
-              strokeWidth={BEZIER_ARC_STROKE_WIDTH}
+              strokeWidth={arc.strokeWidth}
               strokeOpacity={BEZIER_ARC_STROKE_OPACITY}
               // Exported dashed too: a junction across unfetched segments
               // reads as a solid inversion in a figure exactly as on screen.

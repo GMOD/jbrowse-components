@@ -23,7 +23,6 @@ jest.mock('@jbrowse/sv-core', () => ({
 // The geometry pass is the SVG export's too and has its own tests; what is
 // asserted here is what the overlay does with the arcs it is handed.
 jest.mock('./pileupBezierArcs.ts', () => ({
-  BEZIER_ARC_STROKE_WIDTH: 1,
   BEZIER_ARC_STROKE_OPACITY: 0.8,
   computePileupBezierArcsFromModel: () =>
     mockArcs.length
@@ -42,6 +41,7 @@ const ARC: PileupArc = {
   x1: 0,
   x2: 30,
   label: 'Deletion',
+  strokeWidth: 1,
 }
 
 // The second hop of the same read, and one arc of another read.

@@ -889,7 +889,7 @@ describe('getAlignmentsColorScales', () => {
     legendItems: () => reads,
     arcLegendTitle: 'Arc colors',
     arcLegendItems: () => arcs,
-    bezierLegendItems: () => [],
+    connectionLegendItems: () => [],
     sashimiLegendItems: [],
   })
   const entries = (scale: ColorScale | undefined) =>
@@ -1048,7 +1048,7 @@ describe('getAlignmentsColorScales', () => {
         { color: '#ff3a8c', label: 'Short insert' },
       ],
       sashimiLegendItems: [],
-      bezierLegendItems: () => [
+      connectionLegendItems: () => [
         // the arc's half of the merged short-insert row, verbatim
         { color: '#ff3a8c', label: 'Short insert' },
         // same label, a color neither half carries — still its own row
@@ -1089,7 +1089,7 @@ describe('getAlignmentsColorScales', () => {
       arcLegendTitle: 'Arc colors',
       arcLegendItems: () => [],
       sashimiLegendItems: [],
-      bezierLegendItems: () => [
+      connectionLegendItems: () => [
         // the verbatim repeat
         { color: '#5555bb', label: 'RR - Both mates reverse strand' },
         // same color, but the curves call it something the fills don't
@@ -1264,7 +1264,7 @@ describe('sashimiLegendItems', () => {
       legendItems: () => [],
       arcLegendTitle: 'Arc colors',
       arcLegendItems: () => [],
-      bezierLegendItems: () => [],
+      connectionLegendItems: () => [],
       sashimiLegendItems: sashimiLegendItems(new Set([-1]), {
         pairLR: '#d3d3d3',
       }),

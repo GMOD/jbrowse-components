@@ -8,7 +8,6 @@ import { SectionBandClip } from './PileupBezierArcsSvg.tsx'
 import { PAN_MOVED } from './panState.ts'
 import {
   BEZIER_ARC_STROKE_OPACITY,
-  BEZIER_ARC_STROKE_WIDTH,
   computePileupBezierArcsFromModel,
 } from './pileupBezierArcs.ts'
 import { formatFeatureLabel } from './tooltipUtils.ts'
@@ -125,7 +124,7 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
                 ? SELECTED_STROKE_WIDTH
                 : isHovered
                   ? HOVERED_STROKE_WIDTH
-                  : BEZIER_ARC_STROKE_WIDTH
+                  : arc.strokeWidth
               return (
                 <g key={arcId}>
                   <path

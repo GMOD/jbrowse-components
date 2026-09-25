@@ -65,7 +65,7 @@ import { computeArcsByGroup } from '../features/arcs/compute.ts'
 import { densityCoverageFields } from '../features/coverage/densityBand.ts'
 import {
   bezierConnectionLegendItems,
-  enumerateBezierPairs,
+  enumerateBezierPairsByGroup,
 } from '../features/linkedReads/computeOverlay.ts'
 import { visibleRegionJunctions } from '../features/sashimi/computeOverlay.ts'
 import { mergeJunctions } from '../features/sashimi/junctions.ts'
@@ -185,6 +185,7 @@ import type {
 } from '../RenderAlignmentDataRPC/types'
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
 import type { CoverageRegionFields } from '../features/coverage/types.ts'
+import type { LinkedPair } from '../features/linkedReads/compute.ts'
 import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
 import type { LaneJunction } from '../features/sashimi/supportingReads.ts'
 import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
@@ -2166,51 +2167,62 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Scroll/pan-invariant half of the bezier connection overlay: the linked
-         * pairs of each section, resolved once per relayout. The read grouping +
-         * connection resolution (`enumerateBezierPairs`) is the allocation-heavy
-         * step; memoizing it here (this getter never reads `scrollTop`) keeps a
-         * scroll frame down to the cheap per-pair screen projection in
-         * `computePileupBezierArcsFromModel`. Narrowed by `bezierArcScope`, and
-         * empty when that is `none`.
+         * The linked pairs the bezier connection overlay draws, per group and
+         * narrowed by `bezierArcScope`. Read off the layout tier, so a band
+         * resize, a group-height drag or a recolor reuses them and only a
+         * relayout enumerates again; the per-frame screen projection is
+         * `computePileupBezierArcsFromModel`'s.
          */
-        get bezierPairSections() {
-          const scope = this.bezierArcScope
-          return scope === 'none'
-            ? []
-            : this.renderSections.map(sec => ({
-                groupKey: sec.groupKey,
-                topOffset: sec.topOffset,
-                pileupHeight: sec.pileupHeight,
-                pairs: enumerateBezierPairs(
-                  sec.laidOutPileupMap,
-                  scope,
-                  // The same normalizer the arcs take,
-                  // and what lets a junction name the off-screen segments it
-                  // steps over in the view's own refName spelling rather than
-                  // the BAM's. Its SA parse belongs to THIS getter's memo, not
-                  // to the per-frame projection that reads the result.
-                  self.canonicalRefName,
-                ),
-              }))
+        get bezierPairsByGroup(): ReadonlyMap<string, LinkedPair[]> {
+          return enumerateBezierPairsByGroup(
+            self.coarseTierStandsIn ? new Map() : self.laidOutByGroupFramed,
+            this.bezierArcScope,
+            self.canonicalRefName,
+          )
         },
 
         /**
          * #getter
-         * Connection types (LINKED_READ_COLOR_*) actually drawn as bezier/line
-         * arcs in view, the input that lets the legend list only the connection
-         * colors present. `bezierPairSections` is already narrowed to what the
-         * overlay draws (`enumerateBezierPairs` applies the scope's own
-         * predicate), so this scans the same list the curves come from rather
-         * than re-deriving the skip rule beside it. Empty while the legend is
+         * `bezierPairsByGroup` placed on each drawn section's pileup band.
+         */
+        get bezierPairSections() {
+          return this.renderSections.flatMap(sec => {
+            const pairs = this.bezierPairsByGroup.get(sec.groupKey)
+            return pairs?.length
+              ? [
+                  {
+                    groupKey: sec.groupKey,
+                    topOffset: sec.topOffset,
+                    pileupHeight: sec.pileupHeight,
+                    pairs,
+                  },
+                ]
+              : []
+          })
+        },
+
+        /**
+         * #getter
+         * The connection types (LINKED_READ_COLOR_*) drawn in view, by the
+         * overlay's curves and by the straight-line pass beside them, so the
+         * key lists every connector colour on screen. Empty while the legend is
          * hidden so the scan is skipped.
          */
-        get bezierConnectionColorTypes(): Set<number> {
+        get connectionColorTypes(): Set<number> {
           const present = new Set<number>()
           if (self.showLegend) {
             for (const sec of this.bezierPairSections) {
               for (const pair of sec.pairs) {
                 present.add(pair.c.colorType)
+              }
+            }
+            if (self.showLinkedReadLines) {
+              for (const sec of this.renderSections) {
+                for (const data of sec.laidOutPileupMap.values()) {
+                  for (const colorType of data.linkedReadLineColorTypes) {
+                    present.add(colorType)
+                  }
+                }
               }
             }
           }
@@ -2219,15 +2231,11 @@ export default function stateModelFactory(
 
         /**
          * #method
-         * Legend swatches for the linked-read connection curves, empty unless the
-         * overlay has something to draw (`bezierArcScope`) and at least one
-         * connection is in view — including the cross-region connectors chain
-         * mode draws without the curved-connector box ticked, since those are
-         * colored by the same rules and a color on screen needs its key.
+         * Legend swatches for the read connectors.
          */
-        bezierLegendItems() {
+        connectionLegendItems() {
           return bezierConnectionLegendItems(
-            this.bezierConnectionColorTypes,
+            this.connectionColorTypes,
             self.colorPalette,
           )
         },
@@ -2645,7 +2653,7 @@ export default function stateModelFactory(
               legendItems: () => self.legendItems(),
               arcLegendTitle: self.arcLegendTitle,
               arcLegendItems: () => self.arcLegendItems(),
-              bezierLegendItems: () => self.bezierLegendItems(),
+              connectionLegendItems: () => self.connectionLegendItems(),
               sashimiLegendItems: this.sashimiLegendItems,
             })
           },

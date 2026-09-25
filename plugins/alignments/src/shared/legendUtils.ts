@@ -223,7 +223,7 @@ export function getAlignmentsColorScales(model: {
   legendItems: () => LegendItem[]
   arcLegendTitle: string
   arcLegendItems: () => LegendItem[]
-  bezierLegendItems: () => LegendItem[]
+  connectionLegendItems: () => LegendItem[]
   sashimiLegendItems: LegendItem[]
 }): ColorScale[] {
   const reads = model.legendItems()
@@ -257,7 +257,7 @@ export function getAlignmentsColorScales(model: {
     scaleOf(
       'connections',
       'Read connections',
-      model.bezierLegendItems().filter(i => !keyed.has(legendKey(i))),
+      model.connectionLegendItems().filter(i => !keyed.has(legendKey(i))),
     ),
     scaleOf('sashimi', 'Splice junctions', model.sashimiLegendItems),
   ]

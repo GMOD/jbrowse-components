@@ -1,4 +1,5 @@
 import { computePileupBezierArcs } from '../../features/linkedReads/computeOverlay.ts'
+import { LINKED_READ_LINE_ALPHA } from '../../shaders/slang/linkedReadLine.consts.generated.ts'
 import { makeBpToScreenX } from './alignmentComponentUtils.ts'
 import { bandScreenTop, sectionBandBottom } from './sectionScreen.ts'
 
@@ -6,12 +7,9 @@ import type { PileupArc } from '../../features/linkedReads/computeOverlay.ts'
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// Stroke style shared by the on-screen overlay (PileupBezierOverlay) and the SVG
-// export (PileupBezierArcsSvg) so the two paths can't drift, per the invariant
-// in this dir's CLAUDE.md. Selection thickens the on-screen stroke only (not
-// exported), so that width lives at the overlay call site.
-export const BEZIER_ARC_STROKE_WIDTH = 1
-export const BEZIER_ARC_STROKE_OPACITY = 0.8
+// The straight-line pass's alpha, so a connector reads the same whichever pass
+// draws it. Each arc carries its own width.
+export const BEZIER_ARC_STROKE_OPACITY = LINKED_READ_LINE_ALPHA
 
 export interface BezierArcSection {
   groupKey: string

@@ -1,11 +1,23 @@
 import { namesToBlock } from '@jbrowse/alignments-core'
+import {
+  SAM_FLAG_FIRST_IN_PAIR,
+  SAM_FLAG_PAIRED,
+  SAM_FLAG_SECOND_IN_PAIR,
+} from '@jbrowse/cigar-utils'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { heightModeLabel } from '@jbrowse/display-kit/heightMode'
 import { autorun } from 'mobx'
 
-import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
+import {
+  baseWorkerPileupData,
+  makePileupDataResult,
+} from '../RenderAlignmentDataRPC/testPileupData.ts'
+import {
+  LINKED_READ_COLOR_PAIR_LR,
+  LINKED_READ_COLOR_PAIR_RL,
+} from '../features/linkedReads/compute.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from '../shared/types.ts'
 import { READ_COLOR_CATEGORY_BY_INDEX } from './colorUtils.ts'
 import { applyReadColorsByGroup } from './groupLayout.ts'
@@ -637,6 +649,67 @@ describe('cross-region chain connectors', () => {
     // and chain mode doesn't narrow an explicit choice
     display.setLinkedReads('normal')
     expect(display.bezierArcScope).toBe('all')
+  })
+})
+
+// In pileup layout a normal pair's connector is the straight-line pass's and a
+// discordant pair's is the overlay's curve.
+describe('curved connectors', () => {
+  const first = SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR
+  const second = SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR
+
+  function connectorDisplay() {
+    const display = createDisplay({ withRegions: true })
+    display.setShowBezierConnections(true)
+    display.setRpcData(
+      0,
+      {
+        groups: [
+          {
+            key: '',
+            label: '',
+            data: {
+              ...baseWorkerPileupData(4),
+              ...namesToBlock(['normal', 'normal', 'outward', 'outward']),
+              readPositions: new Uint32Array([
+                100, 200, 400, 500, 1000, 1100, 1400, 1500,
+              ]),
+              readFlags: new Uint16Array([first, second, first, second]),
+              readStrands: new Int8Array([1, -1, -1, 1]),
+              readPairOrientations: new Uint8Array([
+                LINKED_READ_COLOR_PAIR_LR,
+                LINKED_READ_COLOR_PAIR_LR,
+                LINKED_READ_COLOR_PAIR_RL,
+                LINKED_READ_COLOR_PAIR_RL,
+              ]),
+            },
+          },
+        ],
+      },
+      region(0),
+    )
+    return display
+  }
+
+  test('a band resize or a recolor reuses the enumerated pairs', () => {
+    const display = connectorDisplay()
+    const dispose = autorun(() => display.bezierPairSections)
+    const pairs = display.bezierPairsByGroup
+    expect(pairs.get('')).toHaveLength(1)
+
+    display.setCoverageHeight(display.coverageHeight + 20)
+    display.setColorBy({ type: 'strand' })
+    expect(display.bezierPairsByGroup).toBe(pairs)
+    dispose()
+  })
+
+  test("the key names the straight lines' colour as well as the curves'", () => {
+    const display = connectorDisplay()
+    display.setShowLegend(true)
+    expect([...display.connectionColorTypes].sort()).toEqual([
+      LINKED_READ_COLOR_PAIR_LR,
+      LINKED_READ_COLOR_PAIR_RL,
+    ])
   })
 })
 
