@@ -1154,7 +1154,6 @@
         "dedupePlugins",
         "desktopVendoredPluginNames",
         "dropVendoredPlugins",
-        "isCJSPluginDefinition",
         "isESMPluginDefinition",
         "isPluginUrl",
         "isStorePluginDefinition",

@@ -20116,7 +20116,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     },
     "PluginDefinition": {
       "title": "PluginDefinition",
-      "description": "A plugin to load: its name plus a \`url\`/\`umdUrl\`/\`esmUrl\`/\`cjsUrl\`, or \`umdLoc\`/\`esmLoc\`/\`cjsLoc\` for a file relative to the config.",
+      "description": "A plugin to load: its name plus a \`url\`/\`umdUrl\`/\`esmUrl\`, or \`umdLoc\`/\`esmLoc\` for a file relative to the config.",
       "type": "object",
       "properties": {
         "name": {
@@ -20131,16 +20131,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "esmUrl": {
           "type": "string"
         },
-        "cjsUrl": {
-          "type": "string"
-        },
         "umdLoc": {
           "$ref": "#/$defs/FileLocation"
         },
         "esmLoc": {
-          "$ref": "#/$defs/FileLocation"
-        },
-        "cjsLoc": {
           "$ref": "#/$defs/FileLocation"
         }
       },
