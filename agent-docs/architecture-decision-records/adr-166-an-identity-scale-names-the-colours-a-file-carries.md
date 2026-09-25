@@ -9,7 +9,7 @@ summary: "FeatureColor takes `scale: 'identity'`: each feature paints the colour
 
 Accepted (2026-09-24), Colin's answer to the question
 [identity_coloring](../handoffs/identity_coloring.md) left open. Amends
-[ADR-163](adr-163-the-feature-colours-scale-resolves-on-the-main-thread.md),
+[ADR-167](adr-167-the-feature-colours-scale-resolves-on-the-main-thread.md),
 which kept the multi-row display's `legend` slot for a file's own `itemRgb`
 relabelled and called that, in grammar terms, an identity scale with labels.
 
@@ -20,7 +20,7 @@ the C-GIAB haplotype track all paint colours the data already carries. The
 multi-row display keyed them through `legend`, a hand-typed list of
 `{ label, color }` beside the colour object: a second spelling of what
 `domain` and `labels` spell on every other scale. The canvas feature display
-had lost its own `legend` in ADR-163, so a BED9 on it had no way to name its
+had lost its own `legend` in ADR-167, so a BED9 on it had no way to name its
 colours at all.
 
 ## Decision

@@ -88,7 +88,8 @@ one.
 | a log axis | `scale_y_log10()` | `"y": {"scale": {"type": "log"}}` | `"scales": {"y": {"type": "log"}}` |
 | a log-like axis through zero | `scale_y_continuous(transform = "pseudo_log")` | `"y": {"scale": {"type": "symlog", "constant"}}` | `"scales": {"y": {"type": "symlog", "symlogConstant"}}` |
 | fixed axis ends | `coord_cartesian(ylim)` | `"scale": {"domain": [lo, hi]}` | `domainMin` and `domainMax` on `scales.y` |
-| one axis over several plots | `facet_*(scales = "fixed")` | `"resolve": {"scale": {"y": "shared"}}` | `scales.y.autoscaleGroup`, across tracks |
+| one axis over a faceted plot | `facet_*(scales = "fixed")` | the default | always: every section and row reads the display's one `scales.y` |
+| one axis over several tracks | — | `"resolve": {"scale": {"y": "shared"}}` on a concatenation | `scales.y.autoscaleGroup` |
 | an axis caption | `labs(y = "…")` | `"axis": {"title"}` | `scales.y.title` |
 | a key heading | `labs(fill = "…")` | `"legend": {"title"}` | `title` on the colour |
 | a horizontal line at a value | `geom_hline(yintercept)` | `"mark": "rule"` with a `datum` | `scales.y.rules` |

@@ -8,7 +8,7 @@ summary: "FeatureColor's scales are `none | categorical | threshold`, so a featu
 ## Status
 
 Accepted (2026-09-21), amended by
-[ADR-163](adr-163-the-feature-colours-scale-resolves-on-the-main-thread.md),
+[ADR-167](adr-167-the-feature-colours-scale-resolves-on-the-main-thread.md),
 which moves the scale to the main thread and adds `linear` and `log`. Extends
 [ADR-153](adr-153-every-display-resolves-its-colour-through-one-function.md)'s
 resolver to a second scale on the canvas feature and multi-way gene colours,
@@ -90,4 +90,4 @@ that is not one colour per interval surface there.
 - **`linear` and `log` on this display.** An unpinned ramp needs its domain
   unioned across the loaded regions, which the quantitative displays hold as a
   uniform; this display packed finished colours in the worker and had none.
-  Reversed by ADR-163, once the main thread held the scale.
+  Reversed by ADR-167, once the main thread held the scale.

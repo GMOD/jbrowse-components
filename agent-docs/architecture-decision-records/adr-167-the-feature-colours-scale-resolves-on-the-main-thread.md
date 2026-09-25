@@ -3,7 +3,7 @@ status: Accepted
 summary: "The canvas feature display's worker ships what a colour scale reads — the colour field's distinct values per region as text, and each box's one-based index into them (`rectColorValues`) — and the main-thread encode paints them through the colour object, as it already paints theme classes. Only `color.value` and `color.field` reach the worker, so a recolour of a named field (its scale, domain, range, a pin, a switch to Default and back) re-encodes what is loaded instead of refetching it, as the alignments read fill has since ADR-148. With the domain the main thread's, FeatureColor takes `linear` and `log`: an open end follows the loaded values, the ramp is core's `continuousColorScale` the mark encoder paints through, `score` paints a ramp while `scale` is unset, and the key is a gradient. FeatureColor also takes `labels` and `title`, so the key names what the colour means and the display's hand-typed `legend` slot goes. The multi-way gene colour, which paints on its own path, becomes `MultiWayGeneColor` with the discrete scales. Amends ADR-156's refusal of `linear` and `log`"
 ---
 
-# ADR-163: The feature colour's scale resolves on the main thread
+# ADR-167: The feature colour's scale resolves on the main thread
 
 ## Status
 

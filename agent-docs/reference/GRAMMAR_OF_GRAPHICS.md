@@ -227,10 +227,12 @@ The seams, named honestly:
   first and a shape over the second, so hue carries r² alone and the index is
   the diamond in the colour of r² 1.
 - **The colour objects are one shape, and a preset is a field.** FeatureColor,
-  ManhattanColor, RibbonColor, MarkColor, AlignmentsColor and VariantCellColor
-  are each
-  `{ value, field, scale, domain, domainMin, domainMax, domainMid, range,
-  scheme, reverse }`, spelt as Vega-Lite spells a scale and as `scales.y`
+  ManhattanColor, RibbonColor, MarkColor, AlignmentsColor, VariantCellColor,
+  WiggleColor and MultiWayGeneColor each take `{ value, field, scale }` and
+  whichever of `domain`, `range`, `domainMin`, `domainMax`, `domainMid`,
+  `scheme`, `reverse`, `labels` and `title` the scales they declare read —
+  FeatureColor and MarkColor all of them, RibbonColor and SyntenyColor only
+  `domain` — spelt as Vega-Lite spells a scale and as `scales.y`
   already did, from display-kit's pieces (`colorChannelSlots`,
   `colorDomainSlot`, `colorRangeSlot`, `colorRampSlots`,
   `colorDomainEndsSlots`), `scale` drawn from
@@ -323,7 +325,7 @@ The seams, named honestly:
   distinct field values and an index per box, and paints every scale —
   categorical, threshold and ramp — in its main-thread encode, the ramp over
   the extent of every loaded region
-  ([ADR-163](../architecture-decision-records/adr-163-the-feature-colours-scale-resolves-on-the-main-thread.md)),
+  ([ADR-167](../architecture-decision-records/adr-167-the-feature-colours-scale-resolves-on-the-main-thread.md)),
   so a recolour there refetches nothing. What
   remains is the dataset beyond the view: a value in no loaded region has
   never been seen, so the domain still grows as the user pans. That is the
@@ -355,7 +357,8 @@ The seams, named honestly:
   `swatches` hook), with the reference and no-call rows after whatever the
   gate kept; synteny maps its own resolved table, already in its channel's
   order, and places the rows through the same `legendSpecOf`. The multiway
-  lane glyphs' `color` is the `FeatureColor` object, so a field there hands
+  lane glyphs' `color` is `MultiWayGeneColor`, FeatureColor's discrete
+  scales without a ramp or identity, so a field there hands
   the union the values its packer filed each mark under (`laneFieldKey`),
   `cluster` among them. The multi-row feature display's `color` is the
   FeatureColor object too: a field there keys through the same derivation
@@ -430,15 +433,14 @@ orders and names a value through `categoricalField` (below), and
 `MAX_GROUPS` by the key set alone, in natural order. **A domain orders and
 never decides which sections exist**, so no worker request carries one and a
 reorder refetches nothing: the listed values stack first, the rest follow
-sorted, and a listed value the data lacks takes no section. The multi-row and
-multiway synteny displays' `domain` slots, every display's `facet.domain`
+sorted, and a listed value the data lacks takes no section. The multiway
+synteny display's `domain` slot, every row display's `rows.domain`, every
+display's `facet.domain`
 and the colour and shape channels' legend order are that one word and rule
 (`groupKeyComparator`); a key over the facet's own field lists its rows in the
-sections' order. Three of the four tree-sidebar displays (MAF and the two
-multi-sample variant ones) share the word as a `domain` row-order slot, read as
-`rowDomain` and applied under `layout`; the quantitative display takes its row
-order off `rows.domain` instead, the object that also holds its labels, tree
-and focus, because its own `domain` is the score axis (ADR-157). Their unlisted
+sections' order. The four tree-sidebar displays take their row order off
+`rows.domain`, read as `rowDomain`, the object that also holds their labels,
+tree and focus (ADR-157). Their unlisted
 rows keep the order they arrived in (`orderRowsByDomain`), since a phylogeny's
 leaf order and a file's sample order mean something, and where a tree describes
 the rows the domain rotates it as far as the topology allows
