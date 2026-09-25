@@ -1,3 +1,7 @@
+---
+name: json-addtrack
+description: Bugs in the spec-recipe add-track dialog output: literal markdown in notes, launch-dialog settings emitted after "Click Launch", and related recipe issues.
+---
 
 Bugs
 

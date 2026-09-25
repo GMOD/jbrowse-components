@@ -1,3 +1,8 @@
+---
+name: inversion
+description: Proposal to read an inversion straight by splitting the mate row at the breakpoints and reversing only the inverted span.
+---
+
 the inverted span of the mate row.
 
 What that looks like. The LGV already supports a region list with mixed orientation, and the scalebar's per-region "Reverse region" item produces one. So "read this inversion straight" becomes: split the mate row's region at the inversion's two breakpoints, and reverse only the middle piece.

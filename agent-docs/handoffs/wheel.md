@@ -1,3 +1,8 @@
+---
+name: wheel
+description: Report from the wheel-zoom fix: eased notches, the full requested zoom at any spin speed, and a 1.8x Ctrl+wheel notch.
+---
+
 test mouse wheel performance
 
 It's landed on local main as three commits: the wheel-zoom fix plus the two doc updates in INTERACTION_PERF.md and GPU_CONTEXT_BUDGET.md. It fast-forwarded cleanly, and I removed the worktree and branch. Nothing is pushed yet.

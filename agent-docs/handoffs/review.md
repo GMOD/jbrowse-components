@@ -1,3 +1,8 @@
+---
+name: review
+description: Brief for reviewing the link-mark round: the size channel, the x2 mate form, the mate transform step and render-core linkMark.
+---
+
 Please review previous agents work:
   Landed on main and cleaned up. Four commits, de0a383e01 through c860b6e68f, and the primary checkout is clean.
 

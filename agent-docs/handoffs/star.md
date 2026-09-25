@@ -1,3 +1,8 @@
+---
+name: star
+description: The gene-page link to the multi-way synteny star is on staging; the genomes_synteny tutorial section is planned but not written.
+---
+
 The gene-page link to the multi-way star is live on staging, but I haven't written the tutorial yet: I stopped to save tokens.
 
 - Staging: deployed from ada with ./run.sh --staging --upload-only. The "☰ Multi-way synteny lanes" link is on staging.genomes.jbrowse.org's gene pages; ./deploy.sh --staging --rollback undoes it. I checked only that the site answers. I haven't clicked the link on staging yet; my earlier end-to-end test ran against a local copy of the site.

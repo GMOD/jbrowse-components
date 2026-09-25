@@ -1,3 +1,8 @@
+---
+name: restack
+description: Report from the video and tutorial follow-up batch: the re-filmed tours, the retired gallery thumbnails, and the one video whose story still needs rewriting.
+---
+
 The follow-up batch has landed on local main (d89697aa92, f1d801ca69, e34a70f4ab). Two items came out differently from the plan: one video still needs its story rewritten, and the gallery thumbnails were retired rather than regenerated.
 
 Videos:

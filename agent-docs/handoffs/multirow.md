@@ -1,3 +1,7 @@
+---
+name: multirow
+description: Report from the MAF GPU port, the shared colour-key rule and GPU row table stage 1, with the next steps in order.
+---
 
 All three branches are on local main (not pushed), and their worktrees and branches are removed.
 

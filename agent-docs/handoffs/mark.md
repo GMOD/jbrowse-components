@@ -19,7 +19,7 @@ Fixes
   - It answers only for multi-source adapters, detected by getMultiSourceFeatureArraysMulti; any other adapter returns [] without scanning its features.
   - discoveredRows unions the adapter's list (label, and colour as labelColor) with the sources found in the features.
   - Pinned: a window where one source is empty keeps the same discoveredRows object and the tree. The work census's initial load gains MarkRowSources 1.
-- Findings 6 and 7 (c51c5deccb, f6ea6addd8):
+- Findings 6 and 7 (`c51c5deccb`, `f6ea6addd8`):
   - Tests added: a new value arriving in a region, the sort-at-column checked against the picture, and collectMarkRowMatrix / MarkGetRowSources tests.
   - The tooltip reads sources[row].label.
   - rowLabelOffset moved to wiggle-core, with a test, and both displays call it.

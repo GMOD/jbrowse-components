@@ -21,7 +21,10 @@
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import { TOOLBAR_READY, local } from './graph-fixtures.ts'
 
-import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type {
+  ScreenshotSpec,
+  SessionUrlSpec,
+} from '../screenshot-spec-types.ts'
 
 const CONFIG = local('test_data/graphgenomeview/pangenome_nonhuman.json')
 
@@ -207,7 +210,7 @@ function bovineLocusSpec(
   loc: string,
   tracks: Record<string, unknown>[],
   viewportHeight: number,
-): ScreenshotSpec {
+): SessionUrlSpec {
   return {
     mode: 'url',
     name,
