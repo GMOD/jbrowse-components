@@ -1,5 +1,5 @@
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
-import { types } from '@jbrowse/mobx-state-tree'
+import { destroy, types } from '@jbrowse/mobx-state-tree'
 
 import jobsModelFactory from './indexJobsModel.ts'
 
@@ -324,6 +324,54 @@ test('a job naming a since-deleted track is dequeued, not left stuck', async () 
   expect(widget.inState('aborted').map(j => j.name)).toEqual(['job1'])
   expect(session.notifyError).toHaveBeenCalled()
 })
+
+// "Return to start screen", a session swap and quitting all destroy the root a
+// task after detaching it, and detach kills the RPC workers — so a job still
+// running lands in its own catch against a tree that is gone. Every line there
+// reaches for the session, and the getParent hop behind it throws rather than
+// warning, which reached the renderer as an unhandled rejection.
+test.each([
+  [
+    'resolves',
+    (resolve: () => void) => {
+      resolve()
+    },
+  ],
+  [
+    'rejects',
+    (_resolve: () => void, reject: (e: unknown) => void) => {
+      reject(new Error('worker terminated'))
+    },
+  ],
+])(
+  'a run whose tree is destroyed mid-RPC stops rather than throwing (%s)',
+  async (_name, release) => {
+    let settle: (() => void) | undefined
+    const { jobsManager, root, session } = setup({
+      call: jest.fn().mockImplementation(
+        () =>
+          new Promise<void>((resolve, reject) => {
+            settle = () => {
+              release(resolve, reject)
+            }
+          }),
+      ),
+    })
+    jobsManager.queueJob(makeEntry())
+    const running = jobsManager.runJob()
+    // let runIndexingJob reach the RPC call it is now parked on
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+
+    destroy(root)
+    settle!()
+
+    await expect(running).resolves.toBeUndefined()
+    expect(session.notify).not.toHaveBeenCalled()
+    expect(session.notifyError).not.toHaveBeenCalled()
+  },
+)
 
 test('the error notification offers a Retry that re-queues the job', async () => {
   jest.spyOn(console, 'error').mockImplementation(() => {})

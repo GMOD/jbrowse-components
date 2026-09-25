@@ -11,6 +11,7 @@ import {
   addDisposer,
   getParent,
   getSnapshot,
+  isAlive,
   isStateTreeNode,
   types,
 } from '@jbrowse/mobx-state-tree'
@@ -397,6 +398,18 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             progressPct: undefined,
           })
         } catch (e) {
+          // The tree can go while the RPC runs — "Return to start screen", a
+          // session swap, quitting — and everything below reaches for it
+          // through `self.session`, a getParent hop that throws on a dead node
+          // rather than warning. Both halves of the teardown arrive here: the
+          // detach destroys the RPC workers, so a call in flight rejects into
+          // this catch, and one that had already resolved throws into it on the
+          // first read the success branch makes. Unguarded, it reached the
+          // renderer as an unhandled rejection, and the autorun's own catch
+          // reads `self.session` too, so reporting it threw again.
+          if (!isAlive(self)) {
+            return
+          }
           if (self.aborted) {
             session.notify(`Cancelled indexing job: ${entry.name}`, 'info')
           } else {
