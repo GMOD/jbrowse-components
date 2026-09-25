@@ -1,7 +1,8 @@
 import { legendIsReadable } from '../ui/legendSpec.ts'
 import { abgrToCssRgba, cssColorToABGR } from './colorBits.ts'
 
-import type { ColorScale } from '../ui/colorScale.ts'
+import type { CategoricalEntry, CategoricalScale } from '../ui/colorScale.ts'
+import type { LegendSwatch } from '../ui/legendSpec.ts'
 import type { CategoricalField } from './categoricalField.ts'
 
 // One (row, value, color) combination a worker found while packing its
@@ -106,6 +107,24 @@ export function unionLegendCandidates<T>(
 }
 
 /**
+ * A source whose every entry is a candidate its one row paints: the entries of
+ * a scale table `encodeFeatures` resolved, or any walk that met each value in
+ * one color.
+ */
+export function everyRowPaints(
+  entries: readonly { value: string; color: number }[],
+): LegendCandidateSource {
+  return {
+    candidates: entries.map(({ value, color }) => ({
+      rowIndex: 0,
+      value,
+      color,
+    })),
+    rowPaintsCandidateColor: () => true,
+  }
+}
+
+/**
  * The one categorical key a color channel derives from what a worker painted:
  * the union above over the loaded regions, each row a painted color naming
  * every value in it through `field` and ordered by it, and nothing where the
@@ -113,7 +132,8 @@ export function unionLegendCandidates<T>(
  * candidates its packer recorded; one resolved by `encodeFeatures` hands the
  * entries of the scale tables that came back. Either way the key lists what
  * the painting holds, and a `closed` field's domain besides once anything
- * painted.
+ * painted. `title` heads it in place of the field's name, `''` heading
+ * nothing, and `swatches` draws a row as something other than its color's box.
  */
 export function derivedColorScale<T>(
   regions: Iterable<T>,
@@ -121,9 +141,17 @@ export function derivedColorScale<T>(
   {
     id,
     field,
+    title = field.field,
     maxItems,
-  }: { id: string; field: CategoricalField; maxItems?: number },
-): ColorScale[] {
+    swatches,
+  }: {
+    id: string
+    field: CategoricalField
+    title?: string
+    maxItems?: number
+    swatches?: (row: CategoricalEntry & { color: string }) => LegendSwatch[]
+  },
+): CategoricalScale[] {
   const painted = unionLegendCandidates(regions, resolve).map(
     ({ values, color }) => {
       const sorted = values.toSorted(field.compare)
@@ -156,9 +184,11 @@ export function derivedColorScale<T>(
         {
           kind: 'categorical',
           id,
-          title: field.field,
+          ...(title ? { title } : {}),
           ...(field.domain.length > 0 ? { domain: field.domain } : {}),
-          entries,
+          entries: swatches
+            ? entries.map(row => ({ ...row, swatches: swatches(row) }))
+            : entries,
         },
       ]
     : []

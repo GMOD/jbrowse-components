@@ -234,7 +234,7 @@ export default function SvgColorLegend({
               <g opacity={entry.hidden ? 0.35 : 1}>
                 {entrySwatches(entry).map((swatch, i) => (
                   <LegendSwatchGlyph
-                    key={swatch.color}
+                    key={`${swatch.shape}-${swatch.color}`}
                     swatch={swatch}
                     size={LEGEND_SWATCH}
                     x={SWATCH_LEFT + i * (LEGEND_SWATCH + SWATCH_GAP)}

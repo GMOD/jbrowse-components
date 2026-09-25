@@ -4,6 +4,7 @@ import {
   MAX_LEGEND_ENTRIES,
   createLegendCandidateCollector,
   derivedColorScale,
+  everyRowPaints,
   unionLegendCandidates,
 } from './legendCandidates.ts'
 import { thresholdField } from './thresholdScale.ts'
@@ -165,7 +166,7 @@ describe('derivedColorScale', () => {
     derivedColorScale([painted], allRowsPaint, {
       id: 'color',
       field: categoricalField('state', { domain }),
-    }).flatMap(scale => (scale.kind === 'categorical' ? scale.entries : []))
+    }).flatMap(scale => scale.entries)
 
   test('orders the values and leaves the no-value row last', () => {
     expect(values().map(e => e.value)).toEqual(['Quies', 'TssA', ''])
@@ -206,7 +207,7 @@ describe('derivedColorScale', () => {
       derivedColorScale([shared], allRowsPaint, {
         id: 'color',
         field: categoricalField('state', { domain: ['Quies', 'Enh'] }),
-      }).flatMap(scale => (scale.kind === 'categorical' ? scale.entries : [])),
+      }).flatMap(scale => scale.entries),
     ).toEqual([
       {
         value: 'Quies',
@@ -236,7 +237,7 @@ describe('derivedColorScale', () => {
       derivedColorScale([drawn], allRowsPaint, {
         id: 'color',
         field: bins,
-      }).flatMap(scale => (scale.kind === 'categorical' ? scale.entries : [])),
+      }).flatMap(scale => scale.entries),
     ).toEqual([
       { value: '< 1', label: '< 1', color: 'rgba(0,0,255,1)' },
       { value: '1 – 2', label: '1 – 2', color: 'rgba(0,255,0,1)' },
@@ -272,5 +273,50 @@ describe('derivedColorScale', () => {
         field: categoricalField('state'),
       }),
     ).toEqual([])
+  })
+
+  test('a title replaces the field name, and an empty one heads nothing', () => {
+    const titled = (title: string) =>
+      derivedColorScale([painted], allRowsPaint, {
+        id: 'color',
+        field: categoricalField('state'),
+        title,
+      })[0]
+    expect(titled('Chromatin state')?.title).toBe('Chromatin state')
+    expect(titled('')).not.toHaveProperty('title')
+  })
+
+  test('draws each row, painted or a closed bin, through its swatches', () => {
+    const [scale] = derivedColorScale(
+      [collect([[0, '≥ 2', RED]])],
+      allRowsPaint,
+      {
+        id: 'color',
+        field: thresholdField('score', {
+          domain: ['2'],
+          range: ['#0000ff', '#ff0000'],
+        }),
+        swatches: ({ value, color }) => [
+          { color, shape: 'diamond' },
+          { color: value },
+        ],
+      },
+    )
+    expect(scale?.entries.map(e => e.swatches)).toEqual([
+      [{ color: 'rgba(0,0,255,1)', shape: 'diamond' }, { color: '< 2' }],
+      [{ color: 'rgba(255,0,0,1)', shape: 'diamond' }, { color: '≥ 2' }],
+    ])
+  })
+
+  test('every entry of a resolved table is a candidate its row paints', () => {
+    const source = everyRowPaints([
+      { value: 'TssA', color: RED },
+      { value: 'Quies', color: GREEN },
+    ])
+    expect(source.candidates).toEqual([
+      { rowIndex: 0, value: 'TssA', color: RED },
+      { rowIndex: 0, value: 'Quies', color: GREEN },
+    ])
+    expect(source.rowPaintsCandidateColor(0)).toBe(true)
   })
 })

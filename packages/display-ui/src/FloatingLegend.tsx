@@ -303,7 +303,11 @@ const LegendItemList = observer(function LegendItemList({
               style={{ minWidth: columns * SWATCH + (columns - 1) * 2 }}
             >
               {legendSwatches(item).map(swatch => (
-                <svg key={swatch.color} width={SWATCH} height={SWATCH}>
+                <svg
+                  key={`${swatch.shape}-${swatch.color}`}
+                  width={SWATCH}
+                  height={SWATCH}
+                >
                   <LegendSwatchGlyph swatch={swatch} size={SWATCH} />
                 </svg>
               ))}

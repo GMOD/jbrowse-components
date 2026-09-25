@@ -14,6 +14,7 @@ import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import {
   MAX_LEGEND_ENTRIES,
   derivedColorScale,
+  everyRowPaints,
 } from '@jbrowse/core/util/legendCandidates'
 import { withHitIndex } from '@jbrowse/core/util/markEncoding'
 import { selectEncodedFeature } from '@jbrowse/core/util/selectEncodedFeature'
@@ -529,13 +530,10 @@ export function stateModelFactory(
           if (scale === 'categorical') {
             return derivedColorScale(
               self.rpcDataMap.values(),
-              ({ scale }) => ({
-                candidates:
-                  scale?.kind === 'categorical'
-                    ? scale.entries.map(entry => ({ rowIndex: 0, ...entry }))
-                    : [],
-                rowPaintsCandidateColor: () => true,
-              }),
+              ({ scale }) =>
+                everyRowPaints(
+                  scale?.kind === 'categorical' ? scale.entries : [],
+                ),
               {
                 id: 'field',
                 field: categoricalField(field, { domain, range }),

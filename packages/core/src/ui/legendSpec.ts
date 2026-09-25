@@ -38,7 +38,8 @@ export interface ColorLegendEntry {
 // in different colors (a pale pileup fill and the saturated stroke its arc
 // needs to stay visible). Listing that twice repeats the label and listing it
 // once drops a color the display really painted, so the row keeps both boxes.
-// Set it OR `color`, not both — `legendSwatches` prefers it.
+// Where both are set, `swatches` is what draws and `color` names the row's
+// color for the readability gate and a hide toggle.
 export interface LegendItem {
   // the datum the row classifies, handed back to a display whose rows act
   // (`FloatingLegend`'s `onItemClick`); absent for a note row
