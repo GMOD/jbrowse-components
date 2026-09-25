@@ -3,7 +3,6 @@ import { emptyArcsUploadData } from '../../features/arcs/types.ts'
 import {
   ARC_APEX_FRACTION,
   ARC_FAR_SCREEN_WIDTHS,
-  ARC_HEIGHT_MARGIN,
 } from '../../shaders/slang/arc.consts.generated.ts'
 import { resolveArcBandHover } from './arcHitTest.ts'
 
@@ -112,11 +111,11 @@ test('a lane that reserved no arc band answers nothing', () => {
   ).toBeUndefined()
 })
 
-// `arcIsFar` is `2 * halfWidth > canvasW`, and `canvasW` is the BLOCK's clamped
-// width (`scissorW`) on both renderers, not the canvas's. Feeding the hit test
-// the full canvas width put it on the other side of that test from the paint
-// for every block narrower than the canvas — which is every multi-region view.
-describe('the far/near split is taken against the same width the renderers use', () => {
+// `arcIsFar` is `2 * halfWidth > viewWidthPx`, and it is the VIEW's width on
+// every consumer — ADR-163's rule for the link mark, and the band's since. Read
+// against the BLOCK, the threshold moves as a region edge scrolls on screen, so
+// a settled arc is repainted as a different mark partway through a pan.
+describe('the far/near split is taken against the view, not the block', () => {
   // A 400px block on a 1000px canvas, still 1bp per px. The mate is off the
   // block's right edge, which is exactly the case the projection is built to
   // extrapolate through.
@@ -142,29 +141,32 @@ describe('the far/near split is taken against the same width the renderers use',
     arcX2: new Uint32Array([1100 + SPAN_PX]),
   }
   // 1bp per px with the block's left edge at bp 1000, so the near foot lands at
-  // 100 and the circle's centre a half-span to its right.
+  // 100 and the curve's centre a half-span to its right.
   const MID_X = 100 + HALF
+  // Both probes sit 50px inside the block, where the two readings are hundreds
+  // of px apart vertically — the whole point being that they are different
+  // marks rather than a near miss.
+  const PROBE_X = 150
 
-  // What the renderers paint: a circle of radius `HALF` centred on the span's
-  // midpoint at the anchor line, whose apex is far above a 100px band — so only
-  // two near-vertical legs are inside it. 20px up the left leg:
-  const LEG = { x: MID_X - Math.sqrt(HALF * HALF - 20 * 20), y: 100 - 20 }
-
-  test('a leg of the painted semicircle answers', () => {
-    expect(
-      resolveArcBandHover(LEG.x, LEG.y, WIDE_PAIR, NARROW)?.hit.index,
-    ).toBe(0)
+  test('a point on the painted dome answers', () => {
+    // The near reading: an ellipse on the pair's half-span, rising by the
+    // band's own Y rule. 40bp of yBp is 40px of rise at this zoom (`APEX`).
+    const ry = ARC_APEX_FRACTION * 40
+    const dx = (MID_X - PROBE_X) / HALF
+    const y = 100 - ry * Math.sqrt(1 - dx * dx)
+    expect(resolveArcBandHover(PROBE_X, y, WIDE_PAIR, NARROW)?.hit.index).toBe(
+      0,
+    )
   })
 
-  test('and the dome the canvas-width reading would have drawn does not', () => {
-    // Read as a near pair the same arc is an ellipse peaking at the midpoint,
-    // which is where the hover used to answer. Nothing is painted there — the
-    // real curve is hundreds of px above the band at that x — so it must miss.
-    const availH = 100 - ARC_HEIGHT_MARGIN
+  test('and the semicircle leg the block-width reading would have painted does not', () => {
+    // Read as a far pair the same arc is a circle of radius `HALF` centred on
+    // the midpoint, whose leg passes through this block 20px above the anchor.
+    // The real curve is a few px off the anchor line there, so it must miss.
     expect(
       resolveArcBandHover(
-        MID_X,
-        100 - ARC_APEX_FRACTION * availH,
+        MID_X - Math.sqrt(HALF * HALF - 20 * 20),
+        100 - 20,
         WIDE_PAIR,
         NARROW,
       ),

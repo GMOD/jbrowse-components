@@ -31,23 +31,16 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 /**
  * A section's arc band plus the block clip the band is measured against, on top
  * of the section's render state.
- *
- * `screenWidthPx` is the block's clamped on-screen width — `clip.scissorW`, the
- * same number the shader reads as `canvasW`. It decides the near/far
- * ellipse-vs-circle branch in `arcMark`, so a painter handed the whole track's
- * width instead would measure an ellipse against a painted circle. Both
- * renderers already resolve it before they reach the band; this is where it
- * crosses to the painter, which has no clip of its own.
  */
 export interface ArcMarkState extends RenderState {
   arcBand: ArcBand
-  screenWidthPx: number
 }
 
 /** What both backends draw the band from, resolved once per block per section. */
 interface ArcBandParams {
   band: ArcBand
-  screenWidthPx: number
+  /** `arcRadiiPx`' near/far threshold — see `ArcBandFrame`. */
+  viewWidthPx: number
   arcsYDomainBp: number | undefined
   /** The configured `readConnectionsLineWidth`, unfloored — see `DrawArcsOpts`. */
   lineWidth: number
@@ -57,7 +50,7 @@ interface ArcBandParams {
 function arcBandParams(state: ArcMarkState): ArcBandParams {
   return {
     band: state.arcBand,
-    screenWidthPx: state.screenWidthPx,
+    viewWidthPx: state.canvasWidth,
     arcsYDomainBp: state.arcsYDomainBp,
     lineWidth: state.readConnectionsLineWidth,
     colors: state.colors,
@@ -83,6 +76,7 @@ function writeArcMarkUniforms(
     arcAnchorPx: arcAnchorY(p.band.top, p.band.height, p.band.down),
     arcBandH: p.band.height,
     blockWidth: block.screenEndPx - block.screenStartPx,
+    viewWidthPx: p.viewWidthPx,
     lineWidthPx: p.lineWidth,
     down: p.band.down,
     arcsYDomainBp: p.arcsYDomainBp,
@@ -126,7 +120,7 @@ function arcLayerShape(
           arcsTop: p.band.top,
           arcsH: p.band.height,
           pairedArcsDown: p.band.down,
-          screenWidthPx: p.screenWidthPx,
+          viewWidthPx: p.viewWidthPx,
           arcsYDomainBp: p.arcsYDomainBp,
           lineWidth: p.lineWidth,
           colors: p.colors,

@@ -46,6 +46,12 @@ own:
 
 ## A far pair keeps its direction for three screen widths
 
+**The width is the VIEW's**, on the GPU (`viewWidthPx`, beside the block's own
+`canvasW`), in the Canvas2D painter and in the hit test alike — ADR-163's rule
+for the link mark. Against a BLOCK the threshold moves as a region edge scrolls
+on screen, so a settled arc is repainted as a different mark partway through a
+pan, and only near a chromosome end or in a multi-region view.
+
 **`ARC_FAR_SCREEN_WIDTHS` is 3, not the 1 that would mean "both endpoints fit on
 screen".** Past it a paired arc's ellipse becomes a true circle and the band clips
 it to near-vertical legs at each real endpoint — which throws the pair's DIRECTION

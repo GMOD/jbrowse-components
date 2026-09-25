@@ -29,6 +29,8 @@ export interface ArcBandUniformValues {
   arcBandH: number
   /** The block's own px width, which carries a foot extrapolated outside it. */
   blockWidth: number
+  /** The whole track's width — `arcRadiiPx`' near/far threshold, not a clip. */
+  viewWidthPx: number
   /** The configured `readConnectionsLineWidth`; raised here to the AA floor. */
   lineWidthPx: number
   down: boolean
@@ -79,6 +81,7 @@ export function writeArcBandUniforms(
     covOffset: v.arcAnchorPx,
     arcBandH: v.arcBandH,
     blockWidth: v.blockWidth,
+    viewWidthPx: v.viewWidthPx,
     // A near-horizontal arc thinner than ~1.5 device px has no vertical room to
     // anti-alias and stairsteps. Floor at 1.5 device px (expressed in CSS px via
     // /dpr) so the AA always spans >1px. On HiDPI a 1px CSS line is already 2

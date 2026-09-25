@@ -4,12 +4,12 @@
 // Scalar twins of arc.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
-function arcIsFar(halfWidthPx: number, canvasWidthPx: number): boolean {
-  return ((2.0 * halfWidthPx) > (3.0 * canvasWidthPx))
+function arcIsFar(halfWidthPx: number, viewWidthPx: number): boolean {
+  return ((2.0 * halfWidthPx) > (3.0 * viewWidthPx))
 }
 
-export function arcRadiiPx(halfWidthPx: number, destYPx: number, canvasWidthPx: number): [number, number] {
-  if (arcIsFar(halfWidthPx, canvasWidthPx)) {
+export function arcRadiiPx(halfWidthPx: number, destYPx: number, viewWidthPx: number): [number, number] {
+  if (arcIsFar(halfWidthPx, viewWidthPx)) {
     return [halfWidthPx, halfWidthPx]
   }
   return [halfWidthPx, (0.75 * destYPx)]

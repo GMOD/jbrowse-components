@@ -97,9 +97,9 @@ export interface CrossRegionArcSectionsInput {
   ) => { left: number; right: number } | undefined
   lineWidth: number
   colors: ColorPalette
-  // The WHOLE VIEW's width — see `ComputeCrossRegionArcsOpts`, which says why
-  // this is the one consumer that must not use a block's.
-  screenWidthPx: number
+  // The whole track's width, `arcRadiiPx`' near/far threshold — see
+  // `ArcBandFrame`.
+  viewWidthPx: number
   // Said out loud rather than dropped silently, which is this repo's rule for a
   // cap — but the caller owns the reporting, because this runs inside a computed
   // that re-evaluates on every pan frame.
@@ -125,7 +125,7 @@ export function computeCrossRegionArcSections(
     regionScreenExtent,
     lineWidth,
     colors,
-    screenWidthPx,
+    viewWidthPx,
     onCapped,
   } = input
   return sections.flatMap(sec => {
@@ -155,7 +155,7 @@ export function computeCrossRegionArcSections(
             arcsTop: 0,
             arcsH: sec.arcBandHeight,
             pairedArcsDown: sec.arcDown,
-            screenWidthPx,
+            viewWidthPx,
           },
           regionReversed,
           regionScreenExtent,

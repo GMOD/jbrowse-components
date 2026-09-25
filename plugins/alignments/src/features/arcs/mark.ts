@@ -35,12 +35,13 @@ export interface ArcBandFrame {
   arcsTop: number
   arcsH: number
   pairedArcsDown: boolean
-  // The BLOCK's clamped on-screen width, which is the shader's `canvasW` — both
-  // renderers upload `scissorW` there. It decides the near/far branch below, so
-  // handing the whole track's width instead puts a consumer on a different side
-  // of that test from the paint: an ellipse measured against a painted circle,
-  // which is a different mark rather than a near miss.
-  screenWidthPx: number
+  // The whole track's on-screen width, which the shader carries as
+  // `viewWidthPx`. It decides the near/far branch below, so a consumer on the
+  // other side of that test from the paint measures an ellipse against a
+  // painted circle — a different mark, not a near miss. Measured against a
+  // BLOCK instead, the threshold moves as a region edge scrolls on screen and
+  // a settled arc changes shape partway through a pan (ADR-163).
+  viewWidthPx: number
 }
 
 interface ArcMarkBase {
@@ -226,7 +227,7 @@ export function arcMarkFrom(
     arcsTop,
     arcsH,
     pairedArcsDown,
-    screenWidthPx,
+    viewWidthPx,
   } = frame
   const mid = (sx1 + sx2) / 2
   const anchorY = arcAnchorY(arcsTop, arcsH, pairedArcsDown)
@@ -247,7 +248,7 @@ export function arcMarkFrom(
       markY: arcMarkY(anchorY, destY, pairedArcsDown),
     }
   }
-  const [rx, ry] = arcRadiiPx(Math.abs(sx2 - sx1) / 2, destY, screenWidthPx)
+  const [rx, ry] = arcRadiiPx(Math.abs(sx2 - sx1) / 2, destY, viewWidthPx)
   return {
     kind: 'dome',
     mid,

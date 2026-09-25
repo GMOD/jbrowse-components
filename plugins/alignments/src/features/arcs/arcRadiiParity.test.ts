@@ -15,7 +15,7 @@ import { arcRadiiPx } from '../../shaders/slang/arc.js.generated.ts'
 // The pair below is the retired code, verbatim, kept only long enough for this
 // sweep. Note it does not even look like the shader's: the shader compared
 // `2 * halfWidthPx` against `canvasW`, this compared a full span against a
-// `screenWidthPx` threaded down through two call layers. Both spellings are the
+// `viewWidthPx` threaded down through two call layers. Both spellings are the
 // same rule, which is exactly why comment-syncing them held while nothing
 // checked that it had.
 function retiredRadii(

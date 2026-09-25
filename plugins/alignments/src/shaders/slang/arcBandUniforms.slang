@@ -40,6 +40,12 @@ public struct ArcBandUniforms {
   // The block's own px width, which is what carries a foot extrapolated
   // outside it.
   public float blockWidth;
+  // The width the far test measures a pair against: the whole track's, not this
+  // block's. Distinct from `canvasW`, which is the block's clamped span because
+  // that is the viewport clip space normalizes over. Measured against the block,
+  // a pair flips between dome and semicircle when a region edge crosses the
+  // screen — the same arc, redrawn as a different mark mid-pan. ADR-163.
+  public float viewWidthPx;
   // The stroke-width FLOOR every mark is raised to, an antialiasing property of
   // the display; each mark's own width rides on its instance.
   public float lineWidthPx;
@@ -83,8 +89,9 @@ public struct ArcBandUniforms {
   // gone; a second table holding the identical nine colours is only somewhere
   // for them to drift.
   //
-  // Last in the block on purpose: the sixteen scalars above pack into 64
-  // bytes, exactly where std140's 16-byte array alignment wants it.
+  // Last in the block on purpose: std140 aligns an array element to 16 bytes,
+  // so the pad lands after the seventeen scalars above rather than splitting
+  // them around it.
   public float4 arcColor[ARC_COLOR_SLOTS];
 };
 

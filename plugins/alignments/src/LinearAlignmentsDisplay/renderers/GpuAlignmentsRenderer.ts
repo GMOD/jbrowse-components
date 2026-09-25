@@ -534,7 +534,7 @@ export class GpuAlignmentsRenderer
         block,
         clip,
         region.arcPack,
-        { ...state, arcBand: band, screenWidthPx: clip.scissorW },
+        { ...state, arcBand: band },
         regionKey,
       )
     }

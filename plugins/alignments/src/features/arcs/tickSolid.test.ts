@@ -51,7 +51,7 @@ const STATE = makeTestRenderState({
 const BAND = {
   ...STATE,
   arcBand: { top: 0, height: 100, down: true },
-  screenWidthPx: 800,
+  viewWidthPx: 800,
 }
 
 function tick(bp: number, support = 1): ComputedLine {

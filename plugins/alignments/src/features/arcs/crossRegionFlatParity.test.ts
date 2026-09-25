@@ -108,7 +108,6 @@ function paint(shapeType: number) {
       readConnectionsLineWidth: 1,
     }),
     arcBand: { top: 0, height: ARCS_H, down: false },
-    screenWidthPx: BLOCK_WIDTH,
   })
   return { strokes, fills }
 }
@@ -133,7 +132,7 @@ function overlay(shapeType: number) {
       arcsTop: 0,
       arcsH: ARCS_H,
       pairedArcsDown: false,
-      screenWidthPx: BLOCK_WIDTH,
+      viewWidthPx: BLOCK_WIDTH,
     },
     regionReversed: () => false,
     regionScreenExtent: () => undefined,

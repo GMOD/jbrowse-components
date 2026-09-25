@@ -63,7 +63,7 @@ export function arcDrawOpts({
   arcsTop,
   arcsH,
   pairedArcsDown,
-  screenWidthPx,
+  viewWidthPx,
   arcsYDomainBp,
   lineWidth,
   colors,
@@ -72,7 +72,7 @@ export function arcDrawOpts({
   arcsTop: number
   arcsH: number
   pairedArcsDown: boolean
-  screenWidthPx: number
+  viewWidthPx: number
   arcsYDomainBp: number | undefined
   lineWidth: number
   colors: ColorPalette
@@ -89,7 +89,7 @@ export function arcDrawOpts({
     arcsTop,
     arcsH,
     pairedArcsDown,
-    screenWidthPx,
+    viewWidthPx,
     lineWidth,
     cssPalette: buildArcColorPalette(colors).map(c => rgb255(c)),
     flatLineCss: rgba255(colors.colorFlatConnector, ARC_FLAT_ALPHA),

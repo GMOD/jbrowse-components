@@ -38,7 +38,7 @@ const BAND: Omit<ArcBandFrame, 'bpToScreenX'> = {
   arcsTop: 0,
   arcsH: 40,
   pairedArcsDown: false,
-  screenWidthPx: VIEW_W,
+  viewWidthPx: VIEW_W,
 }
 
 function block(panPx: number, reversed: boolean): BpRegionBounds {

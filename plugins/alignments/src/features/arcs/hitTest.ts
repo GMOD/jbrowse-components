@@ -106,7 +106,7 @@ function arcLineHitAt(data: ArcsUploadData, i: number): ArcLineHitResult {
 // The band frame every mark is resolved into, plus the one thing only the hit
 // test spends: the configured stroke width, which is how wide the target is. It
 // was a second declaration of the same seven fields, which is what let the frame
-// grow `screenWidthPx` on one side and not the other — the bug the field's own
+// grow `viewWidthPx` on one side and not the other — the bug the field's own
 // comment in `mark.ts` describes.
 export interface ArcHitOptions extends ArcBandFrame {
   lineWidth: number

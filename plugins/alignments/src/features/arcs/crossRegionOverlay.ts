@@ -145,13 +145,6 @@ export interface ComputeCrossRegionArcsOpts {
   ) => number | undefined
   // The band, minus the projection the frame's own `bpToScreenX` would have
   // supplied — that is the field this overlay replaces.
-  //
-  // `screenWidthPx` is the WHOLE VIEW's here, not a block's. In the per-region
-  // passes it must be the block's, because it decides `arcRadiiPx`' near/far
-  // branch and a consumer on the other side of that test from the paint is
-  // measuring a different mark. There is no other paint to agree with here:
-  // this overlay IS the paint for these arcs, and the width they are drawn
-  // across is the view's.
   frame: Omit<ArcBandFrame, 'bpToScreenX'>
   // Whether a displayed region draws right-to-left, which mirrors a foot's
   // genomic direction into a screen one. A view-level property in practice —

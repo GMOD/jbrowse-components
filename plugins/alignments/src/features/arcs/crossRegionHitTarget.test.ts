@@ -45,7 +45,7 @@ function draw(arcs: CrossRegionArc[], lineWidth: number) {
       arcsTop: 0,
       arcsH: 100,
       pairedArcsDown: false,
-      screenWidthPx: 800,
+      viewWidthPx: 800,
     },
     regionReversed: () => false,
     regionScreenExtent: () => undefined,

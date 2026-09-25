@@ -3012,7 +3012,7 @@ export default function stateModelFactory(
             regionScreenExtent: i => extentByRegion[i],
             lineWidth: self.readConnectionsLineWidth,
             colors,
-            screenWidthPx: view.width,
+            viewWidthPx: self.canvasWidthPx,
             // Once per NUMBER, not once per evaluation, since this getter
             // re-runs on every pan frame — see `reportArcCap`.
             onCapped: (groupKey, dropped, kept) => {

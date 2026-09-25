@@ -88,7 +88,7 @@ function arcBandClip(scale: ArcBandScale): ArcBandClip {
   return {
     x: scale.clipLeft,
     y: scale.arcsTop,
-    width: scale.screenWidthPx,
+    width: scale.clipWidth,
     height: scale.arcsH,
   }
 }
@@ -135,11 +135,12 @@ export interface ArcHighlight {
 }
 
 // The block's own clamped screen span, carried alongside the hit-test frame
-// because every consumer that draws over the band has to clip to it. Its WIDTH
-// is already `ArcHitOptions.screenWidthPx` — the two are one number, the
-// renderers' `scissorW` — so only the left edge is new.
+// because every consumer that draws over the band has to clip to it. Both
+// edges, because the frame's own width is the VIEW's — `arcRadiiPx`' near/far
+// threshold — and the renderers cut this pass at the block's `scissorW`.
 interface ArcBandScale extends ArcHitOptions {
   clipLeft: number
+  clipWidth: number
 }
 
 // The screen-space frame one section's arc band draws in: the bp→x projection,
@@ -154,24 +155,13 @@ function arcBandScreenScale(opts: ArcHitBandOptions): ArcBandScale | undefined {
   if (!(bpPerPx > 0)) {
     return undefined
   }
-  // The shader's `canvasW`, and it is the BLOCK's clamped width, not the
-  // canvas's. Both renderers upload `scissorW` there — GPU `f[U.canvasW] =
-  // scissorW`, Canvas2D `drawArcs(…, scissorW)` — and `arcIsFar` is
-  // `2 * halfWidth > canvasW`, the test that decides whether a pair draws as a
-  // dome or degenerates to a semicircle showing two near-vertical legs.
-  //
-  // Handing the full track width here instead put the hit test on a different
-  // side of that test from the paint whenever a block is narrower than the
-  // canvas — every multi-region view, and any region partly scrolled off. The
-  // draw flipped to the semicircle first, and until the hit test caught up it
-  // was measuring an ellipse dome (`ry = 0.75 * arcH`, inside the band) against
-  // a painted circle of radius `halfWidth` (apex far above it): not a near
-  // miss, a different curve, so the hover went dead across that whole zoom
-  // window rather than drifting by a pixel.
-  //
-  // `clampBlockScissor` is the renderers' own helper rather than a third
-  // spelling of floor/ceil/clamp, because that is the shape this bug already
-  // took once.
+  // The rect both renderers cut this pass to. `clampBlockScissor` is their own
+  // helper rather than a third spelling of floor/ceil/clamp, because a hit test
+  // on a different side of a renderer's boundary from the paint is the shape
+  // this file's bugs keep taking — `arcIsFar` was one, and the hover went dead
+  // across a whole zoom window rather than drifting by a pixel. Both sides read
+  // the view's width for that test now, so the scissor is a clip and nothing
+  // else.
   const scissor = clampBlockScissor(
     region.screenStartPx,
     region.screenEndPx,
@@ -196,8 +186,9 @@ function arcBandScreenScale(opts: ArcHitBandOptions): ArcBandScale | undefined {
     arcsH,
     pairedArcsDown: band.arcDown,
     lineWidth,
-    screenWidthPx: scissor.scissorW,
+    viewWidthPx: canvasWidthPx,
     clipLeft: scissor.scissorX,
+    clipWidth: scissor.scissorW,
   }
 }
 

@@ -253,7 +253,6 @@ export function drawAlignmentBlocks(
             paintArcBand(ctx, region.arcs, block, {
               ...sectionState,
               arcBand,
-              screenWidthPx: scissorW,
             })
           })
         }

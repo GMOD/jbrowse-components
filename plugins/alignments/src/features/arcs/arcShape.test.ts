@@ -54,7 +54,7 @@ function domeMark(
   anchorY: number,
   arcH: number,
   down: boolean,
-  screenWidthPx: number,
+  viewWidthPx: number,
 ): ArcDome {
   // The anchor is the band's far edge (`arcAnchorY`), so an up band puts its top
   // at 0 and a down band puts its top AT the anchor. A linear domain equal to
@@ -78,7 +78,7 @@ function domeMark(
       arcsTop: down ? anchorY : 0,
       arcsH,
       pairedArcsDown: down,
-      screenWidthPx,
+      viewWidthPx,
     },
   )
   if (mark.kind !== 'dome') {

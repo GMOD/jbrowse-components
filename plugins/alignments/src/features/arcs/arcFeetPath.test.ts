@@ -16,7 +16,7 @@ const FRAME = {
   arcsTop: 0,
   arcsH: 100,
   pairedArcsDown: false,
-  screenWidthPx: 1000,
+  viewWidthPx: 1000,
   arcsYDomainBp: 1000,
   arcsYLog: false,
 }

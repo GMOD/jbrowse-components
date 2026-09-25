@@ -382,7 +382,7 @@ describe('an unplaced connection resolves to a minimum-width mark on the anchor'
     arcsTop: 100,
     arcsH: 60,
     pairedArcsDown: false,
-    screenWidthPx: 800,
+    viewWidthPx: 800,
   }
 
   test('one square`s worth of bar at the placed foot, on the zero anchor', () => {

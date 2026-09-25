@@ -16,7 +16,7 @@ const FRAME = {
   arcsH: 100,
   pairedArcsDown: false,
   lineWidth: 1,
-  screenWidthPx: 1000,
+  viewWidthPx: 1000,
   // Read-cloud style: an autoscaled |tlen| domain read on a log axis. A yBp far
   // past the domain is the interesting case, because that is where the clamp
   // decides the apex.

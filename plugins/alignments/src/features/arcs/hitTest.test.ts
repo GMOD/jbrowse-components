@@ -21,7 +21,7 @@ const BAND = {
   arcsH: 100,
   pairedArcsDown: false,
   lineWidth: 1,
-  screenWidthPx: 1000,
+  viewWidthPx: 1000,
   // Arc mode: linear Y, and a domain that makes 1bp of yBp exactly 1px of rise
   // (availH = arcsH - ARC_HEIGHT_MARGIN = 92).
   arcsYDomainBp: 92,
@@ -61,12 +61,12 @@ function drawnEllipse(
   sx2: number,
   yBp: number,
   down: boolean,
-  screenWidthPx: number,
+  viewWidthPx: number,
 ) {
   const mark = arcMark(arcsData([{ x1: sx1, x2: sx2, yBp }]), 0, {
     ...BAND,
     pairedArcsDown: down,
-    screenWidthPx,
+    viewWidthPx,
   })
   if (mark.kind !== 'dome') {
     throw new Error('expected a dome')
@@ -91,9 +91,9 @@ function pointsOnDrawnCurve(
   sx2: number,
   yBp: number,
   down = false,
-  screenWidthPx = BAND.screenWidthPx,
+  viewWidthPx = BAND.viewWidthPx,
 ) {
-  const e = drawnEllipse(sx1, sx2, yBp, down, screenWidthPx)
+  const e = drawnEllipse(sx1, sx2, yBp, down, viewWidthPx)
   const [start, end] = down ? [0, Math.PI] : [Math.PI, 2 * Math.PI]
   return [0.05, 0.25, 0.5, 0.75, 0.95].map(f => {
     const t = start + f * (end - start)
@@ -145,7 +145,7 @@ test('a far pair answers on its near-vertical legs', () => {
   // Span wider than the screen: arcRadiiPx degenerates the dome to a circle on
   // the pair's own half-width, so the band clips everything but two legs rising
   // from the real endpoints.
-  const far = { ...BAND, screenWidthPx: 100 }
+  const far = { ...BAND, viewWidthPx: 100 }
   const data = arcsData([{ x1: 200, x2: 600, yBp: 40 }])
   // Only the part of that circle inside the band is drawn — the apex sits 200px
   // up in a 100px band — so the clipped-away samples are not hits and asking for
@@ -165,7 +165,7 @@ test('a far pair answers on its near-vertical legs', () => {
 test('a far pair with a millions-of-px radius still resolves its legs', () => {
   // The case distToWideCirclePx exists for: `length(p - c) - r` cancels away
   // every significant digit at this radius, so a naive distance answers noise.
-  const far = { ...BAND, screenWidthPx: 800 }
+  const far = { ...BAND, viewWidthPx: 800 }
   const data = arcsData([{ x1: 0, x2: 4_000_000, yBp: 40 }])
   // Just outside the left endpoint's leg, a few px up the band.
   expect(hitTestArcBand(0, BAND.arcsH - 20, data, far)?.index).toBe(0)

@@ -181,8 +181,14 @@ struct VsOut {
 // function because the radii below and the fragment's `kind` are two readings of
 // one predicate, and spelling it twice is how they would come to disagree about
 // which shape an arc at exactly the threshold is.
-bool arcIsFar(float halfWidthPx, float canvasWidthPx) {
-  return 2.0 * halfWidthPx > ARC_FAR_SCREEN_WIDTHS * canvasWidthPx;
+//
+// `viewWidthPx` is the VIEW's width. ADR-163 settled that for the link mark —
+// "the view's width, not the block's, so the two blocks holding a pair's feet
+// draw one curve" — and the band is the same argument: a threshold measured
+// against a block moves when a region edge scrolls on screen, which redraws a
+// settled arc as a different mark partway through a pan.
+bool arcIsFar(float halfWidthPx, float viewWidthPx) {
+  return 2.0 * halfWidthPx > ARC_FAR_SCREEN_WIDTHS * viewWidthPx;
 }
 
 // The two radii of the half-ellipse an arc draws, in CSS px: the pair's own
@@ -211,8 +217,8 @@ bool arcIsFar(float halfWidthPx, float canvasWidthPx) {
 // blind spot the survey had") — stated in different units on the two sides, so
 // comment-syncing holds while the arithmetic diverges. A disagreement here is
 // not sub-pixel: an ellipse and a circle are different marks.
-public float2 arcRadiiPx(float halfWidthPx, float destYPx, float canvasWidthPx) {
-  if (arcIsFar(halfWidthPx, canvasWidthPx)) {
+public float2 arcRadiiPx(float halfWidthPx, float destYPx, float viewWidthPx) {
+  if (arcIsFar(halfWidthPx, viewWidthPx)) {
     return float2(halfWidthPx, halfWidthPx);
   }
   return float2(halfWidthPx, ARC_APEX_FRACTION * destYPx);
@@ -250,10 +256,12 @@ Curve arcCurve(Instance inst, ArcBandUniforms u, float strokeHalfPx) {
   Curve cv;
   cv.yDir = yDir;
   cv.ends = float2(min(x1Px, x2Px), max(x1Px, x2Px));
-  // `far` is purely a function of on-screen span — no bp limit.
-  cv.kind = arcIsFar(halfWidthPx, u.canvasW) ? KIND_CIRCLE : KIND_ELLIPSE;
+  // `far` is purely a function of on-screen span — no bp limit — and it is
+  // measured against the VIEW's width, so the same pair is the same shape
+  // wherever the blocks fall. `u.canvasW` is this block's.
+  cv.kind = arcIsFar(halfWidthPx, u.viewWidthPx) ? KIND_CIRCLE : KIND_ELLIPSE;
   cv.c = float2((x1Px + x2Px) * 0.5, 0.0);
-  cv.radii = arcRadiiPx(halfWidthPx, destY, u.canvasW);
+  cv.radii = arcRadiiPx(halfWidthPx, destY, u.viewWidthPx);
   // The band the pass is scissored to is u.arcBandH tall measured from the
   // anchor, so that — plus the stroke, so the cut is outside the band rather
   // than on its last row — is the whole of a leg that can be seen.
