@@ -1389,6 +1389,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         },
         /**
          * #method
+         * What a bare click on the shared rubberband strip offers: one row per
+         * genome row, each holding that row's own click menu at the base it
+         * paints under `px`. A pixel rather than an offset, since each row maps
+         * it through its own `pxToBp`.
          */
         rubberbandClickMenuItems(px: number): MenuItem[] {
           return multiLevelRowClickMenuItems(self.views, px)

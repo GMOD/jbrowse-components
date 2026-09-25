@@ -278,6 +278,16 @@ selection: **Get sequence (visible region)** on the reference sequence track,
 launch's own
 [visible-region entry](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at).
 
+Clicking the scale bar without dragging names a single base. Its menu holds
+**Center view here**, **Zoom to base level** and **Copy coordinate**.
+
+The [synteny](/docs/user_guides/linear_synteny_view) and
+[breakpoint split](/docs/user_guides/sv_visualization#breakpoint-split-view)
+views have one strip for the whole stack. A drag there leads with **Zoom to
+region(s)**, which zooms every row at once; below it, one row per genome carries
+that row's own menu, because a sequence to fetch or a coordinate to copy belongs
+to one assembly.
+
 ## Scalebar chromosome name menu
 
 The chromosome names along the scale bar are clickable. The menu holds:

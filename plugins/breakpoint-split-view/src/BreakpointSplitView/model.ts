@@ -1009,6 +1009,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #method
+       * What a bare click on the shared rubberband strip offers: one row per
+       * panel, each holding that panel's own click menu at the base it paints
+       * under `px`. A pixel rather than an offset, since each panel maps it
+       * through its own `pxToBp`.
        */
       rubberbandClickMenuItems(px: number): MenuItem[] {
         return multiLevelRowClickMenuItems(self.views, px)
