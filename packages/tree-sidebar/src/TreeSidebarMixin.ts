@@ -692,6 +692,10 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           ? applySubtreeFilter(self.parsedTree, self.rowFocus)
           : undefined
       },
+      /**
+       * #getter
+       * `bandedSources` and `rowBands`, from one pass over the rows.
+       */
       get bandedRows() {
         const banding = self.rowBanding
         const rows = self.clusterableSources
