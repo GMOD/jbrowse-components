@@ -129,6 +129,7 @@ interface CircularViewInitSelf extends IStateTreeNode {
 export interface ChordSyntenyDisplaySelf extends IStateTreeNode {
   type: string
   loaded: boolean
+  fetchInert: boolean
   displayError: unknown
   alignmentsBetween: (
     referenceAssembly: string,
@@ -212,8 +213,7 @@ async function applyInit(
     const { trackId, trackSnapshot, displaySnapshot } = normalizeTrackInit(t)
     await self.launchTrack(trackId, trackSnapshot, displaySnapshot)
   }
-  // after the tracks, whose adapters the reorder reads its alignments off; not
-  // after their ribbon fetch, which it runs its own fetch instead of waiting on
+  // after the tracks, whose ribbon fetch the reorder waits on and orders from
   if (init.autoDiagonalize) {
     await self.autoDiagonalize()
   }

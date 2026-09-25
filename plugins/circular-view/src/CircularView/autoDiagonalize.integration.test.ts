@@ -37,6 +37,7 @@ function assemblyConf(name: string, contigs: string[]) {
 async function launch(
   autoDiagonalize: boolean,
   beforeLaunch?: (session: any) => void,
+  tracks = ['aln'],
 ) {
   const session = createTestSession() as any
   beforeLaunch?.(session)
@@ -56,7 +57,7 @@ async function launch(
   })
   const view = (await session.launchView('CircularView', {
     assembly: ['A', 'B'],
-    tracks: ['aln'],
+    tracks,
     autoDiagonalize,
   })) as CircularViewModel
   view.setWidth(800)
@@ -108,6 +109,31 @@ test('a second pass over the same circle moves nothing', async () => {
   const stats = await runCircularDiagonalize(view)
   expect(stats).toEqual({ totalReordered: 0, totalReversed: 0 })
   expect(JSON.stringify(view.displayedRegions)).toBe(before)
+}, 40000)
+
+// A ribbon track aligning neither genome on the circle never fetches, so it
+// never loads, and the reorder must not wait for it
+test('a ribbon track off the circle does not hold up the reorder', async () => {
+  const view = await launch(
+    true,
+    session => {
+      session.addAssemblyConf(assemblyConf('C', ['c1']))
+      session.addSessionTrackConf({
+        trackId: 'offCircle',
+        type: 'SyntenyTrack',
+        assemblyNames: ['C', 'C'],
+        adapter: {
+          type: 'PAFAdapter',
+          pafLocation: PAF,
+          queryAssembly: 'C',
+          targetAssembly: 'C',
+        },
+      })
+    },
+    ['aln', 'offCircle'],
+  )
+  expect(view.tracks).toHaveLength(2)
+  expect(view.displayedRegions.some(r => r.reversed)).toBe(true)
 }, 40000)
 
 // Without the launch key the circle keeps the order it was given, which is the

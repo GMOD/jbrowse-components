@@ -37,9 +37,10 @@ export async function runCircularDiagonalize(
     return undefined
   }
   statusCallback?.('Loading features')
-  await when(() => displays.every(d => d.loaded || !!d.displayError), {
-    signal,
-  })
+  await when(
+    () => displays.every(d => d.loaded || d.fetchInert || !!d.displayError),
+    { signal },
+  )
   const failed = displays.find(d => d.displayError)
   if (failed) {
     throw failed.displayError
