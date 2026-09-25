@@ -84,7 +84,7 @@ function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
       regions={model.rpcDataMap}
       renderState={model.renderState}
     >
-      {model.markTypes.includes('text') ? (
+      {overlays && model.markTypes.includes('text') ? (
         <g transform={`translate(0,${yTop})`}>
           <MarkTextSvg
             model={model}
