@@ -85,22 +85,26 @@ test('stopsFromRampLut reads the entries sampleColorRamp defines, exactly', () =
   expect(legend.at(-1)!.offset).toBe(1)
 })
 
-test('domainMid moves the stop list midpoint to that fraction of the table', () => {
+// ggplot2's gradient2: the middle stop at `mid`, and both sides on one scale,
+// so the farther end reaches its end stop, the nearer stops short of its own,
+// and two values equally far from the middle take mirrored colours.
+test('domainMid puts the middle stop there, both sides on one scale', () => {
   const stops: ColorRampStop[] = [
     [0, 0, 255, 255],
     [255, 255, 255, 255],
     [255, 0, 0, 255],
   ]
   const lut = buildColorRampLut(stops, 0.25)
-  const at = (t: number) => {
-    const o = Math.round(t * (lut.length / 4 - 1)) * 4
-    return [lut[o], lut[o + 1], lut[o + 2]]
+  const last = lut.length / 4 - 1
+  const at = (i: number) => [lut[i * 4], lut[i * 4 + 1], lut[i * 4 + 2]]
+  const expected = (i: number) =>
+    sampleColorRamp(stops, 0.5 + (i / last - 0.25) / 1.5).slice(0, 3)
+  for (const i of [0, 32, 64, 160, last]) {
+    expect(at(i)).toEqual(expected(i))
   }
-  expect(at(0.25)).toEqual([255, 255, 255])
-  expect(at(0)).toEqual([0, 0, 255])
-  expect(at(1)).toEqual([255, 0, 0])
-  expect(at(0.125)).toEqual(sampleColorRamp(stops, 0.25).slice(0, 3))
-  expect(at(0.625)).toEqual(sampleColorRamp(stops, 0.75).slice(0, 3))
+  expect(at(last)).toEqual([255, 0, 0])
+  expect(at(0)).toEqual(sampleColorRamp(stops, 1 / 3).slice(0, 3))
+  expect(at(0)).not.toEqual([0, 0, 255])
 })
 
 test('a ramp is dark at its low end when its first stop is darker over white', () => {

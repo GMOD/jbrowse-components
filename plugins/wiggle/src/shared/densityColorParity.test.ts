@@ -373,12 +373,18 @@ describe('named-ramp (LUT) density mode', () => {
         },
       )
 
-      test('the domain ends are the ramp ends, not folded onto one', () => {
-        if (max > min && (rampMid === undefined || rampMid > min)) {
-          expect(gpuAt(min)).toEqual(entry(0))
-          withinBucket(parseRgba(canvasFn(min)), entry(0) as number[])
-          expect(gpuAt(max)).toEqual(entry(255))
-          withinBucket(parseRgba(canvasFn(max)), entry(255) as number[])
+      // Both sides of the middle on one scale: the farther domain end reaches
+      // its ramp end, and the nearer lands on its own side, not folded over.
+      test('the farther domain end reaches its ramp end on both backends', () => {
+        if (max > min) {
+          const mid = rampMidNorm(min, max, scaleType, rampMid, symlogConstant)
+          const [far, near, farEntry] =
+            1 - mid >= mid ? [max, min, 255] : [min, max, 0]
+          expect(gpuAt(far)).toEqual(entry(farEntry))
+          withinBucket(parseRgba(canvasFn(far)), entry(farEntry) as number[])
+          if (mid > 0 && mid < 1) {
+            expect(gpuAt(near)).not.toEqual(gpuAt(far))
+          }
         }
       })
 

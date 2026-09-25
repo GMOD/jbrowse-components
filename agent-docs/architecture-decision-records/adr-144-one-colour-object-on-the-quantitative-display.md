@@ -13,7 +13,11 @@ Accepted (2026-09-19). Follows [ADR-142](adr-142-one-value-scale-object.md) and
 shared colour shape to the display that had not taken it, and finishes
 superseding [ADR-016](adr-016-bicolorpivot-stays-in-worker.md).
 [plugins/wiggle/src/CLAUDE.md](../../plugins/wiggle/src/CLAUDE.md) is the
-operational doc.
+operational doc. Amended 2026-09-25: `domainMid` keeps both sides of the middle
+on one scale, the farther end of the domain reaching its end stop, as the white
+fade already did and as ggplot2's `scale_fill_gradient2` does, where it had
+stretched each side to its own end; core's `buildColorRampLut` and the shader's
+`densityRampT` share the rule.
 [ADR-151](adr-151-a-channels-scale-is-spelt-as-scales-y-spells-one.md)
 supersedes the `palette` and `ramp` members this record declares, which it
 spells `range` and `scheme`, and the `colorPaletteSlot` and `colorRampSlot`

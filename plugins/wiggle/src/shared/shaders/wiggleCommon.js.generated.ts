@@ -4,8 +4,16 @@
 // Scalar twins of wiggleCommon.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
+function _clamp(x: number, lo: number, hi: number) {
+  return _min(_max(x, lo), hi)
+}
+
 function _max(a: number, b: number) {
   return b > a || Number.isNaN(a) ? b : a
+}
+
+function _min(a: number, b: number) {
+  return b < a || Number.isNaN(a) ? b : a
 }
 
 export function densityGradientT(norm: number, zeroNorm: number): number {
@@ -13,17 +21,5 @@ export function densityGradientT(norm: number, zeroNorm: number): number {
 }
 
 export function densityRampT(norm: number, midNorm: number): number {
-  let _t0: boolean
-  if ((midNorm > 0.0)) {
-    _t0 = (norm <= midNorm)
-  } else {
-    _t0 = false
-  }
-  let _t1: number
-  if (_t0) {
-    _t1 = ((0.5 * norm) / midNorm)
-  } else {
-    _t1 = (0.5 + ((0.5 * (norm - midNorm)) / _max((1.0 - midNorm), 0.00009999999747379)))
-  }
-  return _t1
+  return _clamp((0.5 + ((norm - midNorm) / (2.0 * _max(midNorm, (1.0 - midNorm))))), 0.0, 1.0)
 }
