@@ -11,8 +11,8 @@ export interface FacetSetting {
 /**
  * #config Facet
  * #category display
- * The `facet` setting of the feature, multi-sample variant and alignments
- * displays: one labelled section of the track per value of a field. A string
+ * The `facet` setting of the feature, multi-sample variant, multi-row and
+ * alignments displays: one labelled section of the track per value of a field. A string
  * is the field; the object adds the order. The mark display's `MarkFacet`
  * adds the steps each section runs. On the multi-sample variant displays the
  * field is a sample attribute from the samples file, such as `population`,
@@ -44,7 +44,8 @@ export const facetConfigSchema = ConfigurationSchema(
      * of the track: a field name, a dotted path into a structured field
      * (`INFO.SVTYPE`, a read's `tags.HP`), a `jexl:` expression, or
      * `strand`. A feature with no value stacks last, under `field: none`.
-     * The multi-sample variant displays read a sample attribute instead.
+     * The multi-sample variant displays read a sample attribute instead, and
+     * the multi-row display a row attribute or `group`, its `rowGroups`.
      * The alignments displays also take a read dimension here:
      * `firstOfPairStrand`, `pairOrientation`, `splitRead`, `mapq` or
      * `mateAssembly`. Writing `facet: "strand"` lands here.

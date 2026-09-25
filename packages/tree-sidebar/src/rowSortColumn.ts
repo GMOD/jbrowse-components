@@ -130,8 +130,8 @@ export function sortRowsAtColumn<S extends { name: string }, D>(
  *
  * Stable throughout: rows with equal values keep their incoming order, and so
  * do the valueless ones. That is what lets an earlier sort survive inside each
- * block a later one produces, and what makes `rowGroups`' contiguous blocks
- * still ordered by whatever was sorted on.
+ * block a later one produces, and what keeps each band ordered by whatever
+ * was sorted on.
  *
  * Returns the rows themselves rather than their names, so the caller writes the
  * result straight to `layout` — the rows it is handed are already

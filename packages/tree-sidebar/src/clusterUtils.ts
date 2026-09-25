@@ -506,11 +506,11 @@ export function validateClusterOrder(
  * that is the focused clade, so a run resolves the structure WITHIN it rather
  * than handing back the whole-cohort tree — both the more useful answer and the
  * only one `computeClusterHierarchy` will draw, since it refuses a tree whose
- * leaves are not exactly the drawn rows in order.
+ * leaves are not exactly the drawn rows in order (per band, under bands).
  *
  * **Undecorated rows, not the drawn `sources`.** Every display decorates on the
  * way to the painting — multi-wiggle synthesizes a palette, the multi-row
- * feature display tags `rowGroups` colors and may reorder into blocks — and
+ * feature display tags `rowGroups` colors — and
  * the arrangement holds whatever it is handed, which is meant to be only what
  * the user chose. `editableSources` narrowed by the focus is the list.
  *

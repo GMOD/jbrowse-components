@@ -46,12 +46,9 @@
 # not a European allele at all. YRI and CHB are two independent zeroes, so the
 # absence cannot be one population's quirk.
 #
-# EQUAL N PER POPULATION, 25 each. `sortSourcesByAttribute` orders groups by
-# size (largest first, ties alphabetical), so equal groups give a stable
-# alphabetical band order — and equal band heights are what let a reader compare
-# the slab fractions between bands by eye. Unequal N would let the band ORDER
-# encode frequency, which reads better as a staircase but silently makes band
-# height mean nothing.
+# EQUAL N PER POPULATION, 25 each, so the bands are one height and a reader can
+# compare the slab fractions between them by eye. Unequal N would make band
+# height mean sample count rather than nothing.
 #
 # Sampling is the first 25 sample ids in sorted order, not a random draw, so the
 # file is reproducible with no seed to record. n=25 costs some precision: the
