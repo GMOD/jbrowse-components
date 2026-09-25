@@ -1240,7 +1240,9 @@ moves by exactly the rounded distance.
 
 ### ScaleTable
 
-Any channel's scale table; the kind names the channel.
+The table behind a channel a key is drawn from: a colour's, whose `kind` names
+the scale it resolved through, or a shape's. A `size` channel's (SizeScaleTable)
+draws no key and stands outside.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
