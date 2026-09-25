@@ -17,15 +17,10 @@ import {
 
 import type { StarFusionAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, IntervalTree, Region } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class StarFusionAdapter extends BaseFeatureDataAdapter<StarFusionAdapterConfig> {
   private loadData = cachedSetup({ setup: opts => this.loadDataP(opts) })
-
-  protected intervalTrees: Record<
-    string,
-    Promise<IntervalTree<Feature> | undefined> | undefined
-  > = {}
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
@@ -108,19 +103,12 @@ export default class StarFusionAdapter extends BaseFeatureDataAdapter<StarFusion
     )
   }
 
-  private async loadFeatureTree(refName: string) {
-    this.intervalTrees[refName] ??= this.loadFeatureTreeP(refName).catch(
-      (e: unknown) => {
-        this.intervalTrees[refName] = undefined
-        throw e
-      },
-    )
-    return this.intervalTrees[refName]
-  }
+  private treeFeatures = intervalTreeFeatures(
+    opts => this.loadData(opts),
+    refName => this.loadFeatureTreeP(refName),
+  )
 
-  public getFeatures(query: Region, opts: BaseOptions = {}) {
-    return intervalTreeFeatures(query, opts, this.loadData, refName =>
-      this.loadFeatureTree(refName),
-    )
+  public getFeatures(query: Region, opts?: BaseOptions) {
+    return this.treeFeatures(query, opts)
   }
 }

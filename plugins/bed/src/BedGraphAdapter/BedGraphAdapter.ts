@@ -17,11 +17,6 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter<BedGraphAdap
   // No `label`: `fetchAndMaybeUnzip` narrates the download from inside.
   loadData = cachedSetup({ setup: opts => this.loadDataP(opts) })
 
-  protected intervalTrees: Record<
-    string,
-    Promise<IntervalTree<Feature> | undefined> | undefined
-  > = {}
-
   async getNames() {
     return resolveColumnNames(
       this.getConf('columnNames'),
@@ -70,19 +65,12 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter<BedGraphAdap
     return bucketBedLines(buffer, opts.statusCallback)
   }
 
-  async loadFeatureIntervalTree(refName: string) {
-    this.intervalTrees[refName] ??= this.loadFeatureIntervalTreeHelper(
-      refName,
-    ).catch((e: unknown) => {
-      this.intervalTrees[refName] = undefined
-      throw e
-    })
-    return this.intervalTrees[refName]
-  }
+  private treeFeatures = intervalTreeFeatures(
+    opts => this.loadData(opts),
+    refName => this.loadFeatureIntervalTreeHelper(refName),
+  )
 
-  public getFeatures(query: Region, opts: BaseOptions = {}) {
-    return intervalTreeFeatures(query, opts, this.loadData, refName =>
-      this.loadFeatureIntervalTree(refName),
-    )
+  public getFeatures(query: Region, opts?: BaseOptions) {
+    return this.treeFeatures(query, opts)
   }
 }

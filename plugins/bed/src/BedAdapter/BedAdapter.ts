@@ -37,11 +37,6 @@ export default class BedAdapter extends BaseFeatureDataAdapter<BedAdapterConfig>
       }),
   })
 
-  protected intervalTrees: Record<
-    string,
-    Promise<IntervalTree<Feature> | undefined> | undefined
-  > = {}
-
   public static capabilities = ['getFeatures', 'getRefNames']
 
   private async loadDataP(opts?: BaseOptions) {
@@ -104,19 +99,12 @@ export default class BedAdapter extends BaseFeatureDataAdapter<BedAdapterConfig>
     return intervalTree
   }
 
-  async loadFeatureIntervalTree(refName: string) {
-    this.intervalTrees[refName] ??= this.loadFeatureIntervalTreeHelper(
-      refName,
-    ).catch((e: unknown) => {
-      this.intervalTrees[refName] = undefined
-      throw e
-    })
-    return this.intervalTrees[refName]
-  }
+  private treeFeatures = intervalTreeFeatures(
+    opts => this.loadData(opts),
+    refName => this.loadFeatureIntervalTreeHelper(refName),
+  )
 
-  public getFeatures(query: Region, opts: BaseOptions = {}) {
-    return intervalTreeFeatures(query, opts, this.loadData, refName =>
-      this.loadFeatureIntervalTree(refName),
-    )
+  public getFeatures(query: Region, opts?: BaseOptions) {
+    return this.treeFeatures(query, opts)
   }
 }

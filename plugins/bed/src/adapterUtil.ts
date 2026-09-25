@@ -4,24 +4,35 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-// Emit the features of a per-refName interval tree that intersect the query.
-// Shared by the in-memory interval-tree adapters. `loadData` is awaited with
-// the caller's opts ahead of the tree memo, so every fetch joins the whole-file
-// load's progress rather than only the one that started the tree.
+// `getFeatures` for an in-memory interval-tree adapter: one tree per refName,
+// built once and rebuilt after a failure. `loadData` is awaited with each
+// caller's opts ahead of the tree, so every fetch joins the whole-file load's
+// progress rather than only the one that started it.
 export function intervalTreeFeatures(
-  query: Region,
-  opts: BaseOptions,
   loadData: (opts: BaseOptions) => Promise<unknown>,
-  loadTree: (refName: string) => Promise<IntervalTree<Feature> | undefined>,
+  buildTree: (refName: string) => Promise<IntervalTree<Feature> | undefined>,
 ) {
-  return ObservableCreate<Feature>(async observer => {
-    await loadData(opts)
-    const tree = await loadTree(query.refName)
-    for (const f of tree?.search([query.start, query.end]) ?? []) {
-      observer.next(f)
+  const trees = new Map<string, Promise<IntervalTree<Feature> | undefined>>()
+  const loadTree = (refName: string) => {
+    let tree = trees.get(refName)
+    if (tree === undefined) {
+      tree = buildTree(refName).catch((e: unknown) => {
+        trees.delete(refName)
+        throw e
+      })
+      trees.set(refName, tree)
     }
-    observer.complete()
-  }, opts.signal)
+    return tree
+  }
+  return (query: Region, opts: BaseOptions = {}) =>
+    ObservableCreate<Feature>(async observer => {
+      await loadData(opts)
+      const tree = await loadTree(query.refName)
+      for (const f of tree?.search([query.start, query.end]) ?? []) {
+        observer.next(f)
+      }
+      observer.complete()
+    }, opts.signal)
 }
 
 // Build one interval tree for a refName from paired-feature buckets, inserting
