@@ -37,8 +37,8 @@ public struct CoverageBandUniforms {
   public float bpHi;
   public float bpLo;
   public float bpLen;
-  // Runtime 0.0 sentinel. HP math uses 1/hpZero to materialize +inf without the
-  // compiler folding the hi/lo combination. MUST always be uploaded as 0.0.
+  // Runtime 0.0 sentinel that keeps the HP clamp floor off the compiler's
+  // constant table; see hpmath.slang. MUST always be uploaded as 0.0.
   public float hpZero;
 
   public float canvasW;

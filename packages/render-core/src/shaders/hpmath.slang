@@ -38,23 +38,29 @@ public float2 hpSplitUint(uint value) {
   return float2(float(hi), float(lo));
 }
 
-// `max(-inf)` and `dot()` exist to thwart the compiler — without them it
-// collapses (hi_a+lo_a)-(hi_b+lo_b) into one large subtraction and the
-// float32 precision the hi/lo split exists to preserve is gone. `hpZero` is
-// a tiny CPU-supplied number; `-1/hpZero` is smaller than any real diff.
+// A floor no bp difference can reach, so clamping to it changes no result.
+// The clamp is there for the compiler: `max()` and `dot()` together stop it
+// collapsing (hi_a+lo_a)-(hi_b+lo_b) into one large subtraction, which loses
+// the float32 precision the hi/lo split exists to preserve. `hpZero` arrives
+// as exactly 0 and carries no magnitude of its own — it makes the floor a
+// runtime value, which is what a backend cannot fold the `max` against. The
+// earlier spelling built the floor as `-1.0 / hpZero`, an infinity WGSL lets
+// an implementation answer with an indeterminate value instead.
+static const float HP_CLAMP_FLOOR = -3.0e38;
+
 public float hpToClipX(float2 splitPos, float3 bpRange, float hpZero) {
-  float inf = 1.0 / hpZero;
+  float floorBp = HP_CLAMP_FLOOR + hpZero;
   float step = 2.0 / bpRange.z;
-  float hi = max(splitPos.x - bpRange.x, -inf);
-  float lo = max(splitPos.y - bpRange.y, -inf);
+  float hi = max(splitPos.x - bpRange.x, floorBp);
+  float lo = max(splitPos.y - bpRange.y, floorBp);
   return dot(float3(-1.0, hi, lo), float3(1.0, step, step));
 }
 
 public float hpScaleLinear(float2 splitPos, float3 bpRange, float hpZero) {
-  float inf = 1.0 / hpZero;
+  float floorBp = HP_CLAMP_FLOOR + hpZero;
   float step = 1.0 / bpRange.z;
-  float hi = max(splitPos.x - bpRange.x, -inf);
-  float lo = max(splitPos.y - bpRange.y, -inf);
+  float hi = max(splitPos.x - bpRange.x, floorBp);
+  float lo = max(splitPos.y - bpRange.y, floorBp);
   return dot(float2(hi, lo), float2(step, step));
 }
 

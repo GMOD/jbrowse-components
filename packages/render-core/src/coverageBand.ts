@@ -166,9 +166,9 @@ export interface CoverageBandUniformValues {
  * so a field left out is a compile error rather than last frame's value.
  *
  * `hpZero` is derived here rather than at each call site because a wrong value
- * draws a plausible but wrong band and raises no error: it MUST be 0, since the HP
- * math materializes +inf as `1/hpZero` to stop the compiler folding the hi/lo
- * split it exists to preserve.
+ * draws a plausible but wrong band and raises no error: it MUST be 0, since the
+ * HP math adds it to a clamp floor to keep that floor off the compiler's
+ * constant table and so stop it folding the hi/lo split away.
  */
 export function writeCoverageBandUniforms(
   buf: ArrayBuffer,
