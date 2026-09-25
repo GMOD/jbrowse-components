@@ -1241,152 +1241,167 @@ export default function MultiSampleVariantBaseModelF(
           }
         },
       }))
-      .views(self => ({
-        /**
-         * #getter
-         * Row name -> source, for the hover tooltip. A Map because row names
-         * come from the file, and on a plain object a sample called
-         * `constructor` resolves to something inherited rather than to a miss.
-         */
-        get sourceMap() {
-          return new Map(self.sources.map(source => [source.name, source]))
-        },
-        /**
-         * #getter
-         * sampleName -> column index into each feature's interned
-         * `genotypeCodes`. Used by the tooltips to decode a hovered cell's
-         * genotype (see genotypeCodec.ts).
-         *
-         * **Rebuilt per pointer frame, not per `cellData` change.** Its only
-         * readers are the two displays' hit tests, which run in React pointer
-         * handlers where nothing is tracked — and MobX discards an unobserved
-         * computed's value as it hands it over. So a hover walks every sample in
-         * the callset, ~60×/s, on a cohort VCF.
-         *
-         * A keep-alive autorun is the fix the canvas displays use
-         * (`CanvasHitIndexes`, and see packages/display-kit/CLAUDE.md), and it
-         * does not work here yet: it evaluates this before any payload has
-         * landed, and several suites stub the cell-data RPC with a catch-all
-         * that resolves a bare `[]`, so `cellData` is truthy with no
-         * `sampleNames` and the reaction throws. Making it holdable means giving
-         * those stubs a real payload shape first; the getter itself is fine.
-         */
-        get genotypeSampleIndex() {
-          return self.cellData
-            ? buildSampleIndex(self.cellData.sampleNames)
-            : undefined
-        },
-        /**
-         * #getter
-         * Worker row -> screen row, the client half of taking row order out of
-         * the RPC (see `sampleFilter`). The cells arrive numbered against the
-         * worker's `rowNames` list, and `rowRemap` maps each to the row the
-         * user is looking at. Rebuilding it is all a reorder costs.
-         *
-         * A worker row the display isn't drawing maps to `HIDDEN_ROW` rather than
-         * being dropped: at that index every painter's own Y-cull puts the cell
-         * far below the canvas, so the sentinel needs no special case on either
-         * backend, in the glyph overlay, or in the SVG export. (It stays rare —
-         * the *set* is still a fetch input, so normally every row shipped is a
-         * row drawn.)
-         *
-         * Undefined until data lands. Consumers that draw cells must treat that
-         * as "nothing to draw yet" rather than falling back to identity: the
-         * worker's order is arbitrary, so identity would paint rows under the
-         * wrong sample names.
-         */
-        get rowRemap(): Uint32Array | undefined {
-          const rowNames = self.cellData?.rowNames
-          if (!rowNames) {
-            return undefined
-          }
-          const sources = self.sources
-          const screenRowByName = new Map<string, number>()
-          for (let i = 0; i < sources.length; i++) {
-            screenRowByName.set(sources[i]!.name, i)
-          }
-          const out = new Uint32Array(rowNames.length)
-          for (let i = 0; i < rowNames.length; i++) {
-            out[i] = screenRowByName.get(rowNames[i]!) ?? HIDDEN_ROW
-          }
-          return out
-        },
-        // Row-height model: `rowHeight` (raw setting, 0 = fit) and
-        // `effectiveRowHeight` (resolved) are `RowHeightMixin`'s; what this
-        // display owes it is `autoRowHeight` below. See
-        // agent-docs/reference/ROW_HEIGHT_AND_FIT.md.
-        /**
-         * #getter
-         * The bands stacked above the rows — the variant lane and the
-         * connector-line zone — resolved once. Both the layout below and the
-         * painters read this, never their own sum: see `variantTopBands.ts`.
-         */
-        get topBands() {
-          return variantTopBandsGeometry({
-            showVariantLane: self.showVariantLane,
-            variantLaneHeight: self.variantLaneHeight,
-            variantLaneLabels: self.variantLaneLabels,
-            lineZoneHeight: self.lineZoneHeight,
-          })
-        },
-        /**
-         * #getter
-         * Px reserved above the rows, and so where the rows begin. This is the
-         * name `TreeSidebar`'s model contract reads (it positions the sidebar
-         * against the rows, not against any one band), and what every component
-         * offsetting itself past the bands takes.
-         */
-        get rowsTopOffset() {
-          return this.topBands.bottom
-        },
-        /**
-         * #getter
-         * Available height for rows (total height minus whatever the bands
-         * above them take). Floored at 0: `lineZoneHeight` (matrix only,
-         * user-draggable up to 1000 independently of `height`) can exceed a
-         * shrunk display height on its own, and the variant lane adds to it.
-         * Every consumer treats this as a real pixel dimension (canvas
-         * height, CSS `height`, scroll viewport height), so it must never go
-         * negative.
-         */
-        get availableHeight() {
-          return Math.max(0, self.height - this.rowsTopOffset)
-        },
-        /**
-         * #getter
-         */
-        get nrow() {
-          return Math.max(1, self.sources.length)
-        },
+      .views(self => {
+        // the last placement handed out, so a change that moves no row (a
+        // relabel, a tint) returns the same array and re-places nothing
+        let lastRowRemap: Uint32Array | undefined
+        return {
+          /**
+           * #getter
+           * Row name -> source, for the hover tooltip. A Map because row names
+           * come from the file, and on a plain object a sample called
+           * `constructor` resolves to something inherited rather than to a miss.
+           */
+          get sourceMap() {
+            return new Map(self.sources.map(source => [source.name, source]))
+          },
+          /**
+           * #getter
+           * sampleName -> column index into each feature's interned
+           * `genotypeCodes`. Used by the tooltips to decode a hovered cell's
+           * genotype (see genotypeCodec.ts).
+           *
+           * **Rebuilt per pointer frame, not per `cellData` change.** Its only
+           * readers are the two displays' hit tests, which run in React pointer
+           * handlers where nothing is tracked — and MobX discards an unobserved
+           * computed's value as it hands it over. So a hover walks every sample in
+           * the callset, ~60×/s, on a cohort VCF.
+           *
+           * A keep-alive autorun is the fix the canvas displays use
+           * (`CanvasHitIndexes`, and see packages/display-kit/CLAUDE.md), and it
+           * does not work here yet: it evaluates this before any payload has
+           * landed, and several suites stub the cell-data RPC with a catch-all
+           * that resolves a bare `[]`, so `cellData` is truthy with no
+           * `sampleNames` and the reaction throws. Making it holdable means giving
+           * those stubs a real payload shape first; the getter itself is fine.
+           */
+          get genotypeSampleIndex() {
+            return self.cellData
+              ? buildSampleIndex(self.cellData.sampleNames)
+              : undefined
+          },
+          /**
+           * #getter
+           * Worker row -> screen row, the client half of taking row order out of
+           * the RPC (see `sampleFilter`). The cells arrive numbered against the
+           * worker's `rowNames` list, and `rowRemap` maps each to the row the
+           * user is looking at. Rebuilding it is all a reorder costs, and a
+           * change that moves no row hands back the previous array, so the
+           * placed cells and their upload stay as they are.
+           *
+           * A worker row the display isn't drawing maps to `HIDDEN_ROW` rather than
+           * being dropped: at that index every painter's own Y-cull puts the cell
+           * far below the canvas, so the sentinel needs no special case on either
+           * backend, in the glyph overlay, or in the SVG export. (It stays rare —
+           * the *set* is still a fetch input, so normally every row shipped is a
+           * row drawn.)
+           *
+           * Undefined until data lands. Consumers that draw cells must treat that
+           * as "nothing to draw yet" rather than falling back to identity: the
+           * worker's order is arbitrary, so identity would paint rows under the
+           * wrong sample names.
+           */
+          get rowRemap(): Uint32Array | undefined {
+            const rowNames = self.cellData?.rowNames
+            if (!rowNames) {
+              return undefined
+            }
+            const sources = self.sources
+            const screenRowByName = new Map<string, number>()
+            for (let i = 0; i < sources.length; i++) {
+              screenRowByName.set(sources[i]!.name, i)
+            }
+            const out = new Uint32Array(rowNames.length)
+            for (let i = 0; i < rowNames.length; i++) {
+              out[i] = screenRowByName.get(rowNames[i]!) ?? HIDDEN_ROW
+            }
+            const last = lastRowRemap
+            if (
+              last?.length === out.length &&
+              out.every((row, i) => row === last[i])
+            ) {
+              return last
+            }
+            lastRowRemap = out
+            return out
+          },
+          // Row-height model: `rowHeight` (raw setting, 0 = fit) and
+          // `effectiveRowHeight` (resolved) are `RowHeightMixin`'s; what this
+          // display owes it is `autoRowHeight` below. See
+          // agent-docs/reference/ROW_HEIGHT_AND_FIT.md.
+          /**
+           * #getter
+           * The bands stacked above the rows — the variant lane and the
+           * connector-line zone — resolved once. Both the layout below and the
+           * painters read this, never their own sum: see `variantTopBands.ts`.
+           */
+          get topBands() {
+            return variantTopBandsGeometry({
+              showVariantLane: self.showVariantLane,
+              variantLaneHeight: self.variantLaneHeight,
+              variantLaneLabels: self.variantLaneLabels,
+              lineZoneHeight: self.lineZoneHeight,
+            })
+          },
+          /**
+           * #getter
+           * Px reserved above the rows, and so where the rows begin. This is the
+           * name `TreeSidebar`'s model contract reads (it positions the sidebar
+           * against the rows, not against any one band), and what every component
+           * offsetting itself past the bands takes.
+           */
+          get rowsTopOffset() {
+            return this.topBands.bottom
+          },
+          /**
+           * #getter
+           * Available height for rows (total height minus whatever the bands
+           * above them take). Floored at 0: `lineZoneHeight` (matrix only,
+           * user-draggable up to 1000 independently of `height`) can exceed a
+           * shrunk display height on its own, and the variant lane adds to it.
+           * Every consumer treats this as a real pixel dimension (canvas
+           * height, CSS `height`, scroll viewport height), so it must never go
+           * negative.
+           */
+          get availableHeight() {
+            return Math.max(0, self.height - this.rowsTopOffset)
+          },
+          /**
+           * #getter
+           */
+          get nrow() {
+            return Math.max(1, self.sources.length)
+          },
 
-        /**
-         * #getter
-         * What fit-to-display-height divides between the rows, and the reason
-         * `RowHeightMixin`'s non-positive floor is reachable at all here:
-         * `availableHeight` floors at 0, so a `lineZoneHeight` that swallows
-         * the whole display makes this exactly 0.
-         *
-         * A **fixed** height goes the other way and is used as-is however many
-         * samples there are — the rows area is a scroll viewport, so rows that
-         * don't fit cost scroll extent rather than a resize.
-         */
-        get autoRowHeight() {
-          return this.availableHeight / this.nrow
-        },
-        /**
-         * #getter
-         */
-        get hierarchy() {
-          return computeClusterHierarchy(
-            self.root,
-            self.sources,
-            self.effectiveRowHeight * this.nrow,
-            self.treeAreaWidth,
-            self.showBranchLength,
-            self.rowBands,
-          )
-        },
-      }))
+          /**
+           * #getter
+           * What fit-to-display-height divides between the rows, and the reason
+           * `RowHeightMixin`'s non-positive floor is reachable at all here:
+           * `availableHeight` floors at 0, so a `lineZoneHeight` that swallows
+           * the whole display makes this exactly 0.
+           *
+           * A **fixed** height goes the other way and is used as-is however many
+           * samples there are — the rows area is a scroll viewport, so rows that
+           * don't fit cost scroll extent rather than a resize.
+           */
+          get autoRowHeight() {
+            return this.availableHeight / this.nrow
+          },
+          /**
+           * #getter
+           */
+          get hierarchy() {
+            return computeClusterHierarchy(
+              self.root,
+              self.sources,
+              self.effectiveRowHeight * this.nrow,
+              self.treeAreaWidth,
+              self.showBranchLength,
+              self.rowBands,
+            )
+          },
+        }
+      })
       .views(self => ({
         /**
          * #getter

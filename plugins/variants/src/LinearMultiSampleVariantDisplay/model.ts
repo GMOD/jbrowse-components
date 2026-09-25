@@ -782,10 +782,14 @@ export function stateModelFactory(
          * cells' hit test reads.
          */
         laneFeatureInfo(featureId: string) {
-          for (const region of self.perRegionCellMap.values()) {
-            const info = region.featureGenotypeMap[featureId]
-            if (info) {
-              return info
+          const { cellData } = self
+          if (cellData?.mode === 'regular') {
+            for (const k in cellData.perRegionCellData) {
+              const info =
+                cellData.perRegionCellData[k]!.featureGenotypeMap[featureId]
+              if (info) {
+                return info
+              }
             }
           }
           return undefined
@@ -801,25 +805,32 @@ export function stateModelFactory(
          * every getter below it does no work.
          *
          * See `buildLaneRenderData` for why this is main-thread and costs no
-         * second fetch. A MobX computed, so it is rebuilt when the payload or
-         * the label mode changes and not per frame. Keyed off
-         * `perRegionCellMap` with the **displayed regions'** bounds, never
-         * `visibleRegions`: the LGV rebuilds that array fresh on every pan and
-         * zoom FRAME, so reading it here re-ran the whole chain below —
-         * SimpleFeature per record, jexl color eval, packing, label solves —
-         * ~60×/s during a drag. A region scrolled off-screen keeps its entry
-         * until its payload is cleared, which only the painter's own block
-         * clipping ever notices.
+         * second fetch. A MobX computed, rebuilt when the payload or the label
+         * mode changes: keyed off the fetched `perRegionCellData`, not the
+         * row-placed `perRegionCellMap`, since a record's mark does not move
+         * with the rows, and off the **displayed regions'** bounds, never
+         * `visibleRegions`, which the LGV rebuilds on every pan and zoom frame.
+         * Either would re-run the whole chain below — SimpleFeature per
+         * record, jexl color eval, packing, label solves — per reorder or per
+         * frame.
          */
         get laneRenderDataMap(): ReadonlyMap<number, LayoutRegionData> {
           const out = new Map<number, LayoutRegionData>()
-          if (self.canRender && self.topBands.laneHeight > 0) {
+          // the payload is read only once the band is on, so an arrival
+          // wakes nothing downstream while it is off
+          const cellData =
+            self.canRender && self.topBands.laneHeight > 0
+              ? self.cellData
+              : undefined
+          if (cellData?.mode === 'regular') {
             const config = self.laneDisplayConfig
             const { jexl } = getEnv<{ pluginManager: PluginManager }>(
               self,
             ).pluginManager
             const { displayedRegions } = self.view
-            for (const [displayedRegionIndex, data] of self.perRegionCellMap) {
+            for (const k in cellData.perRegionCellData) {
+              const displayedRegionIndex = Number(k)
+              const data = cellData.perRegionCellData[k]!
               const region = displayedRegions[displayedRegionIndex]
               if (region && data.featureIdList.length) {
                 out.set(

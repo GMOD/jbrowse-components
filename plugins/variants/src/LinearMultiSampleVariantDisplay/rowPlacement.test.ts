@@ -1,4 +1,5 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { autorun } from 'mobx'
 
 import { HIDDEN_ROW } from '../shared/constants.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -107,6 +108,25 @@ describe('multi-sample variant row placement', () => {
     display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
     // worker rows are ["S2","S1","S0"], screen order is S1,S0,S2
     expect(placement(display)).toEqual({ 0: 2, 1: 0, 2: 1 })
+  })
+
+  // Placing is a copy of every cell, and a new placement is a GPU re-upload.
+  // A relabel or a tint moves no row, so it hands back the same placement.
+  test('a relabel or a tint re-places no cell', () => {
+    const display = setup()
+    const dispose = autorun(() => {
+      void display.perRegionCellMap
+    })
+    const before = display.perRegionCellMap.get(0)
+    display.applyRowEdits(
+      display.editableSources.map((s, i) =>
+        i === 0 ? { ...s, label: 'Renamed', labelColor: '#123456' } : s,
+      ),
+    )
+    expect(display.perRegionCellMap.get(0)).toBe(before)
+    display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
+    expect(display.perRegionCellMap.get(0)).not.toBe(before)
+    dispose()
   })
 
   test('a reorder does not invalidate the fetch', () => {
