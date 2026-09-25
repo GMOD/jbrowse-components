@@ -5330,9 +5330,11 @@
       "package": "@jbrowse/render-core",
       "names": [
         "DIAMOND_GLYPH_SCALE",
+        "DIAMOND_MITER_REACHES",
         "GLYPH_DIAMOND",
         "GLYPH_DISC",
-        "GLYPH_TRIANGLE"
+        "GLYPH_TRIANGLE",
+        "TRIANGLE_MITER_REACHES"
       ],
       "worker": "real"
     },
