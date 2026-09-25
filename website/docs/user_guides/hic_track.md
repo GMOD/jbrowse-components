@@ -150,8 +150,9 @@ line. A [mark display](/docs/config_guides/mark_display#links) draws each call
 as a link from one end to its mate, so you can stack the called loops directly
 above the matrix they came from.
 
-Add the BEDPE track with a `LinearMarkDisplay` whose `link` mark reads the mate
-through a `mate` step, then add the `.hic` matrix as a separate track and
+Add the BEDPE file from **Add a track** and pick **Marks** from the track menu's
+display types: the display sees each call name its other end and draws the arcs
+with nothing configured. Then add the `.hic` matrix as a separate track and
 reorder so the links sit above it. A link's `size` sets its stroke width, and
 `encoding.size` scales it by the score.
 

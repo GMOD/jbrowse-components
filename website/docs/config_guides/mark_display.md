@@ -454,7 +454,12 @@ adapter fills a `mate` field, and a VCF states each end in an `ALT`. The `mate`
 step reads either into `mate.refName`, `mate.start` and `mate.end`, one feature
 per end a record states, with `svtype` beside them, and `x2` then names those
 fields as a locus, so a mate on another chromosome draws to wherever the view
-shows it. Structural variants from a VCF, coloured by type:
+shows it.
+
+**A track whose records name a mate draws the links with nothing configured**:
+pick **Marks** from the track menu's display types over a BEDPE, a STAR-Fusion
+file or an SV VCF and the display writes the mark and the step below for itself.
+Write them out to say more — a colour by type, a stroke by score, a shape:
 
 ```json addtrack
 {

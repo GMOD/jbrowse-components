@@ -1,4 +1,5 @@
 import { MAX_LEGEND_ITEMS } from '@jbrowse/core/ui/legendSpec'
+import { matedBy } from '@jbrowse/core/util/featureTransforms'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -35,6 +36,11 @@ export interface PlotFields {
   categorical: string[]
   /** `source`, where a multi-source adapter lists more than one: a row each. */
   rows?: string
+  /**
+   * How the scanned features state a second locus, where any of them do: the
+   * `mate` a paired adapter filled, or a breakend or symbolic `ALT`.
+   */
+  mated?: 'mate' | 'alt'
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -90,9 +96,14 @@ export function scanPlotFields(
   const numeric = new Map<string, boolean>()
   const carried = new Map<string, number>()
   const values = new Map<string, Set<unknown>>()
+  let mated: PlotFields['mated']
   const n = Math.min(features.length, PLOT_FIELD_SAMPLE)
   for (let i = 0; i < n; i++) {
-    const record = features[i]!.toJSON()
+    const feature = features[i]!
+    if (mated !== 'mate') {
+      mated = matedBy(feature) ?? mated
+    }
+    const record = feature.toJSON()
     for (const [field, value] of fieldEntries(record)) {
       const v = datumOf(value)
       if (v === undefined) {
@@ -118,5 +129,6 @@ export function scanPlotFields(
       f => !numeric.get(f)! && values.get(f)!.size <= MAX_LEGEND_ITEMS,
     ),
     ...(listedSources > 1 ? { rows: ROWS_FIELD } : {}),
+    ...(mated === undefined ? {} : { mated }),
   }
 }

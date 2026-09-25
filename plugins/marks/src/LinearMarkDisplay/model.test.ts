@@ -2923,3 +2923,28 @@ test('a hidden section leaves the link stroke domain the way it leaves the key',
   display.hideGroup('a')
   expect(display.sizeScales[0]!.domain).toEqual([50, 100])
 })
+
+test('a scan finding a mate writes the link and its step, with nothing declared', async () => {
+  const { display } = createTestEnvironment(
+    [],
+    WIDE_REGION,
+    'BedAdapter',
+    {},
+    (_sessionId, method) =>
+      method === 'MarkScanPlotFields'
+        ? Promise.resolve({
+            numeric: ['score'],
+            categorical: [],
+            mated: 'mate',
+          })
+        : new Promise(() => {}),
+  ).createDisplay()
+  await waitFor(() => {
+    expect(display.markTypes).toEqual(['link'])
+  })
+  expect(display.rpcProps().layers[0]!.transform).toEqual([{ type: 'mate' }])
+  expect(display.rpcProps().layers[0]!.encoding.x2).toEqual({
+    chrom: 'mate.refName',
+    pos: 'mate.start',
+  })
+})

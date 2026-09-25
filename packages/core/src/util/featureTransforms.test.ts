@@ -1,4 +1,4 @@
-import { facetLayers, runTransforms } from './featureTransforms.ts'
+import { facetLayers, matedBy, runTransforms } from './featureTransforms.ts'
 import createJexlInstance from './jexl.ts'
 import { placeRect } from './layouts/placeRect.ts'
 import SimpleFeature from './simpleFeature.ts'
@@ -812,4 +812,30 @@ test('mate answers a pair of ends once, whichever record or allele states it', (
     [{ type: 'mate' }],
   )
   expect(out.map(f => f.id())).toEqual(['a', '10-11'])
+})
+
+// The default plot decides on `matedBy` whether links are the picture a track
+// wants, and the mate step decides again on its own reading. They have to
+// agree: a record the default draws links for and the step then drops leaves
+// an empty display, and one the step would pair draws nothing at all.
+test('matedBy names a second end for exactly the records the mate step keeps', () => {
+  const records = [
+    sv(999, ['N[ctgB:2000['], { SVTYPE: ['BND'] }, 'bnd'),
+    sv(100, ['<DEL>'], { END: [400] }, 'del'),
+    sv(200, ['<DEL>'], {}, 'del-no-end'),
+    sv(300, ['A'], {}, 'snv'),
+    sv(400, ['A', 'N]ctgB:900]'], {}, 'snv-then-bnd'),
+    feature(10, 20, { mate: { refName: 'ctgB', start: 30, end: 40 } }),
+    feature(60, 70),
+  ]
+  const kept = new Set(
+    runTransforms(records, [{ type: 'mate' }]).map(f =>
+      f.id().replace(/#\d+$/, ''),
+    ),
+  )
+  expect(records.map(f => [f.id(), matedBy(f) !== undefined])).toEqual(
+    records.map(f => [f.id(), kept.has(f.id())]),
+  )
+  expect(matedBy(records[0]!)).toBe('alt')
+  expect(matedBy(records[5]!)).toBe('mate')
 })

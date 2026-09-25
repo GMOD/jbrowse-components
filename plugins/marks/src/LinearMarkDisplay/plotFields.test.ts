@@ -265,3 +265,47 @@ test('a config saying more than the dialog can write back reopens empty', () => 
     expect(specOf(marks)).toBeUndefined()
   }
 })
+
+test('a paired record draws links, whichever way it names its other end', () => {
+  const bedpe = scanPlotFields(
+    features([
+      { score: 7, mate: { refName: 'ctgB', start: 30, end: 40 } },
+      { score: 9, mate: { refName: 'ctgB', start: 50, end: 60 } },
+    ]),
+    { listedSources: 0 },
+  )
+  expect(bedpe.mated).toBe('mate')
+  // a score of its own does not make a paired record a bar chart
+  expect(bedpe.numeric).toContain('score')
+  expect(defaultPlotMarks(bedpe)).toEqual([
+    {
+      mark: 'link',
+      encoding: { x2: { chrom: 'mate.refName', pos: 'mate.start' } },
+      transform: [{ type: 'mate' }],
+    },
+  ])
+
+  const breakends = scanPlotFields(
+    features([
+      { ALT: ['N[ctgB:2000['], INFO: { SVTYPE: ['BND'] } },
+      { ALT: ['<DEL>'], INFO: { END: [400] } },
+    ]),
+    { listedSources: 0 },
+  )
+  expect(breakends.mated).toBe('alt')
+  expect(defaultPlotMarks(breakends)).toEqual(defaultPlotMarks(bedpe))
+})
+
+test('an ordinary VCF names no other end, so its default is what its fields say', () => {
+  const snvs = scanPlotFields(
+    features([
+      { ALT: ['A'], QUAL: 50, score: 3 },
+      { ALT: ['G'], QUAL: 20, score: 4 },
+    ]),
+    { listedSources: 0 },
+  )
+  expect(snvs.mated).toBeUndefined()
+  expect(defaultPlotMarks(snvs)).toEqual([
+    { mark: 'bar', encoding: { y: 'score' } },
+  ])
+})

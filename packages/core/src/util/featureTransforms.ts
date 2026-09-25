@@ -274,6 +274,25 @@ function mateFields(
   }
 }
 
+/**
+ * #api
+ * How a record states its other end, or undefined where it states none: the
+ * `mate` a paired adapter fills (BEDPE, STAR-Fusion), or an `ALT` the breakend
+ * and symbolic-SV readers resolve. The `mate` step admits exactly the features
+ * this names one for, so a caller deciding whether links are the picture a
+ * track wants asks here rather than re-reading the fields.
+ */
+export function matedBy(f: Feature) {
+  if (statedMate(f)) {
+    return 'mate' as const
+  }
+  const alts = f.get('ALT')
+  return Array.isArray(alts) &&
+    (alts as string[]).some(alt => junctionEnds(f, alt))
+    ? ('alt' as const)
+    : undefined
+}
+
 function mates(features: readonly Feature[]) {
   const out: Feature[] = []
   const seen = new Set<string>()
