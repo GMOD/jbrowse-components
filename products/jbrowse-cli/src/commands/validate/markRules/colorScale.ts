@@ -151,7 +151,8 @@ export function colorProblems(
   presets: FieldPresets<string>,
 ): ColorProblem[] {
   const color = withPreset(written, presets)
-  const { domain = [], range = [], domainMin, domainMax } = color
+  const { domain = [], domainMin, domainMax } = color
+  const { range = [] } = written
   const scale =
     color.scale === IDENTITY_SCALE
       ? IDENTITY_SCALE
