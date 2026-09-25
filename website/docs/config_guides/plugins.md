@@ -4,32 +4,41 @@ description: Adding first- and third-party plugins via config.json
 guide_category: Core configuration
 ---
 
-In jbrowse-web and jbrowse-desktop, add a plugin by listing its `name` (which
-must match the name the plugin registers itself under) and bundle `url` in the
-top-level `plugins` array.
+In jbrowse-web and jbrowse-desktop, the top-level `plugins` array says what to
+load. A published plugin is named by its plugin-store entry; a plugin you host
+yourself is named by its url.
 
 ```json
 {
   "plugins": [
-    {
-      "name": "GDC",
-      "url": "https://unpkg.com/jbrowse-plugin-gdc/dist/jbrowse-plugin-gdc.umd.production.min.js"
-    },
+    { "storePlugin": "MsaView" },
     {
       "name": "MyPlugin",
-      "esmLoc": { "uri": "plugin.js" }
+      "url": "https://example.com/plugins/myplugin.umd.js"
+    },
+    {
+      "name": "MyLocalPlugin",
+      "umdLoc": { "uri": "myplugin.umd.js" }
     }
   ]
 }
 ```
 
-- **`name` must match the plugin's own registration** (`name = 'GDC'` in the
-  plugin class), or the plugin fails to load.
-- **The [plugin store](/plugin_store/) lists unpkg URLs** for published plugins,
-  which you can also download to your own server. Plugin authors submit a PR to
-  [jbrowse-plugin-list](https://github.com/GMOD/jbrowse-plugin-list).
+- **`storePlugin` is the name the [plugin store](/plugin_store/) lists it
+  under.** JBrowse resolves it against the store when the config loads, picking
+  a build published for the version of JBrowse doing the reading and checking
+  its integrity hash. Nothing in the config pins a url or a version, which is
+  what makes it the form to use in a config that will be read for years — a
+  permanent url, a track hub. Plugin authors submit a PR to
+  [jbrowse-plugin-list](https://github.com/GMOD/jbrowse-plugin-list) to be
+  listed.
+- **`name` must match the plugin's own registration** (`name = 'MyPlugin'` in
+  the plugin class) for a UMD build, which is looked up by that name once its
+  script has run. An ESM build carries its own, and a store entry supplies one.
 - **Embedded components load plugins inline**; see the
   [inline plugins example](https://jbrowse.org/storybook/lgv/plugins/#with-inline-plugins).
+
+## Naming a build directly
 
 `url` is the simplest field and equals `umdUrl`. The others differ in module
 format and in what the path resolves against:
@@ -45,6 +54,28 @@ format and in what the path resolves against:
 `umdLoc`/`esmLoc` suit a plugin file that lives beside config.json. UMD is what
 the plugin store publishes and the only format an RPC worker can load, so it is
 the format to reach for unless you are loading a plugin you build yourself.
+
+Add `integrity` beside a UMD url to have the browser check the bytes against the
+hash before running them; the store publishes one per build.
+
+A url is an answer computed on the day the config was written, which is what
+`storePlugin` exists to avoid. The two can ride together — the ref for a JBrowse
+that resolves it, the url for one that does not, and as the fallback when the
+store cannot be reached:
+
+```json
+{
+  "plugins": [
+    {
+      "storePlugin": "MsaView",
+      "name": "MsaView",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-msaview/latest/dist/jbrowse-plugin-msaview.umd.production.min.js"
+    }
+  ]
+}
+```
+
+## The retired `cjsUrl`
 
 The `cjsUrl` field is gone as of v5. It loaded a plugin by writing it to a temp
 file and `require`ing it in jbrowse-desktop's renderer, which nothing needed:

@@ -839,3 +839,51 @@ describe('the schema and the manifest agree', () => {
     },
   )
 })
+
+// `required: ['name']` rejected every definition whose format carries its own
+// name, and the schema knew nothing of the store ref — the form a config at a
+// permanent url is meant to use, and the only one jb2hubs can emit.
+describe('a plugin definition', () => {
+  const withPlugins = (plugins: unknown[]) => ({ ...baseConfig(), plugins })
+
+  it.each([
+    ['a bare store ref', { storePlugin: 'MsaView' }],
+    // a generator emits both while hosts that resolve refs are rolling out
+    [
+      'a ref beside the url it falls back to',
+      { storePlugin: 'GWAS', name: 'GWAS', umdUrl: 'https://x/g.umd.js' },
+    ],
+    [
+      'an ESM url, which carries its own name',
+      { esmUrl: 'https://x/p.esm.js' },
+    ],
+    ['an ESM file beside the config', { esmLoc: { uri: 'p.esm.js' } }],
+    [
+      'a UMD build with the store integrity hash',
+      { name: 'GWAS', umdUrl: 'https://x/g.umd.js', integrity: 'sha384-abc' },
+    ],
+    ['the legacy url spelling', { name: 'GDC', url: 'https://x/gdc.js' }],
+  ])('is accepted: %s', (_label, plugin) => {
+    expect(whereOf(withPlugins([plugin]))).toEqual([])
+  })
+
+  it.each([
+    // the UMD loader looks the bundle up on globalThis by name, so this one
+    // shape does need it
+    ['a UMD url with no name', { umdUrl: 'https://x/g.umd.js' }],
+    ['a name with no build', { name: 'GWAS' }],
+    ['nothing at all', {}],
+    // PluginLoader reads .uri and .baseUri and nothing else
+    [
+      'a loc naming a local path',
+      { name: 'X', umdLoc: { localPath: '/p.js' } },
+    ],
+    // retired in v5; PluginLoader names UMD or ESM as the successor
+    ['a cjsUrl', { cjsUrl: 'https://x/p.cjs.js' }],
+    // reported at plugins[0], or deeper where the schema can say which key
+  ])('is refused: %s', (_label, plugin) => {
+    const where = whereOf(withPlugins([plugin]))
+    expect(where.length).toBeGreaterThan(0)
+    expect(where.every(w => w.startsWith('plugins[0]'))).toBe(true)
+  })
+})

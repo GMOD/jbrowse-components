@@ -20116,9 +20116,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     },
     "PluginDefinition": {
       "title": "PluginDefinition",
-      "description": "A plugin to load: its name plus a \`url\`/\`umdUrl\`/\`esmUrl\`, or \`umdLoc\`/\`esmLoc\` for a file relative to the config.",
+      "description": "A plugin to load: \`storePlugin\` naming a plugin-store entry, or a build url — \`url\`/\`umdUrl\`/\`esmUrl\`, or \`umdLoc\`/\`esmLoc\` for a file beside the config. A UMD build also needs \`name\`, the global its bundle defines.",
       "type": "object",
       "properties": {
+        "storePlugin": {
+          "type": "string",
+          "description": "A plugin-store entry's name, resolved against the store at load time so the config is not pinned to a url or a version. The form to use in a config served from a permanent url."
+        },
         "name": {
           "type": "string"
         },
@@ -20132,14 +20136,80 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         "umdLoc": {
-          "$ref": "#/$defs/FileLocation"
+          "type": "object",
+          "properties": {
+            "uri": {
+              "type": "string"
+            },
+            "baseUri": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "uri"
+          ],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
         },
         "esmLoc": {
-          "$ref": "#/$defs/FileLocation"
+          "type": "object",
+          "properties": {
+            "uri": {
+              "type": "string"
+            },
+            "baseUri": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "uri"
+          ],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        },
+        "integrity": {
+          "type": "string",
+          "description": "Subresource integrity hash for a UMD build, as the plugin store publishes it."
         }
       },
-      "required": [
-        "name"
+      "anyOf": [
+        {
+          "required": [
+            "storePlugin"
+          ]
+        },
+        {
+          "required": [
+            "esmUrl"
+          ]
+        },
+        {
+          "required": [
+            "esmLoc"
+          ]
+        },
+        {
+          "required": [
+            "name",
+            "url"
+          ]
+        },
+        {
+          "required": [
+            "name",
+            "umdUrl"
+          ]
+        },
+        {
+          "required": [
+            "name",
+            "umdLoc"
+          ]
+        }
       ]
     }
   }

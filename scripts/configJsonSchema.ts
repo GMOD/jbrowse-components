@@ -1386,20 +1386,48 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     ...closed(slotTable(rootMeta, 0)),
   }
 
+  const pluginLoc = closed(
+    { uri: { type: 'string' }, baseUri: { type: 'string' } },
+    ['uri'],
+  )
   defs.PluginDefinition = {
     title: 'PluginDefinition',
     description:
-      'A plugin to load: its name plus a `url`/`umdUrl`/`esmUrl`, or `umdLoc`/`esmLoc` for a file relative to the config.',
+      'A plugin to load: `storePlugin` naming a plugin-store entry, or a build url — `url`/`umdUrl`/`esmUrl`, or `umdLoc`/`esmLoc` for a file beside the config. A UMD build also needs `name`, the global its bundle defines.',
     type: 'object',
     properties: {
+      storePlugin: {
+        type: 'string',
+        description:
+          "A plugin-store entry's name, resolved against the store at load time so the config is not pinned to a url or a version. The form to use in a config served from a permanent url.",
+      },
       name: { type: 'string' },
       url: { type: 'string' },
       umdUrl: { type: 'string' },
       esmUrl: { type: 'string' },
-      umdLoc: ref('FileLocation'),
-      esmLoc: ref('FileLocation'),
+      // not `FileLocation`: PluginLoader reads `.uri` and `.baseUri` and
+      // nothing else, so a `localPath` or a blob resolves to the string
+      // "undefined" against the config's base
+      umdLoc: pluginLoc,
+      esmLoc: pluginLoc,
+      integrity: {
+        type: 'string',
+        description:
+          'Subresource integrity hash for a UMD build, as the plugin store publishes it.',
+      },
     },
-    required: ['name'],
+    // `name` is required only alongside a UMD url, which is the one loader that
+    // looks the plugin up on `globalThis` by name. An ESM build carries its own
+    // name and a store ref gets one from the manifest, so requiring it outright
+    // rejected two forms JBrowse loads.
+    anyOf: [
+      { required: ['storePlugin'] },
+      { required: ['esmUrl'] },
+      { required: ['esmLoc'] },
+      { required: ['name', 'url'] },
+      { required: ['name', 'umdUrl'] },
+      { required: ['name', 'umdLoc'] },
+    ],
   }
 
   const ROOT_OVERRIDES: Record<string, JsonSchema> = {
