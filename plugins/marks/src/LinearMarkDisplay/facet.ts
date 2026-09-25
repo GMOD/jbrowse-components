@@ -134,7 +134,7 @@ function rowRemap(region: MarkRegionData, layout: FacetLayout) {
 // The key and the extents over the instances a layer draws, so a hidden
 // section leaves the legend and the axis the way it leaves the plot.
 function drawnScales(layer: StoredLayer): StoredLayer {
-  const { y, color, colorValue, glyph, scale, shapeScale } = layer
+  const { y, color, colorValue, glyph, scale, shapeScale, sizeScale } = layer
   const colors = new Set(color)
   const bits = colorValue && rampValueBits(colorValue)
   const glyphs = new Set(glyph)
@@ -142,12 +142,19 @@ function drawnScales(layer: StoredLayer): StoredLayer {
   let yMax = -Infinity
   let vMin = Infinity
   let vMax = -Infinity
+  let sMin = Infinity
+  let sMax = -Infinity
   let missing = false
   let notNumber = false
   for (let i = 0; i < layer.count; i++) {
     if (y) {
       yMin = Math.min(yMin, y[i]!)
       yMax = Math.max(yMax, y[i]!)
+    }
+    const sv = layer.size?.[i]
+    if (sv !== undefined && Number.isFinite(sv)) {
+      sMin = Math.min(sMin, sv)
+      sMax = Math.max(sMax, sv)
     }
     if (colorValue) {
       const v = colorValue[i]!
@@ -190,6 +197,7 @@ function drawnScales(layer: StoredLayer): StoredLayer {
       ...shapeScale,
       entries: shapeScale.entries.filter(e => glyphs.has(SHAPE_CODES[e.shape])),
     },
+    sizeScale: sizeScale && { ...sizeScale, extent: [sMin, sMax] },
   }
 }
 
@@ -220,6 +228,8 @@ function facetLayer(layer: StoredLayer, remap: Uint32Array): StoredLayer {
     colorValue: layer.colorValue && keepRampValues(layer.colorValue, shown),
     glyph: layer.glyph?.filter(shown),
     text: layer.text?.filter(shown),
+    size: layer.size?.filter(shown),
+    x2Ref: layer.x2Ref?.filter(shown),
     flatbush: layer.flatbush && x.length > 0 ? hitIndexOf(x, x2, y) : undefined,
     flatbushData: undefined,
   })
