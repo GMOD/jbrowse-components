@@ -64,12 +64,8 @@ static const uint RC_NO_TAG_VALUE    = 18u;
 static const uint RC_MOD_FWD         = 19u;
 static const uint RC_MOD_REV         = 20u;
 // MAPQ 255 is the SAM spec's "mapping quality unavailable" sentinel, not a
-// mapping quality of 255. Fed to the hue ramp it painted an ordinary
-// blue-violet — a color a reader would take for a genuine very high score, and
-// one the MAPQ legend named nothing. Its own flat-swatch category instead, so it
-// paints the neutral grey and the legend lists it exactly when reads carry it.
-// No branch is needed in getReadColor: a flat category resolves straight out of
-// u.readCategoryColor.
+// score, so it is a flat category of its own: the neutral grey rather than the
+// ramp's top, keyed exactly when reads carry it.
 static const uint RC_MAPQ_UNAVAILABLE = 21u;
 
 // When a read's direction is uninformative (normal color scheme, mate unmapped,
@@ -151,13 +147,12 @@ struct Instance {
   uint  endOff         : ATTR1;   // absolute genomic bp
   uint  y              : ATTR2;
   uint  flags          : ATTR3;
-  uint  mapq           : ATTR4;
-  float insertSize     : ATTR5;
-  int   strand         : ATTR6;
-  uint  tagColor       : ATTR7;   // ABGR u32; 0 = not set
-  uint  edgeFlags      : ATTR8;   // bit 0 = is_first, bit 1 = is_last
-  uint  interchrom     : ATTR9;   // 1 = mate on a different chromosome
-  uint  colorCategory  : ATTR10;  // RC_* — CPU-classified, see above
+  float insertSize     : ATTR4;
+  int   strand         : ATTR5;
+  uint  fillColor      : ATTR6;   // ABGR u32 under RC_MAPQ and RC_TAG; 0 = not set
+  uint  edgeFlags      : ATTR7;   // bit 0 = is_first, bit 1 = is_last
+  uint  interchrom     : ATTR8;   // 1 = mate on a different chromosome
+  uint  colorCategory  : ATTR9;   // RC_* — CPU-classified, see above
 };
 
 struct VsOut {
@@ -216,21 +211,12 @@ bool showChevron(bool chainMode, float pxPerBp, float featHeight,
       && (!dirMoot || featWPx > CHEVRON_DIRLESS_MIN_WIDTH_PX);
 }
 
+// RC_MAPQ and RC_TAG resolve per read, so `packReadSegments` packs their colour
+// into `fillColor`; an unset tag colour falls back to RC_TAG's own palette slot.
 float3 getReadColor(Instance inst, Uniforms u) {
   uint cat = inst.colorCategory;
-  // The two categories that are a per-read ramp or packed value rather than a
-  // flat swatch, so they cannot come from the palette table.
-  if (cat == RC_MAPQ) { return hueRampHalfSat(float(inst.mapq)); }
-  if (cat == RC_TAG) {
-    // An unset tag color falls back to RC_TAG's OWN palette slot, which is what
-    // `readCategoryPaletteKeys.tag` resolves. This used to name `u.colorPairLR`
-    // — the slot that table happens to point at — which is the same colour by
-    // coincidence and the last place the shader named a palette slot for a read
-    // fill. Re-point the table and a named copy would silently disagree with it,
-    // which is the whole failure the RC_* categories replaced.
-    return inst.tagColor != 0u
-      ? unpackRGBA(inst.tagColor).xyz
-      : categoryPaletteColor(cat, u);
+  if ((cat == RC_MAPQ || cat == RC_TAG) && inst.fillColor != 0u) {
+    return unpackRGBA(inst.fillColor).xyz;
   }
   return categoryPaletteColor(cat, u);
 }

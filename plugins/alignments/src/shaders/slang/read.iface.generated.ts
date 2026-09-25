@@ -290,12 +290,12 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[153] = uniforms.devicePixelRatio
 }
 
-export const INSTANCE_STRIDE_BYTES = 44
-export const INSTANCE_STRIDE_WORDS = 11
+export const INSTANCE_STRIDE_BYTES = 40
+export const INSTANCE_STRIDE_WORDS = 10
 
 // Word indices into a Float32Array view over the instance buffer.
 export const INSTANCE_OFFSET_F32 = {
-  insertSize: 5,
+  insertSize: 4,
 } as const
 
 // Word indices into a Uint32Array view over the instance buffer.
@@ -304,16 +304,15 @@ export const INSTANCE_OFFSET_U32 = {
   endOff: 1,
   y: 2,
   flags: 3,
-  mapq: 4,
-  tagColor: 7,
-  edgeFlags: 8,
-  interchrom: 9,
-  colorCategory: 10,
+  fillColor: 6,
+  edgeFlags: 7,
+  interchrom: 8,
+  colorCategory: 9,
 } as const
 
 // Word indices into a Int32Array view over the instance buffer.
 export const INSTANCE_OFFSET_I32 = {
-  strand: 6,
+  strand: 5,
 } as const
 
 export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
@@ -321,13 +320,12 @@ export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
   { name: 'a_endOff', components: 1, type: 'uint', offsetBytes: 4, integer: true },
   { name: 'a_y', components: 1, type: 'uint', offsetBytes: 8, integer: true },
   { name: 'a_flags', components: 1, type: 'uint', offsetBytes: 12, integer: true },
-  { name: 'a_mapq', components: 1, type: 'uint', offsetBytes: 16, integer: true },
-  { name: 'a_insertSize', components: 1, type: 'float', offsetBytes: 20, integer: false },
-  { name: 'a_strand', components: 1, type: 'int', offsetBytes: 24, integer: true },
-  { name: 'a_tagColor', components: 1, type: 'uint', offsetBytes: 28, integer: true },
-  { name: 'a_edgeFlags', components: 1, type: 'uint', offsetBytes: 32, integer: true },
-  { name: 'a_interchrom', components: 1, type: 'uint', offsetBytes: 36, integer: true },
-  { name: 'a_colorCategory', components: 1, type: 'uint', offsetBytes: 40, integer: true },
+  { name: 'a_insertSize', components: 1, type: 'float', offsetBytes: 16, integer: false },
+  { name: 'a_strand', components: 1, type: 'int', offsetBytes: 20, integer: true },
+  { name: 'a_fillColor', components: 1, type: 'uint', offsetBytes: 24, integer: true },
+  { name: 'a_edgeFlags', components: 1, type: 'uint', offsetBytes: 28, integer: true },
+  { name: 'a_interchrom', components: 1, type: 'uint', offsetBytes: 32, integer: true },
+  { name: 'a_colorCategory', components: 1, type: 'uint', offsetBytes: 36, integer: true },
 ]
 
 export interface InstanceArrays {
@@ -335,10 +333,9 @@ export interface InstanceArrays {
   endOff: ArrayLike<number>
   y: ArrayLike<number>
   flags: ArrayLike<number>
-  mapq: ArrayLike<number>
   insertSize: ArrayLike<number>
   strand: ArrayLike<number>
-  tagColor: ArrayLike<number>
+  fillColor: ArrayLike<number>
   edgeFlags: ArrayLike<number>
   interchrom: ArrayLike<number>
   colorCategory: ArrayLike<number>
@@ -352,20 +349,19 @@ export function packInstances(
   const f32 = new Float32Array(buf)
   const u32 = new Uint32Array(buf)
   const i32 = new Int32Array(buf)
-  const { startOff, endOff, y, flags, mapq, insertSize, strand, tagColor, edgeFlags, interchrom, colorCategory } = arrays
+  const { startOff, endOff, y, flags, insertSize, strand, fillColor, edgeFlags, interchrom, colorCategory } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_WORDS
     u32[o + 0] = startOff[i]!
     u32[o + 1] = endOff[i]!
     u32[o + 2] = y[i]!
     u32[o + 3] = flags[i]!
-    u32[o + 4] = mapq[i]!
-    f32[o + 5] = insertSize[i]!
-    i32[o + 6] = strand[i]!
-    u32[o + 7] = tagColor[i]!
-    u32[o + 8] = edgeFlags[i]!
-    u32[o + 9] = interchrom[i]!
-    u32[o + 10] = colorCategory[i]!
+    f32[o + 4] = insertSize[i]!
+    i32[o + 5] = strand[i]!
+    u32[o + 6] = fillColor[i]!
+    u32[o + 7] = edgeFlags[i]!
+    u32[o + 8] = interchrom[i]!
+    u32[o + 9] = colorCategory[i]!
   }
   return buf
 }
@@ -406,65 +402,56 @@ export function setInstanceFlags(u32: Uint32Array, i: number, v: number) {
   u32[i * INSTANCE_STRIDE_WORDS + 3] = v
 }
 
-// Instance `i`'s `mapq`.
-export function getInstanceMapq(u32: Uint32Array, i: number) {
-  return u32[i * INSTANCE_STRIDE_WORDS + 4]!
-}
-
-export function setInstanceMapq(u32: Uint32Array, i: number, v: number) {
-  u32[i * INSTANCE_STRIDE_WORDS + 4] = v
-}
-
 // Instance `i`'s `insertSize`.
 export function getInstanceInsertSize(f32: Float32Array, i: number) {
-  return f32[i * INSTANCE_STRIDE_WORDS + 5]!
+  return f32[i * INSTANCE_STRIDE_WORDS + 4]!
 }
 
 export function setInstanceInsertSize(f32: Float32Array, i: number, v: number) {
-  f32[i * INSTANCE_STRIDE_WORDS + 5] = v
+  f32[i * INSTANCE_STRIDE_WORDS + 4] = v
 }
 
 // Instance `i`'s `strand`.
 export function getInstanceStrand(i32: Int32Array, i: number) {
-  return i32[i * INSTANCE_STRIDE_WORDS + 6]!
+  return i32[i * INSTANCE_STRIDE_WORDS + 5]!
 }
 
 export function setInstanceStrand(i32: Int32Array, i: number, v: number) {
-  i32[i * INSTANCE_STRIDE_WORDS + 6] = v
+  i32[i * INSTANCE_STRIDE_WORDS + 5] = v
 }
 
-// Instance `i`'s `tagColor`.
-export function getInstanceTagColor(u32: Uint32Array, i: number) {
-  return u32[i * INSTANCE_STRIDE_WORDS + 7]!
+// Instance `i`'s `fillColor`.
+export function getInstanceFillColor(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 6]!
 }
 
-export function setInstanceTagColor(u32: Uint32Array, i: number, v: number) {
-  u32[i * INSTANCE_STRIDE_WORDS + 7] = v
+export function setInstanceFillColor(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 6] = v
 }
 
 // Instance `i`'s `edgeFlags`.
 export function getInstanceEdgeFlags(u32: Uint32Array, i: number) {
-  return u32[i * INSTANCE_STRIDE_WORDS + 8]!
+  return u32[i * INSTANCE_STRIDE_WORDS + 7]!
 }
 
 export function setInstanceEdgeFlags(u32: Uint32Array, i: number, v: number) {
-  u32[i * INSTANCE_STRIDE_WORDS + 8] = v
+  u32[i * INSTANCE_STRIDE_WORDS + 7] = v
 }
 
 // Instance `i`'s `interchrom`.
 export function getInstanceInterchrom(u32: Uint32Array, i: number) {
-  return u32[i * INSTANCE_STRIDE_WORDS + 9]!
+  return u32[i * INSTANCE_STRIDE_WORDS + 8]!
 }
 
 export function setInstanceInterchrom(u32: Uint32Array, i: number, v: number) {
-  u32[i * INSTANCE_STRIDE_WORDS + 9] = v
+  u32[i * INSTANCE_STRIDE_WORDS + 8] = v
 }
 
 // Instance `i`'s `colorCategory`.
 export function getInstanceColorCategory(u32: Uint32Array, i: number) {
-  return u32[i * INSTANCE_STRIDE_WORDS + 10]!
+  return u32[i * INSTANCE_STRIDE_WORDS + 9]!
 }
 
 export function setInstanceColorCategory(u32: Uint32Array, i: number, v: number) {
-  u32[i * INSTANCE_STRIDE_WORDS + 10] = v
+  u32[i * INSTANCE_STRIDE_WORDS + 9] = v
 }

@@ -15,6 +15,7 @@ import {
   shouldOutlineReads,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import {
+  RC_MAPQ,
   READ_OUTLINE_MIN_WIDTH_PX,
   READ_OUTLINE_PX,
   READ_OUTLINE_SHADE,
@@ -23,6 +24,7 @@ import * as readShader from '../../shaders/slang/read.generated.ts'
 import { showChevron as shaderShowChevron } from '../../shaders/slang/read.js.generated.ts'
 import { CHEVRON_PX } from '../../shaders/slang/readChevron.generated.ts'
 import { chevronCapsEdge } from '../../shaders/slang/readChevron.js.generated.ts'
+import { MAPQ_ABGR } from '../../shared/qualityRamps.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
@@ -79,17 +81,22 @@ export function packReadSegments(data: ReadMarkRegion): ArrayBuffer {
   for (let j = 0; j < n; j++) {
     const ri = segmentReadIndices[j]!
     const o = j * stride32
+    const category = colorCategories[ri]!
     u32[o + F_U32.startOff] = segmentPositions[j * 2]!
     u32[o + F_U32.endOff] = segmentPositions[j * 2 + 1]!
     u32[o + F_U32.y] = readYs[ri]!
     u32[o + F_U32.flags] = readFlags[ri]!
-    u32[o + F_U32.mapq] = readMapqs[ri]!
     f32[o + F_F32.insertSize] = readInsertSizes[ri]!
     i32[o + F_I32.strand] = readStrands[ri]!
-    u32[o + F_U32.tagColor] = hasTagColors ? tagColors[ri]! : 0
+    u32[o + F_U32.fillColor] =
+      category === RC_MAPQ
+        ? MAPQ_ABGR[readMapqs[ri]!]!
+        : hasTagColors
+          ? tagColors[ri]!
+          : 0
     u32[o + F_U32.edgeFlags] = segmentEdgeFlags[j]!
     u32[o + F_U32.interchrom] = interchrom[ri]!
-    u32[o + F_U32.colorCategory] = colorCategories[ri]!
+    u32[o + F_U32.colorCategory] = category
   }
   return buf
 }

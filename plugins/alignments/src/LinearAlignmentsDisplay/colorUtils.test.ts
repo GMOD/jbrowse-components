@@ -434,15 +434,8 @@ describe('getReadColor maps each category to its palette color', () => {
     ).toBe(rgb255(palette.colorLongInsert))
   })
 
-  test('mapping quality uses an hsl ramp keyed on mapq', () => {
-    expect(
-      getReadColor(0, makeData({ mapq: 42 }), 'mappingQuality', palette),
-    ).toBe('hsl(42,50%,50%)')
-  })
-
-  // 255 is "mapping quality unavailable", not a score of 255. On the ramp it
-  // came out an ordinary blue-violet — indistinguishable from a genuine very
-  // high score, and named by nothing in the legend.
+  // 255 is "mapping quality unavailable", not a score of 255; on the ramp it
+  // would read as a genuine high score.
   test('mapq 255 leaves the ramp for the neutral unavailable swatch', () => {
     const data = makeData({ mapq: 255 })
     expect(readColorCategory(0, data, 'mappingQuality')).toBe('mapqUnavailable')

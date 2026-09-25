@@ -27,6 +27,7 @@ import {
 } from '../shaders/slang/read.consts.generated.ts'
 import { COLOR_SCHEMES, isDataFillScheme } from '../shared/colorSchemes.ts'
 import { classifyInsertSize } from '../shared/insertSizeStats.ts'
+import { MAPQ_CSS } from '../shared/qualityRamps.ts'
 import {
   CHAIN_SPLIT_DELETION,
   CHAIN_SPLIT_INVERSION,
@@ -367,7 +368,7 @@ function schemeCategory(
     // 255 is the SAM spec's "unavailable", not a score of 255 — and it is what
     // `getMappingQuality` returns for a feature carrying no mapping quality at
     // all (PAF/MashMap blocks without one). Split out so it takes the neutral
-    // grey rather than a hue the ramp's legend never names.
+    // grey rather than the ramp's top.
     case 'mappingQuality':
       return data.readMapqs[i] === MAPQ_UNAVAILABLE ? 'mapqUnavailable' : 'mapq'
 
@@ -448,8 +449,7 @@ function categoryColor(
     case 'plain':
       return rgb255(palette.colorPairLR)
     case 'mapq':
-      // hue = mapq degrees (0–255), browser native hsl() is fastest
-      return `hsl(${data.readMapqs[i]},50%,50%)`
+      return MAPQ_CSS[data.readMapqs[i]!]!
     case 'tag': {
       const packed = data.readTagColors[i]
       return packed ? abgrToCssRgba(packed) : rgb255(palette.colorPairLR)
@@ -525,7 +525,7 @@ export const swatchPaletteKeys = {
   // co-linear (deletion) split reuses the supplementary orange — "ordinary split
   // read", with magenta reserved for the special inverted case
   splitDeletion: 'colorSupplementary',
-  // read a CPU-baked scheme resolved no color for: the shader's tagColor==0
+  // read a CPU-baked scheme resolved no color for: the shader's fillColor==0
   // fallback, which is the same neutral 'plain' paints
   noTagValue: 'colorPairLR',
   // MAPQ 255 = "unavailable": the neutral grey, because the answer is missing,
@@ -541,10 +541,10 @@ export type SwatchCategory = keyof typeof swatchPaletteKeys
 // category is painted and the color its swatch shows come from one table rather
 // than from a shader chain checked against this one by a test.
 //
-// `mapq` and `tag` resolve per read (an hsl() of the mapq, a packed tag color)
+// `mapq` and `tag` resolve per read (the MAPQ ramp's colour, a packed tag color)
 // and never reach the uploaded table; they take the neutral fill so the slot
 // holds a sane color rather than whatever the last block render left, which is
-// also what the shader's own tagColor==0 path paints.
+// also what the shader's own fillColor==0 path paints.
 export const readCategoryPaletteKeys = {
   ...swatchPaletteKeys,
   plain: 'colorPairLR',

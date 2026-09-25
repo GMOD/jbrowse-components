@@ -62,7 +62,7 @@ export function firstOfPairStrand(strand: number, flags: number) {
 // The SAM spec's "mapping quality is not available" sentinel — a real value with
 // a meaning, not a score. Named because two places have to agree on it: this
 // file produces it, and `readColorCategory` gives it its own color bucket rather
-// than feeding 255 to the MAPQ hue ramp.
+// than feeding 255 to the MAPQ ramp.
 export const MAPQ_UNAVAILABLE = 255
 
 // A feature's mapping quality, or MAPQ_UNAVAILABLE when it has none.

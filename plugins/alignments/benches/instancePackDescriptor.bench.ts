@@ -16,7 +16,7 @@
 //
 //   gather   8 of 11 fields are per READ, reached as `readYs[segmentReadIndices[j]]`
 //   strided  startOff/endOff are `segmentPositions[j*2]` and `[j*2+1]`
-//   fallback `tagColor` is `hasTagColors ? tagColors[ri] : 0`
+//   fallback `fillColor` is `hasTagColors ? tagColors[ri] : 0`
 //
 // The same shapes (plus affine — `freq[i]/255`, `x1[i]-baseH`, `idx[i]+1`) are
 // why ~12 other packers in the tree are hand-written, so a form that absorbs
@@ -142,7 +142,6 @@ interface Data {
   segmentEdgeFlags: Uint32Array
   readYs: Uint32Array
   readFlags: Uint32Array
-  readMapqs: Uint32Array
   readInsertSizes: Float32Array
   readStrands: Int32Array
   readTagColors: Uint32Array
@@ -165,7 +164,6 @@ const packInline = (data: Data, buf: ArrayBuffer) => {
   const interchrom = data.readInterchrom
   const readYs = data.readYs
   const readFlags = data.readFlags
-  const readMapqs = data.readMapqs
   const readInsertSizes = data.readInsertSizes
   const readStrands = data.readStrands
   const segmentPositions = data.segmentPositions
@@ -178,10 +176,9 @@ const packInline = (data: Data, buf: ArrayBuffer) => {
     u32[o + F_U32.endOff] = segmentPositions[j * 2 + 1]!
     u32[o + F_U32.y] = readYs[ri]!
     u32[o + F_U32.flags] = readFlags[ri]!
-    u32[o + F_U32.mapq] = readMapqs[ri]!
     f32[o + F_F32.insertSize] = readInsertSizes[ri]!
     i32[o + F_I32.strand] = readStrands[ri]!
-    u32[o + F_U32.tagColor] = hasTagColors ? tagColors[ri]! : 0
+    u32[o + F_U32.fillColor] = hasTagColors ? tagColors[ri]! : 0
     u32[o + F_U32.edgeFlags] = segmentEdgeFlags[j]!
     u32[o + F_U32.interchrom] = interchrom[ri]!
     u32[o + F_U32.colorCategory] = colorCategories[ri]!
@@ -203,7 +200,6 @@ const packControl = (data: Data, buf: ArrayBuffer) => {
   const interchrom = data.readInterchrom
   const readYs = data.readYs
   const readFlags = data.readFlags
-  const readMapqs = data.readMapqs
   const readInsertSizes = data.readInsertSizes
   const readStrands = data.readStrands
   const segmentPositions = data.segmentPositions
@@ -216,10 +212,9 @@ const packControl = (data: Data, buf: ArrayBuffer) => {
     u32[o + F_U32.endOff] = segmentPositions[j * 2 + 1]!
     u32[o + F_U32.y] = readYs[ri]!
     u32[o + F_U32.flags] = readFlags[ri]!
-    u32[o + F_U32.mapq] = readMapqs[ri]!
     f32[o + F_F32.insertSize] = readInsertSizes[ri]!
     i32[o + F_I32.strand] = readStrands[ri]!
-    u32[o + F_U32.tagColor] = hasTagColors ? tagColors[ri]! : 0
+    u32[o + F_U32.fillColor] = hasTagColors ? tagColors[ri]! : 0
     u32[o + F_U32.edgeFlags] = segmentEdgeFlags[j]!
     u32[o + F_U32.interchrom] = interchrom[ri]!
     u32[o + F_U32.colorCategory] = colorCategories[ri]!
@@ -242,7 +237,6 @@ const packInlineLiteral = (data: Data, buf: ArrayBuffer) => {
   const interchrom = data.readInterchrom
   const readYs = data.readYs
   const readFlags = data.readFlags
-  const readMapqs = data.readMapqs
   const readInsertSizes = data.readInsertSizes
   const readStrands = data.readStrands
   const segmentPositions = data.segmentPositions
@@ -255,13 +249,12 @@ const packInlineLiteral = (data: Data, buf: ArrayBuffer) => {
     u32[o + 1] = segmentPositions[j * 2 + 1]!
     u32[o + 2] = readYs[ri]!
     u32[o + 3] = readFlags[ri]!
-    u32[o + 4] = readMapqs[ri]!
-    f32[o + 5] = readInsertSizes[ri]!
-    i32[o + 6] = readStrands[ri]!
-    u32[o + 7] = hasTagColors ? tagColors[ri]! : 0
-    u32[o + 8] = segmentEdgeFlags[j]!
-    u32[o + 9] = interchrom[ri]!
-    u32[o + 10] = colorCategories[ri]!
+    f32[o + 4] = readInsertSizes[ri]!
+    i32[o + 5] = readStrands[ri]!
+    u32[o + 6] = hasTagColors ? tagColors[ri]! : 0
+    u32[o + 7] = segmentEdgeFlags[j]!
+    u32[o + 8] = interchrom[ri]!
+    u32[o + 9] = colorCategories[ri]!
   }
   return buf
 }
@@ -282,8 +275,7 @@ const packInlineHoisted = (data: Data, buf: ArrayBuffer) => {
     endOff: W_endOff,
     y: W_y,
     flags: W_flags,
-    mapq: W_mapq,
-    tagColor: W_tagColor,
+    fillColor: W_fillColor,
     edgeFlags: W_edgeFlags,
     interchrom: W_interchrom,
     colorCategory: W_colorCategory,
@@ -296,7 +288,6 @@ const packInlineHoisted = (data: Data, buf: ArrayBuffer) => {
   const interchrom = data.readInterchrom
   const readYs = data.readYs
   const readFlags = data.readFlags
-  const readMapqs = data.readMapqs
   const readInsertSizes = data.readInsertSizes
   const readStrands = data.readStrands
   const segmentPositions = data.segmentPositions
@@ -309,10 +300,9 @@ const packInlineHoisted = (data: Data, buf: ArrayBuffer) => {
     u32[o + W_endOff] = segmentPositions[j * 2 + 1]!
     u32[o + W_y] = readYs[ri]!
     u32[o + W_flags] = readFlags[ri]!
-    u32[o + W_mapq] = readMapqs[ri]!
     f32[o + W_insertSize] = readInsertSizes[ri]!
     i32[o + W_strand] = readStrands[ri]!
-    u32[o + W_tagColor] = hasTagColors ? tagColors[ri]! : 0
+    u32[o + W_fillColor] = hasTagColors ? tagColors[ri]! : 0
     u32[o + W_edgeFlags] = segmentEdgeFlags[j]!
     u32[o + W_interchrom] = interchrom[ri]!
     u32[o + W_colorCategory] = colorCategories[ri]!
@@ -366,10 +356,9 @@ interface ReadDesc {
   endOff: Desc
   y: Desc
   flags: Desc
-  mapq: Desc
   insertSize: Desc
   strand: Desc
-  tagColor: Desc
+  fillColor: Desc
   edgeFlags: Desc
   interchrom: Desc
   colorCategory: Desc
@@ -412,13 +401,6 @@ const packDescIdent = (
   const eF = e_.f
   const eM = e_.m
   const eB = e_.b
-  const g_ = norm(d.mapq, identity)
-  const gS = g_.s
-  const gX = g_.x
-  const gT = g_.t
-  const gF = g_.f
-  const gM = g_.m
-  const gB = g_.b
   const h_ = norm(d.insertSize, identity)
   const hS = h_.s
   const hX = h_.x
@@ -433,7 +415,7 @@ const packDescIdent = (
   const kF = k_.f
   const kM = k_.m
   const kB = k_.b
-  const l_ = norm(d.tagColor, identity)
+  const l_ = norm(d.fillColor, identity)
   const lS = l_.s
   const lX = l_.x
   const lT = l_.t
@@ -467,13 +449,12 @@ const packDescIdent = (
     u32[o + 1] = bS[bX[i]! * bT + bF]! * bM + bB
     u32[o + 2] = cS[cX[i]! * cT + cF]! * cM + cB
     u32[o + 3] = eS[eX[i]! * eT + eF]! * eM + eB
-    u32[o + 4] = gS[gX[i]! * gT + gF]! * gM + gB
-    f32[o + 5] = hS[hX[i]! * hT + hF]! * hM + hB
-    i32[o + 6] = kS[kX[i]! * kT + kF]! * kM + kB
-    u32[o + 7] = lS[lX[i]! * lT + lF]! * lM + lB
-    u32[o + 8] = pS[pX[i]! * pT + pF]! * pM + pB
-    u32[o + 9] = qS[qX[i]! * qT + qF]! * qM + qB
-    u32[o + 10] = rS[rX[i]! * rT + rF]! * rM + rB
+    f32[o + 4] = hS[hX[i]! * hT + hF]! * hM + hB
+    i32[o + 5] = kS[kX[i]! * kT + kF]! * kM + kB
+    u32[o + 6] = lS[lX[i]! * lT + lF]! * lM + lB
+    u32[o + 7] = pS[pX[i]! * pT + pF]! * pM + pB
+    u32[o + 8] = qS[qX[i]! * qT + qF]! * qM + qB
+    u32[o + 9] = rS[rX[i]! * rT + rF]! * rM + rB
   }
   return buf
 }
@@ -529,13 +510,6 @@ const packDescBranch = (d: ReadDesc, n: number, buf: ArrayBuffer) => {
   const eF = e_.f
   const eM = e_.m
   const eB = e_.b
-  const g_ = normB(d.mapq)
-  const gS = g_.s
-  const gX = g_.x
-  const gT = g_.t
-  const gF = g_.f
-  const gM = g_.m
-  const gB = g_.b
   const h_ = normB(d.insertSize)
   const hS = h_.s
   const hX = h_.x
@@ -550,7 +524,7 @@ const packDescBranch = (d: ReadDesc, n: number, buf: ArrayBuffer) => {
   const kF = k_.f
   const kM = k_.m
   const kB = k_.b
-  const l_ = normB(d.tagColor)
+  const l_ = normB(d.fillColor)
   const lS = l_.s
   const lX = l_.x
   const lT = l_.t
@@ -584,13 +558,12 @@ const packDescBranch = (d: ReadDesc, n: number, buf: ArrayBuffer) => {
     u32[o + 1] = bS[(bX ? bX[i]! : i) * bT + bF]! * bM + bB
     u32[o + 2] = cS[(cX ? cX[i]! : i) * cT + cF]! * cM + cB
     u32[o + 3] = eS[(eX ? eX[i]! : i) * eT + eF]! * eM + eB
-    u32[o + 4] = gS[(gX ? gX[i]! : i) * gT + gF]! * gM + gB
-    f32[o + 5] = hS[(hX ? hX[i]! : i) * hT + hF]! * hM + hB
-    i32[o + 6] = kS[(kX ? kX[i]! : i) * kT + kF]! * kM + kB
-    u32[o + 7] = lS[(lX ? lX[i]! : i) * lT + lF]! * lM + lB
-    u32[o + 8] = pS[(pX ? pX[i]! : i) * pT + pF]! * pM + pB
-    u32[o + 9] = qS[(qX ? qX[i]! : i) * qT + qF]! * qM + qB
-    u32[o + 10] = rS[(rX ? rX[i]! : i) * rT + rF]! * rM + rB
+    f32[o + 4] = hS[(hX ? hX[i]! : i) * hT + hF]! * hM + hB
+    i32[o + 5] = kS[(kX ? kX[i]! : i) * kT + kF]! * kM + kB
+    u32[o + 6] = lS[(lX ? lX[i]! : i) * lT + lF]! * lM + lB
+    u32[o + 7] = pS[(pX ? pX[i]! : i) * pT + pF]! * pM + pB
+    u32[o + 8] = qS[(qX ? qX[i]! : i) * qT + qF]! * qM + qB
+    u32[o + 9] = rS[(rX ? rX[i]! : i) * rT + rF]! * rM + rB
   }
   return buf
 }
@@ -618,14 +591,12 @@ const packDescGather = (g: ReadGathered, n: number, buf: ArrayBuffer) => {
   const cX = g.y.index
   const eS = g.flags.src
   const eX = g.flags.index
-  const gS = g.mapq.src
-  const gX = g.mapq.index
   const hS = g.insertSize.src
   const hX = g.insertSize.index
   const kS = g.strand.src
   const kX = g.strand.index
-  const lS = g.tagColor.src
-  const lX = g.tagColor.index
+  const lS = g.fillColor.src
+  const lX = g.fillColor.index
   const pS = g.edgeFlags.src
   const pX = g.edgeFlags.index
   const qS = g.interchrom.src
@@ -638,13 +609,12 @@ const packDescGather = (g: ReadGathered, n: number, buf: ArrayBuffer) => {
     u32[o + 1] = bS[bX[i]!]!
     u32[o + 2] = cS[cX[i]!]!
     u32[o + 3] = eS[eX[i]!]!
-    u32[o + 4] = gS[gX[i]!]!
-    f32[o + 5] = hS[hX[i]!]!
-    i32[o + 6] = kS[kX[i]!]!
-    u32[o + 7] = lS[lX[i]!]!
-    u32[o + 8] = pS[pX[i]!]!
-    u32[o + 9] = qS[qX[i]!]!
-    u32[o + 10] = rS[rX[i]!]!
+    f32[o + 4] = hS[hX[i]!]!
+    i32[o + 5] = kS[kX[i]!]!
+    u32[o + 6] = lS[lX[i]!]!
+    u32[o + 7] = pS[pX[i]!]!
+    u32[o + 8] = qS[qX[i]!]!
+    u32[o + 9] = rS[rX[i]!]!
   }
   return buf
 }
@@ -670,10 +640,6 @@ const packDescAffine = (g: ReadGathered, n: number, buf: ArrayBuffer) => {
   const eX = g.flags.index
   const eM = g.flags.scale
   const eB = g.flags.bias
-  const gS = g.mapq.src
-  const gX = g.mapq.index
-  const gM = g.mapq.scale
-  const gB = g.mapq.bias
   const hS = g.insertSize.src
   const hX = g.insertSize.index
   const hM = g.insertSize.scale
@@ -682,10 +648,10 @@ const packDescAffine = (g: ReadGathered, n: number, buf: ArrayBuffer) => {
   const kX = g.strand.index
   const kM = g.strand.scale
   const kB = g.strand.bias
-  const lS = g.tagColor.src
-  const lX = g.tagColor.index
-  const lM = g.tagColor.scale
-  const lB = g.tagColor.bias
+  const lS = g.fillColor.src
+  const lX = g.fillColor.index
+  const lM = g.fillColor.scale
+  const lB = g.fillColor.bias
   const pS = g.edgeFlags.src
   const pX = g.edgeFlags.index
   const pM = g.edgeFlags.scale
@@ -704,13 +670,12 @@ const packDescAffine = (g: ReadGathered, n: number, buf: ArrayBuffer) => {
     u32[o + 1] = bS[bX[i]!]! * bM + bB
     u32[o + 2] = cS[cX[i]!]! * cM + cB
     u32[o + 3] = eS[eX[i]!]! * eM + eB
-    u32[o + 4] = gS[gX[i]!]! * gM + gB
-    f32[o + 5] = hS[hX[i]!]! * hM + hB
-    i32[o + 6] = kS[kX[i]!]! * kM + kB
-    u32[o + 7] = lS[lX[i]!]! * lM + lB
-    u32[o + 8] = pS[pX[i]!]! * pM + pB
-    u32[o + 9] = qS[qX[i]!]! * qM + qB
-    u32[o + 10] = rS[rX[i]!]! * rM + rB
+    f32[o + 4] = hS[hX[i]!]! * hM + hB
+    i32[o + 5] = kS[kX[i]!]! * kM + kB
+    u32[o + 6] = lS[lX[i]!]! * lM + lB
+    u32[o + 7] = pS[pX[i]!]! * pM + pB
+    u32[o + 8] = qS[qX[i]!]! * qM + qB
+    u32[o + 9] = rS[rX[i]!]! * rM + rB
   }
   return buf
 }
@@ -729,10 +694,9 @@ interface SegmentFields {
 interface ReadFields {
   y: ArrayLike<number>
   flags: ArrayLike<number>
-  mapq: ArrayLike<number>
   insertSize: ArrayLike<number>
   strand: ArrayLike<number>
-  tagColor: ArrayLike<number>
+  fillColor: ArrayLike<number>
   interchrom: ArrayLike<number>
   colorCategory: ArrayLike<number>
 }
@@ -748,16 +712,8 @@ const packGrouped = (
   const f32 = new Float32Array(buf)
   const i32 = new Int32Array(buf)
   const { startOff, endOff, edgeFlags } = seg
-  const {
-    y,
-    flags,
-    mapq,
-    insertSize,
-    strand,
-    tagColor,
-    interchrom,
-    colorCategory,
-  } = read
+  const { y, flags, insertSize, strand, fillColor, interchrom, colorCategory } =
+    read
   for (let i = 0; i < n; i++) {
     const o = i * INSTANCE_STRIDE_WORDS
     const g0 = readIndex[i]!
@@ -765,13 +721,12 @@ const packGrouped = (
     u32[o + 1] = endOff[i]!
     u32[o + 2] = y[g0]!
     u32[o + 3] = flags[g0]!
-    u32[o + 4] = mapq[g0]!
-    f32[o + 5] = insertSize[g0]!
-    i32[o + 6] = strand[g0]!
-    u32[o + 7] = tagColor[g0]!
-    u32[o + 8] = edgeFlags[i]!
-    u32[o + 9] = interchrom[g0]!
-    u32[o + 10] = colorCategory[g0]!
+    f32[o + 4] = insertSize[g0]!
+    i32[o + 5] = strand[g0]!
+    u32[o + 6] = fillColor[g0]!
+    u32[o + 7] = edgeFlags[i]!
+    u32[o + 8] = interchrom[g0]!
+    u32[o + 9] = colorCategory[g0]!
   }
   return buf
 }
@@ -792,16 +747,8 @@ const packGroupedStrided = (
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
   const i32 = new Int32Array(buf)
-  const {
-    y,
-    flags,
-    mapq,
-    insertSize,
-    strand,
-    tagColor,
-    interchrom,
-    colorCategory,
-  } = read
+  const { y, flags, insertSize, strand, fillColor, interchrom, colorCategory } =
+    read
   for (let i = 0; i < n; i++) {
     const o = i * INSTANCE_STRIDE_WORDS
     const g0 = readIndex[i]!
@@ -809,13 +756,12 @@ const packGroupedStrided = (
     u32[o + 1] = segmentPositions[i * 2 + 1]!
     u32[o + 2] = y[g0]!
     u32[o + 3] = flags[g0]!
-    u32[o + 4] = mapq[g0]!
-    f32[o + 5] = insertSize[g0]!
-    i32[o + 6] = strand[g0]!
-    u32[o + 7] = tagColor[g0]!
-    u32[o + 8] = edgeFlags[i]!
-    u32[o + 9] = interchrom[g0]!
-    u32[o + 10] = colorCategory[g0]!
+    f32[o + 4] = insertSize[g0]!
+    i32[o + 5] = strand[g0]!
+    u32[o + 6] = fillColor[g0]!
+    u32[o + 7] = edgeFlags[i]!
+    u32[o + 8] = interchrom[g0]!
+    u32[o + 9] = colorCategory[g0]!
   }
   return buf
 }
@@ -837,12 +783,11 @@ const packTwoPass = (data: Data, buf: ArrayBuffer) => {
     const o = i * INSTANCE_STRIDE_WORDS
     u32[o + 0] = segmentPositions[i * 2]!
     u32[o + 1] = segmentPositions[i * 2 + 1]!
-    u32[o + 8] = segmentEdgeFlags[i]!
+    u32[o + 7] = segmentEdgeFlags[i]!
   }
   const index = data.segmentReadIndices
   const readYs = data.readYs
   const readFlags = data.readFlags
-  const readMapqs = data.readMapqs
   const readInsertSizes = data.readInsertSizes
   const readStrands = data.readStrands
   const tagColors = data.readTagColors
@@ -853,12 +798,11 @@ const packTwoPass = (data: Data, buf: ArrayBuffer) => {
     const ri = index[i]!
     u32[o + 2] = readYs[ri]!
     u32[o + 3] = readFlags[ri]!
-    u32[o + 4] = readMapqs[ri]!
-    f32[o + 5] = readInsertSizes[ri]!
-    i32[o + 6] = readStrands[ri]!
-    u32[o + 7] = tagColors[ri]!
-    u32[o + 9] = interchrom[ri]!
-    u32[o + 10] = colorCategories[ri]!
+    f32[o + 4] = readInsertSizes[ri]!
+    i32[o + 5] = readStrands[ri]!
+    u32[o + 6] = tagColors[ri]!
+    u32[o + 8] = interchrom[ri]!
+    u32[o + 9] = colorCategories[ri]!
   }
   return buf
 }
@@ -874,10 +818,9 @@ const packMaterialize = (data: Data, buf: ArrayBuffer) => {
   const index = data.segmentReadIndices
   const y = new Uint32Array(n)
   const flags = new Uint32Array(n)
-  const mapq = new Uint32Array(n)
   const insertSize = new Float32Array(n)
   const strand = new Int32Array(n)
-  const tagColor = new Uint32Array(n)
+  const fillColor = new Uint32Array(n)
   const interchrom = new Uint32Array(n)
   const colorCategory = new Uint32Array(n)
   const startOff = new Uint32Array(n)
@@ -885,7 +828,6 @@ const packMaterialize = (data: Data, buf: ArrayBuffer) => {
   const sp = data.segmentPositions
   const readYs = data.readYs
   const readFlags = data.readFlags
-  const readMapqs = data.readMapqs
   const readInsertSizes = data.readInsertSizes
   const readStrands = data.readStrands
   const readTagColors = data.readTagColors
@@ -897,10 +839,9 @@ const packMaterialize = (data: Data, buf: ArrayBuffer) => {
     endOff[i] = sp[i * 2 + 1]!
     y[i] = readYs[ri]!
     flags[i] = readFlags[ri]!
-    mapq[i] = readMapqs[ri]!
     insertSize[i] = readInsertSizes[ri]!
     strand[i] = readStrands[ri]!
-    tagColor[i] = readTagColors[ri]!
+    fillColor[i] = readTagColors[ri]!
     interchrom[i] = readInterchrom[ri]!
     colorCategory[i] = readColorCategories[ri]!
   }
@@ -910,10 +851,9 @@ const packMaterialize = (data: Data, buf: ArrayBuffer) => {
       endOff,
       y,
       flags,
-      mapq,
       insertSize,
       strand,
-      tagColor,
+      fillColor,
       edgeFlags: data.segmentEdgeFlags,
       interchrom,
       colorCategory,
@@ -998,7 +938,6 @@ for (const fx of FIXTURES) {
     segmentEdgeFlags: new Uint32Array(n),
     readYs: new Uint32Array(numReads),
     readFlags: new Uint32Array(numReads),
-    readMapqs: new Uint32Array(numReads),
     readInsertSizes: new Float32Array(numReads),
     readStrands: new Int32Array(numReads),
     readTagColors: new Uint32Array(numReads),
@@ -1014,7 +953,6 @@ for (const fx of FIXTURES) {
   for (let i = 0; i < numReads; i++) {
     data.readYs[i] = i % 400
     data.readFlags[i] = Math.floor(rand() * 4096)
-    data.readMapqs[i] = Math.floor(rand() * 61)
     data.readInsertSizes[i] = Math.floor(rand() * 1000) - 500
     data.readStrands[i] = rand() > 0.5 ? 1 : -1
     data.readTagColors[i] = Math.floor(rand() * 4_000_000_000)
@@ -1042,10 +980,9 @@ for (const fx of FIXTURES) {
     endOff: { src: data.segmentPositions, stride: 2, offset: 1 },
     y: { src: data.readYs, index: segmentReadIndices },
     flags: { src: data.readFlags, index: segmentReadIndices },
-    mapq: { src: data.readMapqs, index: segmentReadIndices },
     insertSize: { src: data.readInsertSizes, index: segmentReadIndices },
     strand: { src: data.readStrands, index: segmentReadIndices },
-    tagColor: { src: data.readTagColors, index: segmentReadIndices },
+    fillColor: { src: data.readTagColors, index: segmentReadIndices },
     edgeFlags: data.segmentEdgeFlags,
     interchrom: { src: data.readInterchrom, index: segmentReadIndices },
     colorCategory: {
@@ -1064,7 +1001,6 @@ for (const fx of FIXTURES) {
       scale: 1,
       bias: 0,
     },
-    mapq: { src: data.readMapqs, index: segmentReadIndices, scale: 1, bias: 0 },
     insertSize: {
       src: data.readInsertSizes,
       index: segmentReadIndices,
@@ -1077,7 +1013,7 @@ for (const fx of FIXTURES) {
       scale: 1,
       bias: 0,
     },
-    tagColor: {
+    fillColor: {
       src: data.readTagColors,
       index: segmentReadIndices,
       scale: 1,
@@ -1111,10 +1047,9 @@ for (const fx of FIXTURES) {
   const readFields: ReadFields = {
     y: data.readYs,
     flags: data.readFlags,
-    mapq: data.readMapqs,
     insertSize: data.readInsertSizes,
     strand: data.readStrands,
-    tagColor: data.readTagColors,
+    fillColor: data.readTagColors,
     interchrom: data.readInterchrom,
     colorCategory: data.readColorCategories,
   }
