@@ -10,12 +10,26 @@ export const BAND_LABEL_WIDTH = 14
 const FONT_SIZE = 11
 const TEXT_PAD = 6
 
+/** `label` if it fits in `room` px, else its longest prefix that fits with an ellipsis. */
+export function fittedLabel(label: string, room: number) {
+  if (measureText(label, FONT_SIZE) <= room) {
+    return label
+  }
+  for (let n = label.length - 1; n > 0; n--) {
+    const cut = `${label.slice(0, n).trimEnd()}…`
+    if (measureText(cut, FONT_SIZE) <= room) {
+      return cut
+    }
+  }
+  return ''
+}
+
 /**
  * The bands' strip in the margin: one column beside the tree, each band's name
  * written up its rows (ggplot2's `strip.position = "left"`, ComplexHeatmap's
- * `row_title`) where the band is tall enough to hold it. One background rect
- * under every band, since a rect per band blends twice at a fractional
- * boundary.
+ * `row_title`), cut short with an ellipsis where the band is too short for
+ * it, and whole on hover. One background rect under every band, since a rect
+ * per band blends twice at a fractional boundary.
  */
 export function SvgBandLabels({
   bands,
@@ -53,21 +67,35 @@ export function SvgBandLabels({
         const offscreen =
           availableHeight !== undefined &&
           (y + height < 0 || y > availableHeight)
-        const fits = measureText(band.label, FONT_SIZE) + TEXT_PAD <= height
+        if (offscreen) {
+          return null
+        }
+        const text = fittedLabel(band.label, height - TEXT_PAD)
         const cy = y + height / 2
-        return offscreen || !fits ? null : (
-          <text
-            key={band.key}
-            x={mid}
-            y={cy}
-            transform={`rotate(-90 ${mid} ${cy})`}
-            fontSize={FONT_SIZE}
-            textAnchor="middle"
-            dominantBaseline="central"
-            {...getFillProps(palette.text.primary)}
-          >
-            {band.label}
-          </text>
+        return (
+          <g key={band.key} style={{ pointerEvents: 'auto' }}>
+            <title>{band.label}</title>
+            <rect
+              x={0}
+              y={y}
+              width={BAND_LABEL_WIDTH}
+              height={height}
+              fill="transparent"
+            />
+            {text ? (
+              <text
+                x={mid}
+                y={cy}
+                transform={`rotate(-90 ${mid} ${cy})`}
+                fontSize={FONT_SIZE}
+                textAnchor="middle"
+                dominantBaseline="central"
+                {...getFillProps(palette.text.primary)}
+              >
+                {text}
+              </text>
+            ) : null}
+          </g>
         )
       })}
     </g>

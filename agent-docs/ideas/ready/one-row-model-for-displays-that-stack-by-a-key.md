@@ -227,7 +227,7 @@ ADR-151 palette→range; no categorical scheme. ADR-153: categoricalScale hashes
 - `facet.hidden` as config only where a band gets a chip → variants = Q1.
 
 ### Colin's questions, answered 2026-09-25
-1. Chips on the row displays: no. A band is labelled in the margin beside the tree, up a strip beside its tint (ggplot2's `strip.position = "left"`, ComplexHeatmap's `row_title`), culled where the band is too short, and the same in the SVG export; hairline dividers between bands, no hide control.
+1. Chips on the row displays: no. A band is labelled in the margin beside the tree, up a strip beside its tint (ggplot2's `strip.position = "left"`, ComplexHeatmap's `row_title`), cut short with an ellipsis where the band is too short and whole on hover, and the same in the SVG export; no dividers between bands, no hide control.
 2. Facet set over a clustered cohort: bands win. A band draws its dendrogram iff the tree has a clade of exactly its rows in order; the hint counts the bands without one and says to re-run clustering.
 3. One shared depth scale across the band trees.
 4. `pile` or `stack` for the pileup channel: out of scope for step 5, still open with step 6.

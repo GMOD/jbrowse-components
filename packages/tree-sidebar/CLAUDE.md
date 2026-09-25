@@ -388,10 +388,10 @@ tree alone.
   out. No clade with a branch, no hierarchy.
 - **The band strip is the band's label**, never a chip over the data:
   `SvgBandLabels`, a `BAND_LABEL_WIDTH` column beside the tree with each band's
-  name written up its rows where it fits, culled where it does not.
-  `RowLabelsOverlay` and `SvgTreeSidebar` both take `bands` and shift the row
-  labels past the strip, so the screen and the export draw one strip; it draws
-  whatever `showRowLabels` says, and nothing hides it.
+  name written up its rows, cut short with an ellipsis where it does not fit and
+  whole on hover. `RowLabelsOverlay` and `SvgTreeSidebar` both take `bands` and
+  shift the row labels past the strip, so the screen and the export draw one
+  strip; it draws whatever `showRowLabels` says, and nothing hides it.
 
 ## SVG export: `SvgTreeSidebar`, never `SvgRowLabels` alone
 

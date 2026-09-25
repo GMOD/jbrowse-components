@@ -1,12 +1,12 @@
 import { render } from '@testing-library/react'
 
 import { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
-import { BAND_LABEL_WIDTH } from './SvgBandLabels.tsx'
+import { BAND_LABEL_WIDTH, fittedLabel } from './SvgBandLabels.tsx'
 import { SvgTreeSidebar } from './SvgTreeSidebar.tsx'
 
 const sources = ['a', 'b', 'c', 'd'].map(name => ({ name }))
 
-// AFR's three rows hold its name; EUR's one row is too short to.
+// AFR's three rows hold its name; EUR's one row holds only a cut of it.
 const bands = [
   { key: 'AFR', label: 'AFR', start: 0, end: 3 },
   { key: 'EUR', label: 'EUR', start: 3, end: 4 },
@@ -54,8 +54,15 @@ describe.each([
   ['the SVG export', exported],
   ['the screen', onScreen],
 ])('band labels in %s', (_, draw) => {
-  test('a band tall enough holds its name, a short one is culled', () => {
-    expect(bandTexts(draw())).toEqual(['AFR'])
+  test('a band tall enough holds its name, a short one a cut of it', () => {
+    expect(bandTexts(draw())).toEqual(['AFR', 'E…'])
+  })
+
+  test('every band names itself whole on hover', () => {
+    const titles = draw().querySelectorAll(
+      '[data-testid="row_band_labels"] title',
+    )
+    expect([...titles].map(t => t.textContent)).toEqual(['AFR', 'EUR'])
   })
 
   test('no line marks where one band meets the next', () => {
@@ -73,7 +80,14 @@ describe.each([
 
   test('the strip stays when the row labels are off', () => {
     const root = draw(false)
-    expect(bandTexts(root)).toEqual(['AFR'])
-    expect(root.textContent).toBe('AFR')
+    expect(bandTexts(root)).toEqual(['AFR', 'E…'])
+    expect(root.textContent).not.toMatch(/[a-d]/)
   })
+})
+
+test('a label cuts to the longest prefix that fits, or to nothing', () => {
+  expect(fittedLabel('Parents', 100)).toBe('Parents')
+  expect(fittedLabel('Parents', 22)).toBe('Pa…')
+  expect(fittedLabel('(no group)', 36)).toBe('(no gr…')
+  expect(fittedLabel('EUR', 5)).toBe('')
 })
