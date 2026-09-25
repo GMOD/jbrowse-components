@@ -197,6 +197,7 @@
       "Tabs",
       "TextField",
       "TextareaAutosize",
+      "ThemeProvider",
       "ToggleButton",
       "ToggleButtonGroup",
       "Toolbar",

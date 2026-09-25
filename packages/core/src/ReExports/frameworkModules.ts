@@ -4,7 +4,7 @@
 // modules.ts joins the two. The worker's copy of this half is generated from
 // it (frameworkWorkerModules.generated.ts), so a key added here is served in
 // both realms by the next `pnpm autogen`.
-import { alpha, createTheme, useTheme } from '@mui/material'
+import { ThemeProvider, alpha, createTheme, useTheme } from '@mui/material'
 import SvgIcon, { createSvgIcon } from '@mui/material/SvgIcon'
 import * as MUIUtils from '@mui/material/utils'
 import * as mxreact from 'mobx-react'
@@ -33,6 +33,7 @@ const muiMaterialLib = {
   alpha,
   useTheme,
   createTheme,
+  ThemeProvider,
 }
 const muiStylesLib = { ...MUIStyles, makeStyles: legacyMakeStyles }
 

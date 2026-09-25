@@ -73,3 +73,12 @@ test('the ui namespace serves BaseTooltip', () => {
     typeof (libs['@jbrowse/core/ui'] as Record<string, unknown>).BaseTooltip,
   ).toBe('function')
 })
+
+// A plugin that bundles core's Dialog (any deep import reaching ui/index.js
+// does) renders ThemeProvider from the host's @mui/material; absent, that is
+// React error #130 when the dialog opens.
+test('@mui/material serves ThemeProvider', () => {
+  expect(
+    (libs['@mui/material'] as Record<string, unknown>).ThemeProvider,
+  ).toBeDefined()
+})
