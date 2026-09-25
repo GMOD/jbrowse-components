@@ -902,11 +902,12 @@ export default defineConfig(
   },
   // Style rules can't apply to codegen output: the transpiler emits `1.0` for a
   // float literal, nests Math.max to mirror the shader's own two-argument
-  // max, and spells `sqrt(a*a + b*b)` because that is what the shader spells —
-  // `Math.hypot` is a DIFFERENT, more accurate function, so taking the autofix
-  // would stop the twin from matching the GPU, which is the file's whole
-  // purpose. Autofixing any of them also edits a file `pnpm gen:shaders`
-  // immediately overwrites — the Shaders CI job diffs it.
+  // max, spells `sqrt(a*a + b*b)` because that is what the shader spells, and
+  // carries a shader's float32 constant at the digits the shader gave it, which
+  // `Math.SQRT2` is not. Each of those is a DIFFERENT, more accurate value or
+  // function, so taking the autofix would stop the twin from matching the GPU,
+  // which is the file's whole purpose. Autofixing any of them also edits a file
+  // `pnpm gen:shaders` immediately overwrites — the Shaders CI job diffs it.
   // The config JSON Schema is a template literal (its `then` keys read as a
   // thenable in object form), and a slot description quoting a `{refseq}` URL
   // template is data.
@@ -916,6 +917,7 @@ export default defineConfig(
       'unicorn/no-zero-fractions': 'off',
       'unicorn/prefer-flat-math-min-max': 'off',
       'unicorn/prefer-modern-math-apis': 'off',
+      'unicorn/prefer-math-constants': 'off',
       'unicorn/no-incorrect-template-string-interpolation': 'off',
     },
   },
