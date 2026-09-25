@@ -17,7 +17,7 @@ import {
   rampOverExtent,
 } from './markEncoding.ts'
 import SimpleFeature from './simpleFeature.ts'
-import { thresholdPalette } from './thresholdScale.ts'
+import { thresholdField, thresholdPalette } from './thresholdScale.ts'
 
 import type { ContinuousRef, ShapeName, LaneName } from './markEncoding.ts'
 
@@ -979,4 +979,45 @@ test('every ramp path paints a value that is no finite number one grey', () => {
   )
   expect(colorOf(Number.NaN)).toBe(RAMP_NOT_FINITE_COLOR)
   expect(colorOf(Infinity)).toBe(RAMP_NOT_FINITE_COLOR)
+})
+
+// The encoder resolves a threshold in its own walk, a bin index per feature
+// rather than a key through the categorical path, so it is held to the
+// thresholdField the feature display, the variant cells and every threshold key
+// read: one value, one colour, whichever of them paints it.
+test("the encoder's threshold paints each value as thresholdField colours it", () => {
+  const domain = ['0.5', '2']
+  const range = ['#111111', '#222222']
+  const values: unknown[] = [
+    -Infinity,
+    0,
+    0.5,
+    1,
+    2,
+    Infinity,
+    '1.5',
+    'n/a',
+    undefined,
+    '',
+    [undefined],
+  ]
+  const features = values.map(
+    (v, i) =>
+      new SimpleFeature({
+        uniqueId: String(i),
+        refName: 'ctgA',
+        start: i,
+        end: i + 1,
+        ...(v === undefined ? {} : { v }),
+      }),
+  )
+  const { color } = encodeFeatures(
+    features,
+    { color: { field: 'v', scale: 'threshold', domain, range } },
+    ['color'],
+  )
+  const field = thresholdField('v', { domain, range })
+  expect([...color]).toEqual(
+    values.map(v => cssColorToABGR(field.color(field.key(v)))),
+  )
 })
