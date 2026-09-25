@@ -1,9 +1,19 @@
 import { INSTANCE_STRIDE_BYTES } from '../shaders/barMark.generated.ts'
-import { RAMP_NOT_FINITE_COLOR } from '../shaders/markColor.generated.ts'
+import {
+  RAMP_NOT_A_NUMBER_COLOR,
+  RAMP_NO_VALUE_BITS,
+  RAMP_NO_VALUE_COLOR,
+} from '../shaders/markColor.generated.ts'
 import { barMark } from './barMark.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { recordingContext as mockCtx } from './drawAgainstHit.ts'
-import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
+import {
+  colorBits,
+  keepRampValues,
+  paintColors,
+  rampUniforms,
+  rampValueMissing,
+} from './markRamp.ts'
 
 import type { BarChannels, BarParams } from './barMark.ts'
 import type { MarkRamp } from './types.ts'
@@ -84,15 +94,28 @@ test('the bake reads the LUT at the value fraction, floors and ceilings clamped'
   ])
 })
 
-test('a value that is no finite number bakes the not-finite grey', () => {
-  const c = bars([Number.NaN, 10, Infinity, -Infinity])
-  const colors = paintColors(c, 4, ramp) as Uint32Array
-  expect([colors[0], colors[2], colors[3]]).toEqual([
-    RAMP_NOT_FINITE_COLOR,
-    RAMP_NOT_FINITE_COLOR,
-    RAMP_NOT_FINITE_COLOR,
+// What markColor.slang reads off the lane's bits: the value-less payload, any
+// other NaN, and an infinity at the end on its side.
+test('the bake paints no value, text and infinities as the shader does', () => {
+  const c = bars([0, Number.NaN, 10, Infinity, -Infinity])
+  new Uint32Array(c.colorValue!.buffer)[0] = RAMP_NO_VALUE_BITS
+  const colors = paintColors(c, 5, ramp) as Uint32Array
+  const grey = (v: number) => (0xff000000 | (v << 16) | (v << 8) | v) >>> 0
+  expect([...colors]).toEqual([
+    RAMP_NO_VALUE_COLOR,
+    RAMP_NOT_A_NUMBER_COLOR,
+    grey(26),
+    grey(255),
+    grey(0),
   ])
-  expect(colors[1]).not.toBe(RAMP_NOT_FINITE_COLOR)
+})
+
+test('keeping part of a lane keeps the value-less payload bit for bit', () => {
+  const values = new Float32Array([1, 0, 3])
+  new Uint32Array(values.buffer)[1] = RAMP_NO_VALUE_BITS
+  const kept = keepRampValues(values, (_, i) => i > 0)
+  expect(rampValueMissing(kept, 0)).toBe(true)
+  expect(kept[1]).toBe(3)
 })
 
 test('a domain with no range steps: the ceiling above its min, the floor at or below', () => {

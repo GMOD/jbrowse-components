@@ -10,7 +10,6 @@ import {
   colorByScales,
   getColorBySwatch,
 } from './colorLegend.ts'
-import { colorSchemes } from './colorUtils.ts'
 
 test('continuous modes get a gradient ramp with bounded domain labels', () => {
   const identity = getColorBySwatch('identity')
@@ -225,17 +224,15 @@ test('colorByScales carries a ramp with its own end labels', () => {
   }
 })
 
-// A pair with no dN/dS paints the match red, which the ramp's top sits close
-// to, so the key names it beside the ramp once some pair had none.
+// A pair with no dN/dS paints the no-value grey every scale paints one in, and
+// the key names it beside the ramp once some pair had none.
 test('a ramp over rows with no value keys the color they paint', () => {
   const [, noValue] = colorByScales('dnds', {
     attributeRanges: { dnds: { min: 0.1, max: 3, missing: true } },
   })
   expect(noValue).toMatchObject({
     kind: 'categorical',
-    entries: [
-      { label: NO_VALUE_LABEL, color: colorSchemes.default.cigarColors.M },
-    ],
+    entries: [{ label: NO_VALUE_LABEL, color: NO_CATEGORY_COLOR }],
   })
   expect(
     colorByScales('dnds', { attributeRanges: { dnds: { min: 0.1, max: 3 } } }),

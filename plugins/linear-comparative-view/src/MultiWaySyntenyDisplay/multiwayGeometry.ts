@@ -151,9 +151,8 @@ class RibbonBuilder {
  * inverted is drawn flipped, so its ribbons run straight while every one of
  * them is an inversion. A measurement or a numeric column paints the synteny
  * view's ramp and a text column one color per label, and a pair carrying no
- * value keeps the slot color, since the synteny view's missing-data red would
- * read as a value on a grey-ribbon stack. Every mode keeps the slot color's
- * alpha; an unlabelled pair the reader hid draws at none.
+ * number the no-value grey every ramp paints one in. Every mode keeps the slot
+ * color's alpha; an unlabelled pair the reader hid draws at none.
  */
 function ribbonColorer(
   field: string,
@@ -181,7 +180,7 @@ function ribbonColorer(
     })
     return (_strand: number, feature: Feature) => {
       value[0] = readChannelValue(feature, continuous.attribute)
-      return Number.isNaN(value[0]) ? slotColor : withAbgrAlpha(ramp(0), alpha)
+      return withAbgrAlpha(ramp(0), alpha)
     }
   }
   const categorical = resolveCategoricalMode(field, attributeRanges)

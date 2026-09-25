@@ -2,6 +2,7 @@ import {
   makeScoreNormalizer,
   scaleTypeCode,
 } from '@jbrowse/render-core/scoreScale'
+import { RAMP_NO_VALUE_BITS } from '@jbrowse/render-core/shaders/markColorConsts'
 import { GLYPH_DISC } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
 import { categoricalScale } from '../ui/colors.ts'
@@ -385,6 +386,9 @@ export function encodeFeatures<L extends LaneName>(
       : undefined
   const rampValues =
     scaled && rampEncoding ? (colorValue ?? new Float32Array(n)) : undefined
+  const rampBits = rampValues
+    ? new Uint32Array(rampValues.buffer, rampValues.byteOffset, n)
+    : undefined
   const thresholdEncoding = scaled?.scale === 'threshold' ? scaled : undefined
   const cuts = thresholdEncoding
     ? thresholdCuts(thresholdEncoding.domain ?? [])
@@ -485,8 +489,15 @@ export function encodeFeatures<L extends LaneName>(
     featureIndex[count] = i
     if (colorCategories) {
       colorCategories.collect(f, count)
-    } else if (rampValues && readColor) {
-      rampValues[count] = numericValue(readColor(f))
+    } else if (rampValues && rampBits && readColor) {
+      const v = readColor(f)
+      if (isMissing(v)) {
+        rampBits[count] = RAMP_NO_VALUE_BITS
+        missingMet = true
+      } else {
+        rampValues[count] = numericValue(v)
+        notNumberMet ||= Number.isNaN(rampValues[count])
+      }
     } else if (binColors && cuts && color && readColor) {
       const v = readColor(f)
       const bin = thresholdIndex(v, cuts)
@@ -550,9 +561,12 @@ export function encodeFeatures<L extends LaneName>(
       rampEncoding,
       extent,
     )
-    if (color) {
+    if (color && rampBits) {
       for (let i = 0; i < count; i++) {
-        color[i] = colorOf(rampValues[i]!)
+        color[i] =
+          rampBits[i] === RAMP_NO_VALUE_BITS
+            ? NO_VALUE_ABGR
+            : colorOf(rampValues[i]!)
       }
     }
     scale = {
@@ -567,6 +581,8 @@ export function encodeFeatures<L extends LaneName>(
       ...(reverse ? { reverse } : {}),
       extent,
       lut,
+      ...(missingMet ? { missing: true } : {}),
+      ...(notNumberMet ? { notNumber: true } : {}),
     }
   }
 
@@ -690,9 +706,10 @@ function rampLut(
  * #api
  * A continuous colour scale over `extent`, the values it met: the domain its
  * declared ends and the extent make, the stops and the table they bake to,
- * and the packed colour a value paints through them, the misconfiguration
- * grey for one that is not finite. The encoder and every display painting a
- * ramp itself read it, so a value takes one colour whoever paints it.
+ * and the packed colour a value paints through them: an infinity the end on
+ * its side, as a threshold places it, and NaN, text that is no number, the
+ * misconfiguration grey. The encoder and every display painting a ramp itself
+ * read it, so a value takes one colour whoever paints it.
  */
 export function continuousColorScale(
   encoding: ContinuousRef,
@@ -713,7 +730,12 @@ export function continuousColorScale(
     stops,
     lut,
     colorOf: (value: number) =>
-      Number.isFinite(value) ? lutColorAt(lut, norm(value)) : FALLBACK_COLOR,
+      Number.isNaN(value)
+        ? FALLBACK_COLOR
+        : lutColorAt(
+            lut,
+            Number.isFinite(value) ? norm(value) : value > 0 ? 1 : 0,
+          ),
   }
 }
 

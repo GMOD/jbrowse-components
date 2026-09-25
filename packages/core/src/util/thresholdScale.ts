@@ -4,6 +4,7 @@ import { MISCONFIGURED_COLOR, NO_CATEGORY_COLOR } from './color/index.ts'
 import { groupKeyComparator, valueText } from './groupKeys.ts'
 import { numericValue } from './numericValue.ts'
 
+import type { CategoricalScale } from '../ui/colorScale.ts'
 import type { CategoricalField } from './categoricalField.ts'
 
 /**
@@ -132,6 +133,20 @@ export function thresholdKeyEntries(
         ]
       : []),
   ]
+}
+
+/**
+ * #api
+ * The rows a ramp's key lists beside its bar once a feature painted one: the
+ * not-a-number and no-value rows a threshold's key ends with. Empty while
+ * neither painted.
+ */
+export function rampGapScales(
+  id: string,
+  met: { missing?: boolean; notNumber?: boolean },
+): CategoricalScale[] {
+  const entries = thresholdKeyEntries([], undefined, met).slice(1)
+  return entries.length > 0 ? [{ kind: 'categorical', id, entries }] : []
 }
 
 /**

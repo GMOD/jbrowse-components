@@ -147,9 +147,10 @@ test('a measurement keys the ramp it paints, and nothing where no ribbon carries
   ])
 })
 
-// A pair with no value keeps the slot color, so that is the color its row
-// names, beside the ramp or among the labels
-test('a pair with no value is keyed in the slot color it paints', () => {
+// A pair with no number paints the no-value grey beside a ramp, and a pair
+// with no label keeps the slot color among the labels; each row names the
+// color its pairs paint.
+test('a pair with no value is keyed in the color it paints', () => {
   const slot = 'rgba(130,130,130,0.3)'
   const [, noValue] = ribbonColorScales(
     'identity',
@@ -159,7 +160,7 @@ test('a pair with no value is keyed in the slot color it paints', () => {
     slot,
   )
   expect(noValue).toMatchObject({
-    entries: [{ label: NO_VALUE_LABEL, color: slot }],
+    entries: [{ label: NO_VALUE_LABEL, color: NO_CATEGORY_COLOR }],
   })
   const rows = ribbonColorKey(
     'group',

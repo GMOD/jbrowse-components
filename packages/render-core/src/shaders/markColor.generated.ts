@@ -7,4 +7,8 @@ export const RAMP_LINEAR = 1
 
 export const RAMP_LOG = 2
 
-export const RAMP_NOT_FINITE_COLOR = 4286611584
+export const RAMP_NO_VALUE_BITS = 2143289345
+
+export const RAMP_NO_VALUE_COLOR = 4289703855
+
+export const RAMP_NOT_A_NUMBER_COLOR = 4286611584

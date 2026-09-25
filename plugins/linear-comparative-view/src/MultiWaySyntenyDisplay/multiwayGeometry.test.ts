@@ -1,5 +1,6 @@
 import { categoricalColor } from '@jbrowse/core/ui/colors'
 import { SimpleFeature } from '@jbrowse/core/util'
+import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import {
   abgrAlpha,
   cssColorToABGR,
@@ -383,7 +384,9 @@ describe('the ribbons', () => {
     const data = ribbonData(cells, 'ribbons:0')
     const alpha = Math.round(0.4 * 255)
     expect(abgrAlpha(data.colors[0]!)).toBe(alpha)
-    expect(data.colors[1]).toBe(cssColorToABGR('rgba(130,130,130,0.4)'))
+    expect(data.colors[1]).toBe(
+      withAbgrAlpha(cssColorToABGR(NO_CATEGORY_COLOR), alpha),
+    )
     expect(data.colors[0]).not.toBe(data.colors[1])
   })
 
@@ -482,7 +485,9 @@ describe('the ribbons', () => {
     for (const colors of [colorsBy('dnds'), colorsBy('ks')]) {
       expect(colors[0]).not.toBe(colors[1])
       expect(abgrAlpha(colors[0]!)).toBe(Math.round(0.4 * 255))
-      expect(colors[2]).toBe(cssColorToABGR('rgba(130,130,130,0.4)'))
+      expect(colors[2]).toBe(
+        withAbgrAlpha(cssColorToABGR(NO_CATEGORY_COLOR), Math.round(0.4 * 255)),
+      )
     }
   })
 

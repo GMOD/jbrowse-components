@@ -11,6 +11,7 @@ import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
+import { rampGapScales } from '@jbrowse/core/util/thresholdScale'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
@@ -677,6 +678,7 @@ export default function stateModelFactory(
                   stops: stopsFromRampLut(colorRamp.lut, RAMP_KEY_STOPS),
                   extent: self.colorValueExtent,
                 },
+                ...rampGapScales('features-gaps', self.colorValueGaps),
               ]
             : []
         return [

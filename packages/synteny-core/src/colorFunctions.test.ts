@@ -2,6 +2,7 @@ import { categoricalColor } from '@jbrowse/core/ui/colors'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import {
+  DEFAULT_RIBBON_COLOR,
   MISSING_VALUE_COLOR,
   UNLABELLED_COLOR,
   createComparativeColorFunction,
@@ -101,7 +102,7 @@ describe('createComparativeColorFunction', () => {
       field: '',
       data,
       trackColor: '#123456',
-      defaultColor: MISSING_VALUE_COLOR,
+      defaultColor: DEFAULT_RIBBON_COLOR,
       attributeRanges: {},
     })
     const point = createComparativeColorFunction({
@@ -120,7 +121,7 @@ describe('createComparativeColorFunction', () => {
         field: colorBy,
         data,
         trackColor: '#123456',
-        defaultColor: MISSING_VALUE_COLOR,
+        defaultColor: DEFAULT_RIBBON_COLOR,
         attributeRanges: {},
       })
       const b = createComparativeColorFunction({
@@ -150,7 +151,7 @@ describe('createComparativeColorFunction', () => {
       field: 'identity',
       data,
       trackColor: '#123456',
-      defaultColor: MISSING_VALUE_COLOR,
+      defaultColor: DEFAULT_RIBBON_COLOR,
       attributeRanges: {},
     })
     for (const i of [0, 1, 2, 3]) {
@@ -236,7 +237,6 @@ describe('a categorical attribute', () => {
     expect(paint(['B1', 'C1', 'A1a'])(0)).toBe(fn(0))
     expect(fn(1)).toBe(cssColorToABGR('#4DB5E3'))
     expect(fn(2)).toBe(UNLABELLED_COLOR)
-    expect(fn(2)).not.toBe(MISSING_VALUE_COLOR)
     expect(paint(['B1', 'C1', 'A1a'], ['C1', 'B1'])(0)).toBe(
       cssColorToABGR(categoricalColor('B1', ['C1', 'B1'])),
     )

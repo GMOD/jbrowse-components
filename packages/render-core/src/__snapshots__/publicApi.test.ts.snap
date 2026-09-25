@@ -49,6 +49,7 @@ exports[`render-core public surface pins the subpath exports 1`] = `
   "./shaders/hpmath",
   "./shaders/linkMark",
   "./shaders/linkMarkConsts",
+  "./shaders/markColorConsts",
   "./shaders/pointGlyph",
   "./shaders/pointGlyphConsts",
   "./shaders/pointMark",

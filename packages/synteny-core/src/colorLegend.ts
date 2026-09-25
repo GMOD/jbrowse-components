@@ -229,7 +229,7 @@ export function getColorBySwatch(
       minLabel: continuous.minLabel,
       maxLabel: continuous.maxLabel,
       ...(attributeRanges?.[continuous.attribute]?.missing
-        ? { missingColor: missingColor ?? defaultCigar.M }
+        ? { missingColor: missingColor ?? NO_CATEGORY_COLOR }
         : {}),
     }
   }

@@ -255,6 +255,13 @@ export type ColorScaleTable =
       extent: [number, number]
       lut: Uint8Array
       /**
+       * Whether a feature with no value painted here, in the no-value grey:
+       * the key's `(no value)` row, as a threshold's.
+       */
+      missing?: boolean
+      /** Whether text that is no number painted here, in the misconfiguration grey. */
+      notNumber?: boolean
+      /**
        * The ramp's RGBA stops, carried beside a `domainMid`: where the middle
        * stop lands in `lut` depends on the domain, so a display that unions an
        * unpinned domain past this region's bakes `lut` again from these.

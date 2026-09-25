@@ -71,11 +71,13 @@ export function featureColorViews(self: FeatureColorHost) {
   const encoding = stableIdentityComputed(() =>
     featureColorEncoding(colorSettingsOf(self)),
   )
-  const extent = stableIdentityComputed(() => {
+  const loaded = stableIdentityComputed(() => {
     const current = encoding.get()
     const field = typeof current === 'object' ? current.field : undefined
     let min = Infinity
     let max = -Infinity
+    let missing = false
+    let notNumber = false
     for (const { colorValues } of self.rpcDataMap.values()) {
       if (colorValues && colorValues.field === field) {
         for (const text of colorValues.values) {
@@ -83,11 +85,15 @@ export function featureColorViews(self: FeatureColorHost) {
           if (Number.isFinite(value)) {
             min = Math.min(min, value)
             max = Math.max(max, value)
+          } else if (text === '') {
+            missing = true
+          } else if (Number.isNaN(value)) {
+            notNumber = true
           }
         }
       }
     }
-    return [min, max] as [number, number]
+    return { extent: [min, max] as [number, number], missing, notNumber }
   })
   return {
     /**
@@ -169,7 +175,17 @@ export function featureColorViews(self: FeatureColorHost) {
      * painting field hold, which a ramp's open ends follow.
      */
     get colorValueExtent(): [number, number] {
-      return extent.get()
+      return loaded.get().extent
+    },
+
+    /**
+     * #getter
+     * Whether a loaded feature holds no value in the painting field, or text
+     * that is no number, which a ramp's key lists beside its bar.
+     */
+    get colorValueGaps(): { missing: boolean; notNumber: boolean } {
+      const { missing, notNumber } = loaded.get()
+      return { missing, notNumber }
     },
 
     /**

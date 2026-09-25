@@ -5,7 +5,7 @@ import {
   packAbgr,
 } from '@jbrowse/core/util/colorBits'
 import {
-  MISSING_VALUE_COLOR,
+  DEFAULT_RIBBON_COLOR,
   colorSchemes,
   createComparativeColorFunction,
 } from '@jbrowse/synteny-core'
@@ -149,7 +149,7 @@ export function computeSyntenyColors({
     hideUnlabelled,
     defaultColor:
       valueColor === undefined
-        ? MISSING_VALUE_COLOR
+        ? DEFAULT_RIBBON_COLOR
         : cssColorToABGR(valueColor),
   })
   const { I: colorI, D: colorD, N: colorN } = buildIndelColors(field)

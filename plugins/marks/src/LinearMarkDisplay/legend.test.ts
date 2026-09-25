@@ -282,6 +282,24 @@ function keyDomain(regions: MarkRegionData[]) {
   return table?.kind === 'ramp' ? table.domain : undefined
 }
 
+// A ramp's key lists the no-value and not-a-number rows beside its bar once any
+// region painted one, as a threshold's key does.
+test('a ramp key lists what it painted grey, across the regions', () => {
+  const scales = markColorScales(
+    buildMarkLegend([rampRegion([1, 2, null]), rampRegion([3, 'n/a'])]),
+  )
+  expect(scales.map(s => s.kind)).toEqual(['ramp', 'categorical'])
+  expect(scales[1]).toMatchObject({
+    entries: [
+      { value: '(not a number)' },
+      { value: '', label: '(no value)', missing: true },
+    ],
+  })
+  expect(
+    markColorScales(buildMarkLegend([rampRegion([1, 2])])).map(s => s.kind),
+  ).toEqual(['ramp'])
+})
+
 // A sparse region used to contribute [0, 1] to the union, so a ramp over
 // [100, 1000] became [0, 1000] once one loaded.
 test('a region holding no number leaves an open ramp where the others put it', () => {

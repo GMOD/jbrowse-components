@@ -153,10 +153,7 @@ export function ribbonColorScales(
   const continuous = resolveContinuousMode(field, attributeRanges)
   if (continuous && continuous.attribute in attributeRanges) {
     const label = colorByShortLabel(field)
-    const [ramp, ...noValue] = colorByScales(field, {
-      attributeRanges,
-      missingColor: slotColor,
-    })
+    const [ramp, ...noValue] = colorByScales(field, { attributeRanges })
     return [
       {
         ...ramp!,

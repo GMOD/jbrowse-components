@@ -17,8 +17,7 @@
 //
 // `normalizeScore` is `scoreScale`'s, so a ramp's domain is read exactly as the
 // axis reads y's and as the Canvas2D twin reads both.
-//! export-consts: RAMP_NONE, RAMP_LINEAR, RAMP_LOG, RAMP_NOT_FINITE_COLOR
-//! js-skip: rampValueFinite — reads the lane's bits, which only the GPU holds; the Canvas2D bake reads the Float32Array and asks Number.isFinite
+//! export-consts: RAMP_NONE, RAMP_LINEAR, RAMP_LOG, RAMP_NO_VALUE_BITS, RAMP_NO_VALUE_COLOR, RAMP_NOT_A_NUMBER_COLOR
 module markColor;
 
 import colorPack;
@@ -30,15 +29,16 @@ public static const int RAMP_NONE = 0;
 public static const int RAMP_LINEAR = 1;
 public static const int RAMP_LOG = 2;
 
-// The misconfiguration grey, packed, which a value that is no finite number
-// paints, as `continuousColorScale` paints one on the per-region path. Read
-// off the lane's bits rather than the float, since a NaN need not survive a
-// vertex attribute through every driver's fast math.
-public static const uint RAMP_NOT_FINITE_COLOR = 0xFF808080u;
-
-public bool rampValueFinite(uint bits) {
-  return (bits & 0x7F800000u) != 0x7F800000u;
-}
+// What the lane carries for a feature with no value in the field: a NaN whose
+// payload no arithmetic produces, so it stays apart from text that is no
+// number, which the encoder writes as an ordinary NaN. The lane is tested as
+// bits, since a NaN need not survive a vertex attribute through every driver's
+// fast math.
+public static const uint RAMP_NO_VALUE_BITS = 0x7FC00001u;
+// The no-value grey and the misconfiguration grey, packed, as every other
+// scale paints the two.
+public static const uint RAMP_NO_VALUE_COLOR = 0xFFAFAFAFu;
+public static const uint RAMP_NOT_A_NUMBER_COLOR = 0xFF808080u;
 
 public float4 markInstanceColor(
   Sampler2D<float4> ramp,
@@ -50,8 +50,14 @@ public float4 markInstanceColor(
   if (rampMode == RAMP_NONE) {
     return unpackRGBA(packed);
   }
-  if (!rampValueFinite(packed)) {
-    return unpackRGBA(RAMP_NOT_FINITE_COLOR);
+  if (packed == RAMP_NO_VALUE_BITS) {
+    return unpackRGBA(RAMP_NO_VALUE_COLOR);
+  }
+  if ((packed & 0x7F800000u) == 0x7F800000u) {
+    // an infinity takes the ramp's end on its side, as a threshold places it
+    return (packed & 0x007FFFFFu) != 0u
+      ? unpackRGBA(RAMP_NOT_A_NUMBER_COLOR)
+      : rampColor(ramp, (packed & 0x80000000u) != 0u ? 0.0 : 1.0);
   }
   int scaleType = rampMode == RAMP_LOG ? SCALE_TYPE_LOG : 0;
   return rampColor(

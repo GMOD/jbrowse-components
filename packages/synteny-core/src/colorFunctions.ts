@@ -47,9 +47,12 @@ import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
 
 // Missing data. NaN is the worker's sentinel on every numeric channel, and a
 // track carrying an attribute on no feature at all has no array; both paint
-// this rather than the ramp's bottom, so "no data" cannot be misread as "the
-// lowest value".
-export const MISSING_VALUE_COLOR = cssColorToABGR(
+// the no-value grey every other scale paints, rather than the ramp's bottom,
+// so "no data" cannot be misread as "the lowest value".
+export const MISSING_VALUE_COLOR = cssColorToABGR(NO_CATEGORY_COLOR)
+
+/** The ribbon colour while no field paints and the track names none: the match colour. */
+export const DEFAULT_RIBBON_COLOR = cssColorToABGR(
   colorSchemes.default.cigarColors.M,
 )
 

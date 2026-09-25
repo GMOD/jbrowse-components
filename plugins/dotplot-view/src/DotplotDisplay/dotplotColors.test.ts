@@ -90,12 +90,12 @@ describe('createDotplotColorFunction', () => {
     }
   })
 
-  test('missing-value sentinel (NaN) returns red', () => {
+  test('missing-value sentinel (NaN) paints the no-value grey', () => {
     const data = fakeRpcData({
       attributes: { identity: new Float32Array([Number.NaN]) },
     })
     const fn = createDotplotColorFunction('identity', data, TRACK_COLOR, {})
-    expect(unpack(fn(0))).toMatchObject({ r: 255, g: 0, b: 0 })
+    expect(unpack(fn(0))).toMatchObject({ r: 175, g: 175, b: 175 })
   })
 
   test('track paints the assigned track color', () => {

@@ -11,6 +11,7 @@ import {
   rampOverExtent,
 } from '@jbrowse/core/util/markEncoding'
 import { SHAPE_CODES } from '@jbrowse/core/util/shapeNames'
+import { keepRampValues, rampValueMissing } from '@jbrowse/render-core/marks'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
@@ -136,14 +137,25 @@ function drawnScales(layer: StoredLayer): StoredLayer {
   let yMax = -Infinity
   let vMin = Infinity
   let vMax = -Infinity
+  let missing = false
+  let notNumber = false
   for (let i = 0; i < layer.count; i++) {
     if (y) {
       yMin = Math.min(yMin, y[i]!)
       yMax = Math.max(yMax, y[i]!)
     }
-    if (colorValue && Number.isFinite(colorValue[i])) {
-      vMin = Math.min(vMin, colorValue[i]!)
-      vMax = Math.max(vMax, colorValue[i]!)
+    if (colorValue) {
+      const v = colorValue[i]!
+      if (Number.isFinite(v)) {
+        vMin = Math.min(vMin, v)
+        vMax = Math.max(vMax, v)
+      } else if (Number.isNaN(v)) {
+        if (rampValueMissing(colorValue, i)) {
+          missing = true
+        } else {
+          notNumber = true
+        }
+      }
     }
   }
   const valued = Number.isFinite(layer.yMin)
@@ -161,9 +173,13 @@ function drawnScales(layer: StoredLayer): StoredLayer {
               notNumber: scale.notNumber && colors.has(MISCONFIGURED_ABGR),
             }
           : scale?.kind === 'ramp' && colorValue
-            ? scale.pinned[0] && scale.pinned[1]
-              ? { ...scale, extent: [vMin, vMax] }
-              : rampOverExtent(scale, [vMin, vMax])
+            ? {
+                ...(scale.pinned[0] && scale.pinned[1]
+                  ? { ...scale, extent: [vMin, vMax] as [number, number] }
+                  : rampOverExtent(scale, [vMin, vMax])),
+                missing,
+                notNumber,
+              }
             : scale,
     shapeScale: shapeScale && {
       ...shapeScale,
@@ -196,7 +212,7 @@ function facetLayer(layer: StoredLayer, remap: Uint32Array): StoredLayer {
     row: moved.filter(r => r !== HIDDEN),
     featureIndex: layer.featureIndex.filter(shown),
     color: layer.color?.filter(shown),
-    colorValue: layer.colorValue?.filter(shown),
+    colorValue: layer.colorValue && keepRampValues(layer.colorValue, shown),
     glyph: layer.glyph?.filter(shown),
     text: layer.text?.filter(shown),
     flatbush: layer.flatbush && x.length > 0 ? hitIndexOf(x, x2, y) : undefined,

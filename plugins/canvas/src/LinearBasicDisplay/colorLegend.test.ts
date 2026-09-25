@@ -468,6 +468,11 @@ describe('derived color key', () => {
           title: 'score',
           domain: [0, 100],
         }),
+        expect.objectContaining({
+          kind: 'categorical',
+          id: 'color-gaps',
+          entries: [expect.objectContaining({ value: '', missing: true })],
+        }),
       ])
       expect(
         rampDisplay({ field: 'score', domainMin: -50 }).colorScales[0],

@@ -195,6 +195,7 @@ export type {
   ContinuousMode,
 } from './colorRamps.ts'
 export {
+  DEFAULT_RIBBON_COLOR,
   MISSING_VALUE_COLOR,
   UNLABELLED_COLOR,
   categoricalColor,

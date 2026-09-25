@@ -24,6 +24,7 @@ import {
   configuredJexlFilters,
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
+import { rampGapScales } from '@jbrowse/core/util/thresholdScale'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
@@ -1485,6 +1486,7 @@ export default function baseStateModelFactory(
               stops: stopsFromRampLut(colorRamp.lut, RAMP_KEY_STOPS),
               extent: self.colorValueExtent,
             },
+            ...rampGapScales('color-gaps', self.colorValueGaps),
           ]
         }
         const identity = self.identityKeyEntries

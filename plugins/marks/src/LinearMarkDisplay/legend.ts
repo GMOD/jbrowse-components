@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/core/util/legendCandidates'
 import { rampOverExtent } from '@jbrowse/core/util/markEncoding'
 import {
+  rampGapScales,
   thresholdKeyEntries,
   thresholdPalette,
 } from '@jbrowse/core/util/thresholdScale'
@@ -126,6 +127,8 @@ function union(current: ScaleTable, next: ScaleTable) {
           Math.min(current.extent[0], next.extent[0]),
           Math.max(current.extent[1], next.extent[1]),
         ]
+        current.missing = current.missing || next.missing
+        current.notNumber = current.notNumber || next.notNumber
       }
       break
   }
@@ -386,6 +389,7 @@ export function markColorScales(
             stops: stopsFromRampLut(scale.lut, RAMP_STOPS),
             extent: scale.extent,
           },
+          ...rampGapScales(`${id}-gaps`, scale),
         ]
     }
   })

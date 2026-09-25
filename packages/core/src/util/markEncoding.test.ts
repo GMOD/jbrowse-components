@@ -1,4 +1,8 @@
-import { RAMP_NOT_FINITE_COLOR } from '@jbrowse/render-core/marks'
+import {
+  RAMP_NOT_A_NUMBER_COLOR,
+  RAMP_NO_VALUE_BITS,
+  RAMP_NO_VALUE_COLOR,
+} from '@jbrowse/render-core/marks'
 import {
   GLYPH_DIAMOND,
   GLYPH_DISC,
@@ -93,9 +97,13 @@ test('a one-element list and a numeric string are the numbers they hold', () => 
   expect([...r.y]).toEqual([0.25, 12, 7])
 })
 
-test('a ramp value that holds no number paints the misconfiguration grey, not the colour of zero', () => {
+// As every other scale reads the two: no value is the no-value grey, text that
+// is no number the misconfiguration grey, and an infinity the end on its side.
+test('under a ramp no value, text and an infinity each paint as every scale paints them', () => {
   const r = encodeFeatures(
-    [-1, null, 1].map((score, i) => feature(i, { score })),
+    [-1, null, 'n/a', 1, Infinity, -Infinity].map((score, i) =>
+      feature(i, { score }),
+    ),
     {
       color: {
         field: 'score',
@@ -107,8 +115,35 @@ test('a ramp value that holds no number paints the misconfiguration grey, not th
     },
     ['color'],
   )
-  expect(r.color[1]).toBe(cssColorToABGR('#808080'))
-  expect(r.color[1]).not.toBe(r.color[0])
+  expect(r.color[1]).toBe(cssColorToABGR(NO_CATEGORY_COLOR))
+  expect(r.color[2]).toBe(cssColorToABGR(MISCONFIGURED_COLOR))
+  expect(r.color[4]).toBe(r.color[3])
+  expect(r.color[5]).toBe(r.color[0])
+  expect(r.scale).toMatchObject({ missing: true, notNumber: true })
+})
+
+// The ramp lane carries a value-less feature as a NaN of its own payload, and
+// its bits reach the GPU and the Canvas2D bake as written.
+test('a ramp lane marks a value-less feature apart from text that is no number', () => {
+  const r = encodeFeatures(
+    [null, 'n/a', 3].map((score, i) => feature(i, { score })),
+    { color: { field: 'score', scale: 'linear' } },
+    ['colorValue'],
+  )
+  const bits = new Uint32Array(
+    r.colorValue.buffer,
+    r.colorValue.byteOffset,
+    r.colorValue.length,
+  )
+  expect(bits[0]).toBe(RAMP_NO_VALUE_BITS)
+  expect(Number.isNaN(r.colorValue[1])).toBe(true)
+  expect(bits[1]).not.toBe(RAMP_NO_VALUE_BITS)
+  expect(r.colorValue[2]).toBe(3)
+  expect(r.scale).toMatchObject({
+    extent: [3, 3],
+    missing: true,
+    notNumber: true,
+  })
 })
 
 // Walking cuts written high to low stopped at the first one a value was
@@ -418,11 +453,9 @@ test('a ramp scale reads the field through its domain into the LUT', () => {
   expect(r.color[0]).toBe(cssColorToABGR('black'))
   expect(r.color[1]).toBe(cssColorToABGR('white'))
   expect(r.color[2]).toBe(cssColorToABGR('rgb(128,128,128)'))
-  // a feature with no value paints the fallback and stays in the payload
+  // a feature with no value paints the no-value grey and stays in the payload
   expect(r.count).toBe(5)
-  // the misconfiguration grey, which is not the no-category grey beside it
-  expect(r.color[3]).toBe(cssColorToABGR('#808080'))
-  expect(r.color[3]).not.toBe(cssColorToABGR(NO_CATEGORY_COLOR))
+  expect(r.color[3]).toBe(cssColorToABGR(NO_CATEGORY_COLOR))
 })
 
 test('domainMid puts the ramp middle stop at that value', () => {
@@ -972,13 +1005,15 @@ test('the size and x2Ref lanes ride the transfer list', () => {
 
 // A bar, point or link mark's ramp resolves on the GPU or in the Canvas2D bake,
 // a span's in the worker through `continuousColorScale`: one value, one colour.
-test('every ramp path paints a value that is no finite number one grey', () => {
+test('every ramp path paints no value, and text that is no number, one grey each', () => {
   const { colorOf } = continuousColorScale(
     { field: 'score', scale: 'linear' },
     [0, 1],
   )
-  expect(colorOf(Number.NaN)).toBe(RAMP_NOT_FINITE_COLOR)
-  expect(colorOf(Infinity)).toBe(RAMP_NOT_FINITE_COLOR)
+  expect(colorOf(Number.NaN)).toBe(RAMP_NOT_A_NUMBER_COLOR)
+  expect(RAMP_NO_VALUE_COLOR).toBe(cssColorToABGR(NO_CATEGORY_COLOR))
+  expect(colorOf(Infinity)).toBe(colorOf(1))
+  expect(colorOf(-Infinity)).toBe(colorOf(0))
 })
 
 // The encoder resolves a threshold in its own walk, a bin index per feature

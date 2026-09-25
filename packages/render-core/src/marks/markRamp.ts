@@ -3,7 +3,9 @@ import {
   RAMP_LINEAR,
   RAMP_LOG,
   RAMP_NONE,
-  RAMP_NOT_FINITE_COLOR,
+  RAMP_NOT_A_NUMBER_COLOR,
+  RAMP_NO_VALUE_BITS,
+  RAMP_NO_VALUE_COLOR,
 } from '../shaders/markColor.generated.ts'
 import { normalizeScore } from '../shaders/scoreScale.js.generated.ts'
 
@@ -50,13 +52,29 @@ export function rampUniforms(ramp: MarkRamp | undefined) {
  */
 export function colorBits(c: ColorChannel): ArrayLike<number> {
   const { colorValue } = c
-  return colorValue
-    ? new Uint32Array(
-        colorValue.buffer,
-        colorValue.byteOffset,
-        colorValue.length,
-      )
-    : (c.color ?? NO_COLORS)
+  return colorValue ? valueBits(colorValue) : (c.color ?? NO_COLORS)
+}
+
+function valueBits(values: Float32Array) {
+  return new Uint32Array(values.buffer, values.byteOffset, values.length)
+}
+
+/**
+ * A ramp lane's values kept where `keep` says, copied as bits: a JS number
+ * read out of the lane may lose the payload `RAMP_NO_VALUE_BITS` marks a
+ * feature with no value by.
+ */
+export function keepRampValues(
+  values: Float32Array,
+  keep: (value: number, index: number) => boolean,
+) {
+  const bits = valueBits(values)
+  return new Float32Array(bits.filter((_, i) => keep(values[i]!, i)).buffer)
+}
+
+/** Whether the lane holds a feature with no value at `index`. */
+export function rampValueMissing(values: Float32Array, index: number) {
+  return valueBits(values)[index] === RAMP_NO_VALUE_BITS
 }
 
 /**
@@ -91,13 +109,22 @@ export function paintColors(
   }
   const entries = lut.length / 4
   const colors = new Uint32Array(count)
+  const bits = valueBits(colorValue)
   for (let i = 0; i < count; i++) {
     const value = colorValue[i]!
-    if (!Number.isFinite(value)) {
-      colors[i] = RAMP_NOT_FINITE_COLOR
+    if (bits[i] === RAMP_NO_VALUE_BITS) {
+      colors[i] = RAMP_NO_VALUE_COLOR
       continue
     }
-    const t = normalizeScore(value, min, max, log ? SCALE_TYPE_LOG : 0, 1)
+    if (Number.isNaN(value)) {
+      colors[i] = RAMP_NOT_A_NUMBER_COLOR
+      continue
+    }
+    const t = Number.isFinite(value)
+      ? normalizeScore(value, min, max, log ? SCALE_TYPE_LOG : 0, 1)
+      : value > 0
+        ? 1
+        : 0
     const o = Math.round(t * (entries - 1)) * 4
     colors[i] =
       ((lut[o + 3]! << 24) |
