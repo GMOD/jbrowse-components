@@ -1,7 +1,6 @@
 import { fireEvent, render, waitFor } from '@testing-library/react'
 
-import ShareDialog from './ShareDialog.tsx'
-import { SHARE_MODE_LOCALSTORAGE_KEY } from './buildShareUrl.ts'
+import ShareDialog, { SHARE_MODE_LOCALSTORAGE_KEY } from './ShareDialog.tsx'
 
 import type { SessionWithShareURL } from '@jbrowse/core/util'
 

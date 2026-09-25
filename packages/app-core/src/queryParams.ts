@@ -26,14 +26,12 @@ type ParamLocation = 'hash' | 'search'
 
 // The single decision of where this URL keeps its params. Computed once per
 // operation and threaded through read+write so the two can't disagree.
-function paramLocation(): ParamLocation {
-  return window.location.hash.includes('=') ? 'hash' : 'search'
+function paramLocation(url: URL | Location = window.location): ParamLocation {
+  return url.hash.includes('=') ? 'hash' : 'search'
 }
 
-function readParams(loc: ParamLocation) {
-  return new URLSearchParams(
-    loc === 'hash' ? window.location.hash.slice(1) : window.location.search,
-  )
+function readParams(loc: ParamLocation, url: URL | Location = window.location) {
+  return new URLSearchParams(loc === 'hash' ? url.hash.slice(1) : url.search)
 }
 
 // history.replaceState fires no event, so a write has to notify readers itself.
@@ -84,11 +82,12 @@ export function readQueryParams<T extends string>(keys: T[]) {
   return result
 }
 
-// Reads the full current param set from wherever this URL keeps them (hash XOR
-// search). Producers that need every param at once (buildShareUrl) share this
-// so the hash/search decision stays in this one module.
-export function readAllQueryParams() {
-  return readParams(paramLocation())
+// Reads the full param set from wherever a URL keeps them (hash XOR search),
+// the page's own by default. Producers that need every param at once
+// (buildShareUrl) share this so the hash/search decision stays in this one
+// module.
+export function readAllQueryParams(url: URL | Location = window.location) {
+  return readParams(paramLocation(url), url)
 }
 
 export function deleteQueryParams(keys: readonly string[]) {

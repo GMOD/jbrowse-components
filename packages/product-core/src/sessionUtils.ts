@@ -1,9 +1,5 @@
 import { maybePluginUrl } from '@jbrowse/core/pluginDefinitions'
-import {
-  SHARE_PREFIX,
-  diffTrackConfig,
-  flattenTrackConfigDelta,
-} from '@jbrowse/core/util'
+import { diffTrackConfig, flattenTrackConfigDelta } from '@jbrowse/core/util'
 import {
   getChildType,
   getPropertyMembers,
@@ -871,12 +867,11 @@ function resolveWebBaseUrl(webExportUrl: string | undefined) {
 // (createSessionLoader) and ignores the rest, so the stamp is inert there and
 // stays in the address bar where a reader can see it.
 //
-// The large inline modes (`encoded-`/`json-`) go in the hash fragment, which is
-// never sent to the server and so can't trip the request-line limit (HTTP 414)
-// the query string can — a self-contained export carries its own assemblies and
-// tracks and is exactly the biggest kind of session. The tiny `share-<id>` short
-// link stays in the query string. Mirrors jbrowse-web's buildShareUrl; the
-// SessionLoader reads `session=`/`config=` from either location (hash XOR query).
+// Every mode goes in the hash fragment, which a browser never sends to a
+// server: a self-contained export carries its own assemblies and tracks and is
+// exactly the session long enough to trip the request-line limit (HTTP 414),
+// and a short link's decryption key would otherwise land in the web host's
+// access log. Mirrors jbrowse-web's buildShareUrl.
 export function buildWebExportUrl(
   // where the link points and what config it loads: the plan's report fields
   // (what was dropped, what reverted) are for the sender's screen, not the URL
@@ -894,11 +889,7 @@ export function buildWebExportUrl(
   if (options.exportedFrom) {
     params.set('exportedFrom', options.exportedFrom)
   }
-  const str = params.toString()
-  if (sessionParam.startsWith(SHARE_PREFIX)) {
-    url.search = str
-  } else {
-    url.hash = str
-  }
+  url.search = ''
+  url.hash = params.toString()
   return url.href
 }

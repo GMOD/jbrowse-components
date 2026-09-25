@@ -201,10 +201,6 @@ function ShortLinkPrompt({
   const host = shareHost(shareURL)
   return (
     <>
-      {/* The decryption key rides in the link's query string, which the page it
-      points at does receive — so "the server never sees it" is only true of the
-      share server, and saying it plainly is the difference between a claim
-      someone can rely on and one they can't. */}
       <Alert severity="info">
         This encrypts your session in this app and uploads it to{' '}
         {host ?? 'the share server'}, which hands it back to whoever opens the

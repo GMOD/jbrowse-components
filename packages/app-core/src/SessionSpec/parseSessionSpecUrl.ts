@@ -1,3 +1,4 @@
+import { readAllQueryParams } from '../queryParams.ts'
 import {
   buildLgvInitFromParams,
   hubConnectionSpec,
@@ -36,23 +37,6 @@ export interface ParsedSessionSpec {
   configUrl?: string
   spec: Omit<SessionSpec, 'sessionName'>
   sessionName?: string
-}
-
-// jbrowse-web keeps its URL params in the hash fragment XOR the query string
-// (the inline `encoded-`/`json-`/`spec-` sessions live in the hash to dodge the
-// server request-line limit; short `share-` links stay in the query). Read from
-// whichever the link uses so a pasted hash-form link parses the same as a
-// query-form one, instead of tripping the "no session in it" error below.
-//
-// This MUST stay identical to jbrowse-web's own reader (`useQueryParam.ts`
-// `paramLocation`: `hash.includes('=') ? hash : search`) — that module's whole
-// point, and this file's, is that a URL resolves the same everywhere. The XOR is
-// a documented invariant its producers (`buildShareUrl`) guarantee, so a
-// both-present link is a non-case; don't "harden" this into a merge that would
-// diverge from the canonical parser.
-function linkParams(url: URL): URLSearchParams {
-  const hash = url.hash.slice(1)
-  return new URLSearchParams(hash.includes('=') ? hash : url.search)
 }
 
 // A `jbrowse://open?url=<web link>` wrapper carries a JBrowse Web url for
@@ -210,7 +194,7 @@ export function parseSessionSpecUrl(input: string): ParsedSessionSpec {
     throw new Error(`Not a URL: ${input}`)
   }
 
-  const params = linkParams(url)
+  const params = readAllQueryParams(url)
   const session = params.get('session')
   if (!session) {
     return {

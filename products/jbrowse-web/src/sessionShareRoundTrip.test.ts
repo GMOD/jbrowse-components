@@ -81,8 +81,12 @@ function mockShareService() {
 // Builds a link for `mode`, navigates to it, and resolves it the way a fresh
 // page load would.
 async function roundTrip(mode: SessionShareMode) {
-  window.history.replaceState(null, '', '/app/?config=conf.json')
-  const { url } = await buildShareUrl(mode, snap, SHARE_URL)
+  const { url } = await buildShareUrl(
+    mode,
+    snap,
+    SHARE_URL,
+    'http://localhost/app/?config=conf.json',
+  )
 
   window.history.replaceState(null, '', url)
   const loader = createSessionLoaderFromUrl(Date.now())
@@ -118,8 +122,11 @@ test.each(['short', 'long', 'json'] as const)(
 test('a short link uploads an encrypted session, not the session', async () => {
   const service = mockShareService()
   try {
-    await roundTrip('short')
+    const { url } = await roundTrip('short')
 
+    // the key rides in the hash, which no server receives
+    expect(new URL(url).search).toBe('')
+    expect(new URL(url).hash).toContain('password=')
     // the crypto-js OpenSSL envelope ("Salted__" + salt, base64) the deployed
     // lambda stores and every already-shared link decodes from
     expect(service.state.uploaded).toMatch(/^U2FsdGVkX1/)

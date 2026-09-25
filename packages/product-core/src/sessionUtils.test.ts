@@ -899,29 +899,31 @@ test('buildWebExportUrl puts a self-contained encoded- session in the hash', () 
   expect(hashParams.get('session')).toBe('encoded-XYZ')
 })
 
-test('buildWebExportUrl adds the password param for a short share link', () => {
+// the password decrypts the uploaded session, and a query string reaches the
+// web host's access log
+test('buildWebExportUrl puts a short share link and its password in the hash', () => {
   const url = buildWebExportUrl(
     { webBaseUrl: 'https://jbrowse.org/code/jb2/latest/' },
     'share-abc123',
     { password: 'sekret' },
   )
   const parsed = new URL(url)
-  expect(parsed.searchParams.get('session')).toBe('share-abc123')
-  expect(parsed.searchParams.get('password')).toBe('sekret')
+  expect(parsed.search).toBe('')
+  const hashParams = new URLSearchParams(parsed.hash.slice(1))
+  expect(hashParams.get('session')).toBe('share-abc123')
+  expect(hashParams.get('password')).toBe('sekret')
 })
 
 // The link points at `latest` and diffs a hosted base config that is fetched
 // fresh on both ends, so nothing else in it is pinned. What produced it is the
 // one thing the producer can record.
-test('buildWebExportUrl stamps what produced the link, in whichever half carries the session', () => {
+test('buildWebExportUrl stamps what produced the link', () => {
   const plan = { webBaseUrl: 'https://jbrowse.org/code/jb2/latest/' }
   const stamp = { exportedFrom: 'jbrowse-desktop@3.6.4' }
   const inline = new URL(buildWebExportUrl(plan, 'encoded-ABC', stamp))
   expect(new URLSearchParams(inline.hash.slice(1)).get('exportedFrom')).toBe(
     'jbrowse-desktop@3.6.4',
   )
-  const short = new URL(buildWebExportUrl(plan, 'share-abc123', stamp))
-  expect(short.searchParams.get('exportedFrom')).toBe('jbrowse-desktop@3.6.4')
   // and an unstamped link stays exactly as it was
   expect(buildWebExportUrl(plan, 'encoded-ABC')).not.toContain('exportedFrom')
 })
@@ -1225,6 +1227,9 @@ test('planWebExport strips params from a pasted webExportUrl', () => {
   })
   expect(plan.webBaseUrl).toBe('https://inst.example/jb2/')
   const url = new URL(buildWebExportUrl(plan, 'share-abc123'))
-  expect(url.hash).toBe('')
-  expect(url.searchParams.get('session')).toBe('share-abc123')
+  expect(url.search).toBe('')
+  expect(url.hash).not.toContain('local-abc')
+  expect(new URLSearchParams(url.hash.slice(1)).get('session')).toBe(
+    'share-abc123',
+  )
 })

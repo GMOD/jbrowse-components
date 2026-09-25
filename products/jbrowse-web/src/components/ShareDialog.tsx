@@ -26,10 +26,13 @@ import {
 import { observer } from 'mobx-react'
 
 import ShareInfoDialog from './ShareInfoDialog.tsx'
-import { SHARE_MODE_LOCALSTORAGE_KEY, buildShareUrl } from './buildShareUrl.ts'
+import { buildShareUrl } from './buildShareUrl.ts'
 import { findLocalFileNames } from './localFileTracks.ts'
 
 import type { SessionShareMode, SessionWithShareURL } from '@jbrowse/core/util'
+
+// remembers the chosen share mode, not a URL
+export const SHARE_MODE_LOCALSTORAGE_KEY = 'jbrowse-shareMode'
 
 const SHARE_MODES = [
   { value: 'short', label: 'Short URL' },
@@ -78,7 +81,7 @@ const ShareDialog = observer(function ShareDialog({
     isLoading: loading,
     mutate,
   } = useFetch(['shareUrl', currentSetting], () =>
-    buildShareUrl(currentSetting, snap, shareURL),
+    buildShareUrl(currentSetting, snap, shareURL, pageUrl),
   )
 
   const url = data?.url ?? ''

@@ -15,8 +15,8 @@ JBrowse Web reads its launch state from the URL. Embedded components such as
 - A fragment is never sent to the server, so a long value (an `encoded-` or
   `json-` session, a whole [session spec](#session-spec), a big
   `&sessionTracks=`) cannot trip the request-line limit that answers a long
-  query string with HTTP 414. The Share button writes its inline formats as hash
-  URLs for that reason.
+  query string with HTTP 414. The Share button writes every link as a hash URL,
+  which also keeps a short link's password out of the web server's logs.
 - If the fragment contains an `=`, JBrowse reads its parameters only from there
   and ignores the query string. Moving one long parameter into the fragment
   means moving them all: `?config=my.json#session=spec-{…}` loads the default
@@ -1168,7 +1168,7 @@ IndexedDB.
 
 ### &session=share-
 
-`https://host/jbrowse2/?session=share-HShsEcnq3i&password=nYzTU`, from the Share
+`https://host/jbrowse2/#session=share-HShsEcnq3i&password=nYzTU`, from the Share
 button.
 
 - The client mints a random key, encrypts the session and uploads the blob
