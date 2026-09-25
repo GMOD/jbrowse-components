@@ -1,3 +1,5 @@
+import { isBlockCovered } from './planRegionFetch.ts'
+
 import type { BufferedVisibleRegion } from './regionHost.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 
@@ -83,8 +85,12 @@ export type CoarseTierResult<P> =
 /**
  * Whether payloads read over `held` still answer for what is on screen, so a
  * pan or a zoom inside the buffered read re-uses them rather than re-reading.
- * The same question the detail fetch asks with `isBlockCovered`: every visible
- * block sits inside the held span of its own displayed region.
+ *
+ * Literally the detail fetch's question, asked over the tier's own spans:
+ * every visible block sits inside the held span of its own displayed region.
+ * `isBlockCovered` is that comparison — including the `floor`/`ceil` that
+ * handles a fractional `bpPerPx` — and this used to restate it inline, which
+ * is one rounding rule kept in two places for two tiers of the same fetch.
  */
 export function coarseTierCovers(
   held: readonly BufferedVisibleRegion[],
@@ -99,9 +105,7 @@ export function coarseTierCovers(
     held.some(
       h =>
         h.displayedRegionIndex === block.displayedRegionIndex &&
-        h.region.refName === block.refName &&
-        h.region.start <= Math.floor(block.start) &&
-        h.region.end >= Math.ceil(block.end),
+        isBlockCovered(h.region, block),
     ),
   )
 }

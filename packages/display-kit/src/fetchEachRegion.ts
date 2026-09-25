@@ -1,10 +1,12 @@
-import {
-  isRegionRefused,
-  measuredBytes,
-  measurementPartial,
-} from '@jbrowse/core/rpc/byteBudget'
+import { isRegionRefused, measuredBytes } from '@jbrowse/core/rpc/byteBudget'
 import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
 import { runInAction } from 'mobx'
+
+import {
+  measurementOf,
+  measurementOfEach,
+  openGateCommit,
+} from './gateCommit.ts'
 
 import type { FetchContext } from './FetchMixin.ts'
 import type { IndexedRegion } from './planRegionFetch.ts'
@@ -73,54 +75,37 @@ export function callEachRegion<R>(
 }
 
 /**
- * The gate bookkeeping one per-region batch owes, as an object rather than two
- * statements in the runner, because both of its rules are the kind a reader
- * restores wrongly and no type catches:
+ * {@link openGateCommit} plus the two things a per-region fan-out adds to it:
+ * the measurement it derives rather than reads, and the cancel a refusal owes.
  *
- * - **The commit happens at most once.** Several regions refusing in one batch
- *   is the ordinary case at whole-genome zoom, and a commit per refusal is a
- *   `fetchGeneration` bump per refusal — a burst of autorun re-runs where one is
- *   owed. Held here rather than inferred from `ctx.isStale()`, which would make
- *   the count depend on `cancelFetch` closing the rotation's guard: true of
- *   `FetchMixin`, but a cross-member contract nothing checks.
- * - **A refusal commits before it cancels.** The other order strands the
- *   verdict: the aborts reject the batch, the commit never lands,
- *   `nextGateState` stamps `gateMeasuredViewportKey` only on a committed
- *   measurement, so `gateSkipsMeasuredViewport` reads false and the plan
- *   re-issues every region off the cancel's own generation bump — forever.
- *   `refuse()` is one call, so there is no order to invert.
+ * **This runner derives `partial` from its own landed count**, where a runner
+ * handed one payload can only read the claim off it. The number is the max over
+ * whichever regions won the race rather than over the set — but only when some
+ * region really did not report: a refusal from the last region to land, and
+ * every refusal on a single-region display, measured the whole set and is
+ * ordinary evidence.
  *
- * `issued` is captured on construction, before anything is issued, so the
- * measurements this batch brings back are judged against the viewport and the
- * tier they were asked for rather than whatever the view moved to during the
- * round trip.
+ * **A refusal commits before it cancels.** The other order strands the verdict:
+ * the aborts reject the batch, the commit never lands, `nextGateState` stamps
+ * `gateMeasuredViewportKey` only on a committed measurement, so
+ * `gateSkipsMeasuredViewport` reads false and the plan re-issues every region
+ * off the cancel's own generation bump — forever. `refuse()` is one call, so
+ * there is no order to invert, and the commit-at-most-once half is
+ * `openGateCommit`'s.
  */
 function gateBatch(
   self: FetchEachRegionModel,
   size: number,
   onComplete?: (issued: GateFetchState) => void,
 ) {
-  const issued = self.gateFetchState()
+  const gate = openGateCommit(self)
   const bytes: (number | undefined)[] = new Array(size)
   let landed = 0
-  let settled = false
   const finish = (refused: boolean) => {
-    if (!settled) {
-      settled = true
-      // a copy, because a refusal commits while siblings are still landing and
-      // would otherwise hand the gate an array that goes on changing under it.
-      //
-      // `partial` is that same fact as a claim about the number: it is the max
-      // over whichever regions won the race rather than over the set — but only
-      // when some region really did not report. A refusal from the last region
-      // to land, and every refusal on a single-region display, measured the
-      // whole set and is ordinary evidence.
-      //
-      // This runner owns its fan-out, so it derives the claim; the two that are
-      // handed one payload read it off the result with `measurementPartial`,
-      // which is where the rest of the argument lives.
-      self.commitFetchBytes([...bytes], issued, landed < size)
-      onComplete?.(issued)
+    // a copy, because a refusal commits while siblings are still landing and
+    // would otherwise hand the gate an array that goes on changing under it
+    if (gate.commit({ perRegionBytes: [...bytes], partial: landed < size })) {
+      onComplete?.(gate.issued)
       if (refused) {
         self.cancelFetch()
       }
@@ -262,7 +247,7 @@ export async function fetchAllRegions<R>(
     onComplete?: (issued: GateFetchState) => void
   },
 ) {
-  const issued = self.gateFetchState()
+  const gate = openGateCommit(self)
   await self.fetchRegions(needed, async ctx => {
     const results = await opts.call(
       needed.map(n => n.region),
@@ -283,12 +268,8 @@ export async function fetchAllRegions<R>(
           )
         }
       })
-      self.commitFetchBytes(
-        results.map(measuredBytes),
-        issued,
-        results.some(measurementPartial),
-      )
-      opts.onComplete?.(issued)
+      gate.commit(measurementOfEach(results))
+      opts.onComplete?.(gate.issued)
     }
   })
 }
@@ -330,7 +311,7 @@ export async function fetchRegionsBatched<R extends RegionPayload>(
     payloadFor?: (displayedRegionIndex: number, result: R) => RegionPayload
   },
 ) {
-  const issued = self.gateFetchState()
+  const gate = openGateCommit(self)
   const payloadFor = opts.payloadFor ?? ((_, result) => result)
   await self.fetchRegions(regions, async ctx => {
     const result = await opts.call(regions, ctx)
@@ -339,11 +320,7 @@ export async function fetchRegionsBatched<R extends RegionPayload>(
       // spans the previous batch marked loaded — an export gate did, after a
       // pan left the view inside the old span and off the new one.
       runInAction(() => {
-        self.commitFetchBytes(
-          [measuredBytes(result)],
-          issued,
-          measurementPartial(result),
-        )
+        gate.commit(measurementOf(result))
         // One payload covers the whole set, so a refusal refuses the set:
         // nothing is committed and nothing is marked loaded, for the reason
         // spelled out in `RegionFetchContext`.

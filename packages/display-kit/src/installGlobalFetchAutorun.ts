@@ -1,19 +1,19 @@
-import {
-  isRegionRefused,
-  measuredBytes,
-  measurementPartial,
-} from '@jbrowse/core/rpc/byteBudget'
+import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { installFetch } from '@jbrowse/core/util/installFetch'
+import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { untracked } from 'mobx'
 
 import { fetchMixinLifecycle } from './FetchMixin.ts'
 import { autorunOnReadyView } from './displayAutoruns.ts'
+import { measurementOf, openGateCommit } from './gateCommit.ts'
 import { installClearHoverOnViewportChange } from './installClearHoverOnViewportChange.ts'
+import { heldDataAnswers } from './regionTooLargeUtils.ts'
 
 import type { FetchContext } from './FetchMixin.ts'
 import type { FetchKey, KeyedFetchHost } from './KeyedFetchMixin.ts'
-import type { GateCommitHost, GateFetchState } from './regionTooLargeUtils.ts'
+import type { GateCommit } from './gateCommit.ts'
+import type { GateCommitHost } from './regionTooLargeUtils.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { FetchPhases } from '@jbrowse/core/util/fetchPhases'
 import type { FetchSkeletonHost } from '@jbrowse/core/util/installFetch'
@@ -87,10 +87,10 @@ interface GlobalFetchIssue<TArgs> {
   signature: FetchKey
 }
 
-/** what one round trip landed, carrying the gate state it was issued under */
+/** what one round trip landed, carrying the gate commit it was issued under */
 interface GlobalFetchLanding<TResult> {
   result: TResult | RegionTooLargeResult
-  issued: GateFetchState
+  gate: GateCommit
 }
 
 /**
@@ -120,16 +120,12 @@ function globalFetchPlan<TArgs, TResult>(
       // skeleton's contract — so the measurement the result comes back with is
       // labelled with the viewport and the tier it was asked for, not a live
       // re-read at commit.
-      const issued = self.gateFetchState()
+      const gate = openGateCommit(self)
       const result = await run(issue.args, ctx)
-      return result === undefined ? undefined : { result, issued }
+      return result === undefined ? undefined : { result, gate }
     },
-    commit: ({ result, issued }, { args, signature }) => {
-      self.commitFetchBytes(
-        [measuredBytes(result)],
-        issued,
-        measurementPartial(result),
-      )
+    commit: ({ result, gate }, { args, signature }) => {
+      gate.commit(measurementOf(result))
       if (!isRegionRefused(result)) {
         self.commitFetchResult(() => {
           commit(result, args)
@@ -160,16 +156,17 @@ function globalFetchPlan<TArgs, TResult>(
  *   unconditionally". Liveness is not a term here: `installFetch` checks it
  *   above every gate, because `host` is a parent walk and so is nearly every
  *   other gate in the tree.
- * - **fetchKey / loadedKey** — `currentFetchKey` (the display's
- *   `viewSignature` plus the `settingsFetchInputs` axis, so the viewport and
- *   every user setting are tracked wherever the compare runs) against the
- *   stamp `commitFetchResult` wrote. While `regionTooLarge` holds, the
- *   committed side reads as absent — the precedence the per-region family
- *   applies through `heldDataAnswers`, here spelled as a key: the banner is
- *   hiding that data and this fetch is the only re-measure. The
- *   skeleton's reload epoch lets Retry override this gate with nothing to
- *   clear — `GlobalFetchMixin.reload()` still drops the stamp so
- *   `dataCurrent` goes false and the overlay shows.
+ * - **heldAnswers** — `currentFetchKey` (the display's `viewSignature` plus
+ *   the `settingsFetchInputs` axis, so the viewport and every user setting are
+ *   tracked wherever the compare runs) against the stamp `commitFetchResult`
+ *   wrote, under `heldDataAnswers` — **the same function the per-region plan
+ *   applies**, so the two families cannot come to disagree about whether held
+ *   data answers while the banner is up. It does not: the banner is hiding
+ *   that data and this fetch is the only re-measure. This was spelled as a
+ *   `loadedKey` answering `undefined` under a refusal, which is the same
+ *   precedence written a second way. The skeleton's reload epoch lets Retry
+ *   override the gate with nothing to clear — `GlobalFetchMixin.reload()`
+ *   still drops the stamp so `dataCurrent` goes false and the overlay shows.
  * - **plan / lifecycle** — {@link globalFetchPlan}'s issue-time capture and
  *   measure-or-commit, over `FetchMixin`'s begin/end bookkeeping and the
  *   mixin's own rotation, so `cancelFetch` and the Cancel button reach the
@@ -203,8 +200,10 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
       self.host.initialized &&
       !self.isMinimized &&
       !self.gateSkipsMeasuredViewport,
-    fetchKey: issue => issue.signature,
-    loadedKey: () => (self.regionTooLarge ? undefined : self.loadedFetchKey),
+    heldAnswers: issue =>
+      heldDataAnswers(self.regionTooLarge, () =>
+        isDataCurrent(self.loadedFetchKey, issue.signature),
+      ),
     ...globalFetchPlan(self, opts),
     ...fetchMixinLifecycle(self),
   })

@@ -66,10 +66,13 @@ export interface GateFetchState {
 }
 
 /**
- * `RegionTooLargeMixin`'s byte-gate commit pair, as every fetch runner needs
- * it: the gate as it stood when a fetch was issued, and where the bytes its
- * result reports go. A display that passes no `byteLimit` measures nothing and
- * commits nothing, so a runner can call them unconditionally.
+ * `RegionTooLargeMixin`'s byte-gate commit pair: the gate as it stood when a
+ * fetch was issued, and where the bytes its result reports go. A display that
+ * passes no `byteLimit` measures nothing and commits nothing, so a runner can
+ * call them unconditionally.
+ *
+ * Runners reach both through `openGateCommit` (`gateCommit.ts`) rather than by
+ * hand — see the note on `commitFetchBytes`.
  */
 export interface GateCommitHost {
   gateFetchState: () => GateFetchState

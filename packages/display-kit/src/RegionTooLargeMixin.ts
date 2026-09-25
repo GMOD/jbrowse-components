@@ -398,9 +398,17 @@ export default function RegionTooLargeMixin() {
     .actions(self => ({
       /**
        * #action
-       * The byte axis of a finished fetch, called by the fetch runners with the
-       * `gateFetchState()` they captured at issue. Commits the per-region max;
-       * an empty batch, or an ungated display, commits nothing.
+       * The byte axis of a finished fetch: the per-region max against the
+       * `gateFetchState()` captured at issue. An empty batch, or an ungated
+       * display, commits nothing.
+       *
+       * **Reached through `openGateCommit` (`gateCommit.ts`), which is the only
+       * production caller.** That object owns the capture, the
+       * commit-at-most-once rule and the pairing of the bytes with `partial` —
+       * a claim that was a trailing optional here, which is how three of the
+       * four runners came to commit a number without saying whether it covered
+       * the region set they asked about. A test staging a measurement by hand
+       * calls this directly, which is what the default is for.
        */
       commitFetchBytes(
         perRegionBytes: (number | undefined)[],

@@ -419,6 +419,7 @@ export default [
   '@jbrowse/display-kit/foundationPaintInert',
   '@jbrowse/display-kit/foundationSvgReady',
   '@jbrowse/display-kit/foundationView',
+  '@jbrowse/display-kit/gateCommit',
   '@jbrowse/display-kit/GlobalFetchMixin',
   '@jbrowse/display-kit/groupByMenu',
   '@jbrowse/display-kit/GroupLabelBox',

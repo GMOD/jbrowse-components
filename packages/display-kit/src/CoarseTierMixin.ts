@@ -1,10 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { isSubAdapterConfig } from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  isRegionRefused,
-  measuredBytes,
-  measurementPartial,
-} from '@jbrowse/core/rpc/byteBudget'
+import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { getContainingTrack } from '@jbrowse/core/util'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
@@ -22,6 +18,7 @@ import {
 } from './coarseTierPhase.ts'
 import { onDisplayedRegionsChange } from './displayAutoruns.ts'
 import { containingHost } from './foundationView.ts'
+import { measurementOf, openGateCommit } from './gateCommit.ts'
 
 import type { ByteGateAdapterPath } from './RegionTooLargeMixin.ts'
 import type {
@@ -31,7 +28,8 @@ import type {
   CoarseTierResult,
 } from './coarseTier.ts'
 import type { CoarseTierPhaseHost } from './coarseTierPhase.ts'
-import type { GateCommitHost, GateFetchState } from './regionTooLargeUtils.ts'
+import type { GateCommit } from './gateCommit.ts'
+import type { GateCommitHost } from './regionTooLargeUtils.ts'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { FetchSkeletonHost } from '@jbrowse/core/util/installFetch'
 import type { StatusWindow } from '@jbrowse/core/util/progress'
@@ -371,7 +369,7 @@ export default function CoarseTierMixin<P extends object>() {
         )
         installFetch<
           CoarseTierRead,
-          { result: CoarseTierResult<P>; issued: GateFetchState | undefined }
+          { result: CoarseTierResult<P>; gate: GateCommit | undefined }
         >(host(self), {
           name: 'FetchCoarseTier',
           delay: 300,
@@ -395,19 +393,16 @@ export default function CoarseTierMixin<P extends object>() {
             )
           },
           run: async (read, ctx) => {
-            const issued = self.coarseTierGated
-              ? host(self).gateFetchState()
+            // opened here, in `run`'s synchronous prefix, so the gate state is
+            // the one this read was issued under rather than a live re-read at
+            // commit — the same capture point every other runner makes
+            const gate = self.coarseTierGated
+              ? openGateCommit(host(self))
               : undefined
-            return { result: await self.fetchCoarseTier(read, ctx), issued }
+            return { result: await self.fetchCoarseTier(read, ctx), gate }
           },
-          commit: ({ result, issued }, read) => {
-            if (issued !== undefined) {
-              host(self).commitFetchBytes(
-                [measuredBytes(result)],
-                issued,
-                measurementPartial(result),
-              )
-            }
+          commit: ({ result, gate }, read) => {
+            gate?.commit(measurementOf(result))
             if (!isRegionRefused(result)) {
               self.setCoarseTier(result.entries, read)
             }
