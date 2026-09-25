@@ -118,11 +118,9 @@ describe('alignments display cross-feature coupling', () => {
     expect(display.showSashimiArcs).toBe(false)
   })
 
-  // The other direction of the same invariant. Hiding coverage used to leave
-  // "Show sashimi arcs" ticked over a display drawing none — and the worker
-  // skips the junction scan when the band is off, so there was no data behind
-  // the ticked box either.
-  test('setShowCoverage(false) turns sashimi off', () => {
+  // Sashimi draws only over the coverage band, so with the band off the arcs are
+  // off whatever the slot says, and turning the band back on restores the slot.
+  test('sashimi resolves off while coverage is off, and returns with it', () => {
     const display = createDisplay()
     display.setShowSashimiArcs(true)
     expect(display.showCoverage).toBe(true)
@@ -130,9 +128,8 @@ describe('alignments display cross-feature coupling', () => {
     display.setShowCoverage(false)
     expect(display.showSashimiArcs).toBe(false)
 
-    // and turning coverage back on does not resurrect it — sashimi is opt-in
     display.setShowCoverage(true)
-    expect(display.showSashimiArcs).toBe(false)
+    expect(display.showSashimiArcs).toBe(true)
   })
 
   // Direction is a single shared field (readConnectionsDown); sashimi stores
@@ -1499,19 +1496,6 @@ describe('a selection is the chrome guide, not the canvas', () => {
     expect('selectedFeatureId' in display.renderState).toBe(false)
     expect('selectedChainReadIds' in display.renderState).toBe(false)
     // Nothing fetched yet, so no read has ink to light.
-    expect(display.selectionInk).toEqual([])
-    stop()
-  })
-
-  test('a chain selection leaves renderState alone too', () => {
-    const { display } = createTestAlignmentsDisplay()
-    let renderStates = 0
-    const stop = autorun(() => {
-      void display.renderState
-      renderStates++
-    })
-    display.setSelectedChainReadIds(['r1', 'r2'])
-    expect(renderStates).toBe(1)
     expect(display.selectionInk).toEqual([])
     stop()
   })

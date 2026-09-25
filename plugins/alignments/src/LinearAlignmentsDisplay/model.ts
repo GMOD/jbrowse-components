@@ -448,11 +448,6 @@ export default function stateModelFactory(
            * `readIdsByChainName`, which is where they come from.
            */
           highlightedChainReadIds: [] as string[],
-          /**
-           * #volatile
-           * Read ids of the clicked chain. Same id space as the hover set above.
-           */
-          selectedChainReadIds: [] as string[],
 
           /**
            * #volatile
@@ -475,12 +470,6 @@ export default function stateModelFactory(
            * next move. `undefined` when not on an arc.
            */
           hoveredArcHighlight: undefined as ArcHighlight | undefined,
-          /**
-           * #volatile
-           * `sashimiSelectionKey` of the junction the sashimi detail widget is
-           * showing, or undefined.
-           */
-          selectedSashimiKey: undefined as string | undefined,
         }
       })
       .views(self => ({
@@ -2476,13 +2465,11 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The selected chain, empty outside chain mode. Every consumer reads it
-         * here — `renderState` for the canvas, `PileupBezierOverlay` for which
-         * arcs draw thick — so a selection the mode has made meaningless is
-         * unrenderable by construction rather than by a clear-on-transition.
+         * Read ids of the selected read's chain, empty outside chain mode.
          */
-        get selectedChainReadIdsInMode() {
-          return self.isChainMode ? self.selectedChainReadIds : []
+        get selectedChainReadIds() {
+          const id = self.selectedFeatureId
+          return id === undefined ? [] : this.readIdsSharingChainWith(id)
         },
 
         /**
@@ -2558,11 +2545,7 @@ export default function stateModelFactory(
            */
           get sashimiJunctionSections() {
             const view = self.view
-            if (
-              !self.showSashimiArcs ||
-              !self.showCoverage ||
-              !view.initialized
-            ) {
+            if (!self.showSashimiArcs || !view.initialized) {
               return []
             }
             const filter = {
@@ -2763,7 +2746,7 @@ export default function stateModelFactory(
         get selectionInk(): HighlightRect[] {
           const { ids, strong } = readsToLight({
             isChainMode: self.isChainMode,
-            chainReadIds: self.selectedChainReadIdsInMode,
+            chainReadIds: self.selectedChainReadIds,
             readId: self.selectedFeatureId,
           })
           return this.readInk(ids, strong)
@@ -3181,9 +3164,6 @@ export default function stateModelFactory(
             self.highlightedChainReadIds = []
           }
         }
-        // Sashimi only renders over the coverage band, so the two settings are
-        // tied in both directions. Kept here, not in the menu handlers, so the
-        // invariant holds for every caller.
         function setShowSashimiArcs(show: boolean) {
           setConf(self, 'showSashimiArcs', show)
           if (show) {
@@ -3192,9 +3172,6 @@ export default function stateModelFactory(
         }
         function setShowCoverage(show: boolean) {
           setConf(self, 'showCoverage', show)
-          if (!show) {
-            setConf(self, 'showSashimiArcs', false)
-          }
         }
         function setSortSlot(sortedBy: SortedBy) {
           setConf(self, 'largeFeaturesFirst', false)
@@ -3254,24 +3231,6 @@ export default function stateModelFactory(
             if (isFeature(session.selection)) {
               session.clearSelection()
             }
-            if (self.selectedChainReadIds.length > 0) {
-              self.selectedChainReadIds = []
-            }
-            self.selectedSashimiKey = undefined
-          },
-
-          /**
-           * #action
-           */
-          setSelectedSashimiKey(key: string | undefined) {
-            self.selectedSashimiKey = key
-          },
-
-          /**
-           * #action
-           */
-          setSelectedChainReadIds(ids: string[]) {
-            self.selectedChainReadIds = ids
           },
 
           /**
@@ -3802,14 +3761,7 @@ export default function stateModelFactory(
               return
             }
             self.scrollTop = 0
-            // Forget chain hover (clearMouseoverState) and selection. A product
-            // choice — selection doesn't survive a mode change — not a
-            // render-safety mechanism: `renderState` already gates chain
-            // highlights on `isChainMode`, so stale IDs can't render regardless.
             clearMouseoverState()
-            if (self.selectedChainReadIds.length > 0) {
-              self.selectedChainReadIds = []
-            }
             const currentType = self.colorBy.type
             if (mode === 'off') {
               if (PAIRING_COLOR_SCHEMES.has(currentType)) {
@@ -4078,23 +4030,6 @@ export default function stateModelFactory(
               call: (region, ctx) => fetchFeaturesForRegion(self, region, ctx),
               onResult: (_displayedRegionIndex, result) => result,
             })
-          },
-
-          /**
-           * #action
-           * Select a read and, in chain mode, mark the rest of its chain — the
-           * one click both the canvas and the bezier overlay land on, so a
-           * connector and the read it joins select the same thing.
-           */
-          selectReadWithChain(featureId: string) {
-            void self.selectFeatureById(featureId)
-            // Assigned unconditionally: a read with no chain — one whose group
-            // is hidden, or whose block no longer holds it — has to clear the
-            // chain the last click left selected, or that chain stays boxed
-            // and its arcs stay thick behind a selection that moved on.
-            self.setSelectedChainReadIds(
-              self.readIdsSharingChainWith(featureId),
-            )
           },
         }
       })

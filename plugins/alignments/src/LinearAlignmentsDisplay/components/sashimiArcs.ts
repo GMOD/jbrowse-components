@@ -96,14 +96,18 @@ export function splitArcsBySide(
 // Stable React key, shared by overlay and export. Unique within one group
 // section + side: the compute layer emits one arc per refName:start:end, so the
 // strand here only records which tint that junction resolved to.
-export function sashimiArcKey(arc: SashimiArc) {
+export function sashimiArcKey(
+  arc: Pick<SashimiArc, 'refName' | 'start' | 'end' | 'strand'>,
+) {
   return `${arc.refName}:${arc.start}:${arc.end}:${arc.strand}`
 }
 
-// Display-wide selection identity, scoped by group section. Selection lives once
-// for the whole display, but the same junction can appear in several grouped
-// sections (e.g. per-sample RNA-seq), so the group must be part of the key — an
-// unscoped key selects that junction in every group at once.
-export function sashimiSelectionKey(groupKey: string, arc: SashimiArc) {
-  return `${groupKey}\t${sashimiArcKey(arc)}`
+// The junction's id in the session selection, scoped by group section: the same
+// junction appears in each grouped section (per-sample RNA-seq), and selecting
+// it in one must not outline it in every other.
+export function sashimiFeatureId(
+  groupKey: string,
+  arc: Pick<SashimiArc, 'refName' | 'start' | 'end' | 'strand'>,
+) {
+  return `sashimi-${groupKey}-${sashimiArcKey(arc)}`
 }

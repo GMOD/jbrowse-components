@@ -466,7 +466,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         )
         return
       case 'feature':
-        model.selectReadWithChain(result.hit.id)
+        void model.selectFeatureById(result.hit.id)
         return
       case 'none':
         model.clearSelection()

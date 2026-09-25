@@ -153,9 +153,12 @@ export function configSlotViews(self: ConfigSlotSelf) {
     get readConnectionsDown(): boolean {
       return getConf(self, 'readConnectionsDown')
     },
-    /** #getter */
+    /**
+     * #getter
+     * Whether sashimi arcs draw: the slot, and the coverage band they hang off.
+     */
     get showSashimiArcs(): boolean {
-      return getConf(self, 'showSashimiArcs')
+      return getConf(self, 'showSashimiArcs') && this.showCoverage
     },
     /** #getter */
     get sashimiArcsMode(): SashimiArcsMode {

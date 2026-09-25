@@ -10,7 +10,7 @@ import { PAN_MOVED } from './panState.ts'
 import {
   SASHIMI_SIDES,
   sashimiArcKey,
-  sashimiSelectionKey,
+  sashimiFeatureId,
   sashimiSideBand,
 } from './sashimiArcs.ts'
 import { bandOnScreen, bandScreenTop } from './sectionScreen.ts'
@@ -30,8 +30,8 @@ import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 // clipped to its own height so it can't paint over the pileup.
 //
 // Hover just widens the stroke, and stays plain React state: it is a
-// per-mousemove thing with nothing to export. Selection is the model's
-// (`selectedSashimiKey`), so the export can draw the same outline. Arc geometry
+// per-mousemove thing with nothing to export. A junction is outlined while the
+// session selection is its detail widget's feature. Arc geometry
 // is memoized on the model (`sashimiArcSections`), so hovering repaints only
 // this band's (low count) paths without recomputing it.
 const SashimiSubBand = observer(function SashimiSubBand({
@@ -68,10 +68,9 @@ const SashimiSubBand = observer(function SashimiSubBand({
     >
       {arcs.map(arc => {
         const arcKey = sashimiArcKey(arc)
-        const selKey = sashimiSelectionKey(groupKey, arc)
         return (
           <Fragment key={arcKey}>
-            {selKey === model.selectedSashimiKey ? (
+            {sashimiFeatureId(groupKey, arc) === model.selectedFeatureId ? (
               <SashimiSelectionOutline arc={arc} palette={palette} />
             ) : null}
             <path
@@ -99,16 +98,11 @@ const SashimiSubBand = observer(function SashimiSubBand({
                 setHoveredArcKey(null)
                 model.clearHoverUnlessPinned()
               }}
-              // Select AND open, always — selection marks the junction the
-              // detail widget is showing, so a second click on the same arc is
-              // idempotent rather than deselecting it while reopening the
-              // widget that says it's selected.
               onClick={e => {
                 if (e.currentTarget.closest(PAN_MOVED)) {
                   return
                 }
-                model.setSelectedSashimiKey(selKey)
-                openSashimiWidget(model, arc)
+                openSashimiWidget(model, arc, groupKey)
               }}
             />
           </Fragment>

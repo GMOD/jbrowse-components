@@ -75,12 +75,12 @@ function renderOverlay(
     height: 200,
     isChainMode: false,
     selectedFeatureId: undefined,
-    selectedChainReadIdsInMode: [],
+    selectedChainReadIds: [],
     getFeatureInfoById: () => undefined,
     setHoverState: jest.fn(),
     clearHoverUnlessPinned: jest.fn(),
     readIdsSharingChainWith: jest.fn(() => []),
-    selectReadWithChain: jest.fn(),
+    selectFeatureById: jest.fn(),
     ...overrides,
   } as unknown as LinearAlignmentsDisplayModel
   const { container } = render(<PileupBezierOverlay model={model} />)
@@ -109,10 +109,10 @@ test('a click selects the endpoint nearer the cursor, chain and all', () => {
   const { model, target } = renderOverlay()
 
   fireEvent.click(target, { clientX: 25 })
-  expect(model.selectReadWithChain).toHaveBeenCalledWith('readB')
+  expect(model.selectFeatureById).toHaveBeenCalledWith('readB')
 
   fireEvent.click(target, { clientX: 5 })
-  expect(model.selectReadWithChain).toHaveBeenLastCalledWith('readA')
+  expect(model.selectFeatureById).toHaveBeenLastCalledWith('readA')
 })
 
 // A click-drag pan across the pileup still ends in a click, and the curves sit
@@ -123,7 +123,7 @@ test('a click that followed a pan selects nothing', () => {
 
   fireEvent.click(target, { clientX: 25 })
 
-  expect(model.selectReadWithChain).not.toHaveBeenCalled()
+  expect(model.selectFeatureById).not.toHaveBeenCalled()
 })
 
 // Through `setHoverState`, which the open context menu's hover pin can refuse —
@@ -186,7 +186,7 @@ test('an arc is thick while the model selects either of its reads', () => {
 })
 
 test('a chain selection thickens every arc of the chain', () => {
-  const { inks } = renderOverlay({ selectedChainReadIdsInMode: CHAIN }, [
+  const { inks } = renderOverlay({ selectedChainReadIds: CHAIN }, [
     ARC,
     NEXT_HOP,
     OTHER,

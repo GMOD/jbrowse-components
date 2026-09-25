@@ -8,6 +8,7 @@ import { openFeatureWidget } from '@jbrowse/core/util'
 import { spliceMotifLabel } from '../../features/sashimi/motif.ts'
 import { getModificationCallName } from '../../shared/modificationData.ts'
 import { getCigarTypeLabel } from '../../shared/types.ts'
+import { sashimiFeatureId } from './sashimiArcs.ts'
 import { getCoverageBin, getInterbaseBin } from './tooltipUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -121,13 +122,10 @@ export function openSashimiWidget(
     strand: number
     motif: number
   },
+  groupKey: string,
 ) {
   openFeatureWidget(model, {
-    // refName:start:end already identifies the arc — the compute layer emits one
-    // per junction, tinted by its dominant strand. Strand stays in the uniqueId
-    // anyway so a re-tinted junction (a fetch that shifts which strand leads)
-    // reads as a new selection rather than silently reusing the old one.
-    uniqueId: `sashimi-${arc.refName}-${arc.start}-${arc.end}-${arc.strand}`,
+    uniqueId: sashimiFeatureId(groupKey, arc),
     // Named like its siblings (openIndicatorWidget, openCigarWidget) so the
     // widget has a heading; without one it opened titled by nothing, leaving the
     // bare `type: 'skip'` to explain what had been clicked.

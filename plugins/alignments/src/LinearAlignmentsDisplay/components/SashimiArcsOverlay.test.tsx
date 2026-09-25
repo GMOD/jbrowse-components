@@ -4,9 +4,10 @@ import { cleanup, fireEvent, render } from '@testing-library/react'
 
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
 import SashimiArcsSvg from './SashimiArcsSvg.tsx'
+import { openSashimiWidget } from './detailWidgets.ts'
 import {
   sashimiArcKey,
-  sashimiSelectionKey,
+  sashimiFeatureId,
   sashimiSideBand,
 } from './sashimiArcs.ts'
 
@@ -104,25 +105,20 @@ describe('sashimiSideBand', () => {
   })
 })
 
-describe('sashimiSelectionKey', () => {
+describe('sashimiFeatureId', () => {
   it('scopes the same junction by group so selection does not bleed across groups', () => {
     const arc = makeArc({})
-    expect(sashimiSelectionKey('sampleA', arc)).not.toBe(
-      sashimiSelectionKey('sampleB', arc),
+    expect(sashimiFeatureId('sampleA', arc)).not.toBe(
+      sashimiFeatureId('sampleB', arc),
     )
-  })
-
-  it('matches for the same junction within one group (ungrouped key is empty)', () => {
-    const arc = makeArc({})
-    expect(sashimiSelectionKey('', arc)).toBe(sashimiSelectionKey('', arc))
   })
 })
 
 describe('sashimi selection', () => {
   const ARC = makeArc({ d: 'M 0 0 L 10 10', strokeWidth: 2 })
-  const SELECTED = sashimiSelectionKey('sampleA', ARC)
+  const SELECTED = sashimiFeatureId('sampleA', ARC)
 
-  function stubModel(selectedSashimiKey: string | undefined) {
+  function stubModel(selectedFeatureId: string | undefined) {
     return {
       id: 'sashimi-selection',
       view: { width: 800 },
@@ -138,8 +134,7 @@ describe('sashimi selection', () => {
       ],
       showSashimiLabels: false,
       bandHeights: { coverageHeight: 100, sashimiArcsHeight: 40 },
-      selectedSashimiKey,
-      setSelectedSashimiKey: jest.fn(),
+      selectedFeatureId,
       setHoverState: jest.fn(),
       clearMouseoverState: jest.fn(),
       clearHoverUnlessPinned: jest.fn(),
@@ -181,14 +176,14 @@ describe('sashimi selection', () => {
     expect(strokeWidths(container)).toEqual(['2'])
   })
 
-  it('records the clicked junction on the model, not in the component', () => {
+  it('opens the widget for the clicked junction in its group', () => {
     const model = stubModel(undefined)
     const { container } = render(<SashimiArcsOverlay model={model} />)
     fireEvent.click(container.querySelector('path')!)
-    expect(model.setSelectedSashimiKey).toHaveBeenCalledWith(SELECTED)
+    expect(openSashimiWidget).toHaveBeenCalledWith(model, ARC, 'sampleA')
   })
 
-  it('outlines the model-selected junction on screen too', () => {
+  it('outlines the junction the session has selected', () => {
     const { container } = render(
       <SashimiArcsOverlay model={stubModel(SELECTED)} />,
     )

@@ -79,7 +79,7 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
   // Selection is the model's, not a local mirror of the last click: clearing
   // it on the canvas or selecting another read has to un-thicken the arc too.
   // Through the mode-gated getter, as the canvas `renderState` is.
-  const selectedChain = new Set(model.selectedChainReadIdsInMode)
+  const selectedChain = new Set(model.selectedChainReadIds)
   const isSelected = (arc: PileupArc) =>
     arc.id1 === selectedFeatureId ||
     arc.id2 === selectedFeatureId ||
@@ -173,7 +173,7 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
                         return
                       }
                       const svg = e.currentTarget.ownerSVGElement
-                      model.selectReadWithChain(
+                      void model.selectFeatureById(
                         svg
                           ? nearerEndpoint(
                               arc,
