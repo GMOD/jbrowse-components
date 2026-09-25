@@ -14,6 +14,7 @@ import { RingPointer } from '../../rings/ringPointer.ts'
 import Controls from './Controls.tsx'
 import { Rulers } from './Ruler.tsx'
 
+import type { RingPointerEvent } from '../../rings/ringPointer.ts'
 import type { CircularViewModel } from '../model.ts'
 
 // lazies. Local Suspense at the use site rather than relying on the app's
@@ -251,11 +252,11 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
 
   const routeRingPointer = (
     event: React.MouseEvent<SVGSVGElement>,
-    type: 'mousemove' | 'click',
+    type: RingPointerEvent,
   ) => {
     const rect = containerRef.current!.getBoundingClientRect()
     const [dx, dy] = offsetFromCenter(model, rect, event)
-    ringPointer.move(event.clientX, event.clientY, dx, dy, rect, type)
+    return ringPointer.move(event.clientX, event.clientY, dx, dy, rect, type)
   }
 
   const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
@@ -350,6 +351,11 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
           onClick={event => {
             if (!draggedRef.current) {
               routeRingPointer(event, 'click')
+            }
+          }}
+          onContextMenu={event => {
+            if (routeRingPointer(event, 'contextmenu') === false) {
+              event.preventDefault()
             }
           }}
         >
