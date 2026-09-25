@@ -240,7 +240,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float syMid = (syTop + syBot) * 0.5;
 
   // 8px-wide chevron when featHeight>=3 and zoom supports it.
-  float chevronClip = CHEVRON_PX / u.canvasW * 2.0;
+  float chevronClip = pxToClipLen(CHEVRON_PX, u.canvasW);
   float featWPx = (sx2 - sx1) * u.canvasW * 0.5;
   o.featWPx = featWPx;
 

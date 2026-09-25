@@ -70,7 +70,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     // Collapse to a 1px centerline for introns / skipped regions, centered on
     // the row's midpoint — the same band drawGaps fills at `midY - 0.5`.
     float mid = (yTop + yBot) * 0.5;
-    float halfPx = 1.0 / u.canvasH;
+    float halfPx = pxToClipLen(0.5, u.canvasH);
     yTop = mid + halfPx;
     yBot = mid - halfPx;
     alpha = intronAlpha(u.featHeight);

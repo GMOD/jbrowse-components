@@ -159,7 +159,7 @@ public float extendToMinWidthPx(float x1, float x2, float minWidth) {
 public float extendToMinWidthX(
   float x1, float x2, float minWidthPx, float canvasWidth
 ) {
-  return extendToMinWidthPx(x1, x2, minWidthPx * 2.0 / canvasWidth);
+  return extendToMinWidthPx(x1, x2, pxToClipLen(minWidthPx, canvasWidth));
 }
 
 // The other min-width rule: widen a [x1, x2] span about its MIDPOINT, so both
@@ -197,7 +197,7 @@ public float2 expandToMinWidthPx(float x1, float x2, float minWidth) {
 public float2 expandToMinWidthX(
   float x1, float x2, float minWidthPx, float canvasWidth
 ) {
-  return expandToMinWidthPx(x1, x2, minWidthPx * 2.0 / canvasWidth);
+  return expandToMinWidthPx(x1, x2, pxToClipLen(minWidthPx, canvasWidth));
 }
 
 // vid%6: 0→(0,0)  1→(1,0)  2→(0,1)  3→(0,1)  4→(1,0)  5→(1,1)

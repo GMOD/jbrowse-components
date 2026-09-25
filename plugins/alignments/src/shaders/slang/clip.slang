@@ -33,7 +33,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   if (alpha <= 0.0) { return discardVertex(); }
 
   float clipCx = bpToClipX(inst.position, u);
-  float halfWClip = 1.0 / u.canvasW;
+  float halfWClip = pxToClipLen(0.5, u.canvasW);
   float sx1 = clipCx - halfWClip;
   float sx2 = clipCx + halfWClip;
 
